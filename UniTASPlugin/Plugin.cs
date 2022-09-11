@@ -2,12 +2,11 @@
 
 namespace UniTASPlugin;
 
-[BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
+[BepInPlugin("____UniTASPlugin", "UniTASPlugin", "1.0.0")]
 public class Plugin : BaseUnityPlugin
 {
     private void Awake()
     {
-        // Plugin startup logic
         Logger.LogInfo($"Plugin {MyPluginInfo.PLUGIN_GUID} is loaded!");
     }
 }
