@@ -1,5 +1,6 @@
 ﻿using BepInEx;
 using HarmonyLib;
+using UnityEngine;
 
 namespace UniTASPlugin;
 
@@ -19,18 +20,15 @@ public class Plugin : BaseUnityPlugin
         var harmony = new Harmony("____UniTASPluginHarmonyPatch");
         harmony.PatchAll();
 
-        new TAS();
-
         Log = Logger;
 
-        Logger.LogInfo($"Plugin UniTASPlu is loaded!");
+        Logger.LogInfo($"Plugin {PLUGIN_NAME} is loaded!");
     }
 
+#pragma warning disable IDE0051
     private void Update()
+#pragma warning restore IDE0051
     {
-        if (UnityEngine.Input.GetKeyDown(UnityEngine.KeyCode.Comma))
-        {
-            TAS.Instance.Running = true;
-        }
+        TAS.TASTool.Update(Time.deltaTime);
     }
 }
