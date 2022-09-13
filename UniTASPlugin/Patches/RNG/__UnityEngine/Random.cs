@@ -2,7 +2,7 @@
 using UniTASPlugin.TAS;
 using UnityEngine;
 
-namespace UniTASPlugin.Patches.TASInput.__UnityEngine.__Random;
+namespace UniTASPlugin.Patches.RNG.__UnityEngine;
 
 [HarmonyPatch(typeof(Random), nameof(Random.InitState))]
 class InitState

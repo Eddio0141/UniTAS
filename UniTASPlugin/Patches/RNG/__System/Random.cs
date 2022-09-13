@@ -2,7 +2,7 @@
 using System;
 using UniTASPlugin.TAS;
 
-namespace UniTASPlugin.Patches.RNG.__System.__Random;
+namespace UniTASPlugin.Patches.RNG.__System;
 
 [HarmonyPatch(typeof(Random), MethodType.Constructor, new Type[] { typeof(int) })]
 class Random__Seed

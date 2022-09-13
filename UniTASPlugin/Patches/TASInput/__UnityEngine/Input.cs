@@ -1,7 +1,7 @@
 ﻿using HarmonyLib;
 using UnityEngine;
 
-namespace UniTASPlugin.Patches.TASInput.__UnityEngine.__Input;
+namespace UniTASPlugin.Patches.TASInput.__UnityEngine;
 
 #pragma warning disable CS0618
 #pragma warning disable IDE1006
@@ -249,7 +249,7 @@ class GetAccelerationEvent
 {
     static bool Prefix(int index)
     {
-        Plugin.Log.LogDebug($"GetAccelerationEvent called with value: {index}");
+        Plugin.Log.LogDebug($"UnityEngine.Input.GetAccelerationEvent called with value: {index}");
 
         return true;
     }
@@ -344,7 +344,7 @@ class SimulateTouch
 {
     static bool Prefix(Touch touch)
     {
-        Plugin.Log.LogDebug($"SimulateTouch called with value: {touch}");
+        Plugin.Log.LogDebug($"UnityEngine.Input.SimulateTouch called with value: {touch}");
 
         if (TAS.TASTool.Running)
         {
@@ -360,7 +360,7 @@ class SimulateTouchInternal
 {
     static bool Prefix(Touch touch, long timestamp)
     {
-        Plugin.Log.LogDebug($"SimulateTouchInternal called with value: {touch}, {timestamp}");
+        Plugin.Log.LogDebug($"UnityEngine.Input.SimulateTouchInternal called with value: {touch}, {timestamp}");
 
         if (TAS.TASTool.Running)
         {
@@ -390,7 +390,7 @@ class simulateMouseWithTouchesSetter
 {
     static bool Prefix(bool value)
     {
-        Plugin.Log.LogDebug($"simulateMouseWithTouches Setter called with value: {value}");
+        Plugin.Log.LogDebug($"UnityEngine.Input.simulateMouseWithTouches Setter called with value: {value}");
 
         return true;
     }
@@ -487,7 +487,7 @@ class imeCompositionModeSetter
 {
     static bool Prefix(IMECompositionMode value)
     {
-        Plugin.Log.LogDebug($"imeCompositionMode Setter called with value: {value}");
+        Plugin.Log.LogDebug($"UnityEngine.Input.imeCompositionMode Setter called with value: {value}");
 
         return true;
     }
@@ -542,7 +542,7 @@ class compositionCursorPosSetter
 {
     static bool Prefix(Vector2 value)
     {
-        Plugin.Log.LogDebug($"compositionCursorPos Setter called with value: {value}");
+        Plugin.Log.LogDebug($"UnityEngine.Input.compositionCursorPos Setter called with value: {value}");
 
         return true;
     }
@@ -567,7 +567,7 @@ class eatKeyPressOnTextFieldFocusSetter
 {
     static bool Prefix(bool value)
     {
-        Plugin.Log.LogDebug($"eatKeyPressOnTextFieldFocus Setter called with value: {value}");
+        Plugin.Log.LogDebug($"UnityEngine.Input.eatKeyPressOnTextFieldFocus Setter called with value: {value}");
 
         return true;
     }
@@ -664,7 +664,7 @@ class multiTouchEnabledSetter
 {
     static bool Prefix(bool value)
     {
-        Plugin.Log.LogDebug($"multiTouchEnabled Setter called with value: {value}");
+        Plugin.Log.LogDebug($"UnityEngine.Input.multiTouchEnabled Setter called with value: {value}");
 
         return true;
     }
@@ -731,7 +731,7 @@ class compensateSensorsSetter
 {
     static bool Prefix(bool value)
     {
-        Plugin.Log.LogDebug($"compensateSensors Setter called with value: {value}");
+        Plugin.Log.LogDebug($"UnityEngine.Input.compensateSensors Setter called with value: {value}");
 
         return true;
     }
@@ -770,7 +770,7 @@ class backButtonLeavesAppSetter
 {
     static bool Prefix(bool value)
     {
-        Plugin.Log.LogDebug($"backButtonLeavesApp Setter called with value: {value}");
+        Plugin.Log.LogDebug($"UnityEngine.Input.backButtonLeavesApp Setter called with value: {value}");
 
         return true;
     }
@@ -811,7 +811,7 @@ class GetGyroInternal
     {
         if (TAS.TASTool.Running)
         {
-            Plugin.Log.LogDebug("GetGyroInternal default value not set");
+            Plugin.Log.LogDebug("UnityEngine.Input.GetGyroInternal default value not set");
         }
 
         return true;
@@ -819,7 +819,7 @@ class GetGyroInternal
 
     static void Postfix(ref int __result)
     {
-        Plugin.Log.LogDebug($"GetGyroInternal return value {__result}");
+        Plugin.Log.LogDebug($"UnityEngine.Input.GetGyroInternal return value {__result}");
     }
 }
 
@@ -873,7 +873,7 @@ class CheckDisabled
     {
         if (TAS.TASTool.Running)
         {
-            Plugin.Log.LogDebug("CheckDisabled default value not set");
+            Plugin.Log.LogDebug("UnityEngine.Input.CheckDisabled default value not set");
         }
 
         return true;
@@ -881,7 +881,7 @@ class CheckDisabled
 
     static void Postfix(ref bool __result)
     {
-        Plugin.Log.LogDebug($"CheckDisabled return value {__result}");
+        Plugin.Log.LogDebug($"UnityEngine.Input.CheckDisabled return value {__result}");
     }
 }*/
 
@@ -892,7 +892,7 @@ class GetTouch_Injected
     {
         if (TAS.TASTool.Running)
         {
-            Plugin.Log.LogDebug($"GetTouch_Injected called with arg {index}");
+            Plugin.Log.LogDebug($"UnityEngine.Input.GetTouch_Injected called with arg {index}");
 
             return false;
         }
@@ -908,7 +908,7 @@ class GetAccelerationEvent_Injected
     {
         if (TAS.TASTool.Running)
         {
-            Plugin.Log.LogDebug($"GetAccelerationEvent_Injected called with arg {index}");
+            Plugin.Log.LogDebug($"UnityEngine.Input.GetAccelerationEvent_Injected called with arg {index}");
 
             return false;
         }
@@ -924,7 +924,7 @@ class SimulateTouchInternal_Injected
     {
         if (TAS.TASTool.Running)
         {
-            Plugin.Log.LogDebug($"SimulateTouchInternal_Injected called with arg {touch}, {timestamp}");
+            Plugin.Log.LogDebug($"UnityEngine.Input.SimulateTouchInternal_Injected called with arg {touch}, {timestamp}");
 
             return false;
         }
@@ -941,7 +941,7 @@ class get_mousePosition_Injected
         if (TAS.TASTool.Running)
         {
             // TODO set ret
-            Plugin.Log.LogDebug($"get_mousePosition_Injected called, TODO set ret");
+            Plugin.Log.LogDebug($"UnityEngine.Input.get_mousePosition_Injected called, TODO set ret");
 
             return false;
         }
@@ -957,7 +957,7 @@ class get_mouseScrollDelta_Injected
     {
         if (TAS.TASTool.Running)
         {
-            Plugin.Log.LogDebug($"get_mouseScrollDelta_Injected called");
+            Plugin.Log.LogDebug($"UnityEngine.Input.get_mouseScrollDelta_Injected called");
 
             return false;
         }
@@ -973,7 +973,7 @@ class get_compositionCursorPos_Injected
     {
         if (TAS.TASTool.Running)
         {
-            Plugin.Log.LogDebug($"get_compositionCursorPos_Injected called");
+            Plugin.Log.LogDebug($"UnityEngine.Input.get_compositionCursorPos_Injected called");
 
             return false;
         }
@@ -989,7 +989,7 @@ class set_compositionCursorPos_Injected
     {
         if (TAS.TASTool.Running)
         {
-            Plugin.Log.LogDebug($"set_compositionCursorPos_Injected called");
+            Plugin.Log.LogDebug($"UnityEngine.Input.set_compositionCursorPos_Injected called");
 
             return false;
         }
@@ -1005,7 +1005,7 @@ class get_acceleration_Injected
     {
         if (TAS.TASTool.Running)
         {
-            Plugin.Log.LogDebug($"get_acceleration_Injected called");
+            Plugin.Log.LogDebug($"UnityEngine.Input.get_acceleration_Injected called");
 
             return false;
         }
