@@ -1,8 +1,8 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
 
 namespace UniTASPlugin.TAS;
 
-public static class TASTool
+public static class Main
 {
     static bool _running;
     public static bool Running
@@ -23,14 +23,16 @@ public static class TASTool
         }
     }
     public static double Time { get; private set; }
+    static readonly List<string> axisNames;
 
-    static TASTool()
+    static Main()
     {
         // wait for TAS client to open
         // set Running depending on this
 
         Running = true;
         Time = 0.0;
+        axisNames = new List<string>();
     }
 
     public static void Update(float deltaTime)
@@ -47,5 +49,16 @@ public static class TASTool
     {
         // TODO: work out seed calculation
         return (int)(Time * 1000.0);
+    }
+
+    public static void AxisCall(string axisName)
+    {
+        if (!axisNames.Contains(axisName))
+        {
+            axisNames.Add(axisName);
+
+            // notify new found axis
+            Plugin.Log.LogInfo($"Found new axis name: {axisName}");
+        }
     }
 }
