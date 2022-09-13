@@ -33,12 +33,12 @@ public static class TASTool
 
     public static void Update(float deltaTime)
     {
+        if (Running)
+        {
+            Input.Update();
+        }
+
         Time += deltaTime;
-
-        Input.Update();
-
-        if (!Running)
-            return;
     }
 
     public static int TimeSeed()

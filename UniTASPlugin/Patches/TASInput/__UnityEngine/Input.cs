@@ -163,10 +163,17 @@ class GetButtonUp
 [HarmonyPatch(typeof(Input), nameof(Input.GetMouseButton))]
 class GetMouseButton
 {
-    static bool Prefix()
+    static bool Prefix(ref bool __result, int button)
     {
         if (TAS.TASTool.Running)
         {
+            __result = button switch
+            {
+                0 => TAS.Input.Mouse.LeftClick,
+                1 => TAS.Input.Mouse.RightClick,
+                2 => TAS.Input.Mouse.MiddleClick,
+                _ => false,
+            };
             return false;
         }
 
@@ -177,10 +184,17 @@ class GetMouseButton
 [HarmonyPatch(typeof(Input), nameof(Input.GetMouseButtonDown))]
 class GetMouseButtonDown
 {
-    static bool Prefix()
+    static bool Prefix(ref bool __result, int button)
     {
         if (TAS.TASTool.Running)
         {
+            __result = button switch
+            {
+                0 => TAS.Input.Mouse.LeftClickDown,
+                1 => TAS.Input.Mouse.RightClickDown,
+                2 => TAS.Input.Mouse.MiddleClickDown,
+                _ => false,
+            };
             return false;
         }
 
@@ -191,10 +205,17 @@ class GetMouseButtonDown
 [HarmonyPatch(typeof(Input), nameof(Input.GetMouseButtonUp))]
 class GetMouseButtonUp
 {
-    static bool Prefix()
+    static bool Prefix(ref bool __result, int button)
     {
         if (TAS.TASTool.Running)
         {
+            __result = button switch
+            {
+                0 => TAS.Input.Mouse.LeftClickUp,
+                1 => TAS.Input.Mouse.RightClickUp,
+                2 => TAS.Input.Mouse.MiddleClickUp,
+                _ => false,
+            };
             return false;
         }
 
@@ -445,7 +466,7 @@ class mousePositionGetter
     {
         if (TAS.TASTool.Running)
         {
-            __result = TAS.Input.mousePosition;
+            __result = TAS.Input.Mouse.Position;
 
             return false;
         }
@@ -528,7 +549,7 @@ class compositionCursorPosGetter
     {
         if (TAS.TASTool.Running)
         {
-            __result = TAS.Input.mousePosition;
+            __result = TAS.Input.Mouse.Position;
 
             return false;
         }
@@ -580,7 +601,7 @@ class mousePresentGetter
     {
         if (TAS.TASTool.Running)
         {
-            __result = TAS.Input.mousePresent;
+            __result = TAS.Input.Mouse.MousePresent;
 
             return false;
         }
