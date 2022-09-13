@@ -12,7 +12,7 @@ class LoadSceneAsync__sceneBuildIndex__parameters
 {
     static bool Prefix(int sceneBuildIndex, LoadSceneParameters parameters, ref AsyncOperation __result)
     {
-        if (TAS.TASTool.Running)
+        if (TAS.Main.Running)
         {
             __result = SceneManager.LoadSceneAsyncNameIndexInternal(null, sceneBuildIndex, parameters, true);
 
@@ -28,7 +28,7 @@ class LoadSceneAsync__sceneName__parameters
 {
     static bool Prefix(string sceneName, LoadSceneParameters parameters, ref AsyncOperation __result)
     {
-        if (TAS.TASTool.Running)
+        if (TAS.Main.Running)
         {
             __result = SceneManager.LoadSceneAsyncNameIndexInternal(sceneName, -1, parameters, true);
 
@@ -44,7 +44,7 @@ class UnloadSceneAsync__sceneBuildIndex
 {
     static bool Prefix(int sceneBuildIndex, ref AsyncOperation __result)
     {
-        if (TAS.TASTool.Running)
+        if (TAS.Main.Running)
         {
             __result = SceneManager.UnloadSceneNameIndexInternal("", sceneBuildIndex, true, UnloadSceneOptions.None, out _);
 
@@ -60,7 +60,7 @@ class UnloadSceneAsync__sceneName
 {
     static bool Prefix(string sceneName, ref AsyncOperation __result)
     {
-        if (TAS.TASTool.Running)
+        if (TAS.Main.Running)
         {
             __result = SceneManager.UnloadSceneNameIndexInternal(sceneName, -1, true, UnloadSceneOptions.None, out _);
 
@@ -76,7 +76,7 @@ class UnloadSceneAsync__scene
 {
     static bool Prefix(ref Scene scene, ref AsyncOperation __result)
     {
-        if (TAS.TASTool.Running)
+        if (TAS.Main.Running)
         {
             __result = SceneManager.UnloadSceneNameIndexInternal("", scene.buildIndex, true, UnloadSceneOptions.None, out _);
 
@@ -92,7 +92,7 @@ class UnloadSceneAsync__sceneBuildIndex__options
 {
     static bool Prefix(int sceneBuildIndex, UnloadSceneOptions options, ref AsyncOperation __result)
     {
-        if (TAS.TASTool.Running)
+        if (TAS.Main.Running)
         {
             __result = SceneManager.UnloadSceneNameIndexInternal("", sceneBuildIndex, true, options, out _);
 
@@ -108,7 +108,7 @@ class UnloadSceneAsync__sceneName__options
 {
     static bool Prefix(string sceneName, UnloadSceneOptions options, ref AsyncOperation __result)
     {
-        if (TAS.TASTool.Running)
+        if (TAS.Main.Running)
         {
             __result = SceneManager.UnloadSceneNameIndexInternal(sceneName, -1, true, options, out _);
 
@@ -124,7 +124,7 @@ class UnloadSceneAsync__scene__options
 {
     static bool Prefix(ref Scene scene, UnloadSceneOptions options, ref AsyncOperation __result)
     {
-        if (TAS.TASTool.Running)
+        if (TAS.Main.Running)
         {
             __result = SceneManager.UnloadSceneNameIndexInternal("", scene.buildIndex, true, options, out _);
 

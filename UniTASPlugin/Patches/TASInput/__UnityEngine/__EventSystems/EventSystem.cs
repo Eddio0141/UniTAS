@@ -10,7 +10,7 @@ class OnApplicationFocus
 {
     static void Prefix(ref bool hasFocus)
     {
-        if (TAS.TASTool.Running)
+        if (TAS.Main.Running)
         {
             // we dont want to lose focus while running the TAS
             hasFocus = true;
@@ -23,7 +23,7 @@ class isFocusedGetter
 {
     static bool Prefix(ref bool __result)
     {
-        if (TAS.TASTool.Running)
+        if (TAS.Main.Running)
         {
             __result = true;
 

@@ -29,6 +29,6 @@ public class Plugin : BaseUnityPlugin
     private void Update()
 #pragma warning restore IDE0051
     {
-        TAS.TASTool.Update(Time.deltaTime);
+        TAS.Main.Update(Time.deltaTime);
     }
 }

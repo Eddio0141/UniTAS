@@ -9,9 +9,9 @@ class InitState
 {
     static void Prefix(ref int seed)
     {
-        if (TASTool.Running)
+        if (Main.Running)
         {
-            seed = TASTool.TimeSeed();
+            seed = Main.TimeSeed();
             Plugin.Log.LogInfo($"UnityEngine.Random.InitState seed set to {seed}");
         }
     }
