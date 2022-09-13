@@ -10,7 +10,10 @@ class Random__Seed
     static void Prefix(ref int Seed)
     {
         if (TASTool.Running)
+        {
             Seed = TASTool.TimeSeed();
+            Plugin.Log.LogInfo($"System.Random initialize seed set to {Seed}");
+        }
     }
 }
 
@@ -22,6 +25,8 @@ class GenerateSeed
         if (TASTool.Running)
         {
             __result = TASTool.TimeSeed();
+            Plugin.Log.LogInfo($"System.Random.GenerateSeed seed set to {__result}");
+
             return false;
         }
 
@@ -37,6 +42,8 @@ class GenerateGlobalSeed
         if (TASTool.Running)
         {
             __result = TASTool.TimeSeed();
+            Plugin.Log.LogInfo($"System.Random.GenerateGlobalSeed seed set to {__result}");
+
             return false;
         }
 
