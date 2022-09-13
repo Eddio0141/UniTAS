@@ -1,71 +1,53 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace UniTASPlugin.TAS;
 
 public static class Input
 {
     public static Mouse Mouse;
-    static int testState = 0;
+    public static Dictionary<string, float> Axis { get; internal set; }
 
     static Input()
     {
         Mouse = new Mouse();
+        Axis = new Dictionary<string, float>();
     }
 
     public static void Update()
     {
         // TODO remove this test
-        if (TASTool.Time < 2)
+        if (Axis.Count == 0)
         {
-            if (testState == 0)
-            {
-                Plugin.Log.LogDebug($"test state 0 at time {TASTool.Time}");
-                testState++;
-            }
-
+            Axis.Add("Mouse X", 0f);
+            Axis.Add("Mouse Y", 0f);
+        }
+        if (Main.Time < 2)
+        {
             Mouse.Position = new Vector2(300, 700);
         }
-        else if (TASTool.Time < 3)
+        else if (Main.Time < 3)
         {
-            if (testState == 1)
-            {
-                Plugin.Log.LogDebug($"test state 1 at time {TASTool.Time}");
-                testState++;
-            }
-
             Mouse.LeftClick = true;
         }
-        else if (TASTool.Time < 3.1)
+        else if (Main.Time < 3.1)
         {
-            if (testState == 2)
-            {
-                Plugin.Log.LogDebug($"test state 2 at time {TASTool.Time}");
-                testState++;
-            }
-
             Mouse.LeftClick = false;
         }
-        else if (TASTool.Time < 4.35) { }
-        else if (TASTool.Time < 4.9)
+        else if (Main.Time < 5)
         {
-            if (testState == 3)
-            {
-                Plugin.Log.LogDebug($"test state 3 at time {TASTool.Time}");
-                testState++;
-
-                ScreenCapture.CaptureScreenshot("C:\\Program Files (x86)\\Steam\\steamapps\\common\\It Steals\\test.png");
-            }
+            Axis["Mouse X"] = 1f;
+            Axis["Mouse Y"] = 0.2f;
         }
-        else if (TASTool.Time > 6 && TASTool.Running)
+        else if (Main.Time < 6)
         {
-            if (testState == 4)
-            {
-                Plugin.Log.LogDebug($"test state 4 at time {TASTool.Time}");
-                testState++;
-            }
-
+            Axis["Mouse X"] = -2f;
+            Axis["Mouse Y"] = 0f;
+        }
+        else if (Main.Time > 8 && Main.Running)
+        {
             Plugin.Log.LogDebug("finished");
-            TASTool.Running = false;
+            Main.Running = false;
         }
 
         Mouse.Update();
