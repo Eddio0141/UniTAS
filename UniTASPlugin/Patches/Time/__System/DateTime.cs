@@ -1,0 +1,23 @@
+﻿using HarmonyLib;
+using System;
+
+namespace UniTASPlugin.Patches.Time.__System;
+
+[HarmonyPatch(typeof(DateTime), nameof(DateTime.Now), MethodType.Getter)]
+class NowGetter
+{
+    static bool Prefix(ref DateTime __result)
+    {
+        if (TAS.Main.Running)
+        {
+            var totalSeconds = TAS.Main.Time;
+            var totalMilliseconds = totalSeconds * 1000;
+            var totalTicks = (long)(totalMilliseconds * 10000);
+            __result = new DateTime(totalTicks);
+
+            return false;
+        }
+
+        return true;
+    }
+}
