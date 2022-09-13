@@ -11,7 +11,7 @@ public static class TASTool
             if (value)
             {
                 // TODO set actual framerate
-                UnityEngine.Time.captureFramerate = 1500;
+                UnityEngine.Time.captureFramerate = 1000;
             }
             else
             {

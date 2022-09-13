@@ -452,13 +452,6 @@ class mousePositionGetter
 
         return true;
     }
-
-    /*
-    static void Postfix(ref Vector3 __result)
-    {
-        Plugin.Log.LogDebug($"mousePosition getter called with return {__result}");
-    }
-    */
 }
 
 [HarmonyPatch(typeof(Input), nameof(Input.mouseScrollDelta), MethodType.Getter)]
@@ -531,10 +524,12 @@ class imeIsSelectedGetter
 [HarmonyPatch(typeof(Input), nameof(Input.compositionCursorPos), MethodType.Getter)]
 class compositionCursorPosGetter
 {
-    static bool Prefix()
+    static bool Prefix(ref Vector2 __result)
     {
         if (TAS.TASTool.Running)
         {
+            __result = TAS.Input.mousePosition;
+
             return false;
         }
 
@@ -581,10 +576,12 @@ class eatKeyPressOnTextFieldFocusSetter
 [HarmonyPatch(typeof(Input), nameof(Input.mousePresent), MethodType.Getter)]
 class mousePresentGetter
 {
-    static bool Prefix()
+    static bool Prefix(ref bool __result)
     {
         if (TAS.TASTool.Running)
         {
+            __result = TAS.Input.mousePresent;
+
             return false;
         }
 
