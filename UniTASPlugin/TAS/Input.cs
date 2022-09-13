@@ -45,11 +45,22 @@ public static class Input
 
             Mouse.LeftClick = false;
         }
-        else if (TASTool.Time > 6 && TASTool.Running)
+        else if (TASTool.Time < 4.35) { }
+        else if (TASTool.Time < 4.9)
         {
             if (testState == 3)
             {
                 Plugin.Log.LogDebug($"test state 3 at time {TASTool.Time}");
+                testState++;
+
+                ScreenCapture.CaptureScreenshot("C:\\Program Files (x86)\\Steam\\steamapps\\common\\It Steals\\test.png");
+            }
+        }
+        else if (TASTool.Time > 6 && TASTool.Running)
+        {
+            if (testState == 4)
+            {
+                Plugin.Log.LogDebug($"test state 4 at time {TASTool.Time}");
                 testState++;
             }
 

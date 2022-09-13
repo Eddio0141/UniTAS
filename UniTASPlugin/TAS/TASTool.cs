@@ -1,8 +1,10 @@
-﻿namespace UniTASPlugin.TAS;
+﻿using UnityEngine;
+
+namespace UniTASPlugin.TAS;
 
 public static class TASTool
 {
-    private static bool _running;
+    static bool _running;
     public static bool Running
     {
         // TODO private set
@@ -11,11 +13,11 @@ public static class TASTool
             if (value)
             {
                 // TODO set actual framerate
-                UnityEngine.Time.captureFramerate = 1000;
+                UnityEngine.Time.captureDeltaTime = 0.001f;
             }
             else
             {
-                UnityEngine.Time.captureFramerate = 0;
+                UnityEngine.Time.captureDeltaTime = 0f;
             }
             _running = value;
         }
