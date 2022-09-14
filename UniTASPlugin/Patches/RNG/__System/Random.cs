@@ -12,12 +12,14 @@ class GenerateSeed
         if (Main.Running)
         {
             __result = Main.TimeSeed();
-            Plugin.Log.LogInfo($"System.Random.GenerateSeed seed set to {__result}");
-
             return false;
         }
-
         return true;
+    }
+
+    static void Postfix(ref int __result)
+    {
+        Plugin.Log.LogInfo($"System.Random.GenerateSeed seed: {__result}");
     }
 }
 
@@ -29,11 +31,13 @@ class GenerateGlobalSeed
         if (Main.Running)
         {
             __result = Main.TimeSeed();
-            Plugin.Log.LogInfo($"System.Random.GenerateGlobalSeed seed set to {__result}");
-
             return false;
         }
-
         return true;
+    }
+
+    static void Postfix(ref int __result)
+    {
+        Plugin.Log.LogInfo($"System.Random.GenerateGlobalSeed seed: {__result}");
     }
 }
