@@ -12,7 +12,8 @@ class InitState
         if (Main.Running)
         {
             seed = Main.TimeSeed();
-            Plugin.Log.LogInfo($"UnityEngine.Random.InitState seed set to {seed}");
         }
+
+        Plugin.Log.LogInfo($"UnityEngine.Random.InitState seed: {seed}");
     }
 }
