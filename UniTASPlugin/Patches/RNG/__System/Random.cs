@@ -7,6 +7,8 @@ namespace UniTASPlugin.Patches.RNG.__System;
 [HarmonyPatch(typeof(Random), "GenerateSeed")]
 class GenerateSeed
 {
+    // TODO do we need to do anything here? seed depends on time, so it should be fine
+    /*
     static bool Prefix(ref int __result)
     {
         if (Main.Running)
@@ -16,6 +18,7 @@ class GenerateSeed
         }
         return true;
     }
+    */
 
     static void Postfix(ref int __result)
     {
@@ -26,6 +29,8 @@ class GenerateSeed
 [HarmonyPatch(typeof(Random), "GenerateGlobalSeed")]
 class GenerateGlobalSeed
 {
+    // TODO do we need to do anything here? seed depends on time, so it should be fine
+    /*
     static bool Prefix(ref int __result)
     {
         if (Main.Running)
@@ -35,6 +40,7 @@ class GenerateGlobalSeed
         }
         return true;
     }
+    */
 
     static void Postfix(ref int __result)
     {
