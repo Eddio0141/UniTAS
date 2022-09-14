@@ -1,4 +1,7 @@
 ﻿using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 
 namespace UniTASPlugin.TAS;
 
@@ -24,6 +27,8 @@ public static class Main
     }
     public static double Time { get; private set; }
     static readonly List<string> axisNames;
+    static List<int> firstScenes;
+    static List<int> firstObjIDs;
 
     static Main()
     {
@@ -33,6 +38,17 @@ public static class Main
         Running = true;
         Time = 0.0;
         axisNames = new List<string>();
+
+        firstScenes = new List<int>();
+        for (int i = 0; i < SceneManager.sceneCount; i++)
+        {
+            firstScenes.Add(SceneManager.GetSceneAt(i).buildIndex);
+        }
+        firstObjIDs = new List<int>();
+        foreach (var obj in Object.FindObjectsOfType<MonoBehaviour>())
+        {
+            firstObjIDs.Add(obj.GetInstanceID());
+        }
     }
 
     public static void Update(float deltaTime)
@@ -60,5 +76,33 @@ public static class Main
             // notify new found axis
             Plugin.Log.LogInfo($"Found new axis name: {axisName}");
         }
+    }
+
+    // BUG fix scene not loading when restarting while loading a scene
+    public static void SoftRestart()
+    {
+        // release mouse lock
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+
+        SceneManager.LoadScene(firstScenes[0]);
+        for (int i = 1; i < firstScenes.Count; i++)
+        {
+            SceneManager.LoadScene(firstScenes[i], LoadSceneMode.Additive);
+        }
+
+        // not sure if destroying object after a scene load is good but shouldn't be a problem
+        foreach (var obj in Object.FindObjectsOfType<MonoBehaviour>())
+        {
+            if (!firstObjIDs.Contains(obj.GetInstanceID()))
+            {
+                if (obj is EventSystem)
+                    continue;
+
+                Object.Destroy(obj);
+            }
+        }
+
+        Plugin.Log.LogInfo("Soft restart");
     }
 }
