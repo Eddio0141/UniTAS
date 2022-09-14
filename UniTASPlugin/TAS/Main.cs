@@ -78,11 +78,13 @@ public static class Main
         Time += deltaTime;
     }
 
+    /*
     public static int TimeSeed()
     {
         // TODO: work out seed calculation
         return (int)(Time * 1000.0);
     }
+    */
 
     public static void AxisCall(string axisName)
     {
@@ -135,6 +137,8 @@ public static class Main
         }
 
         Time = seed / 1000.0;
+        Plugin.Log.LogInfo($"System time seconds: {Time}");
+        
         SceneManager.LoadScene(firstScenes[0]);
         for (int i = 1; i < firstScenes.Count; i++)
         {
