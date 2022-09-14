@@ -29,7 +29,7 @@ public static class MovieHandler
         TAS.Main.Running = true;
         TAS.Main.SoftRestart(CurrentMovie.Seed);
 
-        Plugin.Log.LogInfo($"Running movie {CurrentMovie.Name} with {CurrentMovie.TotalFrames()} frames ({CurrentMovie.TotalSeconds()}s runtime)");
+        Plugin.Log.LogInfo($"Movie start: {CurrentMovie}");
     }
 
     static bool CheckCurrentMovieEnd()
@@ -139,6 +139,11 @@ public class Movie
     public float TotalFrames()
     {
         return Framebulks.Sum(f => f.FrameCount);
+    }
+
+    public override string ToString()
+    {
+        return $"Name: {Name}, {Framebulks.Count} framebulks, {TotalFrames()} total frames, {TotalSeconds()} seconds of runtime";
     }
 }
 
