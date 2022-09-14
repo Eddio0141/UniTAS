@@ -142,8 +142,6 @@ class GetKeyDownString
 [HarmonyPatch(typeof(Input), nameof(Input.GetAxis))]
 class GetAxis
 {
-    static float lastAxis;
-
     static bool Prefix(string axisName, ref float __result)
     {
         TAS.Main.AxisCall(axisName);
@@ -155,29 +153,15 @@ class GetAxis
             {
                 __result = value;
             }
-
             return false;
         }
-
         return true;
-    }
-
-    static void Postfix(string axisName, ref float __result)
-    {
-        if (axisName == "Mouse X" && __result != lastAxis)
-        {
-            if (UnityEngine.Time.captureDeltaTime != 0)
-                Plugin.Log.LogDebug($"GetAxis({axisName}) = {__result}, frametime: {UnityEngine.Time.captureDeltaTime}");
-            lastAxis = __result;
-        }
     }
 }
 
 [HarmonyPatch(typeof(Input), nameof(Input.GetAxisRaw))]
 class GetAxisRaw
 {
-    static float lastAxis;
-
     static bool Prefix(string axisName, ref float __result)
     {
         TAS.Main.AxisCall(axisName);
@@ -190,21 +174,9 @@ class GetAxisRaw
             {
                 __result = value;
             }
-
             return false;
         }
-
         return true;
-    }
-
-    static void Postfix(string axisName, ref float __result)
-    {
-        if (axisName == "Mouse X" && __result != lastAxis)
-        {
-            if (UnityEngine.Time.captureDeltaTime != 0)
-                Plugin.Log.LogDebug($"GetAxisRaw({axisName}) = {__result}, frametime: {UnityEngine.Time.captureDeltaTime}");
-            lastAxis = __result;
-        }
     }
 }
 
@@ -468,28 +440,14 @@ class inputStringGetter
 [HarmonyPatch(typeof(Input), nameof(Input.mousePosition), MethodType.Getter)]
 class mousePositionGetter
 {
-    static Vector3 lastVec;
-
     static bool Prefix(ref Vector3 __result)
     {
         if (TAS.Main.Running)
         {
             __result = Mouse.Position;
-
             return false;
         }
-
         return true;
-    }
-
-    static void Postfix(ref Vector3 __result)
-    {
-        if (__result != lastVec)
-        {
-            if (UnityEngine.Time.captureDeltaTime != 0)
-                Plugin.Log.LogDebug($"UnityEngine.Input.mousePosition Getter called with value: {__result}, frametime: {UnityEngine.Time.captureDeltaTime}");
-            lastVec = __result;
-        }
     }
 }
 
