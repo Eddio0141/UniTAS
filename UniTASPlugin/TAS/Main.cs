@@ -44,7 +44,7 @@ public static class Main
     /// Scene unloading count status. 0 means there are no scenes unloading, 1 means there is one scene unloading, 2 means there are two scenes unloading, etc.
     /// </summary>
     public static int UnloadingSceneCount { get; set; }
-    public static List<int> DontDestroyOnLoadIDs = new List<int>();
+    public static List<int> DontDestroyOnLoadIDs = new();
 
     static Main()
     {
