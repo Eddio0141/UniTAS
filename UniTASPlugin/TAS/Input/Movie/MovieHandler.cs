@@ -151,8 +151,8 @@ public class Movie
         var framesSection = "frames";
         var seedText = "seed ";
         var fieldSeparator = "|";
-        var listSeparator = " ";
-        var axisNameSurround = "\"";
+        var listSeparator = ' ';
+        var axisNameSurround = '"';
         const string leftClick = "left";
         const string rightClick = "right";
         const string middleClick = "middle";
@@ -346,39 +346,94 @@ public class Movie
                         continue;
                     }
 
-                    var axisInfo = field.Split(listSeparator, StringSplitOptions.None);
+                    var fieldChars = field.ToCharArray();
 
-                    for (int i = 0; i < axisInfo.Length; i++)
+                    var gettingAxisName = true;
+                    var firstSurroundChar = true;
+                    var betweenNameAndValue = true;
+                    var betweenValueAndName = false;
+                    var builder = "";
+                    var axisName = "";
+
+                    for (int i = 0; i < fieldChars.Length; i++)
                     {
-                        var axis = axisInfo[i];
+                        var ch = fieldChars[i];
 
-                        if (!axis.StartsWith(axisNameSurround) && !axis.EndsWith(axisNameSurround))
+                        if (betweenValueAndName)
                         {
-                            errorMsg = $"Axis name not surrounded by {axisNameSurround}";
-                            break;
+                            if (ch == listSeparator)
+                                continue;
+
+                            betweenValueAndName = false;
                         }
 
-                        axis = axis[1..^1];
-
-                        if (i + 1 >= axisInfo.Length)
+                        if (gettingAxisName)
                         {
-                            errorMsg = "Axis is missing value";
-                            break;
+                            if (ch == axisNameSurround)
+                            {
+                                if (firstSurroundChar)
+                                {
+                                    firstSurroundChar = false;
+                                    continue;
+                                }
+
+                                axisName = builder;
+                                builder = "";
+                                gettingAxisName = false;
+                                continue;
+                            }
+
+                            builder += ch;
+                            continue;
                         }
 
-                        var value = axisInfo[i + 1];
-
-                        if (!float.TryParse(field, out var valueFloat))
+                        if (betweenNameAndValue)
                         {
-                            errorMsg = "Axis value not a decimal";
-                            break;
+                            if (ch == listSeparator)
+                                continue;
+
+                            betweenNameAndValue = false;
                         }
 
-                        framebulk.Axises.AxisMove.Add(axis, valueFloat);
+                        var finalIteration = i == fieldChars.Length - 1;
+
+                        if (ch == listSeparator || finalIteration)
+                        {
+                            if (finalIteration)
+                                builder += ch;
+
+                            if (!float.TryParse(builder, out var axisValue))
+                            {
+                                errorMsg = "Axis value not a valid decimal";
+                                break;
+                            }
+
+                            framebulk.Axises.AxisMove.Add(axisName, axisValue);
+
+                            if (!finalIteration)
+                            {
+                                gettingAxisName = true;
+                                firstSurroundChar = true;
+                                betweenNameAndValue = true;
+                                betweenValueAndName = true;
+                                builder = "";
+                                axisName = "";
+                            }
+
+                            continue;
+                        }
+
+                        builder += ch;
                     }
 
                     if (errorMsg != "")
                         break;
+
+                    if (gettingAxisName)
+                    {
+                        errorMsg = "Axis missing value";
+                        break;
+                    }
 
                     axisField = false;
                     continue;
