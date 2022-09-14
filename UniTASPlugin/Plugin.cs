@@ -24,8 +24,6 @@ public class Plugin : BaseUnityPlugin
 
         Log = Logger;
 
-        new GameObject().AddComponent<TAS.UnityASyncHandler>();
-
         Log.LogInfo($"Plugin {PLUGIN_NAME} is loaded!");
     }
 

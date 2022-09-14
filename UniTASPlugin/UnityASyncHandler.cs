@@ -1,7 +1,8 @@
 ﻿using System.Collections;
+using UniTASPlugin.TAS;
 using UnityEngine;
 
-namespace UniTASPlugin.TAS;
+namespace UniTASPlugin;
 
 internal class UnityASyncHandler : MonoBehaviour
 {
@@ -17,7 +18,7 @@ internal class UnityASyncHandler : MonoBehaviour
             return;
         }
 
-        DontDestroyOnLoad(this);
+        DontDestroyOnLoad(transform);
         Instance = this;
     }
 
