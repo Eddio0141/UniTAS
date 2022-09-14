@@ -1,5 +1,6 @@
 ﻿using BepInEx;
 using HarmonyLib;
+using UniTASPlugin.TAS.Input.Movie;
 using UnityEngine;
 
 namespace UniTASPlugin;
@@ -33,10 +34,18 @@ public class Plugin : BaseUnityPlugin
     {
         TAS.Main.Update(Time.deltaTime);
 
+        // TODO record tas would seem interesting maybe
+        // TODO simulate slowdown as user option
+        // TODO GUI
+
         // TODO remove this test
         if (Input.GetKeyDown(KeyCode.K))
         {
-            TAS.Main.SoftRestart();
+            var movie = new Movie("test", new System.Collections.Generic.List<Framebulk> {
+                new Framebulk(0.001f, 2000)
+            });
+
+            MovieHandler.RunMovie(movie);
         }
     }
 }
