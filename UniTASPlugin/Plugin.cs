@@ -37,12 +37,16 @@ public class Plugin : BaseUnityPlugin
         // TODO record tas would seem interesting maybe
         // TODO simulate slowdown as user option
         // TODO GUI
+        // TODO movie end notification cause memes
 
         // TODO remove this test
-        if (Input.GetKeyDown(KeyCode.K))
+        if (!TAS.Main.Running && Input.GetKeyDown(KeyCode.K))
         {
             var movie = new Movie("test", new System.Collections.Generic.List<Framebulk> {
-                new Framebulk(0.001f, 2000)
+                new Framebulk(0.001f, 2000),
+                new Framebulk(0.001f, 500, new Mouse(300, 730)),
+                new Framebulk(0.001f, 100, new Mouse(300, 730, true)),
+                new Framebulk(0.001f, 2000, new Mouse(300, 730)),
             });
 
             MovieHandler.RunMovie(movie);
