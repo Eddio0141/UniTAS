@@ -10,4 +10,9 @@ public static class Axis
     {
         Values = new();
     }
+
+    public static void Clear()
+    {
+        Values.Clear();
+    }
 }

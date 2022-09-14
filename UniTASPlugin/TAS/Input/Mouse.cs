@@ -22,22 +22,7 @@ public static class Mouse
     static Mouse()
     {
         MousePresent = true;
-        Position = Vector2.zero;
-
-        LeftClick = false;
-        LeftClickDown = false;
-        LeftClickUp = false;
-        LeftClickPrev = false;
-
-        RightClick = false;
-        RightClickDown = false;
-        RightClickUp = false;
-        RightClickPrev = false;
-
-        MiddleClick = false;
-        MiddleClickDown = false;
-        MiddleClickUp = false;
-        MiddleClickPrev = false;
+        Clear();
     }
 
     public static void Update()
@@ -72,5 +57,25 @@ public static class Mouse
         LeftClickPrev = LeftClick;
         RightClickPrev = RightClick;
         MiddleClickPrev = MiddleClick;
+    }
+
+    public static void Clear()
+    {
+        Position = Vector2.zero;
+
+        LeftClick = false;
+        LeftClickDown = false;
+        LeftClickUp = false;
+        LeftClickPrev = false;
+
+        RightClick = false;
+        RightClickDown = false;
+        RightClickUp = false;
+        RightClickPrev = false;
+
+        MiddleClick = false;
+        MiddleClickDown = false;
+        MiddleClickUp = false;
+        MiddleClickPrev = false;
     }
 }

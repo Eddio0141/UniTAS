@@ -12,4 +12,11 @@ public static class Main
         Keyboard.Update();
         VirtualCursor.Update();
     }
+
+    public static void Clear()
+    {
+        Mouse.Clear();
+        Keyboard.Clear();
+        Axis.Clear();
+    }
 }

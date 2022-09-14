@@ -41,4 +41,12 @@ public static class Keyboard
             }
         }
     }
+
+    public static void Clear()
+    {
+        Keys.Clear();
+        KeysDown.Clear();
+        KeysUp.Clear();
+        KeysPrev.Clear();
+    }
 }
