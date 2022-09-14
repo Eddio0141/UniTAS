@@ -31,7 +31,7 @@ class GetKeyString
     {
         if (TAS.Main.Running)
         {
-            Plugin.Log.LogDebug($"GetKeyString: {name}");
+            //Plugin.Log.LogDebug($"GetKeyString: {name}");
 
             return false;
         }
@@ -63,7 +63,7 @@ class GetKeyUpString
     {
         if (TAS.Main.Running)
         {
-            Plugin.Log.LogDebug($"GetKeyUpString: {name}");
+            //Plugin.Log.LogDebug($"GetKeyUpString: {name}");
 
             return false;
         }
@@ -95,7 +95,7 @@ class GetKeyDownString
     {
         if (TAS.Main.Running)
         {
-            Plugin.Log.LogDebug($"GetKeyDownString: {name}");
+            //Plugin.Log.LogDebug($"GetKeyDownString: {name}");
 
             return false;
         }
