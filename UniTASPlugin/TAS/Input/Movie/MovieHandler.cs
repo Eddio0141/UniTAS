@@ -72,7 +72,7 @@ public static class MovieHandler
             var axisMoveSetDefault = new List<string>();
             foreach (var (key, _) in Input.Axis.Values)
             {
-                if (!fb.Axis.AxisMove.ContainsKey(key))
+                if (!fb.Axises.AxisMove.ContainsKey(key))
                     axisMoveSetDefault.Add(key);
             }
             foreach (var key in axisMoveSetDefault)
@@ -82,7 +82,7 @@ public static class MovieHandler
                 else
                     Input.Axis.Values.Add(key, default);
             }
-            foreach (var (axis, value) in fb.Axis.AxisMove)
+            foreach (var (axis, value) in fb.Axises.AxisMove)
             {
                 if (Input.Axis.Values.ContainsKey(axis))
                 {
@@ -122,6 +122,320 @@ public class Movie
     public readonly List<Framebulk> Framebulks;
     public readonly int Seed;
 
+    /* V1 FORMAT
+
+    version 1
+    seed seedvalue
+    frames
+    mouse x|mouse y|left right middle|UpArrow W A S D|"axis X" 1 "sprint" -0.1|frametime|framecount
+    |||W A S D||0.001|500
+    |||||frametime|framecount
+    // comment
+    
+    */
+    public Movie(string filename, string text, out string errorMsg)
+    {
+        errorMsg = "";
+
+        Name = filename;
+        Framebulks = new();
+
+        string[] lines = text.Split("\n", StringSplitOptions.RemoveEmptyEntries);
+
+        var inVersion = true;
+        var inProperties = true;
+        var foundSeed = false;
+
+        var comment = "//";
+        var versionText = "version 1";
+        var framesSection = "frames";
+        var seedText = "seed ";
+        var fieldSeparator = "|";
+        var listSeparator = " ";
+        var axisNameSurround = "\"";
+        const string leftClick = "left";
+        const string rightClick = "right";
+        const string middleClick = "middle";
+
+        foreach (var line in lines)
+        {
+            var lineTrim = line.Trim();
+
+            if (lineTrim.StartsWith(comment))
+                continue;
+
+            if (inVersion)
+            {
+                if (lineTrim != versionText)
+                {
+                    errorMsg = "First line not defining version";
+                    break;
+                }
+                inVersion = false;
+                continue;
+            }
+
+            if (inProperties)
+            {
+                if (lineTrim.StartsWith(seedText))
+                {
+                    if (foundSeed)
+                    {
+                        errorMsg = "Seed property defined twice";
+                        break;
+                    }
+
+                    if (!uint.TryParse(lineTrim[seedText.Length..], out var seed))
+                    {
+                        errorMsg = "Seed value not an unsigned integer";
+                        break;
+                    }
+
+                    Seed = (int)seed;
+                    foundSeed = true;
+
+                    continue;
+                }
+
+                if (lineTrim == framesSection)
+                {
+                    inProperties = false;
+                    continue;
+                }
+            }
+
+            var fields = lineTrim.Split(fieldSeparator);
+
+            var framebulk = new Framebulk();
+            var mouseXField = true;
+            var mouseYField = true;
+            var mouseClickField = true;
+            var keysField = true;
+            var axisField = true;
+            var frametimeField = true;
+
+            foreach (var field in fields)
+            {
+                if (mouseXField)
+                {
+                    if (field == "")
+                    {
+                        mouseXField = false;
+                        continue;
+                    }
+
+                    if (!float.TryParse(field, out var x))
+                    {
+                        errorMsg = "Mouse X value not a valid decimal";
+                        break;
+                    }
+
+                    framebulk.Mouse.X = x;
+                    mouseXField = false;
+                    continue;
+                }
+
+                if (mouseYField)
+                {
+                    if (field == "")
+                    {
+                        mouseYField = false;
+                        continue;
+                    }
+
+                    if (!float.TryParse(field, out var y))
+                    {
+                        errorMsg = "Mouse Y value not a valid decimal";
+                        break;
+                    }
+
+                    framebulk.Mouse.Y = y;
+                    mouseYField = false;
+                    continue;
+                }
+
+                if (mouseClickField)
+                {
+                    if (field == "")
+                    {
+                        mouseClickField = false;
+                        continue;
+                    }
+
+                    var clickedButtons = field.Split(listSeparator, StringSplitOptions.RemoveEmptyEntries);
+
+                    foreach (var clickField in clickedButtons)
+                    {
+                        switch (clickField)
+                        {
+                            case leftClick:
+                                if (framebulk.Mouse.Left)
+                                {
+                                    errorMsg = "Mouse left click defined twice";
+                                    break;
+                                }
+                                framebulk.Mouse.Left = true;
+                                break;
+                            case rightClick:
+                                if (framebulk.Mouse.Right)
+                                {
+                                    errorMsg = "Mouse right click defined twice";
+                                    break;
+                                }
+                                framebulk.Mouse.Right = true;
+                                break;
+                            case middleClick:
+                                if (framebulk.Mouse.Middle)
+                                {
+                                    errorMsg = "Mouse middle click defined twice";
+                                    break;
+                                }
+                                framebulk.Mouse.Middle = true;
+                                break;
+                            default:
+                                errorMsg = "Mouse click value not valid";
+                                break;
+                        }
+
+                        if (errorMsg != "")
+                            break;
+                    }
+
+                    if (errorMsg != "")
+                        break;
+
+                    mouseClickField = false;
+                    continue;
+                }
+
+                if (keysField)
+                {
+                    if (field == "")
+                    {
+                        framebulk.Keys = new();
+                        keysField = false;
+                        continue;
+                    }
+
+                    var keys = field.Split(listSeparator, StringSplitOptions.None);
+
+                    foreach (var key in keys)
+                    {
+                        if (!Enum.TryParse(key, out KeyCode k))
+                        {
+                            errorMsg = "Key value not a valid key";
+                            break;
+                        }
+
+                        framebulk.Keys.Pressed.Add(k);
+                    }
+
+                    if (errorMsg != "")
+                        break;
+
+                    keysField = false;
+                    continue;
+                }
+
+                if (axisField)
+                {
+                    if (field == "")
+                    {
+                        framebulk.Axises = new();
+                        axisField = false;
+                        continue;
+                    }
+
+                    var axisInfo = field.Split(listSeparator, StringSplitOptions.None);
+
+                    for (int i = 0; i < axisInfo.Length; i++)
+                    {
+                        var axis = axisInfo[i];
+
+                        if (!axis.StartsWith(axisNameSurround) && !axis.EndsWith(axisNameSurround))
+                        {
+                            errorMsg = $"Axis name not surrounded by {axisNameSurround}";
+                            break;
+                        }
+
+                        axis = axis[1..^1];
+
+                        if (i + 1 >= axisInfo.Length)
+                        {
+                            errorMsg = "Axis is missing value";
+                            break;
+                        }
+
+                        var value = axisInfo[i + 1];
+
+                        if (!float.TryParse(field, out var valueFloat))
+                        {
+                            errorMsg = "Axis value not a decimal";
+                            break;
+                        }
+
+                        framebulk.Axises.AxisMove.Add(axis, valueFloat);
+                    }
+
+                    if (errorMsg != "")
+                        break;
+
+                    axisField = false;
+                    continue;
+                }
+
+                if (frametimeField)
+                {
+                    if (field == "")
+                    {
+                        errorMsg = "Frametime is missing";
+                        break;
+                    }
+
+                    if (!float.TryParse(field, out var frametime))
+                    {
+                        errorMsg = "Frametime not a decimal";
+                        break;
+                    }
+
+                    if (frametime < 0)
+                    {
+                        errorMsg = "Frametime is not positive";
+                        break;
+                    }
+                    if (frametime == 0)
+                    {
+                        errorMsg = "Frametime needs to be greater than 0";
+                        break;
+                    }
+
+                    framebulk.Frametime = frametime;
+                    frametimeField = false;
+                    continue;
+                }
+
+                if (!int.TryParse(field, out var frameCount))
+                {
+                    errorMsg = "Framecount not an integer";
+                    break;
+                }
+
+                if (frameCount < 1)
+                {
+                    errorMsg = "Framecount needs to be greater than 0";
+                    break;
+                }
+
+                framebulk.FrameCount = frameCount;
+            }
+
+            if (errorMsg != "")
+                break;
+
+            Framebulks.Add(framebulk);
+        }
+    }
+
     public Movie(string name, List<Framebulk> framebulks) : this(name, framebulks, 0) { }
 
     public Movie(string name, List<Framebulk> framebulks, int seed)
@@ -153,21 +467,22 @@ public class Framebulk
     public int FrameCount;
 
     public Mouse Mouse;
-    public Key Key;
-    public Axis Axis;
+    public Keys Keys;
+    public Axises Axises;
 
-    public Framebulk(float frametime, uint frameCount) : this(frametime, frameCount, new Mouse(), new Key(), new Axis()) { }
-    public Framebulk(float frametime, uint frameCount, Mouse mouse) : this(frametime, frameCount, mouse, new Key(), new Axis()) { }
-    public Framebulk(float frametime, uint frameCount, Key key) : this(frametime, frameCount, new Mouse(), key, new Axis()) { }
-    public Framebulk(float frametime, uint frameCount, Axis axis) : this(frametime, frameCount, new Mouse(), new Key(), axis) { }
-    public Framebulk(float frametime, uint frameCount, Mouse mouse, Key key, Axis axis)
+    public Framebulk() : this(0.01f, 1, new Mouse(), new Keys(), new Axises()) { }
+    public Framebulk(float frametime, uint frameCount) : this(frametime, frameCount, new Mouse(), new Keys(), new Axises()) { }
+    public Framebulk(float frametime, uint frameCount, Mouse mouse) : this(frametime, frameCount, mouse, new Keys(), new Axises()) { }
+    public Framebulk(float frametime, uint frameCount, Keys key) : this(frametime, frameCount, new Mouse(), key, new Axises()) { }
+    public Framebulk(float frametime, uint frameCount, Axises axis) : this(frametime, frameCount, new Mouse(), new Keys(), axis) { }
+    public Framebulk(float frametime, uint frameCount, Mouse mouse, Keys key, Axises axis)
     {
         Frametime = frametime;
         // TODO warn frameCount being too high or low
         FrameCount = (int)frameCount;
         Mouse = mouse ?? throw new ArgumentNullException(nameof(mouse));
-        Key = key ?? throw new ArgumentNullException(nameof(key));
-        Axis = axis ?? throw new ArgumentNullException(nameof(axis));
+        Keys = key ?? throw new ArgumentNullException(nameof(key));
+        Axises = axis ?? throw new ArgumentNullException(nameof(axis));
     }
 }
 
@@ -199,25 +514,25 @@ public class Mouse
     }
 }
 
-public class Key
+public class Keys
 {
     public List<KeyCode> Pressed;
 
-    public Key() : this(new()) { }
+    public Keys() : this(new()) { }
 
-    public Key(List<KeyCode> pressed)
+    public Keys(List<KeyCode> pressed)
     {
         Pressed = pressed ?? throw new ArgumentNullException(nameof(pressed));
     }
 }
 
-public class Axis
+public class Axises
 {
     public Dictionary<string, float> AxisMove;
 
-    public Axis() : this(new()) { }
+    public Axises() : this(new()) { }
 
-    public Axis(Dictionary<string, float> axisMove)
+    public Axises(Dictionary<string, float> axisMove)
     {
         AxisMove = axisMove;
     }
