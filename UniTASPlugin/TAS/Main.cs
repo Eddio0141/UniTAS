@@ -79,6 +79,7 @@ public static class Main
     }
 
     // BUG fix scene not loading when restarting while loading a scene
+    // HACK idea: force captureDeltaTime to be non zero to ensure scene is loaded
     public static void SoftRestart()
     {
         // release mouse lock
