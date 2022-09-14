@@ -44,11 +44,10 @@ public static class Main
 
     static Main()
     {
-        // wait for TAS client to open
-        // set Running depending on this
-
-        Running = true;
-        Time = 0.0;
+        Running = false;
+        // set time to system time
+        Time = System.DateTime.Now.Ticks / 10000d;
+        Plugin.Log.LogInfo($"System time seconds: {Time}");
         axisNames = new List<string>();
 
         firstScenes = new List<int>();
