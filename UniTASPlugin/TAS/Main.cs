@@ -44,6 +44,7 @@ public static class Main
     /// Scene unloading count status. 0 means there are no scenes unloading, 1 means there is one scene unloading, 2 means there are two scenes unloading, etc.
     /// </summary>
     public static int UnloadingSceneCount { get; set; }
+    public static List<int> DontDestroyOnLoadIDs = new List<int>();
 
     static Main()
     {
@@ -62,7 +63,11 @@ public static class Main
         firstObjIDs = new List<int>();
         foreach (var obj in Object.FindObjectsOfType<MonoBehaviour>())
         {
-            firstObjIDs.Add(obj.GetInstanceID());
+            var id = obj.GetInstanceID();
+            if (DontDestroyOnLoadIDs.Contains(id))
+            {
+                firstObjIDs.Add(id);
+            }
         }
 
         LoadingSceneCount = 0;
@@ -95,6 +100,7 @@ public static class Main
         }
     }
 
+    // BUG: on It Steals, the game's play button breaks when you soft restart while waiting for next scene to load
     public static void SoftRestart()
     {
         if (LoadingSceneCount > 0)
@@ -119,22 +125,24 @@ public static class Main
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
+        // destroy all objects that are marked DontDestroyOnLoad and wasn't loaded in the first scene
+        foreach (var obj in Object.FindObjectsOfType<MonoBehaviour>())
+        {
+            var id = obj.GetInstanceID();
+
+            if (!DontDestroyOnLoadIDs.Contains(id))
+                continue;
+
+            if (firstObjIDs.Contains(id))
+                continue;
+
+            Object.Destroy(obj);
+        }
+
         SceneManager.LoadScene(firstScenes[0]);
         for (int i = 1; i < firstScenes.Count; i++)
         {
             SceneManager.LoadScene(firstScenes[i], LoadSceneMode.Additive);
-        }
-
-        // not sure if destroying object after a scene load is good but shouldn't be a problem
-        foreach (var obj in Object.FindObjectsOfType<MonoBehaviour>())
-        {
-            if (!firstObjIDs.Contains(obj.GetInstanceID()))
-            {
-                if (obj is EventSystem)
-                    continue;
-
-                Object.Destroy(obj);
-            }
         }
 
         Plugin.Log.LogInfo("Finish soft restart");
