@@ -101,7 +101,7 @@ public static class Main
     }
 
     // BUG: on It Steals, the game's play button breaks when you soft restart while waiting for next scene to load
-    public static void SoftRestart()
+    public static void SoftRestart(int seed)
     {
         if (LoadingSceneCount > 0)
         {
@@ -139,6 +139,7 @@ public static class Main
             Object.Destroy(obj);
         }
 
+        Time = seed / 1000.0;
         SceneManager.LoadScene(firstScenes[0]);
         for (int i = 1; i < firstScenes.Count; i++)
         {
