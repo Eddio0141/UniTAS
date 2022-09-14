@@ -1,8 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 
 namespace UniTASPlugin.TAS;
@@ -19,8 +17,6 @@ public static class Main
             if (value)
             {
                 Cursor.visible = false;
-                // TODO set actual framerate
-                UnityEngine.Time.captureDeltaTime = 0.001f;
             }
             else
             {
