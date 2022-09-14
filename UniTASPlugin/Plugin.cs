@@ -1,5 +1,6 @@
 ﻿using BepInEx;
 using HarmonyLib;
+using System.IO;
 using UniTASPlugin.TAS.Input.Movie;
 using UnityEngine;
 
@@ -42,12 +43,14 @@ public class Plugin : BaseUnityPlugin
         // TODO remove this test
         if (!TAS.Main.Running && Input.GetKeyDown(KeyCode.K))
         {
-            var movie = new Movie("test", new System.Collections.Generic.List<Framebulk> {
-                new Framebulk(0.001f, 2000),
-                new Framebulk(0.001f, 500, new Mouse(300, 730)),
-                new Framebulk(0.001f, 100, new Mouse(300, 730, true)),
-                new Framebulk(0.001f, 2000, new Mouse(300, 730)),
-            });
+            var text = File.ReadAllText("C:\\Program Files (x86)\\Steam\\steamapps\\common\\It Steals\\test.uti");
+            var movie = new Movie("test.uti", text, out var err);
+
+            if (err != "")
+            {
+                Log.LogError(err);
+                return;
+            }
 
             MovieHandler.RunMovie(movie);
         }
