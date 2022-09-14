@@ -21,6 +21,11 @@ class LoadSceneAsync__sceneBuildIndex__parameters
 
         return true;
     }
+
+    static void Postfix(ref AsyncOperation __result)
+    {
+        TAS.UnityASyncHandler.AsyncSceneLoad(__result);
+    }
 }
 
 [HarmonyPatch(typeof(SceneManager), nameof(SceneManager.LoadSceneAsync), new Type[] { typeof(string), typeof(LoadSceneParameters) })]
@@ -36,6 +41,11 @@ class LoadSceneAsync__sceneName__parameters
         }
 
         return true;
+    }
+
+    static void Postfix(ref AsyncOperation __result)
+    {
+        TAS.UnityASyncHandler.AsyncSceneLoad(__result);
     }
 }
 
@@ -53,6 +63,11 @@ class UnloadSceneAsync__sceneBuildIndex
 
         return true;
     }
+
+    static void Postfix(ref AsyncOperation __result)
+    {
+        TAS.UnityASyncHandler.AsyncSceneUnload(__result);
+    }
 }
 
 [HarmonyPatch(typeof(SceneManager), nameof(SceneManager.UnloadSceneAsync), new Type[] { typeof(string) })]
@@ -68,6 +83,11 @@ class UnloadSceneAsync__sceneName
         }
 
         return true;
+    }
+
+    static void Postfix(ref AsyncOperation __result)
+    {
+        TAS.UnityASyncHandler.AsyncSceneUnload(__result);
     }
 }
 
@@ -85,6 +105,11 @@ class UnloadSceneAsync__scene
 
         return true;
     }
+
+    static void Postfix(ref AsyncOperation __result)
+    {
+        TAS.UnityASyncHandler.AsyncSceneUnload(__result);
+    }
 }
 
 [HarmonyPatch(typeof(SceneManager), nameof(SceneManager.UnloadSceneAsync), new Type[] { typeof(int), typeof(UnloadSceneOptions) })]
@@ -100,6 +125,11 @@ class UnloadSceneAsync__sceneBuildIndex__options
         }
 
         return true;
+    }
+
+    static void Postfix(ref AsyncOperation __result)
+    {
+        TAS.UnityASyncHandler.AsyncSceneUnload(__result);
     }
 }
 
@@ -117,6 +147,11 @@ class UnloadSceneAsync__sceneName__options
 
         return true;
     }
+
+    static void Postfix(ref AsyncOperation __result)
+    {
+        TAS.UnityASyncHandler.AsyncSceneUnload(__result);
+    }
 }
 
 [HarmonyPatch(typeof(SceneManager), nameof(SceneManager.UnloadSceneAsync), new Type[] { typeof(Scene), typeof(UnloadSceneOptions) })]
@@ -132,5 +167,10 @@ class UnloadSceneAsync__scene__options
         }
 
         return true;
+    }
+
+    static void Postfix(ref AsyncOperation __result)
+    {
+        TAS.UnityASyncHandler.AsyncSceneUnload(__result);
     }
 }

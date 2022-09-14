@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
@@ -13,22 +15,35 @@ public static class Main
         // TODO private set
         get => _running; set
         {
+            RunInitOrStopping = true;
             if (value)
             {
+                Cursor.visible = false;
                 // TODO set actual framerate
                 UnityEngine.Time.captureDeltaTime = 0.001f;
             }
             else
             {
+                Cursor.visible = Input.VirtualCursor.Visible;
                 UnityEngine.Time.captureDeltaTime = 0f;
             }
             _running = value;
+            RunInitOrStopping = false;
         }
     }
+    public static bool RunInitOrStopping { get; private set; }
     public static double Time { get; private set; }
     static readonly List<string> axisNames;
-    static List<int> firstScenes;
-    static List<int> firstObjIDs;
+    static readonly List<int> firstScenes;
+    static readonly List<int> firstObjIDs;
+    /// <summary>
+    /// Scene loading count status. 0 means there are no scenes loading, 1 means there is one scene loading, 2 means there are two scenes loading, etc.
+    /// </summary>
+    public static int LoadingSceneCount { get; set; }
+    /// <summary>
+    /// Scene unloading count status. 0 means there are no scenes unloading, 1 means there is one scene unloading, 2 means there are two scenes unloading, etc.
+    /// </summary>
+    public static int UnloadingSceneCount { get; set; }
 
     static Main()
     {
@@ -49,13 +64,15 @@ public static class Main
         {
             firstObjIDs.Add(obj.GetInstanceID());
         }
+
+        LoadingSceneCount = 0;
     }
 
     public static void Update(float deltaTime)
     {
         if (Running)
         {
-            Input.Update();
+            Input.Main.Update();
         }
 
         Time += deltaTime;
@@ -78,10 +95,26 @@ public static class Main
         }
     }
 
-    // BUG fix scene not loading when restarting while loading a scene
-    // HACK idea: force captureDeltaTime to be non zero to ensure scene is loaded
     public static void SoftRestart()
     {
+        if (LoadingSceneCount > 0)
+        {
+            Plugin.Log.LogInfo($"Pending soft restart, waiting on {LoadingSceneCount} scenes to finish loading");
+            while (LoadingSceneCount > 0)
+            {
+                Thread.Sleep(1);
+            }
+        }
+        if (UnloadingSceneCount > 0)
+        {
+            Plugin.Log.LogInfo($"Pending soft restart, waiting on {UnloadingSceneCount} scenes to finish loading");
+            while (UnloadingSceneCount > 0)
+            {
+                Thread.Sleep(1);
+            }
+        }
+        Plugin.Log.LogInfo("Soft restarting");
+
         // release mouse lock
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
@@ -104,6 +137,6 @@ public static class Main
             }
         }
 
-        Plugin.Log.LogInfo("Soft restart");
+        Plugin.Log.LogInfo("Finish soft restart");
     }
 }

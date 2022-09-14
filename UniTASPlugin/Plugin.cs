@@ -22,7 +22,9 @@ public class Plugin : BaseUnityPlugin
 
         Log = Logger;
 
-        Logger.LogInfo($"Plugin {PLUGIN_NAME} is loaded!");
+        new GameObject().AddComponent<TAS.UnityASyncHandler>();
+
+        Log.LogInfo($"Plugin {PLUGIN_NAME} is loaded!");
     }
 
 #pragma warning disable IDE0051
@@ -30,5 +32,11 @@ public class Plugin : BaseUnityPlugin
 #pragma warning restore IDE0051
     {
         TAS.Main.Update(Time.deltaTime);
+
+        // TODO remove this test
+        if (Input.GetKeyDown(KeyCode.K))
+        {
+            TAS.Main.SoftRestart();
+        }
     }
 }
