@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using UniTASPlugin.TAS.Input;
 using UnityEngine;
 
 namespace UniTASPlugin.Patches.TASInput.__UnityEngine;
@@ -100,7 +101,7 @@ class GetAxis
         if (TAS.Main.Running)
         {
             // TODO some notification on missing axis
-            if (TAS.Input.Axis.TryGetValue(axisName, out float value))
+            if (TAS.Input.Main.Axis.TryGetValue(axisName, out float value))
             {
                 __result = value;
             }
@@ -122,7 +123,7 @@ class GetAxisRaw
         if (TAS.Main.Running)
         {
             // TODO some notification on missing axis
-            if (TAS.Input.Axis.TryGetValue(axisName, out float value))
+            if (TAS.Input.Main.Axis.TryGetValue(axisName, out float value))
             {
                 __result = value;
             }
@@ -185,9 +186,9 @@ class GetMouseButton
         {
             __result = button switch
             {
-                0 => TAS.Input.Mouse.LeftClick,
-                1 => TAS.Input.Mouse.RightClick,
-                2 => TAS.Input.Mouse.MiddleClick,
+                0 => Mouse.LeftClick,
+                1 => Mouse.RightClick,
+                2 => Mouse.MiddleClick,
                 _ => false,
             };
             return false;
@@ -206,9 +207,9 @@ class GetMouseButtonDown
         {
             __result = button switch
             {
-                0 => TAS.Input.Mouse.LeftClickDown,
-                1 => TAS.Input.Mouse.RightClickDown,
-                2 => TAS.Input.Mouse.MiddleClickDown,
+                0 => Mouse.LeftClickDown,
+                1 => Mouse.RightClickDown,
+                2 => Mouse.MiddleClickDown,
                 _ => false,
             };
             return false;
@@ -227,9 +228,9 @@ class GetMouseButtonUp
         {
             __result = button switch
             {
-                0 => TAS.Input.Mouse.LeftClickUp,
-                1 => TAS.Input.Mouse.RightClickUp,
-                2 => TAS.Input.Mouse.MiddleClickUp,
+                0 => Mouse.LeftClickUp,
+                1 => Mouse.RightClickUp,
+                2 => Mouse.MiddleClickUp,
                 _ => false,
             };
             return false;
