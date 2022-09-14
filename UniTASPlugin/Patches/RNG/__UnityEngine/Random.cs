@@ -16,6 +16,6 @@ class InitState
         */
         // TODO do we need to do anything here? seed depends on time, so it should be fine
 
-        Plugin.Log.LogInfo($"UnityEngine.Random.InitState seed: {seed}");
+        Plugin.Log.LogDebug($"UnityEngine.Random.InitState seed: {seed}");
     }
 }

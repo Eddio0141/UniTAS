@@ -27,7 +27,7 @@ class GetKeyInt
 [HarmonyPatch(typeof(Input), nameof(Input.GetKeyString))]
 class GetKeyString
 {
-    static bool Prefix(string name/*, ref bool __result*/)
+    static bool Prefix(/*string name, ref bool __result*/)
     {
         if (TAS.Main.Running)
         {
@@ -59,7 +59,7 @@ class GetKeyUpInt
 [HarmonyPatch(typeof(Input), nameof(Input.GetKeyUpString))]
 class GetKeyUpString
 {
-    static bool Prefix(string name/*, ref bool __result*/)
+    static bool Prefix(/*string name, ref bool __result*/)
     {
         if (TAS.Main.Running)
         {
@@ -91,7 +91,7 @@ class GetKeyDownInt
 [HarmonyPatch(typeof(Input), nameof(Input.GetKeyDownString))]
 class GetKeyDownString
 {
-    static bool Prefix(string name)
+    static bool Prefix(/*string name*/)
     {
         if (TAS.Main.Running)
         {
