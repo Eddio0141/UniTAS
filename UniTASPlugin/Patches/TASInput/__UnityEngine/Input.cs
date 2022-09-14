@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using UniTASPlugin.TAS.Input;
+using UniTASPlugin.TAS.Input.Movie;
 using UnityEngine;
 
 namespace UniTASPlugin.Patches.TASInput.__UnityEngine;
@@ -10,10 +11,12 @@ namespace UniTASPlugin.Patches.TASInput.__UnityEngine;
 [HarmonyPatch(typeof(Input), nameof(Input.GetKeyInt))]
 class GetKeyInt
 {
-    static bool Prefix()
+    static bool Prefix(KeyCode key, ref bool __result)
     {
         if (TAS.Main.Running)
         {
+            __result = Keyboard.Keys.Contains(key);
+
             return false;
         }
 
@@ -24,10 +27,12 @@ class GetKeyInt
 [HarmonyPatch(typeof(Input), nameof(Input.GetKeyString))]
 class GetKeyString
 {
-    static bool Prefix()
+    static bool Prefix(string name/*, ref bool __result*/)
     {
         if (TAS.Main.Running)
         {
+            Plugin.Log.LogDebug($"GetKeyString: {name}");
+
             return false;
         }
 
@@ -38,10 +43,12 @@ class GetKeyString
 [HarmonyPatch(typeof(Input), nameof(Input.GetKeyUpInt))]
 class GetKeyUpInt
 {
-    static bool Prefix()
+    static bool Prefix(KeyCode key, ref bool __result)
     {
         if (TAS.Main.Running)
         {
+            __result = Keyboard.KeysUp.Contains(key);
+
             return false;
         }
 
@@ -52,10 +59,12 @@ class GetKeyUpInt
 [HarmonyPatch(typeof(Input), nameof(Input.GetKeyUpString))]
 class GetKeyUpString
 {
-    static bool Prefix()
+    static bool Prefix(string name/*, ref bool __result*/)
     {
         if (TAS.Main.Running)
         {
+            Plugin.Log.LogDebug($"GetKeyUpString: {name}");
+
             return false;
         }
 
@@ -66,10 +75,12 @@ class GetKeyUpString
 [HarmonyPatch(typeof(Input), nameof(Input.GetKeyDownInt))]
 class GetKeyDownInt
 {
-    static bool Prefix()
+    static bool Prefix(KeyCode key, ref bool __result)
     {
         if (TAS.Main.Running)
         {
+            __result = Keyboard.KeysDown.Contains(key);
+
             return false;
         }
 
@@ -80,10 +91,12 @@ class GetKeyDownInt
 [HarmonyPatch(typeof(Input), nameof(Input.GetKeyDownString))]
 class GetKeyDownString
 {
-    static bool Prefix()
+    static bool Prefix(string name)
     {
         if (TAS.Main.Running)
         {
+            Plugin.Log.LogDebug($"GetKeyDownString: {name}");
+
             return false;
         }
 
@@ -101,7 +114,7 @@ class GetAxis
         if (TAS.Main.Running)
         {
             // TODO some notification on missing axis
-            if (TAS.Input.Main.Axis.TryGetValue(axisName, out float value))
+            if (TAS.Input.Axis.Values.TryGetValue(axisName, out float value))
             {
                 __result = value;
             }
@@ -123,7 +136,8 @@ class GetAxisRaw
         if (TAS.Main.Running)
         {
             // TODO some notification on missing axis
-            if (TAS.Input.Main.Axis.TryGetValue(axisName, out float value))
+            // TODO find out what the difference between GetAxis and GetAxisRaw is
+            if (TAS.Input.Axis.Values.TryGetValue(axisName, out float value))
             {
                 __result = value;
             }
@@ -186,9 +200,9 @@ class GetMouseButton
         {
             __result = button switch
             {
-                0 => Mouse.LeftClick,
-                1 => Mouse.RightClick,
-                2 => Mouse.MiddleClick,
+                0 => TAS.Input.Mouse.LeftClick,
+                1 => TAS.Input.Mouse.RightClick,
+                2 => TAS.Input.Mouse.MiddleClick,
                 _ => false,
             };
             return false;
@@ -207,9 +221,9 @@ class GetMouseButtonDown
         {
             __result = button switch
             {
-                0 => Mouse.LeftClickDown,
-                1 => Mouse.RightClickDown,
-                2 => Mouse.MiddleClickDown,
+                0 => TAS.Input.Mouse.LeftClickDown,
+                1 => TAS.Input.Mouse.RightClickDown,
+                2 => TAS.Input.Mouse.MiddleClickDown,
                 _ => false,
             };
             return false;
@@ -228,9 +242,9 @@ class GetMouseButtonUp
         {
             __result = button switch
             {
-                0 => Mouse.LeftClickUp,
-                1 => Mouse.RightClickUp,
-                2 => Mouse.MiddleClickUp,
+                0 => TAS.Input.Mouse.LeftClickUp,
+                1 => TAS.Input.Mouse.RightClickUp,
+                2 => TAS.Input.Mouse.MiddleClickUp,
                 _ => false,
             };
             return false;
@@ -288,90 +302,6 @@ class GetAccelerationEvent
     static bool Prefix(int index)
     {
         Plugin.Log.LogDebug($"UnityEngine.Input.GetAccelerationEvent called with value: {index}");
-
-        return true;
-    }
-}
-
-[HarmonyPatch(typeof(Input), nameof(Input.GetKey), new System.Type[] { typeof(KeyCode) }, new ArgumentType[] { ArgumentType.Normal })]
-class GetKey__KeyCode
-{
-    static bool Prefix()
-    {
-        if (TAS.Main.Running)
-        {
-            return false;
-        }
-
-        return true;
-    }
-}
-
-[HarmonyPatch(typeof(Input), nameof(Input.GetKey), new System.Type[] { typeof(string) }, new ArgumentType[] { ArgumentType.Normal })]
-class GetKey__string
-{
-    static bool Prefix()
-    {
-        if (TAS.Main.Running)
-        {
-            return false;
-        }
-
-        return true;
-    }
-}
-
-[HarmonyPatch(typeof(Input), nameof(Input.GetKeyUp), new System.Type[] { typeof(KeyCode) }, new ArgumentType[] { ArgumentType.Normal })]
-class GetKeyUp__KeyCode
-{
-    static bool Prefix()
-    {
-        if (TAS.Main.Running)
-        {
-            return false;
-        }
-
-        return true;
-    }
-}
-
-[HarmonyPatch(typeof(Input), nameof(Input.GetKeyUp), new System.Type[] { typeof(string) }, new ArgumentType[] { ArgumentType.Normal })]
-class GetKeyUp__string
-{
-    static bool Prefix()
-    {
-        if (TAS.Main.Running)
-        {
-            return false;
-        }
-
-        return true;
-    }
-}
-
-[HarmonyPatch(typeof(Input), nameof(Input.GetKeyDown), new System.Type[] { typeof(KeyCode) }, new ArgumentType[] { ArgumentType.Normal })]
-class GetKeyDown__KeyCode
-{
-    static bool Prefix()
-    {
-        if (TAS.Main.Running)
-        {
-            return false;
-        }
-
-        return true;
-    }
-}
-
-[HarmonyPatch(typeof(Input), nameof(Input.GetKeyDown), new System.Type[] { typeof(string) }, new ArgumentType[] { ArgumentType.Normal })]
-class GetKeyDown__string
-{
-    static bool Prefix()
-    {
-        if (TAS.Main.Running)
-        {
-            return false;
-        }
 
         return true;
     }
