@@ -15,15 +15,24 @@ public static class MovieHandler
     public static void RunMovie(Movie movie)
     {
         CurrentFrameNum = 0;
-        currentFramebulkFrameIndex = 0;
         currentFramebulkIndex = 0;
+        currentFramebulkFrameIndex = 1;
 
         CurrentMovie = movie;
 
         if (CurrentMovie.Framebulks.Count > 0)
         {
-            // TODO do i need to pre set captureDeltaTime before the frame runs?
-            Time.captureDeltaTime = CurrentMovie.Framebulks[0].Frametime;
+            var firstFb = CurrentMovie.Framebulks[0];
+
+            Main.Clear();
+            Time.captureDeltaTime = firstFb.Frametime;
+            GameControl(firstFb);
+
+            if (currentFramebulkFrameIndex >= firstFb.FrameCount)
+            {
+                currentFramebulkFrameIndex = 0;
+                currentFramebulkIndex++;
+            }
         }
 
         TAS.Main.Running = true;
@@ -50,11 +59,6 @@ public static class MovieHandler
     {
         if (TAS.Main.Running)
         {
-            if (currentFramebulkIndex == 0 && currentFramebulkFrameIndex == 0)
-            {
-                Plugin.Log.LogDebug($"Time: {TAS.Main.Time}, time since level load: {Time.timeSinceLevelLoad}, time since start: {Time.fixedUnscaledTime}, frame count since start: {Time.frameCount}, realtime since start: {Time.realtimeSinceStartup}, TAS framecount: {TAS.Main.FrameCount}");
-            }
-
             if (!CheckCurrentMovieEnd())
                 return;
 
@@ -69,54 +73,44 @@ public static class MovieHandler
                 fb = CurrentMovie.Framebulks[currentFramebulkIndex];
             }
 
-            Input.Mouse.Position = new Vector2(fb.Mouse.X, fb.Mouse.Y);
-            Input.Mouse.LeftClick = fb.Mouse.Left;
-            Input.Mouse.RightClick = fb.Mouse.Right;
-            Input.Mouse.MiddleClick = fb.Mouse.Middle;
-
-            var axisMoveSetDefault = new List<string>();
-            foreach (var (key, _) in Axis.Values)
-            {
-                if (!fb.Axises.AxisMove.ContainsKey(key))
-                    axisMoveSetDefault.Add(key);
-            }
-            foreach (var key in axisMoveSetDefault)
-            {
-                if (Axis.Values.ContainsKey(key))
-                    Axis.Values[key] = default;
-                else
-                    Axis.Values.Add(key, default);
-            }
-            foreach (var (axis, value) in fb.Axises.AxisMove)
-            {
-                if (Axis.Values.ContainsKey(axis))
-                {
-                    Axis.Values[axis] = value;
-                }
-                else
-                {
-                    Axis.Values.Add(axis, value);
-                }
-            }
+            Time.captureDeltaTime = fb.Frametime;
+            GameControl(fb);
 
             CurrentFrameNum++;
             currentFramebulkFrameIndex++;
+        }
+    }
 
-            // set next framebulk framerate
-            var nextFbIndex = currentFramebulkIndex;
-            if (currentFramebulkFrameIndex >= fb.FrameCount)
+    static void GameControl(Framebulk fb)
+    {
+        Input.Mouse.Position = new Vector2(fb.Mouse.X, fb.Mouse.Y);
+        Input.Mouse.LeftClick = fb.Mouse.Left;
+        Input.Mouse.RightClick = fb.Mouse.Right;
+        Input.Mouse.MiddleClick = fb.Mouse.Middle;
+
+        var axisMoveSetDefault = new List<string>();
+        foreach (var (key, _) in Axis.Values)
+        {
+            if (!fb.Axises.AxisMove.ContainsKey(key))
+                axisMoveSetDefault.Add(key);
+        }
+        foreach (var key in axisMoveSetDefault)
+        {
+            if (Axis.Values.ContainsKey(key))
+                Axis.Values[key] = default;
+            else
+                Axis.Values.Add(key, default);
+        }
+        foreach (var (axis, value) in fb.Axises.AxisMove)
+        {
+            if (Axis.Values.ContainsKey(axis))
             {
-                nextFbIndex++;
-                if (nextFbIndex >= CurrentMovie.Framebulks.Count)
-                {
-                    // dont bother with captureDeltaTime change if its the end of movie
-                    return;
-                }
+                Axis.Values[axis] = value;
             }
-
-            var nextFb = CurrentMovie.Framebulks[nextFbIndex];
-
-            Time.captureDeltaTime = nextFb.Frametime;
+            else
+            {
+                Axis.Values.Add(axis, value);
+            }
         }
     }
 }
