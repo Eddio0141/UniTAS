@@ -157,7 +157,9 @@ public class Framebulk
     public Axis Axis;
 
     public Framebulk(float frametime, uint frameCount) : this(frametime, frameCount, new Mouse(), new Key(), new Axis()) { }
-
+    public Framebulk(float frametime, uint frameCount, Mouse mouse) : this(frametime, frameCount, mouse, new Key(), new Axis()) { }
+    public Framebulk(float frametime, uint frameCount, Key key) : this(frametime, frameCount, new Mouse(), key, new Axis()) { }
+    public Framebulk(float frametime, uint frameCount, Axis axis) : this(frametime, frameCount, new Mouse(), new Key(), axis) { }
     public Framebulk(float frametime, uint frameCount, Mouse mouse, Key key, Axis axis)
     {
         Frametime = frametime;
