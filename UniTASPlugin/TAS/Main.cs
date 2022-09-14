@@ -31,7 +31,6 @@ public static class Main
     public static double Time { get; private set; }
     public static ulong FrameCount { get; private set; }
     static readonly List<string> axisNames;
-    static readonly List<int> firstScenes;
     static readonly List<int> firstObjIDs;
     /// <summary>
     /// Scene loading count status. 0 means there are no scenes loading, 1 means there is one scene loading, 2 means there are two scenes loading, etc.
@@ -52,11 +51,6 @@ public static class Main
         FrameCount = 0;
         axisNames = new List<string>();
 
-        firstScenes = new List<int>();
-        for (int i = 0; i < SceneManager.sceneCount; i++)
-        {
-            firstScenes.Add(SceneManager.GetSceneAt(i).buildIndex);
-        }
         firstObjIDs = new List<int>();
         foreach (var obj in Object.FindObjectsOfType<MonoBehaviour>())
         {
@@ -147,11 +141,7 @@ public static class Main
         FrameCount = 0;
         Plugin.Log.LogInfo($"System time seconds: {Time}");
 
-        SceneManager.LoadScene(firstScenes[0]);
-        for (int i = 1; i < firstScenes.Count; i++)
-        {
-            SceneManager.LoadScene(firstScenes[i], LoadSceneMode.Additive);
-        }
+        SceneManager.LoadScene(0);
 
         Plugin.Log.LogInfo("Finish soft restart");
     }
