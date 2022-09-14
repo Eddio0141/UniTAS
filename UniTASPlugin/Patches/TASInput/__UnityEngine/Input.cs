@@ -16,18 +16,22 @@ class GetKeyInt
     {
         if (TAS.Main.Running)
         {
-            if (lastKey != key)
-            {
-                Plugin.Log.LogDebug($"GetKeyInt: {key}, frametime: {UnityEngine.Time.captureDeltaTime}");
-            }
-            lastKey = key;
-
             __result = Keyboard.Keys.Contains(key);
 
             return false;
         }
 
         return true;
+    }
+
+    static void Postfix(KeyCode key, ref bool __result)
+    {
+        if (__result && key != lastKey)
+        {
+            if (UnityEngine.Time.captureDeltaTime != 0)
+                Plugin.Log.LogDebug($"GetKeyInt({key}) = true, frametime: {UnityEngine.Time.captureDeltaTime}");
+            lastKey = key;
+        }
     }
 }
 
@@ -56,18 +60,22 @@ class GetKeyUpInt
     {
         if (TAS.Main.Running)
         {
-            if (lastKey != key)
-            {
-                Plugin.Log.LogDebug($"GetKeyUpInt: {key}, frametime: {UnityEngine.Time.captureDeltaTime}");
-            }
-            lastKey = key;
-
             __result = Keyboard.KeysUp.Contains(key);
 
             return false;
         }
 
         return true;
+    }
+
+    static void Postfix(KeyCode key, ref bool __result)
+    {
+        if (__result && key != lastKey)
+        {
+            if (UnityEngine.Time.captureDeltaTime != 0)
+                Plugin.Log.LogDebug($"GetKeyUpInt({key}) = true, frametime: {UnityEngine.Time.captureDeltaTime}");
+            lastKey = key;
+        }
     }
 }
 
@@ -96,18 +104,22 @@ class GetKeyDownInt
     {
         if (TAS.Main.Running)
         {
-            if (lastKey != key)
-            {
-                Plugin.Log.LogDebug($"GetKeyDownInt: {key}, frametime: {UnityEngine.Time.captureDeltaTime}");
-            }
-            lastKey = key;
-            
             __result = Keyboard.KeysDown.Contains(key);
 
             return false;
         }
 
         return true;
+    }
+
+    static void Postfix(KeyCode key, ref bool __result)
+    {
+        if (__result && key != lastKey)
+        {
+            if (UnityEngine.Time.captureDeltaTime != 0)
+                Plugin.Log.LogDebug($"GetKeyDownInt({key}) = true, frametime: {UnityEngine.Time.captureDeltaTime}");
+            lastKey = key;
+        }
     }
 }
 
@@ -130,6 +142,8 @@ class GetKeyDownString
 [HarmonyPatch(typeof(Input), nameof(Input.GetAxis))]
 class GetAxis
 {
+    static float lastAxis;
+
     static bool Prefix(string axisName, ref float __result)
     {
         TAS.Main.AxisCall(axisName);
@@ -137,7 +151,7 @@ class GetAxis
         if (TAS.Main.Running)
         {
             // TODO some notification on missing axis
-            if (TAS.Input.Axis.Values.TryGetValue(axisName, out float value))
+            if (Axis.Values.TryGetValue(axisName, out float value))
             {
                 __result = value;
             }
@@ -147,11 +161,23 @@ class GetAxis
 
         return true;
     }
+
+    static void Postfix(string axisName, ref float __result)
+    {
+        if (axisName == "Mouse X" && __result != lastAxis)
+        {
+            if (UnityEngine.Time.captureDeltaTime != 0)
+                Plugin.Log.LogDebug($"GetAxis({axisName}) = {__result}, frametime: {UnityEngine.Time.captureDeltaTime}");
+            lastAxis = __result;
+        }
+    }
 }
 
 [HarmonyPatch(typeof(Input), nameof(Input.GetAxisRaw))]
 class GetAxisRaw
 {
+    static float lastAxis;
+
     static bool Prefix(string axisName, ref float __result)
     {
         TAS.Main.AxisCall(axisName);
@@ -160,7 +186,7 @@ class GetAxisRaw
         {
             // TODO some notification on missing axis
             // TODO find out what the difference between GetAxis and GetAxisRaw is
-            if (TAS.Input.Axis.Values.TryGetValue(axisName, out float value))
+            if (Axis.Values.TryGetValue(axisName, out float value))
             {
                 __result = value;
             }
@@ -169,6 +195,16 @@ class GetAxisRaw
         }
 
         return true;
+    }
+
+    static void Postfix(string axisName, ref float __result)
+    {
+        if (axisName == "Mouse X" && __result != lastAxis)
+        {
+            if (UnityEngine.Time.captureDeltaTime != 0)
+                Plugin.Log.LogDebug($"GetAxisRaw({axisName}) = {__result}, frametime: {UnityEngine.Time.captureDeltaTime}");
+            lastAxis = __result;
+        }
     }
 }
 
@@ -223,9 +259,9 @@ class GetMouseButton
         {
             __result = button switch
             {
-                0 => TAS.Input.Mouse.LeftClick,
-                1 => TAS.Input.Mouse.RightClick,
-                2 => TAS.Input.Mouse.MiddleClick,
+                0 => Mouse.LeftClick,
+                1 => Mouse.RightClick,
+                2 => Mouse.MiddleClick,
                 _ => false,
             };
             return false;
@@ -244,9 +280,9 @@ class GetMouseButtonDown
         {
             __result = button switch
             {
-                0 => TAS.Input.Mouse.LeftClickDown,
-                1 => TAS.Input.Mouse.RightClickDown,
-                2 => TAS.Input.Mouse.MiddleClickDown,
+                0 => Mouse.LeftClickDown,
+                1 => Mouse.RightClickDown,
+                2 => Mouse.MiddleClickDown,
                 _ => false,
             };
             return false;
@@ -265,9 +301,9 @@ class GetMouseButtonUp
         {
             __result = button switch
             {
-                0 => TAS.Input.Mouse.LeftClickUp,
-                1 => TAS.Input.Mouse.RightClickUp,
-                2 => TAS.Input.Mouse.MiddleClickUp,
+                0 => Mouse.LeftClickUp,
+                1 => Mouse.RightClickUp,
+                2 => Mouse.MiddleClickUp,
                 _ => false,
             };
             return false;
@@ -432,16 +468,28 @@ class inputStringGetter
 [HarmonyPatch(typeof(Input), nameof(Input.mousePosition), MethodType.Getter)]
 class mousePositionGetter
 {
+    static Vector3 lastVec;
+
     static bool Prefix(ref Vector3 __result)
     {
         if (TAS.Main.Running)
         {
-            __result = TAS.Input.Mouse.Position;
+            __result = Mouse.Position;
 
             return false;
         }
 
         return true;
+    }
+
+    static void Postfix(ref Vector3 __result)
+    {
+        if (__result != lastVec)
+        {
+            if (UnityEngine.Time.captureDeltaTime != 0)
+                Plugin.Log.LogDebug($"UnityEngine.Input.mousePosition Getter called with value: {__result}, frametime: {UnityEngine.Time.captureDeltaTime}");
+            lastVec = __result;
+        }
     }
 }
 
@@ -519,7 +567,7 @@ class compositionCursorPosGetter
     {
         if (TAS.Main.Running)
         {
-            __result = TAS.Input.Mouse.Position;
+            __result = Mouse.Position;
 
             return false;
         }
@@ -571,7 +619,7 @@ class mousePresentGetter
     {
         if (TAS.Main.Running)
         {
-            __result = TAS.Input.Mouse.MousePresent;
+            __result = Mouse.MousePresent;
 
             return false;
         }

@@ -50,6 +50,11 @@ public static class MovieHandler
     {
         if (TAS.Main.Running)
         {
+            if (currentFramebulkIndex == 0 && currentFramebulkFrameIndex == 0)
+            {
+                Plugin.Log.LogDebug($"Time: {TAS.Main.Time}, time since level load: {Time.timeSinceLevelLoad}, time since start: {Time.fixedUnscaledTime}, frame count since start: {Time.frameCount}, realtime since start: {Time.realtimeSinceStartup}, TAS framecount: {TAS.Main.FrameCount}");
+            }
+
             if (!CheckCurrentMovieEnd())
                 return;
 
@@ -70,27 +75,27 @@ public static class MovieHandler
             Input.Mouse.MiddleClick = fb.Mouse.Middle;
 
             var axisMoveSetDefault = new List<string>();
-            foreach (var (key, _) in Input.Axis.Values)
+            foreach (var (key, _) in Axis.Values)
             {
                 if (!fb.Axises.AxisMove.ContainsKey(key))
                     axisMoveSetDefault.Add(key);
             }
             foreach (var key in axisMoveSetDefault)
             {
-                if (Input.Axis.Values.ContainsKey(key))
-                    Input.Axis.Values[key] = default;
+                if (Axis.Values.ContainsKey(key))
+                    Axis.Values[key] = default;
                 else
-                    Input.Axis.Values.Add(key, default);
+                    Axis.Values.Add(key, default);
             }
             foreach (var (axis, value) in fb.Axises.AxisMove)
             {
-                if (Input.Axis.Values.ContainsKey(axis))
+                if (Axis.Values.ContainsKey(axis))
                 {
-                    Input.Axis.Values[axis] = value;
+                    Axis.Values[axis] = value;
                 }
                 else
                 {
-                    Input.Axis.Values.Add(axis, value);
+                    Axis.Values.Add(axis, value);
                 }
             }
 
@@ -405,6 +410,12 @@ public class Movie
                             if (!float.TryParse(builder, out var axisValue))
                             {
                                 errorMsg = "Axis value not a valid decimal";
+                                break;
+                            }
+
+                            if (axisValue > 1 || axisValue < -1)
+                            {
+                                errorMsg = "Axis value needs to be between -1 and 1";
                                 break;
                             }
 
