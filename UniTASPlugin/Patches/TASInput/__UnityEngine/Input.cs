@@ -1,6 +1,5 @@
 ﻿using HarmonyLib;
 using UniTASPlugin.TAS.Input;
-using UniTASPlugin.TAS.Input.Movie;
 using UnityEngine;
 
 namespace UniTASPlugin.Patches.TASInput.__UnityEngine;
@@ -11,10 +10,18 @@ namespace UniTASPlugin.Patches.TASInput.__UnityEngine;
 [HarmonyPatch(typeof(Input), nameof(Input.GetKeyInt))]
 class GetKeyInt
 {
+    static KeyCode lastKey;
+
     static bool Prefix(KeyCode key, ref bool __result)
     {
         if (TAS.Main.Running)
         {
+            if (lastKey != key)
+            {
+                Plugin.Log.LogDebug($"GetKeyInt: {key}, frametime: {UnityEngine.Time.captureDeltaTime}");
+            }
+            lastKey = key;
+
             __result = Keyboard.Keys.Contains(key);
 
             return false;
@@ -43,10 +50,18 @@ class GetKeyString
 [HarmonyPatch(typeof(Input), nameof(Input.GetKeyUpInt))]
 class GetKeyUpInt
 {
+    static KeyCode lastKey;
+
     static bool Prefix(KeyCode key, ref bool __result)
     {
         if (TAS.Main.Running)
         {
+            if (lastKey != key)
+            {
+                Plugin.Log.LogDebug($"GetKeyUpInt: {key}, frametime: {UnityEngine.Time.captureDeltaTime}");
+            }
+            lastKey = key;
+
             __result = Keyboard.KeysUp.Contains(key);
 
             return false;
@@ -75,10 +90,18 @@ class GetKeyUpString
 [HarmonyPatch(typeof(Input), nameof(Input.GetKeyDownInt))]
 class GetKeyDownInt
 {
+    static KeyCode lastKey;
+
     static bool Prefix(KeyCode key, ref bool __result)
     {
         if (TAS.Main.Running)
         {
+            if (lastKey != key)
+            {
+                Plugin.Log.LogDebug($"GetKeyDownInt: {key}, frametime: {UnityEngine.Time.captureDeltaTime}");
+            }
+            lastKey = key;
+            
             __result = Keyboard.KeysDown.Contains(key);
 
             return false;

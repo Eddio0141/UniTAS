@@ -8,6 +8,8 @@ class InitState
 {
     static void Prefix(ref int seed)
     {
+        //var stackTrace = new System.Diagnostics.StackTrace();
+        //Plugin.Log.LogDebug($"Random.InitState called: {stackTrace}");
         /*
         if (Main.Running)
         {
