@@ -1,5 +1,4 @@
 ﻿using UniTASPlugin.TAS.Input.Movie;
-using UnityEngine;
 
 namespace UniTASPlugin.TAS.Input;
 
