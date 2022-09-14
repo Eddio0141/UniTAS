@@ -29,6 +29,7 @@ public static class Main
     }
     public static bool RunInitOrStopping { get; private set; }
     public static double Time { get; private set; }
+    public static ulong FrameCount { get; private set; }
     static readonly List<string> axisNames;
     static readonly List<int> firstScenes;
     static readonly List<int> firstObjIDs;
@@ -48,6 +49,7 @@ public static class Main
         // set time to system time
         Time = System.DateTime.Now.Ticks / 10000d;
         Plugin.Log.LogInfo($"System time seconds: {Time}");
+        FrameCount = 0;
         axisNames = new List<string>();
 
         firstScenes = new List<int>();
@@ -65,6 +67,10 @@ public static class Main
             }
         }
 
+        var asyncHandler = new GameObject();
+        asyncHandler.AddComponent<UnityASyncHandler>();
+        firstObjIDs.Add(asyncHandler.GetInstanceID());
+
         LoadingSceneCount = 0;
     }
 
@@ -76,6 +82,7 @@ public static class Main
         }
 
         Time += deltaTime;
+        FrameCount++;
     }
 
     /*
@@ -137,8 +144,9 @@ public static class Main
         }
 
         Time = seed / 1000.0;
+        FrameCount = 0;
         Plugin.Log.LogInfo($"System time seconds: {Time}");
-        
+
         SceneManager.LoadScene(firstScenes[0]);
         for (int i = 1; i < firstScenes.Count; i++)
         {
