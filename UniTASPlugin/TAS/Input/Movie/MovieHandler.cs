@@ -20,6 +20,12 @@ public static class MovieHandler
 
         CurrentMovie = movie;
 
+        if (CurrentMovie.Framebulks.Count > 0)
+        {
+            // TODO do i need to pre set captureDeltaTime before the frame runs?
+            Time.captureDeltaTime = CurrentMovie.Framebulks[0].Frametime;
+        }
+
         TAS.Main.Running = true;
         TAS.Main.SoftRestart(CurrentMovie.Seed);
 
@@ -31,6 +37,9 @@ public static class MovieHandler
         if (currentFramebulkIndex >= CurrentMovie.Framebulks.Count)
         {
             TAS.Main.Running = false;
+
+            Plugin.Log.LogInfo("Movie end");
+
             return false;
         }
 
@@ -87,6 +96,22 @@ public static class MovieHandler
 
             CurrentFrameNum++;
             currentFramebulkFrameIndex++;
+
+            // set next framebulk framerate
+            var nextFbIndex = currentFramebulkIndex;
+            if (currentFramebulkFrameIndex >= fb.FrameCount)
+            {
+                nextFbIndex++;
+                if (nextFbIndex >= CurrentMovie.Framebulks.Count)
+                {
+                    // dont bother with captureDeltaTime change if its the end of movie
+                    return;
+                }
+            }
+
+            var nextFb = CurrentMovie.Framebulks[nextFbIndex];
+
+            Time.captureDeltaTime = nextFb.Frametime;
         }
     }
 }
@@ -126,12 +151,13 @@ public class Framebulk
     public Key Key;
     public Axis Axis;
 
-    public Framebulk(float frametime, int frameCount) : this(frametime, frameCount, new Mouse(), new Key(), new Axis()) { }
+    public Framebulk(float frametime, uint frameCount) : this(frametime, frameCount, new Mouse(), new Key(), new Axis()) { }
 
-    public Framebulk(float frametime, int frameCount, Mouse mouse, Key key, Axis axis)
+    public Framebulk(float frametime, uint frameCount, Mouse mouse, Key key, Axis axis)
     {
         Frametime = frametime;
-        FrameCount = frameCount;
+        // TODO warn frameCount being too high or low
+        FrameCount = (int)frameCount;
         Mouse = mouse ?? throw new ArgumentNullException(nameof(mouse));
         Key = key ?? throw new ArgumentNullException(nameof(key));
         Axis = axis ?? throw new ArgumentNullException(nameof(axis));
