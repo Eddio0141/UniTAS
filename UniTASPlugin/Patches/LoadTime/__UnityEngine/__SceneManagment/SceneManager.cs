@@ -24,7 +24,7 @@ class LoadSceneAsync__sceneBuildIndex__parameters
 
     static void Postfix(ref AsyncOperation __result)
     {
-        TAS.UnityASyncHandler.AsyncSceneLoad(__result);
+        UnityASyncHandler.AsyncSceneLoad(__result);
     }
 }
 
@@ -45,7 +45,7 @@ class LoadSceneAsync__sceneName__parameters
 
     static void Postfix(ref AsyncOperation __result)
     {
-        TAS.UnityASyncHandler.AsyncSceneLoad(__result);
+        UnityASyncHandler.AsyncSceneLoad(__result);
     }
 }
 
@@ -66,7 +66,7 @@ class UnloadSceneAsync__sceneBuildIndex
 
     static void Postfix(ref AsyncOperation __result)
     {
-        TAS.UnityASyncHandler.AsyncSceneUnload(__result);
+        UnityASyncHandler.AsyncSceneUnload(__result);
     }
 }
 
@@ -87,7 +87,7 @@ class UnloadSceneAsync__sceneName
 
     static void Postfix(ref AsyncOperation __result)
     {
-        TAS.UnityASyncHandler.AsyncSceneUnload(__result);
+        UnityASyncHandler.AsyncSceneUnload(__result);
     }
 }
 
@@ -108,7 +108,7 @@ class UnloadSceneAsync__scene
 
     static void Postfix(ref AsyncOperation __result)
     {
-        TAS.UnityASyncHandler.AsyncSceneUnload(__result);
+        UnityASyncHandler.AsyncSceneUnload(__result);
     }
 }
 
@@ -129,7 +129,7 @@ class UnloadSceneAsync__sceneBuildIndex__options
 
     static void Postfix(ref AsyncOperation __result)
     {
-        TAS.UnityASyncHandler.AsyncSceneUnload(__result);
+        UnityASyncHandler.AsyncSceneUnload(__result);
     }
 }
 
@@ -150,7 +150,7 @@ class UnloadSceneAsync__sceneName__options
 
     static void Postfix(ref AsyncOperation __result)
     {
-        TAS.UnityASyncHandler.AsyncSceneUnload(__result);
+        UnityASyncHandler.AsyncSceneUnload(__result);
     }
 }
 
@@ -171,6 +171,6 @@ class UnloadSceneAsync__scene__options
 
     static void Postfix(ref AsyncOperation __result)
     {
-        TAS.UnityASyncHandler.AsyncSceneUnload(__result);
+        UnityASyncHandler.AsyncSceneUnload(__result);
     }
 }
