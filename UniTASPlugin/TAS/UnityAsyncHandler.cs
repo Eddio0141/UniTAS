@@ -21,12 +21,21 @@ internal class UnityASyncHandler : MonoBehaviour
         Instance = this;
     }
 
+    // TODO prevent this object from being destroyed
     public static void AsyncSceneLoad(AsyncOperation operation)
     {
-        Instance.StartCoroutine(AsyncSceneLoadWait(operation));
+        if (operation == null)
+            return;
+        if (Instance == null)
+        {
+            Plugin.Log.LogWarning("UnityASyncHandler is null, this should not happen, skipping scene load tracker");
+            Main.LoadingSceneCount = 0;
+            return;
+        }
+        Instance.StartCoroutine(Instance.AsyncSceneLoadWait(operation));
     }
 
-    static IEnumerator AsyncSceneLoadWait(AsyncOperation operation)
+    IEnumerator AsyncSceneLoadWait(AsyncOperation operation)
     {
         yield return new WaitUntil(() => operation.isDone);
         Main.LoadingSceneCount--;
@@ -34,10 +43,18 @@ internal class UnityASyncHandler : MonoBehaviour
 
     public static void AsyncSceneUnload(AsyncOperation operation)
     {
-        Instance.StartCoroutine(AsyncSceneUnloadWait(operation));
+        if (operation == null)
+            return;
+        if (Instance == null)
+        {
+            Plugin.Log.LogWarning("UnityASyncHandler is null, this should not happen, skipping scene unload tracker");
+            Main.UnloadingSceneCount = 0;
+            return;
+        }
+        Instance.StartCoroutine(Instance.AsyncSceneUnloadWait(operation));
     }
 
-    static IEnumerator AsyncSceneUnloadWait(AsyncOperation operation)
+    IEnumerator AsyncSceneUnloadWait(AsyncOperation operation)
     {
         yield return new WaitUntil(() => operation.isDone);
         Main.UnloadingSceneCount--;
