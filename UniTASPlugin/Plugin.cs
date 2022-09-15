@@ -25,6 +25,7 @@ public class Plugin : BaseUnityPlugin
 
         Log = Logger;
 
+        Log.LogInfo($"Company name: {Application.companyName}, product name: {Application.productName}, version: {Application.version}");
         Log.LogInfo($"Plugin {PLUGIN_NAME} is loaded!");
     }
 
