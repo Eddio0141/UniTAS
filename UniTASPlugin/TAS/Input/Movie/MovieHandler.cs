@@ -48,7 +48,7 @@ public static class MovieHandler
     static void RunMoviePending()
     {
         TAS.Main.Running = true;
-        TAS.Main.SoftRestart(CurrentMovie.Seed);
+        TAS.Main.SoftRestart(CurrentMovie.Seed, false);
         Plugin.Log.LogInfo($"Movie start: {CurrentMovie}");
     }
 
@@ -138,6 +138,7 @@ public static class MovieHandler
 
 public class Movie
 {
+    // TODO seed can be DateTime instance
     public readonly string Name;
     public readonly List<Framebulk> Framebulks;
     public readonly int Seed;
