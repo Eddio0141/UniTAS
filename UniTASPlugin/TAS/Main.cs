@@ -195,8 +195,11 @@ public static class Main
 
         foreach (var obj in Object.FindObjectsOfType<MonoBehaviour>())
         {
-            // force coroutines to stop
-            obj.StopAllCoroutines();
+            if (!(obj is Plugin or UnityASyncHandler))
+            {
+                // force coroutines to stop
+                obj.StopAllCoroutines();
+            }
 
             var id = obj.GetInstanceID();
 
