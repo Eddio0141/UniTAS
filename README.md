@@ -48,6 +48,9 @@ I haven't planned for VR support currently
 - A way to handle additional unity patches which is a dependency not included by default
 - l2cpp support
 - TAS GUI
+- Template for unity version
+- Check if I need netstandard2.1
+- Each unity version needs to build for netstandard2.0, net46, net35. [read this](https://docs.microsoft.com/en-us/nuget/create-packages/multiple-target-frameworks-project-file).
 
 # Background tasks to be finished
 - Full input legacy system override
