@@ -32,14 +32,9 @@ public class Plugin : BaseUnityPlugin
     private void Update()
 #pragma warning restore IDE0051
     {
-        if (TAS.Main.Running && MovieHandler.CurrentFrameNum > 717 && MovieHandler.CurrentFrameNum < 721)
-        {
-            Log.LogDebug($"frame {MovieHandler.CurrentFrameNum}, Plugin.Update called");
-        }
-
         TAS.Main.Update(Time.deltaTime);
 
-        // TODO record tas would seem interesting maybe
+        // TODO record gameplay feature would seem interesting maybe
         // TODO simulate slowdown as user option
         // TODO GUI
         // TODO movie end notification cause memes
@@ -58,21 +53,6 @@ public class Plugin : BaseUnityPlugin
 
             MovieHandler.RunMovie(movie);
         }
-        /*
-        if (!TAS.Main.Running && Input.GetKeyDown(KeyCode.L))
-        {
-            // find gameobject with MouseLook without reference
-            var objs = FindObjectsOfType<GameObject>();
-
-            foreach (var obj in objs)
-            {
-                if (obj.GetComponents<Component>().Any(c => c.GetType().Name == "MouseLook"))
-                {
-
-                }
-            }
-        }
-        */
     }
 
 #pragma warning disable IDE0051

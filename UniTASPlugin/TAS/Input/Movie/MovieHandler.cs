@@ -86,44 +86,9 @@ public static class MovieHandler
                 fb = CurrentMovie.Framebulks[currentFramebulkIndex];
             }
 
-            if (TAS.Main.Running && CurrentFrameNum > 716 && CurrentFrameNum < 721)
-            {
-                Plugin.Log.LogDebug($"frame: {CurrentFrameNum}, MovieHandler.Update called, about to control game!");
-            }
             Time.captureDeltaTime = fb.Frametime;
-            if (TAS.Main.Running && CurrentFrameNum > 716 && CurrentFrameNum < 721)
-            {
-                Plugin.Log.LogDebug($"just set the captureDeltaTime");
-            }
             GameControl(fb);
-            if (TAS.Main.Running && CurrentFrameNum > 716 && CurrentFrameNum < 721)
-            {
-                Plugin.Log.LogDebug($"just set the game control");
-            }
 
-            // TODO remove this
-            if (CurrentFrameNum < 721)
-            {
-                var obj = GameObject.Find("Main Camera");
-                if (obj != null)
-                {
-                    // TODO REMOVE THIS
-                    var body = obj.GetComponent<MouseLook>().playerBody.transform;
-                    var bodyPos = obj.GetComponent<MouseLook>().playerBody.transform.position;
-                    Plugin.Log.LogDebug($"Frame {TAS.Main.FrameCount}, pos: ({bodyPos.x}, {bodyPos.y}, {bodyPos.z}), rot: {body.rotation.eulerAngles}");
-                }
-
-                var objsWithTag = GameObject.FindGameObjectsWithTag("Spawn");
-                for (int i = 0; i < objsWithTag.Length; i++)
-                {
-                    var objWithTag = objsWithTag[i];
-                    var pos = objWithTag.transform.position;
-                    Plugin.Log.LogDebug($"Frame {TAS.Main.FrameCount}, Spawn tag {i}: ({pos.x}, {pos.y}, {pos.z})");
-                }
-            }
-
-            if (TAS.Main.Running && CurrentFrameNum > 716 && CurrentFrameNum < 721)
-                Plugin.Log.LogInfo($"just increased the frame num to {CurrentFrameNum}");
             currentFramebulkFrameIndex++;
         }
     }

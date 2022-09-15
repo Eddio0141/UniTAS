@@ -10,8 +10,6 @@ namespace UniTASPlugin.Patches.TASInput.__UnityEngine;
 [HarmonyPatch(typeof(Input), nameof(Input.GetKeyInt))]
 class GetKeyInt
 {
-    static KeyCode lastKey;
-
     static bool Prefix(KeyCode key, ref bool __result)
     {
         if (TAS.Main.Running)
@@ -22,16 +20,6 @@ class GetKeyInt
         }
 
         return true;
-    }
-
-    static void Postfix(KeyCode key, ref bool __result)
-    {
-        if (__result && key != lastKey)
-        {
-            if (UnityEngine.Time.captureDeltaTime != 0)
-                Plugin.Log.LogDebug($"GetKeyInt({key}) = true, frametime: {UnityEngine.Time.captureDeltaTime}");
-            lastKey = key;
-        }
     }
 }
 
@@ -54,8 +42,6 @@ class GetKeyString
 [HarmonyPatch(typeof(Input), nameof(Input.GetKeyUpInt))]
 class GetKeyUpInt
 {
-    static KeyCode lastKey;
-
     static bool Prefix(KeyCode key, ref bool __result)
     {
         if (TAS.Main.Running)
@@ -66,16 +52,6 @@ class GetKeyUpInt
         }
 
         return true;
-    }
-
-    static void Postfix(KeyCode key, ref bool __result)
-    {
-        if (__result && key != lastKey)
-        {
-            if (UnityEngine.Time.captureDeltaTime != 0)
-                Plugin.Log.LogDebug($"GetKeyUpInt({key}) = true, frametime: {UnityEngine.Time.captureDeltaTime}");
-            lastKey = key;
-        }
     }
 }
 
@@ -98,8 +74,6 @@ class GetKeyUpString
 [HarmonyPatch(typeof(Input), nameof(Input.GetKeyDownInt))]
 class GetKeyDownInt
 {
-    static KeyCode lastKey;
-
     static bool Prefix(KeyCode key, ref bool __result)
     {
         if (TAS.Main.Running)
@@ -110,16 +84,6 @@ class GetKeyDownInt
         }
 
         return true;
-    }
-
-    static void Postfix(KeyCode key, ref bool __result)
-    {
-        if (__result && key != lastKey)
-        {
-            if (UnityEngine.Time.captureDeltaTime != 0)
-                Plugin.Log.LogDebug($"GetKeyDownInt({key}) = true, frametime: {UnityEngine.Time.captureDeltaTime}");
-            lastKey = key;
-        }
     }
 }
 
