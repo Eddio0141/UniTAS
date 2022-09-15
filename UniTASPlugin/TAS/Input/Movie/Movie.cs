@@ -7,7 +7,6 @@ namespace UniTASPlugin.TAS.Input.Movie;
 
 public class Movie
 {
-    // TODO seed can be DateTime instance
     public readonly string Name;
     public readonly List<Framebulk> Framebulks;
     public readonly int Seed;

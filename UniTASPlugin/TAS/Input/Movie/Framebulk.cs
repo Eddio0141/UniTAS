@@ -19,7 +19,6 @@ public class Framebulk
     public Framebulk(float frametime, uint frameCount, Mouse mouse, Keys key, Axises axis)
     {
         Frametime = frametime;
-        // TODO warn frameCount being too high or low
         FrameCount = (int)frameCount;
         Mouse = mouse ?? throw new ArgumentNullException(nameof(mouse));
         Keys = key ?? throw new ArgumentNullException(nameof(key));

@@ -8,7 +8,6 @@ public class Mouse
     public bool Left;
     public bool Right;
     public bool Middle;
-    // TODO scroll
 
     public Mouse() : this(0, 0, false, false, false) { }
 

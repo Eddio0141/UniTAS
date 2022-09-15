@@ -22,7 +22,6 @@ internal class UnityASyncHandler : MonoBehaviour
         Instance = this;
     }
 
-    // TODO prevent this object from being destroyed
     public static void AsyncSceneLoad(AsyncOperation operation)
     {
         if (operation == null)

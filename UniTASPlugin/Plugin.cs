@@ -35,21 +35,6 @@ public class Plugin : BaseUnityPlugin
         GameCapture.Update();
         TAS.Main.Update(Time.deltaTime);
 
-        // TODO record gameplay feature would seem interesting maybe
-        // TODO simulate slowdown as user option
-        // TODO GUI
-        // TODO movie end notification
-        // TODO encode movie to video
-        // TODO game helpers
-        // TODO Time.captureDeltaTime needs to be unable to be changed by user while movie is running
-        // TODO movie can create "macros"
-        // TODO movie can call helper functions
-        // TODO save states
-        // TODO game capture function from movie
-        // TODO screen resolution
-        // TODO fix different scene desyncing while heavy load on Plugin.Update / Plugin.FixedUpdate (maybe use a coroutine)
-        // BUG in "It Steals", the loading text is different from when you run a TAS with soft restart from in game, and from main menu
-
         // TODO remove this test
         if (!TAS.Main.Running && Input.GetKeyDown(KeyCode.K))
         {

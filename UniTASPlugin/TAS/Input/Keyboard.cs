@@ -5,7 +5,6 @@ namespace UniTASPlugin.TAS.Input;
 
 public static class Keyboard
 {
-    // TODO string key names
     public static List<KeyCode> Keys { get; internal set; }
     public static List<KeyCode> KeysDown { get; private set; }
     public static List<KeyCode> KeysUp { get; private set; }

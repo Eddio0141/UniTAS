@@ -154,8 +154,7 @@ public static class Main
             Plugin.Log.LogInfo($"Found new axis name: {axisName}");
         }
     }
-
-    // BUG: on "It Steals", the game's play button breaks when you soft restart while waiting for next scene to load
+    
     /// <summary>
     /// Soft restart the game. This will not reload the game, but tries to reset the game state.
     /// Mainly used for TAS movie playback.

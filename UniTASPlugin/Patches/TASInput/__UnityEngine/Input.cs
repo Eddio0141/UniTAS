@@ -112,7 +112,6 @@ class GetAxis
 
         if (TAS.Main.Running)
         {
-            // TODO some notification on missing axis
             if (Axis.Values.TryGetValue(axisName, out float value))
             {
                 __result = value;
@@ -132,8 +131,6 @@ class GetAxisRaw
 
         if (TAS.Main.Running)
         {
-            // TODO some notification on missing axis
-            // TODO find out what the difference between GetAxis and GetAxisRaw is
             if (Axis.Values.TryGetValue(axisName, out float value))
             {
                 __result = value;
@@ -901,7 +898,6 @@ class get_mousePosition_Injected
     {
         if (TAS.Main.Running)
         {
-            // TODO set ret
             Plugin.Log.LogDebug($"UnityEngine.Input.get_mousePosition_Injected called, TODO set ret");
 
             return false;

@@ -24,7 +24,6 @@ public static class GameCapture
 
     static void CaptureFrame()
     {
-        // TODO framerate change would compile the mp4 first
         var path = $"{captureFolder}{Path.DirectorySeparatorChar}{captureCount}.png";
         ScreenCapture.CaptureScreenshot(path);
         captureCount++;
@@ -45,6 +44,5 @@ public static class GameCapture
     public static void StopCapture()
     {
         capturing = false;
-        // TODO compile into video
     }
 }

@@ -8,7 +8,6 @@ public static class Main
     {
         if (TAS.Main.Running)
         {
-            // TODO button handler
             Mouse.Update();
             Keyboard.Update();
             VirtualCursor.Update();

@@ -28,8 +28,7 @@ public static class VirtualCursor
 
         canvasScaler = canvasObj.AddComponent<CanvasScaler>();
         canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-
-        // TODO default mouse texture
+        
         cursorRawImage = cursorRawImageObj.AddComponent<RawImage>();
         cursorRectTransform = cursorRawImageObj.GetComponent<RectTransform>();
         cursorRawImage.texture = new Texture2D(100, 100);
