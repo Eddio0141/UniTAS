@@ -1,7 +1,6 @@
 ﻿using BepInEx;
 using HarmonyLib;
 using System.IO;
-using System.Linq;
 using UniTASPlugin.TAS.Input.Movie;
 using UnityEngine;
 
