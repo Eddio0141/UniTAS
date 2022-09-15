@@ -31,10 +31,26 @@ A tool that lets you TAS unity games hopefully
 - [ ] Frame advance / slow down
 - [ ] Optional resolution
 
+# Known bugs
+- Different scene possibly desyncing while heavy load on Plugin.Update / Plugin.FixedUpdate (maybe use a coroutine)
+### It Steals
+- The loading text is different from when you run a TAS with soft restart from in game, and from main menu
+- the game's play button breaks when you soft restart while waiting for next scene to load
+
+# VR Support
+I haven't planned for VR support currently
+
+# Important TODOs
+- Separate tool to set up the TAS tool for a unity game
+- Integrate BepInEx to project
+- Build script or something to build everything properly
+- A way to handle multiple unity versions, including 32 / 64 bits
+- A way to handle additional unity patches which is a dependency not included by default
+- l2cpp support
+- TAS GUI
+
 # Background tasks to be finished
-- [x] RNG and time problems
-- [x] No inconsistent scene loads
-- [ ] Full input legacy system override
+- Full input legacy system override
   - [x] Mouse clicks
   - [x] Axis & value control
   - [ ] Button presses
@@ -47,27 +63,50 @@ A tool that lets you TAS unity games hopefully
   - [ ] Keyboard presses
     - KeyCode works but not overriding string variant of GetKey checks and not supported in keyboard system
   - [ ] Touch screen
+  - [ ] GetAccelerationEvent call
+  - [ ] simulateMouseWithTouches call
+  - [ ] imeCompositionMode call
+  - [ ] compositionCursorPos call
+  - [ ] location getter purpose
+  - [ ] CheckDisabled purpose
+  - [ ] What to do with setters in module
   - [ ] Other devices
-- [ ] Full new input system override
-- [ ] Game capture
+- Full new input system override
+- Game capture
   - [ ] Audio recording
   - [ ] Faster video recording
-- [ ] Resolution needs to be defined in movie
-- [ ] DateTime customizability in movie and seed will use that type too
-- [ ] Time.captureDeltaTime needs to be unable to be changed by user while movie is running
-- [ ] Movie file input macro functions
-- [ ] Movie file TAS helper function calls
-- [ ] Movie end notification on screen (very important)
-- [ ] Movie frame count on screen (also very important and funny)
-- [ ] New Framebulk instance not warning or throwing with FrameCount being 0 or too high than int max
-- [ ] Fix virtual cursor
-- [ ] Virtual cursor needs to have default texture
-- [ ] Objects like Plugin and UnityASyncHandler needs to be made sure to not be destroyed or cloned
-- [ ] Brute forcer stuff
-- [ ] Lua and other scripting methods?
-
-# Known bugs
-- Different scene possibly desyncing while heavy load on Plugin.Update / Plugin.FixedUpdate (maybe use a coroutine)
-### It Steals
-- The loading text is different from when you run a TAS with soft restart from in game, and from main menu
-- the game's play button breaks when you soft restart while waiting for next scene to load
+- Disable network
+- Soft restart needs to reset save files
+- Savestates
+  - [ ] Save
+    - [ ] Save current scene info
+    - [ ] Save graphics info
+    - [ ] Save object IDs
+    - [ ] Save object states
+    - [ ] Save system time
+    - [ ] Save game files
+    - [ ] Wait for FixedUpdate or count current FixedUpdate iteration
+    - [ ] Find other game states
+  - [ ] Load
+    - [ ] Load scene if not on the correct one
+    - [ ] Load missing objects
+    - [ ] Unload objects not in save
+    - [ ] Load object states
+    - [ ] Set system time
+    - [ ] Load game files
+- Resolution needs to be defined in movie
+- DateTime customizability in movie and seed will use that type too
+- Time.captureDeltaTime needs to be unable to be changed by user while movie is running
+- Movie file input macro functions
+- Movie file TAS helper function calls
+- Movie end notification on screen (very important)
+- Movie frame count on screen (also very important and funny)
+- New Framebulk instance not warning or throwing with FrameCount being 0 or too high than int max
+- Fix virtual cursor
+- Virtual cursor needs to have default texture
+- Objects like Plugin and UnityASyncHandler needs to be made sure to not be destroyed or cloned
+- Brute forcer stuff
+- Lua and other scripting methods?
+- System.Random
+  - [ ] System.Random.GenerateSeed check if consistent generation
+  - [ ] System.Random.GenerateGlobalSeed check if consistent generation
