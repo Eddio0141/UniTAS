@@ -6,10 +6,13 @@ public static class Main
 {
     public static void Update()
     {
-        // TODO button handler
-        Mouse.Update();
-        Keyboard.Update();
-        VirtualCursor.Update();
+        if (TAS.Main.Running)
+        {
+            // TODO button handler
+            Mouse.Update();
+            Keyboard.Update();
+            VirtualCursor.Update();
+        }
     }
 
     public static void Clear()
