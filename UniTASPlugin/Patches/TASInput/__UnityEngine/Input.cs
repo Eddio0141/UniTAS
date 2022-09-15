@@ -520,17 +520,6 @@ class eatKeyPressOnTextFieldFocusGetter
     }
 }
 
-[HarmonyPatch(typeof(Input), nameof(Input.eatKeyPressOnTextFieldFocus), MethodType.Setter)]
-class eatKeyPressOnTextFieldFocusSetter
-{
-    static bool Prefix(bool value)
-    {
-        Plugin.Log.LogDebug($"UnityEngine.Input.eatKeyPressOnTextFieldFocus Setter called with value: {value}");
-
-        return true;
-    }
-}
-
 [HarmonyPatch(typeof(Input), nameof(Input.mousePresent), MethodType.Getter)]
 class mousePresentGetter
 {
@@ -718,17 +707,6 @@ class backButtonLeavesAppGetter
         {
             return false;
         }
-
-        return true;
-    }
-}
-
-[HarmonyPatch(typeof(Input), nameof(Input.backButtonLeavesApp), MethodType.Setter)]
-class backButtonLeavesAppSetter
-{
-    static bool Prefix(bool value)
-    {
-        Plugin.Log.LogDebug($"UnityEngine.Input.backButtonLeavesApp Setter called with value: {value}");
 
         return true;
     }
