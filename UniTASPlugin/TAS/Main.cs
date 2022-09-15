@@ -42,14 +42,14 @@ public static class Main
     public static int UnloadingSceneCount { get; set; }
     public static List<int> DontDestroyOnLoadIDs = new();
     static bool pendingFixedUpdateSoftRestart;
-    static int pendingSoftRestartSeed;
+    static int softRestartSeed;
 
     static Main()
     {
         Running = false;
         // set time to system time
         Time = System.DateTime.Now.Ticks / 10000d;
-        Plugin.Log.LogInfo($"System time seconds: {Time}");
+        Plugin.Log.LogInfo($"System time: {System.DateTime.Now}");
         FrameCount = 0;
         axisNames = new List<string>();
         pendingFixedUpdateSoftRestart = false;
@@ -104,7 +104,7 @@ public static class Main
     }
 
     // BUG: on "It Steals", the game's play button breaks when you soft restart while waiting for next scene to load
-    public static void SoftRestart(int seed)
+    public static void SoftRestart(int seed, bool nextFixedUpdateWait)
     {
         if (LoadingSceneCount > 0)
         {
@@ -123,9 +123,16 @@ public static class Main
             }
         }
 
-        pendingFixedUpdateSoftRestart = true;
-        pendingSoftRestartSeed = seed;
-        Plugin.Log.LogInfo("Soft restarting, pending FixedUpdate call");
+        pendingFixedUpdateSoftRestart = nextFixedUpdateWait;
+        softRestartSeed = seed;
+        if (nextFixedUpdateWait)
+        {
+            Plugin.Log.LogInfo("Soft restarting, pending FixedUpdate call");
+        }
+        else
+        {
+            SoftRestartOperation();
+        }
     }
 
     static void SoftRestartOperation()
@@ -150,9 +157,9 @@ public static class Main
             Object.Destroy(obj);
         }
 
-        Time = pendingSoftRestartSeed / 1000.0;
+        Time = softRestartSeed / 1000.0;
         FrameCount = 0;
-        Plugin.Log.LogInfo($"System time seconds: {Time}");
+        Plugin.Log.LogInfo($"System time: {System.DateTime.Now}");
 
         SceneManager.LoadScene(0);
 
