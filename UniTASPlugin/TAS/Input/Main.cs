@@ -13,6 +13,11 @@ public static class Main
         VirtualCursor.Update();
     }
 
+    public static void FixedUpdate()
+    {
+        MovieHandler.FixedUpdate();
+    }
+
     public static void Clear()
     {
         Mouse.Clear();

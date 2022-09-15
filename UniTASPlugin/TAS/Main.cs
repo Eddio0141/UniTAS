@@ -42,7 +42,7 @@ public static class Main
     /// </summary>
     public static int UnloadingSceneCount { get; set; }
     public static List<int> DontDestroyOnLoadIDs = new();
-    public static bool PendingFixedUpdateSoftRestart { get; private set; }
+    static bool pendingFixedUpdateSoftRestart;
     static int pendingSoftRestartSeed;
 
     static Main()
@@ -53,7 +53,7 @@ public static class Main
         Plugin.Log.LogInfo($"System time seconds: {Time}");
         FrameCount = 0;
         axisNames = new List<string>();
-        PendingFixedUpdateSoftRestart = false;
+        pendingFixedUpdateSoftRestart = false;
 
         firstObjIDs = new List<int>();
         foreach (var obj in Object.FindObjectsOfType<MonoBehaviour>())
@@ -85,10 +85,11 @@ public static class Main
 
     public static void FixedUpdate()
     {
-        if (PendingFixedUpdateSoftRestart)
+        Input.Main.FixedUpdate();
+        if (pendingFixedUpdateSoftRestart)
         {
             SoftRestartOperation();
-            PendingFixedUpdateSoftRestart = false;
+            pendingFixedUpdateSoftRestart = false;
         }
     }
 
@@ -122,8 +123,10 @@ public static class Main
                 Thread.Sleep(1);
             }
         }
-        PendingFixedUpdateSoftRestart = true;
+
+        pendingFixedUpdateSoftRestart = true;
         pendingSoftRestartSeed = seed;
+        Plugin.Log.LogInfo("Soft restarting, pending FixedUpdate call");
     }
 
     static void SoftRestartOperation()

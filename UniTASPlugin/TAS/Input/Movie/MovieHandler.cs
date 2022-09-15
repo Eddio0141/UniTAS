@@ -11,6 +11,12 @@ public static class MovieHandler
     public static ulong CurrentFrameNum { get; private set; }
     static int currentFramebulkIndex;
     static int currentFramebulkFrameIndex;
+    static bool pendingMovieStartFixedUpdate;
+
+    static MovieHandler()
+    {
+        pendingMovieStartFixedUpdate = false;
+    }
 
     public static void RunMovie(Movie movie)
     {
@@ -35,9 +41,14 @@ public static class MovieHandler
             }
         }
 
+        pendingMovieStartFixedUpdate = true;
+        Plugin.Log.LogInfo("Starting movie, pending FixedUpdate call");
+    }
+
+    static void RunMoviePending()
+    {
         TAS.Main.Running = true;
         TAS.Main.SoftRestart(CurrentMovie.Seed);
-
         Plugin.Log.LogInfo($"Movie start: {CurrentMovie}");
     }
 
@@ -57,7 +68,7 @@ public static class MovieHandler
 
     public static void Update()
     {
-        if (TAS.Main.Running && !TAS.Main.PendingFixedUpdateSoftRestart)
+        if (TAS.Main.Running)
         {
             CurrentFrameNum++;
 
@@ -75,17 +86,17 @@ public static class MovieHandler
                 fb = CurrentMovie.Framebulks[currentFramebulkIndex];
             }
 
-            if (TAS.Main.Running && CurrentFrameNum > 717 && CurrentFrameNum < 721)
+            if (TAS.Main.Running && CurrentFrameNum > 716 && CurrentFrameNum < 721)
             {
                 Plugin.Log.LogDebug($"frame: {CurrentFrameNum}, MovieHandler.Update called, about to control game!");
             }
             Time.captureDeltaTime = fb.Frametime;
-            if (TAS.Main.Running && CurrentFrameNum > 717 && CurrentFrameNum < 721)
+            if (TAS.Main.Running && CurrentFrameNum > 716 && CurrentFrameNum < 721)
             {
                 Plugin.Log.LogDebug($"just set the captureDeltaTime");
             }
             GameControl(fb);
-            if (TAS.Main.Running && CurrentFrameNum > 717 && CurrentFrameNum < 721)
+            if (TAS.Main.Running && CurrentFrameNum > 716 && CurrentFrameNum < 721)
             {
                 Plugin.Log.LogDebug($"just set the game control");
             }
@@ -111,9 +122,18 @@ public static class MovieHandler
                 }
             }
 
-            if (TAS.Main.Running && CurrentFrameNum > 717 && CurrentFrameNum < 721)
+            if (TAS.Main.Running && CurrentFrameNum > 716 && CurrentFrameNum < 721)
                 Plugin.Log.LogInfo($"just increased the frame num to {CurrentFrameNum}");
             currentFramebulkFrameIndex++;
+        }
+    }
+
+    public static void FixedUpdate()
+    {
+        if (pendingMovieStartFixedUpdate)
+        {
+            RunMoviePending();
+            pendingMovieStartFixedUpdate = false;
         }
     }
 
