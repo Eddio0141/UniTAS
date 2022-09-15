@@ -40,6 +40,7 @@ public class Plugin : BaseUnityPlugin
         // TODO movie end notification
         // TODO encode movie to video
         // TODO game helpers
+        // TODO Time.captureDeltaTime needs to be unable to be changed by user while movie is running
 
         // TODO remove this test
         if (!TAS.Main.Running && Input.GetKeyDown(KeyCode.K))
@@ -53,7 +54,7 @@ public class Plugin : BaseUnityPlugin
                 return;
             }
 
-            MovieHandler.RunMovie(movie);
+            TAS.Main.RunMovie(movie);
         }
     }
 
