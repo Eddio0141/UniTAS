@@ -48,6 +48,7 @@ public class Plugin : BaseUnityPlugin
         // TODO game capture function from movie
         // TODO screen resolution
         // TODO fix different scene desyncing while heavy load on Plugin.Update / Plugin.FixedUpdate (maybe use a coroutine)
+        // BUG in "It Steals", the loading text is different from when you run a TAS with soft restart from in game, and from main menu
 
         // TODO remove this test
         if (!TAS.Main.Running && Input.GetKeyDown(KeyCode.K))
