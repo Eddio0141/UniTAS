@@ -42,6 +42,8 @@ public static class Main
     /// </summary>
     public static int UnloadingSceneCount { get; set; }
     public static List<int> DontDestroyOnLoadIDs = new();
+    public static bool PendingFixedUpdateSoftRestart { get; private set; }
+    static int pendingSoftRestartSeed;
 
     static Main()
     {
@@ -51,6 +53,7 @@ public static class Main
         Plugin.Log.LogInfo($"System time seconds: {Time}");
         FrameCount = 0;
         axisNames = new List<string>();
+        PendingFixedUpdateSoftRestart = false;
 
         firstObjIDs = new List<int>();
         foreach (var obj in Object.FindObjectsOfType<MonoBehaviour>())
@@ -80,13 +83,14 @@ public static class Main
         FrameCount++;
     }
 
-    /*
-    public static int TimeSeed()
+    public static void FixedUpdate()
     {
-        // TODO: work out seed calculation
-        return (int)(Time * 1000.0);
+        if (PendingFixedUpdateSoftRestart)
+        {
+            SoftRestartOperation();
+            PendingFixedUpdateSoftRestart = false;
+        }
     }
-    */
 
     public static void AxisCall(string axisName)
     {
@@ -99,7 +103,7 @@ public static class Main
         }
     }
 
-    // BUG: on It Steals, the game's play button breaks when you soft restart while waiting for next scene to load
+    // BUG: on "It Steals", the game's play button breaks when you soft restart while waiting for next scene to load
     public static void SoftRestart(int seed)
     {
         if (LoadingSceneCount > 0)
@@ -118,6 +122,12 @@ public static class Main
                 Thread.Sleep(1);
             }
         }
+        PendingFixedUpdateSoftRestart = true;
+        pendingSoftRestartSeed = seed;
+    }
+
+    static void SoftRestartOperation()
+    {
         Plugin.Log.LogInfo("Soft restarting");
 
         // release mouse lock
@@ -138,14 +148,12 @@ public static class Main
             Object.Destroy(obj);
         }
 
-        Time = seed / 1000.0;
+        Time = pendingSoftRestartSeed / 1000.0;
         FrameCount = 0;
         Plugin.Log.LogInfo($"System time seconds: {Time}");
 
         SceneManager.LoadScene(0);
-        var objs = Object.FindObjectsOfType<MonoBehaviour>();
-        Plugin.Log.LogDebug($"Object count: {objs.Length}, obj names: {string.Join(", ", objs.Select(x => x.name))}");
 
-        Plugin.Log.LogInfo("Finish soft restart");
+        Plugin.Log.LogInfo("Finish soft restarting");
     }
 }

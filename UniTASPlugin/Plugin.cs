@@ -74,4 +74,11 @@ public class Plugin : BaseUnityPlugin
         }
         */
     }
+
+#pragma warning disable IDE0051
+    private void FixedUpdate()
+#pragma warning restore IDE0051
+    {
+        TAS.Main.FixedUpdate();
+    }
 }

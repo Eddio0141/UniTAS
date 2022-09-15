@@ -57,8 +57,10 @@ public static class MovieHandler
 
     public static void Update()
     {
-        if (TAS.Main.Running)
+        if (TAS.Main.Running && !TAS.Main.PendingFixedUpdateSoftRestart)
         {
+            CurrentFrameNum++;
+
             if (!CheckCurrentMovieEnd())
                 return;
 
@@ -109,7 +111,8 @@ public static class MovieHandler
                 }
             }
 
-            CurrentFrameNum++;
+            if (TAS.Main.Running && CurrentFrameNum > 717 && CurrentFrameNum < 721)
+                Plugin.Log.LogInfo($"just increased the frame num to {CurrentFrameNum}");
             currentFramebulkFrameIndex++;
         }
     }
