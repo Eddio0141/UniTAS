@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
+using UniTASPlugin.TAS.Input;
+using UniTASPlugin.TAS.Input.Movie;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -43,9 +45,15 @@ public static class Main
     public static List<int> DontDestroyOnLoadIDs = new();
     static bool pendingFixedUpdateSoftRestart;
     static int softRestartSeed;
+    public static Movie CurrentMovie { get; private set; }
+    public static ulong CurrentFrameNum { get; private set; }
+    static int currentFramebulkIndex;
+    static int currentFramebulkFrameIndex;
+    static bool pendingMovieStartFixedUpdate;
 
     static Main()
     {
+        pendingMovieStartFixedUpdate = false;
         Running = false;
         // set time to system time
         Time = System.DateTime.Now.Ticks / 10000d;
@@ -84,13 +92,60 @@ public static class Main
 
     public static void FixedUpdate()
     {
-        Input.Main.FixedUpdate();
+        UpdateMovie();
+        
+        // this needs to be called before checking pending soft restart or it will cause a 1 frame desync
+        if (pendingMovieStartFixedUpdate)
+        {
+            RunMoviePending();
+            pendingMovieStartFixedUpdate = false;
+        }
         if (pendingFixedUpdateSoftRestart)
         {
-            // this needs to be called after Input.Main.FixedUpdate or will cause 1 frame delay in the TAS run
             SoftRestartOperation();
             pendingFixedUpdateSoftRestart = false;
         }
+    }
+
+    static void UpdateMovie()
+    {
+        if (Running)
+        {
+            CurrentFrameNum++;
+
+            if (!CheckCurrentMovieEnd())
+                return;
+
+            var fb = CurrentMovie.Framebulks[currentFramebulkIndex];
+            if (currentFramebulkFrameIndex >= fb.FrameCount)
+            {
+                currentFramebulkIndex++;
+                if (!CheckCurrentMovieEnd())
+                    return;
+
+                currentFramebulkFrameIndex = 0;
+                fb = CurrentMovie.Framebulks[currentFramebulkIndex];
+            }
+
+            UnityEngine.Time.captureDeltaTime = fb.Frametime;
+            GameControl(fb);
+
+            currentFramebulkFrameIndex++;
+        }
+    }
+    
+    static bool CheckCurrentMovieEnd()
+    {
+        if (currentFramebulkIndex >= CurrentMovie.Framebulks.Count)
+        {
+            TAS.Main.Running = false;
+
+            Plugin.Log.LogInfo("Movie end");
+
+            return false;
+        }
+
+        return true;
     }
 
     public static void AxisCall(string axisName)
@@ -105,6 +160,11 @@ public static class Main
     }
 
     // BUG: on "It Steals", the game's play button breaks when you soft restart while waiting for next scene to load
+    /// <summary>
+    /// Soft restart the game. This will not reload the game, but tries to reset the game state.
+    /// Mainly used for TAS movie playback.
+    /// </summary>
+    /// <param name="seed"></param>
     public static void SoftRestart(int seed)
     {
         if (LoadingSceneCount > 0)
@@ -158,5 +218,72 @@ public static class Main
         SceneManager.LoadScene(0);
 
         Plugin.Log.LogInfo("Finish soft restarting");
+    }
+
+    public static void RunMovie(Movie movie)
+    {
+        CurrentFrameNum = 0;
+        currentFramebulkIndex = 0;
+        currentFramebulkFrameIndex = 1;
+
+        CurrentMovie = movie;
+
+        if (CurrentMovie.Framebulks.Count > 0)
+        {
+            var firstFb = CurrentMovie.Framebulks[0];
+
+            Input.Main.Clear();
+            UnityEngine.Time.captureDeltaTime = firstFb.Frametime;
+            GameControl(firstFb);
+
+            if (currentFramebulkFrameIndex >= firstFb.FrameCount)
+            {
+                currentFramebulkFrameIndex = 0;
+                currentFramebulkIndex++;
+            }
+        }
+
+        pendingMovieStartFixedUpdate = true;
+        Plugin.Log.LogInfo("Starting movie, pending FixedUpdate call");
+    }
+    
+    static void RunMoviePending()
+    {
+        Running = true;
+        SoftRestart(CurrentMovie.Seed);
+        Plugin.Log.LogInfo($"Movie start: {CurrentMovie}");
+    }
+    
+    static void GameControl(Framebulk fb)
+    {
+        Input.Mouse.Position = new Vector2(fb.Mouse.X, fb.Mouse.Y);
+        Input.Mouse.LeftClick = fb.Mouse.Left;
+        Input.Mouse.RightClick = fb.Mouse.Right;
+        Input.Mouse.MiddleClick = fb.Mouse.Middle;
+
+        var axisMoveSetDefault = new List<string>();
+        foreach (var (key, _) in Axis.Values)
+        {
+            if (!fb.Axises.AxisMove.ContainsKey(key))
+                axisMoveSetDefault.Add(key);
+        }
+        foreach (var key in axisMoveSetDefault)
+        {
+            if (Axis.Values.ContainsKey(key))
+                Axis.Values[key] = default;
+            else
+                Axis.Values.Add(key, default);
+        }
+        foreach (var (axis, value) in fb.Axises.AxisMove)
+        {
+            if (Axis.Values.ContainsKey(axis))
+            {
+                Axis.Values[axis] = value;
+            }
+            else
+            {
+                Axis.Values.Add(axis, value);
+            }
+        }
     }
 }

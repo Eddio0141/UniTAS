@@ -7,15 +7,9 @@ public static class Main
     public static void Update()
     {
         // TODO button handler
-        MovieHandler.Update();
         Mouse.Update();
         Keyboard.Update();
         VirtualCursor.Update();
-    }
-
-    public static void FixedUpdate()
-    {
-        MovieHandler.FixedUpdate();
     }
 
     public static void Clear()
