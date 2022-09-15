@@ -37,7 +37,9 @@ public class Plugin : BaseUnityPlugin
         // TODO record gameplay feature would seem interesting maybe
         // TODO simulate slowdown as user option
         // TODO GUI
-        // TODO movie end notification cause memes
+        // TODO movie end notification
+        // TODO encode movie to video
+        // TODO game helpers
 
         // TODO remove this test
         if (!TAS.Main.Running && Input.GetKeyDown(KeyCode.K))
