@@ -93,7 +93,7 @@ public static class Main
     public static void FixedUpdate()
     {
         UpdateMovie();
-        
+
         // this needs to be called before checking pending soft restart or it will cause a 1 frame desync
         if (pendingMovieStartFixedUpdate)
         {
@@ -133,7 +133,7 @@ public static class Main
             currentFramebulkFrameIndex++;
         }
     }
-    
+
     static bool CheckCurrentMovieEnd()
     {
         if (currentFramebulkIndex >= CurrentMovie.Framebulks.Count)
@@ -197,9 +197,11 @@ public static class Main
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 
-        // destroy all objects that are marked DontDestroyOnLoad and wasn't loaded in the first scene
         foreach (var obj in Object.FindObjectsOfType<MonoBehaviour>())
         {
+            // force coroutines to stop
+            obj.StopAllCoroutines();
+
             var id = obj.GetInstanceID();
 
             if (!DontDestroyOnLoadIDs.Contains(id))
@@ -208,15 +210,15 @@ public static class Main
             if (firstObjIDs.Contains(id))
                 continue;
 
+            // destroy all objects that are marked DontDestroyOnLoad and wasn't loaded in the first scene
             Object.Destroy(obj);
         }
 
         Time = softRestartSeed / 1000.0;
         FrameCount = 0;
+
         Plugin.Log.LogInfo($"System time: {System.DateTime.Now}");
-
         SceneManager.LoadScene(0);
-
         Plugin.Log.LogInfo("Finish soft restarting");
     }
 
@@ -246,14 +248,14 @@ public static class Main
         pendingMovieStartFixedUpdate = true;
         Plugin.Log.LogInfo("Starting movie, pending FixedUpdate call");
     }
-    
+
     static void RunMoviePending()
     {
         Running = true;
         SoftRestart(CurrentMovie.Seed);
         Plugin.Log.LogInfo($"Movie start: {CurrentMovie}");
     }
-    
+
     static void GameControl(Framebulk fb)
     {
         Input.Mouse.Position = new Vector2(fb.Mouse.X, fb.Mouse.Y);
