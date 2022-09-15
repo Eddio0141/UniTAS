@@ -87,6 +87,7 @@ public static class Main
         Input.Main.FixedUpdate();
         if (pendingFixedUpdateSoftRestart)
         {
+            // this needs to be called after Input.Main.FixedUpdate or will cause 1 frame delay in the TAS run
             SoftRestartOperation();
             pendingFixedUpdateSoftRestart = false;
         }
@@ -104,7 +105,7 @@ public static class Main
     }
 
     // BUG: on "It Steals", the game's play button breaks when you soft restart while waiting for next scene to load
-    public static void SoftRestart(int seed, bool nextFixedUpdateWait)
+    public static void SoftRestart(int seed)
     {
         if (LoadingSceneCount > 0)
         {
@@ -123,16 +124,9 @@ public static class Main
             }
         }
 
-        pendingFixedUpdateSoftRestart = nextFixedUpdateWait;
+        pendingFixedUpdateSoftRestart = true;
         softRestartSeed = seed;
-        if (nextFixedUpdateWait)
-        {
-            Plugin.Log.LogInfo("Soft restarting, pending FixedUpdate call");
-        }
-        else
-        {
-            SoftRestartOperation();
-        }
+        Plugin.Log.LogInfo("Soft restarting, pending FixedUpdate call");
     }
 
     static void SoftRestartOperation()

@@ -48,7 +48,7 @@ public static class MovieHandler
     static void RunMoviePending()
     {
         TAS.Main.Running = true;
-        TAS.Main.SoftRestart(CurrentMovie.Seed, false);
+        TAS.Main.SoftRestart(CurrentMovie.Seed);
         Plugin.Log.LogInfo($"Movie start: {CurrentMovie}");
     }
 
