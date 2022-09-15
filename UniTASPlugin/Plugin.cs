@@ -47,6 +47,7 @@ public class Plugin : BaseUnityPlugin
         // TODO save states
         // TODO game capture function from movie
         // TODO screen resolution
+        // TODO fix different scene desyncing while heavy load on Plugin.Update / Plugin.FixedUpdate (maybe use a coroutine)
 
         // TODO remove this test
         if (!TAS.Main.Running && Input.GetKeyDown(KeyCode.K))
