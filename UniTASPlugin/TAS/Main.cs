@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -142,6 +143,8 @@ public static class Main
         Plugin.Log.LogInfo($"System time seconds: {Time}");
 
         SceneManager.LoadScene(0);
+        var objs = Object.FindObjectsOfType<MonoBehaviour>();
+        Plugin.Log.LogDebug($"Object count: {objs.Length}, obj names: {string.Join(", ", objs.Select(x => x.name))}");
 
         Plugin.Log.LogInfo("Finish soft restart");
     }
