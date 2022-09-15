@@ -32,6 +32,7 @@ public class Plugin : BaseUnityPlugin
     private void Update()
 #pragma warning restore IDE0051
     {
+        GameCapture.Update();
         TAS.Main.Update(Time.deltaTime);
 
         // TODO record gameplay feature would seem interesting maybe
@@ -41,6 +42,11 @@ public class Plugin : BaseUnityPlugin
         // TODO encode movie to video
         // TODO game helpers
         // TODO Time.captureDeltaTime needs to be unable to be changed by user while movie is running
+        // TODO movie can create "macros"
+        // TODO movie can call helper functions
+        // TODO save states
+        // TODO game capture function from movie
+        // TODO screen resolution
 
         // TODO remove this test
         if (!TAS.Main.Running && Input.GetKeyDown(KeyCode.K))

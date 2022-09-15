@@ -134,7 +134,7 @@ public static class Main
     {
         if (currentFramebulkIndex >= CurrentMovie.Framebulks.Count)
         {
-            TAS.Main.Running = false;
+            Running = false;
 
             Plugin.Log.LogInfo("Movie end");
 
