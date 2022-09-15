@@ -81,10 +81,8 @@ public static class Main
 
     public static void Update(float deltaTime)
     {
-        if (Running)
-        {
-            Input.Main.Update();
-        }
+        UpdateMovie();
+        Input.Main.Update();
 
         Time += deltaTime;
         FrameCount++;
@@ -92,8 +90,6 @@ public static class Main
 
     public static void FixedUpdate()
     {
-        UpdateMovie();
-
         // this needs to be called before checking pending soft restart or it will cause a 1 frame desync
         if (pendingMovieStartFixedUpdate)
         {
@@ -217,9 +213,10 @@ public static class Main
         Time = softRestartSeed / 1000.0;
         FrameCount = 0;
 
-        Plugin.Log.LogInfo($"System time: {System.DateTime.Now}");
         SceneManager.LoadScene(0);
+
         Plugin.Log.LogInfo("Finish soft restarting");
+        Plugin.Log.LogInfo($"System time: {System.DateTime.Now}");
     }
 
     public static void RunMovie(Movie movie)
