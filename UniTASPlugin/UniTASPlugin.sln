@@ -5,6 +5,8 @@ VisualStudioVersion = 17.2.32630.192
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UniTASPlugin", "UniTASPlugin.csproj", "{BF67D033-ECD3-485C-817B-6C289D9AFA9F}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "UniTASCore", "..\UniTASCore\UniTASCore.shproj", "{6561F3A5-A13B-4BB2-9E12-43382FDED89E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,5 +23,9 @@ Global
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {24108394-AF07-434D-9DF0-0D0C28507DC0}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		..\UniTASCore\UniTASCore.projitems*{6561f3a5-a13b-4bb2-9e12-43382fded89e}*SharedItemsImports = 13
+		..\UniTASCore\UniTASCore.projitems*{bf67d033-ecd3-485c-817b-6c289d9afa9f}*SharedItemsImports = 5
 	EndGlobalSection
 EndGlobal
