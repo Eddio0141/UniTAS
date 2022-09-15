@@ -9,5 +9,6 @@
     <Import_RootNamespace>Core</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)PluginInfo.cs" />
   </ItemGroup>
 </Project>
