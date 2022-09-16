@@ -1,4 +1,4 @@
-﻿using Core.UnityHooks.Types;
+﻿using Core.UnityHooks;
 
 namespace Core.TAS.Input;
 

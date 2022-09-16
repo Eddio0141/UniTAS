@@ -1,6 +1,7 @@
 ﻿using Core.TAS.Input;
 using Core.TAS.Input.Movie;
-using Core.UnityHooks.Types;
+using Core.UnityHooks;
+using Core.UnityHooks.Helpers;
 using System.Collections.Generic;
 using System.Threading;
 
@@ -32,7 +33,7 @@ public static class Main
     public static double Time { get; private set; }
     public static ulong FrameCount { get; private set; }
     static readonly List<string> axisNames;
-    static List<int> firstObjIDs;
+    static readonly List<int> firstObjIDs;
     /// <summary>
     /// Scene loading count status. 0 means there are no scenes loading, 1 means there is one scene loading, 2 means there are two scenes loading, etc.
     /// </summary>
@@ -224,7 +225,7 @@ public static class Main
         Log.LogInfo("Soft restarting");
 
         // release mouse lock
-        Cursor.lockState = CursorLockMode.None;
+        Cursor.lockState = CursorLockModeType.None;
         Cursor.visible = true;
 
         foreach (var obj in Object.FindObjectsOfType<MonoBehaviour>())
@@ -235,7 +236,7 @@ public static class Main
                 MonoBehavior.StopAllCoroutines(obj);
             }
 
-            var id = obj.GetInstanceID();
+            var id = Object.GetInstanceID(new Args(obj, new object[] { }));
 
             if (!DontDestroyOnLoadIDs.Contains(id))
                 continue;
@@ -244,7 +245,7 @@ public static class Main
                 continue;
 
             // destroy all objects that are marked DontDestroyOnLoad and wasn't loaded in the first scene
-            Object.Destroy(obj);
+            Object.Destroy(new Args(new object[] { obj }));
         }
 
         Time = softRestartSeed / 1000.0;
