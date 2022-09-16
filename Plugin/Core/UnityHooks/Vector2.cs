@@ -37,8 +37,8 @@ public class Vector2 : Base<Vector2>, To
     public object ConvertTo()
     {
         var newType = Activator.CreateInstance(ObjType);
-        ObjType.GetField("x").SetValue(newType, x);
-        ObjType.GetField("y").SetValue(newType, y);
+        xFieldSet(newType, x);
+        yFieldSet(newType, y);
         return newType;
     }
 
