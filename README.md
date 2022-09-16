@@ -10,7 +10,6 @@ A tool that lets you TAS unity games hopefully
 - The only code right now is in Plugin which is a [BepInEx](https://docs.bepinex.dev/master/) plugin, and only tested with the game "It Steals" latest version
 - Has many testing code that won't work on other pcs such as:
   - Building the UniTASPlugin plugin would try copy the dll to `C:\Program Files (x86)\Steam\steamapps\common\It Steals\BepInEx\plugins`
-  - Relies on dependency for `UnityEngine.UI.dll` for testing from path `Program Files (x86)\Steam\steamapps\common\It Steals\It Steals_Data\Managed\UnityEngine.UI.dll`
   - Plugin runs only with netstandard2.1
   - Plugin was never tested in 32 bits
 - Pressing "K" would run a test TAS from path `C:\Program Files (x86)\Steam\steamapps\common\It Steals\test.uti`
