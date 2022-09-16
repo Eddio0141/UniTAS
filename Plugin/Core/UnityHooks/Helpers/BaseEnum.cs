@@ -3,9 +3,9 @@ using System.Linq;
 
 namespace Core.UnityHooks.Helpers;
 
-public abstract class BaseEnum : Base
+public abstract class BaseEnum<E> : Base
 {
-    public Type EnumType { get; protected set; }
+    public static Type EnumType { get; protected set; }
 
     public override void Init(Type objType, UnityVersion version)
     {
@@ -16,12 +16,12 @@ public abstract class BaseEnum : Base
 
     void InitEnumInternal(Type objType)
     {
-        EnumType = GetEnumType();
+        var enumType = typeof(E);
 
         var variants = Enum.GetValues(objType).Cast<ulong>();
         var variantsString = Enum.GetValues(objType).Cast<string>();
 
-        if (variants.Count() != Enum.GetValues(EnumType).Length)
+        if (variants.Count() != Enum.GetValues(enumType).Length)
         {
             throw new Exception("KeyCode variants count is not equal to KeyCodeTypes count");
         }
@@ -34,18 +34,30 @@ public abstract class BaseEnum : Base
             var variant = variants.ElementAt(i);
             var stringVariant = variantsString.ElementAt(i);
 
-            if (Convert.ChangeType(variant, EnumType).ToString() != stringVariant)
+            if (Convert.ChangeType(variant, enumType).ToString() != stringVariant)
             {
                 throw new Exception("Enum variant mismatch");
             }
         }
     }
 
-    protected abstract Type GetEnumType();
-
-    public object To(object value)
+    /// <summary>
+    /// Converts dummy enum to original type.
+    /// </summary>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    public static object To(E value)
     {
-        return Convert.ChangeType((long)Convert.ChangeType(value, EnumType), ObjType);
+        return Convert.ChangeType(Convert.ToInt64(value), ObjType);
     }
 
+    /// <summary>
+    /// Converts original enum to dummy enum type.
+    /// </summary>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    public static E From(object value)
+    {
+        return (E)Convert.ChangeType((long)Convert.ChangeType(value, ObjType), typeof(E));
+    }
 }
