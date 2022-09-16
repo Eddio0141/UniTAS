@@ -228,7 +228,7 @@ public static class Main
         Cursor.lockState = CursorLockModeType.None;
         Cursor.visible = true;
 
-        foreach (var obj in Object.FindObjectsOfType<MonoBehaviour>())
+        foreach (var obj in Object.FindObjectsOfType(new Args(new object[] { MonoBehavior.ObjType })))
         {
             if (!(obj is Plugin or UnityASyncHandler))
             {
