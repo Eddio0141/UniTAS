@@ -27,7 +27,7 @@ public class Vector2 : Base<Vector2>, To
         switch (version)
         {
             case UnityVersion.v2021_2_14:
-                zeroGetter = objType.GetMethod("zero", BindingFlags.Public | BindingFlags.Static);
+                zeroGetter = objType.GetProperty("zero", BindingFlags.Public | BindingFlags.Static | BindingFlags.GetField, null, objType, new Type[] { }, null).GetGetMethod();
                 x_ = objType.GetField("x", BindingFlags.Instance | BindingFlags.Public);
                 y_ = objType.GetField("y", BindingFlags.Instance | BindingFlags.Public);
                 break;
