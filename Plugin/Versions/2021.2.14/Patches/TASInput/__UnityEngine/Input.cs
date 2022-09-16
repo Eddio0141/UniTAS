@@ -406,7 +406,7 @@ class mousePositionGetter
     {
         if (Core.TAS.Main.Running)
         {
-            __result = Mouse.Position;
+            __result = (Vector2)Mouse.Position.ConvertTo();
             return false;
         }
         return true;
@@ -487,7 +487,7 @@ class compositionCursorPosGetter
     {
         if (Core.TAS.Main.Running)
         {
-            __result = Mouse.Position;
+            __result = (Vector2)Mouse.Position.ConvertTo();
 
             return false;
         }
