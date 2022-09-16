@@ -9,6 +9,21 @@
     <Import_RootNamespace>Core</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Log.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PluginInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TAS\Input\Axis.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TAS\Input\Keyboard.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TAS\Input\Main.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TAS\Input\Mouse.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TAS\Input\Movie\Axises.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TAS\Input\Movie\Framebulk.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TAS\Input\Movie\Keys.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TAS\Input\Movie\Mouse.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TAS\Input\Movie\Movie.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TAS\Input\VirtualCursor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TAS\Main.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UnityHelpers\Main.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UnityHelpers\Object.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UnityHelpers\Types.cs" />
   </ItemGroup>
 </Project>
