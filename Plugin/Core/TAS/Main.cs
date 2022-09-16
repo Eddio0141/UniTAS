@@ -54,7 +54,7 @@ public static class Main
     static Main()
     {
         pendingMovieStartFixedUpdate = false;
-        Running = false;
+        _running = false;
         // set time to system time
         Time = System.DateTime.Now.Ticks / 10000d;
         Log.LogInfo($"System time: {System.DateTime.Now}");
