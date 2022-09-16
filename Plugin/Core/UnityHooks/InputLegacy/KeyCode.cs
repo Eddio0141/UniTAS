@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Core.UnityHooks.InputLegacy;
 
-public class KeyCode : Base
+public class KeyCode : Base<KeyCode>
 {
     protected override void InitByUnityVersion(Type objType, UnityVersion version)
     {
