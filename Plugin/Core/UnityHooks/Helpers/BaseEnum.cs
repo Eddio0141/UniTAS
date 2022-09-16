@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Core.UnityHooks.Helpers;
@@ -18,23 +19,21 @@ public abstract class BaseEnum<T, E> : Base<T>
     {
         var enumType = typeof(E);
 
-        var variants = Enum.GetValues(objType).Cast<ulong>();
-        var variantsString = Enum.GetValues(objType).Cast<string>();
+        var variants = Enum.GetValues(objType);
+        var variantsWrappers = Enum.GetValues(enumType);
 
-        if (variants.Count() != Enum.GetValues(enumType).Length)
+        if (variants.Length != Enum.GetValues(enumType).Length)
         {
-            throw new Exception("KeyCode variants count is not equal to KeyCodeTypes count");
+            throw new Exception("Type variant count is not equal to dummy enum variant count");
         }
 
-        Log.LogDebug($"Found {variants.Count()} variants, string variants: {string.Join(", ", variantsString)}");
-
         // check enum variant match
-        for (int i = 0; i < variants.Count(); i++)
+        for (int i = 0; i < variants.Length; i++)
         {
-            var variant = variants.ElementAt(i);
-            var stringVariant = variantsString.ElementAt(i);
+            var variant = variants.GetValue(i);
+            var variantWrapper = variantsWrappers.GetValue(i);
 
-            if (Convert.ChangeType(variant, enumType).ToString() != stringVariant)
+            if (variant.ToString() != variantWrapper.ToString())
             {
                 throw new Exception("Enum variant mismatch");
             }
