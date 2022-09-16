@@ -16,10 +16,10 @@ public class Object : Base<Object>
         switch (version)
         {
             case UnityVersion.v2021_2_14:
-                getInstanceID = objType.GetMethod("GetInstanceID", BindingFlags.Public | BindingFlags.Instance);
-                findObjectsOfType = objType.GetMethod("FindObjectsOfType", BindingFlags.Public | BindingFlags.Static);
-                destroy = objType.GetMethod("Destroy", BindingFlags.Public | BindingFlags.Static);
-                dontDestroyOnLoad = objType.GetMethod("DontDestroyOnLoad", BindingFlags.Public | BindingFlags.Static);
+                getInstanceID = objType.GetMethod("GetInstanceID", BindingFlags.Public | BindingFlags.Instance, null, new Type[] { }, null);
+                findObjectsOfType = objType.GetMethod("FindObjectsOfType", BindingFlags.Public | BindingFlags.Static, null, new Type[] { typeof(Type) }, null);
+                destroy = objType.GetMethod("Destroy", BindingFlags.Public | BindingFlags.Static, null, new Type[] { ObjType }, null);
+                dontDestroyOnLoad = objType.GetMethod("DontDestroyOnLoad", BindingFlags.Public | BindingFlags.Static, null, new Type[] { ObjType }, null);
                 break;
         }
     }
@@ -31,16 +31,16 @@ public class Object : Base<Object>
 
     public static object[] FindObjectsOfType(Args args)
     {
-        return findObjectsOfType.Invoke(args.Instance, args.Arguments) as object[];
+        return findObjectsOfType.Invoke(null, args.Arguments) as object[];
     }
 
     public static void Destroy(Args args)
     {
-        destroy.Invoke(args.Instance, args.Arguments);
+        destroy.Invoke(null, args.Arguments);
     }
 
     public static void DontDestroyOnLoad(Args args)
     {
-        dontDestroyOnLoad.Invoke(args.Instance, args.Arguments);
+        dontDestroyOnLoad.Invoke(null, args.Arguments);
     }
 }

@@ -1,44 +1,17 @@
 ﻿using Core.UnityHooks.Helpers;
 using System;
-using System.Linq;
 
 namespace Core.UnityHooks.InputLegacy;
 
-public class KeyCode : Base<KeyCode>
+public class KeyCode : BaseEnum<KeyCode, KeyCodeTypes>
 {
     protected override void InitByUnityVersion(Type objType, UnityVersion version)
     {
-        var variants = Enum.GetValues(objType).Cast<int>();
-        var variantsString = Enum.GetValues(objType).Cast<string>();
-
-        if (variants.Count() != Enum.GetValues(typeof(KeyCodeTypes)).Length)
-        {
-            throw new Exception("KeyCode variants count is not equal to KeyCodeTypes count");
-        }
-
-        Log.LogDebug($"Found {variants.Count()} variants, string variants: {string.Join(", ", variantsString)}");
-
         switch (version)
         {
             case UnityVersion.v2021_2_14:
-                // TODO move variant checking to base class
-                for (int i = 0; i < variants.Count(); i++)
-                {
-                    var variant = variants.ElementAt(i);
-                    var stringVariant = variantsString.ElementAt(i);
-
-                    if (((KeyCodeTypes)variant).ToString() != stringVariant)
-                    {
-                        throw new Exception("Enum variant mismatch");
-                    }
-                }
                 break;
         }
-    }
-
-    public static KeyCodeTypes From(object variant)
-    {
-        return (KeyCodeTypes)(int)variant;
     }
 }
 

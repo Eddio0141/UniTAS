@@ -18,10 +18,10 @@ public class Cursor : Base<Cursor>
         switch (version)
         {
             case UnityVersion.v2021_2_14:
-                visibleGetter = objType.GetMethod("visible", BindingFlags.GetField);
-                visibleSetter = objType.GetMethod("visible", BindingFlags.SetField);
-                lockStateGetter = objType.GetMethod("lockState", BindingFlags.GetField);
-                lockStateSetter = objType.GetMethod("lockState", BindingFlags.SetField);
+                visibleGetter = objType.GetMethod("visible", BindingFlags.GetField | BindingFlags.Static);
+                visibleSetter = objType.GetMethod("visible", BindingFlags.SetField | BindingFlags.Static, null, new Type[] { typeof(bool) }, null);
+                lockStateGetter = objType.GetMethod("lockState", BindingFlags.GetField | BindingFlags.Static);
+                lockStateSetter = objType.GetMethod("lockState", BindingFlags.SetField | BindingFlags.Static, null, new Type[] { CursorLockMode.ObjType }, null);
                 break;
         }
     }
