@@ -69,6 +69,7 @@ I haven't planned for VR support currently
 
 # Background tasks to be finished
 - Core.UnityHelpers.Types's fields and values and stuff needs to not use its own version as much as possible, instead use System.Type as a base and do some magic inside.
+- Pass assembly information to some initializer for Core.UnityHooks and use reflection to get the types rather than finding each type in Plugin initialization
 - Full input legacy system override
   - [x] Mouse clicks
   - [x] Axis & value control
