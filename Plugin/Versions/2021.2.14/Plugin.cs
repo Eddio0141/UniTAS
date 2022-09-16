@@ -41,8 +41,12 @@ public class Plugin : BaseUnityPlugin
 
     static void InitUnityHelpers()
     {
-        new Core.UnityHooks.Object().Init(typeof(Object), UnityVersion.v2021_2_14);
+        //      /InputLegacy
         new Core.UnityHooks.InputLegacy.KeyCode().Init(typeof(KeyCode), UnityVersion.v2021_2_14);
+        //      /
+        new Core.UnityHooks.Cursor().Init(typeof(Cursor), UnityVersion.v2021_2_14);
+        new Core.UnityHooks.CursorLockMode().Init(typeof(CursorLockMode), UnityVersion.v2021_2_14);
+        new Core.UnityHooks.Object().Init(typeof(Object), UnityVersion.v2021_2_14);
         new Core.UnityHooks.Vector2().Init(typeof(Vector2), UnityVersion.v2021_2_14);
     }
 
