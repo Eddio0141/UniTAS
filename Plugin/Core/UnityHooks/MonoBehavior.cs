@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace Core.UnityHooks;
 
-public class MonoBehavior : Base<MonoBehavior>
+internal class MonoBehavior : Base<MonoBehavior>
 {
     static MethodInfo stopAllCoroutines;
 
@@ -18,7 +18,7 @@ public class MonoBehavior : Base<MonoBehavior>
         }
     }
 
-    public static void StopAllCoroutines(object instance)
+    internal static void StopAllCoroutines(object instance)
     {
         stopAllCoroutines.Invoke(instance, null);
     }

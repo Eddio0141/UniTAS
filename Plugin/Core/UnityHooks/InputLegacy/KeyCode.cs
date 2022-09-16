@@ -3,7 +3,7 @@ using System;
 
 namespace Core.UnityHooks.InputLegacy;
 
-public class KeyCode : BaseEnum<KeyCode, KeyCodeType>
+internal class KeyCode : BaseEnum<KeyCode, KeyCodeType>
 {
     protected override void InitByUnityVersion(Type objType, UnityVersion version)
     {

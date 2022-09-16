@@ -6,7 +6,7 @@ namespace Core.UnityHooks;
 
 #pragma warning disable IDE1006
 
-public class Cursor : Base<Cursor>
+internal class Cursor : Base<Cursor>
 {
     static MethodInfo visibleGetter;
     static MethodInfo visibleSetter;
@@ -28,7 +28,7 @@ public class Cursor : Base<Cursor>
         }
     }
 
-    public static bool visible
+    internal static bool visible
     {
         get => (bool)visibleGetter.Invoke(null, new object[] { });
         set => visibleSetter.Invoke(null, new object[] { value });

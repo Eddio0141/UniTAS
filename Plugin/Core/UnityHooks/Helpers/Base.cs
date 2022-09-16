@@ -6,7 +6,7 @@ public abstract class Base<T>
 {
     internal static Type ObjType { get; set; }
 
-    public virtual void Init(Type objType, UnityVersion version)
+    internal virtual void Init(Type objType, UnityVersion version)
     {
         ObjType = objType;
         InitByUnityVersion(objType, version);

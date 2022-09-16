@@ -1,14 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Core.UnityHooks.Helpers;
 
-public abstract class BaseEnum<T, E> : Base<T>
+internal abstract class BaseEnum<T, E> : Base<T>
 {
     public static Type EnumType { get; protected set; }
 
-    public override void Init(Type objType, UnityVersion version)
+    internal override void Init(Type objType, UnityVersion version)
     {
         ObjType = objType;
         InitByUnityVersion(objType, version);
@@ -45,7 +43,7 @@ public abstract class BaseEnum<T, E> : Base<T>
     /// </summary>
     /// <param name="value"></param>
     /// <returns></returns>
-    public static object To(E value)
+    internal static object To(E value)
     {
         var valueVariants = Enum.GetValues(ObjType);
         var valueString = value.ToString();
@@ -66,7 +64,7 @@ public abstract class BaseEnum<T, E> : Base<T>
     /// </summary>
     /// <param name="value"></param>
     /// <returns></returns>
-    public static E From(object value)
+    internal static E From(object value)
     {
         var valueVariants = Enum.GetValues(typeof(E));
         var valueString = value.ToString();

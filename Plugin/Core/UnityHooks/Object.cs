@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace Core.UnityHooks;
 
-public class Object : Base<Object>
+internal class Object : Base<Object>
 {
     static MethodBase getInstanceID;
     static MethodBase findObjectsOfType__Type;
@@ -24,22 +24,22 @@ public class Object : Base<Object>
         }
     }
 
-    public static int GetInstanceID(object instance)
+    internal static int GetInstanceID(object instance)
     {
         return (int)getInstanceID.Invoke(instance, null);
     }
 
-    public static object[] FindObjectsOfType(Type type)
+    internal static object[] FindObjectsOfType(Type type)
     {
         return findObjectsOfType__Type.Invoke(null, new object[] { type }) as object[];
     }
 
-    public static void Destroy(object obj)
+    internal static void Destroy(object obj)
     {
         destroy__Object.Invoke(null, new object[] { obj });
     }
 
-    public static void DontDestroyOnLoad(object target)
+    internal static void DontDestroyOnLoad(object target)
     {
         dontDestroyOnLoad.Invoke(null, new object[] { target });
     }

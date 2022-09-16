@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace Core.UnityHooks;
 
-public class SceneManager : Base<SceneManager>
+internal class SceneManager : Base<SceneManager>
 {
     static MethodInfo loadScene__int;
 
@@ -18,7 +18,7 @@ public class SceneManager : Base<SceneManager>
         }
     }
 
-    public static void LoadScene(int sceneBuildIndex)
+    internal static void LoadScene(int sceneBuildIndex)
     {
         loadScene__int.Invoke(null, new object[] { sceneBuildIndex });
     }
