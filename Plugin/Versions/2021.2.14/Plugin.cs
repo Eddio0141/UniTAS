@@ -29,10 +29,12 @@ public class Plugin : BaseUnityPlugin
         var harmony = new Harmony($"{Core.PluginInfo.NAME}HarmonyPatch");
         harmony.PatchAll();
 
-        Log.LogInfo("Initializing unity function helpers");
-        InitUnityHelpers();
-
         Log.LogInfo($"Plugin {Core.PluginInfo.NAME} is loaded!");
+    }
+
+    static Plugin()
+    {
+        InitUnityHelpers();
     }
 
     static void InitUnityHelpers()
