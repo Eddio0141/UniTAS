@@ -2,7 +2,7 @@
 
 namespace Core.UnityHooks.Helpers;
 
-public abstract class Base
+public abstract class Base<T>
 {
     internal static Type ObjType { get; set; }
 
