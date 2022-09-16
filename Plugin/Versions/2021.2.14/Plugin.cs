@@ -46,7 +46,9 @@ public class Plugin : BaseUnityPlugin
         //      /
         new Core.UnityHooks.Cursor().Init(typeof(Cursor), UnityVersion.v2021_2_14);
         new Core.UnityHooks.CursorLockMode().Init(typeof(CursorLockMode), UnityVersion.v2021_2_14);
+        new Core.UnityHooks.MonoBehavior().Init(typeof(MonoBehaviour), UnityVersion.v2021_2_14);
         new Core.UnityHooks.Object().Init(typeof(Object), UnityVersion.v2021_2_14);
+        new Core.UnityHooks.SceneManager().Init(typeof(UnityEngine.SceneManagement.SceneManager), UnityVersion.v2021_2_14);
         new Core.UnityHooks.Vector2().Init(typeof(Vector2), UnityVersion.v2021_2_14);
     }
 
