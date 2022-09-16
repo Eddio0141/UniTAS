@@ -230,7 +230,7 @@ public static class Main
 
         foreach (var obj in Object.FindObjectsOfType(MonoBehavior.ObjType))
         {
-            if (!(obj is Plugin or UnityASyncHandler))
+            if (!(obj.GetType() == PluginInfo.PluginType || obj.GetType() == PluginInfo.UnityASyncHandlerType))
             {
                 // force coroutines to stop
                 MonoBehavior.StopAllCoroutines(obj);
