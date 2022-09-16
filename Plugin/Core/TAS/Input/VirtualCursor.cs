@@ -17,7 +17,7 @@ public static class VirtualCursor
         Visible = true;
 
         var canvasObj = new GameObject("VirtualCursorCanvas");
-        Object.DontDestroyOnLoad(canvasObj);
+        Object.DontDestroyOnLoad(new Args(new System.Type[] { canvasObj }));
         cursorRawImageObj = new GameObject("VirtualCursorRawImage");
         Object.DontDestroyOnLoad(cursorRawImageObj);
 
@@ -27,7 +27,7 @@ public static class VirtualCursor
 
         canvasScaler = canvasObj.AddComponent<CanvasScaler>();
         canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        
+
         cursorRawImage = cursorRawImageObj.AddComponent<RawImage>();
         cursorRectTransform = cursorRawImageObj.GetComponent<RectTransform>();
         cursorRawImage.texture = new Texture2D(100, 100);
