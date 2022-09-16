@@ -1,4 +1,4 @@
-﻿using Core.UnityHelpers.Types.InputLegacy;
+﻿using Core.UnityHook.Types.InputLegacy;
 using System;
 using System.Collections.Generic;
 using System.Linq;

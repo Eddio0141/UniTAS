@@ -1,4 +1,4 @@
-﻿using Core.UnityHelpers.Types.InputLegacy;
+﻿using Core.UnityHook.Types.InputLegacy;
 using System.Collections.Generic;
 
 namespace Core.TAS.Input;

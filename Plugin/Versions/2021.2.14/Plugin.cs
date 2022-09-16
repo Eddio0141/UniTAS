@@ -41,9 +41,9 @@ public class Plugin : BaseUnityPlugin
 
     static void InitUnityHelpers()
     {
-        new Core.UnityHelpers.Types.Object().Init(typeof(Object), UnityVersion.v2021_2_14);
-        new Core.UnityHelpers.Types.InputLegacy.KeyCode().Init(typeof(KeyCode), UnityVersion.v2021_2_14);
-        new Core.UnityHelpers.Types.Vector2().Init(typeof(Vector2), UnityVersion.v2021_2_14);
+        new Core.UnityHook.Types.Object().Init(typeof(Object), UnityVersion.v2021_2_14);
+        new Core.UnityHook.Types.InputLegacy.KeyCode().Init(typeof(KeyCode), UnityVersion.v2021_2_14);
+        new Core.UnityHook.Types.Vector2().Init(typeof(Vector2), UnityVersion.v2021_2_14);
     }
 
 #pragma warning disable IDE0051

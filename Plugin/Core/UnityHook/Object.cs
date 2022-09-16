@@ -1,7 +1,8 @@
-﻿using System;
+﻿using Core.UnityHook.Helpers;
+using System;
 using System.Reflection;
 
-namespace Core.UnityHelpers.Types;
+namespace Core.UnityHook;
 
 public class Object : Base
 {

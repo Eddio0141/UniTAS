@@ -1,7 +1,8 @@
-﻿using System;
+﻿using Core.UnityHook.Helpers;
+using System;
 using System.Linq;
 
-namespace Core.UnityHelpers.Types.InputLegacy;
+namespace Core.UnityHook.InputLegacy;
 
 public class KeyCode : Base
 {

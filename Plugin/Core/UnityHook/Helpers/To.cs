@@ -1,4 +1,4 @@
-﻿namespace Core.UnityHelpers.Types;
+﻿namespace Core.UnityHook.Helpers;
 
 /// <summary>
 /// Converts from an instance to another type.

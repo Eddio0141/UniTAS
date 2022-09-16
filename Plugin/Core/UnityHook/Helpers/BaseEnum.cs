@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
 
-namespace Core.UnityHelpers.Types;
+namespace Core.UnityHook.Helpers;
 
-public abstract class EnumBase : Base
+public abstract class BaseEnum : Base
 {
     public Type EnumType { get; protected set; }
 

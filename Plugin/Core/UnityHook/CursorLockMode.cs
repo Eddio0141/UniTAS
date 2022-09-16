@@ -1,8 +1,9 @@
-﻿using System;
+﻿using Core.UnityHook.Helpers;
+using System;
 
-namespace Core.UnityHelpers.Types;
+namespace Core.UnityHook;
 
-public class CursorLockMode : EnumBase
+public class CursorLockMode : BaseEnum
 {
     protected override void InitByUnityVersion(Type objType, UnityVersion version)
     {

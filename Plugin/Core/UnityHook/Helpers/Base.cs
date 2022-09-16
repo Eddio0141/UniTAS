@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Core.UnityHelpers.Types;
+namespace Core.UnityHook.Helpers;
 
 public abstract class Base
 {
