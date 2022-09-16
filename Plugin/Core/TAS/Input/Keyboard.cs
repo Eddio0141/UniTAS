@@ -1,14 +1,14 @@
-﻿using System.Collections.Generic;
-using Core.UnityHelpers.DummyTypes.InputLegacy;
+﻿using Core.UnityHelpers.Types.InputLegacy;
+using System.Collections.Generic;
 
 namespace Core.TAS.Input;
 
 public static class Keyboard
 {
-    public static List<KeyCode> Keys { get; internal set; }
-    public static List<KeyCode> KeysDown { get; private set; }
-    public static List<KeyCode> KeysUp { get; private set; }
-    private static readonly List<KeyCode> KeysPrev;
+    public static List<KeyCodeTypes> Keys { get; internal set; }
+    public static List<KeyCodeTypes> KeysDown { get; private set; }
+    public static List<KeyCodeTypes> KeysUp { get; private set; }
+    private static readonly List<KeyCodeTypes> KeysPrev;
 
     static Keyboard()
     {

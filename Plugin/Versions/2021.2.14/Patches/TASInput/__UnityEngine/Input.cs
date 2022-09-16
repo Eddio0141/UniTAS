@@ -15,7 +15,7 @@ class GetKeyInt
     {
         if (Core.TAS.Main.Running)
         {
-            __result = Keyboard.Keys.Contains(key);
+            __result = Keyboard.Keys.Contains(Core.UnityHelpers.Types.InputLegacy.KeyCode.From((int)key));
 
             return false;
         }
@@ -47,7 +47,7 @@ class GetKeyUpInt
     {
         if (Core.TAS.Main.Running)
         {
-            __result = Keyboard.KeysUp.Contains(key);
+            __result = Keyboard.KeysUp.Contains(Core.UnityHelpers.Types.InputLegacy.KeyCode.From((int)key));
 
             return false;
         }
@@ -79,7 +79,7 @@ class GetKeyDownInt
     {
         if (Core.TAS.Main.Running)
         {
-            __result = Keyboard.KeysDown.Contains(key);
+            __result = Keyboard.KeysDown.Contains(Core.UnityHelpers.Types.InputLegacy.KeyCode.From((int)key));
 
             return false;
         }
