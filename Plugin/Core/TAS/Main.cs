@@ -1,7 +1,9 @@
 ﻿using Core.TAS.Input;
 using Core.TAS.Input.Movie;
 using Core.UnityHelpers;
+using Core.UnityHelpers.Types;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace Core.TAS;
 
@@ -20,7 +22,7 @@ public static class Main
             }
             else
             {
-                Cursor.visible = Input.VirtualCursor.Visible;
+                Cursor.visible = VirtualCursor.Visible;
                 UnityEngine.Time.captureDeltaTime = 0f;
             }
             _running = value;
@@ -61,16 +63,18 @@ public static class Main
         pendingFixedUpdateSoftRestart = false;
 
         firstObjIDs = new List<int>();
-        foreach (var obj in Object.FindObjectsOfType(Types.MonoBehavior))
+        var objs = Object.FindObjectsOfType(new Args(new object[] { typeof(UnityEngine.MonoBehaviour) }));
+
+        foreach (var obj in objs)
         {
-            var id = Object.GetInstanceID(obj);
+            var id = Object.GetInstanceID(new Args(obj, new object[] { }));
             if (DontDestroyOnLoadIDs.Contains(id))
             {
                 firstObjIDs.Add(id);
             }
         }
 
-
+        UnloadingSceneCount = 0;
         LoadingSceneCount = 0;
     }
 
@@ -196,7 +200,7 @@ public static class Main
     {
         if (LoadingSceneCount > 0)
         {
-            Plugin.Log.LogInfo($"Pending soft restart, waiting on {LoadingSceneCount} scenes to finish loading");
+            Log.LogInfo($"Pending soft restart, waiting on {LoadingSceneCount} scenes to finish loading");
             while (LoadingSceneCount > 0)
             {
                 Thread.Sleep(1);
@@ -204,7 +208,7 @@ public static class Main
         }
         if (UnloadingSceneCount > 0)
         {
-            Plugin.Log.LogInfo($"Pending soft restart, waiting on {UnloadingSceneCount} scenes to finish loading");
+            Log.LogInfo($"Pending soft restart, waiting on {UnloadingSceneCount} scenes to finish loading");
             while (UnloadingSceneCount > 0)
             {
                 Thread.Sleep(1);
@@ -213,12 +217,12 @@ public static class Main
 
         pendingFixedUpdateSoftRestart = true;
         softRestartSeed = seed;
-        Plugin.Log.LogInfo("Soft restarting, pending FixedUpdate call");
+        Log.LogInfo("Soft restarting, pending FixedUpdate call");
     }
 
     static void SoftRestartOperation()
     {
-        Plugin.Log.LogInfo("Soft restarting");
+        Log.LogInfo("Soft restarting");
 
         // release mouse lock
         Cursor.lockState = CursorLockMode.None;
@@ -229,7 +233,7 @@ public static class Main
             if (!(obj is Plugin or UnityASyncHandler))
             {
                 // force coroutines to stop
-                obj.StopAllCoroutines();
+                MonoBehavior.StopAllCoroutines(obj);
             }
 
             var id = obj.GetInstanceID();
@@ -249,7 +253,41 @@ public static class Main
 
         SceneManager.LoadScene(0);
 
-        Plugin.Log.LogInfo("Finish soft restarting");
-        Plugin.Log.LogInfo($"System time: {System.DateTime.Now}");
+        Log.LogInfo("Finish soft restarting");
+        Log.LogInfo($"System time: {System.DateTime.Now}");
+    }
+
+    public static void RunMovie(Movie movie)
+    {
+        CurrentFrameNum = 0;
+        currentFramebulkIndex = 0;
+        currentFramebulkFrameIndex = 1;
+
+        CurrentMovie = movie;
+
+        if (CurrentMovie.Framebulks.Count > 0)
+        {
+            var firstFb = CurrentMovie.Framebulks[0];
+
+            Input.Main.Clear();
+            UnityEngine.Time.captureDeltaTime = firstFb.Frametime;
+            GameControl(firstFb);
+
+            if (currentFramebulkFrameIndex >= firstFb.FrameCount)
+            {
+                currentFramebulkFrameIndex = 0;
+                currentFramebulkIndex++;
+            }
+        }
+
+        pendingMovieStartFixedUpdate = true;
+        Log.LogInfo("Starting movie, pending FixedUpdate call");
+    }
+
+    static void RunMoviePending()
+    {
+        Running = true;
+        SoftRestart(CurrentMovie.Seed);
+        Log.LogInfo($"Movie start: {CurrentMovie}");
     }
 }
