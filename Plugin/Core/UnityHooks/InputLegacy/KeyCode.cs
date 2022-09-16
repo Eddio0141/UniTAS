@@ -3,7 +3,7 @@ using System;
 
 namespace Core.UnityHooks.InputLegacy;
 
-public class KeyCode : BaseEnum<KeyCode, KeyCodeTypes>
+public class KeyCode : BaseEnum<KeyCode, KeyCodeType>
 {
     protected override void InitByUnityVersion(Type objType, UnityVersion version)
     {
@@ -15,7 +15,7 @@ public class KeyCode : BaseEnum<KeyCode, KeyCodeTypes>
     }
 }
 
-public enum KeyCodeTypes
+public enum KeyCodeType
 {
     None,
     Backspace = 8,

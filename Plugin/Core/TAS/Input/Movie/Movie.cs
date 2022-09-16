@@ -210,7 +210,7 @@ public class Movie
 
                     foreach (var key in keys)
                     {
-                        if (!Enum.TryParse(key, out KeyCodeTypes k))
+                        if (!Enum.TryParse(key, out KeyCodeType k))
                         {
                             errorMsg = "Key value not a valid key";
                             break;

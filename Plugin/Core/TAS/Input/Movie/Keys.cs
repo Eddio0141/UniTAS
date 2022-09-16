@@ -6,11 +6,11 @@ namespace Core.TAS.Input.Movie;
 
 public class Keys
 {
-    public List<KeyCodeTypes> Pressed;
+    public List<KeyCodeType> Pressed;
 
     public Keys() : this(new()) { }
 
-    public Keys(List<KeyCodeTypes> pressed)
+    public Keys(List<KeyCodeType> pressed)
     {
         Pressed = pressed ?? throw new ArgumentNullException(nameof(pressed));
     }

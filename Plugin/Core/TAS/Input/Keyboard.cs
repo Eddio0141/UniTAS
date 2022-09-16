@@ -5,10 +5,10 @@ namespace Core.TAS.Input;
 
 public static class Keyboard
 {
-    public static List<KeyCodeTypes> Keys { get; internal set; }
-    public static List<KeyCodeTypes> KeysDown { get; private set; }
-    public static List<KeyCodeTypes> KeysUp { get; private set; }
-    private static readonly List<KeyCodeTypes> KeysPrev;
+    public static List<KeyCodeType> Keys { get; internal set; }
+    public static List<KeyCodeType> KeysDown { get; private set; }
+    public static List<KeyCodeType> KeysUp { get; private set; }
+    private static readonly List<KeyCodeType> KeysPrev;
 
     static Keyboard()
     {
