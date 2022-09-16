@@ -11,8 +11,10 @@ public static class PluginInfo
     public const string VERSION = "0.1.0";
 
     public static UnityVersion UnityVersion { get; private set; }
+    internal static Type PluginType;
+    internal static Type UnityASyncHandlerType;
 
-    public static void Init(string unityVersion)
+    public static void Init(string unityVersion, Type pluginType, Type unityASyncHandlerType)
     {
         var unityVersionEnum = UnityVersionFromString(unityVersion);
         UnityVersion = unityVersionEnum.Item1;
@@ -31,6 +33,9 @@ public static class PluginInfo
             default:
                 throw new InvalidOperationException();
         }
+
+        PluginType = pluginType;
+        UnityASyncHandlerType = unityASyncHandlerType;
     }
 
     /// <summary>
