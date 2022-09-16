@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using Core.TAS;
+using HarmonyLib;
 using UnityEngine.EventSystems;
 
 namespace UniTASPlugin.Patches.TASInput.__UnityEngine.__EventSystems;
@@ -10,7 +11,7 @@ class OnApplicationFocus
 {
     static void Prefix(ref bool hasFocus)
     {
-        if (TAS.Main.Running)
+        if (Main.Running)
         {
             // we dont want to lose focus while running the TAS
             hasFocus = true;
@@ -23,7 +24,7 @@ class isFocusedGetter
 {
     static bool Prefix(ref bool __result)
     {
-        if (TAS.Main.Running)
+        if (Main.Running)
         {
             __result = true;
 
