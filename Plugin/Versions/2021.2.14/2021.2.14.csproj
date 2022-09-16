@@ -15,6 +15,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Dependency\**" />
+    <EmbeddedResource Remove="Dependency\**" />
+    <None Remove="Dependency\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
     <PackageReference Include="BepInEx.Core" Version="5.*" />
     <PackageReference Include="UnityEngine.Modules" Version="2021.2.14" IncludeAssets="compile" />
@@ -26,7 +32,7 @@
   
   <ItemGroup>
     <Reference Include="UnityEngine.UI">
-      <HintPath>..\..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\It Steals\It Steals_Data\Managed\UnityEngine.UI.dll</HintPath>
+      <HintPath>Dependency\UnityEngine.UI.dll</HintPath>
     </Reference>
   </ItemGroup>
   
