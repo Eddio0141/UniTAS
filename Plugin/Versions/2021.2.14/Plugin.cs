@@ -42,8 +42,9 @@ public class Plugin : BaseUnityPlugin
         //      /InputLegacy
         new Core.UnityHooks.InputLegacy.KeyCode().Init(typeof(KeyCode), UnityVersion.v2021_2_14);
         //      /
-        new Core.UnityHooks.Cursor().Init(typeof(Cursor), UnityVersion.v2021_2_14);
+        // CursorLockMode needs to come before Cursor
         new Core.UnityHooks.CursorLockMode().Init(typeof(CursorLockMode), UnityVersion.v2021_2_14);
+        new Core.UnityHooks.Cursor().Init(typeof(Cursor), UnityVersion.v2021_2_14);
         new Core.UnityHooks.MonoBehavior().Init(typeof(MonoBehaviour), UnityVersion.v2021_2_14);
         new Core.UnityHooks.Object().Init(typeof(Object), UnityVersion.v2021_2_14);
         new Core.UnityHooks.SceneManager().Init(typeof(UnityEngine.SceneManagement.SceneManager), UnityVersion.v2021_2_14);
