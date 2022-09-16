@@ -6,7 +6,7 @@ namespace Core.UnityHooks;
 
 #pragma warning disable IDE1006
 
-public class Cursor : Base
+public class Cursor : Base<Cursor>
 {
     static MethodInfo visibleGetter;
     static MethodInfo visibleSetter;

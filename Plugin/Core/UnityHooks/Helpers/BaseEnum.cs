@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace Core.UnityHooks.Helpers;
 
-public abstract class BaseEnum<E> : Base
+public abstract class BaseEnum<T, E> : Base<T>
 {
     public static Type EnumType { get; protected set; }
 

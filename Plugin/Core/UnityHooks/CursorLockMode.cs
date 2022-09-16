@@ -3,7 +3,7 @@ using System;
 
 namespace Core.UnityHooks;
 
-public class CursorLockMode : BaseEnum
+public class CursorLockMode : BaseEnum<CursorLockMode, CursorLockModeType>
 {
     protected override void InitByUnityVersion(Type objType, UnityVersion version)
     {
@@ -13,14 +13,9 @@ public class CursorLockMode : BaseEnum
                 break;
         }
     }
-
-    protected override Type GetEnumType()
-    {
-        return typeof(CursorLockModeType);
-    }
 }
 
-internal enum CursorLockModeType
+public enum CursorLockModeType
 {
     None,
     Locked,

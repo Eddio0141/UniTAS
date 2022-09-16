@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace Core.UnityHooks;
 
-public class Object : Base
+public class Object : Base<Object>
 {
     static MethodBase getInstanceID;
     static MethodBase findObjectsOfType;

@@ -4,7 +4,7 @@ using System.Globalization;
 
 namespace Core.UnityHooks;
 
-public class Vector2 : Base, To
+public class Vector2 : Base<Vector2>, To
 {
     public float x;
     public float y;
