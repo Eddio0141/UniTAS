@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Core.UnityHelpers.DummyTypes.InputLegacy;
+using System;
 using System.Collections.Generic;
 
 namespace Core.TAS.Input.Movie;

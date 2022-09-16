@@ -23,6 +23,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)TAS\Input\Movie\Movie.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TAS\Input\VirtualCursor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TAS\Main.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UnityHelpers\DummyTypes\InputLegacy\KeyCode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UnityHelpers\Main.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UnityHelpers\Types\Args.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UnityHelpers\Types\Base.cs" />
