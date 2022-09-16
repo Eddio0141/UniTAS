@@ -19,12 +19,12 @@ public class Plugin : BaseUnityPlugin
         Log.LogInfo($"Initializing {Core.PluginInfo.NAME}");
         Log.LogInfo($"Game company name: {Application.companyName}, product name: {Application.productName}, version: {Application.version}");
 
-        Core.PluginInfo.Init("1.0.0");
-        Core.PluginInfo.Init("v2020.8.20");
-        Core.PluginInfo.Init(Application.unityVersion);
-        Core.PluginInfo.Init("v2021.2.20");
-        Core.PluginInfo.Init("v2021.3.1");
-        Core.PluginInfo.Init("v2022.0.0");
+        Core.PluginInfo.Init("1.0.0", typeof(Plugin), typeof(UnityASyncHandler));
+        Core.PluginInfo.Init("v2020.8.20", typeof(Plugin), typeof(UnityASyncHandler));
+        Core.PluginInfo.Init(Application.unityVersion, typeof(Plugin), typeof(UnityASyncHandler));
+        Core.PluginInfo.Init("v2021.2.20", typeof(Plugin), typeof(UnityASyncHandler));
+        Core.PluginInfo.Init("v2021.3.1", typeof(Plugin), typeof(UnityASyncHandler));
+        Core.PluginInfo.Init("v2022.0.0", typeof(Plugin), typeof(UnityASyncHandler));
 
         var asyncHandler = new GameObject();
         asyncHandler.AddComponent<UnityASyncHandler>();
