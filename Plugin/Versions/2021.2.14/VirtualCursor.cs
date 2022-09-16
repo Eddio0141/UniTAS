@@ -1,4 +1,5 @@
-﻿using Core.UnityHelpers.Types;
+﻿using UnityEngine;
+using UnityEngine.UI;
 
 namespace Core.TAS.Input;
 
@@ -17,7 +18,7 @@ public static class VirtualCursor
         Visible = true;
 
         var canvasObj = new GameObject("VirtualCursorCanvas");
-        Object.DontDestroyOnLoad(new Args(new System.Type[] { canvasObj }));
+        Object.DontDestroyOnLoad(canvasObj);
         cursorRawImageObj = new GameObject("VirtualCursorRawImage");
         Object.DontDestroyOnLoad(cursorRawImageObj);
 
@@ -47,7 +48,7 @@ public static class VirtualCursor
         if (!Visible)
             return;
 
-        cursorRectTransform.anchoredPosition = Mouse.Position + hotspot;
+        cursorRectTransform.anchoredPosition = (Vector2)Mouse.Position.ConvertTo() + hotspot;
     }
 }
 
