@@ -5,7 +5,7 @@ using HarmonyLib;
 using System.IO;
 using UnityEngine;
 
-namespace UniTASPlugin;
+namespace v2021_2_14;
 
 [BepInPlugin(Core.PluginInfo.GUID, Core.PluginInfo.NAME, Core.PluginInfo.VERSION)]
 public class Plugin : BaseUnityPlugin

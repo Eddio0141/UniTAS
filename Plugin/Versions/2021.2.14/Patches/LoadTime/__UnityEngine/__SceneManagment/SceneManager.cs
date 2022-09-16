@@ -3,7 +3,7 @@ using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace UniTASPlugin.Patches.LoadTime.__UnityEngine.__SceneManagment;
+namespace v2021_2_14.Patches.LoadTime.__UnityEngine.__SceneManagment;
 
 #pragma warning disable Publicizer001
 

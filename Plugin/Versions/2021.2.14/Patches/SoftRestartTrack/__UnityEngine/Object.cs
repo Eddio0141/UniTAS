@@ -1,7 +1,7 @@
 ﻿using HarmonyLib;
 using UnityEngine;
 
-namespace UniTASPlugin.Patches.SoftRestartTrack.__UnityEngine;
+namespace v2021_2_14.Patches.SoftRestartTrack.__UnityEngine;
 
 [HarmonyPatch(typeof(Object), nameof(Object.DontDestroyOnLoad))]
 class DontDestroyOnLoad

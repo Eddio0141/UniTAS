@@ -3,7 +3,7 @@ using Core.TAS.Input;
 using HarmonyLib;
 using UnityEngine;
 
-namespace UniTASPlugin.Patches.TASInput.__UnityEngine;
+namespace v2021_2_14.Patches.TASInput.__UnityEngine;
 
 #pragma warning disable CS0618
 #pragma warning disable IDE1006

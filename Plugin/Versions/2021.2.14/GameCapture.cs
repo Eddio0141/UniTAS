@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using UnityEngine;
 
-namespace UniTASPlugin;
+namespace v2021_2_14;
 
 public static class GameCapture
 {

@@ -2,7 +2,7 @@
 using HarmonyLib;
 using System;
 
-namespace UniTASPlugin.Patches.RNG.__System;
+namespace v2021_2_14.Patches.RNG.__System;
 
 [HarmonyPatch(typeof(Random), "GenerateSeed")]
 class GenerateSeed

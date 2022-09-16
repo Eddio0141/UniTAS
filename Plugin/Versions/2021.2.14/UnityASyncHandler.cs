@@ -3,7 +3,7 @@ using Core.TAS;
 using System.Collections;
 using UnityEngine;
 
-namespace UniTASPlugin;
+namespace v2021_2_14;
 
 internal class UnityASyncHandler : MonoBehaviour
 {
