@@ -10,10 +10,8 @@ public class Object : Base
     static MethodBase destroy;
     static MethodBase dontDestroyOnLoad;
 
-    public override void Init(Type objType, UnityVersion version)
+    protected override void InitByUnityVersion(Type objType, UnityVersion version)
     {
-        base.Init(objType, version);
-
         switch (version)
         {
             case UnityVersion.v2021_2_14:
@@ -21,9 +19,6 @@ public class Object : Base
                 findObjectsOfType = objType.GetMethod("FindObjectsOfType", BindingFlags.Public | BindingFlags.Static);
                 destroy = objType.GetMethod("Destroy", BindingFlags.Public | BindingFlags.Static);
                 dontDestroyOnLoad = objType.GetMethod("DontDestroyOnLoad", BindingFlags.Public | BindingFlags.Static);
-                break;
-            default:
-                new Exception("Unsupported Unity version");
                 break;
         }
     }
