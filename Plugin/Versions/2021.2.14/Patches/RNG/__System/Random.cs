@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using Core;
+using HarmonyLib;
 using System;
 
 namespace UniTASPlugin.Patches.RNG.__System;
@@ -8,7 +9,7 @@ class GenerateSeed
 {
     static void Postfix(ref int __result)
     {
-        Plugin.Log.LogDebug($"System.Random.GenerateSeed seed: {__result}");
+        Log.LogDebug($"System.Random.GenerateSeed seed: {__result}");
     }
 }
 
@@ -17,6 +18,6 @@ class GenerateGlobalSeed
 {
     static void Postfix(ref int __result)
     {
-        Plugin.Log.LogDebug($"System.Random.GenerateGlobalSeed seed: {__result}");
+        Log.LogDebug($"System.Random.GenerateGlobalSeed seed: {__result}");
     }
 }

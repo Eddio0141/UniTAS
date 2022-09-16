@@ -1,7 +1,7 @@
 ﻿using HarmonyLib;
 using UnityEngine;
 
-namespace UniTASPlugin.Patches.VirtualCursor.__UnityEngine;
+namespace UniCore.TAS.lugin.Patches.VirtualCursor.__UnityEngine;
 
 #pragma warning disable IDE1006
 
@@ -10,7 +10,7 @@ class SetCursor_Injected
 {
     static void Prefix(Texture2D texture, ref Vector2 hotspot)
     {
-        TAS.Input.VirtualCursor.SetCursor(texture, hotspot);
+        Core.TAS.Input.VirtualCursor.SetCursor(texture, hotspot);
     }
 }
 
@@ -20,11 +20,11 @@ class visibleSetter
     static void Prefix(bool value)
     {
         // we ignore if the run is about to start since we set the visibility off
-        if (TAS.Main.RunInitOrStopping)
+        if (Core.TAS.Main.RunInitOrStopping)
         {
             return;
         }
-        TAS.Input.VirtualCursor.Visible = value;
+        Core.TAS.Input.VirtualCursor.Visible = value;
     }
 }
 
@@ -33,9 +33,9 @@ class visibleGetter
 {
     static bool Prefix(ref bool __result)
     {
-        if (TAS.Main.Running)
+        if (Core.TAS.Main.Running)
         {
-            // force the hardware cursor to be off while TAS is running
+            // force the hardware cursor to be off while Core.TAS.is running
             __result = false;
             return false;
         }

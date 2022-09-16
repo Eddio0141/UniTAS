@@ -9,9 +9,9 @@ class fixedUnscaledTimeGetter
 {
     static bool Prefix(ref float __result)
     {
-        if (TAS.Main.Running)
+        if (Core.TAS.Main.Running)
         {
-            __result = (float)TAS.Main.Time;
+            __result = (float)Core.TAS.Main.Time;
 
             return false;
         }
@@ -25,9 +25,9 @@ class fixedUnscaledTimeAsDoubleGetter
 {
     static bool Prefix(ref double __result)
     {
-        if (TAS.Main.Running)
+        if (Core.TAS.Main.Running)
         {
-            __result = TAS.Main.Time;
+            __result = Core.TAS.Main.Time;
 
             return false;
         }
@@ -41,9 +41,9 @@ class frameCountGetter
 {
     static bool Prefix(ref int __result)
     {
-        if (TAS.Main.Running)
+        if (Core.TAS.Main.Running)
         {
-            __result = (int)TAS.Main.FrameCount;
+            __result = (int)Core.TAS.Main.FrameCount;
 
             return false;
         }
@@ -57,9 +57,9 @@ class renderedFrameCountGetter
 {
     static bool Prefix(ref int __result)
     {
-        if (TAS.Main.Running)
+        if (Core.TAS.Main.Running)
         {
-            __result = (int)TAS.Main.FrameCount;
+            __result = (int)Core.TAS.Main.FrameCount;
 
             return false;
         }
@@ -73,9 +73,9 @@ class realtimeSinceStartupGetter
 {
     static bool Prefix(ref float __result)
     {
-        if (TAS.Main.Running)
+        if (Core.TAS.Main.Running)
         {
-            __result = (float)TAS.Main.Time;
+            __result = (float)Core.TAS.Main.Time;
 
             return false;
         }
@@ -89,9 +89,9 @@ class realtimeSinceStartupAsDoubleGetter
 {
     static bool Prefix(ref double __result)
     {
-        if (TAS.Main.Running)
+        if (Core.TAS.Main.Running)
         {
-            __result = TAS.Main.Time;
+            __result = Core.TAS.Main.Time;
 
             return false;
         }

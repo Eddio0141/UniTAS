@@ -8,9 +8,9 @@ class TickCountGetter
 {
     static bool Prefix(ref int __result)
     {
-        if (TAS.Main.Running)
+        if (Core.TAS.Main.Running)
         {
-            var totalSeconds = TAS.Main.Time;
+            var totalSeconds = Core.TAS.Main.Time;
             var totalMilliseconds = totalSeconds * 1000;
             __result = (int)totalMilliseconds;
 
