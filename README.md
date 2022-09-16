@@ -137,3 +137,4 @@ I haven't planned for VR support currently
 - Movie matching unity version
 - Movie matching game name?
 - Movie store game version
+- Movie ability to switch between captureFramerate and captureDeltaTime
