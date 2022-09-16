@@ -42,11 +42,6 @@ public class KeyCode : Base
     }
 }
 
-/// <summary>
-/// KeyCode variants.
-/// If adding new unity version, check if the enum values are the exact same.
-/// If not, create new type for version and handle that in that case.
-/// </summary>
 public enum KeyCodeTypes
 {
     None,
