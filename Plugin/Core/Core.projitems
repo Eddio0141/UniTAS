@@ -27,6 +27,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)UnityHooks\Helpers\BaseEnum.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UnityHooks\InputLegacy\KeyCode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UnityHooks\Helpers\Base.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UnityHooks\Main.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UnityHooks\MonoBehavior.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UnityHooks\Object.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UnityHooks\Helpers\To.cs" />

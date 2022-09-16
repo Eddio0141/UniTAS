@@ -3,6 +3,7 @@ using Core;
 using Core.TAS.Input.Movie;
 using HarmonyLib;
 using System.IO;
+using System.Linq;
 using UnityEngine;
 
 namespace v2021_2_14;
@@ -18,7 +19,7 @@ public class Plugin : BaseUnityPlugin
 
         Log.LogInfo($"Initializing {Core.PluginInfo.NAME}");
         Log.LogInfo($"Game company name: {Application.companyName}, product name: {Application.productName}, version: {Application.version}");
-        
+
         Log.LogDebug($"Unity version: {Application.unityVersion}");
         Core.PluginInfo.Init(Application.unityVersion, typeof(Plugin), typeof(UnityASyncHandler));
 
@@ -34,20 +35,8 @@ public class Plugin : BaseUnityPlugin
 
     static Plugin()
     {
-        InitUnityHelpers();
-    }
-
-    static void InitUnityHelpers()
-    {
-        //      /InputLegacy
-        new Core.UnityHooks.InputLegacy.KeyCode().Init(typeof(KeyCode), UnityVersion.v2021_2_14);
-        //      /
-        new Core.UnityHooks.Cursor().Init(typeof(Cursor), UnityVersion.v2021_2_14);
-        new Core.UnityHooks.CursorLockMode().Init(typeof(CursorLockMode), UnityVersion.v2021_2_14);
-        new Core.UnityHooks.MonoBehavior().Init(typeof(MonoBehaviour), UnityVersion.v2021_2_14);
-        new Core.UnityHooks.Object().Init(typeof(Object), UnityVersion.v2021_2_14);
-        new Core.UnityHooks.SceneManager().Init(typeof(UnityEngine.SceneManagement.SceneManager), UnityVersion.v2021_2_14);
-        new Core.UnityHooks.Vector2().Init(typeof(Vector2), UnityVersion.v2021_2_14);
+        var unityCoreModuleAssembly = System.AppDomain.CurrentDomain.GetAssemblies().Where(a => a.GetName().FullName == "UnityEngine.CoreModule").ElementAt(0);
+        Core.UnityHooks.Main.Init(UnityVersion.v2021_2_14, unityCoreModuleAssembly);
     }
 
 #pragma warning disable IDE0051
