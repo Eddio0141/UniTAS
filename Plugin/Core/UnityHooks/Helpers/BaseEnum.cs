@@ -47,7 +47,18 @@ public abstract class BaseEnum<T, E> : Base<T>
     /// <returns></returns>
     public static object To(E value)
     {
-        return Convert.ChangeType(Convert.ToInt64(value), ObjType);
+        var valueVariants = Enum.GetValues(ObjType);
+        var valueString = value.ToString();
+
+        // get matching variant
+        foreach (var variant in valueVariants)
+        {
+            if (variant.ToString() == valueString)
+            {
+                return variant;
+            }
+        }
+        throw new InvalidOperationException("Enum variant not found");
     }
 
     /// <summary>
@@ -57,6 +68,17 @@ public abstract class BaseEnum<T, E> : Base<T>
     /// <returns></returns>
     public static E From(object value)
     {
-        return (E)Convert.ChangeType((long)Convert.ChangeType(value, ObjType), typeof(E));
+        var valueVariants = Enum.GetValues(typeof(E));
+        var valueString = value.ToString();
+
+        // get matching variant
+        foreach (var variant in valueVariants)
+        {
+            if (variant.ToString() == valueString)
+            {
+                return (E)variant;
+            }
+        }
+        throw new InvalidOperationException("Enum variant not found");
     }
 }
