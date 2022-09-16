@@ -31,6 +31,17 @@ A tool that lets you TAS unity games hopefully
 - [ ] Frame advance / slow down
 - [ ] Optional resolution
 
+# Version support
+- 2021.2.14
+  - [ ] 32 bits
+    - [ ] netstandard2.0
+    - [ ] net46
+    - [ ] net35
+  - [ ] 64 bits
+    - [ ] netstandard2.0
+    - [ ] net46
+    - [ ] net35
+
 # Known bugs
 - Different scene possibly desyncing while heavy load on Plugin.Update / Plugin.FixedUpdate (maybe use a coroutine)
 ### It Steals
