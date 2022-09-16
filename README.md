@@ -38,7 +38,7 @@ A tool that lets you TAS unity games hopefully
     - [ ] net46
     - [ ] net35
   - [ ] 64 bits
-    - [ ] netstandard2.0
+    - [x] netstandard2.0
     - [ ] net46
     - [ ] net35
 
@@ -62,6 +62,7 @@ I haven't planned for VR support currently
 - Template for unity version
 - Check if I need netstandard2.1
 - Each unity version needs to build for netstandard2.0, net46, net35. [read this](https://docs.microsoft.com/en-us/nuget/create-packages/multiple-target-frameworks-project-file).
+- What to do with additional unity dependencies? Currently 2021.2.14 has UnityEngine.UI required but maybe can get away with trying to bind
 
 # Adding unity version support
 // TODO create template
