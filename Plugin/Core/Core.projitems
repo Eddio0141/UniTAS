@@ -26,11 +26,11 @@
     <Compile Include="$(MSBuildThisFileDirectory)UnityHooks\CursorLockMode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UnityHooks\Helpers\BaseEnum.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UnityHooks\InputLegacy\KeyCode.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)UnityHooks\Helpers\Args.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UnityHooks\Helpers\Base.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UnityHooks\MonoBehavior.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UnityHooks\Object.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UnityHooks\Helpers\To.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UnityHooks\SceneManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UnityHooks\Vector2.cs" />
   </ItemGroup>
   <ItemGroup>
