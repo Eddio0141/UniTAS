@@ -64,7 +64,7 @@ public class Plugin : BaseUnityPlugin
                 return;
             }
 
-            TAS.Main.RunMovie(movie);
+            Core.TAS.Main.RunMovie(movie);
         }
     }
 
