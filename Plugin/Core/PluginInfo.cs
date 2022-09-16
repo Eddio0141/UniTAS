@@ -22,13 +22,13 @@ public static class PluginInfo
         switch (unityVersionEnum.Item2)
         {
             case UnitySupportStatus.UsingFirstVersion:
-                Log.LogWarning($"Unity version is lower than the lowest supported, falling back to {UnityVersion}");
+                Log.LogWarning($"Unity version is lower than the lowest supported, falling back compatibility to {UnityVersion}");
                 break;
             case UnitySupportStatus.FoundMatch:
-                Log.LogInfo($"Unity version {UnityVersion} is supported");
+                Log.LogInfo($"Unity version {UnityVersion} is supported in tool");
                 break;
             case UnitySupportStatus.UsingLowerVersion:
-                Log.LogWarning($"No matching unity version found, falling back to {UnityVersion}");
+                Log.LogWarning($"No matching unity version found, falling back compatibility to {UnityVersion}");
                 break;
             default:
                 throw new InvalidOperationException();
@@ -48,14 +48,7 @@ public static class PluginInfo
     /// <exception cref="Exception"></exception>
     public static (UnityVersion, UnitySupportStatus) UnityVersionFromString(string version)
     {
-        Log.LogDebug($"version text: {version}");
-
         var (major, minor, patch) = Helper.SemanticVersioningFromString(version);
-
-        if (major < 1)
-        {
-            throw new Exception("Unity version too low");
-        }
 
         var allUnityVersions = Enum.GetValues(typeof(UnityVersion)).Cast<UnityVersion>();
         var allUnityVersionsSemantic = new List<(int, int, int)>();

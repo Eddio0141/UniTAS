@@ -9,9 +9,18 @@ internal static class Helper
     public static (int, int, int) SemanticVersioningFromString(string version)
     {
         version = version.Replace("v", "");
-        version = version.Replace("_", "");
+        // TODO do I ignore characters?
+        version = string.Join("", version.Where(c => char.IsDigit(c) || c == '.' || c == '_'));
 
-        var versionSplit = version.Split('.');
+        string[] versionSplit;
+        if (version.Contains('.'))
+        {
+            versionSplit = version.Split('.');
+        }
+        else
+        {
+            versionSplit = version.Split('_');
+        }
         var versionSplitValues = new List<int>();
 
         // force check all values
