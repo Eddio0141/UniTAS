@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Core.UnityHelpers.Types.InputLegacy;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -209,7 +210,7 @@ public class Movie
 
                     foreach (var key in keys)
                     {
-                        if (!Enum.TryParse(key, out KeyCode k))
+                        if (!Enum.TryParse(key, out KeyCodeTypes k))
                         {
                             errorMsg = "Key value not a valid key";
                             break;
