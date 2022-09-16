@@ -3,7 +3,7 @@ using System.Globalization;
 
 namespace Core.UnityHelpers.Types;
 
-public class Vector2
+public class Vector2 : Base, To
 {
     public float x;
     public float y;
@@ -12,10 +12,29 @@ public class Vector2
     public static Vector2 zero { get => new(0, 0); }
 #pragma warning restore IDE1006
 
+    public Vector2() : this(0, 0) { }
+
     public Vector2(float x, float y)
     {
         this.x = x;
         this.y = y;
+    }
+
+    protected override void InitByUnityVersion(Type _, UnityVersion version)
+    {
+        switch (version)
+        {
+            case UnityVersion.v2021_2_14:
+                break;
+        }
+    }
+
+    public object ConvertTo()
+    {
+        var newType = Activator.CreateInstance(ObjType);
+        ObjType.GetField("x").SetValue(newType, x);
+        ObjType.GetField("y").SetValue(newType, y);
+        return newType;
     }
 
     public static Vector2 operator +(Vector2 a, Vector2 b)
