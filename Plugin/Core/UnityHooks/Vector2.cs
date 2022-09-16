@@ -9,7 +9,7 @@ public class Vector2 : Base<Vector2>, To
     public float x;
     public float y;
 
-    protected override void InitByUnityVersion(Type _, UnityVersion version)
+    protected override void InitByUnityVersion(Type objType, UnityVersion version)
     {
         switch (version)
         {
