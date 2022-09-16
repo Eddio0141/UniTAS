@@ -108,7 +108,7 @@ class GetAxis
 {
     static bool Prefix(string axisName, ref float __result)
     {
-        TAS.Main.AxisCall(axisName);
+        Core.TAS.Main.AxisCall(axisName);
 
         if (TAS.Main.Running)
         {
@@ -127,7 +127,7 @@ class GetAxisRaw
 {
     static bool Prefix(string axisName, ref float __result)
     {
-        TAS.Main.AxisCall(axisName);
+        Core.TAS.Main.AxisCall(axisName);
 
         if (TAS.Main.Running)
         {

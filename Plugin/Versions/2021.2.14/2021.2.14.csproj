@@ -11,7 +11,7 @@
       https://api.nuget.org/v3/index.json;
       https://nuget.bepinex.dev/v3/index.json
     </RestoreAdditionalProjectSources>
-    <RootNamespace>2021.2.14</RootNamespace>
+    <RootNamespace>_2021_2_14</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
