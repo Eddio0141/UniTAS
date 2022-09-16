@@ -1,4 +1,6 @@
-﻿namespace Core.TAS.Input;
+﻿using Core.UnityHelpers.Types;
+
+namespace Core.TAS.Input;
 
 public static class Mouse
 {

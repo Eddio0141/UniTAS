@@ -29,6 +29,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)UnityHelpers\Types\Base.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UnityHelpers\Types\MonoBehavior.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UnityHelpers\Types\Object.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UnityHelpers\Types\Vector2.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="$(MSBuildThisFileDirectory)UnityHelpers\Types\InputLegacy\" />
