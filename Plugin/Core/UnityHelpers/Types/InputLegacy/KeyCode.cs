@@ -5,10 +5,8 @@ namespace Core.UnityHelpers.Types.InputLegacy;
 
 public class KeyCode : Base
 {
-    public override void Init(Type objType, UnityVersion version)
+    protected override void InitByUnityVersion(Type objType, UnityVersion version)
     {
-        base.Init(objType, version);
-
         var variants = Enum.GetValues(objType).Cast<int>();
         var variantsString = Enum.GetValues(objType).Cast<string>();
 
@@ -22,6 +20,7 @@ public class KeyCode : Base
         switch (version)
         {
             case UnityVersion.v2021_2_14:
+                // TODO move variant checking to base class
                 for (int i = 0; i < variants.Count(); i++)
                 {
                     var variant = variants.ElementAt(i);
@@ -33,14 +32,12 @@ public class KeyCode : Base
                     }
                 }
                 break;
-            default:
-                throw new Exception("Unsupported Unity version");
         }
     }
 
-    public static KeyCodeTypes From(int variant)
+    public static KeyCodeTypes From(object variant)
     {
-        return (KeyCodeTypes)variant;
+        return (KeyCodeTypes)(int)variant;
     }
 }
 
