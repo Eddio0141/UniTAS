@@ -4,6 +4,7 @@ using System.Reflection;
 
 namespace Core.UnityHooks;
 
+#pragma warning disable IDE1006
 public class Vector2 : Base<Vector2>, To
 {
     public float x;
@@ -12,6 +13,8 @@ public class Vector2 : Base<Vector2>, To
     static MethodInfo zeroGetter;
     static FieldInfo x_;
     static FieldInfo y_;
+
+    public Vector2() : this(0, 0) { }
 
     public Vector2(float x, float y)
     {
