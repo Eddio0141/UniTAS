@@ -13,8 +13,3 @@ public abstract class Base
         Version = version;
     }
 }
-
-public enum UnityVersion
-{
-    v2021_2_14
-}

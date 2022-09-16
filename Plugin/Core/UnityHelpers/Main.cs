@@ -4,9 +4,12 @@ namespace Core.UnityHelpers;
 
 public static class Main
 {
-    public static void Init(Func<Type, object[]> findObjectsOfType, Func<object, int> getInstanceID, Type monoBehavior, Type keyCode, Type object_)
+    internal static Type Object;
+    internal static Type MonoBehavior;
+
+    public static void Init(Type object_, Type monoBehavior)
     {
-        Types.Init(monoBehavior, keyCode);
-        Object.Init(getInstanceID, findObjectsOfType, object_);
+        Object = object_;
+        MonoBehavior = monoBehavior;
     }
 }
