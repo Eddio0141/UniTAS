@@ -21,17 +21,20 @@
     <Compile Include="$(MSBuildThisFileDirectory)TAS\Input\Movie\Keys.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TAS\Input\Movie\Mouse.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TAS\Input\Movie\Movie.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)TAS\Input\VirtualCursor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TAS\Main.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UnityHelpers\Types\Cursor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UnityHelpers\Types\CursorLockMode.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UnityHelpers\Types\EnumBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UnityHelpers\Types\InputLegacy\KeyCode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UnityHelpers\Main.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UnityHelpers\Types\Args.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UnityHelpers\Types\Base.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)UnityHelpers\Types\MonoBehavior.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UnityHelpers\Types\Object.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UnityHelpers\Types\To.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UnityHelpers\Types\Vector2.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)Exceptions\" />
     <Folder Include="$(MSBuildThisFileDirectory)UnityHelpers\Types\InputLegacy\" />
   </ItemGroup>
 </Project>
