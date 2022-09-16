@@ -18,8 +18,8 @@ public class MonoBehavior : Base<MonoBehavior>
         }
     }
 
-    public static void StopAllCoroutines(Args args)
+    public static void StopAllCoroutines()
     {
-        stopAllCoroutines.Invoke(null, args.Arguments);
+        stopAllCoroutines.Invoke(null, null);
     }
 }

@@ -7,8 +7,8 @@ namespace Core.UnityHooks;
 public class Object : Base<Object>
 {
     static MethodBase getInstanceID;
-    static MethodBase findObjectsOfType;
-    static MethodBase destroy;
+    static MethodBase findObjectsOfType__Type;
+    static MethodBase destroy__Object;
     static MethodBase dontDestroyOnLoad;
 
     protected override void InitByUnityVersion(Type objType, UnityVersion version)
@@ -17,30 +17,30 @@ public class Object : Base<Object>
         {
             case UnityVersion.v2021_2_14:
                 getInstanceID = objType.GetMethod("GetInstanceID", BindingFlags.Public | BindingFlags.Instance, null, new Type[] { }, null);
-                findObjectsOfType = objType.GetMethod("FindObjectsOfType", BindingFlags.Public | BindingFlags.Static, null, new Type[] { typeof(Type) }, null);
-                destroy = objType.GetMethod("Destroy", BindingFlags.Public | BindingFlags.Static, null, new Type[] { ObjType }, null);
+                findObjectsOfType__Type = objType.GetMethod("FindObjectsOfType", BindingFlags.Public | BindingFlags.Static, null, new Type[] { typeof(Type) }, null);
+                destroy__Object = objType.GetMethod("Destroy", BindingFlags.Public | BindingFlags.Static, null, new Type[] { ObjType }, null);
                 dontDestroyOnLoad = objType.GetMethod("DontDestroyOnLoad", BindingFlags.Public | BindingFlags.Static, null, new Type[] { ObjType }, null);
                 break;
         }
     }
 
-    public static int GetInstanceID(Args args)
+    public static int GetInstanceID(object instance)
     {
-        return (int)getInstanceID.Invoke(args.Instance, args.Arguments);
+        return (int)getInstanceID.Invoke(instance, null);
     }
 
-    public static object[] FindObjectsOfType(Args args)
+    public static object[] FindObjectsOfType(Type type)
     {
-        return findObjectsOfType.Invoke(null, args.Arguments) as object[];
+        return findObjectsOfType__Type.Invoke(null, new object[] { type }) as object[];
     }
 
-    public static void Destroy(Args args)
+    public static void Destroy(object obj)
     {
-        destroy.Invoke(null, args.Arguments);
+        destroy__Object.Invoke(null, new object[] { obj });
     }
 
-    public static void DontDestroyOnLoad(Args args)
+    public static void DontDestroyOnLoad(object target)
     {
-        dontDestroyOnLoad.Invoke(null, args.Arguments);
+        dontDestroyOnLoad.Invoke(null, new object[] { target });
     }
 }
