@@ -1,8 +1,8 @@
-﻿using Core.UnityHook.Helpers;
+﻿using Core.UnityHooks.Helpers;
 using System;
 using System.Globalization;
 
-namespace Core.UnityHook;
+namespace Core.UnityHooks;
 
 public class Vector2 : Base, To
 {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace Core.UnityHook.Helpers;
+namespace Core.UnityHooks.Helpers;
 
 public abstract class BaseEnum : Base
 {

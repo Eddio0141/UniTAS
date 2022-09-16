@@ -1,7 +1,7 @@
-﻿using Core.UnityHook.Helpers;
+﻿using Core.UnityHooks.Helpers;
 using System;
 
-namespace Core.UnityHook;
+namespace Core.UnityHooks;
 
 public class CursorLockMode : BaseEnum
 {

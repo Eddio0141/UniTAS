@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Core.UnityHook.Helpers;
+namespace Core.UnityHooks.Helpers;
 
 public class Args
 {
