@@ -1,10 +1,19 @@
 ﻿using Core.UnityHooks.Helpers;
 using System;
+using System.Collections.Generic;
 
 namespace Core.UnityHooks;
 
-internal class CursorLockMode : BaseEnum<CursorLockMode, CursorLockModeType>
+internal class CursorLockMode : BaseEnum<CursorLockMode>
 {
+    protected override Dictionary<UnityVersion, Type> GetAllEnumTypes()
+    {
+        return new Dictionary<UnityVersion, Type>()
+        {
+            { UnityVersion.v2018_4_25, typeof(CursorLockModeType) },
+        };
+    }
+
     protected override void InitByUnityVersion(Type objType, UnityVersion version) { }
 }
 

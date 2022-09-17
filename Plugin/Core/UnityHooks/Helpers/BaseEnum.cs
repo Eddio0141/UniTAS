@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Core.UnityHooks.Helpers;
 
-internal abstract class BaseEnum<T> : Base<T>
+public abstract class BaseEnum<T> : Base<T>
 {
     public static List<Type> EnumTypes { get; protected set; }
 
