@@ -1,7 +1,7 @@
 ﻿using HarmonyLib;
 using UnityEngine;
 
-namespace UniCore.TAS.lugin.Patches.VirtualCursor.__UnityEngine;
+namespace v2018_4_25.Patches.VirtualCursor.__UnityEngine;
 
 #pragma warning disable IDE1006
 

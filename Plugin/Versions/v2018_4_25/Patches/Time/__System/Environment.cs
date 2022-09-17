@@ -1,7 +1,7 @@
 ﻿using HarmonyLib;
 using System;
 
-namespace v2021_2_14.Patches.Time.__System;
+namespace v2018_4_25.Patches.Time.__System;
 
 [HarmonyPatch(typeof(Environment), nameof(Environment.TickCount), MethodType.Getter)]
 class TickCountGetter
