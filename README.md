@@ -29,12 +29,6 @@ A tool that lets you TAS unity games hopefully
 - [ ] Frame advance / slow down
 - [ ] Optional resolution
 
-# Version support
-- 2021.2.14
-  - [x] netstandard2.0
-  - [ ] net46
-  - [ ] net35
-
 # Known bugs
 - Different scene possibly desyncing while heavy load on Plugin.Update / Plugin.FixedUpdate (maybe use a coroutine)
 ### It Steals
@@ -44,19 +38,36 @@ A tool that lets you TAS unity games hopefully
 # VR Support
 I haven't planned for VR support currently
 
+# L2CPP Support
+Depends on BepInEx's progress on it
+
 # Important TODOs
 - Separate tool to set up the TAS tool for a unity game
 - Integrate BepInEx to project
 - Build script or something to build everything properly
 - A way to handle additional unity patches which is a dependency not included by default
-- l2cpp support
 - TAS GUI
 - Template for unity version
 - Check if I need netstandard2.1
-- Each unity version needs to build for netstandard2.0, net46, net35. [read this](https://docs.microsoft.com/en-us/nuget/create-packages/multiple-target-frameworks-project-file).
+- Each unity version might need to build for netstandard2.0, net46, net35. [read this](https://docs.microsoft.com/en-us/nuget/create-packages/multiple-target-frameworks-project-file).
 - What to do with additional unity dependencies? Currently 2021.2.14 has UnityEngine.UI required but maybe can get away with trying to bind
 - Not sure if different net versions needs to be built and supported for each unity version support
 - Not sure if UnityEngine.UI exists in other games with same game version
+
+# Version support
+- 2021.2.14
+  - [x] .NET Standard 2.1
+  - [x] .NET Standard 2.0
+  - [ ] .NET Framework 4.6
+  - [ ] .NET Framework 3.5
+- 2018.4.25
+  - [ ] .NET Standard 2.0
+  - [ ] .NET Framework 4.6
+  - [x] .NET Framework 3.5
+
+# Supported games
+- "It Steals"
+  - 12.4
 
 # Adding unity version support
 // TODO create template
