@@ -219,14 +219,15 @@ public class Movie
                         if (key == "")
                             continue;
 
-                        if (!Enum.IsDefined(typeof(KeyCodeType_2021_2_14), key))
+                        if (!KeyCode.IsDefined(key))
                         {
                             errorMsg = "Key value not a valid key";
                             break;
                         }
 
-                        var k = Enum.Parse(typeof(KeyCodeType_2021_2_14), key);
-                        framebulk.Keys.Pressed.Add((KeyCodeType_2021_2_14)k);
+                        // TODO check unity version and keycode check
+                        var k = Enum.Parse(KeyCode.ObjType, key);
+                        framebulk.Keys.Pressed.Add(new KeyCode(KeyCode.From(k).ToString()));
                     }
 
                     if (errorMsg != "")
