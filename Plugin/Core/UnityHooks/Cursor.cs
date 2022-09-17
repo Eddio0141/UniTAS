@@ -31,7 +31,7 @@ internal class Cursor : Base<Cursor>
 
     internal static CursorLockModeType lockState
     {
-        get => CursorLockMode.From(lockStateGetter.Invoke(null, new object[] { }));
+        get => (CursorLockModeType)CursorLockMode.From(lockStateGetter.Invoke(null, new object[] { }));
         set => lockStateSetter.Invoke(null, new object[] { CursorLockMode.To(value) });
     }
 }
