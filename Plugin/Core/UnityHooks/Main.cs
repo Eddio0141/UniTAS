@@ -52,10 +52,10 @@ public static class Main
             throw new Exception("UnityEngine.Time not found");
 
         //      /InputLegacy
-        new InputLegacy.KeyCode().Init(keyCode, version);
+        new InputLegacy.KeyCode("").Init(keyCode, version);
         //      /
         new Cursor().Init(cursor, version);
-        new CursorLockMode().Init(cursorLockMode, version);
+        new CursorLockMode("").Init(cursorLockMode, version);
         new MonoBehavior().Init(monoBehaviour, version);
         new Object().Init(@object, version);
         new SceneManager().Init(sceneManager, version);
