@@ -39,7 +39,7 @@ public class Movie
         var versionText = "version 1";
         var framesSection = "frames";
         var seedText = "seed ";
-        var fieldSeparator = ' ';
+        var fieldSeparator = '|';
         var listSeparator = ' ';
         var axisNameSurround = '"';
         const string leftClick = "left";
