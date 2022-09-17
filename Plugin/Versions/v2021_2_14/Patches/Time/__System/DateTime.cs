@@ -8,11 +8,7 @@ class NowGetter
 {
     static bool Prefix(ref DateTime __result)
     {
-        if (Core.TAS.Main.Running)
-        {
-            __result = Core.TAS.Main.Time;
-            return false;
-        }
-        return true;
+        __result = Core.TAS.Main.Time;
+        return false;
     }
 }

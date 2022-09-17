@@ -9,12 +9,8 @@ class fixedUnscaledTimeGetter
 {
     static bool Prefix(ref float __result)
     {
-        if (Core.TAS.Main.Running)
-        {
-            __result = (float)System.TimeSpan.FromTicks(Core.TAS.Main.Time.Ticks).TotalSeconds;
-            return false;
-        }
-        return true;
+        __result = (float)System.TimeSpan.FromTicks(Core.TAS.Main.Time.Ticks).TotalSeconds;
+        return false;
     }
 }
 
@@ -23,12 +19,8 @@ class fixedUnscaledTimeAsDoubleGetter
 {
     static bool Prefix(ref double __result)
     {
-        if (Core.TAS.Main.Running)
-        {
-            __result = System.TimeSpan.FromTicks(Core.TAS.Main.Time.Ticks).TotalSeconds;
-            return false;
-        }
-        return true;
+        __result = System.TimeSpan.FromTicks(Core.TAS.Main.Time.Ticks).TotalSeconds;
+        return false;
     }
 }
 
@@ -37,12 +29,8 @@ class frameCountGetter
 {
     static bool Prefix(ref int __result)
     {
-        if (Core.TAS.Main.Running)
-        {
-            __result = (int)Core.TAS.Main.FrameCount;
-            return false;
-        }
-        return true;
+        __result = (int)Core.TAS.Main.FrameCount;
+        return false;
     }
 }
 
@@ -51,12 +39,8 @@ class renderedFrameCountGetter
 {
     static bool Prefix(ref int __result)
     {
-        if (Core.TAS.Main.Running)
-        {
-            __result = (int)Core.TAS.Main.FrameCount;
-            return false;
-        }
-        return true;
+        __result = (int)Core.TAS.Main.FrameCount;
+        return false;
     }
 }
 
@@ -65,12 +49,8 @@ class realtimeSinceStartupGetter
 {
     static bool Prefix(ref float __result)
     {
-        if (Core.TAS.Main.Running)
-        {
-            __result = (float)System.TimeSpan.FromTicks(Core.TAS.Main.Time.Ticks).TotalSeconds;
-            return false;
-        }
-        return true;
+        __result = (float)System.TimeSpan.FromTicks(Core.TAS.Main.Time.Ticks).TotalSeconds;
+        return false;
     }
 }
 
@@ -79,11 +59,7 @@ class realtimeSinceStartupAsDoubleGetter
 {
     static bool Prefix(ref double __result)
     {
-        if (Core.TAS.Main.Running)
-        {
-            __result = System.TimeSpan.FromTicks(Core.TAS.Main.Time.Ticks).TotalSeconds;
-            return false;
-        }
-        return true;
+        __result = System.TimeSpan.FromTicks(Core.TAS.Main.Time.Ticks).TotalSeconds;
+        return false;
     }
 }

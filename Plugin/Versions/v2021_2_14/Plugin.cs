@@ -71,6 +71,14 @@ public class Plugin : BaseUnityPlugin
 
             Core.TAS.Main.RunMovie(movie);
         }
+        if (!Core.TAS.Main.Running && Input.GetKeyDown(KeyCode.L))
+        {
+            Core.SaveState.Main.Save();
+        }
+        if (!Core.TAS.Main.Running && Input.GetKeyDown(KeyCode.O))
+        {
+            Core.SaveState.Main.Load();
+        }
     }
 
 #pragma warning disable IDE0051
