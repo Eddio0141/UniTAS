@@ -10,14 +10,9 @@ class NowGetter
     {
         if (Core.TAS.Main.Running)
         {
-            var totalSeconds = Core.TAS.Main.Time;
-            var totalMilliseconds = totalSeconds * 1000;
-            var totalTicks = (long)(totalMilliseconds * 10000);
-            __result = new DateTime(totalTicks);
-
+            __result = Core.TAS.Main.Time;
             return false;
         }
-
         return true;
     }
 }

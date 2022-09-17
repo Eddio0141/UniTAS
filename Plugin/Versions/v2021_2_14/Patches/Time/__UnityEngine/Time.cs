@@ -11,11 +11,9 @@ class fixedUnscaledTimeGetter
     {
         if (Core.TAS.Main.Running)
         {
-            __result = (float)Core.TAS.Main.Time;
-
+            __result = (float)System.TimeSpan.FromTicks(Core.TAS.Main.Time.Ticks).TotalSeconds;
             return false;
         }
-
         return true;
     }
 }
@@ -27,11 +25,9 @@ class fixedUnscaledTimeAsDoubleGetter
     {
         if (Core.TAS.Main.Running)
         {
-            __result = Core.TAS.Main.Time;
-
+            __result = System.TimeSpan.FromTicks(Core.TAS.Main.Time.Ticks).TotalSeconds;
             return false;
         }
-
         return true;
     }
 }
@@ -44,10 +40,8 @@ class frameCountGetter
         if (Core.TAS.Main.Running)
         {
             __result = (int)Core.TAS.Main.FrameCount;
-
             return false;
         }
-
         return true;
     }
 }
@@ -60,10 +54,8 @@ class renderedFrameCountGetter
         if (Core.TAS.Main.Running)
         {
             __result = (int)Core.TAS.Main.FrameCount;
-
             return false;
         }
-
         return true;
     }
 }
@@ -75,11 +67,9 @@ class realtimeSinceStartupGetter
     {
         if (Core.TAS.Main.Running)
         {
-            __result = (float)Core.TAS.Main.Time;
-
+            __result = (float)System.TimeSpan.FromTicks(Core.TAS.Main.Time.Ticks).TotalSeconds;
             return false;
         }
-
         return true;
     }
 }
@@ -91,11 +81,9 @@ class realtimeSinceStartupAsDoubleGetter
     {
         if (Core.TAS.Main.Running)
         {
-            __result = Core.TAS.Main.Time;
-
+            __result = System.TimeSpan.FromTicks(Core.TAS.Main.Time.Ticks).TotalSeconds;
             return false;
         }
-
         return true;
     }
 }

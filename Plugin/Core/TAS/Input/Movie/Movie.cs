@@ -9,7 +9,7 @@ public class Movie
 {
     public readonly string Name;
     public readonly List<Framebulk> Framebulks;
-    public readonly int Seed;
+    public readonly DateTime Time;
 
     /* V1 FORMAT
 
@@ -77,13 +77,14 @@ public class Movie
                         break;
                     }
 
-                    if (!uint.TryParse(lineTrim.Substring(seedText.Length), out var seed))
+                    // TODO way to parse DateTime
+                    if (!long.TryParse(lineTrim.Substring(seedText.Length), out var seed))
                     {
-                        errorMsg = "Seed value not an unsigned integer";
+                        errorMsg = "Seed value not a value";
                         break;
                     }
 
-                    Seed = (int)seed;
+                    Time = new DateTime(seed);
                     foundSeed = true;
 
                     continue;
@@ -397,13 +398,13 @@ public class Movie
         }
     }
 
-    public Movie(string name, List<Framebulk> framebulks) : this(name, framebulks, 0) { }
+    public Movie(string name, List<Framebulk> framebulks) : this(name, framebulks, new DateTime(0)) { }
 
-    public Movie(string name, List<Framebulk> framebulks, int seed)
+    public Movie(string name, List<Framebulk> framebulks, DateTime time)
     {
         Name = name ?? throw new ArgumentNullException(nameof(name));
         Framebulks = framebulks ?? throw new ArgumentNullException(nameof(framebulks));
-        Seed = seed;
+        Time = time;
     }
 
     public float TotalSeconds()

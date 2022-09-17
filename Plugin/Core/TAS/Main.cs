@@ -29,8 +29,8 @@ public static class Main
         }
     }
     public static bool RunInitOrStopping { get; private set; }
-    public static double Time { get; private set; }
-    public static ulong FrameCount { get; private set; }
+    public static System.DateTime Time { get; set; }
+    public static ulong FrameCount { get; set; }
     static readonly List<string> axisNames;
     static List<int> firstObjIDs;
     /// <summary>
@@ -43,19 +43,21 @@ public static class Main
     public static int UnloadingSceneCount { get; set; }
     public static List<int> DontDestroyOnLoadIDs = new();
     static bool pendingFixedUpdateSoftRestart;
-    static int softRestartSeed;
+    static System.DateTime softRestartTime;
     public static Movie CurrentMovie { get; private set; }
-    public static ulong CurrentFrameNum { get; private set; }
+    public static ulong FrameCountMovie { get; private set; }
     static int currentFramebulkIndex;
     static int currentFramebulkFrameIndex;
     static bool pendingMovieStartFixedUpdate;
+    public static int FixedUpdateIndex { get; private set; }
 
     static Main()
     {
         pendingMovieStartFixedUpdate = false;
         _running = false;
         // set time to system time
-        Time = System.DateTime.Now.Ticks / 10000d;
+        // TODO get original method result, and use that instead
+        Time = System.DateTime.Now;
         Log.LogInfo($"System time: {System.DateTime.Now}");
         FrameCount = 0;
         axisNames = new List<string>();
@@ -87,12 +89,13 @@ public static class Main
         UpdateMovie();
         Input.Main.Update();
 
-        Time += deltaTime;
+        Time.AddSeconds(deltaTime);
         FrameCount++;
     }
 
     public static void FixedUpdate()
     {
+        FixedUpdateIndex++;
         // this needs to be called before checking pending soft restart or it will cause a 1 frame desync
         if (pendingMovieStartFixedUpdate)
         {
@@ -110,7 +113,7 @@ public static class Main
     {
         if (Running)
         {
-            CurrentFrameNum++;
+            FrameCountMovie++;
 
             if (!CheckCurrentMovieEnd())
                 return;
@@ -197,8 +200,8 @@ public static class Main
     /// Soft restart the game. This will not reload the game, but tries to reset the game state.
     /// Mainly used for TAS movie playback.
     /// </summary>
-    /// <param name="seed"></param>
-    public static void SoftRestart(int seed)
+    /// <param name="time"></param>
+    public static void SoftRestart(System.DateTime time)
     {
         if (LoadingSceneCount > 0)
         {
@@ -218,7 +221,7 @@ public static class Main
         }
 
         pendingFixedUpdateSoftRestart = true;
-        softRestartSeed = seed;
+        softRestartTime = time;
         Log.LogInfo("Soft restarting, pending FixedUpdate call");
     }
 
@@ -250,8 +253,9 @@ public static class Main
             Object.Destroy(obj);
         }
 
-        Time = softRestartSeed / 1000.0;
+        Time = softRestartTime;
         FrameCount = 0;
+        FixedUpdateIndex = 0;
 
         SceneManager.LoadScene(0);
 
@@ -261,7 +265,7 @@ public static class Main
 
     public static void RunMovie(Movie movie)
     {
-        CurrentFrameNum = 0;
+        FrameCountMovie = 0;
         currentFramebulkIndex = 0;
         currentFramebulkFrameIndex = 1;
 
@@ -290,7 +294,7 @@ public static class Main
     static void RunMoviePending()
     {
         Running = true;
-        SoftRestart(CurrentMovie.Seed);
+        SoftRestart(CurrentMovie.Time);
         Log.LogInfo($"Movie start: {CurrentMovie}");
     }
 }

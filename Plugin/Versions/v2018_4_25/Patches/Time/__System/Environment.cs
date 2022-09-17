@@ -10,13 +10,9 @@ class TickCountGetter
     {
         if (Core.TAS.Main.Running)
         {
-            var totalSeconds = Core.TAS.Main.Time;
-            var totalMilliseconds = totalSeconds * 1000;
-            __result = (int)totalMilliseconds;
-
+            __result = (int)TimeSpan.FromTicks(Core.TAS.Main.Time.Ticks).TotalMilliseconds;
             return false;
         }
-
         return true;
     }
 }
