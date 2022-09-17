@@ -8,7 +8,7 @@ public static class Main
         {
             Mouse.Update();
             Keyboard.Update();
-            VirtualCursor.Update();
+            //VirtualCursor.Update();
         }
     }
 

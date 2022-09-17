@@ -10,7 +10,7 @@ class SetCursor_Injected
 {
     static void Prefix(Texture2D texture, ref Vector2 hotspot)
     {
-        Core.TAS.Input.VirtualCursor.SetCursor(texture, hotspot);
+        //Core.TAS.Input.VirtualCursor.SetCursor(texture, hotspot);
     }
 }
 
@@ -24,7 +24,7 @@ class visibleSetter
         {
             return;
         }
-        Core.TAS.Input.VirtualCursor.Visible = value;
+        //Core.TAS.Input.VirtualCursor.Visible = value;
     }
 }
 

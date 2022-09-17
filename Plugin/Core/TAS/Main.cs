@@ -21,7 +21,7 @@ public static class Main
             }
             else
             {
-                Cursor.visible = VirtualCursor.Visible;
+                //Cursor.visible = VirtualCursor.Visible;
                 UnityHooks.Time.captureDeltaTime = 0f;
             }
             _running = value;

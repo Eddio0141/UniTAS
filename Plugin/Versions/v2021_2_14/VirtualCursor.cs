@@ -1,10 +1,8 @@
-﻿using UnityEngine;
-using UnityEngine.UI;
-
-namespace Core.TAS.Input;
+﻿namespace v2021_2_14;
 
 public static class VirtualCursor
 {
+    /*
     static Vector2 hotspot;
     public static bool Visible { get; set; }
     static readonly CanvasScaler canvasScaler;
@@ -27,7 +25,6 @@ public static class VirtualCursor
         canvasObj.AddComponent<Canvas>();
 
         canvasScaler = canvasObj.AddComponent<CanvasScaler>();
-        canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
 
         cursorRawImage = cursorRawImageObj.AddComponent<RawImage>();
         cursorRectTransform = cursorRawImageObj.GetComponent<RectTransform>();
@@ -50,5 +47,6 @@ public static class VirtualCursor
 
         cursorRectTransform.anchoredPosition = (Vector2)Mouse.Position.ConvertTo() + hotspot;
     }
+    */
 }
 

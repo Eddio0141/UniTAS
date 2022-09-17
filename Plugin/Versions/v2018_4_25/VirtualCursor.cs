@@ -1,10 +1,8 @@
-﻿using UnityEngine;
-using UnityEngine.UI;
-
-namespace Core.TAS.Input;
+﻿namespace v2018_4_25;
 
 public static class VirtualCursor
 {
+    /*
     static Vector2 hotspot;
     public static bool Visible { get; set; }
     static readonly CanvasScaler canvasScaler;
@@ -50,5 +48,5 @@ public static class VirtualCursor
 
         cursorRectTransform.anchoredPosition = (Vector2)Mouse.Position.ConvertTo() + hotspot;
     }
+    */
 }
-

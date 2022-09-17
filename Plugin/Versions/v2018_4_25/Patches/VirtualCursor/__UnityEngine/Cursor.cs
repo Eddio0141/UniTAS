@@ -8,9 +8,9 @@ namespace v2018_4_25.Patches.VirtualCursor.__UnityEngine;
 [HarmonyPatch(typeof(Cursor), nameof(Cursor.SetCursor_Injected))]
 class SetCursor_Injected
 {
-    static void Prefix(Texture2D texture, ref Vector2 hotspot)
+    static void Prefix(/*Texture2D texture, ref Vector2 hotspot*/)
     {
-        Core.TAS.Input.VirtualCursor.SetCursor(texture, hotspot);
+        //Core.TAS.Input.VirtualCursor.SetCursor(texture, hotspot);
     }
 }
 
@@ -24,7 +24,7 @@ class visibleSetter
         {
             return;
         }
-        Core.TAS.Input.VirtualCursor.Visible = value;
+        //Core.TAS.Input.VirtualCursor.Visible = value;
     }
 }
 
