@@ -6,6 +6,7 @@ namespace Core.UnityHooks.Helpers;
 public abstract class BaseEnum<T> : Base<T>
 {
     public static List<Type> EnumTypes { get; protected set; }
+    protected static List<Type> allVariants { get; set; }
 
     internal override void Init(Type objType, UnityVersion version)
     {
@@ -20,7 +21,7 @@ public abstract class BaseEnum<T> : Base<T>
         var enumTypesWithVersions = GetAllEnumTypes();
 
         var variants = Enum.GetValues(objType);
-        var variantsWrappers = new List<Type>();
+        allVariants = new List<Type>();
         foreach (var enumTypeWithVersion in enumTypesWithVersions)
         {
             var version = enumTypeWithVersion.Key;
@@ -37,11 +38,11 @@ public abstract class BaseEnum<T> : Base<T>
             var enumVariants = Enum.GetValues(enumType);
             foreach (var enumVariant in enumVariants)
             {
-                variantsWrappers.Add((Type)enumVariant);
+                allVariants.Add((Type)enumVariant);
             }
         }
 
-        if (variants.Length != variantsWrappers.Count)
+        if (variants.Length != allVariants.Count)
         {
             throw new Exception("Type variant count is not equal to dummy enum variant count");
         }
@@ -50,7 +51,7 @@ public abstract class BaseEnum<T> : Base<T>
         for (int i = 0; i < variants.Length; i++)
         {
             var variant = variants.GetValue(i);
-            var variantWrapper = variantsWrappers[i];
+            var variantWrapper = allVariants[i];
 
             if (variant.ToString() != variantWrapper.ToString())
             {
@@ -90,18 +91,29 @@ public abstract class BaseEnum<T> : Base<T>
     internal static object From(object value)
     {
         var valueString = value.ToString();
-        foreach (var enumType in EnumTypes)
+        // get matching variant
+        foreach (var variant in allVariants)
         {
-            var valueVariants = Enum.GetValues(enumType);
-            // get matching variant
-            foreach (var variant in valueVariants)
+            if (variant.ToString() == valueString)
             {
-                if (variant.ToString() == valueString)
-                {
-                    return variant;
-                }
+                return variant;
             }
         }
         throw new InvalidOperationException("Enum variant not found");
+    }
+
+    internal static bool IsDefined(object value)
+    {
+        var valueString = value.ToString();
+
+        // get matching variant
+        foreach (var variant in allVariants)
+        {
+            if (variant.ToString() == valueString)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }
