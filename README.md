@@ -138,3 +138,10 @@ I haven't planned for VR support currently
 - Movie matching game name?
 - Movie store game version
 - Movie ability to switch between captureFramerate and captureDeltaTime
+- Input legacy system KeyCode
+  - [ ] 3.5.1-3.5.5: has everything except below
+  - [ ] 4.0-4.6: adds LeftCommand, RightCommand
+  - [ ] 5.0-2018.2: adds Joystick5Button0 all the way to Joystick8Button19
+  - [ ] 2018.3-2021.1: adds Percent, LeftCurlyBracket, Pipe, RightCurlyBracket, Tilde
+  - [x] 2021.2-2022.2: adds LeftMeta, RightMeta
+  - [ ] 2023.1: adds WheelUp, WheelDown
