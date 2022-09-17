@@ -11,6 +11,8 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Helper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Log.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Patches\Time\__System\DateTime.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Patches\Time\__System\Environment.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PluginInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SaveState\Main.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SaveState\State.cs" />
