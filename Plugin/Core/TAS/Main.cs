@@ -86,16 +86,18 @@ public static class Main
 
     public static void Update(float deltaTime)
     {
+        SaveState.Main.Update();
         UpdateMovie();
         Input.Main.Update();
 
         Time.AddSeconds(deltaTime);
         FrameCount++;
+        // TODO this needs to be set at the actual unity's Update call
+        FixedUpdateIndex++;
     }
 
     public static void FixedUpdate()
     {
-        FixedUpdateIndex++;
         // this needs to be called before checking pending soft restart or it will cause a 1 frame desync
         if (pendingMovieStartFixedUpdate)
         {
@@ -107,6 +109,8 @@ public static class Main
             SoftRestartOperation();
             pendingFixedUpdateSoftRestart = false;
         }
+        // TODO this needs to be set to 0 at the actual unity's FixedUpdate call
+        FixedUpdateIndex = 0;
     }
 
     static void UpdateMovie()
