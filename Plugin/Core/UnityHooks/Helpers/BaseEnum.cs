@@ -6,7 +6,7 @@ namespace Core.UnityHooks.Helpers;
 public abstract class BaseEnum<T> : Base<T>
 {
     public static List<Type> EnumTypes { get; protected set; }
-    protected static List<Type> allVariants { get; set; }
+    protected static List<object> allVariants { get; set; }
 
     public string Value { get; set; }
 
@@ -28,7 +28,7 @@ public abstract class BaseEnum<T> : Base<T>
         var enumTypesWithVersions = GetAllEnumTypes();
 
         var variants = Enum.GetValues(objType);
-        allVariants = new List<Type>();
+        allVariants = new List<object>();
         foreach (var enumTypeWithVersion in enumTypesWithVersions)
         {
             var version = enumTypeWithVersion.Key;
@@ -36,16 +36,14 @@ public abstract class BaseEnum<T> : Base<T>
 
             // don't allow enum version higher than current version
             if (version > PluginInfo.UnityVersion)
-            {
                 break;
-            }
-
-            EnumTypes.Add(enumType);
 
             var enumVariants = Enum.GetValues(enumType);
+            EnumTypes.Add(enumType);
+
             foreach (var enumVariant in enumVariants)
             {
-                allVariants.Add((Type)enumVariant);
+                allVariants.Add(enumVariant);
             }
         }
 
@@ -54,15 +52,12 @@ public abstract class BaseEnum<T> : Base<T>
             throw new Exception("Type variant count is not equal to dummy enum variant count");
         }
 
-        // check enum variant match
-        for (int i = 0; i < variants.Length; i++)
+        // check enum if exists
+        foreach (var variant in allVariants)
         {
-            var variant = variants.GetValue(i);
-            var variantWrapper = allVariants[i];
-
-            if (variant.ToString() != variantWrapper.ToString())
+            if (!Enum.IsDefined(ObjType, variant.ToString()))
             {
-                throw new Exception("Enum variant mismatch");
+                throw new Exception($"Enum {variant} not found");
             }
         }
     }

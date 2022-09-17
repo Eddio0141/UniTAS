@@ -12,7 +12,7 @@ internal class CursorLockMode : BaseEnum<CursorLockMode>
     {
         return new Dictionary<UnityVersion, Type>()
         {
-            { UnityVersion.v2018_4_25, typeof(CursorLockModeType) },
+            {UnityVersion.v2018_4_25, typeof(CursorLockModeType) },
         };
     }
 
