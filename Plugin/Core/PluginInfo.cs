@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace Core;
 
@@ -14,28 +15,35 @@ public static class PluginInfo
     internal static Type PluginType;
     internal static Type UnityASyncHandlerType;
 
-    public static void Init(string unityVersion, Type pluginType, Type unityASyncHandlerType)
+    static PluginInfo()
     {
+        var unityVersion = Helper.UnityVersion();
+        Logger.Log.LogInfo($"Internally found version: {unityVersion}");
+        // TODO make this version compatible, v3.5.1 doesn't have those
+        Logger.Log.LogInfo($"Game company name: {Application.companyName}, product name: {Application.productName}, version: {Application.version}");
+
         var unityVersionEnum = UnityVersionFromString(unityVersion);
         UnityVersion = unityVersionEnum.UnityVersion;
 
         switch (unityVersionEnum.UnitySupportStatus)
         {
             case UnitySupportStatus.UsingFirstVersion:
-                Log.LogWarning($"Unity version is lower than the lowest supported, falling back compatibility to {UnityVersion}");
+                Logger.Log.LogWarning($"Unity version is lower than the lowest supported, falling back compatibility to {UnityVersion}");
                 break;
             case UnitySupportStatus.FoundMatch:
-                Log.LogInfo($"Unity version {UnityVersion} is supported in tool");
+                Logger.Log.LogInfo($"Unity version {UnityVersion} is supported in tool");
                 break;
             case UnitySupportStatus.UsingLowerVersion:
-                Log.LogWarning($"No matching unity version found, falling back compatibility to {UnityVersion}");
+                Logger.Log.LogWarning($"No matching unity version found, falling back compatibility to {UnityVersion}");
                 break;
             default:
                 throw new InvalidOperationException();
         }
 
-        PluginType = pluginType;
-        UnityASyncHandlerType = unityASyncHandlerType;
+        var allTypes = AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.GetTypes());
+
+        PluginType = allTypes.Where(t => t.Name == "Plugin" && t.BaseType == null).FirstOrDefault() ?? throw new InvalidOperationException("Could not find Plugin type");
+        UnityASyncHandlerType = allTypes.Where(t => t.Name == "UnityASyncHandler" && t.BaseType == null).FirstOrDefault() ?? throw new InvalidOperationException("Could not find UnityASyncHandler type");
     }
 
     /// <summary>

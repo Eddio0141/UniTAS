@@ -58,7 +58,7 @@ public static class Main
         // set time to system time
         // TODO get original method result, and use that instead
         Time = System.DateTime.Now;
-        Log.LogInfo($"System time: {System.DateTime.Now}");
+        Logger.LogInfo($"System time: {System.DateTime.Now}");
         FrameCount = 0;
         axisNames = new List<string>();
         pendingFixedUpdateSoftRestart = false;
@@ -146,7 +146,7 @@ public static class Main
         {
             Running = false;
 
-            Log.LogInfo("Movie end");
+            Logger.LogInfo("Movie end");
 
             return false;
         }
@@ -197,7 +197,7 @@ public static class Main
             axisNames.Add(axisName);
 
             // notify new found axis
-            Log.LogInfo($"Found new axis name: {axisName}");
+            Logger.LogInfo($"Found new axis name: {axisName}");
         }
     }
     /// <summary>
@@ -209,7 +209,7 @@ public static class Main
     {
         if (LoadingSceneCount > 0)
         {
-            Log.LogInfo($"Pending soft restart, waiting on {LoadingSceneCount} scenes to finish loading");
+            Logger.LogInfo($"Pending soft restart, waiting on {LoadingSceneCount} scenes to finish loading");
             while (LoadingSceneCount > 0)
             {
                 Thread.Sleep(1);
@@ -217,7 +217,7 @@ public static class Main
         }
         if (UnloadingSceneCount > 0)
         {
-            Log.LogInfo($"Pending soft restart, waiting on {UnloadingSceneCount} scenes to finish loading");
+            Logger.LogInfo($"Pending soft restart, waiting on {UnloadingSceneCount} scenes to finish loading");
             while (UnloadingSceneCount > 0)
             {
                 Thread.Sleep(1);
@@ -226,12 +226,12 @@ public static class Main
 
         pendingFixedUpdateSoftRestart = true;
         softRestartTime = time;
-        Log.LogInfo("Soft restarting, pending FixedUpdate call");
+        Logger.LogInfo("Soft restarting, pending FixedUpdate call");
     }
 
     static void SoftRestartOperation()
     {
-        Log.LogInfo("Soft restarting");
+        Logger.LogInfo("Soft restarting");
 
         // release mouse lock
         Cursor.lockState = CursorLockModeType.None;
@@ -263,8 +263,8 @@ public static class Main
 
         SceneManager.LoadScene(0);
 
-        Log.LogInfo("Finish soft restarting");
-        Log.LogInfo($"System time: {System.DateTime.Now}");
+        Logger.LogInfo("Finish soft restarting");
+        Logger.LogInfo($"System time: {System.DateTime.Now}");
     }
 
     public static void RunMovie(Movie movie)
@@ -292,13 +292,13 @@ public static class Main
         }
 
         pendingMovieStartFixedUpdate = true;
-        Log.LogInfo("Starting movie, pending FixedUpdate call");
+        Logger.LogInfo("Starting movie, pending FixedUpdate call");
     }
 
     static void RunMoviePending()
     {
         Running = true;
         SoftRestart(CurrentMovie.Time);
-        Log.LogInfo($"Movie start: {CurrentMovie}");
+        Logger.LogInfo($"Movie start: {CurrentMovie}");
     }
 }

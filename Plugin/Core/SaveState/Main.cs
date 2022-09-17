@@ -28,17 +28,17 @@ internal static class Main
         var saveVersion = PluginInfo.UnityVersion;
 
         Test = new State(sceneIndex, time, frameCount, fixedUpdateIndex, cursorVisible, cursorLockState, saveVersion);
-        Log.LogDebug("Saved test state");
+        Logger.LogDebug("Saved test state");
     }
 
     public static void Load()
     {
-        Log.LogDebug("We are loading the test state");
+        Logger.LogDebug("We are loading the test state");
         var state = Test;
         pendingLoad = true;
         pendingLoadFixedUpdateIndex = state.FixedUpdateIndex;
         pendingState = state;
-        Log.LogDebug($"Scene: {state.Scene}, Time: {state.Time}, FrameCount: {state.FrameCount}, FixedUpdateIndex: {state.FixedUpdateIndex}");
+        Logger.LogDebug($"Scene: {state.Scene}, Time: {state.Time}, FrameCount: {state.FrameCount}, FixedUpdateIndex: {state.FixedUpdateIndex}");
     }
 
     public static void Update()
@@ -52,7 +52,7 @@ internal static class Main
 
     public static void LoadOperation()
     {
-        Log.LogDebug("Load operation starting");
+        Logger.LogDebug("Load operation starting");
         var scene = pendingState.Scene;
         var time = pendingState.Time;
         var frameCount = pendingState.FrameCount;
@@ -69,6 +69,6 @@ internal static class Main
         Cursor.visible = cursorVisible;
         Cursor.lockState = cursorLockState;
 
-        Log.LogDebug($"Load operation finished, time: {DateTime.Now}, frameCount: {TAS.Main.FrameCount}");
+        Logger.LogDebug($"Load operation finished, time: {DateTime.Now}, frameCount: {TAS.Main.FrameCount}");
     }
 }

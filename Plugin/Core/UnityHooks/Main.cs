@@ -1,13 +1,24 @@
 ﻿using System;
 using System.Linq;
-using System.Reflection;
 
 namespace Core.UnityHooks;
 
 public static class Main
 {
-    public static void Init(UnityVersion version, Assembly unityCoreModule)
+    static Main()
     {
+        var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+        var unityCoreModules = assemblies.Where(a => a.GetName().Name == "UnityEngine.CoreModule");
+
+        if (unityCoreModules.Count() == 0)
+        {
+            Logger.Log.LogError("Found no UnityEngine.CoreModule assembly, dumping all found assemblies");
+            Logger.Log.LogError(assemblies.Select(a => a.GetName().FullName));
+            // TODO stop TAS tool from turning into a blackhole
+            return;
+        }
+
+        var unityCoreModule = unityCoreModules.ElementAt(0);
         var types = unityCoreModule.GetTypes().ToList();
 
         Type keyCode = null;
@@ -58,15 +69,15 @@ public static class Main
             throw new Exception("UnityEngine.Time not found");
 
         //      /InputLegacy
-        new InputLegacy.KeyCode("").Init(keyCode, version);
+        new InputLegacy.KeyCode("").Init(keyCode, PluginInfo.UnityVersion);
         //      /
-        new Cursor().Init(cursor, version);
-        new CursorLockMode("").Init(cursorLockMode, version);
-        new MonoBehavior().Init(monoBehaviour, version);
-        new Object().Init(@object, version);
-        new SceneManager().Init(sceneManager, version);
-        new Scene().Init(scene, version);
-        new Time().Init(time, version);
-        new Vector2().Init(vector2, version);
+        new Cursor().Init(cursor, PluginInfo.UnityVersion);
+        new CursorLockMode("").Init(cursorLockMode, PluginInfo.UnityVersion);
+        new MonoBehavior().Init(monoBehaviour, PluginInfo.UnityVersion);
+        new Object().Init(@object, PluginInfo.UnityVersion);
+        new SceneManager().Init(sceneManager, PluginInfo.UnityVersion);
+        new Scene().Init(scene, PluginInfo.UnityVersion);
+        new Time().Init(time, PluginInfo.UnityVersion);
+        new Vector2().Init(vector2, PluginInfo.UnityVersion);
     }
 }

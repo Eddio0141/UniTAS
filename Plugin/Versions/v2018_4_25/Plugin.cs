@@ -11,43 +11,22 @@ namespace v2018_4_25;
 [BepInPlugin(Core.PluginInfo.GUID, Core.PluginInfo.NAME, Core.PluginInfo.VERSION)]
 public class Plugin : BaseUnityPlugin
 {
+    internal static BepInEx.Logging.ManualLogSource Log;
+
 #pragma warning disable IDE0051
     private void Awake()
 #pragma warning restore IDE0051
     {
-        Log.SetLoggers(Logger.LogDebug, Logger.LogError, Logger.LogFatal, Logger.LogInfo, Logger.LogMessage, Logger.LogWarning);
-        Log.LogInfo($"Game company name: {Application.companyName}, product name: {Application.productName}, version: {Application.version}");
-
-        Log.LogDebug($"Unity version: {Application.unityVersion}");
-
         var asyncHandler = new GameObject();
         asyncHandler.AddComponent<UnityASyncHandler>();
         Core.TAS.Main.AddUnityASyncHandlerID(asyncHandler.GetInstanceID());
+
+        Log = Logger;
 
         var harmony = new Harmony($"{Core.PluginInfo.NAME}HarmonyPatch");
         harmony.PatchAll();
 
         Log.LogInfo($"Plugin {Core.PluginInfo.NAME} is loaded!");
-    }
-
-    static Plugin()
-    {
-        Core.PluginInfo.Init(Application.unityVersion, typeof(Plugin), typeof(UnityASyncHandler));
-
-        var assemblies = System.AppDomain.CurrentDomain.GetAssemblies();
-        var unityCoreModules = assemblies.Where(a => a.GetName().Name == "UnityEngine.CoreModule");
-
-        if (unityCoreModules.Count() == 0)
-        {
-            Log.LogError("Found no UnityEngine.CoreModule assembly, dumping all found assemblies");
-            Log.LogError(assemblies.Select(a => a.GetName().FullName));
-            // TODO stop TAS tool from turning int a blackhole
-        }
-        else
-        {
-            var unityCoreModule = unityCoreModules.ElementAt(0);
-            Core.UnityHooks.Main.Init(UnityVersion.v2018_4_25, unityCoreModule);
-        }
     }
 
 #pragma warning disable IDE0051

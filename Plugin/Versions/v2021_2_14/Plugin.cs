@@ -15,10 +15,10 @@ public class Plugin : BaseUnityPlugin
     private void Awake()
 #pragma warning restore IDE0051
     {
-        Log.SetLoggers(Logger.LogDebug, Logger.LogError, Logger.LogFatal, Logger.LogInfo, Logger.LogMessage, Logger.LogWarning);
-        Log.LogInfo($"Game company name: {Application.companyName}, product name: {Application.productName}, version: {Application.version}");
+        Core.Logger.SetLoggers(Logger.LogDebug, Logger.LogError, Logger.LogFatal, Logger.LogInfo, Logger.LogMessage, Logger.LogWarning);
+        Core.Logger.LogInfo($"Game company name: {Application.companyName}, product name: {Application.productName}, version: {Application.version}");
 
-        Log.LogDebug($"Unity version: {Application.unityVersion}");
+        Core.Logger.LogDebug($"Unity version: {Application.unityVersion}");
 
         var asyncHandler = new GameObject();
         asyncHandler.AddComponent<UnityASyncHandler>();
@@ -27,7 +27,7 @@ public class Plugin : BaseUnityPlugin
         var harmony = new Harmony($"{Core.PluginInfo.NAME}HarmonyPatch");
         harmony.PatchAll();
 
-        Log.LogInfo($"Plugin {Core.PluginInfo.NAME} is loaded!");
+        Core.Logger.LogInfo($"Plugin {Core.PluginInfo.NAME} is loaded!");
     }
 
     static Plugin()
@@ -39,8 +39,8 @@ public class Plugin : BaseUnityPlugin
 
         if (unityCoreModules.Count() == 0)
         {
-            Log.LogError("Found no UnityEngine.CoreModule assembly, dumping all found assemblies");
-            Log.LogError(assemblies.Select(a => a.GetName().FullName));
+            Core.Logger.LogError("Found no UnityEngine.CoreModule assembly, dumping all found assemblies");
+            Core.Logger.LogError(assemblies.Select(a => a.GetName().FullName));
             // TODO stop TAS tool from turning int a blackhole
         }
         else
@@ -65,7 +65,7 @@ public class Plugin : BaseUnityPlugin
 
             if (err != "")
             {
-                Log.LogError(err);
+                Core.Logger.LogError(err);
                 return;
             }
 

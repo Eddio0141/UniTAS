@@ -294,7 +294,7 @@ class GetAccelerationEvent
 {
     static bool Prefix(int index)
     {
-        Log.LogDebug($"UnityEngine.Input.GetAccelerationEvent called with value: {index}");
+        Core.Logger.LogDebug($"UnityEngine.Input.GetAccelerationEvent called with value: {index}");
 
         return true;
     }
@@ -305,7 +305,7 @@ class SimulateTouch
 {
     static bool Prefix(Touch touch)
     {
-        Log.LogDebug($"UnityEngine.Input.SimulateTouch called with value: {touch}");
+        Core.Logger.LogDebug($"UnityEngine.Input.SimulateTouch called with value: {touch}");
 
         if (Core.TAS.Main.Running)
         {
@@ -321,7 +321,7 @@ class SimulateTouchInternal
 {
     static bool Prefix(Touch touch, long timestamp)
     {
-        Log.LogDebug($"UnityEngine.Input.SimulateTouchInternal called with value: {touch}, {timestamp}");
+        Core.Logger.LogDebug($"UnityEngine.Input.SimulateTouchInternal called with value: {touch}, {timestamp}");
 
         if (Core.TAS.Main.Running)
         {
@@ -351,7 +351,7 @@ class simulateMouseWithTouchesSetter
 {
     static bool Prefix(bool value)
     {
-        Log.LogDebug($"UnityEngine.Input.simulateMouseWithTouches Setter called with value: {value}");
+        Core.Logger.LogDebug($"UnityEngine.Input.simulateMouseWithTouches Setter called with value: {value}");
 
         return true;
     }
@@ -446,7 +446,7 @@ class imeCompositionModeSetter
 {
     static bool Prefix(IMECompositionMode value)
     {
-        Log.LogDebug($"UnityEngine.Input.imeCompositionMode Setter called with value: {value}");
+        Core.Logger.LogDebug($"UnityEngine.Input.imeCompositionMode Setter called with value: {value}");
 
         return true;
     }
@@ -501,7 +501,7 @@ class compositionCursorPosSetter
 {
     static bool Prefix(Vector2 value)
     {
-        Log.LogDebug($"UnityEngine.Input.compositionCursorPos Setter called with value: {value}");
+        Core.Logger.LogDebug($"UnityEngine.Input.compositionCursorPos Setter called with value: {value}");
 
         return true;
     }
@@ -612,7 +612,7 @@ class multiTouchEnabledSetter
 {
     static bool Prefix(bool value)
     {
-        Log.LogDebug($"UnityEngine.Input.multiTouchEnabled Setter called with value: {value}");
+        Core.Logger.LogDebug($"UnityEngine.Input.multiTouchEnabled Setter called with value: {value}");
 
         return true;
     }
@@ -679,7 +679,7 @@ class compensateSensorsSetter
 {
     static bool Prefix(bool value)
     {
-        Log.LogDebug($"UnityEngine.Input.compensateSensors Setter called with value: {value}");
+        Core.Logger.LogDebug($"UnityEngine.Input.compensateSensors Setter called with value: {value}");
 
         return true;
     }
@@ -748,7 +748,7 @@ class GetGyroInternal
     {
         if (Core.TAS.Main.Running)
         {
-            Log.LogDebug("UnityEngine.Input.GetGyroInternal default value not set");
+            Core.Logger.LogDebug("UnityEngine.Input.GetGyroInternal default value not set");
         }
 
         return true;
@@ -756,7 +756,7 @@ class GetGyroInternal
 
     static void Postfix(ref int __result)
     {
-        Log.LogDebug($"UnityEngine.Input.GetGyroInternal return value {__result}");
+        Core.Logger.LogDebug($"UnityEngine.Input.GetGyroInternal return value {__result}");
     }
 }
 
@@ -829,7 +829,7 @@ class GetTouch_Injected
     {
         if (Core.TAS.Main.Running)
         {
-            Log.LogDebug($"UnityEngine.Input.GetTouch_Injected called with arg {index}");
+            Core.Logger.LogDebug($"UnityEngine.Input.GetTouch_Injected called with arg {index}");
 
             return false;
         }
@@ -845,7 +845,7 @@ class GetAccelerationEvent_Injected
     {
         if (Core.TAS.Main.Running)
         {
-            Log.LogDebug($"UnityEngine.Input.GetAccelerationEvent_Injected called with arg {index}");
+            Core.Logger.LogDebug($"UnityEngine.Input.GetAccelerationEvent_Injected called with arg {index}");
 
             return false;
         }
@@ -861,7 +861,7 @@ class SimulateTouchInternal_Injected
     {
         if (Core.TAS.Main.Running)
         {
-            Log.LogDebug($"UnityEngine.Input.SimulateTouchInternal_Injected called with arg {touch}, {timestamp}");
+            Core.Logger.LogDebug($"UnityEngine.Input.SimulateTouchInternal_Injected called with arg {touch}, {timestamp}");
 
             return false;
         }
@@ -877,7 +877,7 @@ class get_mousePosition_Injected
     {
         if (Core.TAS.Main.Running)
         {
-            Log.LogDebug($"UnityEngine.Input.get_mousePosition_Injected called, TODO set ret");
+            Core.Logger.LogDebug($"UnityEngine.Input.get_mousePosition_Injected called, TODO set ret");
 
             return false;
         }
@@ -893,7 +893,7 @@ class get_mouseScrollDelta_Injected
     {
         if (Core.TAS.Main.Running)
         {
-            Log.LogDebug($"UnityEngine.Input.get_mouseScrollDelta_Injected called");
+            Core.Logger.LogDebug($"UnityEngine.Input.get_mouseScrollDelta_Injected called");
 
             return false;
         }
@@ -909,7 +909,7 @@ class get_compositionCursorPos_Injected
     {
         if (Core.TAS.Main.Running)
         {
-            Log.LogDebug($"UnityEngine.Input.get_compositionCursorPos_Injected called");
+            Core.Logger.LogDebug($"UnityEngine.Input.get_compositionCursorPos_Injected called");
 
             return false;
         }
@@ -925,7 +925,7 @@ class set_compositionCursorPos_Injected
     {
         if (Core.TAS.Main.Running)
         {
-            Log.LogDebug($"UnityEngine.Input.set_compositionCursorPos_Injected called");
+            Core.Logger.LogDebug($"UnityEngine.Input.set_compositionCursorPos_Injected called");
 
             return false;
         }
@@ -941,7 +941,7 @@ class get_acceleration_Injected
     {
         if (Core.TAS.Main.Running)
         {
-            Log.LogDebug($"UnityEngine.Input.get_acceleration_Injected called");
+            Core.Logger.LogDebug($"UnityEngine.Input.get_acceleration_Injected called");
 
             return false;
         }
