@@ -1,9 +1,7 @@
 ﻿using BepInEx;
-using Core;
 using Core.TAS.Input.Movie;
 using HarmonyLib;
 using System.IO;
-using System.Linq;
 using UnityEngine;
 
 namespace v2018_4_25;

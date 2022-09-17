@@ -294,7 +294,7 @@ class GetAccelerationEvent
 {
     static bool Prefix(int index)
     {
-        Core.Logger.LogDebug($"UnityEngine.Input.GetAccelerationEvent called with value: {index}");
+        Plugin.Log.LogDebug($"UnityEngine.Input.GetAccelerationEvent called with value: {index}");
 
         return true;
     }
@@ -319,7 +319,7 @@ class simulateMouseWithTouchesSetter
 {
     static bool Prefix(bool value)
     {
-        Core.Logger.LogDebug($"UnityEngine.Input.simulateMouseWithTouches Setter called with value: {value}");
+        Plugin.Log.LogDebug($"UnityEngine.Input.simulateMouseWithTouches Setter called with value: {value}");
 
         return true;
     }
@@ -414,7 +414,7 @@ class imeCompositionModeSetter
 {
     static bool Prefix(IMECompositionMode value)
     {
-        Core.Logger.LogDebug($"UnityEngine.Input.imeCompositionMode Setter called with value: {value}");
+        Plugin.Log.LogDebug($"UnityEngine.Input.imeCompositionMode Setter called with value: {value}");
 
         return true;
     }
@@ -469,7 +469,7 @@ class compositionCursorPosSetter
 {
     static bool Prefix(Vector2 value)
     {
-        Core.Logger.LogDebug($"UnityEngine.Input.compositionCursorPos Setter called with value: {value}");
+        Plugin.Log.LogDebug($"UnityEngine.Input.compositionCursorPos Setter called with value: {value}");
 
         return true;
     }
@@ -580,7 +580,7 @@ class multiTouchEnabledSetter
 {
     static bool Prefix(bool value)
     {
-        Core.Logger.LogDebug($"UnityEngine.Input.multiTouchEnabled Setter called with value: {value}");
+        Plugin.Log.LogDebug($"UnityEngine.Input.multiTouchEnabled Setter called with value: {value}");
 
         return true;
     }
@@ -647,7 +647,7 @@ class compensateSensorsSetter
 {
     static bool Prefix(bool value)
     {
-        Core.Logger.LogDebug($"UnityEngine.Input.compensateSensors Setter called with value: {value}");
+        Plugin.Log.LogDebug($"UnityEngine.Input.compensateSensors Setter called with value: {value}");
 
         return true;
     }
@@ -716,7 +716,7 @@ class GetGyroInternal
     {
         if (Core.TAS.Main.Running)
         {
-            Core.Logger.LogDebug("UnityEngine.Input.GetGyroInternal default value not set");
+            Plugin.Log.LogDebug("UnityEngine.Input.GetGyroInternal default value not set");
         }
 
         return true;
@@ -724,7 +724,7 @@ class GetGyroInternal
 
     static void Postfix(ref int __result)
     {
-        Core.Logger.LogDebug($"UnityEngine.Input.GetGyroInternal return value {__result}");
+        Plugin.Log.LogDebug($"UnityEngine.Input.GetGyroInternal return value {__result}");
     }
 }
 
@@ -797,7 +797,7 @@ class GetTouch_Injected
     {
         if (Core.TAS.Main.Running)
         {
-            Core.Logger.LogDebug($"UnityEngine.Input.GetTouch_Injected called with arg {index}");
+            Plugin.Log.LogDebug($"UnityEngine.Input.GetTouch_Injected called with arg {index}");
 
             return false;
         }
@@ -813,7 +813,7 @@ class GetAccelerationEvent_Injected
     {
         if (Core.TAS.Main.Running)
         {
-            Core.Logger.LogDebug($"UnityEngine.Input.GetAccelerationEvent_Injected called with arg {index}");
+            Plugin.Log.LogDebug($"UnityEngine.Input.GetAccelerationEvent_Injected called with arg {index}");
 
             return false;
         }
@@ -829,7 +829,7 @@ class get_mousePosition_Injected
     {
         if (Core.TAS.Main.Running)
         {
-            Core.Logger.LogDebug($"UnityEngine.Input.get_mousePosition_Injected called, TODO set ret");
+            Plugin.Log.LogDebug($"UnityEngine.Input.get_mousePosition_Injected called, TODO set ret");
 
             return false;
         }
@@ -845,7 +845,7 @@ class get_mouseScrollDelta_Injected
     {
         if (Core.TAS.Main.Running)
         {
-            Core.Logger.LogDebug($"UnityEngine.Input.get_mouseScrollDelta_Injected called");
+            Plugin.Log.LogDebug($"UnityEngine.Input.get_mouseScrollDelta_Injected called");
 
             return false;
         }
@@ -861,7 +861,7 @@ class get_compositionCursorPos_Injected
     {
         if (Core.TAS.Main.Running)
         {
-            Core.Logger.LogDebug($"UnityEngine.Input.get_compositionCursorPos_Injected called");
+            Plugin.Log.LogDebug($"UnityEngine.Input.get_compositionCursorPos_Injected called");
 
             return false;
         }
@@ -877,7 +877,7 @@ class set_compositionCursorPos_Injected
     {
         if (Core.TAS.Main.Running)
         {
-            Core.Logger.LogDebug($"UnityEngine.Input.set_compositionCursorPos_Injected called");
+            Plugin.Log.LogDebug($"UnityEngine.Input.set_compositionCursorPos_Injected called");
 
             return false;
         }
@@ -893,7 +893,7 @@ class get_acceleration_Injected
     {
         if (Core.TAS.Main.Running)
         {
-            Core.Logger.LogDebug($"UnityEngine.Input.get_acceleration_Injected called");
+            Plugin.Log.LogDebug($"UnityEngine.Input.get_acceleration_Injected called");
 
             return false;
         }

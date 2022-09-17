@@ -29,7 +29,7 @@ internal class UnityASyncHandler : MonoBehaviour
             return;
         if (Instance == null)
         {
-            Core.Logger.LogWarning("UnityASyncHandler is null, this should not happen, skipping scene load tracker");
+            Plugin.Log.LogWarning("UnityASyncHandler is null, this should not happen, skipping scene load tracker");
             Main.LoadingSceneCount = 0;
             return;
         }
@@ -48,7 +48,7 @@ internal class UnityASyncHandler : MonoBehaviour
             return;
         if (Instance == null)
         {
-            Core.Logger.LogWarning("UnityASyncHandler is null, this should not happen, skipping scene unload tracker");
+            Plugin.Log.LogWarning("UnityASyncHandler is null, this should not happen, skipping scene unload tracker");
             Main.UnloadingSceneCount = 0;
             return;
         }
