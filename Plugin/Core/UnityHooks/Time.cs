@@ -15,20 +15,16 @@ internal class Time : Base<Time>
 
     protected override void InitByUnityVersion(Type objType, UnityVersion version)
     {
+        var captureFramerate = objType.GetProperty("captureFramerate", BindingFlags.Public | BindingFlags.Static);
+        captureFramerateGetter = captureFramerate.GetGetMethod();
+        captureFramerateSetter = captureFramerate.GetSetMethod();
+
         switch (version)
         {
             case UnityVersion.v2021_2_14:
                 var captureDeltaTime = objType.GetProperty("captureDeltaTime", BindingFlags.Public | BindingFlags.Static);
                 captureDeltaTimeGetter = captureDeltaTime.GetGetMethod();
                 captureDeltaTimeSetter = captureDeltaTime.GetSetMethod();
-                var captureFramerate = objType.GetProperty("captureFramerate", BindingFlags.Public | BindingFlags.Static);
-                captureFramerateGetter = captureFramerate.GetGetMethod();
-                captureFramerateSetter = captureFramerate.GetSetMethod();
-                break;
-            case UnityVersion.v2018_4_25:
-                captureFramerate = objType.GetProperty("captureFramerate", BindingFlags.Public | BindingFlags.Static);
-                captureFramerateGetter = captureFramerate.GetGetMethod();
-                captureFramerateSetter = captureFramerate.GetSetMethod();
                 break;
         }
     }

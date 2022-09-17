@@ -13,16 +13,10 @@ internal class Object : Base<Object>
 
     protected override void InitByUnityVersion(Type objType, UnityVersion version)
     {
-        switch (version)
-        {
-            case UnityVersion.v2018_4_25:
-            case UnityVersion.v2021_2_14:
-                getInstanceID = objType.GetMethod("GetInstanceID", BindingFlags.Public | BindingFlags.Instance, null, new Type[] { }, null);
-                findObjectsOfType__Type = objType.GetMethod("FindObjectsOfType", BindingFlags.Public | BindingFlags.Static, null, new Type[] { typeof(Type) }, null);
-                destroy__Object = objType.GetMethod("Destroy", BindingFlags.Public | BindingFlags.Static, null, new Type[] { ObjType }, null);
-                dontDestroyOnLoad = objType.GetMethod("DontDestroyOnLoad", BindingFlags.Public | BindingFlags.Static, null, new Type[] { ObjType }, null);
-                break;
-        }
+        getInstanceID = objType.GetMethod("GetInstanceID", BindingFlags.Public | BindingFlags.Instance, null, new Type[] { }, null);
+        findObjectsOfType__Type = objType.GetMethod("FindObjectsOfType", BindingFlags.Public | BindingFlags.Static, null, new Type[] { typeof(Type) }, null);
+        destroy__Object = objType.GetMethod("Destroy", BindingFlags.Public | BindingFlags.Static, null, new Type[] { ObjType }, null);
+        dontDestroyOnLoad = objType.GetMethod("DontDestroyOnLoad", BindingFlags.Public | BindingFlags.Static, null, new Type[] { ObjType }, null);
     }
 
     internal static int GetInstanceID(object instance)

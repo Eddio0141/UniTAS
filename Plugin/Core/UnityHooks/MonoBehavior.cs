@@ -10,15 +10,7 @@ internal class MonoBehavior : Base<MonoBehavior>
 
     protected override void InitByUnityVersion(Type objType, UnityVersion version)
     {
-        switch (version)
-        {
-            case UnityVersion.v2021_2_14:
-                stopAllCoroutines = objType.GetMethod("StopAllCoroutines", BindingFlags.Instance | BindingFlags.Public, null, new Type[] { }, null);
-                break;
-            case UnityVersion.v2018_4_25:
-                stopAllCoroutines = objType.GetMethod("StopAllCoroutines", BindingFlags.Instance | BindingFlags.Public, null, new Type[] { }, null);
-                break;
-        }
+        stopAllCoroutines = objType.GetMethod("StopAllCoroutines", BindingFlags.Instance | BindingFlags.Public, null, new Type[] { }, null);
     }
 
     internal static void StopAllCoroutines(object instance)

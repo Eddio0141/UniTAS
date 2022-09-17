@@ -10,15 +10,7 @@ internal class SceneManager : Base<SceneManager>
 
     protected override void InitByUnityVersion(Type objType, UnityVersion version)
     {
-        switch (version)
-        {
-            case UnityVersion.v2021_2_14:
-                loadScene__int = objType.GetMethod("LoadScene", BindingFlags.Public | BindingFlags.Static, null, new Type[] { typeof(int) }, null);
-                break;
-            case UnityVersion.v2018_4_25:
-                loadScene__int = objType.GetMethod("LoadScene", BindingFlags.Public | BindingFlags.Static, null, new Type[] { typeof(int) }, null);
-                break;
-        }
+        loadScene__int = objType.GetMethod("LoadScene", BindingFlags.Public | BindingFlags.Static, null, new Type[] { typeof(int) }, null);
     }
 
     internal static void LoadScene(int sceneBuildIndex)

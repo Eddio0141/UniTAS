@@ -15,25 +15,12 @@ internal class Cursor : Base<Cursor>
 
     protected override void InitByUnityVersion(Type objType, UnityVersion version)
     {
-        switch (version)
-        {
-            case UnityVersion.v2021_2_14:
-                var visible = objType.GetProperty("visible", BindingFlags.Public | BindingFlags.Static);
-                visibleGetter = visible.GetGetMethod();
-                visibleSetter = visible.GetSetMethod();
-                var lockState = objType.GetProperty("lockState", BindingFlags.Public | BindingFlags.Static);
-                lockStateGetter = lockState.GetGetMethod();
-                lockStateSetter = lockState.GetSetMethod();
-                break;
-            case UnityVersion.v2018_4_25:
-                visible = objType.GetProperty("visible", BindingFlags.Public | BindingFlags.Static);
-                visibleGetter = visible.GetGetMethod();
-                visibleSetter = visible.GetSetMethod();
-                lockState = objType.GetProperty("lockState", BindingFlags.Public | BindingFlags.Static);
-                lockStateGetter = lockState.GetGetMethod();
-                lockStateSetter = lockState.GetSetMethod();
-                break;
-        }
+        var visible = objType.GetProperty("visible", BindingFlags.Public | BindingFlags.Static);
+        visibleGetter = visible.GetGetMethod();
+        visibleSetter = visible.GetSetMethod();
+        var lockState = objType.GetProperty("lockState", BindingFlags.Public | BindingFlags.Static);
+        lockStateGetter = lockState.GetGetMethod();
+        lockStateSetter = lockState.GetSetMethod();
     }
 
     internal static bool visible
