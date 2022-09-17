@@ -6,45 +6,139 @@ namespace Core;
 
 internal static class Helper
 {
-    public static (int, int, int) SemanticVersioningFromString(string version)
+    public class SemanticVersion
     {
-        version = version.Replace("v", "");
-        // TODO do I ignore characters?
-        version = string.Join("", version.Where(c => char.IsDigit(c) || c == '.' || c == '_'));
+        public int Major { get; set; }
+        public int Minor { get; set; }
+        public int Patch { get; set; }
 
-        string[] versionSplit;
-        if (version.Contains('.'))
+        public SemanticVersion(int major, int minor, int patch)
         {
-            versionSplit = version.Split('.');
+            Major = major;
+            Minor = minor;
+            Patch = patch;
         }
-        else
-        {
-            versionSplit = version.Split('_');
-        }
-        var versionSplitValues = new List<int>();
 
-        // force check all values
-        foreach (var versionSplitValue in versionSplit)
+        public SemanticVersion(UnityVersion version)
         {
-            if (!int.TryParse(versionSplitValue, out var versionValue))
+            var versionParsed = new SemanticVersion(version.ToString());
+
+            Major = versionParsed.Major;
+            Minor = versionParsed.Minor;
+            Patch = versionParsed.Patch;
+        }
+
+        public static bool operator <(SemanticVersion a, SemanticVersion b)
+        {
+            return a.Major < b.Major || (a.Major == b.Major && a.Minor < b.Minor) || (a.Major == b.Major && a.Minor == b.Minor && a.Patch < b.Patch);
+        }
+
+        public static bool operator <(UnityVersion unityVersion, SemanticVersion b)
+        {
+            var a = new SemanticVersion(unityVersion);
+            return a.Major < b.Major || (a.Major == b.Major && a.Minor < b.Minor) || (a.Major == b.Major && a.Minor == b.Minor && a.Patch < b.Patch);
+        }
+
+        public static bool operator >(SemanticVersion a, SemanticVersion b)
+        {
+            return a.Major > b.Major || (a.Major == b.Major && a.Minor > b.Minor) || (a.Major == b.Major && a.Minor == b.Minor && a.Patch > b.Patch);
+        }
+
+        public static bool operator >(UnityVersion unityVersion, SemanticVersion b)
+        {
+            var a = new SemanticVersion(unityVersion);
+            return a.Major > b.Major || (a.Major == b.Major && a.Minor > b.Minor) || (a.Major == b.Major && a.Minor == b.Minor && a.Patch > b.Patch);
+        }
+
+        public static bool operator ==(SemanticVersion a, SemanticVersion b)
+        {
+            return a.Major == b.Major && a.Minor == b.Minor && a.Patch == b.Patch;
+        }
+
+        public static bool operator !=(SemanticVersion a, SemanticVersion b)
+        {
+            return a.Major != b.Major || a.Minor != b.Minor || a.Patch != b.Patch;
+        }
+
+        public static bool operator <=(SemanticVersion a, SemanticVersion b)
+        {
+            return a < b || a == b;
+        }
+
+        public static bool operator >=(SemanticVersion a, SemanticVersion b)
+        {
+            return a > b || a == b;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is SemanticVersion version)
             {
-                throw new Exception("Semantic version not a valid version");
+                return this == version;
             }
 
-            versionSplitValues.Add(versionValue);
+            return false;
         }
 
-        // remove anything after 3 version values
-        if (versionSplitValues.Count > 3)
+        public override int GetHashCode()
         {
-            versionSplitValues.RemoveRange(3, versionSplitValues.Count - 3);
-        }
-        else if (versionSplitValues.Count < 3)
-        {
-            // add zeros to make version value count 3
-            versionSplitValues.AddRange(Enumerable.Repeat(0, 3 - versionSplitValues.Count));
+            return Major.GetHashCode() ^ Minor.GetHashCode() ^ Patch.GetHashCode();
         }
 
-        return (versionSplitValues[0], versionSplitValues[1], versionSplitValues[2]);
+        public SemanticVersion(string version)
+        {
+            version = version.Replace("v", "");
+
+            var builder = "";
+            // TODO do I ignore characters?
+            foreach (var ch in version.ToCharArray())
+            {
+                if (char.IsDigit(ch) || ch == '.' || ch == '_')
+                {
+                    builder += ch;
+                }
+            }
+            version = builder;
+            
+            UnityEngine.Debug.Log($"version concat: {version}");
+
+            string[] versionSplit;
+            if (version.Contains('.'))
+            {
+                versionSplit = version.Split('.');
+            }
+            else
+            {
+                versionSplit = version.Split('_');
+            }
+            var versionSplitValues = new List<int>();
+
+            // force check all values
+            foreach (var versionSplitValue in versionSplit)
+            {
+                if (!int.TryParse(versionSplitValue, out var versionValue))
+                {
+                    // TODO dont throw exception
+                    throw new Exception($"Semantic version not a valid version");
+                }
+
+                versionSplitValues.Add(versionValue);
+            }
+
+            // remove anything after 3 version values
+            if (versionSplitValues.Count > 3)
+            {
+                versionSplitValues.RemoveRange(3, versionSplitValues.Count - 3);
+            }
+            else if (versionSplitValues.Count < 3)
+            {
+                // add zeros to make version value count 3
+                versionSplitValues.AddRange(Enumerable.Repeat(0, 3 - versionSplitValues.Count));
+            }
+
+            Major = versionSplitValues[0];
+            Minor = versionSplitValues[1];
+            Patch = versionSplitValues[2];
+        }
     }
 }

@@ -32,6 +32,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)UnityHooks\Object.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UnityHooks\Helpers\To.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UnityHooks\SceneManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UnityHooks\Time.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UnityHooks\Vector2.cs" />
   </ItemGroup>
   <ItemGroup>

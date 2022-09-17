@@ -6,7 +6,7 @@ using System.IO;
 using System.Linq;
 using UnityEngine;
 
-namespace v2021_2_14;
+namespace v2018_4_25;
 
 [BepInPlugin(Core.PluginInfo.GUID, Core.PluginInfo.NAME, Core.PluginInfo.VERSION)]
 public class Plugin : BaseUnityPlugin
@@ -16,12 +16,9 @@ public class Plugin : BaseUnityPlugin
 #pragma warning restore IDE0051
     {
         Log.SetLoggers(Logger.LogDebug, Logger.LogError, Logger.LogFatal, Logger.LogInfo, Logger.LogMessage, Logger.LogWarning);
-
-        Log.LogInfo($"Initializing {Core.PluginInfo.NAME}");
         Log.LogInfo($"Game company name: {Application.companyName}, product name: {Application.productName}, version: {Application.version}");
 
         Log.LogDebug($"Unity version: {Application.unityVersion}");
-        Core.PluginInfo.Init(Application.unityVersion, typeof(Plugin), typeof(UnityASyncHandler));
 
         var asyncHandler = new GameObject();
         asyncHandler.AddComponent<UnityASyncHandler>();
@@ -35,8 +32,22 @@ public class Plugin : BaseUnityPlugin
 
     static Plugin()
     {
-        var unityCoreModuleAssembly = System.AppDomain.CurrentDomain.GetAssemblies().Where(a => a.GetName().FullName == "UnityEngine.CoreModule").ElementAt(0);
-        Core.UnityHooks.Main.Init(UnityVersion.v2021_2_14, unityCoreModuleAssembly);
+        Core.PluginInfo.Init(Application.unityVersion, typeof(Plugin), typeof(UnityASyncHandler));
+
+        var assemblies = System.AppDomain.CurrentDomain.GetAssemblies();
+        var unityCoreModules = assemblies.Where(a => a.GetName().Name == "UnityEngine.CoreModule");
+
+        if (unityCoreModules.Count() == 0)
+        {
+            Log.LogError("Found no UnityEngine.CoreModule assembly, dumping all found assemblies");
+            Log.LogError(assemblies.Select(a => a.GetName().FullName));
+            // TODO stop TAS tool from turning int a blackhole
+        }
+        else
+        {
+            var unityCoreModule = unityCoreModules.ElementAt(0);
+            Core.UnityHooks.Main.Init(UnityVersion.v2018_4_25, unityCoreModule);
+        }
     }
 
 #pragma warning disable IDE0051
@@ -49,7 +60,7 @@ public class Plugin : BaseUnityPlugin
         // TODO remove this test
         if (!Core.TAS.Main.Running && Input.GetKeyDown(KeyCode.K))
         {
-            var text = File.ReadAllText("C:\\Program Files (x86)\\Steam\\steamapps\\common\\It Steals\\test.uti");
+            var text = File.ReadAllText("C:\\Users\\Yuki\\Documents\\test.uti");
             var movie = new Movie("test.uti", text, out var err);
 
             if (err != "")

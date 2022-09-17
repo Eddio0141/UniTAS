@@ -15,6 +15,9 @@ internal class MonoBehavior : Base<MonoBehavior>
             case UnityVersion.v2021_2_14:
                 stopAllCoroutines = objType.GetMethod("StopAllCoroutines", BindingFlags.Instance | BindingFlags.Public, null, new Type[] { }, null);
                 break;
+            case UnityVersion.v2018_4_25:
+                stopAllCoroutines = objType.GetMethod("StopAllCoroutines", BindingFlags.Instance | BindingFlags.Public, null, new Type[] { }, null);
+                break;
         }
     }
 

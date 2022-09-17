@@ -17,9 +17,9 @@ public static class PluginInfo
     public static void Init(string unityVersion, Type pluginType, Type unityASyncHandlerType)
     {
         var unityVersionEnum = UnityVersionFromString(unityVersion);
-        UnityVersion = unityVersionEnum.Item1;
+        UnityVersion = unityVersionEnum.UnityVersion;
 
-        switch (unityVersionEnum.Item2)
+        switch (unityVersionEnum.UnitySupportStatus)
         {
             case UnitySupportStatus.UsingFirstVersion:
                 Log.LogWarning($"Unity version is lower than the lowest supported, falling back compatibility to {UnityVersion}");
@@ -46,16 +46,16 @@ public static class PluginInfo
     /// <param name="version"></param>
     /// <returns></returns>
     /// <exception cref="Exception"></exception>
-    public static (UnityVersion, UnitySupportStatus) UnityVersionFromString(string version)
+    public static UnityVersionFromStringResult UnityVersionFromString(string version)
     {
-        var (major, minor, patch) = Helper.SemanticVersioningFromString(version);
+        var versionParsed = new Helper.SemanticVersion(version);
 
         var allUnityVersions = Enum.GetValues(typeof(UnityVersion)).Cast<UnityVersion>();
-        var allUnityVersionsSemantic = new List<(int, int, int)>();
+        var allUnityVersionsSemantic = new List<Helper.SemanticVersion>();
 
         foreach (var unityVersion in allUnityVersions)
         {
-            allUnityVersionsSemantic.Add(Helper.SemanticVersioningFromString(unityVersion.ToString()));
+            allUnityVersionsSemantic.Add(new Helper.SemanticVersion(unityVersion.ToString()));
         }
 
         // versions are already sorted, search through them all
@@ -65,70 +65,74 @@ public static class PluginInfo
         var findingMajor = true;
         var findingMinor = true;
 
-        var (foundMajor, foundMinor, foundPatch) = (allUnityVersionsSemantic[0].Item1, allUnityVersionsSemantic[0].Item2, allUnityVersionsSemantic[0].Item3);
-        foreach (var (unityMajor, unityMinor, unityPatch) in allUnityVersionsSemantic)
+        var foundVersion = allUnityVersionsSemantic[0];
+        foreach (var unityVersion in allUnityVersionsSemantic)
         {
+            var unityMajor = unityVersion.Major;
+            var unityMinor = unityVersion.Minor;
+            var unityPatch = unityVersion.Patch;
+
             if (findingMajor)
             {
-                if (unityMajor < major)
+                if (unityMajor < versionParsed.Major)
                 {
-                    foundMajor = unityMajor;
-                    foundMinor = unityMinor;
-                    foundPatch = unityPatch;
+                    foundVersion.Major = unityMajor;
+                    foundVersion.Minor = unityMinor;
+                    foundVersion.Patch = unityPatch;
                     continue;
                 }
-                if (unityMajor == major)
+                if (unityMajor == versionParsed.Major)
                 {
-                    foundMajor = unityMajor;
-                    foundMinor = unityMinor;
-                    foundPatch = unityPatch;
+                    foundVersion.Major = unityMajor;
+                    foundVersion.Minor = unityMinor;
+                    foundVersion.Patch = unityPatch;
                 }
                 findingMajor = false;
             }
 
-            if (unityMajor > foundMajor)
+            if (unityMajor > foundVersion.Major)
                 break;
 
             if (findingMinor)
             {
-                if (unityMinor < minor)
+                if (unityMinor < versionParsed.Minor)
                 {
-                    foundMinor = unityMinor;
-                    foundPatch = unityPatch;
+                    foundVersion.Minor = unityMinor;
+                    foundVersion.Patch = unityPatch;
                     continue;
                 }
-                if (unityMinor == minor)
+                if (unityMinor == versionParsed.Minor)
                 {
-                    foundMinor = unityMinor;
-                    foundPatch = unityPatch;
+                    foundVersion.Minor = unityMinor;
+                    foundVersion.Patch = unityPatch;
                 }
                 findingMinor = false;
             }
 
-            if (unityMinor > foundMinor)
+            if (unityMinor > foundVersion.Minor)
                 break;
 
-            if (unityPatch < patch)
+            if (unityPatch < versionParsed.Patch)
             {
-                foundPatch = unityPatch;
+                foundVersion.Patch = unityPatch;
                 continue;
             }
-            else if (unityPatch == patch)
+            else if (unityPatch == versionParsed.Patch)
             {
-                foundPatch = unityPatch;
+                foundVersion.Patch = unityPatch;
                 break;
             }
         }
 
         var foundStatus = UnitySupportStatus.UsingLowerVersion;
-        if (foundMajor == major && foundMinor == minor && foundPatch == patch)
+        if (foundVersion == versionParsed)
             foundStatus = UnitySupportStatus.FoundMatch;
-        else if (major < foundMajor || (major <= foundMajor && minor < foundMinor) || (major <= foundMajor && minor <= foundMinor && patch < foundPatch))
+        else if (versionParsed.Major < foundVersion.Major || (versionParsed.Major <= foundVersion.Major && versionParsed.Minor < foundVersion.Minor) || (versionParsed.Major <= foundVersion.Major && versionParsed.Minor <= foundVersion.Minor && versionParsed.Patch < foundVersion.Patch))
             foundStatus = UnitySupportStatus.UsingFirstVersion;
 
-        Enum.TryParse(typeof(UnityVersion), $"v{foundMajor}_{foundMinor}_{foundPatch}", out var result);
+        var result = Enum.Parse(typeof(UnityVersion), $"v{foundVersion.Major}_{foundVersion.Minor}_{foundVersion.Patch}");
 
-        return ((UnityVersion)result, foundStatus);
+        return new UnityVersionFromStringResult((UnityVersion)result, foundStatus);
     }
 
     public enum UnitySupportStatus
@@ -137,13 +141,27 @@ public static class PluginInfo
         UsingLowerVersion,
         UsingFirstVersion,
     }
+
+    public class UnityVersionFromStringResult
+    {
+        public UnityVersion UnityVersion;
+        public UnitySupportStatus UnitySupportStatus;
+
+        public UnityVersionFromStringResult(UnityVersion unityVersion, UnitySupportStatus unitySupportStatus)
+        {
+            UnityVersion = unityVersion;
+            UnitySupportStatus = unitySupportStatus;
+        }
+    }
 }
 
 /// <summary>
 /// Supported Unity versions.
 /// Follows semantic versioning.
 /// </summary>
+// The order of the enum matters
 public enum UnityVersion
 {
+    v2018_4_25,
     v2021_2_14,
 }

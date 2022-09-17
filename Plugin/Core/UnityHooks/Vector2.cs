@@ -31,6 +31,11 @@ public class Vector2 : Base<Vector2>, To
                 x_ = objType.GetField("x", BindingFlags.Instance | BindingFlags.Public);
                 y_ = objType.GetField("y", BindingFlags.Instance | BindingFlags.Public);
                 break;
+            case UnityVersion.v2018_4_25:
+                zeroGetter = objType.GetProperty("zero", BindingFlags.Public | BindingFlags.Static | BindingFlags.GetField, null, objType, new Type[] { }, null).GetGetMethod();
+                x_ = objType.GetField("x", BindingFlags.Instance | BindingFlags.Public);
+                y_ = objType.GetField("y", BindingFlags.Instance | BindingFlags.Public);
+                break;
         }
     }
 

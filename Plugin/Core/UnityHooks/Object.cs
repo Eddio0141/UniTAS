@@ -15,6 +15,7 @@ internal class Object : Base<Object>
     {
         switch (version)
         {
+            case UnityVersion.v2018_4_25:
             case UnityVersion.v2021_2_14:
                 getInstanceID = objType.GetMethod("GetInstanceID", BindingFlags.Public | BindingFlags.Instance, null, new Type[] { }, null);
                 findObjectsOfType__Type = objType.GetMethod("FindObjectsOfType", BindingFlags.Public | BindingFlags.Static, null, new Type[] { typeof(Type) }, null);
@@ -31,7 +32,12 @@ internal class Object : Base<Object>
 
     internal static object[] FindObjectsOfType(Type type)
     {
-        return findObjectsOfType__Type.Invoke(null, new object[] { type }) as object[];
+        var result = findObjectsOfType__Type.Invoke(null, new object[] { type });
+
+        if (result == null)
+            return new object[] { };
+        else
+            return (object[])(result);
     }
 
     internal static void Destroy(object obj)

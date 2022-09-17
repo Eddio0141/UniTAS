@@ -25,6 +25,14 @@ internal class Cursor : Base<Cursor>
                 lockStateGetter = lockState.GetGetMethod();
                 lockStateSetter = lockState.GetSetMethod();
                 break;
+            case UnityVersion.v2018_4_25:
+                visible = objType.GetProperty("visible", BindingFlags.Public | BindingFlags.Static);
+                visibleGetter = visible.GetGetMethod();
+                visibleSetter = visible.GetSetMethod();
+                lockState = objType.GetProperty("lockState", BindingFlags.Public | BindingFlags.Static);
+                lockStateGetter = lockState.GetGetMethod();
+                lockStateSetter = lockState.GetSetMethod();
+                break;
         }
     }
 

@@ -1,7 +1,6 @@
 ﻿using Core.TAS.Input;
 using Core.TAS.Input.Movie;
 using Core.UnityHooks;
-using Core.UnityHooks.Helpers;
 using System.Collections.Generic;
 using System.Threading;
 
@@ -23,7 +22,7 @@ public static class Main
             else
             {
                 Cursor.visible = VirtualCursor.Visible;
-                UnityEngine.Time.captureDeltaTime = 0f;
+                UnityHooks.Time.captureDeltaTime = 0f;
             }
             _running = value;
             RunInitOrStopping = false;
@@ -33,7 +32,7 @@ public static class Main
     public static double Time { get; private set; }
     public static ulong FrameCount { get; private set; }
     static readonly List<string> axisNames;
-    static readonly List<int> firstObjIDs;
+    static List<int> firstObjIDs;
     /// <summary>
     /// Scene loading count status. 0 means there are no scenes loading, 1 means there is one scene loading, 2 means there are two scenes loading, etc.
     /// </summary>
@@ -127,7 +126,7 @@ public static class Main
                 fb = CurrentMovie.Framebulks[currentFramebulkIndex];
             }
 
-            UnityEngine.Time.captureDeltaTime = fb.Frametime;
+            UnityHooks.Time.captureDeltaTime = fb.Frametime;
             GameControl(fb);
 
             currentFramebulkFrameIndex++;
@@ -156,8 +155,9 @@ public static class Main
         Input.Mouse.MiddleClick = fb.Mouse.Middle;
 
         var axisMoveSetDefault = new List<string>();
-        foreach (var (key, _) in Axis.Values)
+        foreach (var pair in Axis.Values)
         {
+            var key = pair.Key;
             if (!fb.Axises.AxisMove.ContainsKey(key))
                 axisMoveSetDefault.Add(key);
         }
@@ -168,8 +168,10 @@ public static class Main
             else
                 Axis.Values.Add(key, default);
         }
-        foreach (var (axis, value) in fb.Axises.AxisMove)
+        foreach (var axisValue in fb.Axises.AxisMove)
         {
+            var axis = axisValue.Key;
+            var value = axisValue.Value;
             if (Axis.Values.ContainsKey(axis))
             {
                 Axis.Values[axis] = value;
@@ -270,7 +272,8 @@ public static class Main
             var firstFb = CurrentMovie.Framebulks[0];
 
             Input.Main.Clear();
-            UnityEngine.Time.captureDeltaTime = firstFb.Frametime;
+            // TODO
+            UnityHooks.Time.captureDeltaTime = firstFb.Frametime;
             GameControl(firstFb);
 
             if (currentFramebulkFrameIndex >= firstFb.FrameCount)

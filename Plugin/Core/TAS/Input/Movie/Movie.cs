@@ -29,7 +29,7 @@ public class Movie
         Name = filename;
         Framebulks = new();
 
-        string[] lines = text.Split("\n", StringSplitOptions.RemoveEmptyEntries);
+        string[] lines = text.Split('\n');
 
         var inVersion = true;
         var inProperties = true;
@@ -39,7 +39,7 @@ public class Movie
         var versionText = "version 1";
         var framesSection = "frames";
         var seedText = "seed ";
-        var fieldSeparator = "|";
+        var fieldSeparator = ' ';
         var listSeparator = ' ';
         var axisNameSurround = '"';
         const string leftClick = "left";
@@ -51,6 +51,9 @@ public class Movie
             var lineTrim = line.Trim();
 
             if (lineTrim.StartsWith(comment))
+                continue;
+
+            if (lineTrim == "")
                 continue;
 
             if (inVersion)
@@ -74,7 +77,7 @@ public class Movie
                         break;
                     }
 
-                    if (!uint.TryParse(lineTrim[seedText.Length..], out var seed))
+                    if (!uint.TryParse(lineTrim.Substring(seedText.Length), out var seed))
                     {
                         errorMsg = "Seed value not an unsigned integer";
                         break;
@@ -151,10 +154,13 @@ public class Movie
                         continue;
                     }
 
-                    var clickedButtons = field.Split(listSeparator, StringSplitOptions.RemoveEmptyEntries);
+                    var clickedButtons = field.Split(listSeparator);
 
                     foreach (var clickField in clickedButtons)
                     {
+                        if (clickField == "")
+                            continue;
+
                         switch (clickField)
                         {
                             case leftClick:
@@ -206,17 +212,21 @@ public class Movie
                         continue;
                     }
 
-                    var keys = field.Split(listSeparator, StringSplitOptions.None);
+                    var keys = field.Split(listSeparator);
 
                     foreach (var key in keys)
                     {
-                        if (!Enum.TryParse(key, out KeyCodeType k))
+                        if (key == "")
+                            continue;
+
+                        if (!Enum.IsDefined(typeof(KeyCodeType_2021_2_14), key))
                         {
                             errorMsg = "Key value not a valid key";
                             break;
                         }
 
-                        framebulk.Keys.Pressed.Add(k);
+                        var k = Enum.Parse(typeof(KeyCodeType_2021_2_14), key);
+                        framebulk.Keys.Pressed.Add((KeyCodeType_2021_2_14)k);
                     }
 
                     if (errorMsg != "")

@@ -15,6 +15,9 @@ internal class SceneManager : Base<SceneManager>
             case UnityVersion.v2021_2_14:
                 loadScene__int = objType.GetMethod("LoadScene", BindingFlags.Public | BindingFlags.Static, null, new Type[] { typeof(int) }, null);
                 break;
+            case UnityVersion.v2018_4_25:
+                loadScene__int = objType.GetMethod("LoadScene", BindingFlags.Public | BindingFlags.Static, null, new Type[] { typeof(int) }, null);
+                break;
         }
     }
 
