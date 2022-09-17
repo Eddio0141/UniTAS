@@ -74,6 +74,7 @@ Depends on BepInEx's progress on it
 // Some information about UnityHelpers binding
 
 # Background tasks to be finished
+- Update() and FixedUpdate() calls in core needs to be done before Unity calls happen, hook to make it work.
 - Create core patches which will be patches for things that exists in all unity versions / .NET versions
 - Pass assembly information to some initializer for Core.UnityHooks and use reflection to get the types rather than finding each type in Plugin initialization
 - Clean up Plugin and UnityASyncHandler type passing
