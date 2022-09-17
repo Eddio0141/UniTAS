@@ -134,7 +134,7 @@ I haven't planned for VR support currently
   - [ ] System.Random.GenerateSeed check if consistent generation
   - [ ] System.Random.GenerateGlobalSeed check if consistent generation
 - Movie needs to store additional information of recorded pc such as whats in CultureInfo
-- Movie matching unity version
+- Movie matching unity version and checks for that version such as keycode
 - Movie matching game name?
 - Movie store game version
 - Movie ability to switch between captureFramerate and captureDeltaTime
