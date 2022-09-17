@@ -11,7 +11,6 @@ A tool that lets you TAS unity games hopefully
 - Has many testing code that won't work on other pcs such as:
   - Building the UniTASPlugin plugin would try copy the dll to `C:\Program Files (x86)\Steam\steamapps\common\It Steals\BepInEx\plugins`
   - Plugin runs only with netstandard2.1
-  - Plugin was never tested in 32 bits
 - Pressing "K" would run a test TAS from path `C:\Program Files (x86)\Steam\steamapps\common\It Steals\test.uti`
 - Currently no convenient tool that installs this TAS tool to some unity game
 - Only tested in windows
@@ -32,14 +31,9 @@ A tool that lets you TAS unity games hopefully
 
 # Version support
 - 2021.2.14
-  - [ ] 32 bits
-    - [ ] netstandard2.0
-    - [ ] net46
-    - [ ] net35
-  - [ ] 64 bits
-    - [x] netstandard2.0
-    - [ ] net46
-    - [ ] net35
+  - [x] netstandard2.0
+  - [ ] net46
+  - [ ] net35
 
 # Known bugs
 - Different scene possibly desyncing while heavy load on Plugin.Update / Plugin.FixedUpdate (maybe use a coroutine)
@@ -54,7 +48,6 @@ I haven't planned for VR support currently
 - Separate tool to set up the TAS tool for a unity game
 - Integrate BepInEx to project
 - Build script or something to build everything properly
-- A way to handle multiple unity versions, including 32 / 64 bits
 - A way to handle additional unity patches which is a dependency not included by default
 - l2cpp support
 - TAS GUI
