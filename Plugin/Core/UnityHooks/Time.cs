@@ -18,14 +18,12 @@ internal class Time : Base<Time>
         var captureFramerate = objType.GetProperty("captureFramerate", BindingFlags.Public | BindingFlags.Static);
         captureFramerateGetter = captureFramerate.GetGetMethod();
         captureFramerateSetter = captureFramerate.GetSetMethod();
-
-        switch (version)
+        var captureDeltaTime = objType.GetProperty("captureDeltaTime", BindingFlags.Public | BindingFlags.Static);
+        // HACK
+        if (captureDeltaTime != null)
         {
-            case UnityVersion.v2021_2_14:
-                var captureDeltaTime = objType.GetProperty("captureDeltaTime", BindingFlags.Public | BindingFlags.Static);
-                captureDeltaTimeGetter = captureDeltaTime.GetGetMethod();
-                captureDeltaTimeSetter = captureDeltaTime.GetSetMethod();
-                break;
+            captureDeltaTimeGetter = captureDeltaTime.GetGetMethod();
+            captureDeltaTimeSetter = captureDeltaTime.GetSetMethod();
         }
     }
 
@@ -36,7 +34,7 @@ internal class Time : Base<Time>
         {
             if (PluginInfo.UnityVersion < new Helper.SemanticVersion(2021, 2, 14))
             {
-                return captureFramerate;
+                return (int)captureFramerateGetter.Invoke(null, new object[] { });
             }
             else
             {
@@ -47,7 +45,7 @@ internal class Time : Base<Time>
         {
             if (PluginInfo.UnityVersion < new Helper.SemanticVersion(2021, 2, 14))
             {
-                captureFramerate = (int)value;
+                captureFramerateSetter.Invoke(null, new object[] { (int)value });
             }
             else
             {
