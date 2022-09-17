@@ -6,6 +6,8 @@ namespace Core.UnityHooks;
 
 internal class CursorLockMode : BaseEnum<CursorLockMode>
 {
+    public CursorLockMode(string value) : base(value) { }
+
     protected override Dictionary<UnityVersion, Type> GetAllEnumTypes()
     {
         return new Dictionary<UnityVersion, Type>()

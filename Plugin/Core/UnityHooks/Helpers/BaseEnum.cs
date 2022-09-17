@@ -8,6 +8,13 @@ public abstract class BaseEnum<T> : Base<T>
     public static List<Type> EnumTypes { get; protected set; }
     protected static List<Type> allVariants { get; set; }
 
+    public string Value { get; set; }
+
+    public BaseEnum(string value)
+    {
+        Value = value ?? throw new ArgumentNullException(nameof(value));
+    }
+
     internal override void Init(Type objType, UnityVersion version)
     {
         ObjType = objType;

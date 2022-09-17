@@ -6,7 +6,7 @@ namespace Core.UnityHooks.InputLegacy;
 
 public class KeyCode : BaseEnum<KeyCode>
 {
-    public string Value { get; set; }
+    public KeyCode(string value) : base(value) { }
 
     protected override Dictionary<UnityVersion, Type> GetAllEnumTypes()
     {
