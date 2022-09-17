@@ -53,6 +53,9 @@ public static class Main
 
     static Main()
     {
+        // we make sure to initialize the time before any other code runs
+        UnityHooks.Main.Init();
+
         pendingMovieStartFixedUpdate = false;
         _running = false;
         // set time to system time

@@ -5,8 +5,10 @@ namespace Core.UnityHooks;
 
 public static class Main
 {
-    static Main()
+    public static void Init()
     {
+        Logger.Log.LogDebug("Calling UnityHooks.Main()");
+
         var assemblies = AppDomain.CurrentDomain.GetAssemblies();
         var unityCoreModules = assemblies.Where(a => a.GetName().Name == "UnityEngine.CoreModule");
 

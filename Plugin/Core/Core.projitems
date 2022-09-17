@@ -40,7 +40,4 @@
     <Compile Include="$(MSBuildThisFileDirectory)UnityHooks\Time.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UnityHooks\Vector2.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="$(MSBuildThisFileDirectory)Exceptions\" />
-  </ItemGroup>
 </Project>
