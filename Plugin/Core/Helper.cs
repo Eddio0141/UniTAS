@@ -99,8 +99,6 @@ internal static class Helper
                 }
             }
             version = builder;
-            
-            UnityEngine.Debug.Log($"version concat: {version}");
 
             string[] versionSplit;
             if (version.Contains('.'))
