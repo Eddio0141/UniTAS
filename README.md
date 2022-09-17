@@ -73,6 +73,9 @@ Depends on BepInEx's progress on it
 // TODO create template
 // Some information about UnityHelpers binding
 
+# Adding patches
+- If the patch target exists across all versions of .NET / Unity in the same form, add to Core/Patches
+
 # Background tasks to be finished
 - Update() and FixedUpdate() calls in core needs to be done before Unity calls happen, hook to make it work.
 - Create core patches which will be patches for things that exists in all unity versions / .NET versions
