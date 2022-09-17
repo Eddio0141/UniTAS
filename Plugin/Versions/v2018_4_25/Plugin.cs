@@ -60,7 +60,7 @@ public class Plugin : BaseUnityPlugin
         // TODO remove this test
         if (!Core.TAS.Main.Running && Input.GetKeyDown(KeyCode.K))
         {
-            var text = File.ReadAllText("C:\\Users\\Yuki\\Documents\\test.uti");
+            var text = File.ReadAllText("C:\\Users\\eddio\\Cat Quest\\test.uti");
             var movie = new Movie("test.uti", text, out var err);
 
             if (err != "")
