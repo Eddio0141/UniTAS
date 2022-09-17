@@ -12,6 +12,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Helper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Log.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PluginInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SaveState\Main.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SaveState\State.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TAS\Input\Axis.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TAS\Input\Keyboard.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TAS\Input\Main.cs" />
@@ -31,6 +33,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)UnityHooks\MonoBehavior.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UnityHooks\Object.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UnityHooks\Helpers\To.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UnityHooks\Scene.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UnityHooks\SceneManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UnityHooks\Time.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UnityHooks\Vector2.cs" />
