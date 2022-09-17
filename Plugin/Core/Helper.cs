@@ -139,4 +139,14 @@ internal static class Helper
             Patch = versionSplitValues[2];
         }
     }
+
+    /// <summary>
+    /// Only call this after UnityPlayer.dll gets loaded.
+    /// </summary>
+    /// <returns></returns>
+    public static string UnityVersion()
+    {
+        System.Diagnostics.FileVersionInfo fileVersion = System.Diagnostics.FileVersionInfo.GetVersionInfo(@".\UnityPlayer.dll");
+        return fileVersion.FileVersion;
+    }
 }
