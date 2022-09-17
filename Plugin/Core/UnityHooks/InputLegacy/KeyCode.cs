@@ -1,21 +1,22 @@
 ﻿using Core.UnityHooks.Helpers;
 using System;
+using System.Collections.Generic;
 
 namespace Core.UnityHooks.InputLegacy;
 
-internal class KeyCode : BaseEnum<KeyCode, KeyCodeType_2021_2_14>
+public class KeyCode : BaseEnum<KeyCode>
 {
     public string Value { get; set; }
 
-    protected override void InitByUnityVersion(Type objType, UnityVersion version)
+    protected override Dictionary<UnityVersion, Type> GetAllEnumTypes()
     {
-        switch (version)
-        {
-            case UnityVersion.v2018_4_25:
-            case UnityVersion.v2021_2_14:
-                break;
-        }
+        return new Dictionary<UnityVersion, Type>() {
+            { UnityVersion.v2018_4_25, typeof(KeyCodeTypeBase) },
+            { UnityVersion.v2021_2_14, typeof(KeyCodeType_2021_2_00) },
+        };
     }
+
+    protected override void InitByUnityVersion(Type objType, UnityVersion version) { }
 }
 
 public enum KeyCodeTypeBase
@@ -345,10 +346,10 @@ public enum KeyCodeTypeBase
     Joystick8Button16,
     Joystick8Button17,
     Joystick8Button18,
-    Joystick8Button19
+    Joystick8Button19,
 }
 
-public enum KeyCodeType_2021_2_14
+public enum KeyCodeType_2021_2_00
 {
     LeftMeta = 310,
     RightMeta = 309,
