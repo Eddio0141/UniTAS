@@ -145,3 +145,4 @@ I haven't planned for VR support currently
   - [ ] 2018.3-2021.1: adds Percent, LeftCurlyBracket, Pipe, RightCurlyBracket, Tilde
   - [x] 2021.2-2022.2: adds LeftMeta, RightMeta
   - [ ] 2023.1: adds WheelUp, WheelDown
+- Movie can set window focus
