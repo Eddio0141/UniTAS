@@ -1,7 +1,7 @@
 ﻿using HarmonyLib;
 //using UnityEngine.EventSystems;
 
-namespace UniTASPlugin.Patches.Auto.TASInput.__UnityEngine.__EventSystems;
+namespace UniTASPlugin.Patches.TASInput.__UnityEngine.__EventSystems;
 
 #pragma warning disable IDE1006
 

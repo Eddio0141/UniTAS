@@ -1,7 +1,7 @@
 ﻿using HarmonyLib;
 using System;
 
-namespace UniTASPlugin.Patches.Auto.Time.__System;
+namespace UniTASPlugin.Patches.Time.__System;
 
 [HarmonyPatch(typeof(DateTime), nameof(DateTime.Now), MethodType.Getter)]
 class NowGetter

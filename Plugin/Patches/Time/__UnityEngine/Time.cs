@@ -1,6 +1,6 @@
 ﻿using HarmonyLib;
 
-namespace UniTASPlugin.Patches.Auto.Time.__UnityEngine;
+namespace UniTASPlugin.Patches.Time.__UnityEngine;
 
 #pragma warning disable IDE1006
 

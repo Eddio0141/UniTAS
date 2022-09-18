@@ -25,18 +25,11 @@ public class Plugin : BaseUnityPlugin
     {
         Log = Logger;
 
-        // get all assembly names
-        var assemblyNames = AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetName().Name).ToList();
-        foreach (var assemblyName in assemblyNames)
-        {
-            Log.LogDebug(assemblyName);
-        }
-
         var unityVersion = Helper.UnityVersion();
         Log.LogInfo($"Internally found version: {unityVersion}");
         // TODO make this version compatible, v3.5.1 doesn't have those
         //Logger.Log.LogInfo($"Game company name: {Application.companyName}, product name: {Application.productName}, version: {Application.version}");
-        
+
         var unityVersionEnum = UnityVersionFromString(unityVersion);
         UnityVersion = unityVersionEnum.UnityVersion;
 
@@ -57,7 +50,6 @@ public class Plugin : BaseUnityPlugin
 
         var harmony = new Harmony($"{NAME}HarmonyPatch");
         harmony.PatchAll();
-        Patches.Manual.PatchWithChecks.Patch();
 
         var asyncHandler = new GameObject();
         asyncHandler.AddComponent<UnityASyncHandler>();

@@ -1,12 +1,42 @@
 ﻿using HarmonyLib;
+using System;
+using System.Reflection;
 using UniTASPlugin.TAS.Input;
 using UnityEngine;
 
-namespace UniTASPlugin.Patches.Auto.TASInput.__UnityEngine;
+namespace UniTASPlugin.Patches.TASInput.__UnityEngine;
 
 [HarmonyPatch(typeof(Input))]
 class InputPatch
 {
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        var msgBuilder = "";
+        if (original != null)
+            msgBuilder += original.Name;
+        if (ex != null)
+        {
+            if (msgBuilder != "")
+                msgBuilder += ": ";
+            msgBuilder += ex.Message;
+        }
+
+        Plugin.Log.LogDebug($"Failed to patch: {msgBuilder}");
+        return null;
+    }
+
+    [HarmonyPrefix]
+    [HarmonyPatch(nameof(Input.mainGyroIndex_Internal))]
+    static bool Prefix_mainGyroIndex_Internal(ref int __result)
+    {
+        if (TAS.Main.Running)
+        {
+            // TODO
+            return false;
+        }
+        return true;
+    }
+
     [HarmonyPrefix]
     [HarmonyPatch(nameof(Input.GetPosition))]
     static bool Prefix_GetPosition(int deviceID, ref Vector3 __result)

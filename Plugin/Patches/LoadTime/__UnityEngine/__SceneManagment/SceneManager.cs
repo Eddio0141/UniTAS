@@ -3,7 +3,7 @@ using System;
 using UnityEngine;
 //using UnityEngine.SceneManagement;
 
-namespace UniTASPlugin.Patches.Auto.LoadTime.__UnityEngine.__SceneManagment;
+namespace UniTASPlugin.Patches.LoadTime.__UnityEngine.__SceneManagment;
 
 /*
 [HarmonyPatch(typeof(SceneManager), nameof(SceneManager.LoadSceneAsync), new Type[] { typeof(int), typeof(LoadSceneParameters) })]
