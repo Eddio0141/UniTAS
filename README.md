@@ -41,20 +41,16 @@ I haven't planned for VR support currently
 Depends on BepInEx's progress on it
 
 # Important TODOs
+- Fix all errors
+- Use System.Reflection and [manual patching](https://harmony.pardeike.net/articles/basics.html#manual-patching) to patch stuff depending on unity version. Might have to stick to manual patching everything since unity engine has changed a lot
 - Separate tool to set up the TAS tool for a unity game
 - Integrate BepInEx to project
 - Build script or something to build everything properly
-- A way to handle additional unity patches which is a dependency not included by default
 - TAS GUI
-- What to do with additional unity dependencies? Currently 2021.2.14 has UnityEngine.UI required but maybe can get away with trying to bind
 
-# Version support
+# Working versions
 - 2021.2.14
-  - [ ] .NET Framework 4.6
-  - [ ] .NET Framework 3.5
 - 2018.4.25
-  - [ ] .NET Framework 4.6
-  - [ ] .NET Framework 3.5
 
 # Supported games
 - "It Steals"
