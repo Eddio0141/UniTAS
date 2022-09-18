@@ -58,8 +58,7 @@ Depends on BepInEx's progress on it
   - 12.4
 
 # Adding unity version support
-// TODO create template
-// Some information about UnityHelpers binding
+// TODO add info
 
 # Adding patches
 - If the patch target exists across all versions of .NET / Unity in the same form, add to Core/Patches
