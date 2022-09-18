@@ -4,8 +4,6 @@ using UnityEngine;
 
 namespace UniTASPlugin.Patches.Auto.TASInput.__UnityEngine;
 
-#pragma warning disable IDE1006
-
 [HarmonyPatch(typeof(Input))]
 class InputPatch
 {
@@ -319,20 +317,6 @@ class InputPatch
             __result = Mouse.Position;
             return false;
         }
-        return true;
-    }
-
-    [HarmonyPrefix]
-    [HarmonyPatch("mousePresent", MethodType.Getter)]
-    static bool Prefix_mousePresentGetter(ref bool __result)
-    {
-        if (TAS.Main.Running)
-        {
-            __result = Mouse.MousePresent;
-
-            return false;
-        }
-
         return true;
     }
 
