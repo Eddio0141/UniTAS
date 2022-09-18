@@ -23,10 +23,4 @@
   <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="all" />
   </ItemGroup>
-  
-  <ItemGroup Condition="'$(TargetFramework)' == 'net46'">
-    <Reference Include="v2021_2_19_UnityEngine.UI">
-      <HintPath>..\Dependencies\UnityEngine.UI\v2021_2_19\UnityEngine.UI.dll</HintPath>
-    </Reference>
-  </ItemGroup>
 </Project>
