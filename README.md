@@ -10,7 +10,6 @@ A tool that lets you TAS unity games hopefully
 - The only code right now is in Plugin which is a [BepInEx](https://docs.bepinex.dev/master/) plugin, and only tested with the game "It Steals" latest version
 - Has many testing code that won't work on other pcs such as:
   - Building the UniTASPlugin plugin would try copy the dll to `C:\Program Files (x86)\Steam\steamapps\common\It Steals\BepInEx\plugins`
-  - Plugin runs only with netstandard2.1
 - Pressing "K" would run a test TAS from path `C:\Program Files (x86)\Steam\steamapps\common\It Steals\test.uti`
 - Currently no convenient tool that installs this TAS tool to some unity game
 - Only tested in windows
@@ -47,23 +46,15 @@ Depends on BepInEx's progress on it
 - Build script or something to build everything properly
 - A way to handle additional unity patches which is a dependency not included by default
 - TAS GUI
-- Template for unity version
-- Check if I need netstandard2.1
-- Each unity version might need to build for netstandard2.0, net46, net35. [read this](https://docs.microsoft.com/en-us/nuget/create-packages/multiple-target-frameworks-project-file).
 - What to do with additional unity dependencies? Currently 2021.2.14 has UnityEngine.UI required but maybe can get away with trying to bind
-- Not sure if different net versions needs to be built and supported for each unity version support
-- Not sure if UnityEngine.UI exists in other games with same game version
 
 # Version support
 - 2021.2.14
-  - [x] .NET Standard 2.1
-  - [x] .NET Standard 2.0
   - [ ] .NET Framework 4.6
   - [ ] .NET Framework 3.5
 - 2018.4.25
-  - [ ] .NET Standard 2.0
   - [ ] .NET Framework 4.6
-  - [x] .NET Framework 3.5
+  - [ ] .NET Framework 3.5
 
 # Supported games
 - "It Steals"
