@@ -1,37 +1,41 @@
 ﻿using HarmonyLib;
+using System;
+using System.Reflection;
 //using UnityEngine.EventSystems;
 
 namespace UniTASPlugin.Patches.TASInput.__UnityEngine.__EventSystems;
 
 #pragma warning disable IDE1006
 
-/*
-[HarmonyPatch(typeof(EventSystem), "OnApplicationFocus")]
-class OnApplicationFocus
+[HarmonyPatch("UnityEngine.EventSystems.EventSystem")]
+class EventSystemPatch
 {
-    static void Prefix(ref bool hasFocus)
+    static Exception Cleanup(MethodBase original, Exception ex)
     {
-        if (Main.Running)
+        return Auxilary.Cleanup_IgnoreNotFound(original, ex);
+    }
+
+    //[HarmonyPrefix]
+    //[HarmonyPatch("OnApplicationFocus", new Type[] { typeof(bool) })]
+    public static void Prefix_OnApplicationFocus(ref bool hasFocus)
+    {
+        if (TAS.Main.Running)
         {
             // we dont want to lose focus while running the TAS
+            // TODO movie can let this lose focus
             hasFocus = true;
         }
     }
-}
 
-[HarmonyPatch(typeof(EventSystem), nameof(EventSystem.isFocused), MethodType.Getter)]
-class isFocusedGetter
-{
-    static bool Prefix(ref bool __result)
+    //[HarmonyPrefix]
+    //[HarmonyPatch("isFocused", MethodType.Getter)]
+    static bool Prefix_isFocusedGetter(ref bool __result)
     {
-        if (Main.Running)
+        if (TAS.Main.Running)
         {
             __result = true;
-
             return false;
         }
-
         return true;
     }
 }
-*/
