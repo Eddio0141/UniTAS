@@ -57,6 +57,7 @@ public class Plugin : BaseUnityPlugin
 
         var harmony = new Harmony($"{NAME}HarmonyPatch");
         harmony.PatchAll();
+        Patches.Manual.PatchWithChecks.Patch();
 
         var asyncHandler = new GameObject();
         asyncHandler.AddComponent<UnityASyncHandler>();
