@@ -47,6 +47,7 @@ Depends on BepInEx's progress on it
 - Integrate BepInEx to project
 - Build script or something to build everything properly
 - TAS GUI
+- Only patch / use types and methods that exist across all supported unity versions
 
 # Working versions
 - 2021.2.14
