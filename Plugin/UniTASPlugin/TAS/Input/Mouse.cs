@@ -1,6 +1,4 @@
-﻿using Core.UnityHooks;
-
-namespace UniTASPlugin.TAS.Input;
+﻿namespace UniTASPlugin.TAS.Input;
 
 public static class Mouse
 {

@@ -1,8 +1,7 @@
-﻿using Core.UnityHooks.Helpers;
-using System;
+﻿using System;
 using System.Reflection;
 
-namespace Core.UnityHooks;
+namespace UniTASPlugin.UnityHooks;
 
 internal class SceneManager : Base<SceneManager>
 {

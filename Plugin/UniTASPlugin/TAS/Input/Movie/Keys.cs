@@ -1,5 +1,4 @@
-﻿using Core.UnityHooks.InputLegacy;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace UniTASPlugin.TAS.Input.Movie;

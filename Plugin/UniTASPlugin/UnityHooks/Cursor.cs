@@ -1,8 +1,7 @@
-﻿using Core.UnityHooks.Helpers;
-using System;
+﻿using System;
 using System.Reflection;
 
-namespace Core.UnityHooks;
+namespace UniTASPlugin.UnityHooks;
 
 #pragma warning disable IDE1006
 

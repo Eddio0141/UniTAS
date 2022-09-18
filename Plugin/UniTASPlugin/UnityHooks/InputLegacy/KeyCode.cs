@@ -1,8 +1,7 @@
-﻿using Core.UnityHooks.Helpers;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
-namespace Core.UnityHooks.InputLegacy;
+namespace UniTASPlugin.UnityHooks.InputLegacy;
 
 public class KeyCode : BaseEnum<KeyCode>
 {

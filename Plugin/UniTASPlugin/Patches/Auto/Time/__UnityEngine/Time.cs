@@ -9,7 +9,7 @@ class fixedUnscaledTimeGetter
 {
     static bool Prefix(ref float __result)
     {
-        __result = (float)System.TimeSpan.FromTicks(Core.TAS.Main.Time.Ticks).TotalSeconds;
+        __result = (float)System.TimeSpan.FromTicks(UniTASPlugin.TAS.Main.Time.Ticks).TotalSeconds;
         return false;
     }
 }
@@ -19,7 +19,7 @@ class fixedUnscaledTimeAsDoubleGetter
 {
     static bool Prefix(ref double __result)
     {
-        __result = System.TimeSpan.FromTicks(Core.TAS.Main.Time.Ticks).TotalSeconds;
+        __result = System.TimeSpan.FromTicks(UniTASPlugin.TAS.Main.Time.Ticks).TotalSeconds;
         return false;
     }
 }
@@ -29,7 +29,7 @@ class frameCountGetter
 {
     static bool Prefix(ref int __result)
     {
-        __result = (int)Core.TAS.Main.FrameCount;
+        __result = (int)UniTASPlugin.TAS.Main.FrameCount;
         return false;
     }
 }
@@ -39,7 +39,7 @@ class renderedFrameCountGetter
 {
     static bool Prefix(ref int __result)
     {
-        __result = (int)Core.TAS.Main.FrameCount;
+        __result = (int)UniTASPlugin.TAS.Main.FrameCount;
         return false;
     }
 }
@@ -49,7 +49,7 @@ class realtimeSinceStartupGetter
 {
     static bool Prefix(ref float __result)
     {
-        __result = (float)System.TimeSpan.FromTicks(Core.TAS.Main.Time.Ticks).TotalSeconds;
+        __result = (float)System.TimeSpan.FromTicks(UniTASPlugin.TAS.Main.Time.Ticks).TotalSeconds;
         return false;
     }
 }
@@ -59,7 +59,7 @@ class realtimeSinceStartupAsDoubleGetter
 {
     static bool Prefix(ref double __result)
     {
-        __result = System.TimeSpan.FromTicks(Core.TAS.Main.Time.Ticks).TotalSeconds;
+        __result = System.TimeSpan.FromTicks(UniTASPlugin.TAS.Main.Time.Ticks).TotalSeconds;
         return false;
     }
 }

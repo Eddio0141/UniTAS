@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Core.UnityHooks.Helpers;
+namespace UniTASPlugin.UnityHooks.Helpers;
 
 public abstract class Base<T>
 {

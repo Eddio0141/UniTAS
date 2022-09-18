@@ -12,9 +12,9 @@ class DontDestroyOnLoad
             return;
 
         var id = target.GetInstanceID();
-        if (!Core.TAS.Main.DontDestroyOnLoadIDs.Contains(id))
+        if (!UniTASPlugin.TAS.Main.DontDestroyOnLoadIDs.Contains(id))
         {
-            Core.TAS.Main.DontDestroyOnLoadIDs.Add(id);
+            UniTASPlugin.TAS.Main.DontDestroyOnLoadIDs.Add(id);
         }
     }
 }
@@ -29,7 +29,7 @@ class Destroy__Object__float
 
         var id = obj.GetInstanceID();
 
-        Core.TAS.Main.DontDestroyOnLoadIDs.Remove(id);
+        UniTASPlugin.TAS.Main.DontDestroyOnLoadIDs.Remove(id);
     }
 }
 
@@ -43,6 +43,6 @@ class DestroyImmediate__Object__bool
 
         var id = obj.GetInstanceID();
 
-        Core.TAS.Main.DontDestroyOnLoadIDs.Remove(id);
+        UniTASPlugin.TAS.Main.DontDestroyOnLoadIDs.Remove(id);
     }
 }

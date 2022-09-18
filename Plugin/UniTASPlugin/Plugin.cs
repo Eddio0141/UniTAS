@@ -1,4 +1,5 @@
 ﻿using BepInEx;
+using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -43,12 +44,12 @@ public class Plugin : BaseUnityPlugin
                 throw new InvalidOperationException();
         }
 
-        var harmony = new Harmony($"{Core.PluginInfo.NAME}HarmonyPatch");
+        var harmony = new Harmony($"{NAME}HarmonyPatch");
         harmony.PatchAll();
 
         var asyncHandler = new GameObject();
         asyncHandler.AddComponent<UnityASyncHandler>();
-        Core.TAS.Main.AddUnityASyncHandlerID(asyncHandler.GetInstanceID());
+        UniTASPlugin.TAS.Main.AddUnityASyncHandlerID(asyncHandler.GetInstanceID());
 
         Log.LogInfo($"Plugin {NAME} is loaded!");
     }
@@ -173,10 +174,10 @@ public class Plugin : BaseUnityPlugin
     private void Update()
     {
         GameCapture.Update();
-        Core.TAS.Main.Update(Time.deltaTime);
+        UniTASPlugin.TAS.Main.Update(Time.deltaTime);
 
         // TODO remove this test
-        if (!Core.TAS.Main.Running && Input.GetKeyDown(KeyCode.K))
+        if (!UniTASPlugin.TAS.Main.Running && Input.GetKeyDown(KeyCode.K))
         {
             var text = File.ReadAllText("C:\\Program Files (x86)\\Steam\\steamapps\\common\\It Steals\\test.uti");
             var movie = new Movie("test.uti", text, out var err);
@@ -187,21 +188,21 @@ public class Plugin : BaseUnityPlugin
                 return;
             }
 
-            Core.TAS.Main.RunMovie(movie);
+            UniTASPlugin.TAS.Main.RunMovie(movie);
         }
-        if (!Core.TAS.Main.Running && Input.GetKeyDown(KeyCode.L))
+        if (!UniTASPlugin.TAS.Main.Running && Input.GetKeyDown(KeyCode.L))
         {
-            Core.SaveState.Main.Save();
+            UniTASPlugin.SaveState.Main.Save();
         }
-        if (!Core.TAS.Main.Running && Input.GetKeyDown(KeyCode.O))
+        if (!UniTASPlugin.TAS.Main.Running && Input.GetKeyDown(KeyCode.O))
         {
-            Core.SaveState.Main.Load();
+            UniTASPlugin.SaveState.Main.Load();
         }
     }
 
     private void FixedUpdate()
     {
-        Core.TAS.Main.FixedUpdate();
+        UniTASPlugin.TAS.Main.FixedUpdate();
     }
 }
 

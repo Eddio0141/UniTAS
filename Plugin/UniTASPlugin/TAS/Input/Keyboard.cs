@@ -1,5 +1,4 @@
-﻿using Core.UnityHooks.InputLegacy;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace UniTASPlugin.TAS.Input;
 

@@ -1,8 +1,7 @@
-﻿using Core.UnityHooks.Helpers;
-using System;
+﻿using System;
 using System.Reflection;
 
-namespace Core.UnityHooks;
+namespace UniTASPlugin.UnityHooks;
 
 #pragma warning disable IDE1006
 public class Vector2 : Base<Vector2>, To

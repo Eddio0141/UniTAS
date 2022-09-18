@@ -1,8 +1,6 @@
-﻿using Core.UnityHooks;
-using System;
-using static Core.Helper;
+﻿using System;
 
-namespace Core.SaveState;
+namespace UniTASPlugin.SaveState;
 
 internal static class Main
 {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace Core.UnityHooks;
+namespace UniTASPlugin.UnityHooks;
 
 public static class Main
 {

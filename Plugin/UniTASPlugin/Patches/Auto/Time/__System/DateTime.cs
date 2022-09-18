@@ -8,7 +8,7 @@ class NowGetter
 {
     static bool Prefix(ref DateTime __result)
     {
-        __result = Core.TAS.Main.Time;
+        __result = UniTASPlugin.TAS.Main.Time;
         return false;
     }
 }
