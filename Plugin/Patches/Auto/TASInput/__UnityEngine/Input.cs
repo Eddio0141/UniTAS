@@ -8,20 +8,6 @@ namespace UniTASPlugin.Patches.Auto.TASInput.__UnityEngine;
 #pragma warning disable CS0618
 #pragma warning disable IDE1006
 
-[HarmonyPatch(typeof(Input), nameof(Input.mainGyroIndex_Internal))]
-class mainGyroIndex_Internal
-{
-    static bool Prefix(ref int __result)
-    {
-        if (TAS.Main.Running)
-        {
-            // TODO
-            return false;
-        }
-        return true;
-    }
-}
-
 [HarmonyPatch(typeof(Input), nameof(Input.GetPosition))]
 class GetPosition
 {
