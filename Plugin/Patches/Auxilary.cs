@@ -1,0 +1,23 @@
+﻿using System;
+using System.Reflection;
+
+namespace UniTASPlugin.Patches;
+
+public static class Auxilary
+{
+    public static Exception Cleanup_IgnoreNotFound(MethodBase original, Exception ex)
+    {
+        var msgBuilder = "";
+        if (original != null)
+            msgBuilder += original.Name;
+        if (ex != null)
+        {
+            if (msgBuilder != "")
+                msgBuilder += ": ";
+            msgBuilder += ex.Message;
+        }
+
+        Plugin.Log.LogDebug($"Failed to patch: {msgBuilder}");
+        return null;
+    }
+}

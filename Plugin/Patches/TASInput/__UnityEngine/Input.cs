@@ -11,19 +11,58 @@ class InputPatch
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        var msgBuilder = "";
-        if (original != null)
-            msgBuilder += original.Name;
-        if (ex != null)
-        {
-            if (msgBuilder != "")
-                msgBuilder += ": ";
-            msgBuilder += ex.Message;
-        }
-
-        Plugin.Log.LogDebug($"Failed to patch: {msgBuilder}");
-        return null;
+        return Auxilary.Cleanup_IgnoreNotFound(original, ex);
     }
+
+    // TODO not sure what this is
+    /*
+    [HarmonyPrefix]
+    [HarmonyPatch("CheckDisabled")]
+    static void Prefix_CheckDisabled(ref int __result)
+    {
+    }
+    */
+
+    [HarmonyPrefix]
+    [HarmonyPatch("penEventCount", MethodType.Getter)]
+    static bool Prefix_penEventCountGetter(ref int __result)
+    {
+        if (TAS.Main.Running)
+        {
+            // TODO
+            __result = 0;
+            return false;
+        }
+        return true;
+    }
+
+    [HarmonyPrefix]
+    [HarmonyPatch("mousePresent", MethodType.Getter)]
+    static bool Prefix_mousePresentGetter(ref bool __result)
+    {
+        if (TAS.Main.Running)
+        {
+            // TODO option to present mouse
+            __result = true;
+            return false;
+        }
+        return true;
+    }
+
+    // TODO does the ret value work with ref?
+    [HarmonyPrefix]
+    [HarmonyPatch("GetPenEvent_Injected", new Type[] { typeof(int) })]
+    static bool Prefix_GetPenEvent_Injected(int index, ref object ret)
+    {
+        if (TAS.Main.Running)
+        {
+            // TODO
+            return false;
+        }
+        return true;
+    }
+
+    // above calls GetPenEvent
 
     [HarmonyPrefix]
     [HarmonyPatch(nameof(Input.mainGyroIndex_Internal))]
