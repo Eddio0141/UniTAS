@@ -10,7 +10,7 @@ A tool that lets you TAS unity games hopefully
 - The only code right now is in Plugin which is a [BepInEx](https://docs.bepinex.dev/master/) plugin, and only tested with the game "It Steals" latest version
 - Has many testing code that won't work on other pcs such as:
   - Building the UniTASPlugin plugin would try copy the dll to `C:\Program Files (x86)\Steam\steamapps\common\It Steals\BepInEx\plugins`
-- Pressing "K" would run a test TAS from path `C:\Program Files (x86)\Steam\steamapps\common\It Steals\test.uti`
+  - Pressing "K" would run a test TAS from path `C:\Program Files (x86)\Steam\steamapps\common\It Steals\test.uti`
 - Currently no convenient tool that installs this TAS tool to some unity game
 - Only tested in windows
 
@@ -65,9 +65,6 @@ Depends on BepInEx's progress on it
 
 # Background tasks to be finished
 - Update() and FixedUpdate() calls in core needs to be done before Unity calls happen, hook to make it work.
-- Create core patches which will be patches for things that exists in all unity versions / .NET versions
-- Pass assembly information to some initializer for Core.UnityHooks and use reflection to get the types rather than finding each type in Plugin initialization
-- Clean up Plugin and UnityASyncHandler type passing
 - Full input legacy system override
   - [x] Mouse clicks
   - [x] Axis & value control
@@ -97,20 +94,20 @@ Depends on BepInEx's progress on it
 - Soft restart needs to reset save files
 - Savestates
   - [ ] Save
-    - [ ] Save current scene info
+    - [x] Save current scene info
     - [ ] Save graphics info
     - [ ] Save object IDs
     - [ ] Save object states
-    - [ ] Save system time
+    - [x] Save system time
     - [ ] Save game files
     - [ ] Wait for FixedUpdate or count current FixedUpdate iteration
     - [ ] Find other game states
   - [ ] Load
-    - [ ] Load scene if not on the correct one
+    - [x] Load scene if not on the correct one
     - [ ] Load missing objects
     - [ ] Unload objects not in save
     - [ ] Load object states
-    - [ ] Set system time
+    - [x] Set system time
     - [ ] Load game files
 - Resolution needs to be defined in movie
 - DateTime customizability in movie and seed will use that type too
@@ -121,9 +118,8 @@ Depends on BepInEx's progress on it
 - Movie frame count on screen (also very important and funny)
 - New Framebulk instance not warning or throwing with FrameCount being 0 or too high than int max
 - Fix virtual cursor
-- Virtual cursor needs to have default texture
-- Objects like Plugin and UnityASyncHandler needs to be made sure to not be destroyed or cloned
-- Brute forcer stuff
+- Objects like Plugin and UnityASyncHandler needs to be made sure to not be destroyed or cloned (BepInEx.cfg can fix this problem most likely)
+- Brute forcer
 - Lua and other scripting methods?
 - System.Random
   - [ ] System.Random.GenerateSeed check if consistent generation
