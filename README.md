@@ -146,7 +146,6 @@ GetRotation
 GetPosition
 
 what doesn't exist in old UnityEngine.Input but does in modern
-GetPenEvent
 GetLastPenContactEvent
 ResetPenEvents
 ClearLastPenContactEvent
@@ -158,19 +157,14 @@ imeCompositionMode
 compositionString
 imeIsSelected
 compositionCursorPos
-mousePresent
-penEventCount
 touchPressureSupported
 stylusTouchSupported
 touchSupported
 compensateSensors
-backButtonLeavesApp
 location
 compass
 GetGyroInternal
-CheckDisabled
 GetTouch_Injected
-GetPenEvent_Injected
 GetLastPenContactEvent_Injected
 GetAccelerationEvent_Injected
 SimulateTouchInternal_Injected
