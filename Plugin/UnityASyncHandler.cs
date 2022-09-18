@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using UniTASPlugin.TAS;
 using UnityEngine;
 
 namespace UniTASPlugin;

@@ -31,7 +31,6 @@ public static class Main
     public static bool RunInitOrStopping { get; private set; }
     public static System.DateTime Time { get; set; }
     public static ulong FrameCount { get; set; }
-    static readonly List<string> axisNames;
     static readonly List<int> firstObjIDs;
     /// <summary>
     /// Scene loading count status. 0 means there are no scenes loading, 1 means there is one scene loading, 2 means there are two scenes loading, etc.
@@ -63,7 +62,6 @@ public static class Main
         Time = System.DateTime.Now;
         Plugin.Log.LogInfo($"System time: {System.DateTime.Now}");
         FrameCount = 0;
-        axisNames = new List<string>();
         pendingFixedUpdateSoftRestart = false;
 
         firstObjIDs = new List<int>();
@@ -192,17 +190,7 @@ public static class Main
             }
         }
     }
-
-    public static void AxisCall(string axisName)
-    {
-        if (!axisNames.Contains(axisName))
-        {
-            axisNames.Add(axisName);
-
-            // notify new found axis
-            Plugin.Log.LogInfo($"Found new axis name: {axisName}");
-        }
-    }
+    
     /// <summary>
     /// Soft restart the game. This will not reload the game, but tries to reset the game state.
     /// Mainly used for TAS movie playback.

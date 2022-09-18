@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace UniTASPlugin.TAS.Input.Movie;
 
@@ -219,15 +220,15 @@ public class Movie
                         if (key == "")
                             continue;
 
-                        if (!KeyCode.IsDefined(key))
+                        if (!Enum.IsDefined(typeof(KeyCode), key))
                         {
                             errorMsg = "Key value not a valid key";
                             break;
                         }
 
                         // TODO check unity version and keycode check
-                        var k = Enum.Parse(KeyCode.ObjType, key);
-                        framebulk.Keys.Pressed.Add(new KeyCode(KeyCode.From(k).ToString()));
+                        var k = Enum.Parse(typeof(KeyCode), key);
+                        framebulk.Keys.Pressed.Add((KeyCode)k);
                     }
 
                     if (errorMsg != "")

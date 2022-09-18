@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using UniTASPlugin.UnityHooks.Helpers;
 
 namespace UniTASPlugin.UnityHooks;
 

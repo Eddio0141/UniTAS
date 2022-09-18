@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using UniTASPlugin.UnityHooks.Helpers;
 
 namespace UniTASPlugin.UnityHooks.InputLegacy;
 

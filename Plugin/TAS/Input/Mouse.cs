@@ -1,4 +1,6 @@
-﻿namespace UniTASPlugin.TAS.Input;
+﻿using UnityEngine;
+
+namespace UniTASPlugin.TAS.Input;
 
 public static class Mouse
 {

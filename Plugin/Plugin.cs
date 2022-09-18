@@ -23,6 +23,13 @@ public class Plugin : BaseUnityPlugin
     {
         Log = Logger;
 
+        // get all assembly names
+        var assemblyNames = AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetName().Name).ToList();
+        foreach (var assemblyName in assemblyNames)
+        {
+            Log.LogDebug(assemblyName);
+        }
+
         //var unityVersion = Helper.UnityVersion();
         //Log.LogInfo($"Internally found version: {unityVersion}");
         // TODO make this version compatible, v3.5.1 doesn't have those
@@ -53,6 +60,9 @@ public class Plugin : BaseUnityPlugin
         var asyncHandler = new GameObject();
         asyncHandler.AddComponent<UnityASyncHandler>();
         TAS.Main.AddUnityASyncHandlerID(asyncHandler.GetInstanceID());
+
+        // all axis names for help
+        Log.LogInfo($"All axis names: {string.Join(", ", Input.GetJoystickNames())}");
 
         Log.LogInfo($"Plugin {NAME} is loaded!");
     }
