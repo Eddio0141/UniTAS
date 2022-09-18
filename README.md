@@ -41,7 +41,7 @@ I haven't planned for VR support currently
 Depends on BepInEx's progress on it
 
 # Important TODOs
-- Fix all errors
+- Use Harmony's Traverse utilities for all reflection stuff
 - Use System.Reflection and [manual patching](https://harmony.pardeike.net/articles/basics.html#manual-patching) to patch stuff depending on unity version. Might have to stick to manual patching everything since unity engine has changed a lot
 - Separate tool to set up the TAS tool for a unity game
 - Integrate BepInEx to project
