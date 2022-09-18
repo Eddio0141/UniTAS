@@ -16,16 +16,18 @@ internal static class Main
 
     public static void Save()
     {
-        var scene = SceneManager.GetActiveScene();
-        var sceneIndex = Scene.buildIndex(scene);
+        // TODO only use this if unity version has it
+        //var scene = SceneManager.GetActiveScene();
+        //var sceneIndex = Scene.buildIndex(scene);
         var time = DateTime.Now;
         var frameCount = TAS.Main.FrameCount;
         var fixedUpdateIndex = TAS.Main.FixedUpdateIndex;
-        var cursorVisible = Cursor.visible;
-        var cursorLockState = Cursor.lockState;
-        var saveVersion = PluginInfo.UnityVersion;
+        // TODO only save this state if unity version has it
+        //var cursorVisible = Cursor.visible;
+        //var cursorLockState = Cursor.lockState;
+        var saveVersion = Plugin.UnityVersion;
 
-        Test = new State(sceneIndex, time, frameCount, fixedUpdateIndex, cursorVisible, cursorLockState, saveVersion);
+        Test = new State(/*sceneIndex,*/ time, frameCount, fixedUpdateIndex, /*cursorVisible, cursorLockState,*/ saveVersion);
         Plugin.Log.LogDebug("Saved test state");
     }
 
@@ -36,7 +38,7 @@ internal static class Main
         pendingLoad = true;
         pendingLoadFixedUpdateIndex = state.FixedUpdateIndex;
         pendingState = state;
-        Plugin.Log.LogDebug($"Scene: {state.Scene}, Time: {state.Time}, FrameCount: {state.FrameCount}, FixedUpdateIndex: {state.FixedUpdateIndex}");
+        Plugin.Log.LogDebug(/*$"Scene: {state.Scene}, */$"Time: {state.Time}, FrameCount: {state.FrameCount}, FixedUpdateIndex: {state.FixedUpdateIndex}");
     }
 
     public static void Update()
@@ -51,21 +53,24 @@ internal static class Main
     public static void LoadOperation()
     {
         Plugin.Log.LogDebug("Load operation starting");
-        var scene = pendingState.Scene;
+        // TODO sort out depending on unity version
+        //var scene = pendingState.Scene;
         var time = pendingState.Time;
         var frameCount = pendingState.FrameCount;
-        var cursorVisible = pendingState.CursorVisible;
-        var cursorLockState = pendingState.CursorLockState;
+        //var cursorVisible = pendingState.CursorVisible;
+        //var cursorLockState = pendingState.CursorLockState;
 
+        /*
         if (Scene.buildIndex(SceneManager.GetActiveScene()) != scene)
         {
             // load correct scene
             SceneManager.LoadScene(scene);
         }
+        */
         TAS.Main.Time = time;
         TAS.Main.FrameCount = frameCount;
-        Cursor.visible = cursorVisible;
-        Cursor.lockState = cursorLockState;
+        //Cursor.visible = cursorVisible;
+        //Cursor.lockState = cursorLockState;
 
         Plugin.Log.LogDebug($"Load operation finished, time: {DateTime.Now}, frameCount: {TAS.Main.FrameCount}");
     }

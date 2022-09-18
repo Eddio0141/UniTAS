@@ -32,7 +32,7 @@ internal class Time : Base<Time>
         // HACK cleaner handling of TAS tool controling framerate
         get
         {
-            if (PluginInfo.UnityVersion < new Helper.SemanticVersion(2021, 2, 14))
+            if (Plugin.UnityVersion < new Helper.SemanticVersion(2021, 2, 14))
             {
                 return (int)captureFramerateGetter.Invoke(null, new object[] { });
             }
@@ -43,7 +43,7 @@ internal class Time : Base<Time>
         }
         set
         {
-            if (PluginInfo.UnityVersion < new Helper.SemanticVersion(2021, 2, 14))
+            if (Plugin.UnityVersion < new Helper.SemanticVersion(2021, 2, 14))
             {
                 captureFramerateSetter.Invoke(null, new object[] { (int)value });
             }

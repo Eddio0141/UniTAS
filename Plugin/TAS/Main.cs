@@ -17,7 +17,8 @@ public static class Main
             RunInitOrStopping = true;
             if (value)
             {
-                Cursor.visible = false;
+                // TODO sort out depending on unity version
+                //Cursor.visible = false;
             }
             else
             {
@@ -225,8 +226,9 @@ public static class Main
         Plugin.Log.LogInfo("Soft restarting");
 
         // release mouse lock
-        Cursor.lockState = CursorLockModeType.None;
-        Cursor.visible = true;
+        // TODO sort out depending on unity version
+        //Cursor.lockState = CursorLockModeType.None;
+        //Cursor.visible = true;
 
         foreach (var obj in Object.FindObjectsOfType(typeof(MonoBehaviour)))
         {
@@ -256,7 +258,8 @@ public static class Main
         FrameCount = 0;
         FixedUpdateIndex = 0;
 
-        SceneManager.LoadScene(0);
+        // TODO sort out depending on unity version
+        //SceneManager.LoadScene(0);
 
         Plugin.Log.LogInfo("Finish soft restarting");
         Plugin.Log.LogInfo($"System time: {System.DateTime.Now}");

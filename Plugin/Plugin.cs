@@ -12,11 +12,13 @@ namespace UniTASPlugin;
 [BepInPlugin(GUID, NAME, VERSION)]
 public class Plugin : BaseUnityPlugin
 {
-    public const string GUID = "UniTASPlugin";
-    public const string NAME = "UniTAS";
-    public const string VERSION = "0.1.0";
+    internal const string GUID = "UniTASPlugin";
+    internal const string NAME = "UniTAS";
+    internal const string VERSION = "0.1.0";
 
     internal static BepInEx.Logging.ManualLogSource Log;
+
+    internal static UnityVersion UnityVersion;
 
     // TODO do i use static constructor here?
     private void Awake()
@@ -37,7 +39,7 @@ public class Plugin : BaseUnityPlugin
 
         // TODO fix this
         var unityVersionEnum = UnityVersionFromString("3.0.0");
-        var UnityVersion = unityVersionEnum.UnityVersion;
+        UnityVersion = unityVersionEnum.UnityVersion;
 
         switch (unityVersionEnum.UnitySupportStatus)
         {

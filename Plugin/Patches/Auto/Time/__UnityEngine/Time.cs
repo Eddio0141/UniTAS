@@ -4,12 +4,14 @@ namespace UniTASPlugin.Patches.Auto.Time.__UnityEngine;
 
 #pragma warning disable IDE1006
 
+// TODO manual patch or something
+/*
 [HarmonyPatch(typeof(UnityEngine.Time), nameof(UnityEngine.Time.fixedUnscaledTime), MethodType.Getter)]
 class fixedUnscaledTimeGetter
 {
     static bool Prefix(ref float __result)
     {
-        __result = (float)System.TimeSpan.FromTicks(UniTASPlugin.TAS.Main.Time.Ticks).TotalSeconds;
+        __result = (float)System.TimeSpan.FromTicks(TAS.Main.Time.Ticks).TotalSeconds;
         return false;
     }
 }
@@ -19,10 +21,11 @@ class fixedUnscaledTimeAsDoubleGetter
 {
     static bool Prefix(ref double __result)
     {
-        __result = System.TimeSpan.FromTicks(UniTASPlugin.TAS.Main.Time.Ticks).TotalSeconds;
+        __result = System.TimeSpan.FromTicks(TAS.Main.Time.Ticks).TotalSeconds;
         return false;
     }
 }
+*/
 
 [HarmonyPatch(typeof(UnityEngine.Time), nameof(UnityEngine.Time.frameCount), MethodType.Getter)]
 class frameCountGetter
@@ -54,6 +57,8 @@ class realtimeSinceStartupGetter
     }
 }
 
+// TODO also this too
+/*
 [HarmonyPatch(typeof(UnityEngine.Time), nameof(UnityEngine.Time.realtimeSinceStartupAsDouble), MethodType.Getter)]
 class realtimeSinceStartupAsDoubleGetter
 {
@@ -63,3 +68,4 @@ class realtimeSinceStartupAsDoubleGetter
         return false;
     }
 }
+*/

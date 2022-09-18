@@ -37,7 +37,11 @@ public class UnityASyncHandler : MonoBehaviour
 
     IEnumerator AsyncSceneLoadWait(AsyncOperation operation)
     {
-        yield return new WaitUntil(() => operation.isDone);
+        // TODO does this work fine
+        while (!operation.isDone)
+        {
+            yield return new WaitForEndOfFrame();
+        }
         Main.LoadingSceneCount--;
     }
 
@@ -56,7 +60,11 @@ public class UnityASyncHandler : MonoBehaviour
 
     IEnumerator AsyncSceneUnloadWait(AsyncOperation operation)
     {
-        yield return new WaitUntil(() => operation.isDone);
+        // TODO does this work fine
+        while (!operation.isDone)
+        {
+            yield return new WaitForEndOfFrame();
+        }
         Main.UnloadingSceneCount--;
     }
 }

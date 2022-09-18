@@ -35,7 +35,7 @@ public abstract class BaseEnum<T> : Base<T>
             var enumType = enumTypeWithVersion.Value;
 
             // don't allow enum version higher than current version
-            if (version > PluginInfo.UnityVersion)
+            if (version > Plugin.UnityVersion)
                 break;
 
             var enumVariants = Enum.GetValues(enumType);

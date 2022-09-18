@@ -25,7 +25,8 @@ public static class GameCapture
     static void CaptureFrame()
     {
         var path = $"{captureFolder}{Path.DirectorySeparatorChar}{captureCount}.png";
-        ScreenCapture.CaptureScreenshot(path);
+        // TODO sort out depending on unity version
+        //ScreenCapture.CaptureScreenshot(path);
         captureCount++;
     }
 
