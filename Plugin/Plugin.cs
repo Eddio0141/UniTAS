@@ -32,13 +32,12 @@ public class Plugin : BaseUnityPlugin
             Log.LogDebug(assemblyName);
         }
 
-        //var unityVersion = Helper.UnityVersion();
-        //Log.LogInfo($"Internally found version: {unityVersion}");
+        var unityVersion = Helper.UnityVersion();
+        Log.LogInfo($"Internally found version: {unityVersion}");
         // TODO make this version compatible, v3.5.1 doesn't have those
         //Logger.Log.LogInfo($"Game company name: {Application.companyName}, product name: {Application.productName}, version: {Application.version}");
-
-        // TODO fix this
-        var unityVersionEnum = UnityVersionFromString("3.0.0");
+        
+        var unityVersionEnum = UnityVersionFromString(unityVersion);
         UnityVersion = unityVersionEnum.UnityVersion;
 
         switch (unityVersionEnum.UnitySupportStatus)
