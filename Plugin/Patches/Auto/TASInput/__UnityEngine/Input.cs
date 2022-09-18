@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using UniTASPlugin.TAS.Input;
 using UnityEngine;
 
 namespace UniTASPlugin.Patches.Auto.TASInput.__UnityEngine;
@@ -11,9 +12,9 @@ class GetKeyInt
 {
     static bool Prefix(KeyCode key, ref bool __result)
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
-            __result = Keyboard.Keys.Contains((UniTASPlugin.UnityHooks.InputLegacy.KeyCode)UniTASPlugin.UnityHooks.InputLegacy.KeyCode.From(key));
+            __result = Keyboard.Keys.Contains((UnityHooks.InputLegacy.KeyCode)UnityHooks.InputLegacy.KeyCode.From(key));
 
             return false;
         }
@@ -27,7 +28,7 @@ class GetKeyString
 {
     static bool Prefix(/*string name, ref bool __result*/)
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             //Log.LogDebug($"GetKeyString: {name}");
 
@@ -43,9 +44,9 @@ class GetKeyUpInt
 {
     static bool Prefix(KeyCode key, ref bool __result)
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
-            __result = Keyboard.KeysUp.Contains((UniTASPlugin.UnityHooks.InputLegacy.KeyCode)UniTASPlugin.UnityHooks.InputLegacy.KeyCode.From(key));
+            __result = Keyboard.KeysUp.Contains((UnityHooks.InputLegacy.KeyCode)UnityHooks.InputLegacy.KeyCode.From(key));
 
             return false;
         }
@@ -59,7 +60,7 @@ class GetKeyUpString
 {
     static bool Prefix(/*string name, ref bool __result*/)
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             //Log.LogDebug($"GetKeyUpString: {name}");
 
@@ -75,9 +76,9 @@ class GetKeyDownInt
 {
     static bool Prefix(KeyCode key, ref bool __result)
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
-            __result = Keyboard.KeysDown.Contains((UniTASPlugin.UnityHooks.InputLegacy.KeyCode)UniTASPlugin.UnityHooks.InputLegacy.KeyCode.From(key));
+            __result = Keyboard.KeysDown.Contains((UnityHooks.InputLegacy.KeyCode)UnityHooks.InputLegacy.KeyCode.From(key));
 
             return false;
         }
@@ -91,7 +92,7 @@ class GetKeyDownString
 {
     static bool Prefix(/*string name*/)
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             //Log.LogDebug($"GetKeyDownString: {name}");
 
@@ -107,9 +108,9 @@ class GetAxis
 {
     static bool Prefix(string axisName, ref float __result)
     {
-        UniTASPlugin.TAS.Main.AxisCall(axisName);
+        TAS.Main.AxisCall(axisName);
 
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             if (Axis.Values.TryGetValue(axisName, out float value))
             {
@@ -126,9 +127,9 @@ class GetAxisRaw
 {
     static bool Prefix(string axisName, ref float __result)
     {
-        UniTASPlugin.TAS.Main.AxisCall(axisName);
+        TAS.Main.AxisCall(axisName);
 
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             if (Axis.Values.TryGetValue(axisName, out float value))
             {
@@ -145,7 +146,7 @@ class GetButton
 {
     static bool Prefix()
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             return false;
         }
@@ -159,7 +160,7 @@ class GetButtonDown
 {
     static bool Prefix()
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             return false;
         }
@@ -173,7 +174,7 @@ class GetButtonUp
 {
     static bool Prefix()
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             return false;
         }
@@ -187,7 +188,7 @@ class GetMouseButton
 {
     static bool Prefix(ref bool __result, int button)
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             __result = button switch
             {
@@ -208,7 +209,7 @@ class GetMouseButtonDown
 {
     static bool Prefix(ref bool __result, int button)
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             __result = button switch
             {
@@ -229,7 +230,7 @@ class GetMouseButtonUp
 {
     static bool Prefix(ref bool __result, int button)
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             __result = button switch
             {
@@ -250,7 +251,7 @@ class ResetInputAxes
 {
     static bool Prefix()
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             return false;
         }
@@ -264,7 +265,7 @@ class GetJoystickNames
 {
     static bool Prefix()
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             return false;
         }
@@ -278,7 +279,7 @@ class GetTouch
 {
     static bool Prefix()
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             return false;
         }
@@ -305,7 +306,7 @@ class SimulateTouch
     {
         Plugin.Log.LogDebug($"UnityEngine.Input.SimulateTouch called with value: {touch}");
 
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             return false;
         }
@@ -321,7 +322,7 @@ class SimulateTouchInternal
     {
         Plugin.Log.LogDebug($"UnityEngine.Input.SimulateTouchInternal called with value: {touch}, {timestamp}");
 
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             return false;
         }
@@ -335,7 +336,7 @@ class simulateMouseWithTouchesGetter
 {
     static bool Prefix()
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             return false;
         }
@@ -360,7 +361,7 @@ class anyKeyGetter
 {
     static bool Prefix()
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             return false;
         }
@@ -374,7 +375,7 @@ class anyKeyDownGetter
 {
     static bool Prefix()
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             return false;
         }
@@ -388,7 +389,7 @@ class inputStringGetter
 {
     static bool Prefix()
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             return false;
         }
@@ -402,7 +403,7 @@ class mousePositionGetter
 {
     static bool Prefix(ref Vector3 __result)
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             __result = (Vector2)Mouse.Position.ConvertTo();
             return false;
@@ -416,7 +417,7 @@ class mouseScrollDeltaGetter
 {
     static bool Prefix()
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             return false;
         }
@@ -430,7 +431,7 @@ class imeCompositionModeGetter
 {
     static bool Prefix()
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             return false;
         }
@@ -455,7 +456,7 @@ class compositionStringGetter
 {
     static bool Prefix()
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             return false;
         }
@@ -469,7 +470,7 @@ class imeIsSelectedGetter
 {
     static bool Prefix()
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             return false;
         }
@@ -483,7 +484,7 @@ class compositionCursorPosGetter
 {
     static bool Prefix(ref Vector2 __result)
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             __result = (Vector2)Mouse.Position.ConvertTo();
 
@@ -510,7 +511,7 @@ class eatKeyPressOnTextFieldFocusGetter
 {
     static bool Prefix()
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             return false;
         }
@@ -524,7 +525,7 @@ class mousePresentGetter
 {
     static bool Prefix(ref bool __result)
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             __result = Mouse.MousePresent;
 
@@ -540,7 +541,7 @@ class touchCountGetter
 {
     static bool Prefix()
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             return false;
         }
@@ -554,7 +555,7 @@ class touchPressureSupportedGetter
 {
     static bool Prefix()
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             return false;
         }
@@ -568,7 +569,7 @@ class stylusTouchSupportedGetter
 {
     static bool Prefix()
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             return false;
         }
@@ -582,7 +583,7 @@ class touchSupportedGetter
 {
     static bool Prefix()
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             return false;
         }
@@ -596,7 +597,7 @@ class multiTouchEnabledGetter
 {
     static bool Prefix()
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             return false;
         }
@@ -621,7 +622,7 @@ class isGyroAvailableGetter
 {
     static bool Prefix()
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             return false;
         }
@@ -635,7 +636,7 @@ class deviceOrientationGetter
 {
     static bool Prefix()
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             return false;
         }
@@ -649,7 +650,7 @@ class accelerationGetter
 {
     static bool Prefix()
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             return false;
         }
@@ -663,7 +664,7 @@ class compensateSensorsGetter
 {
     static bool Prefix()
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             return false;
         }
@@ -688,7 +689,7 @@ class accelerationEventCountGetter
 {
     static bool Prefix()
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             return false;
         }
@@ -702,7 +703,7 @@ class backButtonLeavesAppGetter
 {
     static bool Prefix()
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             return false;
         }
@@ -716,7 +717,7 @@ class locationGetter
 {
     static bool Prefix()
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             return false;
         }
@@ -730,7 +731,7 @@ class compassGetter
 {
     static bool Prefix()
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             return false;
         }
@@ -744,7 +745,7 @@ class GetGyroInternal
 {
     static bool Prefix()
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             Plugin.Log.LogDebug("UnityEngine.Input.GetGyroInternal default value not set");
         }
@@ -763,7 +764,7 @@ class gyroGetter
 {
     static bool Prefix()
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             return false;
         }
@@ -777,7 +778,7 @@ class touchesGetter
 {
     static bool Prefix()
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             return false;
         }
@@ -791,7 +792,7 @@ class accelerationEventsGetter
 {
     static bool Prefix()
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             return false;
         }
@@ -825,7 +826,7 @@ class GetTouch_Injected
 {
     static bool Prefix(int index/*, out Touch ret*/)
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             Plugin.Log.LogDebug($"UnityEngine.Input.GetTouch_Injected called with arg {index}");
 
@@ -841,7 +842,7 @@ class GetAccelerationEvent_Injected
 {
     static bool Prefix(int index/*, out AccelerationEvent ret*/)
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             Plugin.Log.LogDebug($"UnityEngine.Input.GetAccelerationEvent_Injected called with arg {index}");
 
@@ -857,7 +858,7 @@ class SimulateTouchInternal_Injected
 {
     static bool Prefix(ref Touch touch, long timestamp)
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             Plugin.Log.LogDebug($"UnityEngine.Input.SimulateTouchInternal_Injected called with arg {touch}, {timestamp}");
 
@@ -873,7 +874,7 @@ class get_mousePosition_Injected
 {
     static bool Prefix(/*out Vector3 ret*/)
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             Plugin.Log.LogDebug($"UnityEngine.Input.get_mousePosition_Injected called, TODO set ret");
 
@@ -889,7 +890,7 @@ class get_mouseScrollDelta_Injected
 {
     static bool Prefix(/*out Vector2 ret*/)
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             Plugin.Log.LogDebug($"UnityEngine.Input.get_mouseScrollDelta_Injected called");
 
@@ -905,7 +906,7 @@ class get_compositionCursorPos_Injected
 {
     static bool Prefix(/*out Vector2 ret*/)
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             Plugin.Log.LogDebug($"UnityEngine.Input.get_compositionCursorPos_Injected called");
 
@@ -921,7 +922,7 @@ class set_compositionCursorPos_Injected
 {
     static bool Prefix(/*ref Vector2 value*/)
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             Plugin.Log.LogDebug($"UnityEngine.Input.set_compositionCursorPos_Injected called");
 
@@ -937,7 +938,7 @@ class get_acceleration_Injected
 {
     static bool Prefix(/*out Vector3 ret*/)
     {
-        if (UniTASPlugin.TAS.Main.Running)
+        if (TAS.Main.Running)
         {
             Plugin.Log.LogDebug($"UnityEngine.Input.get_acceleration_Injected called");
 

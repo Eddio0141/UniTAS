@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace UniTASPlugin;
 
-internal class UnityASyncHandler : MonoBehaviour
+public class UnityASyncHandler : MonoBehaviour
 {
     public static UnityASyncHandler Instance;
 

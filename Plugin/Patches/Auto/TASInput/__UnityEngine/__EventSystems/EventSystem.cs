@@ -1,10 +1,11 @@
 ﻿using HarmonyLib;
-using UnityEngine.EventSystems;
+//using UnityEngine.EventSystems;
 
 namespace UniTASPlugin.Patches.Auto.TASInput.__UnityEngine.__EventSystems;
 
 #pragma warning disable IDE1006
 
+/*
 [HarmonyPatch(typeof(EventSystem), "OnApplicationFocus")]
 class OnApplicationFocus
 {
@@ -33,3 +34,4 @@ class isFocusedGetter
         return true;
     }
 }
+*/

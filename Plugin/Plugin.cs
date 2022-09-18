@@ -2,7 +2,10 @@
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using UniTASPlugin.TAS.Input.Movie;
+using UnityEngine;
 
 namespace UniTASPlugin;
 
@@ -49,7 +52,7 @@ public class Plugin : BaseUnityPlugin
 
         var asyncHandler = new GameObject();
         asyncHandler.AddComponent<UnityASyncHandler>();
-        UniTASPlugin.TAS.Main.AddUnityASyncHandlerID(asyncHandler.GetInstanceID());
+        TAS.Main.AddUnityASyncHandlerID(asyncHandler.GetInstanceID());
 
         Log.LogInfo($"Plugin {NAME} is loaded!");
     }
@@ -174,10 +177,10 @@ public class Plugin : BaseUnityPlugin
     private void Update()
     {
         GameCapture.Update();
-        UniTASPlugin.TAS.Main.Update(Time.deltaTime);
+        TAS.Main.Update(Time.deltaTime);
 
         // TODO remove this test
-        if (!UniTASPlugin.TAS.Main.Running && Input.GetKeyDown(KeyCode.K))
+        if (!TAS.Main.Running && Input.GetKeyDown(KeyCode.K))
         {
             var text = File.ReadAllText("C:\\Program Files (x86)\\Steam\\steamapps\\common\\It Steals\\test.uti");
             var movie = new Movie("test.uti", text, out var err);
@@ -188,21 +191,21 @@ public class Plugin : BaseUnityPlugin
                 return;
             }
 
-            UniTASPlugin.TAS.Main.RunMovie(movie);
+            TAS.Main.RunMovie(movie);
         }
-        if (!UniTASPlugin.TAS.Main.Running && Input.GetKeyDown(KeyCode.L))
+        if (!TAS.Main.Running && Input.GetKeyDown(KeyCode.L))
         {
-            UniTASPlugin.SaveState.Main.Save();
+            SaveState.Main.Save();
         }
-        if (!UniTASPlugin.TAS.Main.Running && Input.GetKeyDown(KeyCode.O))
+        if (!TAS.Main.Running && Input.GetKeyDown(KeyCode.O))
         {
-            UniTASPlugin.SaveState.Main.Load();
+            SaveState.Main.Load();
         }
     }
 
     private void FixedUpdate()
     {
-        UniTASPlugin.TAS.Main.FixedUpdate();
+        TAS.Main.FixedUpdate();
     }
 }
 
