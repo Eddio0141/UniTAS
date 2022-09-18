@@ -47,7 +47,8 @@ Depends on BepInEx's progress on it
 - Integrate BepInEx to project
 - Build script or something to build everything properly
 - TAS GUI
-- Only patch / use types and methods that exist across all supported unity versions
+- Only use types and methods that exist across all supported unity versions with same args (or at least use object as input or something)
+- Patch types by detecting if they exist and ignore if it doesn't
 
 # Working versions
 - 2021.2.14
@@ -60,10 +61,9 @@ Depends on BepInEx's progress on it
 # Adding unity version support
 // TODO add info
 
-# Adding patches
-- If the patch target exists across all versions of .NET / Unity in the same form, add to Core/Patches
-
 # Background tasks to be finished
+- SystemInfo.supportsGyroscope needs to be patched, UnityEngine.SystemInfo needs to be checked for patches
+- Check InputUnsafeUtility and patch them in unity versions that has them
 - Update() and FixedUpdate() calls in core needs to be done before Unity calls happen, hook to make it work.
 - Full input legacy system override
   - [x] Mouse clicks
@@ -137,3 +137,59 @@ Depends on BepInEx's progress on it
   - [x] 2021.2-2022.2: adds LeftMeta, RightMeta
   - [ ] 2023.1: adds WheelUp, WheelDown
 - Movie can set window focus
+
+# Notes for myself
+```
+what doesn't exist in modern UnityEngine.Input but does in old
+mainGyroIndex_Internal
+GetRotation
+GetPosition
+
+what doesn't exist in old UnityEngine.Input but does in modern
+GetPenEvent
+GetLastPenContactEvent
+ResetPenEvents
+ClearLastPenContactEvent
+SimulateTouch
+SimulateTouchInternal
+simulateMouseWithTouches
+mouseScrollDelta
+imeCompositionMode
+compositionString
+imeIsSelected
+compositionCursorPos
+mousePresent
+penEventCount
+touchPressureSupported
+stylusTouchSupported
+touchSupported
+compensateSensors
+backButtonLeavesApp
+location
+compass
+GetGyroInternal
+CheckDisabled
+GetTouch_Injected
+GetPenEvent_Injected
+GetLastPenContactEvent_Injected
+GetAccelerationEvent_Injected
+SimulateTouchInternal_Injected
+get_mousePosition_Injected
+get_mouseScrollDelta_Injected
+get_compositionCursorPos_Injected
+set_compositionCursorPos_Injected
+get_acceleration_Injected
+
+what moved to InputUnsafeUtility in modern from old
+GetKeyUpString
+GetKeyString
+GetKeyDownString
+
+what arguments changed from old to modern UnityEngine.Input
+GetKeyInt
+GetKeyUpInt
+GetKeyDownInt
+
+notes from old to new
+isGyroAvailable deprecated, use SystemInfo.supportsGyroscope instead
+```
