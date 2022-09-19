@@ -169,7 +169,6 @@ class UnloadSceneAsync
 - Movie matching unity version and checks for that version such as keycode
 - Movie matching game name?
 - Movie store game version
-- Movie ability to switch between captureFramerate and captureDeltaTime
 - Input legacy system KeyCode
   - [ ] 3.5.1-3.5.5: has everything except below
   - [ ] 4.0-4.6: adds LeftCommand, RightCommand
