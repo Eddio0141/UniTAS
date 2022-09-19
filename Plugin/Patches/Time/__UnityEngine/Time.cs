@@ -14,6 +14,7 @@ class TimePatch
         return Auxilary.Cleanup_IgnoreNotFound(original, ex);
     }
 
+    /*
     [HarmonyPrefix]
     [HarmonyPatch("fixedUnscaledTime", MethodType.Getter)]
     static bool Prefix_fixedUnscaledTimeGetter(ref float __result)
@@ -29,6 +30,7 @@ class TimePatch
         __result = System.TimeSpan.FromTicks(TAS.Main.Time.Ticks).TotalSeconds;
         return false;
     }
+    */
 
     [HarmonyPrefix]
     [HarmonyPatch(nameof(UnityEngine.Time.frameCount), MethodType.Getter)]
@@ -59,6 +61,16 @@ class TimePatch
     static bool Prefix_realtimeSinceStartupAsDoubleGetter(ref double __result)
     {
         __result = System.TimeSpan.FromTicks(UniTASPlugin.TAS.Main.Time.Ticks).TotalSeconds;
+        return false;
+    }
+}
+
+[HarmonyPatch(typeof(UnityEngine.Time), "fixedUnscaledTime", MethodType.Getter)]
+class Test
+{
+    static bool Prefix(ref float __result)
+    {
+        __result = (float)TimeSpan.FromTicks(TAS.Main.Time.Ticks).TotalSeconds;
         return false;
     }
 }

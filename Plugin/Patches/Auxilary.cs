@@ -9,7 +9,7 @@ public static class Auxilary
     {
         var msgBuilder = "";
         if (original != null)
-            msgBuilder += original.Name;
+            msgBuilder += $"{original.DeclaringType}.{original.Name}";
         if (ex != null)
         {
             if (msgBuilder != "")
