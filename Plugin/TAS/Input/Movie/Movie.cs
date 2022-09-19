@@ -225,8 +225,7 @@ public class Movie
                             errorMsg = "Key value not a valid key";
                             break;
                         }
-
-                        // TODO check unity version and keycode check
+                        
                         var k = Enum.Parse(typeof(KeyCode), key);
                         framebulk.Keys.Pressed.Add((KeyCode)k);
                     }

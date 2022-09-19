@@ -70,8 +70,6 @@ public static class Main
         if (time == null)
             throw new Exception("UnityEngine.Time not found");
 
-        //      /InputLegacy
-        new InputLegacy.KeyCode("").Init(keyCode, Plugin.UnityVersion);
         //      /
         new Cursor().Init(cursor, Plugin.UnityVersion);
         new CursorLockMode("").Init(cursorLockMode, Plugin.UnityVersion);
