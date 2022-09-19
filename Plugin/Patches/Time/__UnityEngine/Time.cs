@@ -6,71 +6,92 @@ namespace UniTASPlugin.Patches.Time.__UnityEngine;
 
 #pragma warning disable IDE1006
 
-[HarmonyPatch(typeof(UnityEngine.Time))]
-class TimePatch
+[HarmonyPatch(typeof(UnityEngine.Time), "fixedUnscaledTime", MethodType.Getter)]
+class fixedUnscaledTimeGetter
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return Auxilary.Cleanup_IgnoreNotFound(original, ex);
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
     }
 
-    /*
-    [HarmonyPrefix]
-    [HarmonyPatch("fixedUnscaledTime", MethodType.Getter)]
-    static bool Prefix_fixedUnscaledTimeGetter(ref float __result)
+    static bool Prefix(ref float __result)
     {
-        __result = (float)System.TimeSpan.FromTicks(TAS.Main.Time.Ticks).TotalSeconds;
-        return false;
-    }
-
-    [HarmonyPrefix]
-    [HarmonyPatch("fixedUnscaledTimeAsDouble", MethodType.Getter)]
-    static bool Prefix_fixedUnscaledTimeAsDoubleGetter(ref double __result)
-    {
-        __result = System.TimeSpan.FromTicks(TAS.Main.Time.Ticks).TotalSeconds;
-        return false;
-    }
-    */
-
-    [HarmonyPrefix]
-    [HarmonyPatch(nameof(UnityEngine.Time.frameCount), MethodType.Getter)]
-    static bool Prefix_frameCountGetter(ref int __result)
-    {
-        __result = (int)TAS.Main.FrameCount;
-        return false;
-    }
-
-    [HarmonyPrefix]
-    [HarmonyPatch(nameof(UnityEngine.Time.renderedFrameCount), MethodType.Getter)]
-    static bool Prefix_renderedFrameCountGetter(ref int __result)
-    {
-        __result = (int)TAS.Main.FrameCount;
-        return false;
-    }
-
-    [HarmonyPrefix]
-    [HarmonyPatch(nameof(UnityEngine.Time.realtimeSinceStartup), MethodType.Getter)]
-    static bool Prefix_realtimeSinceStartupGetter(ref float __result)
-    {
-        __result = (float)System.TimeSpan.FromTicks(TAS.Main.Time.Ticks).TotalSeconds;
-        return false;
-    }
-
-    [HarmonyPrefix]
-    [HarmonyPatch("realtimeSinceStartupAsDouble", MethodType.Getter)]
-    static bool Prefix_realtimeSinceStartupAsDoubleGetter(ref double __result)
-    {
-        __result = System.TimeSpan.FromTicks(UniTASPlugin.TAS.Main.Time.Ticks).TotalSeconds;
+        __result = (float)TimeSpan.FromTicks(TAS.Main.Time.Ticks).TotalSeconds;
         return false;
     }
 }
 
-[HarmonyPatch(typeof(UnityEngine.Time), "fixedUnscaledTime", MethodType.Getter)]
-class Test
+[HarmonyPatch(typeof(UnityEngine.Time), "fixedUnscaledTimeAsDouble", MethodType.Getter)]
+class fixedUnscaledTimeAsDoubleGetter
 {
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static bool Prefix(ref double __result)
+    {
+        __result = TimeSpan.FromTicks(TAS.Main.Time.Ticks).TotalSeconds;
+        return false;
+    }
+}
+
+[HarmonyPatch(typeof(UnityEngine.Time), nameof(UnityEngine.Time.frameCount), MethodType.Getter)]
+class frameCountGetter
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static bool Prefix(ref int __result)
+    {
+        __result = (int)TAS.Main.FrameCount;
+        return false;
+    }
+}
+
+[HarmonyPatch(typeof(UnityEngine.Time), nameof(UnityEngine.Time.renderedFrameCount), MethodType.Getter)]
+class renderedFrameCountGetter
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static bool Prefix(ref int __result)
+    {
+        __result = (int)TAS.Main.FrameCount;
+        return false;
+    }
+}
+
+[HarmonyPatch(typeof(UnityEngine.Time), nameof(UnityEngine.Time.realtimeSinceStartup), MethodType.Getter)]
+class realtimeSinceStartupGetter
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
     static bool Prefix(ref float __result)
     {
         __result = (float)TimeSpan.FromTicks(TAS.Main.Time.Ticks).TotalSeconds;
+        return false;
+    }
+}
+
+[HarmonyPatch(typeof(UnityEngine.Time), "realtimeSinceStartupAsDouble", MethodType.Getter)]
+class realtimeSinceStartupAsDoubleGetter
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static bool Prefix(ref double __result)
+    {
+        __result = TimeSpan.FromTicks(TAS.Main.Time.Ticks).TotalSeconds;
         return false;
     }
 }

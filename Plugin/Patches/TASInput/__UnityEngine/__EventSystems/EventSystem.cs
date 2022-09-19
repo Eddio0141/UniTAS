@@ -5,17 +5,15 @@ using UnityEngine.EventSystems;
 
 namespace UniTASPlugin.Patches.TASInput.__UnityEngine.__EventSystems;
 
-[HarmonyPatch(typeof(EventSystem))]
-class EventSystemPatch
+[HarmonyPatch(typeof(EventSystem), nameof(EventSystem.isFocused), MethodType.Getter)]
+class isFocusedGetter
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return Auxilary.Cleanup_IgnoreNotFound(original, ex);
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
     }
 
-    [HarmonyPrefix]
-    [HarmonyPatch(nameof(EventSystem.isFocused), MethodType.Getter)]
-    static bool Prefix_isFocusedGetter(ref bool __result)
+    static bool Prefix(ref bool __result)
     {
         if (TAS.Main.Running)
         {

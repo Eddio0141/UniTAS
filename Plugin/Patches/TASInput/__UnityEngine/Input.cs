@@ -6,26 +6,24 @@ using UnityEngine;
 
 namespace UniTASPlugin.Patches.TASInput.__UnityEngine;
 
-[HarmonyPatch(typeof(Input))]
-class InputPatch
+// TODO not sure what this is
+/*
+[HarmonyPrefix]
+[HarmonyPatch("CheckDisabled")]
+static void Prefix_CheckDisabled(ref int __result)
+{
+}
+*/
+
+[HarmonyPatch(typeof(Input), "penEventCount", MethodType.Getter)]
+class penEventCountGetter
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return Auxilary.Cleanup_IgnoreNotFound(original, ex);
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
     }
 
-    // TODO not sure what this is
-    /*
-    [HarmonyPrefix]
-    [HarmonyPatch("CheckDisabled")]
-    static void Prefix_CheckDisabled(ref int __result)
-    {
-    }
-    */
-
-    [HarmonyPrefix]
-    [HarmonyPatch("penEventCount", MethodType.Getter)]
-    static bool Prefix_penEventCountGetter(ref int __result)
+    static bool Prefix(ref int __result)
     {
         if (TAS.Main.Running)
         {
@@ -35,10 +33,17 @@ class InputPatch
         }
         return true;
     }
+}
 
-    [HarmonyPrefix]
-    [HarmonyPatch("mousePresent", MethodType.Getter)]
-    static bool Prefix_mousePresentGetter(ref bool __result)
+[HarmonyPatch(typeof(Input), "mousePresent", MethodType.Getter)]
+class mousePresentGetter
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static bool Prefix(ref bool __result)
     {
         if (TAS.Main.Running)
         {
@@ -48,11 +53,18 @@ class InputPatch
         }
         return true;
     }
+}
 
-    // TODO does the ret value work with ref?
-    [HarmonyPrefix]
-    [HarmonyPatch("GetPenEvent_Injected", new Type[] { typeof(int) })]
-    static bool Prefix_GetPenEvent_Injected(int index, ref object ret)
+// TODO does the ret value work with ref?
+[HarmonyPatch(typeof(Input), "GetPenEvent_Injected", new Type[] { typeof(int) })]
+class GetPenEvent_Injected
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static bool Prefix(int index, ref object ret)
     {
         if (TAS.Main.Running)
         {
@@ -61,12 +73,19 @@ class InputPatch
         }
         return true;
     }
+}
 
-    // above calls GetPenEvent
+// above calls GetPenEvent
 
-    [HarmonyPrefix]
-    [HarmonyPatch(nameof(Input.mainGyroIndex_Internal))]
-    static bool Prefix_mainGyroIndex_Internal(ref int __result)
+[HarmonyPatch(typeof(Input), nameof(Input.mainGyroIndex_Internal))]
+class mainGyroIndex_Internal
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static bool Prefix(ref int __result)
     {
         if (TAS.Main.Running)
         {
@@ -75,10 +94,17 @@ class InputPatch
         }
         return true;
     }
+}
 
-    [HarmonyPrefix]
-    [HarmonyPatch(nameof(Input.GetPosition))]
-    static bool Prefix_GetPosition(int deviceID, ref Vector3 __result)
+[HarmonyPatch(typeof(Input), nameof(Input.GetPosition))]
+class GetPosition
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static bool Prefix(int deviceID, ref Vector3 __result)
     {
         if (TAS.Main.Running)
         {
@@ -87,25 +113,32 @@ class InputPatch
         }
         return true;
     }
+}
 
-    // above gets called from gyro { get; }
-    /*
-    public static Gyroscope gyro
+// above gets called from gyro { get; }
+/*
+public static Gyroscope gyro
+{
+    get
     {
-        get
+        if (Input.m_MainGyro == null)
         {
-            if (Input.m_MainGyro == null)
-            {
-                Input.m_MainGyro = new Gyroscope(Input.mainGyroIndex_Internal());
-            }
-            return Input.m_MainGyro;
+            Input.m_MainGyro = new Gyroscope(Input.mainGyroIndex_Internal());
         }
+        return Input.m_MainGyro;
     }
-    */
+}
+*/
 
-    [HarmonyPrefix]
-    [HarmonyPatch(nameof(Input.GetKeyInt))]
-    static bool Prefix_GetKeyInt(object key, ref bool __result)
+[HarmonyPatch(typeof(Input), nameof(Input.GetKeyInt))]
+class GetKeyInt
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static bool Prefix(object key, ref bool __result)
     {
         if (TAS.Main.Running)
         {
@@ -114,12 +147,19 @@ class InputPatch
         }
         return true;
     }
+}
 
-    // above gets called from GetKey
+// above gets called from GetKey
 
-    [HarmonyPrefix]
-    [HarmonyPatch(nameof(Input.GetKeyString))]
-    static bool Prefix_GetKeyString(/*string name, ref bool __result*/)
+[HarmonyPatch(typeof(Input), nameof(Input.GetKeyString))]
+class GetKeyString
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static bool Prefix(/*string name, ref bool __result*/)
     {
         if (TAS.Main.Running)
         {
@@ -128,12 +168,19 @@ class InputPatch
         }
         return true;
     }
+}
 
-    // above gets called from GetKey
+// above gets called from GetKey
 
-    [HarmonyPrefix]
-    [HarmonyPatch(nameof(Input.GetKeyUpString))]
-    static bool Prefix_GetKeyUpString(/*string name, ref bool __result*/)
+[HarmonyPatch(typeof(Input), nameof(Input.GetKeyUpString))]
+class GetKeyUpString
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static bool Prefix(/*string name, ref bool __result*/)
     {
         if (TAS.Main.Running)
         {
@@ -142,12 +189,19 @@ class InputPatch
         }
         return true;
     }
+}
 
-    // above gets called from GetKeyUp
+// above gets called from GetKeyUp
 
-    [HarmonyPrefix]
-    [HarmonyPatch(nameof(Input.GetKeyUpInt))]
-    static bool Prefix_GetKeyUpInt(object key, ref bool __result)
+[HarmonyPatch(typeof(Input), nameof(Input.GetKeyUpInt))]
+class GetKeyUpInt
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static bool Prefix(object key, ref bool __result)
     {
         if (TAS.Main.Running)
         {
@@ -156,12 +210,19 @@ class InputPatch
         }
         return true;
     }
+}
 
-    // above gets called from GetKeyUp
+// above gets called from GetKeyUp
 
-    [HarmonyPrefix]
-    [HarmonyPatch(nameof(Input.GetKeyDownString))]
-    static bool Prefix_GetKeyDownString(/*string name*/)
+[HarmonyPatch(typeof(Input), nameof(Input.GetKeyDownString))]
+class GetKeyDownString
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static bool Prefix(/*string name*/)
     {
         if (TAS.Main.Running)
         {
@@ -171,12 +232,19 @@ class InputPatch
 
         return true;
     }
+}
 
-    // above gets called from GetKeyDown
+// above gets called from GetKeyDown
 
-    [HarmonyPrefix]
-    [HarmonyPatch(nameof(Input.GetKeyDownInt))]
-    static bool Prefix_GetKeyDownInt(object key, ref bool __result)
+[HarmonyPatch(typeof(Input), nameof(Input.GetKeyDownInt))]
+class GetKeyDownInt
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static bool Prefix(object key, ref bool __result)
     {
         if (TAS.Main.Running)
         {
@@ -185,12 +253,19 @@ class InputPatch
         }
         return true;
     }
+}
 
-    // above gets called from GetKeyDown
+// above gets called from GetKeyDown
 
-    [HarmonyPrefix]
-    [HarmonyPatch(nameof(Input.GetAxis))]
-    static bool Prefix_GetAxis(string axisName, ref float __result)
+[HarmonyPatch(typeof(Input), nameof(Input.GetAxis))]
+class GetAxis
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static bool Prefix(string axisName, ref float __result)
     {
         if (TAS.Main.Running)
         {
@@ -202,10 +277,17 @@ class InputPatch
         }
         return true;
     }
+}
 
-    [HarmonyPrefix]
-    [HarmonyPatch(nameof(Input.GetAxisRaw))]
-    static bool Prefix_GetAxisRaw(string axisName, ref float __result)
+[HarmonyPatch(typeof(Input), nameof(Input.GetAxisRaw))]
+class GetAxisRaw
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static bool Prefix(string axisName, ref float __result)
     {
         if (TAS.Main.Running)
         {
@@ -218,10 +300,17 @@ class InputPatch
         }
         return true;
     }
+}
 
-    [HarmonyPrefix]
-    [HarmonyPatch(nameof(Input.GetButton))]
-    static bool Prefix_GetButton(string buttonName)
+[HarmonyPatch(typeof(Input), nameof(Input.GetButton))]
+class GetButton
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static bool Prefix(string buttonName)
     {
         if (TAS.Main.Running)
         {
@@ -230,10 +319,17 @@ class InputPatch
         }
         return true;
     }
+}
 
-    [HarmonyPrefix]
-    [HarmonyPatch(nameof(Input.GetButtonDown))]
-    static bool Prefix_GetButtonDown(string buttonName)
+[HarmonyPatch(typeof(Input), nameof(Input.GetButtonDown))]
+class GetButtonDown
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static bool Prefix(string buttonName)
     {
         if (TAS.Main.Running)
         {
@@ -242,10 +338,17 @@ class InputPatch
         }
         return true;
     }
+}
 
-    [HarmonyPrefix]
-    [HarmonyPatch(nameof(Input.GetButtonUp))]
-    static bool Prefix_GetButtonUp(string buttonName)
+[HarmonyPatch(typeof(Input), nameof(Input.GetButtonUp))]
+class GetButtonUp
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static bool Prefix(string buttonName)
     {
         if (TAS.Main.Running)
         {
@@ -254,10 +357,17 @@ class InputPatch
         }
         return true;
     }
+}
 
-    [HarmonyPrefix]
-    [HarmonyPatch(nameof(Input.GetMouseButton))]
-    static bool Prefix_GetMouseButton(ref bool __result, int button)
+[HarmonyPatch(typeof(Input), nameof(Input.GetMouseButton))]
+class GetMouseButton
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static bool Prefix(ref bool __result, int button)
     {
         if (TAS.Main.Running)
         {
@@ -272,10 +382,17 @@ class InputPatch
         }
         return true;
     }
+}
 
-    [HarmonyPrefix]
-    [HarmonyPatch(nameof(Input.GetMouseButtonDown))]
-    static bool Prefix_GetMouseButtonDown(ref bool __result, int button)
+[HarmonyPatch(typeof(Input), nameof(Input.GetMouseButtonDown))]
+class GetMouseButtonDown
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static bool Prefix(ref bool __result, int button)
     {
         if (TAS.Main.Running)
         {
@@ -290,10 +407,17 @@ class InputPatch
         }
         return true;
     }
+}
 
-    [HarmonyPrefix]
-    [HarmonyPatch(nameof(Input.GetMouseButtonUp))]
-    static bool Prefix_GetMouseButtonUp(ref bool __result, int button)
+[HarmonyPatch(typeof(Input), nameof(Input.GetMouseButtonUp))]
+class GetMouseButtonUp
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static bool Prefix(ref bool __result, int button)
     {
         if (TAS.Main.Running)
         {
@@ -308,10 +432,17 @@ class InputPatch
         }
         return true;
     }
+}
 
-    [HarmonyPrefix]
-    [HarmonyPatch(nameof(Input.ResetInputAxes))]
-    static bool Prefix_ResetInputAxes()
+[HarmonyPatch(typeof(Input), nameof(Input.ResetInputAxes))]
+class ResetInputAxes
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static bool Prefix()
     {
         // TODO make this work
         // Resets all input. After ResetInputAxes all axes return to 0 and all buttons return to 0 for one frame.
@@ -323,10 +454,17 @@ class InputPatch
         }
         return true;
     }
+}
 
-    [HarmonyPrefix]
-    [HarmonyPatch(nameof(Input.GetAccelerationEvent))]
-    static bool Prefix_GetAccelerationEvent(int index, ref AccelerationEvent __result)
+[HarmonyPatch(typeof(Input), nameof(Input.GetAccelerationEvent))]
+class GetAccelerationEvent
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static bool Prefix(int index, ref AccelerationEvent __result)
     {
         if (TAS.Main.Running)
         {
@@ -336,10 +474,17 @@ class InputPatch
         }
         return true;
     }
+}
 
-    [HarmonyPrefix]
-    [HarmonyPatch(nameof(Input.anyKey), MethodType.Getter)]
-    static bool Prefix_anyKeyGetter(ref bool __result)
+[HarmonyPatch(typeof(Input), nameof(Input.anyKey), MethodType.Getter)]
+class anyKeyGetter
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static bool Prefix(ref bool __result)
     {
         if (TAS.Main.Running)
         {
@@ -348,10 +493,17 @@ class InputPatch
         }
         return true;
     }
+}
 
-    [HarmonyPrefix]
-    [HarmonyPatch(nameof(Input.anyKeyDown), MethodType.Getter)]
-    static bool Prefix_anyKeyDownGetter(ref bool __result)
+[HarmonyPatch(typeof(Input), nameof(Input.anyKeyDown), MethodType.Getter)]
+class anyKeyDownGetter
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static bool Prefix(ref bool __result)
     {
         // TODO make sure this gets called before Update calls
         if (TAS.Main.Running)
@@ -361,10 +513,17 @@ class InputPatch
         }
         return true;
     }
+}
 
-    [HarmonyPrefix]
-    [HarmonyPatch(nameof(Input.inputString), MethodType.Getter)]
-    static bool Prefix_inputStringGetter()
+[HarmonyPatch(typeof(Input), nameof(Input.inputString), MethodType.Getter)]
+class inputStringGetter
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static bool Prefix()
     {
         if (TAS.Main.Running)
         {
@@ -376,10 +535,17 @@ class InputPatch
         }
         return true;
     }
+}
 
-    [HarmonyPrefix]
-    [HarmonyPatch(nameof(Input.mousePosition), MethodType.Getter)]
-    static bool Prefix_mousePositionGetter(ref Vector3 __result)
+[HarmonyPatch(typeof(Input), nameof(Input.mousePosition), MethodType.Getter)]
+class mousePositionGetter
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static bool Prefix(ref Vector3 __result)
     {
         if (TAS.Main.Running)
         {
@@ -388,10 +554,17 @@ class InputPatch
         }
         return true;
     }
+}
 
-    [HarmonyPrefix]
-    [HarmonyPatch(nameof(Input.multiTouchEnabled), MethodType.Getter)]
-    static bool Prefix_multiTouchEnabledGetter(ref bool __result)
+[HarmonyPatch(typeof(Input), nameof(Input.multiTouchEnabled), MethodType.Getter)]
+class multiTouchEnabledGetter
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static bool Prefix(ref bool __result)
     {
         if (TAS.Main.Running)
         {
@@ -402,10 +575,17 @@ class InputPatch
 
         return true;
     }
+}
 
-    [HarmonyPrefix]
-    [HarmonyPatch(nameof(Input.multiTouchEnabled), MethodType.Setter)]
-    static bool Prefix_multiTouchEnabledSetter(bool value)
+[HarmonyPatch(typeof(Input), nameof(Input.multiTouchEnabled), MethodType.Setter)]
+class multiTouchEnabledSetter
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static bool Prefix(bool value)
     {
         if (TAS.Main.Running)
         {
@@ -414,10 +594,17 @@ class InputPatch
         }
         return true;
     }
+}
 
-    [HarmonyPrefix]
-    [HarmonyPatch(nameof(Input.isGyroAvailable), MethodType.Getter)]
-    static bool Prefix_isGyroAvailableGetter(ref bool __result)
+[HarmonyPatch(typeof(Input), nameof(Input.isGyroAvailable), MethodType.Getter)]
+class isGyroAvailableGetter
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static bool Prefix(ref bool __result)
     {
         if (TAS.Main.Running)
         {
@@ -428,10 +615,17 @@ class InputPatch
 
         return true;
     }
+}
 
-    [HarmonyPrefix]
-    [HarmonyPatch(nameof(Input.deviceOrientation), MethodType.Getter)]
-    static bool Prefix_deviceOrientationGetter(ref DeviceOrientation __result)
+[HarmonyPatch(typeof(Input), nameof(Input.deviceOrientation), MethodType.Getter)]
+class deviceOrientationGetter
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static bool Prefix(ref DeviceOrientation __result)
     {
         if (TAS.Main.Running)
         {
@@ -442,10 +636,17 @@ class InputPatch
 
         return true;
     }
+}
 
-    [HarmonyPrefix]
-    [HarmonyPatch(nameof(Input.acceleration), MethodType.Getter)]
-    static bool Prefix_accelerationGetter(ref Vector3 __result)
+[HarmonyPatch(typeof(Input), nameof(Input.acceleration), MethodType.Getter)]
+class accelerationGetter
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static bool Prefix(ref Vector3 __result)
     {
         if (TAS.Main.Running)
         {
@@ -456,10 +657,17 @@ class InputPatch
 
         return true;
     }
+}
 
-    [HarmonyPrefix]
-    [HarmonyPatch(nameof(Input.accelerationEventCount), MethodType.Getter)]
-    static bool Prefix_accelerationEventCountGetter(ref int __result)
+[HarmonyPatch(typeof(Input), nameof(Input.accelerationEventCount), MethodType.Getter)]
+class accelerationEventCountGetter
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static bool Prefix(ref int __result)
     {
         if (TAS.Main.Running)
         {
@@ -470,26 +678,33 @@ class InputPatch
         }
         return true;
     }
+}
 
-    /*
-    public static AccelerationEvent[] accelerationEvents
+/*
+public static AccelerationEvent[] accelerationEvents
+{
+    get
     {
-        get
+        int accelerationEventCount = Input.accelerationEventCount;
+        AccelerationEvent[] array = new AccelerationEvent[accelerationEventCount];
+        for (int i = 0; i < accelerationEventCount; i++)
         {
-            int accelerationEventCount = Input.accelerationEventCount;
-            AccelerationEvent[] array = new AccelerationEvent[accelerationEventCount];
-            for (int i = 0; i < accelerationEventCount; i++)
-            {
-                array[i] = Input.GetAccelerationEvent(i);
-            }
-            return array;
+            array[i] = Input.GetAccelerationEvent(i);
         }
+        return array;
     }
-    */
+}
+*/
 
-    [HarmonyPrefix]
-    [HarmonyPatch(nameof(Input.touchCount), MethodType.Getter)]
-    static bool Prefix_touchCountGetter(ref int __result)
+[HarmonyPatch(typeof(Input), nameof(Input.touchCount), MethodType.Getter)]
+class touchCountGetter
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static bool Prefix(ref int __result)
     {
         if (TAS.Main.Running)
         {
@@ -500,10 +715,17 @@ class InputPatch
         }
         return true;
     }
+}
 
-    [HarmonyPrefix]
-    [HarmonyPatch(nameof(Input.GetTouch))]
-    static bool Prefix_GetTouch(ref Touch __result)
+[HarmonyPatch(typeof(Input), nameof(Input.GetTouch))]
+class GetTouch
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static bool Prefix(ref Touch __result)
     {
         if (TAS.Main.Running)
         {
@@ -513,26 +735,33 @@ class InputPatch
         }
         return true;
     }
+}
 
-    /*
-    public static Touch[] touches
+/*
+public static Touch[] touches
+{
+    get
     {
-        get
+        int touchCount = Input.touchCount;
+        Touch[] array = new Touch[touchCount];
+        for (int i = 0; i < touchCount; i++)
         {
-            int touchCount = Input.touchCount;
-            Touch[] array = new Touch[touchCount];
-            for (int i = 0; i < touchCount; i++)
-            {
-                array[i] = Input.GetTouch(i);
-            }
-            return array;
+            array[i] = Input.GetTouch(i);
         }
+        return array;
     }
-    */
+}
+*/
 
-    [HarmonyPrefix]
-    [HarmonyPatch(nameof(Input.GetRotation))]
-    static bool Prefix_GetRotation(ref Vector3 __result)
+[HarmonyPatch(typeof(Input), nameof(Input.GetRotation))]
+class GetRotation
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static bool Prefix(ref Vector3 __result)
     {
         if (TAS.Main.Running)
         {

@@ -4,17 +4,15 @@ using UnityEngine;
 
 namespace UniTASPlugin.Patches.SoftRestartTrack.__UnityEngine;
 
-[HarmonyPatch(typeof(Object))]
-class ObjectPatch
+[HarmonyPatch(typeof(Object), nameof(Object.DontDestroyOnLoad))]
+class DontDestroyOnLoad
 {
     static System.Exception Cleanup(MethodBase original, System.Exception ex)
     {
-        return Auxilary.Cleanup_IgnoreNotFound(original, ex);
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
     }
 
-    [HarmonyPrefix]
-    [HarmonyPatch(nameof(Object.DontDestroyOnLoad))]
-    static void Prefix_DontDestroyOnLoad(Object target)
+    static void Prefix(Object target)
     {
         if (target == null)
             return;
@@ -25,10 +23,17 @@ class ObjectPatch
             TAS.Main.DontDestroyOnLoadIDs.Add(id);
         }
     }
+}
 
-    [HarmonyPrefix]
-    [HarmonyPatch(nameof(Object.Destroy), new System.Type[] { typeof(Object), typeof(float) })]
-    static void Prefix_Destroy__Object__float(Object obj)
+[HarmonyPatch(typeof(Object), nameof(Object.Destroy), new System.Type[] { typeof(Object), typeof(float) })]
+class Destroy__Object__float
+{
+    static System.Exception Cleanup(MethodBase original, System.Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static void Prefix(Object obj)
     {
         if (obj == null)
             return;
@@ -37,10 +42,17 @@ class ObjectPatch
 
         TAS.Main.DontDestroyOnLoadIDs.Remove(id);
     }
+}
 
-    [HarmonyPrefix]
-    [HarmonyPatch(nameof(Object.DestroyImmediate), new System.Type[] { typeof(Object), typeof(bool) })]
-    static void Prefix_DestroyImmediate__Object__bool(Object obj)
+[HarmonyPatch(typeof(Object), nameof(Object.DestroyImmediate), new System.Type[] { typeof(Object), typeof(bool) })]
+class DestroyImmediate__Object__bool
+{
+    static System.Exception Cleanup(MethodBase original, System.Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static void Prefix(Object obj)
     {
         if (obj == null)
             return;
