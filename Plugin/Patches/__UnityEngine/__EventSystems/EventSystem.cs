@@ -2,7 +2,7 @@
 using System;
 using System.Reflection;
 
-namespace UniTASPlugin.Patches.TASInput.__UnityEngine.__EventSystems;
+namespace UniTASPlugin.Patches.__UnityEngine.__EventSystems;
 
 static class Helper
 {

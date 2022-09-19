@@ -2,7 +2,7 @@
 using System;
 using System.Reflection;
 
-namespace UniTASPlugin.Patches.Time.__UnityEngine;
+namespace UniTASPlugin.Patches.__UnityEngine;
 
 #pragma warning disable IDE1006
 

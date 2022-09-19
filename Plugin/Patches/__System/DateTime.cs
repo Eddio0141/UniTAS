@@ -2,7 +2,7 @@
 using System;
 using System.Reflection;
 
-namespace UniTASPlugin.Patches.Time.__System;
+namespace UniTASPlugin.Patches.__System;
 
 [HarmonyPatch(typeof(DateTime))]
 class DateTimePatch

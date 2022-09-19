@@ -3,7 +3,7 @@ using System;
 using System.Reflection;
 using UnityEngine;
 
-namespace UniTASPlugin.Patches.LoadTime.__UnityEngine.__SceneManagment;
+namespace UniTASPlugin.Patches.__UnityEngine.__SceneManagment;
 
 static class Helper
 {

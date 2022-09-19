@@ -2,7 +2,7 @@
 using System.Reflection;
 using UnityEngine;
 
-namespace UniTASPlugin.Patches.SoftRestartTrack.__UnityEngine;
+namespace UniTASPlugin.Patches.__UnityEngine;
 
 [HarmonyPatch(typeof(Object), nameof(Object.DontDestroyOnLoad))]
 class DontDestroyOnLoad

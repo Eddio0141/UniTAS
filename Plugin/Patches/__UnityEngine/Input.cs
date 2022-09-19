@@ -4,7 +4,7 @@ using System.Reflection;
 using UniTASPlugin.TAS.Input;
 using UnityEngine;
 
-namespace UniTASPlugin.Patches.TASInput.__UnityEngine;
+namespace UniTASPlugin.Patches.__UnityEngine;
 
 // TODO not sure what this is
 /*
