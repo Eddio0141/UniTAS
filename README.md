@@ -58,7 +58,7 @@ Depends on BepInEx's progress on it
 
 # Adding patches for some unity version
 - All patches goes in plugin's Patches folder
-- Depending on the purpose of the patch, create or use an existing folder for it, e.g. TASInput if overriding some new Input function for the TAS inputs
+- __namespace for each namespace of the patch method, e.g. patch for UnityEngine.EventSystems.EventSystem.isFocused, we will put the patch class `isFocusedGetter` in `__UnityEngine/EventSystems/EventSystem.cs`
 - Make sure to separate each patch as a separate patch class, This prevents all patches in the patch class from failing if 1 fails
 - Use `static Exception Cleanup` method in patch class and use the helper methods depending on situations as below does:
 ```cs
