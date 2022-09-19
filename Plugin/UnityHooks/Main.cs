@@ -9,8 +9,8 @@ public static class Main
     {
         Plugin.Log.LogDebug("Calling UnityHooks.Main()");
 
-        var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-        var unityCoreModules = assemblies.Where(a => a.GetName().Name == "UnityEngine.CoreModule");
+        System.Reflection.Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
+        System.Collections.Generic.IEnumerable<System.Reflection.Assembly> unityCoreModules = assemblies.Where(a => a.GetName().Name == "UnityEngine.CoreModule");
 
         if (unityCoreModules.Count() == 0)
         {
@@ -20,8 +20,8 @@ public static class Main
             return;
         }
 
-        var unityCoreModule = unityCoreModules.ElementAt(0);
-        var types = unityCoreModule.GetTypes().ToList();
+        System.Reflection.Assembly unityCoreModule = unityCoreModules.ElementAt(0);
+        System.Collections.Generic.List<Type> types = unityCoreModule.GetTypes().ToList();
 
         Type keyCode = null;
         Type cursor = null;

@@ -26,7 +26,7 @@ internal class Object : Base<Object>
 
     internal static object[] FindObjectsOfType(Type type)
     {
-        var result = findObjectsOfType__Type.Invoke(null, new object[] { type });
+        object result = findObjectsOfType__Type.Invoke(null, new object[] { type });
 
         if (result == null)
             return new object[] { };

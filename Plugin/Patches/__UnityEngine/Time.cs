@@ -6,6 +6,21 @@ namespace UniTASPlugin.Patches.__UnityEngine;
 
 #pragma warning disable IDE1006
 
+[HarmonyPatch(typeof(UnityEngine.Time), "captureDeltaTime", MethodType.Setter)]
+class captureDeltaTimeSetter
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static bool Prefix(ref float __result)
+    {
+        __result = (float)TimeSpan.FromTicks(TAS.Main.Time.Ticks).TotalSeconds;
+        return false;
+    }
+}
+
 [HarmonyPatch(typeof(UnityEngine.Time), "fixedUnscaledTime", MethodType.Getter)]
 class fixedUnscaledTimeGetter
 {

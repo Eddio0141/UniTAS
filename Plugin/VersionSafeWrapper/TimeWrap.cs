@@ -1,5 +1,4 @@
 ﻿using HarmonyLib;
-using System;
 using UnityEngine;
 
 namespace UniTASPlugin.VersionSafeWrapper;
@@ -29,7 +28,7 @@ public static class TimeWrap
         }
         else
         {
-            var framerate = (int)(1 / frametime);
+            int framerate = (int)(1 / frametime);
             captureFramerate().SetValue(framerate);
         }
     }

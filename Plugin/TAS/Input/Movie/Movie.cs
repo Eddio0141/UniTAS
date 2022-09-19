@@ -33,24 +33,24 @@ public class Movie
 
         string[] lines = text.Split('\n');
 
-        var inVersion = true;
-        var inProperties = true;
-        var foundSeed = false;
+        bool inVersion = true;
+        bool inProperties = true;
+        bool foundSeed = false;
 
-        var comment = "//";
-        var versionText = "version 1";
-        var framesSection = "frames";
-        var seedText = "seed ";
-        var fieldSeparator = '|';
-        var listSeparator = ' ';
-        var axisNameSurround = '"';
+        string comment = "//";
+        string versionText = "version 1";
+        string framesSection = "frames";
+        string seedText = "seed ";
+        char fieldSeparator = '|';
+        char listSeparator = ' ';
+        char axisNameSurround = '"';
         const string leftClick = "left";
         const string rightClick = "right";
         const string middleClick = "middle";
 
-        foreach (var line in lines)
+        foreach (string line in lines)
         {
-            var lineTrim = line.Trim();
+            string lineTrim = line.Trim();
 
             if (lineTrim.StartsWith(comment))
                 continue;
@@ -80,7 +80,7 @@ public class Movie
                     }
 
                     // TODO way to parse DateTime
-                    if (!long.TryParse(lineTrim.Substring(seedText.Length), out var seed))
+                    if (!long.TryParse(lineTrim.Substring(seedText.Length), out long seed))
                     {
                         error = "Seed value not a value";
                         break;
@@ -99,17 +99,17 @@ public class Movie
                 }
             }
 
-            var fields = lineTrim.Split(fieldSeparator);
+            string[] fields = lineTrim.Split(fieldSeparator);
 
-            var framebulk = new Framebulk();
-            var mouseXField = true;
-            var mouseYField = true;
-            var mouseClickField = true;
-            var keysField = true;
-            var axisField = true;
-            var frametimeField = true;
+            Framebulk framebulk = new();
+            bool mouseXField = true;
+            bool mouseYField = true;
+            bool mouseClickField = true;
+            bool keysField = true;
+            bool axisField = true;
+            bool frametimeField = true;
 
-            foreach (var field in fields)
+            foreach (string field in fields)
             {
                 if (mouseXField)
                 {
@@ -119,7 +119,7 @@ public class Movie
                         continue;
                     }
 
-                    if (!float.TryParse(field, out var x))
+                    if (!float.TryParse(field, out float x))
                     {
                         error = "Mouse X value not a valid decimal";
                         break;
@@ -138,7 +138,7 @@ public class Movie
                         continue;
                     }
 
-                    if (!float.TryParse(field, out var y))
+                    if (!float.TryParse(field, out float y))
                     {
                         error = "Mouse Y value not a valid decimal";
                         break;
@@ -157,9 +157,9 @@ public class Movie
                         continue;
                     }
 
-                    var clickedButtons = field.Split(listSeparator);
+                    string[] clickedButtons = field.Split(listSeparator);
 
-                    foreach (var clickField in clickedButtons)
+                    foreach (string clickField in clickedButtons)
                     {
                         if (clickField == "")
                             continue;
@@ -215,9 +215,9 @@ public class Movie
                         continue;
                     }
 
-                    var keys = field.Split(listSeparator);
+                    string[] keys = field.Split(listSeparator);
 
-                    foreach (var key in keys)
+                    foreach (string key in keys)
                     {
                         if (key == "")
                             continue;
@@ -228,7 +228,7 @@ public class Movie
                             break;
                         }
 
-                        var k = Enum.Parse(typeof(KeyCode), key);
+                        object k = Enum.Parse(typeof(KeyCode), key);
                         framebulk.Keys.Pressed.Add((KeyCode)k);
                     }
 
@@ -248,18 +248,18 @@ public class Movie
                         continue;
                     }
 
-                    var fieldChars = field.ToCharArray();
+                    char[] fieldChars = field.ToCharArray();
 
-                    var gettingAxisName = true;
-                    var firstSurroundChar = true;
-                    var betweenNameAndValue = true;
-                    var betweenValueAndName = false;
-                    var builder = "";
-                    var axisName = "";
+                    bool gettingAxisName = true;
+                    bool firstSurroundChar = true;
+                    bool betweenNameAndValue = true;
+                    bool betweenValueAndName = false;
+                    string builder = "";
+                    string axisName = "";
 
                     for (int i = 0; i < fieldChars.Length; i++)
                     {
-                        var ch = fieldChars[i];
+                        char ch = fieldChars[i];
 
                         if (betweenValueAndName)
                         {
@@ -297,14 +297,14 @@ public class Movie
                             betweenNameAndValue = false;
                         }
 
-                        var finalIteration = i == fieldChars.Length - 1;
+                        bool finalIteration = i == fieldChars.Length - 1;
 
                         if (ch == listSeparator || finalIteration)
                         {
                             if (finalIteration)
                                 builder += ch;
 
-                            if (!float.TryParse(builder, out var axisValue))
+                            if (!float.TryParse(builder, out float axisValue))
                             {
                                 error = "Axis value not a valid decimal";
                                 break;
@@ -355,7 +355,7 @@ public class Movie
                         break;
                     }
 
-                    if (!float.TryParse(field, out var frametime))
+                    if (!float.TryParse(field, out float frametime))
                     {
                         error = "Frametime not a decimal";
                         break;
@@ -374,7 +374,7 @@ public class Movie
 
                     if (!TimeWrap.HasCaptureDeltaTime())
                     {
-                        var framerate = 1 / frametime;
+                        float framerate = 1 / frametime;
 
                         if (Helper.ValueHasDecimalPoints(framerate))
                         {
@@ -388,7 +388,7 @@ public class Movie
                     continue;
                 }
 
-                if (!int.TryParse(field, out var frameCount))
+                if (!int.TryParse(field, out int frameCount))
                 {
                     error = "Framecount not an integer";
                     break;

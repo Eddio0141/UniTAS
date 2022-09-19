@@ -23,7 +23,7 @@ public static class Keyboard
         KeysDown.Clear();
         KeysUp.Clear();
 
-        foreach (var key in KeysPrev)
+        foreach (KeyCode key in KeysPrev)
         {
             if (!Keys.Contains(key))
             {
@@ -31,7 +31,7 @@ public static class Keyboard
                 KeysPrev.Remove(key);
             }
         }
-        foreach (var key in Keys)
+        foreach (KeyCode key in Keys)
         {
             if (!KeysPrev.Contains(key))
             {

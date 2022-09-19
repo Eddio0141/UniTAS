@@ -25,12 +25,12 @@ public class Plugin : BaseUnityPlugin
     {
         Log = Logger;
 
-        var unityVersion = Helper.UnityVersion();
+        string unityVersion = Helper.UnityVersion();
         Log.LogInfo($"Internally found version: {unityVersion}");
         // TODO make this version compatible, v3.5.1 doesn't have those
         //Logger.Log.LogInfo($"Game company name: {Application.companyName}, product name: {Application.productName}, version: {Application.version}");
 
-        var unityVersionEnum = UnityVersionFromString(unityVersion);
+        UnityVersionFromStringResult unityVersionEnum = UnityVersionFromString(unityVersion);
         UnityVersion = unityVersionEnum.UnityVersion;
 
         switch (unityVersionEnum.UnitySupportStatus)
@@ -48,10 +48,10 @@ public class Plugin : BaseUnityPlugin
                 throw new InvalidOperationException();
         }
 
-        var harmony = new Harmony($"{NAME}HarmonyPatch");
+        Harmony harmony = new($"{NAME}HarmonyPatch");
         harmony.PatchAll();
 
-        var asyncHandler = new GameObject();
+        GameObject asyncHandler = new();
         asyncHandler.AddComponent<UnityASyncHandler>();
         TAS.Main.AddUnityASyncHandlerID(asyncHandler.GetInstanceID());
 
@@ -72,12 +72,12 @@ public class Plugin : BaseUnityPlugin
     // TODO move this somewhere else
     public static UnityVersionFromStringResult UnityVersionFromString(string version)
     {
-        var versionParsed = new Helper.SemanticVersion(version);
+        Helper.SemanticVersion versionParsed = new(version);
 
-        var allUnityVersions = Enum.GetValues(typeof(UnityVersion)).Cast<UnityVersion>();
-        var allUnityVersionsSemantic = new List<Helper.SemanticVersion>();
+        IEnumerable<UnityVersion> allUnityVersions = Enum.GetValues(typeof(UnityVersion)).Cast<UnityVersion>();
+        List<Helper.SemanticVersion> allUnityVersionsSemantic = new();
 
-        foreach (var unityVersion in allUnityVersions)
+        foreach (UnityVersion unityVersion in allUnityVersions)
         {
             allUnityVersionsSemantic.Add(new Helper.SemanticVersion(unityVersion.ToString()));
         }
@@ -86,15 +86,15 @@ public class Plugin : BaseUnityPlugin
 
         // TODO faster search with binary search on all rather than linear
         //      search result needs to point to lowest index of `allUnityVersionsSemantic`, and resulting unity version needs to be equal or less than input version
-        var findingMajor = true;
-        var findingMinor = true;
+        bool findingMajor = true;
+        bool findingMinor = true;
 
-        var foundVersion = allUnityVersionsSemantic[0];
-        foreach (var unityVersion in allUnityVersionsSemantic)
+        Helper.SemanticVersion foundVersion = allUnityVersionsSemantic[0];
+        foreach (Helper.SemanticVersion unityVersion in allUnityVersionsSemantic)
         {
-            var unityMajor = unityVersion.Major;
-            var unityMinor = unityVersion.Minor;
-            var unityPatch = unityVersion.Patch;
+            int unityMajor = unityVersion.Major;
+            int unityMinor = unityVersion.Minor;
+            int unityPatch = unityVersion.Patch;
 
             if (findingMajor)
             {
@@ -148,13 +148,13 @@ public class Plugin : BaseUnityPlugin
             }
         }
 
-        var foundStatus = UnitySupportStatus.UsingLowerVersion;
+        UnitySupportStatus foundStatus = UnitySupportStatus.UsingLowerVersion;
         if (foundVersion == versionParsed)
             foundStatus = UnitySupportStatus.FoundMatch;
         else if (versionParsed.Major < foundVersion.Major || (versionParsed.Major <= foundVersion.Major && versionParsed.Minor < foundVersion.Minor) || (versionParsed.Major <= foundVersion.Major && versionParsed.Minor <= foundVersion.Minor && versionParsed.Patch < foundVersion.Patch))
             foundStatus = UnitySupportStatus.UsingFirstVersion;
 
-        var result = Enum.Parse(typeof(UnityVersion), $"v{foundVersion.Major}_{foundVersion.Minor}_{foundVersion.Patch}");
+        object result = Enum.Parse(typeof(UnityVersion), $"v{foundVersion.Major}_{foundVersion.Minor}_{foundVersion.Patch}");
 
         return new UnityVersionFromStringResult((UnityVersion)result, foundStatus);
     }
@@ -186,8 +186,8 @@ public class Plugin : BaseUnityPlugin
         // TODO remove this test
         if (!TAS.Main.Running && Input.GetKeyDown(KeyCode.K))
         {
-            var text = File.ReadAllText("C:\\Program Files (x86)\\Steam\\steamapps\\common\\It Steals\\test.uti");
-            var movie = new Movie("test.uti", text, out var err, out var warnings);
+            string text = File.ReadAllText("C:\\Program Files (x86)\\Steam\\steamapps\\common\\It Steals\\test.uti");
+            Movie movie = new("test.uti", text, out string err, out List<string> warnings);
 
             if (err != "")
             {
@@ -196,7 +196,7 @@ public class Plugin : BaseUnityPlugin
             }
             if (warnings.Count > 1)
             {
-                foreach (var warn in warnings)
+                foreach (string warn in warnings)
                 {
                     Log.LogWarning(warn);
                 }

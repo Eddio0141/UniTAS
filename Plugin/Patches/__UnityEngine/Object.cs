@@ -17,7 +17,7 @@ class DontDestroyOnLoad
         if (target == null)
             return;
 
-        var id = target.GetInstanceID();
+        int id = target.GetInstanceID();
         if (!TAS.Main.DontDestroyOnLoadIDs.Contains(id))
         {
             TAS.Main.DontDestroyOnLoadIDs.Add(id);
@@ -38,7 +38,7 @@ class Destroy__Object__float
         if (obj == null)
             return;
 
-        var id = obj.GetInstanceID();
+        int id = obj.GetInstanceID();
 
         TAS.Main.DontDestroyOnLoadIDs.Remove(id);
     }
@@ -57,7 +57,7 @@ class DestroyImmediate__Object__bool
         if (obj == null)
             return;
 
-        var id = obj.GetInstanceID();
+        int id = obj.GetInstanceID();
 
         TAS.Main.DontDestroyOnLoadIDs.Remove(id);
     }

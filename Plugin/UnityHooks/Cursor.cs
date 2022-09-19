@@ -15,10 +15,10 @@ internal class Cursor : Base<Cursor>
 
     protected override void InitByUnityVersion(Type objType, UnityVersion version)
     {
-        var visible = objType.GetProperty("visible", BindingFlags.Public | BindingFlags.Static);
+        PropertyInfo visible = objType.GetProperty("visible", BindingFlags.Public | BindingFlags.Static);
         visibleGetter = visible.GetGetMethod();
         visibleSetter = visible.GetSetMethod();
-        var lockState = objType.GetProperty("lockState", BindingFlags.Public | BindingFlags.Static);
+        PropertyInfo lockState = objType.GetProperty("lockState", BindingFlags.Public | BindingFlags.Static);
         lockStateGetter = lockState.GetGetMethod();
         lockStateSetter = lockState.GetSetMethod();
     }

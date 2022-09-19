@@ -71,11 +71,11 @@ public static class Main
         pendingFixedUpdateSoftRestart = false;
 
         firstObjIDs = new List<int>();
-        var objs = Object.FindObjectsOfType(typeof(MonoBehaviour));
+        Object[] objs = Object.FindObjectsOfType(typeof(MonoBehaviour));
 
-        foreach (var obj in objs)
+        foreach (Object obj in objs)
         {
-            var id = obj.GetInstanceID();
+            int id = obj.GetInstanceID();
             if (DontDestroyOnLoadIDs.Contains(id))
             {
                 firstObjIDs.Add(id);
@@ -129,7 +129,7 @@ public static class Main
             if (!CheckCurrentMovieEnd())
                 return;
 
-            var fb = CurrentMovie.Framebulks[currentFramebulkIndex];
+            Framebulk fb = CurrentMovie.Framebulks[currentFramebulkIndex];
             if (currentFramebulkFrameIndex >= fb.FrameCount)
             {
                 currentFramebulkIndex++;
@@ -168,24 +168,24 @@ public static class Main
         Input.Mouse.RightClick = fb.Mouse.Right;
         Input.Mouse.MiddleClick = fb.Mouse.Middle;
 
-        var axisMoveSetDefault = new List<string>();
-        foreach (var pair in Axis.Values)
+        List<string> axisMoveSetDefault = new();
+        foreach (KeyValuePair<string, float> pair in Axis.Values)
         {
-            var key = pair.Key;
+            string key = pair.Key;
             if (!fb.Axises.AxisMove.ContainsKey(key))
                 axisMoveSetDefault.Add(key);
         }
-        foreach (var key in axisMoveSetDefault)
+        foreach (string key in axisMoveSetDefault)
         {
             if (Axis.Values.ContainsKey(key))
                 Axis.Values[key] = default;
             else
                 Axis.Values.Add(key, default);
         }
-        foreach (var axisValue in fb.Axises.AxisMove)
+        foreach (KeyValuePair<string, float> axisValue in fb.Axises.AxisMove)
         {
-            var axis = axisValue.Key;
-            var value = axisValue.Value;
+            string axis = axisValue.Key;
+            float value = axisValue.Value;
             if (Axis.Values.ContainsKey(axis))
             {
                 Axis.Values[axis] = value;
@@ -232,16 +232,16 @@ public static class Main
 
         // release mouse lock
         // TODO sort out depending on unity version
-        var cursor = Traverse.CreateWithType("UnityEngine.Cursor");
-        var cursorLockModeType = AccessTools.TypeByName("UnityEngine.CursorLockMode");
+        Traverse cursor = Traverse.CreateWithType("UnityEngine.Cursor");
+        System.Type cursorLockModeType = AccessTools.TypeByName("UnityEngine.CursorLockMode");
 
-        var cursorLockState = cursor.Property("lockState");
-        var cursorVisible = cursor.Property("visible");
+        Traverse cursorLockState = cursor.Property("lockState");
+        Traverse cursorVisible = cursor.Property("visible");
 
         cursorLockState.SetValue(System.Enum.Parse(cursorLockModeType, "None"));
         cursorVisible.SetValue(true);
 
-        foreach (var obj in Object.FindObjectsOfType(typeof(MonoBehaviour)))
+        foreach (Object obj in Object.FindObjectsOfType(typeof(MonoBehaviour)))
         {
             if (!(obj.GetType() == typeof(Plugin) || obj.GetType() == typeof(UnityASyncHandler)))
             {
@@ -253,7 +253,7 @@ public static class Main
                 Plugin.Log.LogDebug($"Not stopping coroutines for {obj.GetType()} with Plugin type and UnityASyncHandlerType");
             }
 
-            var id = obj.GetInstanceID();
+            int id = obj.GetInstanceID();
 
             if (!DontDestroyOnLoadIDs.Contains(id))
                 continue;
@@ -273,7 +273,7 @@ public static class Main
         FixedUpdateIndex = 0;
 
         // TODO sort out depending on unity version
-        var sceneManager = Traverse.CreateWithType("UnityEngine.SceneManagement.SceneManager");
+        Traverse sceneManager = Traverse.CreateWithType("UnityEngine.SceneManagement.SceneManager");
         sceneManager = sceneManager.Method("LoadScene", new System.Type[] { typeof(int) });
         sceneManager.GetValue(new object[] { 0 });
 
@@ -291,7 +291,7 @@ public static class Main
 
         if (CurrentMovie.Framebulks.Count > 0)
         {
-            var firstFb = CurrentMovie.Framebulks[0];
+            Framebulk firstFb = CurrentMovie.Framebulks[0];
 
             Input.Main.Clear();
             TimeWrap.SetFrametime(firstFb.Frametime);

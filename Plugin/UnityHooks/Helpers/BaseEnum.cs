@@ -25,23 +25,23 @@ public abstract class BaseEnum<T> : Base<T>
     void InitEnumInternal(Type objType)
     {
         EnumTypes = new();
-        var enumTypesWithVersions = GetAllEnumTypes();
+        Dictionary<UnityVersion, Type> enumTypesWithVersions = GetAllEnumTypes();
 
-        var variants = Enum.GetValues(objType);
+        Array variants = Enum.GetValues(objType);
         allVariants = new List<object>();
-        foreach (var enumTypeWithVersion in enumTypesWithVersions)
+        foreach (KeyValuePair<UnityVersion, Type> enumTypeWithVersion in enumTypesWithVersions)
         {
-            var version = enumTypeWithVersion.Key;
-            var enumType = enumTypeWithVersion.Value;
+            UnityVersion version = enumTypeWithVersion.Key;
+            Type enumType = enumTypeWithVersion.Value;
 
             // don't allow enum version higher than current version
             if (version > Plugin.UnityVersion)
                 break;
 
-            var enumVariants = Enum.GetValues(enumType);
+            Array enumVariants = Enum.GetValues(enumType);
             EnumTypes.Add(enumType);
 
-            foreach (var enumVariant in enumVariants)
+            foreach (object enumVariant in enumVariants)
             {
                 allVariants.Add(enumVariant);
             }
@@ -53,7 +53,7 @@ public abstract class BaseEnum<T> : Base<T>
         }
 
         // check enum if exists
-        foreach (var variant in allVariants)
+        foreach (object variant in allVariants)
         {
             if (!Enum.IsDefined(ObjType, variant.ToString()))
             {
@@ -71,11 +71,11 @@ public abstract class BaseEnum<T> : Base<T>
     /// <returns></returns>
     internal static object To(object value)
     {
-        var valueVariants = Enum.GetValues(ObjType);
-        var valueString = value.ToString();
+        Array valueVariants = Enum.GetValues(ObjType);
+        string valueString = value.ToString();
 
         // get matching variant
-        foreach (var variant in valueVariants)
+        foreach (object variant in valueVariants)
         {
             if (variant.ToString() == valueString)
             {
@@ -92,9 +92,9 @@ public abstract class BaseEnum<T> : Base<T>
     /// <returns></returns>
     internal static object From(object value)
     {
-        var valueString = value.ToString();
+        string valueString = value.ToString();
         // get matching variant
-        foreach (var variant in allVariants)
+        foreach (object variant in allVariants)
         {
             if (variant.ToString() == valueString)
             {
@@ -106,10 +106,10 @@ public abstract class BaseEnum<T> : Base<T>
 
     internal static bool IsDefined(object value)
     {
-        var valueString = value.ToString();
+        string valueString = value.ToString();
 
         // get matching variant
-        foreach (var variant in allVariants)
+        foreach (object variant in allVariants)
         {
             if (variant.ToString() == valueString)
             {

@@ -21,7 +21,7 @@ internal static class Helper
 
         public SemanticVersion(UnityVersion version)
         {
-            var versionParsed = new SemanticVersion(version.ToString());
+            SemanticVersion versionParsed = new(version.ToString());
 
             Major = versionParsed.Major;
             Minor = versionParsed.Minor;
@@ -35,7 +35,7 @@ internal static class Helper
 
         public static bool operator <(UnityVersion unityVersion, SemanticVersion b)
         {
-            var a = new SemanticVersion(unityVersion);
+            SemanticVersion a = new(unityVersion);
             return a.Major < b.Major || (a.Major == b.Major && a.Minor < b.Minor) || (a.Major == b.Major && a.Minor == b.Minor && a.Patch < b.Patch);
         }
 
@@ -46,7 +46,7 @@ internal static class Helper
 
         public static bool operator >(UnityVersion unityVersion, SemanticVersion b)
         {
-            var a = new SemanticVersion(unityVersion);
+            SemanticVersion a = new(unityVersion);
             return a.Major > b.Major || (a.Major == b.Major && a.Minor > b.Minor) || (a.Major == b.Major && a.Minor == b.Minor && a.Patch > b.Patch);
         }
 
@@ -89,9 +89,9 @@ internal static class Helper
         {
             version = version.Replace("v", "");
 
-            var builder = "";
+            string builder = "";
             // TODO do I ignore characters?
-            foreach (var ch in version.ToCharArray())
+            foreach (char ch in version.ToCharArray())
             {
                 if (char.IsDigit(ch) || ch == '.' || ch == '_')
                 {
@@ -109,12 +109,12 @@ internal static class Helper
             {
                 versionSplit = version.Split('_');
             }
-            var versionSplitValues = new List<int>();
+            List<int> versionSplitValues = new();
 
             // force check all values
-            foreach (var versionSplitValue in versionSplit)
+            foreach (string versionSplitValue in versionSplit)
             {
-                if (!int.TryParse(versionSplitValue, out var versionValue))
+                if (!int.TryParse(versionSplitValue, out int versionValue))
                 {
                     // TODO dont throw exception
                     throw new Exception($"Semantic version not a valid version");

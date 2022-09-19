@@ -55,9 +55,9 @@ class UnloadSceneAsync__sceneBuildIndex
     {
         if (TAS.Main.Running)
         {
-            var internalCall = Helper.GetUnloadSceneNameIndexInternal();
-            var unloadSceneOptions = Helper.GetUnloadSceneOptions();
-            var noneVariant = Enum.Parse(unloadSceneOptions, "None");
+            Traverse internalCall = Helper.GetUnloadSceneNameIndexInternal();
+            Type unloadSceneOptions = Helper.GetUnloadSceneOptions();
+            object noneVariant = Enum.Parse(unloadSceneOptions, "None");
             __result = (AsyncOperation)internalCall.GetValue(new object[] { "", sceneBuildIndex, true, noneVariant, null });
             return false;
         }
@@ -87,7 +87,7 @@ class LoadSceneAsync__sceneBuildIndex__parameters
     {
         if (TAS.Main.Running)
         {
-            var internalCall = Helper.GetLoadSceneAsyncNameIndexInternal();
+            Traverse internalCall = Helper.GetLoadSceneAsyncNameIndexInternal();
             __result = (AsyncOperation)internalCall.GetValue(new object[] { null, sceneBuildIndex, parameters, true });
             return false;
         }
@@ -117,7 +117,7 @@ class LoadSceneAsync__sceneName__parameters
     {
         if (TAS.Main.Running)
         {
-            var internalCall = Helper.GetLoadSceneAsyncNameIndexInternal();
+            Traverse internalCall = Helper.GetLoadSceneAsyncNameIndexInternal();
             __result = (AsyncOperation)internalCall.GetValue(new object[] { sceneName, -1, parameters, true });
             return false;
         }
@@ -147,9 +147,9 @@ class UnloadSceneAsync__sceneName
     {
         if (TAS.Main.Running)
         {
-            var internalCall = Helper.GetUnloadSceneNameIndexInternal();
-            var unloadSceneOptions = Helper.GetUnloadSceneOptions();
-            var noneVariant = Enum.Parse(unloadSceneOptions, "None");
+            Traverse internalCall = Helper.GetUnloadSceneNameIndexInternal();
+            Type unloadSceneOptions = Helper.GetUnloadSceneOptions();
+            object noneVariant = Enum.Parse(unloadSceneOptions, "None");
             __result = (AsyncOperation)internalCall.GetValue(new object[] { sceneName, -1, true, noneVariant, null });
             return false;
         }
@@ -179,10 +179,10 @@ class UnloadSceneAsync__scene
     {
         if (TAS.Main.Running)
         {
-            var internalCall = Helper.GetUnloadSceneNameIndexInternal();
-            var sceneTraverse = Traverse.Create(scene);
-            var unloadSceneOptions = Helper.GetUnloadSceneOptions();
-            var noneVariant = Enum.Parse(unloadSceneOptions, "None");
+            Traverse internalCall = Helper.GetUnloadSceneNameIndexInternal();
+            Traverse sceneTraverse = Traverse.Create(scene);
+            Type unloadSceneOptions = Helper.GetUnloadSceneOptions();
+            object noneVariant = Enum.Parse(unloadSceneOptions, "None");
             __result = (AsyncOperation)internalCall.GetValue(new object[] { "", sceneTraverse.Field("buildIndex").GetValue(), true, noneVariant, null });
             return false;
         }
@@ -212,7 +212,7 @@ class UnloadSceneAsync__sceneBuildIndex__options
     {
         if (TAS.Main.Running)
         {
-            var internalCall = Helper.GetUnloadSceneNameIndexInternal();
+            Traverse internalCall = Helper.GetUnloadSceneNameIndexInternal();
             __result = (AsyncOperation)internalCall.GetValue(new object[] { "", sceneBuildIndex, true, options, null });
             return false;
         }
@@ -242,7 +242,7 @@ class UnloadSceneAsync__sceneName__options
     {
         if (TAS.Main.Running)
         {
-            var internalCall = Helper.GetUnloadSceneNameIndexInternal();
+            Traverse internalCall = Helper.GetUnloadSceneNameIndexInternal();
             __result = (AsyncOperation)internalCall.GetValue(new object[] { sceneName, -1, true, options, null });
             return false;
         }
@@ -272,8 +272,8 @@ class UnloadSceneAsync__scene__options
     {
         if (TAS.Main.Running)
         {
-            var internalCall = Helper.GetUnloadSceneNameIndexInternal();
-            var sceneTraverse = Traverse.Create(scene);
+            Traverse internalCall = Helper.GetUnloadSceneNameIndexInternal();
+            Traverse sceneTraverse = Traverse.Create(scene);
             __result = (AsyncOperation)internalCall.GetValue(new object[] { "", sceneTraverse.Field("buildIndex").GetValue(), true, options, null });
             return false;
         }

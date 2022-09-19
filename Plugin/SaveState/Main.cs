@@ -19,13 +19,13 @@ internal static class Main
         // TODO only use this if unity version has it
         //var scene = SceneManager.GetActiveScene();
         //var sceneIndex = Scene.buildIndex(scene);
-        var time = DateTime.Now;
-        var frameCount = TAS.Main.FrameCount;
-        var fixedUpdateIndex = TAS.Main.FixedUpdateIndex;
+        DateTime time = DateTime.Now;
+        ulong frameCount = TAS.Main.FrameCount;
+        int fixedUpdateIndex = TAS.Main.FixedUpdateIndex;
         // TODO only save this state if unity version has it
         //var cursorVisible = Cursor.visible;
         //var cursorLockState = Cursor.lockState;
-        var saveVersion = Plugin.UnityVersion;
+        UnityVersion saveVersion = Plugin.UnityVersion;
 
         Test = new State(/*sceneIndex,*/ time, frameCount, fixedUpdateIndex, /*cursorVisible, cursorLockState,*/ saveVersion);
         Plugin.Log.LogDebug("Saved test state");
@@ -34,7 +34,7 @@ internal static class Main
     public static void Load()
     {
         Plugin.Log.LogDebug("We are loading the test state");
-        var state = Test;
+        State state = Test;
         pendingLoad = true;
         pendingLoadFixedUpdateIndex = state.FixedUpdateIndex;
         pendingState = state;
@@ -55,8 +55,8 @@ internal static class Main
         Plugin.Log.LogDebug("Load operation starting");
         // TODO sort out depending on unity version
         //var scene = pendingState.Scene;
-        var time = pendingState.Time;
-        var frameCount = pendingState.FrameCount;
+        DateTime time = pendingState.Time;
+        ulong frameCount = pendingState.FrameCount;
         //var cursorVisible = pendingState.CursorVisible;
         //var cursorLockState = pendingState.CursorLockState;
 
