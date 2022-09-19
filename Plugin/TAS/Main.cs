@@ -54,7 +54,7 @@ public static class Main
 
     static Main()
     {
-        // we make sure to initialize the time before any other code runs
+        // TODO remove hooks slowly
         UnityHooks.Main.Init();
 
         pendingMovieStartFixedUpdate = false;
@@ -93,7 +93,7 @@ public static class Main
         UpdateMovie();
         Input.Main.Update();
 
-        Time.AddSeconds(deltaTime);
+        Time += System.TimeSpan.FromSeconds(deltaTime);
         FrameCount++;
         // TODO this needs to be set at the actual unity's Update call
         FixedUpdateIndex++;
@@ -271,7 +271,7 @@ public static class Main
         sceneManager.GetValue(new object[] { 0 });
 
         Plugin.Log.LogInfo("Finish soft restarting");
-        Plugin.Log.LogInfo($"System time: {System.DateTime.Now}");
+        Plugin.Log.LogInfo($"System time: {System.DateTime.Now}, milliseconds: {System.DateTime.Now.Millisecond}");
     }
 
     public static void RunMovie(Movie movie)
