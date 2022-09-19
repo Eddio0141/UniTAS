@@ -265,7 +265,6 @@ public static class Main
             Object.Destroy(obj);
         }
 
-        Plugin.Log.LogDebug("setting time");
         Time = softRestartTime;
         // TODO diff unity versions
         Traverse.Create(typeof(Random)).Method("InitState", new System.Type[] { typeof(int) }).GetValue((int)Seed());
