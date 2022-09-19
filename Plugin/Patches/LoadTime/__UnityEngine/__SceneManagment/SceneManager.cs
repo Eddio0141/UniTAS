@@ -55,8 +55,10 @@ class UnloadSceneAsync__sceneBuildIndex
     {
         if (TAS.Main.Running)
         {
-            // TODO make this work
-            //__result = SceneManager.UnloadSceneNameIndexInternal("", sceneBuildIndex, true, UnloadSceneOptions.None, out _);
+            var internalCall = Helper.GetUnloadSceneNameIndexInternal();
+            var unloadSceneOptions = Helper.GetUnloadSceneOptions();
+            var noneVariant = Enum.Parse(unloadSceneOptions, "None");
+            __result = (AsyncOperation)internalCall.GetValue(new object[] { "", sceneBuildIndex, true, noneVariant, null });
             return false;
         }
         return true;
