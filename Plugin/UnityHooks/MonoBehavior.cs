@@ -8,7 +8,7 @@ internal class MonoBehavior : Base<MonoBehavior>
 {
     static MethodInfo stopAllCoroutines;
 
-    protected override void InitByUnityVersion(Type objType, UnityVersion version)
+    protected override void InitByUnityVersion(Type objType)
     {
         stopAllCoroutines = objType.GetMethod("StopAllCoroutines", BindingFlags.Instance | BindingFlags.Public, null, new Type[] { }, null);
     }

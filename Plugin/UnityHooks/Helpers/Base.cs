@@ -6,11 +6,11 @@ public abstract class Base<T>
 {
     internal static Type ObjType { get; set; }
 
-    internal virtual void Init(Type objType, UnityVersion version)
+    internal virtual void Init(Type objType)
     {
         ObjType = objType;
-        InitByUnityVersion(objType, version);
+        InitByUnityVersion(objType);
     }
 
-    protected abstract void InitByUnityVersion(Type objType, UnityVersion version);
+    protected abstract void InitByUnityVersion(Type objType);
 }

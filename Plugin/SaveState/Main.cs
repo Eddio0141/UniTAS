@@ -25,7 +25,7 @@ internal static class Main
         // TODO only save this state if unity version has it
         //var cursorVisible = Cursor.visible;
         //var cursorLockState = Cursor.lockState;
-        UnityVersion saveVersion = Plugin.UnityVersion;
+        var saveVersion = Plugin.UnityVersion;
 
         Test = new State(/*sceneIndex,*/ time, frameCount, fixedUpdateIndex, /*cursorVisible, cursorLockState,*/ saveVersion);
         Plugin.Log.LogDebug("Saved test state");

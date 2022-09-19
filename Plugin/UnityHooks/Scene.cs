@@ -8,7 +8,7 @@ internal class Scene : Base<Scene>
 {
     static MethodInfo buildIndexGetter;
 
-    protected override void InitByUnityVersion(Type objType, UnityVersion version)
+    protected override void InitByUnityVersion(Type objType)
     {
         buildIndexGetter = objType.GetProperty("buildIndex", BindingFlags.Public | BindingFlags.Instance).GetGetMethod();
     }

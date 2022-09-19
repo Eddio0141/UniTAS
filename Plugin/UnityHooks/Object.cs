@@ -11,7 +11,7 @@ internal class Object : Base<Object>
     static MethodBase destroy__Object;
     static MethodBase dontDestroyOnLoad;
 
-    protected override void InitByUnityVersion(Type objType, UnityVersion version)
+    protected override void InitByUnityVersion(Type objType)
     {
         getInstanceID = objType.GetMethod("GetInstanceID", BindingFlags.Public | BindingFlags.Instance, null, new Type[] { }, null);
         findObjectsOfType__Type = objType.GetMethod("FindObjectsOfType", BindingFlags.Public | BindingFlags.Static, null, new Type[] { typeof(Type) }, null);

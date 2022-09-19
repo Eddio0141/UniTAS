@@ -5,7 +5,7 @@ namespace UniTASPlugin.SaveState;
 internal class State
 {
     // save state info itself
-    public readonly UnityVersion SaveVersion;
+    public readonly SemanticVersion SaveVersion;
     // scene
     // TODO sort out depending on unity version
     //public readonly int Scene;
@@ -18,7 +18,7 @@ internal class State
     //public readonly bool CursorVisible;
     //public readonly UnityHooks.CursorLockModeType CursorLockState;
 
-    public State(/*int scene,*/ DateTime time, ulong frameCount, int fixedUpdateIndex, /*bool cursorVisible, UnityHooks.CursorLockModeType cursorLockState,*/ UnityVersion saveVersion)
+    public State(/*int scene,*/ DateTime time, ulong frameCount, int fixedUpdateIndex, /*bool cursorVisible, UnityHooks.CursorLockModeType cursorLockState,*/ SemanticVersion saveVersion)
     {
         SaveVersion = saveVersion;
 

@@ -1,9 +1,7 @@
 ﻿using BepInEx;
 using HarmonyLib;
-using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using UniTASPlugin.TAS.Input.Movie;
 using UnityEngine;
 
@@ -18,35 +16,16 @@ public class Plugin : BaseUnityPlugin
 
     internal static BepInEx.Logging.ManualLogSource Log;
 
-    internal static UnityVersion UnityVersion;
+    internal static SemanticVersion UnityVersion;
 
-    // TODO do i use static constructor here?
     private void Awake()
     {
         Log = Logger;
 
-        string unityVersion = Helper.UnityVersion();
-        Log.LogInfo($"Internally found version: {unityVersion}");
+        UnityVersion = Helper.GetUnityVersion();
+        Log.LogInfo($"Internally found version: {UnityVersion}");
         // TODO make this version compatible, v3.5.1 doesn't have those
         //Logger.Log.LogInfo($"Game company name: {Application.companyName}, product name: {Application.productName}, version: {Application.version}");
-
-        UnityVersionFromStringResult unityVersionEnum = UnityVersionFromString(unityVersion);
-        UnityVersion = unityVersionEnum.UnityVersion;
-
-        switch (unityVersionEnum.UnitySupportStatus)
-        {
-            case UnitySupportStatus.UsingFirstVersion:
-                Log.LogWarning($"Unity version is lower than the lowest supported, falling back compatibility to {UnityVersion}");
-                break;
-            case UnitySupportStatus.FoundMatch:
-                Log.LogInfo($"Unity version {UnityVersion} is supported in tool");
-                break;
-            case UnitySupportStatus.UsingLowerVersion:
-                Log.LogWarning($"No matching unity version found, falling back compatibility to {UnityVersion}");
-                break;
-            default:
-                throw new InvalidOperationException();
-        }
 
         Harmony harmony = new($"{NAME}HarmonyPatch");
         harmony.PatchAll();
@@ -59,123 +38,6 @@ public class Plugin : BaseUnityPlugin
         Log.LogInfo($"All axis names: {string.Join(", ", Input.GetJoystickNames())}");
 
         Log.LogInfo($"Plugin {NAME} is loaded!");
-    }
-
-    /// <summary>
-    /// Get UnityVersion enum from string.
-    /// If version isn't directly supported, it will try to get the lower unity version instead.
-    /// If version lower than input isn't found, will try use the first supported version as a last effort.
-    /// </summary>
-    /// <param name="version"></param>
-    /// <returns></returns>
-    /// <exception cref="Exception"></exception>
-    // TODO move this somewhere else
-    public static UnityVersionFromStringResult UnityVersionFromString(string version)
-    {
-        Helper.SemanticVersion versionParsed = new(version);
-
-        IEnumerable<UnityVersion> allUnityVersions = Enum.GetValues(typeof(UnityVersion)).Cast<UnityVersion>();
-        List<Helper.SemanticVersion> allUnityVersionsSemantic = new();
-
-        foreach (UnityVersion unityVersion in allUnityVersions)
-        {
-            allUnityVersionsSemantic.Add(new Helper.SemanticVersion(unityVersion.ToString()));
-        }
-
-        // versions are already sorted, search through them all
-
-        // TODO faster search with binary search on all rather than linear
-        //      search result needs to point to lowest index of `allUnityVersionsSemantic`, and resulting unity version needs to be equal or less than input version
-        bool findingMajor = true;
-        bool findingMinor = true;
-
-        Helper.SemanticVersion foundVersion = allUnityVersionsSemantic[0];
-        foreach (Helper.SemanticVersion unityVersion in allUnityVersionsSemantic)
-        {
-            int unityMajor = unityVersion.Major;
-            int unityMinor = unityVersion.Minor;
-            int unityPatch = unityVersion.Patch;
-
-            if (findingMajor)
-            {
-                if (unityMajor < versionParsed.Major)
-                {
-                    foundVersion.Major = unityMajor;
-                    foundVersion.Minor = unityMinor;
-                    foundVersion.Patch = unityPatch;
-                    continue;
-                }
-                if (unityMajor == versionParsed.Major)
-                {
-                    foundVersion.Major = unityMajor;
-                    foundVersion.Minor = unityMinor;
-                    foundVersion.Patch = unityPatch;
-                }
-                findingMajor = false;
-            }
-
-            if (unityMajor > foundVersion.Major)
-                break;
-
-            if (findingMinor)
-            {
-                if (unityMinor < versionParsed.Minor)
-                {
-                    foundVersion.Minor = unityMinor;
-                    foundVersion.Patch = unityPatch;
-                    continue;
-                }
-                if (unityMinor == versionParsed.Minor)
-                {
-                    foundVersion.Minor = unityMinor;
-                    foundVersion.Patch = unityPatch;
-                }
-                findingMinor = false;
-            }
-
-            if (unityMinor > foundVersion.Minor)
-                break;
-
-            if (unityPatch < versionParsed.Patch)
-            {
-                foundVersion.Patch = unityPatch;
-                continue;
-            }
-            else if (unityPatch == versionParsed.Patch)
-            {
-                foundVersion.Patch = unityPatch;
-                break;
-            }
-        }
-
-        UnitySupportStatus foundStatus = UnitySupportStatus.UsingLowerVersion;
-        if (foundVersion == versionParsed)
-            foundStatus = UnitySupportStatus.FoundMatch;
-        else if (versionParsed.Major < foundVersion.Major || (versionParsed.Major <= foundVersion.Major && versionParsed.Minor < foundVersion.Minor) || (versionParsed.Major <= foundVersion.Major && versionParsed.Minor <= foundVersion.Minor && versionParsed.Patch < foundVersion.Patch))
-            foundStatus = UnitySupportStatus.UsingFirstVersion;
-
-        object result = Enum.Parse(typeof(UnityVersion), $"v{foundVersion.Major}_{foundVersion.Minor}_{foundVersion.Patch}");
-
-        return new UnityVersionFromStringResult((UnityVersion)result, foundStatus);
-    }
-
-    public enum UnitySupportStatus
-    {
-        FoundMatch,
-        UsingLowerVersion,
-        UsingFirstVersion,
-    }
-
-    public class UnityVersionFromStringResult
-    {
-        public UnityVersion UnityVersion;
-        public UnitySupportStatus UnitySupportStatus;
-
-        public UnityVersionFromStringResult(UnityVersion unityVersion, UnitySupportStatus unitySupportStatus)
-        {
-            UnityVersion = unityVersion;
-            UnitySupportStatus = unitySupportStatus;
-        }
     }
 
     private void Update()
@@ -218,15 +80,4 @@ public class Plugin : BaseUnityPlugin
     {
         TAS.Main.FixedUpdate();
     }
-}
-
-/// <summary>
-/// Supported Unity versions.
-/// Follows semantic versioning.
-/// </summary>
-// The order of the enum matters
-public enum UnityVersion
-{
-    v2018_4_25,
-    v2021_2_14,
 }
