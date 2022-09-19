@@ -1,4 +1,6 @@
-﻿using System;
+﻿using HarmonyLib;
+using System;
+using UnityEngine;
 
 namespace UniTASPlugin.SaveState;
 
@@ -8,6 +10,11 @@ internal static class Main
     static bool pendingLoad;
     static int pendingLoadFixedUpdateIndex;
     static State pendingState;
+
+    static object testInstance;
+    static float testx;
+    static float testy;
+    static float testz;
 
     static Main()
     {
@@ -26,6 +33,13 @@ internal static class Main
         //var cursorVisible = Cursor.visible;
         //var cursorLockState = Cursor.lockState;
         var saveVersion = Plugin.UnityVersion;
+
+        testInstance = UnityEngine.Object.FindObjectOfType(AccessTools.TypeByName("MouseLook"));
+        var body = Traverse.Create(testInstance).Field("playerBody");
+        var position = body.Property("position");
+        testx = (float)position.Field("x").GetValue();
+        testy = (float)position.Field("y").GetValue();
+        testz = (float)position.Field("z").GetValue();
 
         Test = new State(/*sceneIndex,*/ time, frameCount, fixedUpdateIndex, /*cursorVisible, cursorLockState,*/ saveVersion);
         Plugin.Log.LogDebug("Saved test state");
@@ -71,6 +85,13 @@ internal static class Main
         TAS.Main.FrameCount = frameCount;
         //Cursor.visible = cursorVisible;
         //Cursor.lockState = cursorLockState;
+
+        // testing
+        var body = Traverse.Create(testInstance).Field("playerBody");
+        var position = body.Property("position");
+        position.Field("x").SetValue(testx);
+        position.Field("y").SetValue(testy);
+        position.Field("z").SetValue(testz);
 
         Plugin.Log.LogDebug($"Load operation finished, time: {DateTime.Now}, frameCount: {TAS.Main.FrameCount}");
     }
