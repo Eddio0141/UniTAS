@@ -31,7 +31,6 @@ A tool that lets you TAS unity games hopefully
 # Known bugs
 - Different scene possibly desyncing while heavy load on Plugin.Update / Plugin.FixedUpdate (maybe use a coroutine)
 ### It Steals
-- The loading text is different from when you run a TAS with soft restart from in game, and from main menu
 - the game's play button breaks when you soft restart while waiting for next scene to load
 
 # VR Support
@@ -41,7 +40,6 @@ I haven't planned for VR support currently
 Depends on BepInEx's progress on it
 
 # Important TODOs
-- Separate each patch, the rest fails if 1 doesn't work for some reason
 - Use Harmony's Traverse utilities for all reflection stuff
 - Use System.Reflection and [manual patching](https://harmony.pardeike.net/articles/basics.html#manual-patching) to patch stuff depending on unity version. Might have to stick to manual patching everything since unity engine has changed a lot
 - Separate tool to set up the TAS tool for a unity game

@@ -59,11 +59,14 @@ public static class Main
 
         pendingMovieStartFixedUpdate = false;
         _running = false;
-        // set time to system time
-        // TODO get original method result, and use that instead
-        Time = System.DateTime.Now;
+        Time = System.DateTime.MinValue;
         Plugin.Log.LogInfo($"System time: {System.DateTime.Now}");
         FrameCount = 0;
+
+        // init random seed
+        // TODO diff unity versions
+        Traverse.Create(typeof(Random)).Method("InitState", new System.Type[] { typeof(int) }).GetValue((int)Seed());
+
         pendingFixedUpdateSoftRestart = false;
 
         firstObjIDs = new List<int>();
@@ -261,7 +264,10 @@ public static class Main
             Object.Destroy(obj);
         }
 
+        Plugin.Log.LogDebug("setting time");
         Time = softRestartTime;
+        // TODO diff unity versions
+        Traverse.Create(typeof(Random)).Method("InitState", new System.Type[] { typeof(int) }).GetValue((int)Seed());
         FrameCount = 0;
         FixedUpdateIndex = 0;
 
@@ -307,5 +313,10 @@ public static class Main
         Running = true;
         SoftRestart(CurrentMovie.Time);
         Plugin.Log.LogInfo($"Movie start: {CurrentMovie}");
+    }
+
+    public static long Seed()
+    {
+        return Time.Ticks;
     }
 }
