@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using HarmonyLib;
+using System.Collections.Generic;
 using System.Threading;
 using UniTASPlugin.TAS.Input;
 using UniTASPlugin.TAS.Input.Movie;
@@ -191,7 +192,7 @@ public static class Main
             }
         }
     }
-    
+
     /// <summary>
     /// Soft restart the game. This will not reload the game, but tries to reset the game state.
     /// Mainly used for TAS movie playback.
@@ -227,8 +228,14 @@ public static class Main
 
         // release mouse lock
         // TODO sort out depending on unity version
-        //Cursor.lockState = CursorLockModeType.None;
-        //Cursor.visible = true;
+        var cursor = Traverse.CreateWithType("UnityEngine.Cursor");
+        var cursorLockModeType = AccessTools.TypeByName("UnityEngine.CursorLockMode");
+
+        var cursorLockState = cursor.Property("lockState");
+        var cursorVisible = cursor.Property("visible");
+
+        cursorLockState.SetValue(System.Enum.Parse(cursorLockModeType, "None"));
+        cursorVisible.SetValue(true);
 
         foreach (var obj in Object.FindObjectsOfType(typeof(MonoBehaviour)))
         {
@@ -259,7 +266,9 @@ public static class Main
         FixedUpdateIndex = 0;
 
         // TODO sort out depending on unity version
-        //SceneManager.LoadScene(0);
+        var sceneManager = Traverse.CreateWithType("UnityEngine.SceneManagement.SceneManager");
+        sceneManager = sceneManager.Method("LoadScene", new System.Type[] { typeof(int) });
+        sceneManager.GetValue(new object[] { 0 });
 
         Plugin.Log.LogInfo("Finish soft restarting");
         Plugin.Log.LogInfo($"System time: {System.DateTime.Now}");
