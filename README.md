@@ -41,7 +41,6 @@ Depends on BepInEx's progress on it
 
 # Important TODOs
 - Use Harmony's Traverse utilities for all reflection stuff
-- Use System.Reflection and [manual patching](https://harmony.pardeike.net/articles/basics.html#manual-patching) to patch stuff depending on unity version. Might have to stick to manual patching everything since unity engine has changed a lot
 - Separate tool to set up the TAS tool for a unity game
 - Integrate BepInEx to project
 - Build script or something to build everything properly
@@ -57,8 +56,50 @@ Depends on BepInEx's progress on it
 - "It Steals"
   - 12.4
 
-# Adding unity version support
-// TODO add info
+# Adding patches for some unity version
+- All patches goes in plugin's Patches folder
+- Depending on the purpose of the patch, create or use an existing folder for it, e.g. TASInput if overriding some new Input function for the TAS inputs
+- Make sure to separate each patch as a separate patch, This prevents all patches in the patch class from failing if 1 fails
+- Use `static Exception Cleanup` method in patch class and use the helper methods depending on situations as below does:
+```cs
+// if the patch exists on some unity version or not (this will simply prevent the method from being patched)
+static System.Exception Cleanup(MethodBase original, System.Exception ex)
+{
+    return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+}
+
+// -------------------------------------------------------------------------
+
+// if the patch NEEDS to be patched (this will show an error in the console, but will let the TAS tool continue anyway)
+static System.Exception Cleanup(System.Reflection.MethodBase original, System.Exception ex)
+{
+    return AuxilaryHelper.Cleanup_NeedsToBePatched(original, ex);
+}
+```
+- If the patch fails even if the method exists in the game, you should use the method `static MethodBase TargetMethod()` in the patch class. Example below:
+```cs
+[HarmonyPatch]
+class UnloadSceneAsync
+{
+    // I recommend using AccessTools helper to find the method
+    static MethodBase TargetMethod()
+    {
+        var sceneManagerType = AccessTools.TypeByName("UnityEngine.SceneManagement.SceneManager");
+        return AccessTools.Method(sceneManagerType, "UnloadSceneAsync", new Type[] { typeof(int) });
+    }
+
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static void Prefix(int sceneBuildIndex, ref AsyncOperation __result)
+    {
+        // some patch code
+    }
+}
+```
+- How to know if the patch works? Check debug output of the plugin by enabling debug print through `GAME_DIR\BepInEx\config\BepInEx.cfg`, field `[Logging.Disk] LogLevel` or `[Logging.Console] Loglevel` and it will show all methods that failed to patch in the `GAME_DIR\BepInEx\LogOutput.log` or the console
 
 # Background tasks to be finished
 - Check whats in SceneManagerAPI, do they need to be patched too
