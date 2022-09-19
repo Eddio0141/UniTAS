@@ -1,13 +1,25 @@
 ﻿using HarmonyLib;
 using System;
 using System.Reflection;
-using UnityEngine.EventSystems;
 
 namespace UniTASPlugin.Patches.TASInput.__UnityEngine.__EventSystems;
 
-[HarmonyPatch(typeof(EventSystem), nameof(EventSystem.isFocused), MethodType.Getter)]
+static class Helper
+{
+    public static Type GetEventSystem()
+    {
+        return AccessTools.TypeByName("UnityEngine.EventSystems.EventSystem");
+    }
+}
+
+[HarmonyPatch]
 class isFocusedGetter
 {
+    static MethodBase TargetMethod()
+    {
+        return AccessTools.PropertyGetter(Helper.GetEventSystem(), "isFocused");
+    }
+
     static Exception Cleanup(MethodBase original, Exception ex)
     {
         return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
