@@ -59,7 +59,7 @@ Depends on BepInEx's progress on it
 # Adding patches for some unity version
 - All patches goes in plugin's Patches folder
 - Depending on the purpose of the patch, create or use an existing folder for it, e.g. TASInput if overriding some new Input function for the TAS inputs
-- Make sure to separate each patch as a separate patch, This prevents all patches in the patch class from failing if 1 fails
+- Make sure to separate each patch as a separate patch class, This prevents all patches in the patch class from failing if 1 fails
 - Use `static Exception Cleanup` method in patch class and use the helper methods depending on situations as below does:
 ```cs
 // if the patch exists on some unity version or not (this will simply prevent the method from being patched)
