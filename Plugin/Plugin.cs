@@ -187,12 +187,19 @@ public class Plugin : BaseUnityPlugin
         if (!TAS.Main.Running && Input.GetKeyDown(KeyCode.K))
         {
             var text = File.ReadAllText("C:\\Program Files (x86)\\Steam\\steamapps\\common\\It Steals\\test.uti");
-            var movie = new Movie("test.uti", text, out var err);
+            var movie = new Movie("test.uti", text, out var err, out var warnings);
 
             if (err != "")
             {
                 Log.LogError(err);
                 return;
+            }
+            if (warnings.Count > 1)
+            {
+                foreach (var warn in warnings)
+                {
+                    Log.LogWarning(warn);
+                }
             }
 
             TAS.Main.RunMovie(movie);

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
 
 namespace UniTASPlugin.TAS.Input.Movie;
@@ -22,9 +23,10 @@ public class Movie
     // comment
     
     */
-    public Movie(string filename, string text, out string errorMsg)
+    public Movie(string filename, string text, out string error, out List<string> warnings)
     {
-        errorMsg = "";
+        error = "";
+        warnings = new();
 
         Name = filename;
         Framebulks = new();
@@ -60,7 +62,7 @@ public class Movie
             {
                 if (lineTrim != versionText)
                 {
-                    errorMsg = "First line not defining version";
+                    error = "First line not defining version";
                     break;
                 }
                 inVersion = false;
@@ -73,14 +75,14 @@ public class Movie
                 {
                     if (foundSeed)
                     {
-                        errorMsg = "Seed property defined twice";
+                        error = "Seed property defined twice";
                         break;
                     }
 
                     // TODO way to parse DateTime
                     if (!long.TryParse(lineTrim.Substring(seedText.Length), out var seed))
                     {
-                        errorMsg = "Seed value not a value";
+                        error = "Seed value not a value";
                         break;
                     }
 
@@ -119,7 +121,7 @@ public class Movie
 
                     if (!float.TryParse(field, out var x))
                     {
-                        errorMsg = "Mouse X value not a valid decimal";
+                        error = "Mouse X value not a valid decimal";
                         break;
                     }
 
@@ -138,7 +140,7 @@ public class Movie
 
                     if (!float.TryParse(field, out var y))
                     {
-                        errorMsg = "Mouse Y value not a valid decimal";
+                        error = "Mouse Y value not a valid decimal";
                         break;
                     }
 
@@ -167,7 +169,7 @@ public class Movie
                             case leftClick:
                                 if (framebulk.Mouse.Left)
                                 {
-                                    errorMsg = "Mouse left click defined twice";
+                                    error = "Mouse left click defined twice";
                                     break;
                                 }
                                 framebulk.Mouse.Left = true;
@@ -175,7 +177,7 @@ public class Movie
                             case rightClick:
                                 if (framebulk.Mouse.Right)
                                 {
-                                    errorMsg = "Mouse right click defined twice";
+                                    error = "Mouse right click defined twice";
                                     break;
                                 }
                                 framebulk.Mouse.Right = true;
@@ -183,21 +185,21 @@ public class Movie
                             case middleClick:
                                 if (framebulk.Mouse.Middle)
                                 {
-                                    errorMsg = "Mouse middle click defined twice";
+                                    error = "Mouse middle click defined twice";
                                     break;
                                 }
                                 framebulk.Mouse.Middle = true;
                                 break;
                             default:
-                                errorMsg = "Mouse click value not valid";
+                                error = "Mouse click value not valid";
                                 break;
                         }
 
-                        if (errorMsg != "")
+                        if (error != "")
                             break;
                     }
 
-                    if (errorMsg != "")
+                    if (error != "")
                         break;
 
                     mouseClickField = false;
@@ -222,15 +224,15 @@ public class Movie
 
                         if (!Enum.IsDefined(typeof(KeyCode), key))
                         {
-                            errorMsg = "Key value not a valid key";
+                            error = "Key value not a valid key";
                             break;
                         }
-                        
+
                         var k = Enum.Parse(typeof(KeyCode), key);
                         framebulk.Keys.Pressed.Add((KeyCode)k);
                     }
 
-                    if (errorMsg != "")
+                    if (error != "")
                         break;
 
                     keysField = false;
@@ -304,13 +306,13 @@ public class Movie
 
                             if (!float.TryParse(builder, out var axisValue))
                             {
-                                errorMsg = "Axis value not a valid decimal";
+                                error = "Axis value not a valid decimal";
                                 break;
                             }
 
                             if (axisValue > 1 || axisValue < -1)
                             {
-                                errorMsg = "Axis value needs to be between -1 and 1";
+                                error = "Axis value needs to be between -1 and 1";
                                 break;
                             }
 
@@ -332,12 +334,12 @@ public class Movie
                         builder += ch;
                     }
 
-                    if (errorMsg != "")
+                    if (error != "")
                         break;
 
                     if (gettingAxisName)
                     {
-                        errorMsg = "Axis missing value";
+                        error = "Axis missing value";
                         break;
                     }
 
@@ -349,25 +351,36 @@ public class Movie
                 {
                     if (field == "")
                     {
-                        errorMsg = "Frametime is missing";
+                        error = "Frametime is missing";
                         break;
                     }
 
                     if (!float.TryParse(field, out var frametime))
                     {
-                        errorMsg = "Frametime not a decimal";
+                        error = "Frametime not a decimal";
                         break;
                     }
 
                     if (frametime < 0)
                     {
-                        errorMsg = "Frametime is not positive";
+                        error = "Frametime is not positive";
                         break;
                     }
                     if (frametime == 0)
                     {
-                        errorMsg = "Frametime needs to be greater than 0";
+                        error = "Frametime needs to be greater than 0";
                         break;
+                    }
+
+                    if (!TimeWrap.HasCaptureDeltaTime())
+                    {
+                        var framerate = 1 / frametime;
+
+                        if (Helper.ValueHasDecimalPoints(framerate))
+                        {
+                            warnings.Add("Frametime has decimal points, this version of unity can't do framerate with decimal points, frametime will be rounded for rounded framerate");
+                            frametime = 1 / (ulong)framerate;
+                        }
                     }
 
                     framebulk.Frametime = frametime;
@@ -377,20 +390,20 @@ public class Movie
 
                 if (!int.TryParse(field, out var frameCount))
                 {
-                    errorMsg = "Framecount not an integer";
+                    error = "Framecount not an integer";
                     break;
                 }
 
                 if (frameCount < 1)
                 {
-                    errorMsg = "Framecount needs to be greater than 0";
+                    error = "Framecount needs to be greater than 0";
                     break;
                 }
 
                 framebulk.FrameCount = frameCount;
             }
 
-            if (errorMsg != "")
+            if (error != "")
                 break;
 
             Framebulks.Add(framebulk);

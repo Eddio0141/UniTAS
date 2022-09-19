@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using UniTASPlugin.TAS.Input;
 using UniTASPlugin.TAS.Input.Movie;
+using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
 
 namespace UniTASPlugin.TAS;
@@ -24,7 +25,7 @@ public static class Main
             else
             {
                 //Cursor.visible = VirtualCursor.Visible;
-                UnityHooks.Time.captureDeltaTime = 0f;
+                TimeWrap.SetFrametime(0);
             }
             _running = value;
             RunInitOrStopping = false;
@@ -139,7 +140,7 @@ public static class Main
                 fb = CurrentMovie.Framebulks[currentFramebulkIndex];
             }
 
-            UnityHooks.Time.captureDeltaTime = fb.Frametime;
+            TimeWrap.SetFrametime(fb.Frametime);
             GameControl(fb);
 
             currentFramebulkFrameIndex++;
@@ -293,8 +294,7 @@ public static class Main
             var firstFb = CurrentMovie.Framebulks[0];
 
             Input.Main.Clear();
-            // TODO
-            UnityHooks.Time.captureDeltaTime = firstFb.Frametime;
+            TimeWrap.SetFrametime(firstFb.Frametime);
             GameControl(firstFb);
 
             if (currentFramebulkFrameIndex >= firstFb.FrameCount)

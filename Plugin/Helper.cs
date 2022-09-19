@@ -149,4 +149,9 @@ internal static class Helper
         System.Diagnostics.FileVersionInfo fileVersion = System.Diagnostics.FileVersionInfo.GetVersionInfo(@".\UnityPlayer.dll");
         return fileVersion.FileVersion;
     }
+
+    public static bool ValueHasDecimalPoints(float value)
+    {
+        return value.ToString().Contains(".");
+    }
 }

@@ -30,8 +30,6 @@ public static class Main
         Type @object = null;
         Type scene = null;
         Type sceneManager = null;
-        Type vector2 = null;
-        Type time = null;
 
         keyCode = types.Find(t => t.FullName == "UnityEngine.KeyCode");
         cursor = types.Find(t => t.FullName == "UnityEngine.Cursor");
@@ -40,8 +38,6 @@ public static class Main
         @object = types.Find(t => t.FullName == "UnityEngine.Object");
         sceneManager = types.Find(t => t.FullName == "UnityEngine.SceneManagement.SceneManager");
         scene = types.Find(t => t.FullName == "UnityEngine.SceneManagement.Scene");
-        vector2 = types.Find(t => t.FullName == "UnityEngine.Vector2");
-        time = types.Find(t => t.FullName == "UnityEngine.Time");
         /*
         switch (version)
         {
@@ -65,10 +61,6 @@ public static class Main
             throw new Exception("UnityEngine.SceneManagement.Scene not found");
         if (sceneManager == null)
             throw new Exception("UnityEngine.SceneManagement.SceneManager not found");
-        if (vector2 == null)
-            throw new Exception("UnityEngine.Vector2 not found");
-        if (time == null)
-            throw new Exception("UnityEngine.Time not found");
 
         //      /
         new Cursor().Init(cursor, Plugin.UnityVersion);
@@ -77,6 +69,5 @@ public static class Main
         new Object().Init(@object, Plugin.UnityVersion);
         new SceneManager().Init(sceneManager, Plugin.UnityVersion);
         new Scene().Init(scene, Plugin.UnityVersion);
-        new Time().Init(time, Plugin.UnityVersion);
     }
 }
