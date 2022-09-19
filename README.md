@@ -63,6 +63,7 @@ Depends on BepInEx's progress on it
 // TODO add info
 
 # Background tasks to be finished
+- Check whats in SceneManagerAPI, do they need to be patched too
 - SystemInfo.supportsGyroscope needs to be patched, UnityEngine.SystemInfo needs to be checked for patches
 - Check InputUnsafeUtility and patch them in unity versions that has them
 - Update() and FixedUpdate() calls in core needs to be done before Unity calls happen, hook to make it work.
