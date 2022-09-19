@@ -8,7 +8,7 @@ class TickCountGetter
 {
     static bool Prefix(ref int __result)
     {
-        __result = (int)TimeSpan.FromTicks(UniTASPlugin.TAS.Main.Time.Ticks).TotalMilliseconds;
+        __result = (int)TimeSpan.FromTicks(TAS.Main.Time.Ticks).TotalMilliseconds;
         return false;
     }
 }

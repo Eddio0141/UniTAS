@@ -1,12 +1,20 @@
 ﻿using HarmonyLib;
+using System.Reflection;
 using UnityEngine;
 
 namespace UniTASPlugin.Patches.SoftRestartTrack.__UnityEngine;
 
-[HarmonyPatch(typeof(Object), nameof(Object.DontDestroyOnLoad))]
-class DontDestroyOnLoad
+[HarmonyPatch(typeof(Object))]
+class ObjectPatch
 {
-    static void Prefix(Object target)
+    static System.Exception Cleanup(MethodBase original, System.Exception ex)
+    {
+        return Auxilary.Cleanup_IgnoreNotFound(original, ex);
+    }
+
+    [HarmonyPrefix]
+    [HarmonyPatch(nameof(Object.DontDestroyOnLoad))]
+    static void Prefix_DontDestroyOnLoad(Object target)
     {
         if (target == null)
             return;
@@ -17,12 +25,10 @@ class DontDestroyOnLoad
             TAS.Main.DontDestroyOnLoadIDs.Add(id);
         }
     }
-}
 
-[HarmonyPatch(typeof(Object), nameof(Object.Destroy), new System.Type[] { typeof(Object), typeof(float) })]
-class Destroy__Object__float
-{
-    static void Prefix(Object obj)
+    [HarmonyPrefix]
+    [HarmonyPatch(nameof(Object.Destroy), new System.Type[] { typeof(Object), typeof(float) })]
+    static void Prefix_Destroy__Object__float(Object obj)
     {
         if (obj == null)
             return;
@@ -31,12 +37,10 @@ class Destroy__Object__float
 
         TAS.Main.DontDestroyOnLoadIDs.Remove(id);
     }
-}
 
-[HarmonyPatch(typeof(Object), nameof(Object.DestroyImmediate), new System.Type[] { typeof(Object), typeof(bool) })]
-class DestroyImmediate__Object__bool
-{
-    static void Prefix(Object obj)
+    [HarmonyPrefix]
+    [HarmonyPatch(nameof(Object.DestroyImmediate), new System.Type[] { typeof(Object), typeof(bool) })]
+    static void Prefix_DestroyImmediate__Object__bool(Object obj)
     {
         if (obj == null)
             return;

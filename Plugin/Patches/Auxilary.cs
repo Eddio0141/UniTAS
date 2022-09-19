@@ -14,7 +14,7 @@ public static class Auxilary
         {
             if (msgBuilder != "")
                 msgBuilder += ": ";
-            msgBuilder += ex.Message;
+            msgBuilder += ex;
         }
 
         Plugin.Log.LogDebug($"Failed to patch: {msgBuilder}");
