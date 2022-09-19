@@ -55,9 +55,6 @@ public static class Main
 
     static Main()
     {
-        // TODO remove hooks slowly
-        UnityHooks.Main.Init();
-
         pendingMovieStartFixedUpdate = false;
         _running = false;
         Time = System.DateTime.MinValue;
