@@ -66,6 +66,7 @@ public class Plugin : BaseUnityPlugin
 
             TAS.Main.RunMovie(movie);
         }
+        /*
         if (!TAS.Main.Running && Input.GetKeyDown(KeyCode.L))
         {
             SaveState.Main.Save();
@@ -74,6 +75,7 @@ public class Plugin : BaseUnityPlugin
         {
             SaveState.Main.Load();
         }
+        */
     }
 
     private void FixedUpdate()
