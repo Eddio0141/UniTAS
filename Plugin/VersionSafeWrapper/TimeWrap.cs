@@ -5,6 +5,10 @@ namespace UniTASPlugin.VersionSafeWrapper;
 
 public static class TimeWrap
 {
+    private static bool settingFrametime = false;
+
+    public static bool SettingFrametime { get => settingFrametime; }
+
     static Traverse captureDeltaTime()
     {
         return Traverse.Create<Time>().Property("captureDeltaTime");
@@ -22,6 +26,7 @@ public static class TimeWrap
 
     public static void SetFrametime(float frametime)
     {
+        settingFrametime = true;
         if (captureDeltaTime().PropertyExists())
         {
             captureDeltaTime().SetValue(frametime);
@@ -31,5 +36,6 @@ public static class TimeWrap
             int framerate = (int)(1 / frametime);
             captureFramerate().SetValue(framerate);
         }
+        settingFrametime = false;
     }
 }

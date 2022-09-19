@@ -1,10 +1,26 @@
 ﻿using HarmonyLib;
 using System;
 using System.Reflection;
+using UniTASPlugin.VersionSafeWrapper;
 
 namespace UniTASPlugin.Patches.__UnityEngine;
 
 #pragma warning disable IDE1006
+
+[HarmonyPatch(typeof(UnityEngine.Time), "captureFramerate", MethodType.Setter)]
+class captureFramerateSetter
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static bool Prefix()
+    {
+        // if TAS is running and we aren't setting the frametime, reject
+        return !TAS.Main.Running || TimeWrap.SettingFrametime;
+    }
+}
 
 [HarmonyPatch(typeof(UnityEngine.Time), "captureDeltaTime", MethodType.Setter)]
 class captureDeltaTimeSetter
@@ -14,10 +30,10 @@ class captureDeltaTimeSetter
         return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
     }
 
-    static bool Prefix(ref float __result)
+    static bool Prefix()
     {
-        __result = (float)TimeSpan.FromTicks(TAS.Main.Time.Ticks).TotalSeconds;
-        return false;
+        // if TAS is running and we aren't setting the frametime, reject
+        return !TAS.Main.Running || TimeWrap.SettingFrametime;
     }
 }
 

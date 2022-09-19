@@ -152,7 +152,6 @@ class UnloadSceneAsync
     - [ ] Load game files
 - Resolution needs to be defined in movie
 - DateTime customizability in movie and seed will use that type too
-- Time.captureDeltaTime needs to be unable to be changed by user while movie is running
 - Movie file input macro functions
 - Movie file TAS helper function calls
 - Movie end notification on screen (very important)
