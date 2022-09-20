@@ -61,7 +61,11 @@ public class Plugin : BaseUnityPlugin
         // TODO remove this test
         if (!TAS.Main.Running && Input.GetKeyDown(KeyCode.K))
         {
-            string text = File.ReadAllText("C:\\Program Files (x86)\\Steam\\steamapps\\common\\It Steals\\test.uti");
+            string text = "";
+            if (File.Exists("C:\\Users\\Yuki\\Documents\\test.uti"))
+                text = File.ReadAllText("C:\\Users\\Yuki\\Documents\\test.uti");
+            else
+                text = File.ReadAllText("C:\\Program Files (x86)\\Steam\\steamapps\\common\\It Steals\\test.uti");
             Movie movie = new("test.uti", text, out string err, out List<string> warnings);
 
             if (err != "")
@@ -81,11 +85,7 @@ public class Plugin : BaseUnityPlugin
         }
         if (!TAS.Main.Running && Input.GetKeyDown(KeyCode.L))
         {
-            var inputManager = Traverse.CreateWithType("UnityEngine.InputSystem.InputSystem");
-            var devices = inputManager.Property("devices");
-            var devicesList = devices.GetValue();
-            var devicesListArray = Traverse.Create(devicesList).Method("ToArray").GetValue<object[]>();
-            Log.LogDebug($"Found {devicesListArray.Length} devices: {string.Join(", ", devicesListArray.Select(x => x.ToString()).ToArray())}");
+            NewInputSystem.ConnectAllDevices();
         }
         /*
         if (!TAS.Main.Running && Input.GetKeyDown(KeyCode.L))
