@@ -99,6 +99,7 @@ class UnloadSceneAsync
 - How to know if the patch works? Check debug output of the plugin by enabling debug print through `GAME_DIR\BepInEx\config\BepInEx.cfg`, field `[Logging.Disk] LogLevel` or `[Logging.Console] Loglevel` and it will show all methods that failed to patch in the `GAME_DIR\BepInEx\LogOutput.log` or the console
 
 # Background tasks to be finished
+- Movie sets screen res and force Screen.width height getters to return the patched value, but if game calls SetResolution then internal state sets to that
 - Check whats in SceneManagerAPI, do they need to be patched too
 - SystemInfo.supportsGyroscope needs to be patched, UnityEngine.SystemInfo needs to be checked for patches
 - Check InputUnsafeUtility and patch them in unity versions that has them
@@ -109,7 +110,7 @@ class UnloadSceneAsync
   - [ ] Button presses
   - [ ] find out what the difference between GetAxis and GetAxisRaw is
   - [ ] Mouse movement
-    - [ ] get_mousePosition_Injected set `ret`
+    - [x] get_mousePosition_Injected set `ret`
     - Has some mouse movement, UI works at the very least
   - [ ] Mouse scrolling
   - [ ] UI control

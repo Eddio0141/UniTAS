@@ -556,6 +556,27 @@ class mousePositionGetter
     }
 }
 
+#pragma warning disable Harmony002 // why does unity name things like this
+[HarmonyPatch(typeof(Input), "get_mousePosition_Injected", MethodType.Normal)]
+#pragma warning restore Harmony002
+class get_mousePosition_Injected
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static bool Prefix(ref Vector3 ret)
+    {
+        if (TAS.Main.Running)
+        {
+            ret = Mouse.Position;
+            return false;
+        }
+        return true;
+    }
+}
+
 [HarmonyPatch(typeof(Input), nameof(Input.multiTouchEnabled), MethodType.Getter)]
 class multiTouchEnabledGetter
 {
