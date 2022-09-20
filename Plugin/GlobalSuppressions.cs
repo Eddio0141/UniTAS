@@ -6,3 +6,7 @@
 using System.Diagnostics.CodeAnalysis;
 
 [assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Some patches are property names or private methods, which are underscore named", Scope = "namespaceanddescendants", Target = "~N:UniTASPlugin.Patches")]
+[assembly: SuppressMessage("Style", "IDE1006:Naming Styles", Justification = "Some patches are property names or private methods, which are underscore named", Scope = "namespaceanddescendants", Target = "~N:UniTASPlugin.Patches.__System")]
+[assembly: SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "<Pending>", Scope = "member", Target = "~M:UniTASPlugin.Plugin.Awake")]
+[assembly: SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "<Pending>", Scope = "member", Target = "~M:UniTASPlugin.Plugin.Update")]
+[assembly: SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "<Pending>", Scope = "member", Target = "~M:UniTASPlugin.Plugin.FixedUpdate")]
