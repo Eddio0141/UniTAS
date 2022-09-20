@@ -23,6 +23,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="postbuild.ps1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
     <PackageReference Include="BepInEx.Core" Version="5.*" />
     <PackageReference Include="UnityEngine.Modules" Version="3.4.0" IncludeAssets="compile" />
