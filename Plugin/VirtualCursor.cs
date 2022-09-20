@@ -3,18 +3,15 @@
 public static class VirtualCursor
 {
     /*
-    static Vector2 hotspot;
-    public static bool Visible { get; set; }
+    static Vector2 hotspot = Vector2.zero;
+    public static bool Visible { get; set; } = true;
     static readonly CanvasScaler canvasScaler;
     static readonly GameObject cursorRawImageObj;
     static readonly RawImage cursorRawImage;
     static readonly RectTransform cursorRectTransform;
 
-    static VirtualCursor()
+    Init()
     {
-        hotspot = Vector2.zero;
-        Visible = true;
-
         var canvasObj = new GameObject("VirtualCursorCanvas");
         Object.DontDestroyOnLoad(canvasObj);
         cursorRawImageObj = new GameObject("VirtualCursorRawImage");

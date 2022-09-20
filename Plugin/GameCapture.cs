@@ -4,14 +4,9 @@ namespace UniTASPlugin;
 
 public static class GameCapture
 {
-    static bool capturing;
+    static bool capturing = false;
     static string captureFolder;
     static ulong captureCount;
-
-    static GameCapture()
-    {
-        capturing = false;
-    }
 
     public static void Update()
     {

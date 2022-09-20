@@ -31,7 +31,7 @@ public class Plugin : BaseUnityPlugin
         Harmony harmony = new($"{NAME}HarmonyPatch");
         harmony.PatchAll();
 
-        GameObject asyncHandler = new();
+        var asyncHandler = new GameObject();
         asyncHandler.AddComponent<UnityASyncHandler>();
         TAS.Main.AddUnityASyncHandlerID(asyncHandler.GetInstanceID());
 
@@ -39,12 +39,20 @@ public class Plugin : BaseUnityPlugin
         // why is this broken TODO
         Log.LogInfo($"All axis names: {string.Join(", ", Input.GetJoystickNames())}");
 
+        // init random seed
+        // TODO diff unity versions
+        Traverse.Create(typeof(Random)).Method("InitState", new System.Type[] { typeof(int) }).GetValue((int)TAS.Main.Seed());
+
+        TAS.Main.Init();
+        TAS.SystemInfo.Init();
+
         var inputManager = Traverse.CreateWithType("UnityEngine.InputSystem.InputManager");
         var devices = inputManager.Property("devices");
         var devicesList = devices.GetValue();
         var devicesListArray = Traverse.Create(devicesList).Method("ToArray").GetValue<object[]>();
         Log.LogDebug($"Found {devicesListArray.Length} devices: {string.Join(", ", devicesListArray.Select(x => x.ToString()).ToArray())}");
 
+        Log.LogInfo($"System time: {System.DateTime.Now}");
         Log.LogInfo($"Plugin {NAME} is loaded!");
     }
 
@@ -73,6 +81,11 @@ public class Plugin : BaseUnityPlugin
             }
 
             TAS.Main.RunMovie(movie);
+        }
+        if (!TAS.Main.Running && Input.GetKeyDown(KeyCode.L))
+        {
+            var base_ = System.AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
+            Log.LogInfo($"Base: {base_}");
         }
         /*
         if (!TAS.Main.Running && Input.GetKeyDown(KeyCode.L))

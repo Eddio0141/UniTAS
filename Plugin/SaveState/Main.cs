@@ -7,7 +7,7 @@ namespace UniTASPlugin.SaveState;
 internal static class Main
 {
     static State Test;
-    static bool pendingLoad;
+    static bool pendingLoad = false;
     static int pendingLoadFixedUpdateIndex;
     static State pendingState;
 
@@ -15,11 +15,6 @@ internal static class Main
     static float testx;
     static float testy;
     static float testz;
-
-    static Main()
-    {
-        pendingLoad = false;
-    }
 
     public static void Save()
     {

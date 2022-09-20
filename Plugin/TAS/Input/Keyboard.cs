@@ -5,18 +5,10 @@ namespace UniTASPlugin.TAS.Input;
 
 public static class Keyboard
 {
-    public static List<KeyCode> Keys { get; internal set; }
-    public static List<KeyCode> KeysDown { get; private set; }
-    public static List<KeyCode> KeysUp { get; private set; }
-    private static readonly List<KeyCode> KeysPrev;
-
-    static Keyboard()
-    {
-        Keys = new();
-        KeysDown = new();
-        KeysUp = new();
-        KeysPrev = new();
-    }
+    public static List<KeyCode> Keys { get; internal set; } = new();
+    public static List<KeyCode> KeysDown { get; private set; } = new();
+    public static List<KeyCode> KeysUp { get; private set; } = new();
+    private static readonly List<KeyCode> KeysPrev = new();
 
     public static void Update()
     {

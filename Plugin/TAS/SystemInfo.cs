@@ -5,9 +5,8 @@ namespace UniTASPlugin.TAS;
 
 public static class SystemInfo
 {
-    static SystemInfo()
+    public static void Init()
     {
-        DeviceType = null;
         var deviceTypeEnum = AccessTools.TypeByName("UnityEngine.DeviceType");
         if (deviceTypeEnum != null)
         {
@@ -15,22 +14,19 @@ public static class SystemInfo
             var deviceType = sysInfo.Property("deviceType");
             if (deviceType.PropertyExists())
             {
-                // by default we go pc
-                DeviceType = "Desktop";
-
                 // just in case, check
                 var allVariants = Enum.GetValues(deviceTypeEnum);
                 var foundDesktop = false;
                 foreach (var variant in allVariants)
                 {
-                    if (variant.ToString() == "Desktop")
+                    if (variant.ToString() == DeviceType)
                         foundDesktop = true;
                 }
                 if (!foundDesktop)
-                    Plugin.Log.LogError("DeviceType enum doesn't contain Desktop, fix this");
+                    Plugin.Log.LogError($"DeviceType enum doesn't contain {DeviceType}, fix this");
             }
         }
     }
 
-    public static string DeviceType { get; set; }
+    public static string DeviceType { get; set; } = "Desktop";
 }

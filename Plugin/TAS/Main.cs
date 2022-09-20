@@ -10,7 +10,7 @@ namespace UniTASPlugin.TAS;
 
 public static class Main
 {
-    static bool _running;
+    static bool _running = false;
     public static bool Running
     {
         // TODO private set
@@ -32,43 +32,30 @@ public static class Main
         }
     }
     public static bool RunInitOrStopping { get; private set; }
-    public static System.DateTime Time { get; set; }
-    public static ulong FrameCount { get; set; }
+    public static System.DateTime Time { get; set; } = System.DateTime.MinValue;
+    public static ulong FrameCount { get; set; } = 0;
     static readonly List<int> firstObjIDs = new();
     /// <summary>
     /// Scene loading count status. 0 means there are no scenes loading, 1 means there is one scene loading, 2 means there are two scenes loading, etc.
     /// </summary>
-    public static int LoadingSceneCount { get; set; }
+    public static int LoadingSceneCount { get; set; } = 0;
     /// <summary>
     /// Scene unloading count status. 0 means there are no scenes unloading, 1 means there is one scene unloading, 2 means there are two scenes unloading, etc.
     /// </summary>
-    public static int UnloadingSceneCount { get; set; }
+    public static int UnloadingSceneCount { get; set; } = 0;
     public static List<int> DontDestroyOnLoadIDs = new();
-    static bool pendingFixedUpdateSoftRestart;
+    static bool pendingFixedUpdateSoftRestart = false;
     static System.DateTime softRestartTime;
     public static Movie.Movie CurrentMovie { get; private set; }
     public static ulong FrameCountMovie { get; private set; }
     static int currentFramebulkIndex;
     static int currentFramebulkFrameIndex;
-    static bool pendingMovieStartFixedUpdate;
+    static bool pendingMovieStartFixedUpdate = false;
     public static int FixedUpdateIndex { get; private set; }
 
-    static Main()
+    public static void Init()
     {
-        pendingMovieStartFixedUpdate = false;
-        _running = false;
-        Time = System.DateTime.MinValue;
-        Plugin.Log.LogInfo($"System time: {System.DateTime.Now}");
-        FrameCount = 0;
-
-        // init random seed
-        // TODO diff unity versions
-        Traverse.Create(typeof(Random)).Method("InitState", new System.Type[] { typeof(int) }).GetValue((int)Seed());
-
-        pendingFixedUpdateSoftRestart = false;
-
-        Object[] objs = Object.FindObjectsOfType(typeof(MonoBehaviour));
-
+        var objs = Object.FindObjectsOfType(typeof(MonoBehaviour));
         foreach (Object obj in objs)
         {
             int id = obj.GetInstanceID();
@@ -77,9 +64,6 @@ public static class Main
                 firstObjIDs.Add(id);
             }
         }
-
-        UnloadingSceneCount = 0;
-        LoadingSceneCount = 0;
     }
 
     public static void AddUnityASyncHandlerID(int id)
@@ -120,7 +104,7 @@ public static class Main
     {
         if (!Running)
             return;
-        
+
         FrameCountMovie++;
         if (!CheckCurrentMovieEnd())
             return;
@@ -308,7 +292,7 @@ public static class Main
 
         SystemInfo.DeviceType = CurrentMovie.DeviceType;
         // TODO fullscreen
-        UnityEngine.Screen.SetResolution(CurrentMovie.Width, CurrentMovie.Height, false, 60);
+        Screen.SetResolution(CurrentMovie.Width, CurrentMovie.Height, false, 60);
 
         SoftRestart(CurrentMovie.Time);
         Plugin.Log.LogInfo($"Movie start: {CurrentMovie}");

@@ -4,26 +4,20 @@ namespace UniTASPlugin.TAS.Input;
 
 public static class Mouse
 {
-    public static bool MousePresent { get; internal set; }
-    public static Vector2 Position { get; internal set; }
-    public static bool LeftClick { get; internal set; }
-    public static bool LeftClickDown { get; private set; }
-    public static bool LeftClickUp { get; private set; }
-    private static bool LeftClickPrev;
-    public static bool RightClick { get; internal set; }
-    public static bool RightClickDown { get; private set; }
-    public static bool RightClickUp { get; private set; }
-    private static bool RightClickPrev;
-    public static bool MiddleClick { get; internal set; }
-    public static bool MiddleClickDown { get; private set; }
-    public static bool MiddleClickUp { get; private set; }
-    private static bool MiddleClickPrev;
-
-    static Mouse()
-    {
-        MousePresent = true;
-        Clear();
-    }
+    public static bool MousePresent { get; internal set; } = true;
+    public static Vector2 Position { get; internal set; } = Vector2.zero;
+    public static bool LeftClick { get; internal set; } = false;
+    public static bool LeftClickDown { get; private set; } = false;
+    public static bool LeftClickUp { get; private set; } = false;
+    private static bool LeftClickPrev = false;
+    public static bool RightClick { get; internal set; } = false;
+    public static bool RightClickDown { get; private set; } = false;
+    public static bool RightClickUp { get; private set; } = false;
+    private static bool RightClickPrev = false;
+    public static bool MiddleClick { get; internal set; } = false;
+    public static bool MiddleClickDown { get; private set; } = false;
+    public static bool MiddleClickUp { get; private set; } = false;
+    private static bool MiddleClickPrev = false;
 
     public static void Update()
     {
