@@ -35,6 +35,7 @@ public class Plugin : BaseUnityPlugin
         TAS.Main.AddUnityASyncHandlerID(asyncHandler.GetInstanceID());
 
         // all axis names for help
+        // why is this broken TODO
         Log.LogInfo($"All axis names: {string.Join(", ", Input.GetJoystickNames())}");
 
         Log.LogInfo($"Plugin {NAME} is loaded!");

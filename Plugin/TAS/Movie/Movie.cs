@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HarmonyLib;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UniTASPlugin.VersionSafeWrapper;
@@ -11,11 +12,16 @@ public class Movie
     public readonly string Name;
     public readonly List<Framebulk> Framebulks;
     public readonly DateTime Time;
+    public readonly string DeviceType;
+    // TODO eventually allow resolution to be changed while movie and is in windowed mode
+    public readonly int Width;
+    public readonly int Height;
 
     /* V1 FORMAT
 
     version 1
     seed seedvalue
+    device DeviceType
     frames
     mouse x|mouse y|left right middle|UpArrow W A S D|"axis X" 1 "sprint" -0.1|frametime|framecount
     |||W A S D||0.001|500
@@ -30,17 +36,23 @@ public class Movie
 
         Name = filename;
         Framebulks = new();
+        Width = 1920;
+        Height = 1080;
 
         string[] lines = text.Split('\n');
 
         bool inVersion = true;
         bool inProperties = true;
         bool foundSeed = false;
+        bool foundDevice = false;
+        bool foundResolution = false;
 
         string comment = "//";
         string versionText = "version 1";
         string framesSection = "frames";
         string seedText = "seed ";
+        string deviceText = "device ";
+        string resolutionText = "resolution ";
         char fieldSeparator = '|';
         char listSeparator = ' ';
         char axisNameSurround = '"';
@@ -78,20 +90,69 @@ public class Movie
                         error = "Seed property defined twice";
                         break;
                     }
-
                     // TODO way to parse DateTime
                     if (!long.TryParse(lineTrim.Substring(seedText.Length), out long seed))
                     {
                         error = "Seed value not a value";
                         break;
                     }
-
                     Time = new DateTime(seed);
                     foundSeed = true;
-
                     continue;
                 }
+                if (lineTrim.StartsWith(deviceText))
+                {
+                    if (foundDevice)
+                    {
+                        error = "Device type defined twice";
+                        break;
+                    }
+                    var deviceType = AccessTools.TypeByName("UnityEngine.DeviceType");
+                    var chosenVariant = lineTrim.Substring(deviceText.Length);
 
+                    if (!Enum.IsDefined(deviceType, chosenVariant))
+                    {
+                        var allVariants = new List<string>();
+                        var deviceTypes = Enum.GetValues(deviceType);
+                        foreach (var t in deviceTypes)
+                        {
+                            allVariants.Add(t.ToString());
+                        }
+                        error = $"Device type not a valid variant, valid variants: {string.Join(", ", allVariants.ToArray())}";
+                        break;
+                    }
+                    DeviceType = chosenVariant;
+                    foundDevice = true;
+                    continue;
+                }
+                if (lineTrim.StartsWith(resolutionText))
+                {
+                    if (foundResolution)
+                    {
+                        error = "Device type defined twice";
+                        break;
+                    }
+                    var resolution = lineTrim.Substring(resolutionText.Length).Split(listSeparator);
+                    if (resolution.Length != 2)
+                    {
+                        error = "Resolution not in format width height";
+                        break;
+                    }
+                    if (!int.TryParse(resolution[0], out int width))
+                    {
+                        error = "Resolution width not a value";
+                        break;
+                    }
+                    if (!int.TryParse(resolution[1], out int height))
+                    {
+                        error = "Resolution height not a value";
+                        break;
+                    }
+                    Width = width;
+                    Height = height;
+                    foundResolution = true;
+                    continue;
+                }
                 if (lineTrim == framesSection)
                 {
                     inProperties = false;

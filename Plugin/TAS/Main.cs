@@ -34,7 +34,7 @@ public static class Main
     public static bool RunInitOrStopping { get; private set; }
     public static System.DateTime Time { get; set; }
     public static ulong FrameCount { get; set; }
-    static readonly List<int> firstObjIDs;
+    static readonly List<int> firstObjIDs = new();
     /// <summary>
     /// Scene loading count status. 0 means there are no scenes loading, 1 means there is one scene loading, 2 means there are two scenes loading, etc.
     /// </summary>
@@ -67,7 +67,6 @@ public static class Main
 
         pendingFixedUpdateSoftRestart = false;
 
-        firstObjIDs = new List<int>();
         Object[] objs = Object.FindObjectsOfType(typeof(MonoBehaviour));
 
         foreach (Object obj in objs)
@@ -119,29 +118,28 @@ public static class Main
 
     static void UpdateMovie()
     {
-        if (Running)
-        {
-            FrameCountMovie++;
+        if (!Running)
+            return;
+        
+        FrameCountMovie++;
+        if (!CheckCurrentMovieEnd())
+            return;
 
+        Framebulk fb = CurrentMovie.Framebulks[currentFramebulkIndex];
+        if (currentFramebulkFrameIndex >= fb.FrameCount)
+        {
+            currentFramebulkIndex++;
             if (!CheckCurrentMovieEnd())
                 return;
 
-            Framebulk fb = CurrentMovie.Framebulks[currentFramebulkIndex];
-            if (currentFramebulkFrameIndex >= fb.FrameCount)
-            {
-                currentFramebulkIndex++;
-                if (!CheckCurrentMovieEnd())
-                    return;
-
-                currentFramebulkFrameIndex = 0;
-                fb = CurrentMovie.Framebulks[currentFramebulkIndex];
-            }
-
-            TimeWrap.SetFrametime(fb.Frametime);
-            GameControl(fb);
-
-            currentFramebulkFrameIndex++;
+            currentFramebulkFrameIndex = 0;
+            fb = CurrentMovie.Framebulks[currentFramebulkIndex];
         }
+
+        TimeWrap.SetFrametime(fb.Frametime);
+        GameControl(fb);
+
+        currentFramebulkFrameIndex++;
     }
 
     static bool CheckCurrentMovieEnd()
@@ -285,6 +283,14 @@ public static class Main
 
         CurrentMovie = movie;
 
+        pendingMovieStartFixedUpdate = true;
+        Plugin.Log.LogInfo("Starting movie, pending FixedUpdate call");
+    }
+
+    static void RunMoviePending()
+    {
+        Running = true;
+
         if (CurrentMovie.Framebulks.Count > 0)
         {
             Framebulk firstFb = CurrentMovie.Framebulks[0];
@@ -300,13 +306,10 @@ public static class Main
             }
         }
 
-        pendingMovieStartFixedUpdate = true;
-        Plugin.Log.LogInfo("Starting movie, pending FixedUpdate call");
-    }
+        SystemInfo.DeviceType = CurrentMovie.DeviceType;
+        // TODO fullscreen
+        UnityEngine.Screen.SetResolution(CurrentMovie.Width, CurrentMovie.Height, false, 60);
 
-    static void RunMoviePending()
-    {
-        Running = true;
         SoftRestart(CurrentMovie.Time);
         Plugin.Log.LogInfo($"Movie start: {CurrentMovie}");
     }
