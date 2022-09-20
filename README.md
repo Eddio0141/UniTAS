@@ -14,18 +14,7 @@ A tool that lets you TAS unity games hopefully
 - Only tested in windows
 
 # TAS tool features
-- [x] TAS play back
-- [ ] Ingame TAS recording
-- [ ] Savestates
-- [ ] Game video recording
-  - Only can dump raw images to disk 
-- [ ] TAS menu
-- [ ] TAS GUI
-- [ ] TAS helpers
-  - [ ] Get all axis names in input legacy system
-    - Only prints them in console when found
-- [ ] Frame advance / slow down
-- [ ] Optional resolution
+- TAS play back
 
 # Known bugs
 - Different scene possibly desyncing while heavy load on Plugin.Update / Plugin.FixedUpdate (maybe use a coroutine)
@@ -104,6 +93,17 @@ class UnloadSceneAsync
 - SystemInfo.supportsGyroscope needs to be patched, UnityEngine.SystemInfo needs to be checked for patches
 - Check InputUnsafeUtility and patch them in unity versions that has them
 - Update() and FixedUpdate() calls in core needs to be done before Unity calls happen, hook to make it work.
+- Ingame TAS recording
+- Savestates
+- Game video recording
+  - Only can dump raw images to disk 
+- TAS menu
+- TAS GUI
+- TAS helpers
+  - Get all axis names in input legacy system
+    - Only prints them in console when found
+- Frame advance / slow down
+- Optional resolution
 - Full input legacy system override
   - [x] Mouse clicks
   - [x] Axis & value control
