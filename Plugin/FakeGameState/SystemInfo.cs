@@ -1,7 +1,7 @@
 ﻿using HarmonyLib;
 using System;
 
-namespace UniTASPlugin.TAS;
+namespace UniTASPlugin.FakeGameState;
 
 public static class SystemInfo
 {

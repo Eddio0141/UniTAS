@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace UniTASPlugin.TAS.Input;
+namespace UniTASPlugin.FakeGameState.InputLegacy;
 
 public static class Keyboard
 {

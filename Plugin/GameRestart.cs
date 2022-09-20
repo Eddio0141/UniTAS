@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using System.Threading;
+using UniTASPlugin.FakeGameState;
 using UnityEngine;
 
 namespace UniTASPlugin;
@@ -85,11 +86,10 @@ internal class GameRestart
             // destroy all objects that are marked DontDestroyOnLoad and wasn't loaded in the first scene
             Object.Destroy(obj);
         }
-
-        TAS.Main.Time = softRestartTime;
+        FakeGameState.GameTime.Time = softRestartTime;
         // TODO diff unity versions
         Traverse.Create(typeof(Random)).Method("InitState", new System.Type[] { typeof(int) }).GetValue((int)TAS.Main.Seed());
-        TAS.Main.FrameCount = 0;
+        FakeGameState.GameTime.FrameCount = 0;
 
         // TODO sort out depending on unity version
         Traverse sceneManager = Traverse.CreateWithType("UnityEngine.SceneManagement.SceneManager");

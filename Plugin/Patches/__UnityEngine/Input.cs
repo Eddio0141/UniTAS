@@ -1,7 +1,7 @@
 ﻿using HarmonyLib;
 using System;
 using System.Reflection;
-using UniTASPlugin.TAS.Input;
+using UniTASPlugin.FakeGameState.InputLegacy;
 using UnityEngine;
 
 namespace UniTASPlugin.Patches.__UnityEngine;

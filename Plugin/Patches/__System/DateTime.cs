@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using System;
 using System.Reflection;
+using UniTASPlugin.FakeGameState;
 
 namespace UniTASPlugin.Patches.__System;
 
@@ -16,7 +17,7 @@ class DateTimePatch
     [HarmonyPatch(nameof(DateTime.Now), MethodType.Getter)]
     static bool Prefix_NowGetter(ref DateTime __result)
     {
-        __result = TAS.Main.Time;
+        __result = GameTime.Time;
         return false;
     }
 }

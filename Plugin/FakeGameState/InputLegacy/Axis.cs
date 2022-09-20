@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace UniTASPlugin.TAS.Input;
+namespace UniTASPlugin.FakeGameState.InputLegacy;
 
 public static class Axis
 {

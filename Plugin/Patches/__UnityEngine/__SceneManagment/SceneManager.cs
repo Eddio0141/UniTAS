@@ -66,7 +66,7 @@ class UnloadSceneAsync__sceneBuildIndex
 
     static void Postfix(ref AsyncOperation __result)
     {
-        Plugin.AsyncSceneUnload(__result);
+        GameTracker.AsyncSceneUnload(__result);
     }
 }
 
@@ -96,7 +96,7 @@ class LoadSceneAsync__sceneBuildIndex__parameters
 
     static void Postfix(ref AsyncOperation __result)
     {
-        Plugin.AsyncSceneLoad(__result);
+        GameTracker.AsyncSceneLoad(__result);
     }
 }
 
@@ -126,7 +126,7 @@ class LoadSceneAsync__sceneName__parameters
 
     static void Postfix(ref AsyncOperation __result)
     {
-        Plugin.AsyncSceneLoad(__result);
+        GameTracker.AsyncSceneLoad(__result);
     }
 }
 
@@ -158,7 +158,7 @@ class UnloadSceneAsync__sceneName
 
     static void Postfix(ref AsyncOperation __result)
     {
-        Plugin.AsyncSceneUnload(__result);
+        GameTracker.AsyncSceneUnload(__result);
     }
 }
 
@@ -191,7 +191,7 @@ class UnloadSceneAsync__scene
 
     static void Postfix(ref AsyncOperation __result)
     {
-        Plugin.AsyncSceneUnload(__result);
+        GameTracker.AsyncSceneUnload(__result);
     }
 }
 
@@ -221,7 +221,7 @@ class UnloadSceneAsync__sceneBuildIndex__options
 
     static void Postfix(ref AsyncOperation __result)
     {
-        Plugin.AsyncSceneUnload(__result);
+        GameTracker.AsyncSceneUnload(__result);
     }
 }
 
@@ -251,7 +251,7 @@ class UnloadSceneAsync__sceneName__options
 
     static void Postfix(ref AsyncOperation __result)
     {
-        Plugin.AsyncSceneUnload(__result);
+        GameTracker.AsyncSceneUnload(__result);
     }
 }
 
@@ -282,6 +282,6 @@ class UnloadSceneAsync__scene__options
 
     static void Postfix(ref AsyncOperation __result)
     {
-        Plugin.AsyncSceneUnload(__result);
+        GameTracker.AsyncSceneUnload(__result);
     }
 }

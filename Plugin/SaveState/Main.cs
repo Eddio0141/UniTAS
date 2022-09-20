@@ -21,8 +21,8 @@ internal static class Main
         //var scene = SceneManager.GetActiveScene();
         //var sceneIndex = Scene.buildIndex(scene);
         DateTime time = DateTime.Now;
-        ulong frameCount = TAS.Main.FrameCount;
-        int fixedUpdateIndex = TAS.Main.FixedUpdateIndex;
+        ulong frameCount = FakeGameState.GameTime.FrameCount;
+        int fixedUpdateIndex = Plugin.FixedUpdateIndex;
         // TODO only save this state if unity version has it
         //var cursorVisible = Cursor.visible;
         //var cursorLockState = Cursor.lockState;
@@ -51,7 +51,7 @@ internal static class Main
 
     public static void Update()
     {
-        if (pendingLoad && TAS.Main.FixedUpdateIndex == pendingLoadFixedUpdateIndex)
+        if (pendingLoad && Plugin.FixedUpdateIndex == pendingLoadFixedUpdateIndex)
         {
             LoadOperation();
             pendingLoad = false;
@@ -65,18 +65,8 @@ internal static class Main
         //var scene = pendingState.Scene;
         DateTime time = pendingState.Time;
         ulong frameCount = pendingState.FrameCount;
-        //var cursorVisible = pendingState.CursorVisible;
-        //var cursorLockState = pendingState.CursorLockState;
-
-        /*
-        if (Scene.buildIndex(SceneManager.GetActiveScene()) != scene)
-        {
-            // load correct scene
-            SceneManager.LoadScene(scene);
-        }
-        */
-        TAS.Main.Time = time;
-        TAS.Main.FrameCount = frameCount;
+        FakeGameState.GameTime.Time = time;
+        FakeGameState.GameTime.FrameCount = frameCount;
         //Cursor.visible = cursorVisible;
         //Cursor.lockState = cursorLockState;
 
@@ -87,6 +77,6 @@ internal static class Main
         position.Field("y").SetValue(testy);
         position.Field("z").SetValue(testz);
 
-        Plugin.Log.LogDebug($"Load operation finished, time: {DateTime.Now}, frameCount: {TAS.Main.FrameCount}");
+        Plugin.Log.LogDebug($"Load operation finished, time: {DateTime.Now}, frameCount: {FakeGameState.GameTime.FrameCount}");
     }
 }

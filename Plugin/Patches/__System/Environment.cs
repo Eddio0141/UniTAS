@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using System;
 using System.Reflection;
+using UniTASPlugin.FakeGameState;
 
 namespace UniTASPlugin.Patches.__System;
 
@@ -16,7 +17,7 @@ class EnvironmentPatch
     [HarmonyPatch(nameof(Environment.TickCount), MethodType.Getter)]
     static bool Prefix_TickCountGetter(ref int __result)
     {
-        __result = (int)TimeSpan.FromTicks(TAS.Main.Time.Ticks).TotalMilliseconds;
+        __result = (int)TimeSpan.FromTicks(GameTime.Time.Ticks).TotalMilliseconds;
         return false;
     }
 }

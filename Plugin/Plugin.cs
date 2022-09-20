@@ -46,7 +46,7 @@ public class Plugin : BaseUnityPlugin
         Traverse.Create(typeof(Random)).Method("InitState", new System.Type[] { typeof(int) }).GetValue((int)TAS.Main.Seed());
 
         GameTracker.Init();
-        TAS.SystemInfo.Init();
+        FakeGameState.SystemInfo.Init();
 
         Log.LogInfo($"System time: {System.DateTime.Now}");
         Log.LogInfo($"Plugin {NAME} is loaded!");
