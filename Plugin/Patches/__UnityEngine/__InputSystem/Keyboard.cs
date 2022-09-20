@@ -1,8 +1,4 @@
-﻿using HarmonyLib;
-using System;
-using System.Reflection;
-
-namespace UniTASPlugin.Patches.__UnityEngine.__InputSystem;
+﻿namespace UniTASPlugin.Patches.__UnityEngine.__InputSystem;
 /*
 static class Helper
 {

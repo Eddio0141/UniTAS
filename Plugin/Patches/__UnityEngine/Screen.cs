@@ -1,7 +1,4 @@
-﻿using HarmonyLib;
-using UnityEngine;
-
-namespace UniTASPlugin.Patches.__UnityEngine;
+﻿namespace UniTASPlugin.Patches.__UnityEngine;
 
 /*
 [HarmonyPatch(typeof(Screen), nameof(Screen.width), MethodType.Getter)]

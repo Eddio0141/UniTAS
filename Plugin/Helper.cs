@@ -1,8 +1,6 @@
-﻿using HarmonyLib;
-using System.Linq;
+﻿using System.Linq;
 using System.Reflection;
 using UniTASPlugin.VersionSafeWrapper;
-using UnityEngine;
 
 namespace UniTASPlugin;
 
@@ -11,7 +9,7 @@ internal static partial class Helper
     public static SemanticVersion GetUnityVersion()
     {
         System.Diagnostics.FileVersionInfo fileVersion = System.Diagnostics.FileVersionInfo.GetVersionInfo(@".\UnityPlayer.dll");
-        var versionRaw = fileVersion.FileVersion;
+        string versionRaw = fileVersion.FileVersion;
         return new SemanticVersion(versionRaw);
     }
 
@@ -22,8 +20,8 @@ internal static partial class Helper
 
     public static Assembly[] GetGameAssemblies()
     {
-        var assemblies = System.AppDomain.CurrentDomain.GetAssemblies();
-        var resetIgnoreAssemblies = new string[] {
+        Assembly[] assemblies = System.AppDomain.CurrentDomain.GetAssemblies();
+        string[] resetIgnoreAssemblies = new string[] {
             "mscorlib",
             "BepInEx.Preloader",
             "BepInEx",
@@ -39,7 +37,7 @@ internal static partial class Helper
             "netstandard",
             "UniTASPlugin",
         };
-        var resetIgnoreAssmelibes_startsWith = new string[]
+        string[] resetIgnoreAssmelibes_startsWith = new string[]
         {
             "Unity.",
             "UnityEngine.",
@@ -50,10 +48,10 @@ internal static partial class Helper
 
         return assemblies.Where((assembly) =>
         {
-            foreach (var assemblyCheck in resetIgnoreAssmelibes_startsWith)
+            foreach (string assemblyCheck in resetIgnoreAssmelibes_startsWith)
                 if (assembly.FullName.StartsWith(assemblyCheck))
                     return false;
-            foreach (var assemblyCheck in resetIgnoreAssemblies)
+            foreach (string assemblyCheck in resetIgnoreAssemblies)
                 if (assembly.FullName == assemblyCheck)
                     return false;
             return true;

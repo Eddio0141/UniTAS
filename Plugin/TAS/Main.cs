@@ -55,7 +55,7 @@ public static class Main
 
     public static void Init()
     {
-        var objs = Object.FindObjectsOfType(typeof(MonoBehaviour));
+        Object[] objs = Object.FindObjectsOfType(typeof(MonoBehaviour));
         foreach (Object obj in objs)
         {
             int id = obj.GetInstanceID();

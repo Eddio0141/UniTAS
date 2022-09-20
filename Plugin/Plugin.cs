@@ -2,7 +2,6 @@
 using HarmonyLib;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using UniTASPlugin.TAS.Movie;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;

@@ -15,7 +15,7 @@ class RangeFloat
     {
         if (TAS.Main.Running)
         {
-            var trace = new System.Diagnostics.StackTrace();
+            System.Diagnostics.StackTrace trace = new();
             Plugin.Log.LogDebug($"Random.Range({min}, {max}) returned {__result}, trace: {trace}");
         }
     }
@@ -33,7 +33,7 @@ class RangeInt
     {
         if (TAS.Main.Running)
         {
-            var trace = new System.Diagnostics.StackTrace();
+            System.Diagnostics.StackTrace trace = new();
             Plugin.Log.LogDebug($"Random.Range({min}, {max}) returned {__result}, trace: {trace}");
         }
     }

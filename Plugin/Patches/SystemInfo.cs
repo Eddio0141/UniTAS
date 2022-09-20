@@ -13,7 +13,7 @@ class SystemInfo
 
     static bool Prefix(ref object __result)
     {
-        var deviceType = AccessTools.TypeByName("UnityEngine.DeviceType");
+        Type deviceType = AccessTools.TypeByName("UnityEngine.DeviceType");
         __result = Enum.Parse(deviceType, TAS.SystemInfo.DeviceType);
         return false;
     }

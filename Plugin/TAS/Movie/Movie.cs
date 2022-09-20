@@ -107,14 +107,14 @@ public class Movie
                         error = "Device type defined twice";
                         break;
                     }
-                    var deviceType = AccessTools.TypeByName("UnityEngine.DeviceType");
-                    var chosenVariant = lineTrim.Substring(deviceText.Length);
+                    Type deviceType = AccessTools.TypeByName("UnityEngine.DeviceType");
+                    string chosenVariant = lineTrim.Substring(deviceText.Length);
 
                     if (!Enum.IsDefined(deviceType, chosenVariant))
                     {
-                        var allVariants = new List<string>();
-                        var deviceTypes = Enum.GetValues(deviceType);
-                        foreach (var t in deviceTypes)
+                        List<string> allVariants = new();
+                        Array deviceTypes = Enum.GetValues(deviceType);
+                        foreach (object t in deviceTypes)
                         {
                             allVariants.Add(t.ToString());
                         }
@@ -132,7 +132,7 @@ public class Movie
                         error = "Device type defined twice";
                         break;
                     }
-                    var resolution = lineTrim.Substring(resolutionText.Length).Split(listSeparator);
+                    string[] resolution = lineTrim.Substring(resolutionText.Length).Split(listSeparator);
                     if (resolution.Length != 2)
                     {
                         error = "Resolution not in format width height";

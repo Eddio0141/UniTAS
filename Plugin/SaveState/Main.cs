@@ -1,6 +1,5 @@
 ﻿using HarmonyLib;
 using System;
-using UnityEngine;
 
 namespace UniTASPlugin.SaveState;
 
@@ -27,11 +26,11 @@ internal static class Main
         // TODO only save this state if unity version has it
         //var cursorVisible = Cursor.visible;
         //var cursorLockState = Cursor.lockState;
-        var saveVersion = Plugin.UnityVersion;
+        SemanticVersion saveVersion = Plugin.UnityVersion;
 
         testInstance = UnityEngine.Object.FindObjectOfType(AccessTools.TypeByName("MouseLook"));
-        var body = Traverse.Create(testInstance).Field("playerBody");
-        var position = body.Property("position");
+        Traverse body = Traverse.Create(testInstance).Field("playerBody");
+        Traverse position = body.Property("position");
         testx = (float)position.Field("x").GetValue();
         testy = (float)position.Field("y").GetValue();
         testz = (float)position.Field("z").GetValue();
@@ -82,8 +81,8 @@ internal static class Main
         //Cursor.lockState = cursorLockState;
 
         // testing
-        var body = Traverse.Create(testInstance).Field("playerBody");
-        var position = body.Property("position");
+        Traverse body = Traverse.Create(testInstance).Field("playerBody");
+        Traverse position = body.Property("position");
         position.Field("x").SetValue(testx);
         position.Field("y").SetValue(testy);
         position.Field("z").SetValue(testz);
