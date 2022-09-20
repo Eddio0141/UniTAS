@@ -30,8 +30,8 @@ A tool that lets you TAS unity games hopefully
 
 # Known bugs
 - Different scene possibly desyncing while heavy load on Plugin.Update / Plugin.FixedUpdate (maybe use a coroutine)
-### It Steals
-- the game's play button breaks when you soft restart while waiting for next scene to load
+### Cat Quest
+- Soft restart causes an exception
 
 # VR Support
 I haven't planned for VR support currently
