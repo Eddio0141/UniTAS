@@ -2,7 +2,7 @@
 using HarmonyLib;
 using System.Collections.Generic;
 using System.IO;
-using UniTASPlugin.TAS.Input.Movie;
+using UniTASPlugin.TAS.Movie;
 using UnityEngine;
 
 namespace UniTASPlugin;

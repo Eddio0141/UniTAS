@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using UniTASPlugin.TAS.Input;
-using UniTASPlugin.TAS.Input.Movie;
+using UniTASPlugin.TAS.Movie;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
 
@@ -46,7 +46,7 @@ public static class Main
     public static List<int> DontDestroyOnLoadIDs = new();
     static bool pendingFixedUpdateSoftRestart;
     static System.DateTime softRestartTime;
-    public static Movie CurrentMovie { get; private set; }
+    public static Movie.Movie CurrentMovie { get; private set; }
     public static ulong FrameCountMovie { get; private set; }
     static int currentFramebulkIndex;
     static int currentFramebulkFrameIndex;
@@ -277,7 +277,7 @@ public static class Main
         Plugin.Log.LogInfo($"System time: {System.DateTime.Now}, milliseconds: {System.DateTime.Now.Millisecond}");
     }
 
-    public static void RunMovie(Movie movie)
+    public static void RunMovie(Movie.Movie movie)
     {
         FrameCountMovie = 0;
         currentFramebulkIndex = 0;
