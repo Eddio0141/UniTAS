@@ -1,5 +1,8 @@
-﻿using System.Linq;
+﻿using HarmonyLib;
+using System.Linq;
 using System.Reflection;
+using UniTASPlugin.VersionSafeWrapper;
+using UnityEngine;
 
 namespace UniTASPlugin;
 
@@ -55,5 +58,21 @@ internal static partial class Helper
                     return false;
             return true;
         }).ToArray();
+    }
+
+    public static string GameRootDir()
+    {
+        return System.AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
+    }
+
+    public static string GameName()
+    {
+        return AppInfo.ProductName();
+    }
+
+    public static string GameExePath()
+    {
+        // TODO other platform support that's not windows
+        return System.IO.Path.Combine(GameRootDir(), $"{GameName()}.exe");
     }
 }

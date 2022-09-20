@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UniTASPlugin.TAS.Movie;
+using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
 
 namespace UniTASPlugin;
@@ -27,13 +28,14 @@ public class Plugin : BaseUnityPlugin
         Log = Logger;
 
         UnityVersion = Helper.GetUnityVersion();
-        Log.LogInfo($"Internally found version: {UnityVersion}");
-        // TODO make this version compatible, v3.5.1 doesn't have those
+        Log.LogInfo($"Internally found unity version: {UnityVersion}");
+        // TODO complete fixing this
+        Log.LogInfo($"Game product name: {AppInfo.ProductName()}");
         //Logger.Log.LogInfo($"Game company name: {Application.companyName}, product name: {Application.productName}, version: {Application.version}");
 
         Harmony harmony = new($"{NAME}HarmonyPatch");
         harmony.PatchAll();
-        
+
         TAS.Main.AddUnityASyncHandlerID(GetInstanceID());
 
         // all axis names for help
@@ -47,11 +49,12 @@ public class Plugin : BaseUnityPlugin
         TAS.Main.Init();
         TAS.SystemInfo.Init();
 
-        var inputManager = Traverse.CreateWithType("UnityEngine.InputSystem.InputManager");
-        var devices = inputManager.Property("devices");
-        var devicesList = devices.GetValue();
-        var devicesListArray = Traverse.Create(devicesList).Method("ToArray").GetValue<object[]>();
-        Log.LogDebug($"Found {devicesListArray.Length} devices: {string.Join(", ", devicesListArray.Select(x => x.ToString()).ToArray())}");
+        // TODO safe thing
+        //var inputManager = Traverse.CreateWithType("UnityEngine.InputSystem.InputSystem");
+        //var devices = inputManager.Property("devices");
+        //var devicesList = devices.GetValue();
+        //var devicesListArray = Traverse.Create(devicesList).Method("ToArray").GetValue<object[]>();
+        //Log.LogDebug($"Found {devicesListArray.Length} devices: {string.Join(", ", devicesListArray.Select(x => x.ToString()).ToArray())}");
 
         Log.LogInfo($"System time: {System.DateTime.Now}");
         Log.LogInfo($"Plugin {NAME} is loaded!");
@@ -82,11 +85,6 @@ public class Plugin : BaseUnityPlugin
             }
 
             TAS.Main.RunMovie(movie);
-        }
-        if (!TAS.Main.Running && Input.GetKeyDown(KeyCode.L))
-        {
-            var base_ = System.AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
-            Log.LogInfo($"Base: {base_}");
         }
         /*
         if (!TAS.Main.Running && Input.GetKeyDown(KeyCode.L))
