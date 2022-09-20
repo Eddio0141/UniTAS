@@ -49,8 +49,6 @@ Depends on BepInEx's progress on it
 - Patch types by detecting if they exist and ignore if it doesn't
 
 # Working versions
-- 2021.2.14
-- 2018.4.25
 
 # Supported games
 - "It Steals"
