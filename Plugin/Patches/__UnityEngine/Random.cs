@@ -11,9 +11,13 @@ class RangeFloat
         return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
     }
 
-    static void Postfix(ref float __result)
+    static void Postfix(float min, float max, ref float __result)
     {
-        Plugin.Log.LogDebug($"Random.Range(float, float) returned {__result}");
+        if (TAS.Main.Running)
+        {
+            var trace = new System.Diagnostics.StackTrace();
+            Plugin.Log.LogDebug($"Random.Range({min}, {max}) returned {__result}, trace: {trace}");
+        }
     }
 }
 
@@ -25,8 +29,12 @@ class RangeInt
         return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
     }
 
-    static void Postfix(ref int __result)
+    static void Postfix(int min, int max, ref int __result)
     {
-        Plugin.Log.LogDebug($"Random.Range(int, int) returned {__result}");
+        if (TAS.Main.Running)
+        {
+            var trace = new System.Diagnostics.StackTrace();
+            Plugin.Log.LogDebug($"Random.Range({min}, {max}) returned {__result}, trace: {trace}");
+        }
     }
 }
