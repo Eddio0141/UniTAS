@@ -19,8 +19,11 @@ public class Plugin : BaseUnityPlugin
 
     internal static SemanticVersion UnityVersion;
 
+    internal static Plugin Instance;
+
     private void Awake()
     {
+        Instance = this;
         Log = Logger;
 
         UnityVersion = Helper.GetUnityVersion();
@@ -30,10 +33,8 @@ public class Plugin : BaseUnityPlugin
 
         Harmony harmony = new($"{NAME}HarmonyPatch");
         harmony.PatchAll();
-
-        var asyncHandler = new GameObject();
-        asyncHandler.AddComponent<UnityASyncHandler>();
-        TAS.Main.AddUnityASyncHandlerID(asyncHandler.GetInstanceID());
+        
+        TAS.Main.AddUnityASyncHandlerID(GetInstanceID());
 
         // all axis names for help
         // why is this broken TODO
@@ -102,5 +103,51 @@ public class Plugin : BaseUnityPlugin
     private void FixedUpdate()
     {
         TAS.Main.FixedUpdate();
+    }
+
+    public static void AsyncSceneLoad(AsyncOperation operation)
+    {
+        if (operation == null)
+            return;
+        if (Instance == null)
+        {
+            Log.LogWarning("Plugin is null, this should not happen, skipping scene load tracker");
+            TAS.Main.LoadingSceneCount = 0;
+            return;
+        }
+        Instance.StartCoroutine(Instance.AsyncSceneLoadWait(operation));
+    }
+
+    System.Collections.IEnumerator AsyncSceneLoadWait(AsyncOperation operation)
+    {
+        // TODO does this work fine
+        while (!operation.isDone)
+        {
+            yield return new WaitForEndOfFrame();
+        }
+        TAS.Main.LoadingSceneCount--;
+    }
+
+    public static void AsyncSceneUnload(AsyncOperation operation)
+    {
+        if (operation == null)
+            return;
+        if (Instance == null)
+        {
+            Log.LogWarning("Plugin is null, this should not happen, skipping scene unload tracker");
+            TAS.Main.UnloadingSceneCount = 0;
+            return;
+        }
+        Instance.StartCoroutine(Instance.AsyncSceneUnloadWait(operation));
+    }
+
+    System.Collections.IEnumerator AsyncSceneUnloadWait(AsyncOperation operation)
+    {
+        // TODO does this work fine
+        while (!operation.isDone)
+        {
+            yield return new WaitForEndOfFrame();
+        }
+        TAS.Main.UnloadingSceneCount--;
     }
 }

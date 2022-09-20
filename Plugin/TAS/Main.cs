@@ -222,14 +222,14 @@ public static class Main
 
         foreach (Object obj in Object.FindObjectsOfType(typeof(MonoBehaviour)))
         {
-            if (!(obj.GetType() == typeof(Plugin) || obj.GetType() == typeof(UnityASyncHandler)))
+            if (obj.GetType() != typeof(Plugin))
             {
                 // force coroutines to stop
                 (obj as MonoBehaviour).StopAllCoroutines();
             }
             else
             {
-                Plugin.Log.LogDebug($"Not stopping coroutines for {obj.GetType()} with Plugin type and UnityASyncHandlerType");
+                Plugin.Log.LogDebug($"Not stopping coroutines for {obj.GetType()} with Plugin type");
             }
 
             int id = obj.GetInstanceID();
