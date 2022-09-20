@@ -14,14 +14,7 @@ class DontDestroyOnLoad
 
     static void Prefix(Object target)
     {
-        if (target == null)
-            return;
-
-        int id = target.GetInstanceID();
-        if (!TAS.Main.DontDestroyOnLoadIDs.Contains(id))
-        {
-            TAS.Main.DontDestroyOnLoadIDs.Add(id);
-        }
+        GameTracker.DontDestroyOnLoadCall(target);
     }
 }
 
@@ -35,12 +28,7 @@ class Destroy__Object__float
 
     static void Prefix(Object obj)
     {
-        if (obj == null)
-            return;
-
-        int id = obj.GetInstanceID();
-
-        TAS.Main.DontDestroyOnLoadIDs.Remove(id);
+        GameTracker.DestroyObject(obj);
     }
 }
 
@@ -54,11 +42,6 @@ class DestroyImmediate__Object__bool
 
     static void Prefix(Object obj)
     {
-        if (obj == null)
-            return;
-
-        int id = obj.GetInstanceID();
-
-        TAS.Main.DontDestroyOnLoadIDs.Remove(id);
+        GameTracker.DestroyObject(obj);
     }
 }
