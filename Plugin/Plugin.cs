@@ -2,6 +2,7 @@
 using HarmonyLib;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UniTASPlugin.TAS.Movie;
 using UnityEngine;
 
@@ -37,6 +38,12 @@ public class Plugin : BaseUnityPlugin
         // all axis names for help
         // why is this broken TODO
         Log.LogInfo($"All axis names: {string.Join(", ", Input.GetJoystickNames())}");
+
+        var inputManager = Traverse.CreateWithType("UnityEngine.InputSystem.InputManager");
+        var devices = inputManager.Property("devices");
+        var devicesList = devices.GetValue();
+        var devicesListArray = Traverse.Create(devicesList).Method("ToArray").GetValue<object[]>();
+        Log.LogDebug($"Found {devicesListArray.Length} devices: {string.Join(", ", devicesListArray.Select(x => x.ToString()).ToArray())}");
 
         Log.LogInfo($"Plugin {NAME} is loaded!");
     }

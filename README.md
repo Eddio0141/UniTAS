@@ -7,9 +7,8 @@ A tool that lets you TAS unity games hopefully
 - The tool is still in a very early stage
 - It only does very basic stuff, mainly that being running a TAS consistently
 - It still has no GUI for control
-- The only code right now is in Plugin which is a [BepInEx](https://docs.bepinex.dev/master/) plugin, and only tested with the game "It Steals" latest version
-- Has many testing code that won't work on other pcs such as:
-  - Building the UniTASPlugin plugin would try copy the dll to `C:\Program Files (x86)\Steam\steamapps\common\It Steals\BepInEx\plugins`
+- The only code right now is in Plugin which is a [BepInEx](https://docs.bepinex.dev/master/) plugin, and only tested with the game "It Steals" latest version, "Cat Quest" and "ULTRAKILL"
+- Has many testing code that won't work on other pcs such as: 
   - Pressing "K" would run a test TAS from path `C:\Program Files (x86)\Steam\steamapps\common\It Steals\test.uti`
 - Currently no convenient tool that installs this TAS tool to some unity game
 - Only tested in windows
@@ -40,12 +39,9 @@ I haven't planned for VR support currently
 Depends on BepInEx's progress on it
 
 # Important TODOs
-- Separate tool to set up the TAS tool for a unity game
-- Integrate BepInEx to project
-- Build script or something to build everything properly
-- TAS GUI
-- Only use types and methods that exist across all supported unity versions with same args (or at least use object as input or something)
-- Patch types by detecting if they exist and ignore if it doesn't
+- Support of new input system (UnityEngine.InputSystem)
+- Soft restart needs to reset game state
+- Savestates
 
 # Working versions
 
@@ -99,6 +95,10 @@ class UnloadSceneAsync
 - How to know if the patch works? Check debug output of the plugin by enabling debug print through `GAME_DIR\BepInEx\config\BepInEx.cfg`, field `[Logging.Disk] LogLevel` or `[Logging.Console] Loglevel` and it will show all methods that failed to patch in the `GAME_DIR\BepInEx\LogOutput.log` or the console
 
 # Background tasks to be finished
+- Separate tool to set up the TAS tool for a unity game
+- Integrate BepInEx to project
+- Build script or something to build everything properly
+- TAS GUI
 - Movie sets screen res and force Screen.width height getters to return the patched value, but if game calls SetResolution then internal state sets to that
 - Check whats in SceneManagerAPI, do they need to be patched too
 - SystemInfo.supportsGyroscope needs to be patched, UnityEngine.SystemInfo needs to be checked for patches
