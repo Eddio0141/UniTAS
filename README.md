@@ -40,7 +40,6 @@ I haven't planned for VR support currently
 Depends on BepInEx's progress on it
 
 # Important TODOs
-- Use Harmony's Traverse utilities for all reflection stuff
 - Separate tool to set up the TAS tool for a unity game
 - Integrate BepInEx to project
 - Build script or something to build everything properly
