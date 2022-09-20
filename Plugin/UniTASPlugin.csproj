@@ -33,8 +33,6 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="copy /Y &quot;$(TargetDir)$(ProjectName).dll&quot; &quot;C:\Program Files (x86)\Steam\steamapps\common\It Steals\BepInEx\plugins\$(ProjectName).dll&quot;" />
-    <Exec Command="copy /Y &quot;$(TargetDir)$(ProjectName).dll&quot; &quot;C:\Users\eddio\Cat Quest\BepInEx\plugins\$(ProjectName).dll&quot;" />
-    <Exec Command="copy /Y &quot;$(TargetDir)$(ProjectName).dll&quot; &quot;C:\Program Files (x86)\Steam\steamapps\common\ULTRAKILL\BepInEx\plugins\$(ProjectName).dll&quot;" />
+    <Exec Command="C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -file &quot;$(ProjectDir)postbuild.ps1&quot; $(TargetDir)$(ProjectName).dll" ContinueOnError="true" />
   </Target>
 </Project>
