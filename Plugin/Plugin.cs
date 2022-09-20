@@ -49,13 +49,6 @@ public class Plugin : BaseUnityPlugin
         TAS.Main.Init();
         TAS.SystemInfo.Init();
 
-        // TODO safe thing
-        //var inputManager = Traverse.CreateWithType("UnityEngine.InputSystem.InputSystem");
-        //var devices = inputManager.Property("devices");
-        //var devicesList = devices.GetValue();
-        //var devicesListArray = Traverse.Create(devicesList).Method("ToArray").GetValue<object[]>();
-        //Log.LogDebug($"Found {devicesListArray.Length} devices: {string.Join(", ", devicesListArray.Select(x => x.ToString()).ToArray())}");
-
         Log.LogInfo($"System time: {System.DateTime.Now}");
         Log.LogInfo($"Plugin {NAME} is loaded!");
     }
@@ -86,11 +79,18 @@ public class Plugin : BaseUnityPlugin
 
             TAS.Main.RunMovie(movie);
         }
+        if (!TAS.Main.Running && Input.GetKeyDown(KeyCode.L))
+        {
+            var inputManager = Traverse.CreateWithType("UnityEngine.InputSystem.InputSystem");
+            var devices = inputManager.Property("devices");
+            var devicesList = devices.GetValue();
+            var devicesListArray = Traverse.Create(devicesList).Method("ToArray").GetValue<object[]>();
+            Log.LogDebug($"Found {devicesListArray.Length} devices: {string.Join(", ", devicesListArray.Select(x => x.ToString()).ToArray())}");
+        }
         /*
         if (!TAS.Main.Running && Input.GetKeyDown(KeyCode.L))
         {
             SaveState.Main.Save();
-        }
         if (!TAS.Main.Running && Input.GetKeyDown(KeyCode.O))
         {
             SaveState.Main.Load();
