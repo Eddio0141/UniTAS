@@ -21,6 +21,8 @@ public class Plugin : BaseUnityPlugin
 
     internal static Plugin Instance;
 
+    internal static int FixedUpdateIndex { get; private set; } = 0;
+
     private void Awake()
     {
         Instance = this;
@@ -35,8 +37,6 @@ public class Plugin : BaseUnityPlugin
         Harmony harmony = new($"{NAME}HarmonyPatch");
         harmony.PatchAll();
 
-        TAS.Main.AddUnityASyncHandlerID(GetInstanceID());
-
         // all axis names for help
         // why is this broken TODO
         Log.LogInfo($"All axis names: {string.Join(", ", Input.GetJoystickNames())}");
@@ -45,7 +45,7 @@ public class Plugin : BaseUnityPlugin
         // TODO diff unity versions
         Traverse.Create(typeof(Random)).Method("InitState", new System.Type[] { typeof(int) }).GetValue((int)TAS.Main.Seed());
 
-        TAS.Main.Init();
+        GameTracker.Init();
         TAS.SystemInfo.Init();
 
         Log.LogInfo($"System time: {System.DateTime.Now}");
@@ -60,7 +60,7 @@ public class Plugin : BaseUnityPlugin
         // TODO remove this test
         if (!TAS.Main.Running && Input.GetKeyDown(KeyCode.K))
         {
-            string text = "";
+            string text;
             if (File.Exists("C:\\Users\\Yuki\\Documents\\test.uti"))
                 text = File.ReadAllText("C:\\Users\\Yuki\\Documents\\test.uti");
             else
@@ -95,56 +95,19 @@ public class Plugin : BaseUnityPlugin
             SaveState.Main.Load();
         }
         */
+
+        // TODO check call timings of Awake, FixedUpdate, Update to determine the best place to put this
+        // TODO if possible, put this at the first call of Update
+        FixedUpdateIndex++;
     }
 
     private void FixedUpdate()
     {
+        // TODO if possible, put this at the first call of FixedUpdate
+        // TODO assert if index is 0 at the first frame after restart, and Awake Update FixedUpdate order execution is the same
+        FixedUpdateIndex = 0;
+        // this needs to be called before checking pending soft restart or it will cause a 1 frame desync
         TAS.Main.FixedUpdate();
-    }
-
-    public static void AsyncSceneLoad(AsyncOperation operation)
-    {
-        if (operation == null)
-            return;
-        if (Instance == null)
-        {
-            Log.LogWarning("Plugin is null, this should not happen, skipping scene load tracker");
-            TAS.Main.LoadingSceneCount = 0;
-            return;
-        }
-        Instance.StartCoroutine(Instance.AsyncSceneLoadWait(operation));
-    }
-
-    System.Collections.IEnumerator AsyncSceneLoadWait(AsyncOperation operation)
-    {
-        // TODO does this work fine
-        while (!operation.isDone)
-        {
-            yield return new WaitForEndOfFrame();
-        }
-        TAS.Main.LoadingSceneCount--;
-    }
-
-    public static void AsyncSceneUnload(AsyncOperation operation)
-    {
-        if (operation == null)
-            return;
-        if (Instance == null)
-        {
-            Log.LogWarning("Plugin is null, this should not happen, skipping scene unload tracker");
-            TAS.Main.UnloadingSceneCount = 0;
-            return;
-        }
-        Instance.StartCoroutine(Instance.AsyncSceneUnloadWait(operation));
-    }
-
-    System.Collections.IEnumerator AsyncSceneUnloadWait(AsyncOperation operation)
-    {
-        // TODO does this work fine
-        while (!operation.isDone)
-        {
-            yield return new WaitForEndOfFrame();
-        }
-        TAS.Main.UnloadingSceneCount--;
+        GameRestart.FixedUpdate();
     }
 }
