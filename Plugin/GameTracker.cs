@@ -47,7 +47,8 @@ public static class GameTracker
         // excludes all types in the namespace
         var exclusionNamespaces = new string[]
         {
-            "Steamworks*"
+            "Steamworks*",
+            "UniRx*",
         };
         // game specific type exclusion
         var exclusionGameAndType = new Dictionary<string, List<string>>
@@ -169,8 +170,8 @@ public static class GameTracker
                 {
                     var v = field.GetValue(null);
                     Plugin.Log.LogDebug($"saving field {gameType}.{field.Name} with {v}");
-                    var c = AccessTools.MakeDeepCopy(v, field.FieldType);
-                    InitialValues[gameType].Add(new KeyValuePair<FieldInfo, object>(field, c));
+                    //var c = AccessTools.MakeDeepCopy(v, field.FieldType);
+                    //InitialValues[gameType].Add(new KeyValuePair<FieldInfo, object>(field, c));
                     continue;
                 }
 
@@ -185,7 +186,7 @@ public static class GameTracker
                 }
                 catch (System.Exception ex)
                 {
-                    Plugin.Log.LogWarning($"failed to clone field {gameType}.{field.Name}, ex: {ex}");
+                    Plugin.Log.LogWarning($"failed to field value for {gameType}.{field.Name}, ex: {ex}");
                     continue;
                 }
                 switch (field.FieldType.FullName)
@@ -258,7 +259,7 @@ public static class GameTracker
                             }
                             Plugin.Log.LogDebug($"field type attributes: {field.FieldType.Attributes}");
                             Plugin.Log.LogDebug("cloning field...");
-                            //System.Threading.Thread.Sleep(100);
+                            //System.Threading.Thread.Sleep(10);
 
                             try
                             {
@@ -267,6 +268,10 @@ public static class GameTracker
                                     objClone = AccessTools.MakeDeepCopy(fieldValue, field.FieldType);
                                     continue;
                                 }
+
+                                Plugin.Log.LogDebug("skipping collection convertion for now");
+                                continue;
+                                /*
                                 // manually clone field if its a collection
                                 var fieldValueAsCollection = ((System.Collections.IEnumerable)fieldValue).Cast<object>();
                                 var clonedCollection = new List<object>();
@@ -291,6 +296,7 @@ public static class GameTracker
                                         }
                                         break;
                                 }
+                                */
                             }
                             catch (System.Exception ex)
                             {
