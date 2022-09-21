@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace UniTASPlugin.Patches.__UnityEngine;
 
+/*
 [HarmonyPatch(typeof(Random), nameof(Random.Range), new System.Type[] { typeof(float), typeof(float) })]
 class RangeFloat
 {
@@ -38,3 +39,4 @@ class RangeInt
         }
     }
 }
+*/
