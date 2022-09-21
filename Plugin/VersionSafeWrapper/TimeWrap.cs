@@ -24,18 +24,41 @@ public static class TimeWrap
         return captureDeltaTime().PropertyExists();
     }
 
-    public static void SetFrametime(float frametime)
+    public static float captureFrametime
     {
-        settingFrametime = true;
-        if (captureDeltaTime().PropertyExists())
+        get
         {
-            captureDeltaTime().SetValue(frametime);
+            if (captureDeltaTime().PropertyExists())
+            {
+                return captureDeltaTime().GetValue<float>();
+            }
+            return 1 / captureFramerate().GetValue<int>();
         }
-        else
+        set
         {
-            int framerate = (int)(1 / frametime);
-            captureFramerate().SetValue(framerate);
+            settingFrametime = true;
+            if (captureDeltaTime().PropertyExists())
+            {
+                captureDeltaTime().SetValue(value);
+            }
+            else
+            {
+                int framerate = (int)(1 / value);
+                captureFramerate().SetValue(framerate);
+            }
+            settingFrametime = false;
         }
-        settingFrametime = false;
+    }
+
+    public static bool FrametimeNotSet
+    {
+        get
+        {
+            if (captureDeltaTime().PropertyExists())
+            {
+                return captureDeltaTime().GetValue<float>() == 0;
+            }
+            return captureFramerate().GetValue<int>() == 0;
+        }
     }
 }
