@@ -227,7 +227,7 @@ public static class GameTracker
                             }
                             Plugin.Log.LogDebug($"field type attributes: {field.FieldType.Attributes}");
                             Plugin.Log.LogDebug("cloning field...");
-                            //System.Threading.Thread.Sleep(10);
+                            //System.Threading.Thread.Sleep(50);
 
                             try
                             {
