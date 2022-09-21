@@ -81,10 +81,6 @@ internal class GameRestart
             Plugin.Log.LogDebug($"Destroying {obj.name}");
             Object.Destroy(obj);
         }
-        GameTime.Time = softRestartTime;
-        // TODO diff unity versions
-        Traverse.Create(typeof(Random)).Method("InitState", new System.Type[] { typeof(int) }).GetValue((int)TAS.Main.Seed());
-        GameTime.FrameCount = 0;
 
         // very game specific behavior
         switch (Helper.GameName())
@@ -112,7 +108,7 @@ internal class GameRestart
                     valueString = "null";
                 else
                     valueString = value.ToString();
-                
+
                 Plugin.Log.LogDebug($"setting field: {typeAndFieldAndValue.Key}.{fieldAndValue.Key} to {valueString}");
 
                 try
@@ -130,6 +126,11 @@ internal class GameRestart
         Traverse sceneManager = Traverse.CreateWithType("UnityEngine.SceneManagement.SceneManager");
         sceneManager = sceneManager.Method("LoadScene", new System.Type[] { typeof(int) });
         sceneManager.GetValue(new object[] { 0 });
+
+        GameTime.Time = softRestartTime;
+        // TODO diff unity versions
+        Traverse.Create(typeof(Random)).Method("InitState", new System.Type[] { typeof(int) }).GetValue((int)GameTime.Seed());
+        GameTime.FrameCount = 0;
 
         Plugin.Log.LogInfo("Finish soft restarting");
         Plugin.Log.LogInfo($"System time: {System.DateTime.Now}, milliseconds: {System.DateTime.Now.Millisecond}");
