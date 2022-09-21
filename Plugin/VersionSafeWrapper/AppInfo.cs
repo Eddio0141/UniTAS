@@ -10,6 +10,8 @@ public static class AppInfo
         return Traverse.CreateWithType("UnityEngine.Application");
     }
 
+    static string productNameCache = null;
+
     public static string ProductName()
     {
         Traverse productNameTraverse = application().Property("productName");
@@ -44,13 +46,19 @@ public static class AppInfo
             throw new System.Exception("Could not find exe in game root dir");
 
         if (!foundMultipleExe)
-            return Path.GetFileNameWithoutExtension(foundExe);
+        {
+            productNameCache = Path.GetFileNameWithoutExtension(foundExe);
+            return productNameCache;
+        }
 
         // use game dir name and see if it matches exe
         string gameDirName = new DirectoryInfo(rootDir).Name;
 
         if (File.Exists(Path.Combine(rootDir, $"{gameDirName}.exe")))
+        {
+            productNameCache = gameDirName;
             return gameDirName;
+        }
 
         return null;
     }
