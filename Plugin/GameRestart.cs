@@ -106,6 +106,7 @@ internal class GameRestart
 
             foreach (var fieldAndValue in fieldsAndValues)
             {
+                Plugin.Log.LogDebug($"setting field: {typeAndFieldAndValue.Key}.{fieldAndValue.Key} to {fieldAndValue.Value}");
                 fieldAndValue.Key.SetValue(null, fieldAndValue.Value);
             }
         }

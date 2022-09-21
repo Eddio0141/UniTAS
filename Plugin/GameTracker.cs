@@ -76,23 +76,45 @@ public static class GameTracker
                 }
             }
         };
+        // variables to track if not excluded
+        var defaultSaveTypes = new List<System.Type>()
+        {
+            typeof(bool),
+            typeof(byte),
+            typeof(sbyte),
+            typeof(ushort),
+            typeof(short),
+            typeof(uint),
+            typeof(int),
+            typeof(ulong),
+            typeof(long),
+            typeof(float),
+            typeof(double),
+            typeof(decimal),
+        };
+        var defaultSaveTypeGameExclusion = new string[]
+        {
 
+        };
+
+        var gameName = Helper.GameName();
         var gameAssemblies = AccessTools.AllAssemblies().Where(a => gameAssemblyNames.Contains(a.GetName().Name)).ToArray();
         var allGameTypes = gameAssemblies
             .SelectMany(a => a.GetTypes())
             .Where(t => !exclusionNamespaces
             .Any(ex => t.Namespace != null && (ex == t.Namespace || (ex.EndsWith("*") && t.Namespace.StartsWith(ex.Remove(ex.Length - 1, 1))))));
-        if (exclusionGameAndType.ContainsKey(Helper.GameName()))
+        if (exclusionGameAndType.ContainsKey(gameName))
         {
-            var excludeNames = exclusionGameAndType[Helper.GameName()];
+            var excludeNames = exclusionGameAndType[gameName];
             allGameTypes =
                 allGameTypes.Where(t => !excludeNames
                 .Any(ex => t.FullName == ex || ex.EndsWith("*") && t.FullName.StartsWith(ex.Remove(ex.Length - 1, 1))));
         }
 
         List<KeyValuePair<string, List<string>>> saveTypesAndFields = new();
-        if (saveGameTypesFields.Keys.Contains(Helper.GameName()))
-            saveTypesAndFields = saveGameTypesFields[Helper.GameName()];
+        if (saveGameTypesFields.Keys.Contains(gameName))
+            saveTypesAndFields = saveGameTypesFields[gameName];
+        var defaultSaveTypeExclude = defaultSaveTypeGameExclusion.Contains(gameName);
 
         /*
          * BUG: THIS TYPE CRASHES THE PLUGIN
@@ -110,36 +132,60 @@ public static class GameTracker
 
             foreach (var field in fields)
             {
-                if (!field.IsStatic)
+                if (!field.IsStatic || field.IsLiteral || field.IsInitOnly)
                     continue;
 
                 var foundFieldIndex = -1;
                 if (saveFieldsIndex > 0)
                     foundFieldIndex = saveTypesAndFields[saveFieldsIndex].Value.FindIndex(f => field.Name == f);
 
-                if (foundFieldIndex < 0)
+                if (foundFieldIndex < 0 && defaultSaveTypeExclude)
                 {
                     Plugin.Log.LogDebug($"skipping saving field {gameType}.{field.Name}");
                     continue;
                 }
+                else if (foundFieldIndex > -1)
+                    Plugin.Log.LogDebug($"game type found match!: {saveFieldsIndex}");
 
                 var fieldType = field.FieldType;
+
+                var inDefaultSaveTypes = false;
+                if (defaultSaveTypeExclude)
+                {
+                    inDefaultSaveTypes = defaultSaveTypes.Contains(fieldType);
+                    if (!inDefaultSaveTypes)
+                        continue;
+                }
+
                 if (!InitialValues.ContainsKey(gameType))
                     InitialValues.Add(gameType, new List<KeyValuePair<FieldInfo, object>>());
 
+                // handle default save type
+                if (!defaultSaveTypeExclude && inDefaultSaveTypes)
+                {
+                    Plugin.Log.LogDebug($"saving field {gameType}.{field.Name}");
+                    var v = field.GetValue(null);
+                    var c = AccessTools.MakeDeepCopy(v, field.FieldType);
+                    InitialValues[gameType].Add(new KeyValuePair<FieldInfo, object>(field, c));
+                    continue;
+                }
+
                 // handling some types by hand since they crash AccessTools.MakeDeepCopy
+                // HACK make my own fixed version of this method
                 object objClone;
                 var fieldValue = field.GetValue(null);
                 switch (field.FieldType.FullName)
                 {
                     case "UnityEngine.Vector2":
                         {
+                            Plugin.Log.LogDebug("found Vector2, applying fix deep copy");
                             var vec = (Vector2)fieldValue;
                             objClone = new Vector2(vec.x, vec.y);
                             break;
                         }
                     case "UnityEngine.Vector2Int":
                         {
+                            Plugin.Log.LogDebug("found Vector2Int, applying fix deep copy");
                             var type_ = AccessTools.TypeByName("UnityEngine.Vector2Int");
                             var constructor = AccessTools.Constructor(type_, new System.Type[] { typeof(int), typeof(int) });
                             objClone = constructor.Invoke(new object[] { AccessTools.Field(type_, "m_X"), AccessTools.Field(type_, "m_Y") });
@@ -147,12 +193,14 @@ public static class GameTracker
                         }
                     case "UnityEngine.Vector3":
                         {
+                            Plugin.Log.LogDebug("found Vector3, applying fix deep copy");
                             var vec = (Vector3)fieldValue;
                             objClone = new Vector3(vec.x, vec.y, vec.z);
                             break;
                         }
                     case "UnityEngine.Vector3Int":
                         {
+                            Plugin.Log.LogDebug("found Vector3Int, applying fix deep copy");
                             var type_ = AccessTools.TypeByName("UnityEngine.Vector3Int");
                             var constructor = AccessTools.Constructor(type_, new System.Type[] { typeof(int), typeof(int) });
                             objClone = constructor.Invoke(new object[] { AccessTools.Field(type_, "m_X"), AccessTools.Field(type_, "m_Y"), AccessTools.Field(type_, "m_Z") });
@@ -160,13 +208,21 @@ public static class GameTracker
                         }
                     case "UnityEngine.Vector4":
                         {
+                            Plugin.Log.LogDebug("found Vector4, applying fix deep copy");
                             var vec = (Vector4)fieldValue;
                             objClone = new Vector4(vec.x, vec.y, vec.z, vec.w);
                             break;
                         }
                     default:
                         {
-                            Plugin.Log.LogDebug($"saving field {gameType}.{field.Name}");
+                            if ((field.FieldType.Attributes & TypeAttributes.NestedPrivate) == TypeAttributes.NestedPrivate)
+                            {
+                                Plugin.Log.LogDebug($"field {gameType}.{field.Name} is nested private, skipping");
+                                continue;
+                            }
+                            Plugin.Log.LogDebug($"saving field {gameType}.{field.Name}, with delay");
+                            Plugin.Log.LogDebug($"field type attributes: {field.FieldType.Attributes}");
+                            //System.Threading.Thread.Sleep(100);
                             objClone = AccessTools.MakeDeepCopy(fieldValue, field.FieldType);
                             break;
                         }
