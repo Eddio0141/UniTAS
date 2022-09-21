@@ -1,7 +1,4 @@
-﻿using HarmonyLib;
-using System.Collections.Generic;
-using System.Threading;
-using UniTASPlugin.FakeGameState;
+﻿using System.Collections.Generic;
 using UniTASPlugin.FakeGameState.InputLegacy;
 using UniTASPlugin.TAS.Movie;
 using UniTASPlugin.VersionSafeWrapper;
@@ -20,13 +17,12 @@ public static class Main
             RunInitOrStopping = true;
             if (value)
             {
-                // TODO sort out depending on unity version
-                //Cursor.visible = false;
+                CursorWrap.visible = false;
             }
             else
             {
                 //Cursor.visible = VirtualCursor.Visible;
-                TimeWrap.SetFrametime(0);
+                TimeWrap.captureFrametime = 0;
             }
             _running = value;
             RunInitOrStopping = false;
@@ -37,24 +33,27 @@ public static class Main
     public static ulong FrameCountMovie { get; private set; }
     static int currentFramebulkIndex;
     static int currentFramebulkFrameIndex;
-    static bool pendingMovieStartFixedUpdate = false;
+    static int pendingMovieStartFixedUpdate = -1;
+    public static bool PreparingRun { get; private set; } = false;
 
     public static void Update(float deltaTime)
     {
         SaveState.Main.Update();
         UpdateMovie();
         FakeGameState.InputLegacy.Main.Update();
-        FakeGameState.GameTime.
-                Time += System.TimeSpan.FromSeconds(deltaTime);
+        FakeGameState.GameTime.Time += System.TimeSpan.FromSeconds(deltaTime);
         FakeGameState.GameTime.FrameCount++;
     }
 
     public static void FixedUpdate()
     {
-        if (pendingMovieStartFixedUpdate)
+        if (pendingMovieStartFixedUpdate > -1)
         {
-            RunMoviePending();
-            pendingMovieStartFixedUpdate = false;
+            if (pendingMovieStartFixedUpdate == 0)
+            {
+                RunMoviePending();
+            }
+            pendingMovieStartFixedUpdate--;
         }
     }
 
@@ -78,7 +77,7 @@ public static class Main
             fb = CurrentMovie.Framebulks[currentFramebulkIndex];
         }
 
-        TimeWrap.SetFrametime(fb.Frametime);
+        TimeWrap.captureFrametime = fb.Frametime;
         GameControl(fb);
 
         currentFramebulkFrameIndex++;
@@ -136,26 +135,20 @@ public static class Main
 
     public static void RunMovie(Movie.Movie movie)
     {
+        PreparingRun = true;
         FrameCountMovie = 0;
         currentFramebulkIndex = 0;
         currentFramebulkFrameIndex = 1;
 
         CurrentMovie = movie;
 
-        pendingMovieStartFixedUpdate = true;
-        Plugin.Log.LogInfo("Starting movie, pending FixedUpdate call");
-    }
-
-    static void RunMoviePending()
-    {
-        Running = true;
-
+        // force framerate to run fixed for Update and FixedUpdate sync
         if (CurrentMovie.Framebulks.Count > 0)
         {
             Framebulk firstFb = CurrentMovie.Framebulks[0];
 
             FakeGameState.InputLegacy.Main.Clear();
-            TimeWrap.SetFrametime(firstFb.Frametime);
+            TimeWrap.captureFrametime = firstFb.Frametime;
             GameControl(firstFb);
 
             if (currentFramebulkFrameIndex >= firstFb.FrameCount)
@@ -165,16 +158,20 @@ public static class Main
             }
         }
 
+        pendingMovieStartFixedUpdate = 1;
+        Plugin.Log.LogInfo("Starting movie, pending FixedUpdate call");
+    }
+
+    static void RunMoviePending()
+    {
+        PreparingRun = false;
+        Running = true;
+
         FakeGameState.SystemInfo.DeviceType = CurrentMovie.DeviceType;
         // TODO fullscreen
         Screen.SetResolution(CurrentMovie.Width, CurrentMovie.Height, false, 60);
 
         GameRestart.SoftRestart(CurrentMovie.Time);
         Plugin.Log.LogInfo($"Movie start: {CurrentMovie}");
-    }
-
-    public static long Seed()
-    {
-        return FakeGameState.GameTime.Time.Ticks;
     }
 }
