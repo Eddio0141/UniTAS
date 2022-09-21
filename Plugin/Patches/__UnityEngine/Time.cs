@@ -18,8 +18,8 @@ class captureFramerateSetter
 
     static bool Prefix()
     {
-        // if TAS is running and we aren't setting the frametime, reject
-        return !TAS.Main.Running || TimeWrap.SettingFrametime;
+        // if TAS is running / preparing and we aren't setting the frametime, reject
+        return !((TAS.Main.Running || TAS.Main.PreparingRun) && !TimeWrap.SettingFrametime);
     }
 }
 
@@ -33,8 +33,8 @@ class captureDeltaTimeSetter
 
     static bool Prefix()
     {
-        // if TAS is running and we aren't setting the frametime, reject
-        return !TAS.Main.Running || TimeWrap.SettingFrametime;
+        // if TAS is running / preparing and we aren't setting the frametime, reject
+        return !((TAS.Main.Running || TAS.Main.PreparingRun) && !TimeWrap.SettingFrametime);
     }
 }
 
