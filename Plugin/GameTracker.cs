@@ -77,26 +77,6 @@ public static class GameTracker
                 }
             }
         };
-        // variables to track if not excluded
-        var defaultSaveTypes = new List<System.Type>()
-        {
-            typeof(bool),
-            typeof(byte),
-            typeof(sbyte),
-            typeof(ushort),
-            typeof(short),
-            typeof(uint),
-            typeof(int),
-            typeof(ulong),
-            typeof(long),
-            typeof(float),
-            typeof(double),
-            typeof(decimal),
-        };
-        var defaultSaveTypeGameExclusion = new string[]
-        {
-
-        };
 
         var gameName = Helper.GameName();
         var gameAssemblies = AccessTools.AllAssemblies().Where(a => gameAssemblyNames.Contains(a.GetName().Name)).ToArray();
@@ -115,7 +95,6 @@ public static class GameTracker
         List<KeyValuePair<string, List<string>>> saveTypesAndFields = new();
         if (saveGameTypesFields.Keys.Contains(gameName))
             saveTypesAndFields = saveGameTypesFields[gameName];
-        var defaultSaveTypeExclude = defaultSaveTypeGameExclusion.Contains(gameName);
 
         /*
          * BUG: THIS TYPE CRASHES THE PLUGIN
@@ -136,44 +115,29 @@ public static class GameTracker
                 if (!field.IsStatic || field.IsLiteral || field.IsInitOnly)
                     continue;
 
+                // check instance field
+                if (field.FieldType == gameType)
+                {
+                    Plugin.Log.LogDebug($"Detected instance field: {gameType.FullName}.{field.Name}, skipping");
+                    continue;
+                }
+
                 var foundFieldIndex = -1;
                 if (saveFieldsIndex > 0)
                     foundFieldIndex = saveTypesAndFields[saveFieldsIndex].Value.FindIndex(f => field.Name == f);
 
-                // TODO testing remove
+                // TODO testing remove this set
                 foundFieldIndex = 0;
-                defaultSaveTypeExclude = false;
-
-                if (foundFieldIndex < 0 && defaultSaveTypeExclude)
+                if (foundFieldIndex < 0)
                 {
                     Plugin.Log.LogDebug($"skipping saving field {gameType}.{field.Name}");
                     continue;
                 }
-                else if (foundFieldIndex > -1)
-                    Plugin.Log.LogDebug($"game type found match!: {foundFieldIndex}");
 
                 var fieldType = field.FieldType;
 
-                var inDefaultSaveTypes = false;
-                if (defaultSaveTypeExclude)
-                {
-                    inDefaultSaveTypes = defaultSaveTypes.Contains(fieldType);
-                    if (!inDefaultSaveTypes)
-                        continue;
-                }
-
                 if (!InitialValues.ContainsKey(gameType))
                     InitialValues.Add(gameType, new List<KeyValuePair<FieldInfo, object>>());
-
-                // handle default save type
-                if (!defaultSaveTypeExclude && inDefaultSaveTypes)
-                {
-                    var v = field.GetValue(null);
-                    Plugin.Log.LogDebug($"saving field {gameType}.{field.Name} with {v}");
-                    //var c = AccessTools.MakeDeepCopy(v, field.FieldType);
-                    //InitialValues[gameType].Add(new KeyValuePair<FieldInfo, object>(field, c));
-                    continue;
-                }
 
                 // handling some types by hand since they crash AccessTools.MakeDeepCopy
                 // HACK make my own fixed version of this method
@@ -186,7 +150,7 @@ public static class GameTracker
                 }
                 catch (System.Exception ex)
                 {
-                    Plugin.Log.LogWarning($"failed to field value for {gameType}.{field.Name}, ex: {ex}");
+                    Plugin.Log.LogWarning($"failed to get field value for {gameType}.{field.Name}, ex: {ex}");
                     continue;
                 }
                 switch (field.FieldType.FullName)
@@ -252,6 +216,10 @@ public static class GameTracker
                             else
                                 fieldValueString = fieldValue.ToString();
                             Plugin.Log.LogDebug($"processing field {gameType}.{field.Name}, value: {fieldValueString}");
+
+                            if (fieldValue == null)
+                                break;
+
                             if ((field.FieldType.Attributes & TypeAttributes.NestedPrivate) == TypeAttributes.NestedPrivate)
                             {
                                 Plugin.Log.LogDebug($"is nested private, skipping");
@@ -265,8 +233,8 @@ public static class GameTracker
                             {
                                 if (fieldValue == null || !typeof(System.Collections.IEnumerable).IsAssignableFrom(field.FieldType))
                                 {
-                                    objClone = AccessTools.MakeDeepCopy(fieldValue, field.FieldType);
-                                    continue;
+                                    objClone = Helper.MakeDeepCopy(fieldValue, field.FieldType);
+                                    break;
                                 }
 
                                 Plugin.Log.LogDebug("skipping collection convertion for now");
@@ -277,7 +245,7 @@ public static class GameTracker
                                 var clonedCollection = new List<object>();
                                 foreach (var value in fieldValueAsCollection)
                                 {
-                                    clonedCollection.Add(AccessTools.MakeDeepCopy(value, value.GetType()));
+                                    clonedCollection.Add(Helper.MakeDeepCopy(value, value.GetType()));
                                 }
 
                                 // convert List to appropriate type if needed to
@@ -301,7 +269,7 @@ public static class GameTracker
                             catch (System.Exception ex)
                             {
                                 failedClone = true;
-                                Plugin.Log.LogWarning($"failed to clone field {gameType}.{field.Name}, value: {fieldValueString}, ex: {ex}");
+                                Plugin.Log.LogWarning($"failed to clone field {gameType}.{field.Name}, value: {fieldValueString}, ex: {ex.Message}");
                             }
                             break;
                         }
