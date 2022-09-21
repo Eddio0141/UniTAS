@@ -60,10 +60,10 @@ public class Plugin : BaseUnityPlugin
         // TODO remove this test
         if (!TAS.Main.Running && Input.GetKeyDown(KeyCode.K))
         {
-            string text;
+            string text = "";
             if (File.Exists("C:\\Users\\Yuki\\Documents\\test.uti"))
                 text = File.ReadAllText("C:\\Users\\Yuki\\Documents\\test.uti");
-            else
+            else if (File.Exists("C:\\Program Files (x86)\\Steam\\steamapps\\common\\It Steals\\test.uti"))
                 text = File.ReadAllText("C:\\Program Files (x86)\\Steam\\steamapps\\common\\It Steals\\test.uti");
             Movie movie = new("test.uti", text, out string err, out List<string> warnings);
 
