@@ -107,7 +107,15 @@ internal class GameRestart
             foreach (var fieldAndValue in fieldsAndValues)
             {
                 Plugin.Log.LogDebug($"setting field: {typeAndFieldAndValue.Key}.{fieldAndValue.Key} to {fieldAndValue.Value}");
-                fieldAndValue.Key.SetValue(null, fieldAndValue.Value);
+
+                try
+                {
+                    fieldAndValue.Key.SetValue(null, fieldAndValue.Value);
+                }
+                catch (System.Exception ex)
+                {
+                    Plugin.Log.LogWarning($"Failed to set field: {typeAndFieldAndValue.Key}.{fieldAndValue.Key} to {fieldAndValue.Value} with exception: {ex}");
+                }
             }
         }
 

@@ -176,8 +176,18 @@ public static class GameTracker
 
                 // handling some types by hand since they crash AccessTools.MakeDeepCopy
                 // HACK make my own fixed version of this method
-                object objClone;
-                var fieldValue = field.GetValue(null);
+                object objClone = null;
+                var failedClone = false;
+                object fieldValue = null;
+                try
+                {
+                    fieldValue = field.GetValue(null);
+                }
+                catch (System.Exception ex)
+                {
+                    Plugin.Log.LogWarning($"failed to clone field {gameType}.{field.Name}, ex: {ex}");
+                    continue;
+                }
                 switch (field.FieldType.FullName)
                 {
                     case "UnityEngine.Vector2":
@@ -219,20 +229,81 @@ public static class GameTracker
                         }
                     default:
                         {
+                            string fieldValueString;
+                            if (fieldValue == null)
+                                fieldValueString = "null";
+                            // if its an array, convert all values to string
+                            else if (fieldValue.GetType().IsArray)
+                            {
+                                Plugin.Log.LogDebug($"trying to convert array type {fieldValue.GetType()} to string");
+                                try
+                                {
+                                    fieldValueString = string.Join(", ", ((System.Collections.IEnumerable)fieldValue).Cast<object>()
+                                        .Select(x => x.ToString())
+                                        .ToArray());
+                                }
+                                catch (System.Exception)
+                                {
+                                    Plugin.Log.LogDebug("it failed");
+                                    fieldValueString = fieldValue.ToString();
+                                }
+                            }
+                            else
+                                fieldValueString = fieldValue.ToString();
+                            Plugin.Log.LogDebug($"processing field {gameType}.{field.Name}, value: {fieldValueString}");
                             if ((field.FieldType.Attributes & TypeAttributes.NestedPrivate) == TypeAttributes.NestedPrivate)
                             {
-                                Plugin.Log.LogDebug($"field {gameType}.{field.Name} is nested private, skipping");
+                                Plugin.Log.LogDebug($"is nested private, skipping");
                                 continue;
                             }
-                            var fieldValueString = fieldValue == null ? "null" : fieldValue.ToString();
-                            Plugin.Log.LogDebug($"saving field {gameType}.{field.Name}, value: {fieldValueString}");
                             Plugin.Log.LogDebug($"field type attributes: {field.FieldType.Attributes}");
+                            Plugin.Log.LogDebug("cloning field...");
                             //System.Threading.Thread.Sleep(100);
-                            objClone = AccessTools.MakeDeepCopy(fieldValue, field.FieldType);
+
+                            try
+                            {
+                                if (fieldValue == null || !typeof(System.Collections.IEnumerable).IsAssignableFrom(field.FieldType))
+                                {
+                                    objClone = AccessTools.MakeDeepCopy(fieldValue, field.FieldType);
+                                    continue;
+                                }
+                                // manually clone field if its a collection
+                                var fieldValueAsCollection = ((System.Collections.IEnumerable)fieldValue).Cast<object>();
+                                var clonedCollection = new List<object>();
+                                foreach (var value in fieldValueAsCollection)
+                                {
+                                    clonedCollection.Add(AccessTools.MakeDeepCopy(value, value.GetType()));
+                                }
+
+                                // convert List to appropriate type if needed to
+                                switch (field.FieldType.GetGenericTypeDefinition().FullName)
+                                {
+                                    case "System.Collections.Generic.Stack`1":
+                                        {
+                                            var stackValue = new Stack<object>(clonedCollection);
+                                            objClone = stackValue;
+                                        }
+                                        break;
+                                    default:
+                                        {
+                                            objClone = clonedCollection;
+                                            Plugin.Log.LogDebug($"field type: {field.FieldType.GetGenericTypeDefinition().FullName}");
+                                        }
+                                        break;
+                                }
+                            }
+                            catch (System.Exception ex)
+                            {
+                                failedClone = true;
+                                Plugin.Log.LogWarning($"failed to clone field {gameType}.{field.Name}, value: {fieldValueString}, ex: {ex}");
+                            }
                             break;
                         }
                 }
-                InitialValues[gameType].Add(new KeyValuePair<FieldInfo, object>(field, objClone));
+                if (!failedClone)
+                    InitialValues[gameType].Add(new KeyValuePair<FieldInfo, object>(field, objClone));
+                else
+                    failedClone = false;
             }
         }
     }
