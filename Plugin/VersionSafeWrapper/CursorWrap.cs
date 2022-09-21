@@ -44,6 +44,7 @@ internal static class CursorWrap
             if (cursor.TypeExists())
             {
                 cursor.Property("visible").SetValue(value);
+                return;
             }
             var screen = Traverse.Create(screenType());
             var showCursor = screen.Property("showCursor");
