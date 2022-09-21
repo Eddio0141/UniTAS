@@ -8,8 +8,7 @@ A tool that lets you TAS unity games hopefully
 - It only does very basic stuff, mainly that being running a TAS consistently
 - It still has no GUI for control
 - The only code right now is in Plugin which is a [BepInEx](https://docs.bepinex.dev/master/) plugin, and only tested with the game "It Steals" latest version, "Cat Quest" and "ULTRAKILL"
-- Has many testing code that won't work on other pcs such as: 
-  - Pressing "K" would run a test TAS from path `C:\Program Files (x86)\Steam\steamapps\common\It Steals\test.uti`
+- Pressing "K" would try run a test TAS
 - Currently no convenient tool that installs this TAS tool to some unity game
 - Only tested in windows
 
