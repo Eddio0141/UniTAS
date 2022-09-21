@@ -21,7 +21,7 @@ public class Plugin : BaseUnityPlugin
 
     internal static Plugin Instance;
 
-    internal static int FixedUpdateIndex { get; private set; } = 0;
+    internal static int FixedUpdateIndex { get; private set; } = -1;
 
     private void Awake()
     {
@@ -43,7 +43,7 @@ public class Plugin : BaseUnityPlugin
 
         // init random seed
         // TODO diff unity versions
-        Traverse.Create(typeof(Random)).Method("InitState", new System.Type[] { typeof(int) }).GetValue((int)TAS.Main.Seed());
+        Traverse.Create(typeof(Random)).Method("InitState", new System.Type[] { typeof(int) }).GetValue((int)FakeGameState.GameTime.Seed());
 
         GameTracker.Init();
         FakeGameState.SystemInfo.Init();
@@ -52,8 +52,11 @@ public class Plugin : BaseUnityPlugin
         Log.LogInfo($"Plugin {NAME} is loaded!");
     }
 
+    // unity execution order is Awake() -> FixedUpdate() -> Update()
     private void Update()
     {
+        // TODO if possible, put this at the first call of Update
+        FixedUpdateIndex++;
         GameCapture.Update();
         TAS.Main.Update(Time.deltaTime);
 
@@ -95,17 +98,12 @@ public class Plugin : BaseUnityPlugin
             SaveState.Main.Load();
         }
         */
-
-        // TODO check call timings of Awake, FixedUpdate, Update to determine the best place to put this
-        // TODO if possible, put this at the first call of Update
-        FixedUpdateIndex++;
     }
 
     private void FixedUpdate()
     {
         // TODO if possible, put this at the first call of FixedUpdate
-        // TODO assert if index is 0 at the first frame after restart, and Awake Update FixedUpdate order execution is the same
-        FixedUpdateIndex = 0;
+        FixedUpdateIndex = -1;
         // this needs to be called before checking pending soft restart or it will cause a 1 frame desync
         TAS.Main.FixedUpdate();
         GameRestart.FixedUpdate();
