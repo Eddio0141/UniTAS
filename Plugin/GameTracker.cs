@@ -53,15 +53,15 @@ public static class GameTracker
         var exclusionGameAndType = new Dictionary<string, List<string>>
         {
             { "It Steals", new List<string>()
-                {
-                    "SteamManager"
-                }
+            {
+                "SteamManager"
+            }
             },
             { "ULTRAKILL", new List<string>()
-                {
-                    "SteamController"
-                }
+            {
+                "SteamController"
             }
+            },
         };
 
         // actual values to save depending on games
@@ -139,13 +139,17 @@ public static class GameTracker
                 if (saveFieldsIndex > 0)
                     foundFieldIndex = saveTypesAndFields[saveFieldsIndex].Value.FindIndex(f => field.Name == f);
 
+                // TODO testing remove
+                foundFieldIndex = 0;
+                defaultSaveTypeExclude = false;
+
                 if (foundFieldIndex < 0 && defaultSaveTypeExclude)
                 {
                     Plugin.Log.LogDebug($"skipping saving field {gameType}.{field.Name}");
                     continue;
                 }
                 else if (foundFieldIndex > -1)
-                    Plugin.Log.LogDebug($"game type found match!: {saveFieldsIndex}");
+                    Plugin.Log.LogDebug($"game type found match!: {foundFieldIndex}");
 
                 var fieldType = field.FieldType;
 
@@ -163,8 +167,8 @@ public static class GameTracker
                 // handle default save type
                 if (!defaultSaveTypeExclude && inDefaultSaveTypes)
                 {
-                    Plugin.Log.LogDebug($"saving field {gameType}.{field.Name}");
                     var v = field.GetValue(null);
+                    Plugin.Log.LogDebug($"saving field {gameType}.{field.Name} with {v}");
                     var c = AccessTools.MakeDeepCopy(v, field.FieldType);
                     InitialValues[gameType].Add(new KeyValuePair<FieldInfo, object>(field, c));
                     continue;
@@ -220,7 +224,8 @@ public static class GameTracker
                                 Plugin.Log.LogDebug($"field {gameType}.{field.Name} is nested private, skipping");
                                 continue;
                             }
-                            Plugin.Log.LogDebug($"saving field {gameType}.{field.Name}, with delay");
+                            var fieldValueString = fieldValue == null ? "null" : fieldValue.ToString();
+                            Plugin.Log.LogDebug($"saving field {gameType}.{field.Name}, value: {fieldValueString}");
                             Plugin.Log.LogDebug($"field type attributes: {field.FieldType.Attributes}");
                             //System.Threading.Thread.Sleep(100);
                             objClone = AccessTools.MakeDeepCopy(fieldValue, field.FieldType);
