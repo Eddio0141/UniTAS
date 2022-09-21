@@ -18,7 +18,7 @@ public static class GameTracker
     public static int UnloadingSceneCount { get; private set; } = 0;
     public static List<int> FirstObjIDs { get; } = new();
     public static List<int> DontDestroyOnLoadIDs { get; private set; } = new();
-    static Dictionary<System.Type, List<KeyValuePair<FieldInfo, object>>> initialValues = new();
+    public static Dictionary<System.Type, List<KeyValuePair<FieldInfo, object>>> InitialValues { get; private set; } = new();
 
     public static void Init()
     {
@@ -124,8 +124,8 @@ public static class GameTracker
                 }
 
                 var fieldType = field.FieldType;
-                if (!initialValues.ContainsKey(gameType))
-                    initialValues.Add(gameType, new List<KeyValuePair<FieldInfo, object>>());
+                if (!InitialValues.ContainsKey(gameType))
+                    InitialValues.Add(gameType, new List<KeyValuePair<FieldInfo, object>>());
 
                 // handling some types by hand since they crash AccessTools.MakeDeepCopy
                 object objClone;
@@ -171,7 +171,7 @@ public static class GameTracker
                             break;
                         }
                 }
-                initialValues[gameType].Add(new KeyValuePair<FieldInfo, object>(field, objClone));
+                InitialValues[gameType].Add(new KeyValuePair<FieldInfo, object>(field, objClone));
             }
         }
     }
