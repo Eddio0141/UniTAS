@@ -1,9 +1,8 @@
-﻿using HarmonyLib;
+﻿/*using HarmonyLib;
 using UnityEngine;
 
 namespace UniTASPlugin.Patches.__UnityEngine;
 
-/*
 [HarmonyPatch(typeof(Random), nameof(Random.Range), new System.Type[] { typeof(float), typeof(float) })]
 class RangeFloat
 {
@@ -12,12 +11,12 @@ class RangeFloat
         return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
     }
 
-    static void Postfix(float min, float max, ref float __result)
+    static void Postfix(float minInclusive, float maxInclusive, ref float __result)
     {
         if (TAS.Main.Running)
         {
             System.Diagnostics.StackTrace trace = new();
-            Plugin.Log.LogDebug($"Random.Range({min}, {max}) returned {__result}, trace: {trace}");
+            Plugin.Log.LogDebug($"Random.Range({minInclusive}, {maxInclusive}) returned {__result}, trace: {trace}");
         }
     }
 }
@@ -30,13 +29,12 @@ class RangeInt
         return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
     }
 
-    static void Postfix(int min, int max, ref int __result)
+    static void Postfix(int minInclusive, int maxExclusive, ref int __result)
     {
         if (TAS.Main.Running)
         {
             System.Diagnostics.StackTrace trace = new();
-            Plugin.Log.LogDebug($"Random.Range({min}, {max}) returned {__result}, trace: {trace}");
+            Plugin.Log.LogDebug($"Random.Range({minInclusive}, {maxExclusive}) returned {__result}, trace: {trace}");
         }
     }
-}
-*/
+}*/
