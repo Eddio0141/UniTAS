@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using System.Threading;
 using UniTASPlugin.FakeGameState;
+using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
 
 namespace UniTASPlugin;
@@ -53,15 +54,8 @@ internal class GameRestart
         Plugin.Log.LogInfo("Soft restarting");
 
         // release mouse lock
-        // TODO sort out depending on unity version
-        var cursor = Traverse.CreateWithType("UnityEngine.Cursor");
-        var cursorLockModeType = AccessTools.TypeByName("UnityEngine.CursorLockMode");
-
-        var cursorLockState = cursor.Property("lockState");
-        var cursorVisible = cursor.Property("visible");
-
-        cursorLockState.SetValue(System.Enum.Parse(cursorLockModeType, "None"));
-        cursorVisible.SetValue(true);
+        CursorWrap.visible = true;
+        CursorWrap.UnlockCursor();
 
         foreach (var obj in Object.FindObjectsOfType(typeof(MonoBehaviour)))
         {
@@ -84,6 +78,7 @@ internal class GameRestart
                 continue;
 
             // destroy all objects that are marked DontDestroyOnLoad and wasn't loaded in the first scene
+            Plugin.Log.LogDebug($"Destroying {obj.name}");
             Object.Destroy(obj);
         }
         GameTime.Time = softRestartTime;
@@ -97,13 +92,22 @@ internal class GameRestart
             case "Cat Quest":
                 {
                     // reset Game.instance.gameData.ai.behaviours
-                    Plugin.Log.LogDebug(Traverse.CreateWithType("Game").Property("instance").Property("gameData").Property("ai").Field("behaviours").Property("Count").GetValue<int>());
                     Traverse.CreateWithType("Game").Property("instance").Property("gameData").Property("ai").Field("behaviours").Method("Clear").GetValue();
-                    Plugin.Log.LogDebug(Traverse.CreateWithType("Game").Property("instance").Property("gameData").Property("ai").Field("behaviours").Property("Count").GetValue<int>());
                     break;
                 }
             default:
                 break;
+        }
+
+        // load stored values
+        foreach (var typeAndFieldAndValue in GameTracker.InitialValues)
+        {
+            var fieldsAndValues = typeAndFieldAndValue.Value;
+
+            foreach (var fieldAndValue in fieldsAndValues)
+            {
+                fieldAndValue.Key.SetValue(null, fieldAndValue.Value);
+            }
         }
 
         // TODO sort out depending on unity version
