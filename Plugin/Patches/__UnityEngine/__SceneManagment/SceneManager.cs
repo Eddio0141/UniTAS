@@ -53,15 +53,11 @@ class UnloadSceneAsync__sceneBuildIndex
 
     static bool Prefix(int sceneBuildIndex, ref AsyncOperation __result)
     {
-        if (TAS.Main.Running)
-        {
-            Traverse internalCall = Helper.GetUnloadSceneNameIndexInternal();
-            Type unloadSceneOptions = Helper.GetUnloadSceneOptions();
-            object noneVariant = Enum.Parse(unloadSceneOptions, "None");
-            __result = (AsyncOperation)internalCall.GetValue(new object[] { "", sceneBuildIndex, true, noneVariant, null });
-            return false;
-        }
-        return true;
+        Traverse internalCall = Helper.GetUnloadSceneNameIndexInternal();
+        Type unloadSceneOptions = Helper.GetUnloadSceneOptions();
+        object noneVariant = Enum.Parse(unloadSceneOptions, "None");
+        __result = (AsyncOperation)internalCall.GetValue(new object[] { "", sceneBuildIndex, true, noneVariant, null });
+        return false;
     }
 
     static void Postfix(ref AsyncOperation __result)
@@ -85,13 +81,9 @@ class LoadSceneAsync__sceneBuildIndex__parameters
 
     static bool Prefix(int sceneBuildIndex, object parameters, ref AsyncOperation __result)
     {
-        if (TAS.Main.Running)
-        {
-            Traverse internalCall = Helper.GetLoadSceneAsyncNameIndexInternal();
-            __result = (AsyncOperation)internalCall.GetValue(new object[] { null, sceneBuildIndex, parameters, true });
-            return false;
-        }
-        return true;
+        Traverse internalCall = Helper.GetLoadSceneAsyncNameIndexInternal();
+        __result = (AsyncOperation)internalCall.GetValue(new object[] { null, sceneBuildIndex, parameters, true });
+        return false;
     }
 
     static void Postfix(ref AsyncOperation __result)
@@ -115,13 +107,9 @@ class LoadSceneAsync__sceneName__parameters
 
     static bool Prefix(string sceneName, object parameters, ref AsyncOperation __result)
     {
-        if (TAS.Main.Running)
-        {
-            Traverse internalCall = Helper.GetLoadSceneAsyncNameIndexInternal();
-            __result = (AsyncOperation)internalCall.GetValue(new object[] { sceneName, -1, parameters, true });
-            return false;
-        }
-        return true;
+        Traverse internalCall = Helper.GetLoadSceneAsyncNameIndexInternal();
+        __result = (AsyncOperation)internalCall.GetValue(new object[] { sceneName, -1, parameters, true });
+        return false;
     }
 
     static void Postfix(ref AsyncOperation __result)
@@ -145,15 +133,11 @@ class UnloadSceneAsync__sceneName
 
     static bool Prefix(string sceneName, ref AsyncOperation __result)
     {
-        if (TAS.Main.Running)
-        {
-            Traverse internalCall = Helper.GetUnloadSceneNameIndexInternal();
-            Type unloadSceneOptions = Helper.GetUnloadSceneOptions();
-            object noneVariant = Enum.Parse(unloadSceneOptions, "None");
-            __result = (AsyncOperation)internalCall.GetValue(new object[] { sceneName, -1, true, noneVariant, null });
-            return false;
-        }
-        return true;
+        Traverse internalCall = Helper.GetUnloadSceneNameIndexInternal();
+        Type unloadSceneOptions = Helper.GetUnloadSceneOptions();
+        object noneVariant = Enum.Parse(unloadSceneOptions, "None");
+        __result = (AsyncOperation)internalCall.GetValue(new object[] { sceneName, -1, true, noneVariant, null });
+        return false;
     }
 
     static void Postfix(ref AsyncOperation __result)
@@ -177,16 +161,12 @@ class UnloadSceneAsync__scene
 
     static bool Prefix(ref object scene, ref AsyncOperation __result)
     {
-        if (TAS.Main.Running)
-        {
-            Traverse internalCall = Helper.GetUnloadSceneNameIndexInternal();
-            Traverse sceneTraverse = Traverse.Create(scene);
-            Type unloadSceneOptions = Helper.GetUnloadSceneOptions();
-            object noneVariant = Enum.Parse(unloadSceneOptions, "None");
-            __result = (AsyncOperation)internalCall.GetValue(new object[] { "", sceneTraverse.Field("buildIndex").GetValue(), true, noneVariant, null });
-            return false;
-        }
-        return true;
+        Traverse internalCall = Helper.GetUnloadSceneNameIndexInternal();
+        Traverse sceneTraverse = Traverse.Create(scene);
+        Type unloadSceneOptions = Helper.GetUnloadSceneOptions();
+        object noneVariant = Enum.Parse(unloadSceneOptions, "None");
+        __result = (AsyncOperation)internalCall.GetValue(new object[] { "", sceneTraverse.Field("buildIndex").GetValue(), true, noneVariant, null });
+        return false;
     }
 
     static void Postfix(ref AsyncOperation __result)
@@ -210,13 +190,9 @@ class UnloadSceneAsync__sceneBuildIndex__options
 
     static bool Prefix(int sceneBuildIndex, object options, ref AsyncOperation __result)
     {
-        if (TAS.Main.Running)
-        {
-            Traverse internalCall = Helper.GetUnloadSceneNameIndexInternal();
-            __result = (AsyncOperation)internalCall.GetValue(new object[] { "", sceneBuildIndex, true, options, null });
-            return false;
-        }
-        return true;
+        Traverse internalCall = Helper.GetUnloadSceneNameIndexInternal();
+        __result = (AsyncOperation)internalCall.GetValue(new object[] { "", sceneBuildIndex, true, options, null });
+        return false;
     }
 
     static void Postfix(ref AsyncOperation __result)
@@ -240,13 +216,9 @@ class UnloadSceneAsync__sceneName__options
 
     static bool Prefix(string sceneName, object options, ref AsyncOperation __result)
     {
-        if (TAS.Main.Running)
-        {
-            Traverse internalCall = Helper.GetUnloadSceneNameIndexInternal();
-            __result = (AsyncOperation)internalCall.GetValue(new object[] { sceneName, -1, true, options, null });
-            return false;
-        }
-        return true;
+        Traverse internalCall = Helper.GetUnloadSceneNameIndexInternal();
+        __result = (AsyncOperation)internalCall.GetValue(new object[] { sceneName, -1, true, options, null });
+        return false;
     }
 
     static void Postfix(ref AsyncOperation __result)
@@ -270,14 +242,10 @@ class UnloadSceneAsync__scene__options
 
     static bool Prefix(ref object scene, object options, ref AsyncOperation __result)
     {
-        if (TAS.Main.Running)
-        {
-            Traverse internalCall = Helper.GetUnloadSceneNameIndexInternal();
-            Traverse sceneTraverse = Traverse.Create(scene);
-            __result = (AsyncOperation)internalCall.GetValue(new object[] { "", sceneTraverse.Field("buildIndex").GetValue(), true, options, null });
-            return false;
-        }
-        return true;
+        Traverse internalCall = Helper.GetUnloadSceneNameIndexInternal();
+        Traverse sceneTraverse = Traverse.Create(scene);
+        __result = (AsyncOperation)internalCall.GetValue(new object[] { "", sceneTraverse.Field("buildIndex").GetValue(), true, options, null });
+        return false;
     }
 
     static void Postfix(ref AsyncOperation __result)
