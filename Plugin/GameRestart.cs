@@ -86,10 +86,25 @@ internal class GameRestart
             // destroy all objects that are marked DontDestroyOnLoad and wasn't loaded in the first scene
             Object.Destroy(obj);
         }
-        FakeGameState.GameTime.Time = softRestartTime;
+        GameTime.Time = softRestartTime;
         // TODO diff unity versions
         Traverse.Create(typeof(Random)).Method("InitState", new System.Type[] { typeof(int) }).GetValue((int)TAS.Main.Seed());
-        FakeGameState.GameTime.FrameCount = 0;
+        GameTime.FrameCount = 0;
+
+        // very game specific behavior
+        switch (Helper.GameName())
+        {
+            case "Cat Quest":
+                {
+                    // reset Game.instance.gameData.ai.behaviours
+                    Plugin.Log.LogDebug(Traverse.CreateWithType("Game").Property("instance").Property("gameData").Property("ai").Field("behaviours").Property("Count").GetValue<int>());
+                    Traverse.CreateWithType("Game").Property("instance").Property("gameData").Property("ai").Field("behaviours").Method("Clear").GetValue();
+                    Plugin.Log.LogDebug(Traverse.CreateWithType("Game").Property("instance").Property("gameData").Property("ai").Field("behaviours").Property("Count").GetValue<int>());
+                    break;
+                }
+            default:
+                break;
+        }
 
         // TODO sort out depending on unity version
         Traverse sceneManager = Traverse.CreateWithType("UnityEngine.SceneManagement.SceneManager");
