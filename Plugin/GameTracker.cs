@@ -6,19 +6,13 @@ using UnityEngine;
 
 namespace UniTASPlugin;
 
-public static class GameTracker
+internal static class GameTracker
 {
-    /// <summary>
-    /// Scene loading count status. 0 means there are no scenes loading, 1 means there is one scene loading, 2 means there are two scenes loading, etc.
-    /// </summary>
-    public static int LoadingSceneCount { get; private set; } = 0;
-    /// <summary>
-    /// Scene unloading count status. 0 means there are no scenes unloading, 1 means there is one scene unloading, 2 means there are two scenes unloading, etc.
-    /// </summary>
-    public static int UnloadingSceneCount { get; private set; } = 0;
-    public static List<int> FirstObjIDs { get; } = new();
-    public static List<int> DontDestroyOnLoadIDs { get; private set; } = new();
-    public static Dictionary<System.Type, List<KeyValuePair<FieldInfo, object>>> InitialValues { get; private set; } = new();
+    internal static List<int> FirstObjIDs { get; } = new();
+    internal static List<int> DontDestroyOnLoadIDs { get; private set; } = new();
+    internal static Dictionary<System.Type, List<KeyValuePair<FieldInfo, object>>> InitialValues { get; private set; } = new();
+    internal static List<System.IntPtr> AsyncSceneLoadsNoActivation { get; private set; } = new();
+    internal static List<System.IntPtr> AsyncSceneUnloadsNoActivation { get; private set; } = new();
 
     public static void Init()
     {
@@ -31,11 +25,6 @@ public static class GameTracker
                 FirstObjIDs.Add(id);
             }
         }
-        var pluginObj = Object.FindObjectOfType(typeof(Plugin));
-        if (pluginObj == null)
-            Plugin.Log.LogError("Plugin object not found, this should never happen");
-        else
-            FirstObjIDs.Add(pluginObj.GetInstanceID());
 
         // initial game state values
         var gameAssemblyNames = new string[] {
@@ -285,44 +274,53 @@ public static class GameTracker
     {
         if (operation == null)
             return;
-        if (Plugin.Instance == null)
-        {
-            Plugin.Log.LogError("Plugin is null, this should not happen, skipping scene load tracker");
-            LoadingSceneCount = 0;
-            return;
-        }
-        Plugin.Instance.StartCoroutine(AsyncSceneLoadWait(operation));
-    }
-
-    static System.Collections.IEnumerator AsyncSceneLoadWait(AsyncOperation operation)
-    {
-        while (!operation.isDone)
-        {
-            yield return new WaitForEndOfFrame();
-        }
-        LoadingSceneCount--;
+        // TODO diff unity version testing
+        var m_Ptr = Traverse.Create(operation).Field("m_Ptr").GetValue<System.IntPtr>();
+        AsyncSceneLoadsNoActivation.Add(m_Ptr);
     }
 
     public static void AsyncSceneUnload(AsyncOperation operation)
     {
         if (operation == null)
-            return;
-        if (Plugin.Instance == null)
         {
-            Plugin.Log.LogError("Plugin is null, this should not happen, skipping scene unload tracker");
-            UnloadingSceneCount = 0;
+            Plugin.Log.LogDebug("AsyncSceneUnload: operation is null");
             return;
         }
-        Plugin.Instance.StartCoroutine(AsyncSceneUnloadWait(operation));
+        Plugin.Log.LogDebug("tracking async unload");
+        var m_Ptr = Traverse.Create(operation).Field("m_Ptr").GetValue<System.IntPtr>();
+        AsyncSceneUnloadsNoActivation.Add(m_Ptr);
     }
 
-    static System.Collections.IEnumerator AsyncSceneUnloadWait(AsyncOperation operation)
+    static KeyValuePair<AsyncOperation, System.Action<AsyncOperation>>? allowSceneActivationLock = null;
+
+    public static void AllowSceneActivationSetFalse(AsyncOperation operation)
     {
-        while (!operation.isDone)
-        {
-            yield return new WaitForEndOfFrame();
-        }
-        UnloadingSceneCount--;
+        // TODO unity version diff test
+        var m_completeCallback = Traverse.Create(operation).Field("m_completeCallback").GetValue<System.Action<AsyncOperation>>();
+        allowSceneActivationLock = new KeyValuePair<AsyncOperation, System.Action<AsyncOperation>>(operation, m_completeCallback);
+    }
+
+    public static void AllowSceneActivationSetTrue()
+    {
+        if (allowSceneActivationLock == null)
+            return;
+
+        var instance = allowSceneActivationLock.Value.Key;
+        var methods = allowSceneActivationLock.Value.Value;
+        //methods.Invoke(instance);
+
+        allowSceneActivationLock = null;
+    }
+
+    public static void AsyncOperationDestroy(AsyncOperation operation)
+    {
+        var m_Ptr = Traverse.Create(operation).Field("m_Ptr").GetValue<System.IntPtr>();
+        if (AsyncSceneLoadsNoActivation.Contains(m_Ptr))
+            Plugin.Log.LogDebug($"found AsyncSceneLoadsNoActivation for {m_Ptr}, deleting");
+        AsyncSceneLoadsNoActivation.Remove(m_Ptr);
+        if (AsyncSceneUnloadsNoActivation.Contains(m_Ptr))
+            Plugin.Log.LogDebug($"found AsyncSceneUnloadsNoActivation for {m_Ptr}, deleting");
+        AsyncSceneUnloadsNoActivation.Remove(m_Ptr);
     }
 
     public static void DontDestroyOnLoadCall(Object @object)
