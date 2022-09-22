@@ -50,6 +50,21 @@ public static class GameTracker
             "Steamworks*",
             "UniRx*",
             "OVRSimpleJSON*",
+            "OVRManager*",
+            "OVRInput*",
+            "OVRGearVrControllerTest*",
+            "OVRHandTest*",
+            "OVRResources*",
+            "OVRPlugin*",
+            "OVRMixedReality*",
+            "OVROverlay*",
+            "OVRHaptics*",
+            "OVRBoundary*",
+            "OVRPlatformMenu*",
+            "OVRRaycaster*",
+            "DarkTonic.MasterAudio*",
+            // HACK: need to look into how this one works, its an input manager
+            "InControl*",
         };
         // game specific type exclusion
         var exclusionGameAndType = new Dictionary<string, List<string>>
@@ -63,14 +78,13 @@ public static class GameTracker
         // game specific field exclusion
         var exclusionGameAndField = new Dictionary<string, List<string>>
         {
-            /*
             { "Keep Talking and Nobody Explodes", new List<string>()
             {
-                "TypewrittenText.logger",
+                "InControl.TouchManager.OnSetup",
             }
             },
-            */
         };
+        // TODO does System.Action affect stuff?
 
         var gameName = Helper.GameName();
         var gameAssemblies = AccessTools.AllAssemblies().Where(a => gameAssemblyNames.Contains(a.GetName().Name)).ToArray();
@@ -105,27 +119,29 @@ public static class GameTracker
 
             foreach (var field in fields)
             {
+                var fieldName = $"{gameType.FullName}.{field.Name}";
                 if (!field.IsStatic || field.IsLiteral || field.IsInitOnly)
                     continue;
 
                 // check instance field
                 var fieldType = field.FieldType;
-                var fieldName = $"{gameType.FullName}.{field.Name}";
                 if (fieldType == gameType)
                 {
                     Plugin.Log.LogDebug($"Detected instance field: {fieldName}, skipping");
                     continue;
                 }
-
                 // check field exclusion
                 if (exclusionFields.Contains(fieldName))
                 {
-                    Plugin.Log.LogDebug($"Ignoring field {fieldName}");
+                    Plugin.Log.LogDebug($"Exclusion fields contains {fieldName}");
                     continue;
                 }
                 // check field type exclusion
                 if (fieldTypeIgnore.Contains(fieldType))
+                {
+                    Plugin.Log.LogDebug($"Ignoring field {fieldName} for safety");
                     continue;
+                }
 
                 if (!InitialValues.ContainsKey(gameType))
                     InitialValues.Add(gameType, new List<KeyValuePair<FieldInfo, object>>());
