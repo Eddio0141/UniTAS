@@ -28,6 +28,8 @@ I haven't planned for VR support currently
 Depends on BepInEx's progress on it
 
 # Important TODOs
+- Async load / unload patch
+- use of Finalizer to combine patches for clean up
 - Support of new input system (UnityEngine.InputSystem)
 - Soft restart needs to reset game state
 - Savestates
