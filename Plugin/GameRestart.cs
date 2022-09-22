@@ -83,6 +83,7 @@ internal class GameRestart
         }
 
         // very game specific behavior
+        /*
         switch (Helper.GameName())
         {
             case "Cat Quest":
@@ -94,6 +95,7 @@ internal class GameRestart
             default:
                 break;
         }
+        */
 
         // load stored values
         foreach (var typeAndFieldAndValue in GameTracker.InitialValues)
@@ -121,14 +123,13 @@ internal class GameRestart
             }
         }
 
-        // TODO sort out depending on unity version
-        Traverse sceneManager = Traverse.CreateWithType("UnityEngine.SceneManagement.SceneManager");
-        sceneManager = sceneManager.Method("LoadScene", new System.Type[] { typeof(int) });
-        sceneManager.GetValue(new object[] { 0 });
+        Plugin.Log.LogDebug("finished setting fields, loading scene");
+        SceneHelper.LoadScene(0);
+
+        Plugin.Log.LogDebug("random setting state");
 
         GameTime.Time = softRestartTime;
-        // TODO diff unity versions
-        Traverse.Create(typeof(Random)).Method("InitState", new System.Type[] { typeof(int) }).GetValue((int)GameTime.Seed());
+        RandomWrap.InitState((int)GameTime.Seed());
         GameTime.FrameCount = 0;
 
         Plugin.Log.LogInfo("Finish soft restarting");
