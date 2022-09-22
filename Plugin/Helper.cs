@@ -122,6 +122,7 @@ internal static partial class Helper
         MakeDeepCopyRecursionDepth++;
         if (MakeDeepCopyRecursionDepth > MakeDeepCopyRecursionDepthLimit)
         {
+            MakeDeepCopyRecursionDepth = 0;
             throw new Exceptions.DeepCopyMaxRecursion();
         }
 
