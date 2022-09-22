@@ -110,13 +110,13 @@ public static class GameTracker
 
                 // check instance field
                 var fieldType = field.FieldType;
+                var fieldName = $"{gameType.FullName}.{field.Name}";
                 if (fieldType == gameType)
                 {
-                    Plugin.Log.LogDebug($"Detected instance field: {gameType.FullName}.{field.Name}, skipping");
+                    Plugin.Log.LogDebug($"Detected instance field: {fieldName}, skipping");
                     continue;
                 }
 
-                var fieldName = $"{gameType.FullName}.{field.Name}";
                 // check field exclusion
                 if (exclusionFields.Contains(fieldName))
                 {
@@ -145,140 +145,81 @@ public static class GameTracker
                     Plugin.Log.LogWarning($"failed to get field value for {fieldName}, ex: {ex}");
                     continue;
                 }
-                switch (fieldType.FullName)
                 {
-                    case "UnityEngine.Vector2":
+                    string fieldValueString;
+                    if (fieldValue == null)
+                        fieldValueString = "null";
+                    // if its an array, convert all values to string
+                    /*else if (fieldValue.GetType().IsArray)
+                    {
+                        Plugin.Log.LogDebug($"trying to convert array type {fieldValue.GetType()} to string");
+                        try
                         {
-                            Plugin.Log.LogDebug("found Vector2, applying fix deep copy");
-                            Plugin.Log.LogDebug($"field type attributes: {fieldType.Attributes}");
-                            var vec = (Vector2)fieldValue;
-                            objClone = new Vector2(vec.x, vec.y);
-                            break;
+                            fieldValueString = string.Join(", ", ((System.Collections.IEnumerable)fieldValue).Cast<object>()
+                                .Select(x => x.ToString())
+                                .ToArray());
                         }
-                    case "UnityEngine.Vector2Int":
+                        catch (System.Exception)
                         {
-                            Plugin.Log.LogDebug("found Vector2Int, applying fix deep copy");
-                            Plugin.Log.LogDebug($"field type attributes: {fieldType.Attributes}");
-                            var type_ = AccessTools.TypeByName("UnityEngine.Vector2Int");
-                            var constructor = AccessTools.Constructor(type_, new System.Type[] { typeof(int), typeof(int) });
-                            objClone = constructor.Invoke(new object[] { AccessTools.Field(type_, "m_X"), AccessTools.Field(type_, "m_Y") });
-                            break;
+                            Plugin.Log.LogDebug("it failed");
+                            fieldValueString = fieldValue.ToString();
                         }
-                    case "UnityEngine.Vector3":
+                        fieldValueString = fieldValue.ToString();
+                    }*/
+                    else
+                        fieldValueString = fieldValue.ToString();
+                    Plugin.Log.LogDebug($"cloning field {fieldName} with value {fieldValueString}");
+                    //System.Threading.Thread.Sleep(50);
+
+                    try
+                    {
+                        if (fieldValue == null || !typeof(System.Collections.IEnumerable).IsAssignableFrom(fieldType))
                         {
-                            Plugin.Log.LogDebug("found Vector3, applying fix deep copy");
-                            Plugin.Log.LogDebug($"field type attributes: {fieldType.Attributes}");
-                            var vec = (Vector3)fieldValue;
-                            objClone = new Vector3(vec.x, vec.y, vec.z);
-                            break;
+                            objClone = Helper.MakeDeepCopy(fieldValue, fieldType);
                         }
-                    case "UnityEngine.Vector3Int":
+                        else
                         {
-                            Plugin.Log.LogDebug("found Vector3Int, applying fix deep copy");
-                            Plugin.Log.LogDebug($"field type attributes: {fieldType.Attributes}");
-                            var type_ = AccessTools.TypeByName("UnityEngine.Vector3Int");
-                            var constructor = AccessTools.Constructor(type_, new System.Type[] { typeof(int), typeof(int) });
-                            objClone = constructor.Invoke(new object[] { AccessTools.Field(type_, "m_X"), AccessTools.Field(type_, "m_Y"), AccessTools.Field(type_, "m_Z") });
-                            break;
-                        }
-                    case "UnityEngine.Vector4":
-                        {
-                            Plugin.Log.LogDebug("found Vector4, applying fix deep copy");
-                            Plugin.Log.LogDebug($"field type attributes: {fieldType.Attributes}");
-                            var vec = (Vector4)fieldValue;
-                            objClone = new Vector4(vec.x, vec.y, vec.z, vec.w);
-                            break;
-                        }
-                    default:
-                        {
-                            string fieldValueString;
-                            if (fieldValue == null)
-                                fieldValueString = "null";
-                            // if its an array, convert all values to string
-                            else if (fieldValue.GetType().IsArray)
+                            Plugin.Log.LogDebug("skipping collection convertion for now");
+                            continue;
+                            /*
+                            // manually clone field if its a collection
+                            var fieldValueAsCollection = ((System.Collections.IEnumerable)fieldValue).Cast<object>();
+                            var clonedCollection = new List<object>();
+                            foreach (var value in fieldValueAsCollection)
                             {
-                                Plugin.Log.LogDebug($"trying to convert array type {fieldValue.GetType()} to string");
-                                /*
-                                try
-                                {
-                                    fieldValueString = string.Join(", ", ((System.Collections.IEnumerable)fieldValue).Cast<object>()
-                                        .Select(x => x.ToString())
-                                        .ToArray());
-                                }
-                                catch (System.Exception)
-                                {
-                                    Plugin.Log.LogDebug("it failed");
-                                    fieldValueString = fieldValue.ToString();
-                                }
-                                */
-                                fieldValueString = fieldValue.ToString();
+                                clonedCollection.Add(Helper.MakeDeepCopy(value, value.GetType()));
                             }
-                            else
-                                fieldValueString = fieldValue.ToString();
-                            Plugin.Log.LogDebug($"processing field {fieldName}, value: {fieldValueString}");
 
-                            if (fieldValue == null)
-                                break;
-
-                            if ((fieldType.Attributes & TypeAttributes.NestedPrivate) == TypeAttributes.NestedPrivate)
+                            // convert List to appropriate type if needed to
+                            switch (fieldType.GetGenericTypeDefinition().FullName)
                             {
-                                Plugin.Log.LogDebug($"is nested private, skipping");
-                                continue;
-                            }
-                            Plugin.Log.LogDebug($"field type attributes: {fieldType.Attributes}");
-                            Plugin.Log.LogDebug("cloning field...");
-                            System.Threading.Thread.Sleep(50);
-
-                            try
-                            {
-                                if (fieldValue == null || !typeof(System.Collections.IEnumerable).IsAssignableFrom(fieldType))
-                                {
-                                    objClone = Helper.MakeDeepCopy(fieldValue, fieldType);
+                                case "System.Collections.Generic.Stack`1":
+                                    {
+                                        var stackValue = new Stack<object>(clonedCollection);
+                                        objClone = stackValue;
+                                    }
                                     break;
-                                }
-
-                                Plugin.Log.LogDebug("skipping collection convertion for now");
-                                continue;
-                                /*
-                                // manually clone field if its a collection
-                                var fieldValueAsCollection = ((System.Collections.IEnumerable)fieldValue).Cast<object>();
-                                var clonedCollection = new List<object>();
-                                foreach (var value in fieldValueAsCollection)
-                                {
-                                    clonedCollection.Add(Helper.MakeDeepCopy(value, value.GetType()));
-                                }
-
-                                // convert List to appropriate type if needed to
-                                switch (fieldType.GetGenericTypeDefinition().FullName)
-                                {
-                                    case "System.Collections.Generic.Stack`1":
-                                        {
-                                            var stackValue = new Stack<object>(clonedCollection);
-                                            objClone = stackValue;
-                                        }
-                                        break;
-                                    default:
-                                        {
-                                            objClone = clonedCollection;
-                                            Plugin.Log.LogDebug($"field type: {fieldType.GetGenericTypeDefinition().FullName}");
-                                        }
-                                        break;
-                                }
-                                */
+                                default:
+                                    {
+                                        objClone = clonedCollection;
+                                        Plugin.Log.LogDebug($"field type: {fieldType.GetGenericTypeDefinition().FullName}");
+                                    }
+                                    break;
                             }
-                            catch (Exceptions.DeepCopyMaxRecursion)
-                            {
-                                failedClone = true;
-                                Plugin.Log.LogWarning($"failed to clone field {fieldName}, value: {fieldValueString}, excluding this type from deep copy");
-                                fieldTypeIgnore.Add(fieldType);
-                            }
-                            catch (System.Exception ex)
-                            {
-                                failedClone = true;
-                                Plugin.Log.LogWarning($"failed to clone field {fieldName}, value: {fieldValueString}, ex: {ex.Message}");
-                            }
-                            break;
+                            */
                         }
+                    }
+                    catch (Exceptions.DeepCopyMaxRecursion)
+                    {
+                        failedClone = true;
+                        Plugin.Log.LogWarning($"max recursion reached, excluding field type {fieldType} from deep copy");
+                        fieldTypeIgnore.Add(fieldType);
+                    }
+                    catch (System.Exception ex)
+                    {
+                        failedClone = true;
+                        Plugin.Log.LogWarning($"failed to clone field, ex: {ex.Message}");
+                    }
                 }
                 if (!failedClone)
                     InitialValues[gameType].Add(new KeyValuePair<FieldInfo, object>(field, objClone));
