@@ -84,10 +84,6 @@ public class Plugin : BaseUnityPlugin
 
             TAS.Main.RunMovie(movie);
         }
-        if (!TAS.Main.Running && Input.GetKeyDown(KeyCode.L))
-        {
-            NewInputSystem.ConnectAllDevices();
-        }
         /*
         if (!TAS.Main.Running && Input.GetKeyDown(KeyCode.L))
         {
