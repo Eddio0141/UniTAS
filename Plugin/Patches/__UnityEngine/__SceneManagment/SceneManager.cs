@@ -28,15 +28,19 @@ class UnloadSceneNameIndexInternal
         return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
     }
 
-    static void Prefix(ref bool immediately)
+    static void Prefix(ref bool immediately, ref bool __state)
     {
-        immediately = true;
+        //__state = immediately;
+        //immediately = true;
     }
 
-    static void Postfix(ref AsyncOperation __result)
+    static void Postfix(ref AsyncOperation __result, ref bool __state)
     {
-        Plugin.Log.LogDebug($"load scene async post result {__result}");
-        GameTracker.AsyncSceneUnload(__result);
+        /*
+        if (!__state)
+            GameTracker.AsyncSceneUnload(__result);
+        Plugin.Log.LogDebug($"unload scene async post result {__result.progress}, {__result.isDone}, {__state}, {FakeGameState.GameTime.FrameCount}");
+        */
     }
 }
 
@@ -53,14 +57,24 @@ class LoadSceneAsyncNameIndexInternal
         return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
     }
 
-    static void Prefix(ref bool mustCompleteNextFrame)
+    static void Prefix(ref bool mustCompleteNextFrame, ref bool __state, string sceneName, int sceneBuildIndex)
     {
-        mustCompleteNextFrame = true;
+        //Plugin.Log.LogDebug($"load scene async \"{sceneName}\", {sceneBuildIndex}, {mustCompleteNextFrame}");
+        //__state = mustCompleteNextFrame;
+        //mustCompleteNextFrame = true;
     }
 
-    static void Postfix(ref AsyncOperation __result)
+    static void Postfix(ref AsyncOperation __result, ref bool __state)
     {
-        Plugin.Log.LogDebug($"load scene async post result {__result}");
+        Plugin.Log.LogDebug("load scene async");
+        // no action if mustCompleteNextFrame is true
+        /*
+        if (__state)
+            return;
+
+        Plugin.Log.LogDebug($"tracking async load {Traverse.Create(__result).Field("m_Ptr").GetValue<IntPtr>()}");
         GameTracker.AsyncSceneLoad(__result);
+        Plugin.Log.LogDebug($"load scene async post result, isDone: {__result.isDone}, priority: {__result.priority}, progress: {__result.progress}, {FakeGameState.GameTime.FrameCount}");
+        */
     }
 }
