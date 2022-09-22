@@ -35,6 +35,7 @@ class UnloadSceneNameIndexInternal
 
     static void Postfix(ref AsyncOperation __result)
     {
+        Plugin.Log.LogDebug($"load scene async post result {__result}");
         GameTracker.AsyncSceneUnload(__result);
     }
 }
@@ -59,6 +60,7 @@ class LoadSceneAsyncNameIndexInternal
 
     static void Postfix(ref AsyncOperation __result)
     {
+        Plugin.Log.LogDebug($"load scene async post result {__result}");
         GameTracker.AsyncSceneLoad(__result);
     }
 }
