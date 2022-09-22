@@ -88,6 +88,7 @@ public static class GameTracker
             },
             { "Keep Talking and Nobody Explodes", new List<string>()
             {
+                /*
                 "Oculus.Platform*",
                 "DigitalOpus.MB.Core*",
                 "LTGUI*",
@@ -97,6 +98,7 @@ public static class GameTracker
                 "LeanTest*",
                 "BindingsExample*",
                 "I2.Loc*",
+                */
             }
             },
         };
@@ -220,11 +222,13 @@ public static class GameTracker
                         {
                             objClone = Helper.MakeDeepCopy(fieldValue, fieldType);
                         }
+                        /*
                         else if (fieldValue == null)
                         {
                             Plugin.Log.LogDebug("field is null, skipping for safety");
                             continue;
                         }
+                        */
                         else
                         {
                             Plugin.Log.LogDebug("skipping collection convertion for now");
