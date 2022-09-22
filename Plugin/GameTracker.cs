@@ -86,6 +86,19 @@ public static class GameTracker
                 "SteamManager",
             }
             },
+            { "Keep Talking and Nobody Explodes", new List<string>()
+            {
+                "Oculus.Platform*",
+                "DigitalOpus.MB.Core*",
+                "LTGUI*",
+                "LeanTween*",
+                "LTDescr*",
+                "LTRect*",
+                "LeanTest*",
+                "BindingsExample*",
+                "I2.Loc*",
+            }
+            },
         };
         // game specific field exclusion
         var exclusionGameAndField = new Dictionary<string, List<string>>
@@ -206,6 +219,11 @@ public static class GameTracker
                         if (fieldValue == null || !typeof(System.Collections.IEnumerable).IsAssignableFrom(fieldType))
                         {
                             objClone = Helper.MakeDeepCopy(fieldValue, fieldType);
+                        }
+                        else if (fieldValue == null)
+                        {
+                            Plugin.Log.LogDebug("field is null, skipping for safety");
+                            continue;
                         }
                         else
                         {
