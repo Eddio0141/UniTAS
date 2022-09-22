@@ -42,8 +42,7 @@ public class Plugin : BaseUnityPlugin
         Log.LogInfo($"All axis names: {string.Join(", ", Input.GetJoystickNames())}");
 
         // init random seed
-        // TODO diff unity versions
-        Traverse.Create(typeof(Random)).Method("InitState", new System.Type[] { typeof(int) }).GetValue((int)FakeGameState.GameTime.Seed());
+        RandomWrap.InitState((int)FakeGameState.GameTime.Seed());
 
         GameTracker.Init();
         FakeGameState.SystemInfo.Init();
