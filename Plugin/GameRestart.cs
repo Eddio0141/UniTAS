@@ -27,23 +27,6 @@ internal class GameRestart
     /// <param name="time"></param>
     public static void SoftRestart(System.DateTime time)
     {
-        if (GameTracker.LoadingSceneCount > 0)
-        {
-            Plugin.Log.LogInfo($"Pending soft restart, waiting on {GameTracker.LoadingSceneCount} scenes to finish loading");
-            while (GameTracker.LoadingSceneCount > 0)
-            {
-                Thread.Sleep(1);
-            }
-        }
-        if (GameTracker.UnloadingSceneCount > 0)
-        {
-            Plugin.Log.LogInfo($"Pending soft restart, waiting on {GameTracker.UnloadingSceneCount} scenes to finish loading");
-            while (GameTracker.UnloadingSceneCount > 0)
-            {
-                Thread.Sleep(1);
-            }
-        }
-
         pendingFixedUpdateSoftRestart = true;
         softRestartTime = time;
         Plugin.Log.LogInfo("Soft restarting, pending FixedUpdate call");
@@ -59,21 +42,16 @@ internal class GameRestart
 
         foreach (var obj in Object.FindObjectsOfType(typeof(MonoBehaviour)))
         {
-            if (obj.GetType() != typeof(Plugin))
-            {
-                // force coroutines to stop
-                (obj as MonoBehaviour).StopAllCoroutines();
-            }
-            else
-            {
-                Plugin.Log.LogDebug($"Not stopping coroutines for {obj.GetType()} with Plugin type");
-            }
+            if (obj.GetType() == typeof(Plugin))
+                continue;
+
+            // force coroutines to stop
+            (obj as MonoBehaviour).StopAllCoroutines();
 
             var id = obj.GetInstanceID();
 
             if (!GameTracker.DontDestroyOnLoadIDs.Contains(id))
                 continue;
-
             if (GameTracker.FirstObjIDs.Contains(id))
                 continue;
 
