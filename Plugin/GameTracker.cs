@@ -44,11 +44,12 @@ public static class GameTracker
             "Assembly-UnityScript",
             "Assembly-UnityScript-firstpass"
         };
-        // excludes all types in the namespace
-        var exclusionNamespaces = new string[]
+        // excludes all types
+        var exclusionTypes = new string[]
         {
             "Steamworks*",
             "UniRx*",
+            // ignoring vr stuff
             "OVRSimpleJSON*",
             "OVRManager*",
             "OVRInput*",
@@ -62,6 +63,17 @@ public static class GameTracker
             "OVRBoundary*",
             "OVRPlatformMenu*",
             "OVRRaycaster*",
+            "OVR.OpenVR.OpenVR*",
+            "GvrAudio*",
+            "GvrControllerInput*",
+            "GvrKeyboard*",
+            "GvrVideoPlayerTexture*",
+            "GvrExecuteEventsExtension*",
+            "GvrMathHelpers*",
+            "GvrDaydreamApi*",
+            "GvrPointerGraphicRaycaster*",
+            "UnityEngine.EventSystems.OVRPhysicsRaycaster",
+            //
             "DarkTonic.MasterAudio*",
             // HACK: need to look into how this one works, its an input manager
             "InControl*",
@@ -90,8 +102,8 @@ public static class GameTracker
         var gameAssemblies = AccessTools.AllAssemblies().Where(a => gameAssemblyNames.Contains(a.GetName().Name)).ToArray();
         var allGameTypes = gameAssemblies
             .SelectMany(a => a.GetTypes())
-            .Where(t => !exclusionNamespaces
-            .Any(ex => t.Namespace != null && (ex == t.Namespace || (ex.EndsWith("*") && t.Namespace.StartsWith(ex.Remove(ex.Length - 1, 1))))));
+            .Where(t => !exclusionTypes
+            .Any(ex => t.FullName != null && (ex == t.FullName || (ex.EndsWith("*") && t.FullName.StartsWith(ex.Remove(ex.Length - 1, 1))))));
         if (exclusionGameAndType.ContainsKey(gameName))
         {
             var excludeNames = exclusionGameAndType[gameName];
@@ -111,7 +123,7 @@ public static class GameTracker
 	    public struct UnityEngine.Vector2 : IEquatable<Vector2>, IFormattable
         */
 
-        var fieldTypeIgnore = new List<System.Type>();
+        //var fieldTypeIgnore = new List<System.Type>();
         foreach (var gameType in allGameTypes)
         {
             // get all static fields
@@ -137,11 +149,13 @@ public static class GameTracker
                     continue;
                 }
                 // check field type exclusion
+                /*
                 if (fieldTypeIgnore.Contains(fieldType))
                 {
                     Plugin.Log.LogDebug($"Ignoring field {fieldName} for safety");
                     continue;
                 }
+                */
 
                 if (!InitialValues.ContainsKey(gameType))
                     InitialValues.Add(gameType, new List<KeyValuePair<FieldInfo, object>>());
@@ -229,7 +243,7 @@ public static class GameTracker
                     {
                         failedClone = true;
                         Plugin.Log.LogWarning($"max recursion reached, excluding field type {fieldType} from deep copy");
-                        fieldTypeIgnore.Add(fieldType);
+                        //fieldTypeIgnore.Add(fieldType);
                     }
                     catch (System.Exception ex)
                     {
