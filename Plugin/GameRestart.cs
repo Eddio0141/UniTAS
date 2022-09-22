@@ -109,15 +109,14 @@ internal class GameRestart
                 else
                     valueString = value.ToString();
 
-                Plugin.Log.LogDebug($"setting field: {typeAndFieldAndValue.Key}.{fieldAndValue.Key} to {valueString}");
-
+                Plugin.Log.LogDebug($"setting field: {fieldAndValue.Key.DeclaringType.FullName}.{fieldAndValue.Key} to {valueString}");
                 try
                 {
                     fieldAndValue.Key.SetValue(null, value);
                 }
                 catch (System.Exception ex)
                 {
-                    Plugin.Log.LogWarning($"Failed to set field: {typeAndFieldAndValue.Key}.{fieldAndValue.Key} to {value} with exception: {ex}");
+                    Plugin.Log.LogWarning($"Failed to set field: {fieldAndValue.Key.DeclaringType.FullName}.{fieldAndValue.Key} to {value} with exception: {ex}");
                 }
             }
         }
