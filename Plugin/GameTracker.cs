@@ -286,51 +286,69 @@ internal static class GameTracker
             this.sceneName = sceneName;
             this.sceneBuildIndex = sceneBuildIndex;
             this.parameters = parameters;
-            UID = 0;
+            var instanceWrap = new AsyncOperationWrap(instance);
+            UID = instanceWrap.UID;
         }
     }
 
-    static Queue<AsyncSceneLoadData> asyncSceneLoads = new();
-    static Queue<AsyncSceneLoadData> asyncSceneLoadsStall = new();
+    static List<AsyncSceneLoadData> asyncSceneLoads = new();
+    static List<AsyncSceneLoadData> asyncSceneLoadsStall = new();
+    static ulong asyncSceneLoadUIDIndex = 1;
 
-    public static void AsyncSceneLoad(string sceneName, int sceneBuildIndex, object parameters, AsyncOperation instance)
+    public static void AsyncSceneLoad(string sceneName, int sceneBuildIndex, object parameters, ref AsyncOperation instance)
     {
-        asyncSceneLoads.Enqueue(new AsyncSceneLoadData(sceneName, sceneBuildIndex, parameters, instance));
+        new AsyncOperationWrap(instance).UID = asyncSceneLoadUIDIndex;
+        asyncSceneLoads.Add(new AsyncSceneLoadData(sceneName, sceneBuildIndex, parameters, instance));
+        asyncSceneLoadUIDIndex++;
     }
 
     public static void AllowSceneActivation(bool allow, AsyncOperation instance)
     {
-        // TODO check UID instead
-        var m_Ptr = new AsyncOperationWrap(instance).m_Ptr;
-
-        if (m_Ptr != System.IntPtr.Zero)
+        var uid = new AsyncOperationWrap(instance).UID;
+        if (uid == 0)
             return;
 
         if (allow)
         {
-            if (asyncSceneLoadsStall.Count < 1)
+            var sceneToLoadIndex = -1;
+            for (int i = 0; i < asyncSceneLoadsStall.Count; i++)
+            {
+                var scene = asyncSceneLoadsStall[i];
+                if (scene.UID == uid)
+                {
+                    sceneToLoadIndex = i;
+                    break;
+                }
+            }
+            if (sceneToLoadIndex < 0)
                 return;
-            var sceneToLoad = asyncSceneLoadsStall.Dequeue();
+            var sceneToLoad = asyncSceneLoadsStall[sceneToLoadIndex];
             // TODO different unity versions
             var sceneManager = Traverse.CreateWithType("UnityEngine.SceneManagement.SceneManager");
             var loadSceneParameters = AccessTools.TypeByName("UnityEngine.SceneManagement.LoadSceneParameters");
             var loadInternal = sceneManager.Method("LoadSceneAsyncNameIndexInternal", new System.Type[] { typeof(string), typeof(int), loadSceneParameters, typeof(bool) });
             loadInternal.GetValue(new object[] { sceneToLoad.sceneName, sceneToLoad.sceneBuildIndex, sceneToLoad.parameters, true });
+            asyncSceneLoadsStall.RemoveAt(sceneToLoadIndex);
+            asyncSceneLoadUIDIndex--;
         }
         else
         {
-            if (asyncSceneLoads.Count < 1)
+            var stallSceneIndex = -1;
+            for (int i = 0; i < asyncSceneLoads.Count; i++)
+            {
+                var scene = asyncSceneLoads[i];
+                if (scene.UID == uid)
+                {
+                    stallSceneIndex = i;
+                    break;
+                }
+            }
+            if (stallSceneIndex < 0)
                 return;
-            asyncSceneLoadsStall.Enqueue(asyncSceneLoads.Dequeue());
+            var stallScene = asyncSceneLoads[stallSceneIndex];
+            asyncSceneLoadsStall.Add(stallScene);
+            asyncSceneLoads.RemoveAt(stallSceneIndex);
         }
-    }
-
-    public static bool DestroyAsyncOperation(AsyncOperation operation)
-    {
-        var wrap = new AsyncOperationWrap(operation);
-        if (wrap.m_Ptr != System.IntPtr.Zero)
-            return false;
-        return true;
     }
 
     public static void DontDestroyOnLoadCall(Object @object)

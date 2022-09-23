@@ -7,22 +7,27 @@ namespace UniTASPlugin.VersionSafeWrapper;
 internal class AsyncOperationWrap
 {
     public AsyncOperation instance { get; private set; }
-
-    const string M_PTR_FIELD_NAME = "m_Ptr";
+    
+    const string UID_FIELD_NAME = "__UniTAS_UID";
 
     public AsyncOperationWrap(AsyncOperation asyncOperation)
     {
         // TODO earlier assertion
-        WrapperAssertions.AssertInstanceField(typeof(AsyncOperation), M_PTR_FIELD_NAME);
+        WrapperAssertions.AssertInstanceField(typeof(AsyncOperation), UID_FIELD_NAME);
         instance = asyncOperation ?? throw new ArgumentNullException(nameof(asyncOperation));
     }
 
-    public IntPtr m_Ptr
+    public ulong UID
     {
         get
         {
-            var m_ptrField = Traverse.Create(instance).Field(M_PTR_FIELD_NAME);
-            return m_ptrField.GetValue<IntPtr>();
+            var uidField = Traverse.Create(instance).Field(UID_FIELD_NAME);
+            return uidField.GetValue<ulong>();
+        }
+        set
+        {
+            var uidField = Traverse.Create(instance).Field(UID_FIELD_NAME);
+            uidField.SetValue(value);
         }
     }
 }

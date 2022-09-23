@@ -47,15 +47,12 @@ class LoadSceneAsyncNameIndexInternal
         return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
     }
 
-    static bool Prefix(bool mustCompleteNextFrame, ref bool __state, string sceneName, int sceneBuildIndex, object parameters, ref AsyncOperation __result)
+    static bool Prefix(bool mustCompleteNextFrame, string sceneName, int sceneBuildIndex, object parameters, ref AsyncOperation __result)
     {
-        var loadSceneMode = Traverse.Create(parameters).Property("loadSceneMode").GetValue();
-        var asyncOrNot = mustCompleteNextFrame ? "insta" : "async";
-        Plugin.Log.LogDebug($"load scene {asyncOrNot}, mode: {loadSceneMode} at {FakeGameState.GameTime.FrameCount}");
         if (!mustCompleteNextFrame)
         {
             __result = new AsyncOperation();
-            GameTracker.AsyncSceneLoad(sceneName, sceneBuildIndex, parameters, __result);
+            GameTracker.AsyncSceneLoad(sceneName, sceneBuildIndex, parameters, ref __result);
             return false;
         }
         return true;
