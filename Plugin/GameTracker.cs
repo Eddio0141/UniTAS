@@ -305,8 +305,12 @@ internal static class GameTracker
     public static void AllowSceneActivation(bool allow, AsyncOperation instance)
     {
         var uid = new AsyncOperationWrap(instance).UID;
+        Plugin.Log.LogDebug($"allow scene activation {allow} for UID {uid}");
         if (uid == 0)
+        {
+            Plugin.Log.LogError("AsyncOperation UID is 0, this should not happen");
             return;
+        }
 
         if (allow)
         {
@@ -328,6 +332,7 @@ internal static class GameTracker
             var loadSceneParameters = AccessTools.TypeByName("UnityEngine.SceneManagement.LoadSceneParameters");
             var loadInternal = sceneManager.Method("LoadSceneAsyncNameIndexInternal", new System.Type[] { typeof(string), typeof(int), loadSceneParameters, typeof(bool) });
             loadInternal.GetValue(new object[] { sceneToLoad.sceneName, sceneToLoad.sceneBuildIndex, sceneToLoad.parameters, true });
+            Plugin.Log.LogDebug($"force loading scene, name: {sceneToLoad.sceneName} build index: {sceneToLoad.sceneBuildIndex}");
             asyncSceneLoadsStall.RemoveAt(sceneToLoadIndex);
             asyncSceneLoadUIDIndex--;
         }
@@ -348,7 +353,30 @@ internal static class GameTracker
             var stallScene = asyncSceneLoads[stallSceneIndex];
             asyncSceneLoadsStall.Add(stallScene);
             asyncSceneLoads.RemoveAt(stallSceneIndex);
+            Plugin.Log.LogDebug($"Added scene to stall list, name: {stallScene.sceneName} build index: {stallScene.sceneBuildIndex}");
         }
+    }
+
+    public static bool GetSceneActivation(AsyncOperation instance)
+    {
+        var uid = new AsyncOperationWrap(instance).UID;
+        if (uid == 0)
+            return false;
+
+        for (int i = 0; i < asyncSceneLoadsStall.Count; i++)
+        {
+            var scene = asyncSceneLoadsStall[i];
+            if (scene.UID == uid)
+                return true;
+        }
+
+        return false;
+    }
+
+    public static bool IsStallingInstance(AsyncOperation instance)
+    {
+        var uid = new AsyncOperationWrap(instance).UID;
+        return uid != 0 && asyncSceneLoadsStall.Any(x => x.UID == uid);
     }
 
     public static void DontDestroyOnLoadCall(Object @object)

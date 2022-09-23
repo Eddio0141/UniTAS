@@ -15,6 +15,7 @@ static class Helper
     }
 }
 
+// TODO also do UnloadSceneAsyncInternal
 [HarmonyPatch]
 class UnloadSceneNameIndexInternal
 {
@@ -53,6 +54,7 @@ class LoadSceneAsyncNameIndexInternal
         {
             __result = new AsyncOperation();
             GameTracker.AsyncSceneLoad(sceneName, sceneBuildIndex, parameters, ref __result);
+            Plugin.Log.LogDebug($"setting up async scene load, assigned UID {new VersionSafeWrapper.AsyncOperationWrap(__result).UID}");
             return false;
         }
         return true;
