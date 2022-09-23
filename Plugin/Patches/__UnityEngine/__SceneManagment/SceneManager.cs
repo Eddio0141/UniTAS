@@ -28,21 +28,9 @@ class UnloadSceneNameIndexInternal
         return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
     }
 
-    static void Prefix(ref bool immediately, ref bool __state)
+    static void Prefix(ref bool immediately)
     {
-        var asyncOrNot = immediately ? "immediately" : "async";
-        Plugin.Log.LogDebug($"unload scene {asyncOrNot} at {FakeGameState.GameTime.FrameCount}");
-        //__state = immediately;
-        //immediately = true;
-    }
-
-    static void Postfix(ref AsyncOperation __result, ref bool __state)
-    {
-        /*
-        if (!__state)
-            GameTracker.AsyncSceneUnload(__result);
-        Plugin.Log.LogDebug($"unload scene async post result {__result.progress}, {__result.isDone}, {__state}, {FakeGameState.GameTime.FrameCount}");
-        */
+        immediately = true;
     }
 }
 
