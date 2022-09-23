@@ -28,6 +28,8 @@ I haven't planned for VR support currently
 Depends on BepInEx's progress on it
 
 # Important TODOs
+- NativeMethodAttribute safety and check AsyncOperation for their use to check what needs to be patched
+- TODO halt operation of SceneManager.LoadSceneAsync, AssetBundle.LoadAssetAsync, Resources.LoadAsync, if anything is stalled
 - Support of new input system (UnityEngine.InputSystem)
 - Soft restart needs to reset game state
 - Savestates
@@ -85,19 +87,6 @@ class UnloadSceneAsync
 - How to know if the patch works? Check debug output of the plugin by enabling debug print through `GAME_DIR\BepInEx\config\BepInEx.cfg`, field `[Logging.Disk] LogLevel` or `[Logging.Console] Loglevel` and it will show all methods that failed to patch in the `GAME_DIR\BepInEx\LogOutput.log` or the console
 
 # Background tasks to be finished
-- what is this exception on ULTRAKILL's scene end?
-```
-[Error  : Unity Log] ArgumentNullException: Value cannot be null.
-Parameter name: _unity_self
-Stack trace:
-FinalRank+<LoadNextLevel>d__68.MoveNext () (at <ba0ba0851e804e1ab6533ea5a3d4d7bb>:0)
-UnityEngine.SetupCoroutine.InvokeMoveNext (System.Collections.IEnumerator enumerator, System.IntPtr returnValueAddress) (at <f15e66ec8bac455da00fc30eb5e18d09>:0)
-UnityEngine.MonoBehaviour:StartCoroutine(IEnumerator)
-FinalRank:SetTime(Single, String)
-StatsManager:SendInfo()
-FinalPit:SendInfo()
-FinalPit:OnTriggerStay(Collider)
-```
 - Separate tool to set up the TAS tool for a unity game
 - Integrate BepInEx to project
 - Build script or something to build everything properly
