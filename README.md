@@ -28,13 +28,12 @@ I haven't planned for VR support currently
 Depends on BepInEx's progress on it
 
 # Important TODOs
-- Use of Preloader patch to add a new "UID" field for tracking purposes
-- use of Finalizer to combine patches for clean up
 - Support of new input system (UnityEngine.InputSystem)
 - Soft restart needs to reset game state
 - Savestates
 
 # Working versions
+- 2019.4.16
 
 # Supported games
 - "It Steals"
@@ -102,7 +101,6 @@ FinalPit:OnTriggerStay(Collider)
 - Separate tool to set up the TAS tool for a unity game
 - Integrate BepInEx to project
 - Build script or something to build everything properly
-- TAS GUI
 - Movie sets screen res and force Screen.width height getters to return the patched value, but if game calls SetResolution then internal state sets to that
 - Check whats in SceneManagerAPI, do they need to be patched too
 - SystemInfo.supportsGyroscope needs to be patched, UnityEngine.SystemInfo needs to be checked for patches
@@ -171,23 +169,13 @@ FinalPit:OnTriggerStay(Collider)
 - Movie frame count on screen (also very important and funny)
 - New Framebulk instance not warning or throwing with FrameCount being 0 or too high than int max
 - Fix virtual cursor
-- Objects like Plugin and UnityASyncHandler needs to be made sure to not be destroyed or cloned (BepInEx.cfg can fix this problem most likely)
+- Plugin needs to be made sure to not be destroyed or cloned
 - Brute forcer
 - Lua and other scripting methods?
-- System.Random
-  - [ ] System.Random.GenerateSeed check if consistent generation
-  - [ ] System.Random.GenerateGlobalSeed check if consistent generation
 - Movie needs to store additional information of recorded pc such as whats in CultureInfo
 - Movie matching unity version and checks for that version such as keycode
 - Movie matching game name?
 - Movie store game version
-- Input legacy system KeyCode
-  - [ ] 3.5.1-3.5.5: has everything except below
-  - [ ] 4.0-4.6: adds LeftCommand, RightCommand
-  - [ ] 5.0-2018.2: adds Joystick5Button0 all the way to Joystick8Button19
-  - [ ] 2018.3-2021.1: adds Percent, LeftCurlyBracket, Pipe, RightCurlyBracket, Tilde
-  - [x] 2021.2-2022.2: adds LeftMeta, RightMeta
-  - [ ] 2023.1: adds WheelUp, WheelDown
 - Movie can set window focus
 
 # Notes for myself
