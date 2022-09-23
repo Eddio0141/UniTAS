@@ -32,7 +32,8 @@ namespace UniTASPatcher
             if (type == null)
                 return;
             // add long UID field
-            type.Fields.Add(new FieldDefinition("__UniTAS_UID", FieldAttributes.Private, assembly.MainModule.ImportReference(typeof(ulong))));
+            var field = new FieldDefinition("__UniTAS_UID", FieldAttributes.Private, assembly.MainModule.ImportReference(typeof(ulong)));
+            type.Fields.Add(field);
             patchedAsyncOperation = true;
         }
     }
