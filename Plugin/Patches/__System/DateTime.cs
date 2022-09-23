@@ -10,7 +10,7 @@ class DateTimePatch
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_NeedsToBePatched(original, ex);
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
     }
 
     [HarmonyPrefix]
