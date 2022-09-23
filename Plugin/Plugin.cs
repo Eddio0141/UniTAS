@@ -103,4 +103,9 @@ public class Plugin : BaseUnityPlugin
         TAS.Main.FixedUpdate();
         GameRestart.FixedUpdate();
     }
+
+    private void LateUpdate()
+    {
+        GameTracker.LateUpdate();
+    }
 }

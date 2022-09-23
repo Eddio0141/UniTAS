@@ -11,8 +11,6 @@ internal static class GameTracker
     internal static List<int> FirstObjIDs { get; } = new();
     internal static List<int> DontDestroyOnLoadIDs { get; private set; } = new();
     internal static Dictionary<System.Type, List<KeyValuePair<FieldInfo, object>>> InitialValues { get; private set; } = new();
-    internal static List<System.IntPtr> AsyncSceneLoadsNoActivation { get; private set; } = new();
-    internal static List<System.IntPtr> AsyncSceneUnloadsNoActivation { get; private set; } = new();
 
     public static void Init()
     {
@@ -270,57 +268,52 @@ internal static class GameTracker
         }
     }
 
-    public static void AsyncSceneLoad(AsyncOperation operation)
+    public static void LateUpdate()
     {
-        if (operation == null)
-            return;
-        // TODO diff unity version testing
-        var m_Ptr = Traverse.Create(operation).Field("m_Ptr").GetValue<System.IntPtr>();
-        AsyncSceneLoadsNoActivation.Add(m_Ptr);
+        asyncSceneLoads.Clear();
     }
 
-    public static void AsyncSceneUnload(AsyncOperation operation)
+    struct AsyncSceneLoadData
     {
-        if (operation == null)
+        public string sceneName;
+        public int sceneBuildIndex;
+        public object parameters;
+
+        public AsyncSceneLoadData(string sceneName, int sceneBuildIndex, object parameters)
         {
-            Plugin.Log.LogDebug("AsyncSceneUnload: operation is null");
-            return;
+            this.sceneName = sceneName;
+            this.sceneBuildIndex = sceneBuildIndex;
+            this.parameters = parameters;
         }
-        Plugin.Log.LogDebug("tracking async unload");
-        var m_Ptr = Traverse.Create(operation).Field("m_Ptr").GetValue<System.IntPtr>();
-        AsyncSceneUnloadsNoActivation.Add(m_Ptr);
     }
 
-    static KeyValuePair<AsyncOperation, System.Action<AsyncOperation>>? allowSceneActivationLock = null;
+    static Queue<AsyncSceneLoadData> asyncSceneLoads = new();
+    static Queue<AsyncSceneLoadData> asyncSceneLoadsStall = new();
 
-    public static void AllowSceneActivationSetFalse(AsyncOperation operation)
+    // TODO unload too?
+    public static void AsyncSceneLoad(string sceneName, int sceneBuildIndex, object parameters)
     {
-        // TODO unity version diff test
-        var m_completeCallback = Traverse.Create(operation).Field("m_completeCallback").GetValue<System.Action<AsyncOperation>>();
-        allowSceneActivationLock = new KeyValuePair<AsyncOperation, System.Action<AsyncOperation>>(operation, m_completeCallback);
+        asyncSceneLoads.Enqueue(new AsyncSceneLoadData(sceneName, sceneBuildIndex, parameters));
     }
 
-    public static void AllowSceneActivationSetTrue()
+    public static void AllowSceneActivation(bool allow)
     {
-        if (allowSceneActivationLock == null)
-            return;
-
-        var instance = allowSceneActivationLock.Value.Key;
-        var methods = allowSceneActivationLock.Value.Value;
-        //methods.Invoke(instance);
-
-        allowSceneActivationLock = null;
-    }
-
-    public static void AsyncOperationDestroy(AsyncOperation operation)
-    {
-        var m_Ptr = Traverse.Create(operation).Field("m_Ptr").GetValue<System.IntPtr>();
-        if (AsyncSceneLoadsNoActivation.Contains(m_Ptr))
-            Plugin.Log.LogDebug($"found AsyncSceneLoadsNoActivation for {m_Ptr}, deleting");
-        AsyncSceneLoadsNoActivation.Remove(m_Ptr);
-        if (AsyncSceneUnloadsNoActivation.Contains(m_Ptr))
-            Plugin.Log.LogDebug($"found AsyncSceneUnloadsNoActivation for {m_Ptr}, deleting");
-        AsyncSceneUnloadsNoActivation.Remove(m_Ptr);
+        if (allow)
+        {
+            if (asyncSceneLoadsStall.Count == 0)
+                return;
+            // TODO different unity versions
+            var sceneToLoad = asyncSceneLoadsStall.Dequeue();
+            var sceneManager = Traverse.CreateWithType("UnityEngine.SceneManagement.SceneManager");
+            var loadSceneParameters = AccessTools.TypeByName("UnityEngine.SceneManagement.LoadSceneParameters");
+            var loadInternal = sceneManager.Method("LoadSceneAsyncNameIndexInternal", new System.Type[] { typeof(string), typeof(int), loadSceneParameters, typeof(bool) });
+            loadInternal.GetValue(new object[] { sceneToLoad.sceneName, sceneToLoad.sceneBuildIndex, sceneToLoad.parameters, true });
+        }
+        else
+        {
+            if (asyncSceneLoads.Count > 0)
+                asyncSceneLoadsStall.Enqueue(asyncSceneLoads.Dequeue());
+        }
     }
 
     public static void DontDestroyOnLoadCall(Object @object)

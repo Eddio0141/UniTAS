@@ -30,6 +30,8 @@ class UnloadSceneNameIndexInternal
 
     static void Prefix(ref bool immediately, ref bool __state)
     {
+        var asyncOrNot = immediately ? "immediately" : "async";
+        Plugin.Log.LogDebug($"unload scene {asyncOrNot} at {FakeGameState.GameTime.FrameCount}");
         //__state = immediately;
         //immediately = true;
     }
@@ -57,24 +59,74 @@ class LoadSceneAsyncNameIndexInternal
         return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
     }
 
-    static void Prefix(ref bool mustCompleteNextFrame, ref bool __state, string sceneName, int sceneBuildIndex)
+    static bool Prefix(bool mustCompleteNextFrame, ref bool __state, string sceneName, int sceneBuildIndex, object parameters, ref AsyncOperation __result)
     {
-        //Plugin.Log.LogDebug($"load scene async \"{sceneName}\", {sceneBuildIndex}, {mustCompleteNextFrame}");
-        //__state = mustCompleteNextFrame;
-        //mustCompleteNextFrame = true;
+        var loadSceneMode = Traverse.Create(parameters).Property("loadSceneMode").GetValue();
+        var asyncOrNot = mustCompleteNextFrame ? "insta" : "async";
+        Plugin.Log.LogDebug($"load scene {asyncOrNot}, mode: {loadSceneMode} at {FakeGameState.GameTime.FrameCount}");
+        if (!mustCompleteNextFrame)
+        {
+            __result = new AsyncOperation();
+            GameTracker.AsyncSceneLoad(sceneName, sceneBuildIndex, parameters);
+            return false;
+        }
+        return true;
+    }
+}
+
+[HarmonyPatch]
+class Internal_SceneLoaded
+{
+    static MethodBase TargetMethod()
+    {
+        return AccessTools.Method(Helper.GetSceneManager(), "Internal_SceneLoaded");
     }
 
-    static void Postfix(ref AsyncOperation __result, ref bool __state)
+    static Exception Cleanup(MethodBase original, Exception ex)
     {
-        Plugin.Log.LogDebug("load scene async");
-        // no action if mustCompleteNextFrame is true
-        /*
-        if (__state)
-            return;
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
 
-        Plugin.Log.LogDebug($"tracking async load {Traverse.Create(__result).Field("m_Ptr").GetValue<IntPtr>()}");
-        GameTracker.AsyncSceneLoad(__result);
-        Plugin.Log.LogDebug($"load scene async post result, isDone: {__result.isDone}, priority: {__result.priority}, progress: {__result.progress}, {FakeGameState.GameTime.FrameCount}");
-        */
+    static void Prefix(object scene, object mode)
+    {
+        Plugin.Log.LogDebug($"sceneLoaded event call at {FakeGameState.GameTime.FrameCount}");
+    }
+}
+
+[HarmonyPatch]
+class Internal_SceneUnloaded
+{
+    static MethodBase TargetMethod()
+    {
+        return AccessTools.Method(Helper.GetSceneManager(), "Internal_SceneUnloaded");
+    }
+
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static void Prefix(object scene)
+    {
+        Plugin.Log.LogDebug($"sceneUnloaded event call at {FakeGameState.GameTime.FrameCount}");
+    }
+}
+
+[HarmonyPatch]
+class Internal_ActiveSceneChanged
+{
+    static MethodBase TargetMethod()
+    {
+        return AccessTools.Method(Helper.GetSceneManager(), "Internal_ActiveSceneChanged");
+    }
+
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static void Prefix(object previousActiveScene, object newActiveScene)
+    {
+        Plugin.Log.LogDebug($"scenechange event call at {FakeGameState.GameTime.FrameCount}");
     }
 }
