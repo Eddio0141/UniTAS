@@ -55,7 +55,7 @@ class LoadSceneAsyncNameIndexInternal
         if (!mustCompleteNextFrame)
         {
             __result = new AsyncOperation();
-            GameTracker.AsyncSceneLoad(sceneName, sceneBuildIndex, parameters);
+            GameTracker.AsyncSceneLoad(sceneName, sceneBuildIndex, parameters, __result);
             return false;
         }
         return true;

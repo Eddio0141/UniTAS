@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
 
 namespace UniTASPlugin;
@@ -278,32 +279,39 @@ internal static class GameTracker
         public string sceneName;
         public int sceneBuildIndex;
         public object parameters;
+        public ulong UID;
 
-        public AsyncSceneLoadData(string sceneName, int sceneBuildIndex, object parameters)
+        public AsyncSceneLoadData(string sceneName, int sceneBuildIndex, object parameters, AsyncOperation instance)
         {
             this.sceneName = sceneName;
             this.sceneBuildIndex = sceneBuildIndex;
             this.parameters = parameters;
+            UID = 0;
         }
     }
 
     static Queue<AsyncSceneLoadData> asyncSceneLoads = new();
     static Queue<AsyncSceneLoadData> asyncSceneLoadsStall = new();
 
-    // TODO unload too?
-    public static void AsyncSceneLoad(string sceneName, int sceneBuildIndex, object parameters)
+    public static void AsyncSceneLoad(string sceneName, int sceneBuildIndex, object parameters, AsyncOperation instance)
     {
-        asyncSceneLoads.Enqueue(new AsyncSceneLoadData(sceneName, sceneBuildIndex, parameters));
+        asyncSceneLoads.Enqueue(new AsyncSceneLoadData(sceneName, sceneBuildIndex, parameters, instance));
     }
 
-    public static void AllowSceneActivation(bool allow)
+    public static void AllowSceneActivation(bool allow, AsyncOperation instance)
     {
+        // TODO check UID instead
+        var m_Ptr = new AsyncOperationWrap(instance).m_Ptr;
+
+        if (m_Ptr != System.IntPtr.Zero)
+            return;
+
         if (allow)
         {
-            if (asyncSceneLoadsStall.Count == 0)
+            if (asyncSceneLoadsStall.Count < 1)
                 return;
-            // TODO different unity versions
             var sceneToLoad = asyncSceneLoadsStall.Dequeue();
+            // TODO different unity versions
             var sceneManager = Traverse.CreateWithType("UnityEngine.SceneManagement.SceneManager");
             var loadSceneParameters = AccessTools.TypeByName("UnityEngine.SceneManagement.LoadSceneParameters");
             var loadInternal = sceneManager.Method("LoadSceneAsyncNameIndexInternal", new System.Type[] { typeof(string), typeof(int), loadSceneParameters, typeof(bool) });
@@ -311,9 +319,18 @@ internal static class GameTracker
         }
         else
         {
-            if (asyncSceneLoads.Count > 0)
-                asyncSceneLoadsStall.Enqueue(asyncSceneLoads.Dequeue());
+            if (asyncSceneLoads.Count < 1)
+                return;
+            asyncSceneLoadsStall.Enqueue(asyncSceneLoads.Dequeue());
         }
+    }
+
+    public static bool DestroyAsyncOperation(AsyncOperation operation)
+    {
+        var wrap = new AsyncOperationWrap(operation);
+        if (wrap.m_Ptr != System.IntPtr.Zero)
+            return false;
+        return true;
     }
 
     public static void DontDestroyOnLoadCall(Object @object)
