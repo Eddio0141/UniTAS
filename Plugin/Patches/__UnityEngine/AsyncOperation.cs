@@ -15,7 +15,6 @@ class setAllowSceneActivation
 
     static void Prefix(bool value, AsyncOperation __instance)
     {
-        Plugin.Log.LogDebug($"allowSceneActivation set to {value} at {FakeGameState.GameTime.FrameCount}");
         GameTracker.AllowSceneActivation(value, __instance);
     }
 }
