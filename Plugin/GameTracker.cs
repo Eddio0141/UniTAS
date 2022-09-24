@@ -271,6 +271,12 @@ internal static class GameTracker
 
     public static void LateUpdate()
     {
+        foreach (var scene in asyncSceneLoads)
+        {
+            Plugin.Log.LogDebug($"force loading scene, name: {scene.sceneName} {scene.sceneBuildIndex}");
+            SceneHelper.LoadSceneAsyncNameIndexInternal(scene.sceneName, scene.sceneBuildIndex, scene.parameters, scene.isAdditive, true);
+            asyncSceneLoadUIDIndex--;
+        }
         asyncSceneLoads.Clear();
     }
 

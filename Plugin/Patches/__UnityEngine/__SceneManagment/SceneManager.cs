@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using System;
 using System.Reflection;
+using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
 
 namespace UniTASPlugin.Patches.__UnityEngine.__SceneManagment;
@@ -84,6 +85,7 @@ class LoadSceneAsyncNameIndexInternal__sceneName__sceneBuildIndex__isAdditive__m
     {
         if (!mustCompleteNextFrame)
         {
+            Plugin.Log.LogDebug($"async scene load");
             __result = new AsyncOperation();
             GameTracker.AsyncSceneLoad(sceneName, sceneBuildIndex, isAdditive, ref __result);
             Plugin.Log.LogDebug($"setting up async scene load, assigned UID {new VersionSafeWrapper.AsyncOperationWrap(__result).UID}");
@@ -112,6 +114,7 @@ class LoadSceneAsyncNameIndexInternal__sceneName__sceneBuildIndex__parameters__m
     {
         if (!mustCompleteNextFrame)
         {
+            Plugin.Log.LogDebug($"async scene load");
             __result = new AsyncOperation();
             GameTracker.AsyncSceneLoad(sceneName, sceneBuildIndex, parameters, ref __result);
             Plugin.Log.LogDebug($"setting up async scene load, assigned UID {new VersionSafeWrapper.AsyncOperationWrap(__result).UID}");
