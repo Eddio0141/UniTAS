@@ -14,6 +14,7 @@ internal class RandomWrap
             initState.GetValue(seed);
             return;
         }
-        throw new System.Exception("Random init state fallback not written TODO");
+        // TODO does this work?
+        Random.seed = seed;
     }
 }
