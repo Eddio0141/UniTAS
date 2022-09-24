@@ -33,6 +33,7 @@ Depends on BepInEx's progress on it
 - Savestates
 
 # Working versions
+- 2017.4.22
 - 2019.4.16
 
 # Supported games
