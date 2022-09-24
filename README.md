@@ -150,7 +150,6 @@ class UnloadSceneAsync
     - [x] Set system time
     - [ ] Load game files
 - Resolution needs to be defined in movie
-- DateTime customizability in movie and seed will use that type too
 - Movie file input macro functions
 - Movie file TAS helper function calls
 - Movie end notification on screen (very important)
