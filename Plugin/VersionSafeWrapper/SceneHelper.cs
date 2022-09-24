@@ -42,7 +42,7 @@ internal static class SceneHelper
                 return;
             }
         }
-        throw new Exception("Failed to load scene, TODO add fallback");
+        Plugin.Log.LogError("Failed to load scene by build index, missing method");
     }
 
     public static void LoadSceneAsyncNameIndexInternal(string sceneName, int sceneBuildIndex, object parameters, bool? isAdditive, bool mustCompleteNextFrame)
