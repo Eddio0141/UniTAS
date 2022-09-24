@@ -281,32 +281,29 @@ internal static class GameTracker
         public object parameters;
         public ulong UID;
 
-        public AsyncSceneLoadData(string sceneName, int sceneBuildIndex, object parameters, AsyncOperation instance)
+        public AsyncSceneLoadData(string sceneName, int sceneBuildIndex, object parameters, AsyncOperationWrap wrap)
         {
             this.sceneName = sceneName;
             this.sceneBuildIndex = sceneBuildIndex;
             this.parameters = parameters;
-            var instanceWrap = new AsyncOperationWrap(instance);
-            UID = instanceWrap.UID;
+            UID = wrap.UID;
         }
     }
 
     static List<AsyncSceneLoadData> asyncSceneLoads = new();
     static List<AsyncSceneLoadData> asyncSceneLoadsStall = new();
-    static ulong asyncSceneLoadUIDIndex = 1;
 
-    public static void AsyncSceneLoad(string sceneName, int sceneBuildIndex, object parameters, ref AsyncOperation instance)
+    public static void AsyncSceneLoad(string sceneName, int sceneBuildIndex, object parameters, AsyncOperationWrap wrap)
     {
-        new AsyncOperationWrap(instance).UID = asyncSceneLoadUIDIndex;
-        asyncSceneLoads.Add(new AsyncSceneLoadData(sceneName, sceneBuildIndex, parameters, instance));
-        asyncSceneLoadUIDIndex++;
+        asyncSceneLoads.Add(new AsyncSceneLoadData(sceneName, sceneBuildIndex, parameters, wrap));
     }
 
     public static void AllowSceneActivation(bool allow, AsyncOperation instance)
     {
-        var uid = new AsyncOperationWrap(instance).UID;
+        var wrap = new AsyncOperationWrap(instance);
+        var uid = wrap.UID;
         Plugin.Log.LogDebug($"allow scene activation {allow} for UID {uid}");
-        if (uid == 0)
+        if (wrap.InstantiatedByUnity)
         {
             Plugin.Log.LogError("AsyncOperation UID is 0, this should not happen");
             return;
@@ -334,7 +331,6 @@ internal static class GameTracker
             loadInternal.GetValue(new object[] { sceneToLoad.sceneName, sceneToLoad.sceneBuildIndex, sceneToLoad.parameters, true });
             Plugin.Log.LogDebug($"force loading scene, name: {sceneToLoad.sceneName} build index: {sceneToLoad.sceneBuildIndex}");
             asyncSceneLoadsStall.RemoveAt(sceneToLoadIndex);
-            asyncSceneLoadUIDIndex--;
         }
         else
         {

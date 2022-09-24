@@ -7,7 +7,7 @@ namespace UniTASPlugin.VersionSafeWrapper;
 internal class AsyncOperationWrap
 {
     public AsyncOperation instance { get; private set; }
-    
+
     const string UID_FIELD_NAME = "__UniTAS_UID";
 
     public AsyncOperationWrap(AsyncOperation asyncOperation)
@@ -15,6 +15,22 @@ internal class AsyncOperationWrap
         // TODO earlier assertion
         WrapperAssertions.AssertInstanceField(typeof(AsyncOperation), UID_FIELD_NAME);
         instance = asyncOperation ?? throw new ArgumentNullException(nameof(asyncOperation));
+    }
+
+    static ulong UIDIndex = 1;
+
+    public void AssignUID()
+    {
+        UID = UIDIndex;
+        UIDIndex++;
+    }
+
+    public void FinalizeCall()
+    {
+        // TODO should i manually call or let deconstructor do it?
+        if (InstantiatedByUnity)
+            return;
+        UIDIndex--;
     }
 
     public ulong UID
@@ -29,5 +45,10 @@ internal class AsyncOperationWrap
             var uidField = Traverse.Create(instance).Field(UID_FIELD_NAME);
             uidField.SetValue(value);
         }
+    }
+
+    public bool InstantiatedByUnity
+    {
+        get => UID == 0;
     }
 }

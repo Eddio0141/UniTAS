@@ -80,7 +80,8 @@ class Finialize
     static bool Prefix(AsyncOperation __instance)
     {
         // unless UID is 0, we shouldn't let it proceed
-        var uid = new AsyncOperationWrap(__instance).UID;
-        return uid == 0;
+        var wrap = new AsyncOperationWrap(__instance);
+        wrap.FinalizeCall();
+        return wrap.InstantiatedByUnity;
     }
 }
