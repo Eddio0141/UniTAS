@@ -27,7 +27,6 @@ I haven't planned for VR support currently
 Depends on BepInEx's progress on it
 
 # Important TODOs
-- TODO halt operation of SceneManager.LoadSceneAsync, AssetBundle.LoadAssetAsync, Resources.LoadAsync, if anything is stalled
 - Support of new input system (UnityEngine.InputSystem)
 - Soft restart needs to reset game state
 - Savestates
