@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using UniTASPlugin.VersionSafeWrapper;
+using UnityEngine;
 
 namespace UniTASPlugin;
 
@@ -13,8 +14,18 @@ internal static partial class Helper
 {
     public static SemanticVersion GetUnityVersion()
     {
-        System.Diagnostics.FileVersionInfo fileVersion = System.Diagnostics.FileVersionInfo.GetVersionInfo(@".\UnityPlayer.dll");
-        string versionRaw = fileVersion.FileVersion;
+        var unityPlayerPath = @".\UnityPlayer.dll";
+        string versionRaw;
+        if (System.IO.File.Exists(unityPlayerPath))
+        {
+            var fullPath = System.IO.Path.GetFullPath(unityPlayerPath);
+            System.Diagnostics.FileVersionInfo fileVersion = System.Diagnostics.FileVersionInfo.GetVersionInfo(fullPath);
+            versionRaw = fileVersion.FileVersion;
+        }
+        else
+        {
+            versionRaw = Application.unityVersion;
+        }
         return new SemanticVersion(versionRaw);
     }
 
@@ -65,7 +76,10 @@ internal static partial class Helper
 
     public static string GameRootDir()
     {
-        return AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
+        var appBase = AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
+        if (appBase != null)
+            return appBase;
+        return System.IO.Path.GetFullPath(".");
     }
 
     public static string GameName()

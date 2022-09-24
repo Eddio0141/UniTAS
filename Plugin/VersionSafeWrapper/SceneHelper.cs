@@ -42,7 +42,7 @@ internal static class SceneHelper
                 return;
             }
         }
-        Plugin.Log.LogError("Failed to load scene by build index, missing method");
+        UnityEngine.Application.LoadLevel(0);
     }
 
     public static void LoadSceneAsyncNameIndexInternal(string sceneName, int sceneBuildIndex, object parameters, bool? isAdditive, bool mustCompleteNextFrame)

@@ -1,7 +1,6 @@
 ﻿using HarmonyLib;
 using System;
 using System.Reflection;
-using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
 
 namespace UniTASPlugin.Patches.__UnityEngine.__SceneManagment;
