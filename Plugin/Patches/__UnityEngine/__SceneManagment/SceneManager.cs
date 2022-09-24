@@ -13,9 +13,18 @@ static class Helper
     {
         return AccessTools.TypeByName($"{NAMESPACE}.SceneManager");
     }
+
+    public static Type GetUnloadSceneOptions()
+    {
+        return AccessTools.TypeByName($"{NAMESPACE}.UnloadSceneOptions");
+    }
+
+    public static MethodInfo GetUnloadSceneNameIndexInternal()
+    {
+        return AccessTools.Method(GetSceneManager(), "UnloadSceneNameIndexInternal", new Type[] { typeof(string), typeof(int), typeof(bool), GetUnloadSceneOptions(), typeof(bool) });
+    }
 }
 
-// TODO also do UnloadSceneAsyncInternal
 [HarmonyPatch]
 class UnloadSceneNameIndexInternal
 {
@@ -32,6 +41,28 @@ class UnloadSceneNameIndexInternal
     static void Prefix(ref bool immediately)
     {
         immediately = true;
+    }
+}
+
+[HarmonyPatch]
+class UnloadSceneAsyncInternal_Injected
+{
+    static MethodBase TargetMethod()
+    {
+        return AccessTools.Method(Helper.GetSceneManager(), "UnloadSceneAsyncInternal_Injected");
+    }
+
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static bool Prefix(object scene, object options)
+    {
+        var sceneTraverse = Traverse.Create(scene);
+        var sceneBuildIndex = sceneTraverse.Property("buildIndex").GetValue<int>();
+        Helper.GetUnloadSceneNameIndexInternal().Invoke(null, new object[] { "", sceneBuildIndex, true, options, null });
+        return false;
     }
 }
 
