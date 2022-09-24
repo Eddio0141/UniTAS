@@ -15,30 +15,14 @@ A tool that lets you TAS unity games hopefully
 # TAS tool features
 - TAS play back
 
-# Known bugs
-- Different scene possibly desyncing while heavy load on Plugin.Update / Plugin.FixedUpdate (maybe use a coroutine)
-### Cat Quest
-- Soft restart causes an exception
-
 # VR Support
 I haven't planned for VR support currently
 
-# L2CPP Support
-Depends on BepInEx's progress on it
-
-# Important TODOs
-- TODO halt operation of SceneManager.LoadSceneAsync, AssetBundle.LoadAssetAsync, Resources.LoadAsync, if anything is stalled
-- Support of new input system (UnityEngine.InputSystem)
-- Soft restart needs to reset game state
-- Savestates
-
-# Working versions
-- 2017.4.22
-- 2019.4.16
+# Supporting unity versions
+For now, anything that BepInEx 5.4.21 can support, ranging from unity 3 to latest, and games that don't use Il2cpp
 
 # Supported games
-- "It Steals"
-  - 12.4
+- tool is in huge WIP
 
 # Adding patches for some unity version
 - All patches goes in plugin's Patches folder
@@ -86,9 +70,6 @@ class UnloadSceneAsync
 - How to know if the patch works? Check debug output of the plugin by enabling debug print through `GAME_DIR\BepInEx\config\BepInEx.cfg`, field `[Logging.Disk] LogLevel` or `[Logging.Console] Loglevel` and it will show all methods that failed to patch in the `GAME_DIR\BepInEx\LogOutput.log` or the console
 
 # Background tasks to be finished
-- Separate tool to set up the TAS tool for a unity game
-- Integrate BepInEx to project
-- Build script or something to build everything properly
 - Movie sets screen res and force Screen.width height getters to return the patched value, but if game calls SetResolution then internal state sets to that
 - Check whats in SceneManagerAPI, do they need to be patched too
 - SystemInfo.supportsGyroscope needs to be patched, UnityEngine.SystemInfo needs to be checked for patches
@@ -126,12 +107,10 @@ class UnloadSceneAsync
   - [ ] CheckDisabled purpose
   - [ ] What to do with setters in module
   - [ ] Other devices
-- Full new input system override
 - Game capture
   - [ ] Audio recording
   - [ ] Faster video recording
 - Disable network
-- Soft restart needs to reset save files
 - Savestates
   - [ ] Save
     - [x] Save current scene info
@@ -155,7 +134,6 @@ class UnloadSceneAsync
 - Movie end notification on screen (very important)
 - Movie frame count on screen (also very important and funny)
 - New Framebulk instance not warning or throwing with FrameCount being 0 or too high than int max
-- Fix virtual cursor
 - Plugin needs to be made sure to not be destroyed or cloned
 - Brute forcer
 - Lua and other scripting methods?
