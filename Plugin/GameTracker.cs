@@ -275,7 +275,6 @@ internal static class GameTracker
         {
             Plugin.Log.LogDebug($"force loading scene, name: {scene.sceneName} {scene.sceneBuildIndex}");
             SceneHelper.LoadSceneAsyncNameIndexInternal(scene.sceneName, scene.sceneBuildIndex, scene.parameters, scene.isAdditive, true);
-            asyncSceneLoadUIDIndex--;
         }
         asyncSceneLoads.Clear();
     }
@@ -324,58 +323,35 @@ internal static class GameTracker
 
         if (allow)
         {
-            var sceneToLoadIndex = -1;
-            for (int i = 0; i < asyncSceneLoadsStall.Count; i++)
-            {
-                var scene = asyncSceneLoadsStall[i];
-                if (scene.UID == uid)
-                {
-                    sceneToLoadIndex = i;
-                    break;
-                }
-            }
+            var sceneToLoadIndex = asyncSceneLoadsStall.FindIndex(s => s.UID == uid);
             if (sceneToLoadIndex < 0)
+            {
+                Plugin.Log.LogError("no scenes to load when the UID isn't 0, theres something wrong");
                 return;
+            }
             var sceneToLoad = asyncSceneLoadsStall[sceneToLoadIndex];
+            asyncSceneLoadsStall.RemoveAt(sceneToLoadIndex);
             SceneHelper.LoadSceneAsyncNameIndexInternal(sceneToLoad.sceneName, sceneToLoad.sceneBuildIndex, sceneToLoad.parameters, sceneToLoad.isAdditive, true);
             Plugin.Log.LogDebug($"force loading scene, name: {sceneToLoad.sceneName} build index: {sceneToLoad.sceneBuildIndex}");
         }
         else
         {
-            var stallSceneIndex = -1;
-            for (int i = 0; i < asyncSceneLoads.Count; i++)
-            {
-                var scene = asyncSceneLoads[i];
-                if (scene.UID == uid)
-                {
-                    stallSceneIndex = i;
-                    break;
-                }
-            }
-            if (stallSceneIndex < 0)
+            var asyncSceneLoadsIndex = asyncSceneLoads.FindIndex(s => s.UID == uid);
+            if (asyncSceneLoadsIndex < 0)
                 return;
-            var stallScene = asyncSceneLoads[stallSceneIndex];
-            asyncSceneLoadsStall.Add(stallScene);
-            asyncSceneLoads.RemoveAt(stallSceneIndex);
-            Plugin.Log.LogDebug($"Added scene to stall list, name: {stallScene.sceneName} build index: {stallScene.sceneBuildIndex}");
+            var scene = asyncSceneLoads[asyncSceneLoadsIndex];
+            asyncSceneLoads.RemoveAt(asyncSceneLoadsIndex);
+            asyncSceneLoadsStall.Add(scene);
+            Plugin.Log.LogDebug($"Added scene to stall list");
         }
     }
 
     public static void AsyncOperationFinalize(ulong uid)
     {
-        var sceneToLoadIndex = -1;
-        for (int i = 0; i < asyncSceneLoadsStall.Count; i++)
-        {
-            var scene = asyncSceneLoadsStall[i];
-            if (scene.UID == uid)
-            {
-                sceneToLoadIndex = i;
-                break;
-            }
-        }
-        if (sceneToLoadIndex < 0)
+        var removeIndex = asyncSceneLoadsStall.FindIndex(a => a.UID == uid);
+        if (removeIndex < 0)
             return;
-        asyncSceneLoadsStall.RemoveAt(sceneToLoadIndex);
+        asyncSceneLoadsStall.RemoveAt(removeIndex);
     }
 
     public static bool GetSceneActivation(AsyncOperation instance)
@@ -383,15 +359,7 @@ internal static class GameTracker
         var uid = new AsyncOperationWrap(instance).UID;
         if (uid == 0)
             return false;
-
-        for (int i = 0; i < asyncSceneLoadsStall.Count; i++)
-        {
-            var scene = asyncSceneLoadsStall[i];
-            if (scene.UID == uid)
-                return true;
-        }
-
-        return false;
+        return asyncSceneLoadsStall.Any(a => a.UID == uid);
     }
 
     public static bool IsStallingInstance(AsyncOperation instance)

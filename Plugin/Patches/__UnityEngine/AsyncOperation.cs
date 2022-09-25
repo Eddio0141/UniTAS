@@ -68,7 +68,6 @@ class isDone
     }
 }
 
-
 [HarmonyPatch(typeof(AsyncOperation), "Finalize")]
 class Finialize
 {

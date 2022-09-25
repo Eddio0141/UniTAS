@@ -87,8 +87,10 @@ class LoadSceneAsyncNameIndexInternal__sceneName__sceneBuildIndex__isAdditive__m
         {
             Plugin.Log.LogDebug($"async scene load");
             __result = new AsyncOperation();
-            GameTracker.AsyncSceneLoad(sceneName, sceneBuildIndex, isAdditive, ref __result);
-            Plugin.Log.LogDebug($"setting up async scene load, assigned UID {new VersionSafeWrapper.AsyncOperationWrap(__result).UID}");
+            var wrap = new AsyncOperationWrap(__result);
+            wrap.AssignUID();
+            GameTracker.AsyncSceneLoad(sceneName, sceneBuildIndex, isAdditive, wrap);
+            Plugin.Log.LogDebug($"setting up async scene load, assigned UID {wrap.UID}");
             return false;
         }
         return true;
