@@ -330,7 +330,6 @@ internal static class GameTracker
             var loadInternal = sceneManager.Method("LoadSceneAsyncNameIndexInternal", new System.Type[] { typeof(string), typeof(int), loadSceneParameters, typeof(bool) });
             loadInternal.GetValue(new object[] { sceneToLoad.sceneName, sceneToLoad.sceneBuildIndex, sceneToLoad.parameters, true });
             Plugin.Log.LogDebug($"force loading scene, name: {sceneToLoad.sceneName} build index: {sceneToLoad.sceneBuildIndex}");
-            asyncSceneLoadsStall.RemoveAt(sceneToLoadIndex);
         }
         else
         {
@@ -351,6 +350,23 @@ internal static class GameTracker
             asyncSceneLoads.RemoveAt(stallSceneIndex);
             Plugin.Log.LogDebug($"Added scene to stall list, name: {stallScene.sceneName} build index: {stallScene.sceneBuildIndex}");
         }
+    }
+
+    public static void AsyncOperationFinalize(ulong uid)
+    {
+        var sceneToLoadIndex = -1;
+        for (int i = 0; i < asyncSceneLoadsStall.Count; i++)
+        {
+            var scene = asyncSceneLoadsStall[i];
+            if (scene.UID == uid)
+            {
+                sceneToLoadIndex = i;
+                break;
+            }
+        }
+        if (sceneToLoadIndex < 0)
+            return;
+        asyncSceneLoadsStall.RemoveAt(sceneToLoadIndex);
     }
 
     public static bool GetSceneActivation(AsyncOperation instance)

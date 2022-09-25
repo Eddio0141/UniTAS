@@ -28,8 +28,10 @@ internal class AsyncOperationWrap
     public void FinalizeCall()
     {
         // TODO should i manually call or let deconstructor do it?
+        Plugin.Log.LogDebug($"FinalizeCall, UID: {UID}");
         if (InstantiatedByUnity)
             return;
+        GameTracker.AsyncOperationFinalize(UID);
         UIDIndex--;
     }
 
