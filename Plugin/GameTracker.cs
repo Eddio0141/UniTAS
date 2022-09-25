@@ -300,14 +300,9 @@ internal static class GameTracker
     static List<AsyncSceneLoadData> asyncSceneLoads = new();
     static List<AsyncSceneLoadData> asyncSceneLoadsStall = new();
 
-    public static void AsyncSceneLoad(string sceneName, int sceneBuildIndex, object parameters, AsyncOperationWrap wrap)
+    public static void AsyncSceneLoad(string sceneName, int sceneBuildIndex, object parameters, bool? isAdditive, AsyncOperationWrap wrap)
     {
-        asyncSceneLoads.Add(new AsyncSceneLoadData(sceneName, sceneBuildIndex, parameters, null, wrap));
-    }
-
-    public static void AsyncSceneLoad(string sceneName, int sceneBuildIndex, bool isAdditive, AsyncOperationWrap wrap)
-    {
-        asyncSceneLoads.Add(new AsyncSceneLoadData(sceneName, sceneBuildIndex, null, isAdditive, wrap));
+        asyncSceneLoads.Add(new AsyncSceneLoadData(sceneName, sceneBuildIndex, parameters, isAdditive, wrap));
     }
 
     public static void AllowSceneActivation(bool allow, AsyncOperation instance)
