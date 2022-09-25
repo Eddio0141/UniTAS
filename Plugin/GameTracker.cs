@@ -325,10 +325,7 @@ internal static class GameTracker
         {
             var sceneToLoadIndex = asyncSceneLoadsStall.FindIndex(s => s.UID == uid);
             if (sceneToLoadIndex < 0)
-            {
-                Plugin.Log.LogError("no scenes to load when the UID isn't 0, theres something wrong");
                 return;
-            }
             var sceneToLoad = asyncSceneLoadsStall[sceneToLoadIndex];
             asyncSceneLoadsStall.RemoveAt(sceneToLoadIndex);
             SceneHelper.LoadSceneAsyncNameIndexInternal(sceneToLoad.sceneName, sceneToLoad.sceneBuildIndex, sceneToLoad.parameters, sceneToLoad.isAdditive, true);
