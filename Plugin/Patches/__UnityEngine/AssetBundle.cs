@@ -84,9 +84,12 @@ class LoadAssetAsync_Internal
 
     static bool Prefix(string name, Type type, ref AssetBundleRequest __result)
     {
-        // TODO handle return, this returns AssetBundleRequest, sort it out with AsyncOperation in mind
         var loadAsset_Internal = Traverse.Create(typeof(AssetBundle)).Method("LoadAsset_Internal", new Type[] { typeof(string), typeof(Type) });
-        var _ = loadAsset_Internal.GetValue(new object[] { name, type });
+        var loadResult = loadAsset_Internal.GetValue(new object[] { name, type });
+        __result = new AssetBundleRequest();
+        var wrap = new AsyncOperationWrap(__result);
+        wrap.AssignUID();
+        AssetBundleRequestWrap.NewFakeInstance(wrap, (UnityEngine.Object)loadResult);
         return false;
     }
 }
@@ -102,9 +105,12 @@ class LoadAssetWithSubAssetsAsync_Internal
 
     static bool Prefix(string name, Type type, ref AssetBundleRequest __result)
     {
-        // TODO handle return, this returns AssetBundleRequest, sort it out with AsyncOperation in mind
         var loadAssetWithSubAssets_Internal = Traverse.Create(typeof(AssetBundle)).Method("LoadAssetWithSubAssets_Internal", new Type[] { typeof(string), typeof(Type) });
-        var _ = loadAssetWithSubAssets_Internal.GetValue(new object[] { name, type });
+        var loadResult = loadAssetWithSubAssets_Internal.GetValue(new object[] { name, type });
+        __result = new AssetBundleRequest();
+        var wrap = new AsyncOperationWrap(__result);
+        wrap.AssignUID();
+        AssetBundleRequestWrap.NewFakeInstance(wrap, (UnityEngine.Object[])loadResult);
         return false;
     }
 }

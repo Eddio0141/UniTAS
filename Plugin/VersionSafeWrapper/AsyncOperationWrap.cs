@@ -32,6 +32,7 @@ internal class AsyncOperationWrap
             return;
         GameTracker.AsyncOperationFinalize(UID);
         AssetBundleCreateRequestWrap.FinalizeCall(UID);
+        AssetBundleRequestWrap.FinalizeCall(UID);
         UIDIndex--;
     }
 
