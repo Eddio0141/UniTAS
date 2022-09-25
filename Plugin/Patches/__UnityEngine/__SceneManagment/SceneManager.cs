@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using System;
 using System.Reflection;
+using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
 
 namespace UniTASPlugin.Patches.__UnityEngine.__SceneManagment;
@@ -22,6 +23,21 @@ static class Helper
     public static MethodInfo GetUnloadSceneNameIndexInternal()
     {
         return AccessTools.Method(GetSceneManager(), "UnloadSceneNameIndexInternal", new Type[] { typeof(string), typeof(int), typeof(bool), GetUnloadSceneOptions(), typeof(bool) });
+    }
+
+    public static bool AsyncSceneLoad(bool mustCompleteNextFrame, string sceneName, int sceneBuildIndex, object parameters, bool? isAdditive, ref AsyncOperation __result)
+    {
+        if (!mustCompleteNextFrame)
+        {
+            Plugin.Log.LogDebug($"async scene load");
+            __result = new AsyncOperation();
+            var wrap = new AsyncOperationWrap(__result);
+            wrap.AssignUID();
+            GameTracker.AsyncSceneLoad(sceneName, sceneBuildIndex, parameters, isAdditive, wrap);
+            Plugin.Log.LogDebug($"setting up async scene load, assigned UID {wrap.UID}");
+            return false;
+        }
+        return true;
     }
 }
 
@@ -82,15 +98,7 @@ class LoadSceneAsyncNameIndexInternal__sceneName__sceneBuildIndex__isAdditive__m
 
     static bool Prefix(string sceneName, int sceneBuildIndex, bool isAdditive, bool mustCompleteNextFrame, ref AsyncOperation __result)
     {
-        if (!mustCompleteNextFrame)
-        {
-            Plugin.Log.LogDebug($"async scene load");
-            __result = new AsyncOperation();
-            GameTracker.AsyncSceneLoad(sceneName, sceneBuildIndex, isAdditive, ref __result);
-            Plugin.Log.LogDebug($"setting up async scene load, assigned UID {new VersionSafeWrapper.AsyncOperationWrap(__result).UID}");
-            return false;
-        }
-        return true;
+        return Helper.AsyncSceneLoad(mustCompleteNextFrame, sceneName, sceneBuildIndex, null, isAdditive, ref __result);
     }
 }
 
@@ -111,14 +119,6 @@ class LoadSceneAsyncNameIndexInternal__sceneName__sceneBuildIndex__parameters__m
 
     static bool Prefix(bool mustCompleteNextFrame, string sceneName, int sceneBuildIndex, object parameters, ref AsyncOperation __result)
     {
-        if (!mustCompleteNextFrame)
-        {
-            Plugin.Log.LogDebug($"async scene load");
-            __result = new AsyncOperation();
-            GameTracker.AsyncSceneLoad(sceneName, sceneBuildIndex, parameters, ref __result);
-            Plugin.Log.LogDebug($"setting up async scene load, assigned UID {new VersionSafeWrapper.AsyncOperationWrap(__result).UID}");
-            return false;
-        }
-        return true;
+        return Helper.AsyncSceneLoad(mustCompleteNextFrame, sceneName, sceneBuildIndex, parameters, null, ref __result);
     }
 }
