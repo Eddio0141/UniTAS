@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using System;
+using System.Reflection;
 
 namespace UniTASPlugin.VersionSafeWrapper;
 
@@ -8,6 +9,25 @@ internal static class SceneHelper
     static Type SceneManager()
     {
         return AccessTools.TypeByName("UnityEngine.SceneManagement.SceneManager");
+    }
+
+    static Type loadSceneParametersType()
+    {
+        return AccessTools.TypeByName("UnityEngine.SceneManagement.LoadSceneParameters");
+    }
+
+    static MethodInfo LoadSceneAsyncNameIndexInternal()
+    {
+        var sceneManagerType = SceneManager();
+        var methodName = "LoadSceneAsyncNameIndexInternal";
+        var method = sceneManagerType.GetMethod(methodName, AccessTools.all, null, new Type[] { typeof(string), typeof(int), typeof(bool), typeof(bool) }, null);
+        if (method != null)
+            return method;
+        var loadSceneParameters = loadSceneParametersType();
+        if (loadSceneParameters != null)
+            return sceneManagerType.GetMethod(methodName, AccessTools.all, null, new Type[] { typeof(string), typeof(int), loadSceneParameters, typeof(bool) }, null);
+        else
+            return null;
     }
 
     public static void LoadScene(int buildIndex)
@@ -22,6 +42,20 @@ internal static class SceneHelper
                 return;
             }
         }
-        throw new Exception("Failed to load scene, TODO add fallback");
+        UnityEngine.Application.LoadLevel(0);
+    }
+
+    public static void LoadSceneAsyncNameIndexInternal(string sceneName, int sceneBuildIndex, object parameters, bool? isAdditive, bool mustCompleteNextFrame)
+    {
+        var loader = LoadSceneAsyncNameIndexInternal();
+        if (loader == null)
+        {
+            Plugin.Log.LogError("Load scene async doesn't exist in this version of unity");
+            return;
+        }
+        if (isAdditive.HasValue)
+            loader.Invoke(null, new object[] { sceneName, sceneBuildIndex, (bool)isAdditive, mustCompleteNextFrame });
+        else
+            loader.Invoke(null, new object[] { sceneName, sceneBuildIndex, parameters, mustCompleteNextFrame });
     }
 }

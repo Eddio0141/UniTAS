@@ -21,6 +21,7 @@ public class Movie
 
     version 1
     seed seedvalue
+    time year month day hour minute second millisecond
     device DeviceType
     frames
     mouse x|mouse y|left right middle|UpArrow W A S D|"axis X" 1 "sprint" -0.1|frametime|framecount
@@ -43,7 +44,7 @@ public class Movie
 
         bool inVersion = true;
         bool inProperties = true;
-        bool foundSeed = false;
+        bool foundSeedOrTime = false;
         bool foundDevice = false;
         bool foundResolution = false;
 
@@ -51,6 +52,7 @@ public class Movie
         string versionText = "version 1";
         string framesSection = "frames";
         string seedText = "seed ";
+        string timeText = "time ";
         string deviceText = "device ";
         string resolutionText = "resolution ";
         char fieldSeparator = '|';
@@ -85,19 +87,56 @@ public class Movie
             {
                 if (lineTrim.StartsWith(seedText))
                 {
-                    if (foundSeed)
+                    if (foundSeedOrTime)
                     {
-                        error = "Seed property defined twice";
+                        error = "Seed property defined twice, or seed and time defined";
                         break;
                     }
-                    // TODO way to parse DateTime
                     if (!long.TryParse(lineTrim.Substring(seedText.Length), out long seed))
                     {
                         error = "Seed value not a value";
                         break;
                     }
                     Time = new DateTime(seed);
-                    foundSeed = true;
+                    foundSeedOrTime = true;
+                    continue;
+                }
+                if (lineTrim.StartsWith(timeText))
+                {
+                    if (foundSeedOrTime)
+                    {
+                        error = "Time property defined twice, or seed and time defined";
+                        break;
+                    }
+                    // year month day hour minute second millisecond
+                    var processing = lineTrim.Substring(seedText.Length).Split(listSeparator);
+                    var values = new int[] { 1, 1, 1, 0, 0, 0, 0 };
+                    var valueNames = new string[] { "year", "month", "day", "hour", "minute", "second", "millisecond" };
+                    if (processing.Length > values.Length || processing.Length < 1)
+                    {
+                        error = "Time property not in format of: year, month, day, hour, minute, second, millisecond";
+                        break;
+                    }
+                    for (int i = 0; i < processing.Length; i++)
+                    {
+                        var value = processing[i];
+                        var name = valueNames[i];
+                        if (!int.TryParse(value, out var valueParsed))
+                        {
+                            error = $"Time property {name} is not a value";
+                            break;
+                        }
+                        if (valueParsed < values[i])
+                        {
+                            error = $"Time property {name} is less than {values[i]}";
+                            break;
+                        }
+                        values[i] = valueParsed;
+                    }
+                    if (error != string.Empty)
+                        break;
+                    Time = new DateTime(values[0], values[1], values[2], values[3], values[4], values[5], values[6], DateTimeKind.Utc);
+                    foundSeedOrTime = true;
                     continue;
                 }
                 if (lineTrim.StartsWith(deviceText))

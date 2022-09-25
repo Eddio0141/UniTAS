@@ -68,11 +68,41 @@ class UnloadSceneAsyncInternal_Injected
 }
 
 [HarmonyPatch]
-class LoadSceneAsyncNameIndexInternal
+class LoadSceneAsyncNameIndexInternal__sceneName__sceneBuildIndex__isAdditive__mustCompleteNextFrame
 {
     static MethodBase TargetMethod()
     {
-        return AccessTools.Method(Helper.GetSceneManager(), "LoadSceneAsyncNameIndexInternal");
+        // string sceneName, int sceneBuildIndex, bool isAdditive, bool mustCompleteNextFrame
+        return AccessTools.Method(Helper.GetSceneManager(), "LoadSceneAsyncNameIndexInternal", new Type[] { typeof(string), typeof(int), typeof(bool), typeof(bool) });
+    }
+
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static bool Prefix(string sceneName, int sceneBuildIndex, bool isAdditive, bool mustCompleteNextFrame, ref AsyncOperation __result)
+    {
+        if (!mustCompleteNextFrame)
+        {
+            Plugin.Log.LogDebug($"async scene load");
+            __result = new AsyncOperation();
+            GameTracker.AsyncSceneLoad(sceneName, sceneBuildIndex, isAdditive, ref __result);
+            Plugin.Log.LogDebug($"setting up async scene load, assigned UID {new VersionSafeWrapper.AsyncOperationWrap(__result).UID}");
+            return false;
+        }
+        return true;
+    }
+}
+
+[HarmonyPatch]
+class LoadSceneAsyncNameIndexInternal__sceneName__sceneBuildIndex__parameters__mustCompleteNextFrame
+{
+    static MethodBase TargetMethod()
+    {
+        // string sceneName, int sceneBuildIndex, LoadSceneParameters parameters, bool mustCompleteNextFrame
+        var loadSceneParametersType = AccessTools.TypeByName("UnityEngine.SceneManagement.LoadSceneParameters");
+        return AccessTools.Method(Helper.GetSceneManager(), "LoadSceneAsyncNameIndexInternal", new Type[] { typeof(string), typeof(int), loadSceneParametersType, typeof(bool) });
     }
 
     static Exception Cleanup(MethodBase original, Exception ex)
@@ -84,6 +114,7 @@ class LoadSceneAsyncNameIndexInternal
     {
         if (!mustCompleteNextFrame)
         {
+            Plugin.Log.LogDebug($"async scene load");
             __result = new AsyncOperation();
             var wrap = new AsyncOperationWrap(__result);
             wrap.AssignUID();

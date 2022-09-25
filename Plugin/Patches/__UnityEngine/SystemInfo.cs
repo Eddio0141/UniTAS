@@ -1,7 +1,7 @@
 ﻿using HarmonyLib;
 using System;
 
-namespace UniTASPlugin.Patches;
+namespace UniTASPlugin.Patches.__UnityEngine;
 
 [HarmonyPatch(typeof(UnityEngine.SystemInfo), "deviceType", MethodType.Getter)]
 class SystemInfo

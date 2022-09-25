@@ -271,6 +271,12 @@ internal static class GameTracker
 
     public static void LateUpdate()
     {
+        foreach (var scene in asyncSceneLoads)
+        {
+            Plugin.Log.LogDebug($"force loading scene, name: {scene.sceneName} {scene.sceneBuildIndex}");
+            SceneHelper.LoadSceneAsyncNameIndexInternal(scene.sceneName, scene.sceneBuildIndex, scene.parameters, scene.isAdditive, true);
+            asyncSceneLoadUIDIndex--;
+        }
         asyncSceneLoads.Clear();
     }
 
@@ -279,13 +285,15 @@ internal static class GameTracker
         public string sceneName;
         public int sceneBuildIndex;
         public object parameters;
+        public bool? isAdditive;
         public ulong UID;
 
-        public AsyncSceneLoadData(string sceneName, int sceneBuildIndex, object parameters, AsyncOperationWrap wrap)
+        public AsyncSceneLoadData(string sceneName, int sceneBuildIndex, object parameters, bool? isAdditive, AsyncOperationWrap wrap)
         {
             this.sceneName = sceneName;
             this.sceneBuildIndex = sceneBuildIndex;
             this.parameters = parameters;
+            this.isAdditive = isAdditive;
             UID = wrap.UID;
         }
     }
@@ -295,7 +303,12 @@ internal static class GameTracker
 
     public static void AsyncSceneLoad(string sceneName, int sceneBuildIndex, object parameters, AsyncOperationWrap wrap)
     {
-        asyncSceneLoads.Add(new AsyncSceneLoadData(sceneName, sceneBuildIndex, parameters, wrap));
+        asyncSceneLoads.Add(new AsyncSceneLoadData(sceneName, sceneBuildIndex, parameters, null, wrap));
+    }
+
+    public static void AsyncSceneLoad(string sceneName, int sceneBuildIndex, bool isAdditive, AsyncOperationWrap wrap)
+    {
+        asyncSceneLoads.Add(new AsyncSceneLoadData(sceneName, sceneBuildIndex, null, isAdditive, wrap));
     }
 
     public static void AllowSceneActivation(bool allow, AsyncOperation instance)
@@ -324,11 +337,7 @@ internal static class GameTracker
             if (sceneToLoadIndex < 0)
                 return;
             var sceneToLoad = asyncSceneLoadsStall[sceneToLoadIndex];
-            // TODO different unity versions
-            var sceneManager = Traverse.CreateWithType("UnityEngine.SceneManagement.SceneManager");
-            var loadSceneParameters = AccessTools.TypeByName("UnityEngine.SceneManagement.LoadSceneParameters");
-            var loadInternal = sceneManager.Method("LoadSceneAsyncNameIndexInternal", new System.Type[] { typeof(string), typeof(int), loadSceneParameters, typeof(bool) });
-            loadInternal.GetValue(new object[] { sceneToLoad.sceneName, sceneToLoad.sceneBuildIndex, sceneToLoad.parameters, true });
+            SceneHelper.LoadSceneAsyncNameIndexInternal(sceneToLoad.sceneName, sceneToLoad.sceneBuildIndex, sceneToLoad.parameters, sceneToLoad.isAdditive, true);
             Plugin.Log.LogDebug($"force loading scene, name: {sceneToLoad.sceneName} build index: {sceneToLoad.sceneBuildIndex}");
         }
         else

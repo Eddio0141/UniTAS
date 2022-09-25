@@ -17,6 +17,11 @@ class DateTimePatch
     [HarmonyPatch(nameof(DateTime.Now), MethodType.Getter)]
     static bool Prefix_NowGetter(ref DateTime __result)
     {
+        if (!GameTime.GotInitialTime)
+        {
+            GameTime.GotInitialTime = true;
+            return true;
+        }
         __result = GameTime.Time;
         return false;
     }
