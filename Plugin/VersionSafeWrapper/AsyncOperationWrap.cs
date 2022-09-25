@@ -22,7 +22,10 @@ internal class AsyncOperationWrap
     public void AssignUID()
     {
         UID = UIDIndex;
-        UIDIndex++;
+        if (UIDIndex == ulong.MaxValue)
+            UIDIndex = 1;
+        else
+            UIDIndex++;
     }
 
     public void FinalizeCall()
@@ -33,7 +36,6 @@ internal class AsyncOperationWrap
         GameTracker.AsyncOperationFinalize(UID);
         AssetBundleCreateRequestWrap.FinalizeCall(UID);
         AssetBundleRequestWrap.FinalizeCall(UID);
-        UIDIndex--;
     }
 
     public ulong UID
