@@ -115,7 +115,25 @@ class LoadAssetWithSubAssetsAsync_Internal
     }
 }
 
+[HarmonyPatch(typeof(AssetBundle), "UnloadAsync")]
+class UnloadAsync
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static bool Prefix(bool unloadAllLoadedObjects, ref object __result)
+    {
+        var unload = Traverse.Create(typeof(AssetBundle)).Method("Unload", new Type[] { typeof(bool) });
+        unload.GetValue(new object[] { unloadAllLoadedObjects });
+        var assetBundleUnloadOperation = AccessTools.TypeByName("UnityEngine.AssetBundleUnloadOperation");
+        __result = AccessTools.CreateInstance(assetBundleUnloadOperation);
+        // my instance so set UID to not let the game destroy it normally
+        new AsyncOperationWrap((AsyncOperation)__result).AssignUID();
+        return false;
+    }
+}
+
 // TODO theres no non-async alternative of this
 // private static extern AssetBundleRecompressOperation RecompressAssetBundleAsync_Internal_Injected(string inputPath, string outputPath, ref BuildCompression method, uint expectedCRC, ThreadPriority priority);
-
-// TODO patch UnloadAsync with Unload
