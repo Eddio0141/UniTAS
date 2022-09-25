@@ -31,6 +31,7 @@ internal class AsyncOperationWrap
         if (InstantiatedByUnity)
             return;
         GameTracker.AsyncOperationFinalize(UID);
+        AssetBundleCreateRequestWrap.FinalizeCall(UID);
         UIDIndex--;
     }
 
