@@ -69,21 +69,21 @@ class fixedUnscaledTimeAsDoubleGetter
     }
 }
 
-// unstable method
-// [HarmonyPatch(typeof(UnityEngine.Time), nameof(UnityEngine.Time.frameCount), MethodType.Getter)]
-// class frameCountGetter
-// {
-//     static Exception Cleanup(MethodBase original, Exception ex)
-//     {
-//         return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
-//     }
+[HarmonyPatch(typeof(UnityEngine.Time), nameof(UnityEngine.Time.frameCount), MethodType.Getter)]
+class frameCountGetter
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
 
-//     static bool Prefix(ref int __result)
-//     {
-//         __result = (int)GameTime.FrameCount;
-//         return false;
-//     }
-// }
+    static bool Prefix(ref int __result)
+    {
+        __result = (int)GameTime.FrameCount;
+        return false;
+    }
+}
+*/
 
 [HarmonyPatch(typeof(UnityEngine.Time), nameof(UnityEngine.Time.renderedFrameCount), MethodType.Getter)]
 class renderedFrameCountGetter
@@ -100,6 +100,7 @@ class renderedFrameCountGetter
     }
 }
 
+/*
 [HarmonyPatch(typeof(UnityEngine.Time), nameof(UnityEngine.Time.realtimeSinceStartup), MethodType.Getter)]
 class realtimeSinceStartupGetter
 {
@@ -128,5 +129,32 @@ class realtimeSinceStartupAsDoubleGetter
         __result = TimeSpan.FromTicks(GameTime.Time.Ticks).TotalSeconds;
         return false;
     }
+}
+*/
+
+/*
+class Dummy
+{
+    public static extern float time { get; }
+
+    public static extern float timeSinceLevelLoad { get; }
+
+    public static extern float deltaTime { get; }
+
+    public static extern float fixedTime { get; }
+
+    public static extern float unscaledTime { get; }
+
+    public static extern float fixedUnscaledTime { get; }
+
+    public static extern float smoothDeltaTime { get; }
+
+    public static extern float maximumParticleDeltaTime { get; set; }
+
+    public static extern int frameCount { get; }
+
+    public static extern int renderedFrameCount { get; }
+
+    public static extern float realtimeSinceStartup { get; }
 }
 */
