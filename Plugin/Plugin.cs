@@ -54,8 +54,6 @@ public class Plugin : BaseUnityPlugin
     // unity execution order is Awake() -> FixedUpdate() -> Update()
     private void Update()
     {
-        var fixedUnscaledTime = Traverse.Create(typeof(Time)).Property("fixedUnscaledTime");
-        fixedUnscaledTime.GetValue();
         // TODO if possible, put this at the first call of Update
         FixedUpdateIndex++;
         GameCapture.Update();

@@ -3,12 +3,13 @@ using System;
 using System.Reflection;
 using UniTASPlugin.FakeGameState;
 using UniTASPlugin.VersionSafeWrapper;
+using UnityEngine;
 
 namespace UniTASPlugin.Patches.__UnityEngine;
 
 #pragma warning disable IDE1006
 
-[HarmonyPatch(typeof(UnityEngine.Time), "captureFramerate", MethodType.Setter)]
+[HarmonyPatch(typeof(Time), "captureFramerate", MethodType.Setter)]
 class set_captureFramerate
 {
     static Exception Cleanup(MethodBase original, Exception ex)
@@ -23,7 +24,7 @@ class set_captureFramerate
     }
 }
 
-[HarmonyPatch(typeof(UnityEngine.Time), "captureDeltaTime", MethodType.Setter)]
+[HarmonyPatch(typeof(Time), "captureDeltaTime", MethodType.Setter)]
 class set_captureDeltaTime
 {
     static Exception Cleanup(MethodBase original, Exception ex)
@@ -38,7 +39,7 @@ class set_captureDeltaTime
     }
 }
 
-[HarmonyPatch(typeof(UnityEngine.Time), "fixedUnscaledTime", MethodType.Getter)]
+[HarmonyPatch(typeof(Time), "fixedUnscaledTime", MethodType.Getter)]
 class get_fixedUnscaledTime
 {
     static Exception Cleanup(MethodBase original, Exception ex)
@@ -52,7 +53,28 @@ class get_fixedUnscaledTime
     }
 }
 
-[HarmonyPatch(typeof(UnityEngine.Time), "fixedUnscaledTimeAsDouble", MethodType.Getter)]
+[HarmonyPatch(typeof(Time), "unscaledTime", MethodType.Getter)]
+class get_unscaledTime
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static Traverse inFixedTimeStep = Traverse.Create(typeof(Time)).Property("inFixedTimeStep");
+    static Traverse fixedUnscaledTime = Traverse.Create(typeof(Time)).Property("inFixedTimeStep");
+
+    static void Postfix(ref float __result)
+    {
+        // When called from inside MonoBehaviour's FixedUpdate, it returns Time.fixedUnscaledTime
+        if (inFixedTimeStep.PropertyExists())
+            __result = fixedUnscaledTime.GetValue<float>();
+        else
+            __result = (float)((double)__result - GameTime.UnscaledTimeOffset);
+    }
+}
+
+[HarmonyPatch(typeof(Time), "fixedUnscaledTimeAsDouble", MethodType.Getter)]
 class get_fixedUnscaledTimeAsDouble
 {
     static Exception Cleanup(MethodBase original, Exception ex)
@@ -66,7 +88,7 @@ class get_fixedUnscaledTimeAsDouble
     }
 }
 
-[HarmonyPatch(typeof(UnityEngine.Time), nameof(UnityEngine.Time.frameCount), MethodType.Getter)]
+[HarmonyPatch(typeof(Time), nameof(Time.frameCount), MethodType.Getter)]
 class get_frameCount
 {
     static Exception Cleanup(MethodBase original, Exception ex)
@@ -80,7 +102,7 @@ class get_frameCount
     }
 }
 
-[HarmonyPatch(typeof(UnityEngine.Time), nameof(UnityEngine.Time.renderedFrameCount), MethodType.Getter)]
+[HarmonyPatch(typeof(Time), nameof(Time.renderedFrameCount), MethodType.Getter)]
 class get_renderedFrameCount
 {
     static Exception Cleanup(MethodBase original, Exception ex)
@@ -94,7 +116,7 @@ class get_renderedFrameCount
     }
 }
 
-[HarmonyPatch(typeof(UnityEngine.Time), nameof(UnityEngine.Time.realtimeSinceStartup), MethodType.Getter)]
+[HarmonyPatch(typeof(Time), nameof(Time.realtimeSinceStartup), MethodType.Getter)]
 class get_realtimeSinceStartup
 {
     static Exception Cleanup(MethodBase original, Exception ex)
@@ -108,8 +130,7 @@ class get_realtimeSinceStartup
     }
 }
 
-/*
-[HarmonyPatch(typeof(UnityEngine.Time), "realtimeSinceStartupAsDouble", MethodType.Getter)]
+[HarmonyPatch(typeof(Time), "realtimeSinceStartupAsDouble", MethodType.Getter)]
 class get_realtimeSinceStartupAsDouble
 {
     static Exception Cleanup(MethodBase original, Exception ex)
@@ -117,28 +138,44 @@ class get_realtimeSinceStartupAsDouble
         return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
     }
 
-    static bool Prefix(ref double __result)
+    static void Postfix(ref double __result)
     {
-        __result = GameTime.SecondsSinceStartUpTimeScale;
-        return false;
+        __result = __result - GameTime.SecondsSinceStartUpOffset;
     }
 }
 
-/*
-class Dummy
+[HarmonyPatch(typeof(Time), nameof(Time.time), MethodType.Getter)]
+class get_time
 {
-    public static extern float time { get; }
-    public static extern float timeSinceLevelLoad { get; }
-    public static extern float fixedTime { get; }
-    public static extern float unscaledTime { get; }
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static void Postfix(ref float __result)
+    {
+        __result = (float)((double)__result - GameTime.ScaledTimeOffset);
+    }
 }
-*/
+
+[HarmonyPatch(typeof(Time), nameof(Time.fixedTime), MethodType.Getter)]
+class get_fixedTime
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static void Postfix(ref float __result)
+    {
+        __result = (float)((double)__result - GameTime.ScaledFixedTimeOffset);
+    }
+}
 
 /*
 class Latest
 {
     public static extern double timeAsDouble { get; }
-    public static extern double timeSinceLevelLoadAsDouble { get; }
     public static extern double fixedTimeAsDouble { get; }
     public static extern double unscaledTimeAsDouble { get; }
     public static extern float fixedUnscaledTime { get; }
