@@ -106,9 +106,8 @@ internal class GameRestart
 
         Plugin.Log.LogDebug("random setting state");
 
-        GameTime.Time = softRestartTime;
+        GameTime.ResetState(softRestartTime);
         RandomWrap.InitState((int)GameTime.Seed());
-        GameTime.FrameCount = 0;
 
         Plugin.Log.LogInfo("Finish soft restarting");
         Plugin.Log.LogInfo($"System time: {System.DateTime.Now}, milliseconds: {System.DateTime.Now.Millisecond}");

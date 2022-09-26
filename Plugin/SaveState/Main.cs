@@ -65,8 +65,7 @@ internal static class Main
         //var scene = pendingState.Scene;
         DateTime time = pendingState.Time;
         ulong frameCount = pendingState.FrameCount;
-        FakeGameState.GameTime.Time = time;
-        FakeGameState.GameTime.FrameCount = frameCount;
+        FakeGameState.GameTime.SetState(time, frameCount);
         //Cursor.visible = cursorVisible;
         //Cursor.lockState = cursorLockState;
 

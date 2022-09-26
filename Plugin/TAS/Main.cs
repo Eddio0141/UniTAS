@@ -41,8 +41,7 @@ public static class Main
         SaveState.Main.Update();
         UpdateMovie();
         FakeGameState.InputLegacy.Main.Update();
-        FakeGameState.GameTime.Time += System.TimeSpan.FromSeconds(deltaTime);
-        FakeGameState.GameTime.FrameCount++;
+        FakeGameState.GameTime.Update(deltaTime);
     }
 
     public static void FixedUpdate()

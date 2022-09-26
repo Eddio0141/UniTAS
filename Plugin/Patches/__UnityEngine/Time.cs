@@ -38,6 +38,7 @@ class captureDeltaTimeSetter
     }
 }
 
+/*
 [HarmonyPatch(typeof(UnityEngine.Time), "fixedUnscaledTime", MethodType.Getter)]
 class fixedUnscaledTimeGetter
 {
@@ -68,20 +69,21 @@ class fixedUnscaledTimeAsDoubleGetter
     }
 }
 
-[HarmonyPatch(typeof(UnityEngine.Time), nameof(UnityEngine.Time.frameCount), MethodType.Getter)]
-class frameCountGetter
-{
-    static Exception Cleanup(MethodBase original, Exception ex)
-    {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
-    }
+// unstable method
+// [HarmonyPatch(typeof(UnityEngine.Time), nameof(UnityEngine.Time.frameCount), MethodType.Getter)]
+// class frameCountGetter
+// {
+//     static Exception Cleanup(MethodBase original, Exception ex)
+//     {
+//         return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+//     }
 
-    static bool Prefix(ref int __result)
-    {
-        __result = (int)GameTime.FrameCount;
-        return false;
-    }
-}
+//     static bool Prefix(ref int __result)
+//     {
+//         __result = (int)GameTime.FrameCount;
+//         return false;
+//     }
+// }
 
 [HarmonyPatch(typeof(UnityEngine.Time), nameof(UnityEngine.Time.renderedFrameCount), MethodType.Getter)]
 class renderedFrameCountGetter
@@ -127,3 +129,4 @@ class realtimeSinceStartupAsDoubleGetter
         return false;
     }
 }
+*/
