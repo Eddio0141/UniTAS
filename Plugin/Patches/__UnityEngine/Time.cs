@@ -62,15 +62,36 @@ class get_unscaledTime
     }
 
     static Traverse inFixedTimeStep = Traverse.Create(typeof(Time)).Property("inFixedTimeStep");
-    static Traverse fixedUnscaledTime = Traverse.Create(typeof(Time)).Property("inFixedTimeStep");
+    static Traverse fixedUnscaledTime = Traverse.Create(typeof(Time)).Property("fixedUnscaledTime");
 
     static void Postfix(ref float __result)
     {
         // When called from inside MonoBehaviour's FixedUpdate, it returns Time.fixedUnscaledTime
-        if (inFixedTimeStep.PropertyExists())
+        if (inFixedTimeStep.PropertyExists() && inFixedTimeStep.GetValue<bool>())
             __result = fixedUnscaledTime.GetValue<float>();
         else
             __result = (float)((double)__result - GameTime.UnscaledTimeOffset);
+    }
+}
+
+[HarmonyPatch(typeof(Time), "unscaledTimeAsDouble", MethodType.Getter)]
+class get_unscaledTimeAsDouble
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static Traverse inFixedTimeStep = Traverse.Create(typeof(Time)).Property("inFixedTimeStep");
+    static Traverse fixedUnscaledTimeAsDouble = Traverse.Create(typeof(Time)).Property("fixedUnscaledTimeAsDouble");
+
+    static void Postfix(ref double __result)
+    {
+        // When called from inside MonoBehaviour's FixedUpdate, it returns Time.fixedUnscaledTimeAsDouble
+        if (inFixedTimeStep.PropertyExists() && inFixedTimeStep.GetValue<bool>())
+            __result = fixedUnscaledTimeAsDouble.GetValue<double>();
+        else
+            __result -= GameTime.UnscaledTimeOffset;
     }
 }
 
@@ -84,7 +105,7 @@ class get_fixedUnscaledTimeAsDouble
 
     static void Postfix(ref double __result)
     {
-        __result = __result - GameTime.FixedUnscaledTimeOffset;
+        __result -= GameTime.FixedUnscaledTimeOffset;
     }
 }
 
@@ -140,7 +161,7 @@ class get_realtimeSinceStartupAsDouble
 
     static void Postfix(ref double __result)
     {
-        __result = __result - GameTime.SecondsSinceStartUpOffset;
+        __result -= GameTime.SecondsSinceStartUpOffset;
     }
 }
 
@@ -158,6 +179,20 @@ class get_time
     }
 }
 
+[HarmonyPatch(typeof(Time), "timeAsDouble", MethodType.Getter)]
+class get_timeAsDouble
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static void Postfix(ref double __result)
+    {
+        __result -= GameTime.ScaledTimeOffset;
+    }
+}
+
 [HarmonyPatch(typeof(Time), nameof(Time.fixedTime), MethodType.Getter)]
 class get_fixedTime
 {
@@ -172,14 +207,16 @@ class get_fixedTime
     }
 }
 
-/*
-class Latest
+[HarmonyPatch(typeof(Time), "fixedTimeAsDouble", MethodType.Getter)]
+class get_fixedTimeAsDouble
 {
-    public static extern double timeAsDouble { get; }
-    public static extern double fixedTimeAsDouble { get; }
-    public static extern double unscaledTimeAsDouble { get; }
-    public static extern float fixedUnscaledTime { get; }
-    public static extern double fixedUnscaledTimeAsDouble { get; }
-    public static extern float unscaledDeltaTime { get; }
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static void Postfix(ref double __result)
+    {
+        __result -= GameTime.ScaledFixedTimeOffset;
+    }
 }
-*/
