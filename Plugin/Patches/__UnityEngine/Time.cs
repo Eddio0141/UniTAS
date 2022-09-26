@@ -38,37 +38,33 @@ class set_captureDeltaTime
     }
 }
 
-/*
 [HarmonyPatch(typeof(UnityEngine.Time), "fixedUnscaledTime", MethodType.Getter)]
-class fixedUnscaledTimeGetter
+class get_fixedUnscaledTime
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
         return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
     }
 
-    static bool Prefix(ref float __result)
+    static void Postfix(ref float __result)
     {
-        __result = (float)TimeSpan.FromTicks(GameTime.Time.Ticks).TotalSeconds;
-        return false;
+        __result = (float)((double)__result - GameTime.FixedUnscaledTimeOffset);
     }
 }
 
 [HarmonyPatch(typeof(UnityEngine.Time), "fixedUnscaledTimeAsDouble", MethodType.Getter)]
-class fixedUnscaledTimeAsDoubleGetter
+class get_fixedUnscaledTimeAsDouble
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
         return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
     }
 
-    static bool Prefix(ref double __result)
+    static void Postfix(ref double __result)
     {
-        __result = TimeSpan.FromTicks(GameTime.Time.Ticks).TotalSeconds;
-        return false;
+        __result = __result - GameTime.FixedUnscaledTimeOffset;
     }
 }
-*/
 
 [HarmonyPatch(typeof(UnityEngine.Time), nameof(UnityEngine.Time.frameCount), MethodType.Getter)]
 class get_frameCount
@@ -92,10 +88,9 @@ class get_renderedFrameCount
         return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
     }
 
-    static bool Prefix(ref int __result)
+    static void Postfix(ref int __result)
     {
-        __result = (int)GameTime.RenderedFrameCount;
-        return false;
+        __result = (int)((ulong)__result - GameTime.RenderedFrameCountOffset);
     }
 }
 
@@ -107,13 +102,13 @@ class get_realtimeSinceStartup
         return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
     }
 
-    static bool Prefix(ref float __result)
+    static void Postfix(ref float __result)
     {
-        __result = (float)GameTime.SecondsSinceStartUp;
-        return false;
+        __result = (float)((double)__result - GameTime.SecondsSinceStartUpOffset);
     }
 }
 
+/*
 [HarmonyPatch(typeof(UnityEngine.Time), "realtimeSinceStartupAsDouble", MethodType.Getter)]
 class get_realtimeSinceStartupAsDouble
 {
@@ -124,7 +119,7 @@ class get_realtimeSinceStartupAsDouble
 
     static bool Prefix(ref double __result)
     {
-        __result = GameTime.SecondsSinceStartUp;
+        __result = GameTime.SecondsSinceStartUpTimeScale;
         return false;
     }
 }
@@ -133,15 +128,21 @@ class get_realtimeSinceStartupAsDouble
 class Dummy
 {
     public static extern float time { get; }
-
     public static extern float timeSinceLevelLoad { get; }
-
     public static extern float fixedTime { get; }
-
     public static extern float unscaledTime { get; }
+}
+*/
 
+/*
+class Latest
+{
+    public static extern double timeAsDouble { get; }
+    public static extern double timeSinceLevelLoadAsDouble { get; }
+    public static extern double fixedTimeAsDouble { get; }
+    public static extern double unscaledTimeAsDouble { get; }
     public static extern float fixedUnscaledTime { get; }
-
-    public static extern int frameCount { get; }
+    public static extern double fixedUnscaledTimeAsDouble { get; }
+    public static extern float unscaledDeltaTime { get; }
 }
 */

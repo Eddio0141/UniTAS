@@ -36,12 +36,11 @@ public static class Main
     static int pendingMovieStartFixedUpdate = -1;
     public static bool PreparingRun { get; private set; } = false;
 
-    public static void Update(float deltaTime)
+    public static void Update()
     {
         SaveState.Main.Update();
         UpdateMovie();
         FakeGameState.InputLegacy.Main.Update();
-        FakeGameState.GameTime.Update(deltaTime);
     }
 
     public static void FixedUpdate()
