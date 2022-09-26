@@ -9,7 +9,7 @@ namespace UniTASPlugin.Patches.__UnityEngine;
 #pragma warning disable IDE1006
 
 [HarmonyPatch(typeof(UnityEngine.Time), "captureFramerate", MethodType.Setter)]
-class captureFramerateSetter
+class set_captureFramerate
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
@@ -24,7 +24,7 @@ class captureFramerateSetter
 }
 
 [HarmonyPatch(typeof(UnityEngine.Time), "captureDeltaTime", MethodType.Setter)]
-class captureDeltaTimeSetter
+class set_captureDeltaTime
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
@@ -68,25 +68,24 @@ class fixedUnscaledTimeAsDoubleGetter
         return false;
     }
 }
-
-[HarmonyPatch(typeof(UnityEngine.Time), nameof(UnityEngine.Time.frameCount), MethodType.Getter)]
-class frameCountGetter
-{
-    static Exception Cleanup(MethodBase original, Exception ex)
-    {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
-    }
-
-    static bool Prefix(ref int __result)
-    {
-        __result = (int)GameTime.FrameCount;
-        return false;
-    }
-}
 */
 
+[HarmonyPatch(typeof(UnityEngine.Time), nameof(UnityEngine.Time.frameCount), MethodType.Getter)]
+class get_frameCount
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static void Postfix(ref int __result)
+    {
+        __result = (int)((ulong)__result - GameTime.FrameCountRestartOffset);
+    }
+}
+
 [HarmonyPatch(typeof(UnityEngine.Time), nameof(UnityEngine.Time.renderedFrameCount), MethodType.Getter)]
-class renderedFrameCountGetter
+class get_renderedFrameCount
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
@@ -95,13 +94,13 @@ class renderedFrameCountGetter
 
     static bool Prefix(ref int __result)
     {
-        __result = (int)GameTime.FrameCount;
+        __result = (int)GameTime.RenderedFrameCount;
         return false;
     }
 }
 
 [HarmonyPatch(typeof(UnityEngine.Time), nameof(UnityEngine.Time.realtimeSinceStartup), MethodType.Getter)]
-class realtimeSinceStartupGetter
+class get_realtimeSinceStartup
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
@@ -116,7 +115,7 @@ class realtimeSinceStartupGetter
 }
 
 [HarmonyPatch(typeof(UnityEngine.Time), "realtimeSinceStartupAsDouble", MethodType.Getter)]
-class realtimeSinceStartupAsDoubleGetter
+class get_realtimeSinceStartupAsDouble
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {

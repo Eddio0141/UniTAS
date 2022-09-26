@@ -102,11 +102,11 @@ internal class GameRestart
         }
 
         Plugin.Log.LogDebug("finished setting fields, loading scene");
+        GameTime.ResetState(softRestartTime);
         SceneHelper.LoadScene(0);
 
         Plugin.Log.LogDebug("random setting state");
 
-        GameTime.ResetState(softRestartTime);
         RandomWrap.InitState((int)GameTime.Seed());
 
         Plugin.Log.LogInfo("Finish soft restarting");

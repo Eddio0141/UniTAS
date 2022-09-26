@@ -84,6 +84,10 @@ public class Plugin : BaseUnityPlugin
 
             TAS.Main.RunMovie(movie);
         }
+        if (!TAS.Main.Running && Input.GetKeyDown(KeyCode.L))
+        {
+            GameRestart.SoftRestart(new System.DateTime());
+        }
         /*
         if (!TAS.Main.Running && Input.GetKeyDown(KeyCode.L))
         {
