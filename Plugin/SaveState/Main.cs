@@ -63,9 +63,9 @@ internal static class Main
         Plugin.Log.LogDebug("Load operation starting");
         // TODO sort out depending on unity version
         //var scene = pendingState.Scene;
-        DateTime time = pendingState.Time;
-        ulong frameCount = pendingState.FrameCount;
-        FakeGameState.GameTime.SetState(time, frameCount);
+        //DateTime time = pendingState.Time;
+        //ulong frameCount = pendingState.FrameCount;
+        //FakeGameState.GameTime.SetState(time, frameCount);
         //Cursor.visible = cursorVisible;
         //Cursor.lockState = cursorLockState;
 

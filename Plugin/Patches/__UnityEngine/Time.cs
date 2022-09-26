@@ -100,7 +100,6 @@ class renderedFrameCountGetter
     }
 }
 
-/*
 [HarmonyPatch(typeof(UnityEngine.Time), nameof(UnityEngine.Time.realtimeSinceStartup), MethodType.Getter)]
 class realtimeSinceStartupGetter
 {
@@ -111,7 +110,7 @@ class realtimeSinceStartupGetter
 
     static bool Prefix(ref float __result)
     {
-        __result = (float)TimeSpan.FromTicks(GameTime.Time.Ticks).TotalSeconds;
+        __result = (float)GameTime.SecondsSinceStartUp;
         return false;
     }
 }
@@ -126,11 +125,10 @@ class realtimeSinceStartupAsDoubleGetter
 
     static bool Prefix(ref double __result)
     {
-        __result = TimeSpan.FromTicks(GameTime.Time.Ticks).TotalSeconds;
+        __result = GameTime.SecondsSinceStartUp;
         return false;
     }
 }
-*/
 
 /*
 class Dummy
@@ -139,22 +137,12 @@ class Dummy
 
     public static extern float timeSinceLevelLoad { get; }
 
-    public static extern float deltaTime { get; }
-
     public static extern float fixedTime { get; }
 
     public static extern float unscaledTime { get; }
 
     public static extern float fixedUnscaledTime { get; }
 
-    public static extern float smoothDeltaTime { get; }
-
-    public static extern float maximumParticleDeltaTime { get; set; }
-
     public static extern int frameCount { get; }
-
-    public static extern int renderedFrameCount { get; }
-
-    public static extern float realtimeSinceStartup { get; }
 }
 */
