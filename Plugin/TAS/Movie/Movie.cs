@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
@@ -108,34 +109,12 @@ public class Movie
                         error = "Time property defined twice, or seed and time defined";
                         break;
                     }
-                    // year month day hour minute second millisecond
-                    var processing = lineTrim.Substring(seedText.Length).Split(listSeparator);
-                    var values = new int[] { 1, 1, 1, 0, 0, 0, 0 };
-                    var valueNames = new string[] { "year", "month", "day", "hour", "minute", "second", "millisecond" };
-                    if (processing.Length > values.Length || processing.Length < 1)
+                    var timeString = lineTrim.Substring(seedText.Length);
+                    if (!DateTime.TryParse(timeString, CultureInfo.InvariantCulture, DateTimeStyles.NoCurrentDateDefault | DateTimeStyles.AdjustToUniversal, out Time))
                     {
-                        error = "Time property not in format of: year, month, day, hour, minute, second, millisecond";
+                        error = "Time value not a valid DateTime, example format: 03/28/2022 07:27:50.5432. Converts time to UTC time zone";
                         break;
                     }
-                    for (int i = 0; i < processing.Length; i++)
-                    {
-                        var value = processing[i];
-                        var name = valueNames[i];
-                        if (!int.TryParse(value, out var valueParsed))
-                        {
-                            error = $"Time property {name} is not a value";
-                            break;
-                        }
-                        if (valueParsed < values[i])
-                        {
-                            error = $"Time property {name} is less than {values[i]}";
-                            break;
-                        }
-                        values[i] = valueParsed;
-                    }
-                    if (error != string.Empty)
-                        break;
-                    Time = new DateTime(values[0], values[1], values[2], values[3], values[4], values[5], values[6], DateTimeKind.Utc);
                     foundSeedOrTime = true;
                     continue;
                 }
