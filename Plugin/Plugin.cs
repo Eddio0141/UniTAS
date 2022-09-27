@@ -30,9 +30,11 @@ public class Plugin : BaseUnityPlugin
 
         UnityVersion = Helper.GetUnityVersion();
         Log.LogInfo($"Internally found unity version: {UnityVersion}");
-        // TODO complete fixing this
         Log.LogInfo($"Game product name: {AppInfo.ProductName()}");
-        //Logger.Log.LogInfo($"Game company name: {Application.companyName}, product name: {Application.productName}, version: {Application.version}");
+        // TODO complete fixing this
+        var companyNameProperty = Traverse.Create(typeof(Application)).Property("companyName");
+        if (companyNameProperty.PropertyExists())
+            Log.LogInfo($"Game company name: {companyNameProperty.GetValue<string>()}");//product name: {Application.productName}, version: {Application.version}");
 
         Harmony harmony = new($"{NAME}HarmonyPatch");
         harmony.PatchAll();
