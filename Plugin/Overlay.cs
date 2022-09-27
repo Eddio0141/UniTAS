@@ -1,4 +1,8 @@
-﻿using UniTASPlugin.VersionSafeWrapper;
+﻿using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using UniTASPlugin.TASMovie;
+using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
 
 namespace UniTASPlugin;
@@ -59,6 +63,8 @@ internal static class Overlay
         currentTexture = cursorDefaultTexture;
 
         UnityCursorVisible = true;
+        BGSurround.SetPixels(Enumerable.Repeat(new Color(1, 1, 1, 0.5f), MENU_SIZE_X * MENU_SIZE_Y).ToArray());
+        BGSurround.Apply();
     }
 
     public static void SetCursorTexture(Texture2D texture)
@@ -71,11 +77,82 @@ internal static class Overlay
 
     public static void Update()
     {
+        // TODO temporary for debugging
+        if (!TAS.Running && Input.GetKeyDown(KeyCode.F10))
+        {
+            Enabled = !Enabled;
+        }
+        if (!TAS.Running && Input.GetKeyDown(KeyCode.F11))
+        {
+            CursorWrap.TempCursorLockToggle(!CursorWrap.TempUnlocked);
+            Plugin.Log.LogDebug($"Unlocked cursor: {CursorWrap.TempUnlocked}");
+        }
+    }
+
+    public static void OnGUI()
+    {
+        DrawGUI();
+
+        if (CursorWrap.TempUnlocked || (ShowCursor && UnityCursorVisible))
+            GUI.DrawTexture(new Rect(Input.mousePosition.x, Screen.height - Input.mousePosition.y, currentTexture.width, currentTexture.height), currentTexture);
+    }
+
+    static int tabIndex = 0;
+    static readonly string[] tabs = new string[] { "Main", "Debug" };
+    static Texture2D BGSurround = new Texture2D(MENU_SIZE_X, MENU_SIZE_Y);
+
+    const int MENU_SIZE_X = 200;
+    const int MENU_SIZE_Y = 200;
+    const int BUTTON_HEIGHT = 20;
+    const int MAIN_CONTENT_START_Y = 55;
+    const int SPACING = 10;
+
+    static void DrawGUI()
+    {
         if (!Enabled)
             return;
 
-        if (ShowCursor && UnityCursorVisible)
-            GUI.DrawTexture(new Rect(Input.mousePosition.x, Screen.height - Input.mousePosition.y, currentTexture.width, currentTexture.height), currentTexture);
+        GUI.BeginGroup(new Rect(10, 10, MENU_SIZE_X, MENU_SIZE_Y));
+        GUI.DrawTexture(new Rect(0, 0, MENU_SIZE_X, MENU_SIZE_Y), BGSurround);
+        GUI.Box(new Rect(0, 0, MENU_SIZE_X, MENU_SIZE_Y), $"{Plugin.NAME} Menu");
+
+        tabIndex = GUI.Toolbar(new Rect(SPACING, 30, 180, 20), tabIndex, tabs);
+
+        switch (tabIndex)
+        {
+            case 0:
+                break;
+            default:
+                // debug
+                {
+                    if (GUI.Button(new Rect(SPACING, MAIN_CONTENT_START_Y, 100, BUTTON_HEIGHT), "test TAS") && !TAS.Running)
+                    {
+                        string text = "";
+                        if (File.Exists("C:\\Users\\Yuki\\Documents\\test.uti"))
+                            text = File.ReadAllText("C:\\Users\\Yuki\\Documents\\test.uti");
+                        else if (File.Exists("C:\\Program Files (x86)\\Steam\\steamapps\\common\\It Steals\\test.uti"))
+                            text = File.ReadAllText("C:\\Program Files (x86)\\Steam\\steamapps\\common\\It Steals\\test.uti");
+                        var movie = new Movie("test.uti", text, out var err, out List<string> warnings);
+
+                        if (err != "")
+                        {
+                            Plugin.Log.LogError(err);
+                            return;
+                        }
+                        if (warnings.Count > 1)
+                        {
+                            foreach (string warn in warnings)
+                            {
+                                Plugin.Log.LogWarning(warn);
+                            }
+                        }
+
+                        TAS.RunMovie(movie);
+                    }
+                    break;
+                }
+        }
+
+        GUI.EndGroup();
     }
 }
-

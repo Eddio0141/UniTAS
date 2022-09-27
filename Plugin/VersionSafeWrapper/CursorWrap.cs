@@ -63,6 +63,49 @@ internal static class CursorWrap
         }
     }
 
+    public static object TempStoreLockVariant = null;
+    public static bool? TempStoreLockCursorState = null;
+    public static bool TempUnlocked { get; private set; } = false;
+
+    public static void TempCursorLockToggle(bool unlock)
+    {
+        TempUnlocked = unlock;
+        if (unlock)
+        {
+            // store data and unlock cursor
+            var cursor = Traverse.Create(cursorType());
+            if (cursor.TypeExists())
+            {
+                TempStoreLockVariant = cursor.Property("lockState").GetValue();
+            }
+            else
+            {
+                var lockCursor = Traverse.Create(screenType()).Property("lockCursor");
+                if (!lockCursor.PropertyExists())
+                {
+                    Plugin.Log.LogError("Failed to unlock cursor, lockCursor property not found");
+                    TempUnlocked = false;
+                    return;
+                }
+                lockCursor.SetValue(false);
+            }
+            UnlockCursor();
+        }
+        else
+        {
+            // restore lock state
+            var cursor = Traverse.Create(cursorType());
+            if (cursor.TypeExists())
+            {
+                if (TempStoreLockVariant != null)
+                    cursor.Property("lockState").SetValue(TempStoreLockVariant);
+                return;
+            }
+            if (TempStoreLockCursorState != null)
+                Traverse.Create(screenType()).Property("lockCursor").SetValue((bool)TempStoreLockCursorState);
+        }
+    }
+
     public static void UnlockCursor()
     {
         var lockModeType = cursorLockModeType();
