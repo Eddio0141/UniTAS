@@ -20,27 +20,16 @@ I haven't planned for VR support currently
 # Supporting unity versions
 For now, anything that BepInEx 5.4.21 can support, ranging from unity 3 to latest, and games that don't use Il2cpp
 
-# Supported games
-- tool is in huge WIP
-
-# Adding patches for some unity version
+# Adding patches for unity and .NET framework
 - All patches goes in plugin's Patches folder
 - __namespace for each namespace of the patch method, e.g. patch for UnityEngine.EventSystems.EventSystem.isFocused, we will put the patch class `isFocusedGetter` in `__UnityEngine/EventSystems/EventSystem.cs`
 - Make sure to separate each patch as a separate patch class, This prevents all patches in the patch class from failing if 1 fails
 - Use `static Exception Cleanup` method in patch class and use the helper methods depending on situations as below does:
 ```cs
-// if the patch exists on some unity version or not (this will simply prevent the method from being patched)
+// this will simply prevent the method from being patched if it doesn't exist
 static System.Exception Cleanup(MethodBase original, System.Exception ex)
 {
     return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
-}
-
-// -------------------------------------------------------------------------
-
-// if the patch NEEDS to be patched (this will show an error in the console, but will let the TAS tool continue anyway)
-static System.Exception Cleanup(System.Reflection.MethodBase original, System.Exception ex)
-{
-    return AuxilaryHelper.Cleanup_NeedsToBePatched(original, ex);
 }
 ```
 - If the patch fails even if the method exists in the game, you should use the method `static MethodBase TargetMethod()` in the patch class. Example below:
@@ -68,16 +57,11 @@ class UnloadSceneAsync
 ```
 - How to know if the patch works? Check debug output of the plugin by enabling debug print through `GAME_DIR\BepInEx\config\BepInEx.cfg`, field `[Logging.Disk] LogLevel` or `[Logging.Console] Loglevel` and it will show all methods that failed to patch in the `GAME_DIR\BepInEx\LogOutput.log` or the console
 
-# Background tasks to be finished
+# Background tasks to be finished (move to issues)
 - Movie sets screen res and force Screen.width height getters to return the patched value, but if game calls SetResolution then internal state sets to that
-- Check whats in SceneManagerAPI, do they need to be patched too
 - SystemInfo.supportsGyroscope needs to be patched, UnityEngine.SystemInfo needs to be checked for patches
 - Check InputUnsafeUtility and patch them in unity versions that has them
 - Update() and FixedUpdate() calls in core needs to be done before Unity calls happen, hook to make it work.
-- Ingame TAS recording
-- Savestates
-- Game video recording
-  - Only can dump raw images to disk 
 - TAS menu
 - TAS GUI
 - TAS helpers
@@ -106,27 +90,6 @@ class UnloadSceneAsync
   - [ ] CheckDisabled purpose
   - [ ] What to do with setters in module
   - [ ] Other devices
-- Game capture
-  - [ ] Audio recording
-  - [ ] Faster video recording
-- Disable network
-- Savestates
-  - [ ] Save
-    - [x] Save current scene info
-    - [ ] Save graphics info
-    - [ ] Save object IDs
-    - [ ] Save object states
-    - [x] Save system time
-    - [ ] Save game files
-    - [ ] Wait for FixedUpdate or count current FixedUpdate iteration
-    - [ ] Find other game states
-  - [ ] Load
-    - [x] Load scene if not on the correct one
-    - [ ] Load missing objects
-    - [ ] Unload objects not in save
-    - [ ] Load object states
-    - [x] Set system time
-    - [ ] Load game files
 - Resolution needs to be defined in movie
 - Movie file input macro functions
 - Movie file TAS helper function calls
@@ -136,8 +99,6 @@ class UnloadSceneAsync
 - Plugin needs to be made sure to not be destroyed or cloned
 - Brute forcer
 - Lua and other scripting methods?
-- Movie needs to store additional information of recorded pc such as whats in CultureInfo
-- Movie matching unity version and checks for that version such as keycode
 - Movie matching game name?
 - Movie store game version
 - Movie can set window focus
