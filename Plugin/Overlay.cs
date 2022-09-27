@@ -1,6 +1,6 @@
 ﻿namespace UniTASPlugin;
 
-public static class VirtualCursor
+public static class Overlay
 {
     /*
     static Vector2 hotspot = Vector2.zero;
