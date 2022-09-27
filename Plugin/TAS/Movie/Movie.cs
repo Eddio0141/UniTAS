@@ -22,7 +22,8 @@ public class Movie
 
     version 1
     seed seedvalue
-    time year month day hour minute second millisecond
+    // seed or time is required
+    time DateTime format
     device DeviceType
     frames
     mouse x|mouse y|left right middle|UpArrow W A S D|"axis X" 1 "sprint" -0.1|frametime|framecount
