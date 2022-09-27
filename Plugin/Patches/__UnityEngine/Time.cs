@@ -20,7 +20,7 @@ class set_captureFramerate
     static bool Prefix()
     {
         // if TAS is running / preparing and we aren't setting the frametime, reject
-        return !((TAS.Main.Running || TAS.Main.PreparingRun) && !TimeWrap.SettingFrametime);
+        return !((TAS.Running || TAS.PreparingRun) && !TimeWrap.SettingFrametime);
     }
 }
 
@@ -35,7 +35,7 @@ class set_captureDeltaTime
     static bool Prefix()
     {
         // if TAS is running / preparing and we aren't setting the frametime, reject
-        return !((TAS.Main.Running || TAS.Main.PreparingRun) && !TimeWrap.SettingFrametime);
+        return !((TAS.Running || TAS.PreparingRun) && !TimeWrap.SettingFrametime);
     }
 }
 

@@ -4,7 +4,7 @@ public static class Main
 {
     public static void Update()
     {
-        if (TAS.Main.Running)
+        if (UniTASPlugin.TAS.Running)
         {
             Mouse.Update();
             Keyboard.Update();

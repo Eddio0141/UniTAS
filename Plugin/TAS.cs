@@ -1,12 +1,11 @@
 ﻿using System.Collections.Generic;
 using UniTASPlugin.FakeGameState.InputLegacy;
-using UniTASPlugin.TAS.Movie;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
 
-namespace UniTASPlugin.TAS;
+namespace UniTASPlugin;
 
-public static class Main
+public static class TAS
 {
     static bool _running = false;
     public static bool Running

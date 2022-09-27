@@ -59,10 +59,10 @@ public class Plugin : BaseUnityPlugin
         // TODO if possible, put this at the first call of Update
         FixedUpdateIndex++;
         GameCapture.Update();
-        TAS.Main.Update();
+        TAS.Update();
 
         // TODO remove this test
-        if (!TAS.Main.Running && Input.GetKeyDown(KeyCode.K))
+        if (!TAS.Running && Input.GetKeyDown(KeyCode.K))
         {
             string text = "";
             if (File.Exists("C:\\Users\\Yuki\\Documents\\test.uti"))
@@ -84,9 +84,9 @@ public class Plugin : BaseUnityPlugin
                 }
             }
 
-            TAS.Main.RunMovie(movie);
+            TAS.RunMovie(movie);
         }
-        if (!TAS.Main.Running && Input.GetKeyDown(KeyCode.L))
+        if (!TAS.Running && Input.GetKeyDown(KeyCode.L))
         {
             GameRestart.SoftRestart(new System.DateTime());
         }
@@ -106,7 +106,7 @@ public class Plugin : BaseUnityPlugin
         // TODO if possible, put this at the first call of FixedUpdate
         FixedUpdateIndex = -1;
         // this needs to be called before checking pending soft restart or it will cause a 1 frame desync
-        TAS.Main.FixedUpdate();
+        TAS.FixedUpdate();
         GameRestart.FixedUpdate();
     }
 

@@ -27,7 +27,7 @@ class isFocusedGetter
 
     static bool Prefix(ref bool __result)
     {
-        if (TAS.Main.Running)
+        if (TAS.Running)
         {
             __result = true;
             return false;
