@@ -45,6 +45,7 @@ public class Plugin : BaseUnityPlugin
 
         GameTracker.Init();
         FakeGameState.SystemInfo.Init();
+        Overlay.Init();
 
         Log.LogInfo($"System time: {System.DateTime.Now}");
         Log.LogInfo($"Plugin {NAME} is loaded!");

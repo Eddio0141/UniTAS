@@ -1,48 +1,81 @@
-﻿using UnityEngine;
+﻿using UniTASPlugin.VersionSafeWrapper;
+using UnityEngine;
 
 namespace UniTASPlugin;
 
 internal static class Overlay
 {
     public static bool Enabled { get; set; } = true;
-
-    /*
-    static Vector2 hotspot = Vector2.zero;
-    public static bool Visible { get; set; } = true;
-    static readonly CanvasScaler canvasScaler;
-    static readonly GameObject cursorRawImageObj;
-    static readonly RawImage cursorRawImage;
-    static readonly RectTransform cursorRectTransform;
+    public static bool ShowCursor { get; set; } = true;
+    private static bool unityCursorVisible = false;
+    public static bool UnityCursorVisible
+    {
+        get => unityCursorVisible;
+        set
+        {
+            CursorWrap.visible = !value;
+            unityCursorVisible = value;
+        }
+    }
+    static Texture2D cursorDefaultTexture = new Texture2D(2, 2);
+    static Texture2D currentTexture = new Texture2D(2, 2);
 
     public static void Init()
     {
-        var canvasObj = new GameObject("VirtualCursorCanvas");
-        Object.DontDestroyOnLoad(canvasObj);
-        cursorRawImageObj = new GameObject("VirtualCursorRawImage");
-        Object.DontDestroyOnLoad(cursorRawImageObj);
+        var alpha = new Color(0, 0, 0, 0);
+        var black = Color.black;
+        var white = Color.white;
+        var cursorRaw = new Color[]
+        {
+            black,alpha,alpha,alpha,alpha,alpha,alpha,alpha,alpha,alpha,alpha,alpha,
+            black,black,alpha,alpha,alpha,alpha,alpha,alpha,alpha,alpha,alpha,alpha,
+            black,white,black,alpha,alpha,alpha,alpha,alpha,alpha,alpha,alpha,alpha,
+            black,white,white,black,alpha,alpha,alpha,alpha,alpha,alpha,alpha,alpha,
+            black,white,white,white,black,alpha,alpha,alpha,alpha,alpha,alpha,alpha,
+            black,white,white,white,white,black,alpha,alpha,alpha,alpha,alpha,alpha,
+            black,white,white,white,white,white,black,alpha,alpha,alpha,alpha,alpha,
+            black,white,white,white,white,white,white,black,alpha,alpha,alpha,alpha,
+            black,white,white,white,white,white,white,white,black,alpha,alpha,alpha,
+            black,white,white,white,white,white,white,white,white,black,alpha,alpha,
+            black,white,white,white,white,white,white,white,white,white,black,alpha,
+            black,white,white,white,white,white,white,white,white,white,white,black,
+            black,white,white,white,white,white,white,black,black,black,black,black,
+            black,white,white,white,black,white,white,black,alpha,alpha,alpha,alpha,
+            black,white,white,black,alpha,black,white,white,black,alpha,alpha,alpha,
+            black,white,black,alpha,alpha,black,white,white,black,alpha,alpha,alpha,
+            black,black,alpha,alpha,alpha,alpha,black,white,white,black,alpha,alpha,
+            alpha,alpha,alpha,alpha,alpha,alpha,black,white,white,black,alpha,alpha,
+            alpha,alpha,alpha,alpha,alpha,alpha,alpha,black,black,alpha,alpha,alpha,
+        };
+        var width = 12;
+        cursorDefaultTexture.Resize(width, cursorRaw.Length / width);
+        for (int i = 0; i < cursorRaw.Length; i++)
+        {
+            var x = i % width;
+            var y = cursorDefaultTexture.height - i / width;
+            cursorDefaultTexture.SetPixel(x, y, cursorRaw[i]);
+        }
+        cursorDefaultTexture.Apply();
+        currentTexture = cursorDefaultTexture;
 
-        cursorRawImageObj.transform.SetParent(canvasObj.transform);
-
-        canvasObj.AddComponent<Canvas>();
-
-        canvasScaler = canvasObj.AddComponent<CanvasScaler>();
-
-        cursorRawImage = cursorRawImageObj.AddComponent<RawImage>();
-        cursorRectTransform = cursorRawImageObj.GetComponent<RectTransform>();
-        cursorRawImage.texture = new Texture2D(100, 100);
+        UnityCursorVisible = true;
     }
 
-    public static void SetCursor(Texture2D texture, Vector2 hotspot)
+    public static void SetCursorTexture(Texture2D texture)
     {
-        cursorRawImage.texture = texture;
-        VirtualCursor.hotspot = hotspot;
+        if (texture == null)
+            currentTexture = cursorDefaultTexture;
+        else
+            currentTexture = texture;
     }
-    */
 
     public static void Update()
     {
         if (!Enabled)
             return;
+
+        if (ShowCursor && UnityCursorVisible)
+            GUI.DrawTexture(new Rect(Input.mousePosition.x, Screen.height - Input.mousePosition.y, currentTexture.width, currentTexture.height), currentTexture);
     }
 }
 
