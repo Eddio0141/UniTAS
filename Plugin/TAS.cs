@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UniTASPlugin.FakeGameState.InputLegacy;
+using UniTASPlugin.TASMovie;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
 
@@ -28,7 +29,7 @@ public static class TAS
         }
     }
     public static bool RunInitOrStopping { get; private set; }
-    public static Movie.Movie CurrentMovie { get; private set; }
+    public static Movie CurrentMovie { get; private set; }
     public static ulong FrameCountMovie { get; private set; }
     static int currentFramebulkIndex;
     static int currentFramebulkFrameIndex;
@@ -39,7 +40,7 @@ public static class TAS
     {
         SaveState.Main.Update();
         UpdateMovie();
-        FakeGameState.InputLegacy.Main.Update();
+        Main.Update();
     }
 
     public static void FixedUpdate()
@@ -130,7 +131,7 @@ public static class TAS
         }
     }
 
-    public static void RunMovie(Movie.Movie movie)
+    public static void RunMovie(Movie movie)
     {
         PreparingRun = true;
         FrameCountMovie = 0;

@@ -1,4 +1,28 @@
-﻿namespace UniTASPlugin.Patches.__UnityEngine;
+﻿using HarmonyLib;
+using System;
+using System.Reflection;
+using UniTASPlugin.VersionSafeWrapper;
+
+namespace UniTASPlugin.Patches.__UnityEngine;
+
+[HarmonyPatch(typeof(UnityEngine.Screen), "showCursor", MethodType.Setter)]
+class set_showCursor
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static void Prefix(ref bool value)
+    {
+        if (!CursorWrap.SettingCursorVisible)
+        {
+            Overlay.UnityCursorVisible = value;
+            if (Overlay.ShowCursor)
+                value = false;
+        }
+    }
+}
 
 /*
 [HarmonyPatch(typeof(Screen), nameof(Screen.width), MethodType.Getter)]

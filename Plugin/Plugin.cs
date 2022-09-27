@@ -2,7 +2,7 @@
 using HarmonyLib;
 using System.Collections.Generic;
 using System.IO;
-using UniTASPlugin.TAS.Movie;
+using UniTASPlugin.TASMovie;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
 
@@ -19,13 +19,10 @@ public class Plugin : BaseUnityPlugin
 
     internal static SemanticVersion UnityVersion;
 
-    internal static Plugin Instance;
-
     internal static int FixedUpdateIndex { get; private set; } = -1;
 
-    private void Awake()
+    void Awake()
     {
-        Instance = this;
         Log = Logger;
 
         UnityVersion = Helper.GetUnityVersion();
@@ -48,13 +45,14 @@ public class Plugin : BaseUnityPlugin
 
         GameTracker.Init();
         FakeGameState.SystemInfo.Init();
+        Overlay.Init();
 
         Log.LogInfo($"System time: {System.DateTime.Now}");
         Log.LogInfo($"Plugin {NAME} is loaded!");
     }
 
     // unity execution order is Awake() -> FixedUpdate() -> Update()
-    private void Update()
+    void Update()
     {
         // TODO if possible, put this at the first call of Update
         FixedUpdateIndex++;
@@ -69,7 +67,7 @@ public class Plugin : BaseUnityPlugin
                 text = File.ReadAllText("C:\\Users\\Yuki\\Documents\\test.uti");
             else if (File.Exists("C:\\Program Files (x86)\\Steam\\steamapps\\common\\It Steals\\test.uti"))
                 text = File.ReadAllText("C:\\Program Files (x86)\\Steam\\steamapps\\common\\It Steals\\test.uti");
-            Movie movie = new("test.uti", text, out string err, out List<string> warnings);
+            var movie = new Movie("test.uti", text, out string err, out List<string> warnings);
 
             if (err != "")
             {
@@ -101,7 +99,7 @@ public class Plugin : BaseUnityPlugin
         */
     }
 
-    private void FixedUpdate()
+    void FixedUpdate()
     {
         // TODO if possible, put this at the first call of FixedUpdate
         FixedUpdateIndex = -1;
@@ -110,8 +108,13 @@ public class Plugin : BaseUnityPlugin
         GameRestart.FixedUpdate();
     }
 
-    private void LateUpdate()
+    void LateUpdate()
     {
         GameTracker.LateUpdate();
+    }
+
+    void OnGUI()
+    {
+        Overlay.Update();
     }
 }

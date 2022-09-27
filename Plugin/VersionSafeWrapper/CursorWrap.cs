@@ -5,6 +5,8 @@ namespace UniTASPlugin.VersionSafeWrapper;
 
 internal static class CursorWrap
 {
+    public static bool SettingCursorVisible { get; private set; } = false;
+
     static Type cursorType()
     {
         return AccessTools.TypeByName("UnityEngine.Cursor");
@@ -40,10 +42,12 @@ internal static class CursorWrap
         }
         set
         {
+            SettingCursorVisible = true;
             var cursor = Traverse.Create(cursorType());
             if (cursor.TypeExists())
             {
                 cursor.Property("visible").SetValue(value);
+                SettingCursorVisible = false;
                 return;
             }
             var screen = Traverse.Create(screenType());
@@ -51,9 +55,11 @@ internal static class CursorWrap
             if (!showCursor.PropertyExists())
             {
                 Plugin.Log.LogError("Failed to set Screen.showCursor property");
+                SettingCursorVisible = false;
                 return;
             }
             showCursor.SetValue(value);
+            SettingCursorVisible = false;
         }
     }
 

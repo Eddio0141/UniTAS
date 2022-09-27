@@ -6,7 +6,7 @@ using System.Linq;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
 
-namespace UniTASPlugin.Movie;
+namespace UniTASPlugin.TASMovie;
 
 public class Movie
 {

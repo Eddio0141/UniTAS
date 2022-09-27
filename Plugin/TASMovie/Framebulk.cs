@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace UniTASPlugin.Movie;
+namespace UniTASPlugin.TASMovie;
 
 public class Framebulk
 {
