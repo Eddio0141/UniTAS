@@ -19,15 +19,10 @@ public class Plugin : BaseUnityPlugin
 
     internal static SemanticVersion UnityVersion;
 
-    internal static Plugin Instance;
-
     internal static int FixedUpdateIndex { get; private set; } = -1;
 
-
-
-    private void Awake()
+    void Awake()
     {
-        Instance = this;
         Log = Logger;
 
         UnityVersion = Helper.GetUnityVersion();
@@ -56,7 +51,7 @@ public class Plugin : BaseUnityPlugin
     }
 
     // unity execution order is Awake() -> FixedUpdate() -> Update()
-    private void Update()
+    void Update()
     {
         // TODO if possible, put this at the first call of Update
         FixedUpdateIndex++;
@@ -103,7 +98,7 @@ public class Plugin : BaseUnityPlugin
         */
     }
 
-    private void FixedUpdate()
+    void FixedUpdate()
     {
         // TODO if possible, put this at the first call of FixedUpdate
         FixedUpdateIndex = -1;
@@ -112,8 +107,13 @@ public class Plugin : BaseUnityPlugin
         GameRestart.FixedUpdate();
     }
 
-    private void LateUpdate()
+    void LateUpdate()
     {
         GameTracker.LateUpdate();
+    }
+
+    void OnGUI()
+    {
+        Overlay.Update();
     }
 }

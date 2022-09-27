@@ -2,8 +2,10 @@
 
 namespace UniTASPlugin;
 
-public static class Overlay
+internal static class Overlay
 {
+    public static bool Enabled { get; set; } = true;
+
     /*
     static Vector2 hotspot = Vector2.zero;
     public static bool Visible { get; set; } = true;
@@ -35,14 +37,12 @@ public static class Overlay
         cursorRawImage.texture = texture;
         VirtualCursor.hotspot = hotspot;
     }
+    */
 
     public static void Update()
     {
-        if (!Visible)
+        if (!Enabled)
             return;
-
-        cursorRectTransform.anchoredPosition = (Vector2)Mouse.Position.ConvertTo() + hotspot;
     }
-    */
 }
 
