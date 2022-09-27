@@ -68,19 +68,18 @@ class isDone
     }
 }
 
-[HarmonyPatch(typeof(AsyncOperation), "Finalize")]
-class Finialize
+[HarmonyPatch(typeof(AsyncOperation), "InternalDestroy")]
+class InternalDestroy
 {
     static System.Exception Cleanup(MethodBase original, System.Exception ex)
     {
         return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
     }
 
-    static bool Prefix(AsyncOperation __instance)
+    static void Prefix(AsyncOperation __instance)
     {
         // unless UID is 0, we shouldn't let it proceed
         var wrap = new AsyncOperationWrap(__instance);
         wrap.FinalizeCall();
-        return wrap.InstantiatedByUnity;
     }
 }
