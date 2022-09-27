@@ -22,7 +22,7 @@ class DateTimePatch
             GameTime.GotInitialTime = true;
             return true;
         }
-        __result = GameTime.Time;
+        __result = GameTime.CurrentTime;
         return false;
     }
 }

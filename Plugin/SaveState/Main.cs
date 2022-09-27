@@ -21,7 +21,7 @@ internal static class Main
         //var scene = SceneManager.GetActiveScene();
         //var sceneIndex = Scene.buildIndex(scene);
         DateTime time = DateTime.Now;
-        ulong frameCount = FakeGameState.GameTime.FrameCount;
+        ulong frameCount = FakeGameState.GameTime.RenderedFrameCountOffset;
         int fixedUpdateIndex = Plugin.FixedUpdateIndex;
         // TODO only save this state if unity version has it
         //var cursorVisible = Cursor.visible;
@@ -63,10 +63,9 @@ internal static class Main
         Plugin.Log.LogDebug("Load operation starting");
         // TODO sort out depending on unity version
         //var scene = pendingState.Scene;
-        DateTime time = pendingState.Time;
-        ulong frameCount = pendingState.FrameCount;
-        FakeGameState.GameTime.Time = time;
-        FakeGameState.GameTime.FrameCount = frameCount;
+        //DateTime time = pendingState.Time;
+        //ulong frameCount = pendingState.FrameCount;
+        //FakeGameState.GameTime.SetState(time, frameCount);
         //Cursor.visible = cursorVisible;
         //Cursor.lockState = cursorLockState;
 
@@ -77,6 +76,6 @@ internal static class Main
         position.Field("y").SetValue(testy);
         position.Field("z").SetValue(testz);
 
-        Plugin.Log.LogDebug($"Load operation finished, time: {DateTime.Now}, frameCount: {FakeGameState.GameTime.FrameCount}");
+        Plugin.Log.LogDebug($"Load operation finished, time: {DateTime.Now}, frameCount: {FakeGameState.GameTime.RenderedFrameCountOffset}");
     }
 }

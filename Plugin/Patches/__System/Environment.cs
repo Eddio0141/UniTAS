@@ -5,7 +5,7 @@ using UniTASPlugin.FakeGameState;
 
 namespace UniTASPlugin.Patches.__System;
 
-[HarmonyPatch(typeof(Environment))]
+[HarmonyPatch(typeof(Environment), nameof(Environment.TickCount), MethodType.Getter)]
 class EnvironmentPatch
 {
     static Exception Cleanup(MethodBase original, Exception ex)
@@ -13,11 +13,9 @@ class EnvironmentPatch
         return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
     }
 
-    [HarmonyPrefix]
-    [HarmonyPatch(nameof(Environment.TickCount), MethodType.Getter)]
-    static bool Prefix_TickCountGetter(ref int __result)
+    static bool Prefix(ref int __result)
     {
-        __result = (int)TimeSpan.FromTicks(GameTime.Time.Ticks).TotalMilliseconds;
+        __result = (int)(GameTime.RealtimeSinceStartup * 1000f);
         return false;
     }
 }

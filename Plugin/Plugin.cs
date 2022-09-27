@@ -30,9 +30,11 @@ public class Plugin : BaseUnityPlugin
 
         UnityVersion = Helper.GetUnityVersion();
         Log.LogInfo($"Internally found unity version: {UnityVersion}");
-        // TODO complete fixing this
         Log.LogInfo($"Game product name: {AppInfo.ProductName()}");
-        //Logger.Log.LogInfo($"Game company name: {Application.companyName}, product name: {Application.productName}, version: {Application.version}");
+        // TODO complete fixing this
+        var companyNameProperty = Traverse.Create(typeof(Application)).Property("companyName");
+        if (companyNameProperty.PropertyExists())
+            Log.LogInfo($"Game company name: {companyNameProperty.GetValue<string>()}");//product name: {Application.productName}, version: {Application.version}");
 
         Harmony harmony = new($"{NAME}HarmonyPatch");
         harmony.PatchAll();
@@ -57,7 +59,7 @@ public class Plugin : BaseUnityPlugin
         // TODO if possible, put this at the first call of Update
         FixedUpdateIndex++;
         GameCapture.Update();
-        TAS.Main.Update(Time.deltaTime);
+        TAS.Main.Update();
 
         // TODO remove this test
         if (!TAS.Main.Running && Input.GetKeyDown(KeyCode.K))
@@ -83,6 +85,10 @@ public class Plugin : BaseUnityPlugin
             }
 
             TAS.Main.RunMovie(movie);
+        }
+        if (!TAS.Main.Running && Input.GetKeyDown(KeyCode.L))
+        {
+            GameRestart.SoftRestart(new System.DateTime());
         }
         /*
         if (!TAS.Main.Running && Input.GetKeyDown(KeyCode.L))
