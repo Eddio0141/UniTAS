@@ -1,4 +1,4 @@
-﻿namespace UniTASPlugin.Movie;
+﻿namespace UniTASPlugin.TASMovie;
 
 public class Mouse
 {

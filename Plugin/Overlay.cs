@@ -1,4 +1,6 @@
-﻿namespace UniTASPlugin;
+﻿using UnityEngine;
+
+namespace UniTASPlugin;
 
 public static class Overlay
 {
@@ -10,7 +12,7 @@ public static class Overlay
     static readonly RawImage cursorRawImage;
     static readonly RectTransform cursorRectTransform;
 
-    Init()
+    public static void Init()
     {
         var canvasObj = new GameObject("VirtualCursorCanvas");
         Object.DontDestroyOnLoad(canvasObj);
@@ -34,9 +36,6 @@ public static class Overlay
         VirtualCursor.hotspot = hotspot;
     }
 
-    /// <summary>
-    /// Shows the cursor.
-    /// </summary>
     public static void Update()
     {
         if (!Visible)
