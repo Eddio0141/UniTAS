@@ -117,13 +117,7 @@ internal static partial class Overlay
 
     const int TAS_MOVIE_BROWSER_WIDTH = 1000;
     const int TAS_MOVIE_BROWSER_HEIGHT = 750;
-    static Rect tasMovieBrowserDefaultRect = new(
-        Screen.width / 2 - TAS_MOVIE_BROWSER_WIDTH / 2,
-        Screen.height / 2 - TAS_MOVIE_BROWSER_HEIGHT / 2,
-        TAS_MOVIE_BROWSER_WIDTH,
-        TAS_MOVIE_BROWSER_HEIGHT);
-    static Rect tasMovieBrowserRect = tasMovieBrowserDefaultRect;
-    static bool tasMovieBrowserShow = false;
+    static FileBrowser tasMovieBrowser = new();
 
     static void DrawGUI()
     {
@@ -167,8 +161,12 @@ internal static partial class Overlay
                     }
                     if (GUILayout.Button("Browse", GUILayout.Width(60)))
                     {
-                        tasMovieBrowserShow = true;
-                        tasMovieBrowserRect = tasMovieBrowserDefaultRect;
+                        tasMovieBrowser = new FileBrowser(Application.dataPath, new Rect(
+                            Screen.width / 2 - TAS_MOVIE_BROWSER_WIDTH / 2,
+                            Screen.height / 2 - TAS_MOVIE_BROWSER_HEIGHT / 2,
+                            TAS_MOVIE_BROWSER_WIDTH,
+                            TAS_MOVIE_BROWSER_HEIGHT),
+                            "Select TAS Movie", 0);
                     }
                     GUILayout.EndHorizontal();
                     break;
@@ -204,8 +202,8 @@ internal static partial class Overlay
                 }
         }
 
-        tasMovieBrowserShow = FileBrowser.Open(ref tasMovieBrowserRect, "Select the movie to play", 0, tasMovieBrowserShow, out filePath);
-
         GUILayout.EndArea();
+
+        tasMovieBrowser.Update(out filePath);
     }
 }
