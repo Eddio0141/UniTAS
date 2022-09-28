@@ -123,7 +123,11 @@ internal static partial class Overlay
         Screen.height / 2 - TAS_MOVIE_BROWSER_HEIGHT / 2,
         TAS_MOVIE_BROWSER_WIDTH,
         TAS_MOVIE_BROWSER_HEIGHT),
-        "Select TAS Movie", 0);
+        "Select TAS Movie", 0, FileBrowser.FileBrowserType.Open, new[] {
+            new FileBrowser.Extension("UniTAS Movie", new[] { "*.uti" }),
+            new FileBrowser.Extension("Text file", new[] { "*.txt" }),
+            new()
+        });
 
     static void DrawGUI()
     {
