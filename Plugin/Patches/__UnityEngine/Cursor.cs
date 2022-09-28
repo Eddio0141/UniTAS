@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using System;
 using System.Reflection;
+using UniTASPlugin.GameOverlay;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
 

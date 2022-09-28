@@ -36,6 +36,12 @@
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="all" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="PresentationFramework">
+      <HintPath>..\..\..\..\..\..\Program Files\Reference Assemblies\Microsoft\Framework\v3.0\PresentationFramework.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -file &quot;$(ProjectDir)postbuild.ps1&quot; $(TargetDir)$(ProjectName).dll" ContinueOnError="true" />
   </Target>

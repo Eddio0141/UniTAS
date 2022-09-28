@@ -1,13 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.Win32;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UniTASPlugin.TASMovie;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
 
-namespace UniTASPlugin;
+namespace UniTASPlugin.GameOverlay;
 
-internal static class Overlay
+internal static partial class Overlay
 {
     public static bool Enabled { get; set; } = true;
     public static bool ShowCursor { get; set; } = true;
@@ -93,39 +94,89 @@ internal static class Overlay
     {
         DrawGUI();
 
-        if (CursorWrap.TempUnlocked || (ShowCursor && UnityCursorVisible))
+        if (CursorWrap.TempUnlocked || ShowCursor && UnityCursorVisible)
             GUI.DrawTexture(new Rect(Input.mousePosition.x, Screen.height - Input.mousePosition.y, currentTexture.width, currentTexture.height), currentTexture);
     }
 
     static int tabIndex = 0;
-    static readonly string[] tabs = new string[] { "Main", "Debug" };
+    static readonly string[] tabs = new string[] { "Movie", "Debug" };
     static Texture2D BGSurround = new Texture2D(MENU_SIZE_X, MENU_SIZE_Y);
+    static string filePath = "";
 
-    const int MENU_SIZE_X = 200;
+    enum Tabs : int
+    {
+        Movie,
+        Debug,
+    }
+
+    const int MENU_SIZE_X = 600;
     const int MENU_SIZE_Y = 200;
-    const int BUTTON_HEIGHT = 20;
-    const int MAIN_CONTENT_START_Y = 55;
-    const int SPACING = 10;
+    const int MENU_X = 10;
+    const int MENU_Y = 10;
+    const int EDGE_SPACING = 5;
+
+    const int TAS_MOVIE_BROWSER_WIDTH = 1000;
+    const int TAS_MOVIE_BROWSER_HEIGHT = 750;
+    static Rect tasMovieBrowserDefaultRect = new(
+        Screen.width / 2 - TAS_MOVIE_BROWSER_WIDTH / 2,
+        Screen.height / 2 - TAS_MOVIE_BROWSER_HEIGHT / 2,
+        TAS_MOVIE_BROWSER_WIDTH,
+        TAS_MOVIE_BROWSER_HEIGHT);
+    static Rect tasMovieBrowserRect = tasMovieBrowserDefaultRect;
+    static bool tasMovieBrowserShow = false;
 
     static void DrawGUI()
     {
         if (!Enabled)
             return;
 
-        GUI.BeginGroup(new Rect(10, 10, MENU_SIZE_X, MENU_SIZE_Y));
-        GUI.DrawTexture(new Rect(0, 0, MENU_SIZE_X, MENU_SIZE_Y), BGSurround);
-        GUI.Box(new Rect(0, 0, MENU_SIZE_X, MENU_SIZE_Y), $"{Plugin.NAME} Menu");
+        GUI.DrawTexture(new Rect(MENU_X, MENU_Y, MENU_SIZE_X, MENU_SIZE_Y), BGSurround);
+        GUI.Box(new Rect(MENU_X, MENU_Y, MENU_SIZE_X, MENU_SIZE_Y), $"{Plugin.NAME} Menu");
+        GUILayout.BeginArea(new Rect(MENU_X + EDGE_SPACING, MENU_Y + EDGE_SPACING + 30, MENU_SIZE_X - EDGE_SPACING * 2, MENU_SIZE_Y - EDGE_SPACING * 2 - 30));
 
-        tabIndex = GUI.Toolbar(new Rect(SPACING, 30, 180, 20), tabIndex, tabs);
-
-        switch (tabIndex)
+        tabIndex = GUILayout.Toolbar(tabIndex, tabs);
+        switch ((Tabs)tabIndex)
         {
-            case 0:
-                break;
+            case Tabs.Movie:
+                {
+                    GUILayout.BeginHorizontal();
+                    GUILayout.Label("Movie Path", GUILayout.Width(70));
+                    filePath = GUILayout.TextField(filePath);
+                    if (GUILayout.Button("Run", GUILayout.Width(40)))
+                    {
+                        if (File.Exists(filePath))
+                        {
+                            var text = File.ReadAllText(filePath);
+                            var movie = new Movie("test.uti", text, out var err, out List<string> warnings);
+
+                            if (err != "")
+                            {
+                                Plugin.Log.LogError(err);
+                                return;
+                            }
+                            if (warnings.Count > 1)
+                            {
+                                foreach (string warn in warnings)
+                                {
+                                    Plugin.Log.LogWarning(warn);
+                                }
+                            }
+
+                            TAS.RunMovie(movie);
+                        }
+                    }
+                    if (GUILayout.Button("Browse", GUILayout.Width(60)))
+                    {
+                        tasMovieBrowserShow = true;
+                        tasMovieBrowserRect = tasMovieBrowserDefaultRect;
+                    }
+                    GUILayout.EndHorizontal();
+                    break;
+                }
             default:
                 // debug
                 {
-                    if (GUI.Button(new Rect(SPACING, MAIN_CONTENT_START_Y, 100, BUTTON_HEIGHT), "test TAS") && !TAS.Running)
+                    if (GUILayout.Button("test TAS") && !TAS.Running)
                     {
                         string text = "";
                         if (File.Exists("C:\\Users\\Yuki\\Documents\\test.uti"))
@@ -153,6 +204,8 @@ internal static class Overlay
                 }
         }
 
-        GUI.EndGroup();
+        tasMovieBrowserShow = FileBrowser.Open(ref tasMovieBrowserRect, "Select the movie to play", 0, tasMovieBrowserShow, out filePath);
+
+        GUILayout.EndArea();
     }
 }
