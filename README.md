@@ -4,10 +4,9 @@ A tool that lets you TAS unity games hopefully
 # <span style="color:red">!!!The tool doesn't bypass anti cheat or anything like that, USE AT YOUR OWN RISK!!!</span>
 
 # Stuff you might want to know
-- Only code that exists right now is in /Plugin and /Patcher, which you have to use along with [bepinex 5](https://docs.bepinex.dev/articles/user_guide/installation/index.html), place the built dll of /Plugin in the bepinex plugin folder, and /Patcher dll into /Patch
 - The tool is still in a very early stage
+- Only code that exists right now is in /Plugin and /Patcher, which you have to use along with [bepinex 5](https://docs.bepinex.dev/articles/user_guide/installation/index.html), place the built dll of /Plugin in the bepinex plugin folder, and /Patcher dll into /Patch
 - It only does very basic stuff, mainly that being running a TAS consistently
-- It still has no GUI for control
 - Currently no convenient tool that installs this TAS tool to some unity game
 - Only tested in windows
 
@@ -62,8 +61,6 @@ class UnloadSceneAsync
 - SystemInfo.supportsGyroscope needs to be patched, UnityEngine.SystemInfo needs to be checked for patches
 - Check InputUnsafeUtility and patch them in unity versions that has them
 - Update() and FixedUpdate() calls in core needs to be done before Unity calls happen, hook to make it work.
-- TAS menu
-- TAS GUI
 - TAS helpers
   - Get all axis names in input legacy system
     - Only prints them in console when found
