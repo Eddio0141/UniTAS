@@ -117,7 +117,13 @@ internal static partial class Overlay
 
     const int TAS_MOVIE_BROWSER_WIDTH = 1000;
     const int TAS_MOVIE_BROWSER_HEIGHT = 750;
-    static FileBrowser tasMovieBrowser = new();
+    static FileBrowser tasMovieBrowser = new(
+        Application.dataPath, new Rect(
+        Screen.width / 2 - TAS_MOVIE_BROWSER_WIDTH / 2,
+        Screen.height / 2 - TAS_MOVIE_BROWSER_HEIGHT / 2,
+        TAS_MOVIE_BROWSER_WIDTH,
+        TAS_MOVIE_BROWSER_HEIGHT),
+        "Select TAS Movie", 0);
 
     static void DrawGUI()
     {
@@ -141,7 +147,7 @@ internal static partial class Overlay
                         if (File.Exists(filePath))
                         {
                             var text = File.ReadAllText(filePath);
-                            var movie = new Movie("test.uti", text, out var err, out List<string> warnings);
+                            var movie = new Movie(Path.GetFileName(filePath), text, out var err, out List<string> warnings);
 
                             if (err != "")
                             {
@@ -161,12 +167,7 @@ internal static partial class Overlay
                     }
                     if (GUILayout.Button("Browse", GUILayout.Width(60)))
                     {
-                        tasMovieBrowser = new FileBrowser(Application.dataPath, new Rect(
-                            Screen.width / 2 - TAS_MOVIE_BROWSER_WIDTH / 2,
-                            Screen.height / 2 - TAS_MOVIE_BROWSER_HEIGHT / 2,
-                            TAS_MOVIE_BROWSER_WIDTH,
-                            TAS_MOVIE_BROWSER_HEIGHT),
-                            "Select TAS Movie", 0);
+                        tasMovieBrowser.Open();
                     }
                     GUILayout.EndHorizontal();
                     break;

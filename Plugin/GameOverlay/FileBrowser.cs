@@ -12,6 +12,7 @@ public class FileBrowser
     string[] displayNames;
     string selectedFileText;
     Vector2 scrollPos;
+    Rect defaultRect;
     Rect windowRect;
     bool opened;
     int id;
@@ -23,19 +24,26 @@ public class FileBrowser
     {
         this.currentDir = currentDir;
         currentDirText = currentDir;
+        defaultRect = windowRect;
         this.windowRect = windowRect;
         this.title = title;
         this.id = id;
         dirChanged = true;
         scrollPos = new();
-        opened = true;
+        opened = false;
         finalPath = "";
         gotFinalPath = true;
     }
 
-    public FileBrowser()
+    public void Open()
     {
-        opened = false;
+        currentDirText = currentDir;
+        windowRect = defaultRect;
+        dirChanged = true;
+        scrollPos = new();
+        opened = true;
+        finalPath = "";
+        gotFinalPath = true;
     }
 
     public void GetFinalPath(ref string finalPath)
