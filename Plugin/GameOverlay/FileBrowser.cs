@@ -10,14 +10,14 @@ public class FileBrowser
     bool dirChanged;
     string[] currentDirPaths;
     string[] displayNames;
-    string selectedPath;
-    string selectedName;
-    bool selected;
+    string selectedFileText;
     Vector2 scrollPos;
     Rect windowRect;
     bool opened;
     int id;
     string title;
+    string finalPath;
+    bool gotFinalPath;
 
     public FileBrowser(string currentDir, Rect windowRect, string title, int id)
     {
@@ -27,9 +27,10 @@ public class FileBrowser
         this.title = title;
         this.id = id;
         dirChanged = true;
-        selected = false;
         scrollPos = new();
         opened = true;
+        finalPath = "";
+        gotFinalPath = true;
     }
 
     public FileBrowser()
@@ -37,11 +38,18 @@ public class FileBrowser
         opened = false;
     }
 
-    public bool Update(out string path)
+    public void GetFinalPath(ref string finalPath)
     {
-        path = "";
+        if (gotFinalPath)
+            return;
+        finalPath = this.finalPath;
+        gotFinalPath = true;
+    }
+
+    public void Update()
+    {
         if (!opened)
-            return false;
+            return;
 
         if (dirChanged && Directory.Exists(currentDir))
         {
@@ -58,7 +66,6 @@ public class FileBrowser
         dirChanged = false;
 
         windowRect = GUILayout.Window(id, windowRect, Window, title, GUI.skin.window);
-        return true;
     }
 
     void Window(int id)
@@ -78,7 +85,9 @@ public class FileBrowser
             dirChanged = true;
         }
         if (GUILayout.Button("x", GUILayout.Width(20)))
+        {
             opened = false;
+        }
         GUILayout.EndHorizontal();
 
         scrollPos = GUILayout.BeginScrollView(scrollPos, false, true);
@@ -95,12 +104,24 @@ public class FileBrowser
                 }
                 else
                 {
-                    selectedPath = path;
-                    selectedName = name;
-                    selected = true;
+                    selectedFileText = name;
                 }
             }
         }
         GUILayout.EndScrollView();
+
+        GUILayout.BeginHorizontal();
+        selectedFileText = GUILayout.TextField(selectedFileText);
+        if (GUILayout.Button("Open", GUILayout.Width(50)))
+        {
+            var combinedPath = Path.Combine(currentDir, selectedFileText);
+            if (File.Exists(combinedPath))
+            {
+                opened = false;
+                gotFinalPath = false;
+                finalPath = combinedPath;
+            }
+        }
+        GUILayout.EndHorizontal();
     }
 }

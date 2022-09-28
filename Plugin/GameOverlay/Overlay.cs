@@ -204,6 +204,7 @@ internal static partial class Overlay
 
         GUILayout.EndArea();
 
-        tasMovieBrowser.Update(out filePath);
+        tasMovieBrowser.Update();
+        tasMovieBrowser.GetFinalPath(ref filePath);
     }
 }
