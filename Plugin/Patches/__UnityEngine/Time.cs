@@ -9,7 +9,7 @@ namespace UniTASPlugin.Patches.__UnityEngine;
 
 #pragma warning disable IDE1006
 
-[HarmonyPatch(typeof(Time), "captureFramerate", MethodType.Setter)]
+[HarmonyPatch(typeof(Time), nameof(Time.captureFramerate), MethodType.Setter)]
 class set_captureFramerate
 {
     static Exception Cleanup(MethodBase original, Exception ex)
@@ -20,7 +20,7 @@ class set_captureFramerate
     static bool Prefix()
     {
         // if TAS is running / preparing and we aren't setting the frametime, reject
-        return !((TAS.Running || TAS.PreparingRun) && !TimeWrap.SettingFrametime);
+        return !(TAS.Running || TAS.PreparingRun);
     }
 }
 
@@ -35,7 +35,7 @@ class set_captureDeltaTime
     static bool Prefix()
     {
         // if TAS is running / preparing and we aren't setting the frametime, reject
-        return !((TAS.Running || TAS.PreparingRun) && !TimeWrap.SettingFrametime);
+        return !(TAS.Running || TAS.PreparingRun);
     }
 }
 
