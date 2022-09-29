@@ -187,21 +187,35 @@ public class FileBrowser
         }
 
         quickAccessWidth = (int)(windowRect.width / 9);
-        
+
         var homePath = Environment.GetEnvironmentVariable("HOMEPATH");
 
-        quickAccessPaths = new[] {
+        var quickAccessPathsBuilder = new List<string>() {
             Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
             Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
             homePath,
             Helper.GameRootDir(),
         };
-        quickAccessNames = new[] {
+        var quickAccessNamesBuilder = new List<string>() {
             "Desktop",
             "Documents",
             "Home",
-            "Game Root",
+            "Game root",
         };
+
+        try
+        {
+            var drives = DriveInfo.GetDrives();
+            foreach (var drive in drives)
+            {
+                quickAccessPathsBuilder.Add(drive.Name);
+                quickAccessNamesBuilder.Add(drive.Name);
+            }
+        }
+        catch (Exception) { }
+
+        quickAccessPaths = quickAccessPathsBuilder.ToArray();
+        quickAccessNames = quickAccessNamesBuilder.ToArray();
     }
 
     public void Open()
@@ -408,16 +422,6 @@ public class FileBrowser
             if (GUILayout.Button(name) && !confirmSave.Opened)
             {
                 changingDir = path;
-                dirChanged = true;
-            }
-        }
-        // all drives
-        var drives = DriveInfo.GetDrives();
-        foreach (var drive in drives)
-        {
-            if (GUILayout.Button(drive.Name) && !confirmSave.Opened)
-            {
-                changingDir = drive.Name;
                 dirChanged = true;
             }
         }
