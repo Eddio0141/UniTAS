@@ -20,17 +20,17 @@ internal static class Main
         // TODO only use this if unity version has it
         //var scene = SceneManager.GetActiveScene();
         //var sceneIndex = Scene.buildIndex(scene);
-        DateTime time = DateTime.Now;
-        ulong frameCount = FakeGameState.GameTime.RenderedFrameCountOffset;
-        int fixedUpdateIndex = Plugin.FixedUpdateIndex;
+        var time = DateTime.Now;
+        var frameCount = FakeGameState.GameTime.RenderedFrameCountOffset;
+        var fixedUpdateIndex = Plugin.FixedUpdateIndex;
         // TODO only save this state if unity version has it
         //var cursorVisible = Cursor.visible;
         //var cursorLockState = Cursor.lockState;
-        SemanticVersion saveVersion = Plugin.UnityVersion;
+        var saveVersion = Plugin.UnityVersion;
 
         testInstance = UnityEngine.Object.FindObjectOfType(AccessTools.TypeByName("MouseLook"));
-        Traverse body = Traverse.Create(testInstance).Field("playerBody");
-        Traverse position = body.Property("position");
+        var body = Traverse.Create(testInstance).Field("playerBody");
+        var position = body.Property("position");
         testx = (float)position.Field("x").GetValue();
         testy = (float)position.Field("y").GetValue();
         testz = (float)position.Field("z").GetValue();
@@ -42,7 +42,7 @@ internal static class Main
     public static void Load()
     {
         Plugin.Log.LogDebug("We are loading the test state");
-        State state = Test;
+        var state = Test;
         pendingLoad = true;
         pendingLoadFixedUpdateIndex = state.FixedUpdateIndex;
         pendingState = state;
@@ -70,11 +70,11 @@ internal static class Main
         //Cursor.lockState = cursorLockState;
 
         // testing
-        Traverse body = Traverse.Create(testInstance).Field("playerBody");
-        Traverse position = body.Property("position");
-        position.Field("x").SetValue(testx);
-        position.Field("y").SetValue(testy);
-        position.Field("z").SetValue(testz);
+        var body = Traverse.Create(testInstance).Field("playerBody");
+        var position = body.Property("position");
+        _ = position.Field("x").SetValue(testx);
+        _ = position.Field("y").SetValue(testy);
+        _ = position.Field("z").SetValue(testz);
 
         Plugin.Log.LogDebug($"Load operation finished, time: {DateTime.Now}, frameCount: {FakeGameState.GameTime.RenderedFrameCountOffset}");
     }

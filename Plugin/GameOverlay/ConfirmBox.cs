@@ -4,15 +4,15 @@ namespace UniTASPlugin.GameOverlay;
 
 public class ConfirmBox
 {
-    string title;
-    string message;
+    readonly string title;
+    readonly string message;
     Rect defaultRect;
     Rect windowRect;
     public bool Opened { get; private set; }
     bool finalResult;
     bool gotFinalResult;
-    int id;
-    ConfirmBoxType confirmType;
+    readonly int id;
+    readonly ConfirmBoxType confirmType;
 
     public ConfirmBox(string title, string message, Rect windowRect, int id, ConfirmBoxType confirmType)
     {

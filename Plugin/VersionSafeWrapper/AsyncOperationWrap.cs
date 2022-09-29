@@ -48,12 +48,9 @@ internal class AsyncOperationWrap
         set
         {
             var uidField = Traverse.Create(instance).Field(UID_FIELD_NAME);
-            uidField.SetValue(value);
+            _ = uidField.SetValue(value);
         }
     }
 
-    public bool InstantiatedByUnity
-    {
-        get => UID == 0;
-    }
+    public bool InstantiatedByUnity => UID == 0;
 }

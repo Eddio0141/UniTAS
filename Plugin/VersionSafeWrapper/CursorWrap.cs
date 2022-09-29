@@ -46,7 +46,7 @@ internal static class CursorWrap
             var cursor = Traverse.Create(cursorType());
             if (cursor.TypeExists())
             {
-                cursor.Property("visible").SetValue(value);
+                _ = cursor.Property("visible").SetValue(value);
                 SettingCursorVisible = false;
                 return;
             }
@@ -58,7 +58,7 @@ internal static class CursorWrap
                 SettingCursorVisible = false;
                 return;
             }
-            showCursor.SetValue(value);
+            _ = showCursor.SetValue(value);
             SettingCursorVisible = false;
         }
     }
@@ -87,7 +87,7 @@ internal static class CursorWrap
                     TempUnlocked = false;
                     return;
                 }
-                lockCursor.SetValue(false);
+                _ = lockCursor.SetValue(false);
             }
             UnlockCursor();
         }
@@ -98,11 +98,11 @@ internal static class CursorWrap
             if (cursor.TypeExists())
             {
                 if (TempStoreLockVariant != null)
-                    cursor.Property("lockState").SetValue(TempStoreLockVariant);
+                    _ = cursor.Property("lockState").SetValue(TempStoreLockVariant);
                 return;
             }
             if (TempStoreLockCursorState != null)
-                Traverse.Create(screenType()).Property("lockCursor").SetValue((bool)TempStoreLockCursorState);
+                _ = Traverse.Create(screenType()).Property("lockCursor").SetValue((bool)TempStoreLockCursorState);
         }
     }
 
@@ -120,7 +120,7 @@ internal static class CursorWrap
                 var lockState = cursor.Property("lockState");
                 if (lockState.PropertyExists())
                 {
-                    lockState.SetValue(variant);
+                    _ = lockState.SetValue(variant);
                     return;
                 }
             }
@@ -133,6 +133,6 @@ internal static class CursorWrap
             Plugin.Log.LogError("Failed to unlock cursor, lockCursor property not found");
             return;
         }
-        lockCursor.SetValue(false);
+        _ = lockCursor.SetValue(false);
     }
 }

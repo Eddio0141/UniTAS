@@ -19,7 +19,7 @@ internal static partial class Helper
         if (System.IO.File.Exists(unityPlayerPath))
         {
             var fullPath = System.IO.Path.GetFullPath(unityPlayerPath);
-            System.Diagnostics.FileVersionInfo fileVersion = System.Diagnostics.FileVersionInfo.GetVersionInfo(fullPath);
+            var fileVersion = System.Diagnostics.FileVersionInfo.GetVersionInfo(fullPath);
             versionRaw = fileVersion.FileVersion;
         }
         else
@@ -36,8 +36,8 @@ internal static partial class Helper
 
     public static Assembly[] GetGameAssemblies()
     {
-        Assembly[] assemblies = System.AppDomain.CurrentDomain.GetAssemblies();
-        string[] resetIgnoreAssemblies = new string[] {
+        var assemblies = System.AppDomain.CurrentDomain.GetAssemblies();
+        var resetIgnoreAssemblies = new string[] {
             "mscorlib",
             "BepInEx.Preloader",
             "BepInEx",
@@ -53,7 +53,7 @@ internal static partial class Helper
             "netstandard",
             "UniTASPlugin",
         };
-        string[] resetIgnoreAssmelibes_startsWith = new string[]
+        var resetIgnoreAssmelibes_startsWith = new string[]
         {
             "Unity.",
             "UnityEngine.",
@@ -64,10 +64,10 @@ internal static partial class Helper
 
         return assemblies.Where((assembly) =>
         {
-            foreach (string assemblyCheck in resetIgnoreAssmelibes_startsWith)
+            foreach (var assemblyCheck in resetIgnoreAssmelibes_startsWith)
                 if (assembly.FullName.StartsWith(assemblyCheck))
                     return false;
-            foreach (string assemblyCheck in resetIgnoreAssemblies)
+            foreach (var assemblyCheck in resetIgnoreAssemblies)
                 if (assembly.FullName == assemblyCheck)
                     return false;
             return true;
@@ -77,9 +77,7 @@ internal static partial class Helper
     public static string GameRootDir()
     {
         var appBase = AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
-        if (appBase != null)
-            return appBase;
-        return System.IO.Path.GetFullPath(".");
+        return appBase ?? System.IO.Path.GetFullPath(".");
     }
 
     public static string GameName()
@@ -169,11 +167,11 @@ internal static partial class Helper
                 if (!addHandlerCache.TryGetValue(resultType, out var addInvoker))
                 {
                     var addOperation = AccessTools.FirstMethod(resultType, m => m.Name == "Add" && m.GetParameters().Length == 1);
-                    if (addOperation is object)
+                    if (addOperation is not null)
                     {
                         addInvoker = MethodInvoker.GetHandler(addOperation);
                     }
-                    addHandlerCacheLock.UpgradeToWriterLock(200);
+                    _ = addHandlerCacheLock.UpgradeToWriterLock(200);
                     addHandlerCacheLock.AcquireWriterLock(200);
                     try
                     {
@@ -191,7 +189,7 @@ internal static partial class Helper
                     var i = 0;
                     foreach (var element in source as IEnumerable)
                     {
-                        var iStr = (i++).ToString();
+                        var iStr = i++.ToString();
                         var path = pathRoot.Length > 0 ? pathRoot + "." + iStr : iStr;
                         var newElement = MakeDeepCopy(element, newElementType, processor, path);
                         _ = addInvoker(addableResult, new object[] { newElement });
@@ -233,7 +231,7 @@ internal static partial class Helper
         Traverse.IterateFields(source, result, (name, src, dst) =>
         {
             var path = pathRoot.Length > 0 ? pathRoot + "." + name : name;
-            var value = processor is object ? processor(path, src, dst) : src.GetValue();
+            var value = processor is not null ? processor(path, src, dst) : src.GetValue();
             _ = dst.SetValue(MakeDeepCopy(value, dst.GetValueType(), processor, path));
         });
         MakeDeepCopyRecursionDepth--;

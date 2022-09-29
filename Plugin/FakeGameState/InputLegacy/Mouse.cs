@@ -21,32 +21,14 @@ public static class Mouse
 
     public static void Update()
     {
-        if (LeftClickPrev && !LeftClick)
-            LeftClickUp = true;
-        else
-            LeftClickUp = false;
-        if (!LeftClickPrev && LeftClick)
-            LeftClickDown = true;
-        else
-            LeftClickDown = false;
+        LeftClickUp = LeftClickPrev && !LeftClick;
+        LeftClickDown = !LeftClickPrev && LeftClick;
 
-        if (RightClickPrev && !RightClick)
-            RightClickUp = true;
-        else
-            RightClickUp = false;
-        if (!RightClickPrev && RightClick)
-            RightClickDown = true;
-        else
-            RightClickDown = false;
+        RightClickUp = RightClickPrev && !RightClick;
+        RightClickDown = !RightClickPrev && RightClick;
 
-        if (MiddleClickPrev && !MiddleClick)
-            MiddleClickUp = true;
-        else
-            MiddleClickUp = false;
-        if (!MiddleClickPrev && MiddleClick)
-            MiddleClickDown = true;
-        else
-            MiddleClickDown = false;
+        MiddleClickUp = MiddleClickPrev && !MiddleClick;
+        MiddleClickDown = !MiddleClickPrev && MiddleClick;
 
         LeftClickPrev = LeftClick;
         RightClickPrev = RightClick;

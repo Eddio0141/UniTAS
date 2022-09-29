@@ -15,15 +15,15 @@ public static class Keyboard
         KeysDown.Clear();
         KeysUp.Clear();
 
-        foreach (KeyCode key in KeysPrev)
+        foreach (var key in KeysPrev)
         {
             if (!Keys.Contains(key))
             {
                 KeysUp.Add(key);
-                KeysPrev.Remove(key);
+                _ = KeysPrev.Remove(key);
             }
         }
-        foreach (KeyCode key in Keys)
+        foreach (var key in Keys)
         {
             if (!KeysPrev.Contains(key))
             {

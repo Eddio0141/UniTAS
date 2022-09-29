@@ -19,6 +19,6 @@ internal static class AssetBundleRequestWrap
 
     public static void FinalizeCall(ulong uid)
     {
-        InstanceTracker.Remove(uid);
+        _ = InstanceTracker.Remove(uid);
     }
 }

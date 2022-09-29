@@ -29,24 +29,22 @@ public class FileBrowser
     readonly string[][][] extensionsProcessed;
     string extensionText;
     int extensionIndex;
-
-    int quickAccessWidth;
+    readonly int quickAccessWidth;
     Vector2 quickAccessScrollPos;
 
     const int CONFIRM_SAVE_WIDTH = 250;
     const int CONFIRM_SAVE_HEIGHT = 100;
     readonly ConfirmBox confirmSave;
-
-    string[] quickAccessPaths;
-    string[] quickAccessNames;
+    readonly string[] quickAccessPaths;
+    readonly string[] quickAccessNames;
 
     Stack<string> dirPrev;
     Stack<string> dirNext;
     bool movingToPrev;
     bool movingToNext;
 
-    static Texture2D folderTexture;
-    static Texture2D fileTexture;
+    static readonly Texture2D folderTexture;
+    static readonly Texture2D fileTexture;
 
     static FileBrowser()
     {
@@ -75,7 +73,7 @@ public class FileBrowser
         };
         var size = 16;
         folderTexture = new(size, size);
-        for (int i = 0; i < folderIcon.Length; i++)
+        for (var i = 0; i < folderIcon.Length; i++)
         {
             var xPos = i % size;
             var yPos = size - i / size;
@@ -107,7 +105,7 @@ public class FileBrowser
             c0,c0,c4,c5,c5,c5,c5,c5,c5,c5,c5,c5,c5,c5,c0,c0,
         };
         fileTexture = new(size, size);
-        for (int i = 0; i < fileIcon.Length; i++)
+        for (var i = 0; i < fileIcon.Length; i++)
         {
             var xPos = i % size;
             var yPos = size - i / size;
@@ -148,11 +146,11 @@ public class FileBrowser
         extensionText = extensions[0].ToString();
 
         extensionsProcessed = new string[extensions.Length][][];
-        for (int i = 0; i < extensions.Length; i++)
+        for (var i = 0; i < extensions.Length; i++)
         {
             var ext = extensions[i];
             extensionsProcessed[i] = new string[ext.Filters.Length][];
-            for (int j = 0; j < ext.Filters.Length; j++)
+            for (var j = 0; j < ext.Filters.Length; j++)
             {
                 var filter = ext.Filters[j];
                 var splitBuilder = new List<string>();
@@ -161,7 +159,7 @@ public class FileBrowser
                 else
                 {
                     var extSplit = filter.Split('*');
-                    for (int k = 0; k < extSplit.Length; k++)
+                    for (var k = 0; k < extSplit.Length; k++)
                     {
                         var split = extSplit[k];
                         if (split == "")
@@ -416,7 +414,7 @@ public class FileBrowser
         GUI.skin.button.alignment = TextAnchor.MiddleLeft;
         if (!confirmSave.Opened)
             quickAccessScrollPos = nextScrollPos;
-        for (int i = 0; i < quickAccessPaths.Length; i++)
+        for (var i = 0; i < quickAccessPaths.Length; i++)
         {
             var path = quickAccessPaths[i];
             var name = quickAccessNames[i];
@@ -432,7 +430,7 @@ public class FileBrowser
         // files in dir
         if (!confirmSave.Opened)
             fileScrollPos = nextScrollPos;
-        for (int i = 0; i < currentDirPaths.Length; i++)
+        for (var i = 0; i < currentDirPaths.Length; i++)
         {
             var path = currentDirPaths[i];
             var name = displayNames[i];
@@ -510,7 +508,7 @@ public class FileBrowser
     {
         public string Name;
         public string[] Filters;
-        string stringified;
+        readonly string stringified;
 
         public Extension(string name, string[] filters)
         {

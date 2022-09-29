@@ -1,6 +1,4 @@
-﻿using HarmonyLib;
-using System.Threading;
-using UniTASPlugin.FakeGameState;
+﻿using UniTASPlugin.FakeGameState;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
 
@@ -83,12 +81,7 @@ internal class GameRestart
             foreach (var fieldAndValue in fieldsAndValues)
             {
                 var value = fieldAndValue.Value;
-                string valueString;
-                if (value == null)
-                    valueString = "null";
-                else
-                    valueString = value.ToString();
-
+                var valueString = value == null ? "null" : value.ToString();
                 Plugin.Log.LogDebug($"setting field: {fieldAndValue.Key.DeclaringType.FullName}.{fieldAndValue.Key} to {valueString}");
                 try
                 {

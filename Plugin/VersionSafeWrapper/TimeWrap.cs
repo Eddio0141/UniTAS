@@ -5,9 +5,7 @@ namespace UniTASPlugin.VersionSafeWrapper;
 
 public static class TimeWrap
 {
-    private static bool settingFrametime = false;
-
-    public static bool SettingFrametime { get => settingFrametime; }
+    public static bool SettingFrametime { get; private set; } = false;
 
     static Traverse captureDeltaTime()
     {
@@ -26,39 +24,22 @@ public static class TimeWrap
 
     public static float captureFrametime
     {
-        get
-        {
-            if (captureDeltaTime().PropertyExists())
-            {
-                return captureDeltaTime().GetValue<float>();
-            }
-            return 1 / captureFramerate().GetValue<int>();
-        }
+        get => captureDeltaTime().PropertyExists() ? captureDeltaTime().GetValue<float>() : 1 / captureFramerate().GetValue<int>();
         set
         {
-            settingFrametime = true;
+            SettingFrametime = true;
             if (captureDeltaTime().PropertyExists())
             {
-                captureDeltaTime().SetValue(value);
+                _ = captureDeltaTime().SetValue(value);
             }
             else
             {
-                int framerate = (int)(1 / value);
-                captureFramerate().SetValue(framerate);
+                var framerate = (int)(1 / value);
+                _ = captureFramerate().SetValue(framerate);
             }
-            settingFrametime = false;
+            SettingFrametime = false;
         }
     }
 
-    public static bool FrametimeNotSet
-    {
-        get
-        {
-            if (captureDeltaTime().PropertyExists())
-            {
-                return captureDeltaTime().GetValue<float>() == 0;
-            }
-            return captureFramerate().GetValue<int>() == 0;
-        }
-    }
+    public static bool FrametimeNotSet => captureDeltaTime().PropertyExists() ? captureDeltaTime().GetValue<float>() == 0 : captureFramerate().GetValue<int>() == 0;
 }

@@ -14,19 +14,19 @@ public static class AppInfo
 
     public static string ProductName()
     {
-        Traverse productNameTraverse = application().Property("productName");
+        var productNameTraverse = application().Property("productName");
         if (productNameTraverse.PropertyExists())
             return productNameTraverse.GetValue<string>();
 
         // fallback, try get in c# way
-        string crashHandlerExe = "UnityCrashHandler64.exe";
-        string foundExe = "";
-        bool foundMultipleExe = false;
-        string rootDir = Helper.GameRootDir();
-        string[] rootFiles = Directory.GetFiles(rootDir);
+        var crashHandlerExe = "UnityCrashHandler64.exe";
+        var foundExe = "";
+        var foundMultipleExe = false;
+        var rootDir = Helper.GameRootDir();
+        var rootFiles = Directory.GetFiles(rootDir);
 
         // iterate over exes in game root dir
-        foreach (string path in rootFiles)
+        foreach (var path in rootFiles)
         {
             if (path == crashHandlerExe)
                 continue;
@@ -52,7 +52,7 @@ public static class AppInfo
         }
 
         // use game dir name and see if it matches exe
-        string gameDirName = new DirectoryInfo(rootDir).Name;
+        var gameDirName = new DirectoryInfo(rootDir).Name;
 
         if (File.Exists(Path.Combine(rootDir, $"{gameDirName}.exe")))
         {

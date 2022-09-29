@@ -24,10 +24,9 @@ internal static class SceneHelper
         if (method != null)
             return method;
         var loadSceneParameters = loadSceneParametersType();
-        if (loadSceneParameters != null)
-            return sceneManagerType.GetMethod(methodName, AccessTools.all, null, new Type[] { typeof(string), typeof(int), loadSceneParameters, typeof(bool) }, null);
-        else
-            return null;
+        return loadSceneParameters != null
+            ? sceneManagerType.GetMethod(methodName, AccessTools.all, null, new Type[] { typeof(string), typeof(int), loadSceneParameters, typeof(bool) }, null)
+            : null;
     }
 
     public static void LoadScene(int buildIndex)
@@ -38,7 +37,7 @@ internal static class SceneHelper
             var loadScene = AccessTools.Method(sceneManager, "LoadScene", new Type[] { typeof(int) });
             if (loadScene != null)
             {
-                loadScene.Invoke(null, new object[] { buildIndex });
+                _ = loadScene.Invoke(null, new object[] { buildIndex });
                 return;
             }
         }
@@ -53,9 +52,8 @@ internal static class SceneHelper
             Plugin.Log.LogError("Load scene async doesn't exist in this version of unity");
             return;
         }
-        if (isAdditive.HasValue)
-            loader.Invoke(null, new object[] { sceneName, sceneBuildIndex, (bool)isAdditive, mustCompleteNextFrame });
-        else
-            loader.Invoke(null, new object[] { sceneName, sceneBuildIndex, parameters, mustCompleteNextFrame });
+        _ = isAdditive.HasValue
+            ? loader.Invoke(null, new object[] { sceneName, sceneBuildIndex, (bool)isAdditive, mustCompleteNextFrame })
+            : loader.Invoke(null, new object[] { sceneName, sceneBuildIndex, parameters, mustCompleteNextFrame });
     }
 }

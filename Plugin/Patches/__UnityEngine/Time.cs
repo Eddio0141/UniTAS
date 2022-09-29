@@ -61,16 +61,15 @@ class get_unscaledTime
         return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
     }
 
-    static Traverse inFixedTimeStep = Traverse.Create(typeof(Time)).Property("inFixedTimeStep");
-    static Traverse fixedUnscaledTime = Traverse.Create(typeof(Time)).Property("fixedUnscaledTime");
+    static readonly Traverse inFixedTimeStep = Traverse.Create(typeof(Time)).Property("inFixedTimeStep");
+    static readonly Traverse fixedUnscaledTime = Traverse.Create(typeof(Time)).Property("fixedUnscaledTime");
 
     static void Postfix(ref float __result)
     {
         // When called from inside MonoBehaviour's FixedUpdate, it returns Time.fixedUnscaledTime
-        if (inFixedTimeStep.PropertyExists() && inFixedTimeStep.GetValue<bool>())
-            __result = fixedUnscaledTime.GetValue<float>();
-        else
-            __result = (float)((double)__result - GameTime.UnscaledTimeOffset);
+        __result = inFixedTimeStep.PropertyExists() && inFixedTimeStep.GetValue<bool>()
+            ? fixedUnscaledTime.GetValue<float>()
+            : (float)((double)__result - GameTime.UnscaledTimeOffset);
     }
 }
 
@@ -82,8 +81,8 @@ class get_unscaledTimeAsDouble
         return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
     }
 
-    static Traverse inFixedTimeStep = Traverse.Create(typeof(Time)).Property("inFixedTimeStep");
-    static Traverse fixedUnscaledTimeAsDouble = Traverse.Create(typeof(Time)).Property("fixedUnscaledTimeAsDouble");
+    static readonly Traverse inFixedTimeStep = Traverse.Create(typeof(Time)).Property("inFixedTimeStep");
+    static readonly Traverse fixedUnscaledTimeAsDouble = Traverse.Create(typeof(Time)).Property("fixedUnscaledTimeAsDouble");
 
     static void Postfix(ref double __result)
     {

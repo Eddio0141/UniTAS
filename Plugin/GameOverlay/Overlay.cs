@@ -1,6 +1,4 @@
-﻿using Microsoft.Win32;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using UniTASPlugin.TASMovie;
 using UniTASPlugin.VersionSafeWrapper;
@@ -22,8 +20,8 @@ internal static partial class Overlay
             unityCursorVisible = value;
         }
     }
-    static Texture2D cursorDefaultTexture = new Texture2D(2, 2);
-    static Texture2D currentTexture = new Texture2D(2, 2);
+    static readonly Texture2D cursorDefaultTexture = new(2, 2);
+    static Texture2D currentTexture = new(2, 2);
 
     public static void Init()
     {
@@ -53,8 +51,8 @@ internal static partial class Overlay
             alpha,alpha,alpha,alpha,alpha,alpha,alpha,black,black,alpha,alpha,alpha,
         };
         var width = 12;
-        cursorDefaultTexture.Resize(width, cursorRaw.Length / width);
-        for (int i = 0; i < cursorRaw.Length; i++)
+        _ = cursorDefaultTexture.Resize(width, cursorRaw.Length / width);
+        for (var i = 0; i < cursorRaw.Length; i++)
         {
             var x = i % width;
             var y = cursorDefaultTexture.height - i / width;
@@ -70,10 +68,7 @@ internal static partial class Overlay
 
     public static void SetCursorTexture(Texture2D texture)
     {
-        if (texture == null)
-            currentTexture = cursorDefaultTexture;
-        else
-            currentTexture = texture;
+        currentTexture = texture ?? cursorDefaultTexture;
     }
 
     public static void Update()
@@ -100,7 +95,7 @@ internal static partial class Overlay
 
     static int tabIndex = 0;
     static readonly string[] tabs = new string[] { "Movie", "Debug" };
-    static Texture2D BGSurround = new Texture2D(MENU_SIZE_X, MENU_SIZE_Y);
+    static readonly Texture2D BGSurround = new(MENU_SIZE_X, MENU_SIZE_Y);
     static string filePath = "";
 
     enum Tabs : int
@@ -117,7 +112,7 @@ internal static partial class Overlay
 
     const int TAS_MOVIE_BROWSER_WIDTH = 1000;
     const int TAS_MOVIE_BROWSER_HEIGHT = 400;
-    static FileBrowser tasMovieBrowser = new(
+    static readonly FileBrowser tasMovieBrowser = new(
         Application.dataPath, new Rect(
         Screen.width / 2 - TAS_MOVIE_BROWSER_WIDTH / 2,
         Screen.height / 2 - TAS_MOVIE_BROWSER_HEIGHT / 2,
@@ -151,7 +146,7 @@ internal static partial class Overlay
                         if (File.Exists(filePath))
                         {
                             var text = File.ReadAllText(filePath);
-                            var movie = new Movie(Path.GetFileName(filePath), text, out var err, out List<string> warnings);
+                            var movie = new Movie(Path.GetFileName(filePath), text, out var err, out var warnings);
 
                             if (err != "")
                             {
@@ -160,7 +155,7 @@ internal static partial class Overlay
                             }
                             if (warnings.Count > 1)
                             {
-                                foreach (string warn in warnings)
+                                foreach (var warn in warnings)
                                 {
                                     Plugin.Log.LogWarning(warn);
                                 }
@@ -181,12 +176,12 @@ internal static partial class Overlay
                 {
                     if (GUILayout.Button("test TAS") && !TAS.Running)
                     {
-                        string text = "";
+                        var text = "";
                         if (File.Exists("C:\\Users\\Yuki\\Documents\\test.uti"))
                             text = File.ReadAllText("C:\\Users\\Yuki\\Documents\\test.uti");
                         else if (File.Exists("C:\\Program Files (x86)\\Steam\\steamapps\\common\\It Steals\\test.uti"))
                             text = File.ReadAllText("C:\\Program Files (x86)\\Steam\\steamapps\\common\\It Steals\\test.uti");
-                        var movie = new Movie("test.uti", text, out var err, out List<string> warnings);
+                        var movie = new Movie("test.uti", text, out var err, out var warnings);
 
                         if (err != "")
                         {
@@ -195,7 +190,7 @@ internal static partial class Overlay
                         }
                         if (warnings.Count > 1)
                         {
-                            foreach (string warn in warnings)
+                            foreach (var warn in warnings)
                             {
                                 Plugin.Log.LogWarning(warn);
                             }

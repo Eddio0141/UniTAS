@@ -269,7 +269,7 @@ class GetAxis
     {
         if (TAS.Running)
         {
-            if (Axis.Values.TryGetValue(axisName, out float value))
+            if (Axis.Values.TryGetValue(axisName, out var value))
             {
                 __result = value;
             }
@@ -291,7 +291,7 @@ class GetAxisRaw
     {
         if (TAS.Running)
         {
-            if (Axis.Values.TryGetValue(axisName, out float value))
+            if (Axis.Values.TryGetValue(axisName, out var value))
             {
                 // TODO whats diff between Raw and normal
                 __result = value;

@@ -126,7 +126,7 @@ class UnloadAsync
     static bool Prefix(bool unloadAllLoadedObjects, ref object __result)
     {
         var unload = Traverse.Create(typeof(AssetBundle)).Method("Unload", new Type[] { typeof(bool) });
-        unload.GetValue(new object[] { unloadAllLoadedObjects });
+        _ = unload.GetValue(new object[] { unloadAllLoadedObjects });
         var assetBundleUnloadOperation = AccessTools.TypeByName("UnityEngine.AssetBundleUnloadOperation");
         __result = AccessTools.CreateInstance(assetBundleUnloadOperation);
         // my instance so set UID to not let the game destroy it normally

@@ -42,31 +42,31 @@ public class Movie
         Width = 1920;
         Height = 1080;
 
-        string[] lines = text.Split('\n');
+        var lines = text.Split('\n');
 
-        bool inVersion = true;
-        bool inProperties = true;
-        bool foundSeedOrTime = false;
-        bool foundDevice = false;
-        bool foundResolution = false;
+        var inVersion = true;
+        var inProperties = true;
+        var foundSeedOrTime = false;
+        var foundDevice = false;
+        var foundResolution = false;
 
-        string comment = "//";
-        string versionText = "version 1";
-        string framesSection = "frames";
-        string seedText = "seed ";
-        string timeText = "time ";
-        string deviceText = "device ";
-        string resolutionText = "resolution ";
-        char fieldSeparator = '|';
-        char listSeparator = ' ';
-        char axisNameSurround = '"';
+        var comment = "//";
+        var versionText = "version 1";
+        var framesSection = "frames";
+        var seedText = "seed ";
+        var timeText = "time ";
+        var deviceText = "device ";
+        var resolutionText = "resolution ";
+        var fieldSeparator = '|';
+        var listSeparator = ' ';
+        var axisNameSurround = '"';
         const string leftClick = "left";
         const string rightClick = "right";
         const string middleClick = "middle";
 
-        foreach (string line in lines)
+        foreach (var line in lines)
         {
-            string lineTrim = line.Trim();
+            var lineTrim = line.Trim();
 
             if (lineTrim.StartsWith(comment))
                 continue;
@@ -94,7 +94,7 @@ public class Movie
                         error = "Seed property defined twice, or seed and time defined";
                         break;
                     }
-                    if (!long.TryParse(lineTrim.Substring(seedText.Length), out long seed))
+                    if (!long.TryParse(lineTrim.Substring(seedText.Length), out var seed))
                     {
                         error = "Seed value not a value";
                         break;
@@ -126,14 +126,14 @@ public class Movie
                         error = "Device type defined twice";
                         break;
                     }
-                    Type deviceType = AccessTools.TypeByName("UnityEngine.DeviceType");
-                    string chosenVariant = lineTrim.Substring(deviceText.Length);
+                    var deviceType = AccessTools.TypeByName("UnityEngine.DeviceType");
+                    var chosenVariant = lineTrim.Substring(deviceText.Length);
 
                     if (!Enum.IsDefined(deviceType, chosenVariant))
                     {
                         List<string> allVariants = new();
-                        Array deviceTypes = Enum.GetValues(deviceType);
-                        foreach (object t in deviceTypes)
+                        var deviceTypes = Enum.GetValues(deviceType);
+                        foreach (var t in deviceTypes)
                         {
                             allVariants.Add(t.ToString());
                         }
@@ -151,18 +151,18 @@ public class Movie
                         error = "Device type defined twice";
                         break;
                     }
-                    string[] resolution = lineTrim.Substring(resolutionText.Length).Split(listSeparator);
+                    var resolution = lineTrim.Substring(resolutionText.Length).Split(listSeparator);
                     if (resolution.Length != 2)
                     {
                         error = "Resolution not in format width height";
                         break;
                     }
-                    if (!int.TryParse(resolution[0], out int width))
+                    if (!int.TryParse(resolution[0], out var width))
                     {
                         error = "Resolution width not a value";
                         break;
                     }
-                    if (!int.TryParse(resolution[1], out int height))
+                    if (!int.TryParse(resolution[1], out var height))
                     {
                         error = "Resolution height not a value";
                         break;
@@ -179,17 +179,17 @@ public class Movie
                 }
             }
 
-            string[] fields = lineTrim.Split(fieldSeparator);
+            var fields = lineTrim.Split(fieldSeparator);
 
             Framebulk framebulk = new();
-            bool mouseXField = true;
-            bool mouseYField = true;
-            bool mouseClickField = true;
-            bool keysField = true;
-            bool axisField = true;
-            bool frametimeField = true;
+            var mouseXField = true;
+            var mouseYField = true;
+            var mouseClickField = true;
+            var keysField = true;
+            var axisField = true;
+            var frametimeField = true;
 
-            foreach (string field in fields)
+            foreach (var field in fields)
             {
                 if (mouseXField)
                 {
@@ -199,7 +199,7 @@ public class Movie
                         continue;
                     }
 
-                    if (!float.TryParse(field, out float x))
+                    if (!float.TryParse(field, out var x))
                     {
                         error = "Mouse X value not a valid decimal";
                         break;
@@ -218,7 +218,7 @@ public class Movie
                         continue;
                     }
 
-                    if (!float.TryParse(field, out float y))
+                    if (!float.TryParse(field, out var y))
                     {
                         error = "Mouse Y value not a valid decimal";
                         break;
@@ -237,9 +237,9 @@ public class Movie
                         continue;
                     }
 
-                    string[] clickedButtons = field.Split(listSeparator);
+                    var clickedButtons = field.Split(listSeparator);
 
-                    foreach (string clickField in clickedButtons)
+                    foreach (var clickField in clickedButtons)
                     {
                         if (clickField == "")
                             continue;
@@ -295,9 +295,9 @@ public class Movie
                         continue;
                     }
 
-                    string[] keys = field.Split(listSeparator);
+                    var keys = field.Split(listSeparator);
 
-                    foreach (string key in keys)
+                    foreach (var key in keys)
                     {
                         if (key == "")
                             continue;
@@ -308,7 +308,7 @@ public class Movie
                             break;
                         }
 
-                        object k = Enum.Parse(typeof(KeyCode), key);
+                        var k = Enum.Parse(typeof(KeyCode), key);
                         framebulk.Keys.Pressed.Add((KeyCode)k);
                     }
 
@@ -328,18 +328,18 @@ public class Movie
                         continue;
                     }
 
-                    char[] fieldChars = field.ToCharArray();
+                    var fieldChars = field.ToCharArray();
 
-                    bool gettingAxisName = true;
-                    bool firstSurroundChar = true;
-                    bool betweenNameAndValue = true;
-                    bool betweenValueAndName = false;
-                    string builder = "";
-                    string axisName = "";
+                    var gettingAxisName = true;
+                    var firstSurroundChar = true;
+                    var betweenNameAndValue = true;
+                    var betweenValueAndName = false;
+                    var builder = "";
+                    var axisName = "";
 
-                    for (int i = 0; i < fieldChars.Length; i++)
+                    for (var i = 0; i < fieldChars.Length; i++)
                     {
-                        char ch = fieldChars[i];
+                        var ch = fieldChars[i];
 
                         if (betweenValueAndName)
                         {
@@ -377,20 +377,20 @@ public class Movie
                             betweenNameAndValue = false;
                         }
 
-                        bool finalIteration = i == fieldChars.Length - 1;
+                        var finalIteration = i == fieldChars.Length - 1;
 
                         if (ch == listSeparator || finalIteration)
                         {
                             if (finalIteration)
                                 builder += ch;
 
-                            if (!float.TryParse(builder, out float axisValue))
+                            if (!float.TryParse(builder, out var axisValue))
                             {
                                 error = "Axis value not a valid decimal";
                                 break;
                             }
 
-                            if (axisValue > 1 || axisValue < -1)
+                            if (axisValue is > 1 or < (-1))
                             {
                                 error = "Axis value needs to be between -1 and 1";
                                 break;
@@ -435,7 +435,7 @@ public class Movie
                         break;
                     }
 
-                    if (!float.TryParse(field, out float frametime))
+                    if (!float.TryParse(field, out var frametime))
                     {
                         error = "Frametime not a decimal";
                         break;
@@ -454,7 +454,7 @@ public class Movie
 
                     if (!TimeWrap.HasCaptureDeltaTime())
                     {
-                        float framerate = 1 / frametime;
+                        var framerate = 1 / frametime;
 
                         if (Helper.ValueHasDecimalPoints(framerate))
                         {
@@ -468,7 +468,7 @@ public class Movie
                     continue;
                 }
 
-                if (!int.TryParse(field, out int frameCount))
+                if (!int.TryParse(field, out var frameCount))
                 {
                     error = "Framecount not an integer";
                     break;

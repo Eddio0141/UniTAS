@@ -1,9 +1,6 @@
 ﻿using BepInEx;
 using HarmonyLib;
-using System.Collections.Generic;
-using System.IO;
 using UniTASPlugin.GameOverlay;
-using UniTASPlugin.TASMovie;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
 

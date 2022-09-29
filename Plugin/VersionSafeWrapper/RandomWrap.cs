@@ -11,7 +11,7 @@ internal class RandomWrap
 
         if (initState.MethodExists())
         {
-            initState.GetValue(seed);
+            _ = initState.GetValue(seed);
             return;
         }
         // TODO does this work?

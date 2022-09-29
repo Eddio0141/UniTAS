@@ -64,7 +64,7 @@ public static class TAS
         if (!CheckCurrentMovieEnd())
             return;
 
-        Framebulk fb = CurrentMovie.Framebulks[currentFramebulkIndex];
+        var fb = CurrentMovie.Framebulks[currentFramebulkIndex];
         if (currentFramebulkFrameIndex >= fb.FrameCount)
         {
             currentFramebulkIndex++;
@@ -103,23 +103,23 @@ public static class TAS
         FakeGameState.InputLegacy.Mouse.MiddleClick = fb.Mouse.Middle;
 
         List<string> axisMoveSetDefault = new();
-        foreach (KeyValuePair<string, float> pair in Axis.Values)
+        foreach (var pair in Axis.Values)
         {
-            string key = pair.Key;
+            var key = pair.Key;
             if (!fb.Axises.AxisMove.ContainsKey(key))
                 axisMoveSetDefault.Add(key);
         }
-        foreach (string key in axisMoveSetDefault)
+        foreach (var key in axisMoveSetDefault)
         {
             if (Axis.Values.ContainsKey(key))
                 Axis.Values[key] = default;
             else
                 Axis.Values.Add(key, default);
         }
-        foreach (KeyValuePair<string, float> axisValue in fb.Axises.AxisMove)
+        foreach (var axisValue in fb.Axises.AxisMove)
         {
-            string axis = axisValue.Key;
-            float value = axisValue.Value;
+            var axis = axisValue.Key;
+            var value = axisValue.Value;
             if (Axis.Values.ContainsKey(axis))
             {
                 Axis.Values[axis] = value;
@@ -143,7 +143,7 @@ public static class TAS
         // force framerate to run fixed for Update and FixedUpdate sync
         if (CurrentMovie.Framebulks.Count > 0)
         {
-            Framebulk firstFb = CurrentMovie.Framebulks[0];
+            var firstFb = CurrentMovie.Framebulks[0];
 
             FakeGameState.InputLegacy.Main.Clear();
             TimeWrap.captureFrametime = firstFb.Frametime;

@@ -77,7 +77,7 @@ class UnloadSceneAsyncInternal_Injected
     {
         var sceneTraverse = Traverse.Create(scene);
         var sceneBuildIndex = sceneTraverse.Property("buildIndex").GetValue<int>();
-        Helper.GetUnloadSceneNameIndexInternal().Invoke(null, new object[] { "", sceneBuildIndex, true, options, null });
+        _ = Helper.GetUnloadSceneNameIndexInternal().Invoke(null, new object[] { "", sceneBuildIndex, true, options, null });
         return false;
     }
 }

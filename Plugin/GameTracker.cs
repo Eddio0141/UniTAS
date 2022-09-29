@@ -15,10 +15,10 @@ internal static class GameTracker
 
     public static void Init()
     {
-        Object[] objs = Object.FindObjectsOfType(typeof(MonoBehaviour));
-        foreach (Object obj in objs)
+        var objs = Object.FindObjectsOfType(typeof(MonoBehaviour));
+        foreach (var obj in objs)
         {
-            int id = obj.GetInstanceID();
+            var id = obj.GetInstanceID();
             if (DontDestroyOnLoadIDs.Contains(id))
             {
                 FirstObjIDs.Add(id);
@@ -106,7 +106,7 @@ internal static class GameTracker
         var allGameTypes = gameAssemblies
             .SelectMany(a => a.GetTypes())
             .Where(t => !exclusionTypes
-            .Any(ex => t.FullName != null && (ex == t.FullName || (ex.EndsWith("*") && t.FullName.StartsWith(ex.Remove(ex.Length - 1, 1))))));
+            .Any(ex => t.FullName != null && (ex == t.FullName || ex.EndsWith("*") && t.FullName.StartsWith(ex.Remove(ex.Length - 1, 1)))));
         if (exclusionGameAndType.ContainsKey(gameName))
         {
             var excludeNames = exclusionGameAndType[gameName];
@@ -179,28 +179,7 @@ internal static class GameTracker
                     continue;
                 }
                 {
-                    string fieldValueString;
-                    if (fieldValue == null)
-                        fieldValueString = "null";
-                    // if its an array, convert all values to string
-                    /*else if (fieldValue.GetType().IsArray)
-                    {
-                        Plugin.Log.LogDebug($"trying to convert array type {fieldValue.GetType()} to string");
-                        try
-                        {
-                            fieldValueString = string.Join(", ", ((System.Collections.IEnumerable)fieldValue).Cast<object>()
-                                .Select(x => x.ToString())
-                                .ToArray());
-                        }
-                        catch (System.Exception)
-                        {
-                            Plugin.Log.LogDebug("it failed");
-                            fieldValueString = fieldValue.ToString();
-                        }
-                        fieldValueString = fieldValue.ToString();
-                    }*/
-                    else
-                        fieldValueString = fieldValue.ToString();
+                    var fieldValueString = fieldValue == null ? "null" : fieldValue.ToString();
                     Plugin.Log.LogDebug($"cloning field {fieldName} with value {fieldValueString}");
                     //System.Threading.Thread.Sleep(50);
 
@@ -297,8 +276,8 @@ internal static class GameTracker
         }
     }
 
-    static List<AsyncSceneLoadData> asyncSceneLoads = new();
-    static List<AsyncSceneLoadData> asyncSceneLoadsStall = new();
+    static readonly List<AsyncSceneLoadData> asyncSceneLoads = new();
+    static readonly List<AsyncSceneLoadData> asyncSceneLoadsStall = new();
 
     public static void AsyncSceneLoad(string sceneName, int sceneBuildIndex, object parameters, bool? isAdditive, AsyncOperationWrap wrap)
     {
@@ -349,9 +328,7 @@ internal static class GameTracker
     public static bool GetSceneActivation(AsyncOperation instance)
     {
         var uid = new AsyncOperationWrap(instance).UID;
-        if (uid == 0)
-            return false;
-        return asyncSceneLoadsStall.Any(a => a.UID == uid);
+        return uid != 0 && asyncSceneLoadsStall.Any(a => a.UID == uid);
     }
 
     public static bool IsStallingInstance(AsyncOperation instance)
@@ -374,6 +351,6 @@ internal static class GameTracker
     {
         if (@object == null)
             return;
-        DontDestroyOnLoadIDs.Remove(@object.GetInstanceID());
+        _ = DontDestroyOnLoadIDs.Remove(@object.GetInstanceID());
     }
 }

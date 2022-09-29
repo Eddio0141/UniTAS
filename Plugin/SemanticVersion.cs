@@ -19,12 +19,12 @@ public class SemanticVersion
 
     public static bool operator <(SemanticVersion a, SemanticVersion b)
     {
-        return a.Major < b.Major || (a.Major == b.Major && a.Minor < b.Minor) || (a.Major == b.Major && a.Minor == b.Minor && a.Patch < b.Patch);
+        return a.Major < b.Major || a.Major == b.Major && a.Minor < b.Minor || a.Major == b.Major && a.Minor == b.Minor && a.Patch < b.Patch;
     }
 
     public static bool operator >(SemanticVersion a, SemanticVersion b)
     {
-        return a.Major > b.Major || (a.Major == b.Major && a.Minor > b.Minor) || (a.Major == b.Major && a.Minor == b.Minor && a.Patch > b.Patch);
+        return a.Major > b.Major || a.Major == b.Major && a.Minor > b.Minor || a.Major == b.Major && a.Minor == b.Minor && a.Patch > b.Patch;
     }
 
     public static bool operator ==(SemanticVersion a, SemanticVersion b)
@@ -49,12 +49,7 @@ public class SemanticVersion
 
     public override bool Equals(object obj)
     {
-        if (obj is SemanticVersion version)
-        {
-            return this == version;
-        }
-
-        return false;
+        return obj is SemanticVersion version && this == version;
     }
 
     public override int GetHashCode()
@@ -71,9 +66,9 @@ public class SemanticVersion
     {
         version = version.Replace("v", "");
 
-        string builder = "";
+        var builder = "";
         // TODO do I ignore characters?
-        foreach (char ch in version.ToCharArray())
+        foreach (var ch in version.ToCharArray())
         {
             if (char.IsDigit(ch) || ch == '.' || ch == '_')
             {
@@ -82,21 +77,13 @@ public class SemanticVersion
         }
         version = builder;
 
-        string[] versionSplit;
-        if (version.Contains('.'))
-        {
-            versionSplit = version.Split('.');
-        }
-        else
-        {
-            versionSplit = version.Split('_');
-        }
+        var versionSplit = version.Contains('.') ? version.Split('.') : version.Split('_');
         List<int> versionSplitValues = new();
 
         // force check all values
-        foreach (string versionSplitValue in versionSplit)
+        foreach (var versionSplitValue in versionSplit)
         {
-            if (!int.TryParse(versionSplitValue, out int versionValue))
+            if (!int.TryParse(versionSplitValue, out var versionValue))
             {
                 // TODO dont throw exception
                 throw new Exception($"Semantic version not a valid version");

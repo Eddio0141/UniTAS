@@ -28,8 +28,8 @@ class LoadAsyncInternal
         // should be fine with my instance and no tinkering
         __result = AccessTools.CreateInstance(Helper.ResourceRequestType());
         var resultTraverse = Traverse.Create(__result);
-        resultTraverse.Field("m_Path").SetValue(path);
-        resultTraverse.Field("m_Type").SetValue(type);
+        _ = resultTraverse.Field("m_Path").SetValue(path);
+        _ = resultTraverse.Field("m_Type").SetValue(type);
         var wrap = new AsyncOperationWrap((AsyncOperation)__result);
         wrap.AssignUID();
         return false;
