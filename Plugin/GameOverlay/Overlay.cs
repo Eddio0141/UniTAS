@@ -116,7 +116,7 @@ internal static partial class Overlay
     const int EDGE_SPACING = 5;
 
     const int TAS_MOVIE_BROWSER_WIDTH = 1000;
-    const int TAS_MOVIE_BROWSER_HEIGHT = 750;
+    const int TAS_MOVIE_BROWSER_HEIGHT = 400;
     static FileBrowser tasMovieBrowser = new(
         Application.dataPath, new Rect(
         Screen.width / 2 - TAS_MOVIE_BROWSER_WIDTH / 2,

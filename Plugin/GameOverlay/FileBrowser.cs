@@ -12,9 +12,9 @@ public class FileBrowser
     string currentDirText;
     bool dirChanged;
     string[] currentDirPaths;
-    string[] displayNames;
+    GUIContent[] displayNames;
     string selectedFileText;
-    Vector2 scrollPos;
+    Vector2 fileScrollPos;
     Rect defaultRect;
     Rect windowRect;
     bool opened;
@@ -30,9 +30,86 @@ public class FileBrowser
     string extensionText;
     int extensionIndex;
 
+    int quickAccessWidth;
+    Vector2 quickAccessScrollPos;
+
     const int CONFIRM_SAVE_WIDTH = 250;
     const int CONFIRM_SAVE_HEIGHT = 100;
     readonly ConfirmBox confirmSave;
+
+    string[] quickAccessPaths;
+    string[] quickAccessNames;
+
+    static Texture2D folderTexture;
+    static Texture2D fileTexture;
+
+    static FileBrowser()
+    {
+        var c0 = new Color(0, 0, 0, 0);
+        var c1 = new Color(1, 201f / 255f, 14f / 255f);
+        var c2 = new Color(239f / 255f, 228f / 255f, 176f / 255f);
+        var c3 = new Color(1, 242f / 255f, 0);
+        var folderIcon = new[]
+        {
+            c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,
+            c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,
+            c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,
+            c0,c1,c1,c1,c1,c1,c1,c0,c0,c0,c0,c0,c0,c0,c0,c0,
+            c0,c1,c1,c1,c1,c1,c1,c2,c2,c2,c2,c2,c2,c2,c1,c0,
+            c0,c1,c1,c1,c1,c1,c1,c2,c3,c3,c3,c3,c3,c3,c1,c0,
+            c0,c2,c2,c2,c2,c2,c2,c2,c3,c3,c3,c3,c3,c3,c1,c0,
+            c0,c2,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c1,c0,
+            c0,c2,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c1,c0,
+            c0,c2,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c1,c0,
+            c0,c2,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c1,c0,
+            c0,c2,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c1,c0,
+            c0,c2,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c1,c0,
+            c0,c2,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c1,c0,
+            c0,c1,c1,c1,c1,c1,c1,c1,c1,c1,c1,c1,c1,c1,c1,c0,
+            c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,
+        };
+        var size = 16;
+        folderTexture = new(size, size);
+        for (int i = 0; i < folderIcon.Length; i++)
+        {
+            var xPos = i % size;
+            var yPos = size - i / size;
+            folderTexture.SetPixel(xPos, yPos, folderIcon[i]);
+        }
+        folderTexture.Apply();
+
+        var c4 = new Color(163f / 255f, 164f / 255f, 164f / 255f);
+        var c5 = new Color(140f / 255f, 141f / 255f, 142f / 255f);
+        var c6 = new Color(214f / 255f, 214f / 255f, 214f / 255f);
+        var c7 = new Color(247f / 255f, 248f / 255f, 249f / 255f);
+        var fileIcon = new[]
+        {
+            c0,c0,c4,c4,c4,c4,c4,c4,c4,c4,c4,c4,c0,c0,c0,c0,
+            c0,c0,c4,c7,c7,c7,c7,c7,c7,c7,c4,c6,c5,c0,c0,c0,
+            c0,c0,c4,c7,c7,c7,c7,c7,c7,c7,c4,c6,c6,c5,c0,c0,
+            c0,c0,c4,c7,c7,c7,c7,c7,c7,c7,c4,c5,c5,c5,c0,c0,
+            c0,c0,c4,c7,c7,c7,c7,c7,c7,c7,c7,c7,c7,c5,c0,c0,
+            c0,c0,c4,c7,c7,c7,c7,c7,c7,c7,c7,c7,c7,c5,c0,c0,
+            c0,c0,c4,c7,c7,c7,c7,c7,c7,c7,c7,c7,c7,c5,c0,c0,
+            c0,c0,c4,c7,c7,c7,c7,c7,c7,c7,c7,c7,c7,c5,c0,c0,
+            c0,c0,c4,c7,c7,c7,c7,c7,c7,c7,c7,c7,c7,c5,c0,c0,
+            c0,c0,c4,c7,c7,c7,c7,c7,c7,c7,c7,c7,c7,c5,c0,c0,
+            c0,c0,c4,c7,c7,c7,c7,c7,c7,c7,c7,c7,c7,c5,c0,c0,
+            c0,c0,c4,c7,c7,c7,c7,c7,c7,c7,c7,c7,c7,c5,c0,c0,
+            c0,c0,c4,c7,c7,c7,c7,c7,c7,c7,c7,c7,c7,c5,c0,c0,
+            c0,c0,c4,c7,c7,c7,c7,c7,c7,c7,c7,c7,c7,c5,c0,c0,
+            c0,c0,c4,c7,c7,c7,c7,c7,c7,c7,c7,c7,c7,c5,c0,c0,
+            c0,c0,c4,c5,c5,c5,c5,c5,c5,c5,c5,c5,c5,c5,c0,c0,
+        };
+        fileTexture = new(size, size);
+        for (int i = 0; i < fileIcon.Length; i++)
+        {
+            var xPos = i % size;
+            var yPos = size - i / size;
+            fileTexture.SetPixel(xPos, yPos, fileIcon[i]);
+        }
+        fileTexture.Apply();
+    }
 
     public FileBrowser(string currentDir, Rect windowRect, string title, int id, FileBrowserType browserType, Extension[] extensions)
     {
@@ -44,7 +121,7 @@ public class FileBrowser
         this.title = title;
         this.id = id;
         dirChanged = true;
-        scrollPos = new();
+        fileScrollPos = new();
         opened = false;
         finalPath = "";
         gotFinalPath = true;
@@ -79,7 +156,6 @@ public class FileBrowser
                 else
                 {
                     var extSplit = filter.Split('*');
-                    Plugin.Log.LogDebug($"extSplit.Length: {extSplit.Length}");
                     for (int k = 0; k < extSplit.Length; k++)
                     {
                         var split = extSplit[k];
@@ -104,6 +180,24 @@ public class FileBrowser
                     break;
                 }
         }
+
+        quickAccessWidth = (int)(windowRect.width / 9);
+
+        var homeEnvVar = Environment.GetEnvironmentVariable("HOMEPATH");
+        var homePath = Environment.GetEnvironmentVariable(homeEnvVar);
+
+        quickAccessPaths = new[] {
+            Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
+            Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+            homePath,
+            Helper.GameRootDir(),
+        };
+        quickAccessNames = new[] {
+            "Desktop",
+            "Documents",
+            "Home",
+            "Game Root",
+        };
     }
 
     public void Open()
@@ -111,10 +205,11 @@ public class FileBrowser
         changingDir = currentDir;
         windowRect = defaultRect;
         dirChanged = true;
-        scrollPos = new();
+        fileScrollPos = new();
         opened = true;
         finalPath = "";
         gotFinalPath = true;
+        quickAccessScrollPos = new();
     }
 
     public void GetFinalPath(ref string finalPath)
@@ -144,7 +239,7 @@ public class FileBrowser
             {
                 try
                 {
-                    var displayNamesBuilder = new List<string>();
+                    var displayNamesBuilder = new List<GUIContent>();
                     var currentDirPathsBuilder = new List<string>();
                     var entries = Directory.GetFileSystemEntries(changingDir, "*");
 
@@ -153,7 +248,7 @@ public class FileBrowser
                         if (Directory.Exists(entry))
                         {
                             var dirName = Path.GetFileName(entry);
-                            displayNamesBuilder.Add(dirName);
+                            displayNamesBuilder.Add(new GUIContent(dirName, folderTexture));
                             currentDirPathsBuilder.Add(entry);
                             continue;
                         }
@@ -181,9 +276,7 @@ public class FileBrowser
                                     else
                                     {
                                         var nextFilter = extFilter[i + 1];
-                                        Plugin.Log.LogDebug($"nextFilter: {nextFilter}");
                                         var nextFilterIndex = nameProcessing.IndexOf(nextFilter);
-                                        Plugin.Log.LogDebug($"nextFilterIndex: {nextFilterIndex}");
                                         if (nextFilterIndex < 0)
                                             break;
                                         nameProcessing = nameProcessing.Substring(nextFilterIndex + nextFilter.Length);
@@ -220,7 +313,7 @@ public class FileBrowser
                         if (filterOut)
                             continue;
 
-                        displayNamesBuilder.Add(name);
+                        displayNamesBuilder.Add(new GUIContent(name, fileTexture));
                         currentDirPathsBuilder.Add(entry);
                     }
 
@@ -230,7 +323,7 @@ public class FileBrowser
                 catch (Exception)
                 {
                     currentDirPaths = new string[0];
-                    displayNames = new string[0];
+                    displayNames = new GUIContent[0];
                 }
                 currentDir = changingDir;
             }
@@ -263,9 +356,40 @@ public class FileBrowser
         }
         GUILayout.EndHorizontal();
 
-        var nextScrollPos = GUILayout.BeginScrollView(scrollPos, false, true);
+        GUILayout.BeginHorizontal();
+        // quick access
+        var nextScrollPos = GUILayout.BeginScrollView(quickAccessScrollPos, GUILayout.Width(quickAccessWidth));
+        GUILayout.BeginVertical();
+        GUILayout.Label("Quick access", GUILayout.Width(quickAccessWidth - 30));
+        GUI.skin.button.alignment = TextAnchor.MiddleLeft;
         if (!confirmSave.Opened)
-            scrollPos = nextScrollPos;
+            quickAccessScrollPos = nextScrollPos;
+        for (int i = 0; i < quickAccessPaths.Length; i++)
+        {
+            var path = quickAccessPaths[i];
+            var name = quickAccessNames[i];
+            if (GUILayout.Button(name) && !confirmSave.Opened)
+            {
+                changingDir = path;
+                dirChanged = true;
+            }
+        }
+        // all drives
+        var drives = DriveInfo.GetDrives();
+        foreach (var drive in drives)
+        {
+            if (GUILayout.Button(drive.Name) && !confirmSave.Opened)
+            {
+                changingDir = drive.Name;
+                dirChanged = true;
+            }
+        }
+        GUILayout.EndVertical();
+        GUILayout.EndScrollView();
+        nextScrollPos = GUILayout.BeginScrollView(fileScrollPos, false, true);
+        // files in dir
+        if (!confirmSave.Opened)
+            fileScrollPos = nextScrollPos;
         for (int i = 0; i < currentDirPaths.Length; i++)
         {
             var path = currentDirPaths[i];
@@ -279,11 +403,13 @@ public class FileBrowser
                 }
                 else
                 {
-                    selectedFileText = name;
+                    selectedFileText = name.text;
                 }
             }
         }
+        GUI.skin.button.alignment = TextAnchor.MiddleCenter;
         GUILayout.EndScrollView();
+        GUILayout.EndHorizontal();
 
         GUILayout.BeginHorizontal();
         selectedFileText = GUILayout.TextField(selectedFileText);
