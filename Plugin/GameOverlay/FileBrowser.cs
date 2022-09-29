@@ -232,6 +232,7 @@ public class FileBrowser
         dirNext = new();
         movingToPrev = false;
         movingToNext = false;
+        selectedFileText = "";
     }
 
     public void GetFinalPath(ref string finalPath)
