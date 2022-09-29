@@ -40,6 +40,11 @@ public class FileBrowser
     string[] quickAccessPaths;
     string[] quickAccessNames;
 
+    Stack<string> dirPrev;
+    Stack<string> dirNext;
+    bool movingToPrev;
+    bool movingToNext;
+
     static Texture2D folderTexture;
     static Texture2D fileTexture;
 
@@ -182,9 +187,8 @@ public class FileBrowser
         }
 
         quickAccessWidth = (int)(windowRect.width / 9);
-
-        var homeEnvVar = Environment.GetEnvironmentVariable("HOMEPATH");
-        var homePath = Environment.GetEnvironmentVariable(homeEnvVar);
+        
+        var homePath = Environment.GetEnvironmentVariable("HOMEPATH");
 
         quickAccessPaths = new[] {
             Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
@@ -210,6 +214,10 @@ public class FileBrowser
         finalPath = "";
         gotFinalPath = true;
         quickAccessScrollPos = new();
+        dirPrev = new();
+        dirNext = new();
+        movingToPrev = false;
+        movingToNext = false;
     }
 
     public void GetFinalPath(ref string finalPath)
@@ -319,6 +327,23 @@ public class FileBrowser
 
                     currentDirPaths = currentDirPathsBuilder.ToArray();
                     displayNames = displayNamesBuilder.ToArray();
+
+                    if (movingToPrev)
+                    {
+                        movingToPrev = false;
+                        dirNext.Push(currentDir);
+                    }
+                    else
+                    if (movingToNext)
+                    {
+                        movingToNext = false;
+                        dirPrev.Push(currentDir);
+                    }
+                    else
+                    {
+                        dirPrev.Push(currentDir);
+                        dirNext.Clear();
+                    }
                 }
                 catch (Exception)
                 {
@@ -339,6 +364,18 @@ public class FileBrowser
         GUI.DragWindow(new Rect(0, 0, 20000, 20));
 
         GUILayout.BeginHorizontal();
+        if (GUILayout.Button("<", GUILayout.Width(20)) && !confirmSave.Opened && dirPrev.Count > 0)
+        {
+            changingDir = dirPrev.Pop();
+            movingToPrev = true;
+            dirChanged = true;
+        }
+        if (GUILayout.Button(">", GUILayout.Width(20)) && !confirmSave.Opened && dirNext.Count > 0)
+        {
+            changingDir = dirNext.Pop();
+            movingToNext = true;
+            dirChanged = true;
+        }
         if (GUILayout.Button("^", GUILayout.Width(20)) && !confirmSave.Opened)
         {
             changingDir = Path.GetDirectoryName(currentDir);
@@ -412,6 +449,7 @@ public class FileBrowser
         GUILayout.EndHorizontal();
 
         GUILayout.BeginHorizontal();
+        GUILayout.Label("file name:", GUILayout.Width(70));
         selectedFileText = GUILayout.TextField(selectedFileText);
         if (GUILayout.Button(selectText, GUILayout.Width(50)) && !confirmSave.Opened)
         {
