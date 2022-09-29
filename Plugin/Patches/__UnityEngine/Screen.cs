@@ -1,11 +1,13 @@
 ﻿using HarmonyLib;
 using System;
 using System.Reflection;
+using UniTASPlugin.GameOverlay;
 using UniTASPlugin.VersionSafeWrapper;
+using UnityEngine;
 
 namespace UniTASPlugin.Patches.__UnityEngine;
 
-[HarmonyPatch(typeof(UnityEngine.Screen), "showCursor", MethodType.Setter)]
+[HarmonyPatch(typeof(Screen), "showCursor", MethodType.Setter)]
 class set_showCursor
 {
     static Exception Cleanup(MethodBase original, Exception ex)
@@ -21,6 +23,21 @@ class set_showCursor
             if (Overlay.ShowCursor)
                 value = false;
         }
+    }
+}
+
+[HarmonyPatch(typeof(Screen), nameof(Screen.lockCursor), MethodType.Setter)]
+class set_lockCursor
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static void Prefix(bool value)
+    {
+        if (CursorWrap.TempUnlocked)
+            CursorWrap.TempStoreLockCursorState = value;
     }
 }
 

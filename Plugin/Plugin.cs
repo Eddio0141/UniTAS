@@ -2,6 +2,7 @@
 using HarmonyLib;
 using System.Collections.Generic;
 using System.IO;
+using UniTASPlugin.GameOverlay;
 using UniTASPlugin.TASMovie;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
@@ -54,49 +55,11 @@ public class Plugin : BaseUnityPlugin
     // unity execution order is Awake() -> FixedUpdate() -> Update()
     void Update()
     {
+        Overlay.Update();
         // TODO if possible, put this at the first call of Update
         FixedUpdateIndex++;
         GameCapture.Update();
         TAS.Update();
-
-        // TODO remove this test
-        if (!TAS.Running && Input.GetKeyDown(KeyCode.K))
-        {
-            string text = "";
-            if (File.Exists("C:\\Users\\Yuki\\Documents\\test.uti"))
-                text = File.ReadAllText("C:\\Users\\Yuki\\Documents\\test.uti");
-            else if (File.Exists("C:\\Program Files (x86)\\Steam\\steamapps\\common\\It Steals\\test.uti"))
-                text = File.ReadAllText("C:\\Program Files (x86)\\Steam\\steamapps\\common\\It Steals\\test.uti");
-            var movie = new Movie("test.uti", text, out string err, out List<string> warnings);
-
-            if (err != "")
-            {
-                Log.LogError(err);
-                return;
-            }
-            if (warnings.Count > 1)
-            {
-                foreach (string warn in warnings)
-                {
-                    Log.LogWarning(warn);
-                }
-            }
-
-            TAS.RunMovie(movie);
-        }
-        if (!TAS.Running && Input.GetKeyDown(KeyCode.L))
-        {
-            GameRestart.SoftRestart(new System.DateTime());
-        }
-        /*
-        if (!TAS.Main.Running && Input.GetKeyDown(KeyCode.L))
-        {
-            SaveState.Main.Save();
-        if (!TAS.Main.Running && Input.GetKeyDown(KeyCode.O))
-        {
-            SaveState.Main.Load();
-        }
-        */
     }
 
     void FixedUpdate()
@@ -115,6 +78,6 @@ public class Plugin : BaseUnityPlugin
 
     void OnGUI()
     {
-        Overlay.Update();
+        Overlay.OnGUI();
     }
 }
