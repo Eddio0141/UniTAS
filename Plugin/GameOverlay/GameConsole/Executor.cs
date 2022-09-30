@@ -37,6 +37,9 @@ public static class Executor
     {
         input = input.Trim();
 
+        if (input.Length == 0)
+            return;
+
         var commandName = true;
         var findingOpenBracket = true;
         var args = true;
