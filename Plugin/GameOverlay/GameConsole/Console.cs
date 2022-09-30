@@ -46,17 +46,21 @@ public static class Console
     static void Window(int id)
     {
         GUI.DragWindow(new Rect(0, 0, 20000, 20));
-        
+
         GUILayout.BeginVertical();
         scrollPos = GUILayout.BeginScrollView(scrollPos);
-        GUILayout.TextArea(content);
+        GUILayout.TextArea(content, GUILayout.ExpandHeight(true));
         GUILayout.EndScrollView();
 
         GUILayout.BeginHorizontal();
         input = GUILayout.TextField(input, GUILayout.ExpandHeight(false));
-        if (GUILayout.Button("Run", GUILayout.ExpandWidth(false), GUILayout.ExpandHeight(false)))
+        if (GUILayout.Button("Clear", GUILayout.ExpandWidth(false)))
         {
-            content += $"{input}\n";
+            content = "";
+            scrollPos = Vector2.zero;
+        }
+        if (GUILayout.Button("Run", GUILayout.ExpandWidth(false)))
+        {
             Executor.Process(input);
             input = "";
         }
