@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace UniTASPlugin.GameOverlay.GameConsole;
@@ -44,7 +43,6 @@ public static class Executor
         var argStart = true;
         var argsString = false;
         var argsList = false;
-        var argsGettingValue = false;
 
         var commandNameBuilder = "";
 
@@ -80,6 +78,11 @@ public static class Executor
                 else
                 {
                     commandNameBuilder += ch;
+                    if (i + 1 == input.Length)
+                    {
+                        CommandSyntaxError("missing args opening bracket", commandNameBuilder);
+                        return;
+                    }
                     continue;
                 }
             }
@@ -131,11 +134,10 @@ public static class Executor
                             }
                             // repeat normal process but we are now in a list
                             argsList = true;
-                            continue;
                         }
 
+                        argBuilder += ch;
                         argStart = false;
-                        argsGettingValue = true;
                     }
                     if (i + 1 == input.Length)
                     {
@@ -151,88 +153,65 @@ public static class Executor
                     }
                     continue;
                 }
-                if (argsGettingValue)
-                {
-                    if (i + 1 == input.Length)
-                    {
-                        if (argsList)
-                            ArgumentSyntaxError("list is missing a closing bracket", commandNameBuilder, currentArgs.Count);
-                        else if (argsString)
-                            ArgumentSyntaxError("string is missing an end quote", commandNameBuilder, currentArgs.Count);
-                        else
-                            ArgumentSyntaxError("argument didn't end with a closing bracket", commandNameBuilder, currentArgs.Count);
-                        return;
-                    }
 
-                    // check string termination
-                    if (argsString && ch == '"' && input[i - 1] != '\\')
-                    {
-                        if (!Parameter.FromString(argBuilder, out var arg) || arg.ParamType != ParameterType.String)
-                        {
-                            Console.Print($"Unreachable error, \"{argBuilder}\" should be parsed as a string for command {commandNameBuilder}, arg index {currentArgs.Count}");
-                            return;
-                        }
-                        argsString = false;
-                        argsGettingValue = false;
-                        currentArgs.Add(arg);
-                        continue;
-                    }
-                    // check list termination
-                    if (!argsString && argsList && ch == ']')
-                    {
-                        if (!Parameter.FromString(argBuilder, out var arg) || arg.ParamType != ParameterType.List)
-                        {
-                            ArgumentSyntaxError($"argument {argBuilder} failed to parse as a list, make sure the values in the list are all the same", commandNameBuilder, currentArgs.Count);
-                            return;
-                        }
-                        argsList = false;
-                        argsGettingValue = false;
-                        currentArgs.Add(arg);
-                        continue;
-                    }
-                    // check normal value termination
-                    if (!argsString && !argsList && ch == ',')
-                    {
-                        if (!Parameter.FromString(argBuilder, out var arg))
-                        {
-                            ArgumentSyntaxError($"argument {argBuilder} failed to parse", commandNameBuilder, currentArgs.Count);
-                            return;
-                        }
-                        argsGettingValue = false;
-                        currentArgs.Add(arg);
-                    }
-                    // add to builder unless normal value termination
-                    else
-                        argBuilder += ch;
-
-                    // check list separation
-                    if (!argsString && argsList && ch == ',')
-                    {
-                        argsGettingValue = false;
-                    }
-                    else
-                    {
-                        continue;
-                    }
-                }
-
-                // check for arg end
-                if (ch == ',' || ch == ')')
-                    argStart = true;
-                else if (ch != ' ')
-                {
-                    Console.Print($"Invalid arguments syntax, expected a separator or an argument closing bracket for command {commandNameBuilder}");
-                    return;
-                }
                 if (i + 1 == input.Length)
                 {
                     if (argsList)
                         ArgumentSyntaxError("list is missing a closing bracket", commandNameBuilder, currentArgs.Count);
-                    else if (ch != ')')
-                        ArgumentSyntaxError("argument didn't end with a closing bracket", commandNameBuilder, currentArgs.Count);
+                    else if (argsString)
+                        ArgumentSyntaxError("string is missing an end quote", commandNameBuilder, currentArgs.Count);
                     else
-                        CommandSyntaxError("command is missing a terminator", commandNameBuilder);
+                        ArgumentSyntaxError("argument didn't end with a closing bracket", commandNameBuilder, currentArgs.Count);
                     return;
+                }
+                // check normal value termination
+                if (!argsString && !argsList && (ch == ',' || ch == ')'))
+                {
+                    if (!Parameter.FromString(argBuilder, out var arg))
+                    {
+                        ArgumentSyntaxError($"argument \"{argBuilder}\" failed to parse", commandNameBuilder, currentArgs.Count);
+                        return;
+                    }
+                    currentArgs.Add(arg);
+                    argBuilder = "";
+                    if (ch == ',')
+                        argStart = true;
+                    else
+                        args = false;
+                    continue;
+                }
+                // simple list string check
+                if (argsList && ch == '"')
+                {
+                    argsString = !argsString;
+                }
+                // builder
+                argBuilder += ch;
+                // check string termination
+                if (argsString && !argsList && ch == '"' && input[i - 1] != '\\')
+                {
+                    if (!Parameter.FromString(argBuilder, out var arg) || arg.ParamType != ParameterType.String)
+                    {
+                        Console.Print($"Unreachable error, \"{argBuilder}\" should be parsed as a string for command {commandNameBuilder}, arg index {currentArgs.Count}");
+                        return;
+                    }
+                    argsString = false;
+                    argStart = true;
+                    currentArgs.Add(arg);
+                    argBuilder = "";
+                }
+                // check list termination
+                else if (!argsString && argsList && ch == ']')
+                {
+                    if (!Parameter.FromString(argBuilder, out var arg) || arg.ParamType != ParameterType.List)
+                    {
+                        ArgumentSyntaxError($"argument {argBuilder} failed to parse as a list, make sure the values in the list are all the same", commandNameBuilder, currentArgs.Count);
+                        return;
+                    }
+                    argStart = true;
+                    argsList = false;
+                    currentArgs.Add(arg);
+                    argBuilder = "";
                 }
                 continue;
             }
@@ -253,7 +232,6 @@ public static class Executor
                 argStart = true;
                 argsString = false;
                 argsList = false;
-                argsGettingValue = false;
 
                 commandNameBuilder = "";
 
@@ -262,7 +240,6 @@ public static class Executor
                 argBuilder = "";
             }
         }
-
 
         ExecuteCommands();
     }
