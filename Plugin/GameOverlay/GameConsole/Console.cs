@@ -1,14 +1,71 @@
-﻿namespace UniTASPlugin.GameOverlay.GameConsole;
+﻿using System;
+using UnityEngine;
+
+namespace UniTASPlugin.GameOverlay.GameConsole;
 
 public static class Console
 {
+    private static bool opened = false;
+    public static bool Opened
+    {
+        get => opened;
+        set
+        {
+            if (value)
+                justOpened = true;
+            opened = value;
+        }
+    }
+
+    static bool justOpened = false;
+    static Rect windowRect;
+    const float WIDTH_MULT = 0.7f;
+    const float HEIGHT_MULT = 0.6f;
+    const int ID = 1000;
+
+    static string content = "";
+    static string input = "";
+    static Vector2 scrollPos = Vector2.zero;
+
     public static void Update()
     {
+        if (!Opened)
+            return;
 
+        if (justOpened)
+        {
+            var width = Screen.width * WIDTH_MULT;
+            var height = Screen.height * HEIGHT_MULT;
+            windowRect = new Rect(Screen.width / 2 - width / 2, Screen.height / 2 - height / 2, width, height);
+            justOpened = false;
+        }
+
+        windowRect = GUILayout.Window(ID, windowRect, Window, "UniTAS Console");
+    }
+
+    static void Window(int id)
+    {
+        GUI.DragWindow(new Rect(0, 0, 20000, 20));
+        
+        GUILayout.BeginVertical();
+        scrollPos = GUILayout.BeginScrollView(scrollPos);
+        GUILayout.TextArea(content);
+        GUILayout.EndScrollView();
+
+        GUILayout.BeginHorizontal();
+        input = GUILayout.TextField(input, GUILayout.ExpandHeight(false));
+        if (GUILayout.Button("Run", GUILayout.ExpandWidth(false), GUILayout.ExpandHeight(false)))
+        {
+            content += $"{input}\n";
+            Executor.Process(input);
+            input = "";
+        }
+        GUILayout.EndHorizontal();
+        GUILayout.EndVertical();
     }
 
     public static void Print(string value)
     {
-        
+        content += $"{value}\n";
     }
 }
