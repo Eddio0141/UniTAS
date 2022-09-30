@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace UniTASPlugin.GameOverlay.GameConsole;
@@ -18,6 +19,7 @@ public static class Console
     }
 
     static bool justOpened = false;
+    static bool windowJustOpened = false;
     static Rect windowRect;
     const float WIDTH_MULT = 0.7f;
     const float HEIGHT_MULT = 0.6f;
@@ -25,6 +27,7 @@ public static class Console
 
     static string content = "";
     static string input = "";
+    const string INPUT_CONTROL_NAME = "ConsoleInput";
     static Vector2 scrollPos = Vector2.zero;
 
     public static void Update()
@@ -37,6 +40,7 @@ public static class Console
             var width = Screen.width * WIDTH_MULT;
             var height = Screen.height * HEIGHT_MULT;
             windowRect = new Rect(Screen.width / 2 - width / 2, Screen.height / 2 - height / 2, width, height);
+            windowJustOpened = true;
             justOpened = false;
         }
 
@@ -45,6 +49,9 @@ public static class Console
 
     static void Window(int id)
     {
+        if (windowJustOpened)
+            GUI.FocusWindow(id);
+
         GUI.DragWindow(new Rect(0, 0, 20000, 20));
 
         GUILayout.BeginVertical();
@@ -53,7 +60,21 @@ public static class Console
         GUILayout.EndScrollView();
 
         GUILayout.BeginHorizontal();
-        input = GUILayout.TextField(input, GUILayout.ExpandHeight(false));
+
+        GUI.SetNextControlName(INPUT_CONTROL_NAME);
+        input = GUILayout.TextArea(input, GUILayout.ExpandHeight(false));
+        if (GUI.changed && input.Contains("\n"))
+        {
+            input = input.Replace("\r\n", "");
+            input = input.Replace("\n", "");
+            ExecInput();
+        }
+        if (windowJustOpened)
+        {
+            GUI.FocusControl(INPUT_CONTROL_NAME);
+            windowJustOpened = false;
+        }
+
         if (GUILayout.Button("Clear", GUILayout.ExpandWidth(false)))
         {
             content = "";
@@ -64,8 +85,15 @@ public static class Console
             Executor.Process(input);
             input = "";
         }
+
         GUILayout.EndHorizontal();
         GUILayout.EndVertical();
+    }
+
+    public static void ExecInput()
+    {
+        Executor.Process(input);
+        input = "";
     }
 
     public static void Print(string value)
