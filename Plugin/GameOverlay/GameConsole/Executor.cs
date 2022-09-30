@@ -106,16 +106,16 @@ public static class Executor
                 }
                 else if (ch != ' ')
                 {
-                    Console.Print("Invalid command syntax, command name cannot contain spaces");
+                    CommandSyntaxError("command name cannot contain spaces", commandNameBuilder);
                     return;
                 }
                 // check if index is at the end of the list
                 if (i + 1 == input.Length)
                 {
                     if (ch == '(')
-                        Console.Print($"Invalid command syntax, missing closing bracket for command {commandNameBuilder}");
+                        CommandSyntaxError("missing closing bracket", commandNameBuilder);
                     else
-                        Console.Print($"Invalid command syntax, missing arguments for command {commandNameBuilder}");
+                        CommandSyntaxError("missing arguments", commandNameBuilder);
                     return;
                 }
             }
@@ -158,7 +158,7 @@ public static class Executor
                         {
                             if (argsList)
                             {
-                                Console.Print($"Invalid argument, you cannot use recursive lists, command: {commandNameBuilder}, arg index {currentArgs.Count}");
+                                ArgumentSyntaxError("you cannot use recursive lists", commandNameBuilder, currentArgs.Count);
                                 return;
                             }
                             // repeat normal process but we are now in a list
@@ -171,13 +171,13 @@ public static class Executor
                     if (i + 1 == input.Length)
                     {
                         if (ch == ')')
-                            Console.Print($"Invalid command syntax, missing terminator for command {commandNameBuilder}");
+                            CommandSyntaxError("missing command terminator", commandNameBuilder);
                         else if (ch == '"')
-                            Console.Print($"Invalid command syntax, missing closing string quote for command {commandNameBuilder}, arg index {currentArgs.Count}");
+                            ArgumentSyntaxError("missing closing string quote", commandNameBuilder, currentArgs.Count);
                         else if (ch == '[' || argsList)
-                            Console.Print($"Invalid command syntax, missing closing list quote for command {commandNameBuilder}, arg index {currentArgs.Count}");
+                            ArgumentSyntaxError("missing closing list quote", commandNameBuilder, currentArgs.Count);
                         else
-                            Console.Print($"Invalid command syntax, missing closing bracket for command {commandNameBuilder}");
+                            CommandSyntaxError("missing argument closing bracket", commandNameBuilder);
                         return;
                     }
                     continue;
@@ -249,7 +249,7 @@ public static class Executor
 
             if (ch != ' ' && ch != ';')
             {
-                Console.Print($"Invalid command syntax, missing terminator for command {commandNameBuilder}");
+                CommandSyntaxError("missing command terminator", commandNameBuilder);
                 return;
             }
 
