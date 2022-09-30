@@ -100,4 +100,10 @@ public static class Console
     {
         content += $"{value}\n";
     }
+
+    public static void Clear()
+    {
+        content = "";
+        scrollPos = Vector2.zero;
+    }
 }

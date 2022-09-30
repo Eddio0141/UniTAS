@@ -64,7 +64,7 @@ public static class Executor
                     commandName = false;
 
                     // find command
-                    var commandIndex = AllCommands.commands.FindIndex(c => c.Name == commandNameBuilder || c.Aliases.Contains(commandNameBuilder));
+                    var commandIndex = AllCommands.Commands.FindIndex(c => c.Name == commandNameBuilder || c.Aliases.Contains(commandNameBuilder));
                     if (commandIndex < 0)
                     {
                         Console.Print($"Command {commandNameBuilder} not found");
@@ -76,7 +76,7 @@ public static class Executor
                         Console.Print($"Missing arguments for command {commandNameBuilder}");
                         return;
                     }
-                    currentCommand = AllCommands.commands[commandIndex];
+                    currentCommand = AllCommands.Commands[commandIndex];
                 }
                 else
                 {
