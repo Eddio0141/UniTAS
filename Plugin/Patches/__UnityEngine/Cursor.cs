@@ -35,12 +35,9 @@ class set_visible
 
     static void Prefix(ref bool value)
     {
-        if (!CursorWrap.SettingCursorVisible)
-        {
-            Overlay.UnityCursorVisible = value;
-            if (Overlay.ShowCursor)
-                value = false;
-        }
+        Overlay.UnityCursorVisible = value;
+        if (Overlay.ShowCursor)
+            value = false;
     }
 }
 
@@ -79,6 +76,6 @@ class set_lockState
     static void Prefix(object value)
     {
         if (CursorWrap.TempUnlocked)
-            CursorWrap.TempStoreLockVariant = value;
+            CursorWrap.TempStoreLockVariant = (int)value;
     }
 }

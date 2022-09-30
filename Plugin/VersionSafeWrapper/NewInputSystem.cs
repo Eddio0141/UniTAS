@@ -8,34 +8,26 @@ public static class NewInputSystem
 {
     const string NAMESPACE = "UnityEngine.InputSystem";
 
-    static Traverse inputSystemTraverse()
-    {
-        return Traverse.Create(inputSystemType());
-    }
+    static readonly Type InputSystemType = AccessTools.TypeByName($"{NAMESPACE}.InputSystem");
 
-    static Type inputSystemType()
-    {
-        return AccessTools.TypeByName($"{NAMESPACE}.InputSystem");
-    }
+    static readonly Traverse InputSystemTraverse = Traverse.Create(InputSystemType);
 
-    static Type inputDeviceType()
-    {
-        return AccessTools.TypeByName($"{NAMESPACE}.InputDevice");
-    }
+    static readonly bool InputSystemExists = InputSystemTraverse.TypeExists();
+
+    static readonly Type inputDeviceType = AccessTools.TypeByName($"{NAMESPACE}.InputDevice");
 
     public static void ConnectAllDevices()
     {
         // TODO make movie choose what devices to connect at any point (and automatically choose what to connect)
-        var inputTraverse = inputSystemTraverse();
-        if (!inputTraverse.TypeExists())
+        if (!InputSystemExists)
             return;
 
         // make sure to not add if they already exist
-        var devices = inputTraverse.Property("devices").Method("ToArray").GetValue<object[]>();
+        var devices = InputSystemTraverse.Property("devices").Method("ToArray").GetValue<object[]>();
         var toAdd = new string[] { /*"Gamepad",*/ "FastKeyboard", "FastMouse" };
-        var removeDevice = inputTraverse.Method("RemoveDevice", new Type[] { inputDeviceType() });
+        var removeDevice = InputSystemTraverse.Method("RemoveDevice", new Type[] { inputDeviceType });
 
-        Plugin.Log.LogDebug(string.Join(", ", inputTraverse.Property("devices").Method("ToArray").GetValue<object[]>().Select(o => o.GetType().ToString()).ToArray()));
+        Plugin.Log.LogDebug(string.Join(", ", InputSystemTraverse.Property("devices").Method("ToArray").GetValue<object[]>().Select(o => o.GetType().ToString()).ToArray()));
 
         foreach (var device in devices)
         {
@@ -45,7 +37,7 @@ public static class NewInputSystem
         // TODO use method or something that wont call event
         //inputTraverse.Method("FlushDisconnectedDevices").GetValue();
 
-        var addDevice = AccessTools.Method(inputSystemType(), "AddDevice", new Type[] { typeof(string) });
+        var addDevice = AccessTools.Method(InputSystemType, "AddDevice", new Type[] { typeof(string) });
 
         foreach (var toAddName in toAdd)
         {
@@ -65,6 +57,6 @@ public static class NewInputSystem
         var generic2 = addDevice.MakeGenericMethod(newbloodLegacyInput);
         _ = generic2.Invoke(null, new object[] { null });
 
-        Plugin.Log.LogDebug(string.Join(", ", inputTraverse.Property("devices").Method("ToArray").GetValue<object[]>().Select(o => o.GetType().ToString()).ToArray()));
+        Plugin.Log.LogDebug(string.Join(", ", InputSystemTraverse.Property("devices").Method("ToArray").GetValue<object[]>().Select(o => o.GetType().ToString()).ToArray()));
     }
 }

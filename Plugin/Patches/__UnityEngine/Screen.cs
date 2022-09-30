@@ -17,12 +17,9 @@ class set_showCursor
 
     static void Prefix(ref bool value)
     {
-        if (!CursorWrap.SettingCursorVisible)
-        {
-            Overlay.UnityCursorVisible = value;
-            if (Overlay.ShowCursor)
-                value = false;
-        }
+        Overlay.UnityCursorVisible = value;
+        if (Overlay.ShowCursor)
+            value = false;
     }
 }
 

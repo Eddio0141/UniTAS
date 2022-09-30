@@ -10,16 +10,7 @@ internal static partial class Overlay
 {
     public static bool Enabled { get; set; } = true;
     public static bool ShowCursor { get; set; } = true;
-    private static bool unityCursorVisible = false;
-    public static bool UnityCursorVisible
-    {
-        get => unityCursorVisible;
-        set
-        {
-            CursorWrap.visible = !value;
-            unityCursorVisible = value;
-        }
-    }
+    public static bool UnityCursorVisible { get; set; } = true;
     static readonly Texture2D cursorDefaultTexture = new(2, 2);
     static Texture2D currentTexture = new(2, 2);
 
@@ -61,9 +52,11 @@ internal static partial class Overlay
         cursorDefaultTexture.Apply();
         currentTexture = cursorDefaultTexture;
 
-        UnityCursorVisible = true;
         BGSurround.SetPixels(Enumerable.Repeat(new Color(1, 1, 1, 0.5f), MENU_SIZE_X * MENU_SIZE_Y).ToArray());
         BGSurround.Apply();
+
+        // hide normal cursor
+        CursorWrap.visible = false;
     }
 
     public static void SetCursorTexture(Texture2D texture)

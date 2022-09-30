@@ -1,36 +1,27 @@
 ﻿using HarmonyLib;
-using UnityEngine;
-using TimeOrig = UniTASPlugin.ReversePatches.__UnityEngine.Time;
+using UniTASPlugin.ReversePatches.__UnityEngine;
 
 namespace UniTASPlugin.VersionSafeWrapper;
 
 public static class TimeWrap
 {
-    static Traverse captureDeltaTime()
-    {
-        return Traverse.Create<Time>().Property("captureDeltaTime");
-    }
-
-    public static bool HasCaptureDeltaTime()
-    {
-        return captureDeltaTime().PropertyExists();
-    }
+    public static readonly bool CaptureDeltaTimeExists = Traverse.Create<UnityEngine.Time>().Property("captureDeltaTime").PropertyExists();
 
     public static float captureFrametime
     {
-        get => HasCaptureDeltaTime() ? captureDeltaTime().GetValue<float>() : 1 / Time.captureFramerate;
+        get => CaptureDeltaTimeExists ? Time.captureDeltaTime : 1 / Time.captureFramerate;
         set
         {
-            if (HasCaptureDeltaTime())
+            if (CaptureDeltaTimeExists)
             {
-                TimeOrig.captureDeltaTime.set(value);
+                Time.captureDeltaTime = value;
             }
             else
             {
-                TimeOrig.captureFramerate.set((int)(1 / value));
+                Time.captureFramerate = (int)(1 / value);
             }
         }
     }
 
-    public static bool FrametimeNotSet => captureDeltaTime().PropertyExists() ? captureDeltaTime().GetValue<float>() == 0 : Time.captureFramerate == 0;
+    public static bool FrametimeNotSet => CaptureDeltaTimeExists ? Time.captureDeltaTime == 0 : Time.captureFramerate == 0;
 }

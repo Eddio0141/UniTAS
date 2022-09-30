@@ -23,6 +23,9 @@ public class Plugin : BaseUnityPlugin
     {
         Log = Logger;
 
+        Harmony harmony = new($"{NAME}HarmonyPatch");
+        harmony.PatchAll();
+
         UnityVersion = Helper.GetUnityVersion();
         Log.LogInfo($"Internally found unity version: {UnityVersion}");
         Log.LogInfo($"Game product name: {AppInfo.ProductName()}");
@@ -30,9 +33,6 @@ public class Plugin : BaseUnityPlugin
         var companyNameProperty = Traverse.Create(typeof(Application)).Property("companyName");
         if (companyNameProperty.PropertyExists())
             Log.LogInfo($"Game company name: {companyNameProperty.GetValue<string>()}");//product name: {Application.productName}, version: {Application.version}");
-
-        Harmony harmony = new($"{NAME}HarmonyPatch");
-        harmony.PatchAll();
 
         // all axis names for help
         // why is this broken TODO

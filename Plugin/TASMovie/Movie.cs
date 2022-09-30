@@ -452,7 +452,7 @@ public class Movie
                         break;
                     }
 
-                    if (!TimeWrap.HasCaptureDeltaTime())
+                    if (!TimeWrap.CaptureDeltaTimeExists)
                     {
                         var framerate = 1 / frametime;
 

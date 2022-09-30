@@ -6,35 +6,26 @@ namespace UniTASPlugin.VersionSafeWrapper;
 
 internal static class SceneHelper
 {
-    static Type SceneManager()
-    {
-        return AccessTools.TypeByName("UnityEngine.SceneManagement.SceneManager");
-    }
+    static readonly Type SceneManager = AccessTools.TypeByName("UnityEngine.SceneManagement.SceneManager");
 
-    static Type loadSceneParametersType()
-    {
-        return AccessTools.TypeByName("UnityEngine.SceneManagement.LoadSceneParameters");
-    }
+    static readonly Type LoadSceneParametersType = AccessTools.TypeByName("UnityEngine.SceneManagement.LoadSceneParameters");
 
     static MethodInfo LoadSceneAsyncNameIndexInternal()
     {
-        var sceneManagerType = SceneManager();
         var methodName = "LoadSceneAsyncNameIndexInternal";
-        var method = sceneManagerType.GetMethod(methodName, AccessTools.all, null, new Type[] { typeof(string), typeof(int), typeof(bool), typeof(bool) }, null);
+        var method = SceneManager.GetMethod(methodName, AccessTools.all, null, new Type[] { typeof(string), typeof(int), typeof(bool), typeof(bool) }, null);
         if (method != null)
             return method;
-        var loadSceneParameters = loadSceneParametersType();
-        return loadSceneParameters != null
-            ? sceneManagerType.GetMethod(methodName, AccessTools.all, null, new Type[] { typeof(string), typeof(int), loadSceneParameters, typeof(bool) }, null)
+        return LoadSceneParametersType != null
+            ? SceneManager.GetMethod(methodName, AccessTools.all, null, new Type[] { typeof(string), typeof(int), LoadSceneParametersType, typeof(bool) }, null)
             : null;
     }
 
     public static void LoadScene(int buildIndex)
     {
-        var sceneManager = SceneManager();
-        if (sceneManager != null)
+        if (SceneManager != null)
         {
-            var loadScene = AccessTools.Method(sceneManager, "LoadScene", new Type[] { typeof(int) });
+            var loadScene = AccessTools.Method(SceneManager, "LoadScene", new Type[] { typeof(int) });
             if (loadScene != null)
             {
                 _ = loadScene.Invoke(null, new object[] { buildIndex });

@@ -5,18 +5,15 @@ namespace UniTASPlugin.VersionSafeWrapper;
 
 public static class AppInfo
 {
-    static Traverse application()
-    {
-        return Traverse.CreateWithType("UnityEngine.Application");
-    }
+    static readonly Traverse Application = Traverse.CreateWithType("UnityEngine.Application");
+    static readonly Traverse productName = Application.Property("productName");
 
     static string productNameCache = null;
 
     public static string ProductName()
     {
-        var productNameTraverse = application().Property("productName");
-        if (productNameTraverse.PropertyExists())
-            return productNameTraverse.GetValue<string>();
+        if (productName.PropertyExists())
+            return productName.GetValue<string>();
 
         // fallback, try get in c# way
         var crashHandlerExe = "UnityCrashHandler64.exe";
