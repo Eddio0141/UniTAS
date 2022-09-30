@@ -66,6 +66,11 @@ public static class Cursor
             return AccessTools.PropertyGetter(Helper.CursorType(), "lockState");
         }
 
+        static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        }
+
         [HarmonyReversePatch]
         public static int get()
         {
@@ -79,6 +84,11 @@ public static class Cursor
         static MethodBase TargetMethod()
         {
             return AccessTools.PropertySetter(Helper.CursorType(), "lockState");
+        }
+
+        static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
         }
 
         [HarmonyReversePatch]
