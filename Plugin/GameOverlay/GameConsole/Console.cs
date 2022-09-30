@@ -21,8 +21,8 @@ public static class Console
     static bool justOpened = false;
     static bool windowJustOpened = false;
     static Rect windowRect;
-    const float WIDTH_MULT = 0.7f;
-    const float HEIGHT_MULT = 0.6f;
+    const float WIDTH_MULT = 0.6f;
+    const float HEIGHT_MULT = 0.55f;
     const int ID = 1000;
 
     static string content = "";
@@ -63,11 +63,19 @@ public static class Console
 
         GUI.SetNextControlName(INPUT_CONTROL_NAME);
         input = GUILayout.TextArea(input, GUILayout.ExpandHeight(false));
-        if (GUI.changed && input.Contains("\n"))
+        if (GUI.changed)
         {
-            input = input.Replace("\r\n", "");
-            input = input.Replace("\n", "");
-            ExecInput();
+            if (input.Contains("\n"))
+            {
+                input = input.Replace("\r\n", "");
+                input = input.Replace("\n", "");
+                ExecInput();
+            }
+            else if (input.Contains("`"))
+            {
+                input = input.Replace("`", "");
+                Opened = false;
+            }
         }
         if (windowJustOpened)
         {
