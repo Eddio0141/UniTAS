@@ -2,7 +2,6 @@
 using System;
 using System.Reflection;
 using UniTASPlugin.FakeGameState;
-using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
 
 namespace UniTASPlugin.Patches.__UnityEngine;

@@ -14,11 +14,9 @@ internal static class SceneHelper
     {
         var methodName = "LoadSceneAsyncNameIndexInternal";
         var method = SceneManager.GetMethod(methodName, AccessTools.all, null, new Type[] { typeof(string), typeof(int), typeof(bool), typeof(bool) }, null);
-        if (method != null)
-            return method;
-        return LoadSceneParametersType != null
+        return method ?? (LoadSceneParametersType != null
             ? SceneManager.GetMethod(methodName, AccessTools.all, null, new Type[] { typeof(string), typeof(int), LoadSceneParametersType, typeof(bool) }, null)
-            : null;
+            : null);
     }
 
     public static void LoadScene(int buildIndex)
