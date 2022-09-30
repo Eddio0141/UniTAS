@@ -8,16 +8,62 @@ public static class AllCommands
 {
     public static List<Command> Commands { get; } = new()
     {
-        new Command("testing", "", args => {
+        new Command("test", "", args => {
             Console.Print("testing");
-            Console.Print($"all params: {string.Join(", ", args.Select(x => x.ToString()).ToArray())}");
-            Console.Print($"param count: {args.Length}");
+            Console.Print($"all args: {string.Join(", ", args.Select(x => x.ToString()).ToArray())}");
+            Console.Print($"arg types: {string.Join(", ", args.Select(x => x.ParamType.ToString()).ToArray())}");
+            Console.Print($"arg count: {args.Length}");
+        }),
+        new Command("commands", "Lists all commands.", args =>
+        {
+            if (!ValidateArgCount(args, 0))
+                return;
+            Console.Print("all commands:");
+            foreach (var cmd in Commands)
+            {
+                Console.Print(cmd.Name);
+            }
         }),
         new Command("clear", "Clears the terminal.", args => {
             if (!ValidateArgCount(args, 0))
                 return;
             Console.Clear();
         }, usage: "clear();"),
+        new Command("help", "Help for the terminal or a specific command. Run commands(); for list of commands.", args => {
+            if (!ValidateArgCount(args, 0, 1))
+                return;
+            Command helpCmd;
+            if (args.Length == 0)
+            {
+                helpCmd = Commands.Find(c => c.Name == "help");
+            } else if (!args[0].GetString(out var findName))
+            {
+                Console.Print("Argument needs to be the command name string");
+                return;
+            }
+            else
+            {
+                var helpCmdIndex = Commands.FindIndex(c => c.Name == findName || c.Aliases.Contains(findName));
+                if (helpCmdIndex < 0)
+                {
+                    Console.Print("Command not found");
+                    return;
+                }
+                helpCmd = Commands[helpCmdIndex];
+            }
+            Console.Print($"Command {helpCmd.Name}");
+            if (helpCmd.Aliases.Length > 0)
+                Console.Print($"aliases: {string.Join(" ", helpCmd.Aliases)}");
+            if (helpCmd.Description != "")
+                Console.Print($"description: {helpCmd.Description}");
+            if (helpCmd.Usage != "")
+                Console.Print($"usage: {helpCmd.Usage}");
+        }, "Help(); / Help(\"echo\");"),
+        new Command("quit", "Quits the game.", args => {
+            if (!ValidateArgCount(args, 0))
+                return;
+            UnityEngine.Application.Quit();
+        }, usage: "quit();"),
         new Command("echo", "Prints the given text to the console.", args => {
             if (!ValidateArgCount(args, 1))
                 return;
@@ -28,7 +74,10 @@ public static class AllCommands
             if (!ValidateArgCount(args, 0, 1))
                 return;
             if (args.Length == 0)
+            {
+                Console.Print($"Restarting with time {DateTime.Now}");
                 GameRestart.SoftRestart(DateTime.Now);
+            }
             else
             {
                 if (!args[0].GetString(out var dateTimeString))
@@ -41,6 +90,7 @@ public static class AllCommands
                     Console.Print("Invalid DateTime value");
                     return;
                 }
+                Console.Print($"Restarting with time {dateTime}");
                 GameRestart.SoftRestart(dateTime);
             }
         }, usage: "soft_restart(); / soft_restart(\"DateTime string\");"),
