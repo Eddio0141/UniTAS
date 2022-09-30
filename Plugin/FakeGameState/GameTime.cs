@@ -6,10 +6,8 @@ namespace UniTASPlugin.FakeGameState;
 
 internal static class GameTime
 {
-    public static DateTime StartupTime { get; private set; } = DateTime.Now;
+    public static DateTime StartupTime { get; private set; } = new DateTime(2000, 1, 1);
     public static DateTime CurrentTime => StartupTime + TimeSpan.FromSeconds(RealtimeSinceStartup);
-    private static bool gotInitialTime = false;
-    public static bool GotInitialTime { get => gotInitialTime; set => gotInitialTime = true; }
     public static ulong RenderedFrameCountOffset { get; private set; } = 0;
     public static ulong FrameCountRestartOffset { get; private set; } = 0;
     public static double SecondsSinceStartUpOffset { get; private set; } = 0;

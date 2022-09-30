@@ -1,45 +1,27 @@
 ﻿using HarmonyLib;
-using UnityEngine;
+using UniTASPlugin.ReversePatches.__UnityEngine;
 
 namespace UniTASPlugin.VersionSafeWrapper;
 
 public static class TimeWrap
 {
-    public static bool SettingFrametime { get; private set; } = false;
-
-    static Traverse captureDeltaTime()
-    {
-        return Traverse.Create<Time>().Property("captureDeltaTime");
-    }
-
-    static Traverse captureFramerate()
-    {
-        return Traverse.Create<Time>().Property("captureFramerate");
-    }
-
-    public static bool HasCaptureDeltaTime()
-    {
-        return captureDeltaTime().PropertyExists();
-    }
+    public static readonly bool CaptureDeltaTimeExists = Traverse.Create<UnityEngine.Time>().Property("captureDeltaTime").PropertyExists();
 
     public static float captureFrametime
     {
-        get => captureDeltaTime().PropertyExists() ? captureDeltaTime().GetValue<float>() : 1 / captureFramerate().GetValue<int>();
+        get => CaptureDeltaTimeExists ? Time.captureDeltaTime : 1 / Time.captureFramerate;
         set
         {
-            SettingFrametime = true;
-            if (captureDeltaTime().PropertyExists())
+            if (CaptureDeltaTimeExists)
             {
-                _ = captureDeltaTime().SetValue(value);
+                Time.captureDeltaTime = value;
             }
             else
             {
-                var framerate = (int)(1 / value);
-                _ = captureFramerate().SetValue(framerate);
+                Time.captureFramerate = (int)(1 / value);
             }
-            SettingFrametime = false;
         }
     }
 
-    public static bool FrametimeNotSet => captureDeltaTime().PropertyExists() ? captureDeltaTime().GetValue<float>() == 0 : captureFramerate().GetValue<int>() == 0;
+    public static bool FrametimeNotSet => CaptureDeltaTimeExists ? Time.captureDeltaTime == 0 : Time.captureFramerate == 0;
 }
