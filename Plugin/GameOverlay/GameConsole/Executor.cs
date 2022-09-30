@@ -143,7 +143,7 @@ public static class Executor
                             Console.Print($"Invalid command syntax, missing terminator for command {commandNameBuilder}");
                         else if (ch == '"')
                             Console.Print($"Invalid command syntax, missing closing string quote for command {commandNameBuilder}, arg index {currentArgs.Count}");
-                        else if (ch == '[')
+                        else if (ch == '[' || argsList)
                             Console.Print($"Invalid command syntax, missing closing list quote for command {commandNameBuilder}, arg index {currentArgs.Count}");
                         else
                             Console.Print($"Invalid command syntax, missing closing bracket for command {commandNameBuilder}");
@@ -153,6 +153,17 @@ public static class Executor
                 }
                 if (argsGettingValue)
                 {
+                    if (i + 1 == input.Length)
+                    {
+                        if (argsList)
+                            ArgumentSyntaxError("list is missing a closing bracket", commandNameBuilder, currentArgs.Count);
+                        else if (argsString)
+                            ArgumentSyntaxError("string is missing an end quote", commandNameBuilder, currentArgs.Count);
+                        else
+                            ArgumentSyntaxError("argument didn't end with a closing bracket", commandNameBuilder, currentArgs.Count);
+                        return;
+                    }
+
                     // check string termination
                     if (argsString && ch == '"' && input[i - 1] != '\\')
                     {
@@ -213,6 +224,16 @@ public static class Executor
                     Console.Print($"Invalid arguments syntax, expected a separator or an argument closing bracket for command {commandNameBuilder}");
                     return;
                 }
+                if (i + 1 == input.Length)
+                {
+                    if (argsList)
+                        ArgumentSyntaxError("list is missing a closing bracket", commandNameBuilder, currentArgs.Count);
+                    else if (ch != ')')
+                        ArgumentSyntaxError("argument didn't end with a closing bracket", commandNameBuilder, currentArgs.Count);
+                    else
+                        CommandSyntaxError("command is missing a terminator", commandNameBuilder);
+                    return;
+                }
                 continue;
             }
 
@@ -226,8 +247,19 @@ public static class Executor
             {
                 commandQueue.Enqueue(new KeyValuePair<Command, Parameter[]>(currentCommand, currentArgs.ToArray()));
 
+                commandName = true;
+                findingOpenBracket = true;
+                args = true;
+                argStart = true;
+                argsString = false;
+                argsList = false;
+                argsGettingValue = false;
+
+                commandNameBuilder = "";
+
                 currentCommand = null;
                 currentArgs.Clear();
+                argBuilder = "";
             }
         }
 
