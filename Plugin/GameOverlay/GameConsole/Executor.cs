@@ -40,12 +40,14 @@ public static class Executor
         if (input.Length == 0)
             return;
 
+        var waitingForCommandName = true;
         var commandName = true;
         var findingOpenBracket = true;
         var args = true;
         var argStart = true;
         var argsString = false;
         var argsList = false;
+        var argsCommaFinding = false;
 
         var commandNameBuilder = "";
 
@@ -59,6 +61,12 @@ public static class Executor
 
             if (commandName)
             {
+                if (waitingForCommandName)
+                {
+                    if (ch == ' ')
+                        continue;
+                    waitingForCommandName = false;
+                }
                 if (ch == ' ' || ch == '(')
                 {
                     commandName = false;
@@ -123,6 +131,24 @@ public static class Executor
                             return;
                         }
                         args = false;
+                    }
+                    else if (argsCommaFinding)
+                    {
+                        if (ch == ',')
+                        {
+                            argsCommaFinding = false;
+                            if (i + 1 == input.Length)
+                            {
+                                ArgumentSyntaxError("argument didn't end with a closing bracket", commandNameBuilder, currentArgs.Count);
+                                return;
+                            }
+                        }
+                        else if (ch != ' ')
+                        {
+                            ArgumentSyntaxError("missing comma between arguments", commandNameBuilder, currentArgs.Count);
+                            return;
+                        }
+                        continue;
                     }
                     else if (ch != ' ')
                     {
@@ -202,6 +228,7 @@ public static class Executor
                     argStart = true;
                     currentArgs.Add(arg);
                     argBuilder = "";
+                    argsCommaFinding = true;
                 }
                 // check list termination
                 else if (!argsString && argsList && ch == ']')
@@ -215,6 +242,7 @@ public static class Executor
                     argsList = false;
                     currentArgs.Add(arg);
                     argBuilder = "";
+                    argsCommaFinding = true;
                 }
                 continue;
             }
@@ -229,12 +257,14 @@ public static class Executor
             {
                 commandQueue.Enqueue(new KeyValuePair<Command, Parameter[]>(currentCommand, currentArgs.ToArray()));
 
+                waitingForCommandName = true;
                 commandName = true;
                 findingOpenBracket = true;
                 args = true;
                 argStart = true;
                 argsString = false;
                 argsList = false;
+                argsCommaFinding = false;
 
                 commandNameBuilder = "";
 
