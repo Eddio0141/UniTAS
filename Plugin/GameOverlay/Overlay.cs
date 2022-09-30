@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Linq;
+using UniTASPlugin.GameOverlay.GameConsole;
 using UniTASPlugin.TASMovie;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
@@ -76,10 +77,15 @@ internal static partial class Overlay
             CursorWrap.TempCursorLockToggle(!CursorWrap.TempUnlocked);
             Plugin.Log.LogDebug($"Unlocked cursor: {CursorWrap.TempUnlocked}");
         }
+        if (!TAS.Running && Input.GetKeyDown(KeyCode.BackQuote))
+        {
+            Console.Opened = !Console.Opened;
+        }
     }
 
     public static void OnGUI()
     {
+        Console.Update();
         DrawGUI();
 
         if (CursorWrap.TempUnlocked || ShowCursor && UnityCursorVisible)
