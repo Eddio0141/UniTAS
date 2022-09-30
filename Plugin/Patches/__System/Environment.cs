@@ -6,7 +6,7 @@ using UniTASPlugin.FakeGameState;
 namespace UniTASPlugin.Patches.__System;
 
 [HarmonyPatch(typeof(Environment), nameof(Environment.TickCount), MethodType.Getter)]
-class EnvironmentPatch
+class get_TickCount
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
