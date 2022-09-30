@@ -140,7 +140,7 @@ public class FileBrowser
                 Screen.height / 2 - CONFIRM_SAVE_HEIGHT / 2,
                 CONFIRM_SAVE_WIDTH,
                 CONFIRM_SAVE_HEIGHT),
-            id + 1,
+            id + 100,
             ConfirmBox.ConfirmBoxType.YesNo);
         extensionIndex = 0;
         extensionText = extensions[0].ToString();
