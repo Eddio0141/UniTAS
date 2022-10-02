@@ -1,5 +1,6 @@
 ﻿using BepInEx;
 using HarmonyLib;
+using UniTASPlugin.FakeGameState.GameFileSystem;
 using UniTASPlugin.GameOverlay;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
@@ -25,6 +26,10 @@ public class Plugin : BaseUnityPlugin
 
         Harmony harmony = new($"{NAME}HarmonyPatch");
         harmony.PatchAll();
+
+        // init fake file system
+        // TODO way of getting device type
+        FileSystem.Init(DeviceType.Windows);
 
         UnityVersion = Helper.GetUnityVersion();
         Log.LogInfo($"Internally found unity version: {UnityVersion}");

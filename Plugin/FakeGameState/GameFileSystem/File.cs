@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.IO;
+using System.Text;
 
 namespace UniTASPlugin.FakeGameState.GameFileSystem;
 
@@ -17,4 +18,8 @@ public class File : Entry
     }
 
     public File(string name, string extension, Dir parent, string data) : this(name, extension, parent, Encoding.UTF8.GetBytes(data)) { }
+
+    public File(string name, string extension, Dir parent) : this(name, extension, parent, new byte[0]) { }
+
+    public File(string filename, Dir parent) : this(Path.GetFileName(filename), Path.GetExtension(filename), parent, new byte[0]) { }
 }

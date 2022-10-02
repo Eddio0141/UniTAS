@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace UniTASPlugin.FakeGameState.GameFileSystem;
 
@@ -19,29 +19,56 @@ public static class FileSystem
 
                     // create path to where unity game is installed
                     var gameDir = Helper.GameRootDir();
-                    var containingDir = new List<string>();
+                    var gameDirSplit = gameDir.Split(Path.DirectorySeparatorChar).ToList();
+                    if (gameDirSplit.Count > 0)
+                        gameDirSplit.RemoveAt(0);
 
-                    while (true)
-                    {
-                        var parentDir = Directory.GetParent(gameDir);
-                        if (parentDir == null)
-                            break;
-                        gameDir = parentDir.FullName;
-                        containingDir.Add(Path.GetDirectoryName(gameDir));
-                    }
-                    if (containingDir.Count > 0)
-                        containingDir.RemoveAt(containingDir.Count - 1);
-                    containingDir.Reverse();
                     var currentRoot = Root;
-                    foreach (var dir in containingDir)
+                    foreach (var dir in gameDirSplit)
                     {
+                        Plugin.Log.LogDebug($"adding {dir}");
                         currentRoot = currentRoot.AddDir(dir);
                     }
+                    Plugin.Log.LogDebug($"Directory exists: {Directory.Exists(gameDir)}");
                     break;
                 }
             default:
                 throw new NotImplementedException();
         }
+    }
+
+    public static void NewDir(string path)
+    {
+        var dir = Root;
+        var dirs = path.Split(Path.DirectorySeparatorChar);
+        foreach (var d in dirs)
+        {
+            dir = dir.AddDir(d);
+        }
+    }
+
+    public static void NewFile(string path)
+    {
+        var dir = Root;
+        var dirs = path.Split(Path.DirectorySeparatorChar);
+        foreach (var d in dirs)
+        {
+            dir = dir.AddDir(d);
+        }
+    }
+
+    public static bool DirectoryExists(string path)
+    {
+        var dir = Root;
+        var dirs = path.Split(Path.DirectorySeparatorChar);
+        foreach (var d in dirs)
+        {
+            dir = dir.GetDir(d);
+            if (dir == null)
+                return false;
+        }
+
+        return true;
     }
 }
 
