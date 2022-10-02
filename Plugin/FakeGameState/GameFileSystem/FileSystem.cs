@@ -4,13 +4,15 @@ using System.Linq;
 
 namespace UniTASPlugin.FakeGameState.GameFileSystem;
 
-public static class FileSystem
+public static partial class FileSystem
 {
     public static Dir Root { get; private set; }
     public static DeviceType DeviceType { get; }
 
     public static void Init(DeviceType device)
     {
+        ExternalHelpers.Init(device);
+
         switch (device)
         {
             case DeviceType.Windows:
@@ -34,26 +36,6 @@ public static class FileSystem
                 }
             default:
                 throw new NotImplementedException();
-        }
-    }
-
-    public static void NewDir(string path)
-    {
-        var dir = Root;
-        var dirs = path.Split(Path.DirectorySeparatorChar);
-        foreach (var d in dirs)
-        {
-            dir = dir.AddDir(d);
-        }
-    }
-
-    public static void NewFile(string path)
-    {
-        var dir = Root;
-        var dirs = path.Split(Path.DirectorySeparatorChar);
-        foreach (var d in dirs)
-        {
-            dir = dir.AddDir(d);
         }
     }
 

@@ -1,5 +1,4 @@
-﻿using System.IO;
-using System.Linq;
+﻿using System.Linq;
 using UniTASPlugin.GameOverlay.GameConsole;
 using UniTASPlugin.TASMovie;
 using UniTASPlugin.VersionSafeWrapper;

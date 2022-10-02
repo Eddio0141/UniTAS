@@ -1,5 +1,4 @@
 ﻿using HarmonyLib;
-using System.IO;
 
 namespace UniTASPlugin.VersionSafeWrapper;
 
