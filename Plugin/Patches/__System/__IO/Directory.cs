@@ -7,7 +7,7 @@ using UniTASPlugin.FakeGameState.GameFileSystem;
 namespace UniTASPlugin.Patches.__System.__IO;
 
 [HarmonyPatch(typeof(Directory), nameof(Directory.Exists))]
-class Exists
+class DirExists
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
@@ -16,7 +16,6 @@ class Exists
 
     static bool Prefix(string path, ref bool __result)
     {
-        Plugin.Log.LogDebug($"Directory.Exists({path})");
         __result = FileSystem.DirectoryExists(path);
         return false;
     }

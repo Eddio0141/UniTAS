@@ -38,4 +38,14 @@ public class Dir : Entry
         }
         return null;
     }
+
+    public File GetFile(string name)
+    {
+        foreach (var child in children)
+        {
+            if (child is File file && file.Name == name)
+                return file;
+        }
+        return null;
+    }
 }

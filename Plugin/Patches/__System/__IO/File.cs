@@ -1,38 +1,32 @@
-﻿namespace UniTASPlugin.Patches.__System.__IO;
+﻿using HarmonyLib;
+using System;
+using System.IO;
+using System.Reflection;
+using UniTASPlugin.FakeGameState.GameFileSystem;
+using FileOrig = System.IO.File;
+
+namespace UniTASPlugin.Patches.__System.__IO;
+
+[HarmonyPatch(typeof(FileOrig), nameof(FileOrig.Exists))]
+class Exists
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static bool Prefix(ref bool __result, string path)
+    {
+#pragma warning disable CS0618 // Type or member is obsolete
+        __result = !string.IsNullOrEmpty(path) && path.IndexOfAny(Path.InvalidPathChars) < 0 && FileSystem.FileExists(path);
+#pragma warning restore CS0618 // Type or member is obsolete
+        return false;
+    }
+}
 
 class Dummy3
 {
     /*
-	/// <summary>Opens a file, appends the specified string to the file, and then closes the file. If the file does not exist, this method creates a file, writes the specified string to the file, then closes the file.</summary>
-	/// <param name="path">The file to append the specified string to.</param>
-	/// <param name="contents">The string to append to the file.</param>
-	/// <exception cref="T:System.ArgumentException">
-	///   <paramref name="path" /> is a zero-length string, contains only white space, or contains one or more invalid characters as defined by <see cref="F:System.IO.Path.InvalidPathChars" />.</exception>
-	/// <exception cref="T:System.ArgumentNullException">
-	///   <paramref name="path" /> is <see langword="null" />.</exception>
-	/// <exception cref="T:System.IO.PathTooLongException">The specified path, file name, or both exceed the system-defined maximum length.</exception>
-	/// <exception cref="T:System.IO.DirectoryNotFoundException">The specified path is invalid (for example, the directory doesn't exist or it is on an unmapped drive).</exception>
-	/// <exception cref="T:System.IO.IOException">An I/O error occurred while opening the file.</exception>
-	/// <exception cref="T:System.UnauthorizedAccessException">
-	///   <paramref name="path" /> specified a file that is read-only.  
-	/// -or-  
-	/// This operation is not supported on the current platform.  
-	/// -or-  
-	/// <paramref name="path" /> specified a directory.  
-	/// -or-  
-	/// The caller does not have the required permission.</exception>
-	/// <exception cref="T:System.NotSupportedException">
-	///   <paramref name="path" /> is in an invalid format.</exception>
-	/// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission.</exception>
-	// Token: 0x06002A5D RID: 10845 RVA: 0x00094980 File Offset: 0x00092B80
-	public static void AppendAllText(string path, string contents)
-	{
-		using (TextWriter textWriter = new StreamWriter(path, true))
-		{
-			textWriter.Write(contents);
-		}
-	}
-
 	/// <summary>Appends the specified string to the file, creating the file if it does not already exist.</summary>
 	/// <param name="path">The file to append the specified string to.</param>
 	/// <param name="contents">The string to append to the file.</param>
@@ -382,17 +376,6 @@ class Dummy3
 		{
 			throw MonoIO.GetException(path, monoIOError);
 		}
-	}
-
-	/// <summary>Determines whether the specified file exists.</summary>
-	/// <param name="path">The file to check.</param>
-	/// <returns>
-	///   <see langword="true" /> if the caller has the required permissions and <paramref name="path" /> contains the name of an existing file; otherwise, <see langword="false" />. This method also returns <see langword="false" /> if <paramref name="path" /> is <see langword="null" />, an invalid path, or a zero-length string. If the caller does not have sufficient permissions to read the specified file, no exception is thrown and the method returns <see langword="false" /> regardless of the existence of <paramref name="path" />.</returns>
-	// Token: 0x06002A69 RID: 10857 RVA: 0x00094CAC File Offset: 0x00092EAC
-	public static bool Exists(string path)
-	{
-		MonoIOError monoIOError;
-		return !string.IsNullOrWhiteSpace(path) && path.IndexOfAny(Path.InvalidPathChars) < 0 && SecurityManager.CheckElevatedPermissions() && MonoIO.ExistsFile(path, out monoIOError);
 	}
 
 	/// <summary>Gets a <see cref="T:System.Security.AccessControl.FileSecurity" /> object that encapsulates the access control list (ACL) entries for a specified file.</summary>

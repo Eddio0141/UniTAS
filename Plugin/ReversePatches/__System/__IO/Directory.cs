@@ -15,6 +15,7 @@ public static class Directory
     static string[] InternalGetFileDirectoryNames
         (string path, string userPathOriginal, string searchPattern, bool includeFiles, bool includeDirs, SearchOption searchOption, bool checkHost) =>
         InternalGetFileDirectoryNamesPatch.method(path, userPathOriginal, searchPattern, includeFiles, includeDirs, searchOption, checkHost);
+    public static string[] GetFileSystemEntries(string path, string searchPattern) => GetFileSystemEntriesPatch.method(path, searchPattern);
 
     [HarmonyPatch]
     static class ExistsPatch
@@ -75,6 +76,22 @@ public static class Directory
         [HarmonyReversePatch]
         [HarmonyPatch(typeof(DirOrig), "InternalGetFileDirectoryNames")]
         public static string[] method(string path, string userPathOriginal, string searchPattern, bool includeFiles, bool includeDirs, SearchOption searchOption, bool checkHost)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    [HarmonyPatch]
+    static class GetFileSystemEntriesPatch
+    {
+        static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        }
+
+        [HarmonyReversePatch]
+        [HarmonyPatch(typeof(DirOrig), nameof(DirOrig.GetFileSystemEntries), new Type[] { typeof(string), typeof(string) })]
+        public static string[] method(string path, string searchPattern)
         {
             throw new NotImplementedException();
         }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using UniTASPlugin.ReversePatches.__System.__IO;
 using UnityEngine;
 
 namespace UniTASPlugin.GameOverlay;
