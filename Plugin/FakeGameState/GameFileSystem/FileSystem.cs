@@ -20,40 +20,58 @@ public static partial class FileSystem
             case DeviceType.Windows:
                 {
                     Root = new Dir("C:", null);
-
-                    // create path to where unity game is installed
-                    var gameDir = Helper.GameRootDir();
-                    var gameDirSplit = gameDir.Split(Path.DirectorySeparatorChar).ToList();
-                    if (gameDirSplit.Count > 0)
-                        gameDirSplit.RemoveAt(0);
-
-                    var currentRoot = Root;
-                    foreach (var dir in gameDirSplit)
-                    {
-                        Plugin.Log.LogDebug($"adding {dir}");
-                        currentRoot = currentRoot.AddDir(dir);
-                    }
-                    Plugin.Log.LogDebug($"Directory exists: {Directory.Exists(gameDir)}");
-                    Plugin.Log.LogDebug($"writing test file to {gameDir}/test.txt");
-                    FileOrig.AppendAllText(Path.Combine(gameDir, "test.txt"), "test");
-                    Plugin.Log.LogDebug("done writing test file");
-                    Plugin.Log.LogDebug($"test file exists: {FileOrig.Exists(Path.Combine(gameDir, "test.txt"))}");
                     break;
                 }
             default:
                 throw new NotImplementedException();
         }
+
+        // create path to where unity game is installed
+        var gameDir = Helper.GameRootDir();
+        CreateDir(gameDir);
+        Plugin.Log.LogDebug($"Directory exists: {Directory.Exists(gameDir)}");
+        Plugin.Log.LogDebug($"writing test file to {gameDir}/test.txt");
+        FileOrig.AppendAllText(Path.Combine(gameDir, "test.txt"), "test");
+        Plugin.Log.LogDebug("done writing test file");
+        Plugin.Log.LogDebug($"test file exists: {FileOrig.Exists(Path.Combine(gameDir, "test.txt"))}");
+    }
+
+    public static void DeleteFile(string path)
+    {
+        var file = GetFile(path);
+        if (file == null)
+            return;
+        var parent = file.Parent;
+        if (parent == null)
+            return;
+        parent.DeleteFile(file);
+    }
+
+    public static Dir CreateDir(string path)
+    {
+        if (!path.StartsWith(Root.Name + Path.DirectorySeparatorChar))
+            return null;
+        var split = path.Split(Path.DirectorySeparatorChar);
+        var currentRoot = Root;
+        foreach (var dir in split)
+        {
+            currentRoot = currentRoot.AddDir(dir);
+        }
+        return currentRoot;
     }
 
     public static Dir GetDir(string path)
     {
+        if (!path.StartsWith(Root.Name + Path.DirectorySeparatorChar))
+            return null;
+
         var dir = Root;
-        var dirs = path.Split(Path.DirectorySeparatorChar);
+        var dirs = path.Split(Path.DirectorySeparatorChar).ToList();
+        if (dirs.Count > 0)
+            dirs.RemoveAt(0);
         foreach (var d in dirs)
         {
-            Plugin.Log.LogDebug($"checking dir {d}");
             dir = dir.GetDir(d);
-            Plugin.Log.LogDebug($"result {dir}");
             if (dir == null)
                 return null;
         }
@@ -78,38 +96,6 @@ public static partial class FileSystem
     {
         var foundFile = GetFile(path);
         return foundFile != null;
-    }
-
-    public static void GetDiskFreeSpace(string path, out ulong availableFreeSpace, out ulong totalSize, out ulong totalFreeSpace)
-    {
-        if (path == null)
-        {
-            availableFreeSpace = 0;
-            totalSize = 0;
-            totalFreeSpace = 0;
-            return;
-        }
-        switch (DeviceType)
-        {
-            case DeviceType.Windows:
-                {
-                    if (path == "C:" || path == "C:\\")
-                    {
-                        availableFreeSpace = TOTAL_SIZE;
-                        totalSize = TOTAL_SIZE;
-                        totalFreeSpace = TOTAL_SIZE;
-                    }
-                    else
-                    {
-                        availableFreeSpace = 0;
-                        totalSize = 0;
-                        totalFreeSpace = 0;
-                    }
-                    break;
-                }
-            default:
-                throw new NotImplementedException();
-        }
     }
 }
 

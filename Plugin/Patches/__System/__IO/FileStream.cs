@@ -58,7 +58,7 @@ class Ctor__string__FileMode__FileAccess__FileShare__int__bool__FileOptions
             }
 #pragma warning restore CS0618 // Type or member is obsolete
             var pathTraverse = Traverse.Create(typeof(Path));
-            path = pathTraverse.Method("InsecureGetFullPath").GetValue<string>(path);
+            path = pathTraverse.Method("InsecureGetFullPath", new Type[] { typeof(string) }).GetValue<string>(path);
             if (Directory.Exists(path))
             {
                 var getSecureFileName = Traverse.Create(typeof(FileStreamOrig)).Method("GetSecureFileName", new Type[] { typeof(string) });
@@ -72,7 +72,6 @@ class Ctor__string__FileMode__FileAccess__FileShare__int__bool__FileOptions
             {
                 throw new ArgumentException(string.Format("Combining FileMode: {0} with FileAccess: {1} is invalid.", access, mode));
             }
-            //SecurityManager.EnsureElevatedPermissions();
             string directoryName = Path.GetDirectoryName(path);
             if (directoryName.Length > 0 && !Directory.Exists(Path.GetFullPath(directoryName)))
             {
@@ -83,7 +82,7 @@ class Ctor__string__FileMode__FileAccess__FileShare__int__bool__FileOptions
             {
                 instanceTraverse.Field("name").SetValue(path);
             }
-            FileSystem.ExternalHelpers.FileStreamConstructorOpen(path, mode, access, share, options);
+            FileSystem.OsHelpers.OpenFile(path, mode, access, share, options);
             // no safe handle field
             instanceTraverse.Field("access").SetValue(access);
             instanceTraverse.Field("owner").SetValue(true);
@@ -97,7 +96,7 @@ class Ctor__string__FileMode__FileAccess__FileShare__int__bool__FileOptions
                     bufferSize = (int)((length < 1000L) ? 1000L : length);
                 }
             }
-            instanceTraverse.Method("InitBuffer").GetValue(bufferSize, false);
+            instanceTraverse.Method("InitBuffer", new Type[] { typeof(int), typeof(bool) }).GetValue(bufferSize, false);
             if (mode == FileMode.Append)
             {
                 __instance.Seek(0L, SeekOrigin.End);
@@ -107,6 +106,52 @@ class Ctor__string__FileMode__FileAccess__FileShare__int__bool__FileOptions
             instanceTraverse.Field("append_startpos").SetValue(0L);
             return false;
         }
+    }
+}
+
+[HarmonyPatch(typeof(FileStreamOrig), nameof(FileStreamOrig.Seek))]
+class Seek
+{
+    static Exception Cleanup(MethodBase original, Exception ex)
+    {
+        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+    }
+
+    static bool Prefix(ref long __result, ref FileStreamOrig __instance, long offset, SeekOrigin origin)
+    {
+        if (!__instance.CanSeek)
+        {
+            throw new NotSupportedException("The stream does not support seeking");
+        }
+        long num;
+        switch (origin)
+        {
+            case SeekOrigin.Begin:
+                num = offset;
+                break;
+            case SeekOrigin.Current:
+                num = __instance.Position + offset;
+                break;
+            case SeekOrigin.End:
+                num = __instance.Length + offset;
+                break;
+            default:
+                throw new ArgumentException("origin", "Invalid SeekOrigin");
+        }
+        if (num < 0L)
+        {
+            throw new IOException("Attempted to Seek before the beginning of the stream");
+        }
+        var instanceTraverse = Traverse.Create(__instance);
+        if (num < instanceTraverse.Field("append_startpos").GetValue<long>())
+        {
+            throw new IOException("Can't seek back over pre-existing data in append mode");
+        }
+        instanceTraverse.Method("FlushBuffer").GetValue();
+        MonoIOError monoIOError;
+        __instance.buf_start = MonoIO.Seek(__instance.safeHandle, num, SeekOrigin.Begin, out monoIOError);
+        __result = instanceTraverse.Field("buf_start").GetValue<long>();
+        return false;
     }
 }
 
@@ -716,57 +761,6 @@ class Dummy4
             throw new ArgumentException("Invalid IAsyncResult", "asyncResult");
         }
         writeDelegate.EndInvoke(asyncResult);
-    }
-
-    /// <summary>Sets the current position of this stream to the given value.</summary>
-    /// <param name="offset">The point relative to <paramref name="origin" /> from which to begin seeking.</param>
-    /// <param name="origin">Specifies the beginning, the end, or the current position as a reference point for <paramref name="offset" />, using a value of type <see cref="T:System.IO.SeekOrigin" />.</param>
-    /// <returns>The new position in the stream.</returns>
-    /// <exception cref="T:System.IO.IOException">An I/O error occurred.</exception>
-    /// <exception cref="T:System.NotSupportedException">The stream does not support seeking, such as if the <see langword="FileStream" /> is constructed from a pipe or console output.</exception>
-    /// <exception cref="T:System.ArgumentException">Seeking is attempted before the beginning of the stream.</exception>
-    /// <exception cref="T:System.ObjectDisposedException">Methods were called after the stream was closed.</exception>
-    public override long Seek(long offset, SeekOrigin origin)
-    {
-        if (this.safeHandle.IsClosed)
-        {
-            throw new ObjectDisposedException("Stream has been closed");
-        }
-        if (!this.CanSeek)
-        {
-            throw new NotSupportedException("The stream does not support seeking");
-        }
-        long num;
-        switch (origin)
-        {
-            case SeekOrigin.Begin:
-                num = offset;
-                break;
-            case SeekOrigin.Current:
-                num = this.Position + offset;
-                break;
-            case SeekOrigin.End:
-                num = this.Length + offset;
-                break;
-            default:
-                throw new ArgumentException("origin", "Invalid SeekOrigin");
-        }
-        if (num < 0L)
-        {
-            throw new IOException("Attempted to Seek before the beginning of the stream");
-        }
-        if (num < this.append_startpos)
-        {
-            throw new IOException("Can't seek back over pre-existing data in append mode");
-        }
-        this.FlushBuffer();
-        MonoIOError monoIOError;
-        this.buf_start = MonoIO.Seek(this.safeHandle, num, SeekOrigin.Begin, out monoIOError);
-        if (monoIOError != MonoIOError.ERROR_SUCCESS)
-        {
-            throw MonoIO.GetException(this.GetSecureFileName(this.name), monoIOError);
-        }
-        return this.buf_start;
     }
 
     /// <summary>Sets the length of this stream to the given value.</summary>

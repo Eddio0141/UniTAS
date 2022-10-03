@@ -40,10 +40,10 @@ public static partial class FileSystem
                         DirectorySeparatorStr = DirectorySeparatorChar.ToString();
                         PathSeparatorChars = new[]
                         {
-                        DirectorySeparatorChar,
-                        AltDirectorySeparatorChar,
-                        VolumeSeparatorChar
-                    };
+                            DirectorySeparatorChar,
+                            AltDirectorySeparatorChar,
+                            VolumeSeparatorChar
+                        };
                         dirEqualsVolume = (DirectorySeparatorChar == VolumeSeparatorChar);
                         break;
                     }
@@ -52,9 +52,36 @@ public static partial class FileSystem
             }
         }
 
-        public static void FileStreamConstructorOpen(string path, FileMode mode, FileAccess access, FileShare share, FileOptions options)
+        public static void GetDiskFreeSpace(string path, out ulong availableFreeSpace, out ulong totalSize, out ulong totalFreeSpace)
         {
-
+            if (path == null)
+            {
+                availableFreeSpace = 0;
+                totalSize = 0;
+                totalFreeSpace = 0;
+                return;
+            }
+            switch (DeviceType)
+            {
+                case DeviceType.Windows:
+                    {
+                        if (path == "C:" || path == "C:\\")
+                        {
+                            availableFreeSpace = TOTAL_SIZE;
+                            totalSize = TOTAL_SIZE;
+                            totalFreeSpace = TOTAL_SIZE;
+                        }
+                        else
+                        {
+                            availableFreeSpace = 0;
+                            totalSize = 0;
+                            totalFreeSpace = 0;
+                        }
+                        break;
+                    }
+                default:
+                    throw new NotImplementedException();
+            }
         }
     }
 }

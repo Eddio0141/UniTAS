@@ -13,20 +13,31 @@ public class Dir : Entry
         children = new List<Entry>();
     }
 
+    public void DeleteFile(File file)
+    {
+        children.Remove(file);
+    }
+
     public Dir AddDir(string name)
     {
-        var addingDir = new Dir(name, this);
-        if (!children.Contains(addingDir))
-            children.Add(addingDir);
-        return addingDir;
+        var dir = GetDir(name);
+        if (dir == null)
+        {
+            dir = new(name, this);
+            children.Add(dir);
+        }
+        return dir;
     }
 
     public File AddFile(string name)
     {
-        var addingFile = new File(name, this);
-        if (!children.Contains(addingFile))
-            children.Add(addingFile);
-        return addingFile;
+        var file = GetFile(name);
+        if (file == null)
+        {
+            file = new(name, this);
+            children.Add(file);
+        }
+        return file;
     }
 
     public Dir GetDir(string name)
