@@ -6,10 +6,8 @@ public class Dir : Entry
 {
     readonly List<Entry> children;
 
-    public Dir(string name, Dir parent)
+    public Dir(string name, Dir parent) : base(name, parent)
     {
-        Name = name;
-        Parent = parent;
         children = new List<Entry>();
     }
 
@@ -38,6 +36,11 @@ public class Dir : Entry
             children.Add(file);
         }
         return file;
+    }
+
+    public void AddEntry(Entry entry)
+    {
+        children.Add(entry);
     }
 
     public Dir GetDir(string name)
