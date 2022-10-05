@@ -29,13 +29,20 @@ public static partial class FileSystem
         // create path to where unity game is installed
         var gameDir = Helper.GameRootDir();
         CreateDir(gameDir);
+        // TODO remove tests
         Plugin.Log.LogDebug($"Directory exists: {Directory.Exists(gameDir)}");
         var testFilePath = Path.Combine(gameDir, "test.txt");
         Plugin.Log.LogDebug($"writing test file to {testFilePath}");
-        FileOrig.AppendAllText(testFilePath, "test");
+        var createFile = FileOrig.Create(testFilePath);
+        var testBytes = new byte[] { 0x74, 0x65, 0x73, 0x74 };
+        createFile.Write(testBytes, 0, testBytes.Length);
+        createFile.Flush();
+        createFile.Close();
         Plugin.Log.LogDebug("done writing test file");
-        Plugin.Log.LogDebug($"test file exists: {FileOrig.Exists(Path.Combine(gameDir, "test.txt"))}");
         Plugin.Log.LogDebug($"file content: {FileOrig.ReadAllText(testFilePath)}");
+        var test2Path = Path.Combine(gameDir, "test2.txt");
+        FileOrig.Copy(testFilePath, test2Path);
+        Plugin.Log.LogDebug($"test 2 exists: {FileOrig.Exists(test2Path)}");
     }
 
     public static void DeleteFile(string path)
