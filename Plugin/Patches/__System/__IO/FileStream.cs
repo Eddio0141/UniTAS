@@ -1,8 +1,10 @@
 ﻿using HarmonyLib;
+using Microsoft.Win32.SafeHandles;
 using System;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Runtime.Remoting.Messaging;
 using UniTASPlugin.FakeGameState.GameFileSystem;
 using FileStreamOrig = System.IO.FileStream;
 
@@ -768,6 +770,8 @@ public static class FileStream
         }
     }
 
+    delegate void WriteDelegate(object instance, byte[] buffer, int offset, int count);
+
     [HarmonyPatch(typeof(FileStreamOrig), nameof(FileStreamOrig.BeginWrite))]
     class BeginWrite
     {
@@ -780,8 +784,6 @@ public static class FileStream
         {
             Traverse.Create(instance).Method("WriteInternal", new Type[] { typeof(byte[]), typeof(int), typeof(int) }).GetValue(src, offset, count);
         }
-
-        delegate void writeDelegate(object instance, byte[] buffer, int offset, int count);
 
         static bool Prefix(ref IAsyncResult __result, ref FileStreamOrig __instance, byte[] array, int offset, int numBytes, AsyncCallback userCallback, object stateObject)
         {
@@ -821,10 +823,12 @@ public static class FileStream
             fileStreamAsyncResultTraverse.Field("BytesRead").SetValue(-1);
             fileStreamAsyncResultTraverse.Field("Count").SetValue(numBytes);
             fileStreamAsyncResultTraverse.Field("OriginalCount").SetValue(numBytes);
-            __result = new writeDelegate(writeInternal).BeginInvoke(__instance, array, offset, numBytes, userCallback, stateObject);
+            __result = new WriteDelegate(writeInternal).BeginInvoke(__instance, array, offset, numBytes, userCallback, stateObject);
             return false;
         }
     }
+
+    delegate int ReadDelegate(object instance, byte[] buffer, int offset, int count);
 
     [HarmonyPatch(typeof(FileStreamOrig), nameof(FileStreamOrig.BeginRead))]
     class BeginRead
@@ -838,8 +842,6 @@ public static class FileStream
         {
             return Traverse.Create(instance).Method("ReadInternal", new Type[] { typeof(byte[]), typeof(int), typeof(int) }).GetValue<int>(dest, offset, count);
         }
-
-        delegate int ReadDelegate(object instance, byte[] buffer, int offset, int count);
 
         static bool Prefix(ref IAsyncResult __result, ref FileStreamOrig __instance, byte[] array, int offset, int numBytes, AsyncCallback userCallback, object stateObject)
         {
@@ -876,225 +878,132 @@ public static class FileStream
             return false;
         }
     }
-}
 
-/*
-[HarmonyPatch(typeof(FileStreamOrig), "Init")]
-class Init
-{
-    static Exception Cleanup(MethodBase original, Exception ex)
+    [HarmonyPatch(typeof(FileStreamOrig), "Init")]
+    class Init
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
-    }
+        static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        }
 
-    static bool Prefix(ref FileStreamOrig __instance, FileAccess access, bool ownsHandle, int bufferSize, bool isAsync, bool isConsoleWrapper)
-    {
+        static bool Prefix(ref FileStreamOrig __instance, FileAccess access, bool ownsHandle, int bufferSize, bool isAsync, bool isConsoleWrapper)
+        {
             if (Helper.CallOriginal())
                 return true;
-        if (access < FileAccess.Read || access > FileAccess.ReadWrite)
-        {
-            throw new ArgumentOutOfRangeException("access");
-        }
-        if (!isConsoleWrapper && bufferSize <= 0)
-        {
-            throw new ArgumentOutOfRangeException("bufferSize", "Positive number required.");
-        }
-        var instanceTraverse = Traverse.Create(__instance);
-        instanceTraverse.Field("canseek").SetValue(true);
-        __instance.ExposeHandle();
-        instanceTraverse.Field("access").SetValue(access);
-        instanceTraverse.Field("owner").SetValue(ownsHandle);
-        instanceTraverse.Field("async").SetValue(isAsync);
-        instanceTraverse.Field("anonymous").SetValue(false);
-        if (instanceTraverse.Field("canseek").GetValue<bool>())
-        {
-            __instance.buf_start = FileSystem.OsHelpers.Seek( MonoIO.Seek(0L, SeekOrigin.Current, out monoIOError);
-            if (monoIOError != MonoIOError.ERROR_SUCCESS)
+            if (access < FileAccess.Read || access > FileAccess.ReadWrite)
             {
-                throw MonoIO.GetException(__instance.name, monoIOError);
+                throw new ArgumentOutOfRangeException("access");
             }
-        }
-        __instance.append_startpos = 0L;
-        return false;
-    }
-}
-*/
-
-class Dummy4
-{
-    /*
-    [SecurityPermission(SecurityAction.Demand, UnmanagedCode = true)]
-    internal FileStream(IntPtr handle, FileAccess access, bool ownsHandle, int bufferSize, bool isAsync, bool isConsoleWrapper)
-    {
-        this.name = "[Unknown]";
-        base..ctor();
-        if (handle == MonoIO.InvalidHandle)
-        {
-            throw new ArgumentException("handle", Locale.GetText("Invalid."));
-        }
-        this.Init(new SafeFileHandle(handle, false), access, ownsHandle, bufferSize, isAsync, isConsoleWrapper);
-    }
-
-    /// <summary>Initializes a new instance of the <see cref="T:System.IO.FileStream" /> class for the specified file handle, with the specified read/write permission, buffer size, and synchronous or asynchronous state.</summary>
-    /// <param name="handle">A file handle for the file that this <see langword="FileStream" /> object will encapsulate.</param>
-    /// <param name="access">A constant that sets the <see cref="P:System.IO.FileStream.CanRead" /> and <see cref="P:System.IO.FileStream.CanWrite" /> properties of the <see langword="FileStream" /> object.</param>
-    /// <param name="bufferSize">A positive <see cref="T:System.Int32" /> value greater than 0 indicating the buffer size. The default buffer size is 4096.</param>
-    /// <param name="isAsync">
-    ///   <see langword="true" /> if the handle was opened asynchronously (that is, in overlapped I/O mode); otherwise, <see langword="false" />.</param>
-    /// <exception cref="T:System.ArgumentException">The <paramref name="handle" /> parameter is an invalid handle.  
-    ///  -or-  
-    ///  The <paramref name="handle" /> parameter is a synchronous handle and it was used asynchronously.</exception>
-    /// <exception cref="T:System.ArgumentOutOfRangeException">The <paramref name="bufferSize" /> parameter is negative.</exception>
-    /// <exception cref="T:System.IO.IOException">An I/O error, such as a disk error, occurred.  
-    ///  -or-  
-    ///  The stream has been closed.</exception>
-    /// <exception cref="T:System.Security.SecurityException">The caller does not have the required permission.</exception>
-    /// <exception cref="T:System.UnauthorizedAccessException">The <paramref name="access" /> requested is not permitted by the operating system for the specified file handle, such as when <paramref name="access" /> is <see langword="Write" /> or <see langword="ReadWrite" /> and the file handle is set for read-only access.</exception>
-    public FileStream(SafeFileHandle handle, FileAccess access, int bufferSize, bool isAsync)
-    {
-        this.name = "[Unknown]";
-        base..ctor();
-        this.Init(handle, access, false, bufferSize, isAsync, false);
-    }
-
-    /// <summary>Waits for the pending asynchronous read operation to complete. (Consider using <see cref="M:System.IO.FileStream.ReadAsync(System.Byte[],System.Int32,System.Int32,System.Threading.CancellationToken)" /> instead.)</summary>
-    /// <param name="asyncResult">The reference to the pending asynchronous request to wait for.</param>
-    /// <returns>The number of bytes read from the stream, between 0 and the number of bytes you requested. Streams only return 0 at the end of the stream, otherwise, they should block until at least 1 byte is available.</returns>
-    /// <exception cref="T:System.ArgumentNullException">
-    ///   <paramref name="asyncResult" /> is <see langword="null" />.</exception>
-    /// <exception cref="T:System.ArgumentException">This <see cref="T:System.IAsyncResult" /> object was not created by calling <see cref="M:System.IO.FileStream.BeginRead(System.Byte[],System.Int32,System.Int32,System.AsyncCallback,System.Object)" /> on this class.</exception>
-    /// <exception cref="T:System.InvalidOperationException">
-    ///   <see cref="M:System.IO.FileStream.EndRead(System.IAsyncResult)" /> is called multiple times.</exception>
-    /// <exception cref="T:System.IO.IOException">The stream is closed or an internal error has occurred.</exception>
-    public override int EndRead(IAsyncResult asyncResult)
-    {
-        if (asyncResult == null)
-        {
-            throw new ArgumentNullException("asyncResult");
-        }
-        if (!this.async)
-        {
-            return base.EndRead(asyncResult);
-        }
-        AsyncResult asyncResult2 = asyncResult as AsyncResult;
-        if (asyncResult2 == null)
-        {
-            throw new ArgumentException("Invalid IAsyncResult", "asyncResult");
-        }
-        FileStream.ReadDelegate readDelegate = asyncResult2.AsyncDelegate as FileStream.ReadDelegate;
-        if (readDelegate == null)
-        {
-            throw new ArgumentException("Invalid IAsyncResult", "asyncResult");
-        }
-        return readDelegate.EndInvoke(asyncResult);
-    }
-
-    /// <summary>Ends an asynchronous write operation and blocks until the I/O operation is complete. (Consider using <see cref="M:System.IO.FileStream.WriteAsync(System.Byte[],System.Int32,System.Int32,System.Threading.CancellationToken)" /> instead.)</summary>
-    /// <param name="asyncResult">The pending asynchronous I/O request.</param>
-    /// <exception cref="T:System.ArgumentNullException">
-    ///   <paramref name="asyncResult" /> is <see langword="null" />.</exception>
-    /// <exception cref="T:System.ArgumentException">This <see cref="T:System.IAsyncResult" /> object was not created by calling <see cref="M:System.IO.Stream.BeginWrite(System.Byte[],System.Int32,System.Int32,System.AsyncCallback,System.Object)" /> on this class.</exception>
-    /// <exception cref="T:System.InvalidOperationException">
-    ///   <see cref="M:System.IO.FileStream.EndWrite(System.IAsyncResult)" /> is called multiple times.</exception>
-    /// <exception cref="T:System.IO.IOException">The stream is closed or an internal error has occurred.</exception>
-    public override void EndWrite(IAsyncResult asyncResult)
-    {
-        if (asyncResult == null)
-        {
-            throw new ArgumentNullException("asyncResult");
-        }
-        if (!this.async)
-        {
-            base.EndWrite(asyncResult);
-            return;
-        }
-        AsyncResult asyncResult2 = asyncResult as AsyncResult;
-        if (asyncResult2 == null)
-        {
-            throw new ArgumentException("Invalid IAsyncResult", "asyncResult");
-        }
-        FileStream.WriteDelegate writeDelegate = asyncResult2.AsyncDelegate as FileStream.WriteDelegate;
-        if (writeDelegate == null)
-        {
-            throw new ArgumentException("Invalid IAsyncResult", "asyncResult");
-        }
-        writeDelegate.EndInvoke(asyncResult);
-    }
-
-    /// <summary>Asynchronously reads a sequence of bytes from the current stream, advances the position within the stream by the number of bytes read, and monitors cancellation requests.</summary>
-    /// <param name="buffer">The buffer to write the data into.</param>
-    /// <param name="offset">The byte offset in <paramref name="buffer" /> at which to begin writing data from the stream.</param>
-    /// <param name="count">The maximum number of bytes to read.</param>
-    /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
-    /// <returns>A task that represents the asynchronous read operation. The value of the <paramref name="TResult" /> parameter contains the total number of bytes read into the buffer. The result value can be less than the number of bytes requested if the number of bytes currently available is less than the requested number, or it can be 0 (zero) if the end of the stream has been reached.</returns>
-    /// <exception cref="T:System.ArgumentNullException">
-    ///   <paramref name="buffer" /> is <see langword="null" />.</exception>
-    /// <exception cref="T:System.ArgumentOutOfRangeException">
-    ///   <paramref name="offset" /> or <paramref name="count" /> is negative.</exception>
-    /// <exception cref="T:System.ArgumentException">The sum of <paramref name="offset" /> and <paramref name="count" /> is larger than the buffer length.</exception>
-    /// <exception cref="T:System.NotSupportedException">The stream does not support reading.</exception>
-    /// <exception cref="T:System.ObjectDisposedException">The stream has been disposed.</exception>
-    /// <exception cref="T:System.InvalidOperationException">The stream is currently in use by a previous read operation.</exception>
-    public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-    {
-        return base.ReadAsync(buffer, offset, count, cancellationToken);
-    }
-
-    /// <summary>Asynchronously writes a sequence of bytes to the current stream, advances the current position within this stream by the number of bytes written, and monitors cancellation requests.</summary>
-    /// <param name="buffer">The buffer to write data from.</param>
-    /// <param name="offset">The zero-based byte offset in <paramref name="buffer" /> from which to begin copying bytes to the stream.</param>
-    /// <param name="count">The maximum number of bytes to write.</param>
-    /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
-    /// <returns>A task that represents the asynchronous write operation.</returns>
-    /// <exception cref="T:System.ArgumentNullException">
-    ///   <paramref name="buffer" /> is <see langword="null" />.</exception>
-    /// <exception cref="T:System.ArgumentOutOfRangeException">
-    ///   <paramref name="offset" /> or <paramref name="count" /> is negative.</exception>
-    /// <exception cref="T:System.ArgumentException">The sum of <paramref name="offset" /> and <paramref name="count" /> is larger than the buffer length.</exception>
-    /// <exception cref="T:System.NotSupportedException">The stream does not support writing.</exception>
-    /// <exception cref="T:System.ObjectDisposedException">The stream has been disposed.</exception>
-    /// <exception cref="T:System.InvalidOperationException">The stream is currently in use by a previous write operation.</exception>
-    public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-    {
-        return base.WriteAsync(buffer, offset, count, cancellationToken);
-    }
-
-    private int ReadSegment(byte[] dest, int dest_offset, int count)
-    {
-        count = Math.Min(count, this.buf_length - this.buf_offset);
-        if (count > 0)
-        {
-            Buffer.InternalBlockCopy(this.buf, this.buf_offset, dest, dest_offset, count);
-            this.buf_offset += count;
-        }
-        return count;
-    }
-
-    private int WriteSegment(byte[] src, int src_offset, int count)
-    {
-        if (count > this.buf_size - this.buf_offset)
-        {
-            count = this.buf_size - this.buf_offset;
-        }
-        if (count > 0)
-        {
-            Buffer.BlockCopy(src, src_offset, this.buf, this.buf_offset, count);
-            this.buf_offset += count;
-            if (this.buf_offset > this.buf_length)
+            if (!isConsoleWrapper && bufferSize <= 0)
             {
-                this.buf_length = this.buf_offset;
+                throw new ArgumentOutOfRangeException("bufferSize", "Positive number required.");
             }
-            this.buf_dirty = true;
+            var instanceTraverse = Traverse.Create(__instance);
+            instanceTraverse.Field("canseek").SetValue(true);
+            instanceTraverse.Method("ExposeHandle").GetValue();
+            instanceTraverse.Field("access").SetValue(access);
+            instanceTraverse.Field("owner").SetValue(ownsHandle);
+            instanceTraverse.Field("async").SetValue(isAsync);
+            instanceTraverse.Field("anonymous").SetValue(false);
+            instanceTraverse.Field("buf_start").SetValue(FileSystem.OsHelpers.Seek(instanceTraverse.Field("name").GetValue<string>(), 0, SeekOrigin.Current));
+            instanceTraverse.Field("append_startpos").SetValue(0);
+            return false;
         }
-        return count;
     }
 
-    private void FlushBufferIfDirty()
+    [HarmonyPatch(typeof(FileStreamOrig), MethodType.Constructor, new Type[] { typeof(IntPtr), typeof(FileAccess), typeof(bool), typeof(int), typeof(bool), typeof(bool) })]
+    class ctor__IntPtr__FileAccess__bool__int__bool__boool
     {
-        if (this.buf_dirty)
+        static Exception Cleanup(MethodBase original, Exception ex)
         {
-            this.FlushBuffer();
+            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        }
+
+        static bool Prefix()
+        {
+            throw new InvalidOperationException("This constructor is not supported by the virtual file system, if this happens then patch more methods to prevent this.");
         }
     }
-    */
+
+    [HarmonyPatch(typeof(FileStreamOrig), MethodType.Constructor, new Type[] { typeof(SafeFileHandle), typeof(FileAccess), typeof(int), typeof(bool) })]
+    class ctor__SafeFileHandle__FileAccess__int_bool
+    {
+        static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        }
+
+        static bool Prefix()
+        {
+            throw new InvalidOperationException("This constructor is not supported by the virtual file system, if this happens then patch more methods to prevent this.");
+        }
+    }
+
+    [HarmonyPatch(typeof(FileStreamOrig), nameof(FileStreamOrig.EndRead))]
+    class EndRead
+    {
+        static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        }
+
+        static bool Prefix(ref int __result, ref FileStreamOrig __instance, IAsyncResult asyncResult)
+        {
+            if (asyncResult == null)
+            {
+                throw new ArgumentNullException("asyncResult");
+            }
+            var instanceTraverse = Traverse.Create(__instance);
+            if (!instanceTraverse.Field("async").GetValue<bool>())
+            {
+                var endRead = AccessTools.Method(typeof(FileStreamOrig), "EndRead", new Type[] { typeof(IAsyncResult) });
+                return (bool)endRead.GetBaseDefinition().Invoke(__instance, new object[] { asyncResult });
+            }
+            if (asyncResult is not AsyncResult asyncResult2)
+            {
+                throw new ArgumentException("Invalid IAsyncResult", "asyncResult");
+            }
+            if (asyncResult2.AsyncDelegate is not ReadDelegate readDelegate)
+            {
+                throw new ArgumentException("Invalid IAsyncResult", "asyncResult");
+            }
+            __result = readDelegate.EndInvoke(asyncResult);
+            return false;
+        }
+    }
+
+    [HarmonyPatch(typeof(FileStreamOrig), nameof(FileStreamOrig.EndWrite))]
+    class EndWrite
+    {
+        static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        }
+
+        static bool Prefix(ref FileStreamOrig __instance, IAsyncResult asyncResult)
+        {
+            if (asyncResult == null)
+            {
+                throw new ArgumentNullException("asyncResult");
+            }
+            var instanceTraverse = Traverse.Create(__instance);
+            if (!instanceTraverse.Field("async").GetValue<bool>())
+            {
+                var endRead = AccessTools.Method(typeof(FileStreamOrig), "EndWrite", new Type[] { typeof(IAsyncResult) });
+                endRead.Invoke(__instance, new object[] { asyncResult });
+                return false;
+            }
+            if (asyncResult is not AsyncResult asyncResult2)
+            {
+                throw new ArgumentException("Invalid IAsyncResult", "asyncResult");
+            }
+            if (asyncResult2.AsyncDelegate is not WriteDelegate writeDelegate)
+            {
+                throw new ArgumentException("Invalid IAsyncResult", "asyncResult");
+            }
+            writeDelegate.EndInvoke(asyncResult);
+            return false;
+        }
+    }
 }
