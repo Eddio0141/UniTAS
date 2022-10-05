@@ -19,8 +19,8 @@ public static class FileStream
             var traceFrames = trace.GetFrames();
             foreach (var frame in traceFrames)
             {
-                var type_ = frame.GetMethod().DeclaringType;
-                if (type_.FullName.StartsWith("BepInEx.Logging"))
+                var typeName = frame.GetMethod().DeclaringType.FullName;
+                if (typeName.StartsWith("BepInEx.Logging") || typeName.StartsWith("UniTASPlugin.ReversePatches"))
                 {
                     return true;
                 }
