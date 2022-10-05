@@ -30,10 +30,12 @@ public static partial class FileSystem
         var gameDir = Helper.GameRootDir();
         CreateDir(gameDir);
         Plugin.Log.LogDebug($"Directory exists: {Directory.Exists(gameDir)}");
-        Plugin.Log.LogDebug($"writing test file to {gameDir}/test.txt");
-        FileOrig.AppendAllText(Path.Combine(gameDir, "test.txt"), "test");
+        var testFilePath = Path.Combine(gameDir, "test.txt");
+        Plugin.Log.LogDebug($"writing test file to {testFilePath}");
+        FileOrig.AppendAllText(testFilePath, "test");
         Plugin.Log.LogDebug("done writing test file");
         Plugin.Log.LogDebug($"test file exists: {FileOrig.Exists(Path.Combine(gameDir, "test.txt"))}");
+        Plugin.Log.LogDebug($"file content: {FileOrig.ReadAllText(testFilePath)}");
     }
 
     public static void DeleteFile(string path)
@@ -51,7 +53,8 @@ public static partial class FileSystem
     {
         if (!path.StartsWith(Root.Name + Path.DirectorySeparatorChar))
             return null;
-        var split = path.Split(Path.DirectorySeparatorChar);
+        var split = path.Split(Path.DirectorySeparatorChar).ToList();
+        split.RemoveAt(0);
         var currentRoot = Root;
         foreach (var dir in split)
         {
