@@ -187,13 +187,16 @@ public static partial class FileSystem
             var file = handle.File;
             var offset = handle.Offset;
             var data = file.Data;
-            if (offset + count > data.Length)
-                return -1;
 
-            Array.Copy(data, offset, dest, dest_offset, count);
-            handle.Offset += count;
+            if (offset >= data.Length)
+                return 0;
 
-            return count;
+            var copyLength = Math.Min(count + offset, data.Length);
+
+            Array.Copy(data, offset, dest, dest_offset, copyLength);
+            handle.Offset += copyLength;
+
+            return (int)copyLength;
         }
     }
 }
