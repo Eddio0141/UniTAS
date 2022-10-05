@@ -922,6 +922,8 @@ public static class FileStream
 
         static bool Prefix()
         {
+            if (Helper.CallOriginal())
+                return true;
             throw new InvalidOperationException("This constructor is not supported by the virtual file system, if this happens then patch more methods to prevent this.");
         }
     }
@@ -936,6 +938,8 @@ public static class FileStream
 
         static bool Prefix()
         {
+            if (Helper.CallOriginal())
+                return true;
             throw new InvalidOperationException("This constructor is not supported by the virtual file system, if this happens then patch more methods to prevent this.");
         }
     }
@@ -950,6 +954,8 @@ public static class FileStream
 
         static bool Prefix(ref int __result, ref FileStreamOrig __instance, IAsyncResult asyncResult)
         {
+            if (Helper.CallOriginal())
+                return true;
             if (asyncResult == null)
             {
                 throw new ArgumentNullException("asyncResult");
@@ -983,6 +989,8 @@ public static class FileStream
 
         static bool Prefix(ref FileStreamOrig __instance, IAsyncResult asyncResult)
         {
+            if (Helper.CallOriginal())
+                return true;
             if (asyncResult == null)
             {
                 throw new ArgumentNullException("asyncResult");
