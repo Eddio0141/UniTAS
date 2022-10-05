@@ -793,9 +793,5 @@ class Dummy8
             }
         }
     }
-
-    private string current;
-
-    private string parent;
     */
 }
