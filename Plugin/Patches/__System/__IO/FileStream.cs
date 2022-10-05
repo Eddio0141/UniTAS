@@ -776,12 +776,15 @@ public static class FileStream
             return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        delegate void WriteDelegate(byte[] buffer, int offset, int count);
+        static void writeInternal(object instance, byte[] src, int offset, int count)
+        {
+            Traverse.Create(instance).Method("WriteInternal", new Type[] { typeof(byte[]), typeof(int), typeof(int) }).GetValue(src, offset, count);
+        }
+
+        delegate void writeDelegate(object instance, byte[] buffer, int offset, int count);
 
         static bool Prefix(ref IAsyncResult __result, ref FileStreamOrig __instance, byte[] array, int offset, int numBytes, AsyncCallback userCallback, object stateObject)
         {
-            return true;
-            /*
             if (Helper.CallOriginal())
                 return true;
             if (!__instance.CanWrite)
@@ -818,9 +821,8 @@ public static class FileStream
             fileStreamAsyncResultTraverse.Field("BytesRead").SetValue(-1);
             fileStreamAsyncResultTraverse.Field("Count").SetValue(numBytes);
             fileStreamAsyncResultTraverse.Field("OriginalCount").SetValue(numBytes);
-            __result = new WriteDelegate(writeInternal).BeginInvoke(array, offset, numBytes, userCallback, stateObject);
+            __result = new writeDelegate(writeInternal).BeginInvoke(__instance, array, offset, numBytes, userCallback, stateObject);
             return false;
-            */
         }
     }
 
@@ -832,12 +834,15 @@ public static class FileStream
             return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        delegate int ReadDelegate(byte[] buffer, int offset, int count);
+        static int readInternal(object instance, byte[] dest, int offset, int count)
+        {
+            return Traverse.Create(instance).Method("ReadInternal", new Type[] { typeof(byte[]), typeof(int), typeof(int) }).GetValue<int>(dest, offset, count);
+        }
+
+        delegate int ReadDelegate(object instance, byte[] buffer, int offset, int count);
 
         static bool Prefix(ref IAsyncResult __result, ref FileStreamOrig __instance, byte[] array, int offset, int numBytes, AsyncCallback userCallback, object stateObject)
         {
-            return true;
-            /*
             if (Helper.CallOriginal())
                 return true;
             if (!__instance.CanRead)
@@ -867,9 +872,8 @@ public static class FileStream
                 __result = (IAsyncResult)beginRead.GetBaseDefinition().Invoke(__instance, new object[] { array, offset, numBytes, userCallback, stateObject });
                 return false;
             }
-            __result = new ReadDelegate(readInternal).BeginInvoke(array, offset, numBytes, userCallback, stateObject);
+            __result = new ReadDelegate(readInternal).BeginInvoke(__instance, array, offset, numBytes, userCallback, stateObject);
             return false;
-            */
         }
     }
 }
