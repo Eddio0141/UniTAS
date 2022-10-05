@@ -198,5 +198,45 @@ public static partial class FileSystem
 
             return (int)copyLength;
         }
+
+        public static void Copy(string src, string dest, bool overwrite)
+        {
+            var srcFile = GetFile(src);
+            if (srcFile == null)
+                throw new FileNotFoundException();
+
+            var destDirName = Directory.GetParent(dest).FullName;
+            var destDir = GetDir(destDirName);
+            if (destDir == null)
+                throw new DirectoryNotFoundException();
+
+            var destFileName = Path.GetFileName(dest);
+            if (!overwrite && destDir.GetFile(destFileName) != null)
+                throw new IOException();
+
+            var destFile = destDir.AddFile(destFileName);
+            destFile.Data = srcFile.Data;
+        }
+
+        public static void DeleteFile(string path)
+        {
+            FileSystem.DeleteFile(path);
+        }
+
+        public static FileAttributes? GetFileAttributes(string path)
+        {
+            var file = GetFile(path);
+            if (file == null)
+                return null;
+            return file.Attributes;
+        }
+
+        public static void SetFileAttributes(string path, FileAttributes attributes)
+        {
+            var file = GetFile(path);
+            if (file == null)
+                return;
+            file.Attributes = attributes;
+        }
     }
 }
