@@ -533,10 +533,6 @@ public static class FileStream
             if (Helper.CallOriginal())
                 return true;
             int num = FileSystem.OsHelpers.Read(Traverse.Create(__instance).Field("name").GetValue<string>(), buf, offset, count);
-            if (num == -1)
-            {
-                throw new IOException();
-            }
             __result = num;
             return false;
         }
