@@ -101,6 +101,32 @@ public static partial class FileSystem
             openHandles.Add(path, handle);
         }
 
+        static void AccessFile(File file)
+        {
+            file.AccessTime = DateTime.Now;
+            if (file.Parent != null)
+                AccessDir(file.Parent);
+        }
+
+        static void AccessDir(Dir dir)
+        {
+            dir.AccessTime = DateTime.Now;
+        }
+
+        static void WriteFile(File file)
+        {
+            AccessFile(file);
+            file.WriteTime = DateTime.Now;
+            if (file.Parent != null)
+                WriteDir(file.Parent);
+        }
+
+        static void WriteDir(Dir dir)
+        {
+            dir.WriteTime = DateTime.Now;
+        }
+
+        // TODO file attribute support
         public static void Close(string path)
         {
             openHandles.Remove(path);
@@ -131,6 +157,7 @@ public static partial class FileSystem
             if (!openHandles.TryGetValue(path, out var handle))
                 throw new IOException();
 
+            AccessFile(handle.File);
             return handle.File.Data.Length;
         }
 
@@ -154,6 +181,7 @@ public static partial class FileSystem
             Array.Copy(src, src_offset, data, offset, count);
             handle.Offset += count;
 
+            WriteFile(file);
             return count;
         }
 
@@ -177,6 +205,7 @@ public static partial class FileSystem
                 Array.Copy(data, newData, length);
                 file.Data = newData;
             }
+            WriteFile(file);
         }
 
         public static int Read(string path, byte[] dest, int dest_offset, int count)
@@ -196,6 +225,7 @@ public static partial class FileSystem
             Array.Copy(data, offset, dest, dest_offset, copyLength);
             handle.Offset += copyLength;
 
+            AccessFile(file);
             return (int)copyLength;
         }
 
@@ -216,6 +246,8 @@ public static partial class FileSystem
 
             var destFile = destDir.AddFile(destFileName);
             destFile.Data = srcFile.Data;
+            AccessFile(srcFile);
+            WriteFile(destFile);
         }
 
         public static void DeleteFile(string path)
@@ -228,6 +260,7 @@ public static partial class FileSystem
             var file = GetFile(path);
             if (file == null)
                 return null;
+            AccessFile(file);
             return file.Attributes;
         }
 
@@ -236,7 +269,82 @@ public static partial class FileSystem
             var file = GetFile(path);
             if (file == null)
                 return;
+            WriteFile(file);
             file.Attributes = attributes;
+        }
+
+        public static DateTime FileCreationTime(string path)
+        {
+            var file = GetFile(path);
+            if (file == null)
+                throw new FileNotFoundException();
+            AccessFile(file);
+            return file.CreationTime;
+        }
+
+        public static bool FileExists(string path)
+        {
+            return FileSystem.FileExists(path);
+        }
+
+        public static bool DirectoryExists(string path)
+        {
+            return FileSystem.DirectoryExists(path);
+        }
+
+        public static bool MoveFile(string source, string dest)
+        {
+            var sourceDirName = Directory.GetParent(source).FullName;
+            var sourceDir = GetDir(sourceDirName);
+            if (sourceDir == null)
+                throw new DirectoryNotFoundException();
+
+            var file = sourceDir.GetFile(source);
+            if (file == null)
+                throw new FileNotFoundException();
+
+            var destDirName = Directory.GetParent(dest).FullName;
+            var destDir = GetDir(destDirName);
+            if (destDir == null)
+                throw new DirectoryNotFoundException();
+
+            var destFileName = Path.GetFileName(dest);
+            if (destDir.GetFile(destFileName) != null)
+                throw new IOException();
+
+            file.Name = destFileName;
+            sourceDir.DeleteFile(file);
+            destDir.AddEntry(file);
+            AccessFile(file);
+            return true;
+        }
+
+        public static void ReplaceFile(string source, string dest)
+        {
+            var sourceDirName = Directory.GetParent(source).FullName;
+            var sourceDir = GetDir(sourceDirName);
+            if (sourceDir == null)
+                throw new DirectoryNotFoundException();
+
+            var file = sourceDir.GetFile(source);
+            if (file == null)
+                throw new FileNotFoundException();
+
+            var destDirName = Directory.GetParent(dest).FullName;
+            var destDir = GetDir(destDirName);
+            if (destDir == null)
+                throw new DirectoryNotFoundException();
+
+            var destFileName = Path.GetFileName(dest);
+            var destFile = destDir.GetFile(destFileName);
+            if (destFile == null)
+                throw new FileNotFoundException();
+
+            file.Name = destFileName;
+            sourceDir.DeleteFile(file);
+            destDir.DeleteFile(destFile);
+            destDir.AddEntry(file);
+            AccessFile(file);
         }
     }
 }
