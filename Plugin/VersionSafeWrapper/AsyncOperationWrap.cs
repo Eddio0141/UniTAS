@@ -12,8 +12,6 @@ internal class AsyncOperationWrap
 
     public AsyncOperationWrap(AsyncOperation asyncOperation)
     {
-        // TODO earlier assertion
-        WrapperAssertions.AssertInstanceField(typeof(AsyncOperation), UID_FIELD_NAME);
         instance = asyncOperation ?? throw new ArgumentNullException(nameof(asyncOperation));
     }
 
