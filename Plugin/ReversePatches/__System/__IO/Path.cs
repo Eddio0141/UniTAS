@@ -13,6 +13,7 @@ public static class Path
     public static string GetFileName(string path) => GetFileNamePatch.method(path);
     public static string GetDirectoryName(string path) => GetDirectoryNamePatch.method(path);
     public static string GetFileNameWithoutExtension(string path) => GetFileNameWithoutExtensionPatch.method(path);
+    public static string GetFullPath(string path) => GetFullPathPatch.method(path);
 
     [HarmonyPatch]
     static class CombinePatch
@@ -72,6 +73,22 @@ public static class Path
 
         [HarmonyReversePatch]
         [HarmonyPatch(typeof(PathOrig), nameof(PathOrig.GetFileNameWithoutExtension))]
+        public static string method(string path)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    [HarmonyPatch]
+    static class GetFullPathPatch
+    {
+        static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        }
+
+        [HarmonyReversePatch]
+        [HarmonyPatch(typeof(PathOrig), nameof(PathOrig.GetFullPath))]
         public static string method(string path)
         {
             throw new NotImplementedException();
