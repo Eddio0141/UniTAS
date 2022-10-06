@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
+using UniTASPlugin.ReversePatches.__System.__IO;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
 
@@ -17,9 +18,9 @@ internal static partial class Helper
     {
         var unityPlayerPath = @".\UnityPlayer.dll";
         string versionRaw;
-        if (System.IO.File.Exists(unityPlayerPath))
+        if (File.Exists(unityPlayerPath))
         {
-            var fullPath = System.IO.Path.GetFullPath(unityPlayerPath);
+            var fullPath = Path.GetFullPath(unityPlayerPath);
             var fileVersion = System.Diagnostics.FileVersionInfo.GetVersionInfo(fullPath);
             versionRaw = fileVersion.FileVersion;
         }
@@ -78,7 +79,7 @@ internal static partial class Helper
     public static string GameRootDir()
     {
         var appBase = AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
-        return appBase ?? System.IO.Path.GetFullPath(".");
+        return appBase ?? Path.GetFullPath(".");
     }
 
     public static string GameName()
@@ -89,7 +90,7 @@ internal static partial class Helper
     public static string GameExePath()
     {
         // TODO other platform support that's not windows
-        return System.IO.Path.Combine(GameRootDir(), $"{GameName()}.exe");
+        return Path.Combine(GameRootDir(), $"{GameName()}.exe");
     }
 
     /// <summary>
