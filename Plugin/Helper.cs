@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Threading;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
@@ -236,5 +237,10 @@ internal static partial class Helper
         });
         MakeDeepCopyRecursionDepth--;
         return result;
+    }
+
+    public static string WildCardToRegular(string value)
+    {
+        return "^" + Regex.Escape(value).Replace("\\?", ".").Replace("\\*", ".*") + "$";
     }
 }
