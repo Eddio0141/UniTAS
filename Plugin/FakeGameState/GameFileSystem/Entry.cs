@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace UniTASPlugin.FakeGameState.GameFileSystem;
@@ -6,7 +7,7 @@ namespace UniTASPlugin.FakeGameState.GameFileSystem;
 public abstract class Entry
 {
     public string Name { get; set; }
-    public Dir Parent { get; protected set; }
+    public Dir Parent { get; internal set; }
     public DateTime CreationTime { get; set; }
     public DateTime AccessTime { get; set; }
     public DateTime WriteTime { get; set; }
