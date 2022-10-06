@@ -246,7 +246,7 @@ static class File
             {
                 throw new IOException("Source and destination arguments are the same file.");
             }
-            string text = null;
+            string text;
             if (destinationBackupFileName != null)
             {
                 if (destinationBackupFileName.Trim().Length == 0 || destinationBackupFileName.IndexOfAny(FileSystem.ExternalHelpers.InvalidPathChars) != -1)
