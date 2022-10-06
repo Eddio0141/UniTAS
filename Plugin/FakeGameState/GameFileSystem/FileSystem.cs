@@ -10,6 +10,7 @@ public static partial class FileSystem
     public static Dir Root { get; private set; }
     public static DeviceType DeviceType { get; }
     const ulong TOTAL_SIZE = 0x200000000; // 8gb
+    public static Dir CurrentDir { get; private set; }
 
     public static void Init(DeviceType device)
     {
@@ -27,11 +28,12 @@ public static partial class FileSystem
         }
 
         // create path to where unity game is installed
-        var gameDir = Helper.GameRootDir();
-        CreateDir(gameDir);
+        var gameDirPath = Helper.GameRootDir();
+        var gameDir = CreateDir(gameDirPath);
+        CurrentDir = gameDir;
         // TODO remove tests
-        Plugin.Log.LogDebug($"Directory exists: {Directory.Exists(gameDir)}");
-        var testFilePath = Path.Combine(gameDir, "test.txt");
+        Plugin.Log.LogDebug($"Directory exists: {Directory.Exists(gameDirPath)}");
+        var testFilePath = Path.Combine(gameDirPath, "test.txt");
         Plugin.Log.LogDebug($"writing test file to {testFilePath}");
         var createFile = FileOrig.Create(testFilePath);
         var testBytes = new byte[] { 0x74, 0x65, 0x73, 0x74 };
@@ -40,7 +42,7 @@ public static partial class FileSystem
         createFile.Close();
         Plugin.Log.LogDebug("done writing test file");
         Plugin.Log.LogDebug($"file content: {FileOrig.ReadAllText(testFilePath)}");
-        var test2Path = Path.Combine(gameDir, "test2.txt");
+        var test2Path = Path.Combine(gameDirPath, "test2.txt");
         FileOrig.Copy(testFilePath, test2Path);
         Plugin.Log.LogDebug($"test 2 exists: {FileOrig.Exists(test2Path)}");
     }
@@ -53,7 +55,7 @@ public static partial class FileSystem
         var parent = file.Parent;
         if (parent == null)
             return;
-        parent.DeleteFile(file);
+        parent.Delete(file);
     }
 
     public static Dir CreateDir(string path)

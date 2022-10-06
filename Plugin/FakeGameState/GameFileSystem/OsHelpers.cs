@@ -58,7 +58,7 @@ public static partial class FileSystem
                 case FileMode.Create:
                     {
                         var pathDir = Directory.GetParent(path);
-                        var dir = CreateDir(pathDir.FullName);
+                        var dir = FileSystem.CreateDir(pathDir.FullName);
                         var filename = Path.GetFileName(path);
                         dir.AddFile(filename);
                         break;
@@ -89,7 +89,7 @@ public static partial class FileSystem
                     {
                         file = GetFile(path);
                         if (file == null)
-                            file = CreateDir(Directory.GetParent(path).FullName).AddFile(Path.GetFileName(path));
+                            file = FileSystem.CreateDir(Directory.GetParent(path).FullName).AddFile(Path.GetFileName(path));
                         handle = new OpenHandle(path, file.Data.Length, options, access, share);
                         break;
                     }
@@ -408,7 +408,7 @@ public static partial class FileSystem
                 throw new IOException();
 
             file.Name = destFileName;
-            sourceDir.DeleteFile(file);
+            sourceDir.Delete(file);
             destDir.AddEntry(file);
             AccessFile(file);
             return true;
@@ -458,8 +458,8 @@ public static partial class FileSystem
                 throw new FileNotFoundException();
 
             file.Name = destFileName;
-            sourceDir.DeleteFile(file);
-            destDir.DeleteFile(destFile);
+            sourceDir.Delete(file);
+            destDir.Delete(destFile);
             destDir.AddEntry(file);
             AccessFile(file);
         }
@@ -507,9 +507,34 @@ public static partial class FileSystem
         public static void SetWorkingDir(string path)
         {
             var pathDir = GetDir(path);
-            if (pathDir == null)
+            CurrentDir = pathDir ?? throw new DirectoryNotFoundException();
+        }
+
+        public static void CreateDir(string path)
+        {
+            FileSystem.CreateDir(path);
+        }
+
+        public static void DeleteEmptyDir(string path)
+        {
+            var dir = GetDir(path);
+            if (dir == null)
                 throw new DirectoryNotFoundException();
-            CurrentDir = pathDir;
+            if (dir.Children.Count > 0)
+                throw new IOException("Directory is not empty");
+            var parent = dir.Parent;
+            if (parent != null)
+                parent.Delete(dir);
+        }
+
+        public static void DeleteDirFull(string path)
+        {
+            var dir = GetDir(path);
+            if (dir == null)
+                throw new DirectoryNotFoundException();
+            var parent = dir.Parent;
+            if (parent != null)
+                parent.Delete(dir);
         }
     }
 }

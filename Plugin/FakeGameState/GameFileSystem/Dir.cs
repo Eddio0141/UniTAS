@@ -11,9 +11,9 @@ public class Dir : Entry
         Children = new List<Entry>();
     }
 
-    public void DeleteFile(File file)
+    public void Delete(Entry entry)
     {
-        Children.Remove(file);
+        Children.Remove(entry);
     }
 
     public Dir AddDir(string name)

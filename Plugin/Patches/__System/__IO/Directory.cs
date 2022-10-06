@@ -139,16 +139,13 @@ static class Directory
 
         static bool Prefix(ref DirectoryInfo __result, string path)
         {
-            DirectoryInfo directoryInfo = new DirectoryInfo(path, true);
+            var dirInfoConstructor = AccessTools.Constructor(typeof(DirectoryInfo), new Type[] { typeof(string), typeof(bool) });
+            var directoryInfo = (DirectoryInfo)dirInfoConstructor.Invoke(null, new object[] { path, true });
             if (directoryInfo.Parent != null && !directoryInfo.Parent.Exists)
             {
                 directoryInfo.Parent.Create();
             }
-            MonoIOError monoIOError;
-            if (!MonoIO.CreateDirectory(directoryInfo.FullName, out monoIOError) && monoIOError != MonoIOError.ERROR_ALREADY_EXISTS && monoIOError != MonoIOError.ERROR_FILE_EXISTS)
-            {
-                throw MonoIO.GetException(path, monoIOError);
-            }
+            FileSystem.OsHelpers.CreateDir(path);
             __result = directoryInfo;
             return false;
         }
@@ -169,29 +166,19 @@ static class Directory
             {
                 throw new NotSupportedException("Only ':' In path");
             }
-            MonoIOError monoIOError;
-            bool flag;
+            if (FileOrig.Exists(path))
+            {
+                throw new IOException("Directory does not exist, but a file of the same name exists.");
+            }
+            /*
             if (MonoIO.ExistsSymlink(path, out monoIOError))
             {
                 flag = MonoIO.DeleteFile(path, out monoIOError);
             }
             else
-            {
-                flag = MonoIO.RemoveDirectory(path, out monoIOError);
-            }
-            if (flag)
-            {
-                return false;
-            }
-            if (monoIOError != MonoIOError.ERROR_FILE_NOT_FOUND)
-            {
-                throw MonoIO.GetException(path, monoIOError);
-            }
-            if (FileOrig.Exists(path))
-            {
-                throw new IOException("Directory does not exist, but a file of the same name exists.");
-            }
-            throw new DirectoryNotFoundException("Directory does not exist.");
+            */
+            FileSystem.OsHelpers.DeleteEmptyDir(path);
+            return false;
         }
     }
 
@@ -205,6 +192,8 @@ static class Directory
 
         static bool Prefix(string path)
         {
+            // only do this if symlink exists
+            /*
             foreach (string path2 in DirOrig.GetDirectories(path))
             {
                 MonoIOError monoIOError;
@@ -223,6 +212,8 @@ static class Directory
                 FileOrig.Delete(array[i]);
             }
             DirOrig.Delete(path);
+            */
+            FileSystem.OsHelpers.DeleteEmptyDir(path);
             return false;
         }
     }

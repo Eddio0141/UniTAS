@@ -7,11 +7,12 @@ using System.Runtime.InteropServices;
 using System.Runtime.Remoting.Messaging;
 using UniTASPlugin.FakeGameState.GameFileSystem;
 using FileStreamOrig = System.IO.FileStream;
+using DirOrig = System.IO.Directory;
 
 namespace UniTASPlugin.Patches.__System.__IO;
 
 [HarmonyPatch]
-public static class FileStream
+static class FileStream
 {
     static class Helper
     {
@@ -90,7 +91,7 @@ public static class FileStream
 #pragma warning restore CS0618 // Type or member is obsolete
                 var pathTraverse = Traverse.Create(typeof(Path));
                 path = pathTraverse.Method("InsecureGetFullPath", new Type[] { typeof(string) }).GetValue<string>(path);
-                if (Directory.Exists(path))
+                if (DirOrig.Exists(path))
                 {
                     var getSecureFileName = Traverse.Create(typeof(FileStreamOrig)).Method("GetSecureFileName", new Type[] { typeof(string) });
                     throw new UnauthorizedAccessException(string.Format("Access to the path '{0}' is denied.", getSecureFileName.GetValue(new object[] { path, false })));
@@ -104,7 +105,7 @@ public static class FileStream
                     throw new ArgumentException(string.Format("Combining FileMode: {0} with FileAccess: {1} is invalid.", access, mode));
                 }
                 string directoryName = Path.GetDirectoryName(path);
-                if (directoryName.Length > 0 && !Directory.Exists(Path.GetFullPath(directoryName)))
+                if (directoryName.Length > 0 && !DirOrig.Exists(Path.GetFullPath(directoryName)))
                 {
                     string arg = anonymous ? directoryName : Path.GetFullPath(path);
                     throw new DirectoryNotFoundException(string.Format("Could not find a part of the path \"{0}\".", arg));
