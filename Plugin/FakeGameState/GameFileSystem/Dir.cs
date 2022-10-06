@@ -4,16 +4,16 @@ namespace UniTASPlugin.FakeGameState.GameFileSystem;
 
 public class Dir : Entry
 {
-    readonly List<Entry> children;
+    public List<Entry> Children { get; private set; }
 
     public Dir(string name, Dir parent) : base(name, parent)
     {
-        children = new List<Entry>();
+        Children = new List<Entry>();
     }
 
     public void DeleteFile(File file)
     {
-        children.Remove(file);
+        Children.Remove(file);
     }
 
     public Dir AddDir(string name)
@@ -22,7 +22,7 @@ public class Dir : Entry
         if (dir == null)
         {
             dir = new(name, this);
-            children.Add(dir);
+            Children.Add(dir);
         }
         return dir;
     }
@@ -33,19 +33,20 @@ public class Dir : Entry
         if (file == null)
         {
             file = new(name, this);
-            children.Add(file);
+            Children.Add(file);
         }
         return file;
     }
 
     public void AddEntry(Entry entry)
     {
-        children.Add(entry);
+        entry.Parent = this;
+        Children.Add(entry);
     }
 
     public Dir GetDir(string name)
     {
-        foreach (var child in children)
+        foreach (var child in Children)
         {
             if (child is Dir dir && dir.Name == name)
                 return dir;
@@ -55,11 +56,38 @@ public class Dir : Entry
 
     public File GetFile(string name)
     {
-        foreach (var child in children)
+        foreach (var child in Children)
         {
             if (child is File file && file.Name == name)
                 return file;
         }
         return null;
+    }
+
+    public File[] GetFilesRecursive()
+    {
+        var result = new List<File>();
+        foreach (var child in Children)
+        {
+            if (child is File file)
+                result.Add(file);
+            else if (child is Dir dir)
+                result.AddRange(dir.GetFilesRecursive());
+        }
+        return result.ToArray();
+    }
+
+    public Dir[] GetDirsRecursive()
+    {
+        var result = new List<Dir>();
+        foreach (var child in Children)
+        {
+            if (child is Dir dir)
+            {
+                result.Add(dir);
+                result.AddRange(dir.GetDirsRecursive());
+            }
+        }
+        return result.ToArray();
     }
 }
