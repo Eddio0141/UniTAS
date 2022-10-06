@@ -23,7 +23,7 @@ static class File
 
         static bool Prefix(ref bool __result, string path)
         {
-            if (!PatcherHelper.CallFromPlugin())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             __result = !string.IsNullOrEmpty(path) && path.IndexOfAny(FileSystem.ExternalHelpers.InvalidPathChars) < 0 && FileSystem.FileExists(path);
             return false;
@@ -40,7 +40,7 @@ static class File
 
         static bool Prefix(string sourceFileName, string destFileName, bool overwrite)
         {
-            if (!PatcherHelper.CallFromPlugin())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             FileSystem.OsHelpers.Copy(PathOrig.GetFullPath(sourceFileName), PathOrig.GetFullPath(destFileName), overwrite);
             return false;
@@ -57,7 +57,7 @@ static class File
 
         static bool Prefix(ref string __result, string sourceFileName, string destFileName, bool overwrite)
         {
-            if (!PatcherHelper.CallFromPlugin())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             string fullPathInternal = PathOrig.GetFullPath(sourceFileName);
             string fullPathInternal2 = PathOrig.GetFullPath(destFileName);
@@ -77,7 +77,7 @@ static class File
 
         static bool Prefix(string path)
         {
-            if (!PatcherHelper.CallFromPlugin())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             FileSystem.OsHelpers.DeleteFile(path);
             return false;
@@ -94,7 +94,7 @@ static class File
 
         static bool Prefix(ref FileSecurity __result)
         {
-            if (!PatcherHelper.CallFromPlugin())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             __result = new FileSecurity();
             __result.AddAccessRule(new FileSystemAccessRule("Everyone", FileSystemRights.FullControl, AccessControlType.Allow));
@@ -112,7 +112,7 @@ static class File
 
         static bool Prefix()
         {
-            if (!PatcherHelper.CallFromPlugin())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             return false;
         }
@@ -128,7 +128,7 @@ static class File
 
         static bool Prefix(ref FileAttributes __result, string path)
         {
-            if (!PatcherHelper.CallFromPlugin())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             __result = FileSystem.OsHelpers.GetFileAttributes(path) ?? FileAttributes.Normal;
             return false;
@@ -145,7 +145,7 @@ static class File
 
         static bool Prefix(string path, FileAttributes fileAttributes)
         {
-            if (!PatcherHelper.CallFromPlugin())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             FileSystem.OsHelpers.SetFileAttributes(path, fileAttributes);
             return false;
@@ -162,7 +162,7 @@ static class File
 
         static bool Prefix(ref DateTime __result, string path)
         {
-            if (!PatcherHelper.CallFromPlugin())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             __result = FileSystem.OsHelpers.FileCreationTime(path);
             return false;
@@ -179,7 +179,7 @@ static class File
 
         static bool Prefix(string sourceFileName, string destFileName)
         {
-            if (!PatcherHelper.CallFromPlugin())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             if (sourceFileName == null)
             {
@@ -229,7 +229,7 @@ static class File
 
         static bool Prefix(string sourceFileName, string destinationFileName, string destinationBackupFileName/*, bool ignoreMetadataErrors*/)
         {
-            if (!PatcherHelper.CallFromPlugin())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             if (sourceFileName == null)
             {
@@ -309,7 +309,7 @@ static class File
 
         static bool Prefix(ref DateTime __result, string path)
         {
-            if (!PatcherHelper.CallFromPlugin())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             __result = FileSystem.OsHelpers.FileAccessTime(path);
             return false;
@@ -326,7 +326,7 @@ static class File
 
         static bool Prefix(ref DateTime __result, string path)
         {
-            if (!PatcherHelper.CallFromPlugin())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             __result = FileSystem.OsHelpers.FileWriteTime(path);
             return false;
@@ -343,7 +343,7 @@ static class File
 
         static bool Prefix(string path, DateTime creationTime)
         {
-            if (!PatcherHelper.CallFromPlugin())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             FileSystem.OsHelpers.SetFileCreationTime(path, creationTime);
             return false;
@@ -360,7 +360,7 @@ static class File
 
         static bool Prefix(string path, DateTime lastAccessTime)
         {
-            if (!PatcherHelper.CallFromPlugin())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             FileSystem.OsHelpers.SetFileAccessTime(path, lastAccessTime);
             return false;
@@ -377,7 +377,7 @@ static class File
 
         static bool Prefix(string path, DateTime lastWriteTime)
         {
-            if (!PatcherHelper.CallFromPlugin())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             FileSystem.OsHelpers.SetFileWriteTime(path, lastWriteTime);
             return false;

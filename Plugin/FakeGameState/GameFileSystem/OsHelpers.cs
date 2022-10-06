@@ -42,7 +42,6 @@ public static partial class FileSystem
 
         public static void OpenFile(string path, FileMode mode, FileAccess access, FileShare share, FileOptions options)
         {
-            Plugin.Log.LogDebug($"Opening file {path} with mode {mode}, access {access}, share {share}, options {options}");
             File file;
             OpenHandle handle = null;
 

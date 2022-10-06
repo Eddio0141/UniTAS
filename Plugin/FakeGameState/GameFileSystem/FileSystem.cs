@@ -32,7 +32,6 @@ public static partial class FileSystem
         var gameDir = CreateDir(gameDirPath);
         CurrentDir = gameDir;
         // TODO remove tests
-        Plugin.Log.LogDebug($"Directory exists: {Directory.Exists(gameDirPath)}");
         var testFilePath = Path.Combine(gameDirPath, "test.txt");
         Plugin.Log.LogDebug($"writing test file to {testFilePath}");
         var createFile = FileOrig.Create(testFilePath);
