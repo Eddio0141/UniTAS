@@ -6,6 +6,7 @@ using System.Security.AccessControl;
 using UniTASPlugin.FakeGameState.GameFileSystem;
 using FileOrig = System.IO.File;
 using DirectoryOrig = System.IO.Directory;
+using PathOrig = System.IO.Path;
 
 namespace UniTASPlugin.Patches.__System.__IO;
 
@@ -37,7 +38,7 @@ static class File
 
         static bool Prefix(string sourceFileName, string destFileName, bool overwrite)
         {
-            FileSystem.OsHelpers.Copy(Path.GetFullPath(sourceFileName), Path.GetFullPath(destFileName), overwrite);
+            FileSystem.OsHelpers.Copy(PathOrig.GetFullPath(sourceFileName), PathOrig.GetFullPath(destFileName), overwrite);
             return false;
         }
     }
@@ -52,8 +53,8 @@ static class File
 
         static bool Prefix(ref string __result, string sourceFileName, string destFileName, bool overwrite)
         {
-            string fullPathInternal = Path.GetFullPath(sourceFileName);
-            string fullPathInternal2 = Path.GetFullPath(destFileName);
+            string fullPathInternal = PathOrig.GetFullPath(sourceFileName);
+            string fullPathInternal2 = PathOrig.GetFullPath(destFileName);
             FileSystem.OsHelpers.Copy(fullPathInternal, fullPathInternal2, overwrite);
             __result = fullPathInternal2;
             return false;
@@ -188,7 +189,7 @@ static class File
             {
                 throw new FileNotFoundException($"{sourceFileName} does not exist", sourceFileName);
             }
-            string directoryName = Path.GetDirectoryName(destFileName);
+            string directoryName = PathOrig.GetDirectoryName(destFileName);
             if (directoryName != string.Empty && !DirectoryOrig.Exists(directoryName))
             {
                 throw new DirectoryNotFoundException("Could not find a part of the path.");
@@ -224,8 +225,8 @@ static class File
             {
                 throw new ArgumentException("destinationFileName");
             }
-            string fullPath = Path.GetFullPath(sourceFileName);
-            string fullPath2 = Path.GetFullPath(destinationFileName);
+            string fullPath = PathOrig.GetFullPath(sourceFileName);
+            string fullPath2 = PathOrig.GetFullPath(destinationFileName);
             if (FileSystem.OsHelpers.DirectoryExists(fullPath))
             {
                 throw new IOException($"{sourceFileName} is a directory");
@@ -253,7 +254,7 @@ static class File
                 {
                     throw new ArgumentException("destinationBackupFileName");
                 }
-                text = Path.GetFullPath(destinationBackupFileName);
+                text = PathOrig.GetFullPath(destinationBackupFileName);
                 if (FileSystem.OsHelpers.DirectoryExists(text))
                 {
                     throw new IOException($"{destinationBackupFileName} is a directory");

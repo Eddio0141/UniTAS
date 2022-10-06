@@ -8,6 +8,7 @@ using System.Runtime.Remoting.Messaging;
 using UniTASPlugin.FakeGameState.GameFileSystem;
 using FileStreamOrig = System.IO.FileStream;
 using DirOrig = System.IO.Directory;
+using PathOrig = System.IO.Path;
 
 namespace UniTASPlugin.Patches.__System.__IO;
 
@@ -84,7 +85,7 @@ static class FileStream
                     throw new ArgumentOutOfRangeException("share", "Enum value was out of legal range.");
                 }
 #pragma warning disable CS0618 // Type or member is obsolete
-                if (path.IndexOfAny(Path.InvalidPathChars) != -1)
+                if (path.IndexOfAny(PathOrig.InvalidPathChars) != -1)
                 {
                     throw new ArgumentException("Name has invalid chars");
                 }
@@ -104,10 +105,10 @@ static class FileStream
                 {
                     throw new ArgumentException(string.Format("Combining FileMode: {0} with FileAccess: {1} is invalid.", access, mode));
                 }
-                string directoryName = Path.GetDirectoryName(path);
-                if (directoryName.Length > 0 && !DirOrig.Exists(Path.GetFullPath(directoryName)))
+                string directoryName = PathOrig.GetDirectoryName(path);
+                if (directoryName.Length > 0 && !DirOrig.Exists(PathOrig.GetFullPath(directoryName)))
                 {
-                    string arg = anonymous ? directoryName : Path.GetFullPath(path);
+                    string arg = anonymous ? directoryName : PathOrig.GetFullPath(path);
                     throw new DirectoryNotFoundException(string.Format("Could not find a part of the path \"{0}\".", arg));
                 }
                 //if (!anonymous)
