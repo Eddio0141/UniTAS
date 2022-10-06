@@ -127,7 +127,6 @@ public static partial class FileSystem
             dir.WriteTime = DateTime.Now;
         }
 
-        // TODO file attribute support
         public static void Close(string path)
         {
             openHandles.Remove(path);

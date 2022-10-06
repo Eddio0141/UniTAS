@@ -9,16 +9,12 @@ public class File : Entry
     public byte[] Data { get; set; }
     public string Text { get => Encoding.UTF8.GetString(Data); set => Encoding.UTF8.GetBytes(value); }
     public string Extension { get; }
-    public FileAttributes Attributes { get; set; }
 
-    public File(string name, Dir parent, byte[] data, FileAttributes attributes) : base(name, parent)
+    public File(string name, Dir parent, byte[] data) : base(name, parent, FileAttributes.Normal)
     {
         Data = data;
-        Attributes = attributes;
         CreationTime = DateTime.Now;
     }
-
-    public File(string name, Dir parent, byte[] data) : this(name, parent, data, FileAttributes.Normal) { }
 
     public File(string name, Dir parent, string data) : this(name, parent, Encoding.UTF8.GetBytes(data)) { }
 

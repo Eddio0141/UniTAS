@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 
 namespace UniTASPlugin.FakeGameState.GameFileSystem;
 
@@ -6,7 +7,7 @@ public class Dir : Entry
 {
     public List<Entry> Children { get; private set; }
 
-    public Dir(string name, Dir parent) : base(name, parent)
+    public Dir(string name, Dir parent) : base(name, parent, FileAttributes.Directory)
     {
         Children = new List<Entry>();
     }
