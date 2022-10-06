@@ -21,7 +21,7 @@ static class Directory
 
         public static void PathValidate(string path)
         {
-            pathValidateTraverse.GetValue(path);
+            _ = pathValidateTraverse.GetValue(path);
         }
 
         public static bool EnvironmentIsRunningOnWindows()
@@ -393,26 +393,13 @@ static class Directory
 
         static bool Prefix(ref string __result, string fullPath, bool thisDirOnly)
         {
-            string result;
-            if (thisDirOnly)
-            {
-                if (fullPath.EndsWith(FileSystem.ExternalHelpers.DirectorySeparatorStr) || fullPath.EndsWith(FileSystem.ExternalHelpers.AltDirectorySeparatorChar.ToString()))
-                {
-                    result = fullPath + ".";
-                }
-                else
-                {
-                    result = fullPath + FileSystem.ExternalHelpers.DirectorySeparatorStr + ".";
-                }
-            }
-            else if (!fullPath.EndsWith(FileSystem.ExternalHelpers.DirectorySeparatorStr) && !fullPath.EndsWith(FileSystem.ExternalHelpers.AltDirectorySeparatorChar.ToString()))
-            {
-                result = fullPath + FileSystem.ExternalHelpers.DirectorySeparatorStr;
-            }
-            else
-            {
-                result = fullPath;
-            }
+            var result = thisDirOnly
+                ? fullPath.EndsWith(FileSystem.ExternalHelpers.DirectorySeparatorStr) || fullPath.EndsWith(FileSystem.ExternalHelpers.AltDirectorySeparatorChar.ToString())
+                    ? fullPath + "."
+                    : fullPath + FileSystem.ExternalHelpers.DirectorySeparatorStr + "."
+                : !fullPath.EndsWith(FileSystem.ExternalHelpers.DirectorySeparatorStr) && !fullPath.EndsWith(FileSystem.ExternalHelpers.AltDirectorySeparatorChar.ToString())
+                    ? fullPath + FileSystem.ExternalHelpers.DirectorySeparatorStr
+                    : fullPath;
             __result = result;
             return false;
         }

@@ -1,11 +1,11 @@
 ﻿using HarmonyLib;
 using System;
-using System.Reflection;
-using UniTASPlugin.FakeGameState.GameFileSystem;
-using PathOrig = System.IO.Path;
-using DirOrig = System.IO.Directory;
-using System.Text;
 using System.Globalization;
+using System.Reflection;
+using System.Text;
+using UniTASPlugin.FakeGameState.GameFileSystem;
+using DirOrig = System.IO.Directory;
+using PathOrig = System.IO.Path;
 
 namespace UniTASPlugin.Patches.__System.__IO;
 
@@ -48,8 +48,8 @@ static class Path
                 return true;
             if (path != null)
             {
-                int num = path.LastIndexOf('.');
-                int num2 = path.LastIndexOfAny(FileSystem.ExternalHelpers.PathSeparatorChars);
+                var num = path.LastIndexOf('.');
+                var num2 = path.LastIndexOfAny(FileSystem.ExternalHelpers.PathSeparatorChars);
                 if (num > num2)
                 {
                     __result = num;
@@ -104,7 +104,7 @@ static class Path
                 __result = path2;
                 return false;
             }
-            char c = path1[path1.Length - 1];
+            var c = path1[path1.Length - 1];
             if (c != FileSystem.ExternalHelpers.DirectorySeparatorChar && c != FileSystem.ExternalHelpers.AltDirectorySeparatorChar && c != FileSystem.ExternalHelpers.VolumeSeparatorChar)
             {
                 __result = path1 + FileSystem.ExternalHelpers.DirectorySeparatorStr + path2;
@@ -136,11 +136,11 @@ static class Path
             {
                 throw new ArgumentException("Illegal characters in path.");
             }
-            char c = path[0];
+            var c = path[0];
             __result =
                 c == FileSystem.ExternalHelpers.DirectorySeparatorChar ||
                 c == FileSystem.ExternalHelpers.AltDirectorySeparatorChar ||
-                (!FileSystem.ExternalHelpers.dirEqualsVolume && path.Length > 1 && path[1] == FileSystem.ExternalHelpers.VolumeSeparatorChar);
+                !FileSystem.ExternalHelpers.dirEqualsVolume && path.Length > 1 && path[1] == FileSystem.ExternalHelpers.VolumeSeparatorChar;
             return false;
         }
     }
@@ -155,11 +155,11 @@ static class Path
 
         static bool Prefix(ref string __result, string s)
         {
-            int length = s.Length;
-            int num = 0;
-            int num2 = 0;
-            int num3 = 0;
-            char c = s[0];
+            var length = s.Length;
+            var num = 0;
+            var num2 = 0;
+            var num3 = 0;
+            var c = s[0];
             if (length > 2 && c == '\\' && s[1] == '\\')
             {
                 num3 = 2;
@@ -169,9 +169,9 @@ static class Path
                 __result = s;
                 return false;
             }
-            for (int i = num3; i < length; i++)
+            for (var i = num3; i < length; i++)
             {
-                char c2 = s[i];
+                var c2 = s[i];
                 if (c2 == FileSystem.ExternalHelpers.DirectorySeparatorChar || c2 == FileSystem.ExternalHelpers.AltDirectorySeparatorChar)
                 {
                     if (FileSystem.ExternalHelpers.DirectorySeparatorChar != FileSystem.ExternalHelpers.AltDirectorySeparatorChar && c2 == FileSystem.ExternalHelpers.AltDirectorySeparatorChar)
@@ -197,17 +197,17 @@ static class Path
                 __result = s;
                 return false;
             }
-            char[] array = new char[length - num];
+            var array = new char[length - num];
             if (num3 != 0)
             {
                 array[0] = '\\';
                 array[1] = '\\';
             }
-            int j = num3;
-            int num4 = num3;
+            var j = num3;
+            var num4 = num3;
             while (j < length && num4 < array.Length)
             {
-                char c3 = s[j];
+                var c3 = s[j];
                 if (c3 != FileSystem.ExternalHelpers.DirectorySeparatorChar && c3 != FileSystem.ExternalHelpers.AltDirectorySeparatorChar)
                 {
                     array[num4++] = c3;
@@ -261,7 +261,7 @@ static class Path
             {
                 throw new ArgumentException("Path contains invalid characters");
             }
-            int num = path.LastIndexOfAny(FileSystem.ExternalHelpers.PathSeparatorChars);
+            var num = path.LastIndexOfAny(FileSystem.ExternalHelpers.PathSeparatorChars);
             if (num == 0)
             {
                 num++;
@@ -271,8 +271,8 @@ static class Path
                 __result = string.Empty;
                 return false;
             }
-            string text = path.Substring(0, num);
-            int length = text.Length;
+            var text = path.Substring(0, num);
+            var length = text.Length;
             if (length >= 2 && FileSystem.ExternalHelpers.DirectorySeparatorChar == '\\' && text[length - 1] == FileSystem.ExternalHelpers.VolumeSeparatorChar)
             {
                 __result = text + FileSystem.ExternalHelpers.DirectorySeparatorChar.ToString();
@@ -309,7 +309,7 @@ static class Path
             {
                 throw new ArgumentException("Illegal characters in path.");
             }
-            int num = Traverse.Create(typeof(PathOrig)).Method("findExtension").GetValue<int>(path);
+            var num = Traverse.Create(typeof(PathOrig)).Method("findExtension").GetValue<int>(path);
             if (num > -1 && num < path.Length - 1)
             {
                 __result = path.Substring(num);
@@ -349,28 +349,14 @@ static class Path
                     __result = path;
                     return false;
                 }
-                string text = Helper.DirInsecureGetCurrentDirectory();
+                var text = Helper.DirInsecureGetCurrentDirectory();
                 if (path.Length == 2)
                 {
-                    if (text[0] == path[0])
-                    {
-                        path = text;
-                    }
-                    else
-                    {
-                        path = Helper.PathGetFullPathName(path);
-                    }
+                    path = text[0] == path[0] ? text : Helper.PathGetFullPathName(path);
                 }
                 else if (path[2] != FileSystem.ExternalHelpers.DirectorySeparatorChar && path[2] != FileSystem.ExternalHelpers.AltDirectorySeparatorChar)
                 {
-                    if (text[0] == path[0])
-                    {
-                        path = PathOrig.Combine(text, path.Substring(2, path.Length - 2));
-                    }
-                    else
-                    {
-                        path = Helper.PathGetFullPathName(path);
-                    }
+                    path = text[0] == path[0] ? PathOrig.Combine(text, path.Substring(2, path.Length - 2)) : Helper.PathGetFullPathName(path);
                 }
                 __result = path;
                 return false;
@@ -433,7 +419,7 @@ static class Path
             }
             else
             {
-                int num = 2;
+                var num = 2;
                 if (path.Length == 1 && Helper.PathIsDirectorySeparator(path[0]))
                 {
                     __result = FileSystem.ExternalHelpers.DirectorySeparatorStr;
@@ -493,7 +479,7 @@ static class Path
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
-            string temp_path = Traverse.Create(typeof(PathOrig)).Method("get_temp_path").GetValue<string>();
+            var temp_path = Traverse.Create(typeof(PathOrig)).Method("get_temp_path").GetValue<string>();
             if (temp_path.Length > 0 && temp_path[temp_path.Length - 1] != FileSystem.ExternalHelpers.DirectorySeparatorChar)
             {
                 __result = temp_path + FileSystem.ExternalHelpers.DirectorySeparatorChar.ToString();
@@ -525,7 +511,7 @@ static class Path
             {
                 throw new ArgumentException("Illegal characters in path.");
             }
-            int num = Traverse.Create(typeof(PathOrig)).Method("findExtension").GetValue<int>(path);
+            var num = Traverse.Create(typeof(PathOrig)).Method("findExtension").GetValue<int>(path);
             __result = 0 <= num && num < path.Length - 1;
             return false;
         }
@@ -543,7 +529,7 @@ static class Path
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
-            int num = 2;
+            var num = 2;
             while (num < path.Length && !Helper.PathIsDirectorySeparator(path[num]))
             {
                 num++;
@@ -580,7 +566,7 @@ static class Path
             }
             if (!Helper.PathIsDirectorySeparator(root[0]) || !Helper.PathIsDirectorySeparator(root[1]))
             {
-                __result = root[0].Equals(path[0]) && path[1] == FileSystem.ExternalHelpers.VolumeSeparatorChar && (root.Length <= 2 || path.Length <= 2 || (Helper.PathIsDirectorySeparator(root[2]) && Helper.PathIsDirectorySeparator(path[2])));
+                __result = root[0].Equals(path[0]) && path[1] == FileSystem.ExternalHelpers.VolumeSeparatorChar && (root.Length <= 2 || path.Length <= 2 || Helper.PathIsDirectorySeparator(root[2]) && Helper.PathIsDirectorySeparator(path[2]));
                 return false;
             }
             if (!Helper.PathIsDirectorySeparator(path[0]) || !Helper.PathIsDirectorySeparator(path[1]))
@@ -589,8 +575,8 @@ static class Path
                 return false;
             }
             var getServerAndShare = Traverse.Create(typeof(PathOrig)).Method("GetServerAndShare");
-            string serverAndShare = getServerAndShare.GetValue<string>(root);
-            string serverAndShare2 = getServerAndShare.GetValue<string>(path);
+            var serverAndShare = getServerAndShare.GetValue<string>(root);
+            var serverAndShare2 = getServerAndShare.GetValue<string>(path);
             __result = string.Compare(serverAndShare, serverAndShare2, true, CultureInfo.InvariantCulture) == 0;
             return false;
         }
@@ -613,14 +599,14 @@ static class Path
                 __result = false;
                 return false;
             }
-            int num = subset.LastIndexOfAny(FileSystem.ExternalHelpers.PathSeparatorChars);
+            var num = subset.LastIndexOfAny(FileSystem.ExternalHelpers.PathSeparatorChars);
             if (string.Compare(subset, 0, path, 0, num) != 0)
             {
                 __result = false;
                 return false;
             }
             num++;
-            int num2 = path.IndexOfAny(FileSystem.ExternalHelpers.PathSeparatorChars, num);
+            var num2 = path.IndexOfAny(FileSystem.ExternalHelpers.PathSeparatorChars, num);
             if (num2 >= num)
             {
                 __result = string.Compare(subset, num, path, num, path.Length - num2) == 0;
@@ -647,10 +633,10 @@ static class Path
             {
                 throw new ArgumentNullException("paths");
             }
-            StringBuilder stringBuilder = new StringBuilder();
-            int num = paths.Length;
-            bool flag = false;
-            foreach (string text in paths)
+            var stringBuilder = new StringBuilder();
+            var num = paths.Length;
+            var flag = false;
+            foreach (var text in paths)
             {
                 if (text == null)
                 {
@@ -665,18 +651,18 @@ static class Path
                     if (flag)
                     {
                         flag = false;
-                        stringBuilder.Append(FileSystem.ExternalHelpers.DirectorySeparatorStr);
+                        _ = stringBuilder.Append(FileSystem.ExternalHelpers.DirectorySeparatorStr);
                     }
                     num--;
                     if (PathOrig.IsPathRooted(text))
                     {
                         stringBuilder.Length = 0;
                     }
-                    stringBuilder.Append(text);
-                    int length = text.Length;
+                    _ = stringBuilder.Append(text);
+                    var length = text.Length;
                     if (length > 0 && num > 0)
                     {
-                        char c = text[length - 1];
+                        var c = text[length - 1];
                         if (c != FileSystem.ExternalHelpers.DirectorySeparatorChar && c != FileSystem.ExternalHelpers.AltDirectorySeparatorChar && c != FileSystem.ExternalHelpers.VolumeSeparatorChar)
                         {
                             flag = true;
@@ -723,8 +709,8 @@ static class Path
                 throw new ArgumentNullException((path1 == null) ? "path1" : "path2");
             }
             var checkInvalidPathChars = Traverse.Create(typeof(PathOrig)).Method("CheckInvalidPathChars");
-            checkInvalidPathChars.GetValue(path1, false);
-            checkInvalidPathChars.GetValue(path2, false);
+            _ = checkInvalidPathChars.GetValue(path1, false);
+            _ = checkInvalidPathChars.GetValue(path2, false);
             if (path2.Length == 0)
             {
                 throw new ArgumentException("Path cannot be the empty string or all whitespace.", "path2");
@@ -733,13 +719,13 @@ static class Path
             {
                 throw new ArgumentException("Second path fragment must not be a drive or UNC name.", "path2");
             }
-            int length = path1.Length;
+            var length = path1.Length;
             if (length == 0)
             {
                 __result = path2;
                 return false;
             }
-            char c = path1[length - 1];
+            var c = path1[length - 1];
             if (c != FileSystem.ExternalHelpers.DirectorySeparatorChar && c != FileSystem.ExternalHelpers.AltDirectorySeparatorChar && c != FileSystem.ExternalHelpers.VolumeSeparatorChar)
             {
                 __result = path1 + FileSystem.ExternalHelpers.DirectorySeparatorChar.ToString() + path2;

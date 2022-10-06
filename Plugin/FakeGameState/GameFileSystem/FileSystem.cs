@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using FileOrig = System.IO.File;
 
 namespace UniTASPlugin.FakeGameState.GameFileSystem;
 
@@ -79,9 +78,7 @@ public static partial class FileSystem
     public static File GetFile(string path)
     {
         var dir = GetDir(Path.GetDirectoryName(path));
-        if (dir == null)
-            return null;
-        return dir.GetFile(Path.GetFileName(path));
+        return dir?.GetFile(Path.GetFileName(path));
     }
 
     public static bool DirectoryExists(string path)

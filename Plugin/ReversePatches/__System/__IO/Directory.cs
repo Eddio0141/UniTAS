@@ -9,13 +9,31 @@ namespace UniTASPlugin.ReversePatches.__System.__IO;
 [HarmonyPatch]
 public static class Directory
 {
-    public static bool Exists(string path) => ExistsPatch.method(path);
-    public static string[] GetFiles(string path) => GetFilesPatch.method(path);
-    static string[] InternalGetFiles(string path, string searchPattern, SearchOption searchOption) => InternalGetFilesPatch.method(path, searchPattern, searchOption);
+    public static bool Exists(string path)
+    {
+        return ExistsPatch.method(path);
+    }
+
+    public static string[] GetFiles(string path)
+    {
+        return GetFilesPatch.method(path);
+    }
+
+    static string[] InternalGetFiles(string path, string searchPattern, SearchOption searchOption)
+    {
+        return InternalGetFilesPatch.method(path, searchPattern, searchOption);
+    }
+
     static string[] InternalGetFileDirectoryNames
-        (string path, string userPathOriginal, string searchPattern, bool includeFiles, bool includeDirs, SearchOption searchOption, bool checkHost) =>
-        InternalGetFileDirectoryNamesPatch.method(path, userPathOriginal, searchPattern, includeFiles, includeDirs, searchOption, checkHost);
-    public static string[] GetFileSystemEntries(string path, string searchPattern) => GetFileSystemEntriesPatch.method(path, searchPattern);
+            (string path, string userPathOriginal, string searchPattern, bool includeFiles, bool includeDirs, SearchOption searchOption, bool checkHost)
+    {
+        return InternalGetFileDirectoryNamesPatch.method(path, userPathOriginal, searchPattern, includeFiles, includeDirs, searchOption, checkHost);
+    }
+
+    public static string[] GetFileSystemEntries(string path, string searchPattern)
+    {
+        return GetFileSystemEntriesPatch.method(path, searchPattern);
+    }
 
     [HarmonyPatch]
     static class ExistsPatch

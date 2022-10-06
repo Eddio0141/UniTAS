@@ -14,7 +14,7 @@ public class Dir : Entry
 
     public void Delete(Entry entry)
     {
-        Children.Remove(entry);
+        _ = Children.Remove(entry);
     }
 
     public Dir AddDir(string name)

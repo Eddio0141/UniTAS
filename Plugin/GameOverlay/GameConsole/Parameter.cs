@@ -6,11 +6,12 @@ namespace UniTASPlugin.GameOverlay.GameConsole;
 public class Parameter
 {
     public ParameterType ParamType { get; }
-    string valueString;
-    int valueInt;
-    float valueFloat;
-    bool valueBool;
-    Parameter[] valueList;
+
+    readonly string valueString;
+    readonly int valueInt;
+    readonly float valueFloat;
+    readonly bool valueBool;
+    readonly Parameter[] valueList;
 
     Parameter(string value)
     {

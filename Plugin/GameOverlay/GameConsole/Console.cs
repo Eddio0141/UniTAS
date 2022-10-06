@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace UniTASPlugin.GameOverlay.GameConsole;
 
@@ -56,7 +54,7 @@ public static class Console
 
         GUILayout.BeginVertical();
         scrollPos = GUILayout.BeginScrollView(scrollPos);
-        GUILayout.TextArea(content, GUILayout.ExpandHeight(true));
+        _ = GUILayout.TextArea(content, GUILayout.ExpandHeight(true));
         GUILayout.EndScrollView();
 
         GUILayout.BeginHorizontal();

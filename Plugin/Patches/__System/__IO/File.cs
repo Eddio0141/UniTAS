@@ -4,8 +4,8 @@ using System.IO;
 using System.Reflection;
 using System.Security.AccessControl;
 using UniTASPlugin.FakeGameState.GameFileSystem;
-using FileOrig = System.IO.File;
 using DirectoryOrig = System.IO.Directory;
+using FileOrig = System.IO.File;
 using PathOrig = System.IO.Path;
 
 namespace UniTASPlugin.Patches.__System.__IO;
@@ -59,8 +59,8 @@ static class File
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
-            string fullPathInternal = PathOrig.GetFullPath(sourceFileName);
-            string fullPathInternal2 = PathOrig.GetFullPath(destFileName);
+            var fullPathInternal = PathOrig.GetFullPath(sourceFileName);
+            var fullPathInternal2 = PathOrig.GetFullPath(destFileName);
             FileSystem.OsHelpers.Copy(fullPathInternal, fullPathInternal2, overwrite);
             __result = fullPathInternal2;
             return false;
@@ -112,9 +112,7 @@ static class File
 
         static bool Prefix()
         {
-            if (PatcherHelper.CallFromPlugin())
-                return true;
-            return false;
+            return PatcherHelper.CallFromPlugin();
         }
     }
 
@@ -209,12 +207,12 @@ static class File
             {
                 throw new FileNotFoundException($"{sourceFileName} does not exist", sourceFileName);
             }
-            string directoryName = PathOrig.GetDirectoryName(destFileName);
+            var directoryName = PathOrig.GetDirectoryName(destFileName);
             if (directoryName != string.Empty && !DirectoryOrig.Exists(directoryName))
             {
                 throw new DirectoryNotFoundException("Could not find a part of the path.");
             }
-            FileSystem.OsHelpers.MoveFile(sourceFileName, destFileName);
+            _ = FileSystem.OsHelpers.MoveFile(sourceFileName, destFileName);
             return false;
         }
     }
@@ -247,8 +245,8 @@ static class File
             {
                 throw new ArgumentException("destinationFileName");
             }
-            string fullPath = PathOrig.GetFullPath(sourceFileName);
-            string fullPath2 = PathOrig.GetFullPath(destinationFileName);
+            var fullPath = PathOrig.GetFullPath(sourceFileName);
+            var fullPath2 = PathOrig.GetFullPath(destinationFileName);
             if (FileSystem.OsHelpers.DirectoryExists(fullPath))
             {
                 throw new IOException($"{sourceFileName} is a directory");

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace UniTASPlugin.FakeGameState.GameFileSystem;
@@ -59,7 +58,7 @@ public static partial class FileSystem
                         var pathDir = Directory.GetParent(path);
                         var dir = FileSystem.CreateDir(pathDir.FullName);
                         var filename = Path.GetFileName(path);
-                        dir.AddFile(filename);
+                        _ = dir.AddFile(filename);
                         break;
                     }
                 case FileMode.Open:
@@ -129,7 +128,7 @@ public static partial class FileSystem
 
         public static void Close(string path)
         {
-            openHandles.Remove(path);
+            _ = openHandles.Remove(path);
         }
 
         public static long Seek(string path, long bufStart, SeekOrigin seekOrigin)
@@ -510,7 +509,7 @@ public static partial class FileSystem
 
         public static void CreateDir(string path)
         {
-            FileSystem.CreateDir(path);
+            _ = FileSystem.CreateDir(path);
         }
 
         public static void DeleteEmptyDir(string path)

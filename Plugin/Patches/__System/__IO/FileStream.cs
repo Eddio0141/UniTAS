@@ -6,8 +6,8 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Remoting.Messaging;
 using UniTASPlugin.FakeGameState.GameFileSystem;
-using FileStreamOrig = System.IO.FileStream;
 using DirOrig = System.IO.Directory;
+using FileStreamOrig = System.IO.FileStream;
 using PathOrig = System.IO.Path;
 
 namespace UniTASPlugin.Patches.__System.__IO;
@@ -36,7 +36,7 @@ static class FileStream
             if (PatcherHelper.CallFromPlugin())
                 return true;
             var instanceTraverse = Traverse.Create(__instance);
-            instanceTraverse.Field("name").SetValue("[Unknown]");
+            _ = instanceTraverse.Field("name").SetValue("[Unknown]");
             if (path == null)
             {
                 throw new ArgumentNullException("path");
@@ -45,13 +45,13 @@ static class FileStream
             {
                 throw new ArgumentException("Path is empty");
             }
-            instanceTraverse.Field("anonymous").SetValue(anonymous);
+            _ = instanceTraverse.Field("anonymous").SetValue(anonymous);
             share &= ~FileShare.Inheritable;
             if (bufferSize <= 0)
             {
                 throw new ArgumentOutOfRangeException("bufferSize", "Positive number required.");
             }
-            if (mode < FileMode.CreateNew || mode > FileMode.Append)
+            if (mode is < FileMode.CreateNew or > FileMode.Append)
             {
                 if (anonymous)
                 {
@@ -61,11 +61,11 @@ static class FileStream
             }
             else
             {
-                if (access < FileAccess.Read || access > FileAccess.ReadWrite)
+                if (access is < FileAccess.Read or > FileAccess.ReadWrite)
                 {
                     throw new ArgumentOutOfRangeException("access", "Enum value was out of legal range.");
                 }
-                if (share < FileShare.None || share > (FileShare.Read | FileShare.Write | FileShare.Delete))
+                if (share is < FileShare.None or > (FileShare.Read | FileShare.Write | FileShare.Delete))
                 {
                     throw new ArgumentOutOfRangeException("share", "Enum value was out of legal range.");
                 }
@@ -90,37 +90,37 @@ static class FileStream
                 {
                     throw new ArgumentException(string.Format("Combining FileMode: {0} with FileAccess: {1} is invalid.", access, mode));
                 }
-                string directoryName = PathOrig.GetDirectoryName(path);
+                var directoryName = PathOrig.GetDirectoryName(path);
                 if (directoryName.Length > 0 && !DirOrig.Exists(PathOrig.GetFullPath(directoryName)))
                 {
-                    string arg = anonymous ? directoryName : PathOrig.GetFullPath(path);
+                    var arg = anonymous ? directoryName : PathOrig.GetFullPath(path);
                     throw new DirectoryNotFoundException(string.Format("Could not find a part of the path \"{0}\".", arg));
                 }
                 //if (!anonymous)
                 //{
-                instanceTraverse.Field("name").SetValue(path);
+                _ = instanceTraverse.Field("name").SetValue(path);
                 //}
                 FileSystem.OsHelpers.OpenFile(path, mode, access, share, options);
-                instanceTraverse.Field("access").SetValue(access);
-                instanceTraverse.Field("owner").SetValue(true);
-                instanceTraverse.Field("canseek").SetValue(true);
-                instanceTraverse.Field("async").SetValue((options & FileOptions.Asynchronous) > FileOptions.None);
+                _ = instanceTraverse.Field("access").SetValue(access);
+                _ = instanceTraverse.Field("owner").SetValue(true);
+                _ = instanceTraverse.Field("canseek").SetValue(true);
+                _ = instanceTraverse.Field("async").SetValue((options & FileOptions.Asynchronous) > FileOptions.None);
                 if (access == FileAccess.Read && bufferSize == 4096)
                 {
-                    long length = __instance.Length;
+                    var length = __instance.Length;
                     if (bufferSize > length)
                     {
                         bufferSize = (int)((length < 1000L) ? 1000L : length);
                     }
                 }
-                instanceTraverse.Method("InitBuffer", new Type[] { typeof(int), typeof(bool) }).GetValue(bufferSize, false);
+                _ = instanceTraverse.Method("InitBuffer", new Type[] { typeof(int), typeof(bool) }).GetValue(bufferSize, false);
                 if (mode == FileMode.Append)
                 {
-                    __instance.Seek(0L, SeekOrigin.End);
-                    instanceTraverse.Field("append_startpos").SetValue(__instance.Position);
+                    _ = __instance.Seek(0L, SeekOrigin.End);
+                    _ = instanceTraverse.Field("append_startpos").SetValue(__instance.Position);
                     return false;
                 }
-                instanceTraverse.Field("append_startpos").SetValue(0L);
+                _ = instanceTraverse.Field("append_startpos").SetValue(0L);
                 return false;
             }
         }
@@ -158,9 +158,9 @@ static class FileStream
             {
                 throw new IOException("Can't seek back over pre-existing data in append mode");
             }
-            instanceTraverse.Method("FlushBuffer").GetValue();
+            _ = instanceTraverse.Method("FlushBuffer").GetValue();
             var seekResult = FileSystem.OsHelpers.Seek(instanceTraverse.Field("name").GetValue<string>(), num, SeekOrigin.Begin);
-            instanceTraverse.Field("buf_start").SetValue(seekResult);
+            _ = instanceTraverse.Field("buf_start").SetValue(seekResult);
             __result = seekResult;
             return false;
         }
@@ -183,7 +183,7 @@ static class FileStream
                 throw new NotSupportedException("The stream does not support seeking");
             }
             var instanceTraverse = Traverse.Create(__instance);
-            instanceTraverse.Method("FlushBufferIfDirty").GetValue();
+            _ = instanceTraverse.Method("FlushBufferIfDirty").GetValue();
             __result = FileSystem.OsHelpers.Length(instanceTraverse.Field("name").GetValue<string>());
             return false;
         }
@@ -251,11 +251,11 @@ static class FileStream
             var instanceTraverse = Traverse.Create(__instance);
             if (instanceTraverse.Field("async").GetValue<bool>())
             {
-                IAsyncResult asyncResult = __instance.BeginWrite(array, offset, count, null, null);
+                var asyncResult = __instance.BeginWrite(array, offset, count, null, null);
                 __instance.EndWrite(asyncResult);
                 return false;
             }
-            Helper.WriteInternalTraverse(__instance).GetValue(array, offset, count);
+            _ = Helper.WriteInternalTraverse(__instance).GetValue(array, offset, count);
             return false;
         }
     }
@@ -276,8 +276,8 @@ static class FileStream
             var instanceTraverse = Traverse.Create(__instance);
             var name = instanceTraverse.Field("name").GetValue<string>();
             FileSystem.OsHelpers.Close(name);
-            instanceTraverse.Field("canseek").SetValue(false);
-            instanceTraverse.Field("access").SetValue((FileAccess)0);
+            _ = instanceTraverse.Field("canseek").SetValue(false);
+            _ = instanceTraverse.Field("access").SetValue((FileAccess)0);
             var bufTraverse = instanceTraverse.Field("buf");
             var buf = bufTraverse.GetValue<byte[]>();
             if (disposing && buf != null)
@@ -287,23 +287,19 @@ static class FileStream
                 var buf_recycle = buf_recycleTraverse.GetValue<byte[]>();
                 if (buf.Length == 4096 && buf_recycle == null)
                 {
-                    object obj = fileStreamTraverse.Field("buf_recycle_lock").GetValue();
+                    var obj = fileStreamTraverse.Field("buf_recycle_lock").GetValue();
                     lock (obj)
                     {
                         if (buf_recycle == null)
                         {
-                            buf_recycleTraverse.SetValue(buf);
+                            _ = buf_recycleTraverse.SetValue(buf);
                         }
                     }
                 }
-                bufTraverse.SetValue(null);
+                _ = bufTraverse.SetValue(null);
                 GC.SuppressFinalize(__instance);
             }
-            if (ex != null)
-            {
-                throw ex;
-            }
-            return false;
+            return ex != null ? throw ex : false;
         }
     }
 
@@ -323,7 +319,7 @@ static class FileStream
             {
                 throw new ArgumentOutOfRangeException("value", "Non-negative number required.");
             }
-            __instance.Seek(value, SeekOrigin.Begin);
+            _ = __instance.Seek(value, SeekOrigin.Begin);
             return false;
         }
     }
@@ -347,22 +343,22 @@ static class FileStream
 
             if (count > instanceTraverse.Field("buf_size").GetValue<int>())
             {
-                flushBufferTraverse.GetValue();
+                _ = flushBufferTraverse.GetValue();
                 if (__instance.CanSeek && !instanceTraverse.Field("isExposed").GetValue<bool>())
                 {
-                    FileSystem.OsHelpers.Seek(name, buf_startTraverse.GetValue<long>(), SeekOrigin.Begin);
+                    _ = FileSystem.OsHelpers.Seek(name, buf_startTraverse.GetValue<long>(), SeekOrigin.Begin);
                 }
-                int i = count;
+                var i = count;
                 while (i > 0)
                 {
                     var num = FileSystem.OsHelpers.Write(name, src, offset, i);
                     i -= num;
                     offset += num;
                 }
-                buf_startTraverse.SetValue(buf_startTraverse.GetValue<long>() + count);
+                _ = buf_startTraverse.SetValue(buf_startTraverse.GetValue<long>() + count);
                 return false;
             }
-            int num2 = 0;
+            var num2 = 0;
             while (count > 0)
             {
                 var num3 = instanceTraverse.Method("WriteSegment", new Type[] { typeof(byte[]), typeof(int), typeof(int) }).GetValue<int>(src, offset + num2, count);
@@ -372,7 +368,7 @@ static class FileStream
                 {
                     break;
                 }
-                flushBufferTraverse.GetValue();
+                _ = flushBufferTraverse.GetValue();
             }
             return false;
         }
@@ -403,25 +399,25 @@ static class FileStream
             var flushBufferTraverse = instanceTraverse.Method("FlushBuffer");
             if (buf_offsetTraverse.GetValue<int>() == buf_sizeTraverse.GetValue<int>())
             {
-                flushBufferTraverse.GetValue();
+                _ = flushBufferTraverse.GetValue();
             }
             if (buf_sizeTraverse.GetValue<int>() == 0)
             {
                 bufTraverse.GetValue<byte[]>()[0] = value;
-                buf_dirtyTraverse.SetValue(true);
-                buf_lengthTraverse.SetValue(1);
-                flushBufferTraverse.GetValue();
+                _ = buf_dirtyTraverse.SetValue(true);
+                _ = buf_lengthTraverse.SetValue(1);
+                _ = flushBufferTraverse.GetValue();
                 return false;
             }
-            byte[] array = bufTraverse.GetValue<byte[]>();
-            int num = buf_offsetTraverse.GetValue<int>();
-            buf_offsetTraverse.SetValue(num + 1);
+            var array = bufTraverse.GetValue<byte[]>();
+            var num = buf_offsetTraverse.GetValue<int>();
+            _ = buf_offsetTraverse.SetValue(num + 1);
             array[num] = value;
             if (buf_offsetTraverse.GetValue<int>() > buf_lengthTraverse.GetValue<int>())
             {
-                buf_lengthTraverse.SetValue(buf_offsetTraverse.GetValue<int>());
+                _ = buf_lengthTraverse.SetValue(buf_offsetTraverse.GetValue<int>());
             }
-            buf_dirtyTraverse.SetValue(true);
+            _ = buf_dirtyTraverse.SetValue(true);
             return false;
         }
     }
@@ -436,9 +432,7 @@ static class FileStream
 
         static bool Prefix()
         {
-            if (PatcherHelper.CallFromPlugin())
-                return true;
-            return false;
+            return PatcherHelper.CallFromPlugin();
         }
     }
 
@@ -452,9 +446,7 @@ static class FileStream
 
         static bool Prefix()
         {
-            if (PatcherHelper.CallFromPlugin())
-                return true;
-            return false;
+            return PatcherHelper.CallFromPlugin();
         }
     }
 
@@ -483,7 +475,7 @@ static class FileStream
                 throw new ArgumentOutOfRangeException("value is less than 0");
             }
             var instanceTraverse = Traverse.Create(__instance);
-            instanceTraverse.Method("FlushBuffer").GetValue();
+            _ = instanceTraverse.Method("FlushBuffer").GetValue();
             FileSystem.OsHelpers.SetLength(instanceTraverse.Field("name").GetValue<string>(), value);
             if (__instance.Position > value)
             {
@@ -503,9 +495,7 @@ static class FileStream
 
         static bool Prefix()
         {
-            if (PatcherHelper.CallFromPlugin())
-                return true;
-            return false;
+            return PatcherHelper.CallFromPlugin();
         }
     }
 
@@ -521,7 +511,7 @@ static class FileStream
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
-            int num = FileSystem.OsHelpers.Read(Traverse.Create(__instance).Field("name").GetValue<string>(), buf, offset, count);
+            var num = FileSystem.OsHelpers.Read(Traverse.Create(__instance).Field("name").GetValue<string>(), buf, offset, count);
             __result = num;
             return false;
         }
@@ -551,16 +541,16 @@ static class FileStream
             {
                 if (buf_offsetTraverse.GetValue<int>() >= buf_lengthTraverse.GetValue<int>())
                 {
-                    instanceTraverse.Method("RefillBuffer").GetValue();
+                    _ = instanceTraverse.Method("RefillBuffer").GetValue();
                     if (buf_lengthTraverse.GetValue<int>() == 0)
                     {
                         __result = -1;
                         return false;
                     }
                 }
-                byte[] array = bufTraverse.GetValue<byte[]>();
+                var array = bufTraverse.GetValue<byte[]>();
                 var num = buf_offsetTraverse.GetValue<int>();
-                buf_offsetTraverse.SetValue(num + 1);
+                _ = buf_offsetTraverse.SetValue(num + 1);
                 __result = array[num];
                 return false;
             }
@@ -594,7 +584,7 @@ static class FileStream
             {
                 throw new NotSupportedException("Stream does not support reading");
             }
-            int num = array.Length;
+            var num = array.Length;
             if (offset < 0)
             {
                 throw new ArgumentOutOfRangeException("offset", "< 0");
@@ -614,7 +604,7 @@ static class FileStream
             var instanceTraverse = Traverse.Create(__instance);
             if (instanceTraverse.Field("async").GetValue<bool>())
             {
-                IAsyncResult asyncResult = __instance.BeginRead(array, offset, count, null, null);
+                var asyncResult = __instance.BeginRead(array, offset, count, null, null);
                 __result = __instance.EndRead(asyncResult);
                 return false;
             }
@@ -640,7 +630,7 @@ static class FileStream
             var instanceTraverse = Traverse.Create(__instance);
             if (!instanceTraverse.Field("isExposed").GetValue<bool>())
             {
-                instanceTraverse.Method("ExposeHandle").GetValue();
+                _ = instanceTraverse.Method("ExposeHandle").GetValue();
             }
             __result = IntPtr.Zero;
             return false;
@@ -686,10 +676,10 @@ static class FileStream
                 var name = instanceTraverse.Field("name").GetValue<string>();
                 if (__instance.CanSeek && !instanceTraverse.Field("isExposed").GetValue<bool>())
                 {
-                    FileSystem.OsHelpers.Seek(name, buf_startTraverse.GetValue<long>(), SeekOrigin.Begin);
+                    _ = FileSystem.OsHelpers.Seek(name, buf_startTraverse.GetValue<long>(), SeekOrigin.Begin);
                 }
-                int i = buf_lengthTraverse.GetValue<int>();
-                int num = 0;
+                var i = buf_lengthTraverse.GetValue<int>();
+                var num = 0;
                 while (i > 0)
                 {
                     var num2 = FileSystem.OsHelpers.Write(name, instanceTraverse.Field("buf").GetValue<byte[]>(), num, buf_lengthTraverse.GetValue<int>());
@@ -697,10 +687,10 @@ static class FileStream
                     num += num2;
                 }
             }
-            buf_startTraverse.SetValue(buf_startTraverse.GetValue<long>() + buf_offsetTraverse.GetValue<int>());
-            buf_lengthTraverse.SetValue(0);
-            buf_offsetTraverse.SetValue(0);
-            buf_dirtyTraverse.SetValue(false);
+            _ = buf_startTraverse.SetValue(buf_startTraverse.GetValue<long>() + buf_offsetTraverse.GetValue<int>());
+            _ = buf_lengthTraverse.SetValue(0);
+            _ = buf_offsetTraverse.SetValue(0);
+            _ = buf_dirtyTraverse.SetValue(false);
             return false;
         }
     }
@@ -735,7 +725,7 @@ static class FileStream
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
-            Traverse.Create(__instance).Method("FlushBuffer").GetValue();
+            _ = Traverse.Create(__instance).Method("FlushBuffer").GetValue();
             return false;
         }
     }
@@ -752,7 +742,7 @@ static class FileStream
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
-            Traverse.Create(__instance).Method("FlushBuffer").GetValue();
+            _ = Traverse.Create(__instance).Method("FlushBuffer").GetValue();
             return false;
         }
     }
@@ -769,7 +759,7 @@ static class FileStream
 
         static void writeInternal(object instance, byte[] src, int offset, int count)
         {
-            Traverse.Create(instance).Method("WriteInternal", new Type[] { typeof(byte[]), typeof(int), typeof(int) }).GetValue(src, offset, count);
+            _ = Traverse.Create(instance).Method("WriteInternal", new Type[] { typeof(byte[]), typeof(int), typeof(int) }).GetValue(src, offset, count);
         }
 
         static bool Prefix(ref IAsyncResult __result, ref FileStreamOrig __instance, byte[] array, int offset, int numBytes, AsyncCallback userCallback, object stateObject)
@@ -807,9 +797,9 @@ static class FileStream
             var fileStreamAsyncResultCtor = AccessTools.Constructor(fileStreamAsyncResultType);
             var fileStreamAsyncResult = fileStreamAsyncResultCtor.Invoke(new object[] { userCallback, stateObject });
             var fileStreamAsyncResultTraverse = Traverse.Create(fileStreamAsyncResult);
-            fileStreamAsyncResultTraverse.Field("BytesRead").SetValue(-1);
-            fileStreamAsyncResultTraverse.Field("Count").SetValue(numBytes);
-            fileStreamAsyncResultTraverse.Field("OriginalCount").SetValue(numBytes);
+            _ = fileStreamAsyncResultTraverse.Field("BytesRead").SetValue(-1);
+            _ = fileStreamAsyncResultTraverse.Field("Count").SetValue(numBytes);
+            _ = fileStreamAsyncResultTraverse.Field("OriginalCount").SetValue(numBytes);
             __result = new WriteDelegate(writeInternal).BeginInvoke(__instance, array, offset, numBytes, userCallback, stateObject);
             return false;
         }
@@ -878,7 +868,7 @@ static class FileStream
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
-            if (access < FileAccess.Read || access > FileAccess.ReadWrite)
+            if (access is < FileAccess.Read or > FileAccess.ReadWrite)
             {
                 throw new ArgumentOutOfRangeException("access");
             }
@@ -887,14 +877,14 @@ static class FileStream
                 throw new ArgumentOutOfRangeException("bufferSize", "Positive number required.");
             }
             var instanceTraverse = Traverse.Create(__instance);
-            instanceTraverse.Field("canseek").SetValue(true);
-            instanceTraverse.Method("ExposeHandle").GetValue();
-            instanceTraverse.Field("access").SetValue(access);
-            instanceTraverse.Field("owner").SetValue(ownsHandle);
-            instanceTraverse.Field("async").SetValue(isAsync);
-            instanceTraverse.Field("anonymous").SetValue(false);
-            instanceTraverse.Field("buf_start").SetValue(FileSystem.OsHelpers.Seek(instanceTraverse.Field("name").GetValue<string>(), 0, SeekOrigin.Current));
-            instanceTraverse.Field("append_startpos").SetValue(0);
+            _ = instanceTraverse.Field("canseek").SetValue(true);
+            _ = instanceTraverse.Method("ExposeHandle").GetValue();
+            _ = instanceTraverse.Field("access").SetValue(access);
+            _ = instanceTraverse.Field("owner").SetValue(ownsHandle);
+            _ = instanceTraverse.Field("async").SetValue(isAsync);
+            _ = instanceTraverse.Field("anonymous").SetValue(false);
+            _ = instanceTraverse.Field("buf_start").SetValue(FileSystem.OsHelpers.Seek(instanceTraverse.Field("name").GetValue<string>(), 0, SeekOrigin.Current));
+            _ = instanceTraverse.Field("append_startpos").SetValue(0);
             return false;
         }
     }
@@ -909,9 +899,9 @@ static class FileStream
 
         static bool Prefix()
         {
-            if (PatcherHelper.CallFromPlugin())
-                return true;
-            throw new InvalidOperationException("This constructor is not supported by the virtual file system, if this happens then patch more methods to prevent this.");
+            return PatcherHelper.CallFromPlugin()
+                ? true
+                : throw new InvalidOperationException("This constructor is not supported by the virtual file system, if this happens then patch more methods to prevent this.");
         }
     }
 
@@ -925,9 +915,9 @@ static class FileStream
 
         static bool Prefix()
         {
-            if (PatcherHelper.CallFromPlugin())
-                return true;
-            throw new InvalidOperationException("This constructor is not supported by the virtual file system, if this happens then patch more methods to prevent this.");
+            return PatcherHelper.CallFromPlugin()
+                ? true
+                : throw new InvalidOperationException("This constructor is not supported by the virtual file system, if this happens then patch more methods to prevent this.");
         }
     }
 
@@ -986,7 +976,7 @@ static class FileStream
             if (!instanceTraverse.Field("async").GetValue<bool>())
             {
                 var endRead = AccessTools.Method(typeof(FileStreamOrig), "EndWrite", new Type[] { typeof(IAsyncResult) });
-                endRead.Invoke(__instance, new object[] { asyncResult });
+                _ = endRead.Invoke(__instance, new object[] { asyncResult });
                 return false;
             }
             if (asyncResult is not AsyncResult asyncResult2)

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 
 namespace UniTASPlugin.FakeGameState.GameFileSystem;
 
@@ -44,7 +43,7 @@ public static partial class FileSystem
                             AltDirectorySeparatorChar,
                             VolumeSeparatorChar
                         };
-                        dirEqualsVolume = (DirectorySeparatorChar == VolumeSeparatorChar);
+                        dirEqualsVolume = DirectorySeparatorChar == VolumeSeparatorChar;
                         break;
                     }
                 default:
@@ -65,7 +64,7 @@ public static partial class FileSystem
             {
                 case DeviceType.Windows:
                     {
-                        if (path == "C:" || path == "C:\\")
+                        if (path is "C:" or "C:\\")
                         {
                             availableFreeSpace = TOTAL_SIZE;
                             totalSize = TOTAL_SIZE;

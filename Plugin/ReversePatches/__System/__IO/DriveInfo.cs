@@ -8,9 +8,15 @@ namespace UniTASPlugin.ReversePatches.__System.__IO;
 [HarmonyPatch]
 public static class DriveInfo
 {
-    public static void GetDiskFreeSpace(string path, out ulong availableFreeSpace, out ulong totalSize, out ulong totalFreeSpace) =>
+    public static void GetDiskFreeSpace(string path, out ulong availableFreeSpace, out ulong totalSize, out ulong totalFreeSpace)
+    {
         GetDiskFreeSpacePatch.method(path, out availableFreeSpace, out totalSize, out totalFreeSpace);
-    public static DriveInfoOrig[] GetDrives() => GetDrivesPatch.method();
+    }
+
+    public static DriveInfoOrig[] GetDrives()
+    {
+        return GetDrivesPatch.method();
+    }
 
     [HarmonyPatch]
     static class GetDiskFreeSpacePatch

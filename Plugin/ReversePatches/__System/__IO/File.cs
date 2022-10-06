@@ -7,8 +7,15 @@ namespace UniTASPlugin.ReversePatches.__System.__IO;
 [HarmonyPatch]
 public static class File
 {
-    public static bool Exists(string path) => ExistsPatch.method(path);
-    public static string ReadAllText(string path) => ReadAllTextPatch.method(path);
+    public static bool Exists(string path)
+    {
+        return ExistsPatch.method(path);
+    }
+
+    public static string ReadAllText(string path)
+    {
+        return ReadAllTextPatch.method(path);
+    }
 
     [HarmonyPatch]
     static class ExistsPatch

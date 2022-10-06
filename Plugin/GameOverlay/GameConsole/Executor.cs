@@ -5,7 +5,7 @@ namespace UniTASPlugin.GameOverlay.GameConsole;
 
 public static class Executor
 {
-    static Queue<KeyValuePair<Command, Parameter[]>> commandQueue = new();
+    static readonly Queue<KeyValuePair<Command, Parameter[]>> commandQueue = new();
 
     static void ExecuteCommands()
     {
@@ -55,7 +55,7 @@ public static class Executor
         List<Parameter> currentArgs = new();
         var argBuilder = "";
 
-        for (int i = 0; i < input.Length; i++)
+        for (var i = 0; i < input.Length; i++)
         {
             var ch = input[i];
 
@@ -67,7 +67,7 @@ public static class Executor
                         continue;
                     waitingForCommandName = false;
                 }
-                if (ch == ' ' || ch == '(')
+                if (ch is ' ' or '(')
                 {
                     commandName = false;
 
@@ -247,7 +247,7 @@ public static class Executor
                 continue;
             }
 
-            if (ch != ' ' && ch != ';')
+            if (ch is not ' ' and not ';')
             {
                 CommandSyntaxError("missing command terminator", commandNameBuilder);
                 return;
