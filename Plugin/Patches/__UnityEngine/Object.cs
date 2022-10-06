@@ -9,7 +9,7 @@ class DontDestroyOnLoad
 {
     static System.Exception Cleanup(MethodBase original, System.Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static void Prefix(Object target)
@@ -23,7 +23,7 @@ class Destroy__Object__float
 {
     static System.Exception Cleanup(MethodBase original, System.Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static void Prefix(Object obj)
@@ -37,7 +37,7 @@ class DestroyImmediate__Object__bool
 {
     static System.Exception Cleanup(MethodBase original, System.Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static void Prefix(Object obj)

@@ -13,6 +13,7 @@ public static class File
     [HarmonyPatch]
     static class ExistsPatch
     {
+        [HarmonyReversePatch]
         [HarmonyPatch(typeof(FileOrig), nameof(FileOrig.Exists))]
         public static bool method(string path)
         {
@@ -23,6 +24,7 @@ public static class File
     [HarmonyPatch]
     static class ReadAllTextPatch
     {
+        [HarmonyReversePatch]
         [HarmonyPatch(typeof(FileOrig), nameof(FileOrig.ReadAllText), new Type[] { typeof(string) })]
         public static string method(string path)
         {

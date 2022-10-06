@@ -11,7 +11,7 @@ class setAllowSceneActivation
 {
     static System.Exception Cleanup(MethodBase original, System.Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(bool value, AsyncOperation __instance)
@@ -26,7 +26,7 @@ class getAllowSceneActivation
 {
     static System.Exception Cleanup(MethodBase original, System.Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(ref bool __result, AsyncOperation __instance)
@@ -43,7 +43,7 @@ class progress
 {
     static System.Exception Cleanup(MethodBase original, System.Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(ref float __result, AsyncOperation __instance)
@@ -58,7 +58,7 @@ class isDone
 {
     static System.Exception Cleanup(MethodBase original, System.Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(ref bool __result, AsyncOperation __instance)
@@ -73,7 +73,7 @@ class InternalDestroy
 {
     static System.Exception Cleanup(MethodBase original, System.Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static void Prefix(AsyncOperation __instance)

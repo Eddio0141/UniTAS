@@ -51,7 +51,7 @@ class UnloadSceneNameIndexInternal
 
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static void Prefix(ref bool immediately)
@@ -70,7 +70,7 @@ class UnloadSceneAsyncInternal_Injected
 
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(object scene, object options)
@@ -93,7 +93,7 @@ class LoadSceneAsyncNameIndexInternal__sceneName__sceneBuildIndex__isAdditive__m
 
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(string sceneName, int sceneBuildIndex, bool isAdditive, bool mustCompleteNextFrame, ref AsyncOperation __result)
@@ -114,7 +114,7 @@ class LoadSceneAsyncNameIndexInternal__sceneName__sceneBuildIndex__parameters__m
 
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(bool mustCompleteNextFrame, string sceneName, int sceneBuildIndex, object parameters, ref AsyncOperation __result)

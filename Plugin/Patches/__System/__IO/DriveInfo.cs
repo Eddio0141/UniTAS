@@ -16,7 +16,7 @@ class GetDiskFreeSpace
 
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(string path, out ulong availableFreeSpace, out ulong totalSize, out ulong totalFreeSpace)

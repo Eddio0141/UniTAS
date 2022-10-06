@@ -12,7 +12,7 @@ using UnityEngine;
 
 namespace UniTASPlugin;
 
-internal static partial class Helper
+public static class Helper
 {
     public static SemanticVersion GetUnityVersion()
     {

@@ -18,7 +18,7 @@ static class SecurityManager
 
         static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
         static bool Prefix()

@@ -14,7 +14,7 @@ class LoadFromFileAsync_Internal
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(string path, uint crc, ulong offset, ref AssetBundleCreateRequest __result)
@@ -37,7 +37,7 @@ class LoadFromMemoryAsync_Internal
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(byte[] binary, uint crc, ref AssetBundleCreateRequest __result)
@@ -58,7 +58,7 @@ class LoadFromStreamAsyncInternal
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(Stream stream, uint crc, uint managedReadBufferSize, ref AssetBundleCreateRequest __result)
@@ -79,7 +79,7 @@ class LoadAssetAsync_Internal
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(string name, Type type, ref AssetBundleRequest __result)
@@ -100,7 +100,7 @@ class LoadAssetWithSubAssetsAsync_Internal
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(string name, Type type, ref AssetBundleRequest __result)
@@ -120,7 +120,7 @@ class UnloadAsync
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(bool unloadAllLoadedObjects, ref object __result)

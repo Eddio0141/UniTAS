@@ -17,21 +17,6 @@ static class FileStream
 {
     static class Helper
     {
-        public static bool CallOriginal()
-        {
-            var trace = new System.Diagnostics.StackTrace();
-            var traceFrames = trace.GetFrames();
-            foreach (var frame in traceFrames)
-            {
-                var typeName = frame.GetMethod().DeclaringType.FullName;
-                if (typeName.StartsWith("BepInEx.Logging") || typeName.StartsWith("UniTASPlugin.ReversePatches"))
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
         public static Traverse WriteInternalTraverse(FileStreamOrig instance)
         {
             return Traverse.Create(instance).Method("WriteInternal", new Type[] { typeof(byte[]), typeof(int), typeof(int) });
@@ -43,12 +28,12 @@ static class FileStream
     {
         static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
         static bool Prefix(ref FileStreamOrig __instance, ref string path, FileMode mode, FileAccess access, ref FileShare share, ref int bufferSize, bool anonymous, FileOptions options)
         {
-            if (Helper.CallOriginal())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             var instanceTraverse = Traverse.Create(__instance);
             instanceTraverse.Field("name").SetValue("[Unknown]");
@@ -90,7 +75,7 @@ static class FileStream
                     throw new ArgumentException("Name has invalid chars");
                 }
 #pragma warning restore CS0618 // Type or member is obsolete
-                var pathTraverse = Traverse.Create(typeof(Path));
+                var pathTraverse = Traverse.Create(typeof(PathOrig));
                 path = pathTraverse.Method("InsecureGetFullPath", new Type[] { typeof(string) }).GetValue<string>(path);
                 if (DirOrig.Exists(path))
                 {
@@ -146,12 +131,12 @@ static class FileStream
     {
         static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
         static bool Prefix(ref long __result, ref FileStreamOrig __instance, long offset, SeekOrigin origin)
         {
-            if (Helper.CallOriginal())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             if (!__instance.CanSeek)
             {
@@ -186,12 +171,12 @@ static class FileStream
     {
         static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
         static bool Prefix(ref long __result, ref FileStreamOrig __instance)
         {
-            if (Helper.CallOriginal())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             if (!__instance.CanSeek)
             {
@@ -209,12 +194,12 @@ static class FileStream
     {
         static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
         static bool Prefix(ref long __result, ref FileStreamOrig __instance)
         {
-            if (Helper.CallOriginal())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             if (!__instance.CanSeek)
             {
@@ -236,12 +221,12 @@ static class FileStream
     {
         static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
         static bool Prefix(ref FileStreamOrig __instance, byte[] array, int offset, int count)
         {
-            if (Helper.CallOriginal())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             if (array == null)
             {
@@ -280,12 +265,12 @@ static class FileStream
     {
         static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
         static bool Prefix(ref FileStreamOrig __instance, bool disposing)
         {
-            if (Helper.CallOriginal())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             Exception ex = null;
             var instanceTraverse = Traverse.Create(__instance);
@@ -327,12 +312,12 @@ static class FileStream
     {
         static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
         static bool Prefix(ref FileStreamOrig __instance, long value)
         {
-            if (Helper.CallOriginal())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             if (value < 0)
             {
@@ -348,12 +333,12 @@ static class FileStream
     {
         static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
         static bool Prefix(ref FileStreamOrig __instance, byte[] src, ref int offset, ref int count)
         {
-            if (Helper.CallOriginal())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             var instanceTraverse = Traverse.Create(__instance);
             var flushBufferTraverse = instanceTraverse.Method("FlushBuffer");
@@ -398,12 +383,12 @@ static class FileStream
     {
         static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
         static bool Prefix(ref FileStreamOrig __instance, byte value)
         {
-            if (Helper.CallOriginal())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             if (!__instance.CanWrite)
             {
@@ -446,12 +431,12 @@ static class FileStream
     {
         static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
         static bool Prefix()
         {
-            if (Helper.CallOriginal())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             return false;
         }
@@ -462,12 +447,12 @@ static class FileStream
     {
         static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
         static bool Prefix()
         {
-            if (Helper.CallOriginal())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             return false;
         }
@@ -478,12 +463,12 @@ static class FileStream
     {
         static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
         static bool Prefix(ref FileStreamOrig __instance, long value)
         {
-            if (Helper.CallOriginal())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             if (!__instance.CanSeek)
             {
@@ -513,12 +498,12 @@ static class FileStream
     {
         static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
         static bool Prefix()
         {
-            if (Helper.CallOriginal())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             return false;
         }
@@ -529,12 +514,12 @@ static class FileStream
     {
         static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
         static bool Prefix(ref FileStreamOrig __instance, ref int __result, byte[] buf, int offset, int count)
         {
-            if (Helper.CallOriginal())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             int num = FileSystem.OsHelpers.Read(Traverse.Create(__instance).Field("name").GetValue<string>(), buf, offset, count);
             __result = num;
@@ -547,12 +532,12 @@ static class FileStream
     {
         static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
         static bool Prefix(ref int __result, ref FileStreamOrig __instance)
         {
-            if (Helper.CallOriginal())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             if (!__instance.CanRead)
             {
@@ -594,12 +579,12 @@ static class FileStream
     {
         static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
         static bool Prefix(ref int __result, ref FileStreamOrig __instance, [In][Out] byte[] array, int offset, int count)
         {
-            if (Helper.CallOriginal())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             if (array == null)
             {
@@ -645,12 +630,12 @@ static class FileStream
     {
         static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
         static bool Prefix(ref IntPtr __result, ref FileStreamOrig __instance)
         {
-            if (Helper.CallOriginal())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             var instanceTraverse = Traverse.Create(__instance);
             if (!instanceTraverse.Field("isExposed").GetValue<bool>())
@@ -667,12 +652,12 @@ static class FileStream
     {
         static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
         static bool Prefix(ref object __result)
         {
-            if (Helper.CallOriginal())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             __result = null;
             return false;
@@ -684,12 +669,12 @@ static class FileStream
     {
         static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
         static bool Prefix(ref FileStreamOrig __instance)
         {
-            if (Helper.CallOriginal())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             var instanceTraverse = Traverse.Create(__instance);
             var buf_dirtyTraverse = instanceTraverse.Field("buf_dirty");
@@ -725,12 +710,12 @@ static class FileStream
     {
         static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
         static bool Prefix(ref FileStreamOrig __instance, ref object __result, object cancellationToken)
         {
-            if (Helper.CallOriginal())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             var flushMethod = AccessTools.Method(typeof(FileStreamOrig), "FlushAsync");
             __result = flushMethod.GetBaseDefinition().Invoke(__instance, new object[] { cancellationToken });
@@ -743,12 +728,12 @@ static class FileStream
     {
         static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
         static bool Prefix(ref FileStreamOrig __instance)
         {
-            if (Helper.CallOriginal())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             Traverse.Create(__instance).Method("FlushBuffer").GetValue();
             return false;
@@ -760,12 +745,12 @@ static class FileStream
     {
         static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
         static bool Prefix(ref FileStreamOrig __instance)
         {
-            if (Helper.CallOriginal())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             Traverse.Create(__instance).Method("FlushBuffer").GetValue();
             return false;
@@ -779,7 +764,7 @@ static class FileStream
     {
         static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
         static void writeInternal(object instance, byte[] src, int offset, int count)
@@ -789,7 +774,7 @@ static class FileStream
 
         static bool Prefix(ref IAsyncResult __result, ref FileStreamOrig __instance, byte[] array, int offset, int numBytes, AsyncCallback userCallback, object stateObject)
         {
-            if (Helper.CallOriginal())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             if (!__instance.CanWrite)
             {
@@ -837,7 +822,7 @@ static class FileStream
     {
         static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
         static int readInternal(object instance, byte[] dest, int offset, int count)
@@ -847,7 +832,7 @@ static class FileStream
 
         static bool Prefix(ref IAsyncResult __result, ref FileStreamOrig __instance, byte[] array, int offset, int numBytes, AsyncCallback userCallback, object stateObject)
         {
-            if (Helper.CallOriginal())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             if (!__instance.CanRead)
             {
@@ -886,12 +871,12 @@ static class FileStream
     {
         static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
         static bool Prefix(ref FileStreamOrig __instance, FileAccess access, bool ownsHandle, int bufferSize, bool isAsync, bool isConsoleWrapper)
         {
-            if (Helper.CallOriginal())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             if (access < FileAccess.Read || access > FileAccess.ReadWrite)
             {
@@ -919,12 +904,12 @@ static class FileStream
     {
         static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
         static bool Prefix()
         {
-            if (Helper.CallOriginal())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             throw new InvalidOperationException("This constructor is not supported by the virtual file system, if this happens then patch more methods to prevent this.");
         }
@@ -935,12 +920,12 @@ static class FileStream
     {
         static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
         static bool Prefix()
         {
-            if (Helper.CallOriginal())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             throw new InvalidOperationException("This constructor is not supported by the virtual file system, if this happens then patch more methods to prevent this.");
         }
@@ -951,12 +936,12 @@ static class FileStream
     {
         static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
         static bool Prefix(ref int __result, ref FileStreamOrig __instance, IAsyncResult asyncResult)
         {
-            if (Helper.CallOriginal())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             if (asyncResult == null)
             {
@@ -986,12 +971,12 @@ static class FileStream
     {
         static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
         static bool Prefix(ref FileStreamOrig __instance, IAsyncResult asyncResult)
         {
-            if (Helper.CallOriginal())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             if (asyncResult == null)
             {

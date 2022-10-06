@@ -14,9 +14,9 @@ static class Path
 {
     static class Helper
     {
-        static readonly Traverse PathGetFullPathNameTraverse = Traverse.Create(typeof(PathOrig)).Method("GetFullPathName");
+        static readonly Traverse PathGetFullPathNameTraverse = Traverse.Create(typeof(PathOrig)).Method("GetFullPathName", new Type[] { typeof(string) });
         static readonly Traverse DirInsecureGetCurrentDirectoryTraverse = Traverse.Create(typeof(DirOrig)).Method("InsecureGetCurrentDirectory");
-        static readonly Traverse PathIsDirectorySeparatorTraverse = Traverse.Create(typeof(PathOrig)).Method("IsDirectorySeparator");
+        static readonly Traverse PathIsDirectorySeparatorTraverse = Traverse.Create(typeof(PathOrig)).Method("IsDirectorySeparator", new Type[] { typeof(char) });
 
         public static string PathGetFullPathName(string path)
         {
@@ -32,21 +32,6 @@ static class Path
         {
             return PathIsDirectorySeparatorTraverse.GetValue<bool>(c);
         }
-
-        public static bool CallOriginal()
-        {
-            var trace = new System.Diagnostics.StackTrace();
-            var traceFrames = trace.GetFrames();
-            foreach (var frame in traceFrames)
-            {
-                var typeName = frame.GetMethod().DeclaringType.FullName;
-                if (typeName.StartsWith("UniTASPlugin.ReversePatches"))
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
     }
 
     [HarmonyPatch(typeof(PathOrig), "findExtension")]
@@ -54,12 +39,12 @@ static class Path
     {
         static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
         static bool Prefix(ref int __result, string path)
         {
-            if (Helper.CallOriginal())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             if (path != null)
             {
@@ -81,12 +66,12 @@ static class Path
     {
         static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
         static bool Prefix(ref string __result, string path1, string path2)
         {
-            if (Helper.CallOriginal())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             if (path1 == null)
             {
@@ -135,12 +120,12 @@ static class Path
     {
         static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
         static bool Prefix(ref bool __result, string path)
         {
-            if (Helper.CallOriginal())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             if (path == null || path.Length == 0)
             {
@@ -165,10 +150,10 @@ static class Path
     {
         static Exception Cleanup(MethodBase original, System.Exception ex)
         {
-            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Postfix(ref string __result, string s)
+        static bool Prefix(ref string __result, string s)
         {
             int length = s.Length;
             int num = 0;
@@ -252,12 +237,12 @@ static class Path
     {
         static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
         static bool Prefix(ref string __result, string path)
         {
-            if (Helper.CallOriginal())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             if (path == string.Empty)
             {
@@ -298,7 +283,7 @@ static class Path
                 __result = text + FileSystem.ExternalHelpers.VolumeSeparatorChar.ToString();
                 return false;
             }
-            __result = Traverse.Create(typeof(PathOrig)).Method("CleanPath").GetValue<string>(text);
+            __result = Traverse.Create(typeof(PathOrig)).Method("CleanPath", new Type[] { typeof(string) }).GetValue<string>(text);
             return false;
         }
     }
@@ -308,12 +293,12 @@ static class Path
     {
         static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
         static bool Prefix(ref string __result, string path)
         {
-            if (Helper.CallOriginal())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             if (path == null)
             {
@@ -340,12 +325,12 @@ static class Path
     {
         static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
         static bool Prefix(ref string __result, ref string path)
         {
-            if (Helper.CallOriginal())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             if (path.Length < 2)
             {
@@ -398,12 +383,12 @@ static class Path
     {
         static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
         static bool Prefix(ref bool __result, char c)
         {
-            if (Helper.CallOriginal())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             __result = c == FileSystem.ExternalHelpers.DirectorySeparatorChar || c == FileSystem.ExternalHelpers.AltDirectorySeparatorChar;
             return false;
@@ -415,12 +400,12 @@ static class Path
     {
         static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
         static bool Prefix(ref string __result, string path)
         {
-            if (Helper.CallOriginal())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             if (path == null)
             {
@@ -501,12 +486,12 @@ static class Path
     {
         static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
         static bool Prefix(ref string __result)
         {
-            if (Helper.CallOriginal())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             string temp_path = Traverse.Create(typeof(PathOrig)).Method("get_temp_path").GetValue<string>();
             if (temp_path.Length > 0 && temp_path[temp_path.Length - 1] != FileSystem.ExternalHelpers.DirectorySeparatorChar)
@@ -524,12 +509,12 @@ static class Path
     {
         static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
         static bool Prefix(ref bool __result, string path)
         {
-            if (Helper.CallOriginal())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             if (path == null || path.Trim().Length == 0)
             {
@@ -551,12 +536,12 @@ static class Path
     {
         static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
         static bool Prefix(ref string __result, string path)
         {
-            if (Helper.CallOriginal())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             int num = 2;
             while (num < path.Length && !Helper.PathIsDirectorySeparator(path[num]))
@@ -581,12 +566,12 @@ static class Path
     {
         static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
         static bool Prefix(ref bool __result, string root, string path)
         {
-            if (Helper.CallOriginal())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             if (root.Length < 2 || path.Length < 2)
             {
@@ -616,12 +601,12 @@ static class Path
     {
         static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
         static bool Prefix(ref bool __result, string subset, string path)
         {
-            if (Helper.CallOriginal())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             if (subset.Length > path.Length)
             {
@@ -651,12 +636,12 @@ static class Path
     {
         static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
         static bool Prefix(ref string __result, string[] paths)
         {
-            if (Helper.CallOriginal())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             if (paths == null)
             {
@@ -709,12 +694,12 @@ static class Path
     {
         static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
         static bool Prefix(ref string __result)
         {
-            if (Helper.CallOriginal())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             __result = FileSystem.ExternalHelpers.DirectorySeparatorStr;
             return false;
@@ -726,12 +711,12 @@ static class Path
     {
         static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
         static bool Prefix(ref string __result, string path1, string path2)
         {
-            if (Helper.CallOriginal())
+            if (PatcherHelper.CallFromPlugin())
                 return true;
             if (path1 == null || path2 == null)
             {
