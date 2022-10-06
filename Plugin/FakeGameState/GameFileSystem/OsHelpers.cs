@@ -414,6 +414,28 @@ public static partial class FileSystem
             return true;
         }
 
+        public static void MoveDirectory(string source, string dest)
+        {
+            var sourceDir = GetDir(source);
+            if (sourceDir == null)
+                throw new DirectoryNotFoundException();
+
+            var destDirCheck = GetDir(dest);
+            if (destDirCheck != null)
+                throw new IOException("Destination directory already exists");
+
+            var destDirParentPath = Directory.GetParent(dest).FullName;
+            var destDirParent = GetDir(destDirParentPath);
+            if (destDirParent == null)
+                throw new DirectoryNotFoundException();
+
+            var destDirName = Path.GetFileName(dest);
+            sourceDir.Name = destDirName;
+            destDirParent.AddEntry(sourceDir);
+            WriteDir(sourceDir);
+            WriteDir(destDirParent);
+        }
+
         public static void ReplaceFile(string source, string dest)
         {
             var sourceDirName = Directory.GetParent(source).FullName;
@@ -475,6 +497,19 @@ public static partial class FileSystem
                     paths.Add(entry.FullName);
             }
             return paths.ToArray();
+        }
+
+        public static Dir WorkingDir()
+        {
+            return CurrentDir;
+        }
+
+        public static void SetWorkingDir(string path)
+        {
+            var pathDir = GetDir(path);
+            if (pathDir == null)
+                throw new DirectoryNotFoundException();
+            CurrentDir = pathDir;
         }
     }
 }
