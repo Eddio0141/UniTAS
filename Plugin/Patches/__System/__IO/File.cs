@@ -5,11 +5,12 @@ using System.Reflection;
 using System.Security.AccessControl;
 using UniTASPlugin.FakeGameState.GameFileSystem;
 using FileOrig = System.IO.File;
+using DirectoryOrig = System.IO.Directory;
 
 namespace UniTASPlugin.Patches.__System.__IO;
 
 [HarmonyPatch]
-public static class File
+static class File
 {
     [HarmonyPatch(typeof(FileOrig), nameof(FileOrig.Exists))]
     class Exists
@@ -21,9 +22,7 @@ public static class File
 
         static bool Prefix(ref bool __result, string path)
         {
-#pragma warning disable CS0618 // Type or member is obsolete
-            __result = !string.IsNullOrEmpty(path) && path.IndexOfAny(Path.InvalidPathChars) < 0 && FileSystem.FileExists(path);
-#pragma warning restore CS0618 // Type or member is obsolete
+            __result = !string.IsNullOrEmpty(path) && path.IndexOfAny(FileSystem.ExternalHelpers.InvalidPathChars) < 0 && FileSystem.FileExists(path);
             return false;
         }
     }
@@ -173,28 +172,24 @@ public static class File
             {
                 throw new ArgumentException("An empty file name is not valid.", "sourceFileName");
             }
-#pragma warning disable CS0618 // Type or member is obsolete
-            if (sourceFileName.Trim().Length == 0 || sourceFileName.IndexOfAny(Path.InvalidPathChars) != -1)
+            if (sourceFileName.Trim().Length == 0 || sourceFileName.IndexOfAny(FileSystem.ExternalHelpers.InvalidPathChars) != -1)
             {
                 throw new ArgumentException("The file name is not valid.");
             }
-#pragma warning restore CS0618 // Type or member is obsolete
             if (destFileName.Length == 0)
             {
                 throw new ArgumentException("An empty file name is not valid.", "destFileName");
             }
-#pragma warning disable CS0618 // Type or member is obsolete
-            if (destFileName.Trim().Length == 0 || destFileName.IndexOfAny(Path.InvalidPathChars) != -1)
+            if (destFileName.Trim().Length == 0 || destFileName.IndexOfAny(FileSystem.ExternalHelpers.InvalidPathChars) != -1)
             {
                 throw new ArgumentException("The file name is not valid.");
             }
-#pragma warning restore CS0618 // Type or member is obsolete
             if (!FileSystem.OsHelpers.FileExists(sourceFileName))
             {
                 throw new FileNotFoundException($"{sourceFileName} does not exist", sourceFileName);
             }
             string directoryName = Path.GetDirectoryName(destFileName);
-            if (directoryName != string.Empty && !Directory.Exists(directoryName))
+            if (directoryName != string.Empty && !DirectoryOrig.Exists(directoryName))
             {
                 throw new DirectoryNotFoundException("Could not find a part of the path.");
             }
@@ -221,18 +216,14 @@ public static class File
             {
                 throw new ArgumentNullException("destinationFileName");
             }
-#pragma warning disable CS0618 // Type or member is obsolete
-            if (sourceFileName.Trim().Length == 0 || sourceFileName.IndexOfAny(Path.InvalidPathChars) != -1)
+            if (sourceFileName.Trim().Length == 0 || sourceFileName.IndexOfAny(FileSystem.ExternalHelpers.InvalidPathChars) != -1)
             {
                 throw new ArgumentException("sourceFileName");
             }
-#pragma warning restore CS0618 // Type or member is obsolete
-#pragma warning disable CS0618 // Type or member is obsolete
-            if (destinationFileName.Trim().Length == 0 || destinationFileName.IndexOfAny(Path.InvalidPathChars) != -1)
+            if (destinationFileName.Trim().Length == 0 || destinationFileName.IndexOfAny(FileSystem.ExternalHelpers.InvalidPathChars) != -1)
             {
                 throw new ArgumentException("destinationFileName");
             }
-#pragma warning restore CS0618 // Type or member is obsolete
             string fullPath = Path.GetFullPath(sourceFileName);
             string fullPath2 = Path.GetFullPath(destinationFileName);
             if (FileSystem.OsHelpers.DirectoryExists(fullPath))
@@ -258,12 +249,10 @@ public static class File
             string text = null;
             if (destinationBackupFileName != null)
             {
-#pragma warning disable CS0618 // Type or member is obsolete
-                if (destinationBackupFileName.Trim().Length == 0 || destinationBackupFileName.IndexOfAny(Path.InvalidPathChars) != -1)
+                if (destinationBackupFileName.Trim().Length == 0 || destinationBackupFileName.IndexOfAny(FileSystem.ExternalHelpers.InvalidPathChars) != -1)
                 {
                     throw new ArgumentException("destinationBackupFileName");
                 }
-#pragma warning restore CS0618 // Type or member is obsolete
                 text = Path.GetFullPath(destinationBackupFileName);
                 if (FileSystem.OsHelpers.DirectoryExists(text))
                 {
@@ -278,7 +267,7 @@ public static class File
                     throw new IOException("Destination and backup arguments are the same file.");
                 }
             }
-            if ((FileOrig.GetAttributes(fullPath2) & FileAttributes.ReadOnly) != (FileAttributes)0)
+            if ((FileOrig.GetAttributes(fullPath2) & FileAttributes.ReadOnly) != 0)
             {
                 throw new IOException("Destination file is read-only.");
             }
