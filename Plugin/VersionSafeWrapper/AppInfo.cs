@@ -1,5 +1,5 @@
 ﻿using HarmonyLib;
-using System.IO;
+using UniTASPlugin.ReversePatches.__System.__IO;
 
 namespace UniTASPlugin.VersionSafeWrapper;
 
@@ -49,7 +49,8 @@ public static class AppInfo
         }
 
         // use game dir name and see if it matches exe
-        var gameDirName = new DirectoryInfo(rootDir).Name;
+        // TODO replace this instance creation
+        var gameDirName = new System.IO.DirectoryInfo(rootDir).Name;
 
         if (File.Exists(Path.Combine(rootDir, $"{gameDirName}.exe")))
         {

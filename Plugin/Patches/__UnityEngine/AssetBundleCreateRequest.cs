@@ -11,7 +11,7 @@ class get_assetBundle
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(AssetBundleCreateRequest __instance, ref AssetBundle __result)

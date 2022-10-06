@@ -14,7 +14,7 @@ class LoadLevelAsync
 
     static System.Exception Cleanup(MethodBase original, System.Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static void Prefix(ref bool mustCompleteNextFrame)

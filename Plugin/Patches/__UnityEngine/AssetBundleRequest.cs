@@ -11,7 +11,7 @@ class get_asset
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(AssetBundleRequest __instance, ref UnityEngine.Object __result)
@@ -29,7 +29,7 @@ class get_allAssets
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(AssetBundleRequest __instance, ref UnityEngine.Object[] __result)

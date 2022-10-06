@@ -8,7 +8,7 @@ class SystemInfo
 {
     static Exception Cleanup(System.Reflection.MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(ref object __result)

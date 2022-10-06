@@ -13,7 +13,7 @@ class set_captureFramerate
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix()
@@ -28,7 +28,7 @@ class set_captureDeltaTime
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix()
@@ -43,7 +43,7 @@ class get_fixedUnscaledTime
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static void Postfix(ref float __result)
@@ -57,7 +57,7 @@ class get_unscaledTime
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static readonly Traverse inFixedTimeStep = Traverse.Create(typeof(Time)).Property("inFixedTimeStep");
@@ -77,7 +77,7 @@ class get_unscaledTimeAsDouble
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static readonly Traverse inFixedTimeStep = Traverse.Create(typeof(Time)).Property("inFixedTimeStep");
@@ -98,7 +98,7 @@ class get_fixedUnscaledTimeAsDouble
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static void Postfix(ref double __result)
@@ -112,7 +112,7 @@ class get_frameCount
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static void Postfix(ref int __result)
@@ -126,7 +126,7 @@ class get_renderedFrameCount
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static void Postfix(ref int __result)
@@ -140,7 +140,7 @@ class get_realtimeSinceStartup
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static void Postfix(ref float __result)
@@ -154,7 +154,7 @@ class get_realtimeSinceStartupAsDouble
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static void Postfix(ref double __result)
@@ -168,7 +168,7 @@ class get_time
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static void Postfix(ref float __result)
@@ -182,7 +182,7 @@ class get_timeAsDouble
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static void Postfix(ref double __result)
@@ -196,7 +196,7 @@ class get_fixedTime
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static void Postfix(ref float __result)
@@ -210,7 +210,7 @@ class get_fixedTimeAsDouble
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static void Postfix(ref double __result)

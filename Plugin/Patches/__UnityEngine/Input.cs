@@ -20,7 +20,7 @@ class penEventCountGetter
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(ref int __result)
@@ -40,7 +40,7 @@ class mousePresentGetter
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(ref bool __result)
@@ -61,7 +61,7 @@ class GetPenEvent_Injected
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(int index, ref object ret)
@@ -82,7 +82,7 @@ class mainGyroIndex_Internal
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(ref int __result)
@@ -101,7 +101,7 @@ class GetPosition
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(int deviceID, ref Vector3 __result)
@@ -135,7 +135,7 @@ class GetKeyInt
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(object key, ref bool __result)
@@ -156,7 +156,7 @@ class GetKeyString
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(/*string name, ref bool __result*/)
@@ -177,7 +177,7 @@ class GetKeyUpString
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(/*string name, ref bool __result*/)
@@ -198,7 +198,7 @@ class GetKeyUpInt
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(object key, ref bool __result)
@@ -219,7 +219,7 @@ class GetKeyDownString
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(/*string name*/)
@@ -241,7 +241,7 @@ class GetKeyDownInt
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(object key, ref bool __result)
@@ -262,7 +262,7 @@ class GetAxis
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(string axisName, ref float __result)
@@ -284,7 +284,7 @@ class GetAxisRaw
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(string axisName, ref float __result)
@@ -307,7 +307,7 @@ class GetButton
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(string buttonName)
@@ -326,7 +326,7 @@ class GetButtonDown
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(string buttonName)
@@ -345,7 +345,7 @@ class GetButtonUp
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(string buttonName)
@@ -364,7 +364,7 @@ class GetMouseButton
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(ref bool __result, int button)
@@ -389,7 +389,7 @@ class GetMouseButtonDown
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(ref bool __result, int button)
@@ -414,7 +414,7 @@ class GetMouseButtonUp
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(ref bool __result, int button)
@@ -439,7 +439,7 @@ class ResetInputAxes
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix()
@@ -461,7 +461,7 @@ class GetAccelerationEvent
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(int index, ref AccelerationEvent __result)
@@ -481,7 +481,7 @@ class anyKeyGetter
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(ref bool __result)
@@ -500,7 +500,7 @@ class anyKeyDownGetter
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(ref bool __result)
@@ -520,7 +520,7 @@ class inputStringGetter
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix()
@@ -542,7 +542,7 @@ class mousePositionGetter
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(ref Vector3 __result)
@@ -563,7 +563,7 @@ class get_mousePosition_Injected
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(ref Vector3 ret)
@@ -582,7 +582,7 @@ class multiTouchEnabledGetter
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(ref bool __result)
@@ -603,7 +603,7 @@ class multiTouchEnabledSetter
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(bool value)
@@ -622,7 +622,7 @@ class isGyroAvailableGetter
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(ref bool __result)
@@ -643,7 +643,7 @@ class deviceOrientationGetter
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(ref DeviceOrientation __result)
@@ -664,7 +664,7 @@ class accelerationGetter
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(ref Vector3 __result)
@@ -685,7 +685,7 @@ class accelerationEventCountGetter
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(ref int __result)
@@ -722,7 +722,7 @@ class touchCountGetter
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(ref int __result)
@@ -743,7 +743,7 @@ class GetTouch
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(ref Touch __result)
@@ -779,7 +779,7 @@ class GetRotation
 {
     static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
     static bool Prefix(ref Vector3 __result)
