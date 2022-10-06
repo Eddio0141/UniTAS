@@ -286,86 +286,79 @@ public static class File
             return false;
         }
     }
-}
 
+    [HarmonyPatch(typeof(FileOrig), nameof(FileOrig.GetLastAccessTime))]
+    class GetLastAccessTime
+    {
+        static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        }
 
-class Dummy3
-{
-    /*
-	public static DateTime GetLastAccessTime(string path)
-	{
-		Path.Validate(path);
-		SecurityManager.EnsureElevatedPermissions();
-		MonoIOStat monoIOStat;
-		MonoIOError monoIOError;
-		if (MonoIO.GetFileStat(path, out monoIOStat, out monoIOError))
-		{
-			return DateTime.FromFileTime(monoIOStat.LastAccessTime);
-		}
-		if (monoIOError == MonoIOError.ERROR_PATH_NOT_FOUND || monoIOError == MonoIOError.ERROR_FILE_NOT_FOUND)
-		{
-			return File.DefaultLocalFileTime;
-		}
-		throw new IOException(path);
-	}
+        public static bool Prefix(ref DateTime __result, string path)
+        {
+            __result = FileSystem.OsHelpers.FileAccessTime(path);
+            return false;
+        }
+    }
 
-	public static DateTime GetLastWriteTime(string path)
-	{
-		Path.Validate(path);
-		SecurityManager.EnsureElevatedPermissions();
-		MonoIOStat monoIOStat;
-		MonoIOError monoIOError;
-		if (MonoIO.GetFileStat(path, out monoIOStat, out monoIOError))
-		{
-			return DateTime.FromFileTime(monoIOStat.LastWriteTime);
-		}
-		if (monoIOError == MonoIOError.ERROR_PATH_NOT_FOUND || monoIOError == MonoIOError.ERROR_FILE_NOT_FOUND)
-		{
-			return File.DefaultLocalFileTime;
-		}
-		throw new IOException(path);
-	}
+    [HarmonyPatch(typeof(FileOrig), nameof(FileOrig.GetLastWriteTime))]
+    class GetLastWriteTime
+    {
+        static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        }
 
-	public static void SetCreationTime(string path, DateTime creationTime)
-	{
-		Path.Validate(path);
-		MonoIOError error;
-		if (!MonoIO.Exists(path, out error))
-		{
-			throw MonoIO.GetException(path, error);
-		}
-		if (!MonoIO.SetCreationTime(path, creationTime, out error))
-		{
-			throw MonoIO.GetException(path, error);
-		}
-	}
+        static bool Prefix(ref DateTime __result, string path)
+        {
+            __result = FileSystem.OsHelpers.FileWriteTime(path);
+            return false;
+        }
+    }
 
-	public static void SetLastAccessTime(string path, DateTime lastAccessTime)
-	{
-		Path.Validate(path);
-		MonoIOError error;
-		if (!MonoIO.Exists(path, out error))
-		{
-			throw MonoIO.GetException(path, error);
-		}
-		if (!MonoIO.SetLastAccessTime(path, lastAccessTime, out error))
-		{
-			throw MonoIO.GetException(path, error);
-		}
-	}
+    [HarmonyPatch(typeof(FileOrig), nameof(FileOrig.SetCreationTime))]
+    class SetCreationTime
+    {
+        static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        }
 
-	public static void SetLastWriteTime(string path, DateTime lastWriteTime)
-	{
-		Path.Validate(path);
-		MonoIOError error;
-		if (!MonoIO.Exists(path, out error))
-		{
-			throw MonoIO.GetException(path, error);
-		}
-		if (!MonoIO.SetLastWriteTime(path, lastWriteTime, out error))
-		{
-			throw MonoIO.GetException(path, error);
-		}
-	}
-    */
+        static bool Prefix(string path, DateTime creationTime)
+        {
+            FileSystem.OsHelpers.SetFileCreationTime(path, creationTime);
+            return false;
+        }
+    }
+
+    [HarmonyPatch(typeof(FileOrig), nameof(FileOrig.SetLastAccessTime))]
+    class SetLastAccessTime
+    {
+        static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        }
+
+        static bool Prefix(string path, DateTime lastAccessTime)
+        {
+            FileSystem.OsHelpers.SetFileAccessTime(path, lastAccessTime);
+            return false;
+        }
+    }
+
+    [HarmonyPatch(typeof(FileOrig), nameof(FileOrig.SetLastWriteTime))]
+    class SetLastWriteTime
+    {
+        static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
+        }
+
+        static bool Prefix(string path, DateTime lastWriteTime)
+        {
+            FileSystem.OsHelpers.SetFileWriteTime(path, lastWriteTime);
+            return false;
+        }
+    }
 }
