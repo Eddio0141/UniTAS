@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace UniTASPlugin.FakeGameState.GameFileSystem;
 
@@ -282,6 +284,99 @@ public static partial class FileSystem
             return file.CreationTime;
         }
 
+        public static DateTime FileAccessTime(string path)
+        {
+            var file = GetFile(path);
+            if (file == null)
+                throw new FileNotFoundException();
+            AccessFile(file);
+            return file.AccessTime;
+        }
+
+        public static DateTime FileWriteTime(string path)
+        {
+            var file = GetFile(path);
+            if (file == null)
+                throw new FileNotFoundException();
+            AccessFile(file);
+            return file.WriteTime;
+        }
+
+        public static void SetFileCreationTime(string path, DateTime time)
+        {
+            var file = GetFile(path);
+            if (file == null)
+                throw new FileNotFoundException();
+            file.CreationTime = time;
+        }
+
+        public static void SetFileAccessTime(string path, DateTime time)
+        {
+            var file = GetFile(path);
+            if (file == null)
+                throw new FileNotFoundException();
+            file.AccessTime = time;
+        }
+
+        public static void SetFileWriteTime(string path, DateTime time)
+        {
+            var file = GetFile(path);
+            if (file == null)
+                throw new FileNotFoundException();
+            file.WriteTime = time;
+        }
+
+        public static DateTime DirCreationTime(string path)
+        {
+            var dir = GetDir(path);
+            if (dir == null)
+                throw new DirectoryNotFoundException();
+            AccessDir(dir);
+            return dir.CreationTime;
+        }
+
+        public static DateTime DirAccessTime(string path)
+        {
+            var dir = GetDir(path);
+            if (dir == null)
+                throw new DirectoryNotFoundException();
+            AccessDir(dir);
+            return dir.AccessTime;
+        }
+
+        public static DateTime DirWriteTime(string path)
+        {
+            var dir = GetDir(path);
+            if (dir == null)
+                throw new DirectoryNotFoundException();
+            AccessDir(dir);
+            return dir.WriteTime;
+        }
+
+        public static void SetDirCreationTime(string path, DateTime time)
+        {
+            var dir = GetDir(path);
+            if (dir == null)
+                throw new DirectoryNotFoundException();
+            dir.CreationTime = time;
+        }
+
+        public static void SetDirAccessTime(string path, DateTime time)
+        {
+            var dir = GetDir(path);
+            if (dir == null)
+                throw new DirectoryNotFoundException();
+            dir.AccessTime = time;
+        }
+
+        public static void SetDirWriteTime(string path, DateTime time)
+        {
+            var dir = GetDir(path);
+            if (dir == null)
+                throw new DirectoryNotFoundException();
+            dir.WriteTime = time;
+        }
+
         public static bool FileExists(string path)
         {
             return FileSystem.FileExists(path);
@@ -345,6 +440,41 @@ public static partial class FileSystem
             destDir.DeleteFile(destFile);
             destDir.AddEntry(file);
             AccessFile(file);
+        }
+
+        public static string[] GetPaths(string path, string searchPattern, bool includeFiles, bool includeDirs, SearchOption searchOption)
+        {
+            var pathDir = GetDir(path);
+            var paths = new List<string>();
+            if (pathDir == null || !includeDirs && !includeFiles)
+                return paths.ToArray();
+
+            var allEntries = new List<Entry>();
+            if (includeFiles)
+                allEntries.AddRange(pathDir.Children);
+            if (includeDirs)
+                allEntries.Add(pathDir);
+            switch (searchOption)
+            {
+                case SearchOption.TopDirectoryOnly:
+                    break;
+                case SearchOption.AllDirectories:
+                    if (includeFiles)
+                        allEntries.AddRange(pathDir.GetFilesRecursive());
+                    if (includeDirs)
+                        allEntries.AddRange(pathDir.GetDirsRecursive());
+                    break;
+                default:
+                    throw new NotImplementedException($"SearchOption {searchOption} not implemented");
+            }
+
+            var searchPatternRegex = Helper.WildCardToRegular(searchPattern);
+            foreach (var entry in allEntries)
+            {
+                if (Regex.IsMatch(entry.Name, searchPatternRegex))
+                    paths.Add(entry.FullName);
+            }
+            return paths.ToArray();
         }
     }
 }
