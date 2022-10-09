@@ -27,6 +27,7 @@
       - From startup (startup flag)
         - Operating system
         - Date time / seed to start with
+        - Frametime or FPS
       - From save state (state flag with path to save state)
         - Load environment settings from state
     - Name
@@ -80,6 +81,9 @@
         - Uses key `$` for defining / using
         - Defined like `$name_without_space=50`
         - Used like `Mouse($name_without_space, $name_without_space)`
+        - Methods can access variables on main scope
+        - Main scope can't access variables inside scopes
+        - Loops can access variables on main scope or method scope its used on
       - Methods
         - Can be called with `method(arg1, arg2, ...)`
         - Return values can be assigned to a variable `$method_return method(arg1, arg2)`
@@ -98,6 +102,38 @@
         - You can do multiple `;` chains to advance multiple frames
       - Wait
         - `wait(50)` procudes 50 of `;`
+      - Game FPS
+        - `fps(100)` will set game FPS to 100
+        - `frametime(0.01)` will set the FPS to 100, not all unity versions support frametime so rounds down making the FPS an integer
+        - `get_fps() / get_frametime()` returns current fps / frametime
+        - If vsync is enabled, it will prevent the FPS from being changed unless vsync is off
+      - Registering a loop
+        - `register_loop(method_name, initial_arg1, initial_arg2, ...)`
+        - `loop_arg(loop_uid, arg1, arg2, ...)`
+        - `remove_loop(loop_uid)`
+        - Runs the method in a loop along side the main script
+        - Example
+        ```
+        fn bunny_hop() {
+          // presses space when on ground
+        }
+        fn spam_key(key_code) { key(key_code); }
+
+        // registers methods to run 
+        $bhop_register register_loop(bunny_hop)
+        $spam_register register_loop(spam_key, A)
+        $spam_register2 register_loop(spam_key, B)
+
+        // some inputs...
+
+        // change the argument to some registered loop
+        loop_arg($spam_register, C)
+
+        // some inputs...
+
+        // stop a loop
+        remove_loop($spam_register)
+        ```
 ```
 // example movie
 version 1.0.0
@@ -111,3 +147,33 @@ seed 0
 ---
 // some actions here
 ```
+
+- Movie rendering
+  - Movie can call a method to start / stop rendering
+  - `record(path_to_mp4) stop_record()`
+
+- TAS tool installer / uninstaller
+  - Install on unity game
+    - Checks if dir contains an unity game
+    - Checks if correct BepInEx is already installed
+      - If installed, check version
+        - If version correct, check if TAS Plugin and Patcher is installed
+          - If incorrect, install latest plugin and patcher
+        - If version incorrect, error message "BepInEx is already installed with the incorrect version"
+      - If not installed
+        - Install bepinex
+        - Run game once
+        - Exit game
+        - Configure bepinex
+        - Install TAS tool
+  - Uninstall
+    - Checks if dir is unity game
+      - Checks if TAS plugin is installed, remove
+      - If other plugins / patchers exist
+        - If it exists, inform user about existing BepInEx, exit
+      - If no other plugins / patchers exist, remove BepInEx components
+
+- In-game menu
+  - TAS play back
+    - Browse / input path to movie
+    - Run button
