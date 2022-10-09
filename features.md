@@ -33,6 +33,8 @@
     - Name
     - Description
     - Author
+    - End save
+      - Creates a save state at end for using it on another movie
   - User defined movie methods
     - Name (unique)
     - Arguments
@@ -134,6 +136,8 @@
         // stop a loop
         remove_loop($spam_register)
         ```
+      - Save state
+        - `save(file_path)` to save
 ```
 // example movie
 version 1.0.0
@@ -177,3 +181,20 @@ seed 0
   - TAS play back
     - Browse / input path to movie
     - Run button
+
+- Save states
+  - Containing info
+    - Environment settings
+    - Date time
+    - RNG state
+    - File state
+    - Loaded scenes
+    - Loaded game objects
+      - Script states
+    - Static field states
+  - Coroutine problem
+    - If coroutine is running then there might not be a way to "save" that information
+      - If no way to store coroutine states then I have warn the user that coroutines are running
+  - Threading problem
+    - If a thread is running then there might not be a way to "save" that information
+      - If no way to store coroutine states then I have warn the user that other threads are running
