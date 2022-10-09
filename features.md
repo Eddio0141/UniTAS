@@ -8,8 +8,6 @@
 # Non essential features
 - Save states
 - In-game xray
-- TAS movie macros
-- TAS movie helper methods
 - TAS playback slowdown
 - Movie generator (e.g. for bruteforcer implementation)
 
@@ -198,3 +196,25 @@ seed 0
   - Threading problem
     - If a thread is running then there might not be a way to "save" that information
       - If no way to store coroutine states then I have warn the user that other threads are running
+
+- Movie generator
+  - Input script from the user
+  - Start from save state / game start
+  - Script returns
+    - Goals
+    - Constraints
+  - Script is given
+    - Unity variables
+    - All game object information
+  - Outputs a movie when user finishes generation
+
+- TAS playback slowdown
+  - Movie method to slow down playback speed at points in movie
+  - `playback_speed(1)` slows game down to be around realtime
+  - `playback_speed(0)` removes slowdown
+  - `playback_speed(2)` slows game down 2 times
+
+- In-game xray
+  - Movie can enable xray with methods
+  - `xray(true) xray(false)`
+  - TAS menu can access the option
