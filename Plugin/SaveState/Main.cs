@@ -26,7 +26,6 @@ internal static class Main
         // TODO only save this state if unity version has it
         //var cursorVisible = Cursor.visible;
         //var cursorLockState = Cursor.lockState;
-        var saveVersion = Plugin.UnityVersion;
 
         testInstance = UnityEngine.Object.FindObjectOfType(AccessTools.TypeByName("MouseLook"));
         var body = Traverse.Create(testInstance).Field("playerBody");
@@ -35,7 +34,7 @@ internal static class Main
         testy = (float)position.Field("y").GetValue();
         testz = (float)position.Field("z").GetValue();
 
-        Test = new State(/*sceneIndex,*/ time, frameCount, fixedUpdateIndex, /*cursorVisible, cursorLockState,*/ saveVersion);
+        Test = new State(/*sceneIndex,*/ time, frameCount, fixedUpdateIndex/*cursorVisible, cursorLockState,*/);
         Plugin.Log.LogDebug("Saved test state");
     }
 

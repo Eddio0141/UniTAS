@@ -10,17 +10,15 @@ namespace UniTASPlugin;
 [BepInPlugin(GUID, NAME, VERSION)]
 public class Plugin : BaseUnityPlugin
 {
-    internal const string GUID = "UniTASPlugin";
-    internal const string NAME = "UniTAS";
-    internal const string VERSION = "0.1.0";
+    public const string GUID = "UniTASPlugin";
+    public const string NAME = "UniTAS";
+    public const string VERSION = "0.1.0";
 
     internal static BepInEx.Logging.ManualLogSource Log;
 
-    internal static SemanticVersion UnityVersion;
-
     internal static int FixedUpdateIndex { get; private set; } = -1;
 
-    void Awake()
+    private void Awake()
     {
         Log = Logger;
 
@@ -30,9 +28,8 @@ public class Plugin : BaseUnityPlugin
         // init fake file system
         // TODO way of getting device type
         FileSystem.Init(DeviceType.Windows);
-
-        UnityVersion = Helper.GetUnityVersion();
-        Log.LogInfo($"Internally found unity version: {UnityVersion}");
+        
+        Log.LogInfo($"Internally found unity version: {Helper.GetUnityVersion()}");
         Log.LogInfo($"Game product name: {AppInfo.ProductName()}");
         // TODO complete fixing this
         var companyNameProperty = Traverse.Create(typeof(Application)).Property("companyName");
