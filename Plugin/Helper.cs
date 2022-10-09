@@ -14,9 +14,9 @@ namespace UniTASPlugin;
 
 public static class Helper
 {
-    public static SemanticVersion GetUnityVersion()
+    public static string GetUnityVersion()
     {
-        var unityPlayerPath = @".\UnityPlayer.dll";
+        const string unityPlayerPath = @".\UnityPlayer.dll";
         string versionRaw;
         if (File.Exists(unityPlayerPath))
         {
@@ -28,7 +28,7 @@ public static class Helper
         {
             versionRaw = Application.unityVersion;
         }
-        return new SemanticVersion(versionRaw);
+        return versionRaw;
     }
 
     public static bool ValueHasDecimalPoints(float value)
