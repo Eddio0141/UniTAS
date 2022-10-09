@@ -26,6 +26,8 @@
         - Operating system
         - Date time / seed to start with
         - Frametime or FPS
+        - Window resolution
+        - Window focus
       - From save state (state flag with path to save state)
         - Load environment settings from state
     - Name
@@ -136,6 +138,12 @@
         ```
       - Save state
         - `save(file_path)` to save
+      - Window resolution
+        - `resolution(1920, 1080)`
+      - Window focus
+        - `window_focus(true) window_focus(false)`
+      - Window full screen
+        - `window_fullscreen(true) window_fullscreen(false)`
 ```
 // example movie
 version 1.0.0
@@ -218,3 +226,53 @@ seed 0
   - Movie can enable xray with methods
   - `xray(true) xray(false)`
   - TAS menu can access the option
+
+# Notes for myself
+```
+what doesn't exist in modern UnityEngine.Input but does in old
+mainGyroIndex_Internal
+GetRotation
+GetPosition
+
+what doesn't exist in old UnityEngine.Input but does in modern
+GetLastPenContactEvent
+ResetPenEvents
+ClearLastPenContactEvent
+SimulateTouch
+SimulateTouchInternal
+simulateMouseWithTouches
+mouseScrollDelta
+imeCompositionMode
+compositionString
+imeIsSelected
+compositionCursorPos
+touchPressureSupported
+stylusTouchSupported
+touchSupported
+compensateSensors
+location
+compass
+GetGyroInternal
+GetTouch_Injected
+GetLastPenContactEvent_Injected
+GetAccelerationEvent_Injected
+SimulateTouchInternal_Injected
+get_mousePosition_Injected
+get_mouseScrollDelta_Injected
+get_compositionCursorPos_Injected
+set_compositionCursorPos_Injected
+get_acceleration_Injected
+
+what moved to InputUnsafeUtility in modern from old
+GetKeyUpString
+GetKeyString
+GetKeyDownString
+
+what arguments changed from old to modern UnityEngine.Input
+GetKeyInt
+GetKeyUpInt
+GetKeyDownInt
+
+notes from old to new
+isGyroAvailable deprecated, use SystemInfo.supportsGyroscope instead
+```
