@@ -21,6 +21,8 @@
 - TAS movie script structure
   - Comments: `// comment`
   - Movie properties
+    - Movie format version
+      - Semantic
     - Virtual environment
       - From startup (startup flag)
         - Operating system
@@ -144,6 +146,38 @@
         - `window_focus(true) window_focus(false)`
       - Window full screen
         - `window_fullscreen(true) window_fullscreen(false)`
+      - If
+        - if $condition { // stuff }
+        - if $condition { } else { }
+        - if $condition { } else if $condition { } else...
+        - Method that returns a boolean can directly be used on the condition without assigning to variable
+      - Variable types
+        - Once assigned, type of the variable can't be changed
+        - Types:
+          - Int
+          - Float
+          - String
+          - Bool
+          - List of types
+            - Accessed through `$value list_index($list, INDEX)`
+            - Set through `list_set($list, INDEX, VALUE)`
+          - Option type
+            - Wraps another type
+            - State will be either Some or None
+            - Used for some methods that can return "nothing" for example, a helper method that gets a gameobject based on name, but can't find the object
+            - Check if Some or None with `is_some($value)` `is_none($value)`
+            - Get value of some with `$value get_some($value)`
+            - New some instance with `$optional some($value)`
+            - New none instance with `$optional none()`
+      - Errors
+        - No error handling
+        - Any errors like method errors will stop the execution of the movie / not parse and inform the user on error
+      - Scopes
+        - `{}`
+        - Variables inside scopes can't be accessed from the outside
+        - Variables outside can be accessed from within the scopes
+        - Variables on the main scope can be accessed from any scope
+        - Scopes can return values with `return`
 ```
 // example movie
 version 1.0.0
