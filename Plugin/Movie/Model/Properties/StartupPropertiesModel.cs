@@ -4,7 +4,7 @@ using Environment = UniTASPlugin.GameEnvironment.Environment;
 
 namespace UniTASPlugin.Movie.Model.Properties;
 
-public class StartupProperties
+public class StartupPropertiesModel
 {
     public Environment Environment { get; }
     public DateTime StartTime { get; }
