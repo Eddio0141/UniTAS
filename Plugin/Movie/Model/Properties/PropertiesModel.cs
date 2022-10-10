@@ -11,8 +11,8 @@ public class PropertiesModel
     public string UnityVersion { get; }
 
     public MovieStartOption MovieStartOption { get; }
-    public StartupProperties StartupProperties { get; }
-    public SaveStateProperties SaveStateProperties { get; }
+    public StartupPropertiesModel StartupProperties { get; }
+    public SaveStatePropertiesModel SaveStateProperties { get; }
 
     public string EndSavePath { get; }
 }
