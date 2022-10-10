@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace UniTASPlugin.TASMovie;
+namespace UniTASPlugin.Movie;
 
 public class Keys
 {

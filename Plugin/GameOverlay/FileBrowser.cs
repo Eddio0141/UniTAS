@@ -186,11 +186,11 @@ public class FileBrowser
 
         quickAccessWidth = (int)(windowRect.width / 9);
 
-        var homePath = Environment.GetEnvironmentVariable("HOMEPATH");
+        var homePath = System.Environment.GetEnvironmentVariable("HOMEPATH");
 
         var quickAccessPathsBuilder = new List<string>() {
-            Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
-            Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+            System.Environment.GetFolderPath(System.Environment.SpecialFolder.Desktop),
+            System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments),
             homePath,
             Helper.GameRootDir(),
         };

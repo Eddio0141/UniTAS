@@ -17,7 +17,7 @@ static class Directory
     static class Helper
     {
         static readonly Traverse pathValidateTraverse = Traverse.Create(typeof(PathOrig)).Method("Validate", new Type[] { typeof(string) });
-        static readonly Traverse environmentIsRunningOnWindowsTraverse = Traverse.Create(typeof(Environment)).Property("IsRunningOnWindows");
+        static readonly Traverse environmentIsRunningOnWindowsTraverse = Traverse.Create(typeof(System.Environment)).Property("IsRunningOnWindows");
 
         public static void PathValidate(string path)
         {

@@ -4,31 +4,32 @@ using UniTASPlugin.FakeGameState.GameFileSystem;
 using UniTASPlugin.GameOverlay;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
+// ReSharper disable UnusedMember.Local
 
 namespace UniTASPlugin;
 
-[BepInPlugin(GUID, NAME, VERSION)]
+[BepInPlugin(Guid, Name, Version)]
 public class Plugin : BaseUnityPlugin
 {
-    public const string GUID = "UniTASPlugin";
-    public const string NAME = "UniTAS";
-    public const string VERSION = "0.1.0";
+    public const string Guid = "UniTASPlugin";
+    public const string Name = "UniTAS";
+    public const string Version = "0.1.0";
 
-    internal static BepInEx.Logging.ManualLogSource Log;
+    public static BepInEx.Logging.ManualLogSource Log;
 
-    internal static int FixedUpdateIndex { get; private set; } = -1;
+    public static int FixedUpdateIndex { get; private set; } = -1;
 
     private void Awake()
     {
         Log = Logger;
 
-        Harmony harmony = new($"{NAME}HarmonyPatch");
+        Harmony harmony = new($"{Name}HarmonyPatch");
         harmony.PatchAll();
 
         // init fake file system
         // TODO way of getting device type
         FileSystem.Init(DeviceType.Windows);
-        
+
         Log.LogInfo($"Internally found unity version: {Helper.GetUnityVersion()}");
         Log.LogInfo($"Game product name: {AppInfo.ProductName()}");
         // TODO complete fixing this
@@ -48,11 +49,11 @@ public class Plugin : BaseUnityPlugin
         Overlay.Init();
 
         Log.LogInfo($"System time: {System.DateTime.Now}");
-        Log.LogInfo($"Plugin {NAME} is loaded!");
+        Log.LogInfo($"Plugin {Name} is loaded!");
     }
 
     // unity execution order is Awake() -> FixedUpdate() -> Update()
-    void Update()
+    private void Update()
     {
         Overlay.Update();
         // TODO if possible, put this at the first call of Update
@@ -61,7 +62,7 @@ public class Plugin : BaseUnityPlugin
         TAS.Update();
     }
 
-    void FixedUpdate()
+    private void FixedUpdate()
     {
         // TODO if possible, put this at the first call of FixedUpdate
         FixedUpdateIndex = -1;
@@ -70,12 +71,16 @@ public class Plugin : BaseUnityPlugin
         GameRestart.FixedUpdate();
     }
 
-    void LateUpdate()
+#pragma warning disable IDE0051
+    private void LateUpdate()
+#pragma warning restore IDE0051
     {
         GameTracker.LateUpdate();
     }
 
-    void OnGUI()
+#pragma warning disable IDE0051
+    private void OnGUI()
+#pragma warning restore IDE0051
     {
         Overlay.OnGUI();
     }

@@ -42,6 +42,10 @@
     </Reference>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Movie\Model\Main\" />
+  </ItemGroup>
+
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -file &quot;$(ProjectDir)postbuild.ps1&quot; $(TargetDir)$(ProjectName).dll" ContinueOnError="true" />
   </Target>

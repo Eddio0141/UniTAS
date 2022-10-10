@@ -1,7 +1,6 @@
 ﻿using System.Linq;
 using UniTASPlugin.GameOverlay.GameConsole;
 using UniTASPlugin.ReversePatches.__System.__IO;
-using UniTASPlugin.TASMovie;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
 
@@ -129,7 +128,7 @@ internal static partial class Overlay
             return;
 
         GUI.DrawTexture(new Rect(MENU_X, MENU_Y, MENU_SIZE_X, MENU_SIZE_Y), BGSurround);
-        GUI.Box(new Rect(MENU_X, MENU_Y, MENU_SIZE_X, MENU_SIZE_Y), $"{Plugin.NAME} Menu");
+        GUI.Box(new Rect(MENU_X, MENU_Y, MENU_SIZE_X, MENU_SIZE_Y), $"{Plugin.Name} Menu");
         GUILayout.BeginArea(new Rect(MENU_X + EDGE_SPACING, MENU_Y + EDGE_SPACING + 30, MENU_SIZE_X - EDGE_SPACING * 2, MENU_SIZE_Y - EDGE_SPACING * 2 - 30));
 
         tabIndex = GUILayout.Toolbar(tabIndex, tabs);
@@ -145,7 +144,7 @@ internal static partial class Overlay
                         if (File.Exists(filePath))
                         {
                             var text = File.ReadAllText(filePath);
-                            var movie = new Movie(Path.GetFileName(filePath), text, out var err, out var warnings);
+                            var movie = new Movie.Movie(Path.GetFileName(filePath), text, out var err, out var warnings);
 
                             if (err != "")
                             {
@@ -180,7 +179,7 @@ internal static partial class Overlay
                             text = File.ReadAllText("C:\\Users\\Yuki\\Documents\\test.uti");
                         else if (File.Exists("C:\\Program Files (x86)\\Steam\\steamapps\\common\\It Steals\\test.uti"))
                             text = File.ReadAllText("C:\\Program Files (x86)\\Steam\\steamapps\\common\\It Steals\\test.uti");
-                        var movie = new Movie("test.uti", text, out var err, out var warnings);
+                        var movie = new Movie.Movie("test.uti", text, out var err, out var warnings);
 
                         if (err != "")
                         {

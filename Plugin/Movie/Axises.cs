@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace UniTASPlugin.TASMovie;
+namespace UniTASPlugin.Movie;
 
 public class Axises
 {
