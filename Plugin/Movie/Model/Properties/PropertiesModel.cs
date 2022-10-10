@@ -1,0 +1,18 @@
+﻿namespace UniTASPlugin.Movie.Model.Properties;
+
+public class PropertiesModel
+{
+    public string Name { get; }
+    public string Description { get; }
+    public string Author { get; }
+
+    public string GameName { get; }
+    public string GameVersion { get; }
+    public string UnityVersion { get; }
+
+    public MovieStartOption MovieStartOption { get; }
+    public StartupProperties StartupProperties { get; }
+    public SaveStateProperties SaveStateProperties { get; }
+
+    public string EndSavePath { get; }
+}

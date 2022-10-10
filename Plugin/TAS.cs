@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using UniTASPlugin.FakeGameState.InputLegacy;
-using UniTASPlugin.TASMovie;
+using UniTASPlugin.Movie;
+using UniTASPlugin.Movie.Model.Properties;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
 
@@ -29,7 +30,7 @@ public static class TAS
         }
     }
     public static bool RunInitOrStopping { get; private set; }
-    public static Movie CurrentMovie { get; private set; }
+    public static PropertiesModel CurrentPropertiesModel { get; private set; }
     public static ulong FrameCountMovie { get; private set; }
     static int currentFramebulkIndex;
     static int currentFramebulkFrameIndex;
@@ -64,7 +65,7 @@ public static class TAS
         if (!CheckCurrentMovieEnd())
             return;
 
-        var fb = CurrentMovie.Framebulks[currentFramebulkIndex];
+        var fb = CurrentPropertiesModel.Framebulks[currentFramebulkIndex];
         if (currentFramebulkFrameIndex >= fb.FrameCount)
         {
             currentFramebulkIndex++;
@@ -72,7 +73,7 @@ public static class TAS
                 return;
 
             currentFramebulkFrameIndex = 0;
-            fb = CurrentMovie.Framebulks[currentFramebulkIndex];
+            fb = CurrentPropertiesModel.Framebulks[currentFramebulkIndex];
         }
 
         TimeWrap.captureFrametime = fb.Frametime;
@@ -83,7 +84,7 @@ public static class TAS
 
     static bool CheckCurrentMovieEnd()
     {
-        if (currentFramebulkIndex >= CurrentMovie.Framebulks.Count)
+        if (currentFramebulkIndex >= CurrentPropertiesModel.Framebulks.Count)
         {
             Running = false;
 
@@ -131,19 +132,19 @@ public static class TAS
         }
     }
 
-    public static void RunMovie(Movie movie)
+    public static void RunMovie(PropertiesModel propertiesModel)
     {
         PreparingRun = true;
         FrameCountMovie = 0;
         currentFramebulkIndex = 0;
         currentFramebulkFrameIndex = 1;
 
-        CurrentMovie = movie;
+        CurrentPropertiesModel = propertiesModel;
 
         // force framerate to run fixed for Update and FixedUpdate sync
-        if (CurrentMovie.Framebulks.Count > 0)
+        if (CurrentPropertiesModel.Framebulks.Count > 0)
         {
-            var firstFb = CurrentMovie.Framebulks[0];
+            var firstFb = CurrentPropertiesModel.Framebulks[0];
 
             FakeGameState.InputLegacy.Main.Clear();
             TimeWrap.captureFrametime = firstFb.Frametime;
@@ -165,11 +166,11 @@ public static class TAS
         PreparingRun = false;
         Running = true;
 
-        FakeGameState.SystemInfo.DeviceType = CurrentMovie.DeviceType;
+        FakeGameState.SystemInfo.DeviceType = CurrentPropertiesModel.DeviceType;
         // TODO fullscreen
-        Screen.SetResolution(CurrentMovie.Width, CurrentMovie.Height, false, 60);
+        Screen.SetResolution(CurrentPropertiesModel.Width, CurrentPropertiesModel.Height, false, 60);
 
-        GameRestart.SoftRestart(CurrentMovie.Time);
-        Plugin.Log.LogInfo($"Movie start: {CurrentMovie}");
+        GameRestart.SoftRestart(CurrentPropertiesModel.Time);
+        Plugin.Log.LogInfo($"Movie start: {CurrentPropertiesModel}");
     }
 }
