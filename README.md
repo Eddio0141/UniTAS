@@ -1,7 +1,9 @@
 # UniTAS
 A tool that lets you TAS unity games hopefully
 
-# <span style="color:red">!!!The tool doesn't bypass anti cheat or anything like that, USE AT YOUR OWN RISK!!!</span>
+# !!!The tool doesn't bypass anti cheat or anything related, USE AT YOUR OWN RISK!!!
+
+# The code is being refactored: [branch](https://github.com/Eddio0141/UniTAS/tree/Eddio0141/issue62), [issue](https://github.com/Eddio0141/UniTAS/issues/62).
 
 # Stuff you might want to know
 - The tool is still in a very early stage
@@ -9,9 +11,6 @@ A tool that lets you TAS unity games hopefully
 - It only does very basic stuff, mainly that being running a TAS consistently
 - Currently no convenient tool that installs this TAS tool to some unity game
 - Only tested in windows
-
-# TAS tool features
-- TAS play back
 
 # VR Support
 I haven't planned for VR support currently
