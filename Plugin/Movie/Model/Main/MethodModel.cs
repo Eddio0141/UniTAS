@@ -2,14 +2,10 @@
 
 namespace UniTASPlugin.Movie.Model.Main;
 
-public class VariableModel<TRet> : IReturnable<TRet>
+public class MethodModel<TArg, TRet> : ScopeModel<TRet>
+where TArg : IValueType
 where TRet : IValueType
 {
     public string Name { get; }
-    private readonly TRet _value;
-
-    public TRet GetReturn()
-    {
-        return _value;
-    }
+    public VariableModel<TArg>[] Arguments { get; }
 }
