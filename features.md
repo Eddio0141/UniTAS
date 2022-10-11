@@ -77,7 +77,7 @@
       - Usable input methods
         - `mouse(X_AXIS, (optional Y_AXIS))`
         - `key(KEYCODE, KEYCODE, KEYCODE...)`
-    - Built in stuff
+    - Scripting
       - Loop
         - `loop COUNT { // actions to loop }`
         - Needs matching `{}` brackets
@@ -88,9 +88,19 @@
         - Methods can access variables on main scope
         - Main scope can't access variables inside scopes
         - Loops can access variables on main scope or method scope its used on
+        - Can copy variables with `$variable_copy $variable_source`
+        - Structure
+          - Technically same as methods, as they return values but take no arguments
+          - Assignment to a variable is an action
       - Methods
         - Can be called with `method(arg1, arg2, ...)`
         - Return values can be assigned to a variable `$method_return method(arg1, arg2)`
+        - Structure:
+          - Name
+          - Argument values (new variables)
+          - Return value
+          - Scope
+          - Calling a method is an action
       - Action merge / separator
         - Those are the same:
 
@@ -169,6 +179,12 @@
             - Get value of some with `$value get_some($value)`
             - New some instance with `$optional some($value)`
             - New none instance with `$optional none()`
+        - Tuple:
+          - Can return multiple variables with different types with `return ($value, $value_with_different_time)`
+          - Assign to multiple variables with `$value $value2 some_method_with_tuple_return()`
+          - Doing `$value some_method_with_tuple_return()` for a return of multiple tuples will only retrieve the first tuple
+          - Structure
+            - Variable <- Variable (Assignable) <- Assignable, assignable returns a tuple type
       - Errors
         - No error handling
         - Any errors like method errors will stop the execution of the movie / not parse and inform the user on error
@@ -178,6 +194,13 @@
         - Variables outside can be accessed from within the scopes
         - Variables on the main scope can be accessed from any scope
         - Scopes can return values with `return`
+        - Structure
+          - Holds normal "things":
+            - Method calls
+            - Variables
+            - Built in functionalities (if statements, method defining, loops)
+          - Holds unique "things":
+            - Return keyword
 ```
 // example movie
 version 1.0.0
