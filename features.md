@@ -89,9 +89,13 @@
         - Main scope can't access variables inside scopes
         - Loops can access variables on main scope or method scope its used on
         - Can copy variables with `$variable_copy $variable_source`
-        - Structure
-          - Technically same as methods, as they return values but take no arguments
-          - Assignment to a variable is an action
+        - Related opcodes
+          - NewVariable NAME INITIAL_VALUE
+          - SetVariableValue NAME VALUE
+      - Const
+        - Anything hardcoded in the script like $value=5
+        - Related opcodes
+          - SetRegConst VALUE
       - Methods
         - Can be called with `method(arg1, arg2, ...)`
         - Return values can be assigned to a variable `$method_return method(arg1, arg2)`
