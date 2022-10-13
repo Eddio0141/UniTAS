@@ -89,22 +89,11 @@
         - Main scope can't access variables inside scopes
         - Loops can access variables on main scope or method scope its used on
         - Can copy variables with `$variable_copy $variable_source`
-        - Related opcodes
-          - NewVariable NAME INITIAL_VALUE
-          - SetVariableValue NAME VALUE
       - Const
         - Anything hardcoded in the script like $value=5
-        - Related opcodes
-          - SetRegConst VALUE
       - Methods
         - Can be called with `method(arg1, arg2, ...)`
         - Return values can be assigned to a variable `$method_return method(arg1, arg2)`
-        - Structure:
-          - Name
-          - Argument values (new variables)
-          - Return value
-          - Scope
-          - Calling a method is an action
       - Action merge / separator
         - Those are the same:
 
@@ -187,8 +176,6 @@
           - Can return multiple variables with different types with `return ($value, $value_with_different_time)`
           - Assign to multiple variables with `$value $value2 some_method_with_tuple_return()`
           - Doing `$value some_method_with_tuple_return()` for a return of multiple tuples will only retrieve the first tuple
-          - Structure
-            - Variable <- Variable (Assignable) <- Assignable, assignable returns a tuple type
       - Errors
         - No error handling
         - Any errors like method errors will stop the execution of the movie / not parse and inform the user on error
@@ -197,14 +184,142 @@
         - Variables inside scopes can't be accessed from the outside
         - Variables outside can be accessed from within the scopes
         - Variables on the main scope can be accessed from any scope
-        - Scopes can return values with `return`
-        - Structure
-          - Holds normal "things":
-            - Method calls
-            - Variables
-            - Built in functionalities (if statements, method defining, loops)
-          - Holds unique "things":
-            - Return keyword
+      - Low level stuff
+        - Registers
+          - Holds any amount of values
+          - Tuple and lists will still only take 1 index to store it
+          - temp
+          - temp2
+          - arg
+          - ret
+            - Return value
+        - Stack
+          - PushStack temp
+            - Pushes temp register and clears it
+          - PopStack temp
+            - Pops temp register after clearing it
+        - Method defining
+          - Compiler will make a jump location for the engine to use
+        - Method call
+          - GotoMethod METHOD_NAME
+        - Jump
+          - Jump Offset
+        - Comparison
+          - Those compare all the register index values with the other
+          - JumpIfEq REGISTER REGISTER2 JUMP_OFFSET
+            - REGISTER == REGISTER2
+          - JumpIfNEq REGISTER REGISTER2 JUMP_OFFSET
+            - REGISTER != REGISTER2
+          - JumpIfLT REGISTER REGISTER2 JUMP_OFFSET
+            - REGISTER < REGISTER2
+          - JumpIfGT REGISTER REGISTER2 JUMP_OFFSET
+            - REGISTER > REGISTER2
+          - JumpIfLTEq REGISTER REGISTER2 JUMP_OFFSET
+            - REGISTER <= REGISTER2
+          - JumpIfGTEq REGISTER REGISTER2 JUMP_OFFSET
+            - REGISTER >= REGISTER2
+        - Maths
+          - Add RESULT_REGISTER REGISTER REGISTER2
+          - Sub RESULT_REGISTER REGISTER REGISTER2
+          - Mult RESULT_REGISTER REGISTER REGISTER2
+          - Div RESULT_REGISTER REGISTER REGISTER2
+          - Mod RESULT_REGISTER REGISTER REGISTER2
+        - Logic
+          - And RESULT_REGISTER REGISTER REGISTER2
+          - Or RESULT_REGISTER REGISTER REGISTER2
+          - Not RESULT_REGISTER REGISTER REGISTER2
+          - Xor RESULT_REGISTER REGISTER REGISTER2
+        - Scopes
+          - EnterScope
+          - ExitScope
+```
+$value = 20
+$value2 = $value
+$value = 40
+$value3 = (50, 10, 20, "something")
+fn method(arg1, arg2) {
+    if true && false {
+        keyboard(W) | keyboard(A)
+        ;;;
+    }
+    if $arg1 {
+    } else {
+    }
+
+    fn method2() {}
+
+    return (arg + arg2, 50, "", [0.0, 1.0, 2.0, 3.1 * 50.0])
+}
+$value4 = (0, 0, "", [])
+loop 10 {
+    $value4 = method($value, 10)
+}
+loop 2 {
+    break
+}
+
+// ASM
+
+// method
+
+// main
+ClearRegister temp
+PushConstToRegister temp 20
+NewVariable value temp
+
+ClearRegister temp
+PushVariableToRegister temp value
+NewVariable value2 temp
+
+ClearRegister temp
+PushConstToRegister temp 40
+SetVariable value temp
+
+ClearRegister temp
+PushConstToRegister temp (50, 10, 20, "something")
+NewVariable value3 temp
+
+ClearRegister temp
+PushConstToRegister temp (0, 0, "", [])
+NewVariable value4 temp
+
+ClearRegister temp
+PushConstToRegister temp 10
+PushStack temp
+EnterScope
+
+ClearRegister arg
+PushVariableToRegister arg value
+PushConstToRegister arg 10
+GotoMethod method
+SetVariable value4 ret
+
+PopStack temp
+ClearRegister temp2
+PushConstToRegister temp2 1
+Sub temp temp temp2
+ClearRegister temp2
+PushConstToRegister temp2 0
+JumpIfGt temp temp2 -11 // jump to start of the inside scope
+ExitScope
+
+ClearRegister temp
+PushConstToRegister temp 2
+PushStack temp
+EnterScope
+
+PopStack temp
+Jump 7 // aim towards the matching ExitScope
+
+PopStack temp
+ClearRegister temp2
+PushConstToRegister temp2 1
+Sub temp temp temp2
+ClearRegister temp2
+PushConstToRegister temp2 0
+JumpIfGt temp temp2 -7
+ExitScope
+```
 ```
 // example movie
 version 1.0.0
