@@ -275,6 +275,42 @@
         - TODO Solve issue of running out of registers by creating a nested list
           - Solution involves stacks but i cba to think rn
 ```
+// OPCODES to implement
+PushArg
+PopArg
+GotoMethod
+Return
+NewVariable
+SetVariable
+ConstToRegister
+And
+Or
+Not
+Xor
+Add
+Sub
+Mult
+Div
+Mod
+Jump
+JumpIfEq
+JumpIfNEq
+JumpIfLT
+JumpIfGT
+JumpIfLTEq
+JumpIfGTEq
+JumpIfTrue
+JumpIfFalse
+FrameAdvance
+VarToRegister
+PushStack
+PopStack
+EnterScope
+ExitScope
+PushTuple
+PushList
+```
+```
 $value = 20
 $value2 = $value
 $value = 40
