@@ -1,4 +1,4 @@
-﻿namespace UniTASPlugin.Movie.Model.ScriptEngineLowLevel;
+﻿namespace UniTASPlugin.Movie.Model.ScriptEngineLowLevel.OpCodes.Method;
 
 public class PushArgOpCode : OpCodeBase
 {
