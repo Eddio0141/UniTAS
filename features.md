@@ -186,22 +186,36 @@
         - Variables on the main scope can be accessed from any scope
       - Low level stuff
         - Registers
-          - Holds any amount of values
-          - Tuple and lists will still only take 1 index to store it
-          - temp
-          - temp2
-          - arg
-          - ret
-            - Return value
+          - Holds a value
+          - Tuples can be extended / created with PushTuple REGISTER_DEST REGISTER_SOURCE
+          - List can be extended / created with PushList REGISTER_DEST REGISTER_SOURCE
+          - Types
+            - temp
+            - temp2
+            - temp3
+            - temp4
+            - temp5
+            - ret
+              - Return value
         - Stack
           - PushStack temp
-            - Pushes temp register and clears it
+            - Pushes temp register by copying
           - PopStack temp
             - Pops temp register after clearing it
         - Method defining
-          - Compiler will make a jump location for the engine to use
+          - Defined method will be store in a different "section" of the engine, which can't be reached with Jump
         - Method call
           - GotoMethod METHOD_NAME
+            - Engine will store stack of return indexes and what section
+            - Engine will automatically know it has entered a scope and when it exits it
+          - Registers won't be cleared or altered in any way by the engine through method jumps
+          - Arguments
+            - PushArg temp
+              - Pushes register to the argument stack
+            - PopArg temp
+              - Pops argument stack to register
+          - Returning to call origin
+            - Return
         - Jump
           - Jump Offset
         - Comparison
@@ -218,6 +232,8 @@
             - REGISTER <= REGISTER2
           - JumpIfGTEq REGISTER REGISTER2 JUMP_OFFSET
             - REGISTER >= REGISTER2
+          - JumpIfTrue REGISTER JUMP_OFFSET
+          - JumpIfFalse REGISTER JUMP_OFFSET
         - Maths
           - Add RESULT_REGISTER REGISTER REGISTER2
           - Sub RESULT_REGISTER REGISTER REGISTER2
@@ -232,6 +248,32 @@
         - Scopes
           - EnterScope
           - ExitScope
+        - Variables
+          - NewVariable NAME REGISTER
+          - SetVariable NAME REGISTER
+        - Loops
+          - Structured like so
+            ```
+            // loop initialize
+            ConstToRegister temp 10 // loop count
+            PushStack temp
+            EnterScope
+            
+            // inside stuff
+
+            PopStack temp
+            ConstToRegister temp2 1
+            Sub temp temp temp2
+            PushStack temp
+            ConstToRegister temp2 0
+            JumpIfGt temp temp2 -6 // jump to start of the inside stuff
+            ExitScope // if break is called, will jump to this line
+            PopStack temp
+            ```
+        - Advance movie by a frame
+          - FrameAdvance
+        - TODO Solve issue of running out of registers by creating a nested list
+          - Solution involves stacks but i cba to think rn
 ```
 $value = 20
 $value2 = $value
@@ -243,10 +285,10 @@ fn method(arg1, arg2) {
         ;;;
     }
     if $arg1 {
+      echo("test")
     } else {
+      ;
     }
-
-    fn method2() {}
 
     return (arg + arg2, 50, "", [0.0, 1.0, 2.0, 3.1 * 50.0])
 }
@@ -258,67 +300,109 @@ loop 2 {
     break
 }
 
-// ASM
+// ====================== ASM ============================
 
-// method
+// method define
+PopArg temp
+NewVariable arg2 temp // right to left
+PopArg temp
+NewVariable arg1 temp
+
+ConstToRegister temp true
+ConstToRegister temp2 false
+And temp temp temp2
+JumpIfTrue temp 10 // jump to after if statement
+
+ConstToRegister temp W
+PushArg temp
+GotoMethod Keyboard
+
+ConstToRegister temp A
+PushArg temp
+GotoMethod Keyboard
+
+FrameAdvance
+FrameAdvance
+FrameAdvance
+
+VarToRegister arg1 temp
+JumpIfFalse temp 4 // goes to else statement
+
+ConstToRegister temp "test"
+GotoMethod echo
+Jump 2 // goes after else statement
+
+FrameAdvance
+
+VarToRegister arg temp
+VarToRegister arg2 temp2
+Add ret temp temp2
+ConstToRegister temp 50
+PushTuple ret temp
+ConstToRegister temp ""
+PushTuple ret temp
+ConstToRegister temp 0.0
+ConstToRegister temp2 1.0
+PushList temp temp2
+ConstToRegister temp2 2.0
+PushList temp temp2
+ConstToRegister temp2 3.1
+ConstToRegister temp3 50.0
+Mul temp2 temp2 temp3
+PushList temp temp2
+PushTuple ret temp
+Return
 
 // main
-ClearRegister temp
-PushConstToRegister temp 20
+ConstToRegister temp 20
 NewVariable value temp
 
-ClearRegister temp
-PushVariableToRegister temp value
+VarToRegister temp value
 NewVariable value2 temp
 
-ClearRegister temp
-PushConstToRegister temp 40
+ConstToRegister temp 40
 SetVariable value temp
 
-ClearRegister temp
-PushConstToRegister temp (50, 10, 20, "something")
+ConstToRegister temp (50, 10, 20, "something")
 NewVariable value3 temp
 
-ClearRegister temp
-PushConstToRegister temp (0, 0, "", [])
+ConstToRegister temp (0, 0, "", [])
 NewVariable value4 temp
 
-ClearRegister temp
-PushConstToRegister temp 10
+ConstToRegister temp 10
 PushStack temp
 EnterScope
 
-ClearRegister arg
-PushVariableToRegister arg value
-PushConstToRegister arg 10
+VarToRegister temp value
+PushArg temp
+ConstToRegister temp 10
+PushArg temp
 GotoMethod method
 SetVariable value4 ret
 
 PopStack temp
-ClearRegister temp2
-PushConstToRegister temp2 1
+ConstToRegister temp2 1
 Sub temp temp temp2
-ClearRegister temp2
-PushConstToRegister temp2 0
-JumpIfGt temp temp2 -11 // jump to start of the inside scope
+PushStack temp
+ConstToRegister temp2 0
+JumpIfGt temp temp2 -11
 ExitScope
+PopStack temp
 
-ClearRegister temp
-PushConstToRegister temp 2
+ConstToRegister temp 2
 PushStack temp
 EnterScope
 
-PopStack temp
 Jump 7 // aim towards the matching ExitScope
 
 PopStack temp
-ClearRegister temp2
-PushConstToRegister temp2 1
+ConstToRegister temp2 1
 Sub temp temp temp2
-ClearRegister temp2
-PushConstToRegister temp2 0
-JumpIfGt temp temp2 -7
+PushStack temp
+ConstToRegister temp2 0
+JumpIfGt temp temp2 -6
 ExitScope
+PopStack temp
 ```
 ```
 // example movie
