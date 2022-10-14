@@ -1,5 +1,5 @@
 ﻿namespace UniTASPlugin.Movie.Model.ScriptEngineLowLevel.ValueTypes;
 
-public interface IValueType
+public abstract class ValueType
 {
 }
