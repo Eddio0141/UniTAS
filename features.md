@@ -276,10 +276,6 @@
           - Solution involves stacks but i cba to think rn
 ```
 // OPCODES to implement
-PushArg
-PopArg
-GotoMethod
-Return
 NewVariable
 SetVariable
 ConstToRegister
