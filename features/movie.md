@@ -254,6 +254,45 @@ fn do_some_actions(arg1, arg2) {
         - FrameAdvance
     - TODO Solve issue of running out of registers by creating a nested list
         - Solution involves stacks but i cba to think rn
+# Tokens
+- $
+  - Variable
+    - Name
+- =, +=, -=, *=, /=, %=
+  - Assignment
+    - Type of assignment
+- -, +, *, /, %
+  - MathOp
+    - Type of operation
+- ()
+  - RoundBracket
+    - Open or closed
+- {}
+  - CurlyBracket
+    - Open or closed
+- []
+  - SquareBracket
+    - Open or closed
+- ,
+  - Comma
+- Integers
+  - Int
+- Float
+  - Float
+- "
+  - DoubleQuotes
+- \char
+  - EscapeChar
+    - Char
+- ;
+  - FrameAdvance
+- |
+  - SeparateAction
+- && || == != ! > < >= <=
+  - Logic
+    - Logic type
+- anything else
+  - Identity
 ```
 $value = 20
 $value2 = $value
