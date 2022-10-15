@@ -43,8 +43,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Movie\Lexer\" />
-    <Folder Include="Movie\Parser\" />
+    <Folder Include="Movie\Script\Lexer\" />
+    <Folder Include="Movie\Script\Parser\" />
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
