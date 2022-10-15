@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UniTASPlugin.FakeGameState.InputLegacy;
 using UniTASPlugin.Movie;
-using UniTASPlugin.Movie.Model.Properties;
+using UniTASPlugin.Movie.Properties;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
 
