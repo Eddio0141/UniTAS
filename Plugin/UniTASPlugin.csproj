@@ -29,6 +29,7 @@
   <ItemGroup>
     <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
     <PackageReference Include="BepInEx.Core" Version="5.*" />
+    <PackageReference Include="Sprache" Version="2.3.1" />
     <PackageReference Include="UnityEngine.Modules" Version="3.4.0" IncludeAssets="compile" />
   </ItemGroup>
 
@@ -40,11 +41,6 @@
     <Reference Include="PresentationFramework">
       <HintPath>..\..\..\..\..\..\Program Files\Reference Assemblies\Microsoft\Framework\v3.0\PresentationFramework.dll</HintPath>
     </Reference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Movie\Script\Lexer\" />
-    <Folder Include="Movie\Script\LowLevelParser\" />
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
