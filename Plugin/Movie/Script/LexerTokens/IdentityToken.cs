@@ -1,6 +1,6 @@
 ﻿namespace UniTASPlugin.Movie.Script.LexerTokens;
 
-public class Identity : TokenBase
+public class IdentityToken : TokenBase
 {
     public string Value { get; }
 }
