@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using UniTASPlugin.Movie.Script.LowLevel.OpCodes;
+using UniTASPlugin.MovieEngine.OpCodes;
 
 namespace UniTASPlugin.Movie.Script;
 
