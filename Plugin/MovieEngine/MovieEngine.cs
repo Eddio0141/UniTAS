@@ -1,11 +1,13 @@
-﻿namespace UniTASPlugin.MovieEngine;
+﻿using System;
+
+namespace UniTASPlugin.MovieEngine;
 
 public class MovieEngine
 {
-    private Register _temp1Register;
-    private Register _temp2Register;
-    private Register _temp3Register;
-    private Register _temp4Register;
-    private Register _temp5Register;
-    private Register _retRegister;
+    private Register[] _registers;
+
+    public MovieEngine()
+    {
+        _registers = new Register[Enum.GetNames(typeof(RegisterType)).Length];
+    }
 }
