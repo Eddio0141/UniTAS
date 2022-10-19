@@ -143,7 +143,7 @@ class GetKeyInt
     {
         if (TAS.Running)
         {
-            __result = Keyboard.Keys.Contains((KeyCode)key);
+            __result = KeyboardState.Keys.Contains((KeyCode)key);
             return false;
         }
         return true;
@@ -206,7 +206,7 @@ class GetKeyUpInt
     {
         if (TAS.Running)
         {
-            __result = Keyboard.KeysUp.Contains((KeyCode)key);
+            __result = KeyboardState.KeysUp.Contains((KeyCode)key);
             return false;
         }
         return true;
@@ -249,7 +249,7 @@ class GetKeyDownInt
     {
         if (TAS.Running)
         {
-            __result = Keyboard.KeysDown.Contains((KeyCode)key);
+            __result = KeyboardState.KeysDown.Contains((KeyCode)key);
             return false;
         }
         return true;
@@ -270,7 +270,7 @@ class GetAxis
     {
         if (TAS.Running)
         {
-            if (Axis.Values.TryGetValue(axisName, out var value))
+            if (AxisState.Values.TryGetValue(axisName, out var value))
             {
                 __result = value;
             }
@@ -292,7 +292,7 @@ class GetAxisRaw
     {
         if (TAS.Running)
         {
-            if (Axis.Values.TryGetValue(axisName, out var value))
+            if (AxisState.Values.TryGetValue(axisName, out var value))
             {
                 // TODO whats diff between Raw and normal
                 __result = value;
@@ -450,7 +450,7 @@ class ResetInputAxes
         // TODO also make sure movie overwrites input on the same frame after reset
         if (TAS.Running)
         {
-            Axis.Values.Clear();
+            AxisState.Values.Clear();
             return false;
         }
         return true;
@@ -489,7 +489,7 @@ class anyKeyGetter
     {
         if (TAS.Running)
         {
-            __result = Keyboard.Keys.Count > 0 || MouseState.LeftClick || MouseState.RightClick || MouseState.MiddleClick;
+            __result = KeyboardState.Keys.Count > 0 || MouseState.LeftClick || MouseState.RightClick || MouseState.MiddleClick;
             return false;
         }
         return true;
@@ -509,7 +509,7 @@ class anyKeyDownGetter
         // TODO make sure this gets called before Update calls
         if (TAS.Running)
         {
-            __result = Keyboard.KeysDown.Count > 0 || MouseState.LeftClickDown || MouseState.RightClickDown || MouseState.MiddleClickDown;
+            __result = KeyboardState.KeysDown.Count > 0 || MouseState.LeftClickDown || MouseState.RightClickDown || MouseState.MiddleClickDown;
             return false;
         }
         return true;

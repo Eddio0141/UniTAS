@@ -44,7 +44,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="MovieEngine\Exceptions\" />
+    <Folder Include="UpdateHelper\" />
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">

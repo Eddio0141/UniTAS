@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
-using UniTASPlugin.FakeGameState.InputLegacy;
 using UniTASPlugin.GameEnvironment;
-using UniTASPlugin.Movie;
-using UniTASPlugin.Movie.Properties;
+using UniTASPlugin.Movie.Models.Properties;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
 
@@ -105,7 +103,7 @@ public static class TAS
         MouseState.MiddleClick = fb.Mouse.Middle;
 
         List<string> axisMoveSetDefault = new();
-        foreach (var pair in Axis.Values)
+        foreach (var pair in AxisState.Values)
         {
             var key = pair.Key;
             if (!fb.Axises.AxisMove.ContainsKey(key))
@@ -113,22 +111,22 @@ public static class TAS
         }
         foreach (var key in axisMoveSetDefault)
         {
-            if (Axis.Values.ContainsKey(key))
-                Axis.Values[key] = default;
+            if (AxisState.Values.ContainsKey(key))
+                AxisState.Values[key] = default;
             else
-                Axis.Values.Add(key, default);
+                AxisState.Values.Add(key, default);
         }
         foreach (var axisValue in fb.Axises.AxisMove)
         {
             var axis = axisValue.Key;
             var value = axisValue.Value;
-            if (Axis.Values.ContainsKey(axis))
+            if (AxisState.Values.ContainsKey(axis))
             {
-                Axis.Values[axis] = value;
+                AxisState.Values[axis] = value;
             }
             else
             {
-                Axis.Values.Add(axis, value);
+                AxisState.Values.Add(axis, value);
             }
         }
     }
