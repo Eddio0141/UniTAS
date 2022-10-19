@@ -1,5 +1,6 @@
 ﻿using System;
 using UniTASPlugin.GameEnvironment;
+using UniTASPlugin.GameEnvironment.InnerState;
 using OsEnvironment = UniTASPlugin.GameEnvironment.OsEnvironment;
 
 namespace UniTASPlugin.Movie.Models.Properties;

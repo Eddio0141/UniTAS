@@ -2,7 +2,7 @@
 using UniTASPlugin.UpdateHelper;
 using UnityEngine;
 
-namespace UniTASPlugin.GameEnvironment;
+namespace UniTASPlugin.GameEnvironment.InnerState.Input;
 
 public class KeyboardState : IOnUpdate
 {

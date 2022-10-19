@@ -2,7 +2,7 @@
 using System;
 using System.Reflection;
 using UniTASPlugin.FakeGameState.InputLegacy;
-using UniTASPlugin.GameEnvironment;
+using UniTASPlugin.GameEnvironment.InnerState.Input;
 using UnityEngine;
 
 namespace UniTASPlugin.Patches.__UnityEngine;

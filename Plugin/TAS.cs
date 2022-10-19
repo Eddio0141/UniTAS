@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using UniTASPlugin.GameEnvironment;
+using UniTASPlugin.GameEnvironment.InnerState.Input;
 using UniTASPlugin.Movie.Models.Properties;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
@@ -8,31 +8,8 @@ namespace UniTASPlugin;
 
 public static class TAS
 {
-    static bool _running = false;
-    public static bool Running
-    {
-        // TODO private set
-        get => _running; set
-        {
-            RunInitOrStopping = true;
-            if (value)
-            {
-                CursorWrap.visible = false;
-            }
-            else
-            {
-                //Cursor.visible = VirtualCursor.Visible;
-                TimeWrap.captureFrametime = 0;
-            }
-            _running = value;
-            RunInitOrStopping = false;
-        }
-    }
-    public static bool RunInitOrStopping { get; private set; }
     public static PropertiesModel CurrentPropertiesModel { get; private set; }
     public static ulong FrameCountMovie { get; private set; }
-    static int currentFramebulkIndex;
-    static int currentFramebulkFrameIndex;
     static int pendingMovieStartFixedUpdate = -1;
     public static bool PreparingRun { get; private set; } = false;
 
@@ -40,7 +17,6 @@ public static class TAS
     {
         SaveState.Main.Update();
         UpdateMovie();
-        Main.Update();
     }
 
     public static void FixedUpdate()

@@ -1,9 +1,9 @@
 ﻿using UniTASPlugin.UpdateHelper;
 using UnityEngine;
 
-namespace UniTASPlugin.GameEnvironment;
+namespace UniTASPlugin.GameEnvironment.InnerState.Input;
 
-public class MouseState : IOnUpdate
+public class MouseState : InputDeviceBase
 {
     public bool MousePresent { get; set; }
     public Vector2 Position { get; set; }
@@ -56,4 +56,6 @@ public class MouseState : IOnUpdate
         _rightClickPrev = RightClick;
         _middleClickPrev = MiddleClick;
     }
+
+    public void 
 }
