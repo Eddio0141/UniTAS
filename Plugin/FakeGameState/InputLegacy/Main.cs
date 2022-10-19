@@ -1,4 +1,6 @@
-﻿namespace UniTASPlugin.FakeGameState.InputLegacy;
+﻿using UniTASPlugin.GameEnvironment;
+
+namespace UniTASPlugin.FakeGameState.InputLegacy;
 
 public static class Main
 {
@@ -6,7 +8,7 @@ public static class Main
     {
         if (UniTASPlugin.TAS.Running)
         {
-            Mouse.Update();
+            MouseState.Update();
             Keyboard.Update();
             //VirtualCursor.Update();
         }
@@ -14,7 +16,7 @@ public static class Main
 
     public static void Clear()
     {
-        Mouse.Clear();
+        MouseState.Clear();
         Keyboard.Clear();
         Axis.Clear();
     }

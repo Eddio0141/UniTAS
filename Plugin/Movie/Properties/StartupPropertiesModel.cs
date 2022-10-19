@@ -1,12 +1,12 @@
 ﻿using System;
 using UniTASPlugin.GameEnvironment;
-using Environment = UniTASPlugin.GameEnvironment.Environment;
+using OsEnvironment = UniTASPlugin.GameEnvironment.OsEnvironment;
 
 namespace UniTASPlugin.Movie.Properties;
 
 public class StartupPropertiesModel
 {
-    public Environment Environment { get; }
+    public OsEnvironment Environment { get; }
     public DateTime StartTime { get; }
     public float FrameTime { get; }
     public WindowState WindowState { get; }

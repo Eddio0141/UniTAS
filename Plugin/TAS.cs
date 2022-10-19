@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UniTASPlugin.FakeGameState.InputLegacy;
+using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.Movie;
 using UniTASPlugin.Movie.Properties;
 using UniTASPlugin.VersionSafeWrapper;
@@ -98,10 +99,10 @@ public static class TAS
 
     static void GameControl(Framebulk fb)
     {
-        FakeGameState.InputLegacy.Mouse.Position = new Vector2(fb.Mouse.X, fb.Mouse.Y);
-        FakeGameState.InputLegacy.Mouse.LeftClick = fb.Mouse.Left;
-        FakeGameState.InputLegacy.Mouse.RightClick = fb.Mouse.Right;
-        FakeGameState.InputLegacy.Mouse.MiddleClick = fb.Mouse.Middle;
+        MouseState.Position = new Vector2(fb.Mouse.X, fb.Mouse.Y);
+        MouseState.LeftClick = fb.Mouse.Left;
+        MouseState.RightClick = fb.Mouse.Right;
+        MouseState.MiddleClick = fb.Mouse.Middle;
 
         List<string> axisMoveSetDefault = new();
         foreach (var pair in Axis.Values)

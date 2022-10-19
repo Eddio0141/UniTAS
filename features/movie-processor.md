@@ -13,10 +13,6 @@ There are internal methods that can be called which isn't user defined
 ## AddMethod
 Takes opcode list and name, stores for use from main method
 
-## CheckValid
-Checks currently stored opcodes, throws exception if something is invalid within
-- Checks if methods exist
-
 ## CurrentInputs
 Retrieves input data such as what is being pressed in the current frame
 Returns null if no more data is found
@@ -24,5 +20,5 @@ Returns null if no more data is found
 ## AdvanceFrame
 Engine advances state to next frame
 
-## IsMovieEnd
-Returns true if movie has no more inputs to process
+## MovieEnd
+True if movie has no more inputs to process

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using BepInEx;
 using UniTASPlugin.Movie.Script;
+using UniTASPlugin.MovieEngine.Exceptions;
 using UniTASPlugin.MovieEngine.OpCodes;
 
 namespace UniTASPlugin.MovieEngine;
@@ -10,7 +11,8 @@ public class MovieEngine
 {
     private Register[] _registers;
     private OpCodeBase[] _mainMethod;
-    private Dictionary<string, OpCodeBase[]> _methods;
+    private readonly Dictionary<string, OpCodeBase[]> _methods;
+    public bool MovieEnd { get; private set; }
 
     public MovieEngine(ScriptModel script)
     {
@@ -22,6 +24,8 @@ public class MovieEngine
         {
             _methods.Add(scriptMethodModel.Name, scriptMethodModel.OpCodes);
         }
+
+        MovieEnd = false;
     }
 
     public void AddMethod(ScriptMethodModel method)
@@ -31,5 +35,15 @@ public class MovieEngine
             throw new MovieMethodAlreadyDefinedException();
         }
         _methods.Add(method.Name, method.OpCodes);
+    }
+
+    public void CurrentState()
+    {
+        throw new NotImplementedException();
+    }
+
+    public void AdvanceFrame()
+    {
+        throw new NotImplementedException();
     }
 }

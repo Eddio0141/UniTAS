@@ -2,6 +2,7 @@
 using System;
 using System.Reflection;
 using UniTASPlugin.FakeGameState.InputLegacy;
+using UniTASPlugin.GameEnvironment;
 using UnityEngine;
 
 namespace UniTASPlugin.Patches.__UnityEngine;
@@ -373,9 +374,9 @@ class GetMouseButton
         {
             __result = button switch
             {
-                0 => Mouse.LeftClick,
-                1 => Mouse.RightClick,
-                2 => Mouse.MiddleClick,
+                0 => MouseState.LeftClick,
+                1 => MouseState.RightClick,
+                2 => MouseState.MiddleClick,
                 _ => false,
             };
             return false;
@@ -398,9 +399,9 @@ class GetMouseButtonDown
         {
             __result = button switch
             {
-                0 => Mouse.LeftClickDown,
-                1 => Mouse.RightClickDown,
-                2 => Mouse.MiddleClickDown,
+                0 => MouseState.LeftClickDown,
+                1 => MouseState.RightClickDown,
+                2 => MouseState.MiddleClickDown,
                 _ => false,
             };
             return false;
@@ -423,9 +424,9 @@ class GetMouseButtonUp
         {
             __result = button switch
             {
-                0 => Mouse.LeftClickUp,
-                1 => Mouse.RightClickUp,
-                2 => Mouse.MiddleClickUp,
+                0 => MouseState.LeftClickUp,
+                1 => MouseState.RightClickUp,
+                2 => MouseState.MiddleClickUp,
                 _ => false,
             };
             return false;
@@ -488,7 +489,7 @@ class anyKeyGetter
     {
         if (TAS.Running)
         {
-            __result = Keyboard.Keys.Count > 0 || Mouse.LeftClick || Mouse.RightClick || Mouse.MiddleClick;
+            __result = Keyboard.Keys.Count > 0 || MouseState.LeftClick || MouseState.RightClick || MouseState.MiddleClick;
             return false;
         }
         return true;
@@ -508,7 +509,7 @@ class anyKeyDownGetter
         // TODO make sure this gets called before Update calls
         if (TAS.Running)
         {
-            __result = Keyboard.KeysDown.Count > 0 || Mouse.LeftClickDown || Mouse.RightClickDown || Mouse.MiddleClickDown;
+            __result = Keyboard.KeysDown.Count > 0 || MouseState.LeftClickDown || MouseState.RightClickDown || MouseState.MiddleClickDown;
             return false;
         }
         return true;
@@ -549,7 +550,7 @@ class mousePositionGetter
     {
         if (TAS.Running)
         {
-            __result = Mouse.Position;
+            __result = MouseState.Position;
             return false;
         }
         return true;
@@ -570,7 +571,7 @@ class get_mousePosition_Injected
     {
         if (TAS.Running)
         {
-            ret = Mouse.Position;
+            ret = MouseState.Position;
             return false;
         }
         return true;
