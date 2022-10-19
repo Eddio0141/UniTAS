@@ -1,57 +1,59 @@
-﻿using UnityEngine;
+﻿using UniTASPlugin.UpdateHelper;
+using UnityEngine;
 
 namespace UniTASPlugin.GameEnvironment;
 
-public class MouseState
+public class MouseState : IOnUpdate
 {
-    public bool MousePresent { get; internal set; } = true;
-    public Vector2 Position { get; internal set; } = Vector2.zero;
-    public bool LeftClick { get; internal set; } = false;
-    public bool LeftClickDown { get; private set; } = false;
-    public bool LeftClickUp { get; private set; } = false;
-    private bool LeftClickPrev = false;
-    public bool RightClick { get; internal set; } = false;
-    public bool RightClickDown { get; private set; } = false;
-    public bool RightClickUp { get; private set; } = false;
-    private bool RightClickPrev = false;
-    public bool MiddleClick { get; internal set; } = false;
-    public bool MiddleClickDown { get; private set; } = false;
-    public bool MiddleClickUp { get; private set; } = false;
-    private bool MiddleClickPrev = false;
+    public bool MousePresent { get; set; }
+    public Vector2 Position { get; set; }
+    public bool LeftClick { get; set; }
+    public bool LeftClickDown { get; private set; }
+    public bool LeftClickUp { get; private set; }
+    private bool _leftClickPrev;
+    public bool RightClick { get; set; }
+    public bool RightClickDown { get; private set; }
+    public bool RightClickUp { get; private set; }
+    private bool _rightClickPrev;
+    public bool MiddleClick { get; set; }
+    public bool MiddleClickDown { get; private set; }
+    public bool MiddleClickUp { get; private set; }
+    private bool _middleClickPrev;
 
-    public void Update()
+    public MouseState()
     {
-        LeftClickUp = LeftClickPrev && !LeftClick;
-        LeftClickDown = !LeftClickPrev && LeftClick;
-
-        RightClickUp = RightClickPrev && !RightClick;
-        RightClickDown = !RightClickPrev && RightClick;
-
-        MiddleClickUp = MiddleClickPrev && !MiddleClick;
-        MiddleClickDown = !MiddleClickPrev && MiddleClick;
-
-        LeftClickPrev = LeftClick;
-        RightClickPrev = RightClick;
-        MiddleClickPrev = MiddleClick;
-    }
-
-    public void Clear()
-    {
+        MousePresent = true;
         Position = Vector2.zero;
 
         LeftClick = false;
         LeftClickDown = false;
         LeftClickUp = false;
-        LeftClickPrev = false;
+        _leftClickPrev = false;
 
         RightClick = false;
         RightClickDown = false;
         RightClickUp = false;
-        RightClickPrev = false;
+        _rightClickPrev = false;
 
         MiddleClick = false;
         MiddleClickDown = false;
         MiddleClickUp = false;
-        MiddleClickPrev = false;
+        _middleClickPrev = false;
+    }
+
+    public void Update(float deltaTime)
+    {
+        LeftClickUp = _leftClickPrev && !LeftClick;
+        LeftClickDown = !_leftClickPrev && LeftClick;
+
+        RightClickUp = _rightClickPrev && !RightClick;
+        RightClickDown = !_rightClickPrev && RightClick;
+
+        MiddleClickUp = _middleClickPrev && !MiddleClick;
+        MiddleClickDown = !_middleClickPrev && MiddleClick;
+
+        _leftClickPrev = LeftClick;
+        _rightClickPrev = RightClick;
+        _middleClickPrev = MiddleClick;
     }
 }
