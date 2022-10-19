@@ -10,9 +10,6 @@ There are internal methods that can be called which isn't user defined
   - List of methods in a class??
   - If method needs to be called from outside, either have a method that takes those methods, or have an event for subscribing, which is then wrapped in the "list of methods in a class"
 
-## MainMethod
-Takes opcode list, stores for later use
-
 ## AddMethod
 Takes opcode list and name, stores for use from main method
 
