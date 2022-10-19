@@ -1,6 +1,6 @@
 ﻿using UniTASPlugin.UpdateHelper;
 
-namespace UniTASPlugin.GameEnvironment;
+namespace UniTASPlugin.GameEnvironment.InnerState.Input;
 
 public class InputState : IOnUpdate
 {
@@ -19,5 +19,10 @@ public class InputState : IOnUpdate
     {
         MouseState.Update(deltaTime);
         KeyboardState.Update(deltaTime);
+    }
+
+    public void ResetStates()
+    {
+
     }
 }

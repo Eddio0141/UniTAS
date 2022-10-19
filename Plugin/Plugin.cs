@@ -1,7 +1,9 @@
-﻿using BepInEx;
+﻿using System;
+using BepInEx;
 using HarmonyLib;
 using UniTASPlugin.FakeGameState.GameFileSystem;
 using UniTASPlugin.GameOverlay;
+using UniTASPlugin.Movie;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
 // ReSharper disable UnusedMember.Local
@@ -55,11 +57,14 @@ public class Plugin : BaseUnityPlugin
     // unity execution order is Awake() -> FixedUpdate() -> Update()
     private void Update()
     {
+        // TODO safe way of getting deltaTime
+        MovieRunnerSingleton.Instance.Update(Time.deltaTime);
         Overlay.Update();
         // TODO if possible, put this at the first call of Update
         FixedUpdateIndex++;
         GameCapture.Update();
         TAS.Update();
+        throw new NotImplementedException();
     }
 
     private void FixedUpdate()

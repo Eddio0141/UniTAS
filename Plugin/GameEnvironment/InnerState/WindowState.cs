@@ -1,4 +1,4 @@
-﻿namespace UniTASPlugin.GameEnvironment;
+﻿namespace UniTASPlugin.GameEnvironment.InnerState;
 
 public class WindowState
 {

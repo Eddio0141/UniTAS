@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace UniTASPlugin.GameEnvironment;
+namespace UniTASPlugin.GameEnvironment.InnerState.Input;
 
 public class AxisState
 {
