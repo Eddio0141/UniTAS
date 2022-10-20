@@ -23,6 +23,8 @@ public class InputState : IOnUpdate
 
     public void ResetStates()
     {
-
+        MouseState.ResetState();
+        AxisState.ResetState();
+        KeyboardState.ResetState();
     }
 }
