@@ -5,7 +5,7 @@ namespace UniTASPlugin.GameEnvironment;
 
 public class GameEnvironmentSingleton
 {
-    public static GameEnvironmentSingleton Instance { get; } = new GameEnvironmentSingleton();
+    public static GameEnvironmentSingleton Instance { get; } = new();
 
     private GameEnvironmentSingleton()
     {
