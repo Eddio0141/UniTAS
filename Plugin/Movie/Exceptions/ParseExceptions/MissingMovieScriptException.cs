@@ -1,4 +1,4 @@
-﻿namespace UniTASPlugin.Movie.ParseExceptions;
+﻿namespace UniTASPlugin.Movie.Exceptions.ParseExceptions;
 
 public class MissingMovieScriptException : MovieParseException
 {

@@ -1,4 +1,4 @@
-﻿namespace UniTASPlugin.Movie.ScriptEngineExceptions;
+﻿namespace UniTASPlugin.Movie.Exceptions.ScriptEngineExceptions;
 
 public class MovieMethodAlreadyDefinedException : MovieScriptEngineException
 {

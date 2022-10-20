@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace UniTASPlugin.Movie.ScriptEngineExceptions;
+namespace UniTASPlugin.Movie.Exceptions.ScriptEngineExceptions;
 
 public class MovieScriptEngineException : Exception
 {
