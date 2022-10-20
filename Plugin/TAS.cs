@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UniTASPlugin.GameEnvironment.InnerState.Input;
+using UniTASPlugin.Movie;
 using UniTASPlugin.Movie.Models.Properties;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
@@ -9,7 +10,6 @@ namespace UniTASPlugin;
 public static class TAS
 {
     public static PropertiesModel CurrentPropertiesModel { get; private set; }
-    public static ulong FrameCountMovie { get; private set; }
     static int pendingMovieStartFixedUpdate = -1;
     public static bool PreparingRun { get; private set; } = false;
 
@@ -33,18 +33,11 @@ public static class TAS
 
     static void UpdateMovie()
     {
-        if (!Running)
-            return;
-
-        FrameCountMovie++;
-        if (!CheckCurrentMovieEnd())
-            return;
-
         var fb = CurrentPropertiesModel.Framebulks[currentFramebulkIndex];
         if (currentFramebulkFrameIndex >= fb.FrameCount)
         {
             currentFramebulkIndex++;
-            if (!CheckCurrentMovieEnd())
+            if (!MovieRunnerSingleton.Instance.IsRunning)
                 return;
 
             currentFramebulkFrameIndex = 0;
@@ -55,20 +48,6 @@ public static class TAS
         GameControl(fb);
 
         currentFramebulkFrameIndex++;
-    }
-
-    static bool CheckCurrentMovieEnd()
-    {
-        if (currentFramebulkIndex >= CurrentPropertiesModel.Framebulks.Count)
-        {
-            Running = false;
-
-            Plugin.Log.LogInfo("Movie end");
-
-            return false;
-        }
-
-        return true;
     }
 
     static void GameControl(Framebulk fb)
