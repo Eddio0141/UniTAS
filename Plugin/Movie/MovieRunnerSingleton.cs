@@ -33,10 +33,12 @@ public class MovieRunnerSingleton : IOnUpdate
         // init engine
         _engine = new MovieScriptEngine(movie.Script);
 
+        // set env
+        GameEnvironmentSingleton.Instance.InputState.ResetStates();
+        GameEnvironmentSingleton.Instance.RunVirtualEnvironment = true;
         // TODO other stuff like save state load, reset, hide cursor, etc
         // TODO handle empty movie
 
-        GameEnvironmentSingleton.Instance.RunVirtualEnvironment = true;
         throw new NotImplementedException();
     }
 

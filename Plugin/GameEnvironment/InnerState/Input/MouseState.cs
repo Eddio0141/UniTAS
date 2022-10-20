@@ -1,5 +1,4 @@
-﻿using UniTASPlugin.UpdateHelper;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace UniTASPlugin.GameEnvironment.InnerState.Input;
 
@@ -23,6 +22,27 @@ public class MouseState : InputDeviceBase
     public MouseState()
     {
         MousePresent = true;
+        ResetState();
+    }
+
+    public override void Update(float deltaTime)
+    {
+        LeftClickUp = _leftClickPrev && !LeftClick;
+        LeftClickDown = !_leftClickPrev && LeftClick;
+
+        RightClickUp = _rightClickPrev && !RightClick;
+        RightClickDown = !_rightClickPrev && RightClick;
+
+        MiddleClickUp = _middleClickPrev && !MiddleClick;
+        MiddleClickDown = !_middleClickPrev && MiddleClick;
+
+        _leftClickPrev = LeftClick;
+        _rightClickPrev = RightClick;
+        _middleClickPrev = MiddleClick;
+    }
+
+    public sealed override void ResetState()
+    {
         Position = Vector2.zero;
 
         LeftClick = false;
@@ -40,22 +60,4 @@ public class MouseState : InputDeviceBase
         MiddleClickUp = false;
         _middleClickPrev = false;
     }
-
-    public void Update(float deltaTime)
-    {
-        LeftClickUp = _leftClickPrev && !LeftClick;
-        LeftClickDown = !_leftClickPrev && LeftClick;
-
-        RightClickUp = _rightClickPrev && !RightClick;
-        RightClickDown = !_rightClickPrev && RightClick;
-
-        MiddleClickUp = _middleClickPrev && !MiddleClick;
-        MiddleClickDown = !_middleClickPrev && MiddleClick;
-
-        _leftClickPrev = LeftClick;
-        _rightClickPrev = RightClick;
-        _middleClickPrev = MiddleClick;
-    }
-
-    public void 
 }

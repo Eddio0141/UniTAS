@@ -1,10 +1,9 @@
 ﻿using System.Collections.Generic;
-using UniTASPlugin.UpdateHelper;
 using UnityEngine;
 
 namespace UniTASPlugin.GameEnvironment.InnerState.Input;
 
-public class KeyboardState : IOnUpdate
+public class KeyboardState : InputDeviceBase
 {
     public List<KeyCode> Keys { get; set; }
     public List<KeyCode> KeysDown { get; }
@@ -19,7 +18,7 @@ public class KeyboardState : IOnUpdate
         _keysPrev = new List<KeyCode>();
     }
 
-    public void Update(float deltaTime)
+    public override void Update(float deltaTime)
     {
         KeysDown.Clear();
         KeysUp.Clear();
@@ -36,5 +35,13 @@ public class KeyboardState : IOnUpdate
             KeysDown.Add(key);
             _keysPrev.Add(key);
         }
+    }
+
+    public override void ResetState()
+    {
+        Keys.Clear();
+        KeysDown.Clear();
+        KeysUp.Clear();
+        _keysPrev.Clear();
     }
 }
