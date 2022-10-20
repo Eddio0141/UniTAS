@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace UniTASPlugin.Movie.ParseExceptions;
+namespace UniTASPlugin.Movie.Exceptions.ParseExceptions;
 
 public class MovieParseException : Exception
 {

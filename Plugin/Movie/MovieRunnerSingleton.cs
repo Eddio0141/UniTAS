@@ -1,6 +1,5 @@
 ﻿using System;
 using UniTASPlugin.GameEnvironment;
-using UniTASPlugin.Movie.Factories;
 using UniTASPlugin.Movie.ScriptEngine;
 using UniTASPlugin.UpdateHelper;
 
@@ -24,7 +23,7 @@ public class MovieRunnerSingleton : IOnUpdate
         var pathText = path;
 
         // parse
-        var movie = MovieFactory.ParseFromText(pathText);
+        var movie = MovieParseProcessor.Parse(pathText);
 
         // warnings
 
