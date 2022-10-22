@@ -1,15 +1,13 @@
 ﻿using UniTASPlugin.GameEnvironment.InnerState;
 using UniTASPlugin.GameEnvironment.InnerState.Input;
+using UniTASPlugin.GameEnvironment.Interfaces;
 
 namespace UniTASPlugin.GameEnvironment;
 
-public class GameEnvironmentSingleton
+public class GameEnvironment : IRunVirtualEnvironmentProperty, IInputStateProperty
 {
-    public static GameEnvironmentSingleton Instance { get; } = new();
-
-    private GameEnvironmentSingleton()
+    public GameEnvironment()
     {
-        // TODO copy actual environment settings
         RunVirtualEnvironment = false;
         Os = Os.Windows;
         WindowState = new WindowState(1920, 1080, false, true);
@@ -17,7 +15,6 @@ public class GameEnvironmentSingleton
     }
 
     public bool RunVirtualEnvironment { get; set; }
-
     public Os Os { get; }
     public WindowState WindowState { get; }
     public InputState InputState { get; }
