@@ -8,11 +8,22 @@ using UniTASPlugin.Movie.ParseInterfaces;
 
 namespace UniTASPlugin.Movie;
 
-public class MovieParseProcessor
+public class MovieParseProcessor : IMovieParser
 {
-    public static MovieModel Parse(string input, IMovieSectionSplitter sectionSplitter, IMoviePropertyParser propertyParser, IMovieScriptParser scriptParser)
+    private readonly IMovieSectionSplitter _sectionSplitter;
+    private readonly IMoviePropertyParser _propertyParser;
+    private readonly IMovieScriptParser _scriptParser;
+
+    public MovieParseProcessor(IMovieSectionSplitter sectionSplitter, IMoviePropertyParser propertyParser, IMovieScriptParser scriptParser)
     {
-        var splitSections = sectionSplitter.Split(input).ToList();
+        _sectionSplitter = sectionSplitter;
+        _propertyParser = propertyParser;
+        _scriptParser = scriptParser;
+    }
+
+    public MovieModel Parse(string input)
+    {
+        var splitSections = _sectionSplitter.Split(input).ToList();
         switch (splitSections.Count())
         {
             case 0:
@@ -21,8 +32,8 @@ public class MovieParseProcessor
                 throw new MissingMovieScriptException();
         }
 
-        var properties = propertyParser.Parse(splitSections.ElementAt(0));
-        var methods = scriptParser.Parse(splitSections.ElementAt(1));
+        var properties = _propertyParser.Parse(splitSections.ElementAt(0));
+        var methods = _scriptParser.Parse(splitSections.ElementAt(1));
 
         var mainMethod = new ScriptMethodModel();
         var definedMethods = new List<ScriptMethodModel>();

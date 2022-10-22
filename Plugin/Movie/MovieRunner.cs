@@ -1,21 +1,22 @@
 ﻿using System;
 using UniTASPlugin.GameEnvironment;
+using UniTASPlugin.Movie.ParseInterfaces;
 using UniTASPlugin.Movie.ScriptEngine;
 using UniTASPlugin.UpdateHelper;
 
 namespace UniTASPlugin.Movie;
 
-public class MovieRunnerSingleton : IOnUpdate
+public class MovieRunner : IOnUpdate
 {
-    public static MovieRunnerSingleton Instance { get; } = new MovieRunnerSingleton();
-
-    public MovieRunnerSingleton()
-    {
-        IsRunning = false;
-    }
-
+    private readonly IMovieParser _parser;
     private MovieScriptEngine _engine;
     public bool IsRunning { get; private set; }
+
+    public MovieRunner(IMovieParser parser)
+    {
+        IsRunning = false;
+        _parser = parser;
+    }
 
     public void RunFromPath(string path)
     {
@@ -23,7 +24,7 @@ public class MovieRunnerSingleton : IOnUpdate
         var pathText = path;
 
         // parse
-        var movie = MovieParseProcessor.Parse(pathText);
+        var movie = _parser.Parse(pathText);
 
         // warnings
 
@@ -33,6 +34,7 @@ public class MovieRunnerSingleton : IOnUpdate
         _engine = new MovieScriptEngine(movie.Script);
 
         // set env
+        // TODO use of DI
         GameEnvironmentSingleton.Instance.InputState.ResetStates();
         GameEnvironmentSingleton.Instance.RunVirtualEnvironment = true;
         // TODO other stuff like save state load, reset, hide cursor, etc
