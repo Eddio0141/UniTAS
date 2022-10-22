@@ -1,12 +1,11 @@
 ﻿using System;
-using UniTASPlugin.GameEnvironment;
+using UniTASPlugin.GameEnvironment.Interfaces;
 using UniTASPlugin.Movie.ParseInterfaces;
 using UniTASPlugin.Movie.ScriptEngine;
-using UniTASPlugin.UpdateHelper;
 
 namespace UniTASPlugin.Movie;
 
-public class MovieRunner : IOnUpdate
+public class MovieRunner
 {
     private readonly IMovieParser _parser;
     private MovieScriptEngine _engine;
@@ -18,7 +17,10 @@ public class MovieRunner : IOnUpdate
         _parser = parser;
     }
 
-    public void RunFromPath(string path)
+    public void RunFromPath<TEnv>(string path, ref TEnv env)
+    where TEnv :
+        IRunVirtualEnvironmentProperty,
+        IInputStateProperty
     {
         // TODO load text from path
         var pathText = path;
@@ -34,16 +36,18 @@ public class MovieRunner : IOnUpdate
         _engine = new MovieScriptEngine(movie.Script);
 
         // set env
-        // TODO use of DI
-        GameEnvironmentSingleton.Instance.InputState.ResetStates();
-        GameEnvironmentSingleton.Instance.RunVirtualEnvironment = true;
+        env.InputState.ResetStates();
+        env.RunVirtualEnvironment = true;
         // TODO other stuff like save state load, reset, hide cursor, etc
         // TODO handle empty movie
 
         throw new NotImplementedException();
     }
 
-    public void Update(float deltaTime)
+    public void Update<TEnv>(ref TEnv env)
+    where TEnv :
+        IRunVirtualEnvironmentProperty,
+        IInputStateProperty
     {
         // TODO input handle
         /*MouseState.Position = new Vector2(fb.Mouse.X, fb.Mouse.Y);
@@ -82,7 +86,7 @@ public class MovieRunner : IOnUpdate
         if (_engine.MovieEnd)
         {
             IsRunning = false;
-            MovieEnd();
+            MovieEnd(ref env);
             return;
         }
 
@@ -93,9 +97,11 @@ public class MovieRunner : IOnUpdate
         throw new NotImplementedException();
     }
 
-    private void MovieEnd()
+    private void MovieEnd<TEnv>(ref TEnv env)
+    where TEnv :
+        IRunVirtualEnvironmentProperty
     {
-        GameEnvironmentSingleton.Instance.RunVirtualEnvironment = false;
+        env.RunVirtualEnvironment = false;
         // TODO set frameTime to 0
         throw new NotImplementedException();
     }
