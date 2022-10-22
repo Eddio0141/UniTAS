@@ -58,7 +58,7 @@ public class Plugin : BaseUnityPlugin
     private void Update()
     {
         // TODO safe way of getting deltaTime
-        MovieRunnerSingleton.Instance.Update(Time.deltaTime);
+        MovieRunner.Instance.Update(Time.deltaTime);
         Overlay.Update();
         // TODO if possible, put this at the first call of Update
         FixedUpdateIndex++;
