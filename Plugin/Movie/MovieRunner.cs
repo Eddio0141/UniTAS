@@ -55,7 +55,7 @@ IScriptEngineAdvanceFrame
     IRunVirtualEnvironmentProperty,
     IInputStateProperty
     {
-        if (IsRunning)
+        if (!IsRunning)
             return;
         // TODO input handle
         /*MouseState.Position = new Vector2(fb.Mouse.X, fb.Mouse.Y);

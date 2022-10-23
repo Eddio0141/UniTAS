@@ -6,6 +6,7 @@ using Ninject.Modules;
 using UniTASPlugin.FakeGameState.GameFileSystem;
 using UniTASPlugin.GameOverlay;
 using UniTASPlugin.Movie;
+using UniTASPlugin.Movie.ScriptEngine;
 using UniTASPlugin.NInjectModules;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
@@ -68,7 +69,8 @@ public class Plugin : BaseUnityPlugin
     {
         var modules = new INinjectModule[]
         {
-            new MovieModule()
+            new MovieModule(),
+            new GameEnvironmentModule()
         };
 
         return new StandardKernel(modules);
@@ -77,14 +79,13 @@ public class Plugin : BaseUnityPlugin
     // unity execution order is Awake() -> FixedUpdate() -> Update()
     private void Update()
     {
-        // TODO safe way of getting deltaTime
-        Kernel.Get<MovieRunner>()
-        MovieRunner.Instance.Update(Time.deltaTime);
+        var movieRunner = Kernel.Get<MovieRunner<MovieScriptEngine>>();
+        var env = Kernel.Get<GameEnvironment.GameEnvironment>();
+        movieRunner.Update(ref env);
         Overlay.Update();
         // TODO if possible, put this at the first call of Update
         FixedUpdateIndex++;
         GameCapture.Update();
-        TAS.Update();
         throw new NotImplementedException();
     }
 
@@ -93,7 +94,7 @@ public class Plugin : BaseUnityPlugin
         // TODO if possible, put this at the first call of FixedUpdate
         FixedUpdateIndex = -1;
         // this needs to be called before checking pending soft restart or it will cause a 1 frame desync
-        TAS.FixedUpdate();
+        //TAS.FixedUpdate();
         GameRestart.FixedUpdate();
     }
 
