@@ -6,6 +6,7 @@ using UniTASPlugin.FakeGameState;
 using UniTASPlugin.Movie.ScriptEngine;
 using UniTASPlugin.Movie;
 using UnityEngine;
+using UniTASPlugin.GameEnvironment;
 
 namespace UniTASPlugin.Patches.__UnityEngine;
 
@@ -24,7 +25,7 @@ class set_captureFramerate
         // if TAS is running / preparing and we aren't setting the frametime, reject
         // TODO below
         //return !(TAS.Running || TAS.PreparingRun);
-        return !Plugin.Instance.Kernel.Get<MovieRunner<MovieScriptEngine>>().IsRunning;
+        return !Plugin.Instance.Kernel.Get<VirtualEnvironment>().RunVirtualEnvironment;
     }
 }
 
@@ -41,7 +42,7 @@ class set_captureDeltaTime
         // if TAS is running / preparing and we aren't setting the frametime, reject
         // TODO below
         //return !(TAS.Running || TAS.PreparingRun);
-        return !Plugin.Instance.Kernel.Get<MovieRunner<MovieScriptEngine>>().IsRunning;
+        return !Plugin.Instance.Kernel.Get<VirtualEnvironment>().RunVirtualEnvironment;
     }
 }
 

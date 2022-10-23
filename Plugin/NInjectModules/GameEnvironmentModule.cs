@@ -7,9 +7,9 @@ public class GameEnvironmentModule : NinjectModule
 {
     public override void Load()
     {
-        Bind<IRunVirtualEnvironmentProperty>().To<GameEnvironment.GameEnvironment>();
-        Bind<IInputStateProperty>().To<GameEnvironment.GameEnvironment>();
+        Bind<IRunVirtualEnvironmentProperty>().To<GameEnvironment.VirtualEnvironment>();
+        Bind<IInputStateProperty>().To<GameEnvironment.VirtualEnvironment>();
 
-        Bind<GameEnvironment.GameEnvironment>().ToSelf().InSingletonScope();
+        Bind<GameEnvironment.VirtualEnvironment>().ToSelf().InSingletonScope();
     }
 }
