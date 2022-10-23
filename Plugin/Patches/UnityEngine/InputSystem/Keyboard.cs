@@ -1,4 +1,4 @@
-﻿namespace UniTASPlugin.Patches.__UnityEngine.__InputSystem;
+﻿namespace UniTASPlugin.Patches.UnityEngine.InputSystem;
 /*
 static class Helper
 {

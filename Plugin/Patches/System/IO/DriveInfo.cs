@@ -1,10 +1,10 @@
-﻿using HarmonyLib;
-using System;
+﻿using System;
 using System.IO;
 using System.Reflection;
+using HarmonyLib;
 using UniTASPlugin.FakeGameState.GameFileSystem;
 
-namespace UniTASPlugin.Patches.__System.__IO;
+namespace UniTASPlugin.Patches.System.IO;
 
 [HarmonyPatch]
 class GetDiskFreeSpace

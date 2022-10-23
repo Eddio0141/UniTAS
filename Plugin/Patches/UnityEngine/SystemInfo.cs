@@ -1,12 +1,12 @@
-﻿using HarmonyLib;
-using System;
+﻿using System;
+using HarmonyLib;
 
-namespace UniTASPlugin.Patches.__UnityEngine;
+namespace UniTASPlugin.Patches.UnityEngine;
 
-[HarmonyPatch(typeof(UnityEngine.SystemInfo), "deviceType", MethodType.Getter)]
+[HarmonyPatch(typeof(global::UnityEngine.SystemInfo), "deviceType", MethodType.Getter)]
 class SystemInfo
 {
-    static Exception Cleanup(System.Reflection.MethodBase original, Exception ex)
+    static Exception Cleanup(global::System.Reflection.MethodBase original, Exception ex)
     {
         return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }

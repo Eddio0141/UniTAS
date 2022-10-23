@@ -1,15 +1,16 @@
-﻿using HarmonyLib;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Security.AccessControl;
+using HarmonyLib;
 using UniTASPlugin.FakeGameState.GameFileSystem;
 using DirOrig = System.IO.Directory;
 using FileOrig = System.IO.File;
 using PathOrig = System.IO.Path;
+using DateTimeOrig = System.DateTime;
 
-namespace UniTASPlugin.Patches.__System.__IO;
+namespace UniTASPlugin.Patches.System.IO;
 
 [HarmonyPatch]
 static class Directory
@@ -17,7 +18,7 @@ static class Directory
     static class Helper
     {
         static readonly Traverse pathValidateTraverse = Traverse.Create(typeof(PathOrig)).Method("Validate", new Type[] { typeof(string) });
-        static readonly Traverse environmentIsRunningOnWindowsTraverse = Traverse.Create(typeof(System.Environment)).Property("IsRunningOnWindows");
+        static readonly Traverse environmentIsRunningOnWindowsTraverse = Traverse.Create(typeof(global::System.Environment)).Property("IsRunningOnWindows");
 
         public static void PathValidate(string path)
         {
@@ -243,7 +244,7 @@ static class Directory
             return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref DateTime __result, string path)
+        static bool Prefix(ref DateTimeOrig __result, string path)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -260,7 +261,7 @@ static class Directory
             return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref DateTime __result, string path)
+        static bool Prefix(ref DateTimeOrig __result, string path)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -277,7 +278,7 @@ static class Directory
             return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref DateTime __result, string path)
+        static bool Prefix(ref DateTimeOrig __result, string path)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -374,7 +375,7 @@ static class Directory
             return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(string path, DateTime creationTime)
+        static bool Prefix(string path, DateTimeOrig creationTime)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -391,7 +392,7 @@ static class Directory
             return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(string path, DateTime lastAccessTime)
+        static bool Prefix(string path, DateTimeOrig lastAccessTime)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -408,7 +409,7 @@ static class Directory
             return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(string path, DateTime lastWriteTime)
+        static bool Prefix(string path, DateTimeOrig lastWriteTime)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;

@@ -1,8 +1,8 @@
-﻿using HarmonyLib;
-using System;
+﻿using System;
 using System.Reflection;
+using HarmonyLib;
 
-namespace UniTASPlugin.Patches.__System.__Security;
+namespace UniTASPlugin.Patches.System.Security;
 
 [HarmonyPatch]
 static class SecurityManager

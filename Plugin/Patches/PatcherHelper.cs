@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using Diagnostics = System.Diagnostics;
 
 namespace UniTASPlugin.Patches;
 
@@ -14,11 +15,14 @@ public static class PatcherHelper
 
     public static bool CallFromPlugin()
     {
-        var trace = new System.Diagnostics.StackTrace();
+        var trace = new Diagnostics.StackTrace();
         var traceFrames = trace.GetFrames();
+        if (traceFrames == null) return false;
         foreach (var frame in traceFrames)
         {
-            var typeName = frame.GetMethod().DeclaringType.FullName;
+            var declaringType = frame.GetMethod().DeclaringType;
+            var typeName = declaringType?.FullName;
+            if (typeName == null) continue;
             if (
                 typeName.StartsWith("UniTASPlugin.ReversePatches") ||
                 typeName.StartsWith("UniTASPlugin.Helper") ||

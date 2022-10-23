@@ -1,10 +1,10 @@
-﻿using HarmonyLib;
-using System;
+﻿using System;
 using System.Reflection;
+using HarmonyLib;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
 
-namespace UniTASPlugin.Patches.__UnityEngine.__SceneManagment;
+namespace UniTASPlugin.Patches.UnityEngine.SceneManagment;
 
 static class Helper
 {

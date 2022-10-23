@@ -1,10 +1,10 @@
-﻿using HarmonyLib;
-using System;
+﻿using System;
 using System.Reflection;
+using HarmonyLib;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
 
-namespace UniTASPlugin.Patches.__UnityEngine;
+namespace UniTASPlugin.Patches.UnityEngine;
 
 [HarmonyPatch(typeof(AssetBundleRequest), nameof(AssetBundleRequest.asset), MethodType.Getter)]
 class get_asset
@@ -14,7 +14,7 @@ class get_asset
         return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
-    static bool Prefix(AssetBundleRequest __instance, ref UnityEngine.Object __result)
+    static bool Prefix(AssetBundleRequest __instance, ref global::UnityEngine.Object __result)
     {
         var wrap = new AsyncOperationWrap(__instance);
         var runOriginal = !AssetBundleRequestWrap.InstanceTracker.TryGetValue(wrap.UID, out var foundResult);
@@ -32,7 +32,7 @@ class get_allAssets
         return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
-    static bool Prefix(AssetBundleRequest __instance, ref UnityEngine.Object[] __result)
+    static bool Prefix(AssetBundleRequest __instance, ref global::UnityEngine.Object[] __result)
     {
         var wrap = new AsyncOperationWrap(__instance);
         var runOriginal = !AssetBundleRequestWrap.InstanceTracker.TryGetValue(wrap.UID, out var foundResult);

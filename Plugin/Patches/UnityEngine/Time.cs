@@ -1,14 +1,12 @@
-﻿using HarmonyLib;
-using Ninject;
-using System;
+﻿using System;
 using System.Reflection;
+using HarmonyLib;
+using Ninject;
 using UniTASPlugin.FakeGameState;
-using UniTASPlugin.Movie.ScriptEngine;
-using UniTASPlugin.Movie;
-using UnityEngine;
 using UniTASPlugin.GameEnvironment;
+using UnityEngine;
 
-namespace UniTASPlugin.Patches.__UnityEngine;
+namespace UniTASPlugin.Patches.UnityEngine;
 
 #pragma warning disable IDE1006
 

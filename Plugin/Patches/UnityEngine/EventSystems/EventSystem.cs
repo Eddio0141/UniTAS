@@ -1,12 +1,10 @@
-﻿using HarmonyLib;
-using System;
+﻿using System;
 using System.Reflection;
+using HarmonyLib;
 using Ninject;
-using UniTASPlugin.Movie;
-using UniTASPlugin.Movie.ScriptEngine;
 using UniTASPlugin.GameEnvironment;
 
-namespace UniTASPlugin.Patches.__UnityEngine.__EventSystems;
+namespace UniTASPlugin.Patches.UnityEngine.EventSystems;
 
 static class Helper
 {
