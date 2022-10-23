@@ -47,6 +47,7 @@ IScriptEngineAdvanceFrame
         // TODO other stuff like save state load, reset, hide cursor, etc
         // TODO handle empty movie
 
+        IsRunning = true;
         throw new NotImplementedException();
     }
 

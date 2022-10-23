@@ -21,6 +21,6 @@ public class MovieModule : NinjectModule
         Bind<IScriptEngineCurrentState>().To<MovieScriptEngine>();
         Bind<IScriptEngineAdvanceFrame>().To<MovieScriptEngine>();
 
-        Bind(typeof(MovieScriptEngine)).ToSelf().InSingletonScope();
+        Bind(typeof(MovieRunner<>)).ToSelf().InSingletonScope();
     }
 }

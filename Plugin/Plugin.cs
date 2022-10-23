@@ -61,7 +61,7 @@ public class Plugin : BaseUnityPlugin
         FakeGameState.SystemInfo.Init();
         Overlay.Init();
 
-        Log.LogInfo($"System time: {System.DateTime.Now}");
+        Log.LogInfo($"System time: {DateTime.Now}");
         Log.LogInfo($"Plugin {Name} is loaded!");
     }
 

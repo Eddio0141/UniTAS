@@ -23,7 +23,7 @@ public static class SystemInfo
                         foundDesktop = true;
                 }
                 if (!foundDesktop)
-                    Plugin.Log.LogError($"DeviceType enum doesn't contain {DeviceType}, fix this");
+                    Plugin.Instance.Log.LogError($"DeviceType enum doesn't contain {DeviceType}, fix this");
             }
         }
     }
