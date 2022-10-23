@@ -1,7 +1,10 @@
 ﻿using HarmonyLib;
+using Ninject;
 using System;
 using System.Reflection;
 using UniTASPlugin.GameEnvironment.InnerState.Input;
+using UniTASPlugin.Movie.ScriptEngine;
+using UniTASPlugin.Movie;
 using UnityEngine;
 
 namespace UniTASPlugin.Patches.__UnityEngine;
@@ -25,7 +28,7 @@ class penEventCountGetter
 
     static bool Prefix(ref int __result)
     {
-        if (TAS.Running)
+        if (Plugin.Instance.Kernel.Get<MovieRunner<MovieScriptEngine>>().IsRunning)
         {
             // TODO
             __result = 0;
@@ -45,7 +48,7 @@ class mousePresentGetter
 
     static bool Prefix(ref bool __result)
     {
-        if (TAS.Running)
+        if (Plugin.Instance.Kernel.Get<MovieRunner<MovieScriptEngine>>().IsRunning)
         {
             // TODO option to present mouse
             __result = true;
@@ -66,7 +69,7 @@ class GetPenEvent_Injected
 
     static bool Prefix(int index, ref object ret)
     {
-        if (TAS.Running)
+        if (Plugin.Instance.Kernel.Get<MovieRunner<MovieScriptEngine>>().IsRunning)
         {
             // TODO
             return false;
@@ -87,7 +90,7 @@ class mainGyroIndex_Internal
 
     static bool Prefix(ref int __result)
     {
-        if (TAS.Running)
+        if (Plugin.Instance.Kernel.Get<MovieRunner<MovieScriptEngine>>().IsRunning)
         {
             // TODO
             return false;
@@ -106,7 +109,7 @@ class GetPosition
 
     static bool Prefix(int deviceID, ref Vector3 __result)
     {
-        if (TAS.Running)
+        if (Plugin.Instance.Kernel.Get<MovieRunner<MovieScriptEngine>>().IsRunning)
         {
             // TODO what is this function call
             return false;
@@ -140,7 +143,7 @@ class GetKeyInt
 
     static bool Prefix(object key, ref bool __result)
     {
-        if (TAS.Running)
+        if (Plugin.Instance.Kernel.Get<MovieRunner<MovieScriptEngine>>().IsRunning)
         {
             __result = KeyboardState.Keys.Contains((KeyCode)key);
             return false;
@@ -161,7 +164,7 @@ class GetKeyString
 
     static bool Prefix(/*string name, ref bool __result*/)
     {
-        if (TAS.Running)
+        if (Plugin.Instance.Kernel.Get<MovieRunner<MovieScriptEngine>>().IsRunning)
         {
             // TODO
             return false;
@@ -182,7 +185,7 @@ class GetKeyUpString
 
     static bool Prefix(/*string name, ref bool __result*/)
     {
-        if (TAS.Running)
+        if (Plugin.Instance.Kernel.Get<MovieRunner<MovieScriptEngine>>().IsRunning)
         {
             // TODO
             return false;
@@ -203,7 +206,7 @@ class GetKeyUpInt
 
     static bool Prefix(object key, ref bool __result)
     {
-        if (TAS.Running)
+        if (Plugin.Instance.Kernel.Get<MovieRunner<MovieScriptEngine>>().IsRunning)
         {
             __result = KeyboardState.KeysUp.Contains((KeyCode)key);
             return false;
@@ -224,7 +227,7 @@ class GetKeyDownString
 
     static bool Prefix(/*string name*/)
     {
-        if (TAS.Running)
+        if (Plugin.Instance.Kernel.Get<MovieRunner<MovieScriptEngine>>().IsRunning)
         {
             // TODO
             return false;
@@ -246,7 +249,7 @@ class GetKeyDownInt
 
     static bool Prefix(object key, ref bool __result)
     {
-        if (TAS.Running)
+        if (Plugin.Instance.Kernel.Get<MovieRunner<MovieScriptEngine>>().IsRunning)
         {
             __result = KeyboardState.KeysDown.Contains((KeyCode)key);
             return false;
@@ -267,7 +270,7 @@ class GetAxis
 
     static bool Prefix(string axisName, ref float __result)
     {
-        if (TAS.Running)
+        if (Plugin.Instance.Kernel.Get<MovieRunner<MovieScriptEngine>>().IsRunning)
         {
             if (AxisState.Values.TryGetValue(axisName, out var value))
             {
@@ -289,7 +292,7 @@ class GetAxisRaw
 
     static bool Prefix(string axisName, ref float __result)
     {
-        if (TAS.Running)
+        if (Plugin.Instance.Kernel.Get<MovieRunner<MovieScriptEngine>>().IsRunning)
         {
             if (AxisState.Values.TryGetValue(axisName, out var value))
             {
@@ -312,7 +315,7 @@ class GetButton
 
     static bool Prefix(string buttonName)
     {
-        if (TAS.Running)
+        if (Plugin.Instance.Kernel.Get<MovieRunner<MovieScriptEngine>>().IsRunning)
         {
             // TODO
             return false;
@@ -331,7 +334,7 @@ class GetButtonDown
 
     static bool Prefix(string buttonName)
     {
-        if (TAS.Running)
+        if (Plugin.Instance.Kernel.Get<MovieRunner<MovieScriptEngine>>().IsRunning)
         {
             // TODO
             return false;
@@ -350,7 +353,7 @@ class GetButtonUp
 
     static bool Prefix(string buttonName)
     {
-        if (TAS.Running)
+        if (Plugin.Instance.Kernel.Get<MovieRunner<MovieScriptEngine>>().IsRunning)
         {
             // TODO
             return false;
@@ -369,7 +372,7 @@ class GetMouseButton
 
     static bool Prefix(ref bool __result, int button)
     {
-        if (TAS.Running)
+        if (Plugin.Instance.Kernel.Get<MovieRunner<MovieScriptEngine>>().IsRunning)
         {
             __result = button switch
             {
@@ -394,7 +397,7 @@ class GetMouseButtonDown
 
     static bool Prefix(ref bool __result, int button)
     {
-        if (TAS.Running)
+        if (Plugin.Instance.Kernel.Get<MovieRunner<MovieScriptEngine>>().IsRunning)
         {
             __result = button switch
             {
@@ -419,7 +422,7 @@ class GetMouseButtonUp
 
     static bool Prefix(ref bool __result, int button)
     {
-        if (TAS.Running)
+        if (Plugin.Instance.Kernel.Get<MovieRunner<MovieScriptEngine>>().IsRunning)
         {
             __result = button switch
             {
@@ -447,7 +450,7 @@ class ResetInputAxes
         // TODO make this work
         // Resets all input. After ResetInputAxes all axes return to 0 and all buttons return to 0 for one frame.
         // TODO also make sure movie overwrites input on the same frame after reset
-        if (TAS.Running)
+        if (Plugin.Instance.Kernel.Get<MovieRunner<MovieScriptEngine>>().IsRunning)
         {
             AxisState.Values.Clear();
             return false;
@@ -466,7 +469,7 @@ class GetAccelerationEvent
 
     static bool Prefix(int index, ref AccelerationEvent __result)
     {
-        if (TAS.Running)
+        if (Plugin.Instance.Kernel.Get<MovieRunner<MovieScriptEngine>>().IsRunning)
         {
             // TODO
             // this gets called in accelerationEvents getter, check when implementing
@@ -486,7 +489,7 @@ class anyKeyGetter
 
     static bool Prefix(ref bool __result)
     {
-        if (TAS.Running)
+        if (Plugin.Instance.Kernel.Get<MovieRunner<MovieScriptEngine>>().IsRunning)
         {
             __result = KeyboardState.Keys.Count > 0 || MouseState.LeftClick || MouseState.RightClick || MouseState.MiddleClick;
             return false;
@@ -506,7 +509,7 @@ class anyKeyDownGetter
     static bool Prefix(ref bool __result)
     {
         // TODO make sure this gets called before Update calls
-        if (TAS.Running)
+        if (Plugin.Instance.Kernel.Get<MovieRunner<MovieScriptEngine>>().IsRunning)
         {
             __result = KeyboardState.KeysDown.Count > 0 || MouseState.LeftClickDown || MouseState.RightClickDown || MouseState.MiddleClickDown;
             return false;
@@ -525,7 +528,7 @@ class inputStringGetter
 
     static bool Prefix()
     {
-        if (TAS.Running)
+        if (Plugin.Instance.Kernel.Get<MovieRunner<MovieScriptEngine>>().IsRunning)
         {
             // Returns the keyboard input entered this frame
             // Only ASCII characters are contained in the inputString.
@@ -547,7 +550,7 @@ class mousePositionGetter
 
     static bool Prefix(ref Vector3 __result)
     {
-        if (TAS.Running)
+        if (Plugin.Instance.Kernel.Get<MovieRunner<MovieScriptEngine>>().IsRunning)
         {
             __result = MouseState.Position;
             return false;
@@ -568,7 +571,7 @@ class get_mousePosition_Injected
 
     static bool Prefix(ref Vector3 ret)
     {
-        if (TAS.Running)
+        if (Plugin.Instance.Kernel.Get<MovieRunner<MovieScriptEngine>>().IsRunning)
         {
             ret = MouseState.Position;
             return false;
@@ -587,7 +590,7 @@ class multiTouchEnabledGetter
 
     static bool Prefix(ref bool __result)
     {
-        if (TAS.Running)
+        if (Plugin.Instance.Kernel.Get<MovieRunner<MovieScriptEngine>>().IsRunning)
         {
             // TODO
             __result = false;
@@ -608,7 +611,7 @@ class multiTouchEnabledSetter
 
     static bool Prefix(bool value)
     {
-        if (TAS.Running)
+        if (Plugin.Instance.Kernel.Get<MovieRunner<MovieScriptEngine>>().IsRunning)
         {
             // TODO handle this
             return false;
@@ -627,7 +630,7 @@ class isGyroAvailableGetter
 
     static bool Prefix(ref bool __result)
     {
-        if (TAS.Running)
+        if (Plugin.Instance.Kernel.Get<MovieRunner<MovieScriptEngine>>().IsRunning)
         {
             // TODO
             __result = false;
@@ -648,7 +651,7 @@ class deviceOrientationGetter
 
     static bool Prefix(ref DeviceOrientation __result)
     {
-        if (TAS.Running)
+        if (Plugin.Instance.Kernel.Get<MovieRunner<MovieScriptEngine>>().IsRunning)
         {
             // TODO
             __result = DeviceOrientation.Unknown;
@@ -669,7 +672,7 @@ class accelerationGetter
 
     static bool Prefix(ref Vector3 __result)
     {
-        if (TAS.Running)
+        if (Plugin.Instance.Kernel.Get<MovieRunner<MovieScriptEngine>>().IsRunning)
         {
             // TODO
             __result = Vector3.zero;
@@ -690,7 +693,7 @@ class accelerationEventCountGetter
 
     static bool Prefix(ref int __result)
     {
-        if (TAS.Running)
+        if (Plugin.Instance.Kernel.Get<MovieRunner<MovieScriptEngine>>().IsRunning)
         {
             // TODO
             // this gets called in accelerationEvents getter, check there if implementing
@@ -727,7 +730,7 @@ class touchCountGetter
 
     static bool Prefix(ref int __result)
     {
-        if (TAS.Running)
+        if (Plugin.Instance.Kernel.Get<MovieRunner<MovieScriptEngine>>().IsRunning)
         {
             // TODO
             // this gets called in touches getter, check if implementing
@@ -748,7 +751,7 @@ class GetTouch
 
     static bool Prefix(ref Touch __result)
     {
-        if (TAS.Running)
+        if (Plugin.Instance.Kernel.Get<MovieRunner<MovieScriptEngine>>().IsRunning)
         {
             // TODO
             // this gets called in touches getter, check if implementing
@@ -784,7 +787,7 @@ class GetRotation
 
     static bool Prefix(ref Vector3 __result)
     {
-        if (TAS.Running)
+        if (Plugin.Instance.Kernel.Get<MovieRunner<MovieScriptEngine>>().IsRunning)
         {
             // TODO what is this call
             __result = Vector3.zero;

@@ -1,7 +1,10 @@
 ﻿using HarmonyLib;
+using Ninject;
 using System;
 using System.Reflection;
 using UniTASPlugin.FakeGameState;
+using UniTASPlugin.Movie.ScriptEngine;
+using UniTASPlugin.Movie;
 using UnityEngine;
 
 namespace UniTASPlugin.Patches.__UnityEngine;
@@ -19,7 +22,9 @@ class set_captureFramerate
     static bool Prefix()
     {
         // if TAS is running / preparing and we aren't setting the frametime, reject
-        return !(TAS.Running || TAS.PreparingRun);
+        // TODO below
+        //return !(TAS.Running || TAS.PreparingRun);
+        return !Plugin.Instance.Kernel.Get<MovieRunner<MovieScriptEngine>>().IsRunning;
     }
 }
 
@@ -34,7 +39,9 @@ class set_captureDeltaTime
     static bool Prefix()
     {
         // if TAS is running / preparing and we aren't setting the frametime, reject
-        return !(TAS.Running || TAS.PreparingRun);
+        // TODO below
+        //return !(TAS.Running || TAS.PreparingRun);
+        return !Plugin.Instance.Kernel.Get<MovieRunner<MovieScriptEngine>>().IsRunning;
     }
 }
 
