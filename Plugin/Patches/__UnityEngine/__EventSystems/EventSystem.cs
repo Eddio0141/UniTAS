@@ -4,6 +4,7 @@ using System.Reflection;
 using Ninject;
 using UniTASPlugin.Movie;
 using UniTASPlugin.Movie.ScriptEngine;
+using UniTASPlugin.GameEnvironment;
 
 namespace UniTASPlugin.Patches.__UnityEngine.__EventSystems;
 
@@ -30,7 +31,7 @@ class isFocusedGetter
 
     static bool Prefix(ref bool __result)
     {
-        if (!Plugin.Instance.Kernel.Get<MovieRunner<MovieScriptEngine>>().IsRunning) return true;
+        if (!Plugin.Instance.Kernel.Get<VirtualEnvironment>().RunVirtualEnvironment) return true;
         __result = true;
         return false;
     }

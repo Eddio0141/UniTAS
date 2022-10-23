@@ -4,9 +4,9 @@ using UniTASPlugin.GameEnvironment.Interfaces;
 
 namespace UniTASPlugin.GameEnvironment;
 
-public class GameEnvironment : IRunVirtualEnvironmentProperty, IInputStateProperty
+public class VirtualEnvironment : IRunVirtualEnvironmentProperty, IInputStateProperty
 {
-    public GameEnvironment()
+    public VirtualEnvironment()
     {
         RunVirtualEnvironment = false;
         Os = Os.Windows;

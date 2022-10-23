@@ -132,7 +132,7 @@ internal static class Overlay
 
         var kernel = Plugin.Instance.Kernel;
         var movieRunner = kernel.Get<MovieRunner<MovieScriptEngine>>();
-        var env = kernel.Get<GameEnvironment.GameEnvironment>();
+        var env = kernel.Get<GameEnvironment.VirtualEnvironment>();
 
         GUI.DrawTexture(new Rect(MENU_X, MENU_Y, MENU_SIZE_X, MENU_SIZE_Y), BGSurround);
         GUI.Box(new Rect(MENU_X, MENU_Y, MENU_SIZE_X, MENU_SIZE_Y), $"{Plugin.Name} Menu");
