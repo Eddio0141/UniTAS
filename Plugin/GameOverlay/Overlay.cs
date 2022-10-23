@@ -1,12 +1,15 @@
 ﻿using System.Linq;
+using Ninject;
 using UniTASPlugin.GameOverlay.GameConsole;
+using UniTASPlugin.Movie;
+using UniTASPlugin.Movie.ScriptEngine;
 using UniTASPlugin.ReversePatches.__System.__IO;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
 
 namespace UniTASPlugin.GameOverlay;
 
-internal static partial class Overlay
+internal static class Overlay
 {
     public static bool Enabled { get; set; } = true;
     public static bool ShowCursor { get; set; } = true;
@@ -66,17 +69,18 @@ internal static partial class Overlay
 
     public static void Update()
     {
-        // TODO temporary for debugging
-        if (!TAS.Running && Input.GetKeyDown(KeyCode.F10))
+        var kernel = Plugin.Instance.Kernel;
+        var movieRunner = kernel.Get<MovieRunner<MovieScriptEngine>>();
+        if (!movieRunner.IsRunning && Input.GetKeyDown(KeyCode.F10))
         {
             Enabled = !Enabled;
         }
-        if (!TAS.Running && Input.GetKeyDown(KeyCode.F11))
+        if (!movieRunner.IsRunning && Input.GetKeyDown(KeyCode.F11))
         {
             CursorWrap.TempCursorLockToggle(!CursorWrap.TempUnlocked);
-            Plugin.Log.LogDebug($"Unlocked cursor: {CursorWrap.TempUnlocked}");
+            Plugin.Instance.Log.LogDebug($"Unlocked cursor: {CursorWrap.TempUnlocked}");
         }
-        if (!TAS.Running && Input.GetKeyDown(KeyCode.BackQuote))
+        if (!movieRunner.IsRunning && Input.GetKeyDown(KeyCode.BackQuote))
         {
             Console.Opened = !Console.Opened;
         }
@@ -91,15 +95,14 @@ internal static partial class Overlay
             GUI.DrawTexture(new Rect(Input.mousePosition.x, Screen.height - Input.mousePosition.y, currentTexture.width, currentTexture.height), currentTexture);
     }
 
-    static int tabIndex = 0;
+    static int _tabIndex = 0;
     static readonly string[] tabs = new string[] { "Movie", "Debug" };
     static readonly Texture2D BGSurround = new(MENU_SIZE_X, MENU_SIZE_Y);
     static string filePath = "";
 
-    enum Tabs : int
+    private enum Tabs
     {
         Movie,
-        Debug,
     }
 
     const int MENU_SIZE_X = 600;
@@ -127,12 +130,16 @@ internal static partial class Overlay
         if (!Enabled)
             return;
 
+        var kernel = Plugin.Instance.Kernel;
+        var movieRunner = kernel.Get<MovieRunner<MovieScriptEngine>>();
+        var env = kernel.Get<GameEnvironment.GameEnvironment>();
+
         GUI.DrawTexture(new Rect(MENU_X, MENU_Y, MENU_SIZE_X, MENU_SIZE_Y), BGSurround);
         GUI.Box(new Rect(MENU_X, MENU_Y, MENU_SIZE_X, MENU_SIZE_Y), $"{Plugin.Name} Menu");
         GUILayout.BeginArea(new Rect(MENU_X + EDGE_SPACING, MENU_Y + EDGE_SPACING + 30, MENU_SIZE_X - EDGE_SPACING * 2, MENU_SIZE_Y - EDGE_SPACING * 2 - 30));
 
-        tabIndex = GUILayout.Toolbar(tabIndex, tabs);
-        switch ((Tabs)tabIndex)
+        _tabIndex = GUILayout.Toolbar(_tabIndex, tabs);
+        switch ((Tabs)_tabIndex)
         {
             case Tabs.Movie:
                 {
@@ -141,25 +148,9 @@ internal static partial class Overlay
                     filePath = GUILayout.TextField(filePath);
                     if (GUILayout.Button("Run", GUILayout.Width(40)))
                     {
-                        if (File.Exists(filePath))
+                        if (File.Exists(filePath) && !movieRunner.IsRunning)
                         {
-                            var text = File.ReadAllText(filePath);
-                            var movie = new Movie.Movie(Path.GetFileName(filePath), text, out var err, out var warnings);
-
-                            if (err != "")
-                            {
-                                Plugin.Log.LogError(err);
-                                return;
-                            }
-                            if (warnings.Count > 1)
-                            {
-                                foreach (var warn in warnings)
-                                {
-                                    Plugin.Log.LogWarning(warn);
-                                }
-                            }
-
-                            TAS.RunMovie(movie);
+                            movieRunner.RunFromPath(Path.GetFileName(filePath), ref env);
                         }
                     }
                     if (GUILayout.Button("Browse", GUILayout.Width(60)))
@@ -172,29 +163,15 @@ internal static partial class Overlay
             default:
                 // debug
                 {
-                    if (GUILayout.Button("test TAS") && !TAS.Running)
+                    if (GUILayout.Button("test TAS") && !movieRunner.IsRunning)
                     {
-                        var text = "";
+                        var path = "";
                         if (File.Exists("C:\\Users\\Yuki\\Documents\\test.uti"))
-                            text = File.ReadAllText("C:\\Users\\Yuki\\Documents\\test.uti");
+                            path = "C:\\Users\\Yuki\\Documents\\test.uti";
                         else if (File.Exists("C:\\Program Files (x86)\\Steam\\steamapps\\common\\It Steals\\test.uti"))
-                            text = File.ReadAllText("C:\\Program Files (x86)\\Steam\\steamapps\\common\\It Steals\\test.uti");
-                        var movie = new Movie.Movie("test.uti", text, out var err, out var warnings);
-
-                        if (err != "")
-                        {
-                            Plugin.Log.LogError(err);
-                            return;
-                        }
-                        if (warnings.Count > 1)
-                        {
-                            foreach (var warn in warnings)
-                            {
-                                Plugin.Log.LogWarning(warn);
-                            }
-                        }
-
-                        TAS.RunMovie(movie);
+                            path =
+                                "\"C:\\\\Program Files (x86)\\\\Steam\\\\steamapps\\\\common\\\\It Steals\\\\test.uti\"";
+                        movieRunner.RunFromPath(path, ref env);
                     }
                     break;
                 }
