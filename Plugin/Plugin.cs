@@ -36,8 +36,12 @@ public class Plugin : BaseUnityPlugin
         Instance = this;
         Log = Logger;
 
+        Log.LogDebug("init patch");
         Harmony harmony = new($"{Name}HarmonyPatch");
         harmony.PatchAll();
+        Log.LogDebug("post init patch");
+
+        Kernel.Get<PatchReverseInvoker>().SetProperty(v => Time.captureFramerate = (int)v, 1000);
 
         // init fake file system
         // TODO way of getting device type
@@ -70,7 +74,8 @@ public class Plugin : BaseUnityPlugin
         var modules = new INinjectModule[]
         {
             new MovieModule(),
-            new GameEnvironmentModule()
+            new GameEnvironmentModule(),
+            new PatchReverseInvokerModule()
         };
 
         return new StandardKernel(modules);
