@@ -29,12 +29,12 @@ static class Helper
     {
         if (!mustCompleteNextFrame)
         {
-            Plugin.Log.LogDebug($"async scene load");
+            Plugin.Instance.Log.LogDebug($"async scene load");
             __result = new AsyncOperation();
             var wrap = new AsyncOperationWrap(__result);
             wrap.AssignUID();
             GameTracker.AsyncSceneLoad(sceneName, sceneBuildIndex, parameters, isAdditive, wrap);
-            Plugin.Log.LogDebug($"setting up async scene load, assigned UID {wrap.UID}");
+            Plugin.Instance.Log.LogDebug($"setting up async scene load, assigned UID {wrap.UID}");
             return false;
         }
         return true;

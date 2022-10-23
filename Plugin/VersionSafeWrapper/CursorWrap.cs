@@ -28,7 +28,7 @@ internal static class CursorWrap
             }
             if (!ScreenShowCursorExists)
             {
-                Plugin.Log.LogError("Failed to retrieve Screen.showCursor property");
+                Plugin.Instance.Log.LogError("Failed to retrieve Screen.showCursor property");
                 return false;
             }
             return Screen.showCursor;
@@ -42,7 +42,7 @@ internal static class CursorWrap
             }
             if (!ScreenShowCursorExists)
             {
-                Plugin.Log.LogError("Failed to set Screen.showCursor property");
+                Plugin.Instance.Log.LogError("Failed to set Screen.showCursor property");
                 return;
             }
             Screen.showCursor = value;
@@ -67,7 +67,7 @@ internal static class CursorWrap
             {
                 if (!ScreenLockCursorExists)
                 {
-                    Plugin.Log.LogError("Failed to unlock cursor, lockCursor property not found");
+                    Plugin.Instance.Log.LogError("Failed to unlock cursor, lockCursor property not found");
                     TempUnlocked = false;
                     return;
                 }
@@ -102,18 +102,18 @@ internal static class CursorWrap
                 }
                 else
                 {
-                    Plugin.Log.LogError("UnityEngine.CursorLockMode exists but the UnityEngine.Cursor.lockState is missing");
+                    Plugin.Instance.Log.LogError("UnityEngine.CursorLockMode exists but the UnityEngine.Cursor.lockState is missing");
                 }
             }
             else
             {
-                Plugin.Log.LogError("UnityEngine.CursorLockMode exists but the None variant is missing");
+                Plugin.Instance.Log.LogError("UnityEngine.CursorLockMode exists but the None variant is missing");
             }
             return;
         }
         if (!ScreenLockCursorExists)
         {
-            Plugin.Log.LogError("Failed to unlock cursor, lockCursor property not found");
+            Plugin.Instance.Log.LogError("Failed to unlock cursor, lockCursor property not found");
             return;
         }
         Screen.lockCursor = false;

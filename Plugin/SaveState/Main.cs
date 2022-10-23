@@ -22,7 +22,7 @@ internal static class Main
         //var sceneIndex = Scene.buildIndex(scene);
         var time = DateTime.Now;
         var frameCount = FakeGameState.GameTime.RenderedFrameCountOffset;
-        var fixedUpdateIndex = Plugin.FixedUpdateIndex;
+        var fixedUpdateIndex = Plugin.Instance.FixedUpdateIndex;
         // TODO only save this state if unity version has it
         //var cursorVisible = Cursor.visible;
         //var cursorLockState = Cursor.lockState;
@@ -35,22 +35,22 @@ internal static class Main
         testz = (float)position.Field("z").GetValue();
 
         Test = new State(/*sceneIndex,*/ time, frameCount, fixedUpdateIndex/*cursorVisible, cursorLockState,*/);
-        Plugin.Log.LogDebug("Saved test state");
+        Plugin.Instance.Log.LogDebug("Saved test state");
     }
 
     public static void Load()
     {
-        Plugin.Log.LogDebug("We are loading the test state");
+        Plugin.Instance.Log.LogDebug("We are loading the test state");
         var state = Test;
         pendingLoad = true;
         pendingLoadFixedUpdateIndex = state.FixedUpdateIndex;
         pendingState = state;
-        Plugin.Log.LogDebug(/*$"Scene: {state.Scene}, */$"Time: {state.Time}, FrameCount: {state.FrameCount}, FixedUpdateIndex: {state.FixedUpdateIndex}");
+        Plugin.Instance.Log.LogDebug(/*$"Scene: {state.Scene}, */$"Time: {state.Time}, FrameCount: {state.FrameCount}, FixedUpdateIndex: {state.FixedUpdateIndex}");
     }
 
     public static void Update()
     {
-        if (pendingLoad && Plugin.FixedUpdateIndex == pendingLoadFixedUpdateIndex)
+        if (pendingLoad && Plugin.Instance.FixedUpdateIndex == pendingLoadFixedUpdateIndex)
         {
             LoadOperation();
             pendingLoad = false;
@@ -59,7 +59,7 @@ internal static class Main
 
     public static void LoadOperation()
     {
-        Plugin.Log.LogDebug("Load operation starting");
+        Plugin.Instance.Log.LogDebug("Load operation starting");
         // TODO sort out depending on unity version
         //var scene = pendingState.Scene;
         //DateTime time = pendingState.Time;
@@ -75,6 +75,6 @@ internal static class Main
         _ = position.Field("y").SetValue(testy);
         _ = position.Field("z").SetValue(testz);
 
-        Plugin.Log.LogDebug($"Load operation finished, time: {DateTime.Now}, frameCount: {FakeGameState.GameTime.RenderedFrameCountOffset}");
+        Plugin.Instance.Log.LogDebug($"Load operation finished, time: {DateTime.Now}, frameCount: {FakeGameState.GameTime.RenderedFrameCountOffset}");
     }
 }
