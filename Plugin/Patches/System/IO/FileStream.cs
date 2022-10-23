@@ -1,16 +1,16 @@
-﻿using HarmonyLib;
-using Microsoft.Win32.SafeHandles;
-using System;
+﻿using System;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Remoting.Messaging;
+using HarmonyLib;
+using Microsoft.Win32.SafeHandles;
 using UniTASPlugin.FakeGameState.GameFileSystem;
 using DirOrig = System.IO.Directory;
 using FileStreamOrig = System.IO.FileStream;
 using PathOrig = System.IO.Path;
 
-namespace UniTASPlugin.Patches.__System.__IO;
+namespace UniTASPlugin.Patches.System.IO;
 
 [HarmonyPatch]
 static class FileStream

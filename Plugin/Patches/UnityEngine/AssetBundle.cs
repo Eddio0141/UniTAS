@@ -1,11 +1,11 @@
-﻿using HarmonyLib;
-using System;
+﻿using System;
 using System.IO;
 using System.Reflection;
+using HarmonyLib;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
 
-namespace UniTASPlugin.Patches.__UnityEngine;
+namespace UniTASPlugin.Patches.UnityEngine;
 
 // AssetBundleCreateRequest for static methods, AssetBundleRequest for instance methods
 // static
@@ -89,7 +89,7 @@ class LoadAssetAsync_Internal
         __result = new AssetBundleRequest();
         var wrap = new AsyncOperationWrap(__result);
         wrap.AssignUID();
-        AssetBundleRequestWrap.NewFakeInstance(wrap, (UnityEngine.Object)loadResult);
+        AssetBundleRequestWrap.NewFakeInstance(wrap, (global::UnityEngine.Object)loadResult);
         return false;
     }
 }
@@ -110,7 +110,7 @@ class LoadAssetWithSubAssetsAsync_Internal
         __result = new AssetBundleRequest();
         var wrap = new AsyncOperationWrap(__result);
         wrap.AssignUID();
-        AssetBundleRequestWrap.NewFakeInstance(wrap, (UnityEngine.Object[])loadResult);
+        AssetBundleRequestWrap.NewFakeInstance(wrap, (global::UnityEngine.Object[])loadResult);
         return false;
     }
 }

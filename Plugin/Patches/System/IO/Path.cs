@@ -1,13 +1,13 @@
-﻿using HarmonyLib;
-using System;
+﻿using System;
 using System.Globalization;
 using System.Reflection;
 using System.Text;
+using HarmonyLib;
 using UniTASPlugin.FakeGameState.GameFileSystem;
 using DirOrig = System.IO.Directory;
 using PathOrig = System.IO.Path;
 
-namespace UniTASPlugin.Patches.__System.__IO;
+namespace UniTASPlugin.Patches.System.IO;
 
 [HarmonyPatch]
 static class Path
@@ -148,7 +148,7 @@ static class Path
     [HarmonyPatch(typeof(PathOrig), "CleanPath")]
     class CleanPath
     {
-        static Exception Cleanup(MethodBase original, System.Exception ex)
+        static Exception Cleanup(MethodBase original, global::System.Exception ex)
         {
             return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
         }

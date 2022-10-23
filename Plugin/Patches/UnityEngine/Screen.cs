@@ -1,11 +1,11 @@
-﻿using HarmonyLib;
-using System;
+﻿using System;
 using System.Reflection;
+using HarmonyLib;
 using UniTASPlugin.GameOverlay;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
 
-namespace UniTASPlugin.Patches.__UnityEngine;
+namespace UniTASPlugin.Patches.UnityEngine;
 
 [HarmonyPatch(typeof(Screen), "showCursor", MethodType.Setter)]
 class set_showCursor

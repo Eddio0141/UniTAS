@@ -1,13 +1,12 @@
-﻿using HarmonyLib;
-using Ninject;
-using System;
+﻿using System;
 using System.Reflection;
+using HarmonyLib;
+using Ninject;
 using UniTASPlugin.GameEnvironment;
-using UniTASPlugin.GameEnvironment.InnerState.Input;
 using UnityEngine;
 using InputOrig = UnityEngine.Input;
 
-namespace UniTASPlugin.Patches.__UnityEngine;
+namespace UniTASPlugin.Patches.UnityEngine;
 
 [HarmonyPatch]
 internal static class Input

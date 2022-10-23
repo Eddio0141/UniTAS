@@ -1,15 +1,15 @@
-﻿using HarmonyLib;
-using System.Reflection;
+﻿using System.Reflection;
+using HarmonyLib;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
 
-namespace UniTASPlugin.Patches.__UnityEngine;
+namespace UniTASPlugin.Patches.UnityEngine;
 
 // TODO different unity version investigation
 [HarmonyPatch(typeof(AsyncOperation), "allowSceneActivation", MethodType.Setter)]
 class setAllowSceneActivation
 {
-    static System.Exception Cleanup(MethodBase original, System.Exception ex)
+    static global::System.Exception Cleanup(MethodBase original, global::System.Exception ex)
     {
         return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
@@ -24,7 +24,7 @@ class setAllowSceneActivation
 [HarmonyPatch(typeof(AsyncOperation), "allowSceneActivation", MethodType.Getter)]
 class getAllowSceneActivation
 {
-    static System.Exception Cleanup(MethodBase original, System.Exception ex)
+    static global::System.Exception Cleanup(MethodBase original, global::System.Exception ex)
     {
         return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
@@ -41,7 +41,7 @@ class getAllowSceneActivation
 [HarmonyPatch(typeof(AsyncOperation), nameof(AsyncOperation.progress), MethodType.Getter)]
 class progress
 {
-    static System.Exception Cleanup(MethodBase original, System.Exception ex)
+    static global::System.Exception Cleanup(MethodBase original, global::System.Exception ex)
     {
         return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
@@ -56,7 +56,7 @@ class progress
 [HarmonyPatch(typeof(AsyncOperation), nameof(AsyncOperation.isDone), MethodType.Getter)]
 class isDone
 {
-    static System.Exception Cleanup(MethodBase original, System.Exception ex)
+    static global::System.Exception Cleanup(MethodBase original, global::System.Exception ex)
     {
         return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
@@ -71,7 +71,7 @@ class isDone
 [HarmonyPatch(typeof(AsyncOperation), "InternalDestroy")]
 class InternalDestroy
 {
-    static System.Exception Cleanup(MethodBase original, System.Exception ex)
+    static global::System.Exception Cleanup(MethodBase original, global::System.Exception ex)
     {
         return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
