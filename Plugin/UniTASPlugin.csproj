@@ -45,6 +45,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="NInjectModules\" />
     <Folder Include="UpdateHelper\" />
   </ItemGroup>
 

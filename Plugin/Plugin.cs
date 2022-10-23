@@ -1,9 +1,12 @@
 ﻿using System;
 using BepInEx;
 using HarmonyLib;
+using Ninject;
+using Ninject.Modules;
 using UniTASPlugin.FakeGameState.GameFileSystem;
 using UniTASPlugin.GameOverlay;
 using UniTASPlugin.Movie;
+using UniTASPlugin.NInjectModules;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
 // ReSharper disable UnusedMember.Local
@@ -17,12 +20,19 @@ public class Plugin : BaseUnityPlugin
     public const string Name = "UniTAS";
     public const string Version = "0.1.0";
 
-    public static BepInEx.Logging.ManualLogSource Log;
+    public IKernel Kernel = InitKernel();
 
-    public static int FixedUpdateIndex { get; private set; } = -1;
+    public BepInEx.Logging.ManualLogSource Log;
+
+    public int FixedUpdateIndex { get; private set; } = -1;
+
+    public static Plugin Instance;
 
     private void Awake()
     {
+        if (Instance != null)
+            return;
+        Instance = this;
         Log = Logger;
 
         Harmony harmony = new($"{Name}HarmonyPatch");
@@ -54,12 +64,21 @@ public class Plugin : BaseUnityPlugin
         Log.LogInfo($"Plugin {Name} is loaded!");
     }
 
-    private IHostBuilder
+    private static IKernel InitKernel()
+    {
+        var modules = new INinjectModule[]
+        {
+            new MovieModule()
+        };
+
+        return new StandardKernel(modules);
+    }
 
     // unity execution order is Awake() -> FixedUpdate() -> Update()
     private void Update()
     {
         // TODO safe way of getting deltaTime
+        Kernel.Get<MovieRunner>()
         MovieRunner.Instance.Update(Time.deltaTime);
         Overlay.Update();
         // TODO if possible, put this at the first call of Update

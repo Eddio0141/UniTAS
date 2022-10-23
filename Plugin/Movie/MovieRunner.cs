@@ -1,26 +1,32 @@
 ﻿using System;
 using UniTASPlugin.GameEnvironment.Interfaces;
 using UniTASPlugin.Movie.ParseInterfaces;
-using UniTASPlugin.Movie.ScriptEngine;
+using UniTASPlugin.Movie.ScriptEngine.EngineInterfaces;
 
 namespace UniTASPlugin.Movie;
 
-public class MovieRunner
+public class MovieRunner<TEngine>
+where TEngine :
+IScriptEngineInitScript,
+IScriptEngineMovieEnd,
+IScriptEngineCurrentState,
+IScriptEngineAdvanceFrame
 {
     private readonly IMovieParser _parser;
-    private MovieScriptEngine _engine;
+    private readonly TEngine _scriptEngine;
     public bool IsRunning { get; private set; }
 
-    public MovieRunner(IMovieParser parser)
+    public MovieRunner(IMovieParser parser, TEngine scriptEngine)
     {
         IsRunning = false;
         _parser = parser;
+        _scriptEngine = scriptEngine;
     }
 
     public void RunFromPath<TEnv>(string path, ref TEnv env)
     where TEnv :
-        IRunVirtualEnvironmentProperty,
-        IInputStateProperty
+    IRunVirtualEnvironmentProperty,
+    IInputStateProperty
     {
         // TODO load text from path
         var pathText = path;
@@ -33,7 +39,7 @@ public class MovieRunner
         // TODO apply environment
 
         // init engine
-        _engine = new MovieScriptEngine(movie.Script);
+        _scriptEngine.Init(movie.Script);
 
         // set env
         env.InputState.ResetStates();
@@ -46,9 +52,11 @@ public class MovieRunner
 
     public void Update<TEnv>(ref TEnv env)
     where TEnv :
-        IRunVirtualEnvironmentProperty,
-        IInputStateProperty
+    IRunVirtualEnvironmentProperty,
+    IInputStateProperty
     {
+        if (IsRunning)
+            return;
         // TODO input handle
         /*MouseState.Position = new Vector2(fb.Mouse.X, fb.Mouse.Y);
         MouseState.LeftClick = fb.Mouse.Left;
@@ -83,7 +91,7 @@ public class MovieRunner
             }
         }*/
 
-        if (_engine.MovieEnd)
+        if (_scriptEngine.MovieEnd)
         {
             IsRunning = false;
             MovieEnd(ref env);
@@ -91,8 +99,8 @@ public class MovieRunner
         }
 
         // TODO
-        _engine.CurrentState();
-        _engine.AdvanceFrame();
+        _scriptEngine.CurrentState();
+        _scriptEngine.AdvanceFrame();
 
         throw new NotImplementedException();
     }
