@@ -38,7 +38,7 @@ internal static class SceneHelper
         var loader = LoadSceneAsyncNameIndexInternal();
         if (loader == null)
         {
-            Plugin.Log.LogError("Load scene async doesn't exist in this version of unity");
+            Plugin.Instance.Log.LogError("Load scene async doesn't exist in this version of unity");
             return;
         }
         _ = isAdditive.HasValue

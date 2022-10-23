@@ -23,7 +23,7 @@ class OnTextInput
 
     static void Prefix(char character)
     {
-        Plugin.Log.LogDebug($"OnTextInput({character})");
+        Plugin.Instance.Log.LogDebug($"OnTextInput({character})");
     }
 }
 */

@@ -1,6 +1,9 @@
 ﻿using HarmonyLib;
 using System;
 using System.Reflection;
+using Ninject;
+using UniTASPlugin.Movie;
+using UniTASPlugin.Movie.ScriptEngine;
 
 namespace UniTASPlugin.Patches.__UnityEngine.__EventSystems;
 
@@ -27,11 +30,8 @@ class isFocusedGetter
 
     static bool Prefix(ref bool __result)
     {
-        if (TAS.Running)
-        {
-            __result = true;
-            return false;
-        }
-        return true;
+        if (!Plugin.Instance.Kernel.Get<MovieRunner<MovieScriptEngine>>().IsRunning) return true;
+        __result = true;
+        return false;
     }
 }
