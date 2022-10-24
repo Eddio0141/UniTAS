@@ -1,4 +1,4 @@
-﻿using Ninject.Modules;
+﻿using NinjectWrap.Modules;
 using UniTASPlugin.GameEnvironment.Interfaces;
 
 namespace UniTASPlugin.NInjectModules;

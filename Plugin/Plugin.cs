@@ -1,8 +1,9 @@
 ﻿using System;
 using BepInEx;
 using HarmonyLib;
-using Ninject;
-using Ninject.Modules;
+using NinjectWrap;
+using NinjectWrap.Modules;
+using NinjectWrap.Syntax;
 using UniTASPlugin.FakeGameState.GameFileSystem;
 using UniTASPlugin.GameOverlay;
 using UniTASPlugin.Movie;

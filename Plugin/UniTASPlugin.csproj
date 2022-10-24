@@ -50,7 +50,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Ninject\src\Ninject\Ninject.csproj" />
+    <ProjectReference Include="..\Ninject\NinjectWrap\NinjectWrap.csproj" />
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">

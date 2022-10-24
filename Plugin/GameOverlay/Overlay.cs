@@ -1,5 +1,6 @@
 ﻿using System.Linq;
-using Ninject;
+using NinjectWrap;
+using NinjectWrap.Syntax;
 using UniTASPlugin.GameOverlay.GameConsole;
 using UniTASPlugin.Movie;
 using UniTASPlugin.Movie.ScriptEngine;
