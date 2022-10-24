@@ -1,4 +1,5 @@
-﻿/*using HarmonyLib;
+﻿// ReSharper disable CommentTypo
+/*using HarmonyLib;
 using UnityEngine;
 
 namespace UniTASPlugin.Patches.__UnityEngine;

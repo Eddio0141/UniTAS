@@ -3,11 +3,14 @@ using System.Reflection;
 using HarmonyLib;
 using UniTASPlugin.GameOverlay;
 using UniTASPlugin.VersionSafeWrapper;
-using UnityEngine;
+using ScreenOrig = UnityEngine.Screen;
+// ReSharper disable InconsistentNaming
+// ReSharper disable UnusedMember.Local
+// ReSharper disable CommentTypo
 
 namespace UniTASPlugin.Patches.UnityEngine;
 
-[HarmonyPatch(typeof(Screen), "showCursor", MethodType.Setter)]
+[HarmonyPatch(typeof(ScreenOrig), "showCursor", MethodType.Setter)]
 internal class set_showCursor
 {
     private static Exception Cleanup(MethodBase original, Exception ex)
@@ -23,7 +26,7 @@ internal class set_showCursor
     }
 }
 
-[HarmonyPatch(typeof(Screen), nameof(Screen.lockCursor), MethodType.Setter)]
+[HarmonyPatch(typeof(ScreenOrig), nameof(ScreenOrig.lockCursor), MethodType.Setter)]
 internal class set_lockCursor
 {
     private static Exception Cleanup(MethodBase original, Exception ex)
@@ -39,7 +42,7 @@ internal class set_lockCursor
 }
 
 /*
-[HarmonyPatch(typeof(Screen), nameof(Screen.width), MethodType.Getter)]
+[HarmonyPatch(typeof(ScreenOrig), nameof(ScreenOrig.width), MethodType.Getter)]
 class widthGetter
 {
     static System.Exception Cleanup(System.Reflection.MethodBase original, System.Exception ex)
@@ -54,7 +57,7 @@ class widthGetter
     }
 }
 
-[HarmonyPatch(typeof(Screen), nameof(Screen.height), MethodType.Getter)]
+[HarmonyPatch(typeof(ScreenOrig), nameof(ScreenOrig.height), MethodType.Getter)]
 class heightGetter
 {
     static System.Exception Cleanup(System.Reflection.MethodBase original, System.Exception ex)
@@ -89,7 +92,7 @@ public static ScreenOrientation orientation
 {
 	get
 	{
-		return Screen.GetScreenOrientation();
+		return ScreenOrig.GetScreenOrientation();
 	}
 	set
 	{
@@ -99,7 +102,7 @@ public static ScreenOrientation orientation
 			Debug.Log("ScreenOrientation.Unknown is deprecated. Please use ScreenOrientation.AutoRotation");
 			value = ScreenOrientation.AutoRotation;
 		}
-		Screen.RequestOrientation(value);
+		ScreenOrig.RequestOrientation(value);
 	}
 }
 
@@ -126,11 +129,11 @@ public static bool autorotateToPortrait
 {
 	get
 	{
-		return Screen.IsOrientationEnabled(EnabledOrientation.kAutorotateToPortrait);
+		return ScreenOrig.IsOrientationEnabled(EnabledOrientation.kAutorotateToPortrait);
 	}
 	set
 	{
-		Screen.SetOrientationEnabled(EnabledOrientation.kAutorotateToPortrait, value);
+		ScreenOrig.SetOrientationEnabled(EnabledOrientation.kAutorotateToPortrait, value);
 	}
 }
 
@@ -141,11 +144,11 @@ public static bool autorotateToPortraitUpsideDown
 {
 	get
 	{
-		return Screen.IsOrientationEnabled(EnabledOrientation.kAutorotateToPortraitUpsideDown);
+		return ScreenOrig.IsOrientationEnabled(EnabledOrientation.kAutorotateToPortraitUpsideDown);
 	}
 	set
 	{
-		Screen.SetOrientationEnabled(EnabledOrientation.kAutorotateToPortraitUpsideDown, value);
+		ScreenOrig.SetOrientationEnabled(EnabledOrientation.kAutorotateToPortraitUpsideDown, value);
 	}
 }
 
@@ -156,11 +159,11 @@ public static bool autorotateToLandscapeLeft
 {
 	get
 	{
-		return Screen.IsOrientationEnabled(EnabledOrientation.kAutorotateToLandscapeLeft);
+		return ScreenOrig.IsOrientationEnabled(EnabledOrientation.kAutorotateToLandscapeLeft);
 	}
 	set
 	{
-		Screen.SetOrientationEnabled(EnabledOrientation.kAutorotateToLandscapeLeft, value);
+		ScreenOrig.SetOrientationEnabled(EnabledOrientation.kAutorotateToLandscapeLeft, value);
 	}
 }
 
@@ -171,11 +174,11 @@ public static bool autorotateToLandscapeRight
 {
 	get
 	{
-		return Screen.IsOrientationEnabled(EnabledOrientation.kAutorotateToLandscapeRight);
+		return ScreenOrig.IsOrientationEnabled(EnabledOrientation.kAutorotateToLandscapeRight);
 	}
 	set
 	{
-		Screen.SetOrientationEnabled(EnabledOrientation.kAutorotateToLandscapeRight, value);
+		ScreenOrig.SetOrientationEnabled(EnabledOrientation.kAutorotateToLandscapeRight, value);
 	}
 }
 
@@ -186,7 +189,7 @@ public static Resolution currentResolution
 	get
 	{
 		Resolution result;
-		Screen.get_currentResolution_Injected(out result);
+		ScreenOrig.get_currentResolution_Injected(out result);
 		return result;
 	}
 }
@@ -208,7 +211,7 @@ public static Rect safeArea
 	get
 	{
 		Rect result;
-		Screen.get_safeArea_Injected(out result);
+		ScreenOrig.get_safeArea_Injected(out result);
 		return result;
 	}
 }
@@ -225,19 +228,19 @@ public static extern void SetResolution(int width, int height, FullScreenMode fu
 // Token: 0x06000839 RID: 2105 RVA: 0x0000C56D File Offset: 0x0000A76D
 public static void SetResolution(int width, int height, FullScreenMode fullscreenMode)
 {
-	Screen.SetResolution(width, height, fullscreenMode, 0);
+	ScreenOrig.SetResolution(width, height, fullscreenMode, 0);
 }
 
 // Token: 0x0600083A RID: 2106 RVA: 0x0000C57A File Offset: 0x0000A77A
 public static void SetResolution(int width, int height, bool fullscreen, [UnityEngine.Internal.DefaultValue("0")] int preferredRefreshRate)
 {
-	Screen.SetResolution(width, height, fullscreen ? FullScreenMode.FullScreenWindow : FullScreenMode.Windowed, preferredRefreshRate);
+	ScreenOrig.SetResolution(width, height, fullscreen ? FullScreenMode.FullScreenWindow : FullScreenMode.Windowed, preferredRefreshRate);
 }
 
 // Token: 0x0600083B RID: 2107 RVA: 0x0000C58D File Offset: 0x0000A78D
 public static void SetResolution(int width, int height, bool fullscreen)
 {
-	Screen.SetResolution(width, height, fullscreen, 0);
+	ScreenOrig.SetResolution(width, height, fullscreen, 0);
 }
 
 // Token: 0x170001DF RID: 479
@@ -246,7 +249,7 @@ public static Vector2Int mainWindowPosition
 {
 	get
 	{
-		return Screen.GetMainWindowPosition();
+		return ScreenOrig.GetMainWindowPosition();
 	}
 }
 
@@ -256,7 +259,7 @@ public static DisplayInfo mainWindowDisplayInfo
 {
 	get
 	{
-		return Screen.GetMainWindowDisplayInfo();
+		return ScreenOrig.GetMainWindowDisplayInfo();
 	}
 }
 
@@ -268,13 +271,13 @@ public static void GetDisplayLayout(List<DisplayInfo> displayLayout)
 	{
 		throw new ArgumentNullException();
 	}
-	Screen.GetDisplayLayoutImpl(displayLayout);
+	ScreenOrig.GetDisplayLayoutImpl(displayLayout);
 }
 
 // Token: 0x0600083F RID: 2111 RVA: 0x0000C5F0 File Offset: 0x0000A7F0
 public static AsyncOperation MoveMainWindowTo(in DisplayInfo display, Vector2Int position)
 {
-	return Screen.MoveMainWindowImpl(display, position);
+	return ScreenOrig.MoveMainWindowImpl(display, position);
 }
 
 // Token: 0x06000840 RID: 2112 RVA: 0x0000C60C File Offset: 0x0000A80C
@@ -282,7 +285,7 @@ public static AsyncOperation MoveMainWindowTo(in DisplayInfo display, Vector2Int
 private static Vector2Int GetMainWindowPosition()
 {
 	Vector2Int result;
-	Screen.GetMainWindowPosition_Injected(out result);
+	ScreenOrig.GetMainWindowPosition_Injected(out result);
 	return result;
 }
 
@@ -291,7 +294,7 @@ private static Vector2Int GetMainWindowPosition()
 private static DisplayInfo GetMainWindowDisplayInfo()
 {
 	DisplayInfo result;
-	Screen.GetMainWindowDisplayInfo_Injected(out result);
+	ScreenOrig.GetMainWindowDisplayInfo_Injected(out result);
 	return result;
 }
 
@@ -304,7 +307,7 @@ private static extern void GetDisplayLayoutImpl(List<DisplayInfo> displayLayout)
 [FreeFunction("MoveMainWindow")]
 private static AsyncOperation MoveMainWindowImpl(in DisplayInfo display, Vector2Int position)
 {
-	return Screen.MoveMainWindowImpl_Injected(display, ref position);
+	return ScreenOrig.MoveMainWindowImpl_Injected(display, ref position);
 }
 
 // Token: 0x170001E1 RID: 481
@@ -394,7 +397,7 @@ private static extern AsyncOperation MoveMainWindowImpl_Injected(in DisplayInfo 
 		{
 			get
 			{
-				return Screen.GetScreenOrientation();
+				return ScreenOrig.GetScreenOrientation();
 			}
 			set
 			{
@@ -404,7 +407,7 @@ private static extern AsyncOperation MoveMainWindowImpl_Injected(in DisplayInfo 
 					Debug.Log("ScreenOrientation.Unknown is deprecated. Please use ScreenOrientation.AutoRotation");
 					value = ScreenOrientation.AutoRotation;
 				}
-				Screen.RequestOrientation(value);
+				ScreenOrig.RequestOrientation(value);
 			}
 		}
 
@@ -431,11 +434,11 @@ private static extern AsyncOperation MoveMainWindowImpl_Injected(in DisplayInfo 
 		{
 			get
 			{
-				return Screen.IsOrientationEnabled(EnabledOrientation.kAutorotateToPortrait);
+				return ScreenOrig.IsOrientationEnabled(EnabledOrientation.kAutorotateToPortrait);
 			}
 			set
 			{
-				Screen.SetOrientationEnabled(EnabledOrientation.kAutorotateToPortrait, value);
+				ScreenOrig.SetOrientationEnabled(EnabledOrientation.kAutorotateToPortrait, value);
 			}
 		}
 
@@ -446,11 +449,11 @@ private static extern AsyncOperation MoveMainWindowImpl_Injected(in DisplayInfo 
 		{
 			get
 			{
-				return Screen.IsOrientationEnabled(EnabledOrientation.kAutorotateToPortraitUpsideDown);
+				return ScreenOrig.IsOrientationEnabled(EnabledOrientation.kAutorotateToPortraitUpsideDown);
 			}
 			set
 			{
-				Screen.SetOrientationEnabled(EnabledOrientation.kAutorotateToPortraitUpsideDown, value);
+				ScreenOrig.SetOrientationEnabled(EnabledOrientation.kAutorotateToPortraitUpsideDown, value);
 			}
 		}
 
@@ -461,11 +464,11 @@ private static extern AsyncOperation MoveMainWindowImpl_Injected(in DisplayInfo 
 		{
 			get
 			{
-				return Screen.IsOrientationEnabled(EnabledOrientation.kAutorotateToLandscapeLeft);
+				return ScreenOrig.IsOrientationEnabled(EnabledOrientation.kAutorotateToLandscapeLeft);
 			}
 			set
 			{
-				Screen.SetOrientationEnabled(EnabledOrientation.kAutorotateToLandscapeLeft, value);
+				ScreenOrig.SetOrientationEnabled(EnabledOrientation.kAutorotateToLandscapeLeft, value);
 			}
 		}
 
@@ -476,11 +479,11 @@ private static extern AsyncOperation MoveMainWindowImpl_Injected(in DisplayInfo 
 		{
 			get
 			{
-				return Screen.IsOrientationEnabled(EnabledOrientation.kAutorotateToLandscapeRight);
+				return ScreenOrig.IsOrientationEnabled(EnabledOrientation.kAutorotateToLandscapeRight);
 			}
 			set
 			{
-				Screen.SetOrientationEnabled(EnabledOrientation.kAutorotateToLandscapeRight, value);
+				ScreenOrig.SetOrientationEnabled(EnabledOrientation.kAutorotateToLandscapeRight, value);
 			}
 		}
 
@@ -491,7 +494,7 @@ private static extern AsyncOperation MoveMainWindowImpl_Injected(in DisplayInfo 
 			get
 			{
 				Resolution result;
-				Screen.get_currentResolution_Injected(out result);
+				ScreenOrig.get_currentResolution_Injected(out result);
 				return result;
 			}
 		}
@@ -513,7 +516,7 @@ private static extern AsyncOperation MoveMainWindowImpl_Injected(in DisplayInfo 
 			get
 			{
 				Rect result;
-				Screen.get_safeArea_Injected(out result);
+				ScreenOrig.get_safeArea_Injected(out result);
 				return result;
 			}
 		}
@@ -526,7 +529,7 @@ private static extern AsyncOperation MoveMainWindowImpl_Injected(in DisplayInfo 
 		[NativeName("RequestResolution")]
 		public static void SetResolution(int width, int height, FullScreenMode fullscreenMode, RefreshRate preferredRefreshRate)
 		{
-			Screen.SetResolution_Injected(width, height, fullscreenMode, ref preferredRefreshRate);
+			ScreenOrig.SetResolution_Injected(width, height, fullscreenMode, ref preferredRefreshRate);
 		}
 
 		// Token: 0x06000917 RID: 2327 RVA: 0x0000E8D4 File Offset: 0x0000CAD4
@@ -539,7 +542,7 @@ private static extern AsyncOperation MoveMainWindowImpl_Injected(in DisplayInfo 
 			{
 				preferredRefreshRate = 0;
 			}
-			Screen.SetResolution(width, height, fullscreenMode, new RefreshRate
+			ScreenOrig.SetResolution(width, height, fullscreenMode, new RefreshRate
 			{
 				numerator = (uint)preferredRefreshRate,
 				denominator = 1U
@@ -549,7 +552,7 @@ private static extern AsyncOperation MoveMainWindowImpl_Injected(in DisplayInfo 
 		// Token: 0x06000918 RID: 2328 RVA: 0x0000E910 File Offset: 0x0000CB10
 		public static void SetResolution(int width, int height, FullScreenMode fullscreenMode)
 		{
-			Screen.SetResolution(width, height, fullscreenMode, new RefreshRate
+			ScreenOrig.SetResolution(width, height, fullscreenMode, new RefreshRate
 			{
 				numerator = 0U,
 				denominator = 1U
@@ -566,7 +569,7 @@ private static extern AsyncOperation MoveMainWindowImpl_Injected(in DisplayInfo 
 			{
 				preferredRefreshRate = 0;
 			}
-			Screen.SetResolution(width, height, fullscreen ? FullScreenMode.FullScreenWindow : FullScreenMode.Windowed, new RefreshRate
+			ScreenOrig.SetResolution(width, height, fullscreen ? FullScreenMode.FullScreenWindow : FullScreenMode.Windowed, new RefreshRate
 			{
 				numerator = (uint)preferredRefreshRate,
 				denominator = 1U
@@ -576,7 +579,7 @@ private static extern AsyncOperation MoveMainWindowImpl_Injected(in DisplayInfo 
 		// Token: 0x0600091A RID: 2330 RVA: 0x0000E981 File Offset: 0x0000CB81
 		public static void SetResolution(int width, int height, bool fullscreen)
 		{
-			Screen.SetResolution(width, height, fullscreen, 0);
+			ScreenOrig.SetResolution(width, height, fullscreen, 0);
 		}
 
 		// Token: 0x170001FE RID: 510
@@ -585,7 +588,7 @@ private static extern AsyncOperation MoveMainWindowImpl_Injected(in DisplayInfo 
 		{
 			get
 			{
-				return Screen.GetMainWindowPosition();
+				return ScreenOrig.GetMainWindowPosition();
 			}
 		}
 
@@ -595,7 +598,7 @@ private static extern AsyncOperation MoveMainWindowImpl_Injected(in DisplayInfo 
 		{
 			get
 			{
-				return Screen.GetMainWindowDisplayInfo();
+				return ScreenOrig.GetMainWindowDisplayInfo();
 			}
 		}
 
@@ -607,13 +610,13 @@ private static extern AsyncOperation MoveMainWindowImpl_Injected(in DisplayInfo 
 			{
 				throw new ArgumentNullException();
 			}
-			Screen.GetDisplayLayoutImpl(displayLayout);
+			ScreenOrig.GetDisplayLayoutImpl(displayLayout);
 		}
 
 		// Token: 0x0600091E RID: 2334 RVA: 0x0000E9E4 File Offset: 0x0000CBE4
 		public static AsyncOperation MoveMainWindowTo(in DisplayInfo display, Vector2Int position)
 		{
-			return Screen.MoveMainWindowImpl(display, position);
+			return ScreenOrig.MoveMainWindowImpl(display, position);
 		}
 
 		// Token: 0x0600091F RID: 2335 RVA: 0x0000EA00 File Offset: 0x0000CC00
@@ -621,7 +624,7 @@ private static extern AsyncOperation MoveMainWindowImpl_Injected(in DisplayInfo 
 		private static Vector2Int GetMainWindowPosition()
 		{
 			Vector2Int result;
-			Screen.GetMainWindowPosition_Injected(out result);
+			ScreenOrig.GetMainWindowPosition_Injected(out result);
 			return result;
 		}
 
@@ -630,7 +633,7 @@ private static extern AsyncOperation MoveMainWindowImpl_Injected(in DisplayInfo 
 		private static DisplayInfo GetMainWindowDisplayInfo()
 		{
 			DisplayInfo result;
-			Screen.GetMainWindowDisplayInfo_Injected(out result);
+			ScreenOrig.GetMainWindowDisplayInfo_Injected(out result);
 			return result;
 		}
 
@@ -643,7 +646,7 @@ private static extern AsyncOperation MoveMainWindowImpl_Injected(in DisplayInfo 
 		[FreeFunction("MoveMainWindow")]
 		private static AsyncOperation MoveMainWindowImpl(in DisplayInfo display, Vector2Int position)
 		{
-			return Screen.MoveMainWindowImpl_Injected(display, ref position);
+			return ScreenOrig.MoveMainWindowImpl_Injected(display, ref position);
 		}
 
 		// Token: 0x17000200 RID: 512

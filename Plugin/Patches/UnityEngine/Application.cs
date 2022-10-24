@@ -1,25 +1,31 @@
 ﻿using System;
 using System.Reflection;
 using HarmonyLib;
-using UnityEngine;
+using AppOrig = UnityEngine.Application;
+// ReSharper disable UnusedMember.Local
+// ReSharper disable RedundantAssignment
 
 namespace UniTASPlugin.Patches.UnityEngine;
 
-[HarmonyPatch(typeof(Application), "LoadLevelAsync")]
-internal class LoadLevelAsync
+[HarmonyPatch]
+internal static class Application
 {
-    private static MethodBase TargetMethod()
+    [HarmonyPatch(typeof(AppOrig), "LoadLevelAsync")]
+    private class LoadLevelAsync
     {
-        return AccessTools.Method(typeof(Application), "LoadLevelAsync", new[] { typeof(string), typeof(int), typeof(bool), typeof(bool) });
-    }
+        private static MethodBase TargetMethod()
+        {
+            return AccessTools.Method(typeof(AppOrig), "LoadLevelAsync", new[] { typeof(string), typeof(int), typeof(bool), typeof(bool) });
+        }
 
-    private static Exception Cleanup(MethodBase original, Exception ex)
-    {
-        return PatcherHelper.Cleanup_IgnoreException(original, ex);
-    }
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+        }
 
-    private static void Prefix(ref bool mustCompleteNextFrame)
-    {
-        mustCompleteNextFrame = true;
+        private static void Prefix(ref bool mustCompleteNextFrame)
+        {
+            mustCompleteNextFrame = true;
+        }
     }
 }

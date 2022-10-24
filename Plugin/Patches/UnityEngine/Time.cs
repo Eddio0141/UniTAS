@@ -5,6 +5,10 @@ using Ninject;
 using UniTASPlugin.FakeGameState;
 using UniTASPlugin.GameEnvironment;
 using TimeOrig = UnityEngine.Time;
+// ReSharper disable InconsistentNaming
+// ReSharper disable IdentifierTypo
+// ReSharper disable UnusedMember.Local
+// ReSharper disable CommentTypo
 
 namespace UniTASPlugin.Patches.UnityEngine;
 

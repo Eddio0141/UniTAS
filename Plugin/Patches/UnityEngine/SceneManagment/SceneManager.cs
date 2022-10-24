@@ -2,7 +2,7 @@
 using System.Reflection;
 using HarmonyLib;
 using UniTASPlugin.VersionSafeWrapper;
-using UnityEngine;
+using AsyncOpOrig = UnityEngine.AsyncOperation;
 // ReSharper disable IdentifierTypo
 // ReSharper disable UnusedMember.Local
 // ReSharper disable RedundantAssignment
@@ -32,11 +32,11 @@ internal static class SceneManager
             return AccessTools.Method(GetSceneManager(), "UnloadSceneNameIndexInternal", new[] { typeof(string), typeof(int), typeof(bool), GetUnloadSceneOptions(), typeof(bool) });
         }
 
-        public static bool AsyncSceneLoad(bool mustCompleteNextFrame, string sceneName, int sceneBuildIndex, object parameters, bool? isAdditive, ref AsyncOperation __result)
+        public static bool AsyncSceneLoad(bool mustCompleteNextFrame, string sceneName, int sceneBuildIndex, object parameters, bool? isAdditive, ref AsyncOpOrig __result)
         {
             if (mustCompleteNextFrame) return true;
             Plugin.Instance.Log.LogDebug("async scene load");
-            __result = new AsyncOperation();
+            __result = new AsyncOpOrig();
             var wrap = new AsyncOperationWrap(__result);
             wrap.AssignUID();
             GameTracker.AsyncSceneLoad(sceneName, sceneBuildIndex, parameters, isAdditive, wrap);
@@ -100,7 +100,7 @@ internal static class SceneManager
             return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        private static bool Prefix(string sceneName, int sceneBuildIndex, bool isAdditive, bool mustCompleteNextFrame, ref AsyncOperation __result)
+        private static bool Prefix(string sceneName, int sceneBuildIndex, bool isAdditive, bool mustCompleteNextFrame, ref AsyncOpOrig __result)
         {
             return Helper.AsyncSceneLoad(mustCompleteNextFrame, sceneName, sceneBuildIndex, null, isAdditive, ref __result);
         }
@@ -121,7 +121,7 @@ internal static class SceneManager
             return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        private static bool Prefix(bool mustCompleteNextFrame, string sceneName, int sceneBuildIndex, object parameters, ref AsyncOperation __result)
+        private static bool Prefix(bool mustCompleteNextFrame, string sceneName, int sceneBuildIndex, object parameters, ref AsyncOpOrig __result)
         {
             return Helper.AsyncSceneLoad(mustCompleteNextFrame, sceneName, sceneBuildIndex, parameters, null, ref __result);
         }

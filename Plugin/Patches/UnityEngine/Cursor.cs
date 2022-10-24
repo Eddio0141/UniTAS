@@ -4,78 +4,84 @@ using HarmonyLib;
 using UniTASPlugin.GameOverlay;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
+// ReSharper disable UnusedMember.Local
+// ReSharper disable InconsistentNaming
 
 namespace UniTASPlugin.Patches.UnityEngine;
 
-internal class CursorHelper
-{
-    public static Type CursorType()
-    {
-        return AccessTools.TypeByName("UnityEngine.Cursor");
-    }
-
-    public static Type CursorLockMode()
-    {
-        return AccessTools.TypeByName("UnityEngine.CursorLockMode");
-    }
-}
-
 [HarmonyPatch]
-internal class set_visible
+internal static class Cursor
 {
-    private static MethodBase TargetMethod()
+    internal class CursorHelper
     {
-        return AccessTools.PropertySetter(CursorHelper.CursorType(), "visible");
+        public static Type CursorType()
+        {
+            return AccessTools.TypeByName("UnityEngine.Cursor");
+        }
+
+        public static Type CursorLockMode()
+        {
+            return AccessTools.TypeByName("UnityEngine.CursorLockMode");
+        }
     }
 
-    private static Exception Cleanup(MethodBase original, Exception ex)
+    [HarmonyPatch]
+    internal class set_visible
     {
-        return PatcherHelper.Cleanup_IgnoreException(original, ex);
+        private static MethodBase TargetMethod()
+        {
+            return AccessTools.PropertySetter(CursorHelper.CursorType(), "visible");
+        }
+
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+        }
+
+        private static void Prefix(ref bool value)
+        {
+            Overlay.UnityCursorVisible = value;
+            if (Overlay.ShowCursor)
+                value = false;
+        }
     }
 
-    private static void Prefix(ref bool value)
+    [HarmonyPatch]
+    internal class SetCursor
     {
-        Overlay.UnityCursorVisible = value;
-        if (Overlay.ShowCursor)
-            value = false;
-    }
-}
+        private static MethodBase TargetMethod()
+        {
+            return AccessTools.Method(CursorHelper.CursorType(), "SetCursor", new[] { typeof(Texture2D), typeof(Vector2), CursorHelper.CursorLockMode() });
+        }
 
-[HarmonyPatch]
-internal class SetCursor
-{
-    private static MethodBase TargetMethod()
-    {
-        return AccessTools.Method(CursorHelper.CursorType(), "SetCursor", new[] { typeof(Texture2D), typeof(Vector2), CursorHelper.CursorLockMode() });
-    }
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+        }
 
-    private static Exception Cleanup(MethodBase original, Exception ex)
-    {
-        return PatcherHelper.Cleanup_IgnoreException(original, ex);
+        private static void Prefix(Texture2D texture)
+        {
+            Overlay.SetCursorTexture(texture);
+        }
     }
 
-    private static void Prefix(Texture2D texture)
+    [HarmonyPatch]
+    internal class set_lockState
     {
-        Overlay.SetCursorTexture(texture);
-    }
-}
+        private static MethodBase TargetMethod()
+        {
+            return AccessTools.PropertySetter(CursorHelper.CursorType(), "lockState");
+        }
 
-[HarmonyPatch]
-internal class set_lockState
-{
-    private static MethodBase TargetMethod()
-    {
-        return AccessTools.PropertySetter(CursorHelper.CursorType(), "lockState");
-    }
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+        }
 
-    private static Exception Cleanup(MethodBase original, Exception ex)
-    {
-        return PatcherHelper.Cleanup_IgnoreException(original, ex);
-    }
-
-    private static void Prefix(object value)
-    {
-        if (CursorWrap.TempUnlocked)
-            CursorWrap.TempStoreLockVariant = (int)value;
+        private static void Prefix(object value)
+        {
+            if (CursorWrap.TempUnlocked)
+                CursorWrap.TempStoreLockVariant = (int)value;
+        }
     }
 }

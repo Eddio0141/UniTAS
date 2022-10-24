@@ -2,21 +2,29 @@
 using System.Reflection;
 using HarmonyLib;
 using UniTASPlugin.VersionSafeWrapper;
-using UnityEngine;
+using AssetBundleOrig = UnityEngine.AssetBundle;
+using AssetBundleCreateRequestOrig = UnityEngine.AssetBundleCreateRequest;
+// ReSharper disable InconsistentNaming
+// ReSharper disable UnusedMember.Local
+// ReSharper disable SuggestBaseTypeForParameter
 
 namespace UniTASPlugin.Patches.UnityEngine;
 
-[HarmonyPatch(typeof(AssetBundleCreateRequest), nameof(AssetBundleCreateRequest.assetBundle), MethodType.Getter)]
-internal class get_assetBundle
+[HarmonyPatch]
+internal static class AssetBundleCreateRequest
 {
-    private static Exception Cleanup(MethodBase original, Exception ex)
+    [HarmonyPatch(typeof(AssetBundleCreateRequestOrig), nameof(AssetBundleCreateRequestOrig.assetBundle), MethodType.Getter)]
+    internal class get_assetBundle
     {
-        return PatcherHelper.Cleanup_IgnoreException(original, ex);
-    }
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+        }
 
-    private static bool Prefix(AssetBundleCreateRequest __instance, ref AssetBundle __result)
-    {
-        var wrap = new AsyncOperationWrap(__instance);
-        return !AssetBundleCreateRequestWrap.InstanceTracker.TryGetValue(wrap.UID, out __result);
+        private static bool Prefix(AssetBundleCreateRequestOrig __instance, ref AssetBundleOrig __result)
+        {
+            var wrap = new AsyncOperationWrap(__instance);
+            return !AssetBundleCreateRequestWrap.InstanceTracker.TryGetValue(wrap.UID, out __result);
+        }
     }
 }

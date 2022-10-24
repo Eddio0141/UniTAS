@@ -1,48 +1,55 @@
 ﻿using System;
 using System.Reflection;
 using HarmonyLib;
-using Object = UnityEngine.Object;
+using ObjectOrig = UnityEngine.Object;
+// ReSharper disable IdentifierTypo
+// ReSharper disable UnusedMember.Local
+// ReSharper disable InconsistentNaming
 
 namespace UniTASPlugin.Patches.UnityEngine;
 
-[HarmonyPatch(typeof(Object), nameof(Object.DontDestroyOnLoad))]
-internal class DontDestroyOnLoad
+[HarmonyPatch]
+internal static class Object
 {
-    private static Exception Cleanup(MethodBase original, Exception ex)
+    [HarmonyPatch(typeof(ObjectOrig), nameof(ObjectOrig.DontDestroyOnLoad))]
+    internal class DontDestroyOnLoad
     {
-        return PatcherHelper.Cleanup_IgnoreException(original, ex);
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+        }
+
+        private static void Prefix(ObjectOrig target)
+        {
+            GameTracker.DontDestroyOnLoadCall(target);
+        }
     }
 
-    private static void Prefix(Object target)
+    [HarmonyPatch(typeof(ObjectOrig), nameof(ObjectOrig.Destroy), typeof(ObjectOrig), typeof(float))]
+    internal class Destroy__Object__float
     {
-        GameTracker.DontDestroyOnLoadCall(target);
-    }
-}
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+        }
 
-[HarmonyPatch(typeof(Object), nameof(Object.Destroy), typeof(Object), typeof(float))]
-internal class Destroy__Object__float
-{
-    private static Exception Cleanup(MethodBase original, Exception ex)
-    {
-        return PatcherHelper.Cleanup_IgnoreException(original, ex);
-    }
-
-    private static void Prefix(Object obj)
-    {
-        GameTracker.DestroyObject(obj);
-    }
-}
-
-[HarmonyPatch(typeof(Object), nameof(Object.DestroyImmediate), typeof(Object), typeof(bool))]
-internal class DestroyImmediate__Object__bool
-{
-    private static Exception Cleanup(MethodBase original, Exception ex)
-    {
-        return PatcherHelper.Cleanup_IgnoreException(original, ex);
+        private static void Prefix(ObjectOrig obj)
+        {
+            GameTracker.DestroyObject(obj);
+        }
     }
 
-    private static void Prefix(Object obj)
+    [HarmonyPatch(typeof(ObjectOrig), nameof(ObjectOrig.DestroyImmediate), typeof(ObjectOrig), typeof(bool))]
+    internal class DestroyImmediate__Object__bool
     {
-        GameTracker.DestroyObject(obj);
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+        }
+
+        private static void Prefix(ObjectOrig obj)
+        {
+            GameTracker.DestroyObject(obj);
+        }
     }
 }
