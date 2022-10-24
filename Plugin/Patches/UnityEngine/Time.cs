@@ -28,6 +28,8 @@ internal static class Time
         private static bool Prefix()
         {
             var kernel = Plugin.Instance.Kernel;
+            if (kernel.Get<PatchReverseInvoker>().Invoking)
+                return true;
             // if TAS is running / preparing and we aren't setting the frametime, reject
             // TODO below
             //return !(TAS.Running || TAS.PreparingRun);
@@ -46,6 +48,8 @@ internal static class Time
         private static bool Prefix()
         {
             var kernel = Plugin.Instance.Kernel;
+            if (kernel.Get<PatchReverseInvoker>().Invoking)
+                return true;
             // if TAS is running / preparing and we aren't setting the frametime, reject
             // TODO below
             //return !(TAS.Running || TAS.PreparingRun);
@@ -63,6 +67,8 @@ internal static class Time
 
         private static void Postfix(ref float __result)
         {
+            if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
+                return;
             __result = (float)(__result - GameTime.FixedUnscaledTimeOffset);
         }
     }
@@ -80,6 +86,8 @@ internal static class Time
 
         private static void Postfix(ref float __result)
         {
+            if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
+                return;
             // When called from inside MonoBehaviour's FixedUpdate, it returns TimeOrig.fixedUnscaledTime
             __result = inFixedTimeStep.PropertyExists() && inFixedTimeStep.GetValue<bool>()
                 ? fixedUnscaledTime.GetValue<float>()
@@ -100,6 +108,8 @@ internal static class Time
 
         private static void Postfix(ref double __result)
         {
+            if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
+                return;
             // When called from inside MonoBehaviour's FixedUpdate, it returns TimeOrig.fixedUnscaledTimeAsDouble
             if (inFixedTimeStep.PropertyExists() && inFixedTimeStep.GetValue<bool>())
                 __result = fixedUnscaledTimeAsDouble.GetValue<double>();
@@ -118,6 +128,8 @@ internal static class Time
 
         private static void Postfix(ref double __result)
         {
+            if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
+                return;
             __result -= GameTime.FixedUnscaledTimeOffset;
         }
     }
@@ -132,6 +144,8 @@ internal static class Time
 
         private static void Postfix(ref int __result)
         {
+            if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
+                return;
             __result = (int)((ulong)__result - GameTime.FrameCountRestartOffset);
         }
     }
@@ -146,6 +160,8 @@ internal static class Time
 
         private static void Postfix(ref int __result)
         {
+            if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
+                return;
             __result = (int)((ulong)__result - GameTime.RenderedFrameCountOffset);
         }
     }
@@ -160,6 +176,8 @@ internal static class Time
 
         private static void Postfix(ref float __result)
         {
+            if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
+                return;
             __result = (float)(__result - GameTime.SecondsSinceStartUpOffset);
         }
     }
@@ -174,6 +192,8 @@ internal static class Time
 
         private static void Postfix(ref double __result)
         {
+            if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
+                return;
             __result -= GameTime.SecondsSinceStartUpOffset;
         }
     }
@@ -188,6 +208,8 @@ internal static class Time
 
         private static void Postfix(ref float __result)
         {
+            if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
+                return;
             __result = (float)(__result - GameTime.ScaledTimeOffset);
         }
     }
@@ -202,6 +224,8 @@ internal static class Time
 
         private static void Postfix(ref double __result)
         {
+            if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
+                return;
             __result -= GameTime.ScaledTimeOffset;
         }
     }
@@ -216,6 +240,8 @@ internal static class Time
 
         private static void Postfix(ref float __result)
         {
+            if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
+                return;
             __result = (float)(__result - GameTime.ScaledFixedTimeOffset);
         }
     }
@@ -230,6 +256,8 @@ internal static class Time
 
         private static void Postfix(ref double __result)
         {
+            if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
+                return;
             __result -= GameTime.ScaledFixedTimeOffset;
         }
     }

@@ -20,7 +20,7 @@ internal static class EventSystem
     }
 
     [HarmonyPatch]
-    internal class isFocusedGetter
+    private class isFocusedGetter
     {
         private static MethodBase TargetMethod()
         {
@@ -34,6 +34,8 @@ internal static class EventSystem
 
         private static bool Prefix(ref bool __result)
         {
+            if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
+                return true;
             if (!Plugin.Instance.Kernel.Get<VirtualEnvironment>().RunVirtualEnvironment) return true;
             __result = true;
             return false;

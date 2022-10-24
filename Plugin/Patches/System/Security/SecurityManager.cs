@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using HarmonyLib;
+using Ninject;
 // ReSharper disable UnusedMember.Local
 
 namespace UniTASPlugin.Patches.System.Security;
@@ -24,7 +25,7 @@ internal static class SecurityManager
 
         private static bool Prefix()
         {
-            return false;
+            return Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking;
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using HarmonyLib;
+using Ninject;
 using UniTASPlugin.GameOverlay;
 using UniTASPlugin.VersionSafeWrapper;
 using ScreenOrig = UnityEngine.Screen;
@@ -10,34 +11,44 @@ using ScreenOrig = UnityEngine.Screen;
 
 namespace UniTASPlugin.Patches.UnityEngine;
 
-[HarmonyPatch(typeof(ScreenOrig), "showCursor", MethodType.Setter)]
-internal class set_showCursor
+[HarmonyPatch]
+internal static class Screen
 {
-    private static Exception Cleanup(MethodBase original, Exception ex)
+    [HarmonyPatch(typeof(ScreenOrig), "showCursor", MethodType.Setter)]
+    internal class set_showCursor
     {
-        return PatcherHelper.Cleanup_IgnoreException(original, ex);
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+        }
+
+        private static bool Prefix(ref bool value)
+        {
+            if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
+                return true;
+            Overlay.UnityCursorVisible = value;
+            if (Overlay.ShowCursor)
+                value = false;
+            return true;
+        }
     }
 
-    private static void Prefix(ref bool value)
+    [HarmonyPatch(typeof(ScreenOrig), nameof(ScreenOrig.lockCursor), MethodType.Setter)]
+    internal class set_lockCursor
     {
-        Overlay.UnityCursorVisible = value;
-        if (Overlay.ShowCursor)
-            value = false;
-    }
-}
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+        }
 
-[HarmonyPatch(typeof(ScreenOrig), nameof(ScreenOrig.lockCursor), MethodType.Setter)]
-internal class set_lockCursor
-{
-    private static Exception Cleanup(MethodBase original, Exception ex)
-    {
-        return PatcherHelper.Cleanup_IgnoreException(original, ex);
-    }
-
-    private static void Prefix(bool value)
-    {
-        if (CursorWrap.TempUnlocked)
-            CursorWrap.TempStoreLockCursorState = value;
+        private static bool Prefix(bool value)
+        {
+            if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
+                return true;
+            if (CursorWrap.TempUnlocked)
+                CursorWrap.TempStoreLockCursorState = value;
+            return true;
+        }
     }
 }
 
@@ -52,6 +63,8 @@ class widthGetter
 
     static bool Prefix(ref int __result)
     {
+   if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
+   return true;
         __result = TAS.Screen.Width;
         return false;
     }
@@ -67,6 +80,8 @@ class heightGetter
 
     static bool Prefix(ref int __result)
     {
+   if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
+   return true;
         __result = TAS.Screen.Height;
         return false;
     }
