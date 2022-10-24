@@ -1,0 +1,3 @@
+[submodule "Ninject"]
+	path = Ninject
+	url = https://github.com/ninject/Ninject.git
