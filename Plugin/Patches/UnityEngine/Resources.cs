@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace UniTASPlugin.Patches.UnityEngine;
 
-static class Helper
+internal static class Helper
 {
     public static Type ResourceRequestType()
     {
@@ -15,14 +15,14 @@ static class Helper
 }
 
 [HarmonyPatch(typeof(Resources), "LoadAsyncInternal")]
-class LoadAsyncInternal
+internal class LoadAsyncInternal
 {
-    static Exception Cleanup(MethodBase original, Exception ex)
+    private static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+        return PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
-    static bool Prefix(string path, Type type, ref object __result)
+    private static bool Prefix(string path, Type type, ref object __result)
     {
         // returns ResourceRequest
         // should be fine with my instance and no tinkering

@@ -5,9 +5,9 @@ namespace UniTASPlugin.GameOverlay.GameConsole;
 
 public static class Executor
 {
-    static readonly Queue<KeyValuePair<Command, Parameter[]>> commandQueue = new();
+    private static readonly Queue<KeyValuePair<Command, Parameter[]>> commandQueue = new();
 
-    static void ExecuteCommands()
+    private static void ExecuteCommands()
     {
         while (commandQueue.Count > 0)
         {
@@ -18,17 +18,17 @@ public static class Executor
         }
     }
 
-    static void CommandSyntaxError(string err, string commandName)
+    private static void CommandSyntaxError(string err, string commandName)
     {
         Console.Print($"Command syntax error, {err}, command: {commandName}");
     }
 
-    static void ArgumentSyntaxError(string err, string commandName, int argIndex)
+    private static void ArgumentSyntaxError(string err, string commandName, int argIndex)
     {
         Console.Print($"Argument syntax error, {err}, command: {commandName}, arg index: {argIndex}");
     }
 
-    static void UnreachableError(string err, string commandName, int argIndex)
+    private static void UnreachableError(string err, string commandName, int argIndex)
     {
         Console.Print($"Unreachable error, {err}, command: {commandName}, arg index: {argIndex}");
     }
@@ -104,7 +104,8 @@ public static class Executor
                     findingOpenBracket = false;
                     continue;
                 }
-                else if (ch != ' ')
+
+                if (ch != ' ')
                 {
                     CommandSyntaxError("command name cannot contain spaces", commandNameBuilder);
                     return;

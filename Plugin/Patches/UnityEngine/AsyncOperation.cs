@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using HarmonyLib;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
@@ -7,14 +8,14 @@ namespace UniTASPlugin.Patches.UnityEngine;
 
 // TODO different unity version investigation
 [HarmonyPatch(typeof(AsyncOperation), "allowSceneActivation", MethodType.Setter)]
-class setAllowSceneActivation
+internal class setAllowSceneActivation
 {
-    static global::System.Exception Cleanup(MethodBase original, global::System.Exception ex)
+    private static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+        return PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
-    static bool Prefix(bool value, AsyncOperation __instance)
+    private static bool Prefix(bool value, AsyncOperation __instance)
     {
         GameTracker.AllowSceneActivation(value, __instance);
         return false;
@@ -22,14 +23,14 @@ class setAllowSceneActivation
 }
 
 [HarmonyPatch(typeof(AsyncOperation), "allowSceneActivation", MethodType.Getter)]
-class getAllowSceneActivation
+internal class getAllowSceneActivation
 {
-    static global::System.Exception Cleanup(MethodBase original, global::System.Exception ex)
+    private static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+        return PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
-    static bool Prefix(ref bool __result, AsyncOperation __instance)
+    private static bool Prefix(ref bool __result, AsyncOperation __instance)
     {
         __result = GameTracker.GetSceneActivation(__instance);
         return false;
@@ -39,14 +40,14 @@ class getAllowSceneActivation
 // TODO probably good idea to override priority
 
 [HarmonyPatch(typeof(AsyncOperation), nameof(AsyncOperation.progress), MethodType.Getter)]
-class progress
+internal class progress
 {
-    static global::System.Exception Cleanup(MethodBase original, global::System.Exception ex)
+    private static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+        return PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
-    static bool Prefix(ref float __result, AsyncOperation __instance)
+    private static bool Prefix(ref float __result, AsyncOperation __instance)
     {
         __result = GameTracker.IsStallingInstance(__instance) ? 0.9f : 1f;
         return false;
@@ -54,14 +55,14 @@ class progress
 }
 
 [HarmonyPatch(typeof(AsyncOperation), nameof(AsyncOperation.isDone), MethodType.Getter)]
-class isDone
+internal class isDone
 {
-    static global::System.Exception Cleanup(MethodBase original, global::System.Exception ex)
+    private static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+        return PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
-    static bool Prefix(ref bool __result, AsyncOperation __instance)
+    private static bool Prefix(ref bool __result, AsyncOperation __instance)
     {
         __result = !GameTracker.IsStallingInstance(__instance);
         return false;
@@ -69,14 +70,14 @@ class isDone
 }
 
 [HarmonyPatch(typeof(AsyncOperation), "InternalDestroy")]
-class InternalDestroy
+internal class InternalDestroy
 {
-    static global::System.Exception Cleanup(MethodBase original, global::System.Exception ex)
+    private static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+        return PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
-    static void Prefix(AsyncOperation __instance)
+    private static void Prefix(AsyncOperation __instance)
     {
         // unless UID is 0, we shouldn't let it proceed
         var wrap = new AsyncOperationWrap(__instance);

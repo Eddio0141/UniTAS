@@ -2,7 +2,6 @@
 using System.Reflection;
 using HarmonyLib;
 using Ninject;
-using Ninject.Syntax;
 using UniTASPlugin.GameEnvironment;
 using UnityEngine;
 using InputOrig = UnityEngine.Input;
@@ -22,14 +21,14 @@ internal static class Input
     */
 
     [HarmonyPatch(typeof(InputOrig), "penEventCount", MethodType.Getter)]
-    class penEventCountGetter
+    private class penEventCountGetter
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref int __result)
+        private static bool Prefix(ref int __result)
         {
             var env = Plugin.Instance.Kernel.Get<VirtualEnvironment>();
             if (!env.RunVirtualEnvironment) return true;
@@ -40,14 +39,14 @@ internal static class Input
     }
 
     [HarmonyPatch(typeof(InputOrig), "mousePresent", MethodType.Getter)]
-    class mousePresentGetter
+    private class mousePresentGetter
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref bool __result)
+        private static bool Prefix(ref bool __result)
         {
             var env = Plugin.Instance.Kernel.Get<VirtualEnvironment>();
             if (!env.RunVirtualEnvironment) return true;
@@ -59,14 +58,14 @@ internal static class Input
 
     // TODO does the ret value work with ref?
     [HarmonyPatch(typeof(InputOrig), "GetPenEvent_Injected", typeof(int))]
-    class GetPenEvent_Injected
+    private class GetPenEvent_Injected
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(int index, ref object ret)
+        private static bool Prefix(int index, ref object ret)
         {
             var env = Plugin.Instance.Kernel.Get<VirtualEnvironment>();
             return !env.RunVirtualEnvironment;
@@ -77,14 +76,14 @@ internal static class Input
     // above calls GetPenEvent
 
     [HarmonyPatch(typeof(InputOrig), nameof(InputOrig.mainGyroIndex_Internal))]
-    class mainGyroIndex_Internal
+    private class mainGyroIndex_Internal
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref int __result)
+        private static bool Prefix(ref int __result)
         {
             var env = Plugin.Instance.Kernel.Get<VirtualEnvironment>();
             return !env.RunVirtualEnvironment;
@@ -93,14 +92,14 @@ internal static class Input
     }
 
     [HarmonyPatch(typeof(InputOrig), nameof(InputOrig.GetPosition))]
-    class GetPosition
+    private class GetPosition
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(int deviceID, ref Vector3 __result)
+        private static bool Prefix(int deviceID, ref Vector3 __result)
         {
             var env = Plugin.Instance.Kernel.Get<VirtualEnvironment>();
             return !env.RunVirtualEnvironment;
@@ -124,14 +123,14 @@ internal static class Input
     */
 
     [HarmonyPatch(typeof(InputOrig), nameof(InputOrig.GetKeyInt))]
-    class GetKeyInt
+    private class GetKeyInt
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(object key, ref bool __result)
+        private static bool Prefix(object key, ref bool __result)
         {
             var env = Plugin.Instance.Kernel.Get<VirtualEnvironment>();
             if (!env.RunVirtualEnvironment) return true;
@@ -143,14 +142,14 @@ internal static class Input
     // above gets called from GetKey
 
     [HarmonyPatch(typeof(InputOrig), nameof(InputOrig.GetKeyString))]
-    class GetKeyString
+    private class GetKeyString
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(/*string name, ref bool __result*/)
+        private static bool Prefix(/*string name, ref bool __result*/)
         {
             var env = Plugin.Instance.Kernel.Get<VirtualEnvironment>();
             return !env.RunVirtualEnvironment;
@@ -161,14 +160,14 @@ internal static class Input
     // above gets called from GetKey
 
     [HarmonyPatch(typeof(InputOrig), nameof(InputOrig.GetKeyUpString))]
-    class GetKeyUpString
+    private class GetKeyUpString
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(/*string name, ref bool __result*/)
+        private static bool Prefix(/*string name, ref bool __result*/)
         {
             var env = Plugin.Instance.Kernel.Get<VirtualEnvironment>();
             return !env.RunVirtualEnvironment;
@@ -179,14 +178,14 @@ internal static class Input
     // above gets called from GetKeyUp
 
     [HarmonyPatch(typeof(InputOrig), nameof(InputOrig.GetKeyUpInt))]
-    class GetKeyUpInt
+    private class GetKeyUpInt
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(object key, ref bool __result)
+        private static bool Prefix(object key, ref bool __result)
         {
             var env = Plugin.Instance.Kernel.Get<VirtualEnvironment>();
             if (!env.RunVirtualEnvironment) return true;
@@ -198,14 +197,14 @@ internal static class Input
     // above gets called from GetKeyUp
 
     [HarmonyPatch(typeof(InputOrig), nameof(InputOrig.GetKeyDownString))]
-    class GetKeyDownString
+    private class GetKeyDownString
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(/*string name*/)
+        private static bool Prefix(/*string name*/)
         {
             var env = Plugin.Instance.Kernel.Get<VirtualEnvironment>();
             return !env.RunVirtualEnvironment;
@@ -216,14 +215,14 @@ internal static class Input
     // above gets called from GetKeyDown
 
     [HarmonyPatch(typeof(InputOrig), nameof(InputOrig.GetKeyDownInt))]
-    class GetKeyDownInt
+    private class GetKeyDownInt
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(object key, ref bool __result)
+        private static bool Prefix(object key, ref bool __result)
         {
             var env = Plugin.Instance.Kernel.Get<VirtualEnvironment>();
             if (!env.RunVirtualEnvironment) return true;
@@ -235,14 +234,14 @@ internal static class Input
     // above gets called from GetKeyDown
 
     [HarmonyPatch(typeof(InputOrig), nameof(InputOrig.GetAxis))]
-    class GetAxis
+    private class GetAxis
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(string axisName, ref float __result)
+        private static bool Prefix(string axisName, ref float __result)
         {
             var env = Plugin.Instance.Kernel.Get<VirtualEnvironment>();
             if (!env.RunVirtualEnvironment) return true;
@@ -255,14 +254,14 @@ internal static class Input
     }
 
     [HarmonyPatch(typeof(InputOrig), nameof(InputOrig.GetAxisRaw))]
-    class GetAxisRaw
+    private class GetAxisRaw
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(string axisName, ref float __result)
+        private static bool Prefix(string axisName, ref float __result)
         {
             var env = Plugin.Instance.Kernel.Get<VirtualEnvironment>();
             if (!env.RunVirtualEnvironment) return true;
@@ -276,14 +275,14 @@ internal static class Input
     }
 
     [HarmonyPatch(typeof(InputOrig), nameof(InputOrig.GetButton))]
-    class GetButton
+    private class GetButton
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(string buttonName)
+        private static bool Prefix(string buttonName)
         {
             var env = Plugin.Instance.Kernel.Get<VirtualEnvironment>();
             return !env.RunVirtualEnvironment;
@@ -292,14 +291,14 @@ internal static class Input
     }
 
     [HarmonyPatch(typeof(InputOrig), nameof(InputOrig.GetButtonDown))]
-    class GetButtonDown
+    private class GetButtonDown
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(string buttonName)
+        private static bool Prefix(string buttonName)
         {
             var env = Plugin.Instance.Kernel.Get<VirtualEnvironment>();
             return !env.RunVirtualEnvironment;
@@ -308,14 +307,14 @@ internal static class Input
     }
 
     [HarmonyPatch(typeof(InputOrig), nameof(InputOrig.GetButtonUp))]
-    class GetButtonUp
+    private class GetButtonUp
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(string buttonName)
+        private static bool Prefix(string buttonName)
         {
             var env = Plugin.Instance.Kernel.Get<VirtualEnvironment>();
             return !env.RunVirtualEnvironment;
@@ -324,14 +323,14 @@ internal static class Input
     }
 
     [HarmonyPatch(typeof(InputOrig), nameof(InputOrig.GetMouseButton))]
-    class GetMouseButton
+    private class GetMouseButton
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref bool __result, int button)
+        private static bool Prefix(ref bool __result, int button)
         {
             var env = Plugin.Instance.Kernel.Get<VirtualEnvironment>();
             if (!env.RunVirtualEnvironment) return true;
@@ -347,14 +346,14 @@ internal static class Input
     }
 
     [HarmonyPatch(typeof(InputOrig), nameof(InputOrig.GetMouseButtonDown))]
-    class GetMouseButtonDown
+    private class GetMouseButtonDown
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref bool __result, int button)
+        private static bool Prefix(ref bool __result, int button)
         {
             var env = Plugin.Instance.Kernel.Get<VirtualEnvironment>();
             if (!env.RunVirtualEnvironment) return true;
@@ -370,14 +369,14 @@ internal static class Input
     }
 
     [HarmonyPatch(typeof(InputOrig), nameof(InputOrig.GetMouseButtonUp))]
-    class GetMouseButtonUp
+    private class GetMouseButtonUp
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref bool __result, int button)
+        private static bool Prefix(ref bool __result, int button)
         {
             var env = Plugin.Instance.Kernel.Get<VirtualEnvironment>();
             if (!env.RunVirtualEnvironment) return true;
@@ -393,14 +392,14 @@ internal static class Input
     }
 
     [HarmonyPatch(typeof(InputOrig), nameof(InputOrig.ResetInputAxes))]
-    class ResetInputAxes
+    private class ResetInputAxes
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix()
+        private static bool Prefix()
         {
             // TODO make this work
             // Resets all input. After ResetInputAxes all axes return to 0 and all buttons return to 0 for one frame.
@@ -413,14 +412,14 @@ internal static class Input
     }
 
     [HarmonyPatch(typeof(InputOrig), nameof(InputOrig.GetAccelerationEvent))]
-    class GetAccelerationEvent
+    private class GetAccelerationEvent
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(int index, ref AccelerationEvent __result)
+        private static bool Prefix(int index, ref AccelerationEvent __result)
         {
             var env = Plugin.Instance.Kernel.Get<VirtualEnvironment>();
             return !env.RunVirtualEnvironment;
@@ -430,14 +429,14 @@ internal static class Input
     }
 
     [HarmonyPatch(typeof(InputOrig), nameof(InputOrig.anyKey), MethodType.Getter)]
-    class anyKeyGetter
+    private class anyKeyGetter
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref bool __result)
+        private static bool Prefix(ref bool __result)
         {
             var env = Plugin.Instance.Kernel.Get<VirtualEnvironment>();
             if (!env.RunVirtualEnvironment) return true;
@@ -448,14 +447,14 @@ internal static class Input
     }
 
     [HarmonyPatch(typeof(InputOrig), nameof(InputOrig.anyKeyDown), MethodType.Getter)]
-    class anyKeyDownGetter
+    private class anyKeyDownGetter
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref bool __result)
+        private static bool Prefix(ref bool __result)
         {
             // TODO make sure this gets called before Update calls
             var env = Plugin.Instance.Kernel.Get<VirtualEnvironment>();
@@ -467,14 +466,14 @@ internal static class Input
     }
 
     [HarmonyPatch(typeof(InputOrig), nameof(InputOrig.inputString), MethodType.Getter)]
-    class inputStringGetter
+    private class inputStringGetter
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix()
+        private static bool Prefix()
         {
             var env = Plugin.Instance.Kernel.Get<VirtualEnvironment>();
             return !env.RunVirtualEnvironment;
@@ -486,14 +485,14 @@ internal static class Input
     }
 
     [HarmonyPatch(typeof(InputOrig), nameof(InputOrig.mousePosition), MethodType.Getter)]
-    class mousePositionGetter
+    private class mousePositionGetter
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref Vector3 __result)
+        private static bool Prefix(ref Vector3 __result)
         {
             var env = Plugin.Instance.Kernel.Get<VirtualEnvironment>();
             if (!env.RunVirtualEnvironment) return true;
@@ -505,14 +504,14 @@ internal static class Input
 #pragma warning disable Harmony002 // why does unity name things like this
     [HarmonyPatch(typeof(InputOrig), "get_mousePosition_Injected", MethodType.Normal)]
 #pragma warning restore Harmony002
-    class get_mousePosition_Injected
+    private class get_mousePosition_Injected
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref Vector3 ret)
+        private static bool Prefix(ref Vector3 ret)
         {
             var env = Plugin.Instance.Kernel.Get<VirtualEnvironment>();
             if (!env.RunVirtualEnvironment) return true;
@@ -522,14 +521,14 @@ internal static class Input
     }
 
     [HarmonyPatch(typeof(InputOrig), nameof(InputOrig.multiTouchEnabled), MethodType.Getter)]
-    class multiTouchEnabledGetter
+    private class multiTouchEnabledGetter
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref bool __result)
+        private static bool Prefix(ref bool __result)
         {
             var env = Plugin.Instance.Kernel.Get<VirtualEnvironment>();
             if (!env.RunVirtualEnvironment) return true;
@@ -541,14 +540,14 @@ internal static class Input
     }
 
     [HarmonyPatch(typeof(InputOrig), nameof(InputOrig.multiTouchEnabled), MethodType.Setter)]
-    class multiTouchEnabledSetter
+    private class multiTouchEnabledSetter
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(bool value)
+        private static bool Prefix(bool value)
         {
             var env = Plugin.Instance.Kernel.Get<VirtualEnvironment>();
             return !env.RunVirtualEnvironment;
@@ -557,14 +556,14 @@ internal static class Input
     }
 
     [HarmonyPatch(typeof(InputOrig), nameof(InputOrig.isGyroAvailable), MethodType.Getter)]
-    class isGyroAvailableGetter
+    private class isGyroAvailableGetter
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref bool __result)
+        private static bool Prefix(ref bool __result)
         {
             var env = Plugin.Instance.Kernel.Get<VirtualEnvironment>();
             if (!env.RunVirtualEnvironment) return true;
@@ -576,14 +575,14 @@ internal static class Input
     }
 
     [HarmonyPatch(typeof(InputOrig), nameof(InputOrig.deviceOrientation), MethodType.Getter)]
-    class deviceOrientationGetter
+    private class deviceOrientationGetter
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref DeviceOrientation __result)
+        private static bool Prefix(ref DeviceOrientation __result)
         {
             var env = Plugin.Instance.Kernel.Get<VirtualEnvironment>();
             if (!env.RunVirtualEnvironment) return true;
@@ -594,14 +593,14 @@ internal static class Input
     }
 
     [HarmonyPatch(typeof(InputOrig), nameof(InputOrig.acceleration), MethodType.Getter)]
-    class accelerationGetter
+    private class accelerationGetter
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref Vector3 __result)
+        private static bool Prefix(ref Vector3 __result)
         {
             var env = Plugin.Instance.Kernel.Get<VirtualEnvironment>();
             if (!env.RunVirtualEnvironment) return true;
@@ -613,14 +612,14 @@ internal static class Input
     }
 
     [HarmonyPatch(typeof(InputOrig), nameof(InputOrig.accelerationEventCount), MethodType.Getter)]
-    class accelerationEventCountGetter
+    private class accelerationEventCountGetter
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref int __result)
+        private static bool Prefix(ref int __result)
         {
             var env = Plugin.Instance.Kernel.Get<VirtualEnvironment>();
             if (!env.RunVirtualEnvironment) return true;
@@ -648,14 +647,14 @@ internal static class Input
     */
 
     [HarmonyPatch(typeof(InputOrig), nameof(InputOrig.touchCount), MethodType.Getter)]
-    class touchCountGetter
+    private class touchCountGetter
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref int __result)
+        private static bool Prefix(ref int __result)
         {
             var env = Plugin.Instance.Kernel.Get<VirtualEnvironment>();
             if (!env.RunVirtualEnvironment) return true;
@@ -667,14 +666,14 @@ internal static class Input
     }
 
     [HarmonyPatch(typeof(InputOrig), nameof(InputOrig.GetTouch))]
-    class GetTouch
+    private class GetTouch
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref Touch __result)
+        private static bool Prefix(ref Touch __result)
         {
             var env = Plugin.Instance.Kernel.Get<VirtualEnvironment>();
             return !env.RunVirtualEnvironment;
@@ -700,14 +699,14 @@ internal static class Input
     */
 
     [HarmonyPatch(typeof(InputOrig), nameof(InputOrig.GetRotation))]
-    class GetRotation
+    private class GetRotation
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref Vector3 __result)
+        private static bool Prefix(ref Vector3 __result)
         {
             var env = Plugin.Instance.Kernel.Get<VirtualEnvironment>();
             if (!env.RunVirtualEnvironment) return true;

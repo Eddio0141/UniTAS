@@ -7,44 +7,45 @@ namespace UniTASPlugin.GameOverlay;
 
 public class FileBrowser
 {
-    string currentDir;
-    string changingDir;
-    string currentDirText;
-    bool dirChanged;
-    string[] currentDirPaths;
-    GUIContent[] displayNames;
-    string selectedFileText;
-    Vector2 fileScrollPos;
-    Rect defaultRect;
-    Rect windowRect;
-    bool opened;
-    readonly int id;
-    readonly string title;
-    string finalPath;
-    bool gotFinalPath;
-    readonly FileBrowserType browserType;
-    readonly string selectText;
-    readonly Extension[] extensions;
+    private string currentDir;
+    private string changingDir;
+    private string currentDirText;
+    private bool dirChanged;
+    private string[] currentDirPaths;
+    private GUIContent[] displayNames;
+    private string selectedFileText;
+    private Vector2 fileScrollPos;
+    private Rect defaultRect;
+    private Rect windowRect;
+    private bool opened;
+    private readonly int id;
+    private readonly string title;
+    private string finalPath;
+    private bool gotFinalPath;
+    private readonly FileBrowserType browserType;
+    private readonly string selectText;
+
+    private readonly Extension[] extensions;
     // list of filter list, each filter list is a split of the filter
-    readonly string[][][] extensionsProcessed;
-    string extensionText;
-    int extensionIndex;
-    readonly int quickAccessWidth;
-    Vector2 quickAccessScrollPos;
+    private readonly string[][][] extensionsProcessed;
+    private string extensionText;
+    private int extensionIndex;
+    private readonly int quickAccessWidth;
+    private Vector2 quickAccessScrollPos;
 
-    const int CONFIRM_SAVE_WIDTH = 250;
-    const int CONFIRM_SAVE_HEIGHT = 100;
-    readonly ConfirmBox confirmSave;
-    readonly string[] quickAccessPaths;
-    readonly string[] quickAccessNames;
+    private const int CONFIRM_SAVE_WIDTH = 250;
+    private const int CONFIRM_SAVE_HEIGHT = 100;
+    private readonly ConfirmBox confirmSave;
+    private readonly string[] quickAccessPaths;
+    private readonly string[] quickAccessNames;
 
-    Stack<string> dirPrev;
-    Stack<string> dirNext;
-    bool movingToPrev;
-    bool movingToNext;
+    private Stack<string> dirPrev;
+    private Stack<string> dirNext;
+    private bool movingToPrev;
+    private bool movingToNext;
 
-    static readonly Texture2D folderTexture;
-    static readonly Texture2D fileTexture;
+    private static readonly Texture2D folderTexture;
+    private static readonly Texture2D fileTexture;
 
     static FileBrowser()
     {
@@ -186,15 +187,17 @@ public class FileBrowser
 
         quickAccessWidth = (int)(windowRect.width / 9);
 
-        var homePath = System.Environment.GetEnvironmentVariable("HOMEPATH");
+        var homePath = Environment.GetEnvironmentVariable("HOMEPATH");
 
-        var quickAccessPathsBuilder = new List<string>() {
-            System.Environment.GetFolderPath(System.Environment.SpecialFolder.Desktop),
-            System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments),
+        var quickAccessPathsBuilder = new List<string>
+        {
+            Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
+            Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
             homePath,
             Helper.GameRootDir(),
         };
-        var quickAccessNamesBuilder = new List<string>() {
+        var quickAccessNamesBuilder = new List<string>
+        {
             "Desktop",
             "Documents",
             "Home",
@@ -294,19 +297,17 @@ public class FileBrowser
                                         filterOut = false;
                                         break;
                                     }
-                                    else
+
+                                    var nextFilter = extFilter[i + 1];
+                                    var nextFilterIndex = nameProcessing.IndexOf(nextFilter);
+                                    if (nextFilterIndex < 0)
+                                        break;
+                                    nameProcessing = nameProcessing.Substring(nextFilterIndex + nextFilter.Length);
+                                    i += 2;
+                                    if (nameProcessing.Length == 0 && i >= extFilter.Length)
                                     {
-                                        var nextFilter = extFilter[i + 1];
-                                        var nextFilterIndex = nameProcessing.IndexOf(nextFilter);
-                                        if (nextFilterIndex < 0)
-                                            break;
-                                        nameProcessing = nameProcessing.Substring(nextFilterIndex + nextFilter.Length);
-                                        i += 2;
-                                        if (nameProcessing.Length == 0 && i >= extFilter.Length)
-                                        {
-                                            filterOut = false;
-                                            break;
-                                        }
+                                        filterOut = false;
+                                        break;
                                     }
                                 }
                                 else
@@ -372,7 +373,7 @@ public class FileBrowser
         windowRect = GUILayout.Window(id, windowRect, Window, title, GUI.skin.window);
     }
 
-    void Window(int id)
+    private void Window(int id)
     {
         GUI.DragWindow(new Rect(0, 0, 20000, 20));
 
@@ -508,7 +509,7 @@ public class FileBrowser
     {
         public string Name;
         public string[] Filters;
-        readonly string stringified;
+        private readonly string stringified;
 
         public Extension(string name, string[] filters)
         {

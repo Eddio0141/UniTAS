@@ -1,15 +1,20 @@
 ﻿using System;
 using BepInEx;
+using BepInEx.Logging;
 using HarmonyLib;
 using Ninject;
 using Ninject.Modules;
+using UniTASPlugin.FakeGameState;
 using UniTASPlugin.FakeGameState.GameFileSystem;
+using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.GameOverlay;
 using UniTASPlugin.Movie;
 using UniTASPlugin.Movie.ScriptEngine;
 using UniTASPlugin.NInjectModules;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
+using SystemInfo = UniTASPlugin.FakeGameState.SystemInfo;
+
 // ReSharper disable UnusedMember.Local
 
 namespace UniTASPlugin;
@@ -23,7 +28,7 @@ public class Plugin : BaseUnityPlugin
 
     public IKernel Kernel = InitKernel();
 
-    public BepInEx.Logging.ManualLogSource Log;
+    public ManualLogSource Log;
 
     public int FixedUpdateIndex { get; private set; } = -1;
 
@@ -57,10 +62,10 @@ public class Plugin : BaseUnityPlugin
         Log.LogInfo($"All axis names: {string.Join(", ", Input.GetJoystickNames())}");
 
         // init random seed
-        RandomWrap.InitState((int)FakeGameState.GameTime.Seed());
+        RandomWrap.InitState((int)GameTime.Seed());
 
         GameTracker.Init();
-        FakeGameState.SystemInfo.Init();
+        SystemInfo.Init();
         Overlay.Init();
 
         Log.LogInfo($"System time: {DateTime.Now}");
@@ -83,7 +88,7 @@ public class Plugin : BaseUnityPlugin
     private void Update()
     {
         var movieRunner = Kernel.Get<MovieRunner<MovieScriptEngine>>();
-        var env = Kernel.Get<GameEnvironment.VirtualEnvironment>();
+        var env = Kernel.Get<VirtualEnvironment>();
         movieRunner.Update(ref env);
         Overlay.Update();
         // TODO if possible, put this at the first call of Update

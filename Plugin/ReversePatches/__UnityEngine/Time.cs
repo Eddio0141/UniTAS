@@ -1,6 +1,6 @@
-﻿using HarmonyLib;
-using System;
+﻿using System;
 using System.Reflection;
+using HarmonyLib;
 using TimeOrig = UnityEngine.Time;
 
 namespace UniTASPlugin.ReversePatches.__UnityEngine;
@@ -12,7 +12,7 @@ public static class Time
     public static float captureDeltaTime { get => captureDeltaTimePatch.get(); set => captureDeltaTimePatch.set(value); }
 
     [HarmonyPatch]
-    static class captureFrameratePatch
+    private static class captureFrameratePatch
     {
         [HarmonyReversePatch]
         [HarmonyPatch(typeof(TimeOrig), nameof(TimeOrig.captureFramerate), MethodType.Getter)]
@@ -30,9 +30,9 @@ public static class Time
     }
 
     [HarmonyPatch]
-    static class captureDeltaTimePatch
+    private static class captureDeltaTimePatch
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
             return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
         }

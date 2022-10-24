@@ -2,7 +2,6 @@
 using System.Reflection;
 using HarmonyLib;
 using Ninject;
-using Ninject.Syntax;
 using UniTASPlugin.FakeGameState;
 using UniTASPlugin.GameEnvironment;
 using TimeOrig = UnityEngine.Time;
@@ -15,14 +14,14 @@ namespace UniTASPlugin.Patches.UnityEngine;
 internal static class Time
 {
     [HarmonyPatch(typeof(TimeOrig), nameof(TimeOrig.captureFramerate), MethodType.Setter)]
-    class set_captureFramerate
+    private class set_captureFramerate
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix()
+        private static bool Prefix()
         {
             var kernel = Plugin.Instance.Kernel;
             // if TAS is running / preparing and we aren't setting the frametime, reject
@@ -33,14 +32,14 @@ internal static class Time
     }
 
     [HarmonyPatch(typeof(TimeOrig), "captureDeltaTime", MethodType.Setter)]
-    class set_captureDeltaTime
+    private class set_captureDeltaTime
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix()
+        private static bool Prefix()
         {
             var kernel = Plugin.Instance.Kernel;
             // if TAS is running / preparing and we aren't setting the frametime, reject
@@ -51,51 +50,51 @@ internal static class Time
     }
 
     [HarmonyPatch(typeof(TimeOrig), "fixedUnscaledTime", MethodType.Getter)]
-    class get_fixedUnscaledTime
+    private class get_fixedUnscaledTime
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static void Postfix(ref float __result)
+        private static void Postfix(ref float __result)
         {
-            __result = (float)((double)__result - GameTime.FixedUnscaledTimeOffset);
+            __result = (float)(__result - GameTime.FixedUnscaledTimeOffset);
         }
     }
 
     [HarmonyPatch(typeof(TimeOrig), "unscaledTime", MethodType.Getter)]
-    class get_unscaledTime
+    private class get_unscaledTime
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static readonly Traverse inFixedTimeStep = Traverse.Create(typeof(TimeOrig)).Property("inFixedTimeStep");
-        static readonly Traverse fixedUnscaledTime = Traverse.Create(typeof(TimeOrig)).Property("fixedUnscaledTime");
+        private static readonly Traverse inFixedTimeStep = Traverse.Create(typeof(TimeOrig)).Property("inFixedTimeStep");
+        private static readonly Traverse fixedUnscaledTime = Traverse.Create(typeof(TimeOrig)).Property("fixedUnscaledTime");
 
-        static void Postfix(ref float __result)
+        private static void Postfix(ref float __result)
         {
             // When called from inside MonoBehaviour's FixedUpdate, it returns TimeOrig.fixedUnscaledTime
             __result = inFixedTimeStep.PropertyExists() && inFixedTimeStep.GetValue<bool>()
                 ? fixedUnscaledTime.GetValue<float>()
-                : (float)((double)__result - GameTime.UnscaledTimeOffset);
+                : (float)(__result - GameTime.UnscaledTimeOffset);
         }
     }
 
     [HarmonyPatch(typeof(TimeOrig), "unscaledTimeAsDouble", MethodType.Getter)]
-    class get_unscaledTimeAsDouble
+    private class get_unscaledTimeAsDouble
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static readonly Traverse inFixedTimeStep = Traverse.Create(typeof(TimeOrig)).Property("inFixedTimeStep");
-        static readonly Traverse fixedUnscaledTimeAsDouble = Traverse.Create(typeof(TimeOrig)).Property("fixedUnscaledTimeAsDouble");
+        private static readonly Traverse inFixedTimeStep = Traverse.Create(typeof(TimeOrig)).Property("inFixedTimeStep");
+        private static readonly Traverse fixedUnscaledTimeAsDouble = Traverse.Create(typeof(TimeOrig)).Property("fixedUnscaledTimeAsDouble");
 
-        static void Postfix(ref double __result)
+        private static void Postfix(ref double __result)
         {
             // When called from inside MonoBehaviour's FixedUpdate, it returns TimeOrig.fixedUnscaledTimeAsDouble
             if (inFixedTimeStep.PropertyExists() && inFixedTimeStep.GetValue<bool>())
@@ -106,126 +105,126 @@ internal static class Time
     }
 
     [HarmonyPatch(typeof(TimeOrig), "fixedUnscaledTimeAsDouble", MethodType.Getter)]
-    class get_fixedUnscaledTimeAsDouble
+    private class get_fixedUnscaledTimeAsDouble
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static void Postfix(ref double __result)
+        private static void Postfix(ref double __result)
         {
             __result -= GameTime.FixedUnscaledTimeOffset;
         }
     }
 
     [HarmonyPatch(typeof(TimeOrig), nameof(TimeOrig.frameCount), MethodType.Getter)]
-    class get_frameCount
+    private class get_frameCount
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static void Postfix(ref int __result)
+        private static void Postfix(ref int __result)
         {
             __result = (int)((ulong)__result - GameTime.FrameCountRestartOffset);
         }
     }
 
     [HarmonyPatch(typeof(TimeOrig), nameof(TimeOrig.renderedFrameCount), MethodType.Getter)]
-    class get_renderedFrameCount
+    private class get_renderedFrameCount
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static void Postfix(ref int __result)
+        private static void Postfix(ref int __result)
         {
             __result = (int)((ulong)__result - GameTime.RenderedFrameCountOffset);
         }
     }
 
     [HarmonyPatch(typeof(TimeOrig), nameof(TimeOrig.realtimeSinceStartup), MethodType.Getter)]
-    class get_realtimeSinceStartup
+    private class get_realtimeSinceStartup
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static void Postfix(ref float __result)
+        private static void Postfix(ref float __result)
         {
-            __result = (float)((double)__result - GameTime.SecondsSinceStartUpOffset);
+            __result = (float)(__result - GameTime.SecondsSinceStartUpOffset);
         }
     }
 
     [HarmonyPatch(typeof(TimeOrig), "realtimeSinceStartupAsDouble", MethodType.Getter)]
-    class get_realtimeSinceStartupAsDouble
+    private class get_realtimeSinceStartupAsDouble
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static void Postfix(ref double __result)
+        private static void Postfix(ref double __result)
         {
             __result -= GameTime.SecondsSinceStartUpOffset;
         }
     }
 
     [HarmonyPatch(typeof(TimeOrig), nameof(TimeOrig.time), MethodType.Getter)]
-    class get_time
+    private class get_time
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static void Postfix(ref float __result)
+        private static void Postfix(ref float __result)
         {
-            __result = (float)((double)__result - GameTime.ScaledTimeOffset);
+            __result = (float)(__result - GameTime.ScaledTimeOffset);
         }
     }
 
     [HarmonyPatch(typeof(TimeOrig), "timeAsDouble", MethodType.Getter)]
-    class get_timeAsDouble
+    private class get_timeAsDouble
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static void Postfix(ref double __result)
+        private static void Postfix(ref double __result)
         {
             __result -= GameTime.ScaledTimeOffset;
         }
     }
 
     [HarmonyPatch(typeof(TimeOrig), nameof(TimeOrig.fixedTime), MethodType.Getter)]
-    class get_fixedTime
+    private class get_fixedTime
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static void Postfix(ref float __result)
+        private static void Postfix(ref float __result)
         {
-            __result = (float)((double)__result - GameTime.ScaledFixedTimeOffset);
+            __result = (float)(__result - GameTime.ScaledFixedTimeOffset);
         }
     }
 
     [HarmonyPatch(typeof(TimeOrig), "fixedTimeAsDouble", MethodType.Getter)]
-    class get_fixedTimeAsDouble
+    private class get_fixedTimeAsDouble
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static void Postfix(ref double __result)
+        private static void Postfix(ref double __result)
         {
             __result -= GameTime.ScaledFixedTimeOffset;
         }

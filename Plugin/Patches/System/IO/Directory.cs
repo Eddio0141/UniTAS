@@ -9,37 +9,39 @@ using DirOrig = System.IO.Directory;
 using FileOrig = System.IO.File;
 using PathOrig = System.IO.Path;
 using DateTimeOrig = System.DateTime;
+// ReSharper disable UnusedMember.Local
+// ReSharper disable InconsistentNaming
 
 namespace UniTASPlugin.Patches.System.IO;
 
 [HarmonyPatch]
-static class Directory
+internal static class Directory
 {
-    static class Helper
+    private static class Helper
     {
-        static readonly Traverse pathValidateTraverse = Traverse.Create(typeof(PathOrig)).Method("Validate", new Type[] { typeof(string) });
-        static readonly Traverse environmentIsRunningOnWindowsTraverse = Traverse.Create(typeof(global::System.Environment)).Property("IsRunningOnWindows");
+        private static readonly Traverse PathValidateTraverse = Traverse.Create(typeof(PathOrig)).Method("Validate", new[] { typeof(string) });
+        private static readonly Traverse EnvironmentIsRunningOnWindowsTraverse = Traverse.Create(typeof(global::System.Environment)).Property("IsRunningOnWindows");
 
         public static void PathValidate(string path)
         {
-            _ = pathValidateTraverse.GetValue(path);
+            _ = PathValidateTraverse.GetValue(path);
         }
 
         public static bool EnvironmentIsRunningOnWindows()
         {
-            return environmentIsRunningOnWindowsTraverse.GetValue<bool>();
+            return EnvironmentIsRunningOnWindowsTraverse.GetValue<bool>();
         }
     }
 
     [HarmonyPatch(typeof(DirOrig), nameof(DirOrig.Exists))]
-    class DirExists
+    private class DirExists
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(string path, ref bool __result)
+        private static bool Prefix(string path, ref bool __result)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -49,14 +51,14 @@ static class Directory
     }
 
     [HarmonyPatch(typeof(DirOrig), "InternalGetFileDirectoryNames")]
-    class InternalGetFileDirectoryNames
+    private class InternalGetFileDirectoryNames
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref string[] __result, string path, string searchPattern, bool includeFiles, bool includeDirs, SearchOption searchOption)
+        private static bool Prefix(ref string[] __result, string path, string searchPattern, bool includeFiles, bool includeDirs, SearchOption searchOption)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -66,14 +68,14 @@ static class Directory
     }
 
     [HarmonyPatch(typeof(DirOrig), "EnumerateFileSystemNames")]
-    class EnumerateFileSystemNames
+    private class EnumerateFileSystemNames
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref IEnumerable<string> __result, string path, string searchPattern, SearchOption searchOption, bool includeFiles, bool includeDirs)
+        private static bool Prefix(ref IEnumerable<string> __result, string path, string searchPattern, SearchOption searchOption, bool includeFiles, bool includeDirs)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -83,14 +85,14 @@ static class Directory
     }
 
     [HarmonyPatch(typeof(DirOrig), nameof(DirOrig.GetDirectoryRoot))]
-    class GetDirectoryRoot
+    private class GetDirectoryRoot
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref string __result, string path)
+        private static bool Prefix(ref string __result, string path)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -100,21 +102,21 @@ static class Directory
         }
     }
 
-    [HarmonyPatch(typeof(DirOrig), nameof(DirOrig.CreateDirectory), new Type[] { typeof(string) })]
-    class CreateDirectory
+    [HarmonyPatch(typeof(DirOrig), nameof(DirOrig.CreateDirectory), typeof(string))]
+    private class CreateDirectory
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref DirectoryInfo __result, string path)
+        private static bool Prefix(ref DirectoryInfo __result, string path)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
             if (path == null)
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
             if (path.Length == 0)
             {
@@ -142,20 +144,20 @@ static class Directory
     }
 
     [HarmonyPatch(typeof(DirOrig), "CreateDirectoriesInternal")]
-    class CreateDirectoriesInternal
+    private class CreateDirectoriesInternal
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref DirectoryInfo __result, string path)
+        private static bool Prefix(ref DirectoryInfo __result, string path)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
-            var dirInfoConstructor = AccessTools.Constructor(typeof(DirectoryInfo), new Type[] { typeof(string), typeof(bool) });
+            var dirInfoConstructor = AccessTools.Constructor(typeof(DirectoryInfo), new[] { typeof(string), typeof(bool) });
             var directoryInfo = (DirectoryInfo)dirInfoConstructor.Invoke(null, new object[] { path, true });
-            if (directoryInfo.Parent != null && !directoryInfo.Parent.Exists)
+            if (directoryInfo.Parent is { Exists: false })
             {
                 directoryInfo.Parent.Create();
             }
@@ -165,15 +167,15 @@ static class Directory
         }
     }
 
-    [HarmonyPatch(typeof(DirOrig), nameof(DirOrig.Delete), new Type[] { typeof(string) })]
-    class Delete
+    [HarmonyPatch(typeof(DirOrig), nameof(DirOrig.Delete), typeof(string))]
+    private class Delete
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(string path)
+        private static bool Prefix(string path)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -199,14 +201,14 @@ static class Directory
     }
 
     [HarmonyPatch(typeof(DirOrig), "RecursiveDelete")]
-    class RecursiveDelete
+    private class RecursiveDelete
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(string path)
+        private static bool Prefix(string path)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -237,14 +239,14 @@ static class Directory
     }
 
     [HarmonyPatch(typeof(DirOrig), nameof(DirOrig.GetLastAccessTime))]
-    class GetLastAccessTime
+    private class GetLastAccessTime
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref DateTimeOrig __result, string path)
+        private static bool Prefix(ref DateTimeOrig __result, string path)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -254,14 +256,14 @@ static class Directory
     }
 
     [HarmonyPatch(typeof(DirOrig), nameof(DirOrig.GetLastWriteTime))]
-    class GetLastWriteTime
+    private class GetLastWriteTime
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref DateTimeOrig __result, string path)
+        private static bool Prefix(ref DateTimeOrig __result, string path)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -271,14 +273,14 @@ static class Directory
     }
 
     [HarmonyPatch(typeof(DirOrig), nameof(DirOrig.GetCreationTime))]
-    class GetCreationTime
+    private class GetCreationTime
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref DateTimeOrig __result, string path)
+        private static bool Prefix(ref DateTimeOrig __result, string path)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -288,14 +290,14 @@ static class Directory
     }
 
     [HarmonyPatch(typeof(DirOrig), "IsRootDirectory")]
-    class IsRootDirectory
+    private class IsRootDirectory
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref bool __result, string path)
+        private static bool Prefix(ref bool __result, string path)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -307,32 +309,32 @@ static class Directory
     }
 
     [HarmonyPatch(typeof(DirOrig), nameof(DirOrig.Move))]
-    class Move
+    private class Move
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(string sourceDirName, string destDirName)
+        private static bool Prefix(string sourceDirName, string destDirName)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
             if (sourceDirName == null)
             {
-                throw new ArgumentNullException("sourceDirName");
+                throw new ArgumentNullException(nameof(sourceDirName));
             }
             if (destDirName == null)
             {
-                throw new ArgumentNullException("destDirName");
+                throw new ArgumentNullException(nameof(destDirName));
             }
             if (sourceDirName.Trim().Length == 0 || sourceDirName.IndexOfAny(FileSystem.ExternalHelpers.InvalidPathChars) != -1)
             {
-                throw new ArgumentException("Invalid source directory name: " + sourceDirName, "sourceDirName");
+                throw new ArgumentException("Invalid source directory name: " + sourceDirName, nameof(sourceDirName));
             }
             if (destDirName.Trim().Length == 0 || destDirName.IndexOfAny(FileSystem.ExternalHelpers.InvalidPathChars) != -1)
             {
-                throw new ArgumentException("Invalid target directory name: " + destDirName, "destDirName");
+                throw new ArgumentException("Invalid target directory name: " + destDirName, nameof(destDirName));
             }
             if (sourceDirName == destDirName)
             {
@@ -352,14 +354,14 @@ static class Directory
     }
 
     [HarmonyPatch(typeof(DirOrig), nameof(DirOrig.SetAccessControl))]
-    class SetAccessControl
+    private class SetAccessControl
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix()
+        private static bool Prefix()
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -368,14 +370,14 @@ static class Directory
     }
 
     [HarmonyPatch(typeof(DirOrig), nameof(DirOrig.SetCreationTime))]
-    class SetCreationTime
+    private class SetCreationTime
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(string path, DateTimeOrig creationTime)
+        private static bool Prefix(string path, DateTimeOrig creationTime)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -385,14 +387,14 @@ static class Directory
     }
 
     [HarmonyPatch(typeof(DirOrig), nameof(DirOrig.SetLastAccessTime))]
-    class SetLastAccessTime
+    private class SetLastAccessTime
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(string path, DateTimeOrig lastAccessTime)
+        private static bool Prefix(string path, DateTimeOrig lastAccessTime)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -402,14 +404,14 @@ static class Directory
     }
 
     [HarmonyPatch(typeof(DirOrig), nameof(DirOrig.SetLastWriteTime))]
-    class SetLastWriteTime
+    private class SetLastWriteTime
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(string path, DateTimeOrig lastWriteTime)
+        private static bool Prefix(string path, DateTimeOrig lastWriteTime)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -419,14 +421,14 @@ static class Directory
     }
 
     [HarmonyPatch(typeof(DirOrig), "GetDemandDir")]
-    class GetDemandDir
+    private class GetDemandDir
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref string __result, string fullPath, bool thisDirOnly)
+        private static bool Prefix(ref string __result, string fullPath, bool thisDirOnly)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -442,15 +444,15 @@ static class Directory
         }
     }
 
-    [HarmonyPatch(typeof(DirOrig), nameof(DirOrig.GetAccessControl), new Type[] { typeof(string), typeof(AccessControlSections) })]
-    class GetAccessControl
+    [HarmonyPatch(typeof(DirOrig), nameof(DirOrig.GetAccessControl), typeof(string), typeof(AccessControlSections))]
+    private class GetAccessControl
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref DirectorySecurity __result)
+        private static bool Prefix(ref DirectorySecurity __result)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -461,14 +463,14 @@ static class Directory
     }
 
     [HarmonyPatch(typeof(DirOrig), "InsecureGetCurrentDirectory")]
-    class InsecureGetCurrentDirectory
+    private class InsecureGetCurrentDirectory
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref string __result)
+        private static bool Prefix(ref string __result)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -480,20 +482,20 @@ static class Directory
     }
 
     [HarmonyPatch(typeof(DirOrig), nameof(DirOrig.SetCurrentDirectory))]
-    class SetCurrentDirectory
+    private class SetCurrentDirectory
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(string path)
+        private static bool Prefix(string path)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
             if (path == null)
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
             if (path.Trim().Length == 0)
             {

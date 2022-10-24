@@ -1,13 +1,15 @@
-﻿using UniTASPlugin.FakeGameState;
+﻿using System;
+using UniTASPlugin.FakeGameState;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace UniTASPlugin;
 
 internal class GameRestart
 {
-    static bool pendingFixedUpdateSoftRestart = false;
-    static System.DateTime softRestartTime;
+    private static bool pendingFixedUpdateSoftRestart;
+    private static DateTime softRestartTime;
 
     public static void FixedUpdate()
     {
@@ -23,14 +25,14 @@ internal class GameRestart
     /// Mainly used for TAS movie playback.
     /// </summary>
     /// <param name="time"></param>
-    public static void SoftRestart(System.DateTime time)
+    public static void SoftRestart(DateTime time)
     {
         pendingFixedUpdateSoftRestart = true;
         softRestartTime = time;
         Plugin.Instance.Log.LogInfo("Soft restarting, pending FixedUpdate call");
     }
 
-    static void SoftRestartOperation()
+    private static void SoftRestartOperation()
     {
         Plugin.Instance.Log.LogInfo("Soft restarting");
 
@@ -87,7 +89,7 @@ internal class GameRestart
                 {
                     fieldAndValue.Key.SetValue(null, value);
                 }
-                catch (System.Exception ex)
+                catch (Exception ex)
                 {
                     Plugin.Instance.Log.LogWarning($"Failed to set field: {fieldAndValue.Key.DeclaringType.FullName}.{fieldAndValue.Key} to {value} with exception: {ex}");
                 }
@@ -103,6 +105,6 @@ internal class GameRestart
         RandomWrap.InitState((int)GameTime.Seed());
 
         Plugin.Instance.Log.LogInfo("Finish soft restarting");
-        Plugin.Instance.Log.LogInfo($"System time: {System.DateTime.Now}, milliseconds: {System.DateTime.Now.Millisecond}");
+        Plugin.Instance.Log.LogInfo($"System time: {DateTime.Now}, milliseconds: {DateTime.Now.Millisecond}");
     }
 }

@@ -1,9 +1,13 @@
-﻿using HarmonyLib;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using HarmonyLib;
+using UniTASPlugin.Exceptions;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace UniTASPlugin;
 
@@ -11,7 +15,7 @@ internal static class GameTracker
 {
     internal static List<int> FirstObjIDs { get; } = new();
     internal static List<int> DontDestroyOnLoadIDs { get; private set; } = new();
-    internal static Dictionary<System.Type, List<KeyValuePair<FieldInfo, object>>> InitialValues { get; private set; } = new();
+    internal static Dictionary<Type, List<KeyValuePair<FieldInfo, object>>> InitialValues { get; private set; } = new();
 
     public static void Init()
     {
@@ -26,14 +30,14 @@ internal static class GameTracker
         }
 
         // initial game state values
-        var gameAssemblyNames = new string[] {
+        var gameAssemblyNames = new[] {
             "Assembly-CSharp",
             "Assembly-CSharp-firstpass",
             "Assembly-UnityScript",
             "Assembly-UnityScript-firstpass"
         };
         // excludes all types
-        var exclusionTypes = new string[]
+        var exclusionTypes = new[]
         {
             "Steamworks*",
             "UniRx*",
@@ -69,13 +73,13 @@ internal static class GameTracker
         // game specific type exclusion
         var exclusionGameAndType = new Dictionary<string, List<string>>
         {
-            { "It Steals", new List<string>()
-            {
+            { "It Steals", new List<string>
+                {
                 "SteamManager",
             }
             },
-            { "Keep Talking and Nobody Explodes", new List<string>()
-            {
+            { "Keep Talking and Nobody Explodes", new List<string>
+                {
                 /*
                 "Oculus.Platform*",
                 "DigitalOpus.MB.Core*",
@@ -93,8 +97,8 @@ internal static class GameTracker
         // game specific field exclusion
         var exclusionGameAndField = new Dictionary<string, List<string>>
         {
-            { "Keep Talking and Nobody Explodes", new List<string>()
-            {
+            { "Keep Talking and Nobody Explodes", new List<string>
+                {
                 "InControl.TouchManager.OnSetup",
             }
             },
@@ -173,7 +177,7 @@ internal static class GameTracker
                 {
                     fieldValue = field.GetValue(null);
                 }
-                catch (System.Exception ex)
+                catch (Exception ex)
                 {
                     Plugin.Instance.Log.LogWarning($"failed to get field value for {fieldName}, ex: {ex}");
                     continue;
@@ -185,7 +189,7 @@ internal static class GameTracker
 
                     try
                     {
-                        if (fieldValue == null || !typeof(System.Collections.IEnumerable).IsAssignableFrom(fieldType))
+                        if (fieldValue == null || !typeof(IEnumerable).IsAssignableFrom(fieldType))
                         {
                             objClone = Helper.MakeDeepCopy(fieldValue, fieldType);
                         }
@@ -228,13 +232,13 @@ internal static class GameTracker
                             */
                         }
                     }
-                    catch (Exceptions.DeepCopyMaxRecursion)
+                    catch (DeepCopyMaxRecursion)
                     {
                         failedClone = true;
                         Plugin.Instance.Log.LogWarning($"max recursion reached, excluding field type {fieldType} from deep copy");
                         //fieldTypeIgnore.Add(fieldType);
                     }
-                    catch (System.Exception ex)
+                    catch (Exception ex)
                     {
                         failedClone = true;
                         Plugin.Instance.Log.LogWarning($"failed to clone field, ex: {ex.Message}");
@@ -258,7 +262,7 @@ internal static class GameTracker
         asyncSceneLoads.Clear();
     }
 
-    struct AsyncSceneLoadData
+    private struct AsyncSceneLoadData
     {
         public string sceneName;
         public int sceneBuildIndex;
@@ -276,8 +280,8 @@ internal static class GameTracker
         }
     }
 
-    static readonly List<AsyncSceneLoadData> asyncSceneLoads = new();
-    static readonly List<AsyncSceneLoadData> asyncSceneLoadsStall = new();
+    private static readonly List<AsyncSceneLoadData> asyncSceneLoads = new();
+    private static readonly List<AsyncSceneLoadData> asyncSceneLoadsStall = new();
 
     public static void AsyncSceneLoad(string sceneName, int sceneBuildIndex, object parameters, bool? isAdditive, AsyncOperationWrap wrap)
     {
@@ -313,7 +317,7 @@ internal static class GameTracker
             var scene = asyncSceneLoads[asyncSceneLoadsIndex];
             asyncSceneLoads.RemoveAt(asyncSceneLoadsIndex);
             asyncSceneLoadsStall.Add(scene);
-            Plugin.Instance.Log.LogDebug($"Added scene to stall list");
+            Plugin.Instance.Log.LogDebug("Added scene to stall list");
         }
     }
 

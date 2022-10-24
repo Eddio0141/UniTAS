@@ -2,36 +2,41 @@
 using System.Reflection;
 using HarmonyLib;
 using Ninject;
-using Ninject.Syntax;
 using UniTASPlugin.GameEnvironment;
+// ReSharper disable InconsistentNaming
+// ReSharper disable UnusedMember.Local
 
 namespace UniTASPlugin.Patches.UnityEngine.EventSystems;
 
-static class Helper
-{
-    public static Type GetEventSystem()
-    {
-        return AccessTools.TypeByName("UnityEngine.EventSystems.EventSystem");
-    }
-}
-
 [HarmonyPatch]
-class isFocusedGetter
+internal static class EventSystem
 {
-    static MethodBase TargetMethod()
+    private static class Helper
     {
-        return AccessTools.PropertyGetter(Helper.GetEventSystem(), "isFocused");
+        public static Type GetEventSystem()
+        {
+            return AccessTools.TypeByName("UnityEngine.EventSystems.EventSystem");
+        }
     }
 
-    static Exception Cleanup(MethodBase original, Exception ex)
+    [HarmonyPatch]
+    internal class isFocusedGetter
     {
-        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
-    }
+        private static MethodBase TargetMethod()
+        {
+            return AccessTools.PropertyGetter(Helper.GetEventSystem(), "isFocused");
+        }
 
-    static bool Prefix(ref bool __result)
-    {
-        if (!Plugin.Instance.Kernel.Get<VirtualEnvironment>().RunVirtualEnvironment) return true;
-        __result = true;
-        return false;
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+        }
+
+        private static bool Prefix(ref bool __result)
+        {
+            if (!Plugin.Instance.Kernel.Get<VirtualEnvironment>().RunVirtualEnvironment) return true;
+            __result = true;
+            return false;
+        }
     }
 }

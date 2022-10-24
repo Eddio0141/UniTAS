@@ -6,17 +6,20 @@ using HarmonyLib;
 using UniTASPlugin.FakeGameState.GameFileSystem;
 using DirOrig = System.IO.Directory;
 using PathOrig = System.IO.Path;
+// ReSharper disable InconsistentNaming
+// ReSharper disable UnusedMember.Local
+// ReSharper disable RedundantAssignment
 
 namespace UniTASPlugin.Patches.System.IO;
 
 [HarmonyPatch]
-static class Path
+internal static class Path
 {
-    static class Helper
+    private static class Helper
     {
-        static readonly Traverse PathGetFullPathNameTraverse = Traverse.Create(typeof(PathOrig)).Method("GetFullPathName", new Type[] { typeof(string) });
-        static readonly Traverse DirInsecureGetCurrentDirectoryTraverse = Traverse.Create(typeof(DirOrig)).Method("InsecureGetCurrentDirectory");
-        static readonly Traverse PathIsDirectorySeparatorTraverse = Traverse.Create(typeof(PathOrig)).Method("IsDirectorySeparator", new Type[] { typeof(char) });
+        private static readonly Traverse PathGetFullPathNameTraverse = Traverse.Create(typeof(PathOrig)).Method("GetFullPathName", new[] { typeof(string) });
+        private static readonly Traverse DirInsecureGetCurrentDirectoryTraverse = Traverse.Create(typeof(DirOrig)).Method("InsecureGetCurrentDirectory");
+        private static readonly Traverse PathIsDirectorySeparatorTraverse = Traverse.Create(typeof(PathOrig)).Method("IsDirectorySeparator", new[] { typeof(char) });
 
         public static string PathGetFullPathName(string path)
         {
@@ -35,14 +38,14 @@ static class Path
     }
 
     [HarmonyPatch(typeof(PathOrig), "findExtension")]
-    class findExtension
+    private class findExtension
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref int __result, string path)
+        private static bool Prefix(ref int __result, string path)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -61,25 +64,25 @@ static class Path
         }
     }
 
-    [HarmonyPatch(typeof(PathOrig), nameof(PathOrig.Combine), new Type[] { typeof(string), typeof(string) })]
-    class Combine
+    [HarmonyPatch(typeof(PathOrig), nameof(PathOrig.Combine), typeof(string), typeof(string))]
+    private class Combine
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref string __result, string path1, string path2)
+        private static bool Prefix(ref string __result, string path1, string path2)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
             if (path1 == null)
             {
-                throw new ArgumentNullException("path1");
+                throw new ArgumentNullException(nameof(path1));
             }
             if (path2 == null)
             {
-                throw new ArgumentNullException("path2");
+                throw new ArgumentNullException(nameof(path2));
             }
             if (path1.Length == 0)
             {
@@ -116,18 +119,18 @@ static class Path
     }
 
     [HarmonyPatch(typeof(PathOrig), nameof(PathOrig.IsPathRooted))]
-    class IsPathRooted
+    private class IsPathRooted
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref bool __result, string path)
+        private static bool Prefix(ref bool __result, string path)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
-            if (path == null || path.Length == 0)
+            if (string.IsNullOrEmpty(path))
             {
                 __result = false;
                 return false;
@@ -146,14 +149,14 @@ static class Path
     }
 
     [HarmonyPatch(typeof(PathOrig), "CleanPath")]
-    class CleanPath
+    private class CleanPath
     {
-        static Exception Cleanup(MethodBase original, global::System.Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref string __result, string s)
+        private static bool Prefix(ref string __result, string s)
         {
             var length = s.Length;
             var num = 0;
@@ -233,14 +236,14 @@ static class Path
     }
 
     [HarmonyPatch(typeof(PathOrig), nameof(PathOrig.GetDirectoryName))]
-    class GetDirectoryName
+    private class GetDirectoryName
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref string __result, string path)
+        private static bool Prefix(ref string __result, string path)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -275,28 +278,28 @@ static class Path
             var length = text.Length;
             if (length >= 2 && FileSystem.ExternalHelpers.DirectorySeparatorChar == '\\' && text[length - 1] == FileSystem.ExternalHelpers.VolumeSeparatorChar)
             {
-                __result = text + FileSystem.ExternalHelpers.DirectorySeparatorChar.ToString();
+                __result = text + FileSystem.ExternalHelpers.DirectorySeparatorChar;
                 return false;
             }
             if (length == 1 && FileSystem.ExternalHelpers.DirectorySeparatorChar == '\\' && path.Length >= 2 && path[num] == FileSystem.ExternalHelpers.VolumeSeparatorChar)
             {
-                __result = text + FileSystem.ExternalHelpers.VolumeSeparatorChar.ToString();
+                __result = text + FileSystem.ExternalHelpers.VolumeSeparatorChar;
                 return false;
             }
-            __result = Traverse.Create(typeof(PathOrig)).Method("CleanPath", new Type[] { typeof(string) }).GetValue<string>(text);
+            __result = Traverse.Create(typeof(PathOrig)).Method("CleanPath", new[] { typeof(string) }).GetValue<string>(text);
             return false;
         }
     }
 
     [HarmonyPatch(typeof(PathOrig), nameof(PathOrig.GetExtension))]
-    class GetExtension
+    private class GetExtension
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref string __result, string path)
+        private static bool Prefix(ref string __result, string path)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -321,14 +324,14 @@ static class Path
     }
 
     [HarmonyPatch(typeof(PathOrig), "WindowsDriveAdjustment")]
-    class WindowsDriveAdjustment
+    private class WindowsDriveAdjustment
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref string __result, ref string path)
+        private static bool Prefix(ref string __result, ref string path)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -342,37 +345,35 @@ static class Path
                 __result = path;
                 return false;
             }
-            else
+
+            if (path[1] != ':' || !char.IsLetter(path[0]))
             {
-                if (path[1] != ':' || !char.IsLetter(path[0]))
-                {
-                    __result = path;
-                    return false;
-                }
-                var text = Helper.DirInsecureGetCurrentDirectory();
-                if (path.Length == 2)
-                {
-                    path = text[0] == path[0] ? text : Helper.PathGetFullPathName(path);
-                }
-                else if (path[2] != FileSystem.ExternalHelpers.DirectorySeparatorChar && path[2] != FileSystem.ExternalHelpers.AltDirectorySeparatorChar)
-                {
-                    path = text[0] == path[0] ? PathOrig.Combine(text, path.Substring(2, path.Length - 2)) : Helper.PathGetFullPathName(path);
-                }
                 __result = path;
                 return false;
             }
+            var text = Helper.DirInsecureGetCurrentDirectory();
+            if (path.Length == 2)
+            {
+                path = text[0] == path[0] ? text : Helper.PathGetFullPathName(path);
+            }
+            else if (path[2] != FileSystem.ExternalHelpers.DirectorySeparatorChar && path[2] != FileSystem.ExternalHelpers.AltDirectorySeparatorChar)
+            {
+                path = text[0] == path[0] ? PathOrig.Combine(text, path.Substring(2, path.Length - 2)) : Helper.PathGetFullPathName(path);
+            }
+            __result = path;
+            return false;
         }
     }
 
     [HarmonyPatch(typeof(PathOrig), "IsDirectorySeparator")]
-    class IsDirectorySeparator
+    private class IsDirectorySeparator
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref bool __result, char c)
+        private static bool Prefix(ref bool __result, char c)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -382,14 +383,14 @@ static class Path
     }
 
     [HarmonyPatch(typeof(PathOrig), nameof(PathOrig.GetPathRoot))]
-    class GetPathRoot
+    private class GetPathRoot
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref string __result, string path)
+        private static bool Prefix(ref string __result, string path)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -417,72 +418,70 @@ static class Path
                 __result = FileSystem.ExternalHelpers.DirectorySeparatorStr;
                 return false;
             }
-            else
+
+            var num = 2;
+            if (path.Length == 1 && Helper.PathIsDirectorySeparator(path[0]))
             {
-                var num = 2;
-                if (path.Length == 1 && Helper.PathIsDirectorySeparator(path[0]))
+                __result = FileSystem.ExternalHelpers.DirectorySeparatorStr;
+                return false;
+            }
+            if (path.Length < 2)
+            {
+                __result = string.Empty;
+                return false;
+            }
+            if (Helper.PathIsDirectorySeparator(path[0]) && Helper.PathIsDirectorySeparator(path[1]))
+            {
+                while (num < path.Length && !Helper.PathIsDirectorySeparator(path[num]))
                 {
-                    __result = FileSystem.ExternalHelpers.DirectorySeparatorStr;
-                    return false;
+                    num++;
                 }
-                if (path.Length < 2)
+                if (num < path.Length)
                 {
-                    __result = string.Empty;
-                    return false;
-                }
-                if (Helper.PathIsDirectorySeparator(path[0]) && Helper.PathIsDirectorySeparator(path[1]))
-                {
+                    num++;
                     while (num < path.Length && !Helper.PathIsDirectorySeparator(path[num]))
                     {
                         num++;
                     }
-                    if (num < path.Length)
-                    {
-                        num++;
-                        while (num < path.Length && !Helper.PathIsDirectorySeparator(path[num]))
-                        {
-                            num++;
-                        }
-                    }
-                    __result = FileSystem.ExternalHelpers.DirectorySeparatorStr + FileSystem.ExternalHelpers.DirectorySeparatorStr + path.Substring(2, num - 2).Replace(FileSystem.ExternalHelpers.AltDirectorySeparatorChar, FileSystem.ExternalHelpers.DirectorySeparatorChar);
-                    return false;
                 }
-                if (Helper.PathIsDirectorySeparator(path[0]))
-                {
-                    __result = FileSystem.ExternalHelpers.DirectorySeparatorStr;
-                    return false;
-                }
-                if (path[1] == FileSystem.ExternalHelpers.VolumeSeparatorChar)
-                {
-                    if (path.Length >= 3 && Helper.PathIsDirectorySeparator(path[2]))
-                    {
-                        num++;
-                    }
-                    __result = path.Substring(0, num);
-                    return false;
-                }
-                __result = DirOrig.GetCurrentDirectory().Substring(0, 2);
+                __result = FileSystem.ExternalHelpers.DirectorySeparatorStr + FileSystem.ExternalHelpers.DirectorySeparatorStr + path.Substring(2, num - 2).Replace(FileSystem.ExternalHelpers.AltDirectorySeparatorChar, FileSystem.ExternalHelpers.DirectorySeparatorChar);
                 return false;
             }
+            if (Helper.PathIsDirectorySeparator(path[0]))
+            {
+                __result = FileSystem.ExternalHelpers.DirectorySeparatorStr;
+                return false;
+            }
+            if (path[1] == FileSystem.ExternalHelpers.VolumeSeparatorChar)
+            {
+                if (path.Length >= 3 && Helper.PathIsDirectorySeparator(path[2]))
+                {
+                    num++;
+                }
+                __result = path.Substring(0, num);
+                return false;
+            }
+            __result = DirOrig.GetCurrentDirectory().Substring(0, 2);
+            return false;
         }
     }
 
     [HarmonyPatch(typeof(PathOrig), nameof(PathOrig.GetTempPath))]
-    class GetTempPath
+    private class GetTempPath
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref string __result)
+        private static bool Prefix(ref string __result)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
             var temp_path = Traverse.Create(typeof(PathOrig)).Method("get_temp_path").GetValue<string>();
             if (temp_path.Length > 0 && temp_path[temp_path.Length - 1] != FileSystem.ExternalHelpers.DirectorySeparatorChar)
             {
-                __result = temp_path + FileSystem.ExternalHelpers.DirectorySeparatorChar.ToString();
+                __result = temp_path + FileSystem.ExternalHelpers.DirectorySeparatorChar;
                 return false;
             }
             __result = temp_path;
@@ -491,14 +490,14 @@ static class Path
     }
 
     [HarmonyPatch(typeof(PathOrig), nameof(PathOrig.HasExtension))]
-    class HasExtension
+    private class HasExtension
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref bool __result, string path)
+        private static bool Prefix(ref bool __result, string path)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -518,14 +517,14 @@ static class Path
     }
 
     [HarmonyPatch(typeof(PathOrig), "GetServerAndShare")]
-    class GetServerAndShare
+    private class GetServerAndShare
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref string __result, string path)
+        private static bool Prefix(ref string __result, string path)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -548,14 +547,14 @@ static class Path
     }
 
     [HarmonyPatch(typeof(PathOrig), "SameRoot")]
-    class SameRoot
+    private class SameRoot
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref bool __result, string root, string path)
+        private static bool Prefix(ref bool __result, string root, string path)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -583,14 +582,14 @@ static class Path
     }
 
     [HarmonyPatch(typeof(PathOrig), "IsPathSubsetOf")]
-    class IsPathSubsetOf
+    private class IsPathSubsetOf
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref bool __result, string subset, string path)
+        private static bool Prefix(ref bool __result, string subset, string path)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -617,21 +616,21 @@ static class Path
         }
     }
 
-    [HarmonyPatch(typeof(PathOrig), nameof(PathOrig.Combine), new Type[] { typeof(string[]) })]
-    class Combine__stringArray
+    [HarmonyPatch(typeof(PathOrig), nameof(PathOrig.Combine), typeof(string[]))]
+    private class Combine__stringArray
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref string __result, string[] paths)
+        private static bool Prefix(ref string __result, string[] paths)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
             if (paths == null)
             {
-                throw new ArgumentNullException("paths");
+                throw new ArgumentNullException(nameof(paths));
             }
             var stringBuilder = new StringBuilder();
             var num = paths.Length;
@@ -640,7 +639,7 @@ static class Path
             {
                 if (text == null)
                 {
-                    throw new ArgumentNullException("One of the paths contains a null value", "paths");
+                    throw new ArgumentNullException(nameof(paths), "One of the paths contains a null value");
                 }
                 if (text.Length != 0)
                 {
@@ -676,14 +675,14 @@ static class Path
     }
 
     [HarmonyPatch(typeof(PathOrig), "DirectorySeparatorCharAsString", MethodType.Getter)]
-    class DirectorySeparatorCharAsString
+    private class DirectorySeparatorCharAsString
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref string __result)
+        private static bool Prefix(ref string __result)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -693,14 +692,14 @@ static class Path
     }
 
     [HarmonyPatch(typeof(PathOrig), "InternalCombine")]
-    class InternalCombine
+    private class InternalCombine
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref string __result, string path1, string path2)
+        private static bool Prefix(ref string __result, string path1, string path2)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -713,11 +712,11 @@ static class Path
             _ = checkInvalidPathChars.GetValue(path2, false);
             if (path2.Length == 0)
             {
-                throw new ArgumentException("Path cannot be the empty string or all whitespace.", "path2");
+                throw new ArgumentException("Path cannot be the empty string or all whitespace.", nameof(path2));
             }
             if (PathOrig.IsPathRooted(path2))
             {
-                throw new ArgumentException("Second path fragment must not be a drive or UNC name.", "path2");
+                throw new ArgumentException("Second path fragment must not be a drive or UNC name.", nameof(path2));
             }
             var length = path1.Length;
             if (length == 0)
@@ -728,7 +727,7 @@ static class Path
             var c = path1[length - 1];
             if (c != FileSystem.ExternalHelpers.DirectorySeparatorChar && c != FileSystem.ExternalHelpers.AltDirectorySeparatorChar && c != FileSystem.ExternalHelpers.VolumeSeparatorChar)
             {
-                __result = path1 + FileSystem.ExternalHelpers.DirectorySeparatorChar.ToString() + path2;
+                __result = path1 + FileSystem.ExternalHelpers.DirectorySeparatorChar + path2;
                 return false;
             }
             __result = path1 + path2;

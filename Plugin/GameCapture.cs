@@ -4,9 +4,9 @@ namespace UniTASPlugin;
 
 public static class GameCapture
 {
-    static bool capturing = false;
-    static string captureFolder;
-    static ulong captureCount;
+    private static bool capturing;
+    private static string captureFolder;
+    private static ulong captureCount;
 
     public static void Update()
     {
@@ -16,7 +16,7 @@ public static class GameCapture
         }
     }
 
-    static void CaptureFrame()
+    private static void CaptureFrame()
     {
         _ = $"{captureFolder}{Path.DirectorySeparatorChar}{captureCount}.png";
         // TODO sort out depending on unity version

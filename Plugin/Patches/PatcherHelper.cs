@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Reflection;
-using Diagnostics = System.Diagnostics;
 
 namespace UniTASPlugin.Patches;
 
@@ -15,7 +15,7 @@ public static class PatcherHelper
 
     public static bool CallFromPlugin()
     {
-        var trace = new Diagnostics.StackTrace();
+        var trace = new StackTrace();
         var traceFrames = trace.GetFrames();
         if (traceFrames == null) return false;
         foreach (var frame in traceFrames)

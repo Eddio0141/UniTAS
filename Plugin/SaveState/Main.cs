@@ -1,19 +1,21 @@
-﻿using HarmonyLib;
-using System;
+﻿using System;
+using HarmonyLib;
+using UniTASPlugin.FakeGameState;
+using Object = UnityEngine.Object;
 
 namespace UniTASPlugin.SaveState;
 
 internal static class Main
 {
-    static State Test;
-    static bool pendingLoad = false;
-    static int pendingLoadFixedUpdateIndex;
-    static State pendingState;
+    private static State Test;
+    private static bool pendingLoad;
+    private static int pendingLoadFixedUpdateIndex;
+    private static State pendingState;
 
-    static object testInstance;
-    static float testx;
-    static float testy;
-    static float testz;
+    private static object testInstance;
+    private static float testx;
+    private static float testy;
+    private static float testz;
 
     public static void Save()
     {
@@ -21,13 +23,13 @@ internal static class Main
         //var scene = SceneManager.GetActiveScene();
         //var sceneIndex = Scene.buildIndex(scene);
         var time = DateTime.Now;
-        var frameCount = FakeGameState.GameTime.RenderedFrameCountOffset;
+        var frameCount = GameTime.RenderedFrameCountOffset;
         var fixedUpdateIndex = Plugin.Instance.FixedUpdateIndex;
         // TODO only save this state if unity version has it
         //var cursorVisible = Cursor.visible;
         //var cursorLockState = Cursor.lockState;
 
-        testInstance = UnityEngine.Object.FindObjectOfType(AccessTools.TypeByName("MouseLook"));
+        testInstance = Object.FindObjectOfType(AccessTools.TypeByName("MouseLook"));
         var body = Traverse.Create(testInstance).Field("playerBody");
         var position = body.Property("position");
         testx = (float)position.Field("x").GetValue();
@@ -75,6 +77,6 @@ internal static class Main
         _ = position.Field("y").SetValue(testy);
         _ = position.Field("z").SetValue(testz);
 
-        Plugin.Instance.Log.LogDebug($"Load operation finished, time: {DateTime.Now}, frameCount: {FakeGameState.GameTime.RenderedFrameCountOffset}");
+        Plugin.Instance.Log.LogDebug($"Load operation finished, time: {DateTime.Now}, frameCount: {GameTime.RenderedFrameCountOffset}");
     }
 }

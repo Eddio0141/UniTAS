@@ -1,14 +1,18 @@
-﻿using HarmonyLib;
-using UniTASPlugin.ReversePatches.__System.__IO;
+﻿using System;
+using System.IO;
+using HarmonyLib;
+using Directory = UniTASPlugin.ReversePatches.__System.__IO.Directory;
+using File = UniTASPlugin.ReversePatches.__System.__IO.File;
+using Path = UniTASPlugin.ReversePatches.__System.__IO.Path;
 
 namespace UniTASPlugin.VersionSafeWrapper;
 
 public static class AppInfo
 {
-    static readonly Traverse Application = Traverse.CreateWithType("UnityEngine.Application");
-    static readonly Traverse productName = Application.Property("productName");
+    private static readonly Traverse Application = Traverse.CreateWithType("UnityEngine.Application");
+    private static readonly Traverse productName = Application.Property("productName");
 
-    static string productNameCache = null;
+    private static string productNameCache;
 
     public static string ProductName()
     {
@@ -40,7 +44,7 @@ public static class AppInfo
         }
 
         if (foundExe == "" && !foundMultipleExe)
-            throw new System.Exception("Could not find exe in game root dir");
+            throw new Exception("Could not find exe in game root dir");
 
         if (!foundMultipleExe)
         {
@@ -50,7 +54,7 @@ public static class AppInfo
 
         // use game dir name and see if it matches exe
         // TODO replace this instance creation
-        var gameDirName = new System.IO.DirectoryInfo(rootDir).Name;
+        var gameDirName = new DirectoryInfo(rootDir).Name;
 
         if (File.Exists(Path.Combine(rootDir, $"{gameDirName}.exe")))
         {

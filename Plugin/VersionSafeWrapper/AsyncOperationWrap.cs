@@ -1,5 +1,5 @@
-﻿using HarmonyLib;
-using System;
+﻿using System;
+using HarmonyLib;
 using UnityEngine;
 
 namespace UniTASPlugin.VersionSafeWrapper;
@@ -8,14 +8,14 @@ internal class AsyncOperationWrap
 {
     public AsyncOperation instance { get; private set; }
 
-    const string UID_FIELD_NAME = "__UniTAS_UID";
+    private const string UID_FIELD_NAME = "__UniTAS_UID";
 
     public AsyncOperationWrap(AsyncOperation asyncOperation)
     {
         instance = asyncOperation ?? throw new ArgumentNullException(nameof(asyncOperation));
     }
 
-    static ulong UIDIndex = 1;
+    private static ulong UIDIndex = 1;
 
     public void AssignUID()
     {
