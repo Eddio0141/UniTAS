@@ -41,8 +41,6 @@ public class Plugin : BaseUnityPlugin
         harmony.PatchAll();
         Log.LogDebug("post init patch");
 
-        Kernel.Get<PatchReverseInvoker>().SetProperty(v => Time.captureFramerate = (int)v, 1000);
-
         // init fake file system
         // TODO way of getting device type
         FileSystem.Init(DeviceType.Windows);
