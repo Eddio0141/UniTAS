@@ -6,6 +6,14 @@ public class PatchReverseInvoker
 {
     public bool Invoking { get; private set; }
 
+    public TRet Invoke<TRet>(Func<TRet> method)
+    {
+        Invoking = true;
+        var ret = method.Invoke();
+        Invoking = false;
+        return ret;
+    }
+
     public TRet Invoke<TRet, T>(Func<T, TRet> method, T arg1)
     {
         Invoking = true;
