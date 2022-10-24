@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using UniTASPlugin.ReversePatches.__System.__IO;
+using Ninject;
 using UnityEngine;
 
 namespace UniTASPlugin.GameOverlay;
@@ -206,7 +206,7 @@ public class FileBrowser
 
         try
         {
-            var drives = DriveInfo.GetDrives();
+            var drives = Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoke(System.IO.DriveInfo.GetDrives);
             foreach (var drive in drives)
             {
                 quickAccessPathsBuilder.Add(drive.Name);

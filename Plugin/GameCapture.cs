@@ -1,4 +1,5 @@
-﻿using UniTASPlugin.ReversePatches.__System.__IO;
+﻿using System.IO;
+using Ninject;
 
 namespace UniTASPlugin;
 
@@ -18,7 +19,8 @@ public static class GameCapture
 
     private static void CaptureFrame()
     {
-        _ = $"{captureFolder}{Path.DirectorySeparatorChar}{captureCount}.png";
+        var rev = Plugin.Instance.Kernel.Get<PatchReverseInvoker>();
+        _ = $"{captureFolder}{rev.GetProperty(() => Path.DirectorySeparatorChar)}{captureCount}.png";
         // TODO sort out depending on unity version
         //ScreenCapture.CaptureScreenshot(path);
         captureCount++;
@@ -27,7 +29,8 @@ public static class GameCapture
     public static bool StartCapture(string path)
     {
         // check if path is a valid folder
-        if (!Directory.Exists(path))
+        var rev = Plugin.Instance.Kernel.Get<PatchReverseInvoker>();
+        if (!rev.Invoke(Directory.Exists, path))
             return false;
 
         captureFolder = path;
