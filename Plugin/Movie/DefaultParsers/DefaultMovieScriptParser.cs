@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UniTASPlugin.Movie.Models.Script;
 using UniTASPlugin.Movie.ParseInterfaces;
 
@@ -8,6 +9,6 @@ public class DefaultMovieScriptParser : IMovieScriptParser
 {
     public IEnumerable<ScriptMethodModel> Parse(string input)
     {
-        throw new System.NotImplementedException();
+        throw new NotImplementedException();
     }
 }

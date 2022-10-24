@@ -1,46 +1,47 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using HarmonyLib;
-using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace UniTASPlugin.Patches.UnityEngine;
 
 [HarmonyPatch(typeof(Object), nameof(Object.DontDestroyOnLoad))]
-class DontDestroyOnLoad
+internal class DontDestroyOnLoad
 {
-    static global::System.Exception Cleanup(MethodBase original, global::System.Exception ex)
+    private static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+        return PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
-    static void Prefix(Object target)
+    private static void Prefix(Object target)
     {
         GameTracker.DontDestroyOnLoadCall(target);
     }
 }
 
-[HarmonyPatch(typeof(Object), nameof(Object.Destroy), new global::System.Type[] { typeof(Object), typeof(float) })]
-class Destroy__Object__float
+[HarmonyPatch(typeof(Object), nameof(Object.Destroy), typeof(Object), typeof(float))]
+internal class Destroy__Object__float
 {
-    static global::System.Exception Cleanup(MethodBase original, global::System.Exception ex)
+    private static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+        return PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
-    static void Prefix(Object obj)
+    private static void Prefix(Object obj)
     {
         GameTracker.DestroyObject(obj);
     }
 }
 
-[HarmonyPatch(typeof(Object), nameof(Object.DestroyImmediate), new global::System.Type[] { typeof(Object), typeof(bool) })]
-class DestroyImmediate__Object__bool
+[HarmonyPatch(typeof(Object), nameof(Object.DestroyImmediate), typeof(Object), typeof(bool))]
+internal class DestroyImmediate__Object__bool
 {
-    static global::System.Exception Cleanup(MethodBase original, global::System.Exception ex)
+    private static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+        return PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
-    static void Prefix(Object obj)
+    private static void Prefix(Object obj)
     {
         GameTracker.DestroyObject(obj);
     }

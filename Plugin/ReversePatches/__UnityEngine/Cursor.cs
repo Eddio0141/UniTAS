@@ -1,10 +1,10 @@
-﻿using HarmonyLib;
-using System;
+﻿using System;
 using System.Reflection;
+using HarmonyLib;
 
 namespace UniTASPlugin.ReversePatches.__UnityEngine;
 
-class Helper
+internal class Helper
 {
     public static Type CursorType()
     {
@@ -19,14 +19,14 @@ public static class Cursor
     public static int lockState { get => get_lockStatePatch.get(); set => set_lockStatePatch.set(value); }
 
     [HarmonyPatch]
-    static class set_visiblePatch
+    private static class set_visiblePatch
     {
-        static MethodBase TargetMethod()
+        private static MethodBase TargetMethod()
         {
             return AccessTools.PropertySetter(Helper.CursorType(), "visible");
         }
 
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
             return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
         }
@@ -39,14 +39,14 @@ public static class Cursor
     }
 
     [HarmonyPatch]
-    static class get_visiblePatch
+    private static class get_visiblePatch
     {
-        static MethodBase TargetMethod()
+        private static MethodBase TargetMethod()
         {
             return AccessTools.PropertyGetter(Helper.CursorType(), "visible");
         }
 
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
             return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
         }
@@ -59,14 +59,14 @@ public static class Cursor
     }
 
     [HarmonyPatch]
-    static class get_lockStatePatch
+    private static class get_lockStatePatch
     {
-        static MethodBase TargetMethod()
+        private static MethodBase TargetMethod()
         {
             return AccessTools.PropertyGetter(Helper.CursorType(), "lockState");
         }
 
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
             return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
         }
@@ -79,14 +79,14 @@ public static class Cursor
     }
 
     [HarmonyPatch]
-    static class set_lockStatePatch
+    private static class set_lockStatePatch
     {
-        static MethodBase TargetMethod()
+        private static MethodBase TargetMethod()
         {
             return AccessTools.PropertySetter(Helper.CursorType(), "lockState");
         }
 
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
             return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
         }

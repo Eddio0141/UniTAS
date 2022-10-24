@@ -2,12 +2,12 @@
 
 namespace UniTASPlugin.Exceptions;
 
-class MissingSomethingStatic : Exception
+internal class MissingSomethingStatic : Exception
 {
     public MissingSomethingStatic(Type type_, string name, string missingItem) : base($"Failed type get assertion, missing static {type_.FullName}.{name} {missingItem}") { }
 }
 
-class MissingSomethingInstance : Exception
+internal class MissingSomethingInstance : Exception
 {
     public MissingSomethingInstance(Type type_, string name, string missingItem) : base($"Failed type get assertion, missing instance {type_.FullName}.{name} {missingItem}") { }
 }

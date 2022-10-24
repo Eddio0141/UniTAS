@@ -9,29 +9,32 @@ using UniTASPlugin.FakeGameState.GameFileSystem;
 using DirOrig = System.IO.Directory;
 using FileStreamOrig = System.IO.FileStream;
 using PathOrig = System.IO.Path;
+// ReSharper disable InconsistentNaming
+// ReSharper disable UnusedMember.Local
+// ReSharper disable StringLiteralTypo
 
 namespace UniTASPlugin.Patches.System.IO;
 
 [HarmonyPatch]
-static class FileStream
+internal static class FileStream
 {
-    static class Helper
+    private static class Helper
     {
         public static Traverse WriteInternalTraverse(FileStreamOrig instance)
         {
-            return Traverse.Create(instance).Method("WriteInternal", new Type[] { typeof(byte[]), typeof(int), typeof(int) });
+            return Traverse.Create(instance).Method("WriteInternal", new[] { typeof(byte[]), typeof(int), typeof(int) });
         }
     }
 
-    [HarmonyPatch(typeof(FileStreamOrig), MethodType.Constructor, new Type[] { typeof(string), typeof(FileMode), typeof(FileAccess), typeof(FileShare), typeof(int), typeof(bool), typeof(FileOptions) })]
-    class Ctor__string__FileMode__FileAccess__FileShare__int__bool__FileOptions
+    [HarmonyPatch(typeof(FileStreamOrig), MethodType.Constructor, typeof(string), typeof(FileMode), typeof(FileAccess), typeof(FileShare), typeof(int), typeof(bool), typeof(FileOptions))]
+    private class Ctor__string__FileMode__FileAccess__FileShare__int__bool__FileOptions
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref FileStreamOrig __instance, ref string path, FileMode mode, FileAccess access, ref FileShare share, ref int bufferSize, bool anonymous, FileOptions options)
+        private static bool Prefix(ref FileStreamOrig __instance, ref string path, FileMode mode, FileAccess access, ref FileShare share, ref int bufferSize, bool anonymous, FileOptions options)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -39,7 +42,7 @@ static class FileStream
             _ = instanceTraverse.Field("name").SetValue("[Unknown]");
             if (path == null)
             {
-                throw new ArgumentNullException("path");
+                throw new ArgumentNullException(nameof(path));
             }
             if (path.Length == 0)
             {
@@ -49,92 +52,92 @@ static class FileStream
             share &= ~FileShare.Inheritable;
             if (bufferSize <= 0)
             {
-                throw new ArgumentOutOfRangeException("bufferSize", "Positive number required.");
+                throw new ArgumentOutOfRangeException(nameof(bufferSize), "Positive number required.");
             }
             if (mode is < FileMode.CreateNew or > FileMode.Append)
             {
                 if (anonymous)
                 {
-                    throw new ArgumentException("mode", "Enum value was out of legal range.");
+                    throw new ArgumentException("Enum value was out of legal range.", nameof(mode));
                 }
-                throw new ArgumentOutOfRangeException("mode", "Enum value was out of legal range.");
+                throw new ArgumentOutOfRangeException(nameof(mode), "Enum value was out of legal range.");
             }
-            else
+
+            if (access is < FileAccess.Read or > FileAccess.ReadWrite)
             {
-                if (access is < FileAccess.Read or > FileAccess.ReadWrite)
-                {
-                    throw new ArgumentOutOfRangeException("access", "Enum value was out of legal range.");
-                }
-                if (share is < FileShare.None or > (FileShare.Read | FileShare.Write | FileShare.Delete))
-                {
-                    throw new ArgumentOutOfRangeException("share", "Enum value was out of legal range.");
-                }
+                throw new ArgumentOutOfRangeException(nameof(access), "Enum value was out of legal range.");
+            }
+            if (share is < FileShare.None or > (FileShare.Read | FileShare.Write | FileShare.Delete))
+            {
+                throw new ArgumentOutOfRangeException(nameof(share), "Enum value was out of legal range.");
+            }
 #pragma warning disable CS0618 // Type or member is obsolete
-                if (path.IndexOfAny(PathOrig.InvalidPathChars) != -1)
-                {
-                    throw new ArgumentException("Name has invalid chars");
-                }
+            if (path.IndexOfAny(PathOrig.InvalidPathChars) != -1)
+            {
+                throw new ArgumentException("Name has invalid chars");
+            }
 #pragma warning restore CS0618 // Type or member is obsolete
-                var pathTraverse = Traverse.Create(typeof(PathOrig));
-                path = pathTraverse.Method("InsecureGetFullPath", new Type[] { typeof(string) }).GetValue<string>(path);
-                if (DirOrig.Exists(path))
+            var pathTraverse = Traverse.Create(typeof(PathOrig));
+            path = pathTraverse.Method("InsecureGetFullPath", new[] { typeof(string) }).GetValue<string>(path);
+            if (DirOrig.Exists(path))
+            {
+                var getSecureFileName = Traverse.Create(typeof(FileStreamOrig)).Method("GetSecureFileName", new[] { typeof(string) });
+                throw new UnauthorizedAccessException(
+                    $"Access to the path '{getSecureFileName.GetValue(path, false)}' is denied.");
+            }
+            if (mode == FileMode.Append && (access & FileAccess.Read) == FileAccess.Read)
+            {
+                throw new ArgumentException("Append access can be requested only in write-only mode.");
+            }
+            if ((access & FileAccess.Write) == 0 && mode != FileMode.Open && mode != FileMode.OpenOrCreate)
+            {
+                throw new ArgumentException($"Combining FileMode: {access} with FileAccess: {mode} is invalid.");
+            }
+            var directoryName = PathOrig.GetDirectoryName(path);
+            // ReSharper disable once PossibleNullReferenceException
+            if (directoryName.Length > 0 && !DirOrig.Exists(PathOrig.GetFullPath(directoryName)))
+            {
+                var arg = anonymous ? directoryName : PathOrig.GetFullPath(path);
+                throw new DirectoryNotFoundException($"Could not find a part of the path \"{arg}\".");
+            }
+            //if (!anonymous)
+            //{
+            _ = instanceTraverse.Field("name").SetValue(path);
+            //}
+            FileSystem.OsHelpers.OpenFile(path, mode, access, share, options);
+            _ = instanceTraverse.Field("access").SetValue(access);
+            _ = instanceTraverse.Field("owner").SetValue(true);
+            _ = instanceTraverse.Field("canseek").SetValue(true);
+            _ = instanceTraverse.Field("async").SetValue((options & FileOptions.Asynchronous) > FileOptions.None);
+            if (access == FileAccess.Read && bufferSize == 4096)
+            {
+                var length = __instance.Length;
+                if (bufferSize > length)
                 {
-                    var getSecureFileName = Traverse.Create(typeof(FileStreamOrig)).Method("GetSecureFileName", new Type[] { typeof(string) });
-                    throw new UnauthorizedAccessException(string.Format("Access to the path '{0}' is denied.", getSecureFileName.GetValue(new object[] { path, false })));
+                    bufferSize = (int)((length < 1000L) ? 1000L : length);
                 }
-                if (mode == FileMode.Append && (access & FileAccess.Read) == FileAccess.Read)
-                {
-                    throw new ArgumentException("Append access can be requested only in write-only mode.");
-                }
-                if ((access & FileAccess.Write) == 0 && mode != FileMode.Open && mode != FileMode.OpenOrCreate)
-                {
-                    throw new ArgumentException(string.Format("Combining FileMode: {0} with FileAccess: {1} is invalid.", access, mode));
-                }
-                var directoryName = PathOrig.GetDirectoryName(path);
-                if (directoryName.Length > 0 && !DirOrig.Exists(PathOrig.GetFullPath(directoryName)))
-                {
-                    var arg = anonymous ? directoryName : PathOrig.GetFullPath(path);
-                    throw new DirectoryNotFoundException(string.Format("Could not find a part of the path \"{0}\".", arg));
-                }
-                //if (!anonymous)
-                //{
-                _ = instanceTraverse.Field("name").SetValue(path);
-                //}
-                FileSystem.OsHelpers.OpenFile(path, mode, access, share, options);
-                _ = instanceTraverse.Field("access").SetValue(access);
-                _ = instanceTraverse.Field("owner").SetValue(true);
-                _ = instanceTraverse.Field("canseek").SetValue(true);
-                _ = instanceTraverse.Field("async").SetValue((options & FileOptions.Asynchronous) > FileOptions.None);
-                if (access == FileAccess.Read && bufferSize == 4096)
-                {
-                    var length = __instance.Length;
-                    if (bufferSize > length)
-                    {
-                        bufferSize = (int)((length < 1000L) ? 1000L : length);
-                    }
-                }
-                _ = instanceTraverse.Method("InitBuffer", new Type[] { typeof(int), typeof(bool) }).GetValue(bufferSize, false);
-                if (mode == FileMode.Append)
-                {
-                    _ = __instance.Seek(0L, SeekOrigin.End);
-                    _ = instanceTraverse.Field("append_startpos").SetValue(__instance.Position);
-                    return false;
-                }
-                _ = instanceTraverse.Field("append_startpos").SetValue(0L);
+            }
+            _ = instanceTraverse.Method("InitBuffer", new[] { typeof(int), typeof(bool) }).GetValue(bufferSize, false);
+            if (mode == FileMode.Append)
+            {
+                _ = __instance.Seek(0L, SeekOrigin.End);
+                _ = instanceTraverse.Field("append_startpos").SetValue(__instance.Position);
                 return false;
             }
+            _ = instanceTraverse.Field("append_startpos").SetValue(0L);
+            return false;
         }
     }
 
     [HarmonyPatch(typeof(FileStreamOrig), nameof(FileStreamOrig.Seek))]
-    class Seek
+    private class Seek
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref long __result, ref FileStreamOrig __instance, long offset, SeekOrigin origin)
+        private static bool Prefix(ref long __result, ref FileStreamOrig __instance, long offset, SeekOrigin origin)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -147,7 +150,7 @@ static class FileStream
                 SeekOrigin.Begin => offset,
                 SeekOrigin.Current => __instance.Position + offset,
                 SeekOrigin.End => __instance.Length + offset,
-                _ => throw new ArgumentException("origin", "Invalid SeekOrigin"),
+                _ => throw new ArgumentException("Invalid SeekOrigin", nameof(origin)),
             };
             if (num < 0L)
             {
@@ -167,14 +170,14 @@ static class FileStream
     }
 
     [HarmonyPatch(typeof(FileStreamOrig), nameof(FileStreamOrig.Length), MethodType.Getter)]
-    class get_Length
+    private class get_Length
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref long __result, ref FileStreamOrig __instance)
+        private static bool Prefix(ref long __result, ref FileStreamOrig __instance)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -190,14 +193,14 @@ static class FileStream
     }
 
     [HarmonyPatch(typeof(FileStreamOrig), nameof(FileStreamOrig.Position), MethodType.Getter)]
-    class get_Position
+    private class get_Position
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref long __result, ref FileStreamOrig __instance)
+        private static bool Prefix(ref long __result, ref FileStreamOrig __instance)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -217,28 +220,28 @@ static class FileStream
     }
 
     [HarmonyPatch(typeof(FileStreamOrig), nameof(FileStreamOrig.Write))]
-    class Write
+    private class Write
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref FileStreamOrig __instance, byte[] array, int offset, int count)
+        private static bool Prefix(ref FileStreamOrig __instance, byte[] array, int offset, int count)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
             if (array == null)
             {
-                throw new ArgumentNullException("array");
+                throw new ArgumentNullException(nameof(array));
             }
             if (offset < 0)
             {
-                throw new ArgumentOutOfRangeException("offset", "< 0");
+                throw new ArgumentOutOfRangeException(nameof(offset), "< 0");
             }
             if (count < 0)
             {
-                throw new ArgumentOutOfRangeException("count", "< 0");
+                throw new ArgumentOutOfRangeException(nameof(count), "< 0");
             }
             if (offset > array.Length - count)
             {
@@ -261,14 +264,14 @@ static class FileStream
     }
 
     [HarmonyPatch(typeof(FileStreamOrig), nameof(FileStreamOrig.Dispose))]
-    class Dispose
+    private class Dispose
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref FileStreamOrig __instance, bool disposing)
+        private static bool Prefix(ref FileStreamOrig __instance, bool disposing)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -290,34 +293,36 @@ static class FileStream
                     var obj = fileStreamTraverse.Field("buf_recycle_lock").GetValue();
                     lock (obj)
                     {
-                        if (buf_recycle == null)
-                        {
-                            _ = buf_recycleTraverse.SetValue(buf);
-                        }
+                        _ = buf_recycleTraverse.SetValue(buf);
                     }
                 }
                 _ = bufTraverse.SetValue(null);
                 GC.SuppressFinalize(__instance);
             }
-            return ex != null ? throw ex : false;
+            if (ex != null)
+            {
+                throw ex;
+            }
+
+            return false;
         }
     }
 
     [HarmonyPatch(typeof(FileStreamOrig), nameof(FileStreamOrig.Position), MethodType.Setter)]
-    class set_Position
+    private class set_Position
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref FileStreamOrig __instance, long value)
+        private static bool Prefix(ref FileStreamOrig __instance, long value)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
             if (value < 0)
             {
-                throw new ArgumentOutOfRangeException("value", "Non-negative number required.");
+                throw new ArgumentOutOfRangeException(nameof(value), "Non-negative number required.");
             }
             _ = __instance.Seek(value, SeekOrigin.Begin);
             return false;
@@ -325,14 +330,14 @@ static class FileStream
     }
 
     [HarmonyPatch(typeof(FileStreamOrig), "WriteInternal")]
-    class WriteInternal
+    private class WriteInternal
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref FileStreamOrig __instance, byte[] src, ref int offset, ref int count)
+        private static bool Prefix(ref FileStreamOrig __instance, byte[] src, ref int offset, ref int count)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -361,7 +366,7 @@ static class FileStream
             var num2 = 0;
             while (count > 0)
             {
-                var num3 = instanceTraverse.Method("WriteSegment", new Type[] { typeof(byte[]), typeof(int), typeof(int) }).GetValue<int>(src, offset + num2, count);
+                var num3 = instanceTraverse.Method("WriteSegment", new[] { typeof(byte[]), typeof(int), typeof(int) }).GetValue<int>(src, offset + num2, count);
                 num2 += num3;
                 count -= num3;
                 if (count == 0)
@@ -375,14 +380,14 @@ static class FileStream
     }
 
     [HarmonyPatch(typeof(FileStreamOrig), nameof(FileStreamOrig.WriteByte))]
-    class WriteByte
+    private class WriteByte
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref FileStreamOrig __instance, byte value)
+        private static bool Prefix(ref FileStreamOrig __instance, byte value)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -423,42 +428,42 @@ static class FileStream
     }
 
     [HarmonyPatch(typeof(FileStreamOrig), nameof(FileStreamOrig.Unlock))]
-    class Unlock
+    private class Unlock
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix()
+        private static bool Prefix()
         {
             return PatcherHelper.CallFromPlugin();
         }
     }
 
     [HarmonyPatch(typeof(FileStreamOrig), nameof(FileStreamOrig.Lock))]
-    class Lock
+    private class Lock
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix()
+        private static bool Prefix()
         {
             return PatcherHelper.CallFromPlugin();
         }
     }
 
     [HarmonyPatch(typeof(FileStreamOrig), nameof(FileStreamOrig.SetLength))]
-    class SetLength
+    private class SetLength
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref FileStreamOrig __instance, long value)
+        private static bool Prefix(ref FileStreamOrig __instance, long value)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -472,7 +477,7 @@ static class FileStream
             }
             if (value < 0L)
             {
-                throw new ArgumentOutOfRangeException("value is less than 0");
+                throw new ArgumentOutOfRangeException(nameof(value), "value is less than 0");
             }
             var instanceTraverse = Traverse.Create(__instance);
             _ = instanceTraverse.Method("FlushBuffer").GetValue();
@@ -486,28 +491,28 @@ static class FileStream
     }
 
     [HarmonyPatch(typeof(FileStreamOrig), nameof(FileStreamOrig.SetAccessControl))]
-    class SetAccessControl
+    private class SetAccessControl
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix()
+        private static bool Prefix()
         {
             return PatcherHelper.CallFromPlugin();
         }
     }
 
     [HarmonyPatch(typeof(FileStreamOrig), "ReadData")]
-    class ReadData
+    private class ReadData
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref FileStreamOrig __instance, ref int __result, byte[] buf, int offset, int count)
+        private static bool Prefix(ref FileStreamOrig __instance, ref int __result, byte[] buf, int offset, int count)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -518,14 +523,14 @@ static class FileStream
     }
 
     [HarmonyPatch(typeof(FileStreamOrig), nameof(FileStreamOrig.ReadByte))]
-    class ReadByte
+    private class ReadByte
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref int __result, ref FileStreamOrig __instance)
+        private static bool Prefix(ref int __result, ref FileStreamOrig __instance)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -565,20 +570,20 @@ static class FileStream
     }
 
     [HarmonyPatch(typeof(FileStreamOrig), nameof(FileStreamOrig.Read))]
-    class Read
+    private class Read
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref int __result, ref FileStreamOrig __instance, [In][Out] byte[] array, int offset, int count)
+        private static bool Prefix(ref int __result, ref FileStreamOrig __instance, [In][Out] byte[] array, int offset, int count)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
             if (array == null)
             {
-                throw new ArgumentNullException("array");
+                throw new ArgumentNullException(nameof(array));
             }
             if (!__instance.CanRead)
             {
@@ -587,11 +592,11 @@ static class FileStream
             var num = array.Length;
             if (offset < 0)
             {
-                throw new ArgumentOutOfRangeException("offset", "< 0");
+                throw new ArgumentOutOfRangeException(nameof(offset), "< 0");
             }
             if (count < 0)
             {
-                throw new ArgumentOutOfRangeException("count", "< 0");
+                throw new ArgumentOutOfRangeException(nameof(count), "< 0");
             }
             if (offset > num)
             {
@@ -608,7 +613,7 @@ static class FileStream
                 __result = __instance.EndRead(asyncResult);
                 return false;
             }
-            __result = instanceTraverse.Method("ReadInternal", new Type[] { typeof(byte[]), typeof(int), typeof(int) }).GetValue<int>(array, offset, count);
+            __result = instanceTraverse.Method("ReadInternal", new[] { typeof(byte[]), typeof(int), typeof(int) }).GetValue<int>(array, offset, count);
             return false;
         }
     }
@@ -616,14 +621,14 @@ static class FileStream
 #pragma warning disable CS0618 // Type or member is obsolete
     [HarmonyPatch(typeof(FileStreamOrig), nameof(FileStreamOrig.Handle), MethodType.Getter)]
 #pragma warning restore CS0618 // Type or member is obsolete
-    class get_Handle
+    private class get_Handle
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref IntPtr __result, ref FileStreamOrig __instance)
+        private static bool Prefix(ref IntPtr __result, ref FileStreamOrig __instance)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -638,14 +643,14 @@ static class FileStream
     }
 
     [HarmonyPatch(typeof(FileStreamOrig), nameof(FileStreamOrig.GetAccessControl))]
-    class GetAccessControl
+    private class GetAccessControl
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref object __result)
+        private static bool Prefix(ref object __result)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -655,14 +660,14 @@ static class FileStream
     }
 
     [HarmonyPatch(typeof(FileStreamOrig), "FlushBuffer")]
-    class FlushBuffer
+    private class FlushBuffer
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref FileStreamOrig __instance)
+        private static bool Prefix(ref FileStreamOrig __instance)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -696,32 +701,32 @@ static class FileStream
     }
 
     [HarmonyPatch(typeof(FileStreamOrig), "FlushAsync")]
-    class FlushAsync
+    private class FlushAsync
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref FileStreamOrig __instance, ref object __result, object cancellationToken)
+        private static bool Prefix(ref FileStreamOrig __instance, ref object __result, object cancellationToken)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
             var flushMethod = AccessTools.Method(typeof(FileStreamOrig), "FlushAsync");
-            __result = flushMethod.GetBaseDefinition().Invoke(__instance, new object[] { cancellationToken });
+            __result = flushMethod.GetBaseDefinition().Invoke(__instance, new[] { cancellationToken });
             return false;
         }
     }
 
-    [HarmonyPatch(typeof(FileStreamOrig), nameof(FileStreamOrig.Flush), new Type[] { typeof(bool) })]
-    class Flush__bool
+    [HarmonyPatch(typeof(FileStreamOrig), nameof(FileStreamOrig.Flush), typeof(bool))]
+    private class Flush__bool
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref FileStreamOrig __instance)
+        private static bool Prefix(ref FileStreamOrig __instance)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -731,14 +736,14 @@ static class FileStream
     }
 
     [HarmonyPatch(typeof(FileStreamOrig), nameof(FileStreamOrig.Flush), new Type[0])]
-    class Flush
+    private class Flush
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref FileStreamOrig __instance)
+        private static bool Prefix(ref FileStreamOrig __instance)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -747,22 +752,22 @@ static class FileStream
         }
     }
 
-    delegate void WriteDelegate(object instance, byte[] buffer, int offset, int count);
+    private delegate void WriteDelegate(object instance, byte[] buffer, int offset, int count);
 
     [HarmonyPatch(typeof(FileStreamOrig), nameof(FileStreamOrig.BeginWrite))]
-    class BeginWrite
+    private class BeginWrite
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static void writeInternal(object instance, byte[] src, int offset, int count)
+        private static void writeInternal(object instance, byte[] src, int offset, int count)
         {
-            _ = Traverse.Create(instance).Method("WriteInternal", new Type[] { typeof(byte[]), typeof(int), typeof(int) }).GetValue(src, offset, count);
+            _ = Traverse.Create(instance).Method("WriteInternal", new[] { typeof(byte[]), typeof(int), typeof(int) }).GetValue(src, offset, count);
         }
 
-        static bool Prefix(ref IAsyncResult __result, ref FileStreamOrig __instance, byte[] array, int offset, int numBytes, AsyncCallback userCallback, object stateObject)
+        private static bool Prefix(ref IAsyncResult __result, ref FileStreamOrig __instance, byte[] array, int offset, int numBytes, AsyncCallback userCallback, object stateObject)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -772,15 +777,15 @@ static class FileStream
             }
             if (array == null)
             {
-                throw new ArgumentNullException("array");
+                throw new ArgumentNullException(nameof(array));
             }
             if (numBytes < 0)
             {
-                throw new ArgumentOutOfRangeException("numBytes", "Must be >= 0");
+                throw new ArgumentOutOfRangeException(nameof(numBytes), "Must be >= 0");
             }
             if (offset < 0)
             {
-                throw new ArgumentOutOfRangeException("offset", "Must be >= 0");
+                throw new ArgumentOutOfRangeException(nameof(offset), "Must be >= 0");
             }
             if (numBytes > array.Length - offset)
             {
@@ -790,12 +795,12 @@ static class FileStream
             if (!instanceTraverse.Field("async").GetValue<bool>())
             {
                 var beginWrite = AccessTools.Method(typeof(FileStreamOrig), "BeginWrite");
-                __result = (IAsyncResult)beginWrite.GetBaseDefinition().Invoke(__instance, new object[] { array, offset, numBytes, userCallback, stateObject });
+                __result = (IAsyncResult)beginWrite.GetBaseDefinition().Invoke(__instance, new[] { array, offset, numBytes, userCallback, stateObject });
                 return false;
             }
             var fileStreamAsyncResultType = AccessTools.TypeByName("System.IO.FileStreamAsyncResult");
             var fileStreamAsyncResultCtor = AccessTools.Constructor(fileStreamAsyncResultType);
-            var fileStreamAsyncResult = fileStreamAsyncResultCtor.Invoke(new object[] { userCallback, stateObject });
+            var fileStreamAsyncResult = fileStreamAsyncResultCtor.Invoke(new[] { userCallback, stateObject });
             var fileStreamAsyncResultTraverse = Traverse.Create(fileStreamAsyncResult);
             _ = fileStreamAsyncResultTraverse.Field("BytesRead").SetValue(-1);
             _ = fileStreamAsyncResultTraverse.Field("Count").SetValue(numBytes);
@@ -805,22 +810,22 @@ static class FileStream
         }
     }
 
-    delegate int ReadDelegate(object instance, byte[] buffer, int offset, int count);
+    private delegate int ReadDelegate(object instance, byte[] buffer, int offset, int count);
 
     [HarmonyPatch(typeof(FileStreamOrig), nameof(FileStreamOrig.BeginRead))]
-    class BeginRead
+    private class BeginRead
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static int readInternal(object instance, byte[] dest, int offset, int count)
+        private static int readInternal(object instance, byte[] dest, int offset, int count)
         {
-            return Traverse.Create(instance).Method("ReadInternal", new Type[] { typeof(byte[]), typeof(int), typeof(int) }).GetValue<int>(dest, offset, count);
+            return Traverse.Create(instance).Method("ReadInternal", new[] { typeof(byte[]), typeof(int), typeof(int) }).GetValue<int>(dest, offset, count);
         }
 
-        static bool Prefix(ref IAsyncResult __result, ref FileStreamOrig __instance, byte[] array, int offset, int numBytes, AsyncCallback userCallback, object stateObject)
+        private static bool Prefix(ref IAsyncResult __result, ref FileStreamOrig __instance, byte[] array, int offset, int numBytes, AsyncCallback userCallback, object stateObject)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -830,15 +835,15 @@ static class FileStream
             }
             if (array == null)
             {
-                throw new ArgumentNullException("array");
+                throw new ArgumentNullException(nameof(array));
             }
             if (numBytes < 0)
             {
-                throw new ArgumentOutOfRangeException("numBytes", "Must be >= 0");
+                throw new ArgumentOutOfRangeException(nameof(numBytes), "Must be >= 0");
             }
             if (offset < 0)
             {
-                throw new ArgumentOutOfRangeException("offset", "Must be >= 0");
+                throw new ArgumentOutOfRangeException(nameof(offset), "Must be >= 0");
             }
             if (numBytes > array.Length - offset)
             {
@@ -848,7 +853,7 @@ static class FileStream
             if (!instanceTraverse.Field("async").GetValue<bool>())
             {
                 var beginRead = AccessTools.Method(typeof(FileStreamOrig), "BeginRead");
-                __result = (IAsyncResult)beginRead.GetBaseDefinition().Invoke(__instance, new object[] { array, offset, numBytes, userCallback, stateObject });
+                __result = (IAsyncResult)beginRead.GetBaseDefinition().Invoke(__instance, new[] { array, offset, numBytes, userCallback, stateObject });
                 return false;
             }
             __result = new ReadDelegate(readInternal).BeginInvoke(__instance, array, offset, numBytes, userCallback, stateObject);
@@ -857,24 +862,24 @@ static class FileStream
     }
 
     [HarmonyPatch(typeof(FileStreamOrig), "Init")]
-    class Init
+    private class Init
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref FileStreamOrig __instance, FileAccess access, bool ownsHandle, int bufferSize, bool isAsync, bool isConsoleWrapper)
+        private static bool Prefix(ref FileStreamOrig __instance, FileAccess access, bool ownsHandle, int bufferSize, bool isAsync, bool isConsoleWrapper)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
             if (access is < FileAccess.Read or > FileAccess.ReadWrite)
             {
-                throw new ArgumentOutOfRangeException("access");
+                throw new ArgumentOutOfRangeException(nameof(access));
             }
             if (!isConsoleWrapper && bufferSize <= 0)
             {
-                throw new ArgumentOutOfRangeException("bufferSize", "Positive number required.");
+                throw new ArgumentOutOfRangeException(nameof(bufferSize), "Positive number required.");
             }
             var instanceTraverse = Traverse.Create(__instance);
             _ = instanceTraverse.Field("canseek").SetValue(true);
@@ -889,15 +894,15 @@ static class FileStream
         }
     }
 
-    [HarmonyPatch(typeof(FileStreamOrig), MethodType.Constructor, new Type[] { typeof(IntPtr), typeof(FileAccess), typeof(bool), typeof(int), typeof(bool), typeof(bool) })]
-    class ctor__IntPtr__FileAccess__bool__int__bool__boool
+    [HarmonyPatch(typeof(FileStreamOrig), MethodType.Constructor, typeof(IntPtr), typeof(FileAccess), typeof(bool), typeof(int), typeof(bool), typeof(bool))]
+    private class ctor__IntPtr__FileAccess__bool__int__bool__bool
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix()
+        private static bool Prefix()
         {
             return PatcherHelper.CallFromPlugin()
                 ? true
@@ -905,15 +910,15 @@ static class FileStream
         }
     }
 
-    [HarmonyPatch(typeof(FileStreamOrig), MethodType.Constructor, new Type[] { typeof(SafeFileHandle), typeof(FileAccess), typeof(int), typeof(bool) })]
-    class ctor__SafeFileHandle__FileAccess__int_bool
+    [HarmonyPatch(typeof(FileStreamOrig), MethodType.Constructor, typeof(SafeFileHandle), typeof(FileAccess), typeof(int), typeof(bool))]
+    private class ctor__SafeFileHandle__FileAccess__int_bool
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix()
+        private static bool Prefix()
         {
             return PatcherHelper.CallFromPlugin()
                 ? true
@@ -922,34 +927,34 @@ static class FileStream
     }
 
     [HarmonyPatch(typeof(FileStreamOrig), nameof(FileStreamOrig.EndRead))]
-    class EndRead
+    private class EndRead
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref int __result, ref FileStreamOrig __instance, IAsyncResult asyncResult)
+        private static bool Prefix(ref int __result, ref FileStreamOrig __instance, IAsyncResult asyncResult)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
             if (asyncResult == null)
             {
-                throw new ArgumentNullException("asyncResult");
+                throw new ArgumentNullException(nameof(asyncResult));
             }
             var instanceTraverse = Traverse.Create(__instance);
             if (!instanceTraverse.Field("async").GetValue<bool>())
             {
-                var endRead = AccessTools.Method(typeof(FileStreamOrig), "EndRead", new Type[] { typeof(IAsyncResult) });
+                var endRead = AccessTools.Method(typeof(FileStreamOrig), "EndRead", new[] { typeof(IAsyncResult) });
                 return (bool)endRead.GetBaseDefinition().Invoke(__instance, new object[] { asyncResult });
             }
             if (asyncResult is not AsyncResult asyncResult2)
             {
-                throw new ArgumentException("Invalid IAsyncResult", "asyncResult");
+                throw new ArgumentException("Invalid IAsyncResult", nameof(asyncResult));
             }
             if (asyncResult2.AsyncDelegate is not ReadDelegate readDelegate)
             {
-                throw new ArgumentException("Invalid IAsyncResult", "asyncResult");
+                throw new ArgumentException("Invalid IAsyncResult", nameof(asyncResult));
             }
             __result = readDelegate.EndInvoke(asyncResult);
             return false;
@@ -957,35 +962,35 @@ static class FileStream
     }
 
     [HarmonyPatch(typeof(FileStreamOrig), nameof(FileStreamOrig.EndWrite))]
-    class EndWrite
+    private class EndWrite
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref FileStreamOrig __instance, IAsyncResult asyncResult)
+        private static bool Prefix(ref FileStreamOrig __instance, IAsyncResult asyncResult)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
             if (asyncResult == null)
             {
-                throw new ArgumentNullException("asyncResult");
+                throw new ArgumentNullException(nameof(asyncResult));
             }
             var instanceTraverse = Traverse.Create(__instance);
             if (!instanceTraverse.Field("async").GetValue<bool>())
             {
-                var endRead = AccessTools.Method(typeof(FileStreamOrig), "EndWrite", new Type[] { typeof(IAsyncResult) });
+                var endRead = AccessTools.Method(typeof(FileStreamOrig), "EndWrite", new[] { typeof(IAsyncResult) });
                 _ = endRead.Invoke(__instance, new object[] { asyncResult });
                 return false;
             }
             if (asyncResult is not AsyncResult asyncResult2)
             {
-                throw new ArgumentException("Invalid IAsyncResult", "asyncResult");
+                throw new ArgumentException("Invalid IAsyncResult", nameof(asyncResult));
             }
             if (asyncResult2.AsyncDelegate is not WriteDelegate writeDelegate)
             {
-                throw new ArgumentException("Invalid IAsyncResult", "asyncResult");
+                throw new ArgumentException("Invalid IAsyncResult", nameof(asyncResult));
             }
             writeDelegate.EndInvoke(asyncResult);
             return false;

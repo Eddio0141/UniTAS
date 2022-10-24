@@ -8,21 +8,23 @@ using DirectoryOrig = System.IO.Directory;
 using FileOrig = System.IO.File;
 using PathOrig = System.IO.Path;
 using DateTimeOrig = System.DateTime;
+// ReSharper disable UnusedMember.Local
+// ReSharper disable InconsistentNaming
 
 namespace UniTASPlugin.Patches.System.IO;
 
 [HarmonyPatch]
-static class File
+internal static class File
 {
     [HarmonyPatch(typeof(FileOrig), nameof(FileOrig.Exists))]
-    class Exists
+    private class Exists
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
             return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref bool __result, string path)
+        private static bool Prefix(ref bool __result, string path)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -31,15 +33,15 @@ static class File
         }
     }
 
-    [HarmonyPatch(typeof(FileOrig), nameof(FileOrig.Copy), new Type[] { typeof(string), typeof(string), typeof(bool) })]
-    class Copy
+    [HarmonyPatch(typeof(FileOrig), nameof(FileOrig.Copy), typeof(string), typeof(string), typeof(bool))]
+    private class Copy
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
             return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(string sourceFileName, string destFileName, bool overwrite)
+        private static bool Prefix(string sourceFileName, string destFileName, bool overwrite)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -49,14 +51,14 @@ static class File
     }
 
     [HarmonyPatch(typeof(FileOrig), "InternalCopy")]
-    class InternalCopy
+    private class InternalCopy
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
             return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref string __result, string sourceFileName, string destFileName, bool overwrite)
+        private static bool Prefix(ref string __result, string sourceFileName, string destFileName, bool overwrite)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -69,14 +71,14 @@ static class File
     }
 
     [HarmonyPatch(typeof(FileOrig), nameof(FileOrig.Delete))]
-    class Delete
+    private class Delete
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
             return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(string path)
+        private static bool Prefix(string path)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -85,15 +87,15 @@ static class File
         }
     }
 
-    [HarmonyPatch(typeof(FileOrig), nameof(FileOrig.GetAccessControl), new Type[] { typeof(string), typeof(AccessControlSections) })]
-    class GetAccessControl
+    [HarmonyPatch(typeof(FileOrig), nameof(FileOrig.GetAccessControl), typeof(string), typeof(AccessControlSections))]
+    private class GetAccessControl
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
             return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref FileSecurity __result)
+        private static bool Prefix(ref FileSecurity __result)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -104,28 +106,28 @@ static class File
     }
 
     [HarmonyPatch(typeof(FileOrig), nameof(FileOrig.SetAccessControl))]
-    class SetAccessControl
+    private class SetAccessControl
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
             return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix()
+        private static bool Prefix()
         {
             return PatcherHelper.CallFromPlugin();
         }
     }
 
     [HarmonyPatch(typeof(FileOrig), nameof(FileOrig.GetAttributes))]
-    class GetAttributes
+    private class GetAttributes
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
             return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref FileAttributes __result, string path)
+        private static bool Prefix(ref FileAttributes __result, string path)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -135,14 +137,14 @@ static class File
     }
 
     [HarmonyPatch(typeof(FileOrig), nameof(FileOrig.SetAttributes))]
-    class SetAttributes
+    private class SetAttributes
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
             return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(string path, FileAttributes fileAttributes)
+        private static bool Prefix(string path, FileAttributes fileAttributes)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -152,14 +154,14 @@ static class File
     }
 
     [HarmonyPatch(typeof(FileOrig), nameof(FileOrig.GetCreationTime))]
-    class GetCreationTime
+    private class GetCreationTime
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
             return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref DateTimeOrig __result, string path)
+        private static bool Prefix(ref DateTimeOrig __result, string path)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -169,28 +171,28 @@ static class File
     }
 
     [HarmonyPatch(typeof(FileOrig), nameof(FileOrig.Move))]
-    class Move
+    private class Move
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
             return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(string sourceFileName, string destFileName)
+        private static bool Prefix(string sourceFileName, string destFileName)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
             if (sourceFileName == null)
             {
-                throw new ArgumentNullException("sourceFileName");
+                throw new ArgumentNullException(nameof(sourceFileName));
             }
             if (destFileName == null)
             {
-                throw new ArgumentNullException("destFileName");
+                throw new ArgumentNullException(nameof(destFileName));
             }
             if (sourceFileName.Length == 0)
             {
-                throw new ArgumentException("An empty file name is not valid.", "sourceFileName");
+                throw new ArgumentException("An empty file name is not valid.", nameof(sourceFileName));
             }
             if (sourceFileName.Trim().Length == 0 || sourceFileName.IndexOfAny(FileSystem.ExternalHelpers.InvalidPathChars) != -1)
             {
@@ -198,7 +200,7 @@ static class File
             }
             if (destFileName.Length == 0)
             {
-                throw new ArgumentException("An empty file name is not valid.", "destFileName");
+                throw new ArgumentException("An empty file name is not valid.", nameof(destFileName));
             }
             if (destFileName.Trim().Length == 0 || destFileName.IndexOfAny(FileSystem.ExternalHelpers.InvalidPathChars) != -1)
             {
@@ -218,25 +220,25 @@ static class File
         }
     }
 
-    [HarmonyPatch(typeof(FileOrig), nameof(FileOrig.Replace), new Type[] { typeof(string), typeof(string), typeof(string), typeof(bool) })]
-    class Replace
+    [HarmonyPatch(typeof(FileOrig), nameof(FileOrig.Replace), typeof(string), typeof(string), typeof(string), typeof(bool))]
+    private class Replace
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
             return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(string sourceFileName, string destinationFileName, string destinationBackupFileName/*, bool ignoreMetadataErrors*/)
+        private static bool Prefix(string sourceFileName, string destinationFileName, string destinationBackupFileName/*, bool ignoreMetadataErrors*/)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
             if (sourceFileName == null)
             {
-                throw new ArgumentNullException("sourceFileName");
+                throw new ArgumentNullException(nameof(sourceFileName));
             }
             if (destinationFileName == null)
             {
-                throw new ArgumentNullException("destinationFileName");
+                throw new ArgumentNullException(nameof(destinationFileName));
             }
             if (sourceFileName.Trim().Length == 0 || sourceFileName.IndexOfAny(FileSystem.ExternalHelpers.InvalidPathChars) != -1)
             {
@@ -268,14 +270,14 @@ static class File
             {
                 throw new IOException("Source and destination arguments are the same file.");
             }
-            string text;
+
             if (destinationBackupFileName != null)
             {
                 if (destinationBackupFileName.Trim().Length == 0 || destinationBackupFileName.IndexOfAny(FileSystem.ExternalHelpers.InvalidPathChars) != -1)
                 {
                     throw new ArgumentException("destinationBackupFileName");
                 }
-                text = PathOrig.GetFullPath(destinationBackupFileName);
+                var text = PathOrig.GetFullPath(destinationBackupFileName);
                 if (FileSystem.OsHelpers.DirectoryExists(text))
                 {
                     throw new IOException($"{destinationBackupFileName} is a directory");
@@ -299,14 +301,14 @@ static class File
     }
 
     [HarmonyPatch(typeof(FileOrig), nameof(FileOrig.GetLastAccessTime))]
-    class GetLastAccessTime
+    private class GetLastAccessTime
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
             return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref DateTimeOrig __result, string path)
+        private static bool Prefix(ref DateTimeOrig __result, string path)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -316,14 +318,14 @@ static class File
     }
 
     [HarmonyPatch(typeof(FileOrig), nameof(FileOrig.GetLastWriteTime))]
-    class GetLastWriteTime
+    private class GetLastWriteTime
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
             return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(ref DateTimeOrig __result, string path)
+        private static bool Prefix(ref DateTimeOrig __result, string path)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -333,14 +335,14 @@ static class File
     }
 
     [HarmonyPatch(typeof(FileOrig), nameof(FileOrig.SetCreationTime))]
-    class SetCreationTime
+    private class SetCreationTime
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
             return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(string path, DateTimeOrig creationTime)
+        private static bool Prefix(string path, DateTimeOrig creationTime)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -350,14 +352,14 @@ static class File
     }
 
     [HarmonyPatch(typeof(FileOrig), nameof(FileOrig.SetLastAccessTime))]
-    class SetLastAccessTime
+    private class SetLastAccessTime
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
             return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(string path, DateTimeOrig lastAccessTime)
+        private static bool Prefix(string path, DateTimeOrig lastAccessTime)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;
@@ -367,14 +369,14 @@ static class File
     }
 
     [HarmonyPatch(typeof(FileOrig), nameof(FileOrig.SetLastWriteTime))]
-    class SetLastWriteTime
+    private class SetLastWriteTime
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
             return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        static bool Prefix(string path, DateTimeOrig lastWriteTime)
+        private static bool Prefix(string path, DateTimeOrig lastWriteTime)
         {
             if (PatcherHelper.CallFromPlugin())
                 return true;

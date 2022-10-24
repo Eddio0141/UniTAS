@@ -8,14 +8,14 @@ using UnityEngine;
 namespace UniTASPlugin.Patches.UnityEngine;
 
 [HarmonyPatch(typeof(Screen), "showCursor", MethodType.Setter)]
-class set_showCursor
+internal class set_showCursor
 {
-    static Exception Cleanup(MethodBase original, Exception ex)
+    private static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+        return PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
-    static void Prefix(ref bool value)
+    private static void Prefix(ref bool value)
     {
         Overlay.UnityCursorVisible = value;
         if (Overlay.ShowCursor)
@@ -24,14 +24,14 @@ class set_showCursor
 }
 
 [HarmonyPatch(typeof(Screen), nameof(Screen.lockCursor), MethodType.Setter)]
-class set_lockCursor
+internal class set_lockCursor
 {
-    static Exception Cleanup(MethodBase original, Exception ex)
+    private static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+        return PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
-    static void Prefix(bool value)
+    private static void Prefix(bool value)
     {
         if (CursorWrap.TempUnlocked)
             CursorWrap.TempStoreLockCursorState = value;

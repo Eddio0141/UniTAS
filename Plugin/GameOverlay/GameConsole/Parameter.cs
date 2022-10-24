@@ -7,37 +7,37 @@ public class Parameter
 {
     public ParameterType ParamType { get; }
 
-    readonly string valueString;
-    readonly int valueInt;
-    readonly float valueFloat;
-    readonly bool valueBool;
-    readonly Parameter[] valueList;
+    private readonly string valueString;
+    private readonly int valueInt;
+    private readonly float valueFloat;
+    private readonly bool valueBool;
+    private readonly Parameter[] valueList;
 
-    Parameter(string value)
+    private Parameter(string value)
     {
         ParamType = ParameterType.String;
         valueString = value.Substring(1, value.Length - 2);
     }
 
-    Parameter(int value)
+    private Parameter(int value)
     {
         ParamType = ParameterType.Int;
         valueInt = value;
     }
 
-    Parameter(float value)
+    private Parameter(float value)
     {
         ParamType = ParameterType.Float;
         valueFloat = value;
     }
 
-    Parameter(bool value)
+    private Parameter(bool value)
     {
         ParamType = ParameterType.Bool;
         valueBool = value;
     }
 
-    Parameter(Parameter[] value)
+    private Parameter(Parameter[] value)
     {
         ParamType = ParameterType.List;
         valueList = value;

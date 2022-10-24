@@ -1,6 +1,6 @@
-﻿using HarmonyLib;
-using System;
+﻿using System;
 using System.Reflection;
+using HarmonyLib;
 using DriveInfoOrig = System.IO.DriveInfo;
 
 namespace UniTASPlugin.ReversePatches.__System.__IO;
@@ -19,9 +19,9 @@ public static class DriveInfo
     }
 
     [HarmonyPatch]
-    static class GetDiskFreeSpacePatch
+    private static class GetDiskFreeSpacePatch
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
             return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
         }
@@ -35,9 +35,9 @@ public static class DriveInfo
     }
 
     [HarmonyPatch]
-    static class GetDrivesPatch
+    private static class GetDrivesPatch
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
             return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
         }

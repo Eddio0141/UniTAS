@@ -1,11 +1,13 @@
-﻿using HarmonyLib;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
+using HarmonyLib;
+using UniTASPlugin.Exceptions;
 using UniTASPlugin.ReversePatches.__System.__IO;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
@@ -21,7 +23,7 @@ public static class Helper
         if (File.Exists(unityPlayerPath))
         {
             var fullPath = Path.GetFullPath(unityPlayerPath);
-            var fileVersion = System.Diagnostics.FileVersionInfo.GetVersionInfo(fullPath);
+            var fileVersion = FileVersionInfo.GetVersionInfo(fullPath);
             versionRaw = fileVersion.FileVersion;
         }
         else
@@ -38,8 +40,8 @@ public static class Helper
 
     public static Assembly[] GetGameAssemblies()
     {
-        var assemblies = System.AppDomain.CurrentDomain.GetAssemblies();
-        var resetIgnoreAssemblies = new string[] {
+        var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+        var resetIgnoreAssemblies = new[] {
             "mscorlib",
             "BepInEx.Preloader",
             "BepInEx",
@@ -55,7 +57,7 @@ public static class Helper
             "netstandard",
             "UniTASPlugin",
         };
-        var resetIgnoreAssmelibes_startsWith = new string[]
+        var resetIgnoreAssmelibes_startsWith = new[]
         {
             "Unity.",
             "UnityEngine.",
@@ -64,7 +66,7 @@ public static class Helper
             "HarmonyDTFAssembly",
         };
 
-        return assemblies.Where((assembly) =>
+        return assemblies.Where(assembly =>
         {
             foreach (var assemblyCheck in resetIgnoreAssmelibes_startsWith)
                 if (assembly.FullName.StartsWith(assemblyCheck))
@@ -96,9 +98,9 @@ public static class Helper
     /// <summary>
     /// A cache for the <see cref="ICollection{T}.Add"/> or similar Add methods for different types.
     /// </summary>
-    static readonly Dictionary<Type, FastInvokeHandler> addHandlerCache = new();
+    private static readonly Dictionary<Type, FastInvokeHandler> addHandlerCache = new();
 
-    static readonly ReaderWriterLock addHandlerCacheLock = new();
+    private static readonly ReaderWriterLock addHandlerCacheLock = new();
 
     /// <summary>Makes a deep copy of any object</summary>
     /// <typeparam name="T">The type of the instance that should be created; for legacy reasons, this must be a class or interface</typeparam>
@@ -129,15 +131,16 @@ public static class Helper
     /// <param name="pathRoot">The optional path root to start with</param>
     /// <returns>The copy of the original object</returns>
     ///
-    static int MakeDeepCopyRecursionDepth = 0;
-    const int MakeDeepCopyRecursionDepthLimit = 500;
+    private static int MakeDeepCopyRecursionDepth;
+
+    private const int MakeDeepCopyRecursionDepthLimit = 500;
     public static object MakeDeepCopy(object source, Type resultType, Func<string, Traverse, Traverse, object> processor = null, string pathRoot = "")
     {
         MakeDeepCopyRecursionDepth++;
         if (MakeDeepCopyRecursionDepth > MakeDeepCopyRecursionDepthLimit)
         {
             MakeDeepCopyRecursionDepth = 0;
-            throw new Exceptions.DeepCopyMaxRecursion();
+            throw new DeepCopyMaxRecursion();
         }
 
         if (source is null || resultType is null)
@@ -194,7 +197,7 @@ public static class Helper
                         var iStr = i++.ToString();
                         var path = pathRoot.Length > 0 ? pathRoot + "." + iStr : iStr;
                         var newElement = MakeDeepCopy(element, newElementType, processor, path);
-                        _ = addInvoker(addableResult, new object[] { newElement });
+                        _ = addInvoker(addableResult, newElement);
                     }
                     MakeDeepCopyRecursionDepth--;
                     return addableResult;
@@ -210,7 +213,7 @@ public static class Helper
         {
             var elementType = resultType.GetElementType();
             var length = ((Array)source).Length;
-            var arrayResult = Activator.CreateInstance(resultType, new object[] { length }) as object[];
+            var arrayResult = Activator.CreateInstance(resultType, length) as object[];
             var originalArray = source as object[];
             for (var i = 0; i < length; i++)
             {

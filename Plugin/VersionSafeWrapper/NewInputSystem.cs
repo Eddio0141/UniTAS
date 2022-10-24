@@ -1,20 +1,20 @@
-﻿using HarmonyLib;
-using System;
+﻿using System;
 using System.Linq;
+using HarmonyLib;
 
 namespace UniTASPlugin.VersionSafeWrapper;
 
 public static class NewInputSystem
 {
-    const string NAMESPACE = "UnityEngine.InputSystem";
+    private const string NAMESPACE = "UnityEngine.InputSystem";
 
-    static readonly Type InputSystemType = AccessTools.TypeByName($"{NAMESPACE}.InputSystem");
+    private static readonly Type InputSystemType = AccessTools.TypeByName($"{NAMESPACE}.InputSystem");
 
-    static readonly Traverse InputSystemTraverse = Traverse.Create(InputSystemType);
+    private static readonly Traverse InputSystemTraverse = Traverse.Create(InputSystemType);
 
-    static readonly bool InputSystemExists = InputSystemTraverse.TypeExists();
+    private static readonly bool InputSystemExists = InputSystemTraverse.TypeExists();
 
-    static readonly Type inputDeviceType = AccessTools.TypeByName($"{NAMESPACE}.InputDevice");
+    private static readonly Type inputDeviceType = AccessTools.TypeByName($"{NAMESPACE}.InputDevice");
 
     public static void ConnectAllDevices()
     {
@@ -24,20 +24,20 @@ public static class NewInputSystem
 
         // make sure to not add if they already exist
         var devices = InputSystemTraverse.Property("devices").Method("ToArray").GetValue<object[]>();
-        var toAdd = new string[] { /*"Gamepad",*/ "FastKeyboard", "FastMouse" };
-        var removeDevice = InputSystemTraverse.Method("RemoveDevice", new Type[] { inputDeviceType });
+        var toAdd = new[] { /*"Gamepad",*/ "FastKeyboard", "FastMouse" };
+        var removeDevice = InputSystemTraverse.Method("RemoveDevice", new[] { inputDeviceType });
 
         Plugin.Instance.Log.LogDebug(string.Join(", ", InputSystemTraverse.Property("devices").Method("ToArray").GetValue<object[]>().Select(o => o.GetType().ToString()).ToArray()));
 
         foreach (var device in devices)
         {
             // TODO use method or something that wont call event
-            _ = removeDevice.GetValue(new object[] { device });
+            _ = removeDevice.GetValue(device);
         }
         // TODO use method or something that wont call event
         //inputTraverse.Method("FlushDisconnectedDevices").GetValue();
 
-        var addDevice = AccessTools.Method(InputSystemType, "AddDevice", new Type[] { typeof(string) });
+        var addDevice = AccessTools.Method(InputSystemType, "AddDevice", new[] { typeof(string) });
 
         foreach (var toAddName in toAdd)
         {

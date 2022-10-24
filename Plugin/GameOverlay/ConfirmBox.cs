@@ -4,15 +4,15 @@ namespace UniTASPlugin.GameOverlay;
 
 public class ConfirmBox
 {
-    readonly string title;
-    readonly string message;
-    Rect defaultRect;
-    Rect windowRect;
+    private readonly string title;
+    private readonly string message;
+    private Rect defaultRect;
+    private Rect windowRect;
     public bool Opened { get; private set; }
-    bool finalResult;
-    bool gotFinalResult;
-    readonly int id;
-    readonly ConfirmBoxType confirmType;
+    private bool finalResult;
+    private bool gotFinalResult;
+    private readonly int id;
+    private readonly ConfirmBoxType confirmType;
 
     public ConfirmBox(string title, string message, Rect windowRect, int id, ConfirmBoxType confirmType)
     {
@@ -40,7 +40,7 @@ public class ConfirmBox
         windowRect = GUILayout.Window(id, windowRect, Window, title);
     }
 
-    void Window(int id)
+    private void Window(int id)
     {
         GUI.DragWindow(new Rect(0, 0, 20000, 20));
 

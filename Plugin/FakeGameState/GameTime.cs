@@ -1,5 +1,5 @@
-﻿using HarmonyLib;
-using System;
+﻿using System;
+using HarmonyLib;
 using UnityEngine;
 
 namespace UniTASPlugin.FakeGameState;
@@ -8,13 +8,13 @@ internal static class GameTime
 {
     public static DateTime StartupTime { get; private set; } = new DateTime(2000, 1, 1);
     public static DateTime CurrentTime => StartupTime + TimeSpan.FromSeconds(RealtimeSinceStartup);
-    public static ulong RenderedFrameCountOffset { get; private set; } = 0;
-    public static ulong FrameCountRestartOffset { get; private set; } = 0;
-    public static double SecondsSinceStartUpOffset { get; private set; } = 0;
-    public static double UnscaledTimeOffset { get; private set; } = 0;
-    public static double FixedUnscaledTimeOffset { get; private set; } = 0;
-    public static double ScaledTimeOffset { get; private set; } = 0;
-    public static double ScaledFixedTimeOffset { get; private set; } = 0;
+    public static ulong RenderedFrameCountOffset { get; private set; }
+    public static ulong FrameCountRestartOffset { get; private set; }
+    public static double SecondsSinceStartUpOffset { get; private set; }
+    public static double UnscaledTimeOffset { get; private set; }
+    public static double FixedUnscaledTimeOffset { get; private set; }
+    public static double ScaledTimeOffset { get; private set; }
+    public static double ScaledFixedTimeOffset { get; private set; }
     public static float RealtimeSinceStartup { get; private set; } = Time.realtimeSinceStartup;
 
     public static void ResetState(DateTime time)

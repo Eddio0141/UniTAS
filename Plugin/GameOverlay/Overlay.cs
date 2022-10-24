@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 using Ninject;
-using Ninject.Syntax;
+using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.GameOverlay.GameConsole;
 using UniTASPlugin.Movie;
 using UniTASPlugin.Movie.ScriptEngine;
@@ -15,15 +15,15 @@ internal static class Overlay
     public static bool Enabled { get; set; } = true;
     public static bool ShowCursor { get; set; } = true;
     public static bool UnityCursorVisible { get; set; } = true;
-    static readonly Texture2D cursorDefaultTexture = new(2, 2);
-    static Texture2D currentTexture = new(2, 2);
+    private static readonly Texture2D cursorDefaultTexture = new(2, 2);
+    private static Texture2D currentTexture = new(2, 2);
 
     public static void Init()
     {
         var alpha = new Color(0, 0, 0, 0);
         var black = Color.black;
         var white = Color.white;
-        var cursorRaw = new Color[]
+        var cursorRaw = new[]
         {
             black,alpha,alpha,alpha,alpha,alpha,alpha,alpha,alpha,alpha,alpha,alpha,
             black,black,alpha,alpha,alpha,alpha,alpha,alpha,alpha,alpha,alpha,alpha,
@@ -96,25 +96,26 @@ internal static class Overlay
             GUI.DrawTexture(new Rect(Input.mousePosition.x, Screen.height - Input.mousePosition.y, currentTexture.width, currentTexture.height), currentTexture);
     }
 
-    static int _tabIndex = 0;
-    static readonly string[] tabs = new string[] { "Movie", "Debug" };
-    static readonly Texture2D BGSurround = new(MENU_SIZE_X, MENU_SIZE_Y);
-    static string filePath = "";
+    private static int _tabIndex;
+    private static readonly string[] tabs = { "Movie", "Debug" };
+    private static readonly Texture2D BGSurround = new(MENU_SIZE_X, MENU_SIZE_Y);
+    private static string filePath = "";
 
     private enum Tabs
     {
         Movie,
     }
 
-    const int MENU_SIZE_X = 600;
-    const int MENU_SIZE_Y = 200;
-    const int MENU_X = 10;
-    const int MENU_Y = 10;
-    const int EDGE_SPACING = 5;
+    private const int MENU_SIZE_X = 600;
+    private const int MENU_SIZE_Y = 200;
+    private const int MENU_X = 10;
+    private const int MENU_Y = 10;
+    private const int EDGE_SPACING = 5;
 
-    const int TAS_MOVIE_BROWSER_WIDTH = 1000;
-    const int TAS_MOVIE_BROWSER_HEIGHT = 400;
-    static readonly FileBrowser tasMovieBrowser = new(
+    private const int TAS_MOVIE_BROWSER_WIDTH = 1000;
+    private const int TAS_MOVIE_BROWSER_HEIGHT = 400;
+
+    private static readonly FileBrowser tasMovieBrowser = new(
         Application.dataPath, new Rect(
         Screen.width / 2 - TAS_MOVIE_BROWSER_WIDTH / 2,
         Screen.height / 2 - TAS_MOVIE_BROWSER_HEIGHT / 2,
@@ -126,14 +127,14 @@ internal static class Overlay
             new()
         });
 
-    static void DrawGUI()
+    private static void DrawGUI()
     {
         if (!Enabled)
             return;
 
         var kernel = Plugin.Instance.Kernel;
         var movieRunner = kernel.Get<MovieRunner<MovieScriptEngine>>();
-        var env = kernel.Get<GameEnvironment.VirtualEnvironment>();
+        var env = kernel.Get<VirtualEnvironment>();
 
         GUI.DrawTexture(new Rect(MENU_X, MENU_Y, MENU_SIZE_X, MENU_SIZE_Y), BGSurround);
         GUI.Box(new Rect(MENU_X, MENU_Y, MENU_SIZE_X, MENU_SIZE_Y), $"{Plugin.Name} Menu");

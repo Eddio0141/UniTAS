@@ -1,6 +1,6 @@
-﻿using HarmonyLib;
-using System;
+﻿using System;
 using System.Reflection;
+using HarmonyLib;
 using ScreenOrig = UnityEngine.Screen;
 
 namespace UniTASPlugin.ReversePatches.__UnityEngine;
@@ -12,9 +12,9 @@ public static class Screen
     public static bool lockCursor { get => lockCursorPatch.get(); set => lockCursorPatch.set(value); }
 
     [HarmonyPatch]
-    static class showCursorPatch
+    private static class showCursorPatch
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
             return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
         }
@@ -35,9 +35,9 @@ public static class Screen
     }
 
     [HarmonyPatch]
-    static class lockCursorPatch
+    private static class lockCursorPatch
     {
-        static Exception Cleanup(MethodBase original, Exception ex)
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
             return AuxilaryHelper.Cleanup_IgnoreException(original, ex);
         }

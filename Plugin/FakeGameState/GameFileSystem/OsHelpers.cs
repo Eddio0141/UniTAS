@@ -7,7 +7,7 @@ namespace UniTASPlugin.FakeGameState.GameFileSystem;
 
 public static partial class FileSystem
 {
-    class OpenHandle
+    private class OpenHandle
     {
         public string Path { get; }
         public long Offset { get; set; }
@@ -37,7 +37,7 @@ public static partial class FileSystem
 
     public static class OsHelpers
     {
-        static readonly Dictionary<string, OpenHandle> openHandles = new();
+        private static readonly Dictionary<string, OpenHandle> openHandles = new();
 
         public static void OpenFile(string path, FileMode mode, FileAccess access, FileShare share, FileOptions options)
         {
@@ -101,19 +101,19 @@ public static partial class FileSystem
             openHandles.Add(path, handle);
         }
 
-        static void AccessFile(File file)
+        private static void AccessFile(File file)
         {
             file.AccessTime = DateTime.Now;
             if (file.Parent != null)
                 AccessDir(file.Parent);
         }
 
-        static void AccessDir(Dir dir)
+        private static void AccessDir(Dir dir)
         {
             dir.AccessTime = DateTime.Now;
         }
 
-        static void WriteFile(File file)
+        private static void WriteFile(File file)
         {
             AccessFile(file);
             file.WriteTime = DateTime.Now;
@@ -121,7 +121,7 @@ public static partial class FileSystem
                 WriteDir(file.Parent);
         }
 
-        static void WriteDir(Dir dir)
+        private static void WriteDir(Dir dir)
         {
             dir.WriteTime = DateTime.Now;
         }

@@ -8,7 +8,7 @@ public static partial class FileSystem
 {
     public static Dir Root { get; private set; }
     public static DeviceType DeviceType { get; }
-    const ulong TOTAL_SIZE = 0x200000000; // 8gb
+    private const ulong TOTAL_SIZE = 0x200000000; // 8gb
     public static Dir CurrentDir { get; private set; }
 
     public static void Init(DeviceType device)

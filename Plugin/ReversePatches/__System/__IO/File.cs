@@ -1,5 +1,5 @@
-﻿using HarmonyLib;
-using System;
+﻿using System;
+using HarmonyLib;
 using FileOrig = System.IO.File;
 
 namespace UniTASPlugin.ReversePatches.__System.__IO;
@@ -18,7 +18,7 @@ public static class File
     }
 
     [HarmonyPatch]
-    static class ExistsPatch
+    private static class ExistsPatch
     {
         [HarmonyReversePatch]
         [HarmonyPatch(typeof(FileOrig), nameof(FileOrig.Exists))]
@@ -29,10 +29,10 @@ public static class File
     }
 
     [HarmonyPatch]
-    static class ReadAllTextPatch
+    private static class ReadAllTextPatch
     {
         [HarmonyReversePatch]
-        [HarmonyPatch(typeof(FileOrig), nameof(FileOrig.ReadAllText), new Type[] { typeof(string) })]
+        [HarmonyPatch(typeof(FileOrig), nameof(FileOrig.ReadAllText), typeof(string))]
         public static string method(string path)
         {
             throw new NotImplementedException();

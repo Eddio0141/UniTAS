@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace UniTASPlugin.Patches.UnityEngine;
 
-class CursorHelper
+internal class CursorHelper
 {
     public static Type CursorType()
     {
@@ -21,19 +21,19 @@ class CursorHelper
 }
 
 [HarmonyPatch]
-class set_visible
+internal class set_visible
 {
-    static MethodBase TargetMethod()
+    private static MethodBase TargetMethod()
     {
         return AccessTools.PropertySetter(CursorHelper.CursorType(), "visible");
     }
 
-    static Exception Cleanup(MethodBase original, Exception ex)
+    private static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+        return PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
-    static void Prefix(ref bool value)
+    private static void Prefix(ref bool value)
     {
         Overlay.UnityCursorVisible = value;
         if (Overlay.ShowCursor)
@@ -42,38 +42,38 @@ class set_visible
 }
 
 [HarmonyPatch]
-class SetCursor
+internal class SetCursor
 {
-    static MethodBase TargetMethod()
+    private static MethodBase TargetMethod()
     {
-        return AccessTools.Method(CursorHelper.CursorType(), "SetCursor", new Type[] { typeof(Texture2D), typeof(Vector2), CursorHelper.CursorLockMode() });
+        return AccessTools.Method(CursorHelper.CursorType(), "SetCursor", new[] { typeof(Texture2D), typeof(Vector2), CursorHelper.CursorLockMode() });
     }
 
-    static Exception Cleanup(MethodBase original, Exception ex)
+    private static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+        return PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
-    static void Prefix(Texture2D texture)
+    private static void Prefix(Texture2D texture)
     {
         Overlay.SetCursorTexture(texture);
     }
 }
 
 [HarmonyPatch]
-class set_lockState
+internal class set_lockState
 {
-    static MethodBase TargetMethod()
+    private static MethodBase TargetMethod()
     {
         return AccessTools.PropertySetter(CursorHelper.CursorType(), "lockState");
     }
 
-    static Exception Cleanup(MethodBase original, Exception ex)
+    private static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return Patches.PatcherHelper.Cleanup_IgnoreException(original, ex);
+        return PatcherHelper.Cleanup_IgnoreException(original, ex);
     }
 
-    static void Prefix(object value)
+    private static void Prefix(object value)
     {
         if (CursorWrap.TempUnlocked)
             CursorWrap.TempStoreLockVariant = (int)value;

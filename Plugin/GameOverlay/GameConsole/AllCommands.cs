@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace UniTASPlugin.GameOverlay.GameConsole;
 
@@ -62,7 +63,7 @@ public static class AllCommands
         new Command("quit", "Quits the game.", args => {
             if (!ValidateArgCount(args, 0))
                 return;
-            UnityEngine.Application.Quit();
+            Application.Quit();
         }, usage: "quit();"),
         new Command("echo", "Prints the given text to the console.", args => {
             if (!ValidateArgCount(args, 1))
@@ -96,7 +97,7 @@ public static class AllCommands
         }, usage: "soft_restart(); / soft_restart(\"DateTime string\");"),
     };
 
-    static bool ValidateArgCount(Parameter[] args, int count)
+    private static bool ValidateArgCount(Parameter[] args, int count)
     {
         if (args.Length != count)
         {
@@ -106,7 +107,7 @@ public static class AllCommands
         return true;
     }
 
-    static bool ValidateArgCount(Parameter[] args, int minInclusive, int maxInclusive)
+    private static bool ValidateArgCount(Parameter[] args, int minInclusive, int maxInclusive)
     {
         if (args.Length < minInclusive)
         {
