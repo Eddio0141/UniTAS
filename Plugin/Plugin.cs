@@ -1,9 +1,8 @@
 ﻿using System;
 using BepInEx;
 using HarmonyLib;
-using NinjectWrap;
-using NinjectWrap.Modules;
-using NinjectWrap.Syntax;
+using Ninject;
+using Ninject.Modules;
 using UniTASPlugin.FakeGameState.GameFileSystem;
 using UniTASPlugin.GameOverlay;
 using UniTASPlugin.Movie;
@@ -37,12 +36,10 @@ public class Plugin : BaseUnityPlugin
         Instance = this;
         Log = Logger;
 
-        Log.LogDebug("init patch");
+        Log.LogInfo("init patch");
         Harmony harmony = new($"{Name}HarmonyPatch");
         harmony.PatchAll();
-        Log.LogDebug("post init patch");
-
-        Kernel.Get<PatchReverseInvoker>().SetProperty(v => Time.captureFramerate = (int)v, 1000);
+        Log.LogInfo("post init patch");
 
         // init fake file system
         // TODO way of getting device type

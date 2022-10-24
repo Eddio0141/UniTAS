@@ -30,6 +30,7 @@
     <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
     <PackageReference Include="BepInEx.Core" Version="5.*" />
     <PackageReference Include="MonoMod.Utils" Version="21.12.13.1" />
+    <PackageReference Include="Ninject" Version="3.2.2" />
     <PackageReference Include="Sprache" Version="2.3.1" />
     <PackageReference Include="UnityEngine.Modules" Version="3.4.0" IncludeAssets="compile" />
   </ItemGroup>
@@ -47,10 +48,6 @@
   <ItemGroup>
     <Folder Include="NInjectModules\" />
     <Folder Include="UpdateHelper\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Ninject\NinjectWrap\NinjectWrap.csproj" />
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">

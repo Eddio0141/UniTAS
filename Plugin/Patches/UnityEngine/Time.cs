@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Reflection;
 using HarmonyLib;
-using NinjectWrap;
-using NinjectWrap.Syntax;
+using Ninject;
+using Ninject.Syntax;
 using UniTASPlugin.FakeGameState;
 using UniTASPlugin.GameEnvironment;
 using TimeOrig = UnityEngine.Time;

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Reflection;
 using HarmonyLib;
-using NinjectWrap;
-using NinjectWrap.Syntax;
+using Ninject;
+using Ninject.Syntax;
 using UniTASPlugin.GameEnvironment;
 
 namespace UniTASPlugin.Patches.UnityEngine.EventSystems;
