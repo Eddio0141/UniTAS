@@ -1,4 +1,4 @@
-﻿using Ninject.Modules;
+﻿using NinjectWrap.Modules;
 using UniTASPlugin.Movie;
 using UniTASPlugin.Movie.DefaultParsers;
 using UniTASPlugin.Movie.ParseInterfaces;
