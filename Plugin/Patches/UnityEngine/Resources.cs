@@ -3,6 +3,10 @@ using System.Reflection;
 using HarmonyLib;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
+using AsyncOpOrig = UnityEngine.AsyncOperation;
+// ReSharper disable UnusedMember.Local
+// ReSharper disable InconsistentNaming
+// ReSharper disable RedundantAssignment
 
 namespace UniTASPlugin.Patches.UnityEngine;
 
@@ -30,7 +34,7 @@ internal class LoadAsyncInternal
         var resultTraverse = Traverse.Create(__result);
         _ = resultTraverse.Field("m_Path").SetValue(path);
         _ = resultTraverse.Field("m_Type").SetValue(type);
-        var wrap = new AsyncOperationWrap((AsyncOperation)__result);
+        var wrap = new AsyncOperationWrap((AsyncOpOrig)__result);
         wrap.AssignUID();
         return false;
     }

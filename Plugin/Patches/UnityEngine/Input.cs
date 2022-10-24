@@ -5,6 +5,9 @@ using Ninject;
 using UniTASPlugin.GameEnvironment;
 using UnityEngine;
 using InputOrig = UnityEngine.Input;
+// ReSharper disable InconsistentNaming
+// ReSharper disable UnusedMember.Local
+// ReSharper disable UnusedParameter.Local
 
 namespace UniTASPlugin.Patches.UnityEngine;
 
