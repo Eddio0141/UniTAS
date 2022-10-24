@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using HarmonyLib;
+using Ninject;
 using UniTASPlugin.GameOverlay;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
@@ -40,6 +41,8 @@ internal static class Cursor
 
         private static void Prefix(ref bool value)
         {
+            if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
+                return;
             Overlay.UnityCursorVisible = value;
             if (Overlay.ShowCursor)
                 value = false;
@@ -61,6 +64,8 @@ internal static class Cursor
 
         private static void Prefix(Texture2D texture)
         {
+            if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
+                return;
             Overlay.SetCursorTexture(texture);
         }
     }
@@ -80,6 +85,8 @@ internal static class Cursor
 
         private static void Prefix(object value)
         {
+            if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
+                return;
             if (CursorWrap.TempUnlocked)
                 CursorWrap.TempStoreLockVariant = (int)value;
         }
