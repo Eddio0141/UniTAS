@@ -14,8 +14,13 @@ public class PatchReverseInvoker
         return ret;
     }
 
-    public void SetProperty(Action<object> property, object value)
+    public void SetProperty<T>(Action<T> property, T value)
     {
         property.Invoke(value);
+    }
+
+    public T GetProperty<T>(Func<T> property)
+    {
+        return property.Invoke();
     }
 }
