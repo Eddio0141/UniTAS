@@ -54,6 +54,6 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -file &quot;$(ProjectDir)postbuild.ps1&quot; $(TargetDir)$(ProjectName).dll" ContinueOnError="true" />
+    <Exec Command="C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -file &quot;$(ProjectDir)postbuild.ps1&quot; $(TargetDir)" ContinueOnError="true" />
   </Target>
 </Project>
