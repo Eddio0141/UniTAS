@@ -5,7 +5,7 @@ VisualStudioVersion = 17.2.32630.192
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UniTASPlugin", "UniTASPlugin.csproj", "{A423BBB7-C9FB-483F-A8D1-CC9FEC595124}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ninject", "..\Ninject\src\Ninject\Ninject.csproj", "{7FA732C3-674E-437A-9F30-87993A59A7BF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NinjectWrap", "..\Ninject\NinjectWrap\NinjectWrap.csproj", "{4C460E7D-758E-4A88-AC64-6CFC620EA15F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +17,10 @@ Global
 		{A423BBB7-C9FB-483F-A8D1-CC9FEC595124}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A423BBB7-C9FB-483F-A8D1-CC9FEC595124}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A423BBB7-C9FB-483F-A8D1-CC9FEC595124}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7FA732C3-674E-437A-9F30-87993A59A7BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7FA732C3-674E-437A-9F30-87993A59A7BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7FA732C3-674E-437A-9F30-87993A59A7BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7FA732C3-674E-437A-9F30-87993A59A7BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4C460E7D-758E-4A88-AC64-6CFC620EA15F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4C460E7D-758E-4A88-AC64-6CFC620EA15F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4C460E7D-758E-4A88-AC64-6CFC620EA15F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4C460E7D-758E-4A88-AC64-6CFC620EA15F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
