@@ -16,11 +16,16 @@ public class PatchReverseInvoker
 
     public void SetProperty<T>(Action<T> property, T value)
     {
+        Invoking = true;
         property.Invoke(value);
+        Invoking = false;
     }
 
     public T GetProperty<T>(Func<T> property)
     {
-        return property.Invoke();
+        Invoking = true;
+        var ret = property.Invoke();
+        Invoking = false;
+        return ret;
     }
 }
