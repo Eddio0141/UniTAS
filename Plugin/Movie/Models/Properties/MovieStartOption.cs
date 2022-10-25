@@ -2,5 +2,6 @@
 
 public enum MovieStartOption
 {
-    FromStartup,
+    Startup,
+    SaveState
 }
