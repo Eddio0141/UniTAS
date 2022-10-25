@@ -8,6 +8,8 @@ public class DefaultMovieSectionSplitter : IMovieSectionSplitter
 {
     public IEnumerable<string> Split(string input)
     {
-        throw new NotImplementedException();
+        var sectionSplitLine = "---";
+        var sections = input.Split(new[] { sectionSplitLine }, StringSplitOptions.None);
+        return sections;
     }
 }
