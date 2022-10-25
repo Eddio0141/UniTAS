@@ -5,14 +5,13 @@
     - Required to be at the start of the movie
     - Semantic
   - Virtual environment
-      - From startup - from_startup
       - Operating system - os
       - Date time / seed to start with - datetime / seed
       - Frametime or FPS - frametime ft / fps
       - Window resolution - resolution x y
       - Window focus - unfocused
-      - From save state (state flag with path to save state) - from_savestate
-        - Load environment settings from state
+    - From save state (state flag with path to save state) - from_savestate
+      - Load environment settings from state
   - Name - name
   - Description - desc
   - Author - author
