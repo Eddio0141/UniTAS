@@ -69,26 +69,4 @@ internal static class Cursor
             Overlay.SetCursorTexture(texture);
         }
     }
-
-    [HarmonyPatch]
-    internal class set_lockState
-    {
-        private static MethodBase TargetMethod()
-        {
-            return AccessTools.PropertySetter(CursorHelper.CursorType(), "lockState");
-        }
-
-        private static Exception Cleanup(MethodBase original, Exception ex)
-        {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
-        }
-
-        private static void Prefix(object value)
-        {
-            if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
-                return;
-            if (CursorWrap.TempUnlocked)
-                CursorWrap.TempStoreLockVariant = (int)value;
-        }
-    }
 }

@@ -32,24 +32,6 @@ internal static class Screen
             return true;
         }
     }
-
-    [HarmonyPatch(typeof(ScreenOrig), nameof(ScreenOrig.lockCursor), MethodType.Setter)]
-    internal class set_lockCursor
-    {
-        private static Exception Cleanup(MethodBase original, Exception ex)
-        {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
-        }
-
-        private static bool Prefix(bool value)
-        {
-            if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
-                return true;
-            if (CursorWrap.TempUnlocked)
-                CursorWrap.TempStoreLockCursorState = value;
-            return true;
-        }
-    }
 }
 
 /*

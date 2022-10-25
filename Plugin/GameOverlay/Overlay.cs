@@ -4,7 +4,6 @@ using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.GameOverlay.GameConsole;
 using UniTASPlugin.Movie;
 using UniTASPlugin.Movie.ScriptEngine;
-using UniTASPlugin.ReversePatches.__System.__IO;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
 
@@ -60,7 +59,7 @@ internal static class Overlay
         BGSurround.Apply();
 
         // hide normal cursor
-        CursorWrap.visible = false;
+        CursorWrap.Visible = false;
     }
 
     public static void SetCursorTexture(Texture2D texture)
@@ -78,8 +77,8 @@ internal static class Overlay
         }
         if (!movieRunner.IsRunning && Input.GetKeyDown(KeyCode.F11))
         {
-            CursorWrap.TempCursorLockToggle(!CursorWrap.TempUnlocked);
-            Plugin.Instance.Log.LogDebug($"Unlocked cursor: {CursorWrap.TempUnlocked}");
+            CursorWrap.UnlockCursor();
+            Plugin.Instance.Log.LogDebug($"Unlocked cursor");
         }
         if (!movieRunner.IsRunning && Input.GetKeyDown(KeyCode.BackQuote))
         {
@@ -92,7 +91,7 @@ internal static class Overlay
         Console.Update();
         DrawGUI();
 
-        if (CursorWrap.TempUnlocked || ShowCursor && UnityCursorVisible)
+        if (ShowCursor && UnityCursorVisible)
             GUI.DrawTexture(new Rect(Input.mousePosition.x, Screen.height - Input.mousePosition.y, currentTexture.width, currentTexture.height), currentTexture);
     }
 
@@ -150,9 +149,10 @@ internal static class Overlay
                     filePath = GUILayout.TextField(filePath);
                     if (GUILayout.Button("Run", GUILayout.Width(40)))
                     {
-                        if (File.Exists(filePath) && !movieRunner.IsRunning)
+                        var rev = Plugin.Instance.Kernel.Get<PatchReverseInvoker>();
+                        if (rev.Invoke(System.IO.File.Exists, filePath) && !movieRunner.IsRunning)
                         {
-                            movieRunner.RunFromPath(Path.GetFileName(filePath), ref env);
+                            movieRunner.RunFromPath(rev.Invoke(System.IO.Path.GetFileName, filePath), ref env);
                         }
                     }
                     if (GUILayout.Button("Browse", GUILayout.Width(60)))
@@ -168,9 +168,10 @@ internal static class Overlay
                     if (GUILayout.Button("test TAS") && !movieRunner.IsRunning)
                     {
                         var path = "";
-                        if (File.Exists("C:\\Users\\Yuki\\Documents\\test.uti"))
+                        var rev = Plugin.Instance.Kernel.Get<PatchReverseInvoker>();
+                        if (rev.Invoke(System.IO.File.Exists, "C:\\Users\\Yuki\\Documents\\test.uti"))
                             path = "C:\\Users\\Yuki\\Documents\\test.uti";
-                        else if (File.Exists("C:\\Program Files (x86)\\Steam\\steamapps\\common\\It Steals\\test.uti"))
+                        else if (rev.Invoke(System.IO.File.Exists, "C:\\Program Files (x86)\\Steam\\steamapps\\common\\It Steals\\test.uti"))
                             path =
                                 "\"C:\\\\Program Files (x86)\\\\Steam\\\\steamapps\\\\common\\\\It Steals\\\\test.uti\"";
                         movieRunner.RunFromPath(path, ref env);

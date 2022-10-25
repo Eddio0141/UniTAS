@@ -37,7 +37,7 @@ internal class GameRestart
         Plugin.Instance.Log.LogInfo("Soft restarting");
 
         // release mouse lock
-        CursorWrap.visible = true;
+        CursorWrap.Visible = true;
         CursorWrap.UnlockCursor();
 
         foreach (var obj in Object.FindObjectsOfType(typeof(MonoBehaviour)))

@@ -252,32 +252,33 @@ public class FileBrowser
         confirmSave.Update();
         if (confirmSave.FinalResult(out var overwriteSave) && overwriteSave)
         {
-            finalPath = Path.Combine(currentDir, selectedFileText);
+            finalPath = Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoke(System.IO.Path.Combine, currentDir, selectedFileText);
             gotFinalPath = false;
             opened = false;
         }
 
         if (dirChanged)
         {
-            if (Directory.Exists(changingDir))
+            var rev = Plugin.Instance.Kernel.Get<PatchReverseInvoker>();
+            if (rev.Invoke(System.IO.Directory.Exists, changingDir))
             {
                 try
                 {
                     var displayNamesBuilder = new List<GUIContent>();
                     var currentDirPathsBuilder = new List<string>();
-                    var entries = Directory.GetFileSystemEntries(changingDir, "*");
+                    var entries = rev.Invoke(System.IO.Directory.GetFileSystemEntries, changingDir, "*");
 
                     foreach (var entry in entries)
                     {
-                        if (Directory.Exists(entry))
+                        if (rev.Invoke(System.IO.Directory.Exists, entry))
                         {
-                            var dirName = Path.GetFileName(entry);
+                            var dirName = rev.Invoke(System.IO.Path.GetFileName, entry);
                             displayNamesBuilder.Add(new GUIContent(dirName, folderTexture));
                             currentDirPathsBuilder.Add(entry);
                             continue;
                         }
 
-                        var name = Path.GetFileName(entry);
+                        var name = rev.Invoke(System.IO.Path.GetFileName, entry);
 
                         // filter
                         var filterOut = true;
@@ -392,7 +393,7 @@ public class FileBrowser
         }
         if (GUILayout.Button("^", GUILayout.Width(20)) && !confirmSave.Opened)
         {
-            changingDir = Path.GetDirectoryName(currentDir);
+            changingDir = Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoke(System.IO.Path.GetDirectoryName, currentDir);
             dirChanged = true;
         }
         currentDirText = GUILayout.TextField(currentDirText);
@@ -437,7 +438,7 @@ public class FileBrowser
             var name = displayNames[i];
             if (GUILayout.Button(name) && !confirmSave.Opened)
             {
-                if (Directory.Exists(path))
+                if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoke(System.IO.Directory.Exists, path))
                 {
                     changingDir = path;
                     dirChanged = true;
@@ -457,12 +458,13 @@ public class FileBrowser
         selectedFileText = GUILayout.TextField(selectedFileText);
         if (GUILayout.Button(selectText, GUILayout.Width(50)) && !confirmSave.Opened)
         {
-            var combinedPath = Path.Combine(currentDir, selectedFileText);
+            var rev = Plugin.Instance.Kernel.Get<PatchReverseInvoker>();
+            var combinedPath = rev.Invoke(System.IO.Path.Combine, currentDir, selectedFileText);
             switch (browserType)
             {
                 case FileBrowserType.Open:
                     {
-                        if (File.Exists(combinedPath))
+                        if (rev.Invoke(System.IO.File.Exists, combinedPath))
                         {
                             opened = false;
                             gotFinalPath = false;
@@ -472,7 +474,7 @@ public class FileBrowser
                     }
                 case FileBrowserType.Save:
                     {
-                        if (File.Exists(combinedPath))
+                        if (rev.Invoke(System.IO.File.Exists, combinedPath))
                         {
                             confirmSave.Open();
                         }
