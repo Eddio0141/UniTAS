@@ -3,20 +3,20 @@
 - Movie properties
 - Movie format version
     - Semantic
-- Virtual environment
-    - From startup (startup flag)
-    - Operating system
-    - Date time / seed to start with
-    - Frametime or FPS
-    - Window resolution
-    - Window focus
-    - From save state (state flag with path to save state)
-    - Load environment settings from state
-- Name
-- Description
-- Author
-- End save
-    - Creates a save state at end for using it on another movie
+  - Virtual environment
+      - From startup (startup flag)
+      - Operating system
+      - Date time / seed to start with
+      - Frametime or FPS
+      - Window resolution
+      - Window focus
+      - From save state (state flag with path to save state)
+      - Load environment settings from state
+  - Name
+  - Description
+  - Author
+  - End save
+      - Creates a save state at end for using it on another movie
 - Scripting
     - Loop
     - `loop COUNT { // actions to loop }`
