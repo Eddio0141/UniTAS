@@ -1,9 +1,6 @@
 ﻿using System;
-using System.IO;
 using HarmonyLib;
-using Directory = UniTASPlugin.ReversePatches.__System.__IO.Directory;
-using File = UniTASPlugin.ReversePatches.__System.__IO.File;
-using Path = UniTASPlugin.ReversePatches.__System.__IO.Path;
+using Ninject;
 
 namespace UniTASPlugin.VersionSafeWrapper;
 
@@ -24,7 +21,8 @@ public static class AppInfo
         var foundExe = "";
         var foundMultipleExe = false;
         var rootDir = Helper.GameRootDir();
-        var rootFiles = Directory.GetFiles(rootDir);
+        var rev = Plugin.Instance.Kernel.Get<PatchReverseInvoker>();
+        var rootFiles = rev.Invoke(System.IO.Directory.GetFiles, rootDir);
 
         // iterate over exes in game root dir
         foreach (var path in rootFiles)
@@ -48,15 +46,15 @@ public static class AppInfo
 
         if (!foundMultipleExe)
         {
-            productNameCache = Path.GetFileNameWithoutExtension(foundExe);
+            productNameCache = rev.Invoke(System.IO.Path.GetFileNameWithoutExtension, foundExe);
             return productNameCache;
         }
 
         // use game dir name and see if it matches exe
         // TODO replace this instance creation
-        var gameDirName = new DirectoryInfo(rootDir).Name;
+        var gameDirName = rev.Invoke(a => new System.IO.DirectoryInfo(a), rootDir).Name;
 
-        if (File.Exists(Path.Combine(rootDir, $"{gameDirName}.exe")))
+        if (rev.Invoke(System.IO.File.Exists, rev.Invoke(System.IO.Path.Combine, rootDir, $"{gameDirName}.exe")))
         {
             productNameCache = gameDirName;
             return gameDirName;

@@ -1,44 +1,43 @@
 ﻿using System;
 using HarmonyLib;
-using UniTASPlugin.ReversePatches.__UnityEngine;
+using Ninject;
 using Screen = UnityEngine.Screen;
 
 namespace UniTASPlugin.VersionSafeWrapper;
 
 internal static class CursorWrap
 {
-    private static readonly bool ScreenLockCursorExists = Traverse.Create<Screen>().Property("lockCursor").PropertyExists();
-
-    private static readonly bool ScreenShowCursorExists = Traverse.Create<Screen>().Property("showCursor").PropertyExists();
-
-    private static readonly bool CursorTypeExists = Traverse.CreateWithType("UnityEngine.Cursor").TypeExists();
-
+    private static readonly bool ScreenLockCursorExists = ScreenLockCursorTraverse.PropertyExists();
+    private static readonly bool ScreenShowCursorExists = ScreenShowCursorTraverse.PropertyExists();
+    private static readonly bool CursorTypeExists = CursorTraverse.TypeExists();
     private static readonly bool LockModeTypeExists = Traverse.CreateWithType("UnityEngine.CursorLockMode").TypeExists();
-
-    private static readonly bool CursorLockStateExists = Traverse.CreateWithType("UnityEngine.Cursor").Property("lockState").PropertyExists();
-
+    private static readonly bool CursorLockStateExists = CursorLockStateTraverse.PropertyExists();
     private static readonly Type CursorLockModeType = AccessTools.TypeByName("UnityEngine.CursorLockMode");
+    private static Traverse CursorTraverse => Traverse.CreateWithType("UnityEngine.Cursor");
+    private static Traverse CursorVisibleTraverse => CursorTraverse.Property("visible");
+    private static Traverse CursorLockStateTraverse => CursorTraverse.Property("lockState");
+    private static Traverse ScreenTraverse => Traverse.Create<Screen>();
+    private static Traverse ScreenShowCursorTraverse => ScreenTraverse.Property("showCursor");
+    private static Traverse ScreenLockCursorTraverse => ScreenTraverse.Property("lockCursor");
 
-    public static bool visible
+    public static bool Visible
     {
         get
         {
             if (CursorTypeExists)
             {
-                return Cursor.visible;
+                return CursorVisibleTraverse.GetValue<bool>();
             }
-            if (!ScreenShowCursorExists)
-            {
-                Plugin.Instance.Log.LogError("Failed to retrieve Screen.showCursor property");
-                return false;
-            }
-            return ReversePatches.__UnityEngine.Screen.showCursor;
+
+            if (ScreenShowCursorExists) return ScreenShowCursorTraverse.GetValue<bool>();
+            Plugin.Instance.Log.LogError("Failed to retrieve Screen.showCursor property");
+            return false;
         }
         set
         {
             if (CursorTypeExists)
             {
-                Cursor.visible = value;
+                CursorVisibleTraverse.SetValue(value);
                 return;
             }
             if (!ScreenShowCursorExists)
@@ -46,46 +45,7 @@ internal static class CursorWrap
                 Plugin.Instance.Log.LogError("Failed to set Screen.showCursor property");
                 return;
             }
-            ReversePatches.__UnityEngine.Screen.showCursor = value;
-        }
-    }
-
-    public static int TempStoreLockVariant;
-    public static bool? TempStoreLockCursorState = null;
-    public static bool TempUnlocked { get; private set; }
-
-    public static void TempCursorLockToggle(bool unlock)
-    {
-        TempUnlocked = unlock;
-        if (unlock)
-        {
-            // store data and unlock cursor
-            if (CursorTypeExists)
-            {
-                TempStoreLockVariant = Cursor.lockState;
-            }
-            else
-            {
-                if (!ScreenLockCursorExists)
-                {
-                    Plugin.Instance.Log.LogError("Failed to unlock cursor, lockCursor property not found");
-                    TempUnlocked = false;
-                    return;
-                }
-                ReversePatches.__UnityEngine.Screen.lockCursor = false;
-            }
-            UnlockCursor();
-        }
-        else
-        {
-            // restore lock state
-            if (CursorTypeExists)
-            {
-                Cursor.lockState = TempStoreLockVariant;
-                return;
-            }
-            if (TempStoreLockCursorState is not null)
-                ReversePatches.__UnityEngine.Screen.lockCursor = TempStoreLockCursorState.Value;
+            ScreenShowCursorTraverse.SetValue(value);
         }
     }
 
@@ -99,7 +59,7 @@ internal static class CursorWrap
                 var variant = Enum.Parse(CursorLockModeType, unlockVariant);
                 if (CursorLockStateExists)
                 {
-                    Cursor.lockState = (int)variant;
+                    CursorLockStateTraverse.SetValue((int)variant);
                 }
                 else
                 {
@@ -117,6 +77,6 @@ internal static class CursorWrap
             Plugin.Instance.Log.LogError("Failed to unlock cursor, lockCursor property not found");
             return;
         }
-        ReversePatches.__UnityEngine.Screen.lockCursor = false;
+        ScreenLockCursorTraverse.SetValue(false);
     }
 }

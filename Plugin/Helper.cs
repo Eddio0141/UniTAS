@@ -7,8 +7,8 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
 using HarmonyLib;
+using Ninject;
 using UniTASPlugin.Exceptions;
-using UniTASPlugin.ReversePatches.__System.__IO;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
 
@@ -20,9 +20,10 @@ public static class Helper
     {
         const string unityPlayerPath = @".\UnityPlayer.dll";
         string versionRaw;
-        if (File.Exists(unityPlayerPath))
+        var rev = Plugin.Instance.Kernel.Get<PatchReverseInvoker>();
+        if (rev.Invoke(System.IO.File.Exists, unityPlayerPath))
         {
-            var fullPath = Path.GetFullPath(unityPlayerPath);
+            var fullPath = rev.Invoke(System.IO.Path.GetFullPath, unityPlayerPath);
             var fileVersion = FileVersionInfo.GetVersionInfo(fullPath);
             versionRaw = fileVersion.FileVersion;
         }
@@ -81,7 +82,8 @@ public static class Helper
     public static string GameRootDir()
     {
         var appBase = AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
-        return appBase ?? Path.GetFullPath(".");
+        var rev = Plugin.Instance.Kernel.Get<PatchReverseInvoker>();
+        return appBase ?? rev.Invoke(System.IO.Path.GetFullPath, ".");
     }
 
     public static string GameName()
@@ -92,7 +94,8 @@ public static class Helper
     public static string GameExePath()
     {
         // TODO other platform support that's not windows
-        return Path.Combine(GameRootDir(), $"{GameName()}.exe");
+        var rev = Plugin.Instance.Kernel.Get<PatchReverseInvoker>();
+        return rev.Invoke(System.IO.Path.Combine, GameRootDir(), $"{GameName()}.exe");
     }
 
     /// <summary>

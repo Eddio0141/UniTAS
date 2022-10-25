@@ -5,23 +5,26 @@ namespace UniTASPlugin.VersionSafeWrapper;
 
 public static class TimeWrap
 {
-    public static readonly bool CaptureDeltaTimeExists = Traverse.Create<Time>().Property("captureDeltaTime").PropertyExists();
+    private static readonly bool CaptureDeltaTimeExists = CaptureDeltaTimeTraverse.PropertyExists();
+    private static Traverse CaptureDeltaTimeTraverse => Traverse.Create<Time>().Property("captureDeltaTime");
 
-    public static float captureFrametime
+    public static float CaptureFrameTime
     {
-        get => CaptureDeltaTimeExists ? ReversePatches.__UnityEngine.Time.captureDeltaTime : 1 / ReversePatches.__UnityEngine.Time.captureFramerate;
+        get => CaptureDeltaTimeExists ? CaptureDeltaTimeTraverse.GetValue<float>() : 1.0f / Time.captureFramerate;
         set
         {
             if (CaptureDeltaTimeExists)
             {
-                ReversePatches.__UnityEngine.Time.captureDeltaTime = value;
+                CaptureDeltaTimeTraverse.SetValue(value);
             }
             else
             {
-                ReversePatches.__UnityEngine.Time.captureFramerate = (int)(1 / value);
+                Time.captureFramerate = (int)(1 / value);
             }
         }
     }
 
-    public static bool FrametimeNotSet => CaptureDeltaTimeExists ? ReversePatches.__UnityEngine.Time.captureDeltaTime == 0 : ReversePatches.__UnityEngine.Time.captureFramerate == 0;
+    public static bool FrameTimeNotSet => CaptureDeltaTimeExists
+        ? CaptureDeltaTimeTraverse.GetValue<float>() == 0
+        : Time.captureFramerate == 0;
 }
