@@ -18,24 +18,23 @@
       - Creates a save state at end for using it on another movie
 - Scripting
     - Loop
-    - `loop COUNT { // actions to loop }`
-    - Needs matching `{}` brackets
+      - `loop COUNT { // actions to loop }`
+      - Needs matching `{}` brackets
     - Variables
-    - Uses key `$` for defining / using
-    - Defined like `$name_without_space = 50`
-    - Used like `Mouse($name_without_space, $name_without_space)`
-    - Methods can access variables on main scope
-    - Main scope can't access variables inside scopes
-    - Loops can access variables on main scope or method scope its used on
-    - Can copy variables with `$variable_copy $variable_source`
+      - Uses key `$` for defining / using
+      - Defined like `$name_without_space = 50`
+      - Used like `Mouse($name_without_space, $name_without_space)`
+    -   Methods can access variables on main scope
+    -   Main scope can't access variables inside scopes
+    -   Loops can access variables on main scope or method scope its used on
+    -   Can copy variables with `$variable_copy $variable_source`
     - Const
-    - Anything hardcoded in the script like $value=5
+      - Anything hardcoded in the script like $value = 5
     - Methods
-    - Can be called with `method(arg1, arg2, ...)`
-    - Return values can be assigned to a variable `$method_return method(arg1, arg2)`
+      - Can be called with `method(arg1, arg2, ...)`
+      - Return values can be assigned to a variable `$method_return method(arg1, arg2)`
     - Action merge / separator
-    - Those are the same:
-
+      - Those are the same:
         #### mouse(50, 50)
         #### key(W)
         ---
@@ -47,55 +46,56 @@
         #### mouse(50, 50); key(W)
     - You can do multiple `;` chains to advance multiple frames
     - Wait
-    - `wait(50)` procudes 50 of `;`
+      - `wait(50)` procudes 50 of `;`
     - Game FPS
-    - `fps(100)` will set game FPS to 100
-    - `frametime(0.01)` will set the FPS to 100, not all unity versions support frametime so rounds down making the FPS an integer
-    - `get_fps() / get_frametime()` returns current fps / frametime
-    - If vsync is enabled, it will prevent the FPS from being changed unless vsync is off
+      - `fps(100)` will set game FPS to 100
+      - `frametime(0.01)` will set the FPS to 100, not all unity versions support frametime so rounds down making the FPS an integer
+      - `get_fps() / get_frametime()` returns current fps / frametime
+      - If vsync is enabled, it will prevent the FPS from being changed unless vsync is off
     - Registering a loop
-    - `register_loop(method_name, initial_arg1, initial_arg2, ...)`
-    - `loop_arg(loop_uid, arg1, arg2, ...)`
-    - `remove_loop(loop_uid)`
-    - Runs the method in a loop along side the main script
-    - Example
-    ```
-    fn bunny_hop() {
-        // presses space when on ground
-    }
-    fn spam_key(key_code) { key(key_code); }
+      - `register_loop(method_name, initial_arg1, initial_arg2, ...)`
+      - `loop_arg(loop_uid, arg1, arg2, ...)`
+      - `remove_loop(loop_uid)`
+      - Runs the method in a loop along side the main script and other loops
+      - Each time the method "exits", the method will be called again on the next frame
+      - Example
+      ```
+      fn bunny_hop() {
+          // presses space when on ground
+      }
+      fn spam_key(key_code) { key(key_code); }
 
-    // registers methods to run 
-    $bhop_register register_loop(bunny_hop)
-    $spam_register register_loop(spam_key, A)
-    $spam_register2 register_loop(spam_key, B)
+      // registers methods to run 
+      $bhop_register register_loop(bunny_hop)
+      $spam_register register_loop(spam_key, A)
+      $spam_register2 register_loop(spam_key, B)
 
-    // some inputs...
+      // some inputs...
 
-    // change the argument to some registered loop
-    loop_arg($spam_register, C)
+      // change the argument to some registered loop
+      loop_arg($spam_register, C)
 
-    // some inputs...
+      // some inputs...
 
-    // stop a loop
-    remove_loop($spam_register)
-    ```
+      // stop a loop
+      remove_loop($spam_register)
+      ```
     - Save state
-    - `save(file_path)` to save
+      - `save(file_path)` to save
     - Window resolution
-    - `resolution(1920, 1080)`
+      - `resolution(1920, 1080)`
     - Window focus
-    - `window_focus(true) window_focus(false)`
+      - `window_focus(true) window_focus(false)`
     - Window full screen
-    - `window_fullscreen(true) window_fullscreen(false)`
+      - `window_fullscreen(true) window_fullscreen(false)`
     - If
-    - if $condition { // stuff }
-    - if $condition { } else { }
-    - if $condition { } else if $condition { } else...
-    - Method that returns a boolean can directly be used on the condition without assigning to variable
+      - if $condition { // stuff }
+      - if $condition { } else { }
+      - if $condition { } else if $condition { } else...
+      - Method that returns a boolean can directly be used on the condition without assigning to variable
     - Variable types
-    - Once assigned, type of the variable can't be changed
-    - Types:
+      - Once assigned, type of the variable can't be changed
+      - Types:
         - Int
         - Float
         - String
@@ -116,13 +116,13 @@
         - Assign to multiple variables with `$value $value2 some_method_with_tuple_return()`
         - Doing `$value some_method_with_tuple_return()` for a return of multiple tuples will only retrieve the first tuple
     - Errors
-    - No error handling
-    - Any errors like method errors will stop the execution of the movie / not parse and inform the user on error
+      - No error handling
+      - Any errors like method errors will stop the execution of the movie / not parse and inform the user on error
     - Scopes
-    - `{}`
-    - Variables inside scopes can't be accessed from the outside
-    - Variables outside can be accessed from within the scopes
-    - Variables on the main scope can be accessed from any scope
+      - `{}`
+      - Variables inside scopes can't be accessed from the outside
+      - Variables outside can be accessed from within the scopes
+      - Variables on the main scope can be accessed from any scope
     - Low level stuff
     - Registers
         - Holds a value
