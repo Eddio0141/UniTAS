@@ -64,18 +64,22 @@ public partial class DefaultMoviePropertiesParser : IMoviePropertyParser
 
             if (foundKeyIndex < 0)
             {
-                var dupeKeyIndex = processedKeys.FindIndex(x => x.Name == key || x.AlternativeNames.Contains(key));
-                if (dupeKeyIndex < 0)
+                var dupeKeyIndex = processedKeys.FindIndex(x => x.Name == key);
+                var altKeyIndex = processedKeys.FindIndex(x => x.AlternativeNames.Contains(key));
+                if (dupeKeyIndex < 0 && altKeyIndex < 0)
                 {
-                    // this means the key is invalid
                     throw new InvalidPropertyKeyException(key);
+                    // this means the key is invalid
                 }
-                // this means the key is a dupe
-                var dupeKey = processedKeys[dupeKeyIndex];
-                if (dupeKey.Name != key)
+                if (altKeyIndex < 0)
                 {
-                    // key was already processed through alternative key
-                    throw new DuplicatePropertyKeyException(dupeKey.Name);
+                    // this means the key is a dupe
+                    var dupeKey = processedKeys[dupeKeyIndex];
+                    if (dupeKey.Name != key)
+                    {
+                        // key was already processed through alternative key
+                        throw new DuplicatePropertyKeyException(dupeKey.Name);
+                    }
                 }
                 throw new DuplicatePropertyKeyException();
             }
@@ -86,12 +90,17 @@ public partial class DefaultMoviePropertiesParser : IMoviePropertyParser
                 throw new ConflictingPropertyKeyException(foundKey.Name, conflictKeys[foundConflictKeyIndex].Value);
 
             leftKeys.RemoveAt(foundKeyIndex);
+            foreach (var altKey in foundKey.AlternativeNames)
+            {
+                var altKeyIndex = leftKeys.FindIndex(x => x.Name == altKey);
+                leftKeys.RemoveAt(altKeyIndex);
+            }
             foreach (var conflictKey in foundKey.ConflictKeys)
             {
                 conflictKeys.Add(new KeyValuePair<string, string>(conflictKey, foundKey.Name));
             }
 
-            var parsedValue = foundKey.Parse(split.Length < 2 ? "" : split[1]);
+            var parsedValue = foundKey.Parse(split.Length < 2 ? "" : split[1].TrimStart());
             switch (foundKey.Name)
             {
                 case OsKey.Key:
