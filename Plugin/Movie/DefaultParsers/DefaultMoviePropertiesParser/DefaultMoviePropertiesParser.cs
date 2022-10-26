@@ -39,7 +39,6 @@ public partial class DefaultMoviePropertiesParser : IMoviePropertyParser
         string description = null;
         string author = null;
 
-        StartupPropertiesModel startupProperties = null;
         Os? os = null;
         DateTime? startTime = null;
         float? frameTime = null;
@@ -143,9 +142,9 @@ public partial class DefaultMoviePropertiesParser : IMoviePropertyParser
         }
 
         if (startTime == null) return new PropertiesModel(name, description, author, endSavePath, loadSaveStatePath);
-        
+
         var windowState = new WindowState(resolution.Value.Key, resolution.Value.Value, isFullScreen.Value, isFocused.Value);
-        startupProperties = new StartupPropertiesModel(os.Value, startTime.Value, frameTime.Value, windowState);
+        var startupProperties = new StartupPropertiesModel(os.Value, startTime.Value, frameTime.Value, windowState);
         return new PropertiesModel(name, description, author, endSavePath, startupProperties);
 
     }
