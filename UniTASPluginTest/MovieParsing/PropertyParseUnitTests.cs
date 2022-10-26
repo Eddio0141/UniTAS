@@ -1,5 +1,6 @@
 ﻿using UniTASPlugin.GameEnvironment.InnerState;
 using UniTASPlugin.Movie.DefaultParsers.DefaultMoviePropertiesParser;
+using UniTASPlugin.Movie.Exceptions.ParseExceptions;
 using UniTASPlugin.Movie.Models.Properties;
 
 // ReSharper disable StringLiteralTypo
@@ -72,5 +73,67 @@ endsave end_save";
         Assert.Equal(expected.EndSavePath, actual.EndSavePath);
         Assert.Equal(expected.StartupProperties, actual.StartupProperties);
         Assert.Equal(expected.LoadSaveStatePath, actual.LoadSaveStatePath);
+    }
+
+    [Fact]
+    public void KeyAltConflict()
+    {
+        var parser = new DefaultMoviePropertiesParser();
+        const string input = @"frametime 0.001
+ft 0.01";
+        Assert.Throws<DuplicatePropertyKeyException>(() => parser.Parse(input));
+    }
+
+    [Fact]
+    public void DupeKey()
+    {
+        var parser = new DefaultMoviePropertiesParser();
+        const string input = @"ft 0.001
+ft 0.01";
+        Assert.Throws<DuplicatePropertyKeyException>(() => parser.Parse(input));
+    }
+
+    [Fact]
+    public void UnknownKey()
+    {
+        var parser = new DefaultMoviePropertiesParser();
+        const string input = "foo";
+        Assert.Throws<InvalidPropertyKeyException>(() => parser.Parse(input));
+    }
+
+    [Fact]
+    public void KeyMultiSpace()
+    {
+        var parser = new DefaultMoviePropertiesParser();
+        const string input = @"name   test TAS
+            author yuu0141
+ desc a test TAS
+from_savestate load.whateveridk
+endsave        end_save";
+        var expected = new PropertiesModel("test TAS", "a test TAS", "yuu0141", "end_save", "load.whateveridk");
+        var actual = parser.Parse(input);
+
+        Assert.Equal(expected.Name, actual.Name);
+        Assert.Equal(expected.Description, actual.Description);
+        Assert.Equal(expected.Author, actual.Author);
+        Assert.Equal(expected.EndSavePath, actual.EndSavePath);
+        Assert.Equal(expected.StartupProperties, actual.StartupProperties);
+        Assert.Equal(expected.LoadSaveStatePath, actual.LoadSaveStatePath);
+    }
+
+    [Fact]
+    public void ConflictingKey()
+    {
+        var parser = new DefaultMoviePropertiesParser();
+        const string input = @"from_savestate test
+ft 0.001";
+        Assert.Throws<ConflictingPropertyKeyException>(() => parser.Parse(input));
+    }
+
+    [Fact]
+    public void UnknownStartType()
+    {
+        var parser = new DefaultMoviePropertiesParser();
+        Assert.Throws<UnknownMovieStartOptionException>(() => parser.Parse("name foo"));
     }
 }
