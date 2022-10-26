@@ -2,20 +2,17 @@
 
 public class PropertiesModel
 {
-    public string MovieVersion { get; }
-
     public string Name { get; }
     public string Description { get; }
     public string Author { get; }
-    
+
     public StartupPropertiesModel StartupProperties { get; }
     public string LoadSaveStatePath { get; }
 
     public string EndSavePath { get; }
 
-    public PropertiesModel(string movieVersion, string name, string description, string author, string endSavePath, StartupPropertiesModel startupPropertiesModel)
+    public PropertiesModel(string name, string description, string author, string endSavePath, StartupPropertiesModel startupPropertiesModel)
     {
-        MovieVersion = movieVersion;
         Name = name;
         Description = description;
         Author = author;
@@ -23,9 +20,8 @@ public class PropertiesModel
         StartupProperties = startupPropertiesModel;
     }
 
-    public PropertiesModel(string movieVersion, string name, string description, string author, string loadSaveStatePath, string endSavePath)
+    public PropertiesModel(string name, string description, string author, string endSavePath, string loadSaveStatePath)
     {
-        MovieVersion = movieVersion;
         Name = name;
         Description = description;
         Author = author;

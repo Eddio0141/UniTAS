@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using UniTASPlugin.GameEnvironment.InnerState;
 using UniTASPlugin.Movie.Exceptions.ParseExceptions;
 using UniTASPlugin.Movie.Models.Properties;
 using UniTASPlugin.Movie.ParseInterfaces;
@@ -14,18 +15,42 @@ public partial class DefaultMoviePropertiesParser : IMoviePropertyParser
         var lines = input.Split('\n');
         var leftKeys = new List<KeyBase>()
         {
-            new VersionKey(),
+            new OsKey(),
+            new StartTimeKey(),
+            new SeedKey(),
+            new FrameTimeKey(),
+            new FtKey(),
+            new FpsKey(),
+            new ResolutionKey(),
+            new Unfocused(),
+            new FullScreen(),
+            new FromSaveState(),
+            new NameKey(),
+            new DescriptionKey(),
+            new AuthorKey(),
+            new EndSaveKey()
         };
-        var conflictKeys = new List<KeyBase>();
+        // key is the conflicting keys, value is what key caused the conflict
+        var conflictKeys = new List<KeyValuePair<string, string>>();
         // for a better error message
         var processedKeys = new List<KeyBase>();
 
-        string movieVersion;
-        string name;
-        string description;
-        string author;
-        StartupPropertiesModel startupProperties;
-        string endSavePath;
+        string name = null;
+        string description = null;
+        string author = null;
+
+        StartupPropertiesModel startupProperties = null;
+        Os? os = null;
+        DateTime? startTime = null;
+        float? frameTime = null;
+
+        // WindowState
+        KeyValuePair<int, int>? resolution = null;
+        bool? isFullScreen = null;
+        bool? isFocused = null;
+
+        string endSavePath = null;
+        string loadSaveStatePath = null;
 
         foreach (var line in lines)
         {
@@ -57,16 +82,59 @@ public partial class DefaultMoviePropertiesParser : IMoviePropertyParser
             }
 
             var foundKey = leftKeys[foundKeyIndex];
+            var foundConflictKeyIndex = conflictKeys.FindIndex(x => x.Key == foundKey.Name);
+            if (foundConflictKeyIndex > -1)
+                throw new ConflictingPropertyKeyException(foundKey.Name, conflictKeys[foundConflictKeyIndex].Value);
+
             leftKeys.RemoveAt(foundKeyIndex);
+            foreach (var conflictKey in foundKey.ConflictKeys)
+            {
+                conflictKeys.Add(new KeyValuePair<string, string>(conflictKey, foundKey.Name));
+            }
 
             var parsedValue = foundKey.Parse(split.Length == 2 ? null : split[1]);
             switch (foundKey.Name)
             {
-                case VersionKey.Key:
-                    {
-                        movieVersion = (string)parsedValue;
-                        break;
-                    }
+                case OsKey.Key:
+                    os = (Os?)parsedValue;
+                    break;
+                case StartTimeKey.Key:
+                    startTime = (DateTime?)parsedValue;
+                    break;
+                case SeedKey.Key:
+                    startTime = (DateTime?)parsedValue;
+                    break;
+                case FrameTimeKey.Key:
+                case FtKey.Key:
+                    frameTime = (float?)parsedValue;
+                    break;
+                case FpsKey.Key:
+                    frameTime = (float?)parsedValue;
+                    break;
+                case ResolutionKey.Key:
+                    resolution = (KeyValuePair<int, int>?)parsedValue;
+                    break;
+                case Unfocused.Key:
+                    isFocused = (bool?)parsedValue;
+                    break;
+                case FullScreen.Key:
+                    isFullScreen = (bool?)parsedValue;
+                    break;
+                case FromSaveState.Key:
+                    loadSaveStatePath = (string)parsedValue;
+                    break;
+                case NameKey.Key:
+                    name = (string)parsedValue;
+                    break;
+                case DescriptionKey.Key:
+                    description = (string)parsedValue;
+                    break;
+                case AuthorKey.Key:
+                    author = (string)parsedValue;
+                    break;
+                case EndSaveKey.Key:
+                    endSavePath = (string)parsedValue;
+                    break;
                 default:
                     throw new InvalidOperationException("Unreachable code");
             }
@@ -74,15 +142,11 @@ public partial class DefaultMoviePropertiesParser : IMoviePropertyParser
             processedKeys.Add(foundKey);
         }
 
-        var versionKeyName = new VersionKey().Name;
-        if (leftKeys.Exists(x => x.Name == versionKeyName))
-            throw new MissingMovieVersionException();
+        if (startTime == null) return new PropertiesModel(name, description, author, endSavePath, loadSaveStatePath);
+        
+        var windowState = new WindowState(resolution.Value.Key, resolution.Value.Value, isFullScreen.Value, isFocused.Value);
+        startupProperties = new StartupPropertiesModel(os.Value, startTime.Value, frameTime.Value, windowState);
+        return new PropertiesModel(name, description, author, endSavePath, startupProperties);
 
-        switch (movieStartOption)
-        {
-            default:
-                throw new MissingMovieStartOption();
-        }
-        return new PropertiesModel(movieVersion, name, description, author)
     }
 }
