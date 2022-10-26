@@ -10,7 +10,7 @@ public partial class DefaultMoviePropertiesParser
         // conflict names will be added to the "conflict" list when this key is matched
         public string[] ConflictKeys { get; }
 
-        private KeyBase(string name, string[] alternativeNames, string[] conflictKeys)
+        protected KeyBase(string name, string[] alternativeNames, string[] conflictKeys)
         {
             Name = name;
             AlternativeNames = alternativeNames;

@@ -9,4 +9,12 @@ public class StartupPropertiesModel
     public DateTime StartTime { get; }
     public float FrameTime { get; }
     public WindowState WindowState { get; }
+
+    public StartupPropertiesModel(Os os, DateTime startTime, float frameTime, WindowState windowState)
+    {
+        Os = os;
+        StartTime = startTime;
+        FrameTime = frameTime;
+        WindowState = windowState;
+    }
 }
