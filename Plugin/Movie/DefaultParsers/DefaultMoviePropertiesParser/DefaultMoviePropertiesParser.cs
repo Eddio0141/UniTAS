@@ -150,13 +150,12 @@ public partial class DefaultMoviePropertiesParser : IMoviePropertyParser
             processedKeys.Add(foundKey);
         }
 
-        if (startTime == null) return new PropertiesModel(name, description, author, endSavePath, loadSaveStatePath);
+        if (loadSaveStatePath != null) return new PropertiesModel(name, description, author, endSavePath, loadSaveStatePath);
         if (resolution == null)
             throw new UnknownMovieStartOptionException();
 
         var windowState = new WindowState(resolution.Value.Key, resolution.Value.Value, isFullScreen.Value, isFocused.Value);
         var startupProperties = new StartupPropertiesModel(os.Value, startTime.Value, frameTime.Value, windowState);
         return new PropertiesModel(name, description, author, endSavePath, startupProperties);
-
     }
 }
