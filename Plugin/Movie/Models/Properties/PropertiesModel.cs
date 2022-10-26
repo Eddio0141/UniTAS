@@ -18,6 +18,7 @@ public class PropertiesModel
         Author = author;
         EndSavePath = endSavePath;
         StartupProperties = startupPropertiesModel;
+        LoadSaveStatePath = null;
     }
 
     public PropertiesModel(string name, string description, string author, string endSavePath, string loadSaveStatePath)
@@ -27,5 +28,6 @@ public class PropertiesModel
         Author = author;
         LoadSaveStatePath = loadSaveStatePath;
         EndSavePath = endSavePath;
+        StartupProperties = null;
     }
 }

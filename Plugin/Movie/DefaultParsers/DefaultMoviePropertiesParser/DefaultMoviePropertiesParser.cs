@@ -68,7 +68,7 @@ public partial class DefaultMoviePropertiesParser : IMoviePropertyParser
                 if (dupeKeyIndex < 0)
                 {
                     // this means the key is invalid
-                    throw new InvalidPropertyKeyException();
+                    throw new InvalidPropertyKeyException(key);
                 }
                 // this means the key is a dupe
                 var dupeKey = processedKeys[dupeKeyIndex];
@@ -91,7 +91,7 @@ public partial class DefaultMoviePropertiesParser : IMoviePropertyParser
                 conflictKeys.Add(new KeyValuePair<string, string>(conflictKey, foundKey.Name));
             }
 
-            var parsedValue = foundKey.Parse(split.Length == 2 ? null : split[1]);
+            var parsedValue = foundKey.Parse(split.Length < 2 ? "" : split[1]);
             switch (foundKey.Name)
             {
                 case OsKey.Key:
@@ -142,6 +142,8 @@ public partial class DefaultMoviePropertiesParser : IMoviePropertyParser
         }
 
         if (startTime == null) return new PropertiesModel(name, description, author, endSavePath, loadSaveStatePath);
+        if (resolution == null)
+            throw new UnknownMovieStartOptionException();
 
         var windowState = new WindowState(resolution.Value.Key, resolution.Value.Value, isFullScreen.Value, isFocused.Value);
         var startupProperties = new StartupPropertiesModel(os.Value, startTime.Value, frameTime.Value, windowState);
