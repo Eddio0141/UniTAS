@@ -1,16 +1,15 @@
 # Movie structure
 - Comments: `// comment`
 - Movie properties
-  - Movie format version - version
-    - Required to be at the start of the movie
-    - Semantic
   - Virtual environment
       - Operating system - os
       - Date time / seed to start with - datetime / seed
       - Frametime or FPS - frametime ft / fps
-      - Window resolution - resolution x y
-      - Window focus - unfocused
-    - From save state (state flag with path to save state) - from_savestate
+      - Window state
+        - Window resolution - resolution x y
+        - Window focus - unfocused
+        - full screen - fullscreen
+    - From save state - from_savestate PATH
       - Load environment settings from state
   - Name - name
   - Description - desc
