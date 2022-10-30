@@ -24,16 +24,16 @@
       - Uses key `$` for defining / using
       - Defined like `$name_without_space = 50`
       - Used like `Mouse($name_without_space, $name_without_space)`
-    -   Methods can access variables on main scope
-    -   Main scope can't access variables inside scopes
-    -   Loops can access variables on main scope or method scope its used on
-    -   Can copy variables with `$variable_copy $variable_source`
+      - Methods can access variables on main scope
+      - Main scope can't access variables inside scopes
+      - Loops can access variables on main scope or method scope its used on
+      - Can copy variables with `$variable_copy = $variable_source`
     - Const
       - Anything hardcoded in the script like $value = 5
     - Methods
       - Can be called with `method(arg1, arg2, ...)`
-      - Return values can be assigned to a variable `$method_return method(arg1, arg2)`
-    - Action merge / separator
+      - Return values can be assigned to a variable `$method_return = method(arg1, arg2)`
+    - Action separator
       - Those are the same:
         #### mouse(50, 50)
         #### key(W)
@@ -45,49 +45,6 @@
     - You need to use `;` in order to "advance" to the next frame
         #### mouse(50, 50); key(W)
     - You can do multiple `;` chains to advance multiple frames
-    - Wait
-      - `wait(50)` procudes 50 of `;`
-    - Game FPS
-      - `fps(100)` will set game FPS to 100
-      - `frametime(0.01)` will set the FPS to 100, not all unity versions support frametime so rounds down making the FPS an integer
-      - `get_fps() / get_frametime()` returns current fps / frametime
-      - If vsync is enabled, it will prevent the FPS from being changed unless vsync is off
-    - Registering a loop
-      - `register_loop(method_name, initial_arg1, initial_arg2, ...)`
-      - `loop_arg(loop_uid, arg1, arg2, ...)`
-      - `remove_loop(loop_uid)`
-      - Runs the method in a loop along side the main script and other loops
-      - Each time the method "exits", the method will be called again on the next frame
-      - Example
-      ```
-      fn bunny_hop() {
-          // presses space when on ground
-      }
-      fn spam_key(key_code) { key(key_code); }
-
-      // registers methods to run 
-      $bhop_register register_loop(bunny_hop)
-      $spam_register register_loop(spam_key, A)
-      $spam_register2 register_loop(spam_key, B)
-
-      // some inputs...
-
-      // change the argument to some registered loop
-      loop_arg($spam_register, C)
-
-      // some inputs...
-
-      // stop a loop
-      remove_loop($spam_register)
-      ```
-    - Save state
-      - `save(file_path)` to save
-    - Window resolution
-      - `resolution(1920, 1080)`
-    - Window focus
-      - `window_focus(true) window_focus(false)`
-    - Window full screen
-      - `window_fullscreen(true) window_fullscreen(false)`
     - If
       - if $condition { // stuff }
       - if $condition { } else { }
@@ -101,20 +58,28 @@
         - String
         - Bool
         - List of types
-        - Accessed through `$value list_index($list, INDEX)`
-        - Set through `list_set($list, INDEX, VALUE)`
+          - New instance from `$value = list_new(VALUE, VALUE2, ...)`
+          - Accessed through `$value = list_index($list, INDEX)`
+          - Set through `list_set($value, INDEX, VALUE)`
+          - Added through `list_add($value, VALUE)`
+          - Remove item `list_remove($value, INDEX)`
         - Option type
-        - Wraps another type
-        - State will be either Some or None
-        - Used for some methods that can return "nothing" for example, a helper method that gets a gameobject based on name, but can't find the object
-        - Check if Some or None with `is_some($value)` `is_none($value)`
-        - Get value of some with `$value get_some($value)`
-        - New some instance with `$optional some($value)`
-        - New none instance with `$optional none()`
+          - Wraps another type
+          - State will be either Some or None
+          - Used for some methods that can return "nothing" for example, a helper method that gets a gameobject based on name, but can't find the object
+          - Check if Some or None with `is_some($value)` `is_none($value)`
+          - Get value of some with `$value = get_some($value)`
+          - New some instance with `$optional = some($value)`
+          - New none instance with `$optional = none()`
+        - Custom type script implementation
+          - Option
+            - "None<>" "None<TYPE>" "Some<TYPE>(VALUE)"
+          - List
+            - "List<TYPE>(VALUE, VALUE, ...)" "List<List<TYPE>>((VALUE, VALUE), (VALUE))"
     - Tuple:
         - Can return multiple variables with different types with `return ($value, $value_with_different_time)`
-        - Assign to multiple variables with `$value $value2 some_method_with_tuple_return()`
-        - Doing `$value some_method_with_tuple_return()` for a return of multiple tuples will only retrieve the first tuple
+        - Assign to multiple variables with `($value, $value2) = tuple_method() some_method_with_tuple_return()`
+        - Doing `$value = some_method_with_tuple_return()` for a return of multiple tuples will only retrieve the first tuple
     - Errors
       - No error handling
       - Any errors like method errors will stop the execution of the movie / not parse and inform the user on error
@@ -123,96 +88,143 @@
       - Variables inside scopes can't be accessed from the outside
       - Variables outside can be accessed from within the scopes
       - Variables on the main scope can be accessed from any scope
-    - Low level stuff
-    - Registers
-        - Holds a value
-        - Tuples can be extended / created with PushTuple REGISTER_DEST REGISTER_SOURCE
-        - List can be extended / created with PushList REGISTER_DEST REGISTER_SOURCE
-        - Types
-        - temp
-        - temp2
-        - temp3
-        - temp4
-        - temp5
-        - ret
-            - Return value
-    - Stack
-        - PushStack temp
-        - Pushes temp register by copying
-        - PopStack temp
-        - Pops temp register after clearing it
-    - Method defining
-        - Defined method will be store in a different "section" of the engine, which can't be reached with Jump
-    - Method call
-        - GotoMethod METHOD_NAME
-        - Engine will store stack of return indexes and what section
-        - Engine will automatically know it has entered a scope and when it exits it
-        - Registers won't be cleared or altered in any way by the engine through method jumps
-        - Arguments
-        - PushArg temp
-            - Pushes register to the argument stack
-        - PopArg temp
-            - Pops argument stack to register
-        - Returning to call origin
-        - Return
-    - Jump
-        - Jump Offset
-    - Comparison
-        - Those compare all the register index values with the other
-        - JumpIfEq REGISTER REGISTER2 JUMP_OFFSET
-        - REGISTER == REGISTER2
-        - JumpIfNEq REGISTER REGISTER2 JUMP_OFFSET
-        - REGISTER != REGISTER2
-        - JumpIfLT REGISTER REGISTER2 JUMP_OFFSET
-        - REGISTER < REGISTER2
-        - JumpIfGT REGISTER REGISTER2 JUMP_OFFSET
-        - REGISTER > REGISTER2
-        - JumpIfLTEq REGISTER REGISTER2 JUMP_OFFSET
-        - REGISTER <= REGISTER2
-        - JumpIfGTEq REGISTER REGISTER2 JUMP_OFFSET
-        - REGISTER >= REGISTER2
-        - JumpIfTrue REGISTER JUMP_OFFSET
-        - JumpIfFalse REGISTER JUMP_OFFSET
-    - Maths
-        - Add RESULT_REGISTER REGISTER REGISTER2
-        - Sub RESULT_REGISTER REGISTER REGISTER2
-        - Mult RESULT_REGISTER REGISTER REGISTER2
-        - Div RESULT_REGISTER REGISTER REGISTER2
-        - Mod RESULT_REGISTER REGISTER REGISTER2
-    - Logic
-        - And RESULT_REGISTER REGISTER REGISTER2
-        - Or RESULT_REGISTER REGISTER REGISTER2
-        - Not RESULT_REGISTER REGISTER REGISTER2
-        - Xor RESULT_REGISTER REGISTER REGISTER2
-    - Scopes
-        - EnterScope
-        - ExitScope
-    - Variables
-        - NewVariable NAME REGISTER
-        - SetVariable NAME REGISTER
-    - Loops
-        - Structured like so
-        ```
-        // loop initialize
-        ConstToRegister temp 10 // loop count
-        PushStack temp
-        EnterScope
-        
-        // inside stuff
 
-        PopStack temp
-        ConstToRegister temp2 1
-        Sub temp temp temp2
-        PushStack temp
-        ConstToRegister temp2 0
-        JumpIfGt temp temp2 -6 // jump to start of the inside stuff
-        ExitScope // if break is called, will jump to this line
-        PopStack temp
-        ```
-    - Advance movie by a frame
-        - FrameAdvance
-    - TODO Solve issue of running out of registers by creating a nested list
-        - Solution involves stacks but i cba to think rn
+# Low level stuff
+- Registers
+    - Holds a value
+    - Tuples can be extended / created with PushTuple REGISTER_DEST REGISTER_SOURCE
+    - List can be extended / created with PushList REGISTER_DEST REGISTER_SOURCE
+    - Types
+    - temp
+    - temp2
+    - temp3
+    - temp4
+    - temp5
+    - ret
+        - Return value
+- Stack
+    - PushStack temp
+    - Pushes temp register by copying
+    - PopStack temp
+    - Pops temp register after clearing it
+- Method defining
+    - Defined method will be store in a different "section" of the engine, which can't be reached with Jump
+- Method call
+    - GotoMethod METHOD_NAME
+    - Engine will store stack of return indexes and what section
+    - Engine will automatically know it has entered a scope and when it exits it
+    - Registers won't be cleared or altered in any way by the engine through method jumps
+    - Arguments
+    - PushArg temp
+        - Pushes register to the argument stack
+    - PopArg temp
+        - Pops argument stack to register
+    - Returning to call origin
+    - Return
+- Jump
+    - Jump Offset
+- Comparison
+    - Those compare all the register index values with the other
+    - JumpIfEq REGISTER REGISTER2 JUMP_OFFSET
+    - REGISTER == REGISTER2
+    - JumpIfNEq REGISTER REGISTER2 JUMP_OFFSET
+    - REGISTER != REGISTER2
+    - JumpIfLT REGISTER REGISTER2 JUMP_OFFSET
+    - REGISTER < REGISTER2
+    - JumpIfGT REGISTER REGISTER2 JUMP_OFFSET
+    - REGISTER > REGISTER2
+    - JumpIfLTEq REGISTER REGISTER2 JUMP_OFFSET
+    - REGISTER <= REGISTER2
+    - JumpIfGTEq REGISTER REGISTER2 JUMP_OFFSET
+    - REGISTER >= REGISTER2
+    - JumpIfTrue REGISTER JUMP_OFFSET
+    - JumpIfFalse REGISTER JUMP_OFFSET
+- Maths
+    - Add RESULT_REGISTER REGISTER REGISTER2
+    - Sub RESULT_REGISTER REGISTER REGISTER2
+    - Mult RESULT_REGISTER REGISTER REGISTER2
+    - Div RESULT_REGISTER REGISTER REGISTER2
+    - Mod RESULT_REGISTER REGISTER REGISTER2
+- Logic
+    - And RESULT_REGISTER REGISTER REGISTER2
+    - Or RESULT_REGISTER REGISTER REGISTER2
+    - Not RESULT_REGISTER REGISTER REGISTER2
+    - Xor RESULT_REGISTER REGISTER REGISTER2
+- Scopes
+    - EnterScope
+    - ExitScope
+- Variables
+    - NewVariable NAME REGISTER
+    - SetVariable NAME REGISTER
+- Loops
+    - Structured like so
+    ```
+    // loop initialize
+    ConstToRegister temp 10 // loop count
+    PushStack temp
+    EnterScope
+    
+    // inside opcode
+
+    PopStack temp
+    ConstToRegister temp2 1
+    Sub temp temp temp2
+    PushStack temp
+    ConstToRegister temp2 0
+    JumpIfGt temp temp2 -6 // jump to start of the inside stuff
+    ExitScope // if break is called, will jump to this line
+    PopStack temp
+    ```
+- Advance movie by a frame
+    - FrameAdvance
+- TODO Solve issue of running out of registers by creating a nested list
+    - Solution involves stacks but i cba to think rn
+
+# Helper methods
+- Save state
+  - `save(file_path)` to save
+- Window resolution
+  - `resolution(1920, 1080)`
+- Window focus
+  - `window_focus(true) window_focus(false)`
+- Window full screen
+  - `window_fullscreen(true) window_fullscreen(false)`
+- Registering a loop
+  - `register_loop(method_name, initial_arg1, initial_arg2, ...)`
+  - `loop_arg(loop_uid, arg1, arg2, ...)`
+  - `remove_loop(loop_uid)`
+  - Runs the method in a loop along side the main script and other loops
+  - Each time the method "exits", the method will be called again on the next frame
+  - Example
+  ```
+  fn bunny_hop() {
+      // presses space when on ground
+  }
+  fn spam_key(key_code) { key(key_code); }
+
+  // registers methods to run 
+  $bhop_register register_loop(bunny_hop)
+  $spam_register register_loop(spam_key, A)
+  $spam_register2 register_loop(spam_key, B)
+
+  // some inputs...
+
+  // change the argument to some registered loop
+  loop_arg($spam_register, C)
+
+  // some inputs...
+
+  // stop a loop
+  remove_loop($spam_register)
+  ```
+- Wait
+  - `wait(50)` procudes 50 of `;`
+- Game FPS
+  - `fps(100)` will set game FPS to 100
+  - `frametime(0.01)` will set the FPS to 100, not all unity versions support frametime so rounds down making the FPS an integer
+  - `get_fps() / get_frametime()` returns current fps / frametime
+  - If vsync is enabled, it will prevent the FPS from being changed unless vsync is off
+
 # Tokens
 - $
   - Variable
@@ -245,13 +257,40 @@
     - Char
 - ;
   - FrameAdvance
-- |
+- | or \n
   - SeparateAction
 - && || == != ! > < >= <=
   - Logic
     - Logic type
-- anything else
-  - Identity
+
+# BNF description
+```bnf
+// General rules
+<string_identifier> ::= "UTF-8 string"
+
+// Variable assignment
+<assign> -> "$" <variable_name> "=" <expr>
+              | <variable_name>
+              | <string>
+              | <> TODO lists and tuples and bools
+<variable_name> ::= <string_identifier>
+
+// Loop
+
+// Method defining
+
+// Method calling
+
+// Action separator
+
+// Advance frame
+
+// If-else
+
+// 
+```
+
+# Example
 ```
 $value = 20
 $value2 = $value
