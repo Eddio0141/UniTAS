@@ -44,6 +44,9 @@
         #### key(W)
         ---
         #### mouse(50, 50) | key(W)
+
+      - You can separate actions with `;` as well
+      - Variable assignment, method calls is separatable
     - You need to use `;` in order to "advance" to the next frame
         #### mouse(50, 50); key(W)
     - You can do multiple `;` chains to advance multiple frames
@@ -229,44 +232,6 @@
   - `frametime(0.01)` will set the FPS to 100, not all unity versions support frametime so rounds down making the FPS an integer
   - `get_fps() / get_frametime()` returns current fps / frametime
   - If vsync is enabled, it will prevent the FPS from being changed unless vsync is off
-
-# Tokens
-- $
-  - Variable
-    - Name
-- =, +=, -=, *=, /=, %=
-  - Assignment
-    - Type of assignment
-- -, +, *, /, %
-  - MathOp
-    - Type of operation
-- ()
-  - RoundBracket
-    - Open or closed
-- {}
-  - CurlyBracket
-    - Open or closed
-- []
-  - SquareBracket, reserved for future use
-    - Open or closed
-- ,
-  - Comma
-- Integers
-  - Int
-- Float
-  - Float
-- "
-  - DoubleQuotes
-- \char
-  - EscapeChar
-    - Char
-- ;
-  - FrameAdvance
-- | or \n
-  - SeparateAction
-- && || == != ! > < >= <=
-  - Logic
-    - Logic type
 
 # BNF description
 ```bnf
