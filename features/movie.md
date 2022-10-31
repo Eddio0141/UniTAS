@@ -1,5 +1,7 @@
 # Movie structure
-- Comments: `// comment`
+- Comments:
+  - `// comment`
+  - `/* comment with any amount of lines */`
 - Movie properties
   - Virtual environment
       - Operating system - os
@@ -81,7 +83,8 @@
         - Assign to multiple variables with `($value, $value2) = tuple_method() some_method_with_tuple_return()`
         - This works too `($value, $value2) = $tuple_value`
         - You can skip tuple value with _ `(_, $value2) = $tuple_value`
-        - Doing `$value = some_method_with_tuple_return()` for a return of multiple tuples will only retrieve the first tuple
+        - Doing `($value) = some_method_with_tuple_return()` for a return of multiple tuples will only retrieve the first tuple
+        - Doing `$tuple_copy = $tuple` will copy the tuple
     - Errors
       - No error handling
       - Any errors like method errors will stop the execution of the movie / not parse and inform the user on error
@@ -244,7 +247,7 @@
   - CurlyBracket
     - Open or closed
 - []
-  - SquareBracket
+  - SquareBracket, reserved for future use
     - Open or closed
 - ,
   - Comma
@@ -267,54 +270,47 @@
 
 # BNF description
 ```bnf
-<string_identifier> = "UTF-8 string"
+<string_identifier> = <UTF-8 string>
 
-// Variable
-<assign> = "$" <string_identifier> "=" <expression>
-<assign_add> = "$" <string_identifier> "+=" <expression>
-<assign_sub> = "$" <string_identifier> "-=" <expression>
-<assign_mult> = "$" <string_identifier> "*=" <expression>
-<assign_div> = "$" <string_identifier> "/=" <expression>
-<assign_mod> = "$" <string_identifier> "%=" <expression>
-
-<tuple_assign> = "$" (<variable_name> | "_") {"," (<variable_name> | "_")} "=" <expression>
-
-// Loop
-
-// Method defining
-<method_def> = "fn" <string_identifier> "(" <tuple_assign> ")" "{" <action> "}"
-
-// Method calling
-
-// Action separator
+<program> = <action> <action_separator> <program> | <action> [ <action_separator> ]
 <action_separator> = "|" | "\n"
-
-// Advance frame
+<action> = <frame_advance> | <variable_assignment> | <variable_tuple_separation> | <if_else> | <method_call> | <method_def> | <scope_open> | <scope_close> | <loop> | <comment>
 <frame_advance> = ";"
-
-// If-else
-<if_else> = "if" <expression> "{" <action> "}" ["else" "{" <action> "}"]
-
-// Arithmetic expressions
-<expr> = <term> { ("+" | "-") <term> }
-<term> = <factor> { ("*" | "/" | "%") <factor> }
-<factor> = <number> | "(" <expr> ")" | <variable_name>
-
-// Number
-<number> = <int> | <float>
-<int> = <digit> { <digit> }
-<float> = <int> "." <int>
-<digit> = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
-
-// Logic expressions
-<logic_expr> = <logic_term> { ("&&" | "||") <logic_term> }
-<logic_term> = <logic_factor> { ("==" | "!=" | ">" | "<" | ">=" | "<=") logic_factor> }
-<logic_factor> = <expr> | "!" <logic_factor> | "(" <logic_expr> ")"
-
-// Bitwise expressions
-<bitwise_expr> = <bitwise_term> { ("&" | "|" | "^") <bitwise_term> }
-<bitwise_term> = <bitwise_factor> { ("<<" | ">>") <bitwise_factor> }
-<bitwise_factor> = <expr> | "~" <bitwise_factor> | "(" <bitwise_expr> ")"
+<variable> = "$" <string_identifier>
+<variable_assignment> = <variable> ("=" | "+=" | "-=" | "*=" | "/=" | "%=") <expression>
+<variable_tuple_separation> = "(" <variable> { "," <variable> } ")" ("=" | "+=" | "-=" | "*=" | "/=" | "%=") ("(" <expression> { "," <expression> } ")" | <method_call>)
+<expression> = <binary_op> | <math_op> | <logic_op> | <variable> | <int> | <float> | <string> | <method_call>
+<math_op> = <expression> <math_op_type> <expression>
+<math_op_type> = "+" | "-" | "*" | "/" | "%"
+<logic_op> = <expression> <logic_op_type> <expression>
+<logic_op_type> = "&&" | "||" | "==" | "!=" | "!" | ">" | "<" | ">=" | "<="
+<binary_op> = <expression> <binary_op_type> <expression>
+<binary_op_type> = "&" | "|" | "^"
+<int> = <int_value>
+<int_value> = <int_digit> <int_value> | <int_digit>
+<int_digit> = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+<float> = <float_value>
+<float_value> = <float_digit> <float_value> | <float_digit>
+<float_digit> = <int_digit> | "."
+<string> = <string_value>
+<string_value> = <string_identifier> | <escape_char>
+<escape_char> = "\" <escape_char_value>
+<escape_char_value> = "n" | "t" | "r" | "0" | "\"" | "\\" 
+<if_else> = "if" <round_bracket_open> <expression> <round_bracket_close> <scope_open> <program> <scope_close> [ "else" <scope_open> <program> <scope_close> ]
+<method_call> = <string_identifier> <round_bracket_open> <method_call_args> <round_bracket_close>
+<method_call_args> = <expression> <method_call_args_separator> <method_call_args> | <expression>
+<method_call_args_separator> = ","
+<method_def> = "fn" <string_identifier> <round_bracket_open> <method_def_args> <round_bracket_close> <scope_open> <program> <scope_close>
+<method_def_args> = <string_identifier> <method_def_args_separator> <method_def_args> | <string_identifier>
+<method_def_args_separator> = ","
+<scope_open> = "{"
+<scope_close> = "}"
+<loop> = "loop" <round_bracket_open> <expression> <round_bracket_close> <scope_open> <program> <scope_close>
+<comment> = "//" <string_identifier>
+<round_bracket_open> = "("
+<round_bracket_close> = ")"
+<square_bracket_open> = "["
+<square_bracket_close> = "]"
 ```
 
 # Example
