@@ -79,6 +79,8 @@
     - Tuple:
         - Can return multiple variables with different types with `return ($value, $value_with_different_time)`
         - Assign to multiple variables with `($value, $value2) = tuple_method() some_method_with_tuple_return()`
+        - This works too `($value, $value2) = $tuple_value`
+        - You can skip tuple value with _ `(_, $value2) = $tuple_value`
         - Doing `$value = some_method_with_tuple_return()` for a return of multiple tuples will only retrieve the first tuple
     - Errors
       - No error handling
@@ -265,29 +267,54 @@
 
 # BNF description
 ```bnf
-// General rules
-<string_identifier> ::= "UTF-8 string"
+<string_identifier> = "UTF-8 string"
 
-// Variable assignment
-<assign> -> "$" <variable_name> "=" <expr>
-              | <variable_name>
-              | <string>
-              | <> TODO lists and tuples and bools
-<variable_name> ::= <string_identifier>
+// Variable
+<assign> = "$" <string_identifier> "=" <expression>
+<assign_add> = "$" <string_identifier> "+=" <expression>
+<assign_sub> = "$" <string_identifier> "-=" <expression>
+<assign_mult> = "$" <string_identifier> "*=" <expression>
+<assign_div> = "$" <string_identifier> "/=" <expression>
+<assign_mod> = "$" <string_identifier> "%=" <expression>
+
+<tuple_assign> = "$" (<variable_name> | "_") {"," (<variable_name> | "_")} "=" <expression>
 
 // Loop
 
 // Method defining
+<method_def> = "fn" <string_identifier> "(" <tuple_assign> ")" "{" <action> "}"
 
 // Method calling
 
 // Action separator
+<action_separator> = "|" | "\n"
 
 // Advance frame
+<frame_advance> = ";"
 
 // If-else
+<if_else> = "if" <expression> "{" <action> "}" ["else" "{" <action> "}"]
 
-// 
+// Arithmetic expressions
+<expr> = <term> { ("+" | "-") <term> }
+<term> = <factor> { ("*" | "/" | "%") <factor> }
+<factor> = <number> | "(" <expr> ")" | <variable_name>
+
+// Number
+<number> = <int> | <float>
+<int> = <digit> { <digit> }
+<float> = <int> "." <int>
+<digit> = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+
+// Logic expressions
+<logic_expr> = <logic_term> { ("&&" | "||") <logic_term> }
+<logic_term> = <logic_factor> { ("==" | "!=" | ">" | "<" | ">=" | "<=") logic_factor> }
+<logic_factor> = <expr> | "!" <logic_factor> | "(" <logic_expr> ")"
+
+// Bitwise expressions
+<bitwise_expr> = <bitwise_term> { ("&" | "|" | "^") <bitwise_term> }
+<bitwise_term> = <bitwise_factor> { ("<<" | ">>") <bitwise_factor> }
+<bitwise_factor> = <expr> | "~" <bitwise_factor> | "(" <bitwise_expr> ")"
 ```
 
 # Example
