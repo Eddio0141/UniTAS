@@ -58,22 +58,18 @@ expression
     | expression (BITWISE_AND | BITWISE_OR | BITWISE_XOR) expression
     | expression (BITWISE_SHIFT_LEFT | BITWISE_SHIFT_RIGHT) expression
     | variable
-    | intValue
-    | floatValue
-    | boolValue
+    | intType
+    | floatType
+    | bool
     | string
     | methodCall
     ;
 
-intValue: INT;
+string: STRING_LITERAL;
+intType: INT;
+floatType: FLOAT;
 
-floatValue: floatDigit floatValue | floatDigit;
-
-floatDigit: FLOAT;
-
-boolValue: 'true' | 'false';
-
-string: stringLiteral;
+bool: 'true' | 'false';
 
 ifElse: 'if' expression scopeOpen program scopeClose ('else if' expression scopeOpen program scopeClose)* ('else' scopeOpen program scopeClose)?;
 
@@ -106,8 +102,6 @@ squareBracketOpen: SQUARE_BRACKET_OPEN;
 squareBracketClose: SQUARE_BRACKET_CLOSE;
 
 stringIdentifier: IDENTIFIER_STRING;
-
-stringLiteral: STRING_LITERAL;
 
 stringChar: STRING_CHAR;
 
@@ -165,8 +159,6 @@ SQUARE_BRACKET_CLOSE: ']';
 INT: '-'? [0-9]+;
 FLOAT: '-'? [0-9]+ DOT [0-9]+;
 IDENTIFIER_STRING: [a-zA-Z_][a-zA-Z0-9_]*;
-// TRUE: 'true';
-// FALSE: 'false';
 STRING_LITERAL: '"' (STRING_CHAR | ESCAPE_SEQUENCE)* '"';
 
 STRING_CHAR: [^"\\];
