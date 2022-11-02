@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-// Generated from .\source\repos\UniTAS\Plugin\MovieScriptDefaultGrammer.g4 by ANTLR 4.11.1
+// Generated from ./MovieScriptDefaultGrammer.g4 by ANTLR 4.11.1
 
 // Unreachable code detected
 #pragma warning disable 0162
