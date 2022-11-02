@@ -398,3 +398,5 @@ FodyWeavers.xsd
 *.sln.iml
 
 postbuild.ps1
+
+.antlr/
