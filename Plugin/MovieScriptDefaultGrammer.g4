@@ -3,8 +3,6 @@ BNF reference
 
 <string_identifier> = <UTF-8 string>
 
-<program> = (<action_with_separator> <action_separator> | <action>) <program> | (<action_with_separator> | <action>)
-<action_separator> = "|" | "\n" | <frame_advance>
 <action> = <frame_advance> | <if_else> | <method_def> | <scope_open> | <scope_close> | <loop> | <comment> | <break> | <continue> | <return>
 <action_with_separator> = <variable_assignment> | <variable_tuple_separation> | <method_call>
 <frame_advance> = ";"
@@ -56,11 +54,19 @@ grammar MovieScriptDefaultGrammer;
  * Parser rules
  */
 
-program: action_with_separator action_separator program
-        | action_with_separator program
-        | action program
-        | action;
+program
+    : (actionWithSeparator actionSeparator | action) program
+    | (actionWithSeparator | action)
+    ;
 
-action_separator: PIPE
-                 | NEWLINE
-                 | frame_advance;
+actionSeparator: PIPE | NEWLINE | SEMICOLON;
+
+/*
+ * Lexer rules
+ */
+
+PIPE: '|';
+NEWLINE: ('\r'? '\n');
+SEMICOLON: ';';
+
+WHITESPACE : (' ' | '\t')+ -> skip;
