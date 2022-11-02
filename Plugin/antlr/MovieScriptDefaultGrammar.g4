@@ -6,7 +6,7 @@ grammar MovieScriptDefaultGrammar;
 
 program: (actionWithSeparator actionSeparator | action NEWLINE*)*;
 
-actionSeparator: ACTIONSEPARATOR | NEWLINE | SEMICOLON;
+actionSeparator: ACTIONSEPARATOR | NEWLINE | frameAdvance;
 
 action
     : frameAdvance
@@ -71,19 +71,15 @@ bool: 'true' | 'false';
 
 ifElse: 'if' expression SCOPE_OPEN NEWLINE* program SCOPE_CLOSE ('else if' expression SCOPE_OPEN NEWLINE* program SCOPE_CLOSE)* ('else' SCOPE_OPEN NEWLINE* program SCOPE_CLOSE)?;
 
-methodCall: methodName ROUND_BRACKET_OPEN methodCallArgs ROUND_BRACKET_CLOSE;
+methodCall: IDENTIFIER_STRING ROUND_BRACKET_OPEN methodCallArgs? ROUND_BRACKET_CLOSE;
 
-methodCallArgs: expression methodCallArgsSeparator methodCallArgs | expression;
+methodCallArgs: expression COMMA methodCallArgs | expression;
 
-methodCallArgsSeparator: COMMA;
-
-methodDef: 'fn' methodName ROUND_BRACKET_OPEN methodDefArgs ROUND_BRACKET_CLOSE SCOPE_OPEN program SCOPE_CLOSE;
-
-methodName: IDENTIFIER_STRING;
+methodDef: 'fn' IDENTIFIER_STRING ROUND_BRACKET_OPEN methodDefArgs? ROUND_BRACKET_CLOSE SCOPE_OPEN NEWLINE* program SCOPE_CLOSE;
 
 methodDefArgs: IDENTIFIER_STRING COMMA methodDefArgs | IDENTIFIER_STRING;
 
-loop: 'loop' ROUND_BRACKET_OPEN expression ROUND_BRACKET_CLOSE SCOPE_OPEN program SCOPE_CLOSE;
+loop: 'loop' ROUND_BRACKET_OPEN expression ROUND_BRACKET_CLOSE SCOPE_OPEN NEWLINE* program SCOPE_CLOSE;
 
 /*
  * Lexer rules
