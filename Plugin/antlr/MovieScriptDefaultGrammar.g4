@@ -20,6 +20,9 @@ action
     | returnAction
     ;
 
+scopeOpen: SCOPE_OPEN;
+scopeClose: SCOPE_CLOSE;
+
 actionWithSeparator
     : variableAssignment
     | variableTupleSeparation
@@ -66,7 +69,7 @@ floatType: FLOAT;
 
 bool: 'true' | 'false';
 
-ifElse: 'if' expression scopeOpen program scopeClose ('else if' expression scopeOpen program scopeClose)* ('else' scopeOpen program scopeClose)?;
+ifElse: 'if' expression SCOPE_OPEN NEWLINE* program SCOPE_CLOSE ('else if' expression SCOPE_OPEN NEWLINE* program SCOPE_CLOSE)* ('else' SCOPE_OPEN NEWLINE* program SCOPE_CLOSE)?;
 
 methodCall: methodName ROUND_BRACKET_OPEN methodCallArgs ROUND_BRACKET_CLOSE;
 
@@ -74,19 +77,13 @@ methodCallArgs: expression methodCallArgsSeparator methodCallArgs | expression;
 
 methodCallArgsSeparator: COMMA;
 
-methodDef: 'fn' methodName ROUND_BRACKET_OPEN methodDefArgs ROUND_BRACKET_CLOSE scopeOpen program scopeClose;
+methodDef: 'fn' methodName ROUND_BRACKET_OPEN methodDefArgs ROUND_BRACKET_CLOSE SCOPE_OPEN program SCOPE_CLOSE;
 
 methodName: IDENTIFIER_STRING;
 
-methodDefArgs: IDENTIFIER_STRING methodDefArgsSeparator methodDefArgs | IDENTIFIER_STRING;
+methodDefArgs: IDENTIFIER_STRING COMMA methodDefArgs | IDENTIFIER_STRING;
 
-methodDefArgsSeparator: COMMA;
-
-scopeOpen: SCOPE_OPEN;
-
-scopeClose: SCOPE_CLOSE;
-
-loop: 'loop' ROUND_BRACKET_OPEN expression ROUND_BRACKET_CLOSE scopeOpen program scopeClose;
+loop: 'loop' ROUND_BRACKET_OPEN expression ROUND_BRACKET_CLOSE SCOPE_OPEN program SCOPE_CLOSE;
 
 /*
  * Lexer rules
