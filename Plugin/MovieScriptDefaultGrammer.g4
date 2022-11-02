@@ -33,7 +33,7 @@ BNF reference
 <string_value> = ( <string_char> | <escape_char> ) <string_value> | ( <string_char> | <escape_char> )
 <escape_char> = "\" <escape_char_value>
 <escape_char_value> = "n" | "t" | "r" | "0" | "\"" | "\\" 
-<if_else> = "if" <round_bracket_open> <expression> <round_bracket_close> <scope_open> <program> <scope_close> [ "else" <scope_open> <program> <scope_close> ]
+<if_else> = "if" <expression> <scope_open> <program> <scope_close> { "else if" <expression> <scope_open> <program> <scope_close> } [ "else" <scope_open> <program> <scope_close> ]
 <method_call> = <method_name> <round_bracket_open> <method_call_args> <round_bracket_close>
 <method_call_args> = <expression> <method_call_args_separator> <method_call_args> | <expression>
 <method_call_args_separator> = ","
