@@ -4,9 +4,11 @@ grammar MovieScriptDefaultGrammer;
  * Parser rules
  */
 
+// newline between actions are ignored
 program
-    : (actionWithSeparator actionSeparator | action NEWLINE?) program
-    | (actionWithSeparator | action NEWLINE?)
+    : (actionWithSeparator actionSeparator | action NEWLINE*) program
+    | (actionWithSeparator | action NEWLINE*)
+    | EOF
     ;
 
 actionSeparator: ACTIONSEPARATOR | NEWLINE | SEMICOLON;
@@ -31,11 +33,11 @@ actionWithSeparator
 
 frameAdvance: SEMICOLON;
 
-breakAction: BREAK;
+breakAction: 'break';
 
-continueAction: CONTINUE;
+continueAction: 'continue';
 
-returnAction: RETURN (expression | tupleExpression)?;
+returnAction: 'return' (expression | tupleExpression)?;
 
 variable: DOLLAR stringIdentifier;
 
@@ -46,9 +48,15 @@ variableTupleSeparation: roundBracketOpen variable (COMMA variable)* roundBracke
 tupleExpression: roundBracketOpen expression (COMMA expression)* roundBracketClose;
 
 expression
-    : expression binaryOpType expression
-    | expression mathOpType expression
-    | expression logicOpType expression
+    : roundBracketOpen expression roundBracketClose
+    | expression (MULTIPLY | DIVIDE | MODULO) expression
+    | expression (PLUS | MINUS) expression
+    | MINUS expression
+    | NOT expression
+    | expression (AND | OR) expression
+    | expression (EQUAL | NOT_EQUAL | LESS | LESS_EQUAL | GREATER | GREATER_EQUAL) expression
+    | expression (BITWISE_AND | BITWISE_OR | BITWISE_XOR) expression
+    | expression (BITWISE_SHIFT_LEFT | BITWISE_SHIFT_RIGHT) expression
     | variable
     | intValue
     | floatValue
@@ -57,25 +65,17 @@ expression
     | methodCall
     ;
 
-mathOpType: PLUS | MINUS | MULTIPLY | DIVIDE | MODULO;
-
-logicOpType: AND | OR | EQUAL | NOT_EQUAL | NOT | GREATER | LESS | GREATER_EQUAL | LESS_EQUAL;
-
-binaryOpType: AND_BINARY | OR_BINARY | XOR_BINARY;
-
-intValue: intDigit intValue | intDigit;
-
-intDigit: NUMBER;
+intValue: INT;
 
 floatValue: floatDigit floatValue | floatDigit;
 
-floatDigit: NUMBER | DOT;
+floatDigit: FLOAT;
 
-boolValue: TRUE | FALSE;
+boolValue: 'true' | 'false';
 
 string: stringLiteral;
 
-ifElse: IF expression scopeOpen program scopeClose (ELSE_IF expression scopeOpen program scopeClose)* (ELSE scopeOpen program scopeClose)?;
+ifElse: 'if' expression scopeOpen program scopeClose ('else if' expression scopeOpen program scopeClose)* ('else' scopeOpen program scopeClose)?;
 
 methodCall: methodName roundBracketOpen methodCallArgs roundBracketClose;
 
@@ -83,7 +83,7 @@ methodCallArgs: expression methodCallArgsSeparator methodCallArgs | expression;
 
 methodCallArgsSeparator: COMMA;
 
-methodDef: FN methodName roundBracketOpen methodDefArgs roundBracketClose scopeOpen program scopeClose;
+methodDef: 'fn' methodName roundBracketOpen methodDefArgs roundBracketClose scopeOpen program scopeClose;
 
 methodName: stringIdentifier;
 
@@ -95,7 +95,7 @@ scopeOpen: SCOPE_OPEN;
 
 scopeClose: SCOPE_CLOSE;
 
-loop: LOOP roundBracketOpen expression roundBracketClose scopeOpen program scopeClose;
+loop: 'loop' roundBracketOpen expression roundBracketClose scopeOpen program scopeClose;
 
 roundBracketOpen: ROUND_BRACKET_OPEN;
 
@@ -116,6 +116,7 @@ stringChar: STRING_CHAR;
  */
  
 fragment PIPE: '|';
+fragment DOT: '.';
 
 ACTIONSEPARATOR: PIPE;
 
@@ -132,22 +133,6 @@ MULTIPLY_ASSIGN: '*=';
 DIVIDE_ASSIGN: '/=';
 MODULO_ASSIGN: '%=';
 
-BREAK: 'break';
-
-CONTINUE: 'continue';
-
-RETURN: 'return';
-
-IF: 'if';
-
-ELSE_IF: 'else if';
-
-ELSE: 'else';
-
-FN: 'fn';
-
-LOOP: 'loop';
-
 AND: '&&';
 OR: '||';
 EQUAL: '==';
@@ -158,9 +143,11 @@ LESS: '<';
 GREATER_EQUAL: '>=';
 LESS_EQUAL: '<=';
 
-AND_BINARY: '&';
-OR_BINARY: PIPE;
-XOR_BINARY: '^';
+BITWISE_AND: '&';
+BITWISE_OR: PIPE;
+BITWISE_XOR: '^';
+BITWISE_SHIFT_LEFT: '<<';
+BITWISE_SHIFT_RIGHT: '>>';
 
 PLUS: '+';
 MINUS: '-';
@@ -175,11 +162,11 @@ ROUND_BRACKET_CLOSE: ')';
 SQUARE_BRACKET_OPEN: '[';
 SQUARE_BRACKET_CLOSE: ']';
 
-NUMBER: [0-9];
-DOT: '.';
+INT: '-'? [0-9]+;
+FLOAT: '-'? [0-9]+ DOT [0-9]+;
 IDENTIFIER_STRING: [a-zA-Z_][a-zA-Z0-9_]*;
-TRUE: 'true';
-FALSE: 'false';
+// TRUE: 'true';
+// FALSE: 'false';
 STRING_LITERAL: '"' (STRING_CHAR | ESCAPE_SEQUENCE)* '"';
 
 STRING_CHAR: [^"\\];
