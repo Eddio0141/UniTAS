@@ -4,12 +4,7 @@ grammar MovieScriptDefaultGrammar;
  * Parser rules
  */
 
-// newline between actions are ignored
-program
-    : (actionWithSeparator actionSeparator | action NEWLINE*) program
-    | (actionWithSeparator | action NEWLINE*)
-    | EOF
-    ;
+program: (actionWithSeparator actionSeparator | action NEWLINE*)*;
 
 actionSeparator: ACTIONSEPARATOR | NEWLINE | SEMICOLON;
 
