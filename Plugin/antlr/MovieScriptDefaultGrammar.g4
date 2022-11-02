@@ -39,16 +39,16 @@ continueAction: 'continue';
 
 returnAction: 'return' (expression | tupleExpression)?;
 
-variable: DOLLAR stringIdentifier;
+variable: DOLLAR IDENTIFIER_STRING;
 
 variableAssignment: variable (ASSIGN | PLUS_ASSIGN | MINUS_ASSIGN | MULTIPLY_ASSIGN | DIVIDE_ASSIGN | MODULO_ASSIGN) (expression | tupleExpression);
 
-variableTupleSeparation: roundBracketOpen variable (COMMA variable)* roundBracketClose (ASSIGN | PLUS_ASSIGN | MINUS_ASSIGN | MULTIPLY_ASSIGN | DIVIDE_ASSIGN | MODULO_ASSIGN) (tupleExpression | methodCall);
+variableTupleSeparation: ROUND_BRACKET_OPEN variable (COMMA variable)* ROUND_BRACKET_CLOSE (ASSIGN | PLUS_ASSIGN | MINUS_ASSIGN | MULTIPLY_ASSIGN | DIVIDE_ASSIGN | MODULO_ASSIGN) (tupleExpression | methodCall);
 
-tupleExpression: roundBracketOpen expression (COMMA expression)* roundBracketClose;
+tupleExpression: ROUND_BRACKET_OPEN expression (COMMA expression)* ROUND_BRACKET_CLOSE;
 
 expression
-    : roundBracketOpen expression roundBracketClose
+    : ROUND_BRACKET_OPEN expression ROUND_BRACKET_CLOSE
     | expression (MULTIPLY | DIVIDE | MODULO) expression
     | expression (PLUS | MINUS) expression
     | MINUS expression
@@ -65,7 +65,7 @@ expression
     | methodCall
     ;
 
-string: STRING_LITERAL;
+string: STRING;
 intType: INT;
 floatType: FLOAT;
 
@@ -73,17 +73,17 @@ bool: 'true' | 'false';
 
 ifElse: 'if' expression scopeOpen program scopeClose ('else if' expression scopeOpen program scopeClose)* ('else' scopeOpen program scopeClose)?;
 
-methodCall: methodName roundBracketOpen methodCallArgs roundBracketClose;
+methodCall: methodName ROUND_BRACKET_OPEN methodCallArgs ROUND_BRACKET_CLOSE;
 
 methodCallArgs: expression methodCallArgsSeparator methodCallArgs | expression;
 
 methodCallArgsSeparator: COMMA;
 
-methodDef: 'fn' methodName roundBracketOpen methodDefArgs roundBracketClose scopeOpen program scopeClose;
+methodDef: 'fn' methodName ROUND_BRACKET_OPEN methodDefArgs ROUND_BRACKET_CLOSE scopeOpen program scopeClose;
 
-methodName: stringIdentifier;
+methodName: IDENTIFIER_STRING;
 
-methodDefArgs: stringIdentifier methodDefArgsSeparator methodDefArgs | stringIdentifier;
+methodDefArgs: IDENTIFIER_STRING methodDefArgsSeparator methodDefArgs | IDENTIFIER_STRING;
 
 methodDefArgsSeparator: COMMA;
 
@@ -91,19 +91,7 @@ scopeOpen: SCOPE_OPEN;
 
 scopeClose: SCOPE_CLOSE;
 
-loop: 'loop' roundBracketOpen expression roundBracketClose scopeOpen program scopeClose;
-
-roundBracketOpen: ROUND_BRACKET_OPEN;
-
-roundBracketClose: ROUND_BRACKET_CLOSE;
-
-squareBracketOpen: SQUARE_BRACKET_OPEN;
-
-squareBracketClose: SQUARE_BRACKET_CLOSE;
-
-stringIdentifier: IDENTIFIER_STRING;
-
-stringChar: STRING_CHAR;
+loop: 'loop' ROUND_BRACKET_OPEN expression ROUND_BRACKET_CLOSE scopeOpen program scopeClose;
 
 /*
  * Lexer rules
@@ -111,6 +99,10 @@ stringChar: STRING_CHAR;
  
 fragment PIPE: '|';
 fragment DOT: '.';
+
+WHITESPACE : (' ' | '\t')+ -> skip;
+COMMENT: '//' .*? -> skip;
+COMMENT_MULTI: '/*' .*? '*/' -> skip;
 
 ACTIONSEPARATOR: PIPE;
 
@@ -153,19 +145,13 @@ SCOPE_OPEN: '{';
 SCOPE_CLOSE: '}';
 ROUND_BRACKET_OPEN: '(';
 ROUND_BRACKET_CLOSE: ')';
-SQUARE_BRACKET_OPEN: '[';
-SQUARE_BRACKET_CLOSE: ']';
 
 INT: '-'? [0-9]+;
 FLOAT: '-'? [0-9]+ DOT [0-9]+;
 IDENTIFIER_STRING: [a-zA-Z_][a-zA-Z0-9_]*;
-STRING_LITERAL: '"' (STRING_CHAR | ESCAPE_SEQUENCE)* '"';
 
-STRING_CHAR: [^"\\];
-ESCAPE_SEQUENCE: '\\' [btnfr"'\\];
+STRING: '"' (STRING_CHAR | ESCAPE_SEQUENCE)* '"';
+fragment STRING_CHAR: ~[\r\n"\\];
+fragment ESCAPE_SEQUENCE: '\\' .;
 
 COMMA: ',';
-
-WHITESPACE : (' ' | '\t')+ -> skip;
-COMMENT: '//' .*? -> skip;
-COMMENT_MULTI: '/*' .*? '*/' -> skip;
