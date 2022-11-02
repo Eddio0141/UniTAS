@@ -30,7 +30,7 @@
     <PackageReference Include="Antlr4.Runtime.Standard" Version="4.9.0" />
     <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
     <PackageReference Include="BepInEx.Core" Version="5.*" />
-    <PackageReference Include="MonoMod.Utils" Version="21.12.13.1" />
+    <PackageReference Include="MonoMod.Utils" Version="22.5.1.1" />
     <PackageReference Include="Ninject" Version="3.2.2" />
     <PackageReference Include="UnityEngine.Modules" Version="3.4.0" IncludeAssets="compile" />
   </ItemGroup>
