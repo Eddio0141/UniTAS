@@ -1,4 +1,4 @@
-grammar MovieScriptDefaultGrammer;
+grammar MovieScriptDefaultGrammar;
 
 /*
  * Parser rules

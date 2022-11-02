@@ -1,1 +1,1 @@
-antlr4 -Dlanguage=CSharp MovieScriptDefaultGrammer.g4
+antlr4 -Dlanguage=CSharp MovieScriptDefaultGrammar.g4

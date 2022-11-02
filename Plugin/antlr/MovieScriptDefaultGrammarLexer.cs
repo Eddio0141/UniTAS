@@ -29,7 +29,7 @@ using DFA = Antlr4.Runtime.Dfa.DFA;
 
 [System.CodeDom.Compiler.GeneratedCode("ANTLR", "4.11.1")]
 [System.CLSCompliant(false)]
-public partial class MovieScriptDefaultGrammerLexer : Lexer {
+public partial class MovieScriptDefaultGrammarLexer : Lexer {
 	protected static DFA[] decisionToDFA;
 	protected static PredictionContextCache sharedContextCache = new PredictionContextCache();
 	public const int
@@ -66,10 +66,10 @@ public partial class MovieScriptDefaultGrammerLexer : Lexer {
 	};
 
 
-	public MovieScriptDefaultGrammerLexer(ICharStream input)
+	public MovieScriptDefaultGrammarLexer(ICharStream input)
 	: this(input, Console.Out, Console.Error) { }
 
-	public MovieScriptDefaultGrammerLexer(ICharStream input, TextWriter output, TextWriter errorOutput)
+	public MovieScriptDefaultGrammarLexer(ICharStream input, TextWriter output, TextWriter errorOutput)
 	: base(input, output, errorOutput)
 	{
 		Interpreter = new LexerATNSimulator(this, _ATN, decisionToDFA, sharedContextCache);
@@ -115,7 +115,7 @@ public partial class MovieScriptDefaultGrammerLexer : Lexer {
 
 	public override int[] SerializedAtn { get { return _serializedATN; } }
 
-	static MovieScriptDefaultGrammerLexer() {
+	static MovieScriptDefaultGrammarLexer() {
 		decisionToDFA = new DFA[_ATN.NumberOfDecisions];
 		for (int i = 0; i < _ATN.NumberOfDecisions; i++) {
 			decisionToDFA[i] = new DFA(_ATN.GetDecisionState(i), i);
