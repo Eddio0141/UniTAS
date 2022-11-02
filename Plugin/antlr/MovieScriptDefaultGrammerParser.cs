@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-// Generated from ./MovieScriptDefaultGrammer.g4 by ANTLR 4.11.1
+// Generated from MovieScriptDefaultGrammer.g4 by ANTLR 4.11.1
 
 // Unreachable code detected
 #pragma warning disable 0162
@@ -36,59 +36,57 @@ public partial class MovieScriptDefaultGrammerParser : Parser {
 	protected static DFA[] decisionToDFA;
 	protected static PredictionContextCache sharedContextCache = new PredictionContextCache();
 	public const int
-		ACTIONSEPARATOR=1, NEWLINE=2, SEMICOLON=3, DOLLAR=4, ASSIGN=5, PLUS_ASSIGN=6, 
-		MINUS_ASSIGN=7, MULTIPLY_ASSIGN=8, DIVIDE_ASSIGN=9, MODULO_ASSIGN=10, 
-		BREAK=11, CONTINUE=12, RETURN=13, IF=14, ELSE_IF=15, ELSE=16, FN=17, LOOP=18, 
-		AND=19, OR=20, EQUAL=21, NOT_EQUAL=22, NOT=23, GREATER=24, LESS=25, GREATER_EQUAL=26, 
-		LESS_EQUAL=27, AND_BINARY=28, OR_BINARY=29, XOR_BINARY=30, PLUS=31, MINUS=32, 
-		MULTIPLY=33, DIVIDE=34, MODULO=35, SCOPE_OPEN=36, SCOPE_CLOSE=37, ROUND_BRACKET_OPEN=38, 
-		ROUND_BRACKET_CLOSE=39, SQUARE_BRACKET_OPEN=40, SQUARE_BRACKET_CLOSE=41, 
-		NUMBER=42, DOT=43, IDENTIFIER_STRING=44, TRUE=45, FALSE=46, STRING_LITERAL=47, 
-		STRING_CHAR=48, ESCAPE_SEQUENCE=49, COMMA=50, WHITESPACE=51, COMMENT=52, 
-		COMMENT_MULTI=53;
+		T__0=1, T__1=2, T__2=3, T__3=4, T__4=5, T__5=6, T__6=7, T__7=8, T__8=9, 
+		T__9=10, ACTIONSEPARATOR=11, NEWLINE=12, SEMICOLON=13, DOLLAR=14, ASSIGN=15, 
+		PLUS_ASSIGN=16, MINUS_ASSIGN=17, MULTIPLY_ASSIGN=18, DIVIDE_ASSIGN=19, 
+		MODULO_ASSIGN=20, AND=21, OR=22, EQUAL=23, NOT_EQUAL=24, NOT=25, GREATER=26, 
+		LESS=27, GREATER_EQUAL=28, LESS_EQUAL=29, BITWISE_AND=30, BITWISE_OR=31, 
+		BITWISE_XOR=32, BITWISE_SHIFT_LEFT=33, BITWISE_SHIFT_RIGHT=34, PLUS=35, 
+		MINUS=36, MULTIPLY=37, DIVIDE=38, MODULO=39, SCOPE_OPEN=40, SCOPE_CLOSE=41, 
+		ROUND_BRACKET_OPEN=42, ROUND_BRACKET_CLOSE=43, SQUARE_BRACKET_OPEN=44, 
+		SQUARE_BRACKET_CLOSE=45, INT=46, FLOAT=47, IDENTIFIER_STRING=48, STRING_LITERAL=49, 
+		STRING_CHAR=50, ESCAPE_SEQUENCE=51, COMMA=52, WHITESPACE=53, COMMENT=54, 
+		COMMENT_MULTI=55;
 	public const int
 		RULE_program = 0, RULE_actionSeparator = 1, RULE_action = 2, RULE_actionWithSeparator = 3, 
 		RULE_frameAdvance = 4, RULE_breakAction = 5, RULE_continueAction = 6, 
 		RULE_returnAction = 7, RULE_variable = 8, RULE_variableAssignment = 9, 
 		RULE_variableTupleSeparation = 10, RULE_tupleExpression = 11, RULE_expression = 12, 
-		RULE_mathOpType = 13, RULE_logicOpType = 14, RULE_binaryOpType = 15, RULE_intValue = 16, 
-		RULE_intDigit = 17, RULE_floatValue = 18, RULE_floatDigit = 19, RULE_boolValue = 20, 
-		RULE_string = 21, RULE_ifElse = 22, RULE_methodCall = 23, RULE_methodCallArgs = 24, 
-		RULE_methodCallArgsSeparator = 25, RULE_methodDef = 26, RULE_methodName = 27, 
-		RULE_methodDefArgs = 28, RULE_methodDefArgsSeparator = 29, RULE_scopeOpen = 30, 
-		RULE_scopeClose = 31, RULE_loop = 32, RULE_roundBracketOpen = 33, RULE_roundBracketClose = 34, 
-		RULE_squareBracketOpen = 35, RULE_squareBracketClose = 36, RULE_stringIdentifier = 37, 
-		RULE_stringLiteral = 38, RULE_stringChar = 39;
+		RULE_string = 13, RULE_intType = 14, RULE_floatType = 15, RULE_bool = 16, 
+		RULE_ifElse = 17, RULE_methodCall = 18, RULE_methodCallArgs = 19, RULE_methodCallArgsSeparator = 20, 
+		RULE_methodDef = 21, RULE_methodName = 22, RULE_methodDefArgs = 23, RULE_methodDefArgsSeparator = 24, 
+		RULE_scopeOpen = 25, RULE_scopeClose = 26, RULE_loop = 27, RULE_roundBracketOpen = 28, 
+		RULE_roundBracketClose = 29, RULE_squareBracketOpen = 30, RULE_squareBracketClose = 31, 
+		RULE_stringIdentifier = 32, RULE_stringChar = 33;
 	public static readonly string[] ruleNames = {
 		"program", "actionSeparator", "action", "actionWithSeparator", "frameAdvance", 
 		"breakAction", "continueAction", "returnAction", "variable", "variableAssignment", 
-		"variableTupleSeparation", "tupleExpression", "expression", "mathOpType", 
-		"logicOpType", "binaryOpType", "intValue", "intDigit", "floatValue", "floatDigit", 
-		"boolValue", "string", "ifElse", "methodCall", "methodCallArgs", "methodCallArgsSeparator", 
-		"methodDef", "methodName", "methodDefArgs", "methodDefArgsSeparator", 
-		"scopeOpen", "scopeClose", "loop", "roundBracketOpen", "roundBracketClose", 
-		"squareBracketOpen", "squareBracketClose", "stringIdentifier", "stringLiteral", 
+		"variableTupleSeparation", "tupleExpression", "expression", "string", 
+		"intType", "floatType", "bool", "ifElse", "methodCall", "methodCallArgs", 
+		"methodCallArgsSeparator", "methodDef", "methodName", "methodDefArgs", 
+		"methodDefArgsSeparator", "scopeOpen", "scopeClose", "loop", "roundBracketOpen", 
+		"roundBracketClose", "squareBracketOpen", "squareBracketClose", "stringIdentifier", 
 		"stringChar"
 	};
 
 	private static readonly string[] _LiteralNames = {
-		null, null, null, "';'", "'$'", "'='", "'+='", "'-='", "'*='", "'/='", 
-		"'%='", "'break'", "'continue'", "'return'", "'if'", "'else if'", "'else'", 
-		"'fn'", "'loop'", "'&&'", "'||'", "'=='", "'!='", "'!'", "'>'", "'<'", 
-		"'>='", "'<='", "'&'", null, "'^'", "'+'", "'-'", "'*'", "'/'", "'%'", 
-		"'{'", "'}'", "'('", "')'", "'['", "']'", null, "'.'", null, "'true'", 
-		"'false'", null, null, null, "','"
+		null, "'break'", "'continue'", "'return'", "'true'", "'false'", "'if'", 
+		"'else if'", "'else'", "'fn'", "'loop'", null, null, "';'", "'$'", "'='", 
+		"'+='", "'-='", "'*='", "'/='", "'%='", "'&&'", "'||'", "'=='", "'!='", 
+		"'!'", "'>'", "'<'", "'>='", "'<='", "'&'", null, "'^'", "'<<'", "'>>'", 
+		"'+'", "'-'", "'*'", "'/'", "'%'", "'{'", "'}'", "'('", "')'", "'['", 
+		"']'", null, null, null, null, null, null, "','"
 	};
 	private static readonly string[] _SymbolicNames = {
-		null, "ACTIONSEPARATOR", "NEWLINE", "SEMICOLON", "DOLLAR", "ASSIGN", "PLUS_ASSIGN", 
-		"MINUS_ASSIGN", "MULTIPLY_ASSIGN", "DIVIDE_ASSIGN", "MODULO_ASSIGN", "BREAK", 
-		"CONTINUE", "RETURN", "IF", "ELSE_IF", "ELSE", "FN", "LOOP", "AND", "OR", 
-		"EQUAL", "NOT_EQUAL", "NOT", "GREATER", "LESS", "GREATER_EQUAL", "LESS_EQUAL", 
-		"AND_BINARY", "OR_BINARY", "XOR_BINARY", "PLUS", "MINUS", "MULTIPLY", 
-		"DIVIDE", "MODULO", "SCOPE_OPEN", "SCOPE_CLOSE", "ROUND_BRACKET_OPEN", 
-		"ROUND_BRACKET_CLOSE", "SQUARE_BRACKET_OPEN", "SQUARE_BRACKET_CLOSE", 
-		"NUMBER", "DOT", "IDENTIFIER_STRING", "TRUE", "FALSE", "STRING_LITERAL", 
-		"STRING_CHAR", "ESCAPE_SEQUENCE", "COMMA", "WHITESPACE", "COMMENT", "COMMENT_MULTI"
+		null, null, null, null, null, null, null, null, null, null, null, "ACTIONSEPARATOR", 
+		"NEWLINE", "SEMICOLON", "DOLLAR", "ASSIGN", "PLUS_ASSIGN", "MINUS_ASSIGN", 
+		"MULTIPLY_ASSIGN", "DIVIDE_ASSIGN", "MODULO_ASSIGN", "AND", "OR", "EQUAL", 
+		"NOT_EQUAL", "NOT", "GREATER", "LESS", "GREATER_EQUAL", "LESS_EQUAL", 
+		"BITWISE_AND", "BITWISE_OR", "BITWISE_XOR", "BITWISE_SHIFT_LEFT", "BITWISE_SHIFT_RIGHT", 
+		"PLUS", "MINUS", "MULTIPLY", "DIVIDE", "MODULO", "SCOPE_OPEN", "SCOPE_CLOSE", 
+		"ROUND_BRACKET_OPEN", "ROUND_BRACKET_CLOSE", "SQUARE_BRACKET_OPEN", "SQUARE_BRACKET_CLOSE", 
+		"INT", "FLOAT", "IDENTIFIER_STRING", "STRING_LITERAL", "STRING_CHAR", 
+		"ESCAPE_SEQUENCE", "COMMA", "WHITESPACE", "COMMENT", "COMMENT_MULTI"
 	};
 	public static readonly IVocabulary DefaultVocabulary = new Vocabulary(_LiteralNames, _SymbolicNames);
 
@@ -135,7 +133,11 @@ public partial class MovieScriptDefaultGrammerParser : Parser {
 		[System.Diagnostics.DebuggerNonUserCode] public ActionContext action() {
 			return GetRuleContext<ActionContext>(0);
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode NEWLINE() { return GetToken(MovieScriptDefaultGrammerParser.NEWLINE, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode[] NEWLINE() { return GetTokens(MovieScriptDefaultGrammerParser.NEWLINE); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode NEWLINE(int i) {
+			return GetToken(MovieScriptDefaultGrammerParser.NEWLINE, i);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode Eof() { return GetToken(MovieScriptDefaultGrammerParser.Eof, 0); }
 		public ProgramContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
 		{
@@ -159,97 +161,112 @@ public partial class MovieScriptDefaultGrammerParser : Parser {
 		EnterRule(_localctx, 0, RULE_program);
 		int _la;
 		try {
-			State = 98;
+			State = 93;
 			ErrorHandler.Sync(this);
 			switch ( Interpreter.AdaptivePredict(TokenStream,4,Context) ) {
 			case 1:
 				EnterOuterAlt(_localctx, 1);
 				{
-				State = 87;
+				State = 78;
 				ErrorHandler.Sync(this);
 				switch (TokenStream.LA(1)) {
 				case DOLLAR:
 				case ROUND_BRACKET_OPEN:
 				case IDENTIFIER_STRING:
 					{
-					State = 80;
+					State = 68;
 					actionWithSeparator();
-					State = 81;
+					State = 69;
 					actionSeparator();
 					}
 					break;
+				case T__0:
+				case T__1:
+				case T__2:
+				case T__5:
+				case T__8:
+				case T__9:
 				case SEMICOLON:
-				case BREAK:
-				case CONTINUE:
-				case RETURN:
-				case IF:
-				case FN:
-				case LOOP:
 				case SCOPE_OPEN:
 				case SCOPE_CLOSE:
 					{
-					State = 83;
+					State = 71;
 					action();
-					State = 85;
+					State = 75;
 					ErrorHandler.Sync(this);
 					_la = TokenStream.LA(1);
-					if (_la==NEWLINE) {
+					while (_la==NEWLINE) {
 						{
-						State = 84;
+						{
+						State = 72;
 						Match(NEWLINE);
 						}
+						}
+						State = 77;
+						ErrorHandler.Sync(this);
+						_la = TokenStream.LA(1);
 					}
-
 					}
 					break;
 				default:
 					throw new NoViableAltException(this);
 				}
-				State = 89;
+				State = 80;
 				program();
 				}
 				break;
 			case 2:
 				EnterOuterAlt(_localctx, 2);
 				{
-				State = 96;
+				State = 90;
 				ErrorHandler.Sync(this);
 				switch (TokenStream.LA(1)) {
 				case DOLLAR:
 				case ROUND_BRACKET_OPEN:
 				case IDENTIFIER_STRING:
 					{
-					State = 91;
+					State = 82;
 					actionWithSeparator();
 					}
 					break;
+				case T__0:
+				case T__1:
+				case T__2:
+				case T__5:
+				case T__8:
+				case T__9:
 				case SEMICOLON:
-				case BREAK:
-				case CONTINUE:
-				case RETURN:
-				case IF:
-				case FN:
-				case LOOP:
 				case SCOPE_OPEN:
 				case SCOPE_CLOSE:
 					{
-					State = 92;
+					State = 83;
 					action();
-					State = 94;
+					State = 87;
 					ErrorHandler.Sync(this);
 					_la = TokenStream.LA(1);
-					if (_la==NEWLINE) {
+					while (_la==NEWLINE) {
 						{
-						State = 93;
+						{
+						State = 84;
 						Match(NEWLINE);
 						}
+						}
+						State = 89;
+						ErrorHandler.Sync(this);
+						_la = TokenStream.LA(1);
 					}
-
 					}
 					break;
 				default:
 					throw new NoViableAltException(this);
 				}
+				}
+				break;
+			case 3:
+				EnterOuterAlt(_localctx, 3);
+				{
+				State = 92;
+				Match(Eof);
 				}
 				break;
 			}
@@ -294,9 +311,9 @@ public partial class MovieScriptDefaultGrammerParser : Parser {
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 100;
+			State = 95;
 			_la = TokenStream.LA(1);
-			if ( !(((_la) & ~0x3f) == 0 && ((1L << _la) & 14L) != 0) ) {
+			if ( !(((_la) & ~0x3f) == 0 && ((1L << _la) & 14336L) != 0) ) {
 			ErrorHandler.RecoverInline(this);
 			}
 			else {
@@ -366,69 +383,69 @@ public partial class MovieScriptDefaultGrammerParser : Parser {
 		ActionContext _localctx = new ActionContext(Context, State);
 		EnterRule(_localctx, 4, RULE_action);
 		try {
-			State = 111;
+			State = 106;
 			ErrorHandler.Sync(this);
 			switch (TokenStream.LA(1)) {
 			case SEMICOLON:
 				EnterOuterAlt(_localctx, 1);
 				{
-				State = 102;
+				State = 97;
 				frameAdvance();
 				}
 				break;
-			case IF:
+			case T__5:
 				EnterOuterAlt(_localctx, 2);
 				{
-				State = 103;
+				State = 98;
 				ifElse();
 				}
 				break;
-			case FN:
+			case T__8:
 				EnterOuterAlt(_localctx, 3);
 				{
-				State = 104;
+				State = 99;
 				methodDef();
 				}
 				break;
 			case SCOPE_OPEN:
 				EnterOuterAlt(_localctx, 4);
 				{
-				State = 105;
+				State = 100;
 				scopeOpen();
 				}
 				break;
 			case SCOPE_CLOSE:
 				EnterOuterAlt(_localctx, 5);
 				{
-				State = 106;
+				State = 101;
 				scopeClose();
 				}
 				break;
-			case LOOP:
+			case T__9:
 				EnterOuterAlt(_localctx, 6);
 				{
-				State = 107;
+				State = 102;
 				loop();
 				}
 				break;
-			case BREAK:
+			case T__0:
 				EnterOuterAlt(_localctx, 7);
 				{
-				State = 108;
+				State = 103;
 				breakAction();
 				}
 				break;
-			case CONTINUE:
+			case T__1:
 				EnterOuterAlt(_localctx, 8);
 				{
-				State = 109;
+				State = 104;
 				continueAction();
 				}
 				break;
-			case RETURN:
+			case T__2:
 				EnterOuterAlt(_localctx, 9);
 				{
-				State = 110;
+				State = 105;
 				returnAction();
 				}
 				break;
@@ -479,27 +496,27 @@ public partial class MovieScriptDefaultGrammerParser : Parser {
 		ActionWithSeparatorContext _localctx = new ActionWithSeparatorContext(Context, State);
 		EnterRule(_localctx, 6, RULE_actionWithSeparator);
 		try {
-			State = 116;
+			State = 111;
 			ErrorHandler.Sync(this);
 			switch (TokenStream.LA(1)) {
 			case DOLLAR:
 				EnterOuterAlt(_localctx, 1);
 				{
-				State = 113;
+				State = 108;
 				variableAssignment();
 				}
 				break;
 			case ROUND_BRACKET_OPEN:
 				EnterOuterAlt(_localctx, 2);
 				{
-				State = 114;
+				State = 109;
 				variableTupleSeparation();
 				}
 				break;
 			case IDENTIFIER_STRING:
 				EnterOuterAlt(_localctx, 3);
 				{
-				State = 115;
+				State = 110;
 				methodCall();
 				}
 				break;
@@ -544,7 +561,7 @@ public partial class MovieScriptDefaultGrammerParser : Parser {
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 118;
+			State = 113;
 			Match(SEMICOLON);
 			}
 		}
@@ -560,7 +577,6 @@ public partial class MovieScriptDefaultGrammerParser : Parser {
 	}
 
 	public partial class BreakActionContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode BREAK() { return GetToken(MovieScriptDefaultGrammerParser.BREAK, 0); }
 		public BreakActionContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
 		{
@@ -585,8 +601,8 @@ public partial class MovieScriptDefaultGrammerParser : Parser {
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 120;
-			Match(BREAK);
+			State = 115;
+			Match(T__0);
 			}
 		}
 		catch (RecognitionException re) {
@@ -601,7 +617,6 @@ public partial class MovieScriptDefaultGrammerParser : Parser {
 	}
 
 	public partial class ContinueActionContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode CONTINUE() { return GetToken(MovieScriptDefaultGrammerParser.CONTINUE, 0); }
 		public ContinueActionContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
 		{
@@ -626,8 +641,8 @@ public partial class MovieScriptDefaultGrammerParser : Parser {
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 122;
-			Match(CONTINUE);
+			State = 117;
+			Match(T__1);
 			}
 		}
 		catch (RecognitionException re) {
@@ -642,7 +657,6 @@ public partial class MovieScriptDefaultGrammerParser : Parser {
 	}
 
 	public partial class ReturnActionContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode RETURN() { return GetToken(MovieScriptDefaultGrammerParser.RETURN, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public ExpressionContext expression() {
 			return GetRuleContext<ExpressionContext>(0);
 		}
@@ -673,20 +687,20 @@ public partial class MovieScriptDefaultGrammerParser : Parser {
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 124;
-			Match(RETURN);
-			State = 127;
+			State = 119;
+			Match(T__2);
+			State = 122;
 			ErrorHandler.Sync(this);
 			switch ( Interpreter.AdaptivePredict(TokenStream,7,Context) ) {
 			case 1:
 				{
-				State = 125;
+				State = 120;
 				expression(0);
 				}
 				break;
 			case 2:
 				{
-				State = 126;
+				State = 121;
 				tupleExpression();
 				}
 				break;
@@ -733,9 +747,9 @@ public partial class MovieScriptDefaultGrammerParser : Parser {
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 129;
+			State = 124;
 			Match(DOLLAR);
-			State = 130;
+			State = 125;
 			stringIdentifier();
 			}
 		}
@@ -791,40 +805,32 @@ public partial class MovieScriptDefaultGrammerParser : Parser {
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 132;
+			State = 127;
 			variable();
-			State = 133;
+			State = 128;
 			_la = TokenStream.LA(1);
-			if ( !(((_la) & ~0x3f) == 0 && ((1L << _la) & 2016L) != 0) ) {
+			if ( !(((_la) & ~0x3f) == 0 && ((1L << _la) & 2064384L) != 0) ) {
 			ErrorHandler.RecoverInline(this);
 			}
 			else {
 				ErrorHandler.ReportMatch(this);
 			    Consume();
 			}
-			State = 136;
+			State = 131;
 			ErrorHandler.Sync(this);
-			switch (TokenStream.LA(1)) {
-			case DOLLAR:
-			case NUMBER:
-			case DOT:
-			case IDENTIFIER_STRING:
-			case TRUE:
-			case FALSE:
-			case STRING_LITERAL:
+			switch ( Interpreter.AdaptivePredict(TokenStream,8,Context) ) {
+			case 1:
 				{
-				State = 134;
+				State = 129;
 				expression(0);
 				}
 				break;
-			case ROUND_BRACKET_OPEN:
+			case 2:
 				{
-				State = 135;
+				State = 130;
 				tupleExpression();
 				}
 				break;
-			default:
-				throw new NoViableAltException(this);
 			}
 			}
 		}
@@ -893,49 +899,49 @@ public partial class MovieScriptDefaultGrammerParser : Parser {
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 138;
+			State = 133;
 			roundBracketOpen();
-			State = 139;
+			State = 134;
 			variable();
-			State = 144;
+			State = 139;
 			ErrorHandler.Sync(this);
 			_la = TokenStream.LA(1);
 			while (_la==COMMA) {
 				{
 				{
-				State = 140;
+				State = 135;
 				Match(COMMA);
-				State = 141;
+				State = 136;
 				variable();
 				}
 				}
-				State = 146;
+				State = 141;
 				ErrorHandler.Sync(this);
 				_la = TokenStream.LA(1);
 			}
-			State = 147;
+			State = 142;
 			roundBracketClose();
-			State = 148;
+			State = 143;
 			_la = TokenStream.LA(1);
-			if ( !(((_la) & ~0x3f) == 0 && ((1L << _la) & 2016L) != 0) ) {
+			if ( !(((_la) & ~0x3f) == 0 && ((1L << _la) & 2064384L) != 0) ) {
 			ErrorHandler.RecoverInline(this);
 			}
 			else {
 				ErrorHandler.ReportMatch(this);
 			    Consume();
 			}
-			State = 151;
+			State = 146;
 			ErrorHandler.Sync(this);
 			switch (TokenStream.LA(1)) {
 			case ROUND_BRACKET_OPEN:
 				{
-				State = 149;
+				State = 144;
 				tupleExpression();
 				}
 				break;
 			case IDENTIFIER_STRING:
 				{
-				State = 150;
+				State = 145;
 				methodCall();
 				}
 				break;
@@ -997,27 +1003,27 @@ public partial class MovieScriptDefaultGrammerParser : Parser {
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 153;
+			State = 148;
 			roundBracketOpen();
-			State = 154;
+			State = 149;
 			expression(0);
-			State = 159;
+			State = 154;
 			ErrorHandler.Sync(this);
 			_la = TokenStream.LA(1);
 			while (_la==COMMA) {
 				{
 				{
-				State = 155;
+				State = 150;
 				Match(COMMA);
-				State = 156;
+				State = 151;
 				expression(0);
 				}
 				}
-				State = 161;
+				State = 156;
 				ErrorHandler.Sync(this);
 				_la = TokenStream.LA(1);
 			}
-			State = 162;
+			State = 157;
 			roundBracketClose();
 			}
 		}
@@ -1033,23 +1039,8 @@ public partial class MovieScriptDefaultGrammerParser : Parser {
 	}
 
 	public partial class ExpressionContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public VariableContext variable() {
-			return GetRuleContext<VariableContext>(0);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public IntValueContext intValue() {
-			return GetRuleContext<IntValueContext>(0);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public FloatValueContext floatValue() {
-			return GetRuleContext<FloatValueContext>(0);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public BoolValueContext boolValue() {
-			return GetRuleContext<BoolValueContext>(0);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public StringContext @string() {
-			return GetRuleContext<StringContext>(0);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public MethodCallContext methodCall() {
-			return GetRuleContext<MethodCallContext>(0);
+		[System.Diagnostics.DebuggerNonUserCode] public RoundBracketOpenContext roundBracketOpen() {
+			return GetRuleContext<RoundBracketOpenContext>(0);
 		}
 		[System.Diagnostics.DebuggerNonUserCode] public ExpressionContext[] expression() {
 			return GetRuleContexts<ExpressionContext>();
@@ -1057,15 +1048,46 @@ public partial class MovieScriptDefaultGrammerParser : Parser {
 		[System.Diagnostics.DebuggerNonUserCode] public ExpressionContext expression(int i) {
 			return GetRuleContext<ExpressionContext>(i);
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public BinaryOpTypeContext binaryOpType() {
-			return GetRuleContext<BinaryOpTypeContext>(0);
+		[System.Diagnostics.DebuggerNonUserCode] public RoundBracketCloseContext roundBracketClose() {
+			return GetRuleContext<RoundBracketCloseContext>(0);
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public MathOpTypeContext mathOpType() {
-			return GetRuleContext<MathOpTypeContext>(0);
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode MINUS() { return GetToken(MovieScriptDefaultGrammerParser.MINUS, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode NOT() { return GetToken(MovieScriptDefaultGrammerParser.NOT, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public VariableContext variable() {
+			return GetRuleContext<VariableContext>(0);
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public LogicOpTypeContext logicOpType() {
-			return GetRuleContext<LogicOpTypeContext>(0);
+		[System.Diagnostics.DebuggerNonUserCode] public IntTypeContext intType() {
+			return GetRuleContext<IntTypeContext>(0);
 		}
+		[System.Diagnostics.DebuggerNonUserCode] public FloatTypeContext floatType() {
+			return GetRuleContext<FloatTypeContext>(0);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public BoolContext @bool() {
+			return GetRuleContext<BoolContext>(0);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public StringContext @string() {
+			return GetRuleContext<StringContext>(0);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public MethodCallContext methodCall() {
+			return GetRuleContext<MethodCallContext>(0);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode MULTIPLY() { return GetToken(MovieScriptDefaultGrammerParser.MULTIPLY, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode DIVIDE() { return GetToken(MovieScriptDefaultGrammerParser.DIVIDE, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode MODULO() { return GetToken(MovieScriptDefaultGrammerParser.MODULO, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode PLUS() { return GetToken(MovieScriptDefaultGrammerParser.PLUS, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode AND() { return GetToken(MovieScriptDefaultGrammerParser.AND, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OR() { return GetToken(MovieScriptDefaultGrammerParser.OR, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode EQUAL() { return GetToken(MovieScriptDefaultGrammerParser.EQUAL, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode NOT_EQUAL() { return GetToken(MovieScriptDefaultGrammerParser.NOT_EQUAL, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode LESS() { return GetToken(MovieScriptDefaultGrammerParser.LESS, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode LESS_EQUAL() { return GetToken(MovieScriptDefaultGrammerParser.LESS_EQUAL, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode GREATER() { return GetToken(MovieScriptDefaultGrammerParser.GREATER, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode GREATER_EQUAL() { return GetToken(MovieScriptDefaultGrammerParser.GREATER_EQUAL, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode BITWISE_AND() { return GetToken(MovieScriptDefaultGrammerParser.BITWISE_AND, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode BITWISE_OR() { return GetToken(MovieScriptDefaultGrammerParser.BITWISE_OR, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode BITWISE_XOR() { return GetToken(MovieScriptDefaultGrammerParser.BITWISE_XOR, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode BITWISE_SHIFT_LEFT() { return GetToken(MovieScriptDefaultGrammerParser.BITWISE_SHIFT_LEFT, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode BITWISE_SHIFT_RIGHT() { return GetToken(MovieScriptDefaultGrammerParser.BITWISE_SHIFT_RIGHT, 0); }
 		public ExpressionContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
 		{
@@ -1095,52 +1117,82 @@ public partial class MovieScriptDefaultGrammerParser : Parser {
 		ExpressionContext _prevctx = _localctx;
 		int _startState = 24;
 		EnterRecursionRule(_localctx, 24, RULE_expression, _p);
+		int _la;
 		try {
 			int _alt;
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 171;
+			State = 174;
 			ErrorHandler.Sync(this);
-			switch ( Interpreter.AdaptivePredict(TokenStream,12,Context) ) {
-			case 1:
+			switch (TokenStream.LA(1)) {
+			case ROUND_BRACKET_OPEN:
 				{
+				State = 160;
+				roundBracketOpen();
+				State = 161;
+				expression(0);
+				State = 162;
+				roundBracketClose();
+				}
+				break;
+			case MINUS:
+				{
+				State = 164;
+				Match(MINUS);
 				State = 165;
+				expression(12);
+				}
+				break;
+			case NOT:
+				{
+				State = 166;
+				Match(NOT);
+				State = 167;
+				expression(11);
+				}
+				break;
+			case DOLLAR:
+				{
+				State = 168;
 				variable();
 				}
 				break;
-			case 2:
-				{
-				State = 166;
-				intValue();
-				}
-				break;
-			case 3:
-				{
-				State = 167;
-				floatValue();
-				}
-				break;
-			case 4:
-				{
-				State = 168;
-				boolValue();
-				}
-				break;
-			case 5:
+			case INT:
 				{
 				State = 169;
+				intType();
+				}
+				break;
+			case FLOAT:
+				{
+				State = 170;
+				floatType();
+				}
+				break;
+			case T__3:
+			case T__4:
+				{
+				State = 171;
+				@bool();
+				}
+				break;
+			case STRING_LITERAL:
+				{
+				State = 172;
 				@string();
 				}
 				break;
-			case 6:
+			case IDENTIFIER_STRING:
 				{
-				State = 170;
+				State = 173;
 				methodCall();
 				}
 				break;
+			default:
+				throw new NoViableAltException(this);
 			}
 			Context.Stop = TokenStream.LT(-1);
-			State = 187;
+			State = 196;
 			ErrorHandler.Sync(this);
 			_alt = Interpreter.AdaptivePredict(TokenStream,14,Context);
 			while ( _alt!=2 && _alt!=global::Antlr4.Runtime.Atn.ATN.INVALID_ALT_NUMBER ) {
@@ -1149,49 +1201,127 @@ public partial class MovieScriptDefaultGrammerParser : Parser {
 						TriggerExitRuleEvent();
 					_prevctx = _localctx;
 					{
-					State = 185;
+					State = 194;
 					ErrorHandler.Sync(this);
 					switch ( Interpreter.AdaptivePredict(TokenStream,13,Context) ) {
 					case 1:
 						{
 						_localctx = new ExpressionContext(_parentctx, _parentState);
 						PushNewRecursionContext(_localctx, _startState, RULE_expression);
-						State = 173;
-						if (!(Precpred(Context, 9))) throw new FailedPredicateException(this, "Precpred(Context, 9)");
-						State = 174;
-						binaryOpType();
-						State = 175;
-						expression(10);
+						State = 176;
+						if (!(Precpred(Context, 14))) throw new FailedPredicateException(this, "Precpred(Context, 14)");
+						State = 177;
+						_la = TokenStream.LA(1);
+						if ( !(((_la) & ~0x3f) == 0 && ((1L << _la) & 962072674304L) != 0) ) {
+						ErrorHandler.RecoverInline(this);
+						}
+						else {
+							ErrorHandler.ReportMatch(this);
+						    Consume();
+						}
+						State = 178;
+						expression(15);
 						}
 						break;
 					case 2:
 						{
 						_localctx = new ExpressionContext(_parentctx, _parentState);
 						PushNewRecursionContext(_localctx, _startState, RULE_expression);
-						State = 177;
-						if (!(Precpred(Context, 8))) throw new FailedPredicateException(this, "Precpred(Context, 8)");
-						State = 178;
-						mathOpType();
 						State = 179;
-						expression(9);
+						if (!(Precpred(Context, 13))) throw new FailedPredicateException(this, "Precpred(Context, 13)");
+						State = 180;
+						_la = TokenStream.LA(1);
+						if ( !(_la==PLUS || _la==MINUS) ) {
+						ErrorHandler.RecoverInline(this);
+						}
+						else {
+							ErrorHandler.ReportMatch(this);
+						    Consume();
+						}
+						State = 181;
+						expression(14);
 						}
 						break;
 					case 3:
 						{
 						_localctx = new ExpressionContext(_parentctx, _parentState);
 						PushNewRecursionContext(_localctx, _startState, RULE_expression);
-						State = 181;
-						if (!(Precpred(Context, 7))) throw new FailedPredicateException(this, "Precpred(Context, 7)");
 						State = 182;
-						logicOpType();
+						if (!(Precpred(Context, 10))) throw new FailedPredicateException(this, "Precpred(Context, 10)");
 						State = 183;
+						_la = TokenStream.LA(1);
+						if ( !(_la==AND || _la==OR) ) {
+						ErrorHandler.RecoverInline(this);
+						}
+						else {
+							ErrorHandler.ReportMatch(this);
+						    Consume();
+						}
+						State = 184;
+						expression(11);
+						}
+						break;
+					case 4:
+						{
+						_localctx = new ExpressionContext(_parentctx, _parentState);
+						PushNewRecursionContext(_localctx, _startState, RULE_expression);
+						State = 185;
+						if (!(Precpred(Context, 9))) throw new FailedPredicateException(this, "Precpred(Context, 9)");
+						State = 186;
+						_la = TokenStream.LA(1);
+						if ( !(((_la) & ~0x3f) == 0 && ((1L << _la) & 1031798784L) != 0) ) {
+						ErrorHandler.RecoverInline(this);
+						}
+						else {
+							ErrorHandler.ReportMatch(this);
+						    Consume();
+						}
+						State = 187;
+						expression(10);
+						}
+						break;
+					case 5:
+						{
+						_localctx = new ExpressionContext(_parentctx, _parentState);
+						PushNewRecursionContext(_localctx, _startState, RULE_expression);
+						State = 188;
+						if (!(Precpred(Context, 8))) throw new FailedPredicateException(this, "Precpred(Context, 8)");
+						State = 189;
+						_la = TokenStream.LA(1);
+						if ( !(((_la) & ~0x3f) == 0 && ((1L << _la) & 7516192768L) != 0) ) {
+						ErrorHandler.RecoverInline(this);
+						}
+						else {
+							ErrorHandler.ReportMatch(this);
+						    Consume();
+						}
+						State = 190;
+						expression(9);
+						}
+						break;
+					case 6:
+						{
+						_localctx = new ExpressionContext(_parentctx, _parentState);
+						PushNewRecursionContext(_localctx, _startState, RULE_expression);
+						State = 191;
+						if (!(Precpred(Context, 7))) throw new FailedPredicateException(this, "Precpred(Context, 7)");
+						State = 192;
+						_la = TokenStream.LA(1);
+						if ( !(_la==BITWISE_SHIFT_LEFT || _la==BITWISE_SHIFT_RIGHT) ) {
+						ErrorHandler.RecoverInline(this);
+						}
+						else {
+							ErrorHandler.ReportMatch(this);
+						    Consume();
+						}
+						State = 193;
 						expression(8);
 						}
 						break;
 					}
 					} 
 				}
-				State = 189;
+				State = 198;
 				ErrorHandler.Sync(this);
 				_alt = Interpreter.AdaptivePredict(TokenStream,14,Context);
 			}
@@ -1208,434 +1338,8 @@ public partial class MovieScriptDefaultGrammerParser : Parser {
 		return _localctx;
 	}
 
-	public partial class MathOpTypeContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode PLUS() { return GetToken(MovieScriptDefaultGrammerParser.PLUS, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode MINUS() { return GetToken(MovieScriptDefaultGrammerParser.MINUS, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode MULTIPLY() { return GetToken(MovieScriptDefaultGrammerParser.MULTIPLY, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode DIVIDE() { return GetToken(MovieScriptDefaultGrammerParser.DIVIDE, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode MODULO() { return GetToken(MovieScriptDefaultGrammerParser.MODULO, 0); }
-		public MathOpTypeContext(ParserRuleContext parent, int invokingState)
-			: base(parent, invokingState)
-		{
-		}
-		public override int RuleIndex { get { return RULE_mathOpType; } }
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void EnterRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammerListener typedListener = listener as IMovieScriptDefaultGrammerListener;
-			if (typedListener != null) typedListener.EnterMathOpType(this);
-		}
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void ExitRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammerListener typedListener = listener as IMovieScriptDefaultGrammerListener;
-			if (typedListener != null) typedListener.ExitMathOpType(this);
-		}
-	}
-
-	[RuleVersion(0)]
-	public MathOpTypeContext mathOpType() {
-		MathOpTypeContext _localctx = new MathOpTypeContext(Context, State);
-		EnterRule(_localctx, 26, RULE_mathOpType);
-		int _la;
-		try {
-			EnterOuterAlt(_localctx, 1);
-			{
-			State = 190;
-			_la = TokenStream.LA(1);
-			if ( !(((_la) & ~0x3f) == 0 && ((1L << _la) & 66571993088L) != 0) ) {
-			ErrorHandler.RecoverInline(this);
-			}
-			else {
-				ErrorHandler.ReportMatch(this);
-			    Consume();
-			}
-			}
-		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			ErrorHandler.ReportError(this, re);
-			ErrorHandler.Recover(this, re);
-		}
-		finally {
-			ExitRule();
-		}
-		return _localctx;
-	}
-
-	public partial class LogicOpTypeContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode AND() { return GetToken(MovieScriptDefaultGrammerParser.AND, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OR() { return GetToken(MovieScriptDefaultGrammerParser.OR, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode EQUAL() { return GetToken(MovieScriptDefaultGrammerParser.EQUAL, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode NOT_EQUAL() { return GetToken(MovieScriptDefaultGrammerParser.NOT_EQUAL, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode NOT() { return GetToken(MovieScriptDefaultGrammerParser.NOT, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode GREATER() { return GetToken(MovieScriptDefaultGrammerParser.GREATER, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode LESS() { return GetToken(MovieScriptDefaultGrammerParser.LESS, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode GREATER_EQUAL() { return GetToken(MovieScriptDefaultGrammerParser.GREATER_EQUAL, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode LESS_EQUAL() { return GetToken(MovieScriptDefaultGrammerParser.LESS_EQUAL, 0); }
-		public LogicOpTypeContext(ParserRuleContext parent, int invokingState)
-			: base(parent, invokingState)
-		{
-		}
-		public override int RuleIndex { get { return RULE_logicOpType; } }
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void EnterRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammerListener typedListener = listener as IMovieScriptDefaultGrammerListener;
-			if (typedListener != null) typedListener.EnterLogicOpType(this);
-		}
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void ExitRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammerListener typedListener = listener as IMovieScriptDefaultGrammerListener;
-			if (typedListener != null) typedListener.ExitLogicOpType(this);
-		}
-	}
-
-	[RuleVersion(0)]
-	public LogicOpTypeContext logicOpType() {
-		LogicOpTypeContext _localctx = new LogicOpTypeContext(Context, State);
-		EnterRule(_localctx, 28, RULE_logicOpType);
-		int _la;
-		try {
-			EnterOuterAlt(_localctx, 1);
-			{
-			State = 192;
-			_la = TokenStream.LA(1);
-			if ( !(((_la) & ~0x3f) == 0 && ((1L << _la) & 267911168L) != 0) ) {
-			ErrorHandler.RecoverInline(this);
-			}
-			else {
-				ErrorHandler.ReportMatch(this);
-			    Consume();
-			}
-			}
-		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			ErrorHandler.ReportError(this, re);
-			ErrorHandler.Recover(this, re);
-		}
-		finally {
-			ExitRule();
-		}
-		return _localctx;
-	}
-
-	public partial class BinaryOpTypeContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode AND_BINARY() { return GetToken(MovieScriptDefaultGrammerParser.AND_BINARY, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OR_BINARY() { return GetToken(MovieScriptDefaultGrammerParser.OR_BINARY, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode XOR_BINARY() { return GetToken(MovieScriptDefaultGrammerParser.XOR_BINARY, 0); }
-		public BinaryOpTypeContext(ParserRuleContext parent, int invokingState)
-			: base(parent, invokingState)
-		{
-		}
-		public override int RuleIndex { get { return RULE_binaryOpType; } }
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void EnterRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammerListener typedListener = listener as IMovieScriptDefaultGrammerListener;
-			if (typedListener != null) typedListener.EnterBinaryOpType(this);
-		}
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void ExitRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammerListener typedListener = listener as IMovieScriptDefaultGrammerListener;
-			if (typedListener != null) typedListener.ExitBinaryOpType(this);
-		}
-	}
-
-	[RuleVersion(0)]
-	public BinaryOpTypeContext binaryOpType() {
-		BinaryOpTypeContext _localctx = new BinaryOpTypeContext(Context, State);
-		EnterRule(_localctx, 30, RULE_binaryOpType);
-		int _la;
-		try {
-			EnterOuterAlt(_localctx, 1);
-			{
-			State = 194;
-			_la = TokenStream.LA(1);
-			if ( !(((_la) & ~0x3f) == 0 && ((1L << _la) & 1879048192L) != 0) ) {
-			ErrorHandler.RecoverInline(this);
-			}
-			else {
-				ErrorHandler.ReportMatch(this);
-			    Consume();
-			}
-			}
-		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			ErrorHandler.ReportError(this, re);
-			ErrorHandler.Recover(this, re);
-		}
-		finally {
-			ExitRule();
-		}
-		return _localctx;
-	}
-
-	public partial class IntValueContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public IntDigitContext intDigit() {
-			return GetRuleContext<IntDigitContext>(0);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public IntValueContext intValue() {
-			return GetRuleContext<IntValueContext>(0);
-		}
-		public IntValueContext(ParserRuleContext parent, int invokingState)
-			: base(parent, invokingState)
-		{
-		}
-		public override int RuleIndex { get { return RULE_intValue; } }
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void EnterRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammerListener typedListener = listener as IMovieScriptDefaultGrammerListener;
-			if (typedListener != null) typedListener.EnterIntValue(this);
-		}
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void ExitRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammerListener typedListener = listener as IMovieScriptDefaultGrammerListener;
-			if (typedListener != null) typedListener.ExitIntValue(this);
-		}
-	}
-
-	[RuleVersion(0)]
-	public IntValueContext intValue() {
-		IntValueContext _localctx = new IntValueContext(Context, State);
-		EnterRule(_localctx, 32, RULE_intValue);
-		try {
-			State = 200;
-			ErrorHandler.Sync(this);
-			switch ( Interpreter.AdaptivePredict(TokenStream,15,Context) ) {
-			case 1:
-				EnterOuterAlt(_localctx, 1);
-				{
-				State = 196;
-				intDigit();
-				State = 197;
-				intValue();
-				}
-				break;
-			case 2:
-				EnterOuterAlt(_localctx, 2);
-				{
-				State = 199;
-				intDigit();
-				}
-				break;
-			}
-		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			ErrorHandler.ReportError(this, re);
-			ErrorHandler.Recover(this, re);
-		}
-		finally {
-			ExitRule();
-		}
-		return _localctx;
-	}
-
-	public partial class IntDigitContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode NUMBER() { return GetToken(MovieScriptDefaultGrammerParser.NUMBER, 0); }
-		public IntDigitContext(ParserRuleContext parent, int invokingState)
-			: base(parent, invokingState)
-		{
-		}
-		public override int RuleIndex { get { return RULE_intDigit; } }
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void EnterRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammerListener typedListener = listener as IMovieScriptDefaultGrammerListener;
-			if (typedListener != null) typedListener.EnterIntDigit(this);
-		}
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void ExitRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammerListener typedListener = listener as IMovieScriptDefaultGrammerListener;
-			if (typedListener != null) typedListener.ExitIntDigit(this);
-		}
-	}
-
-	[RuleVersion(0)]
-	public IntDigitContext intDigit() {
-		IntDigitContext _localctx = new IntDigitContext(Context, State);
-		EnterRule(_localctx, 34, RULE_intDigit);
-		try {
-			EnterOuterAlt(_localctx, 1);
-			{
-			State = 202;
-			Match(NUMBER);
-			}
-		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			ErrorHandler.ReportError(this, re);
-			ErrorHandler.Recover(this, re);
-		}
-		finally {
-			ExitRule();
-		}
-		return _localctx;
-	}
-
-	public partial class FloatValueContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public FloatDigitContext floatDigit() {
-			return GetRuleContext<FloatDigitContext>(0);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public FloatValueContext floatValue() {
-			return GetRuleContext<FloatValueContext>(0);
-		}
-		public FloatValueContext(ParserRuleContext parent, int invokingState)
-			: base(parent, invokingState)
-		{
-		}
-		public override int RuleIndex { get { return RULE_floatValue; } }
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void EnterRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammerListener typedListener = listener as IMovieScriptDefaultGrammerListener;
-			if (typedListener != null) typedListener.EnterFloatValue(this);
-		}
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void ExitRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammerListener typedListener = listener as IMovieScriptDefaultGrammerListener;
-			if (typedListener != null) typedListener.ExitFloatValue(this);
-		}
-	}
-
-	[RuleVersion(0)]
-	public FloatValueContext floatValue() {
-		FloatValueContext _localctx = new FloatValueContext(Context, State);
-		EnterRule(_localctx, 36, RULE_floatValue);
-		try {
-			State = 208;
-			ErrorHandler.Sync(this);
-			switch ( Interpreter.AdaptivePredict(TokenStream,16,Context) ) {
-			case 1:
-				EnterOuterAlt(_localctx, 1);
-				{
-				State = 204;
-				floatDigit();
-				State = 205;
-				floatValue();
-				}
-				break;
-			case 2:
-				EnterOuterAlt(_localctx, 2);
-				{
-				State = 207;
-				floatDigit();
-				}
-				break;
-			}
-		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			ErrorHandler.ReportError(this, re);
-			ErrorHandler.Recover(this, re);
-		}
-		finally {
-			ExitRule();
-		}
-		return _localctx;
-	}
-
-	public partial class FloatDigitContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode NUMBER() { return GetToken(MovieScriptDefaultGrammerParser.NUMBER, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode DOT() { return GetToken(MovieScriptDefaultGrammerParser.DOT, 0); }
-		public FloatDigitContext(ParserRuleContext parent, int invokingState)
-			: base(parent, invokingState)
-		{
-		}
-		public override int RuleIndex { get { return RULE_floatDigit; } }
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void EnterRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammerListener typedListener = listener as IMovieScriptDefaultGrammerListener;
-			if (typedListener != null) typedListener.EnterFloatDigit(this);
-		}
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void ExitRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammerListener typedListener = listener as IMovieScriptDefaultGrammerListener;
-			if (typedListener != null) typedListener.ExitFloatDigit(this);
-		}
-	}
-
-	[RuleVersion(0)]
-	public FloatDigitContext floatDigit() {
-		FloatDigitContext _localctx = new FloatDigitContext(Context, State);
-		EnterRule(_localctx, 38, RULE_floatDigit);
-		int _la;
-		try {
-			EnterOuterAlt(_localctx, 1);
-			{
-			State = 210;
-			_la = TokenStream.LA(1);
-			if ( !(_la==NUMBER || _la==DOT) ) {
-			ErrorHandler.RecoverInline(this);
-			}
-			else {
-				ErrorHandler.ReportMatch(this);
-			    Consume();
-			}
-			}
-		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			ErrorHandler.ReportError(this, re);
-			ErrorHandler.Recover(this, re);
-		}
-		finally {
-			ExitRule();
-		}
-		return _localctx;
-	}
-
-	public partial class BoolValueContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode TRUE() { return GetToken(MovieScriptDefaultGrammerParser.TRUE, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode FALSE() { return GetToken(MovieScriptDefaultGrammerParser.FALSE, 0); }
-		public BoolValueContext(ParserRuleContext parent, int invokingState)
-			: base(parent, invokingState)
-		{
-		}
-		public override int RuleIndex { get { return RULE_boolValue; } }
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void EnterRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammerListener typedListener = listener as IMovieScriptDefaultGrammerListener;
-			if (typedListener != null) typedListener.EnterBoolValue(this);
-		}
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void ExitRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammerListener typedListener = listener as IMovieScriptDefaultGrammerListener;
-			if (typedListener != null) typedListener.ExitBoolValue(this);
-		}
-	}
-
-	[RuleVersion(0)]
-	public BoolValueContext boolValue() {
-		BoolValueContext _localctx = new BoolValueContext(Context, State);
-		EnterRule(_localctx, 40, RULE_boolValue);
-		int _la;
-		try {
-			EnterOuterAlt(_localctx, 1);
-			{
-			State = 212;
-			_la = TokenStream.LA(1);
-			if ( !(_la==TRUE || _la==FALSE) ) {
-			ErrorHandler.RecoverInline(this);
-			}
-			else {
-				ErrorHandler.ReportMatch(this);
-			    Consume();
-			}
-			}
-		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			ErrorHandler.ReportError(this, re);
-			ErrorHandler.Recover(this, re);
-		}
-		finally {
-			ExitRule();
-		}
-		return _localctx;
-	}
-
 	public partial class StringContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public StringLiteralContext stringLiteral() {
-			return GetRuleContext<StringLiteralContext>(0);
-		}
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode STRING_LITERAL() { return GetToken(MovieScriptDefaultGrammerParser.STRING_LITERAL, 0); }
 		public StringContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
 		{
@@ -1656,12 +1360,142 @@ public partial class MovieScriptDefaultGrammerParser : Parser {
 	[RuleVersion(0)]
 	public StringContext @string() {
 		StringContext _localctx = new StringContext(Context, State);
-		EnterRule(_localctx, 42, RULE_string);
+		EnterRule(_localctx, 26, RULE_string);
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 214;
-			stringLiteral();
+			State = 199;
+			Match(STRING_LITERAL);
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			ErrorHandler.ReportError(this, re);
+			ErrorHandler.Recover(this, re);
+		}
+		finally {
+			ExitRule();
+		}
+		return _localctx;
+	}
+
+	public partial class IntTypeContext : ParserRuleContext {
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode INT() { return GetToken(MovieScriptDefaultGrammerParser.INT, 0); }
+		public IntTypeContext(ParserRuleContext parent, int invokingState)
+			: base(parent, invokingState)
+		{
+		}
+		public override int RuleIndex { get { return RULE_intType; } }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void EnterRule(IParseTreeListener listener) {
+			IMovieScriptDefaultGrammerListener typedListener = listener as IMovieScriptDefaultGrammerListener;
+			if (typedListener != null) typedListener.EnterIntType(this);
+		}
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void ExitRule(IParseTreeListener listener) {
+			IMovieScriptDefaultGrammerListener typedListener = listener as IMovieScriptDefaultGrammerListener;
+			if (typedListener != null) typedListener.ExitIntType(this);
+		}
+	}
+
+	[RuleVersion(0)]
+	public IntTypeContext intType() {
+		IntTypeContext _localctx = new IntTypeContext(Context, State);
+		EnterRule(_localctx, 28, RULE_intType);
+		try {
+			EnterOuterAlt(_localctx, 1);
+			{
+			State = 201;
+			Match(INT);
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			ErrorHandler.ReportError(this, re);
+			ErrorHandler.Recover(this, re);
+		}
+		finally {
+			ExitRule();
+		}
+		return _localctx;
+	}
+
+	public partial class FloatTypeContext : ParserRuleContext {
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode FLOAT() { return GetToken(MovieScriptDefaultGrammerParser.FLOAT, 0); }
+		public FloatTypeContext(ParserRuleContext parent, int invokingState)
+			: base(parent, invokingState)
+		{
+		}
+		public override int RuleIndex { get { return RULE_floatType; } }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void EnterRule(IParseTreeListener listener) {
+			IMovieScriptDefaultGrammerListener typedListener = listener as IMovieScriptDefaultGrammerListener;
+			if (typedListener != null) typedListener.EnterFloatType(this);
+		}
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void ExitRule(IParseTreeListener listener) {
+			IMovieScriptDefaultGrammerListener typedListener = listener as IMovieScriptDefaultGrammerListener;
+			if (typedListener != null) typedListener.ExitFloatType(this);
+		}
+	}
+
+	[RuleVersion(0)]
+	public FloatTypeContext floatType() {
+		FloatTypeContext _localctx = new FloatTypeContext(Context, State);
+		EnterRule(_localctx, 30, RULE_floatType);
+		try {
+			EnterOuterAlt(_localctx, 1);
+			{
+			State = 203;
+			Match(FLOAT);
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			ErrorHandler.ReportError(this, re);
+			ErrorHandler.Recover(this, re);
+		}
+		finally {
+			ExitRule();
+		}
+		return _localctx;
+	}
+
+	public partial class BoolContext : ParserRuleContext {
+		public BoolContext(ParserRuleContext parent, int invokingState)
+			: base(parent, invokingState)
+		{
+		}
+		public override int RuleIndex { get { return RULE_bool; } }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void EnterRule(IParseTreeListener listener) {
+			IMovieScriptDefaultGrammerListener typedListener = listener as IMovieScriptDefaultGrammerListener;
+			if (typedListener != null) typedListener.EnterBool(this);
+		}
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void ExitRule(IParseTreeListener listener) {
+			IMovieScriptDefaultGrammerListener typedListener = listener as IMovieScriptDefaultGrammerListener;
+			if (typedListener != null) typedListener.ExitBool(this);
+		}
+	}
+
+	[RuleVersion(0)]
+	public BoolContext @bool() {
+		BoolContext _localctx = new BoolContext(Context, State);
+		EnterRule(_localctx, 32, RULE_bool);
+		int _la;
+		try {
+			EnterOuterAlt(_localctx, 1);
+			{
+			State = 205;
+			_la = TokenStream.LA(1);
+			if ( !(_la==T__3 || _la==T__4) ) {
+			ErrorHandler.RecoverInline(this);
+			}
+			else {
+				ErrorHandler.ReportMatch(this);
+			    Consume();
+			}
 			}
 		}
 		catch (RecognitionException re) {
@@ -1676,7 +1510,6 @@ public partial class MovieScriptDefaultGrammerParser : Parser {
 	}
 
 	public partial class IfElseContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode IF() { return GetToken(MovieScriptDefaultGrammerParser.IF, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public ExpressionContext[] expression() {
 			return GetRuleContexts<ExpressionContext>();
 		}
@@ -1701,11 +1534,6 @@ public partial class MovieScriptDefaultGrammerParser : Parser {
 		[System.Diagnostics.DebuggerNonUserCode] public ScopeCloseContext scopeClose(int i) {
 			return GetRuleContext<ScopeCloseContext>(i);
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode[] ELSE_IF() { return GetTokens(MovieScriptDefaultGrammerParser.ELSE_IF); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ELSE_IF(int i) {
-			return GetToken(MovieScriptDefaultGrammerParser.ELSE_IF, i);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ELSE() { return GetToken(MovieScriptDefaultGrammerParser.ELSE, 0); }
 		public IfElseContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
 		{
@@ -1726,55 +1554,55 @@ public partial class MovieScriptDefaultGrammerParser : Parser {
 	[RuleVersion(0)]
 	public IfElseContext ifElse() {
 		IfElseContext _localctx = new IfElseContext(Context, State);
-		EnterRule(_localctx, 44, RULE_ifElse);
+		EnterRule(_localctx, 34, RULE_ifElse);
 		int _la;
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 216;
-			Match(IF);
-			State = 217;
+			State = 207;
+			Match(T__5);
+			State = 208;
 			expression(0);
-			State = 218;
+			State = 209;
 			scopeOpen();
-			State = 219;
+			State = 210;
 			program();
-			State = 220;
+			State = 211;
 			scopeClose();
-			State = 229;
+			State = 220;
 			ErrorHandler.Sync(this);
 			_la = TokenStream.LA(1);
-			while (_la==ELSE_IF) {
+			while (_la==T__6) {
 				{
 				{
-				State = 221;
-				Match(ELSE_IF);
-				State = 222;
+				State = 212;
+				Match(T__6);
+				State = 213;
 				expression(0);
-				State = 223;
+				State = 214;
 				scopeOpen();
-				State = 224;
+				State = 215;
 				program();
-				State = 225;
+				State = 216;
 				scopeClose();
 				}
 				}
-				State = 231;
+				State = 222;
 				ErrorHandler.Sync(this);
 				_la = TokenStream.LA(1);
 			}
-			State = 237;
+			State = 228;
 			ErrorHandler.Sync(this);
 			_la = TokenStream.LA(1);
-			if (_la==ELSE) {
+			if (_la==T__7) {
 				{
-				State = 232;
-				Match(ELSE);
-				State = 233;
+				State = 223;
+				Match(T__7);
+				State = 224;
 				scopeOpen();
-				State = 234;
+				State = 225;
 				program();
-				State = 235;
+				State = 226;
 				scopeClose();
 				}
 			}
@@ -1825,17 +1653,17 @@ public partial class MovieScriptDefaultGrammerParser : Parser {
 	[RuleVersion(0)]
 	public MethodCallContext methodCall() {
 		MethodCallContext _localctx = new MethodCallContext(Context, State);
-		EnterRule(_localctx, 46, RULE_methodCall);
+		EnterRule(_localctx, 36, RULE_methodCall);
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 239;
+			State = 230;
 			methodName();
-			State = 240;
+			State = 231;
 			roundBracketOpen();
-			State = 241;
+			State = 232;
 			methodCallArgs();
-			State = 242;
+			State = 233;
 			roundBracketClose();
 			}
 		}
@@ -1880,26 +1708,26 @@ public partial class MovieScriptDefaultGrammerParser : Parser {
 	[RuleVersion(0)]
 	public MethodCallArgsContext methodCallArgs() {
 		MethodCallArgsContext _localctx = new MethodCallArgsContext(Context, State);
-		EnterRule(_localctx, 48, RULE_methodCallArgs);
+		EnterRule(_localctx, 38, RULE_methodCallArgs);
 		try {
-			State = 249;
+			State = 240;
 			ErrorHandler.Sync(this);
-			switch ( Interpreter.AdaptivePredict(TokenStream,19,Context) ) {
+			switch ( Interpreter.AdaptivePredict(TokenStream,17,Context) ) {
 			case 1:
 				EnterOuterAlt(_localctx, 1);
 				{
-				State = 244;
+				State = 235;
 				expression(0);
-				State = 245;
+				State = 236;
 				methodCallArgsSeparator();
-				State = 246;
+				State = 237;
 				methodCallArgs();
 				}
 				break;
 			case 2:
 				EnterOuterAlt(_localctx, 2);
 				{
-				State = 248;
+				State = 239;
 				expression(0);
 				}
 				break;
@@ -1938,11 +1766,11 @@ public partial class MovieScriptDefaultGrammerParser : Parser {
 	[RuleVersion(0)]
 	public MethodCallArgsSeparatorContext methodCallArgsSeparator() {
 		MethodCallArgsSeparatorContext _localctx = new MethodCallArgsSeparatorContext(Context, State);
-		EnterRule(_localctx, 50, RULE_methodCallArgsSeparator);
+		EnterRule(_localctx, 40, RULE_methodCallArgsSeparator);
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 251;
+			State = 242;
 			Match(COMMA);
 			}
 		}
@@ -1958,7 +1786,6 @@ public partial class MovieScriptDefaultGrammerParser : Parser {
 	}
 
 	public partial class MethodDefContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode FN() { return GetToken(MovieScriptDefaultGrammerParser.FN, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public MethodNameContext methodName() {
 			return GetRuleContext<MethodNameContext>(0);
 		}
@@ -2000,25 +1827,25 @@ public partial class MovieScriptDefaultGrammerParser : Parser {
 	[RuleVersion(0)]
 	public MethodDefContext methodDef() {
 		MethodDefContext _localctx = new MethodDefContext(Context, State);
-		EnterRule(_localctx, 52, RULE_methodDef);
+		EnterRule(_localctx, 42, RULE_methodDef);
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 253;
-			Match(FN);
-			State = 254;
+			State = 244;
+			Match(T__8);
+			State = 245;
 			methodName();
-			State = 255;
+			State = 246;
 			roundBracketOpen();
-			State = 256;
+			State = 247;
 			methodDefArgs();
-			State = 257;
+			State = 248;
 			roundBracketClose();
-			State = 258;
+			State = 249;
 			scopeOpen();
-			State = 259;
+			State = 250;
 			program();
-			State = 260;
+			State = 251;
 			scopeClose();
 			}
 		}
@@ -2057,11 +1884,11 @@ public partial class MovieScriptDefaultGrammerParser : Parser {
 	[RuleVersion(0)]
 	public MethodNameContext methodName() {
 		MethodNameContext _localctx = new MethodNameContext(Context, State);
-		EnterRule(_localctx, 54, RULE_methodName);
+		EnterRule(_localctx, 44, RULE_methodName);
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 262;
+			State = 253;
 			stringIdentifier();
 			}
 		}
@@ -2106,26 +1933,26 @@ public partial class MovieScriptDefaultGrammerParser : Parser {
 	[RuleVersion(0)]
 	public MethodDefArgsContext methodDefArgs() {
 		MethodDefArgsContext _localctx = new MethodDefArgsContext(Context, State);
-		EnterRule(_localctx, 56, RULE_methodDefArgs);
+		EnterRule(_localctx, 46, RULE_methodDefArgs);
 		try {
-			State = 269;
+			State = 260;
 			ErrorHandler.Sync(this);
-			switch ( Interpreter.AdaptivePredict(TokenStream,20,Context) ) {
+			switch ( Interpreter.AdaptivePredict(TokenStream,18,Context) ) {
 			case 1:
 				EnterOuterAlt(_localctx, 1);
 				{
-				State = 264;
+				State = 255;
 				stringIdentifier();
-				State = 265;
+				State = 256;
 				methodDefArgsSeparator();
-				State = 266;
+				State = 257;
 				methodDefArgs();
 				}
 				break;
 			case 2:
 				EnterOuterAlt(_localctx, 2);
 				{
-				State = 268;
+				State = 259;
 				stringIdentifier();
 				}
 				break;
@@ -2164,11 +1991,11 @@ public partial class MovieScriptDefaultGrammerParser : Parser {
 	[RuleVersion(0)]
 	public MethodDefArgsSeparatorContext methodDefArgsSeparator() {
 		MethodDefArgsSeparatorContext _localctx = new MethodDefArgsSeparatorContext(Context, State);
-		EnterRule(_localctx, 58, RULE_methodDefArgsSeparator);
+		EnterRule(_localctx, 48, RULE_methodDefArgsSeparator);
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 271;
+			State = 262;
 			Match(COMMA);
 			}
 		}
@@ -2205,11 +2032,11 @@ public partial class MovieScriptDefaultGrammerParser : Parser {
 	[RuleVersion(0)]
 	public ScopeOpenContext scopeOpen() {
 		ScopeOpenContext _localctx = new ScopeOpenContext(Context, State);
-		EnterRule(_localctx, 60, RULE_scopeOpen);
+		EnterRule(_localctx, 50, RULE_scopeOpen);
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 273;
+			State = 264;
 			Match(SCOPE_OPEN);
 			}
 		}
@@ -2246,11 +2073,11 @@ public partial class MovieScriptDefaultGrammerParser : Parser {
 	[RuleVersion(0)]
 	public ScopeCloseContext scopeClose() {
 		ScopeCloseContext _localctx = new ScopeCloseContext(Context, State);
-		EnterRule(_localctx, 62, RULE_scopeClose);
+		EnterRule(_localctx, 52, RULE_scopeClose);
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 275;
+			State = 266;
 			Match(SCOPE_CLOSE);
 			}
 		}
@@ -2266,7 +2093,6 @@ public partial class MovieScriptDefaultGrammerParser : Parser {
 	}
 
 	public partial class LoopContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode LOOP() { return GetToken(MovieScriptDefaultGrammerParser.LOOP, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public RoundBracketOpenContext roundBracketOpen() {
 			return GetRuleContext<RoundBracketOpenContext>(0);
 		}
@@ -2305,23 +2131,23 @@ public partial class MovieScriptDefaultGrammerParser : Parser {
 	[RuleVersion(0)]
 	public LoopContext loop() {
 		LoopContext _localctx = new LoopContext(Context, State);
-		EnterRule(_localctx, 64, RULE_loop);
+		EnterRule(_localctx, 54, RULE_loop);
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 277;
-			Match(LOOP);
-			State = 278;
+			State = 268;
+			Match(T__9);
+			State = 269;
 			roundBracketOpen();
-			State = 279;
+			State = 270;
 			expression(0);
-			State = 280;
+			State = 271;
 			roundBracketClose();
-			State = 281;
+			State = 272;
 			scopeOpen();
-			State = 282;
+			State = 273;
 			program();
-			State = 283;
+			State = 274;
 			scopeClose();
 			}
 		}
@@ -2358,11 +2184,11 @@ public partial class MovieScriptDefaultGrammerParser : Parser {
 	[RuleVersion(0)]
 	public RoundBracketOpenContext roundBracketOpen() {
 		RoundBracketOpenContext _localctx = new RoundBracketOpenContext(Context, State);
-		EnterRule(_localctx, 66, RULE_roundBracketOpen);
+		EnterRule(_localctx, 56, RULE_roundBracketOpen);
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 285;
+			State = 276;
 			Match(ROUND_BRACKET_OPEN);
 			}
 		}
@@ -2399,11 +2225,11 @@ public partial class MovieScriptDefaultGrammerParser : Parser {
 	[RuleVersion(0)]
 	public RoundBracketCloseContext roundBracketClose() {
 		RoundBracketCloseContext _localctx = new RoundBracketCloseContext(Context, State);
-		EnterRule(_localctx, 68, RULE_roundBracketClose);
+		EnterRule(_localctx, 58, RULE_roundBracketClose);
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 287;
+			State = 278;
 			Match(ROUND_BRACKET_CLOSE);
 			}
 		}
@@ -2440,11 +2266,11 @@ public partial class MovieScriptDefaultGrammerParser : Parser {
 	[RuleVersion(0)]
 	public SquareBracketOpenContext squareBracketOpen() {
 		SquareBracketOpenContext _localctx = new SquareBracketOpenContext(Context, State);
-		EnterRule(_localctx, 70, RULE_squareBracketOpen);
+		EnterRule(_localctx, 60, RULE_squareBracketOpen);
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 289;
+			State = 280;
 			Match(SQUARE_BRACKET_OPEN);
 			}
 		}
@@ -2481,11 +2307,11 @@ public partial class MovieScriptDefaultGrammerParser : Parser {
 	[RuleVersion(0)]
 	public SquareBracketCloseContext squareBracketClose() {
 		SquareBracketCloseContext _localctx = new SquareBracketCloseContext(Context, State);
-		EnterRule(_localctx, 72, RULE_squareBracketClose);
+		EnterRule(_localctx, 62, RULE_squareBracketClose);
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 291;
+			State = 282;
 			Match(SQUARE_BRACKET_CLOSE);
 			}
 		}
@@ -2522,53 +2348,12 @@ public partial class MovieScriptDefaultGrammerParser : Parser {
 	[RuleVersion(0)]
 	public StringIdentifierContext stringIdentifier() {
 		StringIdentifierContext _localctx = new StringIdentifierContext(Context, State);
-		EnterRule(_localctx, 74, RULE_stringIdentifier);
+		EnterRule(_localctx, 64, RULE_stringIdentifier);
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 293;
+			State = 284;
 			Match(IDENTIFIER_STRING);
-			}
-		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			ErrorHandler.ReportError(this, re);
-			ErrorHandler.Recover(this, re);
-		}
-		finally {
-			ExitRule();
-		}
-		return _localctx;
-	}
-
-	public partial class StringLiteralContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode STRING_LITERAL() { return GetToken(MovieScriptDefaultGrammerParser.STRING_LITERAL, 0); }
-		public StringLiteralContext(ParserRuleContext parent, int invokingState)
-			: base(parent, invokingState)
-		{
-		}
-		public override int RuleIndex { get { return RULE_stringLiteral; } }
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void EnterRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammerListener typedListener = listener as IMovieScriptDefaultGrammerListener;
-			if (typedListener != null) typedListener.EnterStringLiteral(this);
-		}
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void ExitRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammerListener typedListener = listener as IMovieScriptDefaultGrammerListener;
-			if (typedListener != null) typedListener.ExitStringLiteral(this);
-		}
-	}
-
-	[RuleVersion(0)]
-	public StringLiteralContext stringLiteral() {
-		StringLiteralContext _localctx = new StringLiteralContext(Context, State);
-		EnterRule(_localctx, 76, RULE_stringLiteral);
-		try {
-			EnterOuterAlt(_localctx, 1);
-			{
-			State = 295;
-			Match(STRING_LITERAL);
 			}
 		}
 		catch (RecognitionException re) {
@@ -2604,11 +2389,11 @@ public partial class MovieScriptDefaultGrammerParser : Parser {
 	[RuleVersion(0)]
 	public StringCharContext stringChar() {
 		StringCharContext _localctx = new StringCharContext(Context, State);
-		EnterRule(_localctx, 78, RULE_stringChar);
+		EnterRule(_localctx, 66, RULE_stringChar);
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 297;
+			State = 286;
 			Match(STRING_CHAR);
 			}
 		}
@@ -2631,107 +2416,109 @@ public partial class MovieScriptDefaultGrammerParser : Parser {
 	}
 	private bool expression_sempred(ExpressionContext _localctx, int predIndex) {
 		switch (predIndex) {
-		case 0: return Precpred(Context, 9);
-		case 1: return Precpred(Context, 8);
-		case 2: return Precpred(Context, 7);
+		case 0: return Precpred(Context, 14);
+		case 1: return Precpred(Context, 13);
+		case 2: return Precpred(Context, 10);
+		case 3: return Precpred(Context, 9);
+		case 4: return Precpred(Context, 8);
+		case 5: return Precpred(Context, 7);
 		}
 		return true;
 	}
 
 	private static int[] _serializedATN = {
-		4,1,53,300,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,6,2,7,
+		4,1,55,289,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,6,2,7,
 		7,7,2,8,7,8,2,9,7,9,2,10,7,10,2,11,7,11,2,12,7,12,2,13,7,13,2,14,7,14,
 		2,15,7,15,2,16,7,16,2,17,7,17,2,18,7,18,2,19,7,19,2,20,7,20,2,21,7,21,
 		2,22,7,22,2,23,7,23,2,24,7,24,2,25,7,25,2,26,7,26,2,27,7,27,2,28,7,28,
-		2,29,7,29,2,30,7,30,2,31,7,31,2,32,7,32,2,33,7,33,2,34,7,34,2,35,7,35,
-		2,36,7,36,2,37,7,37,2,38,7,38,2,39,7,39,1,0,1,0,1,0,1,0,1,0,3,0,86,8,0,
-		3,0,88,8,0,1,0,1,0,1,0,1,0,1,0,3,0,95,8,0,3,0,97,8,0,3,0,99,8,0,1,1,1,
-		1,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,3,2,112,8,2,1,3,1,3,1,3,3,3,117,
-		8,3,1,4,1,4,1,5,1,5,1,6,1,6,1,7,1,7,1,7,3,7,128,8,7,1,8,1,8,1,8,1,9,1,
-		9,1,9,1,9,3,9,137,8,9,1,10,1,10,1,10,1,10,5,10,143,8,10,10,10,12,10,146,
-		9,10,1,10,1,10,1,10,1,10,3,10,152,8,10,1,11,1,11,1,11,1,11,5,11,158,8,
-		11,10,11,12,11,161,9,11,1,11,1,11,1,12,1,12,1,12,1,12,1,12,1,12,1,12,3,
-		12,172,8,12,1,12,1,12,1,12,1,12,1,12,1,12,1,12,1,12,1,12,1,12,1,12,1,12,
-		5,12,186,8,12,10,12,12,12,189,9,12,1,13,1,13,1,14,1,14,1,15,1,15,1,16,
-		1,16,1,16,1,16,3,16,201,8,16,1,17,1,17,1,18,1,18,1,18,1,18,3,18,209,8,
-		18,1,19,1,19,1,20,1,20,1,21,1,21,1,22,1,22,1,22,1,22,1,22,1,22,1,22,1,
-		22,1,22,1,22,1,22,5,22,228,8,22,10,22,12,22,231,9,22,1,22,1,22,1,22,1,
-		22,1,22,3,22,238,8,22,1,23,1,23,1,23,1,23,1,23,1,24,1,24,1,24,1,24,1,24,
-		3,24,250,8,24,1,25,1,25,1,26,1,26,1,26,1,26,1,26,1,26,1,26,1,26,1,26,1,
-		27,1,27,1,28,1,28,1,28,1,28,1,28,3,28,270,8,28,1,29,1,29,1,30,1,30,1,31,
-		1,31,1,32,1,32,1,32,1,32,1,32,1,32,1,32,1,32,1,33,1,33,1,34,1,34,1,35,
-		1,35,1,36,1,36,1,37,1,37,1,38,1,38,1,39,1,39,1,39,0,1,24,40,0,2,4,6,8,
-		10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,
-		58,60,62,64,66,68,70,72,74,76,78,0,7,1,0,1,3,1,0,5,10,1,0,31,35,1,0,19,
-		27,1,0,28,30,1,0,42,43,1,0,45,46,294,0,98,1,0,0,0,2,100,1,0,0,0,4,111,
-		1,0,0,0,6,116,1,0,0,0,8,118,1,0,0,0,10,120,1,0,0,0,12,122,1,0,0,0,14,124,
-		1,0,0,0,16,129,1,0,0,0,18,132,1,0,0,0,20,138,1,0,0,0,22,153,1,0,0,0,24,
-		171,1,0,0,0,26,190,1,0,0,0,28,192,1,0,0,0,30,194,1,0,0,0,32,200,1,0,0,
-		0,34,202,1,0,0,0,36,208,1,0,0,0,38,210,1,0,0,0,40,212,1,0,0,0,42,214,1,
-		0,0,0,44,216,1,0,0,0,46,239,1,0,0,0,48,249,1,0,0,0,50,251,1,0,0,0,52,253,
-		1,0,0,0,54,262,1,0,0,0,56,269,1,0,0,0,58,271,1,0,0,0,60,273,1,0,0,0,62,
-		275,1,0,0,0,64,277,1,0,0,0,66,285,1,0,0,0,68,287,1,0,0,0,70,289,1,0,0,
-		0,72,291,1,0,0,0,74,293,1,0,0,0,76,295,1,0,0,0,78,297,1,0,0,0,80,81,3,
-		6,3,0,81,82,3,2,1,0,82,88,1,0,0,0,83,85,3,4,2,0,84,86,5,2,0,0,85,84,1,
-		0,0,0,85,86,1,0,0,0,86,88,1,0,0,0,87,80,1,0,0,0,87,83,1,0,0,0,88,89,1,
-		0,0,0,89,90,3,0,0,0,90,99,1,0,0,0,91,97,3,6,3,0,92,94,3,4,2,0,93,95,5,
-		2,0,0,94,93,1,0,0,0,94,95,1,0,0,0,95,97,1,0,0,0,96,91,1,0,0,0,96,92,1,
-		0,0,0,97,99,1,0,0,0,98,87,1,0,0,0,98,96,1,0,0,0,99,1,1,0,0,0,100,101,7,
-		0,0,0,101,3,1,0,0,0,102,112,3,8,4,0,103,112,3,44,22,0,104,112,3,52,26,
-		0,105,112,3,60,30,0,106,112,3,62,31,0,107,112,3,64,32,0,108,112,3,10,5,
-		0,109,112,3,12,6,0,110,112,3,14,7,0,111,102,1,0,0,0,111,103,1,0,0,0,111,
-		104,1,0,0,0,111,105,1,0,0,0,111,106,1,0,0,0,111,107,1,0,0,0,111,108,1,
-		0,0,0,111,109,1,0,0,0,111,110,1,0,0,0,112,5,1,0,0,0,113,117,3,18,9,0,114,
-		117,3,20,10,0,115,117,3,46,23,0,116,113,1,0,0,0,116,114,1,0,0,0,116,115,
-		1,0,0,0,117,7,1,0,0,0,118,119,5,3,0,0,119,9,1,0,0,0,120,121,5,11,0,0,121,
-		11,1,0,0,0,122,123,5,12,0,0,123,13,1,0,0,0,124,127,5,13,0,0,125,128,3,
-		24,12,0,126,128,3,22,11,0,127,125,1,0,0,0,127,126,1,0,0,0,127,128,1,0,
-		0,0,128,15,1,0,0,0,129,130,5,4,0,0,130,131,3,74,37,0,131,17,1,0,0,0,132,
-		133,3,16,8,0,133,136,7,1,0,0,134,137,3,24,12,0,135,137,3,22,11,0,136,134,
-		1,0,0,0,136,135,1,0,0,0,137,19,1,0,0,0,138,139,3,66,33,0,139,144,3,16,
-		8,0,140,141,5,50,0,0,141,143,3,16,8,0,142,140,1,0,0,0,143,146,1,0,0,0,
-		144,142,1,0,0,0,144,145,1,0,0,0,145,147,1,0,0,0,146,144,1,0,0,0,147,148,
-		3,68,34,0,148,151,7,1,0,0,149,152,3,22,11,0,150,152,3,46,23,0,151,149,
-		1,0,0,0,151,150,1,0,0,0,152,21,1,0,0,0,153,154,3,66,33,0,154,159,3,24,
-		12,0,155,156,5,50,0,0,156,158,3,24,12,0,157,155,1,0,0,0,158,161,1,0,0,
-		0,159,157,1,0,0,0,159,160,1,0,0,0,160,162,1,0,0,0,161,159,1,0,0,0,162,
-		163,3,68,34,0,163,23,1,0,0,0,164,165,6,12,-1,0,165,172,3,16,8,0,166,172,
-		3,32,16,0,167,172,3,36,18,0,168,172,3,40,20,0,169,172,3,42,21,0,170,172,
-		3,46,23,0,171,164,1,0,0,0,171,166,1,0,0,0,171,167,1,0,0,0,171,168,1,0,
-		0,0,171,169,1,0,0,0,171,170,1,0,0,0,172,187,1,0,0,0,173,174,10,9,0,0,174,
-		175,3,30,15,0,175,176,3,24,12,10,176,186,1,0,0,0,177,178,10,8,0,0,178,
-		179,3,26,13,0,179,180,3,24,12,9,180,186,1,0,0,0,181,182,10,7,0,0,182,183,
-		3,28,14,0,183,184,3,24,12,8,184,186,1,0,0,0,185,173,1,0,0,0,185,177,1,
-		0,0,0,185,181,1,0,0,0,186,189,1,0,0,0,187,185,1,0,0,0,187,188,1,0,0,0,
-		188,25,1,0,0,0,189,187,1,0,0,0,190,191,7,2,0,0,191,27,1,0,0,0,192,193,
-		7,3,0,0,193,29,1,0,0,0,194,195,7,4,0,0,195,31,1,0,0,0,196,197,3,34,17,
-		0,197,198,3,32,16,0,198,201,1,0,0,0,199,201,3,34,17,0,200,196,1,0,0,0,
-		200,199,1,0,0,0,201,33,1,0,0,0,202,203,5,42,0,0,203,35,1,0,0,0,204,205,
-		3,38,19,0,205,206,3,36,18,0,206,209,1,0,0,0,207,209,3,38,19,0,208,204,
-		1,0,0,0,208,207,1,0,0,0,209,37,1,0,0,0,210,211,7,5,0,0,211,39,1,0,0,0,
-		212,213,7,6,0,0,213,41,1,0,0,0,214,215,3,76,38,0,215,43,1,0,0,0,216,217,
-		5,14,0,0,217,218,3,24,12,0,218,219,3,60,30,0,219,220,3,0,0,0,220,229,3,
-		62,31,0,221,222,5,15,0,0,222,223,3,24,12,0,223,224,3,60,30,0,224,225,3,
-		0,0,0,225,226,3,62,31,0,226,228,1,0,0,0,227,221,1,0,0,0,228,231,1,0,0,
-		0,229,227,1,0,0,0,229,230,1,0,0,0,230,237,1,0,0,0,231,229,1,0,0,0,232,
-		233,5,16,0,0,233,234,3,60,30,0,234,235,3,0,0,0,235,236,3,62,31,0,236,238,
-		1,0,0,0,237,232,1,0,0,0,237,238,1,0,0,0,238,45,1,0,0,0,239,240,3,54,27,
-		0,240,241,3,66,33,0,241,242,3,48,24,0,242,243,3,68,34,0,243,47,1,0,0,0,
-		244,245,3,24,12,0,245,246,3,50,25,0,246,247,3,48,24,0,247,250,1,0,0,0,
-		248,250,3,24,12,0,249,244,1,0,0,0,249,248,1,0,0,0,250,49,1,0,0,0,251,252,
-		5,50,0,0,252,51,1,0,0,0,253,254,5,17,0,0,254,255,3,54,27,0,255,256,3,66,
-		33,0,256,257,3,56,28,0,257,258,3,68,34,0,258,259,3,60,30,0,259,260,3,0,
-		0,0,260,261,3,62,31,0,261,53,1,0,0,0,262,263,3,74,37,0,263,55,1,0,0,0,
-		264,265,3,74,37,0,265,266,3,58,29,0,266,267,3,56,28,0,267,270,1,0,0,0,
-		268,270,3,74,37,0,269,264,1,0,0,0,269,268,1,0,0,0,270,57,1,0,0,0,271,272,
-		5,50,0,0,272,59,1,0,0,0,273,274,5,36,0,0,274,61,1,0,0,0,275,276,5,37,0,
-		0,276,63,1,0,0,0,277,278,5,18,0,0,278,279,3,66,33,0,279,280,3,24,12,0,
-		280,281,3,68,34,0,281,282,3,60,30,0,282,283,3,0,0,0,283,284,3,62,31,0,
-		284,65,1,0,0,0,285,286,5,38,0,0,286,67,1,0,0,0,287,288,5,39,0,0,288,69,
-		1,0,0,0,289,290,5,40,0,0,290,71,1,0,0,0,291,292,5,41,0,0,292,73,1,0,0,
-		0,293,294,5,44,0,0,294,75,1,0,0,0,295,296,5,47,0,0,296,77,1,0,0,0,297,
-		298,5,48,0,0,298,79,1,0,0,0,21,85,87,94,96,98,111,116,127,136,144,151,
-		159,171,185,187,200,208,229,237,249,269
+		2,29,7,29,2,30,7,30,2,31,7,31,2,32,7,32,2,33,7,33,1,0,1,0,1,0,1,0,1,0,
+		5,0,74,8,0,10,0,12,0,77,9,0,3,0,79,8,0,1,0,1,0,1,0,1,0,1,0,5,0,86,8,0,
+		10,0,12,0,89,9,0,3,0,91,8,0,1,0,3,0,94,8,0,1,1,1,1,1,2,1,2,1,2,1,2,1,2,
+		1,2,1,2,1,2,1,2,3,2,107,8,2,1,3,1,3,1,3,3,3,112,8,3,1,4,1,4,1,5,1,5,1,
+		6,1,6,1,7,1,7,1,7,3,7,123,8,7,1,8,1,8,1,8,1,9,1,9,1,9,1,9,3,9,132,8,9,
+		1,10,1,10,1,10,1,10,5,10,138,8,10,10,10,12,10,141,9,10,1,10,1,10,1,10,
+		1,10,3,10,147,8,10,1,11,1,11,1,11,1,11,5,11,153,8,11,10,11,12,11,156,9,
+		11,1,11,1,11,1,12,1,12,1,12,1,12,1,12,1,12,1,12,1,12,1,12,1,12,1,12,1,
+		12,1,12,1,12,1,12,3,12,175,8,12,1,12,1,12,1,12,1,12,1,12,1,12,1,12,1,12,
+		1,12,1,12,1,12,1,12,1,12,1,12,1,12,1,12,1,12,1,12,5,12,195,8,12,10,12,
+		12,12,198,9,12,1,13,1,13,1,14,1,14,1,15,1,15,1,16,1,16,1,17,1,17,1,17,
+		1,17,1,17,1,17,1,17,1,17,1,17,1,17,1,17,5,17,219,8,17,10,17,12,17,222,
+		9,17,1,17,1,17,1,17,1,17,1,17,3,17,229,8,17,1,18,1,18,1,18,1,18,1,18,1,
+		19,1,19,1,19,1,19,1,19,3,19,241,8,19,1,20,1,20,1,21,1,21,1,21,1,21,1,21,
+		1,21,1,21,1,21,1,21,1,22,1,22,1,23,1,23,1,23,1,23,1,23,3,23,261,8,23,1,
+		24,1,24,1,25,1,25,1,26,1,26,1,27,1,27,1,27,1,27,1,27,1,27,1,27,1,27,1,
+		28,1,28,1,29,1,29,1,30,1,30,1,31,1,31,1,32,1,32,1,33,1,33,1,33,0,1,24,
+		34,0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,
+		48,50,52,54,56,58,60,62,64,66,0,9,1,0,11,13,1,0,15,20,1,0,37,39,1,0,35,
+		36,1,0,21,22,2,0,23,24,26,29,1,0,30,32,1,0,33,34,1,0,4,5,294,0,93,1,0,
+		0,0,2,95,1,0,0,0,4,106,1,0,0,0,6,111,1,0,0,0,8,113,1,0,0,0,10,115,1,0,
+		0,0,12,117,1,0,0,0,14,119,1,0,0,0,16,124,1,0,0,0,18,127,1,0,0,0,20,133,
+		1,0,0,0,22,148,1,0,0,0,24,174,1,0,0,0,26,199,1,0,0,0,28,201,1,0,0,0,30,
+		203,1,0,0,0,32,205,1,0,0,0,34,207,1,0,0,0,36,230,1,0,0,0,38,240,1,0,0,
+		0,40,242,1,0,0,0,42,244,1,0,0,0,44,253,1,0,0,0,46,260,1,0,0,0,48,262,1,
+		0,0,0,50,264,1,0,0,0,52,266,1,0,0,0,54,268,1,0,0,0,56,276,1,0,0,0,58,278,
+		1,0,0,0,60,280,1,0,0,0,62,282,1,0,0,0,64,284,1,0,0,0,66,286,1,0,0,0,68,
+		69,3,6,3,0,69,70,3,2,1,0,70,79,1,0,0,0,71,75,3,4,2,0,72,74,5,12,0,0,73,
+		72,1,0,0,0,74,77,1,0,0,0,75,73,1,0,0,0,75,76,1,0,0,0,76,79,1,0,0,0,77,
+		75,1,0,0,0,78,68,1,0,0,0,78,71,1,0,0,0,79,80,1,0,0,0,80,81,3,0,0,0,81,
+		94,1,0,0,0,82,91,3,6,3,0,83,87,3,4,2,0,84,86,5,12,0,0,85,84,1,0,0,0,86,
+		89,1,0,0,0,87,85,1,0,0,0,87,88,1,0,0,0,88,91,1,0,0,0,89,87,1,0,0,0,90,
+		82,1,0,0,0,90,83,1,0,0,0,91,94,1,0,0,0,92,94,5,0,0,1,93,78,1,0,0,0,93,
+		90,1,0,0,0,93,92,1,0,0,0,94,1,1,0,0,0,95,96,7,0,0,0,96,3,1,0,0,0,97,107,
+		3,8,4,0,98,107,3,34,17,0,99,107,3,42,21,0,100,107,3,50,25,0,101,107,3,
+		52,26,0,102,107,3,54,27,0,103,107,3,10,5,0,104,107,3,12,6,0,105,107,3,
+		14,7,0,106,97,1,0,0,0,106,98,1,0,0,0,106,99,1,0,0,0,106,100,1,0,0,0,106,
+		101,1,0,0,0,106,102,1,0,0,0,106,103,1,0,0,0,106,104,1,0,0,0,106,105,1,
+		0,0,0,107,5,1,0,0,0,108,112,3,18,9,0,109,112,3,20,10,0,110,112,3,36,18,
+		0,111,108,1,0,0,0,111,109,1,0,0,0,111,110,1,0,0,0,112,7,1,0,0,0,113,114,
+		5,13,0,0,114,9,1,0,0,0,115,116,5,1,0,0,116,11,1,0,0,0,117,118,5,2,0,0,
+		118,13,1,0,0,0,119,122,5,3,0,0,120,123,3,24,12,0,121,123,3,22,11,0,122,
+		120,1,0,0,0,122,121,1,0,0,0,122,123,1,0,0,0,123,15,1,0,0,0,124,125,5,14,
+		0,0,125,126,3,64,32,0,126,17,1,0,0,0,127,128,3,16,8,0,128,131,7,1,0,0,
+		129,132,3,24,12,0,130,132,3,22,11,0,131,129,1,0,0,0,131,130,1,0,0,0,132,
+		19,1,0,0,0,133,134,3,56,28,0,134,139,3,16,8,0,135,136,5,52,0,0,136,138,
+		3,16,8,0,137,135,1,0,0,0,138,141,1,0,0,0,139,137,1,0,0,0,139,140,1,0,0,
+		0,140,142,1,0,0,0,141,139,1,0,0,0,142,143,3,58,29,0,143,146,7,1,0,0,144,
+		147,3,22,11,0,145,147,3,36,18,0,146,144,1,0,0,0,146,145,1,0,0,0,147,21,
+		1,0,0,0,148,149,3,56,28,0,149,154,3,24,12,0,150,151,5,52,0,0,151,153,3,
+		24,12,0,152,150,1,0,0,0,153,156,1,0,0,0,154,152,1,0,0,0,154,155,1,0,0,
+		0,155,157,1,0,0,0,156,154,1,0,0,0,157,158,3,58,29,0,158,23,1,0,0,0,159,
+		160,6,12,-1,0,160,161,3,56,28,0,161,162,3,24,12,0,162,163,3,58,29,0,163,
+		175,1,0,0,0,164,165,5,36,0,0,165,175,3,24,12,12,166,167,5,25,0,0,167,175,
+		3,24,12,11,168,175,3,16,8,0,169,175,3,28,14,0,170,175,3,30,15,0,171,175,
+		3,32,16,0,172,175,3,26,13,0,173,175,3,36,18,0,174,159,1,0,0,0,174,164,
+		1,0,0,0,174,166,1,0,0,0,174,168,1,0,0,0,174,169,1,0,0,0,174,170,1,0,0,
+		0,174,171,1,0,0,0,174,172,1,0,0,0,174,173,1,0,0,0,175,196,1,0,0,0,176,
+		177,10,14,0,0,177,178,7,2,0,0,178,195,3,24,12,15,179,180,10,13,0,0,180,
+		181,7,3,0,0,181,195,3,24,12,14,182,183,10,10,0,0,183,184,7,4,0,0,184,195,
+		3,24,12,11,185,186,10,9,0,0,186,187,7,5,0,0,187,195,3,24,12,10,188,189,
+		10,8,0,0,189,190,7,6,0,0,190,195,3,24,12,9,191,192,10,7,0,0,192,193,7,
+		7,0,0,193,195,3,24,12,8,194,176,1,0,0,0,194,179,1,0,0,0,194,182,1,0,0,
+		0,194,185,1,0,0,0,194,188,1,0,0,0,194,191,1,0,0,0,195,198,1,0,0,0,196,
+		194,1,0,0,0,196,197,1,0,0,0,197,25,1,0,0,0,198,196,1,0,0,0,199,200,5,49,
+		0,0,200,27,1,0,0,0,201,202,5,46,0,0,202,29,1,0,0,0,203,204,5,47,0,0,204,
+		31,1,0,0,0,205,206,7,8,0,0,206,33,1,0,0,0,207,208,5,6,0,0,208,209,3,24,
+		12,0,209,210,3,50,25,0,210,211,3,0,0,0,211,220,3,52,26,0,212,213,5,7,0,
+		0,213,214,3,24,12,0,214,215,3,50,25,0,215,216,3,0,0,0,216,217,3,52,26,
+		0,217,219,1,0,0,0,218,212,1,0,0,0,219,222,1,0,0,0,220,218,1,0,0,0,220,
+		221,1,0,0,0,221,228,1,0,0,0,222,220,1,0,0,0,223,224,5,8,0,0,224,225,3,
+		50,25,0,225,226,3,0,0,0,226,227,3,52,26,0,227,229,1,0,0,0,228,223,1,0,
+		0,0,228,229,1,0,0,0,229,35,1,0,0,0,230,231,3,44,22,0,231,232,3,56,28,0,
+		232,233,3,38,19,0,233,234,3,58,29,0,234,37,1,0,0,0,235,236,3,24,12,0,236,
+		237,3,40,20,0,237,238,3,38,19,0,238,241,1,0,0,0,239,241,3,24,12,0,240,
+		235,1,0,0,0,240,239,1,0,0,0,241,39,1,0,0,0,242,243,5,52,0,0,243,41,1,0,
+		0,0,244,245,5,9,0,0,245,246,3,44,22,0,246,247,3,56,28,0,247,248,3,46,23,
+		0,248,249,3,58,29,0,249,250,3,50,25,0,250,251,3,0,0,0,251,252,3,52,26,
+		0,252,43,1,0,0,0,253,254,3,64,32,0,254,45,1,0,0,0,255,256,3,64,32,0,256,
+		257,3,48,24,0,257,258,3,46,23,0,258,261,1,0,0,0,259,261,3,64,32,0,260,
+		255,1,0,0,0,260,259,1,0,0,0,261,47,1,0,0,0,262,263,5,52,0,0,263,49,1,0,
+		0,0,264,265,5,40,0,0,265,51,1,0,0,0,266,267,5,41,0,0,267,53,1,0,0,0,268,
+		269,5,10,0,0,269,270,3,56,28,0,270,271,3,24,12,0,271,272,3,58,29,0,272,
+		273,3,50,25,0,273,274,3,0,0,0,274,275,3,52,26,0,275,55,1,0,0,0,276,277,
+		5,42,0,0,277,57,1,0,0,0,278,279,5,43,0,0,279,59,1,0,0,0,280,281,5,44,0,
+		0,281,61,1,0,0,0,282,283,5,45,0,0,283,63,1,0,0,0,284,285,5,48,0,0,285,
+		65,1,0,0,0,286,287,5,50,0,0,287,67,1,0,0,0,19,75,78,87,90,93,106,111,122,
+		131,139,146,154,174,194,196,220,228,240,260
 	};
 
 	public static readonly ATN _ATN =

@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-// Generated from ./MovieScriptDefaultGrammer.g4 by ANTLR 4.11.1
+// Generated from MovieScriptDefaultGrammer.g4 by ANTLR 4.11.1
 
 // Unreachable code detected
 #pragma warning disable 0162
@@ -161,86 +161,6 @@ public interface IMovieScriptDefaultGrammerListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitExpression([NotNull] MovieScriptDefaultGrammerParser.ExpressionContext context);
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammerParser.mathOpType"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void EnterMathOpType([NotNull] MovieScriptDefaultGrammerParser.MathOpTypeContext context);
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="MovieScriptDefaultGrammerParser.mathOpType"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void ExitMathOpType([NotNull] MovieScriptDefaultGrammerParser.MathOpTypeContext context);
-	/// <summary>
-	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammerParser.logicOpType"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void EnterLogicOpType([NotNull] MovieScriptDefaultGrammerParser.LogicOpTypeContext context);
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="MovieScriptDefaultGrammerParser.logicOpType"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void ExitLogicOpType([NotNull] MovieScriptDefaultGrammerParser.LogicOpTypeContext context);
-	/// <summary>
-	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammerParser.binaryOpType"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void EnterBinaryOpType([NotNull] MovieScriptDefaultGrammerParser.BinaryOpTypeContext context);
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="MovieScriptDefaultGrammerParser.binaryOpType"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void ExitBinaryOpType([NotNull] MovieScriptDefaultGrammerParser.BinaryOpTypeContext context);
-	/// <summary>
-	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammerParser.intValue"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void EnterIntValue([NotNull] MovieScriptDefaultGrammerParser.IntValueContext context);
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="MovieScriptDefaultGrammerParser.intValue"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void ExitIntValue([NotNull] MovieScriptDefaultGrammerParser.IntValueContext context);
-	/// <summary>
-	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammerParser.intDigit"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void EnterIntDigit([NotNull] MovieScriptDefaultGrammerParser.IntDigitContext context);
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="MovieScriptDefaultGrammerParser.intDigit"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void ExitIntDigit([NotNull] MovieScriptDefaultGrammerParser.IntDigitContext context);
-	/// <summary>
-	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammerParser.floatValue"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void EnterFloatValue([NotNull] MovieScriptDefaultGrammerParser.FloatValueContext context);
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="MovieScriptDefaultGrammerParser.floatValue"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void ExitFloatValue([NotNull] MovieScriptDefaultGrammerParser.FloatValueContext context);
-	/// <summary>
-	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammerParser.floatDigit"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void EnterFloatDigit([NotNull] MovieScriptDefaultGrammerParser.FloatDigitContext context);
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="MovieScriptDefaultGrammerParser.floatDigit"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void ExitFloatDigit([NotNull] MovieScriptDefaultGrammerParser.FloatDigitContext context);
-	/// <summary>
-	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammerParser.boolValue"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void EnterBoolValue([NotNull] MovieScriptDefaultGrammerParser.BoolValueContext context);
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="MovieScriptDefaultGrammerParser.boolValue"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void ExitBoolValue([NotNull] MovieScriptDefaultGrammerParser.BoolValueContext context);
-	/// <summary>
 	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammerParser.string"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
@@ -250,6 +170,36 @@ public interface IMovieScriptDefaultGrammerListener : IParseTreeListener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	void ExitString([NotNull] MovieScriptDefaultGrammerParser.StringContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammerParser.intType"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterIntType([NotNull] MovieScriptDefaultGrammerParser.IntTypeContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="MovieScriptDefaultGrammerParser.intType"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitIntType([NotNull] MovieScriptDefaultGrammerParser.IntTypeContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammerParser.floatType"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterFloatType([NotNull] MovieScriptDefaultGrammerParser.FloatTypeContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="MovieScriptDefaultGrammerParser.floatType"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitFloatType([NotNull] MovieScriptDefaultGrammerParser.FloatTypeContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammerParser.bool"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterBool([NotNull] MovieScriptDefaultGrammerParser.BoolContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="MovieScriptDefaultGrammerParser.bool"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitBool([NotNull] MovieScriptDefaultGrammerParser.BoolContext context);
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammerParser.ifElse"/>.
 	/// </summary>
@@ -410,16 +360,6 @@ public interface IMovieScriptDefaultGrammerListener : IParseTreeListener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	void ExitStringIdentifier([NotNull] MovieScriptDefaultGrammerParser.StringIdentifierContext context);
-	/// <summary>
-	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammerParser.stringLiteral"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void EnterStringLiteral([NotNull] MovieScriptDefaultGrammerParser.StringLiteralContext context);
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="MovieScriptDefaultGrammerParser.stringLiteral"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	void ExitStringLiteral([NotNull] MovieScriptDefaultGrammerParser.StringLiteralContext context);
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammerParser.stringChar"/>.
 	/// </summary>
