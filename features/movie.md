@@ -233,6 +233,20 @@
   - `get_fps() / get_frametime()` returns current fps / frametime
   - If vsync is enabled, it will prevent the FPS from being changed unless vsync is off
 
+# Reserved words
+- `fn` for function defining
+- `if` for if statement
+- `else` for else statement
+- `loop` for looping statement
+- `for` RESERVED FOR FUTURE USE
+- `while` RESERVED FOR FUTURE USE
+- `break` for breaking out of loops
+- `continue` for continuing to the next iteration of a loop
+- `return` for returning from a method
+- `true` for true
+- `false` for false
+- `match` RESERVED FOR FUTURE USE
+
 # BNF description
 ```bnf
 <string_identifier> = "a" .. "z" | "A" .. "Z" | "0" .. "9" | "_" | "-"
@@ -250,7 +264,7 @@
 <variable_assignment> = <variable> ("=" | "+=" | "-=" | "*=" | "/=" | "%=") (<expression> | <tuple_expression>)
 <variable_tuple_separation> = "(" <variable> { "," <variable> } ")" ("=" | "+=" | "-=" | "*=" | "/=" | "%=") ( <tuple_expression> | <method_call> )
 <tuple_expression> = "(" <expression> { "," <expression> } ")"
-<expression> = <binary_op> | <math_op> | <logic_op> | <variable> | <int> | <float> | <string> | <method_call>
+<expression> = <binary_op> | <math_op> | <logic_op> | <variable> | <int> | <float> | <string> | <bool> | <method_call>
 <math_op> = <expression> <math_op_type> <expression>
 <math_op_type> = "+" | "-" | "*" | "/" | "%"
 <logic_op> = <expression> <logic_op_type> <expression>
@@ -263,6 +277,7 @@
 <float> = <float_value>
 <float_value> = <float_digit> <float_value> | <float_digit>
 <float_digit> = <int_digit> | "."
+<bool> = "true" | "false"
 <string> = <string_value>
 <string_value> = ( <string_char> | <escape_char> ) <string_value> | ( <string_char> | <escape_char> )
 <escape_char> = "\" <escape_char_value>
