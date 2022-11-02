@@ -135,7 +135,7 @@ floatDigit: NUMBER | DOT;
 
 string: stringLiteral;
 
-ifElse: IF roundBracketOpen expression roundBracketClose scopeOpen program scopeClose (ELSE scopeOpen program scopeClose)?;
+ifElse: IF expression scopeOpen program scopeClose (ELSE_IF expression scopeOpen program scopeClose)* (ELSE scopeOpen program scopeClose)?;
 
 methodCall: methodName roundBracketOpen methodCallArgs roundBracketClose;
 
