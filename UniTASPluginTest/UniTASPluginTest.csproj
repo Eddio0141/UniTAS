@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
@@ -28,10 +28,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Plugin\UniTASPlugin.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="MovieParsing\" />
   </ItemGroup>
 
 </Project>
