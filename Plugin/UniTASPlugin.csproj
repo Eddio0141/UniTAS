@@ -46,6 +46,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Movie\DefaultParsers\DefaultMovieScriptParser\" />
     <Folder Include="NInjectModules\" />
     <Folder Include="UpdateHelper\" />
   </ItemGroup>
