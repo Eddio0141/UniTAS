@@ -181,6 +181,16 @@ public interface IMovieScriptDefaultGrammarListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitExpression([NotNull] MovieScriptDefaultGrammarParser.ExpressionContext context);
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.expressionTerminator"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterExpressionTerminator([NotNull] MovieScriptDefaultGrammarParser.ExpressionTerminatorContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.expressionTerminator"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitExpressionTerminator([NotNull] MovieScriptDefaultGrammarParser.ExpressionTerminatorContext context);
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.string"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>

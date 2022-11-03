@@ -55,14 +55,17 @@ expression
     | expression (EQUAL | NOT_EQUAL | LESS | LESS_EQUAL | GREATER | GREATER_EQUAL) expression
     | expression (BITWISE_AND | BITWISE_OR | BITWISE_XOR) expression
     | expression (BITWISE_SHIFT_LEFT | BITWISE_SHIFT_RIGHT) expression
-    | variable
+    | expressionTerminator
+    ;
+
+expressionTerminator
+    : variable
     | intType
     | floatType
     | bool
     | string
     | methodCall
     ;
-
 string: STRING;
 intType: INT;
 floatType: FLOAT;
