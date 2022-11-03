@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using UniTASPlugin.Movie.Models.Script;
 using UniTASPlugin.Movie.ParseInterfaces;
 
-namespace UniTASPlugin.Movie.DefaultParsers;
+namespace UniTASPlugin.Movie.DefaultParsers.DefaultMovieScriptParser;
 
-public class DefaultMovieScriptParser : IMovieScriptParser
+public partial class DefaultMovieScriptParser : IMovieScriptParser
 {
     public IEnumerable<ScriptMethodModel> Parse(string input)
     {

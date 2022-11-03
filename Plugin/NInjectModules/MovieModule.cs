@@ -2,6 +2,7 @@
 using UniTASPlugin.Movie;
 using UniTASPlugin.Movie.DefaultParsers;
 using UniTASPlugin.Movie.DefaultParsers.DefaultMoviePropertiesParser;
+using UniTASPlugin.Movie.DefaultParsers.DefaultMovieScriptParser;
 using UniTASPlugin.Movie.ParseInterfaces;
 using UniTASPlugin.Movie.ScriptEngine;
 using UniTASPlugin.Movie.ScriptEngine.EngineInterfaces;
