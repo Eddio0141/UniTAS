@@ -216,6 +216,18 @@ public partial class MovieScriptDefaultGrammarBaseListener : IMovieScriptDefault
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitExpression([NotNull] MovieScriptDefaultGrammarParser.ExpressionContext context) { }
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.expressionTerminator"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterExpressionTerminator([NotNull] MovieScriptDefaultGrammarParser.ExpressionTerminatorContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.expressionTerminator"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitExpressionTerminator([NotNull] MovieScriptDefaultGrammarParser.ExpressionTerminatorContext context) { }
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.string"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
