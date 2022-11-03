@@ -43,7 +43,7 @@ variableAssignment: variable (ASSIGN | PLUS_ASSIGN | MINUS_ASSIGN | MULTIPLY_ASS
 
 variableTupleSeparation: ROUND_BRACKET_OPEN variable (COMMA variable)* ROUND_BRACKET_CLOSE (ASSIGN | PLUS_ASSIGN | MINUS_ASSIGN | MULTIPLY_ASSIGN | DIVIDE_ASSIGN | MODULO_ASSIGN) (tupleExpression | methodCall);
 
-tupleExpression: ROUND_BRACKET_OPEN expression (COMMA expression)+ ROUND_BRACKET_CLOSE;
+tupleExpression: ROUND_BRACKET_OPEN (expression | tupleExpression) (COMMA (expression | tupleExpression))+ ROUND_BRACKET_CLOSE;
 
 expression
     : ROUND_BRACKET_OPEN expression ROUND_BRACKET_CLOSE
