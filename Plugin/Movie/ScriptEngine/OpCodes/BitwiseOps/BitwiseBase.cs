@@ -1,6 +1,6 @@
 ﻿namespace UniTASPlugin.Movie.ScriptEngine.OpCodes.BitwiseOps;
 
-public abstract class BitwiseBase
+public abstract class BitwiseBase : OpCodeBase
 {
     public RegisterType ResultRegister { get; }
     public RegisterType Left { get; }
