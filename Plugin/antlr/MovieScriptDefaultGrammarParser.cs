@@ -1110,6 +1110,7 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 	}
 
 	public partial class ExpressionContext : ParserRuleContext {
+		public IToken setNegative;
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ROUND_BRACKET_OPEN() { return GetToken(MovieScriptDefaultGrammarParser.ROUND_BRACKET_OPEN, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public ExpressionContext[] expression() {
 			return GetRuleContexts<ExpressionContext>();
@@ -1190,7 +1191,7 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 			case MINUS:
 				{
 				State = 148;
-				Match(MINUS);
+				_localctx.setNegative = Match(MINUS);
 				State = 149;
 				expression(7);
 				}
