@@ -184,9 +184,10 @@
     PopStack temp
     ```
 - Advance movie by a frame
-    - FrameAdvance
-- TODO Solve issue of running out of registers by creating a nested list
-    - Solution involves stacks but i cba to think rn
+  - FrameAdvance
+- Register operation
+  - Move REGISTER REGISTER2
+    - Moves REGISTER2 to REGISTER
 
 # Helper methods
 - Save state
