@@ -76,7 +76,7 @@ ifElse: 'if' expression SCOPE_OPEN NEWLINE* program SCOPE_CLOSE ('else if' expre
 
 methodCall: IDENTIFIER_STRING ROUND_BRACKET_OPEN methodCallArgs? ROUND_BRACKET_CLOSE;
 
-methodCallArgs: expression COMMA methodCallArgs | expression;
+methodCallArgs: (expression | tupleExpression) COMMA methodCallArgs | (expression | tupleExpression);
 
 methodDef: 'fn' IDENTIFIER_STRING ROUND_BRACKET_OPEN methodDefArgs? ROUND_BRACKET_CLOSE SCOPE_OPEN NEWLINE* program SCOPE_CLOSE;
 
