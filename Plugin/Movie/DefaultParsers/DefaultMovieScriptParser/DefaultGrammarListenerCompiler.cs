@@ -4,6 +4,8 @@ using System.Linq;
 using UniTASPlugin.Movie.Models.Script;
 using UniTASPlugin.Movie.ScriptEngine;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes;
+using UniTASPlugin.Movie.ScriptEngine.OpCodes.Logic;
+using UniTASPlugin.Movie.ScriptEngine.OpCodes.Maths;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Method;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.RegisterSet;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.VariableSet;
@@ -17,8 +19,14 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
     private readonly List<KeyValuePair<string, List<OpCodeBase>>> _builtMethods = new();
     private readonly Stack<KeyValuePair<string, List<OpCodeBase>>> _methodBuilders = new();
     private bool _buildingMethod;
-    private RegisterType? _reserveTupleListRegister;
-    private RegisterType _expressionTerminatorRegister;
+
+    private RegisterType? _tupleListRegisterReserve;
+
+    private RegisterType? _expressionTerminatorRegisterLeftReserve;
+    private RegisterType _expressionTerminatorRegisterRightReserve;
+    // reserved register for using expression on operations like variable assignment, method argument, use of expression result for another expression, etc
+    private RegisterType _expressionUseRegisterReserve;
+
     private readonly bool[] _reservedTempRegister = new bool[RegisterType.Temp5 - RegisterType.Temp + 1];
 
     public ScriptModel Compile()
@@ -87,34 +95,44 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
     public override void EnterExpressionTerminator(MovieScriptDefaultGrammarParser.ExpressionTerminatorContext context)
     {
-        _expressionTerminatorRegister = AllocateTempRegister();
+        RegisterType usingRegister;
+        if (_expressionTerminatorRegisterLeftReserve == null)
+        {
+            _expressionTerminatorRegisterLeftReserve = AllocateTempRegister();
+            usingRegister = (RegisterType)_expressionTerminatorRegisterLeftReserve;
+        }
+        else
+        {
+            _expressionTerminatorRegisterRightReserve = AllocateTempRegister();
+            usingRegister = _expressionTerminatorRegisterRightReserve;
+        }
         if (context.variable() != null)
         {
             var variable = context.variable().IDENTIFIER_STRING().GetText();
-            AddOpCode(new VarToRegisterOpCode(_expressionTerminatorRegister, variable));
+            AddOpCode(new VarToRegisterOpCode(usingRegister, variable));
         }
         else if (context.intType() != null)
         {
             var value = context.intType().INT().GetText();
             var valueParsed = int.Parse(value);
-            AddOpCode(new ConstToRegisterOpCode(_expressionTerminatorRegister, new IntValueType(valueParsed)));
+            AddOpCode(new ConstToRegisterOpCode(usingRegister, new IntValueType(valueParsed)));
         }
         else if (context.floatType() != null)
         {
             var value = context.floatType().FLOAT().GetText();
             var valueParsed = float.Parse(value);
-            AddOpCode(new ConstToRegisterOpCode(_expressionTerminatorRegister, new FloatValueType(valueParsed)));
+            AddOpCode(new ConstToRegisterOpCode(usingRegister, new FloatValueType(valueParsed)));
         }
         else if (context.@bool() != null)
         {
             var value = context.@bool().GetText();
             var valueParsed = bool.Parse(value);
-            AddOpCode(new ConstToRegisterOpCode(_expressionTerminatorRegister, new BoolValueType(valueParsed)));
+            AddOpCode(new ConstToRegisterOpCode(usingRegister, new BoolValueType(valueParsed)));
         }
         else if (context.@string() != null)
         {
             var value = context.@string().STRING().GetText();
-            AddOpCode(new ConstToRegisterOpCode(_expressionTerminatorRegister, new StringValueType(value)));
+            AddOpCode(new ConstToRegisterOpCode(usingRegister, new StringValueType(value)));
         }
         else if (context.methodCall() != null)
         {
@@ -125,23 +143,59 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
     public override void ExitExpression(MovieScriptDefaultGrammarParser.ExpressionContext context)
     {
+        // possible operations
         /*
          * | expression (MULTIPLY | DIVIDE | MODULO) expression
          * | expression (PLUS | MINUS) expression
          * | MINUS expression
          * | NOT expression
-           | expression (AND | OR) expression
-           | expression (EQUAL | NOT_EQUAL | LESS | LESS_EQUAL | GREATER | GREATER_EQUAL) expression
-           | expression (BITWISE_AND | BITWISE_OR | BITWISE_XOR) expression
-           | expression (BITWISE_SHIFT_LEFT | BITWISE_SHIFT_RIGHT) expression
+         * | expression (AND | OR) expression
+         * | expression (EQUAL | NOT_EQUAL | LESS | LESS_EQUAL | GREATER | GREATER_EQUAL) expression
+         * | expression (BITWISE_AND | BITWISE_OR | BITWISE_XOR) expression
+         * | expression (BITWISE_SHIFT_LEFT | BITWISE_SHIFT_RIGHT) expression
          */
+
+        // ReSharper disable once PossibleInvalidOperationException
+        _expressionUseRegisterReserve = _expressionTerminatorRegisterLeftReserve.Value;
+        var res = _expressionUseRegisterReserve;
+        var left = _expressionTerminatorRegisterLeftReserve.Value;
+        var right = _expressionTerminatorRegisterRightReserve;
+
+        if (context.MULTIPLY() != null)
+        {
+            AddOpCode(new MultOpCode(res, left, right));
+        }
+        else
+        if (context.DIVIDE() != null)
+        {
+            AddOpCode(new DivOpCode(res, left, right));
+        }
+        else if (context.MODULO() != null)
+        {
+            AddOpCode(new ModOpCode(res, left, right));
+        }
+        else if (context.PLUS() != null)
+        {
+            AddOpCode(new AddOpCode(res, left, right));
+        }
+        else if (context.MINUS() != null)
+        {
+            AddOpCode(new SubOpCode(res, left, right));
+        }
+        else if (context.AND() != null)
+        {
+            AddOpCode(new AndOpCode());
+        }
+
+        _expressionTerminatorRegisterLeftReserve = null;
+        DeallocateTempRegister(_expressionTerminatorRegisterRightReserve);
     }
 
     public override void EnterTupleExpression(MovieScriptDefaultGrammarParser.TupleExpressionContext context)
     {
         // reserve for tuple / array creation
-        if (_reserveTupleListRegister != null) return;
-        _reserveTupleListRegister = AllocateTempRegister();
+        if (_tupleListRegisterReserve != null) return;
+        _tupleListRegisterReserve = AllocateTempRegister();
     }
 
     public override void ExitTupleExpression(MovieScriptDefaultGrammarParser.TupleExpressionContext context)
@@ -153,7 +207,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
             if (parent is not MovieScriptDefaultGrammarParser.ProgramContext)
             {
                 // ReSharper disable once PossibleInvalidOperationException
-                DeallocateTempRegister(_reserveTupleListRegister.Value);
+                DeallocateTempRegister(_tupleListRegisterReserve.Value);
                 break;
             }
 
