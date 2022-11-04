@@ -4,6 +4,7 @@ using System.Linq;
 using UniTASPlugin.Movie.Models.Script;
 using UniTASPlugin.Movie.ScriptEngine;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes;
+using UniTASPlugin.Movie.ScriptEngine.OpCodes.BitwiseOps;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Logic;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Maths;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Method;
@@ -143,18 +144,6 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
     public override void ExitExpression(MovieScriptDefaultGrammarParser.ExpressionContext context)
     {
-        // possible operations
-        /*
-         * | expression (MULTIPLY | DIVIDE | MODULO) expression
-         * | expression (PLUS | MINUS) expression
-         * | MINUS expression
-         * | NOT expression
-         * | expression (AND | OR) expression
-         * | expression (EQUAL | NOT_EQUAL | LESS | LESS_EQUAL | GREATER | GREATER_EQUAL) expression
-         * | expression (BITWISE_AND | BITWISE_OR | BITWISE_XOR) expression
-         * | expression (BITWISE_SHIFT_LEFT | BITWISE_SHIFT_RIGHT) expression
-         */
-
         // ReSharper disable once PossibleInvalidOperationException
         _expressionUseRegisterReserve = _expressionTerminatorRegisterLeftReserve.Value;
         var res = _expressionUseRegisterReserve;
@@ -182,9 +171,41 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         {
             AddOpCode(new SubOpCode(res, left, right));
         }
+        else if (context.setNegative != null)
+        {
+            AddOpCode(new FlipNegativeOpCode(res, left));
+        }
+        else if (context.NOT() != null)
+        {
+            AddOpCode(new NotOpCode(left));
+        }
         else if (context.AND() != null)
         {
-            AddOpCode(new AndOpCode());
+            AddOpCode(new AndOpCode(res, left, right));
+        }
+        else if (context.OR() != null)
+        {
+            AddOpCode(new OrOpCode(res, left, right));
+        }
+        else if (context.BITWISE_AND() != null)
+        {
+            AddOpCode(new BitwiseAndOpCode(res, left, right));
+        }
+        else if (context.BITWISE_OR() != null)
+        {
+            AddOpCode(new BitwiseOrOpCode(res, left, right));
+        }
+        else if (context.BITWISE_XOR() != null)
+        {
+            AddOpCode(new BitwiseXorOpCode(res, left, right));
+        }
+        else if (context.BITWISE_SHIFT_LEFT() != null)
+        {
+            AddOpCode(new BitwiseShiftLeftOpCode(res, left, right));
+        }
+        else if (context.BITWISE_SHIFT_RIGHT() != null)
+        {
+            AddOpCode(new BitwiseShiftRightOpCode(res, left, right));
         }
 
         _expressionTerminatorRegisterLeftReserve = null;
