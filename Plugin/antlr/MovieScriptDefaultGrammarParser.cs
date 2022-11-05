@@ -1236,7 +1236,7 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 				State = 153;
 				_localctx.setNegative = Match(MINUS);
 				State = 154;
-				expression(7);
+				expression(9);
 				}
 				break;
 			case NOT:
@@ -1280,7 +1280,7 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 						_localctx = new ExpressionContext(_parentctx, _parentState);
 						PushNewRecursionContext(_localctx, _startState, RULE_expression);
 						State = 160;
-						if (!(Precpred(Context, 9))) throw new FailedPredicateException(this, "Precpred(Context, 9)");
+						if (!(Precpred(Context, 8))) throw new FailedPredicateException(this, "Precpred(Context, 8)");
 						State = 161;
 						_la = TokenStream.LA(1);
 						if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << MULTIPLY) | (1L << DIVIDE) | (1L << MODULO))) != 0)) ) {
@@ -1291,7 +1291,7 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 						    Consume();
 						}
 						State = 162;
-						expression(10);
+						expression(9);
 						}
 						break;
 					case 2:
@@ -1299,7 +1299,7 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 						_localctx = new ExpressionContext(_parentctx, _parentState);
 						PushNewRecursionContext(_localctx, _startState, RULE_expression);
 						State = 163;
-						if (!(Precpred(Context, 8))) throw new FailedPredicateException(this, "Precpred(Context, 8)");
+						if (!(Precpred(Context, 7))) throw new FailedPredicateException(this, "Precpred(Context, 7)");
 						State = 164;
 						_la = TokenStream.LA(1);
 						if ( !(_la==PLUS || _la==MINUS) ) {
@@ -1310,7 +1310,7 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 						    Consume();
 						}
 						State = 165;
-						expression(9);
+						expression(8);
 						}
 						break;
 					case 3:
@@ -2234,8 +2234,8 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 	}
 	private bool expression_sempred(ExpressionContext _localctx, int predIndex) {
 		switch (predIndex) {
-		case 0: return Precpred(Context, 9);
-		case 1: return Precpred(Context, 8);
+		case 0: return Precpred(Context, 8);
+		case 1: return Precpred(Context, 7);
 		case 2: return Precpred(Context, 5);
 		case 3: return Precpred(Context, 4);
 		case 4: return Precpred(Context, 3);
@@ -2397,16 +2397,16 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 		'\x11', '\x1', '\x2', '\x97', '\x98', '\a', '/', '\x2', '\x2', '\x98', 
 		'\x99', '\x5', ' ', '\x11', '\x2', '\x99', '\x9A', '\a', '\x30', '\x2', 
 		'\x2', '\x9A', '\xA1', '\x3', '\x2', '\x2', '\x2', '\x9B', '\x9C', '\a', 
-		')', '\x2', '\x2', '\x9C', '\xA1', '\x5', ' ', '\x11', '\t', '\x9D', '\x9E', 
+		')', '\x2', '\x2', '\x9C', '\xA1', '\x5', ' ', '\x11', '\v', '\x9D', '\x9E', 
 		'\a', '\x1E', '\x2', '\x2', '\x9E', '\xA1', '\x5', ' ', '\x11', '\b', 
 		'\x9F', '\xA1', '\x5', '\"', '\x12', '\x2', '\xA0', '\x96', '\x3', '\x2', 
 		'\x2', '\x2', '\xA0', '\x9B', '\x3', '\x2', '\x2', '\x2', '\xA0', '\x9D', 
 		'\x3', '\x2', '\x2', '\x2', '\xA0', '\x9F', '\x3', '\x2', '\x2', '\x2', 
-		'\xA1', '\xB6', '\x3', '\x2', '\x2', '\x2', '\xA2', '\xA3', '\f', '\v', 
+		'\xA1', '\xB6', '\x3', '\x2', '\x2', '\x2', '\xA2', '\xA3', '\f', '\n', 
 		'\x2', '\x2', '\xA3', '\xA4', '\t', '\x3', '\x2', '\x2', '\xA4', '\xB5', 
-		'\x5', ' ', '\x11', '\f', '\xA5', '\xA6', '\f', '\n', '\x2', '\x2', '\xA6', 
+		'\x5', ' ', '\x11', '\v', '\xA5', '\xA6', '\f', '\t', '\x2', '\x2', '\xA6', 
 		'\xA7', '\t', '\x4', '\x2', '\x2', '\xA7', '\xB5', '\x5', ' ', '\x11', 
-		'\v', '\xA8', '\xA9', '\f', '\a', '\x2', '\x2', '\xA9', '\xAA', '\t', 
+		'\n', '\xA8', '\xA9', '\f', '\a', '\x2', '\x2', '\xA9', '\xAA', '\t', 
 		'\x5', '\x2', '\x2', '\xAA', '\xB5', '\x5', ' ', '\x11', '\b', '\xAB', 
 		'\xAC', '\f', '\x6', '\x2', '\x2', '\xAC', '\xAD', '\t', '\x6', '\x2', 
 		'\x2', '\xAD', '\xB5', '\x5', ' ', '\x11', '\a', '\xAE', '\xAF', '\f', 
