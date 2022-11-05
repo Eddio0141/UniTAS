@@ -180,6 +180,18 @@ public partial class MovieScriptDefaultGrammarBaseListener : IMovieScriptDefault
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitVariableAssignment([NotNull] MovieScriptDefaultGrammarParser.VariableAssignmentContext context) { }
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.tupleAssignment"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterTupleAssignment([NotNull] MovieScriptDefaultGrammarParser.TupleAssignmentContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.tupleAssignment"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitTupleAssignment([NotNull] MovieScriptDefaultGrammarParser.TupleAssignmentContext context) { }
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.variableTupleSeparation"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
