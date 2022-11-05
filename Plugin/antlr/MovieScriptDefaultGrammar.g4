@@ -51,7 +51,7 @@ expression
     : ROUND_BRACKET_OPEN expression ROUND_BRACKET_CLOSE
     | setNegative = MINUS expression
     | expression (MULTIPLY | DIVIDE | MODULO) expression
-    | expression (PLUS | MINUS) expression
+    | expression (PLUS | subtract = MINUS) expression
     | NOT expression
     | expression (AND | OR) expression
     | expression (EQUAL | NOT_EQUAL | LESS | LESS_EQUAL | GREATER | GREATER_EQUAL) expression
