@@ -5,9 +5,9 @@ public class SetVariableOpCode : OpCodeBase
     public string Name { get; }
     public RegisterType Register { get; }
 
-    public SetVariableOpCode(string name, RegisterType register)
+    public SetVariableOpCode(RegisterType register, string name)
     {
-        Name = name;
         Register = register;
+        Name = name;
     }
 }

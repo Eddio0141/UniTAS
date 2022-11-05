@@ -10,7 +10,6 @@ using UniTASPlugin.Movie.ScriptEngine.OpCodes.Logic;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Maths;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Method;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.RegisterSet;
-using UniTASPlugin.Movie.ScriptEngine.OpCodes.VariableSet;
 using UniTASPlugin.Movie.ScriptEngine.ValueTypes;
 
 namespace UniTASPlugin.Movie.DefaultParsers.DefaultMovieScriptParser;
@@ -19,18 +18,17 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 {
     private class MethodBuilder
     {
-        public string Name { get; }
+        private string _name;
         public List<OpCodeBase> OpCodes { get; set; } = new();
-        public List<string> DeclaredVariables { get; set; } = new();
 
         public MethodBuilder(string name)
         {
-            Name = name;
+            _name = name;
         }
 
         public KeyValuePair<string, List<OpCodeBase>> GetFinalResult()
         {
-            return new KeyValuePair<string, List<OpCodeBase>>(Name, OpCodes);
+            return new KeyValuePair<string, List<OpCodeBase>>(_name, OpCodes);
         }
     }
 
@@ -110,7 +108,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
     {
         var argName = context.IDENTIFIER_STRING().GetText();
         AddOpCode(new PopArgOpCode(RegisterType.Temp));
-        AddOpCode(new NewVariableOpCode(RegisterType.Temp, argName));
+        AddOpCode(new SetVariableOpCode(RegisterType.Temp, argName));
     }
 
     public override void EnterExpressionTerminator(MovieScriptDefaultGrammarParser.ExpressionTerminatorContext context)
@@ -233,9 +231,9 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
     public override void EnterTupleExpression(MovieScriptDefaultGrammarParser.TupleExpressionContext context)
     {
-        // reserve for tuple / array creation
-        if (_tupleListRegisterReserve != null) return;
-        _tupleListRegisterReserve = AllocateTempRegister();
+        // reserve for tuple / array creation TODO
+        //if (_tupleListRegisterReserve != null) return;
+        //_tupleListRegisterReserve = AllocateTempRegister();
     }
 
     public override void ExitTupleExpression(MovieScriptDefaultGrammarParser.TupleExpressionContext context)
@@ -259,27 +257,46 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
     public override void ExitVariableAssignment(MovieScriptDefaultGrammarParser.VariableAssignmentContext context)
     {
-        RegisterType usingRegister;
-        if (_expressionUseRegisterReserve != null)
-        {
-            usingRegister = _expressionUseRegisterReserve.Value;
-            _expressionUseRegisterReserve = null;
-        }
-        else/* if (_tupleListRegisterReserve != null)*/
-        {
-            Debug.Assert(_tupleListRegisterReserve != null, nameof(_tupleListRegisterReserve) + " != null");
-            usingRegister = _tupleListRegisterReserve.Value;
-            _tupleListRegisterReserve = null;
-        }
-
         var variableName = context.variable().IDENTIFIER_STRING().GetText();
+        Debug.Assert(_expressionUseRegisterReserve != null, nameof(_expressionUseRegisterReserve) + " != null");
+        var usingRegister = _expressionUseRegisterReserve.Value;
+        _expressionUseRegisterReserve = null;
 
-        if (context.ASSIGN() != null)
+        if (context.ASSIGN() == null)
         {
-            // TODO
+            var reserveAdd = AllocateTempRegister();
+            AddOpCode(new VarToRegisterOpCode(reserveAdd, variableName));
+
+            // +
+            if (context.PLUS_ASSIGN() != null)
+            {
+                AddOpCode(new AddOpCode(usingRegister, reserveAdd, usingRegister));
+            }
+            // -
+            else if (context.MINUS_ASSIGN() != null)
+            {
+                AddOpCode(new SubOpCode(usingRegister, reserveAdd, usingRegister));
+            }
+            // *
+            else if (context.MULTIPLY_ASSIGN() != null)
+            {
+                AddOpCode(new MultOpCode(usingRegister, reserveAdd, usingRegister));
+            }
+            // /
+            else if (context.DIVIDE_ASSIGN() != null)
+            {
+                AddOpCode(new DivOpCode(usingRegister, reserveAdd, usingRegister));
+            }
+            // %
+            else if (context.MODULO_ASSIGN() != null)
+            {
+                AddOpCode(new ModOpCode(usingRegister, reserveAdd, usingRegister));
+            }
+
+            DeallocateTempRegister(reserveAdd);
         }
 
-        AddOpCode(new SetVariableOpCode(variableName, usingRegister));
+        AddOpCode(new SetVariableOpCode(usingRegister, variableName));
 
         DeallocateTempRegister(usingRegister);
     }
