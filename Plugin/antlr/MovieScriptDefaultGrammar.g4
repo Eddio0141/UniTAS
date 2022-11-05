@@ -25,6 +25,7 @@ scopeClose: SCOPE_CLOSE;
 
 actionWithSeparator
     : variableAssignment
+    | tupleAssignment
     | variableTupleSeparation
     | methodCall
     ;
@@ -39,7 +40,8 @@ returnAction: 'return' (expression | tupleExpression)?;
 
 variable: DOLLAR IDENTIFIER_STRING;
 
-variableAssignment: variable (ASSIGN | PLUS_ASSIGN | MINUS_ASSIGN | MULTIPLY_ASSIGN | DIVIDE_ASSIGN | MODULO_ASSIGN) (expression | tupleExpression);
+variableAssignment: variable (ASSIGN | PLUS_ASSIGN | MINUS_ASSIGN | MULTIPLY_ASSIGN | DIVIDE_ASSIGN | MODULO_ASSIGN) expression;
+tupleAssignment: variable ASSIGN tupleExpression;
 
 variableTupleSeparation: ROUND_BRACKET_OPEN variable (COMMA variable)* ROUND_BRACKET_CLOSE (ASSIGN | PLUS_ASSIGN | MINUS_ASSIGN | MULTIPLY_ASSIGN | DIVIDE_ASSIGN | MODULO_ASSIGN) (tupleExpression | methodCall);
 
