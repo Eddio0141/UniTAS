@@ -18,7 +18,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 {
     private class MethodBuilder
     {
-        private string _name;
+        private readonly string _name;
         public List<OpCodeBase> OpCodes { get; set; } = new();
 
         public MethodBuilder(string name)
@@ -33,7 +33,6 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
     }
 
     private readonly List<OpCodeBase> _mainBuilder = new();
-    private readonly List<string> _mainScopeVariable = new();
     private readonly List<KeyValuePair<string, List<OpCodeBase>>> _builtMethods = new();
     private readonly Stack<MethodBuilder> _methodBuilders = new();
     private bool _buildingMethod;
@@ -161,7 +160,9 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
     public override void ExitExpression(MovieScriptDefaultGrammarParser.ExpressionContext context)
     {
-        Debug.Assert(_expressionTerminatorRegisterLeftReserve != null, nameof(_expressionTerminatorRegisterLeftReserve) + " != null");
+        if (_expressionTerminatorRegisterLeftReserve == null)
+            return;
+
         _expressionUseRegisterReserve = _expressionTerminatorRegisterLeftReserve.Value;
         var res = _expressionUseRegisterReserve.Value;
         var left = _expressionTerminatorRegisterLeftReserve.Value;
