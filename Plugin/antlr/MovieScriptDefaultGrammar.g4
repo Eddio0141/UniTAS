@@ -49,9 +49,9 @@ tupleExpression: ROUND_BRACKET_OPEN (expression | tupleExpression) (COMMA (expre
 
 expression
     : ROUND_BRACKET_OPEN expression ROUND_BRACKET_CLOSE
+    | setNegative = MINUS expression
     | expression (MULTIPLY | DIVIDE | MODULO) expression
     | expression (PLUS | MINUS) expression
-    | setNegative = MINUS expression
     | NOT expression
     | expression (AND | OR) expression
     | expression (EQUAL | NOT_EQUAL | LESS | LESS_EQUAL | GREATER | GREATER_EQUAL) expression
