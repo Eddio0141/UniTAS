@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using UniTASPlugin.Movie.Models.Script;
 using UniTASPlugin.Movie.ScriptEngine;
@@ -16,9 +17,27 @@ namespace UniTASPlugin.Movie.DefaultParsers.DefaultMovieScriptParser;
 
 public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListener
 {
+    private class MethodBuilder
+    {
+        public string Name { get; }
+        public List<OpCodeBase> OpCodes { get; set; } = new();
+        public List<string> DeclaredVariables { get; set; } = new();
+
+        public MethodBuilder(string name)
+        {
+            Name = name;
+        }
+
+        public KeyValuePair<string, List<OpCodeBase>> GetFinalResult()
+        {
+            return new KeyValuePair<string, List<OpCodeBase>>(Name, OpCodes);
+        }
+    }
+
     private readonly List<OpCodeBase> _mainBuilder = new();
+    private readonly List<string> _mainScopeVariable = new();
     private readonly List<KeyValuePair<string, List<OpCodeBase>>> _builtMethods = new();
-    private readonly Stack<KeyValuePair<string, List<OpCodeBase>>> _methodBuilders = new();
+    private readonly Stack<MethodBuilder> _methodBuilders = new();
     private bool _buildingMethod;
 
     private RegisterType? _tupleListRegisterReserve;
@@ -26,7 +45,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
     private RegisterType? _expressionTerminatorRegisterLeftReserve;
     private RegisterType _expressionTerminatorRegisterRightReserve;
     // reserved register for using expression on operations like variable assignment, method argument, use of expression result for another expression, etc
-    private RegisterType _expressionUseRegisterReserve;
+    private RegisterType? _expressionUseRegisterReserve;
 
     private readonly bool[] _reservedTempRegister = new bool[RegisterType.Temp5 - RegisterType.Temp + 1];
 
@@ -63,7 +82,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
     {
         if (_buildingMethod)
         {
-            _methodBuilders.Peek().Value.Add(opCode);
+            _methodBuilders.Peek().OpCodes.Add(opCode);
         }
         else
         {
@@ -75,12 +94,12 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
     {
         var methodName = context.IDENTIFIER_STRING().GetText();
         _buildingMethod = true;
-        _methodBuilders.Push(new KeyValuePair<string, List<OpCodeBase>>(methodName, new()));
+        _methodBuilders.Push(new(methodName));
     }
 
     public override void ExitMethodDef(MovieScriptDefaultGrammarParser.MethodDefContext context)
     {
-        _builtMethods.Add(_methodBuilders.Pop());
+        _builtMethods.Add(_methodBuilders.Pop().GetFinalResult());
         if (_methodBuilders.Count == 0)
         {
             _buildingMethod = false;
@@ -144,9 +163,9 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
     public override void ExitExpression(MovieScriptDefaultGrammarParser.ExpressionContext context)
     {
-        // ReSharper disable once PossibleInvalidOperationException
+        Debug.Assert(_expressionTerminatorRegisterLeftReserve != null, nameof(_expressionTerminatorRegisterLeftReserve) + " != null");
         _expressionUseRegisterReserve = _expressionTerminatorRegisterLeftReserve.Value;
-        var res = _expressionUseRegisterReserve;
+        var res = _expressionUseRegisterReserve.Value;
         var left = _expressionTerminatorRegisterLeftReserve.Value;
         var right = _expressionTerminatorRegisterRightReserve;
 
@@ -227,7 +246,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         {
             if (parent is not MovieScriptDefaultGrammarParser.ProgramContext)
             {
-                // ReSharper disable once PossibleInvalidOperationException
+                Debug.Assert(_tupleListRegisterReserve != null, nameof(_tupleListRegisterReserve) + " != null");
                 DeallocateTempRegister(_tupleListRegisterReserve.Value);
                 break;
             }
@@ -236,5 +255,32 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
                 break;
             parent = parent.Parent;
         }
+    }
+
+    public override void ExitVariableAssignment(MovieScriptDefaultGrammarParser.VariableAssignmentContext context)
+    {
+        RegisterType usingRegister;
+        if (_expressionUseRegisterReserve != null)
+        {
+            usingRegister = _expressionUseRegisterReserve.Value;
+            _expressionUseRegisterReserve = null;
+        }
+        else/* if (_tupleListRegisterReserve != null)*/
+        {
+            Debug.Assert(_tupleListRegisterReserve != null, nameof(_tupleListRegisterReserve) + " != null");
+            usingRegister = _tupleListRegisterReserve.Value;
+            _tupleListRegisterReserve = null;
+        }
+
+        var variableName = context.variable().IDENTIFIER_STRING().GetText();
+
+        if (context.ASSIGN() != null)
+        {
+            // TODO
+        }
+
+        AddOpCode(new SetVariableOpCode(variableName, usingRegister));
+
+        DeallocateTempRegister(usingRegister);
     }
 }

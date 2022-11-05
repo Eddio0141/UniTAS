@@ -162,8 +162,7 @@
     - EnterScope
     - ExitScope
 - Variables
-    - NewVariable NAME REGISTER
-    - SetVariable NAME REGISTER
+  - SetVariable NAME REGISTER
 - Loops
     - Structured like so
     ```
