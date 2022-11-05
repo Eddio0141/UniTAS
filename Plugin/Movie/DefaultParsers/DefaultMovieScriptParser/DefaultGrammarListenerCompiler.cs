@@ -300,4 +300,9 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
         DeallocateTempRegister(usingRegister);
     }
+
+    public override void EnterFrameAdvance(MovieScriptDefaultGrammarParser.FrameAdvanceContext context)
+    {
+        AddOpCode(new FrameAdvanceOpCode());
+    }
 }

@@ -1,5 +1,5 @@
 ﻿namespace UniTASPlugin.Movie.ScriptEngine.OpCodes;
 
-public class FrameAdvance : OpCodeBase
+public class FrameAdvanceOpCode : OpCodeBase
 {
 }
