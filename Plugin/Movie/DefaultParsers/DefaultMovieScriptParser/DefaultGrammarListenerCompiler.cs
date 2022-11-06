@@ -111,7 +111,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         AddOpCode(new SetVariableOpCode(RegisterType.Temp, argName));
     }
 
-    public override void EnterExpressionTerminator(MovieScriptDefaultGrammarParser.ExpressionTerminatorContext context)
+    public override void ExitExpressionTerminator(MovieScriptDefaultGrammarParser.ExpressionTerminatorContext context)
     {
         RegisterType usingRegister;
         if (_expressionTerminatorRegisterLeftReserve == null)
