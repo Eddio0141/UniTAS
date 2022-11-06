@@ -187,6 +187,9 @@
 - Register operation
   - Move REGISTER REGISTER2
     - Moves REGISTER2 to REGISTER
+- Expression operation brackets problem
+  - Using brackets in expressions temporarily takes up a register, so if you have a lot of (expression), you will run out of registers
+  - To solve this, use a temp register to store the result of the expression, and use the stack to store the temp register if you need to use it again
 
 # Helper methods
 - Save state
