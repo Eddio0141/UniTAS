@@ -125,7 +125,7 @@ $value5 = false");
     [Fact]
     public void ExpressionCalculation()
     {
-        var script = Setup("$value = -((1 + 2) * 3 / 4) % 5");
+        var script = Setup("$value = -((1 + 2) - 3 * 4 / 5) % 6");
         var definedMethod = script.MainMethod;
 
         var actual = new ScriptMethodModel(null, new OpCodeBase[]

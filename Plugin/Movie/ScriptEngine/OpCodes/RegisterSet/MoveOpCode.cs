@@ -2,10 +2,10 @@
 
 public class MoveOpCode : RegisterSetBase
 {
-    public RegisterType RegisterDest { get; }
+    public RegisterType Dest { get; }
 
-    public MoveOpCode(RegisterType register, RegisterType registerDest) : base(register)
+    public MoveOpCode(RegisterType source, RegisterType dest) : base(source)
     {
-        RegisterDest = registerDest;
+        Dest = dest;
     }
 }
