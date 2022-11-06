@@ -217,7 +217,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         {
             BracketExpressionStoreReserveSetLeft();
         }
-        else
+        else if (_expressionTerminatorRegisterLeftReserve == null && _expressionTerminatorRegisterRightReserve == null)
         {
             throw new InvalidOperationException(
                 "Left and Right reserved registers are both null, means the (expr) made both Left and Right null, then there's no exprTerminator token next so Left is never set again");
