@@ -8,6 +8,7 @@ using UniTASPlugin.Movie.ScriptEngine.OpCodes;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Maths;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Method;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.RegisterSet;
+using UniTASPlugin.Movie.ScriptEngine.OpCodes.StackOp;
 using UniTASPlugin.Movie.ScriptEngine.ValueTypes;
 
 namespace UniTASPluginTest.MovieParsing;
@@ -150,5 +151,11 @@ $value5 = false");
         });
 
         definedMethod.Should().BeEquivalentTo(actual);
+    }
+
+    [Fact]
+    public void BracketsExpressionChain()
+    {
+        Setup("$value = 1+(2+(3+(4+(5+(6+(7))))))");
     }
 }
