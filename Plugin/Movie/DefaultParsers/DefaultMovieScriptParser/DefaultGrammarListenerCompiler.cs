@@ -10,7 +10,6 @@ using UniTASPlugin.Movie.ScriptEngine.OpCodes.Logic;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Maths;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Method;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.RegisterSet;
-using UniTASPlugin.Movie.ScriptEngine.OpCodes.StackOp;
 using UniTASPlugin.Movie.ScriptEngine.ValueTypes;
 
 namespace UniTASPlugin.Movie.DefaultParsers.DefaultMovieScriptParser;
@@ -43,7 +42,6 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
     private RegisterType? _expressionTerminatorRegisterLeftReserve;
     private RegisterType? _expressionTerminatorRegisterRightReserve;
     private RegisterType? _bracketExpressionStoreReserve;
-    private int _bracketExpressionStoreReserveStack = -1;
 
     private readonly bool[] _reservedTempRegister = new bool[RegisterType.Temp5 - RegisterType.Temp + 1];
 
@@ -159,47 +157,13 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         }
     }
 
-    private void BracketExpressionStoreReserveSetLeft()
-    {
-        Debug.Assert(_bracketExpressionStoreReserve != null, nameof(_bracketExpressionStoreReserve) + " != null");
-        if (_expressionTerminatorRegisterLeftReserve == null)
-        {
-            _expressionTerminatorRegisterLeftReserve = AllocateTempRegister();
-            AddOpCode(new MoveOpCode(_bracketExpressionStoreReserve.Value, _expressionTerminatorRegisterLeftReserve.Value));
-        }
-        else
-        {
-            _expressionTerminatorRegisterRightReserve = AllocateTempRegister();
-            AddOpCode(new MoveOpCode(_bracketExpressionStoreReserve.Value, _expressionTerminatorRegisterRightReserve.Value));
-        }
-
-        _bracketExpressionStoreReserveStack--;
-        if (_bracketExpressionStoreReserveStack < 0)
-        {
-            DeallocateTempRegister(_bracketExpressionStoreReserve.Value);
-            _bracketExpressionStoreReserve = null;
-        }
-        else
-        {
-            AddOpCode(new PopStackOpCode(_bracketExpressionStoreReserve.Value));
-        }
-    }
-
     public override void ExitExpression(MovieScriptDefaultGrammarParser.ExpressionContext context)
     {
         if (context.expressionTerminator() != null)
             return;
         if (context.ROUND_BRACKET_OPEN() != null)
         {
-            if (_bracketExpressionStoreReserve == null)
-            {
-                _bracketExpressionStoreReserve = AllocateTempRegister();
-            }
-            else
-            {
-                AddOpCode(new PushStackOpCode(_bracketExpressionStoreReserve.Value));
-            }
-            _bracketExpressionStoreReserveStack++;
+            _bracketExpressionStoreReserve = AllocateTempRegister();
 
             Debug.Assert(_expressionTerminatorRegisterLeftReserve != null, nameof(_expressionTerminatorRegisterLeftReserve) + " != null");
             AddOpCode(new MoveOpCode(_expressionTerminatorRegisterLeftReserve.Value, _bracketExpressionStoreReserve.Value));
@@ -208,16 +172,25 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
             return;
         }
 
-        if (context.GetChild(0) is MovieScriptDefaultGrammarParser.ExpressionContext childContext && childContext.ROUND_BRACKET_OPEN() != null)
+        // use stored (expr) result if there is any
+        if (context.GetChild(0) is MovieScriptDefaultGrammarParser.ExpressionContext childContext &&
+            childContext.ROUND_BRACKET_OPEN() != null || _expressionTerminatorRegisterLeftReserve == null &&
+            _bracketExpressionStoreReserve != null)
         {
-            BracketExpressionStoreReserveSetLeft();
-        }
+            Debug.Assert(_bracketExpressionStoreReserve != null, nameof(_bracketExpressionStoreReserve) + " != null");
+            if (_expressionTerminatorRegisterLeftReserve == null)
+            {
+                _expressionTerminatorRegisterLeftReserve = _bracketExpressionStoreReserve.Value;
+                _bracketExpressionStoreReserve = null;
+            }
+            else
+            {
+                _expressionTerminatorRegisterRightReserve = _bracketExpressionStoreReserve.Value;
+            }
 
-        if (_expressionTerminatorRegisterLeftReserve == null && _bracketExpressionStoreReserve != null)
-        {
-            BracketExpressionStoreReserveSetLeft();
+            _bracketExpressionStoreReserve = null;
         }
-        else if (_expressionTerminatorRegisterLeftReserve == null && _expressionTerminatorRegisterRightReserve == null)
+        else if (_expressionTerminatorRegisterLeftReserve == null && _bracketExpressionStoreReserve == null)
         {
             throw new InvalidOperationException(
                 "Left and Right reserved registers are both null, means the (expr) made both Left and Right null, then there's no exprTerminator token next so Left is never set again");
