@@ -8,7 +8,6 @@ using UniTASPlugin.Movie.ScriptEngine.OpCodes;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Maths;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Method;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.RegisterSet;
-using UniTASPlugin.Movie.ScriptEngine.OpCodes.StackOp;
 using UniTASPlugin.Movie.ScriptEngine.ValueTypes;
 
 namespace UniTASPluginTest.MovieParsing;
@@ -21,10 +20,13 @@ public class DefaultMovieScriptParserUnitTests
         var speakLexer = new MovieScriptDefaultGrammarLexer(inputStream);
         var commonTokenStream = new CommonTokenStream(speakLexer);
         var speakParser = new MovieScriptDefaultGrammarParser(commonTokenStream);
-        var program = speakParser.program();
+        var program = speakParser.script();
         var listener = new DefaultGrammarListenerCompiler();
         ParseTreeWalker.Default.Walk(listener, program);
-        return listener.Compile();
+        var methods = listener.Compile().ToList();
+        var mainMethod = methods.First(x => x.Name == null);
+        var definedMethods = methods.Where(x => x.Name != null);
+        return new ScriptModel(mainMethod, definedMethods);
     }
 
     [Fact]
@@ -126,6 +128,12 @@ $value5 = false");
     [Fact]
     public void ExpressionCalculation()
     {
+        /*
+         * -((1 + 2) - 3 * 4 / 5) % 6
+         * %, flipSign, (, -, (, +, 1, 2, ), /, *, 3, (, +, 4, 5, ), 6, ), 7
+         * %, flipSign, -, +, 1, 2, /, *, 3, +, 4, 5, 6, 7
+         */
+
         var script = Setup("$value = -((1 + 2) - 3 * 4 / 5) % 6");
         var definedMethod = script.MainMethod;
 
@@ -154,6 +162,6 @@ $value5 = false");
     [Fact]
     public void BracketsExpressionChain()
     {
-        Setup("$value = 1+(2+(3+(4+(5+(6+(7))))))");
+        Setup("$value = 1+(2*3+(4+(5+(6+(7+(8))))))");
     }
 }
