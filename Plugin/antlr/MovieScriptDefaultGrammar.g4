@@ -4,6 +4,7 @@ grammar MovieScriptDefaultGrammar;
  * Parser rules
  */
 
+script: program EOF;
 program: (actionWithSeparator actionSeparator | action NEWLINE*)*;
 
 actionSeparator: ACTIONSEPARATOR | NEWLINE | frameAdvance;
@@ -48,26 +49,18 @@ variableTupleSeparation: ROUND_BRACKET_OPEN variable (COMMA variable)* ROUND_BRA
 tupleExpression: ROUND_BRACKET_OPEN (expression | tupleExpression) (COMMA (expression | tupleExpression))+ ROUND_BRACKET_CLOSE;
 
 expression
-    : ROUND_BRACKET_OPEN expression ROUND_BRACKET_CLOSE
-    | setNegative = MINUS expression
-    | expression (MULTIPLY | DIVIDE | MODULO) expression
-    | expression (PLUS | subtract = MINUS) expression
-    | NOT expression
-    | expression (AND | OR) expression
-    | expression (EQUAL | NOT_EQUAL | LESS | LESS_EQUAL | GREATER | GREATER_EQUAL) expression
-    | expression (BITWISE_AND | BITWISE_OR | BITWISE_XOR) expression
-    | expression (BITWISE_SHIFT_LEFT | BITWISE_SHIFT_RIGHT) expression
-    | expressionTerminator
+    : MINUS expression #flipSign
+    | left=expression (MULTIPLY | DIVIDE | MODULO) right=expression #multiplyDivide
+    | left=expression (PLUS | MINUS) right=expression #addSubtract
+    | NOT expression #not
+    | expression (AND | OR) expression #andOr
+    | expression (EQUAL | NOT_EQUAL | LESS | LESS_EQUAL | GREATER | GREATER_EQUAL) expression #compare
+    | expression (BITWISE_AND | BITWISE_OR | BITWISE_XOR) expression #bitwise
+    | expression (BITWISE_SHIFT_LEFT | BITWISE_SHIFT_RIGHT) expression #bitwiseShift
+    | ROUND_BRACKET_OPEN expression ROUND_BRACKET_CLOSE #parentheses
+    | (variable | intType | floatType | bool | string | methodCall) #terminator
     ;
 
-expressionTerminator
-    : variable
-    | intType
-    | floatType
-    | bool
-    | string
-    | methodCall
-    ;
 string: STRING;
 intType: INT;
 floatType: FLOAT;
@@ -148,3 +141,5 @@ fragment STRING_CHAR: ~[\r\n"\\];
 fragment ESCAPE_SEQUENCE: '\\' .;
 
 COMMA: ',';
+
+ANY: .;
