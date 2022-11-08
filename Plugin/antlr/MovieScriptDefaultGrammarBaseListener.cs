@@ -36,6 +36,18 @@ using ParserRuleContext = Antlr4.Runtime.ParserRuleContext;
 [System.CLSCompliant(false)]
 public partial class MovieScriptDefaultGrammarBaseListener : IMovieScriptDefaultGrammarListener {
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.script"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterScript([NotNull] MovieScriptDefaultGrammarParser.ScriptContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.script"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitScript([NotNull] MovieScriptDefaultGrammarParser.ScriptContext context) { }
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.program"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
@@ -216,29 +228,145 @@ public partial class MovieScriptDefaultGrammarBaseListener : IMovieScriptDefault
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitTupleExpression([NotNull] MovieScriptDefaultGrammarParser.TupleExpressionContext context) { }
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.expression"/>.
+	/// Enter a parse tree produced by the <c>andOr</c>
+	/// labeled alternative in <see cref="MovieScriptDefaultGrammarParser.expression"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void EnterExpression([NotNull] MovieScriptDefaultGrammarParser.ExpressionContext context) { }
+	public virtual void EnterAndOr([NotNull] MovieScriptDefaultGrammarParser.AndOrContext context) { }
 	/// <summary>
-	/// Exit a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.expression"/>.
+	/// Exit a parse tree produced by the <c>andOr</c>
+	/// labeled alternative in <see cref="MovieScriptDefaultGrammarParser.expression"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void ExitExpression([NotNull] MovieScriptDefaultGrammarParser.ExpressionContext context) { }
+	public virtual void ExitAndOr([NotNull] MovieScriptDefaultGrammarParser.AndOrContext context) { }
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.expressionTerminator"/>.
+	/// Enter a parse tree produced by the <c>parentheses</c>
+	/// labeled alternative in <see cref="MovieScriptDefaultGrammarParser.expression"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void EnterExpressionTerminator([NotNull] MovieScriptDefaultGrammarParser.ExpressionTerminatorContext context) { }
+	public virtual void EnterParentheses([NotNull] MovieScriptDefaultGrammarParser.ParenthesesContext context) { }
 	/// <summary>
-	/// Exit a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.expressionTerminator"/>.
+	/// Exit a parse tree produced by the <c>parentheses</c>
+	/// labeled alternative in <see cref="MovieScriptDefaultGrammarParser.expression"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void ExitExpressionTerminator([NotNull] MovieScriptDefaultGrammarParser.ExpressionTerminatorContext context) { }
+	public virtual void ExitParentheses([NotNull] MovieScriptDefaultGrammarParser.ParenthesesContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by the <c>multiplyDivide</c>
+	/// labeled alternative in <see cref="MovieScriptDefaultGrammarParser.expression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterMultiplyDivide([NotNull] MovieScriptDefaultGrammarParser.MultiplyDivideContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by the <c>multiplyDivide</c>
+	/// labeled alternative in <see cref="MovieScriptDefaultGrammarParser.expression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitMultiplyDivide([NotNull] MovieScriptDefaultGrammarParser.MultiplyDivideContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by the <c>not</c>
+	/// labeled alternative in <see cref="MovieScriptDefaultGrammarParser.expression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterNot([NotNull] MovieScriptDefaultGrammarParser.NotContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by the <c>not</c>
+	/// labeled alternative in <see cref="MovieScriptDefaultGrammarParser.expression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitNot([NotNull] MovieScriptDefaultGrammarParser.NotContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by the <c>compare</c>
+	/// labeled alternative in <see cref="MovieScriptDefaultGrammarParser.expression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterCompare([NotNull] MovieScriptDefaultGrammarParser.CompareContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by the <c>compare</c>
+	/// labeled alternative in <see cref="MovieScriptDefaultGrammarParser.expression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitCompare([NotNull] MovieScriptDefaultGrammarParser.CompareContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by the <c>addSubtract</c>
+	/// labeled alternative in <see cref="MovieScriptDefaultGrammarParser.expression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterAddSubtract([NotNull] MovieScriptDefaultGrammarParser.AddSubtractContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by the <c>addSubtract</c>
+	/// labeled alternative in <see cref="MovieScriptDefaultGrammarParser.expression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitAddSubtract([NotNull] MovieScriptDefaultGrammarParser.AddSubtractContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by the <c>bitwise</c>
+	/// labeled alternative in <see cref="MovieScriptDefaultGrammarParser.expression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterBitwise([NotNull] MovieScriptDefaultGrammarParser.BitwiseContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by the <c>bitwise</c>
+	/// labeled alternative in <see cref="MovieScriptDefaultGrammarParser.expression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitBitwise([NotNull] MovieScriptDefaultGrammarParser.BitwiseContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by the <c>bitwiseShift</c>
+	/// labeled alternative in <see cref="MovieScriptDefaultGrammarParser.expression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterBitwiseShift([NotNull] MovieScriptDefaultGrammarParser.BitwiseShiftContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by the <c>bitwiseShift</c>
+	/// labeled alternative in <see cref="MovieScriptDefaultGrammarParser.expression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitBitwiseShift([NotNull] MovieScriptDefaultGrammarParser.BitwiseShiftContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by the <c>terminator</c>
+	/// labeled alternative in <see cref="MovieScriptDefaultGrammarParser.expression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterTerminator([NotNull] MovieScriptDefaultGrammarParser.TerminatorContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by the <c>terminator</c>
+	/// labeled alternative in <see cref="MovieScriptDefaultGrammarParser.expression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitTerminator([NotNull] MovieScriptDefaultGrammarParser.TerminatorContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by the <c>flipSign</c>
+	/// labeled alternative in <see cref="MovieScriptDefaultGrammarParser.expression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterFlipSign([NotNull] MovieScriptDefaultGrammarParser.FlipSignContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by the <c>flipSign</c>
+	/// labeled alternative in <see cref="MovieScriptDefaultGrammarParser.expression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitFlipSign([NotNull] MovieScriptDefaultGrammarParser.FlipSignContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.string"/>.
 	/// <para>The default implementation does nothing.</para>
