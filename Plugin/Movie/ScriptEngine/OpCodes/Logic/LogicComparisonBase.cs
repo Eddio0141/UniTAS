@@ -5,7 +5,7 @@ public abstract class LogicComparisonBase : LogicBase
     public RegisterType Left { get; }
     public RegisterType Right { get; }
 
-    protected LogicComparisonBase(RegisterType resultRegister, RegisterType left, RegisterType right) : base(resultRegister)
+    protected LogicComparisonBase(RegisterType dest, RegisterType left, RegisterType right) : base(dest)
     {
         Left = left;
         Right = right;

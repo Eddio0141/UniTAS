@@ -2,7 +2,7 @@
 
 public class OrOpCode : LogicComparisonBase
 {
-    public OrOpCode(RegisterType resultRegister, RegisterType left, RegisterType right) : base(resultRegister, left, right)
+    public OrOpCode(RegisterType dest, RegisterType left, RegisterType right) : base(dest, left, right)
     {
     }
 }
