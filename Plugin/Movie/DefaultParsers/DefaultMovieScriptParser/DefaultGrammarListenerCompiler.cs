@@ -2,15 +2,15 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using UniTASPlugin.Movie.Models.Script;
 using UniTASPlugin.Movie.ScriptEngine;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes;
-using UniTASPlugin.Movie.ScriptEngine.OpCodes.BitwiseOps;
-using UniTASPlugin.Movie.ScriptEngine.OpCodes.Logic;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Maths;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Method;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.RegisterSet;
 using UniTASPlugin.Movie.ScriptEngine.ValueTypes;
+using static MovieScriptDefaultGrammarParser;
 
 namespace UniTASPlugin.Movie.DefaultParsers.DefaultMovieScriptParser;
 
@@ -39,16 +39,123 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
     private RegisterType? _tupleListRegisterReserve;
 
-    private RegisterType? _expressionTerminatorRegisterLeftReserve;
-    private RegisterType? _expressionTerminatorRegisterRightReserve;
-    private RegisterType? _bracketExpressionStoreReserve;
+    private readonly List<ExpressionBase> _expressionBuilder = new();
 
     private readonly bool[] _reservedTempRegister = new bool[RegisterType.Temp5 - RegisterType.Temp + 1];
 
-    public ScriptModel Compile()
+    public IEnumerable<ScriptMethodModel> Compile()
     {
-        return new ScriptModel(new(null, _mainBuilder),
-            new List<ScriptMethodModel>(_builtMethods.Select(x => new ScriptMethodModel(x.Key, x.Value))));
+        var methods = new List<ScriptMethodModel>();
+        methods.Add(new(null, _mainBuilder));
+        methods.AddRange(_builtMethods.Select(x => new ScriptMethodModel(x.Key, x.Value)));
+        return methods;
+    }
+
+    private void AddExpression(ExpressionBase expression)
+    {
+        _expressionBuilder.Add(expression);
+    }
+
+    private KeyValuePair<IEnumerable<OpCodeBase>, RegisterType> BuildExpressionOpCodes()
+    {
+        var i = 0;
+        OperationType? op = null;
+        ExpressionBase left = null;
+        ExpressionBase right = null;
+        var leftRegister = AllocateTempRegister();
+        var rightRegister = AllocateTempRegister();
+        var storeRegister = AllocateTempRegister();
+        while (i < _expressionBuilder.Count)
+        {
+            var expr = _expressionBuilder[i];
+            i++;
+            if (expr is OperationExpression opExpression)
+            {
+                op = opExpression.Operation;
+                left = null;
+                right = null;
+                continue;
+            }
+
+            if (expr is ConstExpression @const)
+            {
+                if (left == null)
+                {
+                    left = @const;
+                }
+                else
+                {
+                    right = @const;
+                }
+            }
+            else if (expr is VariableExpression var)
+            {
+                if (left == null)
+                {
+                    left = var;
+                }
+                else
+                {
+                    right = var;
+                }
+            }
+
+            Debug.Assert(op != null, nameof(op) + " != null");
+            switch (op.Value)
+            {
+                case OperationType.FlipNegative:
+                    break;
+                case OperationType.Mult:
+                    break;
+                case OperationType.Div:
+                    break;
+                case OperationType.Mod:
+                    break;
+                case OperationType.Add:
+                    if (right == null)
+                    {
+                        continue;
+                    }
+                    // TODO consider about storeRegister
+                    AddOpCode(new AddOpCode(leftRegister, leftRegister, rightRegister));
+                    break;
+                case OperationType.Subtract:
+                    break;
+                case OperationType.Not:
+                    break;
+                case OperationType.AndLogic:
+                    break;
+                case OperationType.OrLogic:
+                    break;
+                case OperationType.EqualsLogic:
+                    break;
+                case OperationType.NotEqualsLogic:
+                    break;
+                case OperationType.LessLogic:
+                    break;
+                case OperationType.LessEqualsLogic:
+                    break;
+                case OperationType.GreaterLogic:
+                    break;
+                case OperationType.GreaterEqualsLogic:
+                    break;
+                case OperationType.BitwiseAnd:
+                    break;
+                case OperationType.BitwiseOr:
+                    break;
+                case OperationType.BitwiseXor:
+                    break;
+                case OperationType.BitwiseShiftLeft:
+                    break;
+                case OperationType.BitwiseShiftRight:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        throw new NotImplementedException();
+        //return new KeyValuePair<IEnumerable<OpCodeBase>, RegisterType>(opCodes, );
     }
 
     private RegisterType AllocateTempRegister()
@@ -86,14 +193,26 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         }
     }
 
-    public override void EnterMethodDef(MovieScriptDefaultGrammarParser.MethodDefContext context)
+    private void AddOpCodes(IEnumerable<OpCodeBase> opCodes)
+    {
+        if (_buildingMethod)
+        {
+            _methodBuilders.Peek().OpCodes.AddRange(opCodes);
+        }
+        else
+        {
+            _mainBuilder.AddRange(opCodes);
+        }
+    }
+
+    public override void EnterMethodDef(MethodDefContext context)
     {
         var methodName = context.IDENTIFIER_STRING().GetText();
         _buildingMethod = true;
         _methodBuilders.Push(new(methodName));
     }
 
-    public override void ExitMethodDef(MovieScriptDefaultGrammarParser.MethodDefContext context)
+    public override void ExitMethodDef(MethodDefContext context)
     {
         _builtMethods.Add(_methodBuilders.Pop().GetFinalResult());
         if (_methodBuilders.Count == 0)
@@ -102,53 +221,184 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         }
     }
 
-    public override void ExitMethodDefArgs(MovieScriptDefaultGrammarParser.MethodDefArgsContext context)
+    public override void ExitMethodDefArgs(MethodDefArgsContext context)
     {
         var argName = context.IDENTIFIER_STRING().GetText();
         AddOpCode(new PopArgOpCode(RegisterType.Temp));
         AddOpCode(new SetVariableOpCode(RegisterType.Temp, argName));
     }
 
-    public override void ExitExpressionTerminator(MovieScriptDefaultGrammarParser.ExpressionTerminatorContext context)
+    public override void EnterFlipSign(FlipSignContext context)
     {
-        RegisterType usingRegister;
-        if (_expressionTerminatorRegisterLeftReserve == null)
+        AddExpression(new OperationExpression(OperationType.FlipNegative));
+    }
+
+    public override void EnterMultiplyDivide(MultiplyDivideContext context)
+    {
+        OperationType opType;
+        if (context.MULTIPLY() != null)
         {
-            _expressionTerminatorRegisterLeftReserve = AllocateTempRegister();
-            usingRegister = _expressionTerminatorRegisterLeftReserve.Value;
+            opType = OperationType.Mult;
+        }
+        else if (context.DIVIDE() != null)
+        {
+            opType = OperationType.Div;
+        }
+        else if (context.MODULO() != null)
+        {
+            opType = OperationType.Mod;
         }
         else
         {
-            _expressionTerminatorRegisterRightReserve = AllocateTempRegister();
-            usingRegister = _expressionTerminatorRegisterRightReserve.Value;
+            throw new InvalidOperationException();
         }
+        AddExpression(new OperationExpression(opType));
+    }
+
+    public override void EnterAddSubtract(AddSubtractContext context)
+    {
+        OperationType opType;
+        if (context.PLUS() != null)
+        {
+            opType = OperationType.Add;
+        }
+        else if (context.MINUS() != null)
+        {
+            opType = OperationType.Subtract;
+        }
+        else
+        {
+            throw new InvalidOperationException();
+        }
+        AddExpression(new OperationExpression(opType));
+    }
+
+    public override void EnterNot(NotContext context)
+    {
+        AddExpression(new OperationExpression(OperationType.Not));
+    }
+
+    public override void EnterAndOr(AndOrContext context)
+    {
+        OperationType opType;
+        if (context.AND() != null)
+        {
+            opType = OperationType.AndLogic;
+        }
+        else if (context.OR() != null)
+        {
+            opType = OperationType.OrLogic;
+        }
+        else
+        {
+            throw new InvalidOperationException();
+        }
+        AddExpression(new OperationExpression(opType));
+    }
+
+    public override void EnterCompare(CompareContext context)
+    {
+        OperationType opType;
+        if (context.EQUAL() != null)
+        {
+            opType = OperationType.EqualsLogic;
+        }
+        else if (context.NOT_EQUAL() != null)
+        {
+            opType = OperationType.NotEqualsLogic;
+        }
+        else if (context.LESS() != null)
+        {
+            opType = OperationType.LessLogic;
+        }
+        else if (context.LESS_EQUAL() != null)
+        {
+            opType = OperationType.LessEqualsLogic;
+        }
+        else if (context.GREATER() != null)
+        {
+            opType = OperationType.GreaterLogic;
+        }
+        else if (context.GREATER_EQUAL() != null)
+        {
+            opType = OperationType.GreaterEqualsLogic;
+        }
+        else
+        {
+            throw new InvalidOperationException();
+        }
+        AddExpression(new OperationExpression(opType));
+    }
+
+    public override void EnterBitwise(BitwiseContext context)
+    {
+        OperationType opType;
+        if (context.BITWISE_AND() != null)
+        {
+            opType = OperationType.BitwiseAnd;
+        }
+        else if (context.BITWISE_OR() != null)
+        {
+            opType = OperationType.BitwiseOr;
+        }
+        else if (context.BITWISE_XOR() != null)
+        {
+            opType = OperationType.BitwiseXor;
+        }
+        else
+        {
+            throw new InvalidOperationException();
+        }
+        AddExpression(new OperationExpression(opType));
+    }
+
+    public override void EnterBitwiseShift(BitwiseShiftContext context)
+    {
+        OperationType opType;
+        if (context.BITWISE_SHIFT_LEFT() != null)
+        {
+            opType = OperationType.BitwiseShiftLeft;
+        }
+        else if (context.BITWISE_SHIFT_RIGHT() != null)
+        {
+            opType = OperationType.BitwiseShiftRight;
+        }
+        else
+        {
+            throw new InvalidOperationException();
+        }
+        AddExpression(new OperationExpression(opType));
+    }
+
+    public override void ExitTerminator(TerminatorContext context)
+    {
         if (context.variable() != null)
         {
             var variable = context.variable().IDENTIFIER_STRING().GetText();
-            AddOpCode(new VarToRegisterOpCode(usingRegister, variable));
+            AddExpression(new VariableExpression(variable));
         }
         else if (context.intType() != null)
         {
             var value = context.intType().INT().GetText();
             var valueParsed = int.Parse(value);
-            AddOpCode(new ConstToRegisterOpCode(usingRegister, new IntValueType(valueParsed)));
+            AddExpression(new ConstExpression(new IntValueType(valueParsed)));
         }
         else if (context.floatType() != null)
         {
             var value = context.floatType().FLOAT().GetText();
             var valueParsed = float.Parse(value);
-            AddOpCode(new ConstToRegisterOpCode(usingRegister, new FloatValueType(valueParsed)));
+            AddExpression(new ConstExpression(new FloatValueType(valueParsed)));
         }
         else if (context.@bool() != null)
         {
             var value = context.@bool().GetText();
             var valueParsed = bool.Parse(value);
-            AddOpCode(new ConstToRegisterOpCode(usingRegister, new BoolValueType(valueParsed)));
+            AddExpression(new ConstExpression(new BoolValueType(valueParsed)));
         }
         else if (context.@string() != null)
         {
             var value = context.@string().STRING().GetText();
-            AddOpCode(new ConstToRegisterOpCode(usingRegister, new StringValueType(value)));
+            AddExpression(new ConstExpression(new StringValueType(value)));
         }
         else if (context.methodCall() != null)
         {
@@ -157,139 +407,20 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         }
     }
 
-    public override void ExitExpression(MovieScriptDefaultGrammarParser.ExpressionContext context)
-    {
-        if (context.expressionTerminator() != null)
-            return;
-        if (context.ROUND_BRACKET_OPEN() != null)
-        {
-            _bracketExpressionStoreReserve = AllocateTempRegister();
-
-            Debug.Assert(_expressionTerminatorRegisterLeftReserve != null, nameof(_expressionTerminatorRegisterLeftReserve) + " != null");
-            AddOpCode(new MoveOpCode(_expressionTerminatorRegisterLeftReserve.Value, _bracketExpressionStoreReserve.Value));
-            DeallocateTempRegister(_expressionTerminatorRegisterLeftReserve.Value);
-            _expressionTerminatorRegisterLeftReserve = null;
-            return;
-        }
-
-        // use stored (expr) result if there is any
-        if (context.GetChild(0) is MovieScriptDefaultGrammarParser.ExpressionContext childContext &&
-            childContext.ROUND_BRACKET_OPEN() != null || _expressionTerminatorRegisterLeftReserve == null &&
-            _bracketExpressionStoreReserve != null)
-        {
-            Debug.Assert(_bracketExpressionStoreReserve != null, nameof(_bracketExpressionStoreReserve) + " != null");
-            if (_expressionTerminatorRegisterLeftReserve == null)
-            {
-                _expressionTerminatorRegisterLeftReserve = _bracketExpressionStoreReserve.Value;
-                _bracketExpressionStoreReserve = null;
-            }
-            else
-            {
-                _expressionTerminatorRegisterRightReserve = _bracketExpressionStoreReserve.Value;
-            }
-
-            _bracketExpressionStoreReserve = null;
-        }
-        else if (_expressionTerminatorRegisterLeftReserve == null && _bracketExpressionStoreReserve == null)
-        {
-            throw new InvalidOperationException(
-                "Left and Right reserved registers are both null, means the (expr) made both Left and Right null, then there's no exprTerminator token next so Left is never set again");
-        }
-
-        Debug.Assert(_expressionTerminatorRegisterLeftReserve != null, nameof(_expressionTerminatorRegisterLeftReserve) + " != null");
-        var res = _expressionTerminatorRegisterLeftReserve.Value;
-        var left = _expressionTerminatorRegisterLeftReserve.Value;
-        var right = _expressionTerminatorRegisterRightReserve;
-
-        if (context.MULTIPLY() != null)
-        {
-            Debug.Assert(right != null, nameof(right) + " != null");
-            AddOpCode(new MultOpCode(res, left, right.Value));
-        }
-        else
-        if (context.DIVIDE() != null)
-        {
-            Debug.Assert(right != null, nameof(right) + " != null");
-            AddOpCode(new DivOpCode(res, left, right.Value));
-        }
-        else if (context.MODULO() != null)
-        {
-            Debug.Assert(right != null, nameof(right) + " != null");
-            AddOpCode(new ModOpCode(res, left, right.Value));
-        }
-        else if (context.PLUS() != null)
-        {
-            Debug.Assert(right != null, nameof(right) + " != null");
-            AddOpCode(new AddOpCode(res, left, right.Value));
-        }
-        else if (context.subtract != null)
-        {
-            Debug.Assert(right != null, nameof(right) + " != null");
-            AddOpCode(new SubOpCode(res, left, right.Value));
-        }
-        else if (context.setNegative != null)
-        {
-            AddOpCode(new FlipNegativeOpCode(res, left));
-        }
-        else if (context.NOT() != null)
-        {
-            AddOpCode(new NotOpCode(left));
-        }
-        else if (context.AND() != null)
-        {
-            Debug.Assert(right != null, nameof(right) + " != null");
-            AddOpCode(new AndOpCode(res, left, right.Value));
-        }
-        else if (context.OR() != null)
-        {
-            Debug.Assert(right != null, nameof(right) + " != null");
-            AddOpCode(new OrOpCode(res, left, right.Value));
-        }
-        else if (context.BITWISE_AND() != null)
-        {
-            Debug.Assert(right != null, nameof(right) + " != null");
-            AddOpCode(new BitwiseAndOpCode(res, left, right.Value));
-        }
-        else if (context.BITWISE_OR() != null)
-        {
-            Debug.Assert(right != null, nameof(right) + " != null");
-            AddOpCode(new BitwiseOrOpCode(res, left, right.Value));
-        }
-        else if (context.BITWISE_XOR() != null)
-        {
-            Debug.Assert(right != null, nameof(right) + " != null");
-            AddOpCode(new BitwiseXorOpCode(res, left, right.Value));
-        }
-        else if (context.BITWISE_SHIFT_LEFT() != null)
-        {
-            Debug.Assert(right != null, nameof(right) + " != null");
-            AddOpCode(new BitwiseShiftLeftOpCode(res, left, right.Value));
-        }
-        else if (context.BITWISE_SHIFT_RIGHT() != null)
-        {
-            Debug.Assert(right != null, nameof(right) + " != null");
-            AddOpCode(new BitwiseShiftRightOpCode(res, left, right.Value));
-        }
-
-        if (_expressionTerminatorRegisterRightReserve == null) return;
-        DeallocateTempRegister(_expressionTerminatorRegisterRightReserve.Value);
-        _expressionTerminatorRegisterRightReserve = null;
-    }
-
-    public override void EnterTupleExpression(MovieScriptDefaultGrammarParser.TupleExpressionContext context)
+    public override void EnterTupleExpression(TupleExpressionContext context)
     {
         // reserve for tuple / array creation TODO
         //if (_tupleListRegisterReserve != null) return;
         //_tupleListRegisterReserve = AllocateTempRegister();
     }
 
-    public override void ExitTupleExpression(MovieScriptDefaultGrammarParser.TupleExpressionContext context)
+    public override void ExitTupleExpression(TupleExpressionContext context)
     {
         // recursively check if there's any more tuple / array expression on top level
         var parent = context.Parent;
         while (true)
         {
-            if (parent is not MovieScriptDefaultGrammarParser.ProgramContext)
+            if (parent is not ProgramContext)
             {
                 Debug.Assert(_tupleListRegisterReserve != null, nameof(_tupleListRegisterReserve) + " != null");
                 DeallocateTempRegister(_tupleListRegisterReserve.Value);
@@ -302,12 +433,13 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         }
     }
 
-    public override void ExitVariableAssignment(MovieScriptDefaultGrammarParser.VariableAssignmentContext context)
+    public override void ExitVariableAssignment(VariableAssignmentContext context)
     {
+        var expressionBuildResult = BuildExpressionOpCodes();
+        AddOpCodes(expressionBuildResult.Key);
+
         var variableName = context.variable().IDENTIFIER_STRING().GetText();
-        Debug.Assert(_expressionTerminatorRegisterLeftReserve != null, nameof(_expressionTerminatorRegisterLeftReserve) + " != null");
-        var usingRegister = _expressionTerminatorRegisterLeftReserve.Value;
-        _expressionTerminatorRegisterLeftReserve = null;
+        var usingRegister = expressionBuildResult.Value;
 
         if (context.ASSIGN() == null)
         {
@@ -348,7 +480,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         DeallocateTempRegister(usingRegister);
     }
 
-    public override void EnterFrameAdvance(MovieScriptDefaultGrammarParser.FrameAdvanceContext context)
+    public override void EnterFrameAdvance(FrameAdvanceContext context)
     {
         AddOpCode(new FrameAdvanceOpCode());
     }
