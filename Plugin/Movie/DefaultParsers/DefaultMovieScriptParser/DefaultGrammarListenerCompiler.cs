@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.InteropServices;
 using UniTASPlugin.Movie.Models.Script;
 using UniTASPlugin.Movie.ScriptEngine;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes;
+using UniTASPlugin.Movie.ScriptEngine.OpCodes.BitwiseOps;
+using UniTASPlugin.Movie.ScriptEngine.OpCodes.Logic;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Maths;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Method;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.RegisterSet;
@@ -45,8 +46,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
     public IEnumerable<ScriptMethodModel> Compile()
     {
-        var methods = new List<ScriptMethodModel>();
-        methods.Add(new(null, _mainBuilder));
+        var methods = new List<ScriptMethodModel> { new(null, _mainBuilder) };
         methods.AddRange(_builtMethods.Select(x => new ScriptMethodModel(x.Key, x.Value)));
         return methods;
     }
@@ -56,8 +56,9 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         _expressionBuilder.Add(expression);
     }
 
-    private KeyValuePair<IEnumerable<OpCodeBase>, RegisterType> BuildExpressionOpCodes()
+    private RegisterType BuildExpressionOpCodes()
     {
+        // TODO method calls
         var i = 0;
         OperationType? op = null;
         ExpressionBase left = null;
@@ -65,97 +66,200 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         var leftRegister = AllocateTempRegister();
         var rightRegister = AllocateTempRegister();
         var storeRegister = AllocateTempRegister();
-        while (i < _expressionBuilder.Count)
+        // loop until expression is const, var, method call, or evaluated
+        while (true)
         {
             var expr = _expressionBuilder[i];
-            i++;
-            if (expr is OperationExpression opExpression)
+            switch (expr)
             {
-                op = opExpression.Operation;
-                left = null;
-                right = null;
+                case OperationExpression opExpression:
+                    op = opExpression.Operation;
+                    if (left is EvaluatedExpression)
+                    {
+                        // move register to store since we are resetting left and right
+                        AddOpCode(new MoveOpCode(leftRegister, storeRegister));
+                    }
+                    left = null;
+                    right = null;
+                    i++;
+                    continue;
+                case ConstExpression @const when left == null:
+                    left = @const;
+                    i++;
+                    break;
+                case ConstExpression @const:
+                    right = @const;
+                    i++;
+                    break;
+                case VariableExpression var when left == null:
+                    left = var;
+                    i++;
+                    break;
+                case VariableExpression var:
+                    right = var;
+                    i++;
+                    break;
+                case EvaluatedExpression evaluated when left == null:
+                    left = evaluated;
+                    i++;
+                    break;
+                case EvaluatedExpression evaluated:
+                    right = evaluated;
+                    i++;
+                    break;
+            }
+
+            if (op == null)
+            {
+                break;
+            }
+
+            // operations that only takes a left to evaluate
+            if (op.Value != OperationType.FlipNegative && op.Value != OperationType.Not && right == null)
+            {
                 continue;
             }
 
-            if (expr is ConstExpression @const)
+            switch (left)
             {
-                if (left == null)
-                {
-                    left = @const;
-                }
-                else
-                {
-                    right = @const;
-                }
+                case ConstExpression leftConst:
+                    AddOpCode(new ConstToRegisterOpCode(leftRegister, leftConst.Value));
+                    break;
+                case VariableExpression var:
+                    AddOpCode(new VarToRegisterOpCode(leftRegister, var.Name));
+                    break;
             }
-            else if (expr is VariableExpression var)
+            switch (right)
             {
-                if (left == null)
-                {
-                    left = var;
-                }
-                else
-                {
-                    right = var;
-                }
+                case ConstExpression rightConst:
+                    AddOpCode(new ConstToRegisterOpCode(rightRegister, rightConst.Value));
+                    break;
+                case VariableExpression var:
+                    AddOpCode(new VarToRegisterOpCode(rightRegister, var.Name));
+                    break;
             }
 
-            Debug.Assert(op != null, nameof(op) + " != null");
+            var usingLeft = left is EvaluatedExpression ? storeRegister : leftRegister;
+            var usingRight = right is EvaluatedExpression ? storeRegister : rightRegister;
+
             switch (op.Value)
             {
                 case OperationType.FlipNegative:
+                    AddOpCode(new FlipNegativeOpCode(usingLeft, leftRegister));
                     break;
                 case OperationType.Mult:
+                    AddOpCode(new MultOpCode(leftRegister, usingLeft, usingRight));
                     break;
                 case OperationType.Div:
+                    AddOpCode(new DivOpCode(leftRegister, usingLeft, usingRight));
                     break;
                 case OperationType.Mod:
+                    AddOpCode(new ModOpCode(leftRegister, usingLeft, usingRight));
                     break;
                 case OperationType.Add:
-                    if (right == null)
-                    {
-                        continue;
-                    }
-                    // TODO consider about storeRegister
-                    AddOpCode(new AddOpCode(leftRegister, leftRegister, rightRegister));
+                    AddOpCode(new AddOpCode(leftRegister, usingLeft, usingRight));
                     break;
                 case OperationType.Subtract:
+                    AddOpCode(new SubOpCode(leftRegister, usingLeft, usingRight));
                     break;
                 case OperationType.Not:
+                    AddOpCode(new NotOpCode(leftRegister, usingLeft));
                     break;
                 case OperationType.AndLogic:
+                    AddOpCode(new AndOpCode(leftRegister, usingLeft, usingRight));
                     break;
                 case OperationType.OrLogic:
+                    AddOpCode(new OrOpCode(leftRegister, usingLeft, usingRight));
                     break;
                 case OperationType.EqualsLogic:
+                    AddOpCode(new EqualOpCode(leftRegister, usingLeft, usingRight));
                     break;
                 case OperationType.NotEqualsLogic:
+                    AddOpCode(new NotEqualOpCode(leftRegister, usingLeft, usingRight));
                     break;
                 case OperationType.LessLogic:
+                    AddOpCode(new LessOpCode(leftRegister, usingLeft, usingRight));
                     break;
                 case OperationType.LessEqualsLogic:
+                    AddOpCode(new LessEqualOpCode(leftRegister, usingLeft, usingRight));
                     break;
                 case OperationType.GreaterLogic:
+                    AddOpCode(new GreaterOpCode(leftRegister, usingLeft, usingRight));
                     break;
                 case OperationType.GreaterEqualsLogic:
+                    AddOpCode(new GreaterEqualOpCode(leftRegister, usingLeft, usingRight));
                     break;
                 case OperationType.BitwiseAnd:
+                    AddOpCode(new BitwiseAndOpCode(leftRegister, usingLeft, usingRight));
                     break;
                 case OperationType.BitwiseOr:
+                    AddOpCode(new BitwiseOrOpCode(leftRegister, usingLeft, usingRight));
                     break;
                 case OperationType.BitwiseXor:
+                    AddOpCode(new BitwiseXorOpCode(leftRegister, usingLeft, usingRight));
                     break;
                 case OperationType.BitwiseShiftLeft:
+                    AddOpCode(new BitwiseShiftLeftOpCode(leftRegister, usingLeft, usingRight));
                     break;
                 case OperationType.BitwiseShiftRight:
+                    AddOpCode(new BitwiseShiftRightOpCode(leftRegister, usingLeft, usingRight));
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+
+            // op is done so we remove stuff
+            op = null;
+            _expressionBuilder.RemoveAt(i - 1);
+            _expressionBuilder.RemoveAt(i - 2);
+            var insertIndex = i - 2;
+            i -= 3;
+            if (right != null)
+            {
+                _expressionBuilder.RemoveAt(i);
+                insertIndex--;
+                i--;
+            }
+            _expressionBuilder.Insert(insertIndex, new EvaluatedExpression());
+            left = null;
+            right = null;
+
+            // wind back to next op
+            while (i > -1)
+            {
+                var exprPrev = _expressionBuilder[i];
+                if (exprPrev is OperationExpression)
+                {
+                    break;
+                }
+                i--;
+            }
+
+            if (i < 0)
+                break;
         }
 
-        throw new NotImplementedException();
-        //return new KeyValuePair<IEnumerable<OpCodeBase>, RegisterType>(opCodes, );
+        // we ran out of expressions to process, finish up
+        Debug.Assert(_expressionBuilder.Count == 1, "There should be only a single evaluated expression, or a const, or some method call left");
+        switch (_expressionBuilder[0])
+        {
+            case ConstExpression constExpression:
+                AddOpCode(new ConstToRegisterOpCode(leftRegister, constExpression.Value));
+                break;
+            /*
+            case EvaluatedExpression evaluatedExpression:
+                break;
+            */
+            case VariableExpression variableExpression:
+                AddOpCode(new VarToRegisterOpCode(leftRegister, variableExpression.Name));
+                break;
+        }
+
+        _expressionBuilder.Clear();
+        DeallocateTempRegister(rightRegister);
+        DeallocateTempRegister(storeRegister);
+
+        return leftRegister;
     }
 
     private RegisterType AllocateTempRegister()
@@ -190,18 +294,6 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         else
         {
             _mainBuilder.Add(opCode);
-        }
-    }
-
-    private void AddOpCodes(IEnumerable<OpCodeBase> opCodes)
-    {
-        if (_buildingMethod)
-        {
-            _methodBuilders.Peek().OpCodes.AddRange(opCodes);
-        }
-        else
-        {
-            _mainBuilder.AddRange(opCodes);
         }
     }
 
@@ -435,11 +527,8 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
     public override void ExitVariableAssignment(VariableAssignmentContext context)
     {
-        var expressionBuildResult = BuildExpressionOpCodes();
-        AddOpCodes(expressionBuildResult.Key);
-
+        var usingRegister = BuildExpressionOpCodes();
         var variableName = context.variable().IDENTIFIER_STRING().GetText();
-        var usingRegister = expressionBuildResult.Value;
 
         if (context.ASSIGN() == null)
         {
@@ -476,7 +565,6 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         }
 
         AddOpCode(new SetVariableOpCode(usingRegister, variableName));
-
         DeallocateTempRegister(usingRegister);
     }
 

@@ -2,7 +2,7 @@
 
 public class GreaterEqualOpCode : LogicComparisonBase
 {
-    public GreaterEqualOpCode(RegisterType resultRegister, RegisterType left, RegisterType right) : base(resultRegister, left, right)
+    public GreaterEqualOpCode(RegisterType dest, RegisterType left, RegisterType right) : base(dest, left, right)
     {
     }
 }

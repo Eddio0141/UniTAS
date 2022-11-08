@@ -2,7 +2,7 @@
 
 public class LessEqualOpCode : LogicComparisonBase
 {
-    public LessEqualOpCode(RegisterType resultRegister, RegisterType left, RegisterType right) : base(resultRegister, left, right)
+    public LessEqualOpCode(RegisterType dest, RegisterType left, RegisterType right) : base(dest, left, right)
     {
     }
 }

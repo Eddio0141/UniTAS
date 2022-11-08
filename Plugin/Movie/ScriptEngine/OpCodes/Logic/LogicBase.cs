@@ -2,10 +2,10 @@
 
 public abstract class LogicBase : OpCodeBase
 {
-    public RegisterType ResultRegister { get; }
+    public RegisterType Dest { get; }
 
-    protected LogicBase(RegisterType resultRegister)
+    protected LogicBase(RegisterType dest)
     {
-        ResultRegister = resultRegister;
+        Dest = dest;
     }
 }

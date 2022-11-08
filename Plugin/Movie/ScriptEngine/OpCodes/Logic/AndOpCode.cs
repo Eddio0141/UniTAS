@@ -2,7 +2,7 @@
 
 public class AndOpCode : LogicComparisonBase
 {
-    public AndOpCode(RegisterType resultRegister, RegisterType left, RegisterType right) : base(resultRegister, left, right)
+    public AndOpCode(RegisterType dest, RegisterType left, RegisterType right) : base(dest, left, right)
     {
     }
 }

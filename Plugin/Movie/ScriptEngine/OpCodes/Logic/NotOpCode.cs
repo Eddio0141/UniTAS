@@ -2,7 +2,10 @@
 
 public class NotOpCode : LogicBase
 {
-    public NotOpCode(RegisterType resultRegister) : base(resultRegister)
+    public RegisterType Source { get; }
+
+    public NotOpCode(RegisterType dest, RegisterType source) : base(dest)
     {
+        Source = source;
     }
 }
