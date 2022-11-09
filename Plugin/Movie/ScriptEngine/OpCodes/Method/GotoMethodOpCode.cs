@@ -3,4 +3,9 @@
 public class GotoMethodOpCode : OpCodeBase
 {
     public string MethodName { get; }
+
+    public GotoMethodOpCode(string methodName)
+    {
+        MethodName = methodName;
+    }
 }
