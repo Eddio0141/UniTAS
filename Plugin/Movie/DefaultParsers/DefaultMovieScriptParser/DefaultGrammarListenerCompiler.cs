@@ -20,10 +20,11 @@ namespace UniTASPlugin.Movie.DefaultParsers.DefaultMovieScriptParser;
 public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListener
 {
     // TODO method call validation
+    // TODO addition type validation
     private class MethodBuilder
     {
         public string Name { get; }
-        public List<OpCodeBase> OpCodes { get; set; } = new();
+        public List<OpCodeBase> OpCodes { get; } = new();
 
         public MethodBuilder(string name)
         {
@@ -778,4 +779,6 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         }
         _methodCallArgStoreCount++;
     }
+
+
 }
