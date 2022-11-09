@@ -163,4 +163,10 @@ $value5 = false");
     {
         Setup("$value = 1+(2*3+(4+(5+(6+(7+(8))))))");
     }
+
+    [Fact]
+    public void ExpressionMethodCall()
+    {
+        Setup("fn method(arg1, arg2) { } $value = 5+(method(1 * 9, 1+(2+3)*4) * 3)");
+    }
 }
