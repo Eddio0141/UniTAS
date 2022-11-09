@@ -169,4 +169,11 @@ $value5 = false");
     {
         Setup("fn method(arg1, arg2) { } $value = 5+(method(1 * 9, 1+(2+3)*4) * 3)");
     }
+
+    [Fact]
+    public void MethodCallChain()
+    {
+        Setup(
+            "fn method(arg){} fn method2(arg){} fn method3(arg){} fn method4(arg){} fn method5(arg){} fn method6(arg){} method(method2(method3(method4(method5(method6((5 + 3) * (3 + 3)))))))");
+    }
 }
