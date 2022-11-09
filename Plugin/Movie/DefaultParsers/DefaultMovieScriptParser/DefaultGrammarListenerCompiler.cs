@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using UniTASPlugin.Movie.Exceptions.ParseExceptions;
 using UniTASPlugin.Movie.Models.Script;
 using UniTASPlugin.Movie.ScriptEngine;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes;
@@ -10,6 +11,7 @@ using UniTASPlugin.Movie.ScriptEngine.OpCodes.Logic;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Maths;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Method;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.RegisterSet;
+using UniTASPlugin.Movie.ScriptEngine.OpCodes.StackOp;
 using UniTASPlugin.Movie.ScriptEngine.ValueTypes;
 using static MovieScriptDefaultGrammarParser;
 
@@ -19,17 +21,17 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 {
     private class MethodBuilder
     {
-        private readonly string _name;
+        public string Name { get; }
         public List<OpCodeBase> OpCodes { get; set; } = new();
 
         public MethodBuilder(string name)
         {
-            _name = name;
+            Name = name;
         }
 
         public KeyValuePair<string, List<OpCodeBase>> GetFinalResult()
         {
-            return new KeyValuePair<string, List<OpCodeBase>>(_name, OpCodes);
+            return new KeyValuePair<string, List<OpCodeBase>>(Name, OpCodes);
         }
     }
 
@@ -40,9 +42,13 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
     private RegisterType? _tupleListRegisterReserve;
 
-    private readonly List<ExpressionBase> _expressionBuilder = new();
+    private readonly Stack<List<ExpressionBase>> _expressionBuilders = new();
 
     private readonly bool[] _reservedTempRegister = new bool[RegisterType.Temp5 - RegisterType.Temp + 1];
+    private readonly Stack<List<int>> _reservedRegisterStackTrack = new();
+
+    private RegisterType? _methodCallArgStore;
+    private int _methodCallArgStoreCount;
 
     public IEnumerable<ScriptMethodModel> Compile()
     {
@@ -51,25 +57,63 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         return methods;
     }
 
+    private void PushUsingTempRegisters()
+    {
+        _reservedRegisterStackTrack.Push(new());
+        for (var i = 0; i < _reservedTempRegister.Length; i++)
+        {
+            var @using = _reservedTempRegister[i];
+            var register = RegisterType.Temp + i;
+            if (@using)
+            {
+                AddOpCode(new PushStackOpCode(register));
+                _reservedRegisterStackTrack.Peek().Add(i);
+            }
+
+            _reservedTempRegister[i] = false;
+        }
+    }
+
+    private void PopUsingTempRegisters()
+    {
+        var usingIndexes = _reservedRegisterStackTrack.Pop();
+        foreach (var usingIndex in usingIndexes)
+        {
+            var register = RegisterType.Temp + usingIndex;
+            AddOpCode(new PopStackOpCode(register));
+            _reservedTempRegister[usingIndex] = true;
+        }
+    }
+
+    private bool FindDefinedMethod(string name)
+    {
+        return _builtMethods.Any(x => x.Key == name) || _methodBuilders.Any(x => x.Name == name);
+    }
+
     private void AddExpression(ExpressionBase expression)
     {
-        _expressionBuilder.Add(expression);
+        _expressionBuilders.Peek().Add(expression);
+    }
+
+    private void PushExpressionBuilderStack()
+    {
+        _expressionBuilders.Push(new());
     }
 
     private RegisterType BuildExpressionOpCodes()
     {
-        // TODO method calls
+        var expressionBuilder = _expressionBuilders.Peek();
         var i = 0;
         OperationType? op = null;
         ExpressionBase left = null;
-        ExpressionBase right = null;
         var leftRegister = AllocateTempRegister();
         var rightRegister = AllocateTempRegister();
         var storeRegister = AllocateTempRegister();
         // loop until expression is const, var, method call, or evaluated
         while (true)
         {
-            var expr = _expressionBuilder[i];
+            var expr = expressionBuilder[i];
+            ExpressionBase right = null;
             switch (expr)
             {
                 case OperationExpression opExpression:
@@ -80,7 +124,6 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
                         AddOpCode(new MoveOpCode(leftRegister, storeRegister));
                     }
                     left = null;
-                    right = null;
                     i++;
                     continue;
                 case ConstExpression @const when left == null:
@@ -107,6 +150,10 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
                     right = evaluated;
                     i++;
                     break;
+                case MethodCallExpression methodCall:
+
+                default:
+                    throw new NotImplementedException();
             }
 
             if (op == null)
@@ -210,24 +257,23 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
             // op is done so we remove stuff
             op = null;
-            _expressionBuilder.RemoveAt(i - 1);
-            _expressionBuilder.RemoveAt(i - 2);
+            expressionBuilder.RemoveAt(i - 1);
+            expressionBuilder.RemoveAt(i - 2);
             var insertIndex = i - 2;
             i -= 3;
             if (right != null)
             {
-                _expressionBuilder.RemoveAt(i);
+                expressionBuilder.RemoveAt(i);
                 insertIndex--;
                 i--;
             }
-            _expressionBuilder.Insert(insertIndex, new EvaluatedExpression());
+            expressionBuilder.Insert(insertIndex, new EvaluatedExpression());
             left = null;
-            right = null;
 
             // wind back to next op
             while (i > -1)
             {
-                var exprPrev = _expressionBuilder[i];
+                var exprPrev = expressionBuilder[i];
                 if (exprPrev is OperationExpression)
                 {
                     break;
@@ -240,8 +286,8 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         }
 
         // we ran out of expressions to process, finish up
-        Debug.Assert(_expressionBuilder.Count == 1, "There should be only a single evaluated expression, or a const, or some method call left");
-        switch (_expressionBuilder[0])
+        Debug.Assert(_expressionBuilders.Count == 1, "There should be only a single evaluated expression, or a const, or some method call left");
+        switch (expressionBuilder[0])
         {
             case ConstExpression constExpression:
                 AddOpCode(new ConstToRegisterOpCode(leftRegister, constExpression.Value));
@@ -255,7 +301,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
                 break;
         }
 
-        _expressionBuilder.Clear();
+        expressionBuilder.Clear();
         DeallocateTempRegister(rightRegister);
         DeallocateTempRegister(storeRegister);
 
@@ -494,8 +540,12 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         }
         else if (context.methodCall() != null)
         {
-            // TODO method call validity check
-            throw new NotImplementedException();
+            var methodName = context.methodCall().IDENTIFIER_STRING().GetText();
+            if (!FindDefinedMethod(methodName))
+            {
+                throw new UsingUndefinedMethodException(methodName);
+            }
+            AddExpression(new MethodCallExpression(methodName));
         }
     }
 
@@ -523,6 +573,11 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
                 break;
             parent = parent.Parent;
         }
+    }
+
+    public override void EnterVariableAssignment(VariableAssignmentContext context)
+    {
+        PushExpressionBuilderStack();
     }
 
     public override void ExitVariableAssignment(VariableAssignmentContext context)
@@ -571,5 +626,42 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
     public override void EnterFrameAdvance(FrameAdvanceContext context)
     {
         AddOpCode(new FrameAdvanceOpCode());
+    }
+
+    public override void EnterMethodCall(MethodCallContext context)
+    {
+        if (context.methodCallArgs() == null) return;
+        PushExpressionBuilderStack();
+        if (context.Parent is ExpressionContext)
+        {
+            PushUsingTempRegisters();
+        }
+    }
+
+    public override void ExitMethodCall(MethodCallContext context)
+    {
+        for (var i = 0; i < _methodCallArgStoreCount; i++)
+        {
+            
+        }
+        if (context.Parent is ExpressionContext)
+        {
+            PopUsingTempRegisters();
+        }
+    }
+
+    public override void ExitMethodCallArgs(MethodCallArgsContext context)
+    {
+        var usingRegister = BuildExpressionOpCodes();
+        // HACK
+        if (_methodCallArgStore == null)
+        {
+            _methodCallArgStore = usingRegister;
+        }
+        else
+        {
+            AddOpCode(new PushStackOpCode(_methodCallArgStore.Value));
+        }
+        _methodCallArgStoreCount++;
     }
 }
