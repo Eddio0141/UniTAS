@@ -324,6 +324,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
         // we ran out of expressions to process, finish up
         Debug.Assert(expressionBuilder.Count == 1, "There should be only a single evaluated expression, or a const, or some method call left");
+        var resultRegister = leftRegister;
         switch (expressionBuilder[0])
         {
             case ConstExpression constExpression:
@@ -332,12 +333,17 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
             case VariableExpression variableExpression:
                 AddOpCode(new VarToRegisterOpCode(leftRegister, variableExpression.Name));
                 break;
+            case MethodCallExpression methodCallExpression:
+                CallMethod(methodCallExpression.MethodName);
+                resultRegister = RegisterType.Ret;
+                DeallocateTempRegister(leftRegister);
+                break;
         }
 
         DeallocateTempRegister(rightRegister);
         DeallocateTempRegister(storeRegister);
 
-        return leftRegister;
+        return resultRegister;
     }
 
     private RegisterType AllocateTempRegister()
@@ -627,6 +633,21 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         }
     }
 
+    public override void EnterActionWithSeparator(ActionWithSeparatorContext context)
+    {
+        if (context.methodCall() != null)
+        {
+            PushExpressionBuilderStack();
+        }
+    }
+
+    public override void ExitActionWithSeparator(ActionWithSeparatorContext context)
+    {
+        if (context.methodCall() == null) return;
+        var methodName = context.methodCall().IDENTIFIER_STRING().GetText();
+        CallMethod(methodName);
+    }
+
     public override void EnterVariableAssignment(VariableAssignmentContext context)
     {
         PushExpressionBuilderStack();
@@ -672,7 +693,10 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         }
 
         AddOpCode(new SetVariableOpCode(usingRegister, variableName));
-        DeallocateTempRegister(usingRegister);
+        if (usingRegister != RegisterType.Ret)
+        {
+            DeallocateTempRegister(usingRegister);
+        }
     }
 
     public override void EnterFrameAdvance(FrameAdvanceContext context)
@@ -735,7 +759,15 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         // HACK, we push the arguments to a temporary register where we unstack and push into arg stack later
         if (_methodCallArgStore == null)
         {
-            _methodCallArgStore = usingRegister;
+            if (usingRegister == RegisterType.Ret)
+            {
+                _methodCallArgStore = AllocateTempRegister();
+                AddOpCode(new MoveOpCode(usingRegister, _methodCallArgStore.Value));
+            }
+            else
+            {
+                _methodCallArgStore = usingRegister;
+            }
         }
         else
         {
