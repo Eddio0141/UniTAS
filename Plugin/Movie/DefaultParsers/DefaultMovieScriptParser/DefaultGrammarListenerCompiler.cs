@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Antlr4.Runtime;
 using UniTASPlugin.Movie.Exceptions.ParseExceptions;
 using UniTASPlugin.Movie.Models.Script;
 using UniTASPlugin.Movie.ScriptEngine;
@@ -45,18 +46,22 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
     // opCodes that will be ran in order to call the method
     private readonly List<OpCodeBase> _methodCallArgsBuilder = new();
 
-    private RegisterType? _tupleListRegisterReserve;
-
     private readonly Stack<List<ExpressionBase>> _expressionBuilders = new();
 
-    private readonly bool[] _reservedTempRegister = new bool[RegisterType.Temp5 - RegisterType.Temp + 1];
+    private readonly bool[] _reservedTempRegister = new bool[RegisterType.Temp9 - RegisterType.Temp + 1];
     private readonly Stack<List<int>> _reservedRegisterStackTrack = new();
 
     private RegisterType? _methodCallArgStore;
     private int _methodCallArgStoreCount;
 
+    private RuleContext _lastTupleExpressionEnter;
+    private RuleContext _lastTupleExpressionExit;
+    private RegisterType? _tupleBuilderStore;
+    private RegisterType? _tupleBuilderParentStore;
+
     public IEnumerable<ScriptMethodModel> Compile()
     {
+        Debug.Assert(!_reservedTempRegister.Any(x => x), "Reserved temporary register is still being used, means something forgot to deallocate it");
         var methods = new List<ScriptMethodModel> { new(null, _mainBuilder) };
         methods.AddRange(_builtMethods.Select(x => new ScriptMethodModel(x.Key, x.Value)));
         return methods;
@@ -362,7 +367,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
     private void DeallocateTempRegister(RegisterType register)
     {
-        if (register is > RegisterType.Temp5 or < RegisterType.Temp)
+        if (register is > RegisterType.Temp9 or < RegisterType.Temp)
         {
             throw new InvalidOperationException("Out of range register value");
         }
@@ -606,32 +611,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
             }
             AddExpression(new MethodCallExpression(methodName));
         }
-    }
-
-    public override void EnterTupleExpression(TupleExpressionContext context)
-    {
-        // reserve for tuple / array creation TODO
-        //if (_tupleListRegisterReserve != null) return;
-        //_tupleListRegisterReserve = AllocateTempRegister();
-    }
-
-    public override void ExitTupleExpression(TupleExpressionContext context)
-    {
-        // recursively check if there's any more tuple / array expression on top level
-        var parent = context.Parent;
-        while (true)
-        {
-            if (parent is not ProgramContext)
-            {
-                Debug.Assert(_tupleListRegisterReserve != null, nameof(_tupleListRegisterReserve) + " != null");
-                DeallocateTempRegister(_tupleListRegisterReserve.Value);
-                break;
-            }
-
-            if (parent.Parent == null)
-                break;
-            parent = parent.Parent;
-        }
+        ExitExpression(context);
     }
 
     public override void EnterActionWithSeparator(ActionWithSeparatorContext context)
@@ -780,5 +760,153 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         _methodCallArgStoreCount++;
     }
 
+    private void ExitExpression(RuleContext context)
+    {
+        if (context.Parent is not TupleExpressionContext tupleExpression) return;
 
+        // expression evaluate for tuple building
+        var resultRegister = BuildExpressionOpCodes();
+        var expressionIndex = tupleExpression.children.IndexOf(context);
+        var nextExprIndex = expressionIndex + 2;
+        if (nextExprIndex < tupleExpression.ChildCount)
+        {
+            var nextExpr = tupleExpression.GetChild(nextExprIndex);
+            if (nextExpr is ExpressionContext or TupleExpressionContext)
+            {
+                PushExpressionBuilderStack();
+            }
+        }
+
+        if (_tupleBuilderStore == null)
+        {
+            if (resultRegister == RegisterType.Ret)
+            {
+                _tupleBuilderStore = AllocateTempRegister();
+                AddOpCode(new MoveOpCode(resultRegister, _tupleBuilderStore.Value));
+            }
+            else
+            {
+                _tupleBuilderStore = resultRegister;
+            }
+        }
+        else
+        {
+            AddOpCode(new PushTupleOpCode(_tupleBuilderStore.Value, resultRegister));
+            DeallocateTempRegister(resultRegister);
+        }
+    }
+
+    public override void ExitFlipSign(FlipSignContext context)
+    {
+        ExitExpression(context);
+    }
+
+    public override void ExitMultiplyDivide(MultiplyDivideContext context)
+    {
+        ExitExpression(context);
+    }
+
+    public override void ExitAddSubtract(AddSubtractContext context)
+    {
+        ExitExpression(context);
+    }
+
+    public override void ExitNot(NotContext context)
+    {
+        ExitExpression(context);
+    }
+
+    public override void ExitAndOr(AndOrContext context)
+    {
+        ExitExpression(context);
+    }
+
+    public override void ExitCompare(CompareContext context)
+    {
+        ExitExpression(context);
+    }
+
+    public override void ExitBitwise(BitwiseContext context)
+    {
+        ExitExpression(context);
+    }
+
+    public override void ExitBitwiseShift(BitwiseShiftContext context)
+    {
+        ExitExpression(context);
+    }
+
+    public override void ExitParentheses(ParenthesesContext context)
+    {
+        ExitExpression(context);
+    }
+
+    public override void EnterTupleExpression(TupleExpressionContext context)
+    {
+        PushExpressionBuilderStack();
+        // if last enter isn't equals to this parent, means we went 1 layer deep
+        if (context.Parent is { Parent: TupleExpressionContext } && !ReferenceEquals(context.Parent, _lastTupleExpressionEnter))
+        {
+            // store the parent tuple build
+            Debug.Assert(_tupleBuilderParentStore != null, nameof(_tupleBuilderParentStore) + " != null");
+            AddOpCode(new PushStackOpCode(_tupleBuilderParentStore.Value));
+        }
+
+        _lastTupleExpressionEnter = context.Parent;
+    }
+
+    public override void ExitTupleExpression(TupleExpressionContext context)
+    {
+        // update parent tuple if this is a child when tupleExpression ends
+        if (context.Parent is not TupleExpressionContext)
+        {
+            if (_tupleBuilderParentStore != null)
+            {
+                // this is the last move
+                Debug.Assert(_tupleBuilderStore != null, nameof(_tupleBuilderStore) + " != null");
+                AddOpCode(new PushTupleOpCode(_tupleBuilderStore.Value, _tupleBuilderParentStore.Value));
+                DeallocateTempRegister(_tupleBuilderParentStore.Value);
+                _tupleBuilderParentStore = null;
+            }
+            _lastTupleExpressionExit = context.Parent;
+            return;
+        }
+
+        _tupleBuilderParentStore ??= AllocateTempRegister();
+        var tupleBuilderParentStore = _tupleBuilderParentStore.Value;
+
+        // we moved up 1 layer
+        if (_lastTupleExpressionExit != null && !ReferenceEquals(context.Parent, _lastTupleExpressionExit))
+        {
+            var tempMove = AllocateTempRegister();
+            AddOpCode(new MoveOpCode(tupleBuilderParentStore, tempMove));
+            // pop and push tuple to parent store only if not last tuple expr
+            AddOpCode(new PopStackOpCode(tupleBuilderParentStore));
+            AddOpCode(new PushTupleOpCode(tupleBuilderParentStore, tempMove));
+            DeallocateTempRegister(tempMove);
+        }
+        else
+        {
+            // still non-last tuple expr
+            Debug.Assert(_tupleBuilderStore != null, nameof(_tupleBuilderStore) + " != null");
+            AddOpCode(new PushTupleOpCode(tupleBuilderParentStore, _tupleBuilderStore.Value));
+            _tupleBuilderStore = null;
+        }
+        _lastTupleExpressionExit = context.Parent;
+    }
+
+    public override void ExitTupleAssignment(TupleAssignmentContext context)
+    {
+        Debug.Assert(_tupleBuilderStore != null, nameof(_tupleBuilderStore) + " != null");
+        var tupleBuilderStore = _tupleBuilderStore.Value;
+
+        var varName = context.variable().IDENTIFIER_STRING().GetText();
+        AddOpCode(new SetVariableOpCode(tupleBuilderStore, varName));
+
+        DeallocateTempRegister(tupleBuilderStore);
+        _tupleBuilderStore = null;
+
+        _lastTupleExpressionEnter = null;
+        _lastTupleExpressionExit = null;
+    }
 }
