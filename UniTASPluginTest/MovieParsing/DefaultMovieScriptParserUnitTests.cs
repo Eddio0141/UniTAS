@@ -32,12 +32,7 @@ public class DefaultMovieScriptParserUnitTests
     [Fact]
     public void AssignTupleOrExpression()
     {
-        /*
-        var script = Setup(@"$value = (10 + 5) * 3
-$value2 = (10, 5, 3)
-$value3 = (3 / (10 * 5), !(true && false))
-$value4 = ((""nested"", 5), ((1.0, -2), ""nested 2"", (10 + 5) * (3)))");
-        */
+        Setup("$value = ((\"nested\", 5), ((1.0, -2), \"nested 2\", (10 + 5) * (3)))");
     }
 
     [Fact]
