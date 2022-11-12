@@ -248,7 +248,6 @@
 - `return` for returning from a method
 - `true` for true
 - `false` for false
-- `match` RESERVED FOR FUTURE USE
 
 # BNF description
 ```bnf
