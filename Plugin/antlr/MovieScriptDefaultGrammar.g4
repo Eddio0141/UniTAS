@@ -5,7 +5,7 @@ grammar MovieScriptDefaultGrammar;
  */
 
 script: program EOF;
-program: (actionWithSeparator actionSeparator | action NEWLINE*)*;
+program: actionWithSeparator | (actionWithSeparator actionSeparator program) | (action NEWLINE*)+;
 
 actionSeparator: ACTIONSEPARATOR | NEWLINE | frameAdvance;
 
