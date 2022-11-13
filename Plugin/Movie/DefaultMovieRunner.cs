@@ -1,26 +1,29 @@
-﻿using System;
+﻿using BepInEx;
+using System;
+using System.Collections.Generic;
 using UniTASPlugin.GameEnvironment.Interfaces;
+using UniTASPlugin.Movie.Exceptions.ScriptEngineExceptions;
+using UniTASPlugin.Movie.Models.Script;
 using UniTASPlugin.Movie.ParseInterfaces;
-using UniTASPlugin.Movie.ScriptEngine.EngineInterfaces;
+using UniTASPlugin.Movie.ScriptEngine;
+using UniTASPlugin.Movie.ScriptEngine.OpCodes;
 
 namespace UniTASPlugin.Movie;
 
-public class MovieRunner<TEngine>
-where TEngine :
-IScriptEngineInitScript,
-IScriptEngineMovieEnd,
-IScriptEngineCurrentState,
-IScriptEngineAdvanceFrame
+public class DefaultMovieRunner : IMovieRunner
 {
+    private Register[] _registers;
+    private OpCodeBase[] _mainMethod;
+    private Dictionary<string, OpCodeBase[]> _methods;
+    public bool MovieEnd { get; private set; }
+
     private readonly IMovieParser _parser;
-    private readonly TEngine _scriptEngine;
     public bool IsRunning { get; private set; }
 
-    public MovieRunner(IMovieParser parser, TEngine scriptEngine)
+    public DefaultMovieRunner(IMovieParser parser)
     {
         IsRunning = false;
         _parser = parser;
-        _scriptEngine = scriptEngine;
     }
 
     public void RunFromPath<TEnv>(string path, ref TEnv env)
@@ -39,7 +42,7 @@ IScriptEngineAdvanceFrame
         // TODO apply environment
 
         // init engine
-        _scriptEngine.Init(movie.Script);
+        InitEngine(movie.Script);
 
         // set env
         env.InputState.ResetStates();
@@ -49,6 +52,19 @@ IScriptEngineAdvanceFrame
 
         IsRunning = true;
         throw new NotImplementedException();
+    }
+
+    private void InitEngine(ScriptModel script)
+    {
+        _registers = new Register[Enum.GetNames(typeof(RegisterType)).Length];
+        MovieEnd = false;
+
+        _mainMethod = script.MainMethod.OpCodes;
+        _methods = new Dictionary<string, OpCodeBase[]>();
+        foreach (var scriptMethodModel in script.Methods)
+        {
+            _methods.Add(scriptMethodModel.Name, scriptMethodModel.OpCodes);
+        }
     }
 
     public void Update<TEnv>(ref TEnv env)
@@ -92,26 +108,41 @@ IScriptEngineAdvanceFrame
             }
         }*/
 
+        /*
         if (_scriptEngine.MovieEnd)
         {
             IsRunning = false;
-            MovieEnd(ref env);
+            AtMovieEnd(ref env);
             return;
         }
 
         // TODO
-        _scriptEngine.CurrentState();
         _scriptEngine.AdvanceFrame();
+        */
 
         throw new NotImplementedException();
     }
 
-    private void MovieEnd<TEnv>(ref TEnv env)
+    private void AtMovieEnd<TEnv>(ref TEnv env)
     where TEnv :
         IRunVirtualEnvironmentProperty
     {
         env.RunVirtualEnvironment = false;
         // TODO set frameTime to 0
+        throw new NotImplementedException();
+    }
+
+    public void AddMethod(ScriptMethodModel method)
+    {
+        if (_methods.ContainsKey(method.Name) || method.Name.IsNullOrWhiteSpace())
+        {
+            throw new MovieMethodAlreadyDefinedException();
+        }
+        _methods.Add(method.Name, method.OpCodes);
+    }
+
+    public void AdvanceFrame()
+    {
         throw new NotImplementedException();
     }
 }

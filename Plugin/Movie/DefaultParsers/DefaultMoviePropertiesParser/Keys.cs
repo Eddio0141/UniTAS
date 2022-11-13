@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Runtime.Remoting.Messaging;
 using UniTASPlugin.GameEnvironment.InnerState;
 using UniTASPlugin.Movie.Exceptions.ParseExceptions;
 // ReSharper disable StringLiteralTypo

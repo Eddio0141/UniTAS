@@ -3,7 +3,6 @@ using System.Reflection;
 using HarmonyLib;
 using Ninject;
 using UniTASPlugin.GameOverlay;
-using UniTASPlugin.VersionSafeWrapper;
 using ScreenOrig = UnityEngine.Screen;
 // ReSharper disable InconsistentNaming
 // ReSharper disable UnusedMember.Local

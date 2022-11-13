@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Reflection;
 using HarmonyLib;
-using Ninject;
 using UniTASPlugin.VersionSafeWrapper;
 using AsyncOpOrig = UnityEngine.AsyncOperation;
 // ReSharper disable IdentifierTypo

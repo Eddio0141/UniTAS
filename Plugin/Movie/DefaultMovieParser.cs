@@ -8,13 +8,13 @@ using UniTASPlugin.Movie.ParseInterfaces;
 
 namespace UniTASPlugin.Movie;
 
-public class MovieParseProcessor : IMovieParser
+public class DefaultMovieParser : IMovieParser
 {
     private readonly IMovieSectionSplitter _sectionSplitter;
     private readonly IMoviePropertyParser _propertyParser;
     private readonly IMovieScriptParser _scriptParser;
 
-    public MovieParseProcessor(IMovieSectionSplitter sectionSplitter, IMoviePropertyParser propertyParser, IMovieScriptParser scriptParser)
+    public DefaultMovieParser(IMovieSectionSplitter sectionSplitter, IMoviePropertyParser propertyParser, IMovieScriptParser scriptParser)
     {
         _sectionSplitter = sectionSplitter;
         _propertyParser = propertyParser;
