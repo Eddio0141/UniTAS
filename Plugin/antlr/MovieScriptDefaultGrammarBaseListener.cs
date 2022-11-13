@@ -60,6 +60,18 @@ public partial class MovieScriptDefaultGrammarBaseListener : IMovieScriptDefault
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitProgram([NotNull] MovieScriptDefaultGrammarParser.ProgramContext context) { }
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.scopedProgram"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterScopedProgram([NotNull] MovieScriptDefaultGrammarParser.ScopedProgramContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.scopedProgram"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitScopedProgram([NotNull] MovieScriptDefaultGrammarParser.ScopedProgramContext context) { }
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.actionSeparator"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
@@ -83,30 +95,6 @@ public partial class MovieScriptDefaultGrammarBaseListener : IMovieScriptDefault
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitAction([NotNull] MovieScriptDefaultGrammarParser.ActionContext context) { }
-	/// <summary>
-	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.scopeOpen"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void EnterScopeOpen([NotNull] MovieScriptDefaultGrammarParser.ScopeOpenContext context) { }
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.scopeOpen"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void ExitScopeOpen([NotNull] MovieScriptDefaultGrammarParser.ScopeOpenContext context) { }
-	/// <summary>
-	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.scopeClose"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void EnterScopeClose([NotNull] MovieScriptDefaultGrammarParser.ScopeCloseContext context) { }
-	/// <summary>
-	/// Exit a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.scopeClose"/>.
-	/// <para>The default implementation does nothing.</para>
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	public virtual void ExitScopeClose([NotNull] MovieScriptDefaultGrammarParser.ScopeCloseContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.actionWithSeparator"/>.
 	/// <para>The default implementation does nothing.</para>

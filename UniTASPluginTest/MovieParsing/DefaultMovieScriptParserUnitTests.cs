@@ -196,7 +196,6 @@ if $value == 0 {
     $value = 2
 } else {
     $value = 3
-}
-");
+}");
     }
 }
