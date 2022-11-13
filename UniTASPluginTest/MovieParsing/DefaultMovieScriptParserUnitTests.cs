@@ -185,4 +185,18 @@ $value5 = false");
         Setup(@"fn method(arg) { }
 $value = method((5 + method(4 * 9 + method(222))) * (4 + 5))");
     }
+
+    [Fact]
+    public void IfElse()
+    {
+        Setup(@"$value = 0
+if $value == 0 {
+    $value = 1
+} else if $value == 1 {
+    $value = 2
+} else {
+    $value = 3
+}
+");
+    }
 }
