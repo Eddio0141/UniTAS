@@ -173,6 +173,13 @@ $value5 = false");
     }
 
     [Fact]
+    public void MethodCallChain2()
+    {
+        Setup(
+            "fn method(arg){} fn method2(arg){} method(method2((5 + 3) * (3 + 3)))");
+    }
+
+    [Fact]
     public void MethodCalculations()
     {
         Setup(@"fn method(arg) { }
