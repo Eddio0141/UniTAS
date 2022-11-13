@@ -3,7 +3,6 @@ using Ninject;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.GameOverlay.GameConsole;
 using UniTASPlugin.Movie;
-using UniTASPlugin.Movie.ScriptEngine;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
 
@@ -70,7 +69,7 @@ internal static class Overlay
     public static void Update()
     {
         var kernel = Plugin.Instance.Kernel;
-        var movieRunner = kernel.Get<MovieRunner<MovieScriptEngine>>();
+        var movieRunner = kernel.Get<DefaultMovieRunner>();
         if (!movieRunner.IsRunning && Input.GetKeyDown(KeyCode.F10))
         {
             Enabled = !Enabled;
@@ -132,7 +131,7 @@ internal static class Overlay
             return;
 
         var kernel = Plugin.Instance.Kernel;
-        var movieRunner = kernel.Get<MovieRunner<MovieScriptEngine>>();
+        var movieRunner = kernel.Get<DefaultMovieRunner>();
         var env = kernel.Get<VirtualEnvironment>();
 
         GUI.DrawTexture(new Rect(MENU_X, MENU_Y, MENU_SIZE_X, MENU_SIZE_Y), BGSurround);

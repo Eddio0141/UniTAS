@@ -9,7 +9,6 @@ using UniTASPlugin.FakeGameState.GameFileSystem;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.GameOverlay;
 using UniTASPlugin.Movie;
-using UniTASPlugin.Movie.ScriptEngine;
 using UniTASPlugin.NInjectModules;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
@@ -87,7 +86,7 @@ public class Plugin : BaseUnityPlugin
     // unity execution order is Awake() -> FixedUpdate() -> Update()
     private void Update()
     {
-        var movieRunner = Kernel.Get<MovieRunner<MovieScriptEngine>>();
+        var movieRunner = Kernel.Get<DefaultMovieRunner>();
         var env = Kernel.Get<VirtualEnvironment>();
         movieRunner.Update(ref env);
         Overlay.Update();

@@ -3,7 +3,6 @@ using System.Reflection;
 using HarmonyLib;
 using Ninject;
 using UniTASPlugin.GameOverlay;
-using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
 // ReSharper disable UnusedMember.Local
 // ReSharper disable InconsistentNaming

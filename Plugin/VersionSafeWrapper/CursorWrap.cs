@@ -1,6 +1,5 @@
 ﻿using System;
 using HarmonyLib;
-using Ninject;
 using Screen = UnityEngine.Screen;
 
 namespace UniTASPlugin.VersionSafeWrapper;
