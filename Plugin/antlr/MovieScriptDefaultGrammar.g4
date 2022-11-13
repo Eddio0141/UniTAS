@@ -6,6 +6,7 @@ grammar MovieScriptDefaultGrammar;
 
 script: program EOF;
 program: actionWithSeparator | (actionWithSeparator actionSeparator program) | (action NEWLINE*)+;
+scopedProgram: SCOPE_OPEN NEWLINE* program NEWLINE* SCOPE_CLOSE;
 
 actionSeparator: ACTIONSEPARATOR | NEWLINE | frameAdvance;
 
@@ -13,16 +14,12 @@ action
     : frameAdvance
     | ifElse
     | methodDef
-    | scopeOpen
-    | scopeClose
+    | scopedProgram
     | loop
     | breakAction
     | continueAction
     | returnAction
     ;
-
-scopeOpen: SCOPE_OPEN;
-scopeClose: SCOPE_CLOSE;
 
 actionWithSeparator
     : variableAssignment
@@ -67,17 +64,17 @@ floatType: FLOAT;
 
 bool: 'true' | 'false';
 
-ifElse: 'if' expression SCOPE_OPEN NEWLINE* program SCOPE_CLOSE ('else if' expression SCOPE_OPEN NEWLINE* program SCOPE_CLOSE)* ('else' SCOPE_OPEN NEWLINE* program SCOPE_CLOSE)?;
+ifElse: 'if' expression scopedProgram ('else if' expression scopedProgram)* ('else' scopedProgram)?;
 
 methodCall: IDENTIFIER_STRING ROUND_BRACKET_OPEN methodCallArgs? ROUND_BRACKET_CLOSE;
 
 methodCallArgs: (expression | tupleExpression) COMMA methodCallArgs | (expression | tupleExpression);
 
-methodDef: 'fn' IDENTIFIER_STRING ROUND_BRACKET_OPEN methodDefArgs? ROUND_BRACKET_CLOSE SCOPE_OPEN NEWLINE* program SCOPE_CLOSE;
+methodDef: 'fn' IDENTIFIER_STRING ROUND_BRACKET_OPEN methodDefArgs? ROUND_BRACKET_CLOSE scopedProgram;
 
 methodDefArgs: IDENTIFIER_STRING COMMA methodDefArgs | IDENTIFIER_STRING;
 
-loop: 'loop' ROUND_BRACKET_OPEN expression ROUND_BRACKET_CLOSE SCOPE_OPEN NEWLINE* program SCOPE_CLOSE;
+loop: 'loop' ROUND_BRACKET_OPEN expression ROUND_BRACKET_CLOSE scopedProgram;
 
 /*
  * Lexer rules
