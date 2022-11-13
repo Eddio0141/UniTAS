@@ -617,14 +617,6 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         ExitExpression(context);
     }
 
-    public override void EnterActionWithSeparator(ActionWithSeparatorContext context)
-    {
-        if (context.methodCall() != null && context.methodCall().methodCallArgs() != null)
-        {
-            PushExpressionBuilderStack();
-        }
-    }
-
     public override void ExitActionWithSeparator(ActionWithSeparatorContext context)
     {
         if (context.methodCall() == null) return;
