@@ -1,4 +1,4 @@
-﻿namespace UniTASPlugin.Movie.DefaultParsers.DefaultMovieScriptParser;
+﻿namespace UniTASPlugin.Movie.DefaultParsers.DefaultMovieScriptParser.Expressions;
 
 public class OperationExpression : ExpressionBase
 {
