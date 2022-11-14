@@ -404,17 +404,41 @@ public partial class MovieScriptDefaultGrammarBaseListener : IMovieScriptDefault
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitBool([NotNull] MovieScriptDefaultGrammarParser.BoolContext context) { }
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.ifElse"/>.
+	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.ifStatement"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void EnterIfElse([NotNull] MovieScriptDefaultGrammarParser.IfElseContext context) { }
+	public virtual void EnterIfStatement([NotNull] MovieScriptDefaultGrammarParser.IfStatementContext context) { }
 	/// <summary>
-	/// Exit a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.ifElse"/>.
+	/// Exit a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.ifStatement"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void ExitIfElse([NotNull] MovieScriptDefaultGrammarParser.IfElseContext context) { }
+	public virtual void ExitIfStatement([NotNull] MovieScriptDefaultGrammarParser.IfStatementContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.elseIfStatement"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterElseIfStatement([NotNull] MovieScriptDefaultGrammarParser.ElseIfStatementContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.elseIfStatement"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitElseIfStatement([NotNull] MovieScriptDefaultGrammarParser.ElseIfStatementContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.elseStatement"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterElseStatement([NotNull] MovieScriptDefaultGrammarParser.ElseStatementContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.elseStatement"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitElseStatement([NotNull] MovieScriptDefaultGrammarParser.ElseStatementContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.methodCall"/>.
 	/// <para>The default implementation does nothing.</para>

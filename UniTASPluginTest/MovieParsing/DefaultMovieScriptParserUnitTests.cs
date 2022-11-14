@@ -194,8 +194,10 @@ if $value == 0 {
     $value = 1
 } else if $value == 1 {
     $value = 2
-} else {
+} else if $value == 2 {
     $value = 3
+} else {
+    $value = 4
 }");
     }
 }

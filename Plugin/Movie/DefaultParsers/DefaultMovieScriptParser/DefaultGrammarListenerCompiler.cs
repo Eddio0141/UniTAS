@@ -9,6 +9,7 @@ using UniTASPlugin.Movie.Models.Script;
 using UniTASPlugin.Movie.ScriptEngine;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.BitwiseOps;
+using UniTASPlugin.Movie.ScriptEngine.OpCodes.Jump;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Logic;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Maths;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Method;
@@ -59,6 +60,8 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
     private RegisterType? _tupleExprTopLevelStore;
     private RegisterType? _tupleExprInnerStore;
     private readonly List<int> _tupleInnerStorePushDepths = new();
+
+    private ExprPreservedBeforeScopedProgram? _exprPreservedBeforeScopedProgram;
 
     public IEnumerable<ScriptMethodModel> Compile()
     {
@@ -901,5 +904,41 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
         DeallocateTempRegister(tupleBuilderStore);
         _tupleExprTopLevelStore = null;
+    }
+
+    public override void EnterIfStatement(IfStatementContext context)
+    {
+        _exprPreservedBeforeScopedProgram = ExprPreservedBeforeScopedProgram.IfStatement;
+        PushExpressionBuilderStack();
+    }
+
+    public override void EnterElseIfStatement(ElseIfStatementContext context)
+    {
+        PushExpressionBuilderStack();
+    }
+
+    public override void EnterLoop(LoopContext context)
+    {
+        _exprPreservedBeforeScopedProgram = ExprPreservedBeforeScopedProgram.Loop;
+    }
+
+    public override void EnterScopedProgram(ScopedProgramContext context)
+    {
+        switch (_exprPreservedBeforeScopedProgram)
+        {
+            case ExprPreservedBeforeScopedProgram.IfStatement:
+                {
+                    var expr = BuildExpressionOpCodes();
+                    AddOpCode(new JumpIfTrue(expr));
+                    break;
+                }
+            case ExprPreservedBeforeScopedProgram.Loop:
+                break;
+            case null:
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+        _exprPreservedBeforeScopedProgram = null;
     }
 }
