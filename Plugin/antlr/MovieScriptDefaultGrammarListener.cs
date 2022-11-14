@@ -341,15 +341,35 @@ public interface IMovieScriptDefaultGrammarListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitBool([NotNull] MovieScriptDefaultGrammarParser.BoolContext context);
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.ifElse"/>.
+	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.ifStatement"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	void EnterIfElse([NotNull] MovieScriptDefaultGrammarParser.IfElseContext context);
+	void EnterIfStatement([NotNull] MovieScriptDefaultGrammarParser.IfStatementContext context);
 	/// <summary>
-	/// Exit a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.ifElse"/>.
+	/// Exit a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.ifStatement"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	void ExitIfElse([NotNull] MovieScriptDefaultGrammarParser.IfElseContext context);
+	void ExitIfStatement([NotNull] MovieScriptDefaultGrammarParser.IfStatementContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.elseIfStatement"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterElseIfStatement([NotNull] MovieScriptDefaultGrammarParser.ElseIfStatementContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.elseIfStatement"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitElseIfStatement([NotNull] MovieScriptDefaultGrammarParser.ElseIfStatementContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.elseStatement"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterElseStatement([NotNull] MovieScriptDefaultGrammarParser.ElseStatementContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.elseStatement"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitElseStatement([NotNull] MovieScriptDefaultGrammarParser.ElseStatementContext context);
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.methodCall"/>.
 	/// </summary>

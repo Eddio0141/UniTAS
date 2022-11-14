@@ -12,7 +12,7 @@ actionSeparator: ACTIONSEPARATOR | NEWLINE | frameAdvance;
 
 action
     : frameAdvance
-    | ifElse
+    | ifStatement
     | methodDef
     | scopedProgram
     | loop
@@ -64,7 +64,9 @@ floatType: FLOAT;
 
 bool: 'true' | 'false';
 
-ifElse: 'if' expression scopedProgram ('else if' expression scopedProgram)* ('else' scopedProgram)?;
+ifStatement: 'if' expression scopedProgram (elseIfStatement | elseStatement)?;
+elseIfStatement: 'else if' expression scopedProgram (elseIfStatement | elseStatement);
+elseStatement: 'else' scopedProgram;
 
 methodCall: IDENTIFIER_STRING ROUND_BRACKET_OPEN methodCallArgs? ROUND_BRACKET_CLOSE;
 
