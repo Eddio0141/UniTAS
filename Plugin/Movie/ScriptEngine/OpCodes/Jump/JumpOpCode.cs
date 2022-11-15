@@ -2,4 +2,7 @@
 
 public class JumpOpCode : JumpBase
 {
+    public JumpOpCode(int offset) : base(offset)
+    {
+    }
 }

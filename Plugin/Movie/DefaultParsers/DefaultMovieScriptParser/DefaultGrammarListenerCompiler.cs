@@ -43,8 +43,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
     private readonly List<OpCodeBase> _mainBuilder = new();
     private readonly List<KeyValuePair<string, List<OpCodeBase>>> _builtMethods = new();
     private readonly Stack<MethodBuilder> _methodBuilders = new();
-    private bool _buildingMethod;
-    private bool _buildingMethodCallArgs;
+    private OpCodeBuildingType _buildingType = OpCodeBuildingType.BuildingMainMethod;
     // opCodes that will be ran in order to call the method
     private readonly List<OpCodeBase> _methodCallArgsBuilder = new();
 
@@ -61,7 +60,8 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
     private RegisterType? _tupleExprInnerStore;
     private readonly List<int> _tupleInnerStorePushDepths = new();
 
-    private ExprPreservedBeforeScopedProgram? _exprPreservedBeforeScopedProgram;
+    private readonly Stack<KeyValuePair<KeyValuePair<int, RegisterType>, OpCodeBuildingType>> _ifNotTrueOffsets = new();
+    private readonly Stack<KeyValuePair<List<int>, OpCodeBuildingType>> _endOfIfExprOffsets = new();
 
     public IEnumerable<ScriptMethodModel> Compile()
     {
@@ -383,40 +383,118 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
     private void AddOpCode(OpCodeBase opCode)
     {
-        if (_buildingMethod)
+        switch (_buildingType)
         {
-            _methodBuilders.Peek().OpCodes.Add(opCode);
-        }
-        else if (_buildingMethodCallArgs)
-        {
-            _methodCallArgsBuilder.Add(opCode);
-        }
-        else
-        {
-            _mainBuilder.Add(opCode);
+            case OpCodeBuildingType.BuildingMainMethod:
+                _mainBuilder.Add(opCode);
+                break;
+            case OpCodeBuildingType.BuildingMethod:
+                _methodBuilders.Peek().OpCodes.Add(opCode);
+                break;
+            case OpCodeBuildingType.BuildingMethodArgs:
+                _methodCallArgsBuilder.Add(opCode);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
         }
     }
 
     private void AddOpCodes(IEnumerable<OpCodeBase> opCodes)
     {
-        if (_buildingMethod)
+        switch (_buildingType)
         {
-            _methodBuilders.Peek().OpCodes.AddRange(opCodes);
+            case OpCodeBuildingType.BuildingMainMethod:
+                _mainBuilder.AddRange(opCodes);
+                break;
+            case OpCodeBuildingType.BuildingMethod:
+                _methodBuilders.Peek().OpCodes.AddRange(opCodes);
+                break;
+            case OpCodeBuildingType.BuildingMethodArgs:
+                _methodCallArgsBuilder.AddRange(opCodes);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
         }
-        else if (_buildingMethodCallArgs)
+    }
+
+    private int GetOpCodeInsertLocation()
+    {
+        switch (_buildingType)
         {
-            _methodCallArgsBuilder.AddRange(opCodes);
+            case OpCodeBuildingType.BuildingMainMethod:
+                return _mainBuilder.Count;
+            case OpCodeBuildingType.BuildingMethod:
+                return _methodBuilders.Peek().OpCodes.Count;
+            case OpCodeBuildingType.BuildingMethodArgs:
+                return _methodCallArgsBuilder.Count;
+            default:
+                throw new ArgumentOutOfRangeException();
         }
-        else
+    }
+
+    private void InsertOpCodeAndUpdateOffset(int index, OpCodeBase opCode)
+    {
+        switch (_buildingType)
         {
-            _mainBuilder.AddRange(opCodes);
+            case OpCodeBuildingType.BuildingMainMethod:
+                _mainBuilder.Insert(index, opCode);
+                break;
+            case OpCodeBuildingType.BuildingMethod:
+                _methodBuilders.Peek().OpCodes.Insert(index, opCode);
+                break;
+            case OpCodeBuildingType.BuildingMethodArgs:
+                _methodCallArgsBuilder.Insert(index, opCode);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+
+        // update offsets
+        var tempMoveList = new List<KeyValuePair<KeyValuePair<int, RegisterType>, OpCodeBuildingType>>();
+        while (_ifNotTrueOffsets.Count > 0)
+        {
+            var ifNotTrueOffset = _ifNotTrueOffsets.Pop();
+            var offset = ifNotTrueOffset.Key.Key;
+            if (ifNotTrueOffset.Value == _buildingType && offset > index)
+            {
+                offset++;
+            }
+            tempMoveList.Add(new KeyValuePair<KeyValuePair<int, RegisterType>, OpCodeBuildingType>(
+                new KeyValuePair<int, RegisterType>(offset, ifNotTrueOffset.Key.Value), ifNotTrueOffset.Value));
+        }
+        foreach (var tempMove in tempMoveList)
+        {
+            _ifNotTrueOffsets.Push(tempMove);
+        }
+
+        var tempMoveList2 = new List<KeyValuePair<List<int>, OpCodeBuildingType>>();
+        while (_endOfIfExprOffsets.Count > 0)
+        {
+            var endOfIfExprOffset = _endOfIfExprOffsets.Pop();
+            var offsets = endOfIfExprOffset.Key;
+            if (endOfIfExprOffset.Value == _buildingType)
+            {
+                for (var i = 0; i < offsets.Count; i++)
+                {
+                    var offset = offsets[i];
+                    if (offset > index)
+                    {
+                        offsets[i]++;
+                    }
+                }
+            }
+            tempMoveList2.Add(new KeyValuePair<List<int>, OpCodeBuildingType>(offsets, endOfIfExprOffset.Value));
+        }
+        foreach (var tempMove in tempMoveList2)
+        {
+            _endOfIfExprOffsets.Push(tempMove);
         }
     }
 
     public override void EnterMethodDef(MethodDefContext context)
     {
         var methodName = context.IDENTIFIER_STRING().GetText();
-        _buildingMethod = true;
+        _buildingType = OpCodeBuildingType.BuildingMethod;
         _methodBuilders.Push(new(methodName));
     }
 
@@ -425,7 +503,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         _builtMethods.Add(_methodBuilders.Pop().GetFinalResult());
         if (_methodBuilders.Count == 0)
         {
-            _buildingMethod = false;
+            _buildingType = OpCodeBuildingType.BuildingMainMethod;
         }
     }
 
@@ -685,7 +763,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
     public override void EnterMethodCall(MethodCallContext context)
     {
-        _buildingMethodCallArgs = true;
+        _buildingType = OpCodeBuildingType.BuildingMethodArgs;
     }
 
     private void CallMethod(string methodName)
@@ -724,7 +802,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
         _methodCallArgStoreCount = 0;
         DeallocateTempRegister(tempMoveRegister);
-        _buildingMethodCallArgs = false;
+        _buildingType = OpCodeBuildingType.BuildingMainMethod;
     }
 
     public override void EnterMethodCallArgs(MethodCallArgsContext context)
@@ -908,37 +986,69 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
     public override void EnterIfStatement(IfStatementContext context)
     {
-        _exprPreservedBeforeScopedProgram = ExprPreservedBeforeScopedProgram.IfStatement;
         PushExpressionBuilderStack();
+        _endOfIfExprOffsets.Push(new(new(), _buildingType));
+    }
+
+    public override void ExitIfStatement(IfStatementContext context)
+    {
+        var builtOffsets = _endOfIfExprOffsets.Pop();
+        var indexes = builtOffsets.Key;
+
+        foreach (var index in indexes)
+        {
+            InsertOpCodeAndUpdateOffset(index, new JumpOpCode(GetOpCodeInsertLocation() + 1));
+        }
+    }
+
+    private void InsertIfNotTrueJump()
+    {
+        var ifNotTrueOffsetRegisterBuildType = _ifNotTrueOffsets.Pop();
+        var ifNotTrueOffsetRegister = ifNotTrueOffsetRegisterBuildType.Key;
+
+        var index = ifNotTrueOffsetRegister.Key;
+        var exprRegister = ifNotTrueOffsetRegister.Value;
+
+        InsertOpCodeAndUpdateOffset(index, new JumpIfFalse(GetOpCodeInsertLocation() + 1, exprRegister));
     }
 
     public override void EnterElseIfStatement(ElseIfStatementContext context)
     {
         PushExpressionBuilderStack();
+        InsertIfNotTrueJump();
     }
 
-    public override void EnterLoop(LoopContext context)
+    public override void EnterElseStatement(ElseStatementContext context)
     {
-        _exprPreservedBeforeScopedProgram = ExprPreservedBeforeScopedProgram.Loop;
+        InsertIfNotTrueJump();
     }
 
     public override void EnterScopedProgram(ScopedProgramContext context)
     {
-        switch (_exprPreservedBeforeScopedProgram)
+        if (context.Parent is IfStatementContext or ElseIfStatementContext)
         {
-            case ExprPreservedBeforeScopedProgram.IfStatement:
+            var register = BuildExpressionOpCodes();
+            _ifNotTrueOffsets.Push(
+                new KeyValuePair<KeyValuePair<int, RegisterType>, OpCodeBuildingType>(
+                    new KeyValuePair<int, RegisterType>(GetOpCodeInsertLocation(), register), _buildingType));
+        }
+    }
+
+    public override void ExitScopedProgram(ScopedProgramContext context)
+    {
+        switch (context.Parent)
+        {
+            case IfStatementContext ifStatement
+                when ifStatement.elseIfStatement() == null && ifStatement.elseStatement() == null:
+            case ElseIfStatementContext elseIfStatement
+                when elseIfStatement.elseIfStatement() == null && elseIfStatement.elseStatement() == null:
+                return;
+            default:
                 {
-                    var expr = BuildExpressionOpCodes();
-                    AddOpCode(new JumpIfTrue(expr));
+                    var buildingOffsets = _endOfIfExprOffsets.Peek();
+                    buildingOffsets.Key.Add(GetOpCodeInsertLocation());
                     break;
                 }
-            case ExprPreservedBeforeScopedProgram.Loop:
-                break;
-            case null:
-                break;
-            default:
-                throw new ArgumentOutOfRangeException();
         }
-        _exprPreservedBeforeScopedProgram = null;
     }
 }
