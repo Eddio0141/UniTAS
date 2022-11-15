@@ -1028,6 +1028,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         if (context.Parent is IfStatementContext or ElseIfStatementContext)
         {
             var register = BuildExpressionOpCodes();
+            DeallocateTempRegister(register);
             _ifNotTrueOffsets.Push(
                 new KeyValuePair<KeyValuePair<int, RegisterType>, OpCodeBuildingType>(
                     new KeyValuePair<int, RegisterType>(GetOpCodeInsertLocation(), register), _buildingType));
@@ -1038,10 +1039,11 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
     {
         switch (context.Parent)
         {
-            case IfStatementContext ifStatement
-                when ifStatement.elseIfStatement() == null && ifStatement.elseStatement() == null:
-            case ElseIfStatementContext elseIfStatement
-                when elseIfStatement.elseIfStatement() == null && elseIfStatement.elseStatement() == null:
+            case IfStatementContext ifStatement when
+                (ifStatement.elseIfStatement() == null && ifStatement.elseStatement() == null):
+            case ElseIfStatementContext elseIfStatement when (elseIfStatement.elseIfStatement() == null &&
+                                                              elseIfStatement.elseStatement() == null):
+            case not IfStatementContext or ElseIfStatementContext:
                 return;
             default:
                 {
