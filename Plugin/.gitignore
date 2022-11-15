@@ -400,5 +400,3 @@ FodyWeavers.xsd
 postbuild.ps1
 
 .antlr/
-*.interp
-*.tokens
