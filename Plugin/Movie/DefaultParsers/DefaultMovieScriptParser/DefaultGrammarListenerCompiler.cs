@@ -1037,17 +1037,11 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
     public override void ExitScopedProgram(ScopedProgramContext context)
     {
-        if (context.Parent is IfStatementContext ifStatement &&
-            ifStatement.elseIfStatement() == null && ifStatement.elseStatement() == null)
-        {
-            return;
-        }
-        if (context.Parent is ElseIfStatementContext elseIfStatement && elseIfStatement.elseIfStatement() == null &&
-            elseIfStatement.elseStatement() == null)
-        {
-            return;
-        }
-        if (context.Parent is not IfStatementContext && context.Parent is not ElseIfStatementContext)
+        if ((context.Parent is IfStatementContext ifStatement &&
+             ifStatement.elseIfStatement() == null && ifStatement.elseStatement() == null) ||
+            (context.Parent is ElseIfStatementContext elseIfStatement && elseIfStatement.elseIfStatement() == null &&
+             elseIfStatement.elseStatement() == null) ||
+            (context.Parent is not IfStatementContext && context.Parent is not ElseIfStatementContext))
         {
             return;
         }
