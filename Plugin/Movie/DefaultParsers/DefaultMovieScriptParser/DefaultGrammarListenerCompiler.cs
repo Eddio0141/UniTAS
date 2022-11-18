@@ -14,6 +14,7 @@ using UniTASPlugin.Movie.ScriptEngine.OpCodes.Logic;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Maths;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Method;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.RegisterSet;
+using UniTASPlugin.Movie.ScriptEngine.OpCodes.Scope;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.StackOp;
 using UniTASPlugin.Movie.ScriptEngine.ValueTypes;
 using static MovieScriptDefaultGrammarParser;
@@ -1033,6 +1034,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
                 new KeyValuePair<KeyValuePair<int, RegisterType>, OpCodeBuildingType>(
                     new KeyValuePair<int, RegisterType>(GetOpCodeInsertLocation(), register), _buildingType));
         }
+        AddOpCode(new EnterScopeOpCode());
     }
 
     public override void ExitScopedProgram(ScopedProgramContext context)
@@ -1043,10 +1045,12 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
              elseIfStatement.elseStatement() == null) ||
             (context.Parent is not IfStatementContext && context.Parent is not ElseIfStatementContext))
         {
+            AddOpCode(new ExitScopeOpCode());
             return;
         }
 
         var buildingOffsets = _endOfIfExprOffsets.Peek();
         buildingOffsets.Key.Add(GetOpCodeInsertLocation());
+        AddOpCode(new ExitScopeOpCode());
     }
 }
