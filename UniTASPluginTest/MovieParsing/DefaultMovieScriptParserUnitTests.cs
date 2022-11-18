@@ -243,4 +243,33 @@ if $value == 0 {
 
         definedMethod.Should().BeEquivalentTo(actual);
     }
+
+    [Fact]
+    public void Scopes()
+    {
+        var script = Setup(@"$value = 0
+{
+    $value = 1
+}
+{
+    $value = 2
+}");
+        var definedMethod = script.MainMethod;
+
+        var actual = new ScriptMethodModel(null, new OpCodeBase[]
+        {
+            new ConstToRegisterOpCode(RegisterType.Temp, new IntValueType(0)),
+            new SetVariableOpCode(RegisterType.Temp, "value"),
+            new EnterScopeOpCode(),
+            new ConstToRegisterOpCode(RegisterType.Temp, new IntValueType(1)),
+            new SetVariableOpCode(RegisterType.Temp, "value"),
+            new ExitScopeOpCode(),
+            new EnterScopeOpCode(),
+            new ConstToRegisterOpCode(RegisterType.Temp, new IntValueType(2)),
+            new SetVariableOpCode(RegisterType.Temp, "value"),
+            new ExitScopeOpCode(),
+        });
+
+        definedMethod.Should().BeEquivalentTo(actual);
+    }
 }
