@@ -5,6 +5,8 @@ using UniTASPlugin.Movie.DefaultParsers.DefaultMovieScriptParser;
 using UniTASPlugin.Movie.Models.Script;
 using UniTASPlugin.Movie.ScriptEngine;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes;
+using UniTASPlugin.Movie.ScriptEngine.OpCodes.Jump;
+using UniTASPlugin.Movie.ScriptEngine.OpCodes.Logic;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Maths;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Method;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.RegisterSet;
@@ -189,7 +191,7 @@ $value = method((5 + method(4 * 9 + method(222))) * (4 + 5))");
     [Fact]
     public void IfElse()
     {
-        Setup(@"$value = 0
+        var script = Setup(@"$value = 0
 if $value == 0 {
     $value = 1
 } else if $value == 1 {
@@ -199,5 +201,37 @@ if $value == 0 {
 } else {
     $value = 4
 }");
+        var definedMethod = script.MainMethod;
+
+        var actual = new ScriptMethodModel(null, new OpCodeBase[]
+        {
+            new ConstToRegisterOpCode(RegisterType.Temp, new IntValueType(0)),
+            new SetVariableOpCode(RegisterType.Temp, "value"),
+            new VarToRegisterOpCode(RegisterType.Temp, "value"),
+            new ConstToRegisterOpCode(RegisterType.Temp2, new IntValueType(0)),
+            new EqualOpCode(RegisterType.Temp, RegisterType.Temp, RegisterType.Temp2),
+            new JumpIfFalse(4, RegisterType.Temp),
+            new ConstToRegisterOpCode(RegisterType.Temp, new IntValueType(1)),
+            new SetVariableOpCode(RegisterType.Temp, "value"),
+            new JumpOpCode(17),
+            new VarToRegisterOpCode(RegisterType.Temp, "value"),
+            new ConstToRegisterOpCode(RegisterType.Temp2, new IntValueType(1)),
+            new EqualOpCode(RegisterType.Temp, RegisterType.Temp, RegisterType.Temp2),
+            new JumpIfFalse(4, RegisterType.Temp),
+            new ConstToRegisterOpCode(RegisterType.Temp, new IntValueType(2)),
+            new SetVariableOpCode(RegisterType.Temp, "value"),
+            new JumpOpCode(10),
+            new VarToRegisterOpCode(RegisterType.Temp, "value"),
+            new ConstToRegisterOpCode(RegisterType.Temp2, new IntValueType(2)),
+            new EqualOpCode(RegisterType.Temp, RegisterType.Temp, RegisterType.Temp2),
+            new JumpIfFalse(4, RegisterType.Temp),
+            new ConstToRegisterOpCode(RegisterType.Temp, new IntValueType(3)),
+            new SetVariableOpCode(RegisterType.Temp, "value"),
+            new JumpOpCode(3),
+            new ConstToRegisterOpCode(RegisterType.Temp, new IntValueType(4)),
+            new SetVariableOpCode(RegisterType.Temp, "value"),
+        });
+
+        definedMethod.Should().BeEquivalentTo(actual);
     }
 }
