@@ -10,6 +10,7 @@ using UniTASPlugin.Movie.ScriptEngine.OpCodes.Logic;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Maths;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Method;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.RegisterSet;
+using UniTASPlugin.Movie.ScriptEngine.OpCodes.Scope;
 using UniTASPlugin.Movie.ScriptEngine.ValueTypes;
 
 namespace UniTASPluginTest.MovieParsing;
@@ -210,26 +211,34 @@ if $value == 0 {
             new VarToRegisterOpCode(RegisterType.Temp, "value"),
             new ConstToRegisterOpCode(RegisterType.Temp2, new IntValueType(0)),
             new EqualOpCode(RegisterType.Temp, RegisterType.Temp, RegisterType.Temp2),
-            new JumpIfFalse(4, RegisterType.Temp),
+            new JumpIfFalse(6, RegisterType.Temp),
+            new EnterScopeOpCode(),
             new ConstToRegisterOpCode(RegisterType.Temp, new IntValueType(1)),
             new SetVariableOpCode(RegisterType.Temp, "value"),
-            new JumpOpCode(17),
+            new ExitScopeOpCode(),
+            new JumpOpCode(23),
             new VarToRegisterOpCode(RegisterType.Temp, "value"),
             new ConstToRegisterOpCode(RegisterType.Temp2, new IntValueType(1)),
             new EqualOpCode(RegisterType.Temp, RegisterType.Temp, RegisterType.Temp2),
-            new JumpIfFalse(4, RegisterType.Temp),
+            new JumpIfFalse(6, RegisterType.Temp),
+            new EnterScopeOpCode(),
             new ConstToRegisterOpCode(RegisterType.Temp, new IntValueType(2)),
             new SetVariableOpCode(RegisterType.Temp, "value"),
-            new JumpOpCode(10),
+            new ExitScopeOpCode(),
+            new JumpOpCode(14),
             new VarToRegisterOpCode(RegisterType.Temp, "value"),
             new ConstToRegisterOpCode(RegisterType.Temp2, new IntValueType(2)),
             new EqualOpCode(RegisterType.Temp, RegisterType.Temp, RegisterType.Temp2),
-            new JumpIfFalse(4, RegisterType.Temp),
+            new JumpIfFalse(6, RegisterType.Temp),
+            new EnterScopeOpCode(),
             new ConstToRegisterOpCode(RegisterType.Temp, new IntValueType(3)),
             new SetVariableOpCode(RegisterType.Temp, "value"),
-            new JumpOpCode(3),
+            new ExitScopeOpCode(),
+            new JumpOpCode(5),
+            new EnterScopeOpCode(),
             new ConstToRegisterOpCode(RegisterType.Temp, new IntValueType(4)),
             new SetVariableOpCode(RegisterType.Temp, "value"),
+            new ExitScopeOpCode()
         });
 
         definedMethod.Should().BeEquivalentTo(actual);
