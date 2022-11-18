@@ -1037,20 +1037,22 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
     public override void ExitScopedProgram(ScopedProgramContext context)
     {
-        switch (context.Parent)
+        if (context.Parent is IfStatementContext ifStatement &&
+            ifStatement.elseIfStatement() == null && ifStatement.elseStatement() == null)
         {
-            case IfStatementContext ifStatement when
-                (ifStatement.elseIfStatement() == null && ifStatement.elseStatement() == null):
-            case ElseIfStatementContext elseIfStatement when (elseIfStatement.elseIfStatement() == null &&
-                                                              elseIfStatement.elseStatement() == null):
-            case not IfStatementContext or ElseIfStatementContext:
-                return;
-            default:
-                {
-                    var buildingOffsets = _endOfIfExprOffsets.Peek();
-                    buildingOffsets.Key.Add(GetOpCodeInsertLocation());
-                    break;
-                }
+            return;
         }
+        if (context.Parent is ElseIfStatementContext elseIfStatement && elseIfStatement.elseIfStatement() == null &&
+            elseIfStatement.elseStatement() == null)
+        {
+            return;
+        }
+        if (context.Parent is not IfStatementContext && context.Parent is not ElseIfStatementContext)
+        {
+            return;
+        }
+
+        var buildingOffsets = _endOfIfExprOffsets.Peek();
+        buildingOffsets.Key.Add(GetOpCodeInsertLocation());
     }
 }
