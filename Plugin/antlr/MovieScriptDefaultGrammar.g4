@@ -5,7 +5,7 @@ grammar MovieScriptDefaultGrammar;
  */
 
 script: program EOF;
-program: actionWithSeparator | (actionWithSeparator actionSeparator program) | (action NEWLINE*)+;
+program: (actionWithSeparator actionSeparator?) | (action NEWLINE*) | (actionWithSeparator actionSeparator program) | (action NEWLINE* program);
 scopedProgram: SCOPE_OPEN NEWLINE* program NEWLINE* SCOPE_CLOSE;
 
 actionSeparator: ACTIONSEPARATOR | NEWLINE | frameAdvance;
@@ -76,7 +76,7 @@ methodDef: 'fn' IDENTIFIER_STRING ROUND_BRACKET_OPEN methodDefArgs? ROUND_BRACKE
 
 methodDefArgs: IDENTIFIER_STRING COMMA methodDefArgs | IDENTIFIER_STRING;
 
-loop: 'loop' ROUND_BRACKET_OPEN expression ROUND_BRACKET_CLOSE scopedProgram;
+loop: 'loop' expression scopedProgram;
 
 /*
  * Lexer rules
