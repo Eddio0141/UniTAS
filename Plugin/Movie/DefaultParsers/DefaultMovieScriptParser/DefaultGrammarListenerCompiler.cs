@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using Antlr4.Runtime;
 using UniTASPlugin.Movie.DefaultParsers.DefaultMovieScriptParser.Expressions;
 using UniTASPlugin.Movie.Exceptions.ParseExceptions;
@@ -63,6 +64,11 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
     private readonly Stack<KeyValuePair<KeyValuePair<int, RegisterType>, OpCodeBuildingType>> _ifNotTrueOffsets = new();
     private readonly Stack<KeyValuePair<List<int>, OpCodeBuildingType>> _endOfIfExprOffsets = new();
+
+    private List<RegisterType> _loopRegisters = new();
+    private readonly Stack<KeyValuePair<KeyValuePair<int, RegisterType>, OpCodeBuildingType>> _endOfLoopExprOffset = new();
+    private readonly Stack<KeyValuePair<List<int>, OpCodeBuildingType>> _endOfLoopOffsets = new();
+    private readonly Stack<KeyValuePair<List<int>, OpCodeBuildingType>> _startOfLoopOffsets = new();
 
     public IEnumerable<ScriptMethodModel> Compile()
     {
@@ -460,9 +466,11 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
             {
                 offset++;
             }
+
             tempMoveList.Add(new KeyValuePair<KeyValuePair<int, RegisterType>, OpCodeBuildingType>(
                 new KeyValuePair<int, RegisterType>(offset, ifNotTrueOffset.Key.Value), ifNotTrueOffset.Value));
         }
+
         foreach (var tempMove in tempMoveList)
         {
             _ifNotTrueOffsets.Push(tempMove);
@@ -484,11 +492,82 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
                     }
                 }
             }
+
             tempMoveList2.Add(new KeyValuePair<List<int>, OpCodeBuildingType>(offsets, endOfIfExprOffset.Value));
         }
+
         foreach (var tempMove in tempMoveList2)
         {
             _endOfIfExprOffsets.Push(tempMove);
+        }
+
+        tempMoveList2.Clear();
+        while (_endOfLoopOffsets.Count > 0)
+        {
+            var endOfLoopOffset = _endOfLoopOffsets.Pop();
+            var offsets = endOfLoopOffset.Key;
+            if (endOfLoopOffset.Value == _buildingType)
+            {
+                for (var i = 0; i < offsets.Count; i++)
+                {
+                    var offset = offsets[i];
+                    if (offset > index)
+                    {
+                        offsets[i]++;
+                    }
+                }
+            }
+
+            tempMoveList2.Add(new KeyValuePair<List<int>, OpCodeBuildingType>(offsets, endOfLoopOffset.Value));
+        }
+
+        foreach (var tempMove in tempMoveList2)
+        {
+            _endOfLoopOffsets.Push(tempMove);
+        }
+
+        tempMoveList2.Clear();
+        while (_startOfLoopOffsets.Count > 0)
+        {
+            var startOfLoopOffset = _startOfLoopOffsets.Pop();
+            var offsets = startOfLoopOffset.Key;
+            if (startOfLoopOffset.Value == _buildingType)
+            {
+                for (var i = 0; i < offsets.Count; i++)
+                {
+                    var offset = offsets[i];
+                    if (offset > index)
+                    {
+                        offsets[i]++;
+                    }
+                }
+            }
+
+            tempMoveList2.Add(new KeyValuePair<List<int>, OpCodeBuildingType>(offsets, startOfLoopOffset.Value));
+        }
+
+        foreach (var tempMove in tempMoveList2)
+        {
+            _startOfLoopOffsets.Push(tempMove);
+        }
+
+        tempMoveList.Clear();
+        while (_endOfLoopExprOffset.Count > 0)
+        {
+            var endOfLoopExprOffset = _endOfLoopExprOffset.Pop();
+            var offset = endOfLoopExprOffset.Key.Key;
+            if (endOfLoopExprOffset.Value == _buildingType && offset > index)
+            {
+                offset++;
+            }
+
+            tempMoveList.Add(new KeyValuePair<KeyValuePair<int, RegisterType>, OpCodeBuildingType>(
+                new KeyValuePair<int, RegisterType>(offset, endOfLoopExprOffset.Key.Value), endOfLoopExprOffset.Value));
+        }
+
+        foreach (var tempMove in tempMoveList)
+        {
+            _endOfLoopExprOffset.Push(tempMove);
         }
     }
 
@@ -1026,31 +1105,65 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
     public override void EnterScopedProgram(ScopedProgramContext context)
     {
-        if (context.Parent is IfStatementContext or ElseIfStatementContext)
+        switch (context.Parent)
         {
-            var register = BuildExpressionOpCodes();
-            DeallocateTempRegister(register);
-            _ifNotTrueOffsets.Push(
-                new KeyValuePair<KeyValuePair<int, RegisterType>, OpCodeBuildingType>(
-                    new KeyValuePair<int, RegisterType>(GetOpCodeInsertLocation(), register), _buildingType));
+            case IfStatementContext or ElseIfStatementContext:
+                {
+                    var register = BuildExpressionOpCodes();
+                    DeallocateTempRegister(register);
+                    _ifNotTrueOffsets.Push(
+                        new KeyValuePair<KeyValuePair<int, RegisterType>, OpCodeBuildingType>(
+                            new KeyValuePair<int, RegisterType>(GetOpCodeInsertLocation(), register), _buildingType));
+                    break;
+                }
+            case LoopContext:
+                {
+                    var register = BuildExpressionOpCodes();
+                    DeallocateTempRegister(register);
+
+                    _endOfLoopExprOffset.Push(
+                        new KeyValuePair<KeyValuePair<int, RegisterType>, OpCodeBuildingType>(
+                        new KeyValuePair<int, RegisterType>(GetOpCodeInsertLocation(), register), _buildingType));
+
+                    _loopRegisters.Add(register);
+                    break;
+                }
         }
+
         AddOpCode(new EnterScopeOpCode());
     }
 
     public override void ExitScopedProgram(ScopedProgramContext context)
     {
         if ((context.Parent is IfStatementContext ifStatement &&
-             ifStatement.elseIfStatement() == null && ifStatement.elseStatement() == null) ||
-            (context.Parent is ElseIfStatementContext elseIfStatement && elseIfStatement.elseIfStatement() == null &&
-             elseIfStatement.elseStatement() == null) ||
-            (context.Parent is not IfStatementContext && context.Parent is not ElseIfStatementContext))
+             (ifStatement.elseIfStatement() != null || ifStatement.elseStatement() != null)) ||
+            (context.Parent is ElseIfStatementContext elseIfStatement &&
+             (elseIfStatement.elseIfStatement() != null || elseIfStatement.elseStatement() != null)))
+        {
+            var buildingOffsets = _endOfIfExprOffsets.Peek();
+            buildingOffsets.Key.Add(GetOpCodeInsertLocation());
+            AddOpCode(new ExitScopeOpCode());
+        }
+        else if (context.Parent is LoopContext)
+        {
+            var endOfLoopExprOffset = _endOfLoopExprOffset.Pop();
+            var loopExprRegister = endOfLoopExprOffset.Key.Value;
+            var loopExprJumpIndex = endOfLoopExprOffset.Key.Key;
+
+            InsertOpCodeAndUpdateOffset(loopExprJumpIndex, new JumpIfEqZero(GetOpCodeInsertLocation() + 1, loopExprRegister));
+
+            var endOfLoopOffsets = _endOfLoopOffsets.Pop();
+            var indexes = endOfLoopOffsets.Key;
+
+            foreach (var index in indexes)
+            {
+                InsertOpCodeAndUpdateOffset(index, new JumpOpCode(GetOpCodeInsertLocation() + 1));
+            }
+        }
+        else
         {
             AddOpCode(new ExitScopeOpCode());
-            return;
         }
 
-        var buildingOffsets = _endOfIfExprOffsets.Peek();
-        buildingOffsets.Key.Add(GetOpCodeInsertLocation());
-        AddOpCode(new ExitScopeOpCode());
     }
 }
