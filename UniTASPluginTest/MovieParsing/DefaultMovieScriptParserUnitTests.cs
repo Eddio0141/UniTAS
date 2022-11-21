@@ -11,6 +11,7 @@ using UniTASPlugin.Movie.ScriptEngine.OpCodes.Maths;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Method;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.RegisterSet;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Scope;
+using UniTASPlugin.Movie.ScriptEngine.OpCodes.StackOp;
 using UniTASPlugin.Movie.ScriptEngine.ValueTypes;
 
 namespace UniTASPluginTest.MovieParsing;
@@ -268,6 +269,36 @@ if $value == 0 {
             new ConstToRegisterOpCode(RegisterType.Temp, new IntValueType(2)),
             new SetVariableOpCode(RegisterType.Temp, "value"),
             new ExitScopeOpCode(),
+        });
+
+        definedMethod.Should().BeEquivalentTo(actual);
+    }
+
+    [Fact]
+    public void Loop()
+    {
+        var script = Setup(@"fn method(){}
+$value = 5
+loop $value {
+    method();
+}");
+
+        var definedMethod = script.MainMethod;
+
+        var actual = new ScriptMethodModel(null, new OpCodeBase[]
+        {
+            new ConstToRegisterOpCode(RegisterType.Temp, new IntValueType(5)),
+            new SetVariableOpCode(RegisterType.Temp, "value"),
+            new VarToRegisterOpCode(RegisterType.Temp, "value"),
+            new JumpIfEqZero(9, RegisterType.Temp),
+            new ConstToRegisterOpCode(RegisterType.Temp2, new IntValueType(1)),
+            new SubOpCode(RegisterType.Temp, RegisterType.Temp, RegisterType.Temp2),
+            new PushStackOpCode(RegisterType.Temp),
+            new EnterScopeOpCode(),
+            new GotoMethodOpCode("method"),
+            new ExitScopeOpCode(),
+            new PopStackOpCode(RegisterType.Temp),
+            new JumpOpCode(-8)
         });
 
         definedMethod.Should().BeEquivalentTo(actual);
