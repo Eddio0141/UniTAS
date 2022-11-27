@@ -6,7 +6,7 @@ grammar MovieScriptDefaultGrammar;
 
 script: program EOF;
 program: (actionWithSeparator actionSeparator?) | (action NEWLINE*) | (actionWithSeparator actionSeparator program) | (action NEWLINE* program);
-scopedProgram: SCOPE_OPEN NEWLINE* program NEWLINE* SCOPE_CLOSE;
+scopedProgram: SCOPE_OPEN NEWLINE* program? NEWLINE* SCOPE_CLOSE;
 
 actionSeparator: ACTIONSEPARATOR | NEWLINE | frameAdvance;
 
