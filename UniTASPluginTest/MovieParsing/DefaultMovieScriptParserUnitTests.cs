@@ -7,6 +7,7 @@ using UniTASPlugin.Movie.ScriptEngine;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Jump;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Logic;
+using UniTASPlugin.Movie.ScriptEngine.OpCodes.Loop;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Maths;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Method;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.RegisterSet;
@@ -47,14 +48,14 @@ public class DefaultMovieScriptParserUnitTests
 
         var actual = new ScriptMethodModel("method",
             new OpCodeBase[]
-        {
-            new PopArgOpCode(RegisterType.Temp),
-            new SetVariableOpCode(RegisterType.Temp, "arg2"),
-            new PopArgOpCode(RegisterType.Temp),
-            new SetVariableOpCode(RegisterType.Temp, "arg1"),
-            new EnterScopeOpCode(),
-            new ExitScopeOpCode()
-        });
+            {
+                new PopArgOpCode(RegisterType.Temp),
+                new SetVariableOpCode(RegisterType.Temp, "arg2"),
+                new PopArgOpCode(RegisterType.Temp),
+                new SetVariableOpCode(RegisterType.Temp, "arg1"),
+                new EnterScopeOpCode(),
+                new ExitScopeOpCode()
+            });
 
         definedMethod.Should().BeEquivalentTo(actual);
     }
@@ -302,6 +303,59 @@ loop $value {
             new ExitScopeOpCode(),
             new PopStackOpCode(RegisterType.Temp),
             new JumpOpCode(-9)
+        });
+
+        definedMethod.Should().BeEquivalentTo(actual);
+    }
+
+    [Fact]
+    public void LoopBreakContinue()
+    {
+        var script = Setup(@"fn method(){}
+$value = 5
+loop $value {
+    if $value == 3 {
+        break
+    } else if $value == 4 {
+        continue
+    }
+}");
+
+        var definedMethod = script.MainMethod;
+
+        var actual = new ScriptMethodModel(null, new OpCodeBase[]
+        {
+            // $value = 5
+            new ConstToRegisterOpCode(RegisterType.Temp, new IntValueType(5)),
+            new SetVariableOpCode(RegisterType.Temp, "value"),
+            new VarToRegisterOpCode(RegisterType.Temp, "value"),
+            // loop $value
+            new JumpIfEqZero(23, RegisterType.Temp),
+            new ConstToRegisterOpCode(RegisterType.Temp2, new IntValueType(1)),
+            new SubOpCode(RegisterType.Temp, RegisterType.Temp, RegisterType.Temp2),
+            new PushStackOpCode(RegisterType.Temp),
+            new EnterScopeOpCode(),
+            // if
+            new VarToRegisterOpCode(RegisterType.Temp, "value"),
+            new ConstToRegisterOpCode(RegisterType.Temp2, new IntValueType(3)),
+            new EqualOpCode(RegisterType.Temp, RegisterType.Temp, RegisterType.Temp2),
+            new JumpIfFalse(12, RegisterType.Temp),
+            new EnterScopeOpCode(),
+            new BreakOpCode(),
+            new ExitScopeOpCode(),
+            new JumpOpCode(8),
+            // else if
+            new VarToRegisterOpCode(RegisterType.Temp, "value"),
+            new ConstToRegisterOpCode(RegisterType.Temp2, new IntValueType(4)),
+            new EqualOpCode(RegisterType.Temp, RegisterType.Temp, RegisterType.Temp2),
+            new JumpIfFalse(4, RegisterType.Temp),
+            new EnterScopeOpCode(),
+            new ContinueOpCode(),
+            new ExitScopeOpCode(),
+            // loop end
+            new ExitScopeOpCode(),
+            new PopStackOpCode(RegisterType.Temp),
+            new JumpOpCode(-22)
         });
 
         definedMethod.Should().BeEquivalentTo(actual);
