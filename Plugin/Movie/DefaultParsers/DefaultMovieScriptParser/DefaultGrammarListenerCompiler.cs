@@ -1144,9 +1144,10 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
                 break;
             }
+            case not MethodDefContext:
+                AddOpCode(new EnterScopeOpCode());
+                break;
         }
-
-        AddOpCode(new EnterScopeOpCode());
     }
 
     public override void ExitScopedProgram(ScopedProgramContext context)
@@ -1196,7 +1197,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
                 InsertIfNotTrueJump();
                 AddOpCode(new ExitScopeOpCode());
                 break;
-            default:
+            case not MethodDefContext:
                 AddOpCode(new ExitScopeOpCode());
                 break;
         }
@@ -1216,5 +1217,33 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
     public override void EnterContinueAction(ContinueActionContext context)
     {
         AddOpCode(new ContinueOpCode());
+    }
+
+    public override void EnterReturnAction(ReturnActionContext context)
+    {
+        if (context.expression() != null)
+        {
+            PushExpressionBuilderStack();
+        }
+    }
+
+    public override void ExitReturnAction(ReturnActionContext context)
+    {
+        if (context.expression() == null)
+        {
+            AddOpCode(new ReturnOpCode());
+            return;
+        }
+
+        var register = BuildExpressionOpCodes();
+
+        if (register is not RegisterType.Ret)
+        {
+            AddOpCode(new MoveOpCode(register, RegisterType.Ret));
+        }
+
+        AddOpCode(new ReturnOpCode());
+
+        DeallocateTempRegister(register);
     }
 }
