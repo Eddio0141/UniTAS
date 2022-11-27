@@ -51,7 +51,9 @@ public class DefaultMovieScriptParserUnitTests
             new PopArgOpCode(RegisterType.Temp),
             new SetVariableOpCode(RegisterType.Temp, "arg2"),
             new PopArgOpCode(RegisterType.Temp),
-            new SetVariableOpCode(RegisterType.Temp, "arg1")
+            new SetVariableOpCode(RegisterType.Temp, "arg1"),
+            new EnterScopeOpCode(),
+            new ExitScopeOpCode()
         });
 
         definedMethod.Should().BeEquivalentTo(actual);
@@ -290,15 +292,16 @@ loop $value {
             new ConstToRegisterOpCode(RegisterType.Temp, new IntValueType(5)),
             new SetVariableOpCode(RegisterType.Temp, "value"),
             new VarToRegisterOpCode(RegisterType.Temp, "value"),
-            new JumpIfEqZero(9, RegisterType.Temp),
+            new JumpIfEqZero(10, RegisterType.Temp),
             new ConstToRegisterOpCode(RegisterType.Temp2, new IntValueType(1)),
             new SubOpCode(RegisterType.Temp, RegisterType.Temp, RegisterType.Temp2),
             new PushStackOpCode(RegisterType.Temp),
             new EnterScopeOpCode(),
             new GotoMethodOpCode("method"),
+            new FrameAdvanceOpCode(),
             new ExitScopeOpCode(),
             new PopStackOpCode(RegisterType.Temp),
-            new JumpOpCode(-8)
+            new JumpOpCode(-9)
         });
 
         definedMethod.Should().BeEquivalentTo(actual);
