@@ -105,6 +105,7 @@
 - Registers
     - Holds a value
     - Tuples can be extended / created with PushTuple REGISTER_DEST REGISTER_SOURCE
+    - Tuples can be popped with PopTuple REGISTER_DEST REGISTER_SOURCE
     - List can be extended / created with PushList REGISTER_DEST REGISTER_SOURCE
     - Types
       - temp
