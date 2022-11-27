@@ -1004,16 +1004,15 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 	}
 
 	public partial class VariableTupleSeparationContext : ParserRuleContext {
+		public IToken varIgnore;
 		public IToken varName;
+		public IToken _IGNORE_VARIABLE_NAME;
+		public IList<IToken> _varIgnores = new List<IToken>();
 		public IToken _IDENTIFIER_STRING;
 		public IList<IToken> _varNames = new List<IToken>();
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode TUPLE_DECONSTRUCTOR_START() { return GetToken(MovieScriptDefaultGrammarParser.TUPLE_DECONSTRUCTOR_START, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ROUND_BRACKET_CLOSE() { return GetToken(MovieScriptDefaultGrammarParser.ROUND_BRACKET_CLOSE, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ASSIGN() { return GetToken(MovieScriptDefaultGrammarParser.ASSIGN, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode[] IGNORE_VARIABLE_NAME() { return GetTokens(MovieScriptDefaultGrammarParser.IGNORE_VARIABLE_NAME); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode IGNORE_VARIABLE_NAME(int i) {
-			return GetToken(MovieScriptDefaultGrammarParser.IGNORE_VARIABLE_NAME, i);
-		}
 		[System.Diagnostics.DebuggerNonUserCode] public TupleExpressionContext tupleExpression() {
 			return GetRuleContext<TupleExpressionContext>(0);
 		}
@@ -1022,6 +1021,10 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 		}
 		[System.Diagnostics.DebuggerNonUserCode] public VariableContext variable() {
 			return GetRuleContext<VariableContext>(0);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode[] IGNORE_VARIABLE_NAME() { return GetTokens(MovieScriptDefaultGrammarParser.IGNORE_VARIABLE_NAME); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode IGNORE_VARIABLE_NAME(int i) {
+			return GetToken(MovieScriptDefaultGrammarParser.IGNORE_VARIABLE_NAME, i);
 		}
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode[] IDENTIFIER_STRING() { return GetTokens(MovieScriptDefaultGrammarParser.IDENTIFIER_STRING); }
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode IDENTIFIER_STRING(int i) {
@@ -1064,7 +1067,7 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 			case IGNORE_VARIABLE_NAME:
 				{
 				State = 147;
-				Match(IGNORE_VARIABLE_NAME);
+				_localctx.varIgnore = Match(IGNORE_VARIABLE_NAME);
 				}
 				break;
 			case IDENTIFIER_STRING:
@@ -1090,7 +1093,8 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 				case IGNORE_VARIABLE_NAME:
 					{
 					State = 152;
-					Match(IGNORE_VARIABLE_NAME);
+					_localctx._IGNORE_VARIABLE_NAME = Match(IGNORE_VARIABLE_NAME);
+					_localctx._varIgnores.Add(_localctx._IGNORE_VARIABLE_NAME);
 					}
 					break;
 				case IDENTIFIER_STRING:
