@@ -11,6 +11,7 @@ using UniTASPlugin.Movie.ScriptEngine.OpCodes;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.BitwiseOps;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Jump;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Logic;
+using UniTASPlugin.Movie.ScriptEngine.OpCodes.Loop;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Maths;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Method;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.RegisterSet;
@@ -75,10 +76,17 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
     public IEnumerable<ScriptMethodModel> Compile()
     {
+        // safety checks
         Debug.Assert(!_reservedTempRegister.Any(x => x),
             "Reserved temporary register is still being used, means something forgot to deallocate it");
         Debug.Assert(_expressionBuilders.Count == 0,
             "Expression builder stack should be empty, something forgot to use it or we allocated too much stack");
+        Debug.Assert(_ifNotTrueOffsets.Count == 0, "Offset storage must be empty, something went wrong");
+        Debug.Assert(_endOfIfExprOffsets.Count == 0, "Offset storage must be empty, something went wrong");
+        Debug.Assert(_endOfLoopOffsets.Count == 0, "Offset storage must be empty, something went wrong");
+        Debug.Assert(_startOfLoopOffsets.Count == 0, "Offset storage must be empty, something went wrong");
+        Debug.Assert(_loopExprUsingRegisters.Count == 0, "Loop register storage must be empty, something went wrong");
+
         var methods = new List<ScriptMethodModel> { new(null, _mainBuilder) };
         methods.AddRange(_builtMethods.Select(x => new ScriptMethodModel(x.Key, x.Value)));
         return methods;
@@ -1147,9 +1155,11 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         {
             case IfStatementContext ifStatement when
                 (ifStatement.elseIfStatement() != null || ifStatement.elseStatement() != null):
-            case ElseIfStatementContext elseIfStatement when
-                (elseIfStatement.elseIfStatement() != null || elseIfStatement.elseStatement() != null):
+            case ElseIfStatementContext elseIfStatement when (elseIfStatement.elseIfStatement() != null ||
+                                                              elseIfStatement.elseStatement() != null):
             {
+                AddOpCode(new ExitScopeOpCode());
+
                 var buildingOffsets = _endOfIfExprOffsets.Peek();
                 buildingOffsets.Key.Add(GetOpCodeInsertLocation());
                 break;
@@ -1158,7 +1168,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
             {
                 var endOfLoopExprOffset = _endOfLoopExprOffset.Pop();
                 var loopExprJumpIndex = endOfLoopExprOffset.Key;
-                var loopCountStoreRegister = _loopExprUsingRegisters.Peek();
+                var loopCountStoreRegister = _loopExprUsingRegisters.Pop();
 
                 InsertOpCodeAndUpdateOffset(loopExprJumpIndex,
                     new JumpIfEqZero(GetOpCodeInsertLocation() + 1, loopCountStoreRegister));
@@ -1171,20 +1181,24 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
                     InsertOpCodeAndUpdateOffset(index, new JumpOpCode(GetOpCodeInsertLocation() + 1));
                 }
 
+                AddOpCode(new ExitScopeOpCode());
+
+                // loop ending stuff
+                var startIndex = _startOfLoopOffsets.Pop().Key;
+
+                AddOpCode(new PopStackOpCode(loopCountStoreRegister));
+                AddOpCode(new JumpOpCode(startIndex - GetOpCodeInsertLocation()));
                 break;
             }
-        }
-
-        AddOpCode(new ExitScopeOpCode());
-
-        // we add loop ending stuff
-        if (context.Parent is LoopContext)
-        {
-            var loopCountStoreRegister = _loopExprUsingRegisters.Pop();
-            var startIndex = _startOfLoopOffsets.Pop().Key;
-
-            AddOpCode(new PopStackOpCode(loopCountStoreRegister));
-            AddOpCode(new JumpOpCode(startIndex - GetOpCodeInsertLocation()));
+            // in case of ending if else statement
+            case IfStatementContext or ElseIfStatementContext when
+                !context.children.Any(x => x is ElseIfStatementContext or ElseStatementContext):
+                InsertIfNotTrueJump();
+                AddOpCode(new ExitScopeOpCode());
+                break;
+            default:
+                AddOpCode(new ExitScopeOpCode());
+                break;
         }
     }
 
@@ -1192,5 +1206,15 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
     {
         // add the loop expression
         PushExpressionBuilderStack();
+    }
+
+    public override void EnterBreakAction(BreakActionContext context)
+    {
+        AddOpCode(new BreakOpCode());
+    }
+
+    public override void EnterContinueAction(ContinueActionContext context)
+    {
+        AddOpCode(new ContinueOpCode());
     }
 }
