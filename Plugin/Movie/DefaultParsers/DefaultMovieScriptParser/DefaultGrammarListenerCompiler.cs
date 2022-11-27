@@ -1144,9 +1144,11 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
                 break;
             }
-            case not MethodDefContext:
-                AddOpCode(new EnterScopeOpCode());
-                break;
+        }
+
+        if (context.Parent is not MethodDefContext)
+        {
+            AddOpCode(new EnterScopeOpCode());
         }
     }
 
