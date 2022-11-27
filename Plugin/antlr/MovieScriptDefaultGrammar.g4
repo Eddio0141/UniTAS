@@ -65,7 +65,7 @@ floatType: FLOAT;
 bool: 'true' | 'false';
 
 ifStatement: 'if' expression scopedProgram (elseIfStatement | elseStatement)?;
-elseIfStatement: 'else if' expression scopedProgram (elseIfStatement | elseStatement);
+elseIfStatement: 'else if' expression scopedProgram (elseIfStatement | elseStatement)?;
 elseStatement: 'else' scopedProgram;
 
 methodCall: IDENTIFIER_STRING ROUND_BRACKET_OPEN methodCallArgs? ROUND_BRACKET_CLOSE;
