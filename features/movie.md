@@ -96,6 +96,10 @@
       - Variables inside scopes can't be accessed from the outside
       - Variables outside can be accessed from within the scopes
       - Variables on the main scope can be accessed from any scope
+    - Return
+      - Returns from method to outer
+      - Can add expression like `return EXPRESSION`
+      - Using this in main will end the movie execution
 
 # Low level stuff
 - Registers
@@ -103,13 +107,12 @@
     - Tuples can be extended / created with PushTuple REGISTER_DEST REGISTER_SOURCE
     - List can be extended / created with PushList REGISTER_DEST REGISTER_SOURCE
     - Types
-    - temp
-    - temp2
-    - temp3
-    - temp4
-    - temp5
-    - ret
-        - Return value
+      - temp
+      - temp2
+      - temp3
+      - temp4
+      - temp5
+      - ret
 - Stack
     - PushStack temp
     - Pushes temp register by copying
