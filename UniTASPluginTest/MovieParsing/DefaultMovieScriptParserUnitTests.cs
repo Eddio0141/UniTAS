@@ -53,8 +53,6 @@ public class DefaultMovieScriptParserUnitTests
                 new SetVariableOpCode(RegisterType.Temp, "arg2"),
                 new PopArgOpCode(RegisterType.Temp),
                 new SetVariableOpCode(RegisterType.Temp, "arg1"),
-                new EnterScopeOpCode(),
-                new ExitScopeOpCode()
             });
 
         definedMethod.Should().BeEquivalentTo(actual);
@@ -356,6 +354,39 @@ loop $value {
             new ExitScopeOpCode(),
             new PopStackOpCode(RegisterType.Temp),
             new JumpOpCode(-22)
+        });
+
+        definedMethod.Should().BeEquivalentTo(actual);
+    }
+
+    [Fact]
+    public void Return()
+    {
+        var script = Setup(@"fn method(){ return 5 }
+$value = method()");
+
+        var definedMethod = script.Methods[0];
+
+        var actual = new ScriptMethodModel("method", new OpCodeBase[]
+        {
+            new ConstToRegisterOpCode(RegisterType.Temp, new IntValueType(5)),
+            new MoveOpCode(RegisterType.Temp, RegisterType.Ret),
+            new ReturnOpCode()
+        });
+
+        definedMethod.Should().BeEquivalentTo(actual);
+    }
+
+    [Fact]
+    public void MainReturn()
+    {
+        var script = Setup("return");
+
+        var definedMethod = script.MainMethod;
+
+        var actual = new ScriptMethodModel(null, new OpCodeBase[]
+        {
+            new ReturnOpCode()
         });
 
         definedMethod.Should().BeEquivalentTo(actual);
