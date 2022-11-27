@@ -1,4 +1,4 @@
-﻿namespace UniTASPlugin.Movie.ScriptEngine.OpCodes;
+﻿namespace UniTASPlugin.Movie.ScriptEngine.OpCodes.Tuple;
 
 public class PushTupleOpCode : OpCodeBase
 {
