@@ -5,28 +5,30 @@ grammar MovieScriptDefaultGrammar;
  */
 
 script: program EOF;
-program: (actionWithSeparator actionSeparator?) | (action NEWLINE*) | (actionWithSeparator actionSeparator program) | (action NEWLINE* program);
-scopedProgram: SCOPE_OPEN NEWLINE* program? NEWLINE* SCOPE_CLOSE;
+program: (actionWithSeparator actionSeparator?)
+	| (action NEWLINE*)
+	| (actionWithSeparator actionSeparator program)
+	| (action NEWLINE* program);
+scopedProgram:
+	SCOPE_OPEN NEWLINE* program? NEWLINE* SCOPE_CLOSE;
 
 actionSeparator: ACTIONSEPARATOR | NEWLINE | frameAdvance;
 
-action
-    : frameAdvance
-    | ifStatement
-    | methodDef
-    | scopedProgram
-    | loop
-    | breakAction
-    | continueAction
-    | returnAction
-    ;
+action:
+	frameAdvance
+	| ifStatement
+	| methodDef
+	| scopedProgram
+	| loop
+	| breakAction
+	| continueAction
+	| returnAction;
 
-actionWithSeparator
-    : variableAssignment
-    | tupleAssignment
-    | variableTupleSeparation
-    | methodCall
-    ;
+actionWithSeparator:
+	variableAssignment
+	| tupleAssignment
+	| variableTupleSeparation
+	| methodCall;
 
 frameAdvance: SEMICOLON;
 
@@ -38,25 +40,62 @@ returnAction: 'return' (expression | tupleExpression)?;
 
 variable: DOLLAR IDENTIFIER_STRING;
 
-variableAssignment: variable (ASSIGN | PLUS_ASSIGN | MINUS_ASSIGN | MULTIPLY_ASSIGN | DIVIDE_ASSIGN | MODULO_ASSIGN) expression;
+variableAssignment:
+	variable (
+		ASSIGN
+		| PLUS_ASSIGN
+		| MINUS_ASSIGN
+		| MULTIPLY_ASSIGN
+		| DIVIDE_ASSIGN
+		| MODULO_ASSIGN
+	) expression;
 tupleAssignment: variable ASSIGN tupleExpression;
 
-variableTupleSeparation: TUPLE_DECONSTRUCTOR_START (varIgnore=IGNORE_VARIABLE_NAME | varName=IDENTIFIER_STRING) (COMMA (varIgnores+=IGNORE_VARIABLE_NAME | varNames+=IDENTIFIER_STRING))* ROUND_BRACKET_CLOSE ASSIGN (tupleExpression | methodCall | variable);
+variableTupleSeparation:
+	TUPLE_DECONSTRUCTOR_START (
+		varIgnore = IGNORE_VARIABLE_NAME
+		| varName = IDENTIFIER_STRING
+	) (
+		COMMA (
+			varIgnores += IGNORE_VARIABLE_NAME
+			| varNames += IDENTIFIER_STRING
+		)
+	)* ROUND_BRACKET_CLOSE ASSIGN (
+		tupleExpression
+		| methodCall
+		| variable
+	);
 
-tupleExpression: ROUND_BRACKET_OPEN (expression | tupleExpression) (COMMA (expression | tupleExpression))+ ROUND_BRACKET_CLOSE;
+tupleExpression:
+	ROUND_BRACKET_OPEN (expression | tupleExpression) (
+		COMMA (expression | tupleExpression)
+	)+ ROUND_BRACKET_CLOSE;
 
-expression
-    : MINUS expression #flipSign
-    | left=expression (MULTIPLY | DIVIDE | MODULO) right=expression #multiplyDivide
-    | left=expression (PLUS | MINUS) right=expression #addSubtract
-    | NOT expression #not
-    | expression (AND | OR) expression #andOr
-    | expression (EQUAL | NOT_EQUAL | LESS | LESS_EQUAL | GREATER | GREATER_EQUAL) expression #compare
-    | expression (BITWISE_AND | BITWISE_OR | BITWISE_XOR) expression #bitwise
-    | expression (BITWISE_SHIFT_LEFT | BITWISE_SHIFT_RIGHT) expression #bitwiseShift
-    | ROUND_BRACKET_OPEN expression ROUND_BRACKET_CLOSE #parentheses
-    | (variable | intType | floatType | bool | string | methodCall) #terminator
-    ;
+expression:
+	MINUS expression													# flipSign
+	| left = expression (MULTIPLY | DIVIDE | MODULO) right = expression	# multiplyDivide
+	| left = expression (PLUS | MINUS) right = expression				# addSubtract
+	| NOT expression													# not
+	| expression (AND | OR) expression									# andOr
+	| expression (
+		EQUAL
+		| NOT_EQUAL
+		| LESS
+		| LESS_EQUAL
+		| GREATER
+		| GREATER_EQUAL
+	) expression														# compare
+	| expression (BITWISE_AND | BITWISE_OR | BITWISE_XOR) expression	# bitwise
+	| expression (BITWISE_SHIFT_LEFT | BITWISE_SHIFT_RIGHT) expression	# bitwiseShift
+	| ROUND_BRACKET_OPEN expression ROUND_BRACKET_CLOSE					# parentheses
+	| (
+		variable
+		| intType
+		| floatType
+		| bool
+		| string
+		| methodCall
+	) # terminator;
 
 string: STRING;
 intType: INT;
@@ -64,28 +103,41 @@ floatType: FLOAT;
 
 bool: 'true' | 'false';
 
-ifStatement: 'if' expression scopedProgram (elseIfStatement | elseStatement)?;
-elseIfStatement: 'else if' expression scopedProgram (elseIfStatement | elseStatement)?;
+ifStatement:
+	'if' expression scopedProgram (
+		elseIfStatement
+		| elseStatement
+	)?;
+elseIfStatement:
+	'else if' expression scopedProgram (
+		elseIfStatement
+		| elseStatement
+	)?;
 elseStatement: 'else' scopedProgram;
 
-methodCall: IDENTIFIER_STRING ROUND_BRACKET_OPEN methodCallArgs? ROUND_BRACKET_CLOSE;
+methodCall:
+	IDENTIFIER_STRING ROUND_BRACKET_OPEN methodCallArgs? ROUND_BRACKET_CLOSE;
 
-methodCallArgs: (expression | tupleExpression) COMMA methodCallArgs | (expression | tupleExpression);
+methodCallArgs: (expression | tupleExpression) COMMA methodCallArgs
+	| (expression | tupleExpression);
 
-methodDef: 'fn' IDENTIFIER_STRING ROUND_BRACKET_OPEN methodDefArgs? ROUND_BRACKET_CLOSE scopedProgram;
+methodDef:
+	'fn' IDENTIFIER_STRING ROUND_BRACKET_OPEN methodDefArgs? ROUND_BRACKET_CLOSE scopedProgram;
 
-methodDefArgs: IDENTIFIER_STRING COMMA methodDefArgs | IDENTIFIER_STRING;
+methodDefArgs:
+	IDENTIFIER_STRING COMMA methodDefArgs
+	| IDENTIFIER_STRING;
 
 loop: 'loop' expression scopedProgram;
 
 /*
  * Lexer rules
  */
- 
+
 fragment PIPE: '|';
 fragment DOT: '.';
 
-WHITESPACE : (' ' | '\t')+ -> skip;
+WHITESPACE: (' ' | '\t')+ -> skip;
 COMMENT: '//' .*? -> skip;
 COMMENT_MULTI: '/*' .*? '*/' -> skip;
 
