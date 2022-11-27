@@ -41,7 +41,7 @@ variable: DOLLAR IDENTIFIER_STRING;
 variableAssignment: variable (ASSIGN | PLUS_ASSIGN | MINUS_ASSIGN | MULTIPLY_ASSIGN | DIVIDE_ASSIGN | MODULO_ASSIGN) expression;
 tupleAssignment: variable ASSIGN tupleExpression;
 
-variableTupleSeparation: TUPLE_DECONSTRUCTOR_START (IGNORE_VARIABLE_NAME | varName=IDENTIFIER_STRING) (COMMA (IGNORE_VARIABLE_NAME | varNames+=IDENTIFIER_STRING))* ROUND_BRACKET_CLOSE ASSIGN (tupleExpression | methodCall | variable);
+variableTupleSeparation: TUPLE_DECONSTRUCTOR_START (varIgnore=IGNORE_VARIABLE_NAME | varName=IDENTIFIER_STRING) (COMMA (varIgnores+=IGNORE_VARIABLE_NAME | varNames+=IDENTIFIER_STRING))* ROUND_BRACKET_CLOSE ASSIGN (tupleExpression | methodCall | variable);
 
 tupleExpression: ROUND_BRACKET_OPEN (expression | tupleExpression) (COMMA (expression | tupleExpression))+ ROUND_BRACKET_CLOSE;
 
