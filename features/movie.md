@@ -257,136 +257,6 @@ Refer to [antlr grammer](../Plugin/antlr/MovieScriptDefaultGrammar.g4)
 
 # Example
 ```
-$value = 20
-$value2 = $value
-$value = 40
-$value3 = (50, 10, 20, "something")
-fn method(arg1, arg2) {
-if true && false {
-    keyboard(W) | keyboard(A)
-    ;;;
-}
-if $arg1 {
-    echo("test")
-} else {
-    ;
-}
-
-return (arg + arg2, 50, "", [0.0, 1.0, 2.0, 3.1 * 50.0])
-}
-$value4 = (0, 0, "", [])
-loop 10 {
-$value4 = method($value, 10)
-}
-loop 2 {
-break
-}
-
-// ====================== ASM ============================
-
-// method define
-PopArg temp
-NewVariable arg2 temp // right to left
-PopArg temp
-NewVariable arg1 temp
-
-ConstToRegister temp true
-ConstToRegister temp2 false
-And temp temp temp2
-JumpIfTrue temp 10 // jump to after if statement
-
-ConstToRegister temp W
-PushArg temp
-GotoMethod Keyboard
-
-ConstToRegister temp A
-PushArg temp
-GotoMethod Keyboard
-
-FrameAdvance
-FrameAdvance
-FrameAdvance
-
-VarToRegister arg1 temp
-JumpIfFalse temp 4 // goes to else statement
-
-ConstToRegister temp "test"
-GotoMethod echo
-Jump 2 // goes after else statement
-
-FrameAdvance
-
-VarToRegister arg temp
-VarToRegister arg2 temp2
-Add ret temp temp2
-ConstToRegister temp 50
-PushTuple ret temp
-ConstToRegister temp ""
-PushTuple ret temp
-ConstToRegister temp 0.0
-ConstToRegister temp2 1.0
-PushList temp temp2
-ConstToRegister temp2 2.0
-PushList temp temp2
-ConstToRegister temp2 3.1
-ConstToRegister temp3 50.0
-Mul temp2 temp2 temp3
-PushList temp temp2
-PushTuple ret temp
-Return
-
-// main
-ConstToRegister temp 20
-NewVariable value temp
-
-VarToRegister temp value
-NewVariable value2 temp
-
-ConstToRegister temp 40
-SetVariable value temp
-
-ConstToRegister temp (50, 10, 20, "something")
-NewVariable value3 temp
-
-ConstToRegister temp (0, 0, "", [])
-NewVariable value4 temp
-
-ConstToRegister temp 10
-PushStack temp
-EnterScope
-
-VarToRegister temp value
-PushArg temp
-ConstToRegister temp 10
-PushArg temp
-GotoMethod method
-SetVariable value4 ret
-
-PopStack temp
-ConstToRegister temp2 1
-Sub temp temp temp2
-PushStack temp
-ConstToRegister temp2 0
-JumpIfGt temp temp2 -11
-ExitScope
-PopStack temp
-
-ConstToRegister temp 2
-PushStack temp
-EnterScope
-
-Jump 7 // aim towards the matching ExitScope
-
-PopStack temp
-ConstToRegister temp2 1
-Sub temp temp temp2
-PushStack temp
-ConstToRegister temp2 0
-JumpIfGt temp temp2 -6
-ExitScope
-PopStack temp
-```
-```
 // example movie
 version 1.0.0
 name Test TAS
@@ -398,4 +268,15 @@ seed 0
 // separates properties from main body
 ---
 // some actions here
+fn method() {
+  // advance 5 frames
+  ;;;;;
+  return 50
+}
+
+$var = method()
+print($var)
+
+press_left();;;;; unpress_left()
+press_right() | press_forward() ;;;;;;;;
 ```
