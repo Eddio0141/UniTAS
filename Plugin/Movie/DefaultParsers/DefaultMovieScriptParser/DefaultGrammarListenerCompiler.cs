@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Reflection;
 using Antlr4.Runtime;
 using UniTASPlugin.Movie.DefaultParsers.DefaultMovieScriptParser.Expressions;
 using UniTASPlugin.Movie.Exceptions.ParseExceptions;
@@ -45,7 +44,9 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
     private readonly List<OpCodeBase> _mainBuilder = new();
     private readonly List<KeyValuePair<string, List<OpCodeBase>>> _builtMethods = new();
     private readonly Stack<MethodBuilder> _methodBuilders = new();
+
     private OpCodeBuildingType _buildingType = OpCodeBuildingType.BuildingMainMethod;
+
     // opCodes that will be ran in order to call the method
     private readonly List<OpCodeBase> _methodCallArgsBuilder = new();
 
@@ -65,14 +66,17 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
     private readonly Stack<KeyValuePair<KeyValuePair<int, RegisterType>, OpCodeBuildingType>> _ifNotTrueOffsets = new();
     private readonly Stack<KeyValuePair<List<int>, OpCodeBuildingType>> _endOfIfExprOffsets = new();
 
-    private List<RegisterType> _loopRegisters = new();
-    private readonly Stack<KeyValuePair<KeyValuePair<int, RegisterType>, OpCodeBuildingType>> _endOfLoopExprOffset = new();
+    private readonly Stack<KeyValuePair<int, OpCodeBuildingType>> _endOfLoopExprOffset =
+        new();
+
     private readonly Stack<KeyValuePair<List<int>, OpCodeBuildingType>> _endOfLoopOffsets = new();
-    private readonly Stack<KeyValuePair<List<int>, OpCodeBuildingType>> _startOfLoopOffsets = new();
+    private readonly Stack<KeyValuePair<int, OpCodeBuildingType>> _startOfLoopOffsets = new();
+    private readonly Stack<RegisterType> _loopExprUsingRegisters = new();
 
     public IEnumerable<ScriptMethodModel> Compile()
     {
-        Debug.Assert(!_reservedTempRegister.Any(x => x), "Reserved temporary register is still being used, means something forgot to deallocate it");
+        Debug.Assert(!_reservedTempRegister.Any(x => x),
+            "Reserved temporary register is still being used, means something forgot to deallocate it");
         Debug.Assert(_expressionBuilders.Count == 0,
             "Expression builder stack should be empty, something forgot to use it or we allocated too much stack");
         var methods = new List<ScriptMethodModel> { new(null, _mainBuilder) };
@@ -147,6 +151,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
                         // move register to store since we are resetting left and right
                         AddOpCode(new MoveOpCode(leftRegister, storeRegister));
                     }
+
                     left = null;
                     i++;
                     continue;
@@ -209,6 +214,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
                     CallMethod(methodCall.MethodName);
                     break;
             }
+
             switch (right)
             {
                 case ConstExpression rightConst:
@@ -318,6 +324,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
                 insertIndex--;
                 i--;
             }
+
             expressionBuilder.Insert(insertIndex, new EvaluatedExpression());
             left = null;
             useStoreRegister = false;
@@ -330,10 +337,12 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
                 {
                     break;
                 }
+
                 if (exprPrev is EvaluatedExpression)
                 {
                     useStoreRegister = true;
                 }
+
                 i--;
             }
 
@@ -342,7 +351,8 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         }
 
         // we ran out of expressions to process, finish up
-        Debug.Assert(expressionBuilder.Count == 1, "There should be only a single evaluated expression, or a const, or some method call left");
+        Debug.Assert(expressionBuilder.Count == 1,
+            "There should be only a single evaluated expression, or a const, or some method call left");
         var resultRegister = leftRegister;
         switch (expressionBuilder[0])
         {
@@ -458,6 +468,9 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
         // update offsets
         var tempMoveList = new List<KeyValuePair<KeyValuePair<int, RegisterType>, OpCodeBuildingType>>();
+        var tempMoveList2 = new List<KeyValuePair<List<int>, OpCodeBuildingType>>();
+        var tempMoveList3 = new List<KeyValuePair<int, OpCodeBuildingType>>();
+
         while (_ifNotTrueOffsets.Count > 0)
         {
             var ifNotTrueOffset = _ifNotTrueOffsets.Pop();
@@ -467,8 +480,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
                 offset++;
             }
 
-            tempMoveList.Add(new KeyValuePair<KeyValuePair<int, RegisterType>, OpCodeBuildingType>(
-                new KeyValuePair<int, RegisterType>(offset, ifNotTrueOffset.Key.Value), ifNotTrueOffset.Value));
+            tempMoveList.Add(new(new(offset, ifNotTrueOffset.Key.Value), ifNotTrueOffset.Value));
         }
 
         foreach (var tempMove in tempMoveList)
@@ -476,7 +488,6 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
             _ifNotTrueOffsets.Push(tempMove);
         }
 
-        var tempMoveList2 = new List<KeyValuePair<List<int>, OpCodeBuildingType>>();
         while (_endOfIfExprOffsets.Count > 0)
         {
             var endOfIfExprOffset = _endOfIfExprOffsets.Pop();
@@ -493,7 +504,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
                 }
             }
 
-            tempMoveList2.Add(new KeyValuePair<List<int>, OpCodeBuildingType>(offsets, endOfIfExprOffset.Value));
+            tempMoveList2.Add(new(offsets, endOfIfExprOffset.Value));
         }
 
         foreach (var tempMove in tempMoveList2)
@@ -518,7 +529,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
                 }
             }
 
-            tempMoveList2.Add(new KeyValuePair<List<int>, OpCodeBuildingType>(offsets, endOfLoopOffset.Value));
+            tempMoveList2.Add(new(offsets, endOfLoopOffset.Value));
         }
 
         foreach (var tempMove in tempMoveList2)
@@ -526,48 +537,17 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
             _endOfLoopOffsets.Push(tempMove);
         }
 
-        tempMoveList2.Clear();
         while (_startOfLoopOffsets.Count > 0)
         {
             var startOfLoopOffset = _startOfLoopOffsets.Pop();
-            var offsets = startOfLoopOffset.Key;
-            if (startOfLoopOffset.Value == _buildingType)
-            {
-                for (var i = 0; i < offsets.Count; i++)
-                {
-                    var offset = offsets[i];
-                    if (offset > index)
-                    {
-                        offsets[i]++;
-                    }
-                }
-            }
-
-            tempMoveList2.Add(new KeyValuePair<List<int>, OpCodeBuildingType>(offsets, startOfLoopOffset.Value));
+            var offset = startOfLoopOffset.Key;
+            offset++;
+            tempMoveList3.Add(new(offset, startOfLoopOffset.Value));
         }
 
-        foreach (var tempMove in tempMoveList2)
+        foreach (var tempMove in tempMoveList3)
         {
             _startOfLoopOffsets.Push(tempMove);
-        }
-
-        tempMoveList.Clear();
-        while (_endOfLoopExprOffset.Count > 0)
-        {
-            var endOfLoopExprOffset = _endOfLoopExprOffset.Pop();
-            var offset = endOfLoopExprOffset.Key.Key;
-            if (endOfLoopExprOffset.Value == _buildingType && offset > index)
-            {
-                offset++;
-            }
-
-            tempMoveList.Add(new KeyValuePair<KeyValuePair<int, RegisterType>, OpCodeBuildingType>(
-                new KeyValuePair<int, RegisterType>(offset, endOfLoopExprOffset.Key.Value), endOfLoopExprOffset.Value));
-        }
-
-        foreach (var tempMove in tempMoveList)
-        {
-            _endOfLoopExprOffset.Push(tempMove);
         }
     }
 
@@ -618,6 +598,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         {
             throw new InvalidOperationException();
         }
+
         AddExpression(new OperationExpression(opType));
     }
 
@@ -636,6 +617,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         {
             throw new InvalidOperationException();
         }
+
         AddExpression(new OperationExpression(opType));
     }
 
@@ -659,6 +641,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         {
             throw new InvalidOperationException();
         }
+
         AddExpression(new OperationExpression(opType));
     }
 
@@ -693,6 +676,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         {
             throw new InvalidOperationException();
         }
+
         AddExpression(new OperationExpression(opType));
     }
 
@@ -715,6 +699,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         {
             throw new InvalidOperationException();
         }
+
         AddExpression(new OperationExpression(opType));
     }
 
@@ -733,6 +718,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         {
             throw new InvalidOperationException();
         }
+
         AddExpression(new OperationExpression(opType));
     }
 
@@ -773,8 +759,10 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
             {
                 throw new UsingUndefinedMethodException(methodName);
             }
+
             AddExpression(new MethodCallExpression(methodName));
         }
+
         ExitExpression(context);
     }
 
@@ -857,8 +845,13 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
     public override void ExitMethodCall(MethodCallContext context)
     {
+        if (_methodCallArgStore == null)
+        {
+            _buildingType = OpCodeBuildingType.BuildingMainMethod;
+            return;
+        }
+
         var tempMoveRegister = AllocateTempRegister();
-        Debug.Assert(_methodCallArgStore != null, nameof(_methodCallArgStore) + " != null");
         var methodCallArgStore = _methodCallArgStore.Value;
         for (var i = 0; i < _methodCallArgStoreCount; i++)
         {
@@ -869,6 +862,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
             AddOpCode(new PopStackOpCode(methodCallArgStore));
             AddOpCode(new PushStackOpCode(tempMoveRegister));
         }
+
         DeallocateTempRegister(methodCallArgStore);
         _methodCallArgStore = null;
         for (var i = 0; i < _methodCallArgStoreCount; i++)
@@ -913,6 +907,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
             AddOpCode(new MoveOpCode(usingRegister, methodCallArgStore));
             DeallocateTempRegister(usingRegister);
         }
+
         _methodCallArgStoreCount++;
     }
 
@@ -1008,6 +1003,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         {
             PushExpressionBuilderStack();
         }
+
         // if inner builder is being used, we push
         if (_tupleExprInnerStore != null)
         {
@@ -1034,6 +1030,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
                 AddOpCode(new PushTupleOpCode(_tupleExprTopLevelStore.Value, tupleExprInnerStore));
                 DeallocateTempRegister(tupleExprInnerStore);
             }
+
             _tupleExprInnerStore = null;
         }
         else if (_tupleInnerStorePushDepths.Contains(_tupleExprDepth))
@@ -1108,26 +1105,37 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         switch (context.Parent)
         {
             case IfStatementContext or ElseIfStatementContext:
-                {
-                    var register = BuildExpressionOpCodes();
-                    DeallocateTempRegister(register);
-                    _ifNotTrueOffsets.Push(
-                        new KeyValuePair<KeyValuePair<int, RegisterType>, OpCodeBuildingType>(
-                            new KeyValuePair<int, RegisterType>(GetOpCodeInsertLocation(), register), _buildingType));
-                    break;
-                }
-            case LoopContext:
-                {
-                    var register = BuildExpressionOpCodes();
-                    DeallocateTempRegister(register);
-
-                    _endOfLoopExprOffset.Push(
-                        new KeyValuePair<KeyValuePair<int, RegisterType>, OpCodeBuildingType>(
+            {
+                var register = BuildExpressionOpCodes();
+                DeallocateTempRegister(register);
+                _ifNotTrueOffsets.Push(
+                    new KeyValuePair<KeyValuePair<int, RegisterType>, OpCodeBuildingType>(
                         new KeyValuePair<int, RegisterType>(GetOpCodeInsertLocation(), register), _buildingType));
+                break;
+            }
+            case LoopContext:
+            {
+                _endOfLoopOffsets.Push(new KeyValuePair<List<int>, OpCodeBuildingType>(new(), _buildingType));
 
-                    _loopRegisters.Add(register);
-                    break;
-                }
+                var register = BuildExpressionOpCodes();
+                DeallocateTempRegister(register);
+                // this register used for storing loop count
+                _loopExprUsingRegisters.Push(register);
+
+                // for jumping to start of loop
+                _startOfLoopOffsets.Push(new(GetOpCodeInsertLocation(), _buildingType));
+
+                _endOfLoopExprOffset.Push(
+                    new KeyValuePair<int, OpCodeBuildingType>(GetOpCodeInsertLocation(), _buildingType));
+
+                // opcodes for loop logic
+                // we use hardcoded temp registers since loop count is pushed anyway
+                AddOpCode(new ConstToRegisterOpCode(RegisterType.Temp2, new IntValueType(1)));
+                AddOpCode(new SubOpCode(RegisterType.Temp, RegisterType.Temp, RegisterType.Temp2));
+                AddOpCode(new PushStackOpCode(RegisterType.Temp));
+
+                break;
+            }
         }
 
         AddOpCode(new EnterScopeOpCode());
@@ -1135,35 +1143,54 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
     public override void ExitScopedProgram(ScopedProgramContext context)
     {
-        if ((context.Parent is IfStatementContext ifStatement &&
-             (ifStatement.elseIfStatement() != null || ifStatement.elseStatement() != null)) ||
-            (context.Parent is ElseIfStatementContext elseIfStatement &&
-             (elseIfStatement.elseIfStatement() != null || elseIfStatement.elseStatement() != null)))
+        switch (context.Parent)
         {
-            var buildingOffsets = _endOfIfExprOffsets.Peek();
-            buildingOffsets.Key.Add(GetOpCodeInsertLocation());
-            AddOpCode(new ExitScopeOpCode());
-        }
-        else if (context.Parent is LoopContext)
-        {
-            var endOfLoopExprOffset = _endOfLoopExprOffset.Pop();
-            var loopExprRegister = endOfLoopExprOffset.Key.Value;
-            var loopExprJumpIndex = endOfLoopExprOffset.Key.Key;
-
-            InsertOpCodeAndUpdateOffset(loopExprJumpIndex, new JumpIfEqZero(GetOpCodeInsertLocation() + 1, loopExprRegister));
-
-            var endOfLoopOffsets = _endOfLoopOffsets.Pop();
-            var indexes = endOfLoopOffsets.Key;
-
-            foreach (var index in indexes)
+            case IfStatementContext ifStatement when
+                (ifStatement.elseIfStatement() != null || ifStatement.elseStatement() != null):
+            case ElseIfStatementContext elseIfStatement when
+                (elseIfStatement.elseIfStatement() != null || elseIfStatement.elseStatement() != null):
             {
-                InsertOpCodeAndUpdateOffset(index, new JumpOpCode(GetOpCodeInsertLocation() + 1));
+                var buildingOffsets = _endOfIfExprOffsets.Peek();
+                buildingOffsets.Key.Add(GetOpCodeInsertLocation());
+                break;
+            }
+            case LoopContext:
+            {
+                var endOfLoopExprOffset = _endOfLoopExprOffset.Pop();
+                var loopExprJumpIndex = endOfLoopExprOffset.Key;
+                var loopCountStoreRegister = _loopExprUsingRegisters.Peek();
+
+                InsertOpCodeAndUpdateOffset(loopExprJumpIndex,
+                    new JumpIfEqZero(GetOpCodeInsertLocation() + 1, loopCountStoreRegister));
+
+                var endOfLoopOffsets = _endOfLoopOffsets.Pop();
+                var indexes = endOfLoopOffsets.Key;
+
+                foreach (var index in indexes)
+                {
+                    InsertOpCodeAndUpdateOffset(index, new JumpOpCode(GetOpCodeInsertLocation() + 1));
+                }
+
+                break;
             }
         }
-        else
-        {
-            AddOpCode(new ExitScopeOpCode());
-        }
 
+        AddOpCode(new ExitScopeOpCode());
+
+        // we add loop ending stuff
+        if (context.Parent is LoopContext)
+        {
+            var loopCountStoreRegister = _loopExprUsingRegisters.Pop();
+            var startIndex = _startOfLoopOffsets.Pop().Key;
+
+            AddOpCode(new PopStackOpCode(loopCountStoreRegister));
+            AddOpCode(new JumpOpCode(startIndex - GetOpCodeInsertLocation()));
+        }
+    }
+
+    public override void EnterLoop(LoopContext context)
+    {
+        // add the loop expression
+        PushExpressionBuilderStack();
     }
 }
