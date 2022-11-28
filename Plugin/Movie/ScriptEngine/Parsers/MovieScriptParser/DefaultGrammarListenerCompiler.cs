@@ -36,6 +36,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
     {
         public string Name { get; }
         public List<OpCodeBase> OpCodes { get; } = new();
+        public int ReturnCount { get; set; } = -1;
         public int ArgCount { get; set; } = -1;
 
         public MethodBuilder(string name)
@@ -50,7 +51,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
     }
 
     private readonly List<OpCodeBase> _mainBuilder = new();
-    private int _mainMethodArgCount = -1;
+    private int _mainMethodReturnCount = -1;
     private readonly List<MethodBuilder> _builtMethods = new();
     private readonly Stack<MethodBuilder> _methodBuilders = new();
 
@@ -82,6 +83,9 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
     private readonly Stack<KeyValuePair<List<int>, OpCodeBuildingType>> _endOfLoopOffsets = new();
     private readonly Stack<KeyValuePair<int, OpCodeBuildingType>> _startOfLoopOffsets = new();
     private readonly Stack<RegisterType> _loopExprUsingRegisters = new();
+
+    private bool _methodCallReturnValueUsed;
+    private int _methodArgCount;
 
     public IEnumerable<ScriptMethodModel> Compile()
     {
@@ -127,11 +131,6 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
             AddOpCode(new PopStackOpCode(register));
             _reservedTempRegister[usingIndex] = true;
         }
-    }
-
-    private bool FindDefinedMethod(string name)
-    {
-        return _builtMethods.Any(x => x.Name == name) || _methodBuilders.Any(x => x.Name == name);
     }
 
     private void AddExpression(ExpressionBase expression)
@@ -440,10 +439,10 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         switch (_buildingType)
         {
             case OpCodeBuildingType.BuildingMainMethod:
-                currentCount = _mainMethodArgCount;
+                currentCount = _mainMethodReturnCount;
                 break;
             case OpCodeBuildingType.BuildingMethod:
-                currentCount = _methodBuilders.Peek().ArgCount;
+                currentCount = _methodBuilders.Peek().ReturnCount;
                 break;
             case OpCodeBuildingType.BuildingMethodArgs:
                 return;
@@ -452,16 +451,16 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         }
 
         // update count if not init
-        var argCount = hasExpr ? 1 : hasTupleExpr ? _tupleExprCount : 0;
+        var returnCount = hasExpr ? 1 : hasTupleExpr ? _tupleExprCount : 0;
         if (currentCount < 0)
         {
             switch (_buildingType)
             {
                 case OpCodeBuildingType.BuildingMainMethod:
-                    _mainMethodArgCount = argCount;
+                    _mainMethodReturnCount = returnCount;
                     break;
                 case OpCodeBuildingType.BuildingMethod:
-                    _methodBuilders.Peek().ArgCount = argCount;
+                    _methodBuilders.Peek().ReturnCount = returnCount;
                     break;
                 case OpCodeBuildingType.BuildingMethodArgs:
                 default:
@@ -472,7 +471,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         }
 
         // check count violation
-        if (currentCount != argCount)
+        if (currentCount != returnCount)
         {
             throw new MethodReturnCountNotMatchingException();
         }
@@ -835,11 +834,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         else if (context.methodCall() != null)
         {
             var methodName = context.methodCall().IDENTIFIER_STRING().GetText();
-            if (!FindDefinedMethod(methodName))
-            {
-                throw new UsingUndefinedMethodException(methodName);
-            }
-
+            CallMethod(methodName);
             AddExpression(new MethodCallExpression(methodName));
         }
 
@@ -918,14 +913,48 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         PushUsingTempRegisters();
 
         // validate method existence
-        var found =
-            _builtMethods.Any(x => x.Name == methodName) ||
-            _methodBuilders.Any(x => x.Name == methodName) ||
-            _externalMethods.Any(x => x.Name == methodName);
+        var builtMethodFoundIndex = _builtMethods.FindIndex(x => x.Name == methodName);
+        var methodBuildersFoundIndex = -1;
+        if (builtMethodFoundIndex < 0)
+        {
+            methodBuildersFoundIndex = _methodBuilders.ToList().FindIndex(x => x.Name == methodName);
+        }
 
-        if (!found)
+        var externalMethodsFoundIndex = -1;
+        if (methodBuildersFoundIndex < 0)
+        {
+            externalMethodsFoundIndex = _externalMethods.ToList().FindIndex(x => x.Name == methodName);
+        }
+
+        if (builtMethodFoundIndex < 0 && methodBuildersFoundIndex < 0 && externalMethodsFoundIndex < 0)
         {
             throw new UsingUndefinedMethodException(methodName);
+        }
+
+        var builtMethodFound = builtMethodFoundIndex > -1 ? _builtMethods[builtMethodFoundIndex] : null;
+        var methodBuildersFound =
+            methodBuildersFoundIndex > -1 ? _methodBuilders.ElementAt(methodBuildersFoundIndex) : null;
+        var externalMethodsFound =
+            externalMethodsFoundIndex > -1 ? _externalMethods.ElementAt(externalMethodsFoundIndex) : null;
+
+        // validate return existing
+        var returnCount = builtMethodFound?.ReturnCount ??
+                          (methodBuildersFound?.ReturnCount ??
+                           (externalMethodsFound != null
+                               ? (externalMethodsFound.ReturnsValue ? 1 : 0)
+                               : throw new NotImplementedException()));
+        if (_methodCallReturnValueUsed && returnCount == 0)
+        {
+            throw new MethodHasNoReturnValueException(methodName);
+        }
+
+        // validate args equality
+        var methodArgCount = builtMethodFound?.ArgCount ??
+                             (methodBuildersFound?.ArgCount ?? externalMethodsFound.ArgCount);
+
+        if (methodArgCount != -1 && methodArgCount != _methodArgCount)
+        {
+            throw new InvokingArgsNotMatchingMethodDefException(methodName, methodArgCount, _methodArgCount);
         }
 
         AddOpCode(new GotoMethodOpCode(methodName));
@@ -934,6 +963,9 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
     public override void ExitMethodCall(MethodCallContext context)
     {
+        // store if return value is used
+        _methodCallReturnValueUsed = context.Parent is not ActionWithSeparatorContext;
+
         if (_methodCallArgStore == null)
         {
             _buildingType = OpCodeBuildingType.BuildingMainMethod;
@@ -970,11 +1002,13 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
     public override void EnterMethodCallArgs(MethodCallArgsContext context)
     {
+        _methodArgCount = 0;
         PushExpressionBuilderStack();
     }
 
     public override void ExitMethodCallArgs(MethodCallArgsContext context)
     {
+        _methodArgCount++;
         var usingRegister = BuildExpressionOpCodes();
         // HACK, we push the arguments to a temporary register where we unstack and push into arg stack later
         if (_methodCallArgStore == null)
