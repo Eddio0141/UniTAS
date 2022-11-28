@@ -71,7 +71,8 @@ tupleExpression:
 	)+ ROUND_BRACKET_CLOSE;
 
 expression:
-	MINUS expression													# flipSign
+	ROUND_BRACKET_OPEN basicType ROUND_BRACKET_CLOSE expression			# castExpression
+	| MINUS expression													# flipSign
 	| left = expression (MULTIPLY | DIVIDE | MODULO) right = expression	# multiplyDivide
 	| left = expression (PLUS | MINUS) right = expression				# addSubtract
 	| NOT expression													# not
@@ -95,6 +96,12 @@ expression:
 		| string
 		| methodCall
 	) # terminator;
+
+basicType:
+	toInt = 'int'
+	| toFloat = 'float'
+	| toBool = 'bool'
+	| toString = 'string';
 
 string: STRING;
 intType: INT;

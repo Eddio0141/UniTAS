@@ -242,6 +242,20 @@ public partial class MovieScriptDefaultGrammarBaseListener : IMovieScriptDefault
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitAndOr([NotNull] MovieScriptDefaultGrammarParser.AndOrContext context) { }
 	/// <summary>
+	/// Enter a parse tree produced by the <c>castExpression</c>
+	/// labeled alternative in <see cref="MovieScriptDefaultGrammarParser.expression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterCastExpression([NotNull] MovieScriptDefaultGrammarParser.CastExpressionContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by the <c>castExpression</c>
+	/// labeled alternative in <see cref="MovieScriptDefaultGrammarParser.expression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitCastExpression([NotNull] MovieScriptDefaultGrammarParser.CastExpressionContext context) { }
+	/// <summary>
 	/// Enter a parse tree produced by the <c>parentheses</c>
 	/// labeled alternative in <see cref="MovieScriptDefaultGrammarParser.expression"/>.
 	/// <para>The default implementation does nothing.</para>
@@ -367,6 +381,18 @@ public partial class MovieScriptDefaultGrammarBaseListener : IMovieScriptDefault
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitFlipSign([NotNull] MovieScriptDefaultGrammarParser.FlipSignContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.basicType"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterBasicType([NotNull] MovieScriptDefaultGrammarParser.BasicTypeContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.basicType"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitBasicType([NotNull] MovieScriptDefaultGrammarParser.BasicTypeContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.string"/>.
 	/// <para>The default implementation does nothing.</para>

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Antlr4.Runtime;
-using Ninject;
 using UniTASPlugin.Movie.ScriptEngine.EngineMethods;
 using UniTASPlugin.Movie.ScriptEngine.Exceptions.ParseExceptions;
 using UniTASPlugin.Movie.ScriptEngine.MovieModels.Script;
@@ -60,7 +59,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
     private readonly Stack<List<ExpressionBase>> _expressionBuilders = new();
 
-    private readonly bool[] _reservedTempRegister = new bool[RegisterType.Temp9 - RegisterType.Temp + 1];
+    private readonly bool[] _reservedTempRegister = new bool[RegisterType.Temp8 - RegisterType.Temp0 + 1];
     private readonly Stack<List<int>> _reservedRegisterStackTrack = new();
 
     private RegisterType? _methodCallArgStore;
@@ -105,7 +104,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         for (var i = 0; i < _reservedTempRegister.Length; i++)
         {
             var @using = _reservedTempRegister[i];
-            var register = RegisterType.Temp + i;
+            var register = RegisterType.Temp0 + i;
             if (@using)
             {
                 AddOpCode(new PushStackOpCode(register));
@@ -121,7 +120,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         var usingIndexes = _reservedRegisterStackTrack.Pop();
         foreach (var usingIndex in usingIndexes)
         {
-            var register = RegisterType.Temp + usingIndex;
+            var register = RegisterType.Temp0 + usingIndex;
             AddOpCode(new PopStackOpCode(register));
             _reservedTempRegister[usingIndex] = true;
         }
@@ -145,6 +144,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
     private RegisterType BuildExpressionOpCodes()
     {
         var expressionBuilder = _expressionBuilders.Pop();
+        var singularExpressionStorage = new Stack<ExpressionBase>();
         var i = 0;
         OperationType? op = null;
         ExpressionBase left = null;
@@ -165,6 +165,12 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
                     {
                         // move register to store since we are resetting left and right
                         AddOpCode(new MoveOpCode(leftRegister, storeRegister));
+                    }
+
+                    // only store expression if op type contains information (such as cast type)
+                    if (expr is CastExpression)
+                    {
+                        singularExpressionStorage.Push(expr);
                     }
 
                     left = null;
@@ -212,7 +218,10 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
             }
 
             // operations that only takes a left to evaluate
-            if (op.Value != OperationType.FlipNegative && op.Value != OperationType.Not && right == null)
+            if (op.Value != OperationType.FlipNegative &&
+                op.Value != OperationType.Not &&
+                op.Value != OperationType.Cast &&
+                right == null)
             {
                 continue;
             }
@@ -263,6 +272,11 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
             switch (op.Value)
             {
+                case OperationType.Cast:
+                    // use singularExpressionStorage
+                    AddOpCode(new CastOpCode((singularExpressionStorage.Pop() as CastExpression).ValueType, usingLeft,
+                        usingResult));
+                    break;
                 case OperationType.FlipNegative:
                     AddOpCode(new FlipNegativeOpCode(usingLeft, usingResult));
                     break;
@@ -368,6 +382,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         // we ran out of expressions to process, finish up
         Debug.Assert(expressionBuilder.Count == 1,
             "There should be only a single evaluated expression, or a const, or some method call left");
+        Debug.Assert(singularExpressionStorage.Count == 0, "The singular expression storage must be used completely");
         var resultRegister = leftRegister;
         switch (expressionBuilder[0])
         {
@@ -397,7 +412,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
             var reserveStatus = _reservedTempRegister[i];
             if (reserveStatus) continue;
             _reservedTempRegister[i] = true;
-            return RegisterType.Temp + i;
+            return RegisterType.Temp0 + i;
         }
 
         throw new InvalidOperationException("ran out of temp registers, should never happen");
@@ -405,7 +420,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
     private void DeallocateTempRegister(RegisterType register)
     {
-        if (register is > RegisterType.Temp9 or < RegisterType.Temp)
+        if (register is > RegisterType.Temp8 or < RegisterType.Temp0)
         {
             return;
         }
@@ -585,8 +600,8 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
     public override void ExitMethodDefArgs(MethodDefArgsContext context)
     {
         var argName = context.IDENTIFIER_STRING().GetText();
-        AddOpCode(new PopArgOpCode(RegisterType.Temp));
-        AddOpCode(new SetVariableOpCode(RegisterType.Temp, argName));
+        AddOpCode(new PopArgOpCode(RegisterType.Temp0));
+        AddOpCode(new SetVariableOpCode(RegisterType.Temp0, argName));
     }
 
     public override void EnterFlipSign(FlipSignContext context)
@@ -1012,6 +1027,35 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         }
     }
 
+    public override void EnterCastExpression(CastExpressionContext context)
+    {
+        var castTypeExpr = context.basicType();
+
+        BasicValueType castType;
+        if (castTypeExpr.toBool != null)
+        {
+            castType = BasicValueType.Bool;
+        }
+        else if (castTypeExpr.toFloat != null)
+        {
+            castType = BasicValueType.Float;
+        }
+        else if (castTypeExpr.toInt != null)
+        {
+            castType = BasicValueType.Int;
+        }
+        else if (castTypeExpr.toString != null)
+        {
+            castType = BasicValueType.String;
+        }
+        else
+        {
+            throw new NotImplementedException("Forgot to implement basic value type casting");
+        }
+
+        AddExpression(new CastExpression(castType));
+    }
+
     public override void EnterTupleExpression(TupleExpressionContext context)
     {
         _tupleExprDepth++;
@@ -1148,9 +1192,9 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
                 // opcodes for loop logic
                 // we use hardcoded temp registers since loop count is pushed anyway
-                AddOpCode(new ConstToRegisterOpCode(RegisterType.Temp2, new IntValueType(1)));
-                AddOpCode(new SubOpCode(RegisterType.Temp, RegisterType.Temp, RegisterType.Temp2));
-                AddOpCode(new PushStackOpCode(RegisterType.Temp));
+                AddOpCode(new ConstToRegisterOpCode(RegisterType.Temp1, new IntValueType(1)));
+                AddOpCode(new SubOpCode(RegisterType.Temp0, RegisterType.Temp0, RegisterType.Temp1));
+                AddOpCode(new PushStackOpCode(RegisterType.Temp0));
 
                 break;
             }

@@ -2,7 +2,8 @@
 
 public enum RegisterType
 {
-    Temp,
+    Temp0,
+    Temp1,
     Temp2,
     Temp3,
     Temp4,
