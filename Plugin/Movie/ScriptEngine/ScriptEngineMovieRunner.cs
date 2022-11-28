@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using BepInEx;
 using UniTASPlugin.GameEnvironment.Interfaces;
-using UniTASPlugin.Movie.ScriptEngine.Exceptions.ScriptEngineExceptions;
 using UniTASPlugin.Movie.ScriptEngine.Models.Script;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes;
 using UniTASPlugin.Movie.ScriptEngine.ParseInterfaces;

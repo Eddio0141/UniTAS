@@ -8,7 +8,6 @@ using UniTASPlugin.FakeGameState;
 using UniTASPlugin.FakeGameState.GameFileSystem;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.GameOverlay;
-using UniTASPlugin.Movie;
 using UniTASPlugin.Movie.ScriptEngine;
 using UniTASPlugin.NInjectModules;
 using UniTASPlugin.VersionSafeWrapper;
