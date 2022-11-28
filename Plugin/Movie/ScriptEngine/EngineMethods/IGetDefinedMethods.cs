@@ -4,5 +4,5 @@ namespace UniTASPlugin.Movie.ScriptEngine.EngineMethods;
 
 public interface IGetDefinedMethods
 {
-    ICollection<EngineExternalMethodBase> GetExternMethods();
+    IEnumerable<EngineExternalMethodBase> GetExternMethods();
 }
