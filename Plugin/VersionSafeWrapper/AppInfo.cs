@@ -21,7 +21,7 @@ public static class AppInfo
         var foundExe = "";
         var foundMultipleExe = false;
         var rootDir = Helper.GameRootDir();
-        var rev = Plugin.Instance.Kernel.Get<PatchReverseInvoker>();
+        var rev = Plugin.Kernel.Get<PatchReverseInvoker>();
         var rootFiles = rev.Invoke(System.IO.Directory.GetFiles, rootDir);
 
         // iterate over exes in game root dir

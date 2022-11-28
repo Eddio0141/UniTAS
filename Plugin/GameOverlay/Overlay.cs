@@ -69,7 +69,7 @@ internal static class Overlay
 
     public static void Update()
     {
-        var kernel = Plugin.Instance.Kernel;
+        var kernel = Plugin.Kernel;
         var movieRunner = kernel.Get<ScriptEngineMovieRunner>();
         if (!movieRunner.IsRunning && Input.GetKeyDown(KeyCode.F10))
         {
@@ -79,7 +79,7 @@ internal static class Overlay
         if (!movieRunner.IsRunning && Input.GetKeyDown(KeyCode.F11))
         {
             CursorWrap.UnlockCursor();
-            Plugin.Instance.Logger.LogDebug($"Unlocked cursor");
+            Plugin.Log.LogDebug($"Unlocked cursor");
         }
 
         if (!movieRunner.IsRunning && Input.GetKeyDown(KeyCode.BackQuote))
@@ -136,7 +136,7 @@ internal static class Overlay
         if (!Enabled)
             return;
 
-        var kernel = Plugin.Instance.Kernel;
+        var kernel = Plugin.Kernel;
         var movieRunner = kernel.Get<ScriptEngineMovieRunner>();
         var env = kernel.Get<VirtualEnvironment>();
 
@@ -155,7 +155,7 @@ internal static class Overlay
                 filePath = GUILayout.TextField(filePath);
                 if (GUILayout.Button("Run", GUILayout.Width(40)))
                 {
-                    var rev = Plugin.Instance.Kernel.Get<PatchReverseInvoker>();
+                    var rev = Plugin.Kernel.Get<PatchReverseInvoker>();
                     if (rev.Invoke(System.IO.File.Exists, filePath) && !movieRunner.IsRunning)
                     {
                         movieRunner.RunFromPath(rev.Invoke(System.IO.Path.GetFileName, filePath), ref env);
@@ -176,7 +176,7 @@ internal static class Overlay
                 if (GUILayout.Button("test TAS") && !movieRunner.IsRunning)
                 {
                     var path = "";
-                    var rev = Plugin.Instance.Kernel.Get<PatchReverseInvoker>();
+                    var rev = Plugin.Kernel.Get<PatchReverseInvoker>();
                     if (rev.Invoke(System.IO.File.Exists, "C:\\Users\\Yuki\\Documents\\test.uti"))
                         path = "C:\\Users\\Yuki\\Documents\\test.uti";
                     else if (rev.Invoke(System.IO.File.Exists,

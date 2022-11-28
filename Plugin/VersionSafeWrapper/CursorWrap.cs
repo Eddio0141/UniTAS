@@ -29,7 +29,7 @@ internal static class CursorWrap
             }
 
             if (ScreenShowCursorExists) return ScreenShowCursorTraverse.GetValue<bool>();
-            Plugin.Instance.Logger.LogError("Failed to retrieve Screen.showCursor property");
+            Plugin.Log.LogError("Failed to retrieve Screen.showCursor property");
             return false;
         }
         set
@@ -41,7 +41,7 @@ internal static class CursorWrap
             }
             if (!ScreenShowCursorExists)
             {
-                Plugin.Instance.Logger.LogError("Failed to set Screen.showCursor property");
+                Plugin.Log.LogError("Failed to set Screen.showCursor property");
                 return;
             }
             ScreenShowCursorTraverse.SetValue(value);
@@ -62,18 +62,18 @@ internal static class CursorWrap
                 }
                 else
                 {
-                    Plugin.Instance.Logger.LogError("UnityEngine.CursorLockMode exists but the UnityEngine.Cursor.lockState is missing");
+                    Plugin.Log.LogError("UnityEngine.CursorLockMode exists but the UnityEngine.Cursor.lockState is missing");
                 }
             }
             else
             {
-                Plugin.Instance.Logger.LogError("UnityEngine.CursorLockMode exists but the None variant is missing");
+                Plugin.Log.LogError("UnityEngine.CursorLockMode exists but the None variant is missing");
             }
             return;
         }
         if (!ScreenLockCursorExists)
         {
-            Plugin.Instance.Logger.LogError("Failed to unlock cursor, lockCursor property not found");
+            Plugin.Log.LogError("Failed to unlock cursor, lockCursor property not found");
             return;
         }
         ScreenLockCursorTraverse.SetValue(false);

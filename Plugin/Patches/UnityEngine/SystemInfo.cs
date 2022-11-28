@@ -21,7 +21,7 @@ internal class SystemInfo
 
         private static bool Prefix(ref object __result)
         {
-            if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
                 return true;
             var deviceType = AccessTools.TypeByName("UnityEngine.DeviceType");
             __result = Enum.Parse(deviceType, FakeGameState.SystemInfo.DeviceType);

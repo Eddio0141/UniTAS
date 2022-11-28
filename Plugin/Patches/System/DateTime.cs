@@ -23,7 +23,7 @@ internal static class DateTime
 
         private static bool Prefix(ref DateTimeOrig __result)
         {
-            if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
                 return true;
             __result = GameTime.CurrentTime;
             return false;
