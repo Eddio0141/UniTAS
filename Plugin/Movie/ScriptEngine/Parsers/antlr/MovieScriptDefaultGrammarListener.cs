@@ -203,6 +203,18 @@ public interface IMovieScriptDefaultGrammarListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitAndOr([NotNull] MovieScriptDefaultGrammarParser.AndOrContext context);
 	/// <summary>
+	/// Enter a parse tree produced by the <c>castExpression</c>
+	/// labeled alternative in <see cref="MovieScriptDefaultGrammarParser.expression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterCastExpression([NotNull] MovieScriptDefaultGrammarParser.CastExpressionContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>castExpression</c>
+	/// labeled alternative in <see cref="MovieScriptDefaultGrammarParser.expression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitCastExpression([NotNull] MovieScriptDefaultGrammarParser.CastExpressionContext context);
+	/// <summary>
 	/// Enter a parse tree produced by the <c>parentheses</c>
 	/// labeled alternative in <see cref="MovieScriptDefaultGrammarParser.expression"/>.
 	/// </summary>
@@ -310,6 +322,16 @@ public interface IMovieScriptDefaultGrammarListener : IParseTreeListener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	void ExitFlipSign([NotNull] MovieScriptDefaultGrammarParser.FlipSignContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.basicType"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterBasicType([NotNull] MovieScriptDefaultGrammarParser.BasicTypeContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.basicType"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitBasicType([NotNull] MovieScriptDefaultGrammarParser.BasicTypeContext context);
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.string"/>.
 	/// </summary>

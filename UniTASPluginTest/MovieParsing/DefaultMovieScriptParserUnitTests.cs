@@ -52,10 +52,10 @@ public class DefaultMovieScriptParserUnitTests
         var actual = new ScriptMethodModel("method",
             new OpCodeBase[]
             {
-                new PopArgOpCode(RegisterType.Temp),
-                new SetVariableOpCode(RegisterType.Temp, "arg2"),
-                new PopArgOpCode(RegisterType.Temp),
-                new SetVariableOpCode(RegisterType.Temp, "arg1"),
+                new PopArgOpCode(RegisterType.Temp0),
+                new SetVariableOpCode(RegisterType.Temp0, "arg2"),
+                new PopArgOpCode(RegisterType.Temp0),
+                new SetVariableOpCode(RegisterType.Temp0, "arg1"),
             });
 
         definedMethod.Should().BeEquivalentTo(actual);
@@ -74,28 +74,28 @@ $value %= 5");
 
         var actual = new ScriptMethodModel(null, new OpCodeBase[]
         {
-            new ConstToRegisterOpCode(RegisterType.Temp, new IntValueType(4)),
-            new SetVariableOpCode(RegisterType.Temp, "value"),
-            new ConstToRegisterOpCode(RegisterType.Temp, new IntValueType(10)),
-            new VarToRegisterOpCode(RegisterType.Temp2, "value"),
-            new AddOpCode(RegisterType.Temp, RegisterType.Temp2, RegisterType.Temp),
-            new SetVariableOpCode(RegisterType.Temp, "value"),
-            new ConstToRegisterOpCode(RegisterType.Temp, new IntValueType(3)),
-            new VarToRegisterOpCode(RegisterType.Temp2, "value"),
-            new SubOpCode(RegisterType.Temp, RegisterType.Temp2, RegisterType.Temp),
-            new SetVariableOpCode(RegisterType.Temp, "value"),
-            new ConstToRegisterOpCode(RegisterType.Temp, new IntValueType(100)),
-            new VarToRegisterOpCode(RegisterType.Temp2, "value"),
-            new MultOpCode(RegisterType.Temp, RegisterType.Temp2, RegisterType.Temp),
-            new SetVariableOpCode(RegisterType.Temp, "value"),
-            new ConstToRegisterOpCode(RegisterType.Temp, new IntValueType(4)),
-            new VarToRegisterOpCode(RegisterType.Temp2, "value"),
-            new DivOpCode(RegisterType.Temp, RegisterType.Temp2, RegisterType.Temp),
-            new SetVariableOpCode(RegisterType.Temp, "value"),
-            new ConstToRegisterOpCode(RegisterType.Temp, new IntValueType(5)),
-            new VarToRegisterOpCode(RegisterType.Temp2, "value"),
-            new ModOpCode(RegisterType.Temp, RegisterType.Temp2, RegisterType.Temp),
-            new SetVariableOpCode(RegisterType.Temp, "value"),
+            new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(4)),
+            new SetVariableOpCode(RegisterType.Temp0, "value"),
+            new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(10)),
+            new VarToRegisterOpCode(RegisterType.Temp1, "value"),
+            new AddOpCode(RegisterType.Temp0, RegisterType.Temp1, RegisterType.Temp0),
+            new SetVariableOpCode(RegisterType.Temp0, "value"),
+            new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(3)),
+            new VarToRegisterOpCode(RegisterType.Temp1, "value"),
+            new SubOpCode(RegisterType.Temp0, RegisterType.Temp1, RegisterType.Temp0),
+            new SetVariableOpCode(RegisterType.Temp0, "value"),
+            new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(100)),
+            new VarToRegisterOpCode(RegisterType.Temp1, "value"),
+            new MultOpCode(RegisterType.Temp0, RegisterType.Temp1, RegisterType.Temp0),
+            new SetVariableOpCode(RegisterType.Temp0, "value"),
+            new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(4)),
+            new VarToRegisterOpCode(RegisterType.Temp1, "value"),
+            new DivOpCode(RegisterType.Temp0, RegisterType.Temp1, RegisterType.Temp0),
+            new SetVariableOpCode(RegisterType.Temp0, "value"),
+            new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(5)),
+            new VarToRegisterOpCode(RegisterType.Temp1, "value"),
+            new ModOpCode(RegisterType.Temp0, RegisterType.Temp1, RegisterType.Temp0),
+            new SetVariableOpCode(RegisterType.Temp0, "value"),
         });
 
         definedMethod.Should().BeEquivalentTo(actual);
@@ -113,16 +113,16 @@ $value5 = false");
 
         var actual = new ScriptMethodModel(null, new OpCodeBase[]
         {
-            new ConstToRegisterOpCode(RegisterType.Temp, new IntValueType(10)),
-            new SetVariableOpCode(RegisterType.Temp, "value"),
-            new ConstToRegisterOpCode(RegisterType.Temp, new FloatValueType(10f)),
-            new SetVariableOpCode(RegisterType.Temp, "value2"),
-            new ConstToRegisterOpCode(RegisterType.Temp, new StringValueType("hello world!")),
-            new SetVariableOpCode(RegisterType.Temp, "value3"),
-            new ConstToRegisterOpCode(RegisterType.Temp, new BoolValueType(true)),
-            new SetVariableOpCode(RegisterType.Temp, "value4"),
-            new ConstToRegisterOpCode(RegisterType.Temp, new BoolValueType(false)),
-            new SetVariableOpCode(RegisterType.Temp, "value5"),
+            new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(10)),
+            new SetVariableOpCode(RegisterType.Temp0, "value"),
+            new ConstToRegisterOpCode(RegisterType.Temp0, new FloatValueType(10f)),
+            new SetVariableOpCode(RegisterType.Temp0, "value2"),
+            new ConstToRegisterOpCode(RegisterType.Temp0, new StringValueType("hello world!")),
+            new SetVariableOpCode(RegisterType.Temp0, "value3"),
+            new ConstToRegisterOpCode(RegisterType.Temp0, new BoolValueType(true)),
+            new SetVariableOpCode(RegisterType.Temp0, "value4"),
+            new ConstToRegisterOpCode(RegisterType.Temp0, new BoolValueType(false)),
+            new SetVariableOpCode(RegisterType.Temp0, "value5"),
         });
 
         definedMethod.Should().BeEquivalentTo(actual);
@@ -142,20 +142,20 @@ $value5 = false");
 
         var actual = new ScriptMethodModel(null, new OpCodeBase[]
         {
-            new ConstToRegisterOpCode(RegisterType.Temp, new IntValueType(1)),
-            new ConstToRegisterOpCode(RegisterType.Temp2, new IntValueType(2)),
-            new AddOpCode(RegisterType.Temp, RegisterType.Temp, RegisterType.Temp2),
-            new MoveOpCode(RegisterType.Temp, RegisterType.Temp3),
-            new ConstToRegisterOpCode(RegisterType.Temp, new IntValueType(3)),
-            new ConstToRegisterOpCode(RegisterType.Temp2, new IntValueType(4)),
-            new MultOpCode(RegisterType.Temp, RegisterType.Temp, RegisterType.Temp2),
-            new ConstToRegisterOpCode(RegisterType.Temp2, new IntValueType(5)),
-            new DivOpCode(RegisterType.Temp, RegisterType.Temp, RegisterType.Temp2),
-            new SubOpCode(RegisterType.Temp, RegisterType.Temp3, RegisterType.Temp),
-            new FlipNegativeOpCode(RegisterType.Temp, RegisterType.Temp),
-            new ConstToRegisterOpCode(RegisterType.Temp2, new IntValueType(6)),
-            new ModOpCode(RegisterType.Temp, RegisterType.Temp, RegisterType.Temp2),
-            new SetVariableOpCode(RegisterType.Temp, "value")
+            new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(1)),
+            new ConstToRegisterOpCode(RegisterType.Temp1, new IntValueType(2)),
+            new AddOpCode(RegisterType.Temp0, RegisterType.Temp0, RegisterType.Temp1),
+            new MoveOpCode(RegisterType.Temp0, RegisterType.Temp2),
+            new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(3)),
+            new ConstToRegisterOpCode(RegisterType.Temp1, new IntValueType(4)),
+            new MultOpCode(RegisterType.Temp0, RegisterType.Temp0, RegisterType.Temp1),
+            new ConstToRegisterOpCode(RegisterType.Temp1, new IntValueType(5)),
+            new DivOpCode(RegisterType.Temp0, RegisterType.Temp0, RegisterType.Temp1),
+            new SubOpCode(RegisterType.Temp0, RegisterType.Temp2, RegisterType.Temp0),
+            new FlipNegativeOpCode(RegisterType.Temp0, RegisterType.Temp0),
+            new ConstToRegisterOpCode(RegisterType.Temp1, new IntValueType(6)),
+            new ModOpCode(RegisterType.Temp0, RegisterType.Temp0, RegisterType.Temp1),
+            new SetVariableOpCode(RegisterType.Temp0, "value")
         });
 
         definedMethod.Should().BeEquivalentTo(actual);
@@ -211,38 +211,38 @@ if $value == 0 {
 
         var actual = new ScriptMethodModel(null, new OpCodeBase[]
         {
-            new ConstToRegisterOpCode(RegisterType.Temp, new IntValueType(0)),
-            new SetVariableOpCode(RegisterType.Temp, "value"),
-            new VarToRegisterOpCode(RegisterType.Temp, "value"),
-            new ConstToRegisterOpCode(RegisterType.Temp2, new IntValueType(0)),
-            new EqualOpCode(RegisterType.Temp, RegisterType.Temp, RegisterType.Temp2),
-            new JumpIfFalse(6, RegisterType.Temp),
+            new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(0)),
+            new SetVariableOpCode(RegisterType.Temp0, "value"),
+            new VarToRegisterOpCode(RegisterType.Temp0, "value"),
+            new ConstToRegisterOpCode(RegisterType.Temp1, new IntValueType(0)),
+            new EqualOpCode(RegisterType.Temp0, RegisterType.Temp0, RegisterType.Temp1),
+            new JumpIfFalse(6, RegisterType.Temp0),
             new EnterScopeOpCode(),
-            new ConstToRegisterOpCode(RegisterType.Temp, new IntValueType(1)),
-            new SetVariableOpCode(RegisterType.Temp, "value"),
+            new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(1)),
+            new SetVariableOpCode(RegisterType.Temp0, "value"),
             new ExitScopeOpCode(),
             new JumpOpCode(23),
-            new VarToRegisterOpCode(RegisterType.Temp, "value"),
-            new ConstToRegisterOpCode(RegisterType.Temp2, new IntValueType(1)),
-            new EqualOpCode(RegisterType.Temp, RegisterType.Temp, RegisterType.Temp2),
-            new JumpIfFalse(6, RegisterType.Temp),
+            new VarToRegisterOpCode(RegisterType.Temp0, "value"),
+            new ConstToRegisterOpCode(RegisterType.Temp1, new IntValueType(1)),
+            new EqualOpCode(RegisterType.Temp0, RegisterType.Temp0, RegisterType.Temp1),
+            new JumpIfFalse(6, RegisterType.Temp0),
             new EnterScopeOpCode(),
-            new ConstToRegisterOpCode(RegisterType.Temp, new IntValueType(2)),
-            new SetVariableOpCode(RegisterType.Temp, "value"),
+            new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(2)),
+            new SetVariableOpCode(RegisterType.Temp0, "value"),
             new ExitScopeOpCode(),
             new JumpOpCode(14),
-            new VarToRegisterOpCode(RegisterType.Temp, "value"),
-            new ConstToRegisterOpCode(RegisterType.Temp2, new IntValueType(2)),
-            new EqualOpCode(RegisterType.Temp, RegisterType.Temp, RegisterType.Temp2),
-            new JumpIfFalse(6, RegisterType.Temp),
+            new VarToRegisterOpCode(RegisterType.Temp0, "value"),
+            new ConstToRegisterOpCode(RegisterType.Temp1, new IntValueType(2)),
+            new EqualOpCode(RegisterType.Temp0, RegisterType.Temp0, RegisterType.Temp1),
+            new JumpIfFalse(6, RegisterType.Temp0),
             new EnterScopeOpCode(),
-            new ConstToRegisterOpCode(RegisterType.Temp, new IntValueType(3)),
-            new SetVariableOpCode(RegisterType.Temp, "value"),
+            new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(3)),
+            new SetVariableOpCode(RegisterType.Temp0, "value"),
             new ExitScopeOpCode(),
             new JumpOpCode(5),
             new EnterScopeOpCode(),
-            new ConstToRegisterOpCode(RegisterType.Temp, new IntValueType(4)),
-            new SetVariableOpCode(RegisterType.Temp, "value"),
+            new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(4)),
+            new SetVariableOpCode(RegisterType.Temp0, "value"),
             new ExitScopeOpCode()
         });
 
@@ -263,15 +263,15 @@ if $value == 0 {
 
         var actual = new ScriptMethodModel(null, new OpCodeBase[]
         {
-            new ConstToRegisterOpCode(RegisterType.Temp, new IntValueType(0)),
-            new SetVariableOpCode(RegisterType.Temp, "value"),
+            new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(0)),
+            new SetVariableOpCode(RegisterType.Temp0, "value"),
             new EnterScopeOpCode(),
-            new ConstToRegisterOpCode(RegisterType.Temp, new IntValueType(1)),
-            new SetVariableOpCode(RegisterType.Temp, "value"),
+            new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(1)),
+            new SetVariableOpCode(RegisterType.Temp0, "value"),
             new ExitScopeOpCode(),
             new EnterScopeOpCode(),
-            new ConstToRegisterOpCode(RegisterType.Temp, new IntValueType(2)),
-            new SetVariableOpCode(RegisterType.Temp, "value"),
+            new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(2)),
+            new SetVariableOpCode(RegisterType.Temp0, "value"),
             new ExitScopeOpCode(),
         });
 
@@ -291,18 +291,18 @@ loop $value {
 
         var actual = new ScriptMethodModel(null, new OpCodeBase[]
         {
-            new ConstToRegisterOpCode(RegisterType.Temp, new IntValueType(5)),
-            new SetVariableOpCode(RegisterType.Temp, "value"),
-            new VarToRegisterOpCode(RegisterType.Temp, "value"),
-            new JumpIfEqZero(10, RegisterType.Temp),
-            new ConstToRegisterOpCode(RegisterType.Temp2, new IntValueType(1)),
-            new SubOpCode(RegisterType.Temp, RegisterType.Temp, RegisterType.Temp2),
-            new PushStackOpCode(RegisterType.Temp),
+            new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(5)),
+            new SetVariableOpCode(RegisterType.Temp0, "value"),
+            new VarToRegisterOpCode(RegisterType.Temp0, "value"),
+            new JumpIfEqZero(10, RegisterType.Temp0),
+            new ConstToRegisterOpCode(RegisterType.Temp1, new IntValueType(1)),
+            new SubOpCode(RegisterType.Temp0, RegisterType.Temp0, RegisterType.Temp1),
+            new PushStackOpCode(RegisterType.Temp0),
             new EnterScopeOpCode(),
             new GotoMethodOpCode("method"),
             new FrameAdvanceOpCode(),
             new ExitScopeOpCode(),
-            new PopStackOpCode(RegisterType.Temp),
+            new PopStackOpCode(RegisterType.Temp0),
             new JumpOpCode(-9)
         });
 
@@ -327,35 +327,35 @@ loop $value {
         var actual = new ScriptMethodModel(null, new OpCodeBase[]
         {
             // $value = 5
-            new ConstToRegisterOpCode(RegisterType.Temp, new IntValueType(5)),
-            new SetVariableOpCode(RegisterType.Temp, "value"),
-            new VarToRegisterOpCode(RegisterType.Temp, "value"),
+            new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(5)),
+            new SetVariableOpCode(RegisterType.Temp0, "value"),
+            new VarToRegisterOpCode(RegisterType.Temp0, "value"),
             // loop $value
-            new JumpIfEqZero(23, RegisterType.Temp),
-            new ConstToRegisterOpCode(RegisterType.Temp2, new IntValueType(1)),
-            new SubOpCode(RegisterType.Temp, RegisterType.Temp, RegisterType.Temp2),
-            new PushStackOpCode(RegisterType.Temp),
+            new JumpIfEqZero(23, RegisterType.Temp0),
+            new ConstToRegisterOpCode(RegisterType.Temp1, new IntValueType(1)),
+            new SubOpCode(RegisterType.Temp0, RegisterType.Temp0, RegisterType.Temp1),
+            new PushStackOpCode(RegisterType.Temp0),
             new EnterScopeOpCode(),
             // if
-            new VarToRegisterOpCode(RegisterType.Temp, "value"),
-            new ConstToRegisterOpCode(RegisterType.Temp2, new IntValueType(3)),
-            new EqualOpCode(RegisterType.Temp, RegisterType.Temp, RegisterType.Temp2),
-            new JumpIfFalse(12, RegisterType.Temp),
+            new VarToRegisterOpCode(RegisterType.Temp0, "value"),
+            new ConstToRegisterOpCode(RegisterType.Temp1, new IntValueType(3)),
+            new EqualOpCode(RegisterType.Temp0, RegisterType.Temp0, RegisterType.Temp1),
+            new JumpIfFalse(12, RegisterType.Temp0),
             new EnterScopeOpCode(),
             new BreakOpCode(),
             new ExitScopeOpCode(),
             new JumpOpCode(8),
             // else if
-            new VarToRegisterOpCode(RegisterType.Temp, "value"),
-            new ConstToRegisterOpCode(RegisterType.Temp2, new IntValueType(4)),
-            new EqualOpCode(RegisterType.Temp, RegisterType.Temp, RegisterType.Temp2),
-            new JumpIfFalse(4, RegisterType.Temp),
+            new VarToRegisterOpCode(RegisterType.Temp0, "value"),
+            new ConstToRegisterOpCode(RegisterType.Temp1, new IntValueType(4)),
+            new EqualOpCode(RegisterType.Temp0, RegisterType.Temp0, RegisterType.Temp1),
+            new JumpIfFalse(4, RegisterType.Temp0),
             new EnterScopeOpCode(),
             new ContinueOpCode(),
             new ExitScopeOpCode(),
             // loop end
             new ExitScopeOpCode(),
-            new PopStackOpCode(RegisterType.Temp),
+            new PopStackOpCode(RegisterType.Temp0),
             new JumpOpCode(-22)
         });
 
@@ -372,8 +372,8 @@ $value = method()");
 
         var actual = new ScriptMethodModel("method", new OpCodeBase[]
         {
-            new ConstToRegisterOpCode(RegisterType.Temp, new IntValueType(5)),
-            new MoveOpCode(RegisterType.Temp, RegisterType.Ret),
+            new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(5)),
+            new MoveOpCode(RegisterType.Temp0, RegisterType.Ret),
             new ReturnOpCode()
         });
 
@@ -410,41 +410,41 @@ $(value7, value8) = method()");
         var actual = new ScriptMethodModel(null, new OpCodeBase[]
         {
             // $value = (50, "test", -1.0)
-            new ConstToRegisterOpCode(RegisterType.Temp, new IntValueType(50)),
-            new PushTupleOpCode(RegisterType.Temp2, RegisterType.Temp),
-            new ConstToRegisterOpCode(RegisterType.Temp2, new StringValueType("test")),
-            new PushTupleOpCode(RegisterType.Temp, RegisterType.Temp2),
-            new ConstToRegisterOpCode(RegisterType.Temp2, new FloatValueType(-1f)),
-            new PushTupleOpCode(RegisterType.Temp2, RegisterType.Temp),
-            new SetVariableOpCode(RegisterType.Temp, "value"),
+            new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(50)),
+            new PushTupleOpCode(RegisterType.Temp1, RegisterType.Temp0),
+            new ConstToRegisterOpCode(RegisterType.Temp1, new StringValueType("test")),
+            new PushTupleOpCode(RegisterType.Temp0, RegisterType.Temp1),
+            new ConstToRegisterOpCode(RegisterType.Temp1, new FloatValueType(-1f)),
+            new PushTupleOpCode(RegisterType.Temp1, RegisterType.Temp0),
+            new SetVariableOpCode(RegisterType.Temp0, "value"),
             // $(value2, value3) = $value
-            new VarToRegisterOpCode(RegisterType.Temp, "value"),
-            new PopTupleOpCode(RegisterType.Temp2, RegisterType.Temp),
-            new SetVariableOpCode(RegisterType.Temp2, "value2"),
-            new PopTupleOpCode(RegisterType.Temp2, RegisterType.Temp),
-            new SetVariableOpCode(RegisterType.Temp2, "value3"),
+            new VarToRegisterOpCode(RegisterType.Temp0, "value"),
+            new PopTupleOpCode(RegisterType.Temp1, RegisterType.Temp0),
+            new SetVariableOpCode(RegisterType.Temp1, "value2"),
+            new PopTupleOpCode(RegisterType.Temp1, RegisterType.Temp0),
+            new SetVariableOpCode(RegisterType.Temp1, "value3"),
             // $(_, value4, value5) = $value
-            new VarToRegisterOpCode(RegisterType.Temp, "value"),
-            new PopTupleOpCode(RegisterType.Temp2, RegisterType.Temp),
-            new PopTupleOpCode(RegisterType.Temp2, RegisterType.Temp),
-            new SetVariableOpCode(RegisterType.Temp2, "value4"),
-            new PopTupleOpCode(RegisterType.Temp2, RegisterType.Temp),
-            new SetVariableOpCode(RegisterType.Temp2, "value5"),
+            new VarToRegisterOpCode(RegisterType.Temp0, "value"),
+            new PopTupleOpCode(RegisterType.Temp1, RegisterType.Temp0),
+            new PopTupleOpCode(RegisterType.Temp1, RegisterType.Temp0),
+            new SetVariableOpCode(RegisterType.Temp1, "value4"),
+            new PopTupleOpCode(RegisterType.Temp1, RegisterType.Temp0),
+            new SetVariableOpCode(RegisterType.Temp1, "value5"),
             // $(_, value6) = (10, 10)
-            new ConstToRegisterOpCode(RegisterType.Temp, new IntValueType(10)),
-            new PushTupleOpCode(RegisterType.Temp2, RegisterType.Temp),
-            new ConstToRegisterOpCode(RegisterType.Temp, new IntValueType(10)),
-            new PushTupleOpCode(RegisterType.Temp, RegisterType.Temp2),
+            new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(10)),
+            new PushTupleOpCode(RegisterType.Temp1, RegisterType.Temp0),
+            new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(10)),
+            new PushTupleOpCode(RegisterType.Temp0, RegisterType.Temp1),
             // set
-            new PopTupleOpCode(RegisterType.Temp2, RegisterType.Temp),
-            new PopTupleOpCode(RegisterType.Temp2, RegisterType.Temp),
-            new SetVariableOpCode(RegisterType.Temp2, "value6"),
+            new PopTupleOpCode(RegisterType.Temp1, RegisterType.Temp0),
+            new PopTupleOpCode(RegisterType.Temp1, RegisterType.Temp0),
+            new SetVariableOpCode(RegisterType.Temp1, "value6"),
             // $(value7, value8) = method()
             new GotoMethodOpCode("method"),
-            new PopTupleOpCode(RegisterType.Temp, RegisterType.Ret),
-            new SetVariableOpCode(RegisterType.Temp, "value7"),
-            new PopTupleOpCode(RegisterType.Temp, RegisterType.Ret),
-            new SetVariableOpCode(RegisterType.Temp, "value8")
+            new PopTupleOpCode(RegisterType.Temp0, RegisterType.Ret),
+            new SetVariableOpCode(RegisterType.Temp0, "value7"),
+            new PopTupleOpCode(RegisterType.Temp0, RegisterType.Ret),
+            new SetVariableOpCode(RegisterType.Temp0, "value8")
         });
 
         definedMethod.Should().BeEquivalentTo(actual);
@@ -467,15 +467,15 @@ $value3 = (10, /*""thing"",,*/ ""thing2"")");
 
         var actual = new ScriptMethodModel(null, new OpCodeBase[]
         {
-            new ConstToRegisterOpCode(RegisterType.Temp, new StringValueType("thingy")),
-            new SetVariableOpCode(RegisterType.Temp, "value"),
-            new ConstToRegisterOpCode(RegisterType.Temp, new StringValueType("\"this is another thing")),
-            new SetVariableOpCode(RegisterType.Temp, "value2"),
-            new ConstToRegisterOpCode(RegisterType.Temp, new IntValueType(10)),
-            new PushTupleOpCode(RegisterType.Temp2, RegisterType.Temp),
-            new ConstToRegisterOpCode(RegisterType.Temp, new StringValueType("thing2")),
-            new PushTupleOpCode(RegisterType.Temp2, RegisterType.Temp),
-            new SetVariableOpCode(RegisterType.Temp2, "value3")
+            new ConstToRegisterOpCode(RegisterType.Temp0, new StringValueType("thingy")),
+            new SetVariableOpCode(RegisterType.Temp0, "value"),
+            new ConstToRegisterOpCode(RegisterType.Temp0, new StringValueType("\"this is another thing")),
+            new SetVariableOpCode(RegisterType.Temp0, "value2"),
+            new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(10)),
+            new PushTupleOpCode(RegisterType.Temp1, RegisterType.Temp0),
+            new ConstToRegisterOpCode(RegisterType.Temp0, new StringValueType("thing2")),
+            new PushTupleOpCode(RegisterType.Temp1, RegisterType.Temp0),
+            new SetVariableOpCode(RegisterType.Temp1, "value3")
         });
 
         definedMethod.Should().BeEquivalentTo(actual);
@@ -490,8 +490,8 @@ $value3 = (10, /*""thing"",,*/ ""thing2"")");
 
         var actual = new ScriptMethodModel(null, new OpCodeBase[]
         {
-            new ConstToRegisterOpCode(RegisterType.Temp, new StringValueType("th\"i\"ngy")),
-            new SetVariableOpCode(RegisterType.Temp, "value"),
+            new ConstToRegisterOpCode(RegisterType.Temp0, new StringValueType("th\"i\"ngy")),
+            new SetVariableOpCode(RegisterType.Temp0, "value"),
         });
 
         definedMethod.Should().BeEquivalentTo(actual);
@@ -509,5 +509,59 @@ $value3 = (10, /*""thing"",,*/ ""thing2"")");
     public void ExternalMethod()
     {
         Setup("print(\"hello world!\")");
+    }
+
+    [Fact]
+    public void MinusOne()
+    {
+        var script = Setup("$value = -(1)");
+        var definedMethod = script.MainMethod;
+
+        var actual = new ScriptMethodModel(null, new OpCodeBase[]
+        {
+            new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(-1)),
+            new FlipNegativeOpCode(RegisterType.Temp0, RegisterType.Temp0),
+            new SetVariableOpCode(RegisterType.Temp0, "value")
+        });
+
+        definedMethod.Should().BeEquivalentTo(actual);
+    }
+
+    [Fact]
+    public void TypeCasting()
+    {
+        var script = Setup(@"$value = (int)""10""
+$value2 = (float)$value
+$value3 = (bool)1
+$value4 = (bool)""false""
+$value5 = (string)$value");
+
+        var definedMethod = script.MainMethod;
+
+        var actual = new ScriptMethodModel(null, new OpCodeBase[]
+        {
+            // $value = (int)"10"
+            new ConstToRegisterOpCode(RegisterType.Temp0, new StringValueType("10")),
+            new CastOpCode(BasicValueType.Int, RegisterType.Temp0, RegisterType.Temp0),
+            new SetVariableOpCode(RegisterType.Temp0, "value"),
+            // $value2 = (float)$value
+            new VarToRegisterOpCode(RegisterType.Temp0, "value"),
+            new CastOpCode(BasicValueType.Float, RegisterType.Temp0, RegisterType.Temp0),
+            new SetVariableOpCode(RegisterType.Temp0, "value2"),
+            // $value3 = (bool)1
+            new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(1)),
+            new CastOpCode(BasicValueType.Bool, RegisterType.Temp0, RegisterType.Temp0),
+            new SetVariableOpCode(RegisterType.Temp0, "value3"),
+            // $value4 = (bool)"false"
+            new ConstToRegisterOpCode(RegisterType.Temp0, new StringValueType("false")),
+            new CastOpCode(BasicValueType.Bool, RegisterType.Temp0, RegisterType.Temp0),
+            new SetVariableOpCode(RegisterType.Temp0, "value4"),
+            // $value5 = (string)$value
+            new VarToRegisterOpCode(RegisterType.Temp0, "value"),
+            new CastOpCode(BasicValueType.String, RegisterType.Temp0, RegisterType.Temp0),
+            new SetVariableOpCode(RegisterType.Temp0, "value5"),
+        });
+
+        definedMethod.Should().BeEquivalentTo(actual);
     }
 }

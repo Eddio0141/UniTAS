@@ -9,6 +9,7 @@ public enum OperationType
     Add,
     Subtract,
     Not,
+    Cast,
     AndLogic,
     OrLogic,
     EqualsLogic,
