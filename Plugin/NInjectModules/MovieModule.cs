@@ -1,9 +1,10 @@
 ﻿using Ninject.Modules;
 using UniTASPlugin.Movie;
-using UniTASPlugin.Movie.DefaultParsers;
-using UniTASPlugin.Movie.DefaultParsers.DefaultMoviePropertiesParser;
-using UniTASPlugin.Movie.DefaultParsers.DefaultMovieScriptParser;
-using UniTASPlugin.Movie.ParseInterfaces;
+using UniTASPlugin.Movie.ScriptEngine;
+using UniTASPlugin.Movie.ScriptEngine.ParseInterfaces;
+using UniTASPlugin.Movie.ScriptEngine.Parsers;
+using UniTASPlugin.Movie.ScriptEngine.Parsers.MoviePropertiesParser;
+using UniTASPlugin.Movie.ScriptEngine.Parsers.MovieScriptParser;
 
 namespace UniTASPlugin.NInjectModules;
 
@@ -14,9 +15,9 @@ public class MovieModule : NinjectModule
         Bind<IMoviePropertyParser>().To<DefaultMoviePropertiesParser>();
         Bind<IMovieScriptParser>().To<DefaultMovieScriptParser>();
         Bind<IMovieSectionSplitter>().To<DefaultMovieSectionSplitter>();
-        Bind<IMovieParser>().To<DefaultMovieParser>();
+        Bind<IMovieParser>().To<ScriptEngineMovieParser>();
 
-        Bind<IMovieRunner>().To<DefaultMovieRunner>();
-        Bind<DefaultMovieRunner>().ToSelf().InSingletonScope();
+        Bind<IMovieRunner>().To<ScriptEngineMovieRunner>();
+        Bind<ScriptEngineMovieRunner>().ToSelf().InSingletonScope();
     }
 }

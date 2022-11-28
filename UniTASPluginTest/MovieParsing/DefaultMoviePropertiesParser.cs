@@ -1,7 +1,7 @@
 ﻿using FluentAssertions;
 using UniTASPlugin.GameEnvironment.InnerState;
-using UniTASPlugin.Movie.Exceptions.ParseExceptions;
-using UniTASPlugin.Movie.Models.Properties;
+using UniTASPlugin.Movie.ScriptEngine.Exceptions.ParseExceptions;
+using UniTASPlugin.Movie.ScriptEngine.Models.Properties;
 using UnityEngine;
 
 // ReSharper disable StringLiteralTypo
@@ -13,7 +13,7 @@ public class DefaultMoviePropertiesParser
     [Fact]
     public void StartFromSaveState()
     {
-        var parser = new UniTASPlugin.Movie.DefaultParsers.DefaultMoviePropertiesParser.DefaultMoviePropertiesParser();
+        var parser = new UniTASPlugin.Movie.ScriptEngine.Parsers.MoviePropertiesParser.DefaultMoviePropertiesParser();
         const string input = @"name test TAS
 author yuu0141
 desc a test TAS
@@ -28,7 +28,7 @@ endsave end_save";
     [Fact]
     public void StartFromReset()
     {
-        var parser = new UniTASPlugin.Movie.DefaultParsers.DefaultMoviePropertiesParser.DefaultMoviePropertiesParser();
+        var parser = new UniTASPlugin.Movie.ScriptEngine.Parsers.MoviePropertiesParser.DefaultMoviePropertiesParser();
         const string input = @"name test TAS
 author yuu0141
 desc a test TAS
@@ -50,7 +50,7 @@ endsave end_save";
     [Fact]
     public void Smallest()
     {
-        var parser = new UniTASPlugin.Movie.DefaultParsers.DefaultMoviePropertiesParser.DefaultMoviePropertiesParser();
+        var parser = new UniTASPlugin.Movie.ScriptEngine.Parsers.MoviePropertiesParser.DefaultMoviePropertiesParser();
         const string input = @"from_savestate s";
         var expected = new PropertiesModel(null, null, null, null, "s");
         var actual = parser.Parse(input);
@@ -61,7 +61,7 @@ endsave end_save";
     [Fact]
     public void KeyAltConflict()
     {
-        var parser = new UniTASPlugin.Movie.DefaultParsers.DefaultMoviePropertiesParser.DefaultMoviePropertiesParser();
+        var parser = new UniTASPlugin.Movie.ScriptEngine.Parsers.MoviePropertiesParser.DefaultMoviePropertiesParser();
         const string input = @"frametime 0.001
 ft 0.01";
         var parse = () => parser.Parse(input);
@@ -71,7 +71,7 @@ ft 0.01";
     [Fact]
     public void DupeKey()
     {
-        var parser = new UniTASPlugin.Movie.DefaultParsers.DefaultMoviePropertiesParser.DefaultMoviePropertiesParser();
+        var parser = new UniTASPlugin.Movie.ScriptEngine.Parsers.MoviePropertiesParser.DefaultMoviePropertiesParser();
         const string input = @"ft 0.001
 ft 0.01";
         var parse = () => parser.Parse(input);
@@ -81,7 +81,7 @@ ft 0.01";
     [Fact]
     public void UnknownKey()
     {
-        var parser = new UniTASPlugin.Movie.DefaultParsers.DefaultMoviePropertiesParser.DefaultMoviePropertiesParser();
+        var parser = new UniTASPlugin.Movie.ScriptEngine.Parsers.MoviePropertiesParser.DefaultMoviePropertiesParser();
         const string input = "foo";
         var parse = () => parser.Parse(input);
         parse.Should().Throw<InvalidPropertyKeyException>();
@@ -90,7 +90,7 @@ ft 0.01";
     [Fact]
     public void KeyMultiSpace()
     {
-        var parser = new UniTASPlugin.Movie.DefaultParsers.DefaultMoviePropertiesParser.DefaultMoviePropertiesParser();
+        var parser = new UniTASPlugin.Movie.ScriptEngine.Parsers.MoviePropertiesParser.DefaultMoviePropertiesParser();
         const string input = @"name   test TAS
             author yuu0141
  desc a test TAS
@@ -105,7 +105,7 @@ endsave        end_save";
     [Fact]
     public void ConflictingKey()
     {
-        var parser = new UniTASPlugin.Movie.DefaultParsers.DefaultMoviePropertiesParser.DefaultMoviePropertiesParser();
+        var parser = new UniTASPlugin.Movie.ScriptEngine.Parsers.MoviePropertiesParser.DefaultMoviePropertiesParser();
         const string input = @"from_savestate test
 ft 0.001";
         var parse = () => parser.Parse(input);
@@ -115,7 +115,7 @@ ft 0.001";
     [Fact]
     public void UnknownStartType()
     {
-        var parser = new UniTASPlugin.Movie.DefaultParsers.DefaultMoviePropertiesParser.DefaultMoviePropertiesParser();
+        var parser = new UniTASPlugin.Movie.ScriptEngine.Parsers.MoviePropertiesParser.DefaultMoviePropertiesParser();
         var parse = () => parser.Parse("name foo");
         parse.Should().Throw<UnknownMovieStartOptionException>();
     }
