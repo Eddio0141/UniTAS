@@ -1,7 +1,6 @@
 using System.Collections.Generic;
-using UniTASPlugin.Movie.ScriptEngine.Models.ExternalMethods;
 
-namespace UniTASPlugin.Movie.ScriptEngine;
+namespace UniTASPlugin.Movie.ScriptEngine.EngineMethods;
 
 public interface IGetDefinedMethods
 {

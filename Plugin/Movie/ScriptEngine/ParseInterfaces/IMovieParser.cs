@@ -1,5 +1,4 @@
-﻿using UniTASPlugin.Movie.ScriptEngine.Models;
-using UniTASPlugin.Movie.ScriptEngine.Models.Movie;
+﻿using UniTASPlugin.Movie.ScriptEngine.MovieModels;
 
 namespace UniTASPlugin.Movie.ScriptEngine.ParseInterfaces;
 

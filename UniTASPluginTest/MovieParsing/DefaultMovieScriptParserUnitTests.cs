@@ -4,7 +4,7 @@ using FluentAssertions;
 using UniTASPlugin.Movie.ScriptEngine;
 using UniTASPlugin.Movie.ScriptEngine.EngineMethods;
 using UniTASPlugin.Movie.ScriptEngine.Exceptions.ParseExceptions;
-using UniTASPlugin.Movie.ScriptEngine.Models.Movie.Script;
+using UniTASPlugin.Movie.ScriptEngine.MovieModels.Script;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Jump;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Logic;

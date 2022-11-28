@@ -1,7 +1,7 @@
 ﻿using System;
 using UniTASPlugin.GameEnvironment.InnerState;
 
-namespace UniTASPlugin.Movie.ScriptEngine.Models.Movie.Properties;
+namespace UniTASPlugin.Movie.ScriptEngine.MovieModels.Properties;
 
 public class StartupPropertiesModel
 {

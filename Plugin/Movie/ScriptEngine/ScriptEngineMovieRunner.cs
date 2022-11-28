@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using UniTASPlugin.GameEnvironment.Interfaces;
-using UniTASPlugin.Movie.ScriptEngine.Models.ExternalMethods;
-using UniTASPlugin.Movie.ScriptEngine.Models.Movie.Script;
+using UniTASPlugin.Movie.ScriptEngine.EngineMethods;
+using UniTASPlugin.Movie.ScriptEngine.MovieModels.Script;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes;
 using UniTASPlugin.Movie.ScriptEngine.ParseInterfaces;
 

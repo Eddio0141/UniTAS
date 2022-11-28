@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using UniTASPlugin.Movie.ScriptEngine.Models.Movie.Script;
+using UniTASPlugin.Movie.ScriptEngine.MovieModels.Script;
 
 namespace UniTASPlugin.Movie.ScriptEngine.ParseInterfaces;
 
