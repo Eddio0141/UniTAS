@@ -20,11 +20,12 @@ public abstract class EngineExternalMethod {
 		ArgCount = argCount;
 	}
 
-	public abstract ValueType? Invoke(ICollection<ValueType> args);
+	public abstract ICollection<ValueType> Invoke(ICollection<ValueType> args);
 }
 ```
 
 - In `Invoke`, returning value must be one of the engine types, optionally returning something
+- Returning value could be a tuple, which you can create by returning a collection
 - `ArgCount` is the number of arguments accepeted, and setting it to **-1** will let it take any number of arguments
 ---
 Engine will then have to store the defined external method
