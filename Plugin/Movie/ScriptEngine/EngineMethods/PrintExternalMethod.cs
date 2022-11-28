@@ -3,13 +3,13 @@ using UniTASPlugin.Movie.ScriptEngine.ValueTypes;
 
 namespace UniTASPlugin.Movie.ScriptEngine.EngineMethods;
 
-public class PrintExternalMethodBase : EngineExternalMethodBase
+public class PrintExternalMethod : EngineExternalMethodBase
 {
-    public PrintExternalMethodBase() : base("print", -1)
+    public PrintExternalMethod() : base("print", -1)
     {
     }
 
-    public override ValueType Invoke(ICollection<ValueType> args)
+    public override List<ValueType> Invoke(IEnumerable<ValueType> args)
     {
         // TODO add more way of logging
         foreach (var arg in args)
@@ -17,6 +17,6 @@ public class PrintExternalMethodBase : EngineExternalMethodBase
             Plugin.Log.LogInfo(arg.ToString());
         }
 
-        return null;
+        return new();
     }
 }

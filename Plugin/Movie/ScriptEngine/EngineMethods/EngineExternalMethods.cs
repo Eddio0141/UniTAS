@@ -6,10 +6,10 @@ public class EngineExternalMethods : IGetDefinedMethods
 {
     private readonly EngineExternalMethodBase[] _externMethods = new[]
     {
-        new PrintExternalMethodBase()
+        new PrintExternalMethod()
     };
 
-    public ICollection<EngineExternalMethodBase> GetExternMethods()
+    public IEnumerable<EngineExternalMethodBase> GetExternMethods()
     {
         return _externMethods;
     }

@@ -7,12 +7,14 @@ public abstract class EngineExternalMethodBase
 {
     public string Name { get; }
     public int ArgCount { get; }
+    public bool ReturnsValue { get; }
 
-    protected EngineExternalMethodBase(string name, int argCount)
+    protected EngineExternalMethodBase(string name, int argCount = 0, bool returnsValue = false)
     {
         Name = name;
         ArgCount = argCount;
+        ReturnsValue = returnsValue;
     }
 
-    public abstract ValueType Invoke(ICollection<ValueType> args);
+    public abstract List<ValueType> Invoke(IEnumerable<ValueType> args);
 }
