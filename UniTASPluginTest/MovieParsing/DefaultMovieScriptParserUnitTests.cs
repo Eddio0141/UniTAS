@@ -447,4 +447,35 @@ $(value7, value8) = method()");
 
         definedMethod.Should().BeEquivalentTo(actual);
     }
+
+    [Fact]
+    public void Comments()
+    {
+        var script = Setup(@"$value = ""thingy""
+/* AAA; ""fake string to make you angry""
+\"" "" BBB;
+"" no
+$value = ""thingy2""
+;;;;
+*/
+$value2 = ""\""this is another thingy"" // you can't see this!
+$value3 = (10, /*""thing"",,*/ ""thing2"")");
+
+        var definedMethod = script.MainMethod;
+
+        var actual = new ScriptMethodModel(null, new OpCodeBase[]
+        {
+            new ConstToRegisterOpCode(RegisterType.Temp, new StringValueType("thingy")),
+            new SetVariableOpCode(RegisterType.Temp, "value"),
+            new ConstToRegisterOpCode(RegisterType.Temp, new StringValueType("\"this is another thing")),
+            new SetVariableOpCode(RegisterType.Temp, "value2"),
+            new ConstToRegisterOpCode(RegisterType.Temp, new IntValueType(10)),
+            new PushTupleOpCode(RegisterType.Temp2, RegisterType.Temp),
+            new ConstToRegisterOpCode(RegisterType.Temp, new StringValueType("thing2")),
+            new PushTupleOpCode(RegisterType.Temp2, RegisterType.Temp),
+            new SetVariableOpCode(RegisterType.Temp2, "value3")
+        });
+
+        definedMethod.Should().BeEquivalentTo(actual);
+    }
 }
