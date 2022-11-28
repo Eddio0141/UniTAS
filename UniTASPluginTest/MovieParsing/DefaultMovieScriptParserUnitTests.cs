@@ -564,4 +564,19 @@ $value5 = (string)$value");
 
         definedMethod.Should().BeEquivalentTo(actual);
     }
+
+    [Fact]
+    public void ReturnValueThrow()
+    {
+        var setup = () => Setup("fn method() { if true { return (0, 1) } return }");
+        setup.Should().Throw<MethodReturnCountNotMatchingException>();
+
+        setup = () => Setup("fn method() { if true { return 0 } return (1, 2) }");
+        setup.Should().Throw<MethodReturnCountNotMatchingException>();
+
+        setup = () => Setup("fn method() { if true { return (0, 1) } return (1, 2, 5) }");
+        setup.Should().Throw<MethodReturnCountNotMatchingException>();
+
+        Setup("return (0, 1); return 5");
+    }
 }
