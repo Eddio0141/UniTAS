@@ -2,7 +2,6 @@
 using Ninject;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.GameOverlay.GameConsole;
-using UniTASPlugin.Movie;
 using UniTASPlugin.Movie.ScriptEngine;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
