@@ -13,6 +13,7 @@ using UniTASPlugin.Movie.ScriptEngine.OpCodes.Method;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.RegisterSet;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Scope;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.StackOp;
+using UniTASPlugin.Movie.ScriptEngine.OpCodes.Tuple;
 using UniTASPlugin.Movie.ScriptEngine.ValueTypes;
 
 namespace UniTASPluginTest.MovieParsing;
@@ -387,6 +388,61 @@ $value = method()");
         var actual = new ScriptMethodModel(null, new OpCodeBase[]
         {
             new ReturnOpCode()
+        });
+
+        definedMethod.Should().BeEquivalentTo(actual);
+    }
+
+    [Fact]
+    public void TupleDeconstruction()
+    {
+        var script = Setup(@"fn method() { return (10, 20) }
+$value = (50, ""test"", -1.0)
+$(value2, value3) = $value
+$(_, value4, value5) = $value
+$(_, value6) = (10, 10)
+$(value7, value8) = method()");
+
+        var definedMethod = script.MainMethod;
+
+        var actual = new ScriptMethodModel(null, new OpCodeBase[]
+        {
+            // $value = (50, "test", -1.0)
+            new ConstToRegisterOpCode(RegisterType.Temp, new IntValueType(50)),
+            new PushTupleOpCode(RegisterType.Temp2, RegisterType.Temp),
+            new ConstToRegisterOpCode(RegisterType.Temp2, new StringValueType("test")),
+            new PushTupleOpCode(RegisterType.Temp, RegisterType.Temp2),
+            new ConstToRegisterOpCode(RegisterType.Temp2, new FloatValueType(-1f)),
+            new PushTupleOpCode(RegisterType.Temp2, RegisterType.Temp),
+            new SetVariableOpCode(RegisterType.Temp, "value"),
+            // $(value2, value3) = $value
+            new VarToRegisterOpCode(RegisterType.Temp, "value"),
+            new PopTupleOpCode(RegisterType.Temp2, RegisterType.Temp),
+            new SetVariableOpCode(RegisterType.Temp2, "value2"),
+            new PopTupleOpCode(RegisterType.Temp2, RegisterType.Temp),
+            new SetVariableOpCode(RegisterType.Temp2, "value3"),
+            // $(_, value4, value5) = $value
+            new VarToRegisterOpCode(RegisterType.Temp, "value"),
+            new PopTupleOpCode(RegisterType.Temp2, RegisterType.Temp),
+            new PopTupleOpCode(RegisterType.Temp2, RegisterType.Temp),
+            new SetVariableOpCode(RegisterType.Temp2, "value4"),
+            new PopTupleOpCode(RegisterType.Temp2, RegisterType.Temp),
+            new SetVariableOpCode(RegisterType.Temp2, "value5"),
+            // $(_, value6) = (10, 10)
+            new ConstToRegisterOpCode(RegisterType.Temp, new IntValueType(10)),
+            new PushTupleOpCode(RegisterType.Temp2, RegisterType.Temp),
+            new ConstToRegisterOpCode(RegisterType.Temp, new IntValueType(10)),
+            new PushTupleOpCode(RegisterType.Temp, RegisterType.Temp2),
+            // set
+            new PopTupleOpCode(RegisterType.Temp2, RegisterType.Temp),
+            new PopTupleOpCode(RegisterType.Temp2, RegisterType.Temp),
+            new SetVariableOpCode(RegisterType.Temp2, "value6"),
+            // $(value7, value8) = method()
+            new GotoMethodOpCode("method"),
+            new PopTupleOpCode(RegisterType.Temp, RegisterType.Ret),
+            new SetVariableOpCode(RegisterType.Temp, "value7"),
+            new PopTupleOpCode(RegisterType.Temp, RegisterType.Ret),
+            new SetVariableOpCode(RegisterType.Temp, "value8")
         });
 
         definedMethod.Should().BeEquivalentTo(actual);
