@@ -171,6 +171,16 @@ public interface IMovieScriptDefaultGrammarListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitVariableTupleSeparation([NotNull] MovieScriptDefaultGrammarParser.VariableTupleSeparationContext context);
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.tupleVar"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterTupleVar([NotNull] MovieScriptDefaultGrammarParser.TupleVarContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.tupleVar"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitTupleVar([NotNull] MovieScriptDefaultGrammarParser.TupleVarContext context);
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.tupleExpression"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>

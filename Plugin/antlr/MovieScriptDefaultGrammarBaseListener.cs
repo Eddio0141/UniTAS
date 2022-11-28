@@ -204,6 +204,18 @@ public partial class MovieScriptDefaultGrammarBaseListener : IMovieScriptDefault
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitVariableTupleSeparation([NotNull] MovieScriptDefaultGrammarParser.VariableTupleSeparationContext context) { }
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.tupleVar"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterTupleVar([NotNull] MovieScriptDefaultGrammarParser.TupleVarContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.tupleVar"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitTupleVar([NotNull] MovieScriptDefaultGrammarParser.TupleVarContext context) { }
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.tupleExpression"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>

@@ -52,19 +52,17 @@ variableAssignment:
 tupleAssignment: variable ASSIGN tupleExpression;
 
 variableTupleSeparation:
-	TUPLE_DECONSTRUCTOR_START (
-		varIgnore = IGNORE_VARIABLE_NAME
-		| varName = IDENTIFIER_STRING
-	) (
-		COMMA (
-			varIgnores += IGNORE_VARIABLE_NAME
-			| varNames += IDENTIFIER_STRING
-		)
+	TUPLE_DECONSTRUCTOR_START (firstVar = tupleVar) (
+		COMMA vars += tupleVar
 	)* ROUND_BRACKET_CLOSE ASSIGN (
 		tupleExpression
 		| methodCall
 		| variable
 	);
+
+tupleVar:
+	varIgnore = IGNORE_VARIABLE_NAME
+	| varName = IDENTIFIER_STRING;
 
 tupleExpression:
 	ROUND_BRACKET_OPEN (expression | tupleExpression) (
