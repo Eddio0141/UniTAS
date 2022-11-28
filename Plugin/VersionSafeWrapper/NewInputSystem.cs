@@ -27,7 +27,7 @@ public static class NewInputSystem
         var toAdd = new[] { /*"Gamepad",*/ "FastKeyboard", "FastMouse" };
         var removeDevice = InputSystemTraverse.Method("RemoveDevice", new[] { inputDeviceType });
 
-        Plugin.Instance.Log.LogDebug(string.Join(", ", InputSystemTraverse.Property("devices").Method("ToArray").GetValue<object[]>().Select(o => o.GetType().ToString()).ToArray()));
+        Plugin.Instance.Logger.LogDebug(string.Join(", ", InputSystemTraverse.Property("devices").Method("ToArray").GetValue<object[]>().Select(o => o.GetType().ToString()).ToArray()));
 
         foreach (var device in devices)
         {
@@ -45,18 +45,18 @@ public static class NewInputSystem
             var toAddType = AccessTools.TypeByName(toAddNameFull);
             if (toAddType == null)
             {
-                Plugin.Instance.Log.LogError($"{toAddNameFull} type is required but missing");
+                Plugin.Instance.Logger.LogError($"{toAddNameFull} type is required but missing");
                 continue;
             }
 
             var generic = addDevice.MakeGenericMethod(toAddType);
-            Plugin.Instance.Log.LogDebug($"Adding {toAddType}");
+            Plugin.Instance.Logger.LogDebug($"Adding {toAddType}");
             _ = generic.Invoke(null, new object[] { null });
         }
         var newbloodLegacyInput = AccessTools.TypeByName("NewBlood.LegacyInput");
         var generic2 = addDevice.MakeGenericMethod(newbloodLegacyInput);
         _ = generic2.Invoke(null, new object[] { null });
 
-        Plugin.Instance.Log.LogDebug(string.Join(", ", InputSystemTraverse.Property("devices").Method("ToArray").GetValue<object[]>().Select(o => o.GetType().ToString()).ToArray()));
+        Plugin.Instance.Logger.LogDebug(string.Join(", ", InputSystemTraverse.Property("devices").Method("ToArray").GetValue<object[]>().Select(o => o.GetType().ToString()).ToArray()));
     }
 }

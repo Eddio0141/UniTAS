@@ -146,13 +146,13 @@ internal static class GameTracker
                 var fieldType = field.FieldType;
                 if (fieldType == gameType)
                 {
-                    Plugin.Instance.Log.LogDebug($"Detected instance field: {fieldName}, skipping");
+                    Plugin.Instance.Logger.LogDebug($"Detected instance field: {fieldName}, skipping");
                     continue;
                 }
                 // check field exclusion
                 if (exclusionFields.Contains(fieldName))
                 {
-                    Plugin.Instance.Log.LogDebug($"Exclusion fields contains {fieldName}");
+                    Plugin.Instance.Logger.LogDebug($"Exclusion fields contains {fieldName}");
                     continue;
                 }
                 // check field type exclusion
@@ -179,12 +179,12 @@ internal static class GameTracker
                 }
                 catch (Exception ex)
                 {
-                    Plugin.Instance.Log.LogWarning($"failed to get field value for {fieldName}, ex: {ex}");
+                    Plugin.Instance.Logger.LogWarning($"failed to get field value for {fieldName}, ex: {ex}");
                     continue;
                 }
                 {
                     var fieldValueString = fieldValue == null ? "null" : fieldValue.ToString();
-                    Plugin.Instance.Log.LogDebug($"cloning field {fieldName} with value {fieldValueString}");
+                    Plugin.Instance.Logger.LogDebug($"cloning field {fieldName} with value {fieldValueString}");
                     //System.Threading.Thread.Sleep(50);
 
                     try
@@ -202,7 +202,7 @@ internal static class GameTracker
                         */
                         else
                         {
-                            Plugin.Instance.Log.LogDebug("skipping collection convertion for now");
+                            Plugin.Instance.Logger.LogDebug("skipping collection convertion for now");
                             continue;
                             /*
                             // manually clone field if its a collection
@@ -235,13 +235,13 @@ internal static class GameTracker
                     catch (DeepCopyMaxRecursion)
                     {
                         failedClone = true;
-                        Plugin.Instance.Log.LogWarning($"max recursion reached, excluding field type {fieldType} from deep copy");
+                        Plugin.Instance.Logger.LogWarning($"max recursion reached, excluding field type {fieldType} from deep copy");
                         //fieldTypeIgnore.Add(fieldType);
                     }
                     catch (Exception ex)
                     {
                         failedClone = true;
-                        Plugin.Instance.Log.LogWarning($"failed to clone field, ex: {ex.Message}");
+                        Plugin.Instance.Logger.LogWarning($"failed to clone field, ex: {ex.Message}");
                     }
                 }
                 if (!failedClone)
@@ -256,7 +256,7 @@ internal static class GameTracker
     {
         foreach (var scene in asyncSceneLoads)
         {
-            Plugin.Instance.Log.LogDebug($"force loading scene, name: {scene.sceneName} {scene.sceneBuildIndex}");
+            Plugin.Instance.Logger.LogDebug($"force loading scene, name: {scene.sceneName} {scene.sceneBuildIndex}");
             SceneHelper.LoadSceneAsyncNameIndexInternal(scene.sceneName, scene.sceneBuildIndex, scene.parameters, scene.isAdditive, true);
         }
         asyncSceneLoads.Clear();
@@ -292,10 +292,10 @@ internal static class GameTracker
     {
         var wrap = new AsyncOperationWrap(instance);
         var uid = wrap.UID;
-        Plugin.Instance.Log.LogDebug($"allow scene activation {allow} for UID {uid}");
+        Plugin.Instance.Logger.LogDebug($"allow scene activation {allow} for UID {uid}");
         if (wrap.InstantiatedByUnity)
         {
-            Plugin.Instance.Log.LogError("AsyncOperation UID is 0, this should not happen");
+            Plugin.Instance.Logger.LogError("AsyncOperation UID is 0, this should not happen");
             return;
         }
 
@@ -307,7 +307,7 @@ internal static class GameTracker
             var sceneToLoad = asyncSceneLoadsStall[sceneToLoadIndex];
             asyncSceneLoadsStall.RemoveAt(sceneToLoadIndex);
             SceneHelper.LoadSceneAsyncNameIndexInternal(sceneToLoad.sceneName, sceneToLoad.sceneBuildIndex, sceneToLoad.parameters, sceneToLoad.isAdditive, true);
-            Plugin.Instance.Log.LogDebug($"force loading scene, name: {sceneToLoad.sceneName} build index: {sceneToLoad.sceneBuildIndex}");
+            Plugin.Instance.Logger.LogDebug($"force loading scene, name: {sceneToLoad.sceneName} build index: {sceneToLoad.sceneBuildIndex}");
         }
         else
         {
@@ -317,7 +317,7 @@ internal static class GameTracker
             var scene = asyncSceneLoads[asyncSceneLoadsIndex];
             asyncSceneLoads.RemoveAt(asyncSceneLoadsIndex);
             asyncSceneLoadsStall.Add(scene);
-            Plugin.Instance.Log.LogDebug("Added scene to stall list");
+            Plugin.Instance.Logger.LogDebug("Added scene to stall list");
         }
     }
 

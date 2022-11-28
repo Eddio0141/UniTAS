@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Antlr4.Runtime;
+using Ninject;
 using UniTASPlugin.Movie.ScriptEngine.Exceptions.ParseExceptions;
-using UniTASPlugin.Movie.ScriptEngine.Models.Script;
+using UniTASPlugin.Movie.ScriptEngine.Models.ExternalMethods;
+using UniTASPlugin.Movie.ScriptEngine.Models.Movie.Script;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.BitwiseOps;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Jump;
@@ -24,8 +26,13 @@ namespace UniTASPlugin.Movie.ScriptEngine.Parsers.MovieScriptParser;
 
 public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListener
 {
-    // TODO method call validation
-    // TODO addition type validation
+    private readonly EngineExternalMethodBase[] _externalMethods;
+
+    public DefaultGrammarListenerCompiler(IGetDefinedMethods getDefinedMethods)
+    {
+        _externalMethods = getDefinedMethods.GetExternMethods().ToArray();
+    }
+
     private class MethodBuilder
     {
         public string Name { get; }
@@ -844,6 +851,18 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         AddOpCodes(_methodCallArgsBuilder);
         _methodCallArgsBuilder.Clear();
         PushUsingTempRegisters();
+
+        // validate method existence
+        var found =
+            _builtMethods.Any(x => x.Key == methodName) ||
+            _methodBuilders.Any(x => x.Name == methodName) ||
+            _externalMethods.Any(x => x.Name == methodName);
+
+        if (!found)
+        {
+            throw new UsingUndefinedMethodException(methodName);
+        }
+
         AddOpCode(new GotoMethodOpCode(methodName));
         PopUsingTempRegisters();
     }

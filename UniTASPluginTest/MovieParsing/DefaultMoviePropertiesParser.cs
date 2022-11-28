@@ -1,7 +1,7 @@
 ﻿using FluentAssertions;
 using UniTASPlugin.GameEnvironment.InnerState;
 using UniTASPlugin.Movie.ScriptEngine.Exceptions.ParseExceptions;
-using UniTASPlugin.Movie.ScriptEngine.Models.Properties;
+using UniTASPlugin.Movie.ScriptEngine.Models.Movie.Properties;
 using UnityEngine;
 
 // ReSharper disable StringLiteralTypo

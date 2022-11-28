@@ -3,7 +3,8 @@ using System.Linq;
 using BepInEx;
 using UniTASPlugin.Movie.ScriptEngine.Exceptions.ParseExceptions;
 using UniTASPlugin.Movie.ScriptEngine.Models;
-using UniTASPlugin.Movie.ScriptEngine.Models.Script;
+using UniTASPlugin.Movie.ScriptEngine.Models.Movie;
+using UniTASPlugin.Movie.ScriptEngine.Models.Movie.Script;
 using UniTASPlugin.Movie.ScriptEngine.ParseInterfaces;
 
 namespace UniTASPlugin.Movie.ScriptEngine.Parsers;

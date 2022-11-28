@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UniTASPlugin.GameEnvironment.Interfaces;
-using UniTASPlugin.Movie.ScriptEngine.Models.Script;
+using UniTASPlugin.Movie.ScriptEngine.Models.ExternalMethods;
+using UniTASPlugin.Movie.ScriptEngine.Models.Movie.Script;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes;
 using UniTASPlugin.Movie.ScriptEngine.ParseInterfaces;
 
@@ -17,10 +19,13 @@ public class ScriptEngineMovieRunner : IMovieRunner
     private readonly IMovieParser _parser;
     public bool IsRunning { get; private set; }
 
-    public ScriptEngineMovieRunner(IMovieParser parser)
+    private readonly EngineExternalMethodBase[] _externMethods;
+
+    public ScriptEngineMovieRunner(IMovieParser parser, IGetDefinedMethods getDefinedMethods)
     {
         IsRunning = false;
         _parser = parser;
+        _externMethods = getDefinedMethods.GetExternMethods().ToArray();
     }
 
     public void RunFromPath<TEnv>(string path, ref TEnv env)
