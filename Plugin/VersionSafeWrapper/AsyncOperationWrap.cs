@@ -28,7 +28,7 @@ internal class AsyncOperationWrap
 
     public void FinalizeCall()
     {
-        Plugin.Instance.Log.LogDebug($"Finalize call async operation, UID: {UID}");
+        Plugin.Instance.Logger.LogDebug($"Finalize call async operation, UID: {UID}");
         if (InstantiatedByUnity)
             return;
         GameTracker.AsyncOperationFinalize(UID);

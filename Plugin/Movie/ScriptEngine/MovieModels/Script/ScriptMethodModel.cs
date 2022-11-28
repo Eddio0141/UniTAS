@@ -2,7 +2,7 @@
 using System.Linq;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes;
 
-namespace UniTASPlugin.Movie.ScriptEngine.Models.Script;
+namespace UniTASPlugin.Movie.ScriptEngine.Models.Movie.Script;
 
 public class ScriptMethodModel
 {

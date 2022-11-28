@@ -2,7 +2,9 @@
 using Antlr4.Runtime.Tree;
 using FluentAssertions;
 using UniTASPlugin.Movie.ScriptEngine;
-using UniTASPlugin.Movie.ScriptEngine.Models.Script;
+using UniTASPlugin.Movie.ScriptEngine.EngineMethods;
+using UniTASPlugin.Movie.ScriptEngine.Exceptions.ParseExceptions;
+using UniTASPlugin.Movie.ScriptEngine.Models.Movie.Script;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Jump;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Logic;
@@ -27,7 +29,7 @@ public class DefaultMovieScriptParserUnitTests
         var commonTokenStream = new CommonTokenStream(speakLexer);
         var speakParser = new MovieScriptDefaultGrammarParser(commonTokenStream);
         var program = speakParser.script();
-        var listener = new DefaultGrammarListenerCompiler();
+        var listener = new DefaultGrammarListenerCompiler(new EngineExternalMethods());
         ParseTreeWalker.Default.Walk(listener, program);
         var methods = listener.Compile().ToList();
         var mainMethod = methods.First(x => x.Name == null);
@@ -493,5 +495,19 @@ $value3 = (10, /*""thing"",,*/ ""thing2"")");
         });
 
         definedMethod.Should().BeEquivalentTo(actual);
+    }
+
+    [Fact]
+    public void UndefinedMethod()
+    {
+        var setup = () => Setup("$value = this_method_does_not_exist()");
+
+        setup.Should().Throw<UsingUndefinedMethodException>();
+    }
+
+    [Fact]
+    public void ExternalMethod()
+    {
+        Setup("print(\"hello world!\")");
     }
 }

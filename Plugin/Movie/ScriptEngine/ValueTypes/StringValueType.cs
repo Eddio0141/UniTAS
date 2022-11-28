@@ -8,4 +8,9 @@ public class StringValueType : ValueType
     {
         Value = value;
     }
+
+    public override string ToString()
+    {
+        return Value;
+    }
 }

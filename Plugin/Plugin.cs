@@ -27,38 +27,41 @@ public class Plugin : BaseUnityPlugin
 
     public IKernel Kernel = InitKernel();
 
-    public ManualLogSource Log;
+    public ManualLogSource Logger;
 
     public int FixedUpdateIndex { get; private set; } = -1;
 
     public static Plugin Instance;
+
+    public static ManualLogSource Log => Instance.Logger;
 
     private void Awake()
     {
         if (Instance != null)
             return;
         Instance = this;
-        Log = Logger;
+        Logger = base.Logger;
 
-        Log.LogInfo("init patch");
+        Logger.LogInfo("init patch");
         Harmony harmony = new($"{Name}HarmonyPatch");
         harmony.PatchAll();
-        Log.LogInfo("post init patch");
+        Logger.LogInfo("post init patch");
 
         // init fake file system
         // TODO way of getting device type
         FileSystem.Init(DeviceType.Windows);
 
-        Log.LogInfo($"Internally found unity version: {Helper.GetUnityVersion()}");
-        Log.LogInfo($"Game product name: {AppInfo.ProductName()}");
+        Logger.LogInfo($"Internally found unity version: {Helper.GetUnityVersion()}");
+        Logger.LogInfo($"Game product name: {AppInfo.ProductName()}");
         // TODO complete fixing this
         var companyNameProperty = Traverse.Create(typeof(Application)).Property("companyName");
         if (companyNameProperty.PropertyExists())
-            Log.LogInfo($"Game company name: {companyNameProperty.GetValue<string>()}");//product name: {Application.productName}, version: {Application.version}");
+            Logger.LogInfo(
+                $"Game company name: {companyNameProperty.GetValue<string>()}"); //product name: {Application.productName}, version: {Application.version}");
 
         // all axis names for help
         // why is this broken TODO
-        Log.LogInfo($"All axis names: {string.Join(", ", Input.GetJoystickNames())}");
+        Logger.LogInfo($"All axis names: {string.Join(", ", Input.GetJoystickNames())}");
 
         // init random seed
         RandomWrap.InitState((int)GameTime.Seed());
@@ -67,15 +70,15 @@ public class Plugin : BaseUnityPlugin
         SystemInfo.Init();
         Overlay.Init();
 
-        Log.LogInfo($"System time: {DateTime.Now}");
-        Log.LogInfo($"Plugin {Name} is loaded!");
+        Logger.LogInfo($"System time: {DateTime.Now}");
+        Logger.LogInfo($"Plugin {Name} is loaded!");
     }
 
     private static IKernel InitKernel()
     {
         var modules = new INinjectModule[]
         {
-            new MovieModule(),
+            new MovieEngineModule(),
             new GameEnvironmentModule(),
             new PatchReverseInvokerModule()
         };

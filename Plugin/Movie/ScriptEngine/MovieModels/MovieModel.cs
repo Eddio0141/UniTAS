@@ -1,7 +1,7 @@
-﻿using UniTASPlugin.Movie.ScriptEngine.Models.Properties;
-using UniTASPlugin.Movie.ScriptEngine.Models.Script;
+﻿using UniTASPlugin.Movie.ScriptEngine.Models.Movie.Properties;
+using UniTASPlugin.Movie.ScriptEngine.Models.Movie.Script;
 
-namespace UniTASPlugin.Movie.ScriptEngine.Models;
+namespace UniTASPlugin.Movie.ScriptEngine.Models.Movie;
 
 public class MovieModel
 {

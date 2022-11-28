@@ -79,7 +79,7 @@ internal static class Overlay
         if (!movieRunner.IsRunning && Input.GetKeyDown(KeyCode.F11))
         {
             CursorWrap.UnlockCursor();
-            Plugin.Instance.Log.LogDebug($"Unlocked cursor");
+            Plugin.Instance.Logger.LogDebug($"Unlocked cursor");
         }
 
         if (!movieRunner.IsRunning && Input.GetKeyDown(KeyCode.BackQuote))
