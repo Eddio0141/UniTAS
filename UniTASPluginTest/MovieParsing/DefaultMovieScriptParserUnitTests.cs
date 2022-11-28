@@ -366,7 +366,7 @@ loop $value {
     public void Return()
     {
         var script = Setup(@"fn method(){ return 5 }
-$value = method()");
+$value = method(1)");
 
         var definedMethod = script.Methods[0];
 
@@ -578,5 +578,12 @@ $value5 = (string)$value");
         setup.Should().Throw<MethodReturnCountNotMatchingException>();
 
         Setup("return (0, 1); return 5");
+    }
+
+    [Fact]
+    public void ExternMethodWrongReturn()
+    {
+        var setup = () => Setup("$value = print(\"hello world!\")");
+        setup.Should().Throw<MethodHasNoReturnValueException>();
     }
 }
