@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UniTASPlugin.Movie.ScriptEngine.ValueTypes;
 
-namespace UniTASPlugin.Movie.ScriptEngine.Models.ExternalMethods;
+namespace UniTASPlugin.Movie.ScriptEngine.EngineMethods;
 
 public class PrintExternalMethodBase : EngineExternalMethodBase
 {

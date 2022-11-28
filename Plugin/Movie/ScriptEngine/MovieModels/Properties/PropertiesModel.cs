@@ -1,4 +1,4 @@
-﻿namespace UniTASPlugin.Movie.ScriptEngine.Models.Movie.Properties;
+﻿namespace UniTASPlugin.Movie.ScriptEngine.MovieModels.Properties;
 
 public class PropertiesModel
 {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UniTASPlugin.GameEnvironment.InnerState;
 using UniTASPlugin.Movie.ScriptEngine.Exceptions.ParseExceptions;
-using UniTASPlugin.Movie.ScriptEngine.Models.Movie.Properties;
+using UniTASPlugin.Movie.ScriptEngine.MovieModels.Properties;
 using UniTASPlugin.Movie.ScriptEngine.ParseInterfaces;
 
 namespace UniTASPlugin.Movie.ScriptEngine.Parsers.MoviePropertiesParser;

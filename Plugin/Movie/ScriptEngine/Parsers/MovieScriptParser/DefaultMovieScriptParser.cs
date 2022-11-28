@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
-using UniTASPlugin.Movie.ScriptEngine.Models.Movie.Script;
+using UniTASPlugin.Movie.ScriptEngine.EngineMethods;
+using UniTASPlugin.Movie.ScriptEngine.MovieModels.Script;
 using UniTASPlugin.Movie.ScriptEngine.ParseInterfaces;
 
 namespace UniTASPlugin.Movie.ScriptEngine.Parsers.MovieScriptParser;
