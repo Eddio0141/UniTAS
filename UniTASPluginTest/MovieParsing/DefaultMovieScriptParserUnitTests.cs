@@ -478,4 +478,20 @@ $value3 = (10, /*""thing"",,*/ ""thing2"")");
 
         definedMethod.Should().BeEquivalentTo(actual);
     }
+
+    [Fact]
+    public void Strings()
+    {
+        var script = Setup("$value = \"th\"i\"ngy\"");
+
+        var definedMethod = script.MainMethod;
+
+        var actual = new ScriptMethodModel(null, new OpCodeBase[]
+        {
+            new ConstToRegisterOpCode(RegisterType.Temp, new StringValueType("th\"i\"ngy")),
+            new SetVariableOpCode(RegisterType.Temp, "value"),
+        });
+
+        definedMethod.Should().BeEquivalentTo(actual);
+    }
 }
