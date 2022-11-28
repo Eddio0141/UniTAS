@@ -100,6 +100,12 @@
       - Returns from method to outer
       - Can add expression like `return EXPRESSION`
       - Using this in main will end the movie execution
+    - Type casting / parsing
+      - You attach a (TYPE) before the expression
+      - Example
+        - `$value = (int)"-10"`
+        - `$value = (string)-1.0`
+      - Parsing will stop the script execution if invalid
 
 # Low level stuff
 - Registers
@@ -191,9 +197,8 @@
 - Register operation
   - Move REGISTER REGISTER2
     - Moves REGISTER2 to REGISTER
-- Expression operation brackets problem
-  - Using brackets in expressions temporarily takes up a register, so if you have a lot of (expression), you will run out of registers
-  - To solve this, use a temp register to store the result of the expression, and use the stack to store the temp register if you need to use it again
+- Type parsing / casting
+  - Cast BASIC_VALUE_TYPE SOURCE_REGISTER, DEST_REGISTER
 
 # Helper methods
 - Save state
