@@ -44,7 +44,7 @@ internal static class Directory
 
         private static bool Prefix(string path, ref bool __result)
         {
-            if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
                 return true;
             __result = FileSystem.DirectoryExists(path);
             return false;
@@ -61,7 +61,7 @@ internal static class Directory
 
         private static bool Prefix(ref string[] __result, string path, string searchPattern, bool includeFiles, bool includeDirs, SearchOption searchOption)
         {
-            if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
                 return true;
             __result = FileSystem.OsHelpers.GetPaths(path, searchPattern, includeFiles, includeDirs, searchOption);
             return false;
@@ -78,7 +78,7 @@ internal static class Directory
 
         private static bool Prefix(ref IEnumerable<string> __result, string path, string searchPattern, SearchOption searchOption, bool includeFiles, bool includeDirs)
         {
-            if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
                 return true;
             __result = FileSystem.OsHelpers.GetPaths(path, searchPattern, includeFiles, includeDirs, searchOption);
             return false;
@@ -95,7 +95,7 @@ internal static class Directory
 
         private static bool Prefix(ref string __result, string path)
         {
-            if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
                 return true;
             Helper.PathValidate(path);
             __result = new string(FileSystem.ExternalHelpers.DirectorySeparatorChar, 1);
@@ -113,7 +113,7 @@ internal static class Directory
 
         private static bool Prefix(ref DirectoryInfo __result, string path)
         {
-            if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
                 return true;
             if (path == null)
             {
@@ -154,7 +154,7 @@ internal static class Directory
 
         private static bool Prefix(ref DirectoryInfo __result, string path)
         {
-            if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
                 return true;
             var dirInfoConstructor = AccessTools.Constructor(typeof(DirectoryInfo), new[] { typeof(string), typeof(bool) });
             var directoryInfo = (DirectoryInfo)dirInfoConstructor.Invoke(null, new object[] { path, true });
@@ -178,7 +178,7 @@ internal static class Directory
 
         private static bool Prefix(string path)
         {
-            if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
                 return true;
             Helper.PathValidate(path);
             if (Helper.EnvironmentIsRunningOnWindows() && path == ":")
@@ -211,7 +211,7 @@ internal static class Directory
 
         private static bool Prefix(string path)
         {
-            if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
                 return true;
             // only do this if symlink exists
             /*
@@ -249,7 +249,7 @@ internal static class Directory
 
         private static bool Prefix(ref DateTimeOrig __result, string path)
         {
-            if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
                 return true;
             __result = FileSystem.OsHelpers.DirAccessTime(path);
             return false;
@@ -266,7 +266,7 @@ internal static class Directory
 
         private static bool Prefix(ref DateTimeOrig __result, string path)
         {
-            if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
                 return true;
             __result = FileSystem.OsHelpers.DirWriteTime(path);
             return false;
@@ -283,7 +283,7 @@ internal static class Directory
 
         private static bool Prefix(ref DateTimeOrig __result, string path)
         {
-            if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
                 return true;
             __result = FileSystem.OsHelpers.DirCreationTime(path);
             return false;
@@ -300,7 +300,7 @@ internal static class Directory
 
         private static bool Prefix(ref bool __result, string path)
         {
-            if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
                 return true;
             __result =
                 FileSystem.ExternalHelpers.DirectorySeparatorChar == '/' && path == "/" ||
@@ -319,7 +319,7 @@ internal static class Directory
 
         private static bool Prefix(string sourceDirName, string destDirName)
         {
-            if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
                 return true;
             if (sourceDirName == null)
             {
@@ -364,7 +364,7 @@ internal static class Directory
 
         private static bool Prefix()
         {
-            return Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking;
+            return Plugin.Kernel.Get<PatchReverseInvoker>().Invoking;
         }
     }
 
@@ -378,7 +378,7 @@ internal static class Directory
 
         private static bool Prefix(string path, DateTimeOrig creationTime)
         {
-            if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
                 return true;
             FileSystem.OsHelpers.SetDirCreationTime(path, creationTime);
             return false;
@@ -395,7 +395,7 @@ internal static class Directory
 
         private static bool Prefix(string path, DateTimeOrig lastAccessTime)
         {
-            if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
                 return true;
             FileSystem.OsHelpers.SetDirAccessTime(path, lastAccessTime);
             return false;
@@ -412,7 +412,7 @@ internal static class Directory
 
         private static bool Prefix(string path, DateTimeOrig lastWriteTime)
         {
-            if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
                 return true;
             FileSystem.OsHelpers.SetDirWriteTime(path, lastWriteTime);
             return false;
@@ -429,7 +429,7 @@ internal static class Directory
 
         private static bool Prefix(ref string __result, string fullPath, bool thisDirOnly)
         {
-            if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
                 return true;
             var result = thisDirOnly
                 ? fullPath.EndsWith(FileSystem.ExternalHelpers.DirectorySeparatorStr) || fullPath.EndsWith(FileSystem.ExternalHelpers.AltDirectorySeparatorChar.ToString())
@@ -453,7 +453,7 @@ internal static class Directory
 
         private static bool Prefix(ref DirectorySecurity __result)
         {
-            if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
                 return true;
             __result = new DirectorySecurity();
             __result.AddAccessRule(new FileSystemAccessRule("Everyone", FileSystemRights.FullControl, AccessControlType.Allow));
@@ -471,7 +471,7 @@ internal static class Directory
 
         private static bool Prefix(ref string __result)
         {
-            if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
                 return true;
             __result = FileSystem.OsHelpers.WorkingDir().FullName;
             return false;
@@ -488,7 +488,7 @@ internal static class Directory
 
         private static bool Prefix(string path)
         {
-            if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
                 return true;
             if (path == null)
             {

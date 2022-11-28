@@ -20,7 +20,7 @@ public static class Helper
     {
         const string unityPlayerPath = @".\UnityPlayer.dll";
         string versionRaw;
-        var rev = Plugin.Instance.Kernel.Get<PatchReverseInvoker>();
+        var rev = Plugin.Kernel.Get<PatchReverseInvoker>();
         if (rev.Invoke(System.IO.File.Exists, unityPlayerPath))
         {
             var fullPath = rev.Invoke(System.IO.Path.GetFullPath, unityPlayerPath);
@@ -82,7 +82,7 @@ public static class Helper
     public static string GameRootDir()
     {
         var appBase = AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
-        var rev = Plugin.Instance.Kernel.Get<PatchReverseInvoker>();
+        var rev = Plugin.Kernel.Get<PatchReverseInvoker>();
         return appBase ?? rev.Invoke(System.IO.Path.GetFullPath, ".");
     }
 
@@ -94,7 +94,7 @@ public static class Helper
     public static string GameExePath()
     {
         // TODO other platform support that's not windows
-        var rev = Plugin.Instance.Kernel.Get<PatchReverseInvoker>();
+        var rev = Plugin.Kernel.Get<PatchReverseInvoker>();
         return rev.Invoke(System.IO.Path.Combine, GameRootDir(), $"{GameName()}.exe");
     }
 

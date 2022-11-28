@@ -40,7 +40,7 @@ internal static class Cursor
 
         private static void Prefix(ref bool value)
         {
-            if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
                 return;
             Overlay.UnityCursorVisible = value;
             if (Overlay.ShowCursor)
@@ -63,7 +63,7 @@ internal static class Cursor
 
         private static void Prefix(Texture2D texture)
         {
-            if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
                 return;
             Overlay.SetCursorTexture(texture);
         }

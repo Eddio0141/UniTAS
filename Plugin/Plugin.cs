@@ -25,22 +25,22 @@ public class Plugin : BaseUnityPlugin
     public const string Name = "UniTAS";
     public const string Version = "0.1.0";
 
-    public IKernel Kernel = InitKernel();
+    public static readonly IKernel Kernel = InitKernel();
 
-    public ManualLogSource Logger;
+    private ManualLogSource _logger;
 
     public int FixedUpdateIndex { get; private set; } = -1;
 
     public static Plugin Instance;
 
-    public static ManualLogSource Log => Instance.Logger;
+    public static ManualLogSource Log => Instance._logger;
 
     private void Awake()
     {
         if (Instance != null)
             return;
         Instance = this;
-        Logger = base.Logger;
+        _logger = Logger;
 
         Logger.LogInfo("init patch");
         Harmony harmony = new($"{Name}HarmonyPatch");

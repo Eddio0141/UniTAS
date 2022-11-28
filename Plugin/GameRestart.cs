@@ -29,12 +29,12 @@ internal class GameRestart
     {
         pendingFixedUpdateSoftRestart = true;
         softRestartTime = time;
-        Plugin.Instance.Logger.LogInfo("Soft restarting, pending FixedUpdate call");
+        Plugin.Log.LogInfo("Soft restarting, pending FixedUpdate call");
     }
 
     private static void SoftRestartOperation()
     {
-        Plugin.Instance.Logger.LogInfo("Soft restarting");
+        Plugin.Log.LogInfo("Soft restarting");
 
         // release mouse lock
         CursorWrap.Visible = true;
@@ -56,7 +56,7 @@ internal class GameRestart
                 continue;
 
             // destroy all objects that are marked DontDestroyOnLoad and wasn't loaded in the first scene
-            Plugin.Instance.Logger.LogDebug($"Destroying {obj.name}");
+            Plugin.Log.LogDebug($"Destroying {obj.name}");
             Object.Destroy(obj);
         }
 
@@ -84,27 +84,27 @@ internal class GameRestart
             {
                 var value = fieldAndValue.Value;
                 var valueString = value == null ? "null" : value.ToString();
-                Plugin.Instance.Logger.LogDebug($"setting field: {fieldAndValue.Key.DeclaringType.FullName}.{fieldAndValue.Key} to {valueString}");
+                Plugin.Log.LogDebug($"setting field: {fieldAndValue.Key.DeclaringType.FullName}.{fieldAndValue.Key} to {valueString}");
                 try
                 {
                     fieldAndValue.Key.SetValue(null, value);
                 }
                 catch (Exception ex)
                 {
-                    Plugin.Instance.Logger.LogWarning($"Failed to set field: {fieldAndValue.Key.DeclaringType.FullName}.{fieldAndValue.Key} to {value} with exception: {ex}");
+                    Plugin.Log.LogWarning($"Failed to set field: {fieldAndValue.Key.DeclaringType.FullName}.{fieldAndValue.Key} to {value} with exception: {ex}");
                 }
             }
         }
 
-        Plugin.Instance.Logger.LogDebug("finished setting fields, loading scene");
+        Plugin.Log.LogDebug("finished setting fields, loading scene");
         GameTime.ResetState(softRestartTime);
         SceneHelper.LoadScene(0);
 
-        Plugin.Instance.Logger.LogDebug("random setting state");
+        Plugin.Log.LogDebug("random setting state");
 
         RandomWrap.InitState((int)GameTime.Seed());
 
-        Plugin.Instance.Logger.LogInfo("Finish soft restarting");
-        Plugin.Instance.Logger.LogInfo($"System time: {DateTime.Now}, milliseconds: {DateTime.Now.Millisecond}");
+        Plugin.Log.LogInfo("Finish soft restarting");
+        Plugin.Log.LogInfo($"System time: {DateTime.Now}, milliseconds: {DateTime.Now.Millisecond}");
     }
 }

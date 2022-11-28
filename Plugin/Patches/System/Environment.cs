@@ -23,7 +23,7 @@ internal static class Environment
 
         private static bool Prefix(ref int __result)
         {
-            if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
                 return true;
             __result = (int)(GameTime.RealtimeSinceStartup * 1000f);
             return false;

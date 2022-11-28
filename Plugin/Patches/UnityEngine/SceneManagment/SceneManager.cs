@@ -35,12 +35,12 @@ internal static class SceneManager
         public static bool AsyncSceneLoad(bool mustCompleteNextFrame, string sceneName, int sceneBuildIndex, object parameters, bool? isAdditive, ref AsyncOpOrig __result)
         {
             if (mustCompleteNextFrame) return true;
-            Plugin.Instance.Logger.LogDebug("async scene load");
+            Plugin.Log.LogDebug("async scene load");
             __result = new AsyncOpOrig();
             var wrap = new AsyncOperationWrap(__result);
             wrap.AssignUID();
             GameTracker.AsyncSceneLoad(sceneName, sceneBuildIndex, parameters, isAdditive, wrap);
-            Plugin.Instance.Logger.LogDebug($"setting up async scene load, assigned UID {wrap.UID}");
+            Plugin.Log.LogDebug($"setting up async scene load, assigned UID {wrap.UID}");
             return false;
         }
     }

@@ -37,17 +37,17 @@ internal static class Main
         testz = (float)position.Field("z").GetValue();
 
         Test = new State(/*sceneIndex,*/ time, frameCount, fixedUpdateIndex/*cursorVisible, cursorLockState,*/);
-        Plugin.Instance.Logger.LogDebug("Saved test state");
+        Plugin.Log.LogDebug("Saved test state");
     }
 
     public static void Load()
     {
-        Plugin.Instance.Logger.LogDebug("We are loading the test state");
+        Plugin.Log.LogDebug("We are loading the test state");
         var state = Test;
         pendingLoad = true;
         pendingLoadFixedUpdateIndex = state.FixedUpdateIndex;
         pendingState = state;
-        Plugin.Instance.Logger.LogDebug(/*$"Scene: {state.Scene}, */$"Time: {state.Time}, FrameCount: {state.FrameCount}, FixedUpdateIndex: {state.FixedUpdateIndex}");
+        Plugin.Log.LogDebug(/*$"Scene: {state.Scene}, */$"Time: {state.Time}, FrameCount: {state.FrameCount}, FixedUpdateIndex: {state.FixedUpdateIndex}");
     }
 
     public static void Update()
@@ -61,7 +61,7 @@ internal static class Main
 
     public static void LoadOperation()
     {
-        Plugin.Instance.Logger.LogDebug("Load operation starting");
+        Plugin.Log.LogDebug("Load operation starting");
         // TODO sort out depending on unity version
         //var scene = pendingState.Scene;
         //DateTime time = pendingState.Time;
@@ -77,6 +77,6 @@ internal static class Main
         _ = position.Field("y").SetValue(testy);
         _ = position.Field("z").SetValue(testz);
 
-        Plugin.Instance.Logger.LogDebug($"Load operation finished, time: {DateTime.Now}, frameCount: {GameTime.RenderedFrameCountOffset}");
+        Plugin.Log.LogDebug($"Load operation finished, time: {DateTime.Now}, frameCount: {GameTime.RenderedFrameCountOffset}");
     }
 }

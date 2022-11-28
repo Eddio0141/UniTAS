@@ -23,7 +23,7 @@ internal static class Screen
 
         private static bool Prefix(ref bool value)
         {
-            if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
                 return true;
             Overlay.UnityCursorVisible = value;
             if (Overlay.ShowCursor)
@@ -44,7 +44,7 @@ class widthGetter
 
     static bool Prefix(ref int __result)
     {
-   if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
+   if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
    return true;
         __result = TAS.Screen.Width;
         return false;
@@ -61,7 +61,7 @@ class heightGetter
 
     static bool Prefix(ref int __result)
     {
-   if (Plugin.Instance.Kernel.Get<PatchReverseInvoker>().Invoking)
+   if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
    return true;
         __result = TAS.Screen.Height;
         return false;
