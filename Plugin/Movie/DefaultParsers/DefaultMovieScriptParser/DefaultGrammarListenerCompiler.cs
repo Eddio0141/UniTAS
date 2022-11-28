@@ -17,6 +17,7 @@ using UniTASPlugin.Movie.ScriptEngine.OpCodes.Method;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.RegisterSet;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Scope;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.StackOp;
+using UniTASPlugin.Movie.ScriptEngine.OpCodes.Tuple;
 using UniTASPlugin.Movie.ScriptEngine.ValueTypes;
 using static MovieScriptDefaultGrammarParser;
 
@@ -400,7 +401,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
     {
         if (register is > RegisterType.Temp9 or < RegisterType.Temp)
         {
-            throw new InvalidOperationException("Out of range register value");
+            return;
         }
 
         _reservedTempRegister[(int)register] = false;
@@ -826,10 +827,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         }
 
         AddOpCode(new SetVariableOpCode(usingRegister, variableName));
-        if (usingRegister != RegisterType.Ret)
-        {
-            DeallocateTempRegister(usingRegister);
-        }
+        DeallocateTempRegister(usingRegister);
     }
 
     public override void EnterFrameAdvance(FrameAdvanceContext context)
@@ -974,17 +972,11 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         // if top level
         if (_tupleExprDepth == 1)
         {
-            // we use expr result register as top level directly if top level is null
-            if (_tupleExprTopLevelStore == null)
-            {
-                _tupleExprTopLevelStore = resultRegister;
-            }
-            // we push expr result register on top level if top level isn't null
-            else
-            {
-                AddOpCode(new PushTupleOpCode(_tupleExprTopLevelStore.Value, resultRegister));
-                DeallocateTempRegister(resultRegister);
-            }
+            // we allow top level if top level is null
+            _tupleExprTopLevelStore ??= AllocateTempRegister();
+
+            AddOpCode(new PushTupleOpCode(_tupleExprTopLevelStore.Value, resultRegister));
+            DeallocateTempRegister(resultRegister);
 
             return;
         }
@@ -1247,5 +1239,62 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         AddOpCode(new ReturnOpCode());
 
         DeallocateTempRegister(register);
+    }
+
+    public override void ExitVariableTupleSeparation(VariableTupleSeparationContext context)
+    {
+        // initialize
+        RegisterType tupleRegister;
+
+        if (context.tupleExpression() != null)
+        {
+            Debug.Assert(_tupleExprTopLevelStore != null, nameof(_tupleExprTopLevelStore) + " != null");
+            tupleRegister = _tupleExprTopLevelStore.Value;
+        }
+        else if (context.methodCall() != null)
+        {
+            CallMethod(context.methodCall().IDENTIFIER_STRING().GetText());
+            tupleRegister = RegisterType.Ret;
+        }
+        else if (context.variable() != null)
+        {
+            tupleRegister = AllocateTempRegister();
+            AddOpCode(new VarToRegisterOpCode(tupleRegister, context.variable().IDENTIFIER_STRING().GetText()));
+        }
+        else
+        {
+            throw new NotImplementedException();
+        }
+
+        // separate
+        var tupleTempStore = AllocateTempRegister();
+
+        // handle first one manually, im lazy
+        AddOpCode(new PopTupleOpCode(tupleTempStore, tupleRegister));
+        if (context.firstVar.varName != null)
+        {
+            AddOpCode(new SetVariableOpCode(tupleTempStore, context.firstVar.varName.Text));
+        }
+
+        // handle all defines
+        foreach (var var in context._vars)
+        {
+            AddOpCode(new PopTupleOpCode(tupleTempStore, tupleRegister));
+            if (var.varName == null) continue;
+            AddOpCode(new SetVariableOpCode(tupleTempStore, var.varName.Text));
+        }
+
+        // clean up
+        if (context.tupleExpression() != null)
+        {
+            DeallocateTempRegister(tupleRegister);
+            _tupleExprTopLevelStore = null;
+        }
+        else if (context.variable() != null)
+        {
+            DeallocateTempRegister(tupleRegister);
+        }
+
+        DeallocateTempRegister(tupleTempStore);
     }
 }
