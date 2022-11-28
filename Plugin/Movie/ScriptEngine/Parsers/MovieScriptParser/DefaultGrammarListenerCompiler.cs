@@ -36,20 +36,22 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
     {
         public string Name { get; }
         public List<OpCodeBase> OpCodes { get; } = new();
+        public int ArgCount { get; set; } = -1;
 
         public MethodBuilder(string name)
         {
             Name = name;
         }
 
-        public KeyValuePair<string, List<OpCodeBase>> GetFinalResult()
+        public ScriptMethodModel GetFinalResult()
         {
-            return new KeyValuePair<string, List<OpCodeBase>>(Name, OpCodes);
+            return new ScriptMethodModel(Name, OpCodes);
         }
     }
 
     private readonly List<OpCodeBase> _mainBuilder = new();
-    private readonly List<KeyValuePair<string, List<OpCodeBase>>> _builtMethods = new();
+    private int _mainMethodArgCount = -1;
+    private readonly List<MethodBuilder> _builtMethods = new();
     private readonly Stack<MethodBuilder> _methodBuilders = new();
 
     private OpCodeBuildingType _buildingType = OpCodeBuildingType.BuildingMainMethod;
@@ -69,6 +71,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
     private RegisterType? _tupleExprTopLevelStore;
     private RegisterType? _tupleExprInnerStore;
     private readonly List<int> _tupleInnerStorePushDepths = new();
+    private int _tupleExprCount;
 
     private readonly Stack<KeyValuePair<KeyValuePair<int, RegisterType>, OpCodeBuildingType>> _ifNotTrueOffsets = new();
     private readonly Stack<KeyValuePair<List<int>, OpCodeBuildingType>> _endOfIfExprOffsets = new();
@@ -94,7 +97,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         Debug.Assert(_loopExprUsingRegisters.Count == 0, "Loop register storage must be empty, something went wrong");
 
         var methods = new List<ScriptMethodModel> { new(null, _mainBuilder) };
-        methods.AddRange(_builtMethods.Select(x => new ScriptMethodModel(x.Key, x.Value)));
+        methods.AddRange(_builtMethods.Select(x => x.GetFinalResult()));
         return methods;
     }
 
@@ -128,7 +131,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
     private bool FindDefinedMethod(string name)
     {
-        return _builtMethods.Any(x => x.Key == name) || _methodBuilders.Any(x => x.Name == name);
+        return _builtMethods.Any(x => x.Name == name) || _methodBuilders.Any(x => x.Name == name);
     }
 
     private void AddExpression(ExpressionBase expression)
@@ -428,6 +431,53 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         _reservedTempRegister[(int)register] = false;
     }
 
+    private void UpdateAndCheckReturnExprCount(bool hasExpr, bool hasTupleExpr)
+    {
+        // main doesn't matter what gets returned from it
+        if (_buildingType is OpCodeBuildingType.BuildingMainMethod) return;
+
+        int currentCount;
+        switch (_buildingType)
+        {
+            case OpCodeBuildingType.BuildingMainMethod:
+                currentCount = _mainMethodArgCount;
+                break;
+            case OpCodeBuildingType.BuildingMethod:
+                currentCount = _methodBuilders.Peek().ArgCount;
+                break;
+            case OpCodeBuildingType.BuildingMethodArgs:
+                return;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+
+        // update count if not init
+        var argCount = hasExpr ? 1 : hasTupleExpr ? _tupleExprCount : 0;
+        if (currentCount < 0)
+        {
+            switch (_buildingType)
+            {
+                case OpCodeBuildingType.BuildingMainMethod:
+                    _mainMethodArgCount = argCount;
+                    break;
+                case OpCodeBuildingType.BuildingMethod:
+                    _methodBuilders.Peek().ArgCount = argCount;
+                    break;
+                case OpCodeBuildingType.BuildingMethodArgs:
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            return;
+        }
+
+        // check count violation
+        if (currentCount != argCount)
+        {
+            throw new MethodReturnCountNotMatchingException();
+        }
+    }
+
     private void AddOpCode(OpCodeBase opCode)
     {
         switch (_buildingType)
@@ -590,7 +640,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
     public override void ExitMethodDef(MethodDefContext context)
     {
-        _builtMethods.Add(_methodBuilders.Pop().GetFinalResult());
+        _builtMethods.Add(_methodBuilders.Pop());
         if (_methodBuilders.Count == 0)
         {
             _buildingType = OpCodeBuildingType.BuildingMainMethod;
@@ -869,7 +919,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
         // validate method existence
         var found =
-            _builtMethods.Any(x => x.Key == methodName) ||
+            _builtMethods.Any(x => x.Name == methodName) ||
             _methodBuilders.Any(x => x.Name == methodName) ||
             _externalMethods.Any(x => x.Name == methodName);
 
@@ -1058,6 +1108,12 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
     public override void EnterTupleExpression(TupleExpressionContext context)
     {
+        // is this the first tuple expr?
+        if (context.Parent is not TupleExpressionContext)
+        {
+            _tupleExprCount = 0;
+        }
+
         _tupleExprDepth++;
         // add expr builder stack on any expression before it's touched
         var exprCount = context.children.Count(x => x is ExpressionContext);
@@ -1065,6 +1121,8 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         {
             PushExpressionBuilderStack();
         }
+
+        _tupleExprCount += exprCount;
 
         // if inner builder is being used, we push
         if (_tupleExprInnerStore != null)
@@ -1285,22 +1343,40 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
     public override void ExitReturnAction(ReturnActionContext context)
     {
-        if (context.expression() == null)
+        UpdateAndCheckReturnExprCount(context.expression() != null, context.tupleExpression() != null);
+
+        if (context.expression() != null)
+        {
+            var register = BuildExpressionOpCodes();
+
+            if (register is not RegisterType.Ret)
+            {
+                AddOpCode(new MoveOpCode(register, RegisterType.Ret));
+            }
+
+            AddOpCode(new ReturnOpCode());
+
+            DeallocateTempRegister(register);
+        }
+        else if (context.tupleExpression() != null)
+        {
+            Debug.Assert(_tupleExprTopLevelStore != null, nameof(_tupleExprTopLevelStore) + " != null");
+            var tupleBuilderStore = _tupleExprTopLevelStore.Value;
+
+            if (tupleBuilderStore is not RegisterType.Ret)
+            {
+                AddOpCode(new MoveOpCode(tupleBuilderStore, RegisterType.Ret));
+            }
+
+            AddOpCode(new ReturnOpCode());
+
+            DeallocateTempRegister(tupleBuilderStore);
+            _tupleExprTopLevelStore = null;
+        }
+        else
         {
             AddOpCode(new ReturnOpCode());
-            return;
         }
-
-        var register = BuildExpressionOpCodes();
-
-        if (register is not RegisterType.Ret)
-        {
-            AddOpCode(new MoveOpCode(register, RegisterType.Ret));
-        }
-
-        AddOpCode(new ReturnOpCode());
-
-        DeallocateTempRegister(register);
     }
 
     public override void ExitVariableTupleSeparation(VariableTupleSeparationContext context)
