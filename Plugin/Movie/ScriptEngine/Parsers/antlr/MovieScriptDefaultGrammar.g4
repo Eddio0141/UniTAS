@@ -4,7 +4,7 @@ grammar MovieScriptDefaultGrammar;
  * Parser rules
  */
 
-script: program EOF;
+script: program NEWLINE* EOF;
 
 program:
 	NEWLINE+ program
