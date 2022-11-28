@@ -5,12 +5,14 @@ grammar MovieScriptDefaultGrammar;
  */
 
 script: program EOF;
-program: (actionWithSeparator actionSeparator?)
-	| (action NEWLINE*)
+
+program:
+	NEWLINE+ program
 	| (actionWithSeparator actionSeparator program)
-	| (action NEWLINE* program);
-scopedProgram:
-	SCOPE_OPEN NEWLINE* program? NEWLINE* SCOPE_CLOSE;
+	| action program
+	| (actionWithSeparator actionSeparator?)
+	| action;
+scopedProgram: SCOPE_OPEN program? NEWLINE* SCOPE_CLOSE;
 
 actionSeparator: ACTIONSEPARATOR | NEWLINE | frameAdvance;
 
@@ -23,7 +25,6 @@ action:
 	| breakAction
 	| continueAction
 	| returnAction;
-
 actionWithSeparator:
 	variableAssignment
 	| tupleAssignment
@@ -132,12 +133,12 @@ loop: 'loop' expression scopedProgram;
  * Lexer rules
  */
 
+WHITESPACE: (' ' | '\t')+ -> skip;
+COMMENT: '//' ~('\r' | '\n')* -> skip;
+COMMENT_MULTI: '/*' .*? '*/' -> skip;
+
 fragment PIPE: '|';
 fragment DOT: '.';
-
-WHITESPACE: (' ' | '\t')+ -> skip;
-COMMENT: '//' .*? -> skip;
-COMMENT_MULTI: '/*' .*? '*/' -> skip;
 
 ACTIONSEPARATOR: PIPE;
 
