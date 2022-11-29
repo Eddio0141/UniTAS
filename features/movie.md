@@ -35,6 +35,8 @@
     - Methods
       - Can be called with `method(arg1, arg2, ...)`
       - Return values can be assigned to a variable `$method_return = method(arg1, arg2)`
+      - Defined like `fn method(arg1, arg2) { }`
+        - Tuples work too `fn method((x, y, z), (rot_x, rot_y, rot_z, (yaw, pitch)), name) { }`
     - Action separator
       - Those are the same:
         #### mouse(50, 50)
