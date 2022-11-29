@@ -1,5 +1,9 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using UniTASPlugin.Movie.ScriptEngine.EngineMethods;
 using UniTASPlugin.Movie.ScriptEngine.Exceptions.ScriptEngineExceptions;
+using UniTASPlugin.Movie.ScriptEngine.MovieModels.Script;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.BitwiseOps;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Jump;
@@ -10,23 +14,33 @@ using UniTASPlugin.Movie.ScriptEngine.OpCodes.RegisterSet;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Scope;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.StackOp;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Tuple;
-using UniTASPlugin.Movie.ScriptEngine.ValueTypes;
-using ValueType = UniTASPlugin.Movie.ScriptEngine.ValueTypes.ValueType;
 
-namespace UniTASPlugin.Movie.ScriptEngine;
+namespace UniTASPlugin.Movie.ScriptEngine.ValueTypes;
 
-public partial class ScriptEngineMovieRunner
+public partial class ScriptEngineLowLevelEngine
 {
-    private class MethodInfo
-    {
-        public int Pc { get; set; }
-        public int MethodIndex { get; }
+    private readonly Register[] _registers;
+    private readonly OpCodeBase[] _mainMethod;
+    private readonly ScriptMethodModel[] _methods;
+    private int _pc;
+    private readonly Stack<MethodInfo> _methodStack = new();
+    private EngineExternalMethodBase[] _externMethods;
 
-        public MethodInfo(int pc, int methodIndex)
+    public bool FinishedExecuting { get; private set; }
+
+    public ScriptEngineLowLevelEngine(ScriptModel script, IGetDefinedMethods getDefinedMethods)
+    {
+        var registerCount = Enum.GetNames(typeof(RegisterType)).Length;
+        _registers = new Register[registerCount];
+        for (var i = 0; i < registerCount; i++)
         {
-            Pc = pc;
-            MethodIndex = methodIndex;
+            _registers[i] = new();
         }
+
+        _mainMethod = script.MainMethod.OpCodes;
+        _methods = script.Methods.ToArray();
+
+        _externMethods = getDefinedMethods.GetExternMethods().ToArray();
     }
 
     private void ValidatePcOffset()
@@ -37,7 +51,7 @@ public partial class ScriptEngineMovieRunner
         // if this is main, movie end
         if (_methodStack.Count == 0)
         {
-            MovieEnd = true;
+            FinishedExecuting = true;
             return;
         }
 
@@ -125,7 +139,7 @@ public partial class ScriptEngineMovieRunner
         return new LeftRightResultValuesRaw(leftValue, rightValue, result == null ? null : _registers[(int)result]);
     }
 
-    private void ProcessUntilStop()
+    public void ExecUntilStop()
     {
         var opCodes = _methodStack.Count == 0 ? _mainMethod : _methods[_methodStack.Peek().MethodIndex].OpCodes;
 
@@ -386,7 +400,8 @@ public partial class ScriptEngineMovieRunner
                 }
                 case OrOpCode orOpCode:
                 {
-                    var values = ValidateTypeAndGetRegister<BoolValueType>(orOpCode.Left, orOpCode.Right, orOpCode.Dest);
+                    var values =
+                        ValidateTypeAndGetRegister<BoolValueType>(orOpCode.Left, orOpCode.Right, orOpCode.Dest);
                     values.Result.InnerValue = new BoolValueType(values.Left.Value || values.Right.Value);
                     _pc++;
                     break;

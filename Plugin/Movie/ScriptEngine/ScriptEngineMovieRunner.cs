@@ -1,34 +1,25 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using UniTASPlugin.GameEnvironment.Interfaces;
 using UniTASPlugin.Movie.ScriptEngine.EngineMethods;
-using UniTASPlugin.Movie.ScriptEngine.MovieModels.Script;
-using UniTASPlugin.Movie.ScriptEngine.OpCodes;
 using UniTASPlugin.Movie.ScriptEngine.ParseInterfaces;
+using UniTASPlugin.Movie.ScriptEngine.ValueTypes;
 
 namespace UniTASPlugin.Movie.ScriptEngine;
 
 public partial class ScriptEngineMovieRunner : IMovieRunner
 {
-    private Register[] _registers;
-    private OpCodeBase[] _mainMethod;
-    private ScriptMethodModel[] _methods;
-    private int _pc;
-    private readonly Stack<MethodInfo> _methodStack = new();
-
     public bool MovieEnd { get; private set; }
+    public bool IsRunning => !MovieEnd;
 
     private readonly IMovieParser _parser;
-    public bool IsRunning { get; private set; }
+    private readonly IGetDefinedMethods _getDefinedMethods;
 
-    private readonly EngineExternalMethodBase[] _externMethods;
+    private ScriptEngineLowLevelEngine _engine;
 
     public ScriptEngineMovieRunner(IMovieParser parser, IGetDefinedMethods getDefinedMethods)
     {
-        IsRunning = false;
         _parser = parser;
-        _externMethods = getDefinedMethods.GetExternMethods().ToArray();
+        _getDefinedMethods = getDefinedMethods;
     }
 
     public void RunFromPath<TEnv>(string path, ref TEnv env)
@@ -45,7 +36,7 @@ public partial class ScriptEngineMovieRunner : IMovieRunner
         // TODO apply environment
 
         // init engine
-        InitEngine(movie.Script);
+        _engine = new ScriptEngineLowLevelEngine(movie.Script, _getDefinedMethods);
 
         // set env
         env.InputState.ResetStates();
@@ -53,25 +44,11 @@ public partial class ScriptEngineMovieRunner : IMovieRunner
         // TODO other stuff like save state load, reset, hide cursor, etc
         // TODO handle empty movie
 
-        IsRunning = true;
-        throw new NotImplementedException();
-    }
-
-    private void InitEngine(ScriptModel script)
-    {
-        var registerCount = Enum.GetNames(typeof(RegisterType)).Length;
-        _registers = new Register[registerCount];
-        for (var i = 0; i < registerCount; i++)
-        {
-            _registers[i] = new();
-        }
-
         MovieEnd = false;
-        _pc = 0;
-        _methodStack.Clear();
 
-        _mainMethod = script.MainMethod.OpCodes;
-        _methods = script.Methods.ToArray();
+        // TODO do we advance frame at the start?
+        _engine.ExecUntilStop();
+        throw new NotImplementedException();
     }
 
     public void Update<TEnv>(ref TEnv env)
@@ -81,6 +58,9 @@ public partial class ScriptEngineMovieRunner : IMovieRunner
     {
         if (!IsRunning)
             return;
+
+        _engine.ExecUntilStop();
+
         // TODO input handle
         /*MouseState.Position = new Vector2(fb.Mouse.X, fb.Mouse.Y);
         MouseState.LeftClick = fb.Mouse.Left;
@@ -115,17 +95,14 @@ public partial class ScriptEngineMovieRunner : IMovieRunner
             }
         }*/
 
-        /*
-        if (_scriptEngine.MovieEnd)
+        if (_engine.FinishedExecuting)
         {
-            IsRunning = false;
+            MovieEnd = true;
             AtMovieEnd(ref env);
             return;
         }
 
-        // TODO
-        _scriptEngine.AdvanceFrame();
-        */
+        _engine.ExecUntilStop();
 
         throw new NotImplementedException();
     }
