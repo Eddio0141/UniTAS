@@ -22,6 +22,7 @@ public partial class ScriptEngineLowLevelEngine
     private readonly Register[] _registers;
 
     private readonly OpCodeBase[] _mainMethod;
+    private readonly List<VariableInfo> _mainVars = new();
     private readonly List<ScriptMethodModel> _methods;
     private readonly List<EngineExternalMethodBase> _externMethods;
 
@@ -593,17 +594,57 @@ public partial class ScriptEngineLowLevelEngine
                     break;
                 }
                 case PushArgOpCode pushArgOpCode:
+                {
+                    var value = _registers[(int)pushArgOpCode.RegisterType];
+                    _argStack.Push(value.IsTuple
+                        ? new List<ValueType>(value.TupleValues)
+                        : new List<ValueType> { value.InnerValue });
                     break;
+                }
                 case ReturnOpCode returnOpCode:
+                {
+                    if (_methodStack.Count == 0)
+                    {
+                        FinishedExecuting = true;
+                        return;
+                    }
+
+                    // return from method
+                    _methodStack.Pop();
+                    _pc = _methodStack.Peek().Pc;
+                    opCodes = _methodStack.Count == 0 ? _mainMethod : _methods[_methodStack.Peek().MethodIndex].OpCodes;
                     break;
-                case PushListOpCode pushListOpCode:
-                    break;
+                }
                 case ConstToRegisterOpCode constToRegisterOpCode:
+                {
+                    _registers[(int)constToRegisterOpCode.Register].InnerValue = constToRegisterOpCode.Value;
                     break;
+                }
                 case MoveOpCode moveOpCode:
+                {
+                    _registers[(int)moveOpCode.Dest].InnerValue = _registers[(int)moveOpCode.Register].InnerValue;
                     break;
+                }
                 case VarToRegisterOpCode varToRegisterOpCode:
+                {
+                    var register = _registers[(int)varToRegisterOpCode.Register];
+                    var registerValue = register.IsTuple
+                        ? register.TupleValues
+                        : new List<ValueType>
+                            { register.InnerValue };
+                    // get vars
+                    var vars = _methodIndex < 0 ? _mainVars : _methodStack.Peek().Vars;
+                    if (vars.TryGetValue(varToRegisterOpCode.Name, out var value))
+                    {
+                        value = registerValue;
+                    }
+                    else
+                    {
+                        vars.Add(varToRegisterOpCode.Name, registerValue);
+                    }
+
                     break;
+                }
                 case EnterScopeOpCode enterScopeOpCode:
                     break;
                 case ExitScopeOpCode exitScopeOpCode:
