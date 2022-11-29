@@ -8,7 +8,6 @@ using UniTASPlugin.Movie.ScriptEngine.MovieModels.Script;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Jump;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Logic;
-using UniTASPlugin.Movie.ScriptEngine.OpCodes.Loop;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Maths;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Method;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.RegisterSet;
@@ -331,7 +330,7 @@ loop $value {
             new SetVariableOpCode(RegisterType.Temp0, "value"),
             new VarToRegisterOpCode(RegisterType.Temp0, "value"),
             // loop $value
-            new JumpIfEqZero(23, RegisterType.Temp0),
+            new JumpIfEqZero(29, RegisterType.Temp0),
             new ConstToRegisterOpCode(RegisterType.Temp1, new IntValueType(1)),
             new SubOpCode(RegisterType.Temp0, RegisterType.Temp0, RegisterType.Temp1),
             new PushStackOpCode(RegisterType.Temp0),
@@ -340,23 +339,30 @@ loop $value {
             new VarToRegisterOpCode(RegisterType.Temp0, "value"),
             new ConstToRegisterOpCode(RegisterType.Temp1, new IntValueType(3)),
             new EqualOpCode(RegisterType.Temp0, RegisterType.Temp0, RegisterType.Temp1),
-            new JumpIfFalse(12, RegisterType.Temp0),
+            new JumpIfFalse(8, RegisterType.Temp0),
             new EnterScopeOpCode(),
-            new BreakOpCode(),
+            // break
             new ExitScopeOpCode(),
-            new JumpOpCode(8),
+            new ExitScopeOpCode(),
+            new PopStackOpCode(RegisterType.Temp0),
+            new JumpOpCode(16),
+            new ExitScopeOpCode(),
+            new JumpOpCode(11),
             // else if
             new VarToRegisterOpCode(RegisterType.Temp0, "value"),
             new ConstToRegisterOpCode(RegisterType.Temp1, new IntValueType(4)),
             new EqualOpCode(RegisterType.Temp0, RegisterType.Temp0, RegisterType.Temp1),
-            new JumpIfFalse(4, RegisterType.Temp0),
+            new JumpIfFalse(7, RegisterType.Temp0),
             new EnterScopeOpCode(),
-            new ContinueOpCode(),
+            new ExitScopeOpCode(),
+            new ExitScopeOpCode(),
+            new PopStackOpCode(RegisterType.Temp0),
+            new JumpOpCode(-24),
             new ExitScopeOpCode(),
             // loop end
             new ExitScopeOpCode(),
             new PopStackOpCode(RegisterType.Temp0),
-            new JumpOpCode(-22)
+            new JumpOpCode(-28)
         });
 
         definedMethod.Should().BeEquivalentTo(actual);
@@ -585,5 +591,16 @@ $value5 = (string)$value");
     {
         var setup = () => Setup("$value = print(\"hello world!\")");
         setup.Should().Throw<MethodHasNoReturnValueException>();
+    }
+
+    [Fact]
+    public void UsingLoopActionsOutside()
+    {
+        var setup = () => Setup("continue");
+        setup.Should().Throw<UsingLoopActionOutsideOfLoopException>();
+        setup = () => Setup("fn method() { continue } loop 5 { method() }");
+        setup.Should().Throw<UsingLoopActionOutsideOfLoopException>();
+        setup = () => Setup("break");
+        setup.Should().Throw<UsingLoopActionOutsideOfLoopException>();
     }
 }
