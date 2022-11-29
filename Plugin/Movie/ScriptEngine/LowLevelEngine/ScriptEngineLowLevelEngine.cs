@@ -20,11 +20,17 @@ namespace UniTASPlugin.Movie.ScriptEngine.ValueTypes;
 public partial class ScriptEngineLowLevelEngine
 {
     private readonly Register[] _registers;
+
     private readonly OpCodeBase[] _mainMethod;
-    private readonly ScriptMethodModel[] _methods;
+    private readonly List<ScriptMethodModel> _methods;
+    private readonly List<EngineExternalMethodBase> _externMethods;
+
     private int _pc;
+    private int _methodIndex = -1;
+
     private readonly Stack<MethodInfo> _methodStack = new();
-    private EngineExternalMethodBase[] _externMethods;
+
+    private readonly Stack<List<ValueType>> _argStack = new();
 
     public bool FinishedExecuting { get; private set; }
 
@@ -38,9 +44,9 @@ public partial class ScriptEngineLowLevelEngine
         }
 
         _mainMethod = script.MainMethod.OpCodes;
-        _methods = script.Methods.ToArray();
+        _methods = script.Methods.ToList();
 
-        _externMethods = getDefinedMethods.GetExternMethods().ToArray();
+        _externMethods = getDefinedMethods.GetExternMethods().ToList();
     }
 
     private void ValidatePcOffset()
@@ -89,10 +95,28 @@ public partial class ScriptEngineLowLevelEngine
         }
     }
 
+    private void ValidateRegisterNonTuple<T>(Register register)
+    {
+        if (register.IsTuple)
+        {
+            throw new ValueTypeMismatchException(typeof(T).ToString(), register.InnerValue.ToString());
+        }
+    }
+
+    private void ValidateRegisterNonTuple(Register register)
+    {
+        if (register.IsTuple)
+        {
+            throw new ValueTypeMismatchException("Non-tuple type", "Tuple type");
+        }
+    }
+
     private LeftRightResultValues<T> ValidateTypeAndGetRegister<T>(RegisterType left, RegisterType? result = null)
         where T : ValueType
     {
-        var leftValue = _registers[(int)left].InnerValue;
+        var leftRegister = _registers[(int)left];
+        var leftValue = leftRegister.InnerValue;
+        ValidateRegisterNonTuple<T>(leftRegister);
 
         if (leftValue is not T newLeft)
         {
@@ -108,8 +132,15 @@ public partial class ScriptEngineLowLevelEngine
         RegisterType? result = null)
         where T : ValueType
     {
-        var leftValue = _registers[(int)left].InnerValue;
-        var rightValue = right == null ? null : _registers[(int)right].InnerValue;
+        var leftRegister = _registers[(int)left];
+        var leftValue = leftRegister.InnerValue;
+        ValidateRegisterNonTuple<T>(leftRegister);
+        var rightRegister = right == null ? null : _registers[(int)right];
+        var rightValue = rightRegister?.InnerValue;
+        if (rightValue != null)
+        {
+            ValidateRegisterNonTuple<T>(rightRegister);
+        }
 
         if (leftValue is not T newLeft || (rightValue != null && rightValue is not T))
         {
@@ -125,8 +156,12 @@ public partial class ScriptEngineLowLevelEngine
     private LeftRightResultValuesRaw ValidateTypeAndGetRegister(RegisterType left, RegisterType right,
         RegisterType? result = null)
     {
-        var leftValue = _registers[(int)left].InnerValue;
-        var rightValue = _registers[(int)right].InnerValue;
+        var leftRegister = _registers[(int)left];
+        var leftValue = leftRegister.InnerValue;
+        ValidateRegisterNonTuple(leftRegister);
+        var rightRegister = _registers[(int)right];
+        var rightValue = rightRegister.InnerValue;
+        ValidateRegisterNonTuple(rightRegister);
 
         if (leftValue is BoolValueType && rightValue is not BoolValueType ||
             leftValue is IntValueType && rightValue is not IntValueType ||
@@ -407,21 +442,156 @@ public partial class ScriptEngineLowLevelEngine
                     break;
                 }
                 case AddOpCode addOpCode:
+                {
+                    try
+                    {
+                        var values =
+                            ValidateTypeAndGetRegister<FloatValueType>(addOpCode.Left, addOpCode.Right,
+                                addOpCode.Result);
+                        values.Result.InnerValue = new FloatValueType(values.Left.Value + values.Right.Value);
+                    }
+                    catch (ValueTypeMismatchException)
+                    {
+                        var values = ValidateTypeAndGetRegister<IntValueType>(addOpCode.Left, addOpCode.Right,
+                            addOpCode.Result);
+                        values.Result.InnerValue = new IntValueType(values.Left.Value + values.Right.Value);
+                    }
+
+                    _pc++;
                     break;
+                }
                 case DivOpCode divOpCode:
+                {
+                    try
+                    {
+                        var values =
+                            ValidateTypeAndGetRegister<FloatValueType>(divOpCode.Left, divOpCode.Right,
+                                divOpCode.Result);
+                        values.Result.InnerValue = new FloatValueType(values.Left.Value / values.Right.Value);
+                    }
+                    catch (ValueTypeMismatchException)
+                    {
+                        var values = ValidateTypeAndGetRegister<IntValueType>(divOpCode.Left, divOpCode.Right,
+                            divOpCode.Result);
+                        values.Result.InnerValue = new IntValueType(values.Left.Value / values.Right.Value);
+                    }
+
+                    _pc++;
                     break;
+                }
                 case FlipNegativeOpCode flipNegativeOpCode:
+                {
+                    try
+                    {
+                        var values = ValidateTypeAndGetRegister<FloatValueType>(flipNegativeOpCode.Source,
+                            flipNegativeOpCode.Dest);
+                        values.Result.InnerValue = new FloatValueType(-values.Left.Value);
+                    }
+                    catch (ValueTypeMismatchException)
+                    {
+                        var values = ValidateTypeAndGetRegister<IntValueType>(flipNegativeOpCode.Source,
+                            flipNegativeOpCode.Dest);
+                        values.Result.InnerValue = new IntValueType(-values.Left.Value);
+                    }
+
+                    _pc++;
                     break;
+                }
                 case ModOpCode modOpCode:
+                {
+                    var values = ValidateTypeAndGetRegister<IntValueType>(modOpCode.Left, modOpCode.Right,
+                        modOpCode.Result);
+                    values.Result.InnerValue = new IntValueType(values.Left.Value % values.Right.Value);
+                    _pc++;
                     break;
+                }
                 case MultOpCode multOpCode:
+                {
+                    try
+                    {
+                        var values =
+                            ValidateTypeAndGetRegister<FloatValueType>(multOpCode.Left, multOpCode.Right,
+                                multOpCode.Result);
+                        values.Result.InnerValue = new FloatValueType(values.Left.Value * values.Right.Value);
+                    }
+                    catch (ValueTypeMismatchException)
+                    {
+                        var values = ValidateTypeAndGetRegister<IntValueType>(multOpCode.Left, multOpCode.Right,
+                            multOpCode.Result);
+                        values.Result.InnerValue = new IntValueType(values.Left.Value * values.Right.Value);
+                    }
+
+                    _pc++;
                     break;
+                }
                 case SubOpCode subOpCode:
+                {
+                    try
+                    {
+                        var values =
+                            ValidateTypeAndGetRegister<FloatValueType>(subOpCode.Left, subOpCode.Right,
+                                subOpCode.Result);
+                        values.Result.InnerValue = new FloatValueType(values.Left.Value - values.Right.Value);
+                    }
+                    catch (ValueTypeMismatchException)
+                    {
+                        var values = ValidateTypeAndGetRegister<IntValueType>(subOpCode.Left, subOpCode.Right,
+                            subOpCode.Result);
+                        values.Result.InnerValue = new IntValueType(values.Left.Value - values.Right.Value);
+                    }
+
+                    _pc++;
                     break;
+                }
                 case GotoMethodOpCode gotoMethodOpCode:
+                {
+                    // method exists, which is checked at compile time
+                    _pc++;
+                    var method = gotoMethodOpCode.MethodName;
+                    var foundDefinedMethod = _methods.FindIndex(m => m.Name == method);
+                    if (foundDefinedMethod > -1)
+                    {
+                        _methodStack.Push(new MethodInfo(_pc, _methodIndex));
+                        _pc = 0;
+                        _methodIndex = foundDefinedMethod;
+                        opCodes = _methodStack.Count == 0
+                            ? _mainMethod
+                            : _methods[_methodStack.Peek().MethodIndex].OpCodes;
+                        break;
+                    }
+
+                    // call to extern method, requires just a call
+                    var externMethod = _externMethods.Find(x => x.Name == method);
+                    var resultValue = externMethod.Invoke(_argStack.ToList().Select(x => (IEnumerable<ValueType>)x));
+                    var resultRegister = _registers[(int)RegisterType.Ret];
+                    switch (resultValue.Count)
+                    {
+                        case 1:
+                            resultRegister.InnerValue = resultValue.First();
+                            break;
+                        case > 1:
+                            resultRegister.TupleValues = resultValue;
+                            break;
+                    }
+
+                    _argStack.Clear();
                     break;
+                }
                 case PopArgOpCode popArgOpCode:
+                {
+                    var arg = _argStack.Pop();
+                    var register = _registers[(int)popArgOpCode.Register];
+                    if (arg.Count == 1)
+                    {
+                        register.InnerValue = arg.First();
+                    }
+                    else
+                    {
+                        register.TupleValues = arg;
+                    }
+
                     break;
+                }
                 case PushArgOpCode pushArgOpCode:
                     break;
                 case ReturnOpCode returnOpCode:
