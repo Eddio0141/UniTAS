@@ -131,11 +131,8 @@ methodDef:
 	'fn' IDENTIFIER_STRING ROUND_BRACKET_OPEN methodDefArgs? ROUND_BRACKET_CLOSE scopedProgram;
 
 methodDefArgs:
-	(methodDefSingleArg | methodDefTupleArg) COMMA methodDefArgs
-	| (methodDefSingleArg | methodDefTupleArg);
-methodDefSingleArg: IDENTIFIER_STRING;
-methodDefTupleArg:
-	ROUND_BRACKET_OPEN IDENTIFIER_STRING COMMA methodDefArgs ROUND_BRACKET_CLOSE;
+	IDENTIFIER_STRING COMMA methodDefArgs
+	| IDENTIFIER_STRING;
 
 loop: 'loop' expression scopedProgram;
 

@@ -657,7 +657,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         }
     }
 
-    public override void ExitMethodDefSingleArg(MethodDefSingleArgContext context)
+    public override void ExitMethodDefArgs(MethodDefArgsContext context)
     {
         var argName = context.IDENTIFIER_STRING().GetText();
         AddOpCode(new PopArgOpCode(RegisterType.Temp0));
