@@ -443,6 +443,26 @@ public interface IMovieScriptDefaultGrammarListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitMethodDefArgs([NotNull] MovieScriptDefaultGrammarParser.MethodDefArgsContext context);
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.methodDefSingleArg"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterMethodDefSingleArg([NotNull] MovieScriptDefaultGrammarParser.MethodDefSingleArgContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.methodDefSingleArg"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitMethodDefSingleArg([NotNull] MovieScriptDefaultGrammarParser.MethodDefSingleArgContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.methodDefTupleArg"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterMethodDefTupleArg([NotNull] MovieScriptDefaultGrammarParser.MethodDefTupleArgContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.methodDefTupleArg"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitMethodDefTupleArg([NotNull] MovieScriptDefaultGrammarParser.MethodDefTupleArgContext context);
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.loop"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
