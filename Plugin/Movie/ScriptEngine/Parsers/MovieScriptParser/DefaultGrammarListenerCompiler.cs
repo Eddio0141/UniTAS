@@ -10,7 +10,6 @@ using UniTASPlugin.Movie.ScriptEngine.OpCodes;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.BitwiseOps;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Jump;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Logic;
-using UniTASPlugin.Movie.ScriptEngine.OpCodes.Loop;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Maths;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Method;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.RegisterSet;
@@ -74,15 +73,16 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
     private readonly List<int> _tupleInnerStorePushDepths = new();
     private int _tupleExprCount;
 
-    private readonly Stack<KeyValuePair<KeyValuePair<int, RegisterType>, OpCodeBuildingType>> _ifNotTrueOffsets = new();
-    private readonly Stack<KeyValuePair<List<int>, OpCodeBuildingType>> _endOfIfExprOffsets = new();
+    private readonly Stack<KeyValuePair<KeyValuePair<int, RegisterType>, string>> _ifNotTrueOffsets = new();
+    private readonly Stack<KeyValuePair<List<int>, string>> _endOfIfExprOffsets = new();
 
-    private readonly Stack<KeyValuePair<int, OpCodeBuildingType>> _endOfLoopExprOffset =
+    private readonly Stack<KeyValuePair<int, string>> _endOfLoopExprOffset =
         new();
 
-    private readonly Stack<KeyValuePair<List<int>, OpCodeBuildingType>> _endOfLoopOffsets = new();
-    private readonly Stack<KeyValuePair<int, OpCodeBuildingType>> _startOfLoopOffsets = new();
+    private readonly Stack<KeyValuePair<List<int>, string>> _endOfLoopOffsets = new();
+    private readonly Stack<KeyValuePair<int, string>> _startOfLoopOffsets = new();
     private readonly Stack<RegisterType> _loopExprUsingRegisters = new();
+    private readonly Stack<KeyValuePair<int, string>> _loopScopeDepth = new();
 
     private bool _methodCallReturnValueUsed;
     private int _methodArgCount;
@@ -103,6 +103,17 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         var methods = new List<ScriptMethodModel> { new(null, _mainBuilder) };
         methods.AddRange(_builtMethods.Select(x => x.GetFinalResult()));
         return methods;
+    }
+
+    private string CurrentBuildingMethodName()
+    {
+        return _buildingType switch
+        {
+            OpCodeBuildingType.BuildingMethod => _methodBuilders.Peek().Name,
+            OpCodeBuildingType.BuildingMethodArgs => null,
+            OpCodeBuildingType.BuildingMainMethod => null,
+            _ => throw new ArgumentOutOfRangeException()
+        };
     }
 
     private void PushUsingTempRegisters()
@@ -546,15 +557,15 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         }
 
         // update offsets
-        var tempMoveList = new List<KeyValuePair<KeyValuePair<int, RegisterType>, OpCodeBuildingType>>();
-        var tempMoveList2 = new List<KeyValuePair<List<int>, OpCodeBuildingType>>();
-        var tempMoveList3 = new List<KeyValuePair<int, OpCodeBuildingType>>();
+        var tempMoveList = new List<KeyValuePair<KeyValuePair<int, RegisterType>, string>>();
+        var tempMoveList2 = new List<KeyValuePair<List<int>, string>>();
+        var tempMoveList3 = new List<KeyValuePair<int, string>>();
 
         while (_ifNotTrueOffsets.Count > 0)
         {
             var ifNotTrueOffset = _ifNotTrueOffsets.Pop();
             var offset = ifNotTrueOffset.Key.Key;
-            if (ifNotTrueOffset.Value == _buildingType && offset > index)
+            if (ifNotTrueOffset.Value == CurrentBuildingMethodName() && offset > index)
             {
                 offset++;
             }
@@ -571,7 +582,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         {
             var endOfIfExprOffset = _endOfIfExprOffsets.Pop();
             var offsets = endOfIfExprOffset.Key;
-            if (endOfIfExprOffset.Value == _buildingType)
+            if (endOfIfExprOffset.Value == CurrentBuildingMethodName())
             {
                 for (var i = 0; i < offsets.Count; i++)
                 {
@@ -596,7 +607,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         {
             var endOfLoopOffset = _endOfLoopOffsets.Pop();
             var offsets = endOfLoopOffset.Key;
-            if (endOfLoopOffset.Value == _buildingType)
+            if (endOfLoopOffset.Value == CurrentBuildingMethodName())
             {
                 for (var i = 0; i < offsets.Count; i++)
                 {
@@ -1218,7 +1229,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
     public override void EnterIfStatement(IfStatementContext context)
     {
         PushExpressionBuilderStack();
-        _endOfIfExprOffsets.Push(new(new(), _buildingType));
+        _endOfIfExprOffsets.Push(new(new(), CurrentBuildingMethodName()));
     }
 
     public override void ExitIfStatement(IfStatementContext context)
@@ -1263,13 +1274,15 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
                 var register = BuildExpressionOpCodes();
                 DeallocateTempRegister(register);
                 _ifNotTrueOffsets.Push(
-                    new KeyValuePair<KeyValuePair<int, RegisterType>, OpCodeBuildingType>(
-                        new KeyValuePair<int, RegisterType>(GetOpCodeInsertLocation(), register), _buildingType));
+                    new KeyValuePair<KeyValuePair<int, RegisterType>, string>(
+                        new KeyValuePair<int, RegisterType>(GetOpCodeInsertLocation(), register),
+                        CurrentBuildingMethodName()));
                 break;
             }
             case LoopContext:
             {
-                _endOfLoopOffsets.Push(new KeyValuePair<List<int>, OpCodeBuildingType>(new(), _buildingType));
+                _endOfLoopOffsets.Push(new KeyValuePair<List<int>, string>(new(), CurrentBuildingMethodName()));
+                _loopScopeDepth.Push(new KeyValuePair<int, string>(0, CurrentBuildingMethodName()));
 
                 var register = BuildExpressionOpCodes();
                 DeallocateTempRegister(register);
@@ -1277,10 +1290,10 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
                 _loopExprUsingRegisters.Push(register);
 
                 // for jumping to start of loop
-                _startOfLoopOffsets.Push(new(GetOpCodeInsertLocation(), _buildingType));
+                _startOfLoopOffsets.Push(new(GetOpCodeInsertLocation(), CurrentBuildingMethodName()));
 
                 _endOfLoopExprOffset.Push(
-                    new KeyValuePair<int, OpCodeBuildingType>(GetOpCodeInsertLocation(), _buildingType));
+                    new KeyValuePair<int, string>(GetOpCodeInsertLocation(), CurrentBuildingMethodName()));
 
                 // opcodes for loop logic
                 // we use hardcoded temp registers since loop count is pushed anyway
@@ -1295,6 +1308,14 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         if (context.Parent is not MethodDefContext)
         {
             AddOpCode(new EnterScopeOpCode());
+        }
+
+        if (context.Parent is not LoopContext && _loopScopeDepth.Count > 0 &&
+            _loopScopeDepth.Peek().Value == CurrentBuildingMethodName())
+        {
+            var loop = _loopScopeDepth.Peek();
+            loop = new KeyValuePair<int, string>(loop.Key + 1, loop.Value);
+            _loopScopeDepth.Push(loop);
         }
     }
 
@@ -1315,6 +1336,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
             }
             case LoopContext:
             {
+                _loopScopeDepth.Pop();
                 var endOfLoopExprOffset = _endOfLoopExprOffset.Pop();
                 var loopExprJumpIndex = endOfLoopExprOffset.Key;
                 var loopCountStoreRegister = _loopExprUsingRegisters.Pop();
@@ -1349,6 +1371,13 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
                 AddOpCode(new ExitScopeOpCode());
                 break;
         }
+
+        if (context.Parent is not LoopContext && _loopScopeDepth.Count > 0 &&
+            _loopScopeDepth.Peek().Value == CurrentBuildingMethodName())
+        {
+            var loop = _loopScopeDepth.Pop();
+            _loopScopeDepth.Push(new KeyValuePair<int, string>(loop.Key - 1, loop.Value));
+        }
     }
 
     public override void EnterLoop(LoopContext context)
@@ -1359,12 +1388,40 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
     public override void EnterBreakAction(BreakActionContext context)
     {
-        AddOpCode(new BreakOpCode());
+        // validate if in loop
+        if (_loopScopeDepth.Count == 0 || _loopScopeDepth.Peek().Value != CurrentBuildingMethodName())
+        {
+            throw new UsingLoopActionOutsideOfLoopException("continue");
+        }
+
+        // depending on the "depth" of the continue, we must exit scope the right amount of times
+        var depth = _loopScopeDepth.Peek().Key + 1;
+        for (var i = 0; i < depth; i++)
+        {
+            AddOpCode(new ExitScopeOpCode());
+        }
+
+        AddOpCode(new PopStackOpCode(_loopExprUsingRegisters.Peek()));
+        _endOfLoopOffsets.Peek().Key.Add(GetOpCodeInsertLocation());
     }
 
     public override void EnterContinueAction(ContinueActionContext context)
     {
-        AddOpCode(new ContinueOpCode());
+        // validate if in loop
+        if (_loopScopeDepth.Count == 0 || _loopScopeDepth.Peek().Value != CurrentBuildingMethodName())
+        {
+            throw new UsingLoopActionOutsideOfLoopException("continue");
+        }
+
+        // depending on the "depth" of the continue, we must exit scope the right amount of times
+        var depth = _loopScopeDepth.Peek().Key + 1;
+        for (var i = 0; i < depth; i++)
+        {
+            AddOpCode(new ExitScopeOpCode());
+        }
+
+        AddOpCode(new PopStackOpCode(_loopExprUsingRegisters.Peek()));
+        AddOpCode(new JumpOpCode(_startOfLoopOffsets.Peek().Key));
     }
 
     public override void EnterReturnAction(ReturnActionContext context)
