@@ -618,18 +618,6 @@ public partial class ScriptEngineLowLevelEngine
                     break;
                 case PushTupleOpCode pushTupleOpCode:
                     break;
-                case BitwiseBase bitwiseBase:
-                    break;
-                case LogicComparisonBase logicComparisonBase:
-                    break;
-                case MathOpBase mathOpBase:
-                    break;
-                case RegisterSetBase registerSetBase:
-                    break;
-                case JumpBase jumpBase:
-                    break;
-                case LogicBase logicBase:
-                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(opCode));
             }
