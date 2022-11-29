@@ -603,4 +603,10 @@ $value5 = (string)$value");
         setup = () => Setup("break");
         setup.Should().Throw<UsingLoopActionOutsideOfLoopException>();
     }
+
+    [Fact]
+    public void MethodDefTuple()
+    {
+        Setup("fn method(id, (x, y, z), (rx, ry, rz, (yaw, pitch)), name) { }");
+    }
 }

@@ -526,6 +526,30 @@ public partial class MovieScriptDefaultGrammarBaseListener : IMovieScriptDefault
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitMethodDefArgs([NotNull] MovieScriptDefaultGrammarParser.MethodDefArgsContext context) { }
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.methodDefSingleArg"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterMethodDefSingleArg([NotNull] MovieScriptDefaultGrammarParser.MethodDefSingleArgContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.methodDefSingleArg"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitMethodDefSingleArg([NotNull] MovieScriptDefaultGrammarParser.MethodDefSingleArgContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.methodDefTupleArg"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterMethodDefTupleArg([NotNull] MovieScriptDefaultGrammarParser.MethodDefTupleArgContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.methodDefTupleArg"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitMethodDefTupleArg([NotNull] MovieScriptDefaultGrammarParser.MethodDefTupleArgContext context) { }
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.loop"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
