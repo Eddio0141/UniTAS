@@ -16,5 +16,5 @@ public abstract class EngineExternalMethodBase
         ReturnsValue = returnsValue;
     }
 
-    public abstract List<ValueType> Invoke(IEnumerable<ValueType> args);
+    public abstract List<ValueType> Invoke(IEnumerable<IEnumerable<ValueType>> args);
 }

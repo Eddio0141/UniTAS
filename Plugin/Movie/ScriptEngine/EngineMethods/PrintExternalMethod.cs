@@ -9,7 +9,7 @@ public class PrintExternalMethod : EngineExternalMethodBase
     {
     }
 
-    public override List<ValueType> Invoke(IEnumerable<ValueType> args)
+    public override List<ValueType> Invoke(IEnumerable<IEnumerable<ValueType>> args)
     {
         // TODO add more way of logging
         foreach (var arg in args)
