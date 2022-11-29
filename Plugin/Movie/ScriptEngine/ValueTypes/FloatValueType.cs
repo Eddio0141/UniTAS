@@ -1,4 +1,6 @@
-﻿namespace UniTASPlugin.Movie.ScriptEngine.ValueTypes;
+﻿using System.Collections.Generic;
+
+namespace UniTASPlugin.Movie.ScriptEngine.ValueTypes;
 
 public class FloatValueType : ValueType
 {
