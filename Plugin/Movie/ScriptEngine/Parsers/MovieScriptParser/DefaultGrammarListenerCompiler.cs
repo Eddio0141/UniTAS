@@ -1101,7 +1101,11 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         if (_tupleExprDepth == 1)
         {
             // we allow top level if top level is null
-            _tupleExprTopLevelStore ??= AllocateTempRegister();
+            if (_tupleExprTopLevelStore == null)
+            {
+                _tupleExprTopLevelStore = AllocateTempRegister();
+                AddOpCode(new ClearTupleOpCode(_tupleExprTopLevelStore.Value));
+            }
 
             AddOpCode(new PushTupleOpCode(_tupleExprTopLevelStore.Value, resultRegister));
             DeallocateTempRegister(resultRegister);
@@ -1114,10 +1118,13 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         if (_tupleExprInnerStore == null)
         {
             _tupleExprInnerStore = resultRegister;
+            AddOpCode(new ClearTupleOpCode(resultRegister));
         }
-        else
+
+        AddOpCode(new PushTupleOpCode(_tupleExprInnerStore.Value, resultRegister));
+
+        if (_tupleExprInnerStore != null)
         {
-            AddOpCode(new PushTupleOpCode(_tupleExprInnerStore.Value, resultRegister));
             DeallocateTempRegister(resultRegister);
         }
     }
