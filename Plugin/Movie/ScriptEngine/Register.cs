@@ -6,7 +6,6 @@ namespace UniTASPlugin.Movie.ScriptEngine;
 public class Register
 {
     private ValueType _innerValue;
-    private List<ValueType> _tupleValues;
 
     public ValueType InnerValue
     {
@@ -18,15 +17,7 @@ public class Register
         }
     }
 
-    public bool IsTuple { get; private set; }
+    public bool IsTuple { get; set; }
 
-    public List<ValueType> TupleValues
-    {
-        get => _tupleValues;
-        set
-        {
-            _tupleValues = value;
-            IsTuple = true;
-        }
-    }
+    public List<ValueType> TupleValues { get; set; }
 }

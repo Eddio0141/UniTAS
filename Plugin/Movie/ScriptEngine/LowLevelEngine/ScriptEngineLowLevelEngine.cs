@@ -20,18 +20,23 @@ namespace UniTASPlugin.Movie.ScriptEngine.ValueTypes;
 public partial class ScriptEngineLowLevelEngine
 {
     private readonly Register[] _registers;
+    private readonly Stack<Register>[] _registerStack;
+    private readonly Stack<List<ValueType>> _argStack = new();
 
     private readonly OpCodeBase[] _mainMethod;
-    private readonly List<VariableInfo> _mainVars = new();
     private readonly List<ScriptMethodModel> _methods;
     private readonly List<EngineExternalMethodBase> _externMethods;
 
+    // current method info
     private int _pc;
     private int _methodIndex = -1;
+    private Stack<List<VariableInfo>> _vars = new();
 
+    // basically global vars
+    private Stack<List<VariableInfo>> _mainVars = new();
+
+    // storage for "paused" methods
     private readonly Stack<MethodInfo> _methodStack = new();
-
-    private readonly Stack<List<ValueType>> _argStack = new();
 
     public bool FinishedExecuting { get; private set; }
 
@@ -42,12 +47,32 @@ public partial class ScriptEngineLowLevelEngine
         for (var i = 0; i < registerCount; i++)
         {
             _registers[i] = new();
+            _registerStack[i] = new();
         }
 
         _mainMethod = script.MainMethod.OpCodes;
         _methods = script.Methods.ToList();
-
         _externMethods = getDefinedMethods.GetExternMethods().ToList();
+    }
+
+    private List<ValueType> GetVariable(string name)
+    {
+        // vars defined in main can be found from anywhere
+        // vars defined in method is stored in anywhere in that method
+        // vars in scopes are pushed on a stack, popped later on scope exit
+        var mainVar = _mainVars.FirstOrDefault().FirstOrDefault(x => x.Name == name);
+        if (mainVar != null)
+        {
+            return mainVar.Value;
+        }
+
+        var currentVar = _vars.FirstOrDefault().FirstOrDefault(x => x.Name == name);
+        if (currentVar != null)
+        {
+            return currentVar.Value;
+        }
+
+        throw new UsingUndefinedVariableException(name);
     }
 
     private void ValidatePcOffset()
@@ -63,8 +88,17 @@ public partial class ScriptEngineLowLevelEngine
         }
 
         // if this is method, exit to outer method
-        _methodStack.Pop();
-        _pc = _methodStack.Peek().Pc;
+        var method = _methodStack.Pop();
+        _pc = method.Pc;
+        _methodIndex = method.MethodIndex;
+        if (_methodIndex < 0)
+        {
+            _mainVars = method.Vars;
+        }
+        else
+        {
+            _vars = method.Vars;
+        }
     }
 
     private struct LeftRightResultValues<ValueT>
@@ -552,9 +586,10 @@ public partial class ScriptEngineLowLevelEngine
                     var foundDefinedMethod = _methods.FindIndex(m => m.Name == method);
                     if (foundDefinedMethod > -1)
                     {
-                        _methodStack.Push(new MethodInfo(_pc, _methodIndex));
+                        _methodStack.Push(new MethodInfo(_pc, _methodIndex, _vars));
                         _pc = 0;
                         _methodIndex = foundDefinedMethod;
+                        _vars.Clear();
                         opCodes = _methodStack.Count == 0
                             ? _mainMethod
                             : _methods[_methodStack.Peek().MethodIndex].OpCodes;
@@ -572,6 +607,7 @@ public partial class ScriptEngineLowLevelEngine
                             break;
                         case > 1:
                             resultRegister.TupleValues = resultValue;
+                            resultRegister.IsTuple = true;
                             break;
                     }
 
@@ -589,6 +625,7 @@ public partial class ScriptEngineLowLevelEngine
                     else
                     {
                         register.TupleValues = arg;
+                        register.IsTuple = true;
                     }
 
                     break;
@@ -601,7 +638,7 @@ public partial class ScriptEngineLowLevelEngine
                         : new List<ValueType> { value.InnerValue });
                     break;
                 }
-                case ReturnOpCode returnOpCode:
+                case ReturnOpCode:
                 {
                     if (_methodStack.Count == 0)
                     {
@@ -610,9 +647,20 @@ public partial class ScriptEngineLowLevelEngine
                     }
 
                     // return from method
-                    _methodStack.Pop();
-                    _pc = _methodStack.Peek().Pc;
-                    opCodes = _methodStack.Count == 0 ? _mainMethod : _methods[_methodStack.Peek().MethodIndex].OpCodes;
+                    var method = _methodStack.Pop();
+                    _pc = method.Pc;
+                    _methodIndex = method.MethodIndex;
+                    if (_methodIndex < 0)
+                    {
+                        opCodes = _mainMethod;
+                        _mainVars = method.Vars;
+                    }
+                    else
+                    {
+                        opCodes = _methods[_methodIndex].OpCodes;
+                        _vars = method.Vars;
+                    }
+
                     break;
                 }
                 case ConstToRegisterOpCode constToRegisterOpCode:
@@ -628,37 +676,109 @@ public partial class ScriptEngineLowLevelEngine
                 case VarToRegisterOpCode varToRegisterOpCode:
                 {
                     var register = _registers[(int)varToRegisterOpCode.Register];
-                    var registerValue = register.IsTuple
-                        ? register.TupleValues
-                        : new List<ValueType>
-                            { register.InnerValue };
                     // get vars
-                    var vars = _methodIndex < 0 ? _mainVars : _methodStack.Peek().Vars;
-                    if (vars.TryGetValue(varToRegisterOpCode.Name, out var value))
+                    var var = GetVariable(varToRegisterOpCode.Name);
+                    if (var.Count == 1)
                     {
-                        value = registerValue;
+                        register.InnerValue = var.First();
                     }
                     else
                     {
-                        vars.Add(varToRegisterOpCode.Name, registerValue);
+                        register.TupleValues = var;
+                        register.IsTuple = true;
                     }
 
                     break;
                 }
-                case EnterScopeOpCode enterScopeOpCode:
+                case EnterScopeOpCode:
+                {
+                    if (_methodIndex < 0)
+                    {
+                        _mainVars.Push(new());
+                    }
+                    else
+                    {
+                        _vars.Push(new());
+                    }
+
                     break;
-                case ExitScopeOpCode exitScopeOpCode:
+                }
+                case ExitScopeOpCode:
+                {
+                    if (_methodIndex < 0)
+                    {
+                        _mainVars.Pop();
+                    }
+                    else
+                    {
+                        _vars.Pop();
+                    }
+
                     break;
+                }
                 case SetVariableOpCode setVariableOpCode:
+                {
+                    var foundVar = _methodIndex < 0
+                        ? _mainVars.FirstOrDefault().FirstOrDefault(x => x.Name == setVariableOpCode.Name)
+                        : _vars.FirstOrDefault().FirstOrDefault(x => x.Name == setVariableOpCode.Name);
+                    var register = _registers[(int)setVariableOpCode.Register];
+                    var registerValue = register.IsTuple
+                        ? register.TupleValues
+                        : new List<ValueType> { register.InnerValue };
+                    if (foundVar == null)
+                    {
+                        // new var
+                        if (_methodIndex < 0)
+                        {
+                            _mainVars.Peek().Add(new VariableInfo(setVariableOpCode.Name, registerValue));
+                        }
+                        else
+                        {
+                            _vars.Peek().Add(new VariableInfo(setVariableOpCode.Name, registerValue));
+                        }
+
+                        break;
+                    }
+
+                    // update var
+                    foundVar.Value = registerValue;
+
                     break;
+                }
                 case PopStackOpCode popStackOpCode:
+                {
+                    var poppedRegister = _registerStack[(int)popStackOpCode.Register].Pop();
+                    _registers[(int)popStackOpCode.Register] = poppedRegister;
                     break;
+                }
                 case PushStackOpCode pushStackOpCode:
+                {
+                    var register = _registers[(int)pushStackOpCode.Register];
+                    _registerStack[(int)pushStackOpCode.Register].Push(register);
                     break;
+                }
                 case PopTupleOpCode popTupleOpCode:
+                {
+                    var source = _registers[(int)popTupleOpCode.Source];
+                    var poppedValue = source.TupleValues.Last();
+                    source.TupleValues.RemoveAt(source.TupleValues.Count - 1);
+                    _registers[(int)popTupleOpCode.Dest].InnerValue = poppedValue;
                     break;
+                }
                 case PushTupleOpCode pushTupleOpCode:
+                {
+                    var source = _registers[(int)pushTupleOpCode.Source];
+                    var dest = _registers[(int)pushTupleOpCode.Dest];
+                    dest.TupleValues.Add(source.InnerValue);
+                    dest.IsTuple = true;
+
                     break;
+                }
+                case ClearTupleOpCode clearTupleOpCode:
+                {
+                    _registers[(int)clearTupleOpCode.Register].TupleValues.Clear();
+                    break;
+                }
                 default:
                     throw new ArgumentOutOfRangeException(nameof(opCode));
             }
