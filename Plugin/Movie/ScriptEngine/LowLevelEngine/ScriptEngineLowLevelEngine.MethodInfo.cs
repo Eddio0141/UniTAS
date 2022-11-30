@@ -8,12 +8,13 @@ public partial class ScriptEngineLowLevelEngine
     {
         public int Pc { get; set; }
         public int MethodIndex { get; }
-        public List<VariableInfo> Vars { get; set; } = new();
+        public Stack<List<VariableInfo>> Vars { get; set; }
 
-        public MethodInfo(int pc, int methodIndex)
+        public MethodInfo(int pc, int methodIndex, Stack<List<VariableInfo>> vars)
         {
             Pc = pc;
             MethodIndex = methodIndex;
+            Vars = vars;
         }
     }
 }
