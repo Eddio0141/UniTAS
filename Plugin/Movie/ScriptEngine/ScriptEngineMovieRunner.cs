@@ -6,7 +6,7 @@ using UniTASPlugin.Movie.ScriptEngine.ValueTypes;
 
 namespace UniTASPlugin.Movie.ScriptEngine;
 
-public partial class ScriptEngineMovieRunner : IMovieRunner
+public class ScriptEngineMovieRunner : IMovieRunner
 {
     public bool MovieEnd { get; private set; }
     public bool IsRunning => !MovieEnd;
