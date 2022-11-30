@@ -616,6 +616,7 @@ public partial class ScriptEngineLowLevelEngine
                 }
                 case PopArgOpCode popArgOpCode:
                 {
+                    _pc++;
                     var arg = _argStack.Pop();
                     var register = _registers[(int)popArgOpCode.Register];
                     if (arg.Count == 1)
@@ -632,6 +633,7 @@ public partial class ScriptEngineLowLevelEngine
                 }
                 case PushArgOpCode pushArgOpCode:
                 {
+                    _pc++;
                     var value = _registers[(int)pushArgOpCode.RegisterType];
                     _argStack.Push(value.IsTuple
                         ? new List<ValueType>(value.TupleValues)
@@ -665,16 +667,19 @@ public partial class ScriptEngineLowLevelEngine
                 }
                 case ConstToRegisterOpCode constToRegisterOpCode:
                 {
+                    _pc++;
                     _registers[(int)constToRegisterOpCode.Register].InnerValue = constToRegisterOpCode.Value;
                     break;
                 }
                 case MoveOpCode moveOpCode:
                 {
+                    _pc++;
                     _registers[(int)moveOpCode.Dest].InnerValue = _registers[(int)moveOpCode.Register].InnerValue;
                     break;
                 }
                 case VarToRegisterOpCode varToRegisterOpCode:
                 {
+                    _pc++;
                     var register = _registers[(int)varToRegisterOpCode.Register];
                     // get vars
                     var var = GetVariable(varToRegisterOpCode.Name);
@@ -692,6 +697,7 @@ public partial class ScriptEngineLowLevelEngine
                 }
                 case EnterScopeOpCode:
                 {
+                    _pc++;
                     if (_methodIndex < 0)
                     {
                         _mainVars.Push(new());
@@ -705,6 +711,7 @@ public partial class ScriptEngineLowLevelEngine
                 }
                 case ExitScopeOpCode:
                 {
+                    _pc++;
                     if (_methodIndex < 0)
                     {
                         _mainVars.Pop();
@@ -718,6 +725,7 @@ public partial class ScriptEngineLowLevelEngine
                 }
                 case SetVariableOpCode setVariableOpCode:
                 {
+                    _pc++;
                     var foundVar = _methodIndex < 0
                         ? _mainVars.FirstOrDefault().FirstOrDefault(x => x.Name == setVariableOpCode.Name)
                         : _vars.FirstOrDefault().FirstOrDefault(x => x.Name == setVariableOpCode.Name);
@@ -747,18 +755,21 @@ public partial class ScriptEngineLowLevelEngine
                 }
                 case PopStackOpCode popStackOpCode:
                 {
+                    _pc++;
                     var poppedRegister = _registerStack[(int)popStackOpCode.Register].Pop();
                     _registers[(int)popStackOpCode.Register] = poppedRegister;
                     break;
                 }
                 case PushStackOpCode pushStackOpCode:
                 {
+                    _pc++;
                     var register = _registers[(int)pushStackOpCode.Register];
                     _registerStack[(int)pushStackOpCode.Register].Push(register);
                     break;
                 }
                 case PopTupleOpCode popTupleOpCode:
                 {
+                    _pc++;
                     var source = _registers[(int)popTupleOpCode.Source];
                     var poppedValue = source.TupleValues.Last();
                     source.TupleValues.RemoveAt(source.TupleValues.Count - 1);
@@ -767,6 +778,7 @@ public partial class ScriptEngineLowLevelEngine
                 }
                 case PushTupleOpCode pushTupleOpCode:
                 {
+                    _pc++;
                     var source = _registers[(int)pushTupleOpCode.Source];
                     var dest = _registers[(int)pushTupleOpCode.Dest];
                     dest.TupleValues.Add(source.InnerValue);
@@ -776,6 +788,7 @@ public partial class ScriptEngineLowLevelEngine
                 }
                 case ClearTupleOpCode clearTupleOpCode:
                 {
+                    _pc++;
                     _registers[(int)clearTupleOpCode.Register].TupleValues.Clear();
                     break;
                 }
