@@ -417,6 +417,7 @@ $(value7, value8) = method()");
         {
             // $value = (50, "test", -1.0)
             new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(50)),
+            new ClearTupleOpCode(RegisterType.Temp1),
             new PushTupleOpCode(RegisterType.Temp1, RegisterType.Temp0),
             new ConstToRegisterOpCode(RegisterType.Temp1, new StringValueType("test")),
             new PushTupleOpCode(RegisterType.Temp0, RegisterType.Temp1),
@@ -438,6 +439,7 @@ $(value7, value8) = method()");
             new SetVariableOpCode(RegisterType.Temp1, "value5"),
             // $(_, value6) = (10, 10)
             new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(10)),
+            new ClearTupleOpCode(RegisterType.Temp1),
             new PushTupleOpCode(RegisterType.Temp1, RegisterType.Temp0),
             new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(10)),
             new PushTupleOpCode(RegisterType.Temp0, RegisterType.Temp1),
@@ -478,6 +480,7 @@ $value3 = (10, /*""thing"",,*/ ""thing2"")");
             new ConstToRegisterOpCode(RegisterType.Temp0, new StringValueType("\"this is another thing")),
             new SetVariableOpCode(RegisterType.Temp0, "value2"),
             new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(10)),
+            new ClearTupleOpCode(RegisterType.Temp1),
             new PushTupleOpCode(RegisterType.Temp1, RegisterType.Temp0),
             new ConstToRegisterOpCode(RegisterType.Temp0, new StringValueType("thing2")),
             new PushTupleOpCode(RegisterType.Temp1, RegisterType.Temp0),
