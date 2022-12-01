@@ -1,6 +1,7 @@
 using System.Collections.Generic;
+using UniTASPlugin.Movie.ScriptEngine.ValueTypes;
 
-namespace UniTASPlugin.Movie.ScriptEngine.ValueTypes;
+namespace UniTASPlugin.Movie.ScriptEngine.LowLevelEngine;
 
 public partial class ScriptEngineLowLevelEngine
 {
