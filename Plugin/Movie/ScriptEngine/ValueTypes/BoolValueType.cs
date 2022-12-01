@@ -15,4 +15,9 @@ public class BoolValueType : ValueType
     {
         return Value.ToString();
     }
+
+    public override object Clone()
+    {
+        return new BoolValueType(Value);
+    }
 }

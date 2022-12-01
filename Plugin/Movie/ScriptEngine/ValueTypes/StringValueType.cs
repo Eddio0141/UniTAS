@@ -15,4 +15,9 @@ public class StringValueType : ValueType
     {
         return Value;
     }
+
+    public override object Clone()
+    {
+        return new StringValueType(Value);
+    }
 }
