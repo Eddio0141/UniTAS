@@ -15,4 +15,9 @@ public class FloatValueType : ValueType
     {
         return Value.ToString();
     }
+
+    public override object Clone()
+    {
+        return new FloatValueType(Value);
+    }
 }

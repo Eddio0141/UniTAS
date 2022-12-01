@@ -15,4 +15,9 @@ public class IntValueType : ValueType
     {
         return Value.ToString();
     }
+
+    public override object Clone()
+    {
+        return new IntValueType(Value);
+    }
 }
