@@ -14,8 +14,10 @@ using UniTASPlugin.Movie.ScriptEngine.OpCodes.RegisterSet;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Scope;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.StackOp;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Tuple;
+using UniTASPlugin.Movie.ScriptEngine.ValueTypes;
+using ValueType = UniTASPlugin.Movie.ScriptEngine.ValueTypes.ValueType;
 
-namespace UniTASPlugin.Movie.ScriptEngine.ValueTypes;
+namespace UniTASPlugin.Movie.ScriptEngine.LowLevelEngine;
 
 public partial class ScriptEngineLowLevelEngine
 {
@@ -40,10 +42,11 @@ public partial class ScriptEngineLowLevelEngine
 
     public bool FinishedExecuting { get; private set; }
 
-    public ScriptEngineLowLevelEngine(ScriptModel script, IGetDefinedMethods getDefinedMethods)
+    public ScriptEngineLowLevelEngine(ScriptModel script, IEnumerable<EngineExternalMethodBase> methods)
     {
         var registerCount = Enum.GetNames(typeof(RegisterType)).Length;
         _registers = new Register[registerCount];
+        _registerStack = new Stack<Register>[registerCount];
         for (var i = 0; i < registerCount; i++)
         {
             _registers[i] = new();
@@ -52,7 +55,8 @@ public partial class ScriptEngineLowLevelEngine
 
         _mainMethod = script.MainMethod.OpCodes;
         _methods = script.Methods.ToList();
-        _externMethods = getDefinedMethods.GetExternMethods().ToList();
+        _externMethods = methods.ToList();
+        _mainVars.Push(new());
     }
 
     private List<ValueType> GetVariable(string name)
@@ -60,16 +64,25 @@ public partial class ScriptEngineLowLevelEngine
         // vars defined in main can be found from anywhere
         // vars defined in method is stored in anywhere in that method
         // vars in scopes are pushed on a stack, popped later on scope exit
-        var mainVar = _mainVars.FirstOrDefault().FirstOrDefault(x => x.Name == name);
-        if (mainVar != null)
+
+
+        VariableInfo foundVar = null;
+
+        if (_methodIndex < 0)
         {
-            return mainVar.Value;
+            foreach (var foundVarInStack in _mainVars
+                         .Select(varStack => varStack.FirstOrDefault(x => x.Name == name))
+                         .Where(foundVarInStack => foundVarInStack != null))
+            {
+                return foundVarInStack.Value;
+            }
         }
 
-        var currentVar = _vars.FirstOrDefault().FirstOrDefault(x => x.Name == name);
-        if (currentVar != null)
+        foreach (var foundVarInStack in _vars
+                     .Select(varStack => varStack.FirstOrDefault(x => x.Name == name))
+                     .Where(foundVarInStack => foundVarInStack != null))
         {
-            return currentVar.Value;
+            return foundVarInStack.Value;
         }
 
         throw new UsingUndefinedVariableException(name);
@@ -81,7 +94,7 @@ public partial class ScriptEngineLowLevelEngine
         if (_pc < opCodes.Length) return;
 
         // if this is main, movie end
-        if (_methodStack.Count == 0)
+        if (_methodIndex < 0)
         {
             FinishedExecuting = true;
             return;
@@ -726,9 +739,29 @@ public partial class ScriptEngineLowLevelEngine
                 case SetVariableOpCode setVariableOpCode:
                 {
                     _pc++;
-                    var foundVar = _methodIndex < 0
-                        ? _mainVars.FirstOrDefault().FirstOrDefault(x => x.Name == setVariableOpCode.Name)
-                        : _vars.FirstOrDefault().FirstOrDefault(x => x.Name == setVariableOpCode.Name);
+                    VariableInfo foundVar = null;
+
+                    if (_methodIndex < 0)
+                    {
+                        foreach (var foundVarInStack in _mainVars
+                                     .Select(varStack => varStack.FirstOrDefault(x => x.Name == setVariableOpCode.Name))
+                                     .Where(foundVarInStack => foundVarInStack != null))
+                        {
+                            foundVar = foundVarInStack;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        foreach (var foundVarInStack in _vars
+                                     .Select(varStack => varStack.FirstOrDefault(x => x.Name == setVariableOpCode.Name))
+                                     .Where(foundVarInStack => foundVarInStack != null))
+                        {
+                            foundVar = foundVarInStack;
+                            break;
+                        }
+                    }
+
                     var register = _registers[(int)setVariableOpCode.Register];
                     var registerValue = register.IsTuple
                         ? register.TupleValues
@@ -753,6 +786,7 @@ public partial class ScriptEngineLowLevelEngine
 
                     break;
                 }
+
                 case PopStackOpCode popStackOpCode:
                 {
                     _pc++;
@@ -764,7 +798,7 @@ public partial class ScriptEngineLowLevelEngine
                 {
                     _pc++;
                     var register = _registers[(int)pushStackOpCode.Register];
-                    _registerStack[(int)pushStackOpCode.Register].Push(register);
+                    _registerStack[(int)pushStackOpCode.Register].Push((Register)register.Clone());
                     break;
                 }
                 case PopTupleOpCode popTupleOpCode:
@@ -797,6 +831,10 @@ public partial class ScriptEngineLowLevelEngine
             }
 
             ValidatePcOffset();
+            if (FinishedExecuting)
+            {
+                return;
+            }
         }
     }
 }
