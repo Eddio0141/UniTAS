@@ -28,7 +28,10 @@ public class DefaultMovieScriptParserUnitTests
         var commonTokenStream = new CommonTokenStream(speakLexer);
         var speakParser = new MovieScriptDefaultGrammarParser(commonTokenStream);
         var program = speakParser.script();
-        var listener = new DefaultGrammarListenerCompiler(new EngineExternalMethods());
+        var listener = new DefaultGrammarListenerCompiler(new EngineExternalMethodBase[]
+        {
+            new PrintExternalMethod()
+        });
         ParseTreeWalker.Default.Walk(listener, program);
         var methods = listener.Compile().ToList();
         var mainMethod = methods.First(x => x.Name == null);
@@ -303,6 +306,43 @@ loop $value {
             new ExitScopeOpCode(),
             new PopStackOpCode(RegisterType.Temp0),
             new JumpOpCode(-9)
+        });
+
+        definedMethod.Should().BeEquivalentTo(actual);
+    }
+
+    [Fact]
+    public void Loop2()
+    {
+        var script = Setup(@"$loop_index = 0
+loop 10 {
+    print($loop_index)
+    $loop_index += 1
+}");
+
+        var definedMethod = script.MainMethod;
+
+        var actual = new ScriptMethodModel(null, new OpCodeBase[]
+        {
+            new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(0)),
+            new SetVariableOpCode(RegisterType.Temp0, "loop_index"),
+            new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(10)),
+            new JumpIfEqZero(16, RegisterType.Temp0),
+            new ConstToRegisterOpCode(RegisterType.Temp1, new IntValueType(1)),
+            new SubOpCode(RegisterType.Temp0, RegisterType.Temp0, RegisterType.Temp1),
+            new PushStackOpCode(RegisterType.Temp0),
+            new EnterScopeOpCode(),
+            new VarToRegisterOpCode(RegisterType.Temp0, "loop_index"),
+            new MoveOpCode(RegisterType.Temp0, RegisterType.Temp1),
+            new PushArgOpCode(RegisterType.Temp1),
+            new GotoMethodOpCode("print"),
+            new VarToRegisterOpCode(RegisterType.Temp0, "loop_index"),
+            new ConstToRegisterOpCode(RegisterType.Temp1, new IntValueType(1)),
+            new AddOpCode(RegisterType.Temp0, RegisterType.Temp0, RegisterType.Temp1),
+            new SetVariableOpCode(RegisterType.Temp0, "loop_index"),
+            new ExitScopeOpCode(),
+            new PopStackOpCode(RegisterType.Temp0),
+            new JumpOpCode(-15)
         });
 
         definedMethod.Should().BeEquivalentTo(actual);
