@@ -26,9 +26,9 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 {
     private readonly EngineExternalMethodBase[] _externalMethods;
 
-    public DefaultGrammarListenerCompiler(IGetDefinedMethods getDefinedMethods)
+    public DefaultGrammarListenerCompiler(IEnumerable<EngineExternalMethodBase> externMethods)
     {
-        _externalMethods = getDefinedMethods.GetExternMethods().ToArray();
+        _externalMethods = externMethods.ToArray();
     }
 
     private class MethodBuilder
@@ -1365,7 +1365,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
                 var startIndex = _startOfLoopOffsets.Pop().Key;
 
                 AddOpCode(new PopStackOpCode(loopCountStoreRegister));
-                AddOpCode(new JumpOpCode(startIndex - GetOpCodeInsertLocation()));
+                AddOpCode(new JumpOpCode(startIndex - GetOpCodeInsertLocation() - 1));
                 break;
             }
             // in case of ending if else statement
