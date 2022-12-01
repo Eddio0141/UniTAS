@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
 using UniTASPlugin.Movie.ScriptEngine.EngineMethods;
@@ -9,11 +10,11 @@ namespace UniTASPlugin.Movie.ScriptEngine.Parsers.MovieScriptParser;
 
 public class DefaultMovieScriptParser : IMovieScriptParser
 {
-    private readonly IGetDefinedMethods _getDefinedMethods;
+    private readonly EngineExternalMethodBase[] _getDefinedMethods;
 
-    public DefaultMovieScriptParser(IGetDefinedMethods getDefinedMethods)
+    public DefaultMovieScriptParser(IEnumerable<EngineExternalMethodBase> externMethods)
     {
-        _getDefinedMethods = getDefinedMethods;
+        _getDefinedMethods = externMethods.ToArray();
     }
 
     public IEnumerable<ScriptMethodModel> Parse(string input)
