@@ -1,5 +1,8 @@
-﻿namespace UniTASPlugin.Movie.ScriptEngine.ValueTypes;
+﻿using System;
 
-public abstract class ValueType
+namespace UniTASPlugin.Movie.ScriptEngine.ValueTypes;
+
+public abstract class ValueType : ICloneable
 {
+    public abstract object Clone();
 }
