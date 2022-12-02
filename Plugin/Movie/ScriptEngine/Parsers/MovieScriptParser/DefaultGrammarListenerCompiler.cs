@@ -795,7 +795,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         else if (context.@string() != null)
         {
             var value = context.@string().STRING().GetText();
-            AddExpression(new ConstExpression(new StringValueType(value)));
+            AddExpression(new ConstExpression(new StringValueType(value.Substring(1, value.Length - 2))));
         }
         else if (context.methodCall() != null)
         {
