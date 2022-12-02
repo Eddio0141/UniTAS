@@ -327,14 +327,13 @@ loop 10 {
             new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(0)),
             new SetVariableOpCode(RegisterType.Temp0, "loop_index"),
             new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(10)),
-            new JumpIfEqZero(16, RegisterType.Temp0),
+            new JumpIfEqZero(15, RegisterType.Temp0),
             new ConstToRegisterOpCode(RegisterType.Temp1, new IntValueType(1)),
             new SubOpCode(RegisterType.Temp0, RegisterType.Temp0, RegisterType.Temp1),
             new PushStackOpCode(RegisterType.Temp0),
             new EnterScopeOpCode(),
             new VarToRegisterOpCode(RegisterType.Temp0, "loop_index"),
-            new MoveOpCode(RegisterType.Temp0, RegisterType.Temp1),
-            new PushArgOpCode(RegisterType.Temp1),
+            new PushArgOpCode(RegisterType.Temp0),
             new GotoMethodOpCode("print"),
             new VarToRegisterOpCode(RegisterType.Temp0, "loop_index"),
             new ConstToRegisterOpCode(RegisterType.Temp1, new IntValueType(1)),
@@ -342,7 +341,7 @@ loop 10 {
             new SetVariableOpCode(RegisterType.Temp0, "loop_index"),
             new ExitScopeOpCode(),
             new PopStackOpCode(RegisterType.Temp0),
-            new JumpOpCode(-15)
+            new JumpOpCode(-14)
         });
 
         definedMethod.Should().BeEquivalentTo(actual);
