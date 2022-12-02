@@ -914,6 +914,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
     public override void EnterMethodCall(MethodCallContext context)
     {
+        _methodArgCount = 0;
         _buildingType = OpCodeBuildingType.BuildingMethodArgs;
     }
 
@@ -951,9 +952,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         // validate return existing
         var returnCount = builtMethodFound?.ReturnCount ??
                           (methodBuildersFound?.ReturnCount ??
-                           (externalMethodsFound != null
-                               ? (externalMethodsFound.ReturnsValue ? 1 : 0)
-                               : throw new NotImplementedException()));
+                           (externalMethodsFound?.ArgReturnCount ?? throw new NotImplementedException()));
         if (_methodCallReturnValueUsed && returnCount == 0)
         {
             throw new MethodHasNoReturnValueException(methodName);
@@ -979,7 +978,9 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
         if (_methodCallArgStore == null)
         {
-            _buildingType = OpCodeBuildingType.BuildingMainMethod;
+            _buildingType = _methodBuilders.Count > 0
+                ? OpCodeBuildingType.BuildingMethod
+                : OpCodeBuildingType.BuildingMainMethod;
             return;
         }
 
@@ -1008,12 +1009,14 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
         _methodCallArgStoreCount = 0;
         DeallocateTempRegister(tempMoveRegister);
-        _buildingType = OpCodeBuildingType.BuildingMainMethod;
+        _buildingType = _methodBuilders.Count > 0
+            ? OpCodeBuildingType.BuildingMethod
+            : OpCodeBuildingType.BuildingMainMethod;
+        ;
     }
 
     public override void EnterMethodCallArgs(MethodCallArgsContext context)
     {
-        _methodArgCount = 0;
         PushExpressionBuilderStack();
     }
 
