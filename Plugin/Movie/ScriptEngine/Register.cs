@@ -34,7 +34,7 @@ public class Register : ICloneable
                 register.TupleValues.Add((ValueType)tupleValue.Clone());
             }
         }
-        else
+        else if (InnerValue != null)
         {
             register.InnerValue = (ValueType)InnerValue.Clone();
         }
