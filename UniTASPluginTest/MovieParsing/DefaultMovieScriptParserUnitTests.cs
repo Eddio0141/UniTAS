@@ -348,6 +348,30 @@ loop 10 {
     }
 
     [Fact]
+    public void Loop3()
+    {
+        var script = Setup("loop 2 { ; }");
+
+        var definedMethod = script.MainMethod;
+
+        var actual = new ScriptMethodModel(null, new OpCodeBase[]
+        {
+            new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(2)),
+            new JumpIfEqZero(9, RegisterType.Temp0),
+            new ConstToRegisterOpCode(RegisterType.Temp1, new IntValueType(1)),
+            new SubOpCode(RegisterType.Temp0, RegisterType.Temp0, RegisterType.Temp1),
+            new PushStackOpCode(RegisterType.Temp0),
+            new EnterScopeOpCode(),
+            new FrameAdvanceOpCode(),
+            new ExitScopeOpCode(),
+            new PopStackOpCode(RegisterType.Temp0),
+            new JumpOpCode(-8)
+        });
+
+        definedMethod.Should().BeEquivalentTo(actual);
+    }
+
+    [Fact]
     public void LoopBreakContinue()
     {
         var script = Setup(@"fn method(){}
