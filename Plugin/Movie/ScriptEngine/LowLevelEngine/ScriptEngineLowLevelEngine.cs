@@ -65,9 +65,6 @@ public partial class ScriptEngineLowLevelEngine
         // vars defined in method is stored in anywhere in that method
         // vars in scopes are pushed on a stack, popped later on scope exit
 
-
-        VariableInfo foundVar = null;
-
         if (_methodIndex < 0)
         {
             foreach (var foundVarInStack in _mainVars
@@ -90,7 +87,7 @@ public partial class ScriptEngineLowLevelEngine
 
     private void ValidatePcOffset()
     {
-        var opCodes = _methodStack.Count == 0 ? _mainMethod : _methods[_methodStack.Peek().MethodIndex].OpCodes;
+        var opCodes = _methodIndex < 0 ? _mainMethod : _methods[_methodIndex].OpCodes;
         if (_pc < opCodes.Length) return;
 
         // if this is main, movie end
@@ -104,24 +101,20 @@ public partial class ScriptEngineLowLevelEngine
         var method = _methodStack.Pop();
         _pc = method.Pc;
         _methodIndex = method.MethodIndex;
-        if (_methodIndex < 0)
-        {
-            _mainVars = method.Vars;
-        }
-        else
+        if (_methodIndex >= 0)
         {
             _vars = method.Vars;
         }
     }
 
-    private struct LeftRightResultValues<ValueT>
-        where ValueT : ValueType
+    private struct LeftRightResultValues<TValue>
+        where TValue : ValueType
     {
-        public ValueT Left { get; }
-        public ValueT Right { get; }
+        public TValue Left { get; }
+        public TValue Right { get; }
         public Register Result { get; }
 
-        public LeftRightResultValues(ValueT left, ValueT right, Register result)
+        public LeftRightResultValues(TValue left, TValue right, Register result)
         {
             Left = left;
             Right = right;
@@ -224,7 +217,7 @@ public partial class ScriptEngineLowLevelEngine
 
     public void ExecUntilStop()
     {
-        var opCodes = _methodStack.Count == 0 ? _mainMethod : _methods[_methodStack.Peek().MethodIndex].OpCodes;
+        var opCodes = _methodIndex < 0 ? _mainMethod : _methods[_methodIndex].OpCodes;
 
         while (true)
         {
@@ -291,7 +284,7 @@ public partial class ScriptEngineLowLevelEngine
                     _pc++;
                     break;
                 }
-                case FrameAdvanceOpCode frameAdvanceOpCode:
+                case FrameAdvanceOpCode:
                 {
                     _pc++;
                     // we exit from loop
@@ -300,11 +293,13 @@ public partial class ScriptEngineLowLevelEngine
                 }
                 case JumpIfEqOpCode jumpIfEqOpCode:
                 {
-                    var values = ValidateTypeAndGetRegister(jumpIfEqOpCode.Left, jumpIfEqOpCode.Right, null);
+                    var values = ValidateTypeAndGetRegister(jumpIfEqOpCode.Left, jumpIfEqOpCode.Right);
                     var jump = values.Left switch
                     {
                         BoolValueType boolValueType => boolValueType.Value == ((BoolValueType)values.Right).Value,
-                        FloatValueType floatValueType => floatValueType.Value == ((FloatValueType)values.Right).Value,
+                        FloatValueType floatValueType => Math.Abs(floatValueType.Value -
+                                                                  ((FloatValueType)values.Right).Value) <
+                                                         0.0001f,
                         IntValueType intValueType => intValueType.Value == ((IntValueType)values.Right).Value,
                         StringValueType stringValueType => stringValueType.Value ==
                                                            ((StringValueType)values.Right).Value,
@@ -368,7 +363,8 @@ public partial class ScriptEngineLowLevelEngine
                     var res = values.Left switch
                     {
                         BoolValueType boolValueType => boolValueType.Value == ((BoolValueType)values.Right).Value,
-                        FloatValueType floatValueType => floatValueType.Value == ((FloatValueType)values.Right).Value,
+                        FloatValueType floatValueType => Math.Abs(floatValueType.Value -
+                                                                  ((FloatValueType)values.Right).Value) < 0.0001f,
                         IntValueType intValueType => intValueType.Value == ((IntValueType)values.Right).Value,
                         StringValueType stringValueType => stringValueType.Value ==
                                                            ((StringValueType)values.Right).Value,
@@ -464,7 +460,8 @@ public partial class ScriptEngineLowLevelEngine
                     var res = values.Left switch
                     {
                         BoolValueType boolValueType => boolValueType.Value != ((BoolValueType)values.Right).Value,
-                        FloatValueType floatValueType => floatValueType.Value != ((FloatValueType)values.Right).Value,
+                        FloatValueType floatValueType => Math.Abs(floatValueType.Value -
+                                                                  ((FloatValueType)values.Right).Value) > 0.0001f,
                         IntValueType intValueType => intValueType.Value != ((IntValueType)values.Right).Value,
                         StringValueType stringValueType => stringValueType.Value !=
                                                            ((StringValueType)values.Right).Value,
@@ -603,9 +600,8 @@ public partial class ScriptEngineLowLevelEngine
                         _pc = 0;
                         _methodIndex = foundDefinedMethod;
                         _vars.Clear();
-                        opCodes = _methodStack.Count == 0
-                            ? _mainMethod
-                            : _methods[_methodStack.Peek().MethodIndex].OpCodes;
+                        _vars.Push(new());
+                        opCodes = _methods[foundDefinedMethod].OpCodes;
                         break;
                     }
 
@@ -655,7 +651,7 @@ public partial class ScriptEngineLowLevelEngine
                 }
                 case ReturnOpCode:
                 {
-                    if (_methodStack.Count == 0)
+                    if (_methodIndex < 0)
                     {
                         FinishedExecuting = true;
                         return;
@@ -668,7 +664,6 @@ public partial class ScriptEngineLowLevelEngine
                     if (_methodIndex < 0)
                     {
                         opCodes = _mainMethod;
-                        _mainVars = method.Vars;
                     }
                     else
                     {
@@ -687,7 +682,18 @@ public partial class ScriptEngineLowLevelEngine
                 case MoveOpCode moveOpCode:
                 {
                     _pc++;
-                    _registers[(int)moveOpCode.Dest].InnerValue = _registers[(int)moveOpCode.Register].InnerValue;
+                    var source = _registers[(int)moveOpCode.Register];
+                    var dest = _registers[(int)moveOpCode.Dest];
+                    if (source.IsTuple)
+                    {
+                        dest.IsTuple = true;
+                        dest.TupleValues = new(source.TupleValues.Select(v => (ValueType)v.Clone()));
+                    }
+                    else
+                    {
+                        dest.InnerValue = (ValueType)source.InnerValue.Clone();
+                    }
+
                     break;
                 }
                 case VarToRegisterOpCode varToRegisterOpCode:
