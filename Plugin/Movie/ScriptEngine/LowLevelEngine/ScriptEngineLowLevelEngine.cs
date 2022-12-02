@@ -811,8 +811,8 @@ public partial class ScriptEngineLowLevelEngine
                 {
                     _pc++;
                     var source = _registers[(int)popTupleOpCode.Source];
-                    var poppedValue = source.TupleValues.Last();
-                    source.TupleValues.RemoveAt(source.TupleValues.Count - 1);
+                    var poppedValue = source.TupleValues.First();
+                    source.TupleValues.RemoveAt(0);
                     _registers[(int)popTupleOpCode.Dest].InnerValue = poppedValue;
                     break;
                 }
