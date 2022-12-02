@@ -1243,9 +1243,20 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
             case LoopContext:
             {
                 _loopScopeDepth.Pop();
+                var loopCountStoreRegister = _loopExprUsingRegisters.Pop();
+
+                AddOpCode(new ExitScopeOpCode());
+
+                // loop ending stuff
+                var startIndex = _startOfLoopOffsets.Pop().Key;
+
+                AddOpCode(new PopStackOpCode(loopCountStoreRegister));
+                AddOpCode(new JumpOpCode(startIndex - GetOpCodeInsertLocation() - 1));
+
+                // jumps from start of loop, and middle of loop (break)
+                
                 var endOfLoopExprOffset = _endOfLoopExprOffset.Pop();
                 var loopExprJumpIndex = endOfLoopExprOffset.Key;
-                var loopCountStoreRegister = _loopExprUsingRegisters.Pop();
 
                 InsertOpCodeAndUpdateOffset(loopExprJumpIndex,
                     new JumpIfEqZero(GetOpCodeInsertLocation() + 1, loopCountStoreRegister));
@@ -1258,13 +1269,6 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
                     InsertOpCodeAndUpdateOffset(index, new JumpOpCode(GetOpCodeInsertLocation() + 1));
                 }
 
-                AddOpCode(new ExitScopeOpCode());
-
-                // loop ending stuff
-                var startIndex = _startOfLoopOffsets.Pop().Key;
-
-                AddOpCode(new PopStackOpCode(loopCountStoreRegister));
-                AddOpCode(new JumpOpCode(startIndex - GetOpCodeInsertLocation() - 1));
                 break;
             }
             // in case of ending if else statement
