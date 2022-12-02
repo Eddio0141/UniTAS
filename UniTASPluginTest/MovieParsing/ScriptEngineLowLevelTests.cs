@@ -87,16 +87,65 @@ loop 10 {
     public void TestTuple()
     {
         var externGetArgs = new TestExternGetArgs();
-        var engine = Setup(
-@"$tuple = (59, ""hello world"", false, -10.3)
+        var engine = Setup(@"$tuple = (59, ""hello world"", false, -10.3)
 $(var, var2, var3, var4) = $tuple
 get_args($var) | get_args($var2) | get_args($var3) | get_args($var4)
 $(var, var2, var3, var4) = (""a"", ""b"", ""c"", ""d"")
-get_args($var, $var2, $var3, $var4)",
+get_args($var) | get_args($var2) | get_args($var3) | get_args($var4)",
             new EngineExternalMethodBase[] { externGetArgs });
 
         engine.ExecUntilStop();
         externGetArgs.Args.Should()
-            .BeEquivalentTo(new[] { "59", "hello world", "false", "-10.3", "a", "b", "c", "d" });
+            .BeEquivalentTo(new[] { "59", "hello world", "False", "-10.3", "a", "b", "c", "d" });
+    }
+
+    [Fact]
+    public void TestReturn()
+    {
+        var externGetArgs = new TestExternGetArgs();
+        var engine = Setup(
+            @"fn test_return() {
+    return (10, 20)
+}
+fn test_return2() {
+    return 99
+}
+fn test_return3(arg1, arg2) {
+    return ($arg1, $arg2)
+}
+
+$(var, var2) = test_return()
+get_args($var) | get_args($var2)
+
+$var = test_return2()
+get_args($var)
+
+$(_, var) = test_return()
+get_args($var)
+
+$(var, var2) = test_return3(-10, -20)
+get_args($var) | get_args($var2)
+get_args($var, $var2)
+",
+            new EngineExternalMethodBase[] { externGetArgs });
+
+        engine.ExecUntilStop();
+        externGetArgs.Args.Should()
+            .BeEquivalentTo(new[] { "10", "20", "99", "20", "-10", "-20", "-10", "-20" });
+    }
+
+    [Fact]
+    public void FrameAdvance()
+    {
+        var engine = Setup("loop 5 { ; } ;", new EngineExternalMethodBase[] { });
+
+        for (var i = 0; i < 5; i++)
+        {
+            engine.ExecUntilStop();
+        }
+
+        engine.FinishedExecuting.Should().BeFalse();
+        engine.ExecUntilStop();
+        engine.FinishedExecuting.Should().BeTrue();
     }
 }
