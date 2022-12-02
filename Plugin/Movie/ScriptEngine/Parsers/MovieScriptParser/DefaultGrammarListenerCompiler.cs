@@ -56,16 +56,10 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
     private OpCodeBuildingType _buildingType = OpCodeBuildingType.BuildingMainMethod;
 
-    // opCodes that will be ran in order to call the method
-    private readonly List<OpCodeBase> _methodCallArgsBuilder = new();
-
     private readonly Stack<List<ExpressionBase>> _expressionBuilders = new();
 
     private readonly bool[] _reservedTempRegister = new bool[RegisterType.Temp8 - RegisterType.Temp0 + 1];
     private readonly Stack<List<int>> _reservedRegisterStackTrack = new();
-
-    private RegisterType? _methodCallArgStore;
-    private int _methodCallArgStoreCount;
 
     private int _tupleExprDepth;
     private RegisterType? _tupleExprTopLevelStore;
@@ -110,7 +104,6 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         return _buildingType switch
         {
             OpCodeBuildingType.BuildingMethod => _methodBuilders.Peek().Name,
-            OpCodeBuildingType.BuildingMethodArgs => null,
             OpCodeBuildingType.BuildingMainMethod => null,
             _ => throw new ArgumentOutOfRangeException()
         };
@@ -446,20 +439,12 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         // main doesn't matter what gets returned from it
         if (_buildingType is OpCodeBuildingType.BuildingMainMethod) return;
 
-        int currentCount;
-        switch (_buildingType)
+        var currentCount = _buildingType switch
         {
-            case OpCodeBuildingType.BuildingMainMethod:
-                currentCount = _mainMethodReturnCount;
-                break;
-            case OpCodeBuildingType.BuildingMethod:
-                currentCount = _methodBuilders.Peek().ReturnCount;
-                break;
-            case OpCodeBuildingType.BuildingMethodArgs:
-                return;
-            default:
-                throw new ArgumentOutOfRangeException();
-        }
+            OpCodeBuildingType.BuildingMainMethod => _mainMethodReturnCount,
+            OpCodeBuildingType.BuildingMethod => _methodBuilders.Peek().ReturnCount,
+            _ => throw new ArgumentOutOfRangeException()
+        };
 
         // update count if not init
         var returnCount = hasExpr ? 1 : hasTupleExpr ? _tupleExprCount : 0;
@@ -473,7 +458,6 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
                 case OpCodeBuildingType.BuildingMethod:
                     _methodBuilders.Peek().ReturnCount = returnCount;
                     break;
-                case OpCodeBuildingType.BuildingMethodArgs:
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -498,27 +482,6 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
             case OpCodeBuildingType.BuildingMethod:
                 _methodBuilders.Peek().OpCodes.Add(opCode);
                 break;
-            case OpCodeBuildingType.BuildingMethodArgs:
-                _methodCallArgsBuilder.Add(opCode);
-                break;
-            default:
-                throw new ArgumentOutOfRangeException();
-        }
-    }
-
-    private void AddOpCodes(IEnumerable<OpCodeBase> opCodes)
-    {
-        switch (_buildingType)
-        {
-            case OpCodeBuildingType.BuildingMainMethod:
-                _mainBuilder.AddRange(opCodes);
-                break;
-            case OpCodeBuildingType.BuildingMethod:
-                _methodBuilders.Peek().OpCodes.AddRange(opCodes);
-                break;
-            case OpCodeBuildingType.BuildingMethodArgs:
-                _methodCallArgsBuilder.AddRange(opCodes);
-                break;
             default:
                 throw new ArgumentOutOfRangeException();
         }
@@ -526,17 +489,12 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
     private int GetOpCodeInsertLocation()
     {
-        switch (_buildingType)
+        return _buildingType switch
         {
-            case OpCodeBuildingType.BuildingMainMethod:
-                return _mainBuilder.Count;
-            case OpCodeBuildingType.BuildingMethod:
-                return _methodBuilders.Peek().OpCodes.Count;
-            case OpCodeBuildingType.BuildingMethodArgs:
-                return _methodCallArgsBuilder.Count;
-            default:
-                throw new ArgumentOutOfRangeException();
-        }
+            OpCodeBuildingType.BuildingMainMethod => _mainBuilder.Count,
+            OpCodeBuildingType.BuildingMethod => _methodBuilders.Peek().OpCodes.Count,
+            _ => throw new ArgumentOutOfRangeException()
+        };
     }
 
     private void InsertOpCodeAndUpdateOffset(int index, OpCodeBase opCode)
@@ -548,9 +506,6 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
                 break;
             case OpCodeBuildingType.BuildingMethod:
                 _methodBuilders.Peek().OpCodes.Insert(index, opCode);
-                break;
-            case OpCodeBuildingType.BuildingMethodArgs:
-                _methodCallArgsBuilder.Insert(index, opCode);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
@@ -915,13 +870,10 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
     public override void EnterMethodCall(MethodCallContext context)
     {
         _methodArgCount = 0;
-        _buildingType = OpCodeBuildingType.BuildingMethodArgs;
     }
 
     private void CallMethod(string methodName)
     {
-        AddOpCodes(_methodCallArgsBuilder);
-        _methodCallArgsBuilder.Clear();
         PushUsingTempRegisters();
 
         // validate method existence
@@ -975,77 +927,12 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
     {
         // store if return value is used
         _methodCallReturnValueUsed = context.Parent is not ActionWithSeparatorContext;
-
-        if (_methodCallArgStore == null)
-        {
-            _buildingType = _methodBuilders.Count > 0
-                ? OpCodeBuildingType.BuildingMethod
-                : OpCodeBuildingType.BuildingMainMethod;
-            return;
-        }
-
-        var tempMoveRegister = AllocateTempRegister();
-        var methodCallArgStore = _methodCallArgStore.Value;
-        for (var i = 0; i < _methodCallArgStoreCount; i++)
-        {
-            AddOpCode(new MoveOpCode(methodCallArgStore, tempMoveRegister));
-
-            // pop if not last index
-            if (i + 1 == _methodCallArgStoreCount) continue;
-            AddOpCode(new PopStackOpCode(methodCallArgStore));
-            AddOpCode(new PushStackOpCode(tempMoveRegister));
-        }
-
-        DeallocateTempRegister(methodCallArgStore);
-        _methodCallArgStore = null;
-        for (var i = 0; i < _methodCallArgStoreCount; i++)
-        {
-            AddOpCode(new PushArgOpCode(tempMoveRegister));
-
-            // if not last index
-            if (i + 1 == _methodCallArgStoreCount) continue;
-            AddOpCode(new PopStackOpCode(tempMoveRegister));
-        }
-
-        _methodCallArgStoreCount = 0;
-        DeallocateTempRegister(tempMoveRegister);
-        _buildingType = _methodBuilders.Count > 0
-            ? OpCodeBuildingType.BuildingMethod
-            : OpCodeBuildingType.BuildingMainMethod;
-        ;
     }
 
     public override void EnterMethodCallArgs(MethodCallArgsContext context)
     {
-        PushExpressionBuilderStack();
-    }
-
-    public override void ExitMethodCallArgs(MethodCallArgsContext context)
-    {
         _methodArgCount++;
-        var usingRegister = BuildExpressionOpCodes();
-        // HACK, we push the arguments to a temporary register where we unstack and push into arg stack later
-        if (_methodCallArgStore == null)
-        {
-            if (usingRegister == RegisterType.Ret)
-            {
-                _methodCallArgStore = AllocateTempRegister();
-                AddOpCode(new MoveOpCode(usingRegister, _methodCallArgStore.Value));
-            }
-            else
-            {
-                _methodCallArgStore = usingRegister;
-            }
-        }
-        else
-        {
-            var methodCallArgStore = _methodCallArgStore.Value;
-            AddOpCode(new PushStackOpCode(methodCallArgStore));
-            AddOpCode(new MoveOpCode(usingRegister, methodCallArgStore));
-            DeallocateTempRegister(usingRegister);
-        }
-
-        _methodCallArgStoreCount++;
+        PushExpressionBuilderStack();
     }
 
     public override void ExitFlipSign(FlipSignContext context)
@@ -1095,6 +982,15 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
     private void ExitExpression(RuleContext context)
     {
+        // if we building method args, push to arg stack
+        if (context.Parent is MethodCallArgsContext)
+        {
+            var argExpr = BuildExpressionOpCodes();
+            AddOpCode(new PushArgOpCode(argExpr));
+            DeallocateTempRegister(argExpr);
+            return;
+        }
+
         // only operate tuple stuff when this expression is evaluated
         if (context.Parent is not TupleExpressionContext) return;
 
