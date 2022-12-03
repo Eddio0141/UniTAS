@@ -35,7 +35,7 @@ public partial class ScriptEngineLowLevelEngine
     private Stack<List<VariableInfo>> _vars = new();
 
     // basically global vars
-    private Stack<List<VariableInfo>> _mainVars = new();
+    private readonly Stack<List<VariableInfo>> _mainVars = new();
 
     // storage for "paused" methods
     private readonly Stack<MethodInfo> _methodStack = new();
@@ -170,6 +170,7 @@ public partial class ScriptEngineLowLevelEngine
     }
 
     private LeftRightResultValues<T> ValidateTypeAndGetRegister<T>(RegisterType left, RegisterType? right,
+        // ReSharper disable once MethodOverloadWithOptionalParameter
         RegisterType? result = null)
         where T : ValueType
     {
