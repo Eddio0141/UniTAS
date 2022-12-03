@@ -10,9 +10,9 @@ namespace UniTASPlugin.Movie.ScriptEngine.Parsers.MovieScriptParser;
 
 public class DefaultMovieScriptParser : IMovieScriptParser
 {
-    private readonly EngineExternalMethodBase[] _getDefinedMethods;
+    private readonly EngineExternalMethod[] _getDefinedMethods;
 
-    public DefaultMovieScriptParser(IEnumerable<EngineExternalMethodBase> externMethods)
+    public DefaultMovieScriptParser(IEnumerable<EngineExternalMethod> externMethods)
     {
         _getDefinedMethods = externMethods.ToArray();
     }

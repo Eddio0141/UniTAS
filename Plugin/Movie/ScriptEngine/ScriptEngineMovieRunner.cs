@@ -3,9 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using UniTASPlugin.GameEnvironment.Interfaces;
 using UniTASPlugin.Movie.ScriptEngine.EngineMethods;
+using UniTASPlugin.Movie.ScriptEngine.EngineMethods.Exceptions;
 using UniTASPlugin.Movie.ScriptEngine.LowLevelEngine;
+using UniTASPlugin.Movie.ScriptEngine.MovieModels.Script;
+using UniTASPlugin.Movie.ScriptEngine.OpCodes;
+using UniTASPlugin.Movie.ScriptEngine.OpCodes.Method;
+using UniTASPlugin.Movie.ScriptEngine.OpCodes.RegisterSet;
 using UniTASPlugin.Movie.ScriptEngine.ParseInterfaces;
-using UniTASPlugin.Movie.ScriptEngine.ValueTypes;
+using ValueType = UniTASPlugin.Movie.ScriptEngine.ValueTypes.ValueType;
 
 namespace UniTASPlugin.Movie.ScriptEngine;
 
@@ -15,14 +20,17 @@ public class ScriptEngineMovieRunner : IMovieRunner
     public bool IsRunning => !MovieEnd;
 
     private readonly IMovieParser _parser;
-    private readonly EngineExternalMethodBase[] _getDefinedMethods;
+    private readonly EngineExternalMethod[] _externalMethods;
 
     private ScriptEngineLowLevelEngine _engine;
+    private ScriptModel _mainScript;
+    private readonly List<ScriptEngineLowLevelEngine> _concurrentRunnersPreUpdate = new();
+    private readonly List<ScriptEngineLowLevelEngine> _concurrentRunnersPostUpdate = new();
 
-    public ScriptEngineMovieRunner(IMovieParser parser, IEnumerable<EngineExternalMethodBase> externMethods)
+    public ScriptEngineMovieRunner(IMovieParser parser, IEnumerable<EngineExternalMethod> externMethods)
     {
         _parser = parser;
-        _getDefinedMethods = externMethods.ToArray();
+        _externalMethods = externMethods.ToArray();
     }
 
     public void RunFromPath<TEnv>(string path, ref TEnv env)
@@ -33,13 +41,14 @@ public class ScriptEngineMovieRunner : IMovieRunner
 
         // parse
         var movie = _parser.Parse(pathText);
+        _mainScript = movie.Script;
 
         // warnings
 
         // TODO apply environment
 
         // init engine
-        _engine = new ScriptEngineLowLevelEngine(movie.Script, _getDefinedMethods);
+        _engine = new ScriptEngineLowLevelEngine(_mainScript, _externalMethods);
 
         // set env
         env.InputState.ResetStates();
@@ -62,7 +71,9 @@ public class ScriptEngineMovieRunner : IMovieRunner
         if (!IsRunning)
             return;
 
+        ConcurrentRunnersPreUpdate();
         _engine.ExecUntilStop();
+        ConcurrentRunnersPostUpdate();
 
         // TODO input handle
         /*MouseState.Position = new Vector2(fb.Mouse.X, fb.Mouse.Y);
@@ -122,5 +133,89 @@ public class ScriptEngineMovieRunner : IMovieRunner
     public void AdvanceFrame()
     {
         throw new NotImplementedException();
+    }
+
+    public void RegisterConcurrentMethod(string methodName, bool preUpdate,
+        IEnumerable<IEnumerable<ValueType>> defaultArgs)
+    {
+        if (methodName == null) return;
+
+        var foundDefinedMethod = _mainScript.Methods.ToList().Find(x => x.Name == methodName);
+        var externFound = foundDefinedMethod == null ? _externalMethods.ToList().Find(x => x.Name == methodName) : null;
+
+        if (foundDefinedMethod == null && externFound == null)
+        {
+            return;
+        }
+
+        // check if arg count match
+        var argCount = foundDefinedMethod == null
+            ? externFound.ArgCount
+            : foundDefinedMethod.OpCodes.Count(x => x is PopArgOpCode);
+
+        var argTuples = defaultArgs as IEnumerable<ValueType>[] ?? defaultArgs.ToArray();
+        if (argCount != argTuples.Count())
+        {
+            throw new MethodArgCountNotMatching(argCount.ToString(), argTuples.Count().ToString());
+        }
+
+        ScriptModel runnerScript;
+        if (foundDefinedMethod != null)
+        {
+            var mainMethod = new List<OpCodeBase>();
+            foreach (var argTuple in argTuples)
+            {
+                foreach (var arg in argTuple)
+                {
+                    mainMethod.Add(new ConstToRegisterOpCode(RegisterType.Temp0, arg));
+                    mainMethod.Add(new PushArgOpCode(RegisterType.Temp0));
+                }
+            }
+
+            runnerScript = new ScriptModel(new(null, mainMethod),
+                new[] { foundDefinedMethod });
+        }
+        else
+        {
+            var wrapperMethod = new List<OpCodeBase>();
+            foreach (var argTuple in argTuples)
+            {
+                foreach (var arg in argTuple)
+                {
+                    wrapperMethod.Add(new ConstToRegisterOpCode(RegisterType.Temp0, arg));
+                    wrapperMethod.Add(new PushArgOpCode(RegisterType.Temp0));
+                }
+            }
+
+            wrapperMethod.Add(new GotoMethodOpCode(externFound.Name));
+            runnerScript = new ScriptModel(new ScriptMethodModel(null, wrapperMethod), new ScriptMethodModel[0]);
+        }
+
+        var engine = new ScriptEngineLowLevelEngine(runnerScript, _externalMethods);
+
+        if (preUpdate)
+        {
+            _concurrentRunnersPreUpdate.Add(engine);
+        }
+        else
+        {
+            _concurrentRunnersPostUpdate.Add(engine);
+        }
+    }
+
+    private void ConcurrentRunnersPreUpdate()
+    {
+        foreach (var runner in _concurrentRunnersPreUpdate)
+        {
+            runner.ExecUntilStop();
+        }
+    }
+
+    private void ConcurrentRunnersPostUpdate()
+    {
+        foreach (var runner in _concurrentRunnersPostUpdate)
+        {
+            runner.ExecUntilStop();
+        }
     }
 }

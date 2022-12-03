@@ -27,7 +27,7 @@ public partial class ScriptEngineLowLevelEngine
 
     private readonly OpCodeBase[] _mainMethod;
     private readonly List<ScriptMethodModel> _methods;
-    private readonly List<EngineExternalMethodBase> _externMethods;
+    private readonly List<EngineExternalMethod> _externMethods;
 
     // current method info
     private int _pc;
@@ -42,7 +42,7 @@ public partial class ScriptEngineLowLevelEngine
 
     public bool FinishedExecuting { get; private set; }
 
-    public ScriptEngineLowLevelEngine(ScriptModel script, IEnumerable<EngineExternalMethodBase> methods)
+    public ScriptEngineLowLevelEngine(ScriptModel script, IEnumerable<EngineExternalMethod> methods)
     {
         var registerCount = Enum.GetNames(typeof(RegisterType)).Length;
         _registers = new Register[registerCount];

@@ -3,7 +3,7 @@ using UniTASPlugin.Movie.ScriptEngine.ValueTypes;
 
 namespace UniTASPlugin.Movie.ScriptEngine.EngineMethods;
 
-public class PrintExternalMethod : EngineExternalMethodBase
+public class PrintExternalMethod : EngineExternalMethod
 {
     public PrintExternalMethod() : base("print", -1)
     {

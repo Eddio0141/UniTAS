@@ -5,14 +5,13 @@ using UniTASPlugin.Movie.ScriptEngine.EngineMethods;
 using UniTASPlugin.Movie.ScriptEngine.LowLevelEngine;
 using UniTASPlugin.Movie.ScriptEngine.MovieModels.Script;
 using UniTASPlugin.Movie.ScriptEngine.Parsers.MovieScriptParser;
-using UniTASPlugin.Movie.ScriptEngine.ValueTypes;
 using ValueType = UniTASPlugin.Movie.ScriptEngine.ValueTypes.ValueType;
 
 namespace UniTASPluginTest.MovieParsing;
 
 public class ScriptEngineLowLevelTests
 {
-    private class TestExternGetArgs : EngineExternalMethodBase
+    private class TestExternGetArgs : EngineExternalMethod
     {
         public List<string> Args { get; } = new();
 
@@ -34,24 +33,8 @@ public class ScriptEngineLowLevelTests
         }
     }
 
-    private class TestExternReturnValues : EngineExternalMethodBase
-    {
-        public TestExternReturnValues() : base("return_values", argReturnCount: 4)
-        {
-        }
-
-        public override List<ValueType> Invoke(IEnumerable<IEnumerable<ValueType>> args)
-        {
-            return new()
-            {
-                new IntValueType(2), new StringValueType("testing stuff!"), new BoolValueType(false),
-                new FloatValueType(-10.29f)
-            };
-        }
-    }
-
     private static ScriptEngineLowLevelEngine Setup(string input,
-        IEnumerable<EngineExternalMethodBase> getDefinedMethods)
+        IEnumerable<EngineExternalMethod> getDefinedMethods)
     {
         var externMethods = getDefinedMethods.ToList();
 
@@ -77,7 +60,7 @@ public class ScriptEngineLowLevelTests
 loop 10 {
     get_args($loop_index)
     $loop_index += 1
-}", new EngineExternalMethodBase[] { externMethod });
+}", new EngineExternalMethod[] { externMethod });
 
         engine.ExecUntilStop();
         externMethod.Args.Should().BeEquivalentTo("0", "1", "2", "3", "4", "5", "6", "7", "8", "9");
@@ -92,7 +75,7 @@ $(var, var2, var3, var4) = $tuple
 get_args($var) | get_args($var2) | get_args($var3) | get_args($var4)
 $(var, var2, var3, var4) = (""a"", ""b"", ""c"", ""d"")
 get_args($var) | get_args($var2) | get_args($var3) | get_args($var4)",
-            new EngineExternalMethodBase[] { externGetArgs });
+            new EngineExternalMethod[] { externGetArgs });
 
         engine.ExecUntilStop();
         externGetArgs.Args.Should()
@@ -127,7 +110,7 @@ $(var, var2) = test_return3(-10, -20)
 get_args($var) | get_args($var2)
 get_args($var, $var2)
 ",
-            new EngineExternalMethodBase[] { externGetArgs });
+            new EngineExternalMethod[] { externGetArgs });
 
         engine.ExecUntilStop();
         externGetArgs.Args.Should()
@@ -137,7 +120,7 @@ get_args($var, $var2)
     [Fact]
     public void FrameAdvance()
     {
-        var engine = Setup("loop 5 { ; } ;", new EngineExternalMethodBase[] { });
+        var engine = Setup("loop 5 { ; } ;", new EngineExternalMethod[] { });
 
         for (var i = 0; i < 5; i++)
         {

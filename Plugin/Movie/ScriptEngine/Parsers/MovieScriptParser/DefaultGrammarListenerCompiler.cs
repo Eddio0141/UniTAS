@@ -24,9 +24,9 @@ namespace UniTASPlugin.Movie.ScriptEngine.Parsers.MovieScriptParser;
 
 public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListener
 {
-    private readonly EngineExternalMethodBase[] _externalMethods;
+    private readonly EngineExternalMethod[] _externalMethods;
 
-    public DefaultGrammarListenerCompiler(IEnumerable<EngineExternalMethodBase> externMethods)
+    public DefaultGrammarListenerCompiler(IEnumerable<EngineExternalMethod> externMethods)
     {
         _externalMethods = externMethods.ToArray();
     }

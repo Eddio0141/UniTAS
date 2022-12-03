@@ -28,7 +28,7 @@ public class DefaultMovieScriptParserUnitTests
         var commonTokenStream = new CommonTokenStream(speakLexer);
         var speakParser = new MovieScriptDefaultGrammarParser(commonTokenStream);
         var program = speakParser.script();
-        var listener = new DefaultGrammarListenerCompiler(new EngineExternalMethodBase[]
+        var listener = new DefaultGrammarListenerCompiler(new EngineExternalMethod[]
         {
             new PrintExternalMethod()
         });
