@@ -1,6 +1,5 @@
 ﻿using Ninject.Modules;
 using UniTASPlugin.GameEnvironment;
-using UniTASPlugin.GameEnvironment.Interfaces;
 
 namespace UniTASPlugin.NInjectModules;
 
