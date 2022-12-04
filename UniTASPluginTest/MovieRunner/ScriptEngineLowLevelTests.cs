@@ -7,11 +7,11 @@ using UniTASPlugin.Movie.ScriptEngine.MovieModels.Script;
 using UniTASPlugin.Movie.ScriptEngine.Parsers.MovieScriptParser;
 using ValueType = UniTASPlugin.Movie.ScriptEngine.ValueTypes.ValueType;
 
-namespace UniTASPluginTest.MovieParsing;
+namespace UniTASPluginTest.MovieRunner;
 
 public class ScriptEngineLowLevelTests
 {
-    private class TestExternGetArgs : EngineExternalMethod
+    public class TestExternGetArgs : EngineExternalMethod
     {
         public List<string> Args { get; } = new();
 
@@ -130,27 +130,5 @@ get_args($var, $var2)
         engine.FinishedExecuting.Should().BeFalse();
         engine.ExecUntilStop();
         engine.FinishedExecuting.Should().BeTrue();
-    }
-
-    [Fact]
-    public void ConcurrentRunners()
-    {
-        var externGetArgs = new TestExternGetArgs();
-        
-        var engine = Setup(@"
-fn concurrent() {
-    get_args(1);
-    get_args(2)
-}
-fn concurrent2() {
-    get_args(3);
-    get_args(4);
-    get_args(5)
-}
-
-register(concurrent, true) | register(concurrent2, false)
-", new EngineExternalMethod[] { externGetArgs, new RegisterExternalMethod() });
-
-        engine.ExecUntilStop();
     }
 }
