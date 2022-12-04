@@ -1,10 +1,9 @@
 ﻿using UniTASPlugin.GameEnvironment.InnerState;
 using UniTASPlugin.GameEnvironment.InnerState.Input;
-using UniTASPlugin.GameEnvironment.Interfaces;
 
 namespace UniTASPlugin.GameEnvironment;
 
-public class VirtualEnvironment : IRunVirtualEnvironmentProperty, IInputStateProperty
+public class VirtualEnvironment
 {
     public VirtualEnvironment()
     {

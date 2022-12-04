@@ -158,7 +158,8 @@ internal static class Overlay
                     var rev = Plugin.Kernel.Get<PatchReverseInvoker>();
                     if (rev.Invoke(System.IO.File.Exists, filePath) && !movieRunner.IsRunning)
                     {
-                        movieRunner.RunFromPath(rev.Invoke(System.IO.Path.GetFileName, filePath), ref env);
+                        var text = rev.Invoke(System.IO.File.ReadAllText, filePath);
+                        kernel.Rebind<VirtualEnvironment>().ToConstant(movieRunner.RunFromInput(text, env));
                     }
                 }
 
@@ -183,7 +184,8 @@ internal static class Overlay
                                  "C:\\Program Files (x86)\\Steam\\steamapps\\common\\It Steals\\test.uti"))
                         path =
                             "\"C:\\\\Program Files (x86)\\\\Steam\\\\steamapps\\\\common\\\\It Steals\\\\test.uti\"";
-                    movieRunner.RunFromPath(path, ref env);
+                    var file = rev.Invoke(System.IO.File.ReadAllText, path);
+                    kernel.Rebind<VirtualEnvironment>().ToConstant(movieRunner.RunFromInput(file, env));
                 }
 
                 break;

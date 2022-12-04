@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using UniTASPlugin.GameEnvironment.Interfaces;
+using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.Movie.ScriptEngine.EngineMethods;
 using UniTASPlugin.Movie.ScriptEngine.EngineMethods.Exceptions;
 using UniTASPlugin.Movie.ScriptEngine.LowLevelEngine;
@@ -14,7 +14,7 @@ using ValueType = UniTASPlugin.Movie.ScriptEngine.ValueTypes.ValueType;
 
 namespace UniTASPlugin.Movie.ScriptEngine;
 
-public class ScriptEngineMovieRunner : IMovieRunner
+public class ScriptEngineMovieRunner : IMovieRunner, IRegisterConcurrentMethod
 {
     public bool MovieEnd { get; private set; }
     public bool IsRunning => !MovieEnd;
@@ -33,14 +33,10 @@ public class ScriptEngineMovieRunner : IMovieRunner
         _externalMethods = externMethods.ToArray();
     }
 
-    public void RunFromPath<TEnv>(string path, ref TEnv env)
-        where TEnv : IRunVirtualEnvironmentProperty, IInputStateProperty
+    public VirtualEnvironment RunFromInput(string input, VirtualEnvironment env)
     {
-        // TODO load text from path
-        var pathText = path;
-
         // parse
-        var movie = _parser.Parse(pathText);
+        var movie = _parser.Parse(input);
         _mainScript = movie.Script;
 
         // warnings
@@ -63,13 +59,10 @@ public class ScriptEngineMovieRunner : IMovieRunner
         throw new NotImplementedException();
     }
 
-    public void Update<TEnv>(ref TEnv env)
-        where TEnv :
-        IRunVirtualEnvironmentProperty,
-        IInputStateProperty
+    public VirtualEnvironment Update(VirtualEnvironment env)
     {
         if (!IsRunning)
-            return;
+            return env;
 
         ConcurrentRunnersPreUpdate();
         _engine.ExecUntilStop();
@@ -112,8 +105,8 @@ public class ScriptEngineMovieRunner : IMovieRunner
         if (_engine.FinishedExecuting)
         {
             MovieEnd = true;
-            AtMovieEnd(ref env);
-            return;
+            env = AtMovieEnd(env);
+            return env;
         }
 
         _engine.ExecUntilStop();
@@ -121,9 +114,7 @@ public class ScriptEngineMovieRunner : IMovieRunner
         throw new NotImplementedException();
     }
 
-    private void AtMovieEnd<TEnv>(ref TEnv env)
-        where TEnv :
-        IRunVirtualEnvironmentProperty
+    private VirtualEnvironment AtMovieEnd(VirtualEnvironment env)
     {
         env.RunVirtualEnvironment = false;
         // TODO set frameTime to 0
@@ -135,6 +126,7 @@ public class ScriptEngineMovieRunner : IMovieRunner
         throw new NotImplementedException();
     }
 
+    // TODO reset method too
     public void RegisterConcurrentMethod(string methodName, bool preUpdate,
         IEnumerable<IEnumerable<ValueType>> defaultArgs)
     {
@@ -196,6 +188,12 @@ public class ScriptEngineMovieRunner : IMovieRunner
         if (preUpdate)
         {
             _concurrentRunnersPreUpdate.Add(engine);
+            // actually run it since otherwise it will skip a frame
+            engine.ExecUntilStop();
+            if (engine.FinishedExecuting)
+            {
+                engine.Reset();
+            }
         }
         else
         {
@@ -208,6 +206,10 @@ public class ScriptEngineMovieRunner : IMovieRunner
         foreach (var runner in _concurrentRunnersPreUpdate)
         {
             runner.ExecUntilStop();
+            if (runner.FinishedExecuting)
+            {
+                runner.Reset();
+            }
         }
     }
 
@@ -216,6 +218,10 @@ public class ScriptEngineMovieRunner : IMovieRunner
         foreach (var runner in _concurrentRunnersPostUpdate)
         {
             runner.ExecUntilStop();
+            if (runner.FinishedExecuting)
+            {
+                runner.Reset();
+            }
         }
     }
 }

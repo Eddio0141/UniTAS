@@ -1,4 +1,4 @@
-﻿using UniTASPlugin.GameEnvironment.Interfaces;
+﻿using UniTASPlugin.GameEnvironment;
 
 namespace UniTASPlugin.Movie;
 
@@ -8,13 +8,7 @@ public interface IMovieRunner
 
     bool MovieEnd { get; }
 
-    void RunFromPath<TEnv>(string path, ref TEnv env)
-        where TEnv :
-        IRunVirtualEnvironmentProperty,
-        IInputStateProperty;
+    VirtualEnvironment RunFromInput(string input, VirtualEnvironment env);
 
-    void Update<TEnv>(ref TEnv env)
-        where TEnv :
-        IRunVirtualEnvironmentProperty,
-        IInputStateProperty;
+    VirtualEnvironment Update(VirtualEnvironment env);
 }
