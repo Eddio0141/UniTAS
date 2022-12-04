@@ -1,6 +1,7 @@
 using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
 using FluentAssertions;
+using UniTASPlugin.Movie.ScriptEngine;
 using UniTASPlugin.Movie.ScriptEngine.EngineMethods;
 using UniTASPlugin.Movie.ScriptEngine.LowLevelEngine;
 using UniTASPlugin.Movie.ScriptEngine.MovieModels.Script;
@@ -19,7 +20,7 @@ public class ScriptEngineLowLevelTests
         {
         }
 
-        public override List<ValueType> Invoke(IEnumerable<IEnumerable<ValueType>> args)
+        public override List<ValueType> Invoke(IEnumerable<IEnumerable<ValueType>> args, ScriptEngineMovieRunner runner)
         {
             foreach (var argTuple in args)
             {
@@ -62,7 +63,7 @@ loop 10 {
     $loop_index += 1
 }", new EngineExternalMethod[] { externMethod });
 
-        engine.ExecUntilStop();
+        engine.ExecUntilStop(null);
         externMethod.Args.Should().BeEquivalentTo("0", "1", "2", "3", "4", "5", "6", "7", "8", "9");
     }
 
@@ -77,7 +78,7 @@ $(var, var2, var3, var4) = (""a"", ""b"", ""c"", ""d"")
 get_args($var) | get_args($var2) | get_args($var3) | get_args($var4)",
             new EngineExternalMethod[] { externGetArgs });
 
-        engine.ExecUntilStop();
+        engine.ExecUntilStop(null);
         externGetArgs.Args.Should()
             .BeEquivalentTo(new[] { "59", "hello world", "False", "-10.3", "a", "b", "c", "d" });
     }
@@ -112,7 +113,7 @@ get_args($var, $var2)
 ",
             new EngineExternalMethod[] { externGetArgs });
 
-        engine.ExecUntilStop();
+        engine.ExecUntilStop(null);
         externGetArgs.Args.Should()
             .BeEquivalentTo(new[] { "10", "20", "99", "20", "-10", "-20", "-10", "-20" });
     }
@@ -124,11 +125,11 @@ get_args($var, $var2)
 
         for (var i = 0; i < 5; i++)
         {
-            engine.ExecUntilStop();
+            engine.ExecUntilStop(null);
         }
 
         engine.FinishedExecuting.Should().BeFalse();
-        engine.ExecUntilStop();
+        engine.ExecUntilStop(null);
         engine.FinishedExecuting.Should().BeTrue();
     }
 }
