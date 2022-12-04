@@ -14,7 +14,7 @@ using ValueType = UniTASPlugin.Movie.ScriptEngine.ValueTypes.ValueType;
 
 namespace UniTASPlugin.Movie.ScriptEngine;
 
-public class ScriptEngineMovieRunner : IMovieRunner, IRegisterConcurrentMethod
+public class ScriptEngineMovieRunner : IMovieRunner
 {
     public bool MovieEnd { get; private set; }
     public bool IsRunning => !MovieEnd;
@@ -54,8 +54,6 @@ public class ScriptEngineMovieRunner : IMovieRunner, IRegisterConcurrentMethod
 
         MovieEnd = false;
 
-        // TODO do we advance frame at the start?
-        _engine.ExecUntilStop();
         throw new NotImplementedException();
     }
 
@@ -65,7 +63,7 @@ public class ScriptEngineMovieRunner : IMovieRunner, IRegisterConcurrentMethod
             return env;
 
         ConcurrentRunnersPreUpdate();
-        _engine.ExecUntilStop();
+        _engine.ExecUntilStop(this);
         ConcurrentRunnersPostUpdate();
 
         // TODO input handle
@@ -108,8 +106,6 @@ public class ScriptEngineMovieRunner : IMovieRunner, IRegisterConcurrentMethod
             env = AtMovieEnd(env);
             return env;
         }
-
-        _engine.ExecUntilStop();
 
         throw new NotImplementedException();
     }
@@ -189,7 +185,7 @@ public class ScriptEngineMovieRunner : IMovieRunner, IRegisterConcurrentMethod
         {
             _concurrentRunnersPreUpdate.Add(engine);
             // actually run it since otherwise it will skip a frame
-            engine.ExecUntilStop();
+            engine.ExecUntilStop(this);
             if (engine.FinishedExecuting)
             {
                 engine.Reset();
@@ -205,7 +201,7 @@ public class ScriptEngineMovieRunner : IMovieRunner, IRegisterConcurrentMethod
     {
         foreach (var runner in _concurrentRunnersPreUpdate)
         {
-            runner.ExecUntilStop();
+            runner.ExecUntilStop(this);
             if (runner.FinishedExecuting)
             {
                 runner.Reset();
@@ -217,7 +213,7 @@ public class ScriptEngineMovieRunner : IMovieRunner, IRegisterConcurrentMethod
     {
         foreach (var runner in _concurrentRunnersPostUpdate)
         {
-            runner.ExecUntilStop();
+            runner.ExecUntilStop(this);
             if (runner.FinishedExecuting)
             {
                 runner.Reset();

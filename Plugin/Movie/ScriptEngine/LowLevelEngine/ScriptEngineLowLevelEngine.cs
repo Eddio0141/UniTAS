@@ -59,6 +59,25 @@ public partial class ScriptEngineLowLevelEngine
         _mainVars.Push(new());
     }
 
+    public void Reset()
+    {
+        var registerCount = Enum.GetNames(typeof(RegisterType)).Length;
+        for (var i = 0; i < registerCount; i++)
+        {
+            _registers[i] = new();
+            _registerStack[i] = new();
+        }
+
+        _argStack.Clear();
+        _pc = 0;
+        _methodIndex = -1;
+        _vars.Clear();
+        _mainVars.Clear();
+        _mainVars.Push(new());
+        _methodStack.Clear();
+        FinishedExecuting = false;
+    }
+
     private List<ValueType> GetVariable(string name)
     {
         // vars defined in main can be found from anywhere
@@ -216,7 +235,7 @@ public partial class ScriptEngineLowLevelEngine
         return new LeftRightResultValuesRaw(leftValue, rightValue, result == null ? null : _registers[(int)result]);
     }
 
-    public void ExecUntilStop()
+    public void ExecUntilStop(ScriptEngineMovieRunner runner)
     {
         var opCodes = _methodIndex < 0 ? _mainMethod : _methods[_methodIndex].OpCodes;
 
@@ -608,7 +627,8 @@ public partial class ScriptEngineLowLevelEngine
 
                     // call to extern method, requires just a call
                     var externMethod = _externMethods.Find(x => x.Name == method);
-                    var resultValue = externMethod.Invoke(_argStack.ToList().Select(x => (IEnumerable<ValueType>)x));
+                    var resultValue = externMethod.Invoke(_argStack.ToList().Select(x => (IEnumerable<ValueType>)x),
+                        runner);
                     var resultRegister = _registers[(int)RegisterType.Ret];
                     switch (resultValue.Count)
                     {

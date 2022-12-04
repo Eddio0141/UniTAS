@@ -9,7 +9,7 @@ public class PrintExternalMethod : EngineExternalMethod
     {
     }
 
-    public override List<ValueType> Invoke(IEnumerable<IEnumerable<ValueType>> args)
+    public override List<ValueType> Invoke(IEnumerable<IEnumerable<ValueType>> args, ScriptEngineMovieRunner runner)
     {
         // TODO add more way of logging
         foreach (var arg in args)
