@@ -1,3 +1,4 @@
+using FluentAssertions;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.Movie.ScriptEngine;
 using UniTASPlugin.Movie.ScriptEngine.EngineMethods;
@@ -24,7 +25,8 @@ public class MovieRunnerTests
     {
         var externGetArgs = new ScriptEngineLowLevelTests.TestExternGetArgs();
 
-        var runner = Setup(@"
+        var runner = Setup(new EngineExternalMethod[] { externGetArgs, new RegisterExternalMethod() });
+        var input = @"
 fn concurrent() {
     get_args(1);
     get_args(2)
@@ -36,8 +38,21 @@ fn concurrent2() {
 }
 
 register(concurrent, true) | register(concurrent2, false)
-", new EngineExternalMethod[] { externGetArgs, new RegisterExternalMethod(runner) });
+get_args(-1);
+get_args(-2);
+get_args(-3);
+get_args(-4)";
+        var fakeEnv = new VirtualEnvironment();
+        runner.RunFromInput(input, fakeEnv);
 
-        engine.ExecUntilStop();
+        runner.Update(fakeEnv);
+        runner.Update(fakeEnv);
+        runner.Update(fakeEnv);
+        runner.IsRunning.Should().BeTrue();
+        runner.Update(fakeEnv);
+        runner.IsRunning.Should().BeFalse();
+
+        externGetArgs.Args.Should()
+            .AllBeEquivalentTo(new[] { "1", "-1", "3", "2", "-2", "4", "1", "-3", "5", "2", "-4", "3" });
     }
 }
