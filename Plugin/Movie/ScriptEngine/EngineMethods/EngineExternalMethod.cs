@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UniTASPlugin.Movie.ScriptEngine.LowLevelEngine;
 using UniTASPlugin.Movie.ScriptEngine.ValueTypes;
 
 namespace UniTASPlugin.Movie.ScriptEngine.EngineMethods;
@@ -16,5 +17,5 @@ public abstract class EngineExternalMethod
         ArgReturnCount = argReturnCount;
     }
 
-    public abstract List<ValueType> Invoke(IEnumerable<IEnumerable<ValueType>> args);
+    public abstract List<ValueType> Invoke(IEnumerable<IEnumerable<ValueType>> args, ScriptEngineMovieRunner runner);
 }
