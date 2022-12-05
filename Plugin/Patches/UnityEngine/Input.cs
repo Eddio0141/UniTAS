@@ -5,6 +5,7 @@ using Ninject;
 using UniTASPlugin.GameEnvironment;
 using UnityEngine;
 using InputOrig = UnityEngine.Input;
+
 // ReSharper disable InconsistentNaming
 // ReSharper disable UnusedMember.Local
 // ReSharper disable UnusedParameter.Local
@@ -149,7 +150,7 @@ internal static class Input
                 return true;
             var env = Plugin.Kernel.Get<VirtualEnvironment>();
             if (!env.RunVirtualEnvironment) return true;
-            __result = env.InputState.KeyboardState.Keys.Contains((KeyCode)key);
+            __result = env.InputState.KeyboardState.Keys.Contains((int)((KeyCode)key));
             return false;
         }
     }
@@ -164,7 +165,7 @@ internal static class Input
             return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        private static bool Prefix(/*string name, ref bool __result*/)
+        private static bool Prefix( /*string name, ref bool __result*/)
         {
             if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
                 return true;
@@ -184,7 +185,7 @@ internal static class Input
             return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        private static bool Prefix(/*string name, ref bool __result*/)
+        private static bool Prefix( /*string name, ref bool __result*/)
         {
             if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
                 return true;
@@ -210,7 +211,7 @@ internal static class Input
                 return true;
             var env = Plugin.Kernel.Get<VirtualEnvironment>();
             if (!env.RunVirtualEnvironment) return true;
-            __result = env.InputState.KeyboardState.KeysUp.Contains((KeyCode)key);
+            __result = env.InputState.KeyboardState.KeysUp.Contains((int)((KeyCode)key));
             return false;
         }
     }
@@ -225,7 +226,7 @@ internal static class Input
             return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        private static bool Prefix(/*string name*/)
+        private static bool Prefix( /*string name*/)
         {
             if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
                 return true;
@@ -251,7 +252,7 @@ internal static class Input
                 return true;
             var env = Plugin.Kernel.Get<VirtualEnvironment>();
             if (!env.RunVirtualEnvironment) return true;
-            __result = env.InputState.KeyboardState.KeysDown.Contains((KeyCode)key);
+            __result = env.InputState.KeyboardState.KeysDown.Contains((int)((KeyCode)key));
             return false;
         }
     }
@@ -276,6 +277,7 @@ internal static class Input
             {
                 __result = value;
             }
+
             return false;
         }
     }
@@ -299,6 +301,7 @@ internal static class Input
                 // TODO whats diff between Raw and normal
                 __result = value;
             }
+
             return false;
         }
     }
@@ -488,7 +491,8 @@ internal static class Input
             var env = Plugin.Kernel.Get<VirtualEnvironment>();
             if (!env.RunVirtualEnvironment) return true;
             var inputState = env.InputState;
-            __result = inputState.KeyboardState.Keys.Count > 0 || inputState.MouseState.LeftClick || inputState.MouseState.RightClick || inputState.MouseState.MiddleClick;
+            __result = inputState.KeyboardState.Keys.Count > 0 || inputState.MouseState.LeftClick ||
+                       inputState.MouseState.RightClick || inputState.MouseState.MiddleClick;
             return false;
         }
     }
@@ -509,7 +513,8 @@ internal static class Input
             var env = Plugin.Kernel.Get<VirtualEnvironment>();
             if (!env.RunVirtualEnvironment) return true;
             var inputState = env.InputState;
-            __result = inputState.KeyboardState.KeysDown.Count > 0 || inputState.MouseState.LeftClickDown || inputState.MouseState.RightClickDown || inputState.MouseState.MiddleClickDown;
+            __result = inputState.KeyboardState.KeysDown.Count > 0 || inputState.MouseState.LeftClickDown ||
+                       inputState.MouseState.RightClickDown || inputState.MouseState.MiddleClickDown;
             return false;
         }
     }
@@ -549,7 +554,8 @@ internal static class Input
                 return true;
             var env = Plugin.Kernel.Get<VirtualEnvironment>();
             if (!env.RunVirtualEnvironment) return true;
-            __result = env.InputState.MouseState.Position;
+            var mouseState = env.InputState.MouseState;
+            __result = new(mouseState.XPos, mouseState.YPos);
             return false;
         }
     }
@@ -570,7 +576,8 @@ internal static class Input
                 return true;
             var env = Plugin.Kernel.Get<VirtualEnvironment>();
             if (!env.RunVirtualEnvironment) return true;
-            ret = env.InputState.MouseState.Position;
+            var mouseState = env.InputState.MouseState;
+            ret = new(mouseState.XPos, mouseState.YPos);
             return false;
         }
     }
@@ -592,7 +599,6 @@ internal static class Input
             // TODO
             __result = false;
             return false;
-
         }
     }
 
@@ -631,7 +637,6 @@ internal static class Input
             // TODO
             __result = false;
             return false;
-
         }
     }
 
@@ -672,7 +677,6 @@ internal static class Input
             // TODO
             __result = Vector3.zero;
             return false;
-
         }
     }
 
