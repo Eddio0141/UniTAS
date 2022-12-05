@@ -14,7 +14,8 @@ public class ScriptEngineMovieParser : IMovieParser
     private readonly IMoviePropertyParser _propertyParser;
     private readonly IMovieScriptParser _scriptParser;
 
-    public ScriptEngineMovieParser(IMovieSectionSplitter sectionSplitter, IMoviePropertyParser propertyParser, IMovieScriptParser scriptParser)
+    public ScriptEngineMovieParser(IMovieSectionSplitter sectionSplitter, IMoviePropertyParser propertyParser,
+        IMovieScriptParser scriptParser)
     {
         _sectionSplitter = sectionSplitter;
         _propertyParser = propertyParser;
@@ -24,7 +25,7 @@ public class ScriptEngineMovieParser : IMovieParser
     public MovieModel Parse(string input)
     {
         var splitSections = _sectionSplitter.Split(input).ToList();
-        switch (splitSections.Count())
+        switch (splitSections.Count)
         {
             case 0:
                 throw new MissingMoviePropertiesException();
@@ -53,6 +54,7 @@ public class ScriptEngineMovieParser : IMovieParser
                 definedMethods.Add(method);
             }
         }
+
         var script = new ScriptModel(mainMethod, definedMethods);
 
         return new MovieModel(properties, script);
