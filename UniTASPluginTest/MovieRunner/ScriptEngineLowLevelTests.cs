@@ -132,4 +132,29 @@ get_args($var, $var2)
         engine.ExecUntilStop(null);
         engine.FinishedExecuting.Should().BeTrue();
     }
+
+    [Fact]
+    public void TestArgs()
+    {
+        var externGetArgs = new TestExternGetArgs();
+        var engine = Setup(
+            @"
+fn test_args(arg, arg2) {
+    get_args($arg)
+    get_args($arg2)
+}
+$(value1, value2) = (10, 20)
+get_args($value1) | get_args($value2)
+get_args($value1, $value2)
+get_args(""hello world"", false)
+
+test_args(""hello world"", false)
+
+get_args((10, 20), ""third item"", (40, 50))",
+            new EngineExternalMethod[] { externGetArgs });
+
+        engine.ExecUntilStop(null);
+        externGetArgs.Args.Should()
+            .BeEquivalentTo("10", "20", "10", "20", "hello world", "False", "hello world", "False", "10", "20", "third item", "40", "50");
+    }
 }
