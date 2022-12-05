@@ -931,8 +931,11 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
     public override void EnterMethodCallArgs(MethodCallArgsContext context)
     {
+        if (context.expression() != null)
+        {
+            PushExpressionBuilderStack();
+        }
         _methodArgCount++;
-        PushExpressionBuilderStack();
     }
 
     public override void ExitFlipSign(FlipSignContext context)
@@ -978,6 +981,19 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
     public override void ExitParentheses(ParenthesesContext context)
     {
         ExitExpression(context);
+    }
+
+    public override void ExitMethodCallArgs(MethodCallArgsContext context)
+    {
+        if (context.methodCallArgs() != null || !context.children.Any(x => x is TupleExpressionContext)) return;
+
+        Debug.Assert(_tupleExprTopLevelStore != null, nameof(_tupleExprTopLevelStore) + " != null");
+        var tupleBuilderStore = _tupleExprTopLevelStore.Value;
+
+        AddOpCode(new PushArgOpCode(tupleBuilderStore));
+
+        DeallocateTempRegister(tupleBuilderStore);
+        _tupleExprTopLevelStore = null;
     }
 
     private void ExitExpression(RuleContext context)
@@ -1254,7 +1270,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
                 AddOpCode(new JumpOpCode(startIndex - GetOpCodeInsertLocation() - 1));
 
                 // jumps from start of loop, and middle of loop (break)
-                
+
                 var endOfLoopExprOffset = _endOfLoopExprOffset.Pop();
                 var loopExprJumpIndex = endOfLoopExprOffset.Key;
 
