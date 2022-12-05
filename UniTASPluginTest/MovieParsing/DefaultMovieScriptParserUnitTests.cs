@@ -669,4 +669,35 @@ $value5 = (string)$value");
         setup = () => Setup("break");
         setup.Should().Throw<UsingLoopActionOutsideOfLoopException>();
     }
+
+    [Fact]
+    public void Tuple()
+    {
+        var script = Setup(@"fn get_args(one, two, three) { }
+get_args((10, 20), ""third item"", (40, 50))");
+        var definedMethod = script.MainMethod;
+
+        var actual = new ScriptMethodModel(null, new OpCodeBase[]
+        {
+            // 10, 20
+            new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(10)),
+            new PushTupleOpCode(RegisterType.Temp1, RegisterType.Temp0),
+            new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(20)),
+            new PushTupleOpCode(RegisterType.Temp1, RegisterType.Temp0),
+            new PushArgOpCode(RegisterType.Temp1),
+            // third item
+            new ConstToRegisterOpCode(RegisterType.Temp0, new StringValueType("third item")),
+            new PushArgOpCode(RegisterType.Temp0),
+            // 40, 50
+            new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(40)),
+            new PushTupleOpCode(RegisterType.Temp1, RegisterType.Temp0),
+            new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(50)),
+            new PushTupleOpCode(RegisterType.Temp1, RegisterType.Temp0),
+            new PushArgOpCode(RegisterType.Temp1),
+            // goto
+            new GotoMethodOpCode("get_args")
+        });
+
+        definedMethod.Should().BeEquivalentTo(actual);
+    }
 }
