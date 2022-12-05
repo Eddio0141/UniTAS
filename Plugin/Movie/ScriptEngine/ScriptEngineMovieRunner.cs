@@ -50,11 +50,9 @@ public class ScriptEngineMovieRunner : IMovieRunner
         env.InputState.ResetStates();
         env.RunVirtualEnvironment = true;
         // TODO other stuff like save state load, reset, hide cursor, etc
-        // TODO handle empty movie
 
         MovieEnd = false;
-
-        throw new NotImplementedException();
+        return env;
     }
 
     public VirtualEnvironment Update(VirtualEnvironment env)
