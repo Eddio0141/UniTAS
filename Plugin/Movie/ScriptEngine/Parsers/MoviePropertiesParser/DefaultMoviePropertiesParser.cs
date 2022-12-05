@@ -13,7 +13,7 @@ public partial class DefaultMoviePropertiesParser : IMoviePropertyParser
     public PropertiesModel Parse(string input)
     {
         var lines = input.Split('\n');
-        var leftKeys = new List<KeyBase>()
+        var leftKeys = new List<KeyBase>
         {
             new OsKey(),
             new StartTimeKey(),
@@ -60,6 +60,9 @@ public partial class DefaultMoviePropertiesParser : IMoviePropertyParser
                 continue;
 
             var key = split[0].Trim();
+            if (key.Length == 0)
+                continue;
+
             var foundKeyIndex = leftKeys.FindIndex(x => x.Name == key);
 
             if (foundKeyIndex < 0)
@@ -71,6 +74,7 @@ public partial class DefaultMoviePropertiesParser : IMoviePropertyParser
                     throw new InvalidPropertyKeyException(key);
                     // this means the key is invalid
                 }
+
                 if (altKeyIndex < 0)
                 {
                     // this means the key is a dupe
@@ -81,6 +85,7 @@ public partial class DefaultMoviePropertiesParser : IMoviePropertyParser
                         throw new DuplicatePropertyKeyException(dupeKey.Name);
                     }
                 }
+
                 throw new DuplicatePropertyKeyException();
             }
 
@@ -95,6 +100,7 @@ public partial class DefaultMoviePropertiesParser : IMoviePropertyParser
                 var altKeyIndex = leftKeys.FindIndex(x => x.Name == altKey);
                 leftKeys.RemoveAt(altKeyIndex);
             }
+
             foreach (var conflictKey in foundKey.ConflictKeys)
             {
                 conflictKeys.Add(new KeyValuePair<string, string>(conflictKey, foundKey.Name));
@@ -150,11 +156,13 @@ public partial class DefaultMoviePropertiesParser : IMoviePropertyParser
             processedKeys.Add(foundKey);
         }
 
-        if (loadSaveStatePath != null) return new PropertiesModel(name, description, author, endSavePath, loadSaveStatePath);
+        if (loadSaveStatePath != null)
+            return new PropertiesModel(name, description, author, endSavePath, loadSaveStatePath);
         if (resolution == null)
             throw new UnknownMovieStartOptionException();
 
-        var windowState = new WindowState(resolution.Value.Key, resolution.Value.Value, isFullScreen.Value, isFocused.Value);
+        var windowState = new WindowState(resolution.Value.Key, resolution.Value.Value, isFullScreen.Value,
+            isFocused.Value);
         var startupProperties = new StartupPropertiesModel(os.Value, startTime.Value, frameTime.Value, windowState);
         return new PropertiesModel(name, description, author, endSavePath, startupProperties);
     }

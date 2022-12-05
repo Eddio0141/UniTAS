@@ -1,11 +1,10 @@
-﻿using UnityEngine;
-
-namespace UniTASPlugin.GameEnvironment.InnerState.Input;
+﻿namespace UniTASPlugin.GameEnvironment.InnerState.Input;
 
 public class MouseState : InputDeviceBase
 {
     public bool MousePresent { get; set; }
-    public Vector2 Position { get; set; }
+    public float XPos { get; set; }
+    public float YPos { get; set; }
     public bool LeftClick { get; set; }
     public bool LeftClickDown { get; private set; }
     public bool LeftClickUp { get; private set; }
@@ -43,7 +42,8 @@ public class MouseState : InputDeviceBase
 
     public sealed override void ResetState()
     {
-        Position = Vector2.zero;
+        XPos = 0f;
+        YPos = 0f;
 
         LeftClick = false;
         LeftClickDown = false;

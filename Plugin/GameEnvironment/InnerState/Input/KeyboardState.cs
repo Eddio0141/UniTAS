@@ -1,21 +1,20 @@
 ﻿using System.Collections.Generic;
-using UnityEngine;
 
 namespace UniTASPlugin.GameEnvironment.InnerState.Input;
 
 public class KeyboardState : InputDeviceBase
 {
-    public List<KeyCode> Keys { get; set; }
-    public List<KeyCode> KeysDown { get; }
-    public List<KeyCode> KeysUp { get; }
-    private readonly List<KeyCode> _keysPrev;
+    public List<int> Keys { get; set; }
+    public List<int> KeysDown { get; }
+    public List<int> KeysUp { get; }
+    private readonly List<int> _keysPrev;
 
     public KeyboardState()
     {
-        Keys = new List<KeyCode>();
-        KeysDown = new List<KeyCode>();
-        KeysUp = new List<KeyCode>();
-        _keysPrev = new List<KeyCode>();
+        Keys = new List<int>();
+        KeysDown = new List<int>();
+        KeysUp = new List<int>();
+        _keysPrev = new List<int>();
     }
 
     public override void Update(float deltaTime)
@@ -29,6 +28,7 @@ public class KeyboardState : InputDeviceBase
             KeysUp.Add(key);
             _ = _keysPrev.Remove(key);
         }
+
         foreach (var key in Keys)
         {
             if (_keysPrev.Contains(key)) continue;
