@@ -150,11 +150,12 @@ get_args(""hello world"", false)
 
 test_args(""hello world"", false)
 
-get_args((10, 20), ""third item"", (40, 50))",
+get_args((10, 20), ""third item"", (40, 50, 60))",
             new EngineExternalMethod[] { externGetArgs });
 
         engine.ExecUntilStop(null);
         externGetArgs.Args.Should()
-            .BeEquivalentTo("10", "20", "10", "20", "hello world", "False", "hello world", "False", "10", "20", "third item", "40", "50");
+            .ContainInOrder("10", "20", "10", "20", "hello world", "False", "hello world", "False", "10", "20",
+                "third item", "40", "50", "60");
     }
 }
