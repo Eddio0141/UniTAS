@@ -11,7 +11,7 @@ jobs:
         configuration: [Debug, Release]
     steps:
     - name: Checkout
-    - uses: actions/checkout@v2.5.0
+      uses: actions/checkout@v2.5.0
     - name: Setup .NET
       uses: actions/setup-dotnet@v3.0.3
       with:
@@ -19,11 +19,12 @@ jobs:
     - name: Test plugin
       working-directory: ./Plugin
       run: dotnet test --configuration ${{ matrix.configuration }}
-    - name: Build
-      - if: runner.os == 'Windows'
-        run: ./build.ps1 -Configuration ${{ matrix.configuration }}
-      - if: runner.os == 'Linux'
-        run: ./build.sh -Configuration ${{ matrix.configuration }}
+    - name: Build windows
+      if: runner.os == 'Windows'
+      run: ./build.ps1 ${{ matrix.configuration }}
+    - name: Build linux
+      if: runner.os == 'Linux'
+      run: ./build.sh ${{ matrix.configuration }}
     - name: Get built artifacts
       uses: actions/upload-artifact@v3.1.1
       with:
