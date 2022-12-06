@@ -11,6 +11,12 @@ A tool that lets you TAS unity games hopefully
 - Currently no convenient tool that installs this TAS tool to some unity game
 - Only tested in windows
 
+# How to build
+- Make sure you have .NET SDK 6.0 installed on your system
+- Run either `build.sh` for linux or `build.ps1` for windows
+  - Takes either `Debug` or `Release` as an argument for choosing building config
+- Check `build/Debug` or `build/Release` for built files
+
 # VR Support
 I haven't planned for VR support currently
 
