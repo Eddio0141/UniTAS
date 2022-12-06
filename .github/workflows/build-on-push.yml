@@ -28,5 +28,5 @@ jobs:
     - name: Get built artifacts
       uses: actions/upload-artifact@v3.1.1
       with:
-        name: ${{ matrix.configuration }}
+        name: ${{ matrix.os }}-${{ matrix.configuration }}
         path: ./build/${{ matrix.configuration }}/
