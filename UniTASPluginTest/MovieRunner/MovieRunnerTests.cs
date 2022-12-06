@@ -64,6 +64,6 @@ get_args(-4)";
         runner.IsRunning.Should().BeFalse();
 
         externGetArgs.Args.Should()
-            .AllBeEquivalentTo(new[] { "concurrent", "True", "1", "-1", "3", "2", "-2", "4", "1", "-3", "5", "2", "-4", "3" });
+            .ContainInOrder("concurrent", "True", "1", "-1", "3", "2", "-2", "4", "1", "-3", "5", "2", "-4", "3");
     }
 }
