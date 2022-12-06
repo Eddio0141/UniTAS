@@ -1,5 +1,7 @@
 # Get args for building debug or release
-$buildType = $args[0]
+param(
+    [string]$buildType = "debug"
+)
 
 # Dotnet build projects
 $dotnetProjects = @(
@@ -16,7 +18,7 @@ foreach ($project in $dotnetProjects) {
 $buildOutput = "build/$buildType"
 
 if (!(Test-Path $buildOutput)) {
-    New-Item -ItemType Directory -Path $buildOutput
+    New-Item -ItemType Directory -Path $buildOutput > $null
 }
 
 # Copy all dll files in build folder
@@ -26,5 +28,5 @@ $copyDirs = @(
 )
 
 foreach ($dir in $copyDirs) {
-    Copy-Item "$dir/*.dll" $buildOutput
+    Copy-Item "$dir/*.dll" $buildOutput -Force
 }
