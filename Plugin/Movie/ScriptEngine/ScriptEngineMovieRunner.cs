@@ -32,7 +32,7 @@ public class ScriptEngineMovieRunner : IMovieRunner
         _externalMethods = externMethods.ToArray();
     }
 
-    public VirtualEnvironment RunFromInput(string input, VirtualEnvironment env)
+    public void RunFromInput(string input, VirtualEnvironment env)
     {
         // parse
         var movie = _parser.Parse(input);
@@ -51,13 +51,12 @@ public class ScriptEngineMovieRunner : IMovieRunner
         // TODO other stuff like save state load, reset, hide cursor, etc
 
         MovieEnd = false;
-        return env;
     }
 
-    public VirtualEnvironment Update(VirtualEnvironment env)
+    public void Update(VirtualEnvironment env)
     {
         if (!IsRunning)
-            return env;
+            return;
 
         ConcurrentRunnersPreUpdate();
         _engine.ExecUntilStop(this);
@@ -100,18 +99,14 @@ public class ScriptEngineMovieRunner : IMovieRunner
         if (_engine.FinishedExecuting)
         {
             MovieEnd = true;
-            env = AtMovieEnd(env);
-            return env;
+            AtMovieEnd(env);
         }
-
-        return env;
     }
 
-    private VirtualEnvironment AtMovieEnd(VirtualEnvironment env)
+    private void AtMovieEnd(VirtualEnvironment env)
     {
         env.RunVirtualEnvironment = false;
         // TODO set frameTime to 0
-        return env;
     }
 
     // TODO reset method too

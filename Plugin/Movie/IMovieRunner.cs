@@ -6,7 +6,7 @@ public interface IMovieRunner
 {
     bool MovieEnd { get; }
 
-    VirtualEnvironment RunFromInput(string input, VirtualEnvironment env);
+    void RunFromInput(string input, VirtualEnvironment env);
 
-    VirtualEnvironment Update(VirtualEnvironment env);
+    void Update(VirtualEnvironment env);
 }
