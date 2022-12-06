@@ -2,12 +2,6 @@ name: build-on-push
 
 on: [push]
 
-# Build and test the project
-# Use windows and ubuntu to test on both platforms
-# Use the latest version of .NET 6
-# Build both Debug and Release configurations
-# Use build script for building
-
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -25,13 +19,11 @@ jobs:
     - name: Test plugin
       run: dotnet test --configuration ${{ matrix.configuration }}
       working-directory: ./Plugin
-    # Run the build.ps1 script on Windows and build.sh on Linux
     - name: Build
       - if: runner.os == 'Windows'
         run: ./build.ps1 -Configuration ${{ matrix.configuration }}
       - if: runner.os == 'Linux'
         run: ./build.sh -Configuration ${{ matrix.configuration }}
-    # Get built artifacts
     - name: Get built artifacts
       uses: actions/upload-artifact@v3.1.1
       with:
