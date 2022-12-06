@@ -3,10 +3,9 @@ A tool that lets you TAS unity games hopefully
 
 # !!!The tool doesn't bypass anti cheat or anything related, USE AT YOUR OWN RISK!!!
 
-# The code is being refactored: [branch](https://github.com/Eddio0141/UniTAS/tree/Eddio0141/issue62), [issue](https://github.com/Eddio0141/UniTAS/issues/62).
-
 # Stuff you might want to know
 - The tool is still in a very early stage
+- Parts of the code could be getting refactored for the sake of cleaning up trash I wrote, check issues for this
 - Only code that exists right now is in /Plugin and /Patcher, which you have to use along with [bepinex 5](https://docs.bepinex.dev/articles/user_guide/installation/index.html), place the built dll of /Plugin in the bepinex plugin folder, and /Patcher dll into /Patch
 - It only does very basic stuff, mainly that being running a TAS consistently
 - Currently no convenient tool that installs this TAS tool to some unity game
