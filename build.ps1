@@ -14,19 +14,21 @@ foreach ($project in $dotnetProjects) {
     dotnet msbuild $project -p:Configuration=$buildType
 }
 
-# Create output folder
+# Create output folders
 $buildOutput = "build/$buildType"
+$buildOutputPlugin = "$buildOutput/Plugin"
+$buildOutputPatcher = "$buildOutput/Patcher"
 
 if (!(Test-Path $buildOutput)) {
     New-Item -ItemType Directory -Path $buildOutput > $null
+    # Folder for plugin
+    New-Item -ItemType Directory -Path "$buildOutputPlugin" > $null
+    # Folder for patcher
+    New-Item -ItemType Directory -Path "$buildOutputPatcher" > $null
 }
 
-# Copy all dll files in build folder
-$copyDirs = @(
-    "Plugin/bin/$buildType/net35",
-    "Patcher/bin/$buildType"
-)
+# Copy plugin dlls
+Copy-Item "Plugin/bin/$buildType/net35/*.dll" "$buildOutputPlugin" -Force
 
-foreach ($dir in $copyDirs) {
-    Copy-Item "$dir/*.dll" $buildOutput -Force
-}
+# Copy patcher dlls
+Copy-Item "Patcher/bin/$buildType/*.dll" "$buildOutputPatcher" -Force

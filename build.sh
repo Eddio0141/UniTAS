@@ -21,21 +21,16 @@ do
     dotnet msbuild $PROJECT -p:Configuration=$BUILD_TYPE
 done
 
-echo "Copying dlls to output folder"
+echo "Copying dlls to output folders"
 
 OUTPUT_DIR="build/$BUILD_TYPE"
+OUTPUT_PLUGIN_DIR="$OUTPUT_DIR/Plugin"
+OUTPUT_PATCHER_DIR="$OUTPUT_DIR/Patcher"
 
-if [ ! -d "$OUTPUT_DIR" ]; then
-    mkdir -p $OUTPUT_DIR
-fi
-
-COPY_DIRS=(
-    "Plugin/bin/$BUILD_TYPE/net35",
-    "Patcher/bin/$BUILD_TYPE"
-)
+# Create output directories
+mkdir -p $OUTPUT_PLUGIN_DIR
+mkdir -p $OUTPUT_PATCHER_DIR
 
 # Only copy dlls
-for DIR in "${COPY_DIRS[@]}"
-do
-    cp $DIR/*.dll $OUTPUT_DIR
-done
+cp "Plugin/bin/$BUILD_TYPE/net35/*.dll" $OUTPUT_DIR_PLUGIN
+cp "Patcher/bin/$BUILD_TYPE/*.dll" $OUTPUT_DIR_PATCHER
