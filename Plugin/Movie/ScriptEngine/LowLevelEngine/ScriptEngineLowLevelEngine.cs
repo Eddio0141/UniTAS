@@ -104,26 +104,50 @@ public partial class ScriptEngineLowLevelEngine
         throw new UsingUndefinedVariableException(name);
     }
 
-    private void ValidatePcOffset()
+    /// <summary>
+    /// Validates _pc and _method_index
+    /// </summary>
+    /// <returns>If _pc was updated in here</returns>
+    private bool ValidatePcOffset()
     {
         var opCodes = _methodIndex < 0 ? _mainMethod : _methods[_methodIndex].OpCodes;
-        if (_pc < opCodes.Length) return;
+        if (_pc < opCodes.Length) return false;
 
         // if this is main, movie end
         if (_methodIndex < 0)
         {
             FinishedExecuting = true;
-            return;
+            return true;
         }
 
         // if this is method, exit to outer method
-        var method = _methodStack.Pop();
-        _pc = method.Pc;
-        _methodIndex = method.MethodIndex;
-        if (_methodIndex >= 0)
+        while (true)
         {
-            _vars = method.Vars;
+            var method = _methodStack.Pop();
+            _pc = method.Pc;
+            _methodIndex = method.MethodIndex;
+
+            // re-validate pc
+            opCodes = _methodIndex < 0 ? _mainMethod : _methods[_methodIndex].OpCodes;
+            if (_pc < opCodes.Length)
+            {
+                if (_methodIndex >= 0)
+                {
+                    _vars = method.Vars;
+                }
+
+                break;
+            }
+
+            // are we finished executing everything?
+            if (_methodIndex < 0)
+            {
+                FinishedExecuting = true;
+                return true;
+            }
         }
+
+        return true;
     }
 
     private struct LeftRightResultValues<TValue>
@@ -682,15 +706,6 @@ public partial class ScriptEngineLowLevelEngine
                     var method = _methodStack.Pop();
                     _pc = method.Pc;
                     _methodIndex = method.MethodIndex;
-                    if (_methodIndex < 0)
-                    {
-                        opCodes = _mainMethod;
-                    }
-                    else
-                    {
-                        opCodes = _methods[_methodIndex].OpCodes;
-                        _vars = method.Vars;
-                    }
 
                     break;
                 }
@@ -857,10 +872,21 @@ public partial class ScriptEngineLowLevelEngine
                     throw new ArgumentOutOfRangeException(nameof(opCode));
             }
 
-            ValidatePcOffset();
-            if (FinishedExecuting)
+            if (ValidatePcOffset())
             {
-                return;
+                if (FinishedExecuting)
+                {
+                    return;
+                }
+
+                if (_methodIndex < 0)
+                {
+                    opCodes = _mainMethod;
+                }
+                else
+                {
+                    opCodes = _methods[_methodIndex].OpCodes;
+                }
             }
         }
     }
