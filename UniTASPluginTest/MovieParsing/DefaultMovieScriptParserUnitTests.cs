@@ -1,6 +1,4 @@
-﻿using Antlr4.Runtime;
-using Antlr4.Runtime.Tree;
-using FluentAssertions;
+﻿using FluentAssertions;
 using UniTASPlugin.Movie.ScriptEngine;
 using UniTASPlugin.Movie.ScriptEngine.EngineMethods;
 using UniTASPlugin.Movie.ScriptEngine.Exceptions.ParseExceptions;
@@ -23,17 +21,8 @@ public class DefaultMovieScriptParserUnitTests
 {
     private static ScriptModel Setup(string input)
     {
-        var inputStream = new AntlrInputStream(input);
-        var speakLexer = new MovieScriptDefaultGrammarLexer(inputStream);
-        var commonTokenStream = new CommonTokenStream(speakLexer);
-        var speakParser = new MovieScriptDefaultGrammarParser(commonTokenStream);
-        var program = speakParser.script();
-        var listener = new DefaultGrammarListenerCompiler(new EngineExternalMethod[]
-        {
-            new PrintExternalMethod()
-        });
-        ParseTreeWalker.Default.Walk(listener, program);
-        var methods = listener.Compile().ToList();
+        var parser = new DefaultMovieScriptParser(new[] { new PrintExternalMethod() });
+        var methods = parser.Parse(input).ToList();
         var mainMethod = methods.First(x => x.Name == null);
         var definedMethods = methods.Where(x => x.Name != null);
         return new ScriptModel(mainMethod, definedMethods);
@@ -556,7 +545,7 @@ $value3 = (10, /*""thing"",,*/ ""thing2"")");
     [Fact]
     public void Strings()
     {
-        var script = Setup("$value = \"th\"i\"ngy\"");
+        var script = Setup("$value = \"th\\\"i\\\"ngy\"");
 
         var definedMethod = script.MainMethod;
 
