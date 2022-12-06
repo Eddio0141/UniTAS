@@ -17,8 +17,8 @@ jobs:
       with:
         dotnet-version: 6.0.x
     - name: Test plugin
-      run: dotnet test --configuration ${{ matrix.configuration }}
       working-directory: ./Plugin
+      run: dotnet test --configuration ${{ matrix.configuration }}
     - name: Build
       - if: runner.os == 'Windows'
         run: ./build.ps1 -Configuration ${{ matrix.configuration }}
