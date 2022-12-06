@@ -651,7 +651,8 @@ public partial class ScriptEngineLowLevelEngine
 
                     // call to extern method, requires just a call
                     var externMethod = _externMethods.Find(x => x.Name == method);
-                    var resultValue = externMethod.Invoke(_argStack.ToList().Select(x => (IEnumerable<ValueType>)x),
+                    var resultValue = externMethod.Invoke(
+                        _argStack.Reverse().ToList().Select(x => (IEnumerable<ValueType>)x),
                         runner);
                     var resultRegister = _registers[(int)RegisterType.Ret];
                     switch (resultValue.Count)
