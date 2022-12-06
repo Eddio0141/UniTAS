@@ -323,7 +323,7 @@ public partial class ScriptEngineLowLevelEngine
                         BasicValueType.Float => new FloatValueType(float.Parse(sourceString)),
                         BasicValueType.Int => new IntValueType(int.Parse(sourceString)),
                         BasicValueType.String => new StringValueType(sourceString),
-                        _ => throw new NotImplementedException()
+                        _ => throw new ArgumentOutOfRangeException()
                     };
                     _pc++;
                     break;
