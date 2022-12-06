@@ -159,7 +159,14 @@ internal static class Overlay
                     if (rev.Invoke(System.IO.File.Exists, filePath) && !movieRunner.IsRunning)
                     {
                         var text = rev.Invoke(System.IO.File.ReadAllText, filePath);
-                        kernel.Rebind<VirtualEnvironment>().ToConstant(movieRunner.RunFromInput(text, env));
+                        try
+                        {
+                            kernel.Rebind<VirtualEnvironment>().ToConstant(movieRunner.RunFromInput(text, env));
+                        }
+                        catch (System.Exception e)
+                        {
+                            Plugin.Log.LogError(e.Message);
+                        }
                     }
                 }
 
@@ -185,7 +192,14 @@ internal static class Overlay
                         path =
                             "\"C:\\\\Program Files (x86)\\\\Steam\\\\steamapps\\\\common\\\\It Steals\\\\test.uti\"";
                     var file = rev.Invoke(System.IO.File.ReadAllText, path);
-                    kernel.Rebind<VirtualEnvironment>().ToConstant(movieRunner.RunFromInput(file, env));
+                    try
+                    {
+                        kernel.Rebind<VirtualEnvironment>().ToConstant(movieRunner.RunFromInput(file, env));
+                    }
+                    catch (System.Exception e)
+                    {
+                        Plugin.Log.LogError(e.Message);
+                    }
                 }
 
                 break;
