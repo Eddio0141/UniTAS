@@ -16,9 +16,6 @@ jobs:
       uses: actions/setup-dotnet@v3.0.3
       with:
         dotnet-version: 6.0.x
-    - name: Test plugin
-      working-directory: ./Plugin
-      run: dotnet test --configuration ${{ matrix.configuration }}
     - name: Build
       - if: runner.os == 'Windows'
         run: ./build.ps1 -Configuration ${{ matrix.configuration }}
