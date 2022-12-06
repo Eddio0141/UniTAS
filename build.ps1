@@ -31,4 +31,4 @@ if (!(Test-Path $buildOutput)) {
 Copy-Item "Plugin/bin/$buildType/net35/*.dll" "$buildOutputPlugin" -Force
 
 # Copy patcher dlls
-Copy-Item "Patcher/bin/$buildType/*.dll" "$buildOutputPatcher" -Force
+Copy-Item "Patcher/bin/$buildType/net35/*.dll" "$buildOutputPatcher" -Force
