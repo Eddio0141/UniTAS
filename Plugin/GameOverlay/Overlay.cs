@@ -161,7 +161,7 @@ internal static class Overlay
                         var text = rev.Invoke(System.IO.File.ReadAllText, filePath);
                         try
                         {
-                            kernel.Rebind<VirtualEnvironment>().ToConstant(movieRunner.RunFromInput(text, env));
+                            movieRunner.RunFromInput(text, env);
                         }
                         catch (System.Exception e)
                         {
@@ -194,7 +194,7 @@ internal static class Overlay
                     var file = rev.Invoke(System.IO.File.ReadAllText, path);
                     try
                     {
-                        kernel.Rebind<VirtualEnvironment>().ToConstant(movieRunner.RunFromInput(file, env));
+                        movieRunner.RunFromInput(file, env);
                     }
                     catch (System.Exception e)
                     {
