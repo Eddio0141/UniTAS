@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.Movie.ScriptEngine.EngineMethods;
@@ -105,19 +104,14 @@ public class ScriptEngineMovieRunner : IMovieRunner
             return env;
         }
 
-        throw new NotImplementedException();
+        return env;
     }
 
     private VirtualEnvironment AtMovieEnd(VirtualEnvironment env)
     {
         env.RunVirtualEnvironment = false;
         // TODO set frameTime to 0
-        throw new NotImplementedException();
-    }
-
-    public void AdvanceFrame()
-    {
-        throw new NotImplementedException();
+        return env;
     }
 
     // TODO reset method too
@@ -158,6 +152,8 @@ public class ScriptEngineMovieRunner : IMovieRunner
                 }
             }
 
+            mainMethod.Add(new GotoMethodOpCode(foundDefinedMethod.Name));
+
             runnerScript = new ScriptModel(new(null, mainMethod),
                 new[] { foundDefinedMethod });
         }
@@ -172,6 +168,8 @@ public class ScriptEngineMovieRunner : IMovieRunner
                     wrapperMethod.Add(new PushArgOpCode(RegisterType.Temp0));
                 }
             }
+
+            wrapperMethod.Add(new GotoMethodOpCode(externFound.Name));
 
             wrapperMethod.Add(new GotoMethodOpCode(externFound.Name));
             runnerScript = new ScriptModel(new ScriptMethodModel(null, wrapperMethod), new ScriptMethodModel[0]);
