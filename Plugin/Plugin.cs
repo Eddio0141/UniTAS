@@ -96,7 +96,6 @@ public class Plugin : BaseUnityPlugin
         // TODO if possible, put this at the first call of Update
         FixedUpdateIndex++;
         GameCapture.Update();
-        throw new NotImplementedException();
     }
 
     private void FixedUpdate()

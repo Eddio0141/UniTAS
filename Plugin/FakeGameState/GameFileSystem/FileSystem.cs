@@ -23,7 +23,7 @@ public static partial class FileSystem
                     break;
                 }
             default:
-                throw new NotImplementedException();
+                throw new ArgumentOutOfRangeException();
         }
 
         // create path to where unity game is installed

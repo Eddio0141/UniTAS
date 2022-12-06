@@ -47,7 +47,7 @@ public static partial class FileSystem
                         break;
                     }
                 default:
-                    throw new NotImplementedException();
+                    throw new ArgumentOutOfRangeException();
             }
         }
 
@@ -79,7 +79,7 @@ public static partial class FileSystem
                         break;
                     }
                 default:
-                    throw new NotImplementedException();
+                    throw new ArgumentOutOfRangeException();
             }
         }
     }

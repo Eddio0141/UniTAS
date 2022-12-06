@@ -92,7 +92,7 @@ public static partial class FileSystem
                         break;
                     }
                 default:
-                    throw new NotImplementedException();
+                    throw new ArgumentOutOfRangeException();
             }
 
             if (mode != FileMode.Append)
@@ -484,7 +484,7 @@ public static partial class FileSystem
                         allEntries.AddRange(pathDir.GetDirsRecursive());
                     break;
                 default:
-                    throw new NotImplementedException($"SearchOption {searchOption} not implemented");
+                    throw new ArgumentOutOfRangeException();
             }
 
             var searchPatternRegex = Helper.WildCardToRegular(searchPattern);

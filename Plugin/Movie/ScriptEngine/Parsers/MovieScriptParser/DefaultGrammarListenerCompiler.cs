@@ -215,7 +215,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
                     i++;
                     break;
                 default:
-                    throw new NotImplementedException();
+                    throw new ArgumentOutOfRangeException();
             }
 
             if (op == null)
@@ -904,7 +904,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         // validate return existing
         var returnCount = builtMethodFound?.ReturnCount ??
                           (methodBuildersFound?.ReturnCount ??
-                           (externalMethodsFound?.ArgReturnCount ?? throw new NotImplementedException()));
+                           (externalMethodsFound?.ArgReturnCount ?? throw new ArgumentOutOfRangeException()));
         if (_methodCallReturnValueUsed && returnCount == 0)
         {
             throw new MethodHasNoReturnValueException(methodName);
@@ -1055,7 +1055,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         }
         else
         {
-            throw new NotImplementedException("Forgot to implement basic value type casting");
+            throw new ArgumentOutOfRangeException();
         }
 
         AddExpression(new CastExpression(castType));
@@ -1418,7 +1418,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         }
         else
         {
-            throw new NotImplementedException();
+            throw new ArgumentOutOfRangeException();
         }
 
         // separate
