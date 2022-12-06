@@ -3,14 +3,14 @@
 # Get args for building debug or release
 if [ -z "$1" ]; then
     echo "No build type specified, defaulting to debug"
-    BUILD_TYPE="debug"
+    BUILD_TYPE="Debug"
 else
     BUILD_TYPE=$1
 fi
 
 # Dotnet build projects paths
 PROJECTS=(
-    "Plugin",
+    "Plugin"
     "Patcher"
 )
 
@@ -18,7 +18,7 @@ PROJECTS=(
 for PROJECT in "${PROJECTS[@]}"
 do
     echo "Building $PROJECT"
-    dotnet msbuild $PROJECT -p:Configuration=$BUILD_TYPE
+    dotnet build "$PROJECT" -c $BUILD_TYPE
 done
 
 echo "Copying dlls to output folders"
@@ -27,10 +27,13 @@ OUTPUT_DIR="build/$BUILD_TYPE"
 OUTPUT_PLUGIN_DIR="$OUTPUT_DIR/Plugin"
 OUTPUT_PATCHER_DIR="$OUTPUT_DIR/Patcher"
 
+SOURCE_PLUGIN_DIR="Plugin/bin/$BUILD_TYPE/net35"
+SOURCE_PATCHER_DIR="Patcher/bin/$BUILD_TYPE/net35"
+
 # Create output directories
-mkdir -p $OUTPUT_PLUGIN_DIR
-mkdir -p $OUTPUT_PATCHER_DIR
+mkdir -p "$OUTPUT_PLUGIN_DIR"
+mkdir -p "$OUTPUT_PATCHER_DIR"
 
 # Only copy dlls
-cp "Plugin/bin/$BUILD_TYPE/net35/*.dll" $OUTPUT_DIR_PLUGIN
-cp "Patcher/bin/$BUILD_TYPE/*.dll" $OUTPUT_DIR_PATCHER
+cp "$SOURCE_PLUGIN_DIR"/*.dll "$OUTPUT_PLUGIN_DIR"
+cp "$SOURCE_PATCHER_DIR"/*.dll "$OUTPUT_PATCHER_DIR"
