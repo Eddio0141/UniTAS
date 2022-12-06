@@ -1,6 +1,6 @@
 # Get args for building debug or release
 param(
-    [string]$buildType = "debug"
+    [string]$buildType = "Debug"
 )
 
 # Dotnet build projects
@@ -11,7 +11,7 @@ $dotnetProjects = @(
 
 # Build each project
 foreach ($project in $dotnetProjects) {
-    dotnet msbuild $project -p:Configuration=$buildType
+    dotnet build "$project" -c "$buildType"
 }
 
 # Create output folders
@@ -31,4 +31,4 @@ if (!(Test-Path $buildOutput)) {
 Copy-Item "Plugin/bin/$buildType/net35/*.dll" "$buildOutputPlugin" -Force
 
 # Copy patcher dlls
-Copy-Item "Patcher/bin/$buildType/*.dll" "$buildOutputPatcher" -Force
+Copy-Item "Patcher/bin/$buildType/net35/*.dll" "$buildOutputPatcher" -Force
