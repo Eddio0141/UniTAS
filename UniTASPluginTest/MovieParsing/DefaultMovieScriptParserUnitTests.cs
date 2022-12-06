@@ -681,6 +681,7 @@ get_args((10, 20), ""third item"", (40, 50))");
         {
             // 10, 20
             new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(10)),
+            new ClearTupleOpCode(RegisterType.Temp1),
             new PushTupleOpCode(RegisterType.Temp1, RegisterType.Temp0),
             new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(20)),
             new PushTupleOpCode(RegisterType.Temp1, RegisterType.Temp0),
@@ -690,6 +691,7 @@ get_args((10, 20), ""third item"", (40, 50))");
             new PushArgOpCode(RegisterType.Temp0),
             // 40, 50
             new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(40)),
+            new ClearTupleOpCode(RegisterType.Temp1),
             new PushTupleOpCode(RegisterType.Temp1, RegisterType.Temp0),
             new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(50)),
             new PushTupleOpCode(RegisterType.Temp1, RegisterType.Temp0),
