@@ -62,25 +62,4 @@ class UnloadSceneAsync
 
 # Background tasks to be finished (move to issues)
 - Update() and FixedUpdate() calls in core needs to be done before Unity calls happen, hook to make it work.
-- Full input legacy system override
-  - [x] Mouse clicks
-  - [x] Axis & value control
-  - [ ] Button presses
-  - [ ] find out what the difference between GetAxis and GetAxisRaw is
-  - [ ] Mouse movement
-    - [x] get_mousePosition_Injected set `ret`
-    - Has some mouse movement, UI works at the very least
-  - [ ] Mouse scrolling
-  - [ ] UI control
-  - [ ] Keyboard presses
-    - KeyCode works but not overriding string variant of GetKey checks and not supported in keyboard system
-  - [ ] Touch screen
-  - [ ] GetAccelerationEvent call
-  - [ ] simulateMouseWithTouches call
-  - [ ] imeCompositionMode call
-  - [ ] compositionCursorPos call
-  - [ ] location getter purpose
-  - [ ] CheckDisabled purpose
-  - [ ] What to do with setters in module
-  - [ ] Other devices
 - Plugin needs to be made sure to not be destroyed or cloned
