@@ -707,6 +707,7 @@ public partial class ScriptEngineLowLevelEngine
                     var method = _methodStack.Pop();
                     _pc = method.Pc;
                     _methodIndex = method.MethodIndex;
+                    opCodes = _methodIndex < 0 ? _mainMethod : _methods[_methodIndex].OpCodes;
 
                     break;
                 }
@@ -880,14 +881,7 @@ public partial class ScriptEngineLowLevelEngine
                     return;
                 }
 
-                if (_methodIndex < 0)
-                {
-                    opCodes = _mainMethod;
-                }
-                else
-                {
-                    opCodes = _methods[_methodIndex].OpCodes;
-                }
+                opCodes = _methodIndex < 0 ? _mainMethod : _methods[_methodIndex].OpCodes;
             }
         }
     }
