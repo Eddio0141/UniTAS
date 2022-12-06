@@ -935,6 +935,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         {
             PushExpressionBuilderStack();
         }
+
         _methodArgCount++;
     }
 
@@ -981,19 +982,6 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
     public override void ExitParentheses(ParenthesesContext context)
     {
         ExitExpression(context);
-    }
-
-    public override void ExitMethodCallArgs(MethodCallArgsContext context)
-    {
-        if (context.methodCallArgs() != null || !context.children.Any(x => x is TupleExpressionContext)) return;
-
-        Debug.Assert(_tupleExprTopLevelStore != null, nameof(_tupleExprTopLevelStore) + " != null");
-        var tupleBuilderStore = _tupleExprTopLevelStore.Value;
-
-        AddOpCode(new PushArgOpCode(tupleBuilderStore));
-
-        DeallocateTempRegister(tupleBuilderStore);
-        _tupleExprTopLevelStore = null;
     }
 
     private void ExitExpression(RuleContext context)
@@ -1133,6 +1121,18 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
             DeallocateTempRegister(tempRegister);
             _tupleInnerStorePushDepths.Remove(_tupleExprDepth);
+        }
+
+        // handle method call args
+        if (context.Parent is MethodCallArgsContext)
+        {
+            Debug.Assert(_tupleExprTopLevelStore != null, nameof(_tupleExprTopLevelStore) + " != null");
+            var tupleBuilderStore = _tupleExprTopLevelStore.Value;
+
+            AddOpCode(new PushArgOpCode(tupleBuilderStore));
+
+            DeallocateTempRegister(tupleBuilderStore);
+            _tupleExprTopLevelStore = null;
         }
     }
 
