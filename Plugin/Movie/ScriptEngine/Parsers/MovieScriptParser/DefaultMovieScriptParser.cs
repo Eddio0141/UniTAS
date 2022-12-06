@@ -23,9 +23,11 @@ public class DefaultMovieScriptParser : IMovieScriptParser
         var speakLexer = new MovieScriptDefaultGrammarLexer(inputStream);
         var commonTokenStream = new CommonTokenStream(speakLexer);
         var speakParser = new MovieScriptDefaultGrammarParser(commonTokenStream);
-        var program = speakParser.program();
+        speakParser.RemoveErrorListeners();
+        speakParser.AddErrorListener(new DefaultErrorListener());
+        var script = speakParser.script();
         var listener = new DefaultGrammarListenerCompiler(_getDefinedMethods);
-        ParseTreeWalker.Default.Walk(listener, program);
+        ParseTreeWalker.Default.Walk(listener, script);
         return listener.Compile();
     }
 }
