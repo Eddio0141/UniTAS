@@ -20,5 +20,9 @@ public class MovieEngineModule : NinjectModule
 
         Bind<IMovieRunner>().To<ScriptEngineMovieRunner>();
         Bind<ScriptEngineMovieRunner>().ToSelf().InSingletonScope();
+
+        Bind<EngineExternalMethod>().To<PrintExternalMethod>();
+        Bind<EngineExternalMethod>().To<RegisterExternalMethod>();
+        Bind<EngineExternalMethod>().To<UnregisterExternalMethod>();
     }
 }
