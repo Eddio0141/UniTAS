@@ -25,8 +25,10 @@ public class MovieRunnerTests
     {
         var externGetArgs = new ScriptEngineLowLevelTests.TestExternGetArgs();
 
-        var runner = Setup(new EngineExternalMethod[] { externGetArgs, new RegisterExternalMethod() });
-        var input = @"name test TAS
+        var runner = Setup(new EngineExternalMethod[]
+            { externGetArgs, new RegisterExternalMethod(), new UnregisterExternalMethod() });
+        // ReSharper disable once StringLiteralTypo
+        const string input = @"name test TAS
 author yuu0141
 desc a test TAS
 os Windows
@@ -48,11 +50,13 @@ fn concurrent2() {
 }
 
 get_args(""concurrent"", true)
-register(""concurrent"", true) | register(""concurrent2"", false)
+$concurrent1 = register(""concurrent"", true) | $concurrent2 = register(""concurrent2"", false)
 get_args(-1);
 get_args(-2);
 get_args(-3);
-get_args(-4)";
+get_args(-4)
+unregister($concurrent1, true);
+get_args(-5)";
         var fakeEnv = new VirtualEnvironment();
         runner.RunFromInput(input, fakeEnv);
 
@@ -61,9 +65,12 @@ get_args(-4)";
         runner.Update(fakeEnv);
         runner.IsRunning.Should().BeTrue();
         runner.Update(fakeEnv);
-        runner.IsRunning.Should().BeFalse();
+        runner.IsRunning.Should().BeTrue();
+        runner.Update(fakeEnv);
 
         externGetArgs.Args.Should()
-            .ContainInOrder("concurrent", "True", "1", "-1", "3", "2", "-2", "4", "1", "-3", "5", "2", "-4", "3");
+            .ContainInOrder("concurrent", "True", "1", "-1", "3", "2", "-2", "4", "1", "-3", "5", "2", "-4", "3", "-5",
+                "4");
+        runner.IsRunning.Should().BeFalse();
     }
 }
