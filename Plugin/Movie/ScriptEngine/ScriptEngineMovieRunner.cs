@@ -186,22 +186,24 @@ public class ScriptEngineMovieRunner : IMovieRunner
             _concurrentRunnersPostUpdate.Add(engine);
         }
 
-        return preUpdate ? _concurrentRunnersPreUpdate.Count - 1 : _concurrentRunnersPostUpdate.Count - 1;
+        return preUpdate
+            ? _concurrentRunnersPreUpdate.Last().GetHashCode()
+            : _concurrentRunnersPostUpdate.Last().GetHashCode();
     }
 
-    public void UnregisterConcurrentMethod(int index, bool preUpdate)
+    public void UnregisterConcurrentMethod(int hashCode, bool preUpdate)
     {
         if (preUpdate)
         {
-            if (index >= _concurrentRunnersPreUpdate.Count) return;
-
-            _concurrentRunnersPreUpdate.RemoveAt(index);
+            var foundRunner = _concurrentRunnersPreUpdate.FindIndex(x => x.GetHashCode() == hashCode);
+            if (foundRunner < 0) return;
+            _concurrentRunnersPreUpdate.RemoveAt(foundRunner);
         }
         else
         {
-            if (index >= _concurrentRunnersPostUpdate.Count) return;
-
-            _concurrentRunnersPostUpdate.RemoveAt(index);
+            var foundRunner = _concurrentRunnersPostUpdate.FindIndex(x => x.GetHashCode() == hashCode);
+            if (foundRunner < 0) return;
+            _concurrentRunnersPostUpdate.RemoveAt(foundRunner);
         }
     }
 
