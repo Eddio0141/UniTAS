@@ -109,18 +109,17 @@ public class ScriptEngineMovieRunner : IMovieRunner
         // TODO set frameTime to 0
     }
 
-    // TODO reset method too
-    public void RegisterConcurrentMethod(string methodName, bool preUpdate,
+    public int RegisterConcurrentMethod(string methodName, bool preUpdate,
         IEnumerable<IEnumerable<ValueType>> defaultArgs)
     {
-        if (methodName == null) return;
+        if (methodName == null) return -1;
 
         var foundDefinedMethod = _mainScript.Methods.ToList().Find(x => x.Name == methodName);
         var externFound = foundDefinedMethod == null ? _externalMethods.ToList().Find(x => x.Name == methodName) : null;
 
         if (foundDefinedMethod == null && externFound == null)
         {
-            return;
+            return -1;
         }
 
         // check if arg count match
@@ -185,6 +184,24 @@ public class ScriptEngineMovieRunner : IMovieRunner
         else
         {
             _concurrentRunnersPostUpdate.Add(engine);
+        }
+
+        return preUpdate ? _concurrentRunnersPreUpdate.Count - 1 : _concurrentRunnersPostUpdate.Count - 1;
+    }
+
+    public void UnregisterConcurrentMethod(int index, bool preUpdate)
+    {
+        if (preUpdate)
+        {
+            if (index >= _concurrentRunnersPreUpdate.Count) return;
+
+            _concurrentRunnersPreUpdate.RemoveAt(index);
+        }
+        else
+        {
+            if (index >= _concurrentRunnersPostUpdate.Count) return;
+
+            _concurrentRunnersPostUpdate.RemoveAt(index);
         }
     }
 
