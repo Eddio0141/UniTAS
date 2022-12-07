@@ -691,4 +691,47 @@ get_args((10, 20), ""third item"", (40, 50))");
 
         definedMethod.Should().BeEquivalentTo(actual);
     }
+
+    [Fact]
+    public void PipeSplit()
+    {
+        var script =
+            Setup(@"fn register(arg1, arg2) { }
+$concurrent1 = register(""concurrent"", true) | $concurrent2 = register(""concurrent"", false)");
+        var definedMethod = script.MainMethod;
+
+        var actual = new ScriptMethodModel(null, new OpCodeBase[]
+        {
+            // "concurrent", true
+            new ConstToRegisterOpCode(RegisterType.Temp0, new StringValueType("concurrent")),
+            new PushArgOpCode(RegisterType.Temp0),
+            new ConstToRegisterOpCode(RegisterType.Temp0, new BoolValueType(true)),
+            new PushArgOpCode(RegisterType.Temp0),
+            new PushStackOpCode(RegisterType.Temp0),
+            new PushStackOpCode(RegisterType.Temp1),
+            new PushStackOpCode(RegisterType.Temp2),
+            new GotoMethodOpCode("register"),
+            new PopStackOpCode(RegisterType.Temp0),
+            new PopStackOpCode(RegisterType.Temp1),
+            new PopStackOpCode(RegisterType.Temp2),
+            // $concurrent1 = 
+            new SetVariableOpCode(RegisterType.Ret, "concurrent1"),
+            // "concurrent", false
+            new ConstToRegisterOpCode(RegisterType.Temp0, new StringValueType("concurrent")),
+            new PushArgOpCode(RegisterType.Temp0),
+            new ConstToRegisterOpCode(RegisterType.Temp0, new BoolValueType(false)),
+            new PushArgOpCode(RegisterType.Temp0),
+            new PushStackOpCode(RegisterType.Temp0),
+            new PushStackOpCode(RegisterType.Temp1),
+            new PushStackOpCode(RegisterType.Temp2),
+            new GotoMethodOpCode("register"),
+            new PopStackOpCode(RegisterType.Temp0),
+            new PopStackOpCode(RegisterType.Temp1),
+            new PopStackOpCode(RegisterType.Temp2),
+            // $concurrent2 = 
+            new SetVariableOpCode(RegisterType.Ret, "concurrent2")
+        });
+
+        definedMethod.Should().BeEquivalentTo(actual);
+    }
 }
