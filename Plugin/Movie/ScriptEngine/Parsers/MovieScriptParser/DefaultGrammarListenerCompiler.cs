@@ -800,7 +800,6 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         else if (context.methodCall() != null)
         {
             var methodName = context.methodCall().IDENTIFIER_STRING().GetText();
-            CallMethod(methodName);
             AddExpression(new MethodCallExpression(methodName));
         }
 
