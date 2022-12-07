@@ -28,7 +28,7 @@ using IToken = Antlr4.Runtime.IToken;
 /// <see cref="MovieScriptDefaultGrammarParser"/>.
 /// </summary>
 [System.CodeDom.Compiler.GeneratedCode("ANTLR", "4.9.3")]
-[System.CLSCompliant(false)]
+
 public interface IMovieScriptDefaultGrammarListener : IParseTreeListener {
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.script"/>.
