@@ -1,56 +1,49 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net35</TargetFramework>
-    <AssemblyName>UniTASPlugin</AssemblyName>
-    <Description>UniTASPlugin</Description>
-    <Version>0.1.0</Version>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <LangVersion>latest</LangVersion>
-    <RestoreAdditionalProjectSources>
-      https://api.nuget.org/v3/index.json;
-      https://nuget.bepinex.dev/v3/index.json
-    </RestoreAdditionalProjectSources>
-    <RootNamespace>UniTASPlugin</RootNamespace>
-    <AssemblyVersion>0.1.0</AssemblyVersion>
-    <FileVersion>0.1.0</FileVersion>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net35</TargetFramework>
+        <AssemblyName>UniTASPlugin</AssemblyName>
+        <Description>UniTASPlugin</Description>
+        <Version>0.1.0</Version>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <LangVersion>latest</LangVersion>
+        <RestoreAdditionalProjectSources>
+            https://api.nuget.org/v3/index.json;
+            https://nuget.bepinex.dev/v3/index.json
+        </RestoreAdditionalProjectSources>
+        <RootNamespace>UniTASPlugin</RootNamespace>
+        <AssemblyVersion>0.1.0</AssemblyVersion>
+        <FileVersion>0.1.0</FileVersion>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="dependency\**" />
-    <EmbeddedResource Remove="dependency\**" />
-    <None Remove="dependency\**" />
-  </ItemGroup>
+    <ItemGroup>
+        <Compile Remove="dependency\**"/>
+        <EmbeddedResource Remove="dependency\**"/>
+        <None Remove="dependency\**"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <None Remove="postbuild.ps1" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Antlr4.Runtime.Standard" Version="4.9.0"/>
+        <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all"/>
+        <PackageReference Include="BepInEx.Core" Version="5.*"/>
+        <PackageReference Include="MonoMod.Utils" Version="22.5.1.1"/>
+        <PackageReference Include="Ninject" Version="3.2.2"/>
+        <PackageReference Include="UnityEngine.Modules" Version="3.4.0" IncludeAssets="compile"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Antlr4.Runtime.Standard" Version="4.9.0" />
-    <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
-    <PackageReference Include="BepInEx.Core" Version="5.*" />
-    <PackageReference Include="MonoMod.Utils" Version="22.5.1.1" />
-    <PackageReference Include="Ninject" Version="3.2.2" />
-    <PackageReference Include="UnityEngine.Modules" Version="3.4.0" IncludeAssets="compile" />
-  </ItemGroup>
+    <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
+        <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all"/>
+    </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
-  </ItemGroup>
+    <ItemGroup>
+        <Reference Include="PresentationFramework">
+            <HintPath>..\..\..\..\..\..\Program Files\Reference Assemblies\Microsoft\Framework\v3.0\PresentationFramework.dll</HintPath>
+        </Reference>
+    </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="PresentationFramework">
-      <HintPath>..\..\..\..\..\..\Program Files\Reference Assemblies\Microsoft\Framework\v3.0\PresentationFramework.dll</HintPath>
-    </Reference>
-  </ItemGroup>
+    <ItemGroup>
+        <Folder Include="NInjectModules\"/>
+        <Folder Include="UpdateHelper\"/>
+    </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="NInjectModules\" />
-    <Folder Include="UpdateHelper\" />
-  </ItemGroup>
-
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -file &quot;$(ProjectDir)postbuild.ps1&quot; $(TargetDir)$(ProjectName).dll" ContinueOnError="true" />
-  </Target>
 </Project>

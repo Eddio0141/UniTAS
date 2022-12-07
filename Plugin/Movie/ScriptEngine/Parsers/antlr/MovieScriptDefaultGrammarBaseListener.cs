@@ -33,7 +33,7 @@ using ParserRuleContext = Antlr4.Runtime.ParserRuleContext;
 /// </summary>
 [System.CodeDom.Compiler.GeneratedCode("ANTLR", "4.9.3")]
 [System.Diagnostics.DebuggerNonUserCode]
-[System.CLSCompliant(false)]
+
 public partial class MovieScriptDefaultGrammarBaseListener : IMovieScriptDefaultGrammarListener {
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="MovieScriptDefaultGrammarParser.script"/>.
