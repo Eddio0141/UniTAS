@@ -141,7 +141,7 @@ internal static class Overlay
         var env = kernel.Get<VirtualEnvironment>();
 
         GUI.DrawTexture(new Rect(MENU_X, MENU_Y, MENU_SIZE_X, MENU_SIZE_Y), BGSurround);
-        GUI.Box(new Rect(MENU_X, MENU_Y, MENU_SIZE_X, MENU_SIZE_Y), $"{Plugin.Name} Menu");
+        GUI.Box(new Rect(MENU_X, MENU_Y, MENU_SIZE_X, MENU_SIZE_Y), $"{MyPluginInfo.PLUGIN_NAME} Menu");
         GUILayout.BeginArea(new Rect(MENU_X + EDGE_SPACING, MENU_Y + EDGE_SPACING + 30, MENU_SIZE_X - EDGE_SPACING * 2,
             MENU_SIZE_Y - EDGE_SPACING * 2 - 30));
 

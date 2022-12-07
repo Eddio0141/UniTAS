@@ -18,13 +18,9 @@ using SystemInfo = UniTASPlugin.FakeGameState.SystemInfo;
 
 namespace UniTASPlugin;
 
-[BepInPlugin(Guid, Name, Version)]
+[BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
 public class Plugin : BaseUnityPlugin
 {
-    public const string Guid = "UniTASPlugin";
-    public const string Name = "UniTAS";
-    public const string Version = "0.1.0";
-
     public static readonly IKernel Kernel = InitKernel();
 
     private ManualLogSource _logger;
@@ -43,7 +39,7 @@ public class Plugin : BaseUnityPlugin
         _logger = Logger;
 
         Logger.LogInfo("init patch");
-        Harmony harmony = new($"{Name}HarmonyPatch");
+        Harmony harmony = new($"{MyPluginInfo.PLUGIN_GUID}HarmonyPatch");
         harmony.PatchAll();
         Logger.LogInfo("post init patch");
 
@@ -71,7 +67,7 @@ public class Plugin : BaseUnityPlugin
         Overlay.Init();
 
         Logger.LogInfo($"System time: {DateTime.Now}");
-        Logger.LogInfo($"Plugin {Name} is loaded!");
+        Logger.LogInfo($"Plugin {MyPluginInfo.PLUGIN_NAME} is loaded!");
     }
 
     private static IKernel InitKernel()
