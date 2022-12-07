@@ -14,8 +14,8 @@ public class UnregisterExternalMethod : EngineExternalMethod
     {
         var argsList = args.ToList();
 
-        var indexArg = argsList[0].First();
-        if (indexArg is not IntValueType index)
+        var hashCodeArg = argsList[0].First();
+        if (hashCodeArg is not IntValueType hashCode)
         {
             return new();
         }
@@ -26,7 +26,7 @@ public class UnregisterExternalMethod : EngineExternalMethod
             return new();
         }
 
-        runner.UnregisterConcurrentMethod(index.Value, preUpdate.Value);
+        runner.UnregisterConcurrentMethod(hashCode.Value, preUpdate.Value);
         return new();
     }
 }
