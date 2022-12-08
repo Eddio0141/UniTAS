@@ -6,10 +6,10 @@ using Ninject;
 using Ninject.Modules;
 using UniTASPlugin.FakeGameState;
 using UniTASPlugin.FakeGameState.GameFileSystem;
-using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.GameOverlay;
 using UniTASPlugin.Movie.ScriptEngine;
 using UniTASPlugin.NInjectModules;
+using UniTASPlugin.UpdateHelper;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
 using SystemInfo = UniTASPlugin.FakeGameState.SystemInfo;
@@ -76,7 +76,8 @@ public class Plugin : BaseUnityPlugin
         {
             new MovieEngineModule(),
             new GameEnvironmentModule(),
-            new PatchReverseInvokerModule()
+            new PatchReverseInvokerModule(),
+            new OnUpdateModule()
         };
 
         return new StandardKernel(modules);
@@ -85,11 +86,17 @@ public class Plugin : BaseUnityPlugin
     // unity execution order is Awake() -> FixedUpdate() -> Update()
     private void Update()
     {
+        // TODO if possible, put this at the first call of Update
+        FixedUpdateIndex++;
+        var updateList = Kernel.GetAll<IOnUpdate>();
+        foreach (var update in updateList)
+        {
+            update.Update(Time.deltaTime);
+        }
+
         var movieRunner = Kernel.Get<ScriptEngineMovieRunner>();
         movieRunner.Update();
         Overlay.Update();
-        // TODO if possible, put this at the first call of Update
-        FixedUpdateIndex++;
         GameCapture.Update();
     }
 
@@ -102,16 +109,12 @@ public class Plugin : BaseUnityPlugin
         GameRestart.FixedUpdate();
     }
 
-#pragma warning disable IDE0051
     private void LateUpdate()
-#pragma warning restore IDE0051
     {
         GameTracker.LateUpdate();
     }
 
-#pragma warning disable IDE0051
     private void OnGUI()
-#pragma warning restore IDE0051
     {
         Overlay.OnGUI();
     }

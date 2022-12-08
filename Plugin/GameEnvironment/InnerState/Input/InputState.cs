@@ -1,25 +1,10 @@
-﻿using UniTASPlugin.UpdateHelper;
+﻿namespace UniTASPlugin.GameEnvironment.InnerState.Input;
 
-namespace UniTASPlugin.GameEnvironment.InnerState.Input;
-
-public class InputState : IOnUpdate
+public class InputState
 {
-    public MouseState MouseState { get; }
-    public AxisState AxisState { get; }
-    public KeyboardState KeyboardState { get; }
-
-    public InputState()
-    {
-        MouseState = new MouseState();
-        AxisState = new AxisState();
-        KeyboardState = new KeyboardState();
-    }
-
-    public void Update(float deltaTime)
-    {
-        MouseState.Update(deltaTime);
-        KeyboardState.Update(deltaTime);
-    }
+    public MouseState MouseState { get; } = new();
+    public AxisState AxisState { get; } = new();
+    public KeyboardState KeyboardState { get; } = new();
 
     public void ResetStates()
     {
