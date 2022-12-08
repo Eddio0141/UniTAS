@@ -86,8 +86,7 @@ public class Plugin : BaseUnityPlugin
     private void Update()
     {
         var movieRunner = Kernel.Get<ScriptEngineMovieRunner>();
-        var env = Kernel.Get<VirtualEnvironment>();
-        movieRunner.Update(env);
+        movieRunner.Update();
         Overlay.Update();
         // TODO if possible, put this at the first call of Update
         FixedUpdateIndex++;
