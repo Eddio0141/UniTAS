@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.Movie.ScriptEngine.EngineMethods;
@@ -36,19 +37,22 @@ public partial class ScriptEngineMovieRunner : IMovieRunner
         // parse
         var movie = _parser.Parse(input);
         _mainScript = movie.Script;
+        var properties = movie.Properties;
+        var startupProperties = properties.StartupProperties;
 
-        // warnings
-
-        // TODO apply environment
+        // TODO warnings
 
         // init engine
         _engine = new ScriptEngineLowLevelEngine(_mainScript, _externalMethods);
 
         // set env
+        // TODO apply environment
         var env = _virtualEnvironmentService.GetVirtualEnv();
         env.InputState.ResetStates();
         env.RunVirtualEnvironment = true;
-        // TODO other stuff like save state load, reset, hide cursor, etc
+        env.FrameTime = startupProperties?.FrameTime ?? throw new NotImplementedException();
+        env.Restart = startupProperties != null;
+        // TODO other stuff like save state load, hide cursor, etc
 
         MovieEnd = false;
     }
