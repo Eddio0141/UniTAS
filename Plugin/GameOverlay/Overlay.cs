@@ -1,6 +1,5 @@
 ﻿using System.Linq;
 using Ninject;
-using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.GameOverlay.GameConsole;
 using UniTASPlugin.Movie.ScriptEngine;
 using UniTASPlugin.VersionSafeWrapper;
@@ -138,7 +137,6 @@ internal static class Overlay
 
         var kernel = Plugin.Kernel;
         var movieRunner = kernel.Get<ScriptEngineMovieRunner>();
-        var env = kernel.Get<VirtualEnvironment>();
 
         GUI.DrawTexture(new Rect(MENU_X, MENU_Y, MENU_SIZE_X, MENU_SIZE_Y), BGSurround);
         GUI.Box(new Rect(MENU_X, MENU_Y, MENU_SIZE_X, MENU_SIZE_Y), $"{MyPluginInfo.PLUGIN_NAME} Menu");
@@ -161,7 +159,7 @@ internal static class Overlay
                         var text = rev.Invoke(System.IO.File.ReadAllText, filePath);
                         try
                         {
-                            movieRunner.RunFromInput(text, env);
+                            movieRunner.RunFromInput(text);
                         }
                         catch (System.Exception e)
                         {
@@ -194,7 +192,7 @@ internal static class Overlay
                     var file = rev.Invoke(System.IO.File.ReadAllText, path);
                     try
                     {
-                        movieRunner.RunFromInput(file, env);
+                        movieRunner.RunFromInput(file);
                     }
                     catch (System.Exception e)
                     {

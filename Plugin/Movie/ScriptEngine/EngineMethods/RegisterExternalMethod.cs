@@ -7,7 +7,7 @@ namespace UniTASPlugin.Movie.ScriptEngine.EngineMethods;
 
 public class RegisterExternalMethod : EngineExternalMethod
 {
-    public RegisterExternalMethod() : base("register", -1)
+    public RegisterExternalMethod() : base("register", -1, 1)
     {
     }
 
@@ -37,7 +37,8 @@ public class RegisterExternalMethod : EngineExternalMethod
         var defaultArgs = argsList.Count < 3 ? new List<List<ValueType>>() : argsList.GetRange(2, argsList.Count - 2);
         var defaultArgsGeneric = defaultArgs.Select(x => x as IEnumerable<ValueType>);
 
-        runner.RegisterConcurrentMethod(argNameStr.Value, preUpdateBool.Value, defaultArgsGeneric);
-        return new();
+        var registeredIndex =
+            runner.RegisterConcurrentMethod(argNameStr.Value, preUpdateBool.Value, defaultArgsGeneric);
+        return new() { new IntValueType(registeredIndex) };
     }
 }
