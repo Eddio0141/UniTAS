@@ -133,30 +133,4 @@ public partial class ScriptEngineMovieRunner
             }
         }
     }
-
-    public void UpdateHeldKey(bool press, int keyCode)
-    {
-        var env = _virtualEnvironmentService.GetVirtualEnv();
-        if (press)
-        {
-            env.InputState.KeyboardState.Keys.Add(keyCode);
-        }
-        else
-        {
-            env.InputState.KeyboardState.Keys.RemoveAt(keyCode);
-        }
-    }
-
-    public void ClearHeldKeys()
-    {
-        var env = _virtualEnvironmentService.GetVirtualEnv();
-        env.InputState.KeyboardState.Keys.Clear();
-    }
-
-    public void MoveMouse(int x, int y)
-    {
-        var env = _virtualEnvironmentService.GetVirtualEnv();
-        env.InputState.MouseState.XPos = x;
-        env.InputState.MouseState.YPos = y;
-    }
 }
