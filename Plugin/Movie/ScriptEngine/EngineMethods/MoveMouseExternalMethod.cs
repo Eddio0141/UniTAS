@@ -1,13 +1,17 @@
 using System.Collections.Generic;
 using System.Linq;
+using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.Movie.ScriptEngine.ValueTypes;
 
 namespace UniTASPlugin.Movie.ScriptEngine.EngineMethods;
 
 public class MoveMouseExternalMethod : EngineExternalMethod
 {
-    public MoveMouseExternalMethod() : base("move_mouse", 2)
+    private readonly IVirtualEnvironmentService _virtualEnvironmentService;
+
+    public MoveMouseExternalMethod(IVirtualEnvironmentService virtualEnvironmentService) : base("move_mouse", 2)
     {
+        _virtualEnvironmentService = virtualEnvironmentService;
     }
 
     public override List<ValueType> Invoke(IEnumerable<IEnumerable<ValueType>> args, ScriptEngineMovieRunner runner)
@@ -18,8 +22,10 @@ public class MoveMouseExternalMethod : EngineExternalMethod
 
         var yArg = argsList[0].First();
         if (yArg is not IntValueType y) return new();
-        
-        runner.MoveMouse(x.Value, y.Value);
+
+        var env = _virtualEnvironmentService.GetVirtualEnv();
+        env.InputState.MouseState.XPos = x.Value;
+        env.InputState.MouseState.YPos = y.Value;
 
         return new();
     }

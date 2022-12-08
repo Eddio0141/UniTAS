@@ -1,14 +1,18 @@
 using System.Collections.Generic;
 using System.Linq;
+using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.Movie.ScriptEngine.ValueTypes;
 
 namespace UniTASPlugin.Movie.ScriptEngine.EngineMethods.Exceptions;
 
 public class UnHoldKeyExternalMethod : EngineExternalMethod
 {
+    private readonly IVirtualEnvironmentService _virtualEnvironmentService;
+
     // ReSharper disable once StringLiteralTypo
-    public UnHoldKeyExternalMethod() : base("unhold_key", 1)
+    public UnHoldKeyExternalMethod(IVirtualEnvironmentService virtualEnvironmentService) : base("unhold_key", 1)
     {
+        _virtualEnvironmentService = virtualEnvironmentService;
     }
 
     public override List<ValueType> Invoke(IEnumerable<IEnumerable<ValueType>> args, ScriptEngineMovieRunner runner)
@@ -17,7 +21,7 @@ public class UnHoldKeyExternalMethod : EngineExternalMethod
         var keyCodeArg = arg.First();
         if (keyCodeArg is not IntValueType keyCode) return new();
 
-        runner.UpdateHeldKey(false, keyCode.Value);
+        _virtualEnvironmentService.GetVirtualEnv().InputState.KeyboardState.Keys.RemoveAt(keyCode.Value);
 
         return new();
     }

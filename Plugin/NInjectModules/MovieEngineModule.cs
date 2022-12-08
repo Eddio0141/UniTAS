@@ -35,5 +35,10 @@ public class MovieEngineModule : NinjectModule
         Bind<EngineExternalMethod>().To<ClearHeldKeysExternalMethod>();
 
         Bind<EngineExternalMethod>().To<MoveMouseExternalMethod>();
+
+        Bind<EngineExternalMethod>().To<SetFpsExternalMethod>();
+        Bind<EngineExternalMethod>().To<SetFrameTimeExternalMethod>();
+        Bind<EngineExternalMethod>().To<GetFpsExternalMethod>();
+        Bind<EngineExternalMethod>().To<GetFrameTimeExternalMethod>();
     }
 }

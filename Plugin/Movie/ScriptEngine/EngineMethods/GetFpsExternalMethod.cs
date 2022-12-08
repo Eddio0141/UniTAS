@@ -2,20 +2,21 @@ using System.Collections.Generic;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.Movie.ScriptEngine.ValueTypes;
 
-namespace UniTASPlugin.Movie.ScriptEngine.EngineMethods.Exceptions;
+namespace UniTASPlugin.Movie.ScriptEngine.EngineMethods;
 
-public class ClearHeldKeysExternalMethod : EngineExternalMethod
+public class GetFpsExternalMethod : EngineExternalMethod
 {
     private readonly IVirtualEnvironmentService _virtualEnvironmentService;
 
-    public ClearHeldKeysExternalMethod(IVirtualEnvironmentService virtualEnvironmentService) : base("clear_held_keys")
+    public GetFpsExternalMethod(IVirtualEnvironmentService virtualEnvironmentService) : base("get_fps", 0, 1)
     {
         _virtualEnvironmentService = virtualEnvironmentService;
     }
 
     public override List<ValueType> Invoke(IEnumerable<IEnumerable<ValueType>> args, ScriptEngineMovieRunner runner)
     {
-        _virtualEnvironmentService.GetVirtualEnv().InputState.KeyboardState.Keys.Clear();
-        return new();
+        var frameTime = _virtualEnvironmentService.GetVirtualEnv().FrameTime;
+
+        return new() { new FloatValueType(1 / frameTime) };
     }
 }

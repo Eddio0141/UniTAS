@@ -5,22 +5,22 @@ using UniTASPlugin.Movie.ScriptEngine.ValueTypes;
 
 namespace UniTASPlugin.Movie.ScriptEngine.EngineMethods;
 
-public class HoldKeyExternalMethod : EngineExternalMethod
+public class SetFrameTimeExternalMethod : EngineExternalMethod
 {
     private readonly IVirtualEnvironmentService _virtualEnvironmentService;
 
-    public HoldKeyExternalMethod(IVirtualEnvironmentService virtualEnvironmentService) : base("hold_key", 1)
+    public SetFrameTimeExternalMethod(IVirtualEnvironmentService virtualEnvironmentService) : base("set_frametime", 1)
     {
         _virtualEnvironmentService = virtualEnvironmentService;
     }
 
     public override List<ValueType> Invoke(IEnumerable<IEnumerable<ValueType>> args, ScriptEngineMovieRunner runner)
     {
-        var arg = args.First();
-        var keyCodeArg = arg.First();
-        if (keyCodeArg is not IntValueType keyCode) return new();
+        var frameTimeArg = args.First().First();
 
-        _virtualEnvironmentService.GetVirtualEnv().InputState.KeyboardState.Keys.Add(keyCode.Value);
+        if (frameTimeArg is not FloatValueType frameTime) return new();
+
+        _virtualEnvironmentService.GetVirtualEnv().FrameTime = frameTime.Value;
 
         return new();
     }
