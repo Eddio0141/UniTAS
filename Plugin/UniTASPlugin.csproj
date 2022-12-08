@@ -29,6 +29,7 @@
         <PackageReference Include="BepInEx.PluginInfoProps" Version="2.*" />
         <PackageReference Include="MonoMod.Utils" Version="22.5.1.1" />
         <PackageReference Include="Ninject" Version="3.2.2" />
+        <PackageReference Include="Ninject.Extensions.Factory" Version="3.2.1" />
         <PackageReference Include="UnityEngine.Modules" Version="3.4.0" IncludeAssets="compile" />
     </ItemGroup>
 
