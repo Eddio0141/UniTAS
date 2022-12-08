@@ -2,18 +2,13 @@
 using System.Linq;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.Movie.ScriptEngine.EngineMethods;
-using UniTASPlugin.Movie.ScriptEngine.EngineMethods.Exceptions;
 using UniTASPlugin.Movie.ScriptEngine.LowLevelEngine;
 using UniTASPlugin.Movie.ScriptEngine.MovieModels.Script;
-using UniTASPlugin.Movie.ScriptEngine.OpCodes;
-using UniTASPlugin.Movie.ScriptEngine.OpCodes.Method;
-using UniTASPlugin.Movie.ScriptEngine.OpCodes.RegisterSet;
 using UniTASPlugin.Movie.ScriptEngine.ParseInterfaces;
-using ValueType = UniTASPlugin.Movie.ScriptEngine.ValueTypes.ValueType;
 
 namespace UniTASPlugin.Movie.ScriptEngine;
 
-public class ScriptEngineMovieRunner : IMovieRunner
+public partial class ScriptEngineMovieRunner : IMovieRunner
 {
     public bool MovieEnd { get; private set; }
     public bool IsRunning => !MovieEnd;
@@ -26,13 +21,17 @@ public class ScriptEngineMovieRunner : IMovieRunner
     private readonly List<ScriptEngineLowLevelEngine> _concurrentRunnersPreUpdate = new();
     private readonly List<ScriptEngineLowLevelEngine> _concurrentRunnersPostUpdate = new();
 
-    public ScriptEngineMovieRunner(IMovieParser parser, IEnumerable<EngineExternalMethod> externMethods)
+    private readonly IVirtualEnvironmentService _virtualEnvironmentService;
+
+    public ScriptEngineMovieRunner(IMovieParser parser, IEnumerable<EngineExternalMethod> externMethods,
+        IVirtualEnvironmentService vEnvService)
     {
         _parser = parser;
         _externalMethods = externMethods.ToArray();
+        _virtualEnvironmentService = vEnvService;
     }
 
-    public void RunFromInput(string input, VirtualEnvironment env)
+    public void RunFromInput(string input)
     {
         // parse
         var movie = _parser.Parse(input);
@@ -46,6 +45,7 @@ public class ScriptEngineMovieRunner : IMovieRunner
         _engine = new ScriptEngineLowLevelEngine(_mainScript, _externalMethods);
 
         // set env
+        var env = _virtualEnvironmentService.GetVirtualEnv();
         env.InputState.ResetStates();
         env.RunVirtualEnvironment = true;
         // TODO other stuff like save state load, reset, hide cursor, etc
@@ -53,7 +53,7 @@ public class ScriptEngineMovieRunner : IMovieRunner
         MovieEnd = false;
     }
 
-    public void Update(VirtualEnvironment env)
+    public void Update()
     {
         if (!IsRunning)
             return;
@@ -99,135 +99,14 @@ public class ScriptEngineMovieRunner : IMovieRunner
         if (_engine.FinishedExecuting)
         {
             MovieEnd = true;
-            AtMovieEnd(env);
+            AtMovieEnd();
         }
     }
 
-    private void AtMovieEnd(VirtualEnvironment env)
+    private void AtMovieEnd()
     {
+        var env = _virtualEnvironmentService.GetVirtualEnv();
         env.RunVirtualEnvironment = false;
         // TODO set frameTime to 0
-    }
-
-    public int RegisterConcurrentMethod(string methodName, bool preUpdate,
-        IEnumerable<IEnumerable<ValueType>> defaultArgs)
-    {
-        if (methodName == null) return -1;
-
-        var foundDefinedMethod = _mainScript.Methods.ToList().Find(x => x.Name == methodName);
-        var externFound = foundDefinedMethod == null ? _externalMethods.ToList().Find(x => x.Name == methodName) : null;
-
-        if (foundDefinedMethod == null && externFound == null)
-        {
-            return -1;
-        }
-
-        // check if arg count match
-        var argCount = foundDefinedMethod == null
-            ? externFound.ArgCount
-            : foundDefinedMethod.OpCodes.Count(x => x is PopArgOpCode);
-
-        var argTuples = defaultArgs as IEnumerable<ValueType>[] ?? defaultArgs.ToArray();
-        if (argCount != argTuples.Count())
-        {
-            throw new MethodArgCountNotMatching(argCount.ToString(), argTuples.Count().ToString());
-        }
-
-        ScriptModel runnerScript;
-        if (foundDefinedMethod != null)
-        {
-            var mainMethod = new List<OpCodeBase>();
-            foreach (var argTuple in argTuples)
-            {
-                foreach (var arg in argTuple)
-                {
-                    mainMethod.Add(new ConstToRegisterOpCode(RegisterType.Temp0, arg));
-                    mainMethod.Add(new PushArgOpCode(RegisterType.Temp0));
-                }
-            }
-
-            mainMethod.Add(new GotoMethodOpCode(foundDefinedMethod.Name));
-
-            runnerScript = new ScriptModel(new(null, mainMethod),
-                new[] { foundDefinedMethod });
-        }
-        else
-        {
-            var wrapperMethod = new List<OpCodeBase>();
-            foreach (var argTuple in argTuples)
-            {
-                foreach (var arg in argTuple)
-                {
-                    wrapperMethod.Add(new ConstToRegisterOpCode(RegisterType.Temp0, arg));
-                    wrapperMethod.Add(new PushArgOpCode(RegisterType.Temp0));
-                }
-            }
-
-            wrapperMethod.Add(new GotoMethodOpCode(externFound.Name));
-
-            wrapperMethod.Add(new GotoMethodOpCode(externFound.Name));
-            runnerScript = new ScriptModel(new ScriptMethodModel(null, wrapperMethod), new ScriptMethodModel[0]);
-        }
-
-        var engine = new ScriptEngineLowLevelEngine(runnerScript, _externalMethods);
-
-        if (preUpdate)
-        {
-            _concurrentRunnersPreUpdate.Add(engine);
-            // actually run it since otherwise it will skip a frame
-            engine.ExecUntilStop(this);
-            if (engine.FinishedExecuting)
-            {
-                engine.Reset();
-            }
-        }
-        else
-        {
-            _concurrentRunnersPostUpdate.Add(engine);
-        }
-
-        return preUpdate
-            ? _concurrentRunnersPreUpdate.Last().GetHashCode()
-            : _concurrentRunnersPostUpdate.Last().GetHashCode();
-    }
-
-    public void UnregisterConcurrentMethod(int hashCode, bool preUpdate)
-    {
-        if (preUpdate)
-        {
-            var foundRunner = _concurrentRunnersPreUpdate.FindIndex(x => x.GetHashCode() == hashCode);
-            if (foundRunner < 0) return;
-            _concurrentRunnersPreUpdate.RemoveAt(foundRunner);
-        }
-        else
-        {
-            var foundRunner = _concurrentRunnersPostUpdate.FindIndex(x => x.GetHashCode() == hashCode);
-            if (foundRunner < 0) return;
-            _concurrentRunnersPostUpdate.RemoveAt(foundRunner);
-        }
-    }
-
-    private void ConcurrentRunnersPreUpdate()
-    {
-        foreach (var runner in _concurrentRunnersPreUpdate)
-        {
-            runner.ExecUntilStop(this);
-            if (runner.FinishedExecuting)
-            {
-                runner.Reset();
-            }
-        }
-    }
-
-    private void ConcurrentRunnersPostUpdate()
-    {
-        foreach (var runner in _concurrentRunnersPostUpdate)
-        {
-            runner.ExecUntilStop(this);
-            if (runner.FinishedExecuting)
-            {
-                runner.Reset();
-            }
-        }
     }
 }
