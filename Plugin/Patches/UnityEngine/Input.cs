@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Reflection;
 using HarmonyLib;
-using Ninject;
 using UniTASPlugin.GameEnvironment;
 using UnityEngine;
 using InputOrig = UnityEngine.Input;
@@ -34,9 +33,9 @@ internal static class Input
 
         private static bool Prefix(ref int __result)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return false;
-            var env = Plugin.Kernel.Get<VirtualEnvironment>();
+            var env = Plugin.Kernel.Resolve<VirtualEnvironment>();
             if (!env.RunVirtualEnvironment) return true;
             // TODO
             __result = 0;
@@ -54,9 +53,9 @@ internal static class Input
 
         private static bool Prefix(ref bool __result)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
-            var env = Plugin.Kernel.Get<VirtualEnvironment>();
+            var env = Plugin.Kernel.Resolve<VirtualEnvironment>();
             if (!env.RunVirtualEnvironment) return true;
             // TODO option to present mouse
             __result = true;
@@ -75,9 +74,9 @@ internal static class Input
 
         private static bool Prefix(int index, ref object ret)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
-            var env = Plugin.Kernel.Get<VirtualEnvironment>();
+            var env = Plugin.Kernel.Resolve<VirtualEnvironment>();
             return !env.RunVirtualEnvironment;
             // TODO
         }
@@ -95,9 +94,9 @@ internal static class Input
 
         private static bool Prefix(ref int __result)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
-            var env = Plugin.Kernel.Get<VirtualEnvironment>();
+            var env = Plugin.Kernel.Resolve<VirtualEnvironment>();
             return !env.RunVirtualEnvironment;
             // TODO
         }
@@ -113,9 +112,9 @@ internal static class Input
 
         private static bool Prefix(int deviceID, ref Vector3 __result)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
-            var env = Plugin.Kernel.Get<VirtualEnvironment>();
+            var env = Plugin.Kernel.Resolve<VirtualEnvironment>();
             return !env.RunVirtualEnvironment;
             // TODO what is this function call
         }
@@ -146,9 +145,9 @@ internal static class Input
 
         private static bool Prefix(object key, ref bool __result)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
-            var env = Plugin.Kernel.Get<VirtualEnvironment>();
+            var env = Plugin.Kernel.Resolve<VirtualEnvironment>();
             if (!env.RunVirtualEnvironment) return true;
             __result = env.InputState.KeyboardState.Keys.Contains((int)((KeyCode)key));
             return false;
@@ -167,9 +166,9 @@ internal static class Input
 
         private static bool Prefix( /*string name, ref bool __result*/)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
-            var env = Plugin.Kernel.Get<VirtualEnvironment>();
+            var env = Plugin.Kernel.Resolve<VirtualEnvironment>();
             return !env.RunVirtualEnvironment;
             // TODO
         }
@@ -187,9 +186,9 @@ internal static class Input
 
         private static bool Prefix( /*string name, ref bool __result*/)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
-            var env = Plugin.Kernel.Get<VirtualEnvironment>();
+            var env = Plugin.Kernel.Resolve<VirtualEnvironment>();
             return !env.RunVirtualEnvironment;
             // TODO
         }
@@ -207,9 +206,9 @@ internal static class Input
 
         private static bool Prefix(object key, ref bool __result)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
-            var env = Plugin.Kernel.Get<VirtualEnvironment>();
+            var env = Plugin.Kernel.Resolve<VirtualEnvironment>();
             if (!env.RunVirtualEnvironment) return true;
             __result = env.InputState.KeyboardState.KeysUp.Contains((int)((KeyCode)key));
             return false;
@@ -228,9 +227,9 @@ internal static class Input
 
         private static bool Prefix( /*string name*/)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
-            var env = Plugin.Kernel.Get<VirtualEnvironment>();
+            var env = Plugin.Kernel.Resolve<VirtualEnvironment>();
             return !env.RunVirtualEnvironment;
             // TODO
         }
@@ -248,9 +247,9 @@ internal static class Input
 
         private static bool Prefix(object key, ref bool __result)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
-            var env = Plugin.Kernel.Get<VirtualEnvironment>();
+            var env = Plugin.Kernel.Resolve<VirtualEnvironment>();
             if (!env.RunVirtualEnvironment) return true;
             __result = env.InputState.KeyboardState.KeysDown.Contains((int)((KeyCode)key));
             return false;
@@ -269,9 +268,9 @@ internal static class Input
 
         private static bool Prefix(string axisName, ref float __result)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
-            var env = Plugin.Kernel.Get<VirtualEnvironment>();
+            var env = Plugin.Kernel.Resolve<VirtualEnvironment>();
             if (!env.RunVirtualEnvironment) return true;
             if (env.InputState.AxisState.Values.TryGetValue(axisName, out var value))
             {
@@ -292,9 +291,9 @@ internal static class Input
 
         private static bool Prefix(string axisName, ref float __result)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
-            var env = Plugin.Kernel.Get<VirtualEnvironment>();
+            var env = Plugin.Kernel.Resolve<VirtualEnvironment>();
             if (!env.RunVirtualEnvironment) return true;
             if (env.InputState.AxisState.Values.TryGetValue(axisName, out var value))
             {
@@ -316,9 +315,9 @@ internal static class Input
 
         private static bool Prefix(string buttonName)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
-            var env = Plugin.Kernel.Get<VirtualEnvironment>();
+            var env = Plugin.Kernel.Resolve<VirtualEnvironment>();
             return !env.RunVirtualEnvironment;
             // TODO
         }
@@ -334,9 +333,9 @@ internal static class Input
 
         private static bool Prefix(string buttonName)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
-            var env = Plugin.Kernel.Get<VirtualEnvironment>();
+            var env = Plugin.Kernel.Resolve<VirtualEnvironment>();
             return !env.RunVirtualEnvironment;
             // TODO
         }
@@ -352,9 +351,9 @@ internal static class Input
 
         private static bool Prefix(string buttonName)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
-            var env = Plugin.Kernel.Get<VirtualEnvironment>();
+            var env = Plugin.Kernel.Resolve<VirtualEnvironment>();
             return !env.RunVirtualEnvironment;
             // TODO
         }
@@ -370,9 +369,9 @@ internal static class Input
 
         private static bool Prefix(ref bool __result, int button)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
-            var env = Plugin.Kernel.Get<VirtualEnvironment>();
+            var env = Plugin.Kernel.Resolve<VirtualEnvironment>();
             if (!env.RunVirtualEnvironment) return true;
             __result = button switch
             {
@@ -395,9 +394,9 @@ internal static class Input
 
         private static bool Prefix(ref bool __result, int button)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
-            var env = Plugin.Kernel.Get<VirtualEnvironment>();
+            var env = Plugin.Kernel.Resolve<VirtualEnvironment>();
             if (!env.RunVirtualEnvironment) return true;
             __result = button switch
             {
@@ -420,9 +419,9 @@ internal static class Input
 
         private static bool Prefix(ref bool __result, int button)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
-            var env = Plugin.Kernel.Get<VirtualEnvironment>();
+            var env = Plugin.Kernel.Resolve<VirtualEnvironment>();
             if (!env.RunVirtualEnvironment) return true;
             __result = button switch
             {
@@ -445,12 +444,12 @@ internal static class Input
 
         private static bool Prefix()
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
             // TODO make this work
             // Resets all input. After ResetInputAxes all axes return to 0 and all buttons return to 0 for one frame.
             // TODO also make sure movie overwrites input on the same frame after reset
-            var env = Plugin.Kernel.Get<VirtualEnvironment>();
+            var env = Plugin.Kernel.Resolve<VirtualEnvironment>();
             if (!env.RunVirtualEnvironment) return true;
             env.InputState.AxisState.Values.Clear();
             return false;
@@ -467,9 +466,9 @@ internal static class Input
 
         private static bool Prefix(int index, ref AccelerationEvent __result)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
-            var env = Plugin.Kernel.Get<VirtualEnvironment>();
+            var env = Plugin.Kernel.Resolve<VirtualEnvironment>();
             return !env.RunVirtualEnvironment;
             // TODO
             // this gets called in accelerationEvents getter, check when implementing
@@ -486,9 +485,9 @@ internal static class Input
 
         private static bool Prefix(ref bool __result)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
-            var env = Plugin.Kernel.Get<VirtualEnvironment>();
+            var env = Plugin.Kernel.Resolve<VirtualEnvironment>();
             if (!env.RunVirtualEnvironment) return true;
             var inputState = env.InputState;
             __result = inputState.KeyboardState.Keys.Count > 0 || inputState.MouseState.LeftClick ||
@@ -507,10 +506,10 @@ internal static class Input
 
         private static bool Prefix(ref bool __result)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
             // TODO make sure this gets called before Update calls
-            var env = Plugin.Kernel.Get<VirtualEnvironment>();
+            var env = Plugin.Kernel.Resolve<VirtualEnvironment>();
             if (!env.RunVirtualEnvironment) return true;
             var inputState = env.InputState;
             __result = inputState.KeyboardState.KeysDown.Count > 0 || inputState.MouseState.LeftClickDown ||
@@ -529,9 +528,9 @@ internal static class Input
 
         private static bool Prefix()
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
-            var env = Plugin.Kernel.Get<VirtualEnvironment>();
+            var env = Plugin.Kernel.Resolve<VirtualEnvironment>();
             return !env.RunVirtualEnvironment;
             // Returns the keyboard input entered this frame
             // Only ASCII characters are contained in the inputString.
@@ -550,9 +549,9 @@ internal static class Input
 
         private static bool Prefix(ref Vector3 __result)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
-            var env = Plugin.Kernel.Get<VirtualEnvironment>();
+            var env = Plugin.Kernel.Resolve<VirtualEnvironment>();
             if (!env.RunVirtualEnvironment) return true;
             var mouseState = env.InputState.MouseState;
             __result = new(mouseState.XPos, mouseState.YPos);
@@ -572,9 +571,9 @@ internal static class Input
 
         private static bool Prefix(ref Vector3 ret)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
-            var env = Plugin.Kernel.Get<VirtualEnvironment>();
+            var env = Plugin.Kernel.Resolve<VirtualEnvironment>();
             if (!env.RunVirtualEnvironment) return true;
             var mouseState = env.InputState.MouseState;
             ret = new(mouseState.XPos, mouseState.YPos);
@@ -592,9 +591,9 @@ internal static class Input
 
         private static bool Prefix(ref bool __result)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
-            var env = Plugin.Kernel.Get<VirtualEnvironment>();
+            var env = Plugin.Kernel.Resolve<VirtualEnvironment>();
             if (!env.RunVirtualEnvironment) return true;
             // TODO
             __result = false;
@@ -612,9 +611,9 @@ internal static class Input
 
         private static bool Prefix(bool value)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
-            var env = Plugin.Kernel.Get<VirtualEnvironment>();
+            var env = Plugin.Kernel.Resolve<VirtualEnvironment>();
             return !env.RunVirtualEnvironment;
             // TODO handle this
         }
@@ -630,9 +629,9 @@ internal static class Input
 
         private static bool Prefix(ref bool __result)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
-            var env = Plugin.Kernel.Get<VirtualEnvironment>();
+            var env = Plugin.Kernel.Resolve<VirtualEnvironment>();
             if (!env.RunVirtualEnvironment) return true;
             // TODO
             __result = false;
@@ -650,9 +649,9 @@ internal static class Input
 
         private static bool Prefix(ref DeviceOrientation __result)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
-            var env = Plugin.Kernel.Get<VirtualEnvironment>();
+            var env = Plugin.Kernel.Resolve<VirtualEnvironment>();
             if (!env.RunVirtualEnvironment) return true;
             // TODO
             __result = DeviceOrientation.Unknown;
@@ -670,9 +669,9 @@ internal static class Input
 
         private static bool Prefix(ref Vector3 __result)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
-            var env = Plugin.Kernel.Get<VirtualEnvironment>();
+            var env = Plugin.Kernel.Resolve<VirtualEnvironment>();
             if (!env.RunVirtualEnvironment) return true;
             // TODO
             __result = Vector3.zero;
@@ -690,9 +689,9 @@ internal static class Input
 
         private static bool Prefix(ref int __result)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
-            var env = Plugin.Kernel.Get<VirtualEnvironment>();
+            var env = Plugin.Kernel.Resolve<VirtualEnvironment>();
             if (!env.RunVirtualEnvironment) return true;
             // TODO
             // this gets called in accelerationEvents getter, check there if implementing
@@ -706,7 +705,7 @@ internal static class Input
     {
         get
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
             int accelerationEventCount = InputOrig.accelerationEventCount;
             AccelerationEvent[] array = new AccelerationEvent[accelerationEventCount];
@@ -729,9 +728,9 @@ internal static class Input
 
         private static bool Prefix(ref int __result)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
-            var env = Plugin.Kernel.Get<VirtualEnvironment>();
+            var env = Plugin.Kernel.Resolve<VirtualEnvironment>();
             if (!env.RunVirtualEnvironment) return true;
             // TODO
             // this gets called in touches getter, check if implementing
@@ -750,9 +749,9 @@ internal static class Input
 
         private static bool Prefix(ref Touch __result)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
-            var env = Plugin.Kernel.Get<VirtualEnvironment>();
+            var env = Plugin.Kernel.Resolve<VirtualEnvironment>();
             return !env.RunVirtualEnvironment;
             // TODO
             // this gets called in touches getter, check if implementing
@@ -764,7 +763,7 @@ internal static class Input
     {
         get
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
             int touchCount = InputOrig.touchCount;
             Touch[] array = new Touch[touchCount];
@@ -787,9 +786,9 @@ internal static class Input
 
         private static bool Prefix(ref Vector3 __result)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
-            var env = Plugin.Kernel.Get<VirtualEnvironment>();
+            var env = Plugin.Kernel.Resolve<VirtualEnvironment>();
             if (!env.RunVirtualEnvironment) return true;
             // TODO what is this call
             __result = Vector3.zero;

@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using Ninject;
 using UniTASPlugin.GameOverlay.GameConsole;
 using UniTASPlugin.Movie.ScriptEngine;
 using UniTASPlugin.VersionSafeWrapper;
@@ -69,7 +68,7 @@ internal static class Overlay
     public static void Update()
     {
         var kernel = Plugin.Kernel;
-        var movieRunner = kernel.Get<ScriptEngineMovieRunner>();
+        var movieRunner = kernel.Resolve<ScriptEngineMovieRunner>();
         if (!movieRunner.IsRunning && Input.GetKeyDown(KeyCode.F10))
         {
             Enabled = !Enabled;
@@ -136,7 +135,7 @@ internal static class Overlay
             return;
 
         var kernel = Plugin.Kernel;
-        var movieRunner = kernel.Get<ScriptEngineMovieRunner>();
+        var movieRunner = kernel.Resolve<ScriptEngineMovieRunner>();
 
         GUI.DrawTexture(new Rect(MENU_X, MENU_Y, MENU_SIZE_X, MENU_SIZE_Y), BGSurround);
         GUI.Box(new Rect(MENU_X, MENU_Y, MENU_SIZE_X, MENU_SIZE_Y), $"{MyPluginInfo.PLUGIN_NAME} Menu");
@@ -153,7 +152,7 @@ internal static class Overlay
                 filePath = GUILayout.TextField(filePath);
                 if (GUILayout.Button("Run", GUILayout.Width(40)))
                 {
-                    var rev = Plugin.Kernel.Get<PatchReverseInvoker>();
+                    var rev = Plugin.Kernel.Resolve<PatchReverseInvoker>();
                     if (rev.Invoke(System.IO.File.Exists, filePath) && !movieRunner.IsRunning)
                     {
                         var text = rev.Invoke(System.IO.File.ReadAllText, filePath);
@@ -182,7 +181,7 @@ internal static class Overlay
                 if (GUILayout.Button("test TAS") && !movieRunner.IsRunning)
                 {
                     var path = "";
-                    var rev = Plugin.Kernel.Get<PatchReverseInvoker>();
+                    var rev = Plugin.Kernel.Resolve<PatchReverseInvoker>();
                     if (rev.Invoke(System.IO.File.Exists, "C:\\Users\\Yuki\\Documents\\test.uti"))
                         path = "C:\\Users\\Yuki\\Documents\\test.uti";
                     else if (rev.Invoke(System.IO.File.Exists,

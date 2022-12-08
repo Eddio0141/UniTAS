@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Reflection;
 using HarmonyLib;
-using Ninject;
 using UniTASPlugin.FakeGameState;
 using UniTASPlugin.GameEnvironment;
 using TimeOrig = UnityEngine.Time;
@@ -28,12 +27,12 @@ internal static class Time
         private static bool Prefix()
         {
             var kernel = Plugin.Kernel;
-            if (kernel.Get<PatchReverseInvoker>().Invoking)
+            if (kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
             // if TAS is running / preparing and we aren't setting the frametime, reject
             // TODO below
             //return !(TAS.Running || TAS.PreparingRun);
-            return !(kernel.Get<VirtualEnvironment>().RunVirtualEnvironment && !kernel.Get<PatchReverseInvoker>().Invoking);
+            return !(kernel.Resolve<VirtualEnvironment>().RunVirtualEnvironment && !kernel.Resolve<PatchReverseInvoker>().Invoking);
         }
     }
 
@@ -48,12 +47,12 @@ internal static class Time
         private static bool Prefix()
         {
             var kernel = Plugin.Kernel;
-            if (kernel.Get<PatchReverseInvoker>().Invoking)
+            if (kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
             // if TAS is running / preparing and we aren't setting the frametime, reject
             // TODO below
             //return !(TAS.Running || TAS.PreparingRun);
-            return !(kernel.Get<VirtualEnvironment>().RunVirtualEnvironment && !kernel.Get<PatchReverseInvoker>().Invoking);
+            return !(kernel.Resolve<VirtualEnvironment>().RunVirtualEnvironment && !kernel.Resolve<PatchReverseInvoker>().Invoking);
         }
     }
 
@@ -67,7 +66,7 @@ internal static class Time
 
         private static void Postfix(ref float __result)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return;
             __result = (float)(__result - GameTime.FixedUnscaledTimeOffset);
         }
@@ -86,7 +85,7 @@ internal static class Time
 
         private static void Postfix(ref float __result)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return;
             // When called from inside MonoBehaviour's FixedUpdate, it returns TimeOrig.fixedUnscaledTime
             __result = inFixedTimeStep.PropertyExists() && inFixedTimeStep.GetValue<bool>()
@@ -108,7 +107,7 @@ internal static class Time
 
         private static void Postfix(ref double __result)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return;
             // When called from inside MonoBehaviour's FixedUpdate, it returns TimeOrig.fixedUnscaledTimeAsDouble
             if (inFixedTimeStep.PropertyExists() && inFixedTimeStep.GetValue<bool>())
@@ -128,7 +127,7 @@ internal static class Time
 
         private static void Postfix(ref double __result)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return;
             __result -= GameTime.FixedUnscaledTimeOffset;
         }
@@ -144,7 +143,7 @@ internal static class Time
 
         private static void Postfix(ref int __result)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return;
             __result = (int)((ulong)__result - GameTime.FrameCountRestartOffset);
         }
@@ -160,7 +159,7 @@ internal static class Time
 
         private static void Postfix(ref int __result)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return;
             __result = (int)((ulong)__result - GameTime.RenderedFrameCountOffset);
         }
@@ -176,7 +175,7 @@ internal static class Time
 
         private static void Postfix(ref float __result)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return;
             __result = (float)(__result - GameTime.SecondsSinceStartUpOffset);
         }
@@ -192,7 +191,7 @@ internal static class Time
 
         private static void Postfix(ref double __result)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return;
             __result -= GameTime.SecondsSinceStartUpOffset;
         }
@@ -208,7 +207,7 @@ internal static class Time
 
         private static void Postfix(ref float __result)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return;
             __result = (float)(__result - GameTime.ScaledTimeOffset);
         }
@@ -224,7 +223,7 @@ internal static class Time
 
         private static void Postfix(ref double __result)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return;
             __result -= GameTime.ScaledTimeOffset;
         }
@@ -240,7 +239,7 @@ internal static class Time
 
         private static void Postfix(ref float __result)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return;
             __result = (float)(__result - GameTime.ScaledFixedTimeOffset);
         }
@@ -256,7 +255,7 @@ internal static class Time
 
         private static void Postfix(ref double __result)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return;
             __result -= GameTime.ScaledFixedTimeOffset;
         }

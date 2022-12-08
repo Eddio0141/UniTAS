@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Reflection;
 using HarmonyLib;
-using Ninject;
 using UniTASPlugin.GameOverlay;
 using UnityEngine;
 // ReSharper disable UnusedMember.Local
@@ -40,7 +39,7 @@ internal static class Cursor
 
         private static void Prefix(ref bool value)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return;
             Overlay.UnityCursorVisible = value;
             if (Overlay.ShowCursor)
@@ -63,7 +62,7 @@ internal static class Cursor
 
         private static void Prefix(Texture2D texture)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return;
             Overlay.SetCursorTexture(texture);
         }

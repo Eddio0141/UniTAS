@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Reflection;
 using HarmonyLib;
-using Ninject;
 using UniTASPlugin.GameEnvironment;
 // ReSharper disable InconsistentNaming
 // ReSharper disable UnusedMember.Local
@@ -34,9 +33,9 @@ internal static class EventSystem
 
         private static bool Prefix(ref bool __result)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
-            if (!Plugin.Kernel.Get<VirtualEnvironment>().RunVirtualEnvironment) return true;
+            if (!Plugin.Kernel.Resolve<VirtualEnvironment>().RunVirtualEnvironment) return true;
             __result = true;
             return false;
         }

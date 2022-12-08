@@ -3,7 +3,6 @@ using System.IO;
 using System.Reflection;
 using System.Security.AccessControl;
 using HarmonyLib;
-using Ninject;
 using UniTASPlugin.FakeGameState.GameFileSystem;
 using DirectoryOrig = System.IO.Directory;
 using FileOrig = System.IO.File;
@@ -27,7 +26,7 @@ internal static class File
 
         private static bool Prefix(ref bool __result, string path)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
             __result = !string.IsNullOrEmpty(path) && path.IndexOfAny(FileSystem.ExternalHelpers.InvalidPathChars) < 0 && FileSystem.FileExists(path);
             return false;
@@ -44,7 +43,7 @@ internal static class File
 
         private static bool Prefix(string sourceFileName, string destFileName, bool overwrite)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
             FileSystem.OsHelpers.Copy(PathOrig.GetFullPath(sourceFileName), PathOrig.GetFullPath(destFileName), overwrite);
             return false;
@@ -61,7 +60,7 @@ internal static class File
 
         private static bool Prefix(ref string __result, string sourceFileName, string destFileName, bool overwrite)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
             var fullPathInternal = PathOrig.GetFullPath(sourceFileName);
             var fullPathInternal2 = PathOrig.GetFullPath(destFileName);
@@ -81,7 +80,7 @@ internal static class File
 
         private static bool Prefix(string path)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
             FileSystem.OsHelpers.DeleteFile(path);
             return false;
@@ -98,7 +97,7 @@ internal static class File
 
         private static bool Prefix(ref FileSecurity __result)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
             __result = new FileSecurity();
             __result.AddAccessRule(new FileSystemAccessRule("Everyone", FileSystemRights.FullControl, AccessControlType.Allow));
@@ -116,7 +115,7 @@ internal static class File
 
         private static bool Prefix()
         {
-            return Plugin.Kernel.Get<PatchReverseInvoker>().Invoking;
+            return Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking;
         }
     }
 
@@ -130,7 +129,7 @@ internal static class File
 
         private static bool Prefix(ref FileAttributes __result, string path)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
             __result = FileSystem.OsHelpers.GetFileAttributes(path) ?? FileAttributes.Normal;
             return false;
@@ -147,7 +146,7 @@ internal static class File
 
         private static bool Prefix(string path, FileAttributes fileAttributes)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
             FileSystem.OsHelpers.SetFileAttributes(path, fileAttributes);
             return false;
@@ -164,7 +163,7 @@ internal static class File
 
         private static bool Prefix(ref DateTimeOrig __result, string path)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
             __result = FileSystem.OsHelpers.FileCreationTime(path);
             return false;
@@ -181,7 +180,7 @@ internal static class File
 
         private static bool Prefix(string sourceFileName, string destFileName)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
             if (sourceFileName == null)
             {
@@ -231,7 +230,7 @@ internal static class File
 
         private static bool Prefix(string sourceFileName, string destinationFileName, string destinationBackupFileName/*, bool ignoreMetadataErrors*/)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
             if (sourceFileName == null)
             {
@@ -311,7 +310,7 @@ internal static class File
 
         private static bool Prefix(ref DateTimeOrig __result, string path)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
             __result = FileSystem.OsHelpers.FileAccessTime(path);
             return false;
@@ -328,7 +327,7 @@ internal static class File
 
         private static bool Prefix(ref DateTimeOrig __result, string path)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
             __result = FileSystem.OsHelpers.FileWriteTime(path);
             return false;
@@ -345,7 +344,7 @@ internal static class File
 
         private static bool Prefix(string path, DateTimeOrig creationTime)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
             FileSystem.OsHelpers.SetFileCreationTime(path, creationTime);
             return false;
@@ -362,7 +361,7 @@ internal static class File
 
         private static bool Prefix(string path, DateTimeOrig lastAccessTime)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
             FileSystem.OsHelpers.SetFileAccessTime(path, lastAccessTime);
             return false;
@@ -379,7 +378,7 @@ internal static class File
 
         private static bool Prefix(string path, DateTimeOrig lastWriteTime)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
             FileSystem.OsHelpers.SetFileWriteTime(path, lastWriteTime);
             return false;
