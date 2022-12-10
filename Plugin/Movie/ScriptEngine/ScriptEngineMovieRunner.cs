@@ -6,6 +6,7 @@ using UniTASPlugin.Movie.ScriptEngine.EngineMethods;
 using UniTASPlugin.Movie.ScriptEngine.LowLevelEngine;
 using UniTASPlugin.Movie.ScriptEngine.MovieModels.Script;
 using UniTASPlugin.Movie.ScriptEngine.ParseInterfaces;
+using UniTASPlugin.VersionSafeWrapper;
 
 namespace UniTASPlugin.Movie.ScriptEngine;
 
@@ -111,6 +112,6 @@ public partial class ScriptEngineMovieRunner : IMovieRunner
     {
         var env = _virtualEnvironmentService.GetVirtualEnv();
         env.RunVirtualEnvironment = false;
-        // TODO set frameTime to 0
+        TimeWrap.CaptureFrameTime = 0;
     }
 }
