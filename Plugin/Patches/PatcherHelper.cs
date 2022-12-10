@@ -11,4 +11,19 @@ public static class PatcherHelper
             Plugin.Log.LogDebug($"Failed to patch: {original}, exception: {ex}");
         return null;
     }
+
+    public static bool InvokedFromCriticalNamespace()
+    {
+        return true;
+        // var rev = Plugin.Kernel.Resolve<PatchReverseInvoker>();
+        // var trace = rev.Invoke(() => new StackTrace());
+        //
+        // var criticalNamespaces = new[]
+        // {
+        //     "BepInEx"
+        // };
+        //
+        // return trace.GetFrames()
+        //     .Any(f => criticalNamespaces.Any(n => f.GetMethod().DeclaringType.FullName.StartsWith(n)));
+    }
 }

@@ -9,6 +9,7 @@ using DirOrig = System.IO.Directory;
 using FileOrig = System.IO.File;
 using PathOrig = System.IO.Path;
 using DateTimeOrig = System.DateTime;
+
 // ReSharper disable UnusedMember.Local
 // ReSharper disable InconsistentNaming
 
@@ -19,8 +20,11 @@ internal static class Directory
 {
     private static class Helper
     {
-        private static readonly Traverse PathValidateTraverse = Traverse.Create(typeof(PathOrig)).Method("Validate", new[] { typeof(string) });
-        private static readonly Traverse EnvironmentIsRunningOnWindowsTraverse = Traverse.Create(typeof(global::System.Environment)).Property("IsRunningOnWindows");
+        private static readonly Traverse PathValidateTraverse =
+            Traverse.Create(typeof(PathOrig)).Method("Validate", new[] { typeof(string) });
+
+        private static readonly Traverse EnvironmentIsRunningOnWindowsTraverse =
+            Traverse.Create(typeof(global::System.Environment)).Property("IsRunningOnWindows");
 
         public static void PathValidate(string path)
         {
@@ -43,7 +47,7 @@ internal static class Directory
 
         private static bool Prefix(string path, ref bool __result)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             __result = FileSystem.DirectoryExists(path);
             return false;
@@ -58,9 +62,10 @@ internal static class Directory
             return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        private static bool Prefix(ref string[] __result, string path, string searchPattern, bool includeFiles, bool includeDirs, SearchOption searchOption)
+        private static bool Prefix(ref string[] __result, string path, string searchPattern, bool includeFiles,
+            bool includeDirs, SearchOption searchOption)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             __result = FileSystem.OsHelpers.GetPaths(path, searchPattern, includeFiles, includeDirs, searchOption);
             return false;
@@ -75,9 +80,10 @@ internal static class Directory
             return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        private static bool Prefix(ref IEnumerable<string> __result, string path, string searchPattern, SearchOption searchOption, bool includeFiles, bool includeDirs)
+        private static bool Prefix(ref IEnumerable<string> __result, string path, string searchPattern,
+            SearchOption searchOption, bool includeFiles, bool includeDirs)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             __result = FileSystem.OsHelpers.GetPaths(path, searchPattern, includeFiles, includeDirs, searchOption);
             return false;
@@ -94,7 +100,7 @@ internal static class Directory
 
         private static bool Prefix(ref string __result, string path)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             Helper.PathValidate(path);
             __result = new string(FileSystem.ExternalHelpers.DirectorySeparatorChar, 1);
@@ -112,33 +118,40 @@ internal static class Directory
 
         private static bool Prefix(ref DirectoryInfo __result, string path)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             if (path == null)
             {
                 throw new ArgumentNullException(nameof(path));
             }
+
             if (path.Length == 0)
             {
                 throw new ArgumentException("Path is empty");
             }
+
             if (path.IndexOfAny(FileSystem.ExternalHelpers.InvalidPathChars) != -1)
             {
                 throw new ArgumentException("Path contains invalid chars");
             }
+
             if (path.Trim().Length == 0)
             {
                 throw new ArgumentException("Only blank characters in path");
             }
+
             if (FileOrig.Exists(path))
             {
                 throw new IOException("Cannot create " + path + " because a file with the same name already exists.");
             }
+
             if (Helper.EnvironmentIsRunningOnWindows() && path == ":")
             {
                 throw new ArgumentException("Only ':' In path");
             }
-            __result = Traverse.Create(typeof(DirOrig)).Method("CreateDirectoriesInternal").GetValue<DirectoryInfo>(path);
+
+            __result = Traverse.Create(typeof(DirOrig)).Method("CreateDirectoriesInternal")
+                .GetValue<DirectoryInfo>(path);
             return false;
         }
     }
@@ -153,14 +166,16 @@ internal static class Directory
 
         private static bool Prefix(ref DirectoryInfo __result, string path)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
-            var dirInfoConstructor = AccessTools.Constructor(typeof(DirectoryInfo), new[] { typeof(string), typeof(bool) });
+            var dirInfoConstructor =
+                AccessTools.Constructor(typeof(DirectoryInfo), new[] { typeof(string), typeof(bool) });
             var directoryInfo = (DirectoryInfo)dirInfoConstructor.Invoke(null, new object[] { path, true });
             if (directoryInfo.Parent is { Exists: false })
             {
                 directoryInfo.Parent.Create();
             }
+
             FileSystem.OsHelpers.CreateDir(path);
             __result = directoryInfo;
             return false;
@@ -177,17 +192,19 @@ internal static class Directory
 
         private static bool Prefix(string path)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             Helper.PathValidate(path);
             if (Helper.EnvironmentIsRunningOnWindows() && path == ":")
             {
                 throw new NotSupportedException("Only ':' In path");
             }
+
             if (FileOrig.Exists(path))
             {
                 throw new IOException("Directory does not exist, but a file of the same name exists.");
             }
+
             /*
             if (MonoIO.ExistsSymlink(path, out monoIOError))
             {
@@ -210,7 +227,7 @@ internal static class Directory
 
         private static bool Prefix(string path)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             // only do this if symlink exists
             /*
@@ -248,7 +265,7 @@ internal static class Directory
 
         private static bool Prefix(ref DateTimeOrig __result, string path)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             __result = FileSystem.OsHelpers.DirAccessTime(path);
             return false;
@@ -265,7 +282,7 @@ internal static class Directory
 
         private static bool Prefix(ref DateTimeOrig __result, string path)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             __result = FileSystem.OsHelpers.DirWriteTime(path);
             return false;
@@ -282,7 +299,7 @@ internal static class Directory
 
         private static bool Prefix(ref DateTimeOrig __result, string path)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             __result = FileSystem.OsHelpers.DirCreationTime(path);
             return false;
@@ -299,7 +316,7 @@ internal static class Directory
 
         private static bool Prefix(ref bool __result, string path)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             __result =
                 FileSystem.ExternalHelpers.DirectorySeparatorChar == '/' && path == "/" ||
@@ -318,36 +335,45 @@ internal static class Directory
 
         private static bool Prefix(string sourceDirName, string destDirName)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             if (sourceDirName == null)
             {
                 throw new ArgumentNullException(nameof(sourceDirName));
             }
+
             if (destDirName == null)
             {
                 throw new ArgumentNullException(nameof(destDirName));
             }
-            if (sourceDirName.Trim().Length == 0 || sourceDirName.IndexOfAny(FileSystem.ExternalHelpers.InvalidPathChars) != -1)
+
+            if (sourceDirName.Trim().Length == 0 ||
+                sourceDirName.IndexOfAny(FileSystem.ExternalHelpers.InvalidPathChars) != -1)
             {
                 throw new ArgumentException("Invalid source directory name: " + sourceDirName, nameof(sourceDirName));
             }
-            if (destDirName.Trim().Length == 0 || destDirName.IndexOfAny(FileSystem.ExternalHelpers.InvalidPathChars) != -1)
+
+            if (destDirName.Trim().Length == 0 ||
+                destDirName.IndexOfAny(FileSystem.ExternalHelpers.InvalidPathChars) != -1)
             {
                 throw new ArgumentException("Invalid target directory name: " + destDirName, nameof(destDirName));
             }
+
             if (sourceDirName == destDirName)
             {
                 throw new IOException("Source and destination path must be different.");
             }
+
             if (DirOrig.Exists(destDirName))
             {
                 throw new IOException(destDirName + " already exists.");
             }
+
             if (!DirOrig.Exists(sourceDirName) && !FileOrig.Exists(sourceDirName))
             {
                 throw new DirectoryNotFoundException(sourceDirName + " does not exist");
             }
+
             FileSystem.OsHelpers.MoveDirectory(sourceDirName, destDirName);
             return false;
         }
@@ -377,7 +403,7 @@ internal static class Directory
 
         private static bool Prefix(string path, DateTimeOrig creationTime)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             FileSystem.OsHelpers.SetDirCreationTime(path, creationTime);
             return false;
@@ -394,7 +420,7 @@ internal static class Directory
 
         private static bool Prefix(string path, DateTimeOrig lastAccessTime)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             FileSystem.OsHelpers.SetDirAccessTime(path, lastAccessTime);
             return false;
@@ -411,7 +437,7 @@ internal static class Directory
 
         private static bool Prefix(string path, DateTimeOrig lastWriteTime)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             FileSystem.OsHelpers.SetDirWriteTime(path, lastWriteTime);
             return false;
@@ -428,13 +454,15 @@ internal static class Directory
 
         private static bool Prefix(ref string __result, string fullPath, bool thisDirOnly)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             var result = thisDirOnly
-                ? fullPath.EndsWith(FileSystem.ExternalHelpers.DirectorySeparatorStr) || fullPath.EndsWith(FileSystem.ExternalHelpers.AltDirectorySeparatorChar.ToString())
+                ? fullPath.EndsWith(FileSystem.ExternalHelpers.DirectorySeparatorStr) ||
+                  fullPath.EndsWith(FileSystem.ExternalHelpers.AltDirectorySeparatorChar.ToString())
                     ? fullPath + "."
                     : fullPath + FileSystem.ExternalHelpers.DirectorySeparatorStr + "."
-                : !fullPath.EndsWith(FileSystem.ExternalHelpers.DirectorySeparatorStr) && !fullPath.EndsWith(FileSystem.ExternalHelpers.AltDirectorySeparatorChar.ToString())
+                : !fullPath.EndsWith(FileSystem.ExternalHelpers.DirectorySeparatorStr) &&
+                  !fullPath.EndsWith(FileSystem.ExternalHelpers.AltDirectorySeparatorChar.ToString())
                     ? fullPath + FileSystem.ExternalHelpers.DirectorySeparatorStr
                     : fullPath;
             __result = result;
@@ -452,10 +480,11 @@ internal static class Directory
 
         private static bool Prefix(ref DirectorySecurity __result)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             __result = new DirectorySecurity();
-            __result.AddAccessRule(new FileSystemAccessRule("Everyone", FileSystemRights.FullControl, AccessControlType.Allow));
+            __result.AddAccessRule(new FileSystemAccessRule("Everyone", FileSystemRights.FullControl,
+                AccessControlType.Allow));
             return false;
         }
     }
@@ -470,7 +499,7 @@ internal static class Directory
 
         private static bool Prefix(ref string __result)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             __result = FileSystem.OsHelpers.WorkingDir().FullName;
             return false;
@@ -487,20 +516,23 @@ internal static class Directory
 
         private static bool Prefix(string path)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             if (path == null)
             {
                 throw new ArgumentNullException(nameof(path));
             }
+
             if (path.Trim().Length == 0)
             {
                 throw new ArgumentException("path string must not be an empty string or whitespace string");
             }
+
             if (!DirOrig.Exists(path))
             {
                 throw new DirectoryNotFoundException("Directory \"" + path + "\" not found.");
             }
+
             FileSystem.OsHelpers.SetWorkingDir(path);
             return false;
         }
