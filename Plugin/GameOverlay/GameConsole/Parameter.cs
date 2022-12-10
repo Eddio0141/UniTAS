@@ -107,7 +107,7 @@ public class Parameter
             ParameterType.Float => valueFloat.ToString(),
             ParameterType.Bool => valueBool.ToString(),
             ParameterType.List => $"[{string.Join(", ", valueList.Select(v => v.ToString()).ToArray())}]",
-            _ => null,
+            _ => null
         };
     }
 
@@ -115,22 +115,22 @@ public class Parameter
     {
         if (value.StartsWith("\"") && value.EndsWith("\""))
         {
-            parameter = new Parameter(value);
+            parameter = new(value);
             return true;
         }
         if (int.TryParse(value, out var intValue))
         {
-            parameter = new Parameter(intValue);
+            parameter = new(intValue);
             return true;
         }
         if (float.TryParse(value, out var floatValue))
         {
-            parameter = new Parameter(floatValue);
+            parameter = new(floatValue);
             return true;
         }
         if (bool.TryParse(value, out var boolValue))
         {
-            parameter = new Parameter(boolValue);
+            parameter = new(boolValue);
             return true;
         }
         if (value.StartsWith("[") && value.EndsWith("]"))
@@ -163,7 +163,7 @@ public class Parameter
                 }
                 list.Add(listParam);
             }
-            parameter = new Parameter(list.ToArray());
+            parameter = new(list.ToArray());
             return true;
         }
 
@@ -178,5 +178,5 @@ public enum ParameterType
     Int,
     Float,
     Bool,
-    List,
+    List
 }

@@ -37,7 +37,7 @@ public class FunkyInjectorContainer
 
         if (!_registeredTypes.ContainsKey(type))
         {
-            throw new Exception($"Type {type.Name} is not registered");
+            throw new($"Type {type.Name} is not registered");
         }
 
         var components = _registeredTypes[type];
@@ -128,7 +128,7 @@ public class FunkyInjectorContainer
 
         if (!_registeredTypes.ContainsKey(type))
         {
-            throw new Exception($"Type {type.Name} is not registered");
+            throw new($"Type {type.Name} is not registered");
         }
 
         return _registeredTypes[type].Select(x => Resolve(x.ImplementationType)).ToArray();

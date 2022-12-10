@@ -13,7 +13,7 @@ internal static class SceneHelper
 
     private static MethodInfo LoadSceneAsyncNameIndexInternal()
     {
-        var methodName = "LoadSceneAsyncNameIndexInternal";
+        const string methodName = "LoadSceneAsyncNameIndexInternal";
         var method = SceneManager.GetMethod(methodName, AccessTools.all, null, new[] { typeof(string), typeof(int), typeof(bool), typeof(bool) }, null);
         return method ?? (LoadSceneParametersType != null
             ? SceneManager.GetMethod(methodName, AccessTools.all, null, new[] { typeof(string), typeof(int), LoadSceneParametersType, typeof(bool) }, null)

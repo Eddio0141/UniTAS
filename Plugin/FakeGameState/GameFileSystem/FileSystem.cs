@@ -19,7 +19,7 @@ public static partial class FileSystem
         {
             case DeviceType.Windows:
                 {
-                    Root = new Dir("C:", null);
+                    Root = new("C:", null);
                     break;
                 }
             default:
@@ -96,5 +96,5 @@ public static partial class FileSystem
 
 public enum DeviceType
 {
-    Windows,
+    Windows
 }

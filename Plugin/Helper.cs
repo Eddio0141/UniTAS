@@ -31,6 +31,7 @@ public static class Helper
         {
             versionRaw = Application.unityVersion;
         }
+
         return versionRaw;
     }
 
@@ -42,7 +43,8 @@ public static class Helper
     public static Assembly[] GetGameAssemblies()
     {
         var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-        var resetIgnoreAssemblies = new[] {
+        var resetIgnoreAssemblies = new[]
+        {
             "mscorlib",
             "BepInEx.Preloader",
             "BepInEx",
@@ -56,7 +58,7 @@ public static class Helper
             "StartupProfiler",
             "Purchasing.Common",
             "netstandard",
-            "UniTASPlugin",
+            "UniTASPlugin"
         };
         var resetIgnoreAssmelibes_startsWith = new[]
         {
@@ -64,7 +66,7 @@ public static class Helper
             "UnityEngine.",
             "Mono.",
             "MonoMod.",
-            "HarmonyDTFAssembly",
+            "HarmonyDTFAssembly"
         };
 
         return assemblies.Where(assembly =>
@@ -122,10 +124,15 @@ public static class Helper
     /// <param name="processor">Optional value transformation function (taking a field name and src/dst <see cref="Traverse"/> instances)</param>
     /// <param name="pathRoot">The optional path root to start with</param>
     ///
-    public static void MakeDeepCopy<T>(object source, out T result, Func<string, Traverse, Traverse, object> processor = null, string pathRoot = "")
+    public static void MakeDeepCopy<T>(object source, out T result,
+        Func<string, Traverse, Traverse, object> processor = null, string pathRoot = "")
     {
         result = (T)MakeDeepCopy(source, typeof(T), processor, pathRoot);
     }
+
+    private static int MakeDeepCopyRecursionDepth;
+
+    private const int MakeDeepCopyRecursionDepthLimit = 500;
 
     /// <summary>Makes a deep copy of any object</summary>
     /// <param name="source">The original object</param>
@@ -133,11 +140,8 @@ public static class Helper
     /// <param name="processor">Optional value transformation function (taking a field name and src/dst <see cref="Traverse"/> instances)</param>
     /// <param name="pathRoot">The optional path root to start with</param>
     /// <returns>The copy of the original object</returns>
-    ///
-    private static int MakeDeepCopyRecursionDepth;
-
-    private const int MakeDeepCopyRecursionDepthLimit = 500;
-    public static object MakeDeepCopy(object source, Type resultType, Func<string, Traverse, Traverse, object> processor = null, string pathRoot = "")
+    public static object MakeDeepCopy(object source, Type resultType,
+        Func<string, Traverse, Traverse, object> processor = null, string pathRoot = "")
     {
         MakeDeepCopyRecursionDepth++;
         if (MakeDeepCopyRecursionDepth > MakeDeepCopyRecursionDepthLimit)
@@ -174,11 +178,13 @@ public static class Helper
             {
                 if (!addHandlerCache.TryGetValue(resultType, out var addInvoker))
                 {
-                    var addOperation = AccessTools.FirstMethod(resultType, m => m.Name == "Add" && m.GetParameters().Length == 1);
+                    var addOperation = AccessTools.FirstMethod(resultType,
+                        m => m.Name == "Add" && m.GetParameters().Length == 1);
                     if (addOperation is not null)
                     {
                         addInvoker = MethodInvoker.GetHandler(addOperation);
                     }
+
                     _ = addHandlerCacheLock.UpgradeToWriterLock(200);
                     addHandlerCacheLock.AcquireWriterLock(200);
                     try
@@ -190,6 +196,7 @@ public static class Helper
                         addHandlerCacheLock.ReleaseWriterLock();
                     }
                 }
+
                 if (addInvoker != null)
                 {
                     var addableResult = Activator.CreateInstance(resultType);
@@ -202,6 +209,7 @@ public static class Helper
                         var newElement = MakeDeepCopy(element, newElementType, processor, path);
                         _ = addInvoker(addableResult, newElement);
                     }
+
                     MakeDeepCopyRecursionDepth--;
                     return addableResult;
                 }
@@ -224,6 +232,7 @@ public static class Helper
                 var path = pathRoot.Length > 0 ? pathRoot + "." + iStr : iStr;
                 arrayResult[i] = MakeDeepCopy(originalArray[i], elementType, processor, path);
             }
+
             MakeDeepCopyRecursionDepth--;
             return arrayResult;
         }

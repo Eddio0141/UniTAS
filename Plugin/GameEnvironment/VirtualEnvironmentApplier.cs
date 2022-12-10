@@ -4,7 +4,7 @@ using UniTASPlugin.VersionSafeWrapper;
 namespace UniTASPlugin.GameEnvironment;
 
 /// <summary>
-/// Helper for apply game environment settings that doesn't apply on it's own.
+///     Helper for apply game environment settings that doesn't apply on it's own.
 /// </summary>
 // ReSharper disable once ClassNeverInstantiated.Global
 public class VirtualEnvironmentApplier : IOnUpdate

@@ -6,24 +6,21 @@ using UniTASPlugin.Movie.ScriptEngine.EngineMethods;
 using UniTASPlugin.Movie.ScriptEngine.LowLevelEngine;
 using UniTASPlugin.Movie.ScriptEngine.MovieModels.Script;
 using UniTASPlugin.Movie.ScriptEngine.ParseInterfaces;
-using UniTASPlugin.VersionSafeWrapper;
 
 namespace UniTASPlugin.Movie.ScriptEngine;
 
 public partial class ScriptEngineMovieRunner : IMovieRunner
 {
-    public bool MovieEnd { get; private set; } = true;
-    public bool IsRunning => !MovieEnd;
+    private readonly List<ScriptEngineLowLevelEngine> _concurrentRunnersPostUpdate = new();
+    private readonly List<ScriptEngineLowLevelEngine> _concurrentRunnersPreUpdate = new();
+    private readonly EngineExternalMethod[] _externalMethods;
 
     private readonly IMovieParser _parser;
-    private readonly EngineExternalMethod[] _externalMethods;
+
+    private readonly IVirtualEnvironmentService _virtualEnvironmentService;
 
     private ScriptEngineLowLevelEngine _engine;
     private ScriptModel _mainScript;
-    private readonly List<ScriptEngineLowLevelEngine> _concurrentRunnersPreUpdate = new();
-    private readonly List<ScriptEngineLowLevelEngine> _concurrentRunnersPostUpdate = new();
-
-    private readonly IVirtualEnvironmentService _virtualEnvironmentService;
 
     public ScriptEngineMovieRunner(IMovieParser parser, IEnumerable<EngineExternalMethod> externMethods,
         IVirtualEnvironmentService vEnvService)
@@ -32,6 +29,9 @@ public partial class ScriptEngineMovieRunner : IMovieRunner
         _externalMethods = externMethods.ToArray();
         _virtualEnvironmentService = vEnvService;
     }
+
+    public bool IsRunning => !MovieEnd;
+    public bool MovieEnd { get; private set; } = true;
 
     public void RunFromInput(string input)
     {

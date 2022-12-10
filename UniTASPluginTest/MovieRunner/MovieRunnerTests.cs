@@ -10,14 +10,6 @@ namespace UniTASPluginTest.MovieRunner;
 
 public class MovieRunnerTests
 {
-    private class FakeVEnvService : IVirtualEnvironmentService
-    {
-        public VirtualEnvironment GetVirtualEnv()
-        {
-            return new();
-        }
-    }
-
     private static ScriptEngineMovieRunner Setup(IEnumerable<EngineExternalMethod> getDefinedMethods)
     {
         var externMethods = getDefinedMethods.ToList();
@@ -79,5 +71,13 @@ get_args(-5)";
             .ContainInOrder("concurrent", "True", "1", "-1", "3", "2", "-2", "4", "1", "-3", "5", "2", "-4", "3", "-5",
                 "4");
         runner.IsRunning.Should().BeFalse();
+    }
+
+    private class FakeVEnvService : IVirtualEnvironmentService
+    {
+        public VirtualEnvironment GetVirtualEnv()
+        {
+            return new VirtualEnvironment();
+        }
     }
 }

@@ -40,7 +40,7 @@ internal static class Overlay
             black, white, black, alpha, alpha, black, white, white, black, alpha, alpha, alpha,
             black, black, alpha, alpha, alpha, alpha, black, white, white, black, alpha, alpha,
             alpha, alpha, alpha, alpha, alpha, alpha, black, white, white, black, alpha, alpha,
-            alpha, alpha, alpha, alpha, alpha, alpha, alpha, black, black, alpha, alpha, alpha,
+            alpha, alpha, alpha, alpha, alpha, alpha, alpha, black, black, alpha, alpha, alpha
         };
         var width = 12;
         _ = cursorDefaultTexture.Resize(width, cursorRaw.Length / width);
@@ -93,7 +93,7 @@ internal static class Overlay
 
         if (ShowCursor && UnityCursorVisible)
             GUI.DrawTexture(
-                new Rect(Input.mousePosition.x, Screen.height - Input.mousePosition.y, currentTexture.width,
+                new(Input.mousePosition.x, Screen.height - Input.mousePosition.y, currentTexture.width,
                     currentTexture.height), currentTexture);
     }
 
@@ -104,7 +104,7 @@ internal static class Overlay
 
     private enum Tabs
     {
-        Movie,
+        Movie
     }
 
     private const int MENU_SIZE_X = 600;
@@ -117,7 +117,7 @@ internal static class Overlay
     private const int TAS_MOVIE_BROWSER_HEIGHT = 400;
 
     private static readonly FileBrowser tasMovieBrowser = new(
-        Application.dataPath, new Rect(
+        Application.dataPath, new(
             Screen.width / 2 - TAS_MOVIE_BROWSER_WIDTH / 2,
             Screen.height / 2 - TAS_MOVIE_BROWSER_HEIGHT / 2,
             TAS_MOVIE_BROWSER_WIDTH,
@@ -137,9 +137,9 @@ internal static class Overlay
         var kernel = Plugin.Kernel;
         var movieRunner = kernel.Resolve<IMovieRunner>();
 
-        GUI.DrawTexture(new Rect(MENU_X, MENU_Y, MENU_SIZE_X, MENU_SIZE_Y), BGSurround);
-        GUI.Box(new Rect(MENU_X, MENU_Y, MENU_SIZE_X, MENU_SIZE_Y), $"{MyPluginInfo.PLUGIN_NAME} Menu");
-        GUILayout.BeginArea(new Rect(MENU_X + EDGE_SPACING, MENU_Y + EDGE_SPACING + 30, MENU_SIZE_X - EDGE_SPACING * 2,
+        GUI.DrawTexture(new(MENU_X, MENU_Y, MENU_SIZE_X, MENU_SIZE_Y), BGSurround);
+        GUI.Box(new(MENU_X, MENU_Y, MENU_SIZE_X, MENU_SIZE_Y), $"{MyPluginInfo.PLUGIN_NAME} Menu");
+        GUILayout.BeginArea(new(MENU_X + EDGE_SPACING, MENU_Y + EDGE_SPACING + 30, MENU_SIZE_X - EDGE_SPACING * 2,
             MENU_SIZE_Y - EDGE_SPACING * 2 - 30));
 
         _tabIndex = GUILayout.Toolbar(_tabIndex, tabs);

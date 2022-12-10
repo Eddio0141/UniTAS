@@ -12,5 +12,5 @@ public enum RegisterType
     Temp7,
     Temp8,
     Temp9,
-    Ret,
+    Ret
 }

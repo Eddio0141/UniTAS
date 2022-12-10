@@ -25,7 +25,7 @@ public class DefaultMovieScriptParserUnitTests
         var methods = parser.Parse(input).ToList();
         var mainMethod = methods.First(x => x.Name == null);
         var definedMethods = methods.Where(x => x.Name != null);
-        return new ScriptModel(mainMethod, definedMethods);
+        return new(mainMethod, definedMethods);
     }
 
     [Fact]
@@ -46,7 +46,7 @@ public class DefaultMovieScriptParserUnitTests
                 new PopArgOpCode(RegisterType.Temp0),
                 new SetVariableOpCode(RegisterType.Temp0, "arg2"),
                 new PopArgOpCode(RegisterType.Temp0),
-                new SetVariableOpCode(RegisterType.Temp0, "arg1"),
+                new SetVariableOpCode(RegisterType.Temp0, "arg1")
             });
 
         definedMethod.Should().BeEquivalentTo(actual);
@@ -86,7 +86,7 @@ $value %= 5");
             new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(5)),
             new VarToRegisterOpCode(RegisterType.Temp1, "value"),
             new ModOpCode(RegisterType.Temp0, RegisterType.Temp1, RegisterType.Temp0),
-            new SetVariableOpCode(RegisterType.Temp0, "value"),
+            new SetVariableOpCode(RegisterType.Temp0, "value")
         });
 
         definedMethod.Should().BeEquivalentTo(actual);
@@ -113,7 +113,7 @@ $value5 = false");
             new ConstToRegisterOpCode(RegisterType.Temp0, new BoolValueType(true)),
             new SetVariableOpCode(RegisterType.Temp0, "value4"),
             new ConstToRegisterOpCode(RegisterType.Temp0, new BoolValueType(false)),
-            new SetVariableOpCode(RegisterType.Temp0, "value5"),
+            new SetVariableOpCode(RegisterType.Temp0, "value5")
         });
 
         definedMethod.Should().BeEquivalentTo(actual);
@@ -263,7 +263,7 @@ if $value == 0 {
             new EnterScopeOpCode(),
             new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(2)),
             new SetVariableOpCode(RegisterType.Temp0, "value"),
-            new ExitScopeOpCode(),
+            new ExitScopeOpCode()
         });
 
         definedMethod.Should().BeEquivalentTo(actual);
@@ -552,7 +552,7 @@ $value3 = (10, /*""thing"",,*/ ""thing2"")");
         var actual = new ScriptMethodModel(null, new OpCodeBase[]
         {
             new ConstToRegisterOpCode(RegisterType.Temp0, new StringValueType("th\"i\"ngy")),
-            new SetVariableOpCode(RegisterType.Temp0, "value"),
+            new SetVariableOpCode(RegisterType.Temp0, "value")
         });
 
         definedMethod.Should().BeEquivalentTo(actual);
@@ -620,7 +620,7 @@ $value5 = (string)$value");
             // $value5 = (string)$value
             new VarToRegisterOpCode(RegisterType.Temp0, "value"),
             new CastOpCode(BasicValueType.String, RegisterType.Temp0, RegisterType.Temp0),
-            new SetVariableOpCode(RegisterType.Temp0, "value5"),
+            new SetVariableOpCode(RegisterType.Temp0, "value5")
         });
 
         definedMethod.Should().BeEquivalentTo(actual);

@@ -379,7 +379,7 @@ internal static class Input
                 0 => env.InputState.MouseState.LeftClick,
                 1 => env.InputState.MouseState.RightClick,
                 2 => env.InputState.MouseState.MiddleClick,
-                _ => false,
+                _ => false
             };
             return false;
         }
@@ -404,7 +404,7 @@ internal static class Input
                 0 => env.InputState.MouseState.LeftClickDown,
                 1 => env.InputState.MouseState.RightClickDown,
                 2 => env.InputState.MouseState.MiddleClickDown,
-                _ => false,
+                _ => false
             };
             return false;
         }
@@ -429,7 +429,7 @@ internal static class Input
                 0 => env.InputState.MouseState.LeftClickUp,
                 1 => env.InputState.MouseState.RightClickUp,
                 2 => env.InputState.MouseState.MiddleClickUp,
-                _ => false,
+                _ => false
             };
             return false;
         }

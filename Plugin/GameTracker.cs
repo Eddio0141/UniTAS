@@ -8,6 +8,7 @@ using UniTASPlugin.Exceptions;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
 using Object = UnityEngine.Object;
+// ReSharper disable StringLiteralTypo
 
 namespace UniTASPlugin;
 
@@ -68,15 +69,15 @@ internal static class GameTracker
             //
             "DarkTonic.MasterAudio*",
             // HACK: need to look into how this one works, its an input manager
-            "InControl*",
+            "InControl*"
         };
         // game specific type exclusion
         var exclusionGameAndType = new Dictionary<string, List<string>>
         {
             { "It Steals", new List<string>
                 {
-                "SteamManager",
-            }
+                "SteamManager"
+                }
             },
             { "Keep Talking and Nobody Explodes", new List<string>
                 {
@@ -92,16 +93,16 @@ internal static class GameTracker
                 "I2.Loc*",
                 */
             }
-            },
+            }
         };
         // game specific field exclusion
         var exclusionGameAndField = new Dictionary<string, List<string>>
         {
             { "Keep Talking and Nobody Explodes", new List<string>
                 {
-                "InControl.TouchManager.OnSetup",
+                "InControl.TouchManager.OnSetup"
+                }
             }
-            },
         };
         // TODO does System.Action affect stuff?
 
@@ -165,7 +166,7 @@ internal static class GameTracker
                 */
 
                 if (!InitialValues.ContainsKey(gameType))
-                    InitialValues.Add(gameType, new List<KeyValuePair<FieldInfo, object>>());
+                    InitialValues.Add(gameType, new());
 
                 // handling some types by hand since they crash AccessTools.MakeDeepCopy
                 // HACK make my own fixed version of this method
@@ -245,7 +246,7 @@ internal static class GameTracker
                     }
                 }
                 if (!failedClone)
-                    InitialValues[gameType].Add(new KeyValuePair<FieldInfo, object>(field, objClone));
+                    InitialValues[gameType].Add(new(field, objClone));
                 else
                     failedClone = false;
             }
@@ -285,7 +286,7 @@ internal static class GameTracker
 
     public static void AsyncSceneLoad(string sceneName, int sceneBuildIndex, object parameters, bool? isAdditive, AsyncOperationWrap wrap)
     {
-        asyncSceneLoads.Add(new AsyncSceneLoadData(sceneName, sceneBuildIndex, parameters, isAdditive, wrap));
+        asyncSceneLoads.Add(new(sceneName, sceneBuildIndex, parameters, isAdditive, wrap));
     }
 
     public static void AllowSceneActivation(bool allow, AsyncOperation instance)

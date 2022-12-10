@@ -70,7 +70,7 @@ public class FileBrowser
             c0,c2,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c1,c0,
             c0,c2,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c1,c0,
             c0,c1,c1,c1,c1,c1,c1,c1,c1,c1,c1,c1,c1,c1,c1,c0,
-            c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,
+            c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0
         };
         var size = 16;
         folderTexture = new(size, size);
@@ -103,7 +103,7 @@ public class FileBrowser
             c0,c0,c4,c7,c7,c7,c7,c7,c7,c7,c7,c7,c7,c5,c0,c0,
             c0,c0,c4,c7,c7,c7,c7,c7,c7,c7,c7,c7,c7,c5,c0,c0,
             c0,c0,c4,c7,c7,c7,c7,c7,c7,c7,c7,c7,c7,c5,c0,c0,
-            c0,c0,c4,c5,c5,c5,c5,c5,c5,c5,c5,c5,c5,c5,c0,c0,
+            c0,c0,c4,c5,c5,c5,c5,c5,c5,c5,c5,c5,c5,c5,c0,c0
         };
         fileTexture = new(size, size);
         for (var i = 0; i < fileIcon.Length; i++)
@@ -133,10 +133,10 @@ public class FileBrowser
         if (extensions.Length < 1)
             extensions = new[] { new Extension() };
         this.extensions = extensions;
-        confirmSave = new ConfirmBox(
+        confirmSave = new(
             "Confirm Save",
             "Are you sure you want to save?",
-            new Rect(
+            new(
                 Screen.width / 2 - CONFIRM_SAVE_WIDTH / 2,
                 Screen.height / 2 - CONFIRM_SAVE_HEIGHT / 2,
                 CONFIRM_SAVE_WIDTH,
@@ -194,14 +194,14 @@ public class FileBrowser
             Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
             Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
             homePath,
-            Helper.GameRootDir(),
+            Helper.GameRootDir()
         };
         var quickAccessNamesBuilder = new List<string>
         {
             "Desktop",
             "Documents",
             "Home",
-            "Game root",
+            "Game root"
         };
 
         try
@@ -273,7 +273,7 @@ public class FileBrowser
                         if (rev.Invoke(System.IO.Directory.Exists, entry))
                         {
                             var dirName = rev.Invoke(System.IO.Path.GetFileName, entry);
-                            displayNamesBuilder.Add(new GUIContent(dirName, folderTexture));
+                            displayNamesBuilder.Add(new(dirName, folderTexture));
                             currentDirPathsBuilder.Add(entry);
                             continue;
                         }
@@ -336,7 +336,7 @@ public class FileBrowser
                         if (filterOut)
                             continue;
 
-                        displayNamesBuilder.Add(new GUIContent(name, fileTexture));
+                        displayNamesBuilder.Add(new(name, fileTexture));
                         currentDirPathsBuilder.Add(entry);
                     }
 
@@ -376,7 +376,7 @@ public class FileBrowser
 
     private void Window(int id)
     {
-        GUI.DragWindow(new Rect(0, 0, 20000, 20));
+        GUI.DragWindow(new(0, 0, 20000, 20));
 
         GUILayout.BeginHorizontal();
         if (GUILayout.Button("<", GUILayout.Width(20)) && !confirmSave.Opened && dirPrev.Count > 0)

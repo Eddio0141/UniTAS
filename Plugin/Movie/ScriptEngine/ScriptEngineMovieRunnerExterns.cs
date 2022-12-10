@@ -51,7 +51,7 @@ public partial class ScriptEngineMovieRunner
 
             mainMethod.Add(new GotoMethodOpCode(foundDefinedMethod.Name));
 
-            runnerScript = new ScriptModel(new(null, mainMethod),
+            runnerScript = new(new(null, mainMethod),
                 new[] { foundDefinedMethod });
         }
         else
@@ -69,7 +69,7 @@ public partial class ScriptEngineMovieRunner
             wrapperMethod.Add(new GotoMethodOpCode(externFound.Name));
 
             wrapperMethod.Add(new GotoMethodOpCode(externFound.Name));
-            runnerScript = new ScriptModel(new ScriptMethodModel(null, wrapperMethod), new ScriptMethodModel[0]);
+            runnerScript = new(new(null, wrapperMethod), new ScriptMethodModel[0]);
         }
 
         var engine = new ScriptEngineLowLevelEngine(runnerScript, _externalMethods);

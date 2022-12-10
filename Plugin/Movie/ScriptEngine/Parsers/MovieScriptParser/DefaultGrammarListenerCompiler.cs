@@ -45,7 +45,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
         public ScriptMethodModel GetFinalResult()
         {
-            return new ScriptMethodModel(Name, OpCodes);
+            return new(Name, OpCodes);
         }
     }
 
@@ -1195,15 +1195,15 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
                 var register = BuildExpressionOpCodes();
                 DeallocateTempRegister(register);
                 _ifNotTrueOffsets.Push(
-                    new KeyValuePair<KeyValuePair<int, RegisterType>, string>(
-                        new KeyValuePair<int, RegisterType>(GetOpCodeInsertLocation(), register),
+                    new(
+                        new(GetOpCodeInsertLocation(), register),
                         CurrentBuildingMethodName()));
                 break;
             }
             case LoopContext:
             {
-                _endOfLoopOffsets.Push(new KeyValuePair<List<int>, string>(new(), CurrentBuildingMethodName()));
-                _loopScopeDepth.Push(new KeyValuePair<int, string>(0, CurrentBuildingMethodName()));
+                _endOfLoopOffsets.Push(new(new(), CurrentBuildingMethodName()));
+                _loopScopeDepth.Push(new(0, CurrentBuildingMethodName()));
 
                 var register = BuildExpressionOpCodes();
                 DeallocateTempRegister(register);
@@ -1214,7 +1214,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
                 _startOfLoopOffsets.Push(new(GetOpCodeInsertLocation(), CurrentBuildingMethodName()));
 
                 _endOfLoopExprOffset.Push(
-                    new KeyValuePair<int, string>(GetOpCodeInsertLocation(), CurrentBuildingMethodName()));
+                    new(GetOpCodeInsertLocation(), CurrentBuildingMethodName()));
 
                 // opcodes for loop logic
                 // we use hardcoded temp registers since loop count is pushed anyway
@@ -1235,7 +1235,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
             _loopScopeDepth.Peek().Value == CurrentBuildingMethodName())
         {
             var loop = _loopScopeDepth.Peek();
-            loop = new KeyValuePair<int, string>(loop.Key + 1, loop.Value);
+            loop = new(loop.Key + 1, loop.Value);
             _loopScopeDepth.Push(loop);
         }
     }
@@ -1301,7 +1301,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
             _loopScopeDepth.Peek().Value == CurrentBuildingMethodName())
         {
             var loop = _loopScopeDepth.Pop();
-            _loopScopeDepth.Push(new KeyValuePair<int, string>(loop.Key - 1, loop.Value));
+            _loopScopeDepth.Push(new(loop.Key - 1, loop.Value));
         }
     }
 

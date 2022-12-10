@@ -94,7 +94,7 @@ public class RegisterAndResolve
         container.Register(ComponentStarter.For<IFoo>().ImplementedBy<Foo2>());
         // ReSharper disable once IdentifierTypo
         var fooz = container.ResolveAll<IFoo>().ToList();
-        Assert.Equal(2, fooz.Count());
+        Assert.Equal(2, fooz.Count);
         Assert.Equal("Foo", fooz[0].Test());
         Assert.Equal("Foo2", fooz[1].Test());
     }

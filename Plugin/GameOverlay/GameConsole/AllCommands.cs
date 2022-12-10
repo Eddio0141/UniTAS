@@ -9,13 +9,13 @@ public static class AllCommands
 {
     public static List<Command> Commands { get; } = new()
     {
-        new Command("test", "", args => {
+        new("test", "", args => {
             Console.Print("testing");
             Console.Print($"all args: {string.Join(", ", args.Select(x => x.ToString()).ToArray())}");
             Console.Print($"arg types: {string.Join(", ", args.Select(x => x.ParamType.ToString()).ToArray())}");
             Console.Print($"arg count: {args.Length}");
         }),
-        new Command("commands", "Lists all commands.", args =>
+        new("commands", "Lists all commands.", args =>
         {
             if (!ValidateArgCount(args, 0))
                 return;
@@ -25,12 +25,12 @@ public static class AllCommands
                 Console.Print(cmd.Name);
             }
         }),
-        new Command("clear", "Clears the terminal.", args => {
+        new("clear", "Clears the terminal.", args => {
             if (!ValidateArgCount(args, 0))
                 return;
             Console.Clear();
         }, usage: "clear();"),
-        new Command("help", "Help for the terminal or a specific command. Run commands(); for list of commands.", args => {
+        new("help", "Help for the terminal or a specific command. Run commands(); for list of commands.", args => {
             if (!ValidateArgCount(args, 0, 1))
                 return;
             Command helpCmd;
@@ -60,17 +60,17 @@ public static class AllCommands
             if (helpCmd.Usage != "")
                 Console.Print($"usage: {helpCmd.Usage}");
         }, "Help(); / Help(\"echo\");"),
-        new Command("quit", "Quits the game.", args => {
+        new("quit", "Quits the game.", args => {
             if (!ValidateArgCount(args, 0))
                 return;
             Application.Quit();
         }, usage: "quit();"),
-        new Command("echo", "Prints the given text to the console.", args => {
+        new("echo", "Prints the given text to the console.", args => {
             if (!ValidateArgCount(args, 1))
                 return;
             Console.Print(args[0].ToString());
         }, usage: "echo(<object>);"),
-        new Command("soft_restart", "Simulates a game restart, no args will use the in-game time as the seed.", args =>
+        new("soft_restart", "Simulates a game restart, no args will use the in-game time as the seed.", args =>
         {
             if (!ValidateArgCount(args, 0, 1))
                 return;
@@ -94,7 +94,7 @@ public static class AllCommands
                 Console.Print($"Restarting with time {dateTime}");
                 GameRestart.SoftRestart(dateTime);
             }
-        }, usage: "soft_restart(); / soft_restart(\"DateTime string\");"),
+        }, usage: "soft_restart(); / soft_restart(\"DateTime string\");")
     };
 
     private static bool ValidateArgCount(Parameter[] args, int count)

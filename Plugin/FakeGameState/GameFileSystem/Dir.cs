@@ -9,7 +9,7 @@ public class Dir : Entry
 
     public Dir(string name, Dir parent) : base(name, parent, FileAttributes.Directory)
     {
-        Children = new List<Entry>();
+        Children = new();
     }
 
     public void Delete(Entry entry)

@@ -209,7 +209,7 @@ public partial class ScriptEngineLowLevelEngine
             throw new ValueTypeMismatchException(typeof(T).ToString(), valueType);
         }
 
-        return new LeftRightResultValues<T>(newLeft, null, result == null ? null : _registers[(int)result]);
+        return new(newLeft, null, result == null ? null : _registers[(int)result]);
     }
 
     private LeftRightResultValues<T> ValidateTypeAndGetRegister<T>(RegisterType left, RegisterType? right,
@@ -234,7 +234,7 @@ public partial class ScriptEngineLowLevelEngine
             throw new ValueTypeMismatchException(typeof(T).ToString(), valueType);
         }
 
-        return new LeftRightResultValues<T>(newLeft, right == null ? null : (T)rightValue,
+        return new(newLeft, right == null ? null : (T)rightValue,
             result == null ? null : _registers[(int)result]);
     }
 
@@ -256,7 +256,7 @@ public partial class ScriptEngineLowLevelEngine
             throw new ValueTypeMismatchException(leftValue.GetType().ToString(), rightValue.GetType().ToString());
         }
 
-        return new LeftRightResultValuesRaw(leftValue, rightValue, result == null ? null : _registers[(int)result]);
+        return new(leftValue, rightValue, result == null ? null : _registers[(int)result]);
     }
 
     public void ExecUntilStop(ScriptEngineMovieRunner runner)
@@ -640,7 +640,7 @@ public partial class ScriptEngineLowLevelEngine
                     var foundDefinedMethod = _methods.FindIndex(m => m.Name == method);
                     if (foundDefinedMethod > -1)
                     {
-                        _methodStack.Push(new MethodInfo(_pc, _methodIndex, _vars));
+                        _methodStack.Push(new(_pc, _methodIndex, _vars));
                         _pc = 0;
                         _methodIndex = foundDefinedMethod;
                         _vars.Clear();
@@ -691,7 +691,7 @@ public partial class ScriptEngineLowLevelEngine
                     _pc++;
                     var value = _registers[(int)pushArgOpCode.RegisterType];
                     _argStack.Push(value.IsTuple
-                        ? new List<ValueType>(value.TupleValues)
+                        ? new(value.TupleValues)
                         : new List<ValueType> { value.InnerValue });
                     break;
                 }
@@ -809,17 +809,17 @@ public partial class ScriptEngineLowLevelEngine
                     var register = _registers[(int)setVariableOpCode.Register];
                     var registerValue = register.IsTuple
                         ? register.TupleValues
-                        : new List<ValueType> { register.InnerValue };
+                        : new() { register.InnerValue };
                     if (foundVar == null)
                     {
                         // new var
                         if (_methodIndex < 0)
                         {
-                            _mainVars.Peek().Add(new VariableInfo(setVariableOpCode.Name, registerValue));
+                            _mainVars.Peek().Add(new(setVariableOpCode.Name, registerValue));
                         }
                         else
                         {
-                            _vars.Peek().Add(new VariableInfo(setVariableOpCode.Name, registerValue));
+                            _vars.Peek().Add(new(setVariableOpCode.Name, registerValue));
                         }
 
                         break;

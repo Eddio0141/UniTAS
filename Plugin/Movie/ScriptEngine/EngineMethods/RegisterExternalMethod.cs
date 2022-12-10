@@ -34,7 +34,7 @@ public class RegisterExternalMethod : EngineExternalMethod
             throw new ExceptedConcurrentMethodNameException();
         }
 
-        var defaultArgs = argsList.Count < 3 ? new List<List<ValueType>>() : argsList.GetRange(2, argsList.Count - 2);
+        var defaultArgs = argsList.Count < 3 ? new() : argsList.GetRange(2, argsList.Count - 2);
         var defaultArgsGeneric = defaultArgs.Select(x => x as IEnumerable<ValueType>);
 
         var registeredIndex =

@@ -50,7 +50,7 @@ public class ScriptEngineLowLevelTests
         var mainMethod = methods.First(x => x.Name == null);
         var definedMethods = methods.Where(x => x.Name != null);
         var script = new ScriptModel(mainMethod, definedMethods);
-        return new ScriptEngineLowLevelEngine(script, externMethods);
+        return new(script, externMethods);
     }
 
     [Fact]
@@ -80,7 +80,7 @@ get_args($var) | get_args($var2) | get_args($var3) | get_args($var4)",
 
         engine.ExecUntilStop(null);
         externGetArgs.Args.Should()
-            .BeEquivalentTo(new[] { "59", "hello world", "False", "-10.3", "a", "b", "c", "d" });
+            .BeEquivalentTo("59", "hello world", "False", "-10.3", "a", "b", "c", "d");
     }
 
     [Fact]
@@ -115,7 +115,7 @@ get_args($var, $var2)
 
         engine.ExecUntilStop(null);
         externGetArgs.Args.Should()
-            .BeEquivalentTo(new[] { "10", "20", "99", "20", "-10", "-20", "-10", "-20" });
+            .BeEquivalentTo("10", "20", "99", "20", "-10", "-20", "-10", "-20");
     }
 
     [Fact]

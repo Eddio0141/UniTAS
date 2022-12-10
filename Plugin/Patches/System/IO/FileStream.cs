@@ -168,7 +168,7 @@ internal static class FileStream
                 SeekOrigin.Begin => offset,
                 SeekOrigin.Current => __instance.Position + offset,
                 SeekOrigin.End => __instance.Length + offset,
-                _ => throw new ArgumentException("Invalid SeekOrigin", nameof(origin)),
+                _ => throw new ArgumentException("Invalid SeekOrigin", nameof(origin))
             };
             if (num < 0L)
             {
