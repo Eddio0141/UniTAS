@@ -1,8 +1,8 @@
 ﻿using System;
 using BepInEx;
 using BepInEx.Logging;
-using Castle.Windsor;
 using HarmonyLib;
+using UniTASFunkyInjector;
 using UniTASPlugin.FakeGameState;
 using UniTASPlugin.FakeGameState.GameFileSystem;
 using UniTASPlugin.GameOverlay;
@@ -17,7 +17,7 @@ namespace UniTASPlugin;
 [BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
 public class Plugin : BaseUnityPlugin
 {
-    public static readonly IWindsorContainer Kernel = ContainerRegister.Init();
+    public static readonly FunkyInjectorContainer Kernel = ContainerRegister.Init();
 
     private ManualLogSource _logger;
 
@@ -35,8 +35,8 @@ public class Plugin : BaseUnityPlugin
         _logger = Logger;
 
         Logger.LogInfo("init patch");
-        Harmony harmony = new($"{MyPluginInfo.PLUGIN_GUID}HarmonyPatch");
-        harmony.PatchAll();
+        //Harmony harmony = new($"{MyPluginInfo.PLUGIN_GUID}HarmonyPatch");
+        //harmony.PatchAll();
         Logger.LogInfo("post init patch");
 
         // init fake file system
@@ -79,7 +79,7 @@ public class Plugin : BaseUnityPlugin
 
         var movieRunner = Kernel.Resolve<ScriptEngineMovieRunner>();
         movieRunner.Update();
-        Overlay.Update();
+        //Overlay.Update();
         GameCapture.Update();
     }
 

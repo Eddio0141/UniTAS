@@ -1,27 +1,22 @@
-using Castle.Facilities.TypedFactory;
-using Castle.Windsor;
+using UniTASFunkyInjector;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.GameEnvironment.InnerState.Input;
 using UniTASPlugin.Movie;
 using UniTASPlugin.Movie.ScriptEngine;
 using UniTASPlugin.Movie.ScriptEngine.EngineMethods;
-using UniTASPlugin.Movie.ScriptEngine.EngineMethods.Exceptions;
 using UniTASPlugin.Movie.ScriptEngine.ParseInterfaces;
 using UniTASPlugin.Movie.ScriptEngine.Parsers;
 using UniTASPlugin.Movie.ScriptEngine.Parsers.MoviePropertiesParser;
 using UniTASPlugin.Movie.ScriptEngine.Parsers.MovieScriptParser;
 using UniTASPlugin.UpdateHelper;
-using Component = Castle.MicroKernel.Registration.Component;
 
 namespace UniTASPlugin;
 
 public static class ContainerRegister
 {
-    public static IWindsorContainer Init()
+    public static FunkyInjectorContainer Init()
     {
-        var container = new WindsorContainer();
-
-        container.AddFacility<TypedFactoryFacility>();
+        var container = new FunkyInjectorContainer();
 
         MovieEngineRegisters(container);
         VirtualEnvRegisters(container);
@@ -31,49 +26,51 @@ public static class ContainerRegister
         return container;
     }
 
-    private static void OnUpdateRegisters(IWindsorContainer container)
+    private static void OnUpdateRegisters(FunkyInjectorContainer container)
     {
-        container.Register(Component.For<IOnUpdate>().ImplementedBy<MouseState>());
-        container.Register(Component.For<IOnUpdate>().ImplementedBy<AxisState>());
-        container.Register(Component.For<IOnUpdate>().ImplementedBy<KeyboardState>());
+        container.Register(ComponentStarter.For<IOnUpdate>().ImplementedBy<MouseState>());
+        container.Register(ComponentStarter.For<IOnUpdate>().ImplementedBy<AxisState>());
+        container.Register(ComponentStarter.For<IOnUpdate>().ImplementedBy<KeyboardState>());
     }
 
-    private static void PatchReverseInvokerRegisters(IWindsorContainer container)
+    private static void PatchReverseInvokerRegisters(FunkyInjectorContainer container)
     {
-        container.Register(Component.For<PatchReverseInvoker>().LifestyleSingleton());
+        container.Register(ComponentStarter.For<PatchReverseInvoker>().LifestyleSingleton());
     }
 
-    private static void MovieEngineRegisters(IWindsorContainer container)
+    private static void MovieEngineRegisters(FunkyInjectorContainer container)
     {
         // parser binds
-        container.Register(Component.For<IMoviePropertyParser>().ImplementedBy<DefaultMoviePropertiesParser>());
-        container.Register(Component.For<IMovieScriptParser>().ImplementedBy<DefaultMovieScriptParser>());
-        container.Register(Component.For<IMovieSectionSplitter>().ImplementedBy<DefaultMovieSectionSplitter>());
-        container.Register(Component.For<IMovieParser>().ImplementedBy<ScriptEngineMovieParser>());
+        container.Register(ComponentStarter.For<IMoviePropertyParser>().ImplementedBy<DefaultMoviePropertiesParser>());
+        container.Register(ComponentStarter.For<IMovieScriptParser>().ImplementedBy<DefaultMovieScriptParser>());
+        container.Register(ComponentStarter.For<IMovieSectionSplitter>().ImplementedBy<DefaultMovieSectionSplitter>());
+        container.Register(ComponentStarter.For<IMovieParser>().ImplementedBy<ScriptEngineMovieParser>());
 
         // runner binds
-        container.Register(Component.For<IMovieRunner>().ImplementedBy<ScriptEngineMovieRunner>().LifestyleSingleton());
+        container.Register(ComponentStarter.For<IMovieRunner>().ImplementedBy<ScriptEngineMovieRunner>()
+            .LifestyleSingleton());
 
         // extern method binds
-        container.Register(Component.For<EngineExternalMethod>().ImplementedBy<PrintExternalMethod>());
+        container.Register(ComponentStarter.For<EngineExternalMethod>().ImplementedBy<PrintExternalMethod>());
 
-        container.Register(Component.For<EngineExternalMethod>().ImplementedBy<RegisterExternalMethod>());
-        container.Register(Component.For<EngineExternalMethod>().ImplementedBy<UnregisterExternalMethod>());
+        container.Register(ComponentStarter.For<EngineExternalMethod>().ImplementedBy<RegisterExternalMethod>());
+        container.Register(ComponentStarter.For<EngineExternalMethod>().ImplementedBy<UnregisterExternalMethod>());
 
-        container.Register(Component.For<EngineExternalMethod>().ImplementedBy<HoldKeyExternalMethod>());
-        container.Register(Component.For<EngineExternalMethod>().ImplementedBy<UnHoldKeyExternalMethod>());
-        container.Register(Component.For<EngineExternalMethod>().ImplementedBy<ClearHeldKeysExternalMethod>());
+        container.Register(ComponentStarter.For<EngineExternalMethod>().ImplementedBy<HoldKeyExternalMethod>());
+        container.Register(ComponentStarter.For<EngineExternalMethod>().ImplementedBy<UnHoldKeyExternalMethod>());
+        container.Register(ComponentStarter.For<EngineExternalMethod>().ImplementedBy<ClearHeldKeysExternalMethod>());
 
-        container.Register(Component.For<EngineExternalMethod>().ImplementedBy<MoveMouseExternalMethod>());
+        container.Register(ComponentStarter.For<EngineExternalMethod>().ImplementedBy<MoveMouseExternalMethod>());
 
-        container.Register(Component.For<EngineExternalMethod>().ImplementedBy<SetFpsExternalMethod>());
-        container.Register(Component.For<EngineExternalMethod>().ImplementedBy<SetFrameTimeExternalMethod>());
-        container.Register(Component.For<EngineExternalMethod>().ImplementedBy<GetFpsExternalMethod>());
-        container.Register(Component.For<EngineExternalMethod>().ImplementedBy<GetFrameTimeExternalMethod>());
+        container.Register(ComponentStarter.For<EngineExternalMethod>().ImplementedBy<SetFpsExternalMethod>());
+        container.Register(ComponentStarter.For<EngineExternalMethod>().ImplementedBy<SetFrameTimeExternalMethod>());
+        container.Register(ComponentStarter.For<EngineExternalMethod>().ImplementedBy<GetFpsExternalMethod>());
+        container.Register(ComponentStarter.For<EngineExternalMethod>().ImplementedBy<GetFrameTimeExternalMethod>());
     }
 
-    private static void VirtualEnvRegisters(IWindsorContainer container)
+    private static void VirtualEnvRegisters(FunkyInjectorContainer container)
     {
-        container.Register(Component.For<IVirtualEnvironmentService>().AsFactory());
+        container.Register(
+            ComponentStarter.For<IVirtualEnvironmentService>().ImplementedBy<VirtualEnvironmentFactory>());
     }
 }
