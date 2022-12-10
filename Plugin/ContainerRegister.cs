@@ -1,4 +1,5 @@
 using UniTASFunkyInjector;
+using UniTASPlugin.FixedUpdateSync;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.GameEnvironment.InnerState.Input;
 using UniTASPlugin.Interfaces.Update;
@@ -24,8 +25,15 @@ public static class ContainerRegister
         PatchReverseInvokerRegisters(container);
         OnUpdateRegisters(container);
         ReverseInvokerRegisters(container);
+        FixedUpdateSyncRegisters(container);
 
         return container;
+    }
+
+    private static void FixedUpdateSyncRegisters(FunkyInjectorContainer container)
+    {
+        container.Register(ComponentStarter.For<FixedUpdateTracker>().LifestyleSingleton());
+        container.Register(ComponentStarter.For<ISyncFixedUpdate>().ImplementedBy<FixedUpdateTracker>());
     }
 
     private static void ReverseInvokerRegisters(FunkyInjectorContainer container)
@@ -35,6 +43,10 @@ public static class ContainerRegister
 
     private static void OnUpdateRegisters(FunkyInjectorContainer container)
     {
+        // priority
+        container.Register(ComponentStarter.For<IOnUpdate>().ImplementedBy<FixedUpdateTracker>());
+        container.Register(ComponentStarter.For<IOnFixedUpdate>().ImplementedBy<FixedUpdateTracker>());
+
         container.Register(ComponentStarter.For<IOnUpdate>().ImplementedBy<MouseState>());
         container.Register(ComponentStarter.For<IOnUpdate>().ImplementedBy<AxisState>());
         container.Register(ComponentStarter.For<IOnUpdate>().ImplementedBy<KeyboardState>());
@@ -54,8 +66,8 @@ public static class ContainerRegister
         container.Register(ComponentStarter.For<IMovieParser>().ImplementedBy<ScriptEngineMovieParser>());
 
         // runner binds
-        container.Register(ComponentStarter.For<IMovieRunner>().ImplementedBy<ScriptEngineMovieRunner>()
-            .LifestyleSingleton());
+        container.Register(ComponentStarter.For<IMovieRunner>().ImplementedBy<ScriptEngineMovieRunner>());
+        container.Register(ComponentStarter.For<ScriptEngineMovieRunner>().LifestyleSingleton());
 
         // extern method binds
         container.Register(ComponentStarter.For<EngineExternalMethod>().ImplementedBy<PrintExternalMethod>());
