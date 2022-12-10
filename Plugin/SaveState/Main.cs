@@ -24,7 +24,7 @@ internal static class Main
         //var sceneIndex = Scene.buildIndex(scene);
         var time = DateTime.Now;
         var frameCount = GameTime.RenderedFrameCountOffset;
-        var fixedUpdateIndex = Plugin.Instance.FixedUpdateIndex;
+        //var fixedUpdateIndex = Plugin.Instance.FixedUpdateIndex;
         // TODO only save this state if unity version has it
         //var cursorVisible = Cursor.visible;
         //var cursorLockState = Cursor.lockState;
@@ -36,7 +36,7 @@ internal static class Main
         testy = (float)position.Field("y").GetValue();
         testz = (float)position.Field("z").GetValue();
 
-        Test = new( /*sceneIndex,*/ time, frameCount, fixedUpdateIndex /*cursorVisible, cursorLockState,*/);
+        //Test = new( /*sceneIndex,*/ time, frameCount, fixedUpdateIndex /*cursorVisible, cursorLockState,*/);
         Plugin.Log.LogDebug("Saved test state");
     }
 
@@ -53,11 +53,11 @@ internal static class Main
 
     public static void Update()
     {
-        if (pendingLoad && Plugin.Instance.FixedUpdateIndex == pendingLoadFixedUpdateIndex)
-        {
-            LoadOperation();
-            pendingLoad = false;
-        }
+        // if (pendingLoad && Plugin.Instance.FixedUpdateIndex == pendingLoadFixedUpdateIndex)
+        // {
+        //     LoadOperation();
+        //     pendingLoad = false;
+        // }
     }
 
     public static void LoadOperation()
