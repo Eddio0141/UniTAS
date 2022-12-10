@@ -285,7 +285,7 @@ public static class Executor
 
             if (ch == ';')
             {
-                commandQueue.Enqueue(new KeyValuePair<Command, Parameter[]>(currentCommand, currentArgs.ToArray()));
+                commandQueue.Enqueue(new(currentCommand, currentArgs.ToArray()));
 
                 waitingForCommandName = true;
                 commandName = true;

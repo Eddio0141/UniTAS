@@ -42,7 +42,7 @@ public class ConfirmBox
 
     private void Window(int id)
     {
-        GUI.DragWindow(new Rect(0, 0, 20000, 20));
+        GUI.DragWindow(new(0, 0, 20000, 20));
 
         GUILayout.Label(message);
         GUILayout.BeginHorizontal();
