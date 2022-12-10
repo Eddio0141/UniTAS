@@ -50,31 +50,34 @@ public class ConfirmBox
         switch (confirmType)
         {
             case ConfirmBoxType.YesNo:
+            {
+                if (GUILayout.Button("Yes"))
                 {
-                    if (GUILayout.Button("Yes"))
-                    {
-                        finalResult = true;
-                        gotFinalResult = false;
-                        Opened = false;
-                    }
-                    if (GUILayout.Button("No"))
-                    {
-                        finalResult = false;
-                        gotFinalResult = false;
-                        Opened = false;
-                    }
-                    break;
+                    finalResult = true;
+                    gotFinalResult = false;
+                    Opened = false;
                 }
+
+                if (GUILayout.Button("No"))
+                {
+                    finalResult = false;
+                    gotFinalResult = false;
+                    Opened = false;
+                }
+
+                break;
+            }
             case ConfirmBoxType.Ok:
+            {
+                if (GUILayout.Button("Ok"))
                 {
-                    if (GUILayout.Button("Ok"))
-                    {
-                        finalResult = true;
-                        gotFinalResult = false;
-                        Opened = false;
-                    }
-                    break;
+                    finalResult = true;
+                    gotFinalResult = false;
+                    Opened = false;
                 }
+
+                break;
+            }
         }
 
         GUILayout.EndHorizontal();
@@ -87,6 +90,7 @@ public class ConfirmBox
             finalResult = false;
             return false;
         }
+
         finalResult = this.finalResult;
         return true;
     }

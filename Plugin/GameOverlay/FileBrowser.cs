@@ -26,6 +26,7 @@ public class FileBrowser
     private readonly string selectText;
 
     private readonly Extension[] extensions;
+
     // list of filter list, each filter list is a split of the filter
     private readonly string[][][] extensionsProcessed;
     private string extensionText;
@@ -55,22 +56,22 @@ public class FileBrowser
         var c3 = new Color(1, 242f / 255f, 0);
         var folderIcon = new[]
         {
-            c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,
-            c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,
-            c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,
-            c0,c1,c1,c1,c1,c1,c1,c0,c0,c0,c0,c0,c0,c0,c0,c0,
-            c0,c1,c1,c1,c1,c1,c1,c2,c2,c2,c2,c2,c2,c2,c1,c0,
-            c0,c1,c1,c1,c1,c1,c1,c2,c3,c3,c3,c3,c3,c3,c1,c0,
-            c0,c2,c2,c2,c2,c2,c2,c2,c3,c3,c3,c3,c3,c3,c1,c0,
-            c0,c2,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c1,c0,
-            c0,c2,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c1,c0,
-            c0,c2,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c1,c0,
-            c0,c2,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c1,c0,
-            c0,c2,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c1,c0,
-            c0,c2,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c1,c0,
-            c0,c2,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c3,c1,c0,
-            c0,c1,c1,c1,c1,c1,c1,c1,c1,c1,c1,c1,c1,c1,c1,c0,
-            c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0,c0
+            c0, c0, c0, c0, c0, c0, c0, c0, c0, c0, c0, c0, c0, c0, c0, c0,
+            c0, c0, c0, c0, c0, c0, c0, c0, c0, c0, c0, c0, c0, c0, c0, c0,
+            c0, c0, c0, c0, c0, c0, c0, c0, c0, c0, c0, c0, c0, c0, c0, c0,
+            c0, c1, c1, c1, c1, c1, c1, c0, c0, c0, c0, c0, c0, c0, c0, c0,
+            c0, c1, c1, c1, c1, c1, c1, c2, c2, c2, c2, c2, c2, c2, c1, c0,
+            c0, c1, c1, c1, c1, c1, c1, c2, c3, c3, c3, c3, c3, c3, c1, c0,
+            c0, c2, c2, c2, c2, c2, c2, c2, c3, c3, c3, c3, c3, c3, c1, c0,
+            c0, c2, c3, c3, c3, c3, c3, c3, c3, c3, c3, c3, c3, c3, c1, c0,
+            c0, c2, c3, c3, c3, c3, c3, c3, c3, c3, c3, c3, c3, c3, c1, c0,
+            c0, c2, c3, c3, c3, c3, c3, c3, c3, c3, c3, c3, c3, c3, c1, c0,
+            c0, c2, c3, c3, c3, c3, c3, c3, c3, c3, c3, c3, c3, c3, c1, c0,
+            c0, c2, c3, c3, c3, c3, c3, c3, c3, c3, c3, c3, c3, c3, c1, c0,
+            c0, c2, c3, c3, c3, c3, c3, c3, c3, c3, c3, c3, c3, c3, c1, c0,
+            c0, c2, c3, c3, c3, c3, c3, c3, c3, c3, c3, c3, c3, c3, c1, c0,
+            c0, c1, c1, c1, c1, c1, c1, c1, c1, c1, c1, c1, c1, c1, c1, c0,
+            c0, c0, c0, c0, c0, c0, c0, c0, c0, c0, c0, c0, c0, c0, c0, c0
         };
         var size = 16;
         folderTexture = new(size, size);
@@ -80,6 +81,7 @@ public class FileBrowser
             var yPos = size - i / size;
             folderTexture.SetPixel(xPos, yPos, folderIcon[i]);
         }
+
         folderTexture.Apply();
 
         var c4 = new Color(163f / 255f, 164f / 255f, 164f / 255f);
@@ -88,22 +90,22 @@ public class FileBrowser
         var c7 = new Color(247f / 255f, 248f / 255f, 249f / 255f);
         var fileIcon = new[]
         {
-            c0,c0,c4,c4,c4,c4,c4,c4,c4,c4,c4,c4,c0,c0,c0,c0,
-            c0,c0,c4,c7,c7,c7,c7,c7,c7,c7,c4,c6,c5,c0,c0,c0,
-            c0,c0,c4,c7,c7,c7,c7,c7,c7,c7,c4,c6,c6,c5,c0,c0,
-            c0,c0,c4,c7,c7,c7,c7,c7,c7,c7,c4,c5,c5,c5,c0,c0,
-            c0,c0,c4,c7,c7,c7,c7,c7,c7,c7,c7,c7,c7,c5,c0,c0,
-            c0,c0,c4,c7,c7,c7,c7,c7,c7,c7,c7,c7,c7,c5,c0,c0,
-            c0,c0,c4,c7,c7,c7,c7,c7,c7,c7,c7,c7,c7,c5,c0,c0,
-            c0,c0,c4,c7,c7,c7,c7,c7,c7,c7,c7,c7,c7,c5,c0,c0,
-            c0,c0,c4,c7,c7,c7,c7,c7,c7,c7,c7,c7,c7,c5,c0,c0,
-            c0,c0,c4,c7,c7,c7,c7,c7,c7,c7,c7,c7,c7,c5,c0,c0,
-            c0,c0,c4,c7,c7,c7,c7,c7,c7,c7,c7,c7,c7,c5,c0,c0,
-            c0,c0,c4,c7,c7,c7,c7,c7,c7,c7,c7,c7,c7,c5,c0,c0,
-            c0,c0,c4,c7,c7,c7,c7,c7,c7,c7,c7,c7,c7,c5,c0,c0,
-            c0,c0,c4,c7,c7,c7,c7,c7,c7,c7,c7,c7,c7,c5,c0,c0,
-            c0,c0,c4,c7,c7,c7,c7,c7,c7,c7,c7,c7,c7,c5,c0,c0,
-            c0,c0,c4,c5,c5,c5,c5,c5,c5,c5,c5,c5,c5,c5,c0,c0
+            c0, c0, c4, c4, c4, c4, c4, c4, c4, c4, c4, c4, c0, c0, c0, c0,
+            c0, c0, c4, c7, c7, c7, c7, c7, c7, c7, c4, c6, c5, c0, c0, c0,
+            c0, c0, c4, c7, c7, c7, c7, c7, c7, c7, c4, c6, c6, c5, c0, c0,
+            c0, c0, c4, c7, c7, c7, c7, c7, c7, c7, c4, c5, c5, c5, c0, c0,
+            c0, c0, c4, c7, c7, c7, c7, c7, c7, c7, c7, c7, c7, c5, c0, c0,
+            c0, c0, c4, c7, c7, c7, c7, c7, c7, c7, c7, c7, c7, c5, c0, c0,
+            c0, c0, c4, c7, c7, c7, c7, c7, c7, c7, c7, c7, c7, c5, c0, c0,
+            c0, c0, c4, c7, c7, c7, c7, c7, c7, c7, c7, c7, c7, c5, c0, c0,
+            c0, c0, c4, c7, c7, c7, c7, c7, c7, c7, c7, c7, c7, c5, c0, c0,
+            c0, c0, c4, c7, c7, c7, c7, c7, c7, c7, c7, c7, c7, c5, c0, c0,
+            c0, c0, c4, c7, c7, c7, c7, c7, c7, c7, c7, c7, c7, c5, c0, c0,
+            c0, c0, c4, c7, c7, c7, c7, c7, c7, c7, c7, c7, c7, c5, c0, c0,
+            c0, c0, c4, c7, c7, c7, c7, c7, c7, c7, c7, c7, c7, c5, c0, c0,
+            c0, c0, c4, c7, c7, c7, c7, c7, c7, c7, c7, c7, c7, c5, c0, c0,
+            c0, c0, c4, c7, c7, c7, c7, c7, c7, c7, c7, c7, c7, c5, c0, c0,
+            c0, c0, c4, c5, c5, c5, c5, c5, c5, c5, c5, c5, c5, c5, c0, c0
         };
         fileTexture = new(size, size);
         for (var i = 0; i < fileIcon.Length; i++)
@@ -112,10 +114,12 @@ public class FileBrowser
             var yPos = size - i / size;
             fileTexture.SetPixel(xPos, yPos, fileIcon[i]);
         }
+
         fileTexture.Apply();
     }
 
-    public FileBrowser(string currentDir, Rect windowRect, string title, int id, FileBrowserType browserType, Extension[] extensions)
+    public FileBrowser(string currentDir, Rect windowRect, string title, int id, FileBrowserType browserType,
+        Extension[] extensions)
     {
         this.currentDir = currentDir;
         changingDir = currentDir;
@@ -169,6 +173,7 @@ public class FileBrowser
                             splitBuilder.Add(split);
                     }
                 }
+
                 extensionsProcessed[i][j] = splitBuilder.ToArray();
             }
         }
@@ -179,10 +184,11 @@ public class FileBrowser
                 selectText = "Open";
                 break;
             case FileBrowserType.Save:
-                {
-                    selectText = "Save"; ;
-                    break;
-                }
+            {
+                selectText = "Save";
+                ;
+                break;
+            }
         }
 
         quickAccessWidth = (int)(windowRect.width / 9);
@@ -213,7 +219,9 @@ public class FileBrowser
                 quickAccessNamesBuilder.Add(drive.Name);
             }
         }
-        catch (Exception) { }
+        catch (Exception)
+        {
+        }
 
         quickAccessPaths = quickAccessPathsBuilder.ToArray();
         quickAccessNames = quickAccessNamesBuilder.ToArray();
@@ -252,7 +260,8 @@ public class FileBrowser
         confirmSave.Update();
         if (confirmSave.FinalResult(out var overwriteSave) && overwriteSave)
         {
-            finalPath = Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoke(System.IO.Path.Combine, currentDir, selectedFileText);
+            finalPath = Plugin.Kernel.Resolve<PatchReverseInvoker>()
+                .Invoke(System.IO.Path.Combine, currentDir, selectedFileText);
             gotFinalPath = false;
             opened = false;
         }
@@ -320,15 +329,18 @@ public class FileBrowser
                                     {
                                         nameProcessing = nameProcessing.Substring(filter.Length);
                                     }
+
                                     if (i + 1 == extFilter.Length)
                                     {
                                         if (nameProcessing.Length == 0)
                                             filterOut = false;
                                         break;
                                     }
+
                                     i++;
                                 }
                             }
+
                             if (!filterOut)
                                 break;
                         }
@@ -348,8 +360,7 @@ public class FileBrowser
                         movingToPrev = false;
                         dirNext.Push(currentDir);
                     }
-                    else
-                    if (movingToNext)
+                    else if (movingToNext)
                     {
                         movingToNext = false;
                         dirPrev.Push(currentDir);
@@ -365,8 +376,10 @@ public class FileBrowser
                     currentDirPaths = new string[0];
                     displayNames = new GUIContent[0];
                 }
+
                 currentDir = changingDir;
             }
+
             currentDirText = currentDir;
             dirChanged = false;
         }
@@ -385,27 +398,33 @@ public class FileBrowser
             movingToPrev = true;
             dirChanged = true;
         }
+
         if (GUILayout.Button(">", GUILayout.Width(20)) && !confirmSave.Opened && dirNext.Count > 0)
         {
             changingDir = dirNext.Pop();
             movingToNext = true;
             dirChanged = true;
         }
+
         if (GUILayout.Button("^", GUILayout.Width(20)) && !confirmSave.Opened)
         {
-            changingDir = Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoke(System.IO.Path.GetDirectoryName, currentDir);
+            changingDir = Plugin.Kernel.Resolve<PatchReverseInvoker>()
+                .Invoke(System.IO.Path.GetDirectoryName, currentDir);
             dirChanged = true;
         }
+
         currentDirText = GUILayout.TextField(currentDirText);
         if (GUILayout.Button("Go", GUILayout.Width(50)) && !confirmSave.Opened)
         {
             changingDir = currentDirText;
             dirChanged = true;
         }
+
         if (GUILayout.Button("x", GUILayout.Width(20)) && !confirmSave.Opened)
         {
             opened = false;
         }
+
         GUILayout.EndHorizontal();
 
         GUILayout.BeginHorizontal();
@@ -426,6 +445,7 @@ public class FileBrowser
                 dirChanged = true;
             }
         }
+
         GUILayout.EndVertical();
         GUILayout.EndScrollView();
         nextScrollPos = GUILayout.BeginScrollView(fileScrollPos, false, true);
@@ -449,6 +469,7 @@ public class FileBrowser
                 }
             }
         }
+
         GUI.skin.button.alignment = TextAnchor.MiddleCenter;
         GUILayout.EndScrollView();
         GUILayout.EndHorizontal();
@@ -463,31 +484,34 @@ public class FileBrowser
             switch (browserType)
             {
                 case FileBrowserType.Open:
+                {
+                    if (rev.Invoke(System.IO.File.Exists, combinedPath))
                     {
-                        if (rev.Invoke(System.IO.File.Exists, combinedPath))
-                        {
-                            opened = false;
-                            gotFinalPath = false;
-                            finalPath = combinedPath;
-                        }
-                        break;
+                        opened = false;
+                        gotFinalPath = false;
+                        finalPath = combinedPath;
                     }
+
+                    break;
+                }
                 case FileBrowserType.Save:
+                {
+                    if (rev.Invoke(System.IO.File.Exists, combinedPath))
                     {
-                        if (rev.Invoke(System.IO.File.Exists, combinedPath))
-                        {
-                            confirmSave.Open();
-                        }
-                        else
-                        {
-                            opened = false;
-                            gotFinalPath = false;
-                            finalPath = combinedPath;
-                        }
-                        break;
+                        confirmSave.Open();
                     }
+                    else
+                    {
+                        opened = false;
+                        gotFinalPath = false;
+                        finalPath = combinedPath;
+                    }
+
+                    break;
+                }
             }
         }
+
         if (GUILayout.Button(extensionText, GUILayout.Width(200)) && extensions.Length > 1)
         {
             extensionIndex++;
@@ -498,6 +522,7 @@ public class FileBrowser
             changingDir = currentDir;
             dirChanged = true;
         }
+
         GUILayout.EndHorizontal();
     }
 
@@ -520,7 +545,9 @@ public class FileBrowser
             stringified = $"{Name} ({string.Join(";", Filters)})";
         }
 
-        public Extension() : this("All Files", new[] { "*" }) { }
+        public Extension() : this("All Files", new[] { "*" })
+        {
+        }
 
         public override string ToString()
         {

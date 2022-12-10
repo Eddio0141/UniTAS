@@ -24,10 +24,15 @@ public static class NewInputSystem
 
         // make sure to not add if they already exist
         var devices = InputSystemTraverse.Property("devices").Method("ToArray").GetValue<object[]>();
-        var toAdd = new[] { /*"Gamepad",*/ "FastKeyboard", "FastMouse" };
+        var toAdd = new[]
+        {
+            /*"Gamepad",*/ "FastKeyboard", "FastMouse"
+        };
         var removeDevice = InputSystemTraverse.Method("RemoveDevice", new[] { inputDeviceType });
 
-        Plugin.Log.LogDebug(string.Join(", ", InputSystemTraverse.Property("devices").Method("ToArray").GetValue<object[]>().Select(o => o.GetType().ToString()).ToArray()));
+        Plugin.Log.LogDebug(string.Join(", ",
+            InputSystemTraverse.Property("devices").Method("ToArray").GetValue<object[]>()
+                .Select(o => o.GetType().ToString()).ToArray()));
 
         foreach (var device in devices)
         {
@@ -53,10 +58,13 @@ public static class NewInputSystem
             Plugin.Log.LogDebug($"Adding {toAddType}");
             _ = generic.Invoke(null, new object[] { null });
         }
+
         var newbloodLegacyInput = AccessTools.TypeByName("NewBlood.LegacyInput");
         var generic2 = addDevice.MakeGenericMethod(newbloodLegacyInput);
         _ = generic2.Invoke(null, new object[] { null });
 
-        Plugin.Log.LogDebug(string.Join(", ", InputSystemTraverse.Property("devices").Method("ToArray").GetValue<object[]>().Select(o => o.GetType().ToString()).ToArray()));
+        Plugin.Log.LogDebug(string.Join(", ",
+            InputSystemTraverse.Property("devices").Method("ToArray").GetValue<object[]>()
+                .Select(o => o.GetType().ToString()).ToArray()));
     }
 }

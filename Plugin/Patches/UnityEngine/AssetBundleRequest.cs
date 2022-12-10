@@ -4,6 +4,7 @@ using HarmonyLib;
 using UniTASPlugin.VersionSafeWrapper;
 using ObjectOrig = UnityEngine.Object;
 using AssetBundleRequestOrig = UnityEngine.AssetBundleRequest;
+
 // ReSharper disable SuggestBaseTypeForParameter
 // ReSharper disable InconsistentNaming
 // ReSharper disable UnusedMember.Local

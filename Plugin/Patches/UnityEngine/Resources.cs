@@ -4,6 +4,7 @@ using HarmonyLib;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
 using AsyncOpOrig = UnityEngine.AsyncOperation;
+
 // ReSharper disable UnusedMember.Local
 // ReSharper disable InconsistentNaming
 // ReSharper disable RedundantAssignment

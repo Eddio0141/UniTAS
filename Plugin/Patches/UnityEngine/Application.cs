@@ -2,6 +2,7 @@
 using System.Reflection;
 using HarmonyLib;
 using AppOrig = UnityEngine.Application;
+
 // ReSharper disable UnusedMember.Local
 // ReSharper disable RedundantAssignment
 
@@ -15,7 +16,8 @@ internal static class Application
     {
         private static MethodBase TargetMethod()
         {
-            return AccessTools.Method(typeof(AppOrig), "LoadLevelAsync", new[] { typeof(string), typeof(int), typeof(bool), typeof(bool) });
+            return AccessTools.Method(typeof(AppOrig), "LoadLevelAsync",
+                new[] { typeof(string), typeof(int), typeof(bool), typeof(bool) });
         }
 
         private static Exception Cleanup(MethodBase original, Exception ex)

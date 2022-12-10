@@ -67,23 +67,27 @@ public static class Executor
                         continue;
                     waitingForCommandName = false;
                 }
+
                 if (ch is ' ' or '(')
                 {
                     commandName = false;
 
                     // find command
-                    var commandIndex = AllCommands.Commands.FindIndex(c => c.Name == commandNameBuilder || c.Aliases.Contains(commandNameBuilder));
+                    var commandIndex = AllCommands.Commands.FindIndex(c =>
+                        c.Name == commandNameBuilder || c.Aliases.Contains(commandNameBuilder));
                     if (commandIndex < 0)
                     {
                         Console.Print($"Command {commandNameBuilder} not found");
                         return;
                     }
+
                     // check if index is at the end of the list
                     if (i + 1 == input.Length)
                     {
                         Console.Print($"Missing arguments for command {commandNameBuilder}");
                         return;
                     }
+
                     currentCommand = AllCommands.Commands[commandIndex];
                 }
                 else
@@ -94,9 +98,11 @@ public static class Executor
                         CommandSyntaxError("missing args opening bracket", commandNameBuilder);
                         return;
                     }
+
                     continue;
                 }
             }
+
             if (findingOpenBracket)
             {
                 if (ch == '(')
@@ -110,6 +116,7 @@ public static class Executor
                     CommandSyntaxError("command name cannot contain spaces", commandNameBuilder);
                     return;
                 }
+
                 // check if index is at the end of the list
                 if (i + 1 == input.Length)
                 {
@@ -120,6 +127,7 @@ public static class Executor
                     return;
                 }
             }
+
             if (args)
             {
                 if (argStart)
@@ -128,9 +136,11 @@ public static class Executor
                     {
                         if (argsList)
                         {
-                            ArgumentSyntaxError("the list closing bracket is missing", commandNameBuilder, currentArgs.Count);
+                            ArgumentSyntaxError("the list closing bracket is missing", commandNameBuilder,
+                                currentArgs.Count);
                             return;
                         }
+
                         args = false;
                     }
                     else if (argsCommaFinding)
@@ -140,15 +150,18 @@ public static class Executor
                             argsCommaFinding = false;
                             if (i + 1 == input.Length)
                             {
-                                ArgumentSyntaxError("argument didn't end with a closing bracket", commandNameBuilder, currentArgs.Count);
+                                ArgumentSyntaxError("argument didn't end with a closing bracket", commandNameBuilder,
+                                    currentArgs.Count);
                                 return;
                             }
                         }
                         else if (ch != ' ')
                         {
-                            ArgumentSyntaxError("missing comma between arguments", commandNameBuilder, currentArgs.Count);
+                            ArgumentSyntaxError("missing comma between arguments", commandNameBuilder,
+                                currentArgs.Count);
                             return;
                         }
+
                         continue;
                     }
                     else if (ch != ' ')
@@ -159,9 +172,11 @@ public static class Executor
                         {
                             if (argsList)
                             {
-                                ArgumentSyntaxError("you cannot use recursive lists", commandNameBuilder, currentArgs.Count);
+                                ArgumentSyntaxError("you cannot use recursive lists", commandNameBuilder,
+                                    currentArgs.Count);
                                 return;
                             }
+
                             // repeat normal process but we are now in a list
                             argsList = true;
                         }
@@ -169,6 +184,7 @@ public static class Executor
                         argBuilder += ch;
                         argStart = false;
                     }
+
                     if (i + 1 == input.Length)
                     {
                         if (ch == ')')
@@ -181,6 +197,7 @@ public static class Executor
                             CommandSyntaxError("missing argument closing bracket", commandNameBuilder);
                         return;
                     }
+
                     continue;
                 }
 
@@ -191,17 +208,21 @@ public static class Executor
                     else if (argsString)
                         ArgumentSyntaxError("string is missing an end quote", commandNameBuilder, currentArgs.Count);
                     else
-                        ArgumentSyntaxError("argument didn't end with a closing bracket", commandNameBuilder, currentArgs.Count);
+                        ArgumentSyntaxError("argument didn't end with a closing bracket", commandNameBuilder,
+                            currentArgs.Count);
                     return;
                 }
+
                 // check normal value termination
                 if (!argsString && !argsList && (ch == ',' || ch == ')'))
                 {
                     if (!Parameter.FromString(argBuilder, out var arg))
                     {
-                        ArgumentSyntaxError($"argument \"{argBuilder}\" failed to parse", commandNameBuilder, currentArgs.Count);
+                        ArgumentSyntaxError($"argument \"{argBuilder}\" failed to parse", commandNameBuilder,
+                            currentArgs.Count);
                         return;
                     }
+
                     currentArgs.Add(arg);
                     argBuilder = "";
                     if (ch == ',')
@@ -210,11 +231,13 @@ public static class Executor
                         args = false;
                     continue;
                 }
+
                 // simple list string check
                 if (argsList && ch == '"')
                 {
                     argsString = !argsString;
                 }
+
                 // builder
                 argBuilder += ch;
                 // check string termination
@@ -222,9 +245,11 @@ public static class Executor
                 {
                     if (!Parameter.FromString(argBuilder, out var arg) || arg.ParamType != ParameterType.String)
                     {
-                        Console.Print($"Unreachable error, \"{argBuilder}\" should be parsed as a string for command {commandNameBuilder}, arg index {currentArgs.Count}");
+                        Console.Print(
+                            $"Unreachable error, \"{argBuilder}\" should be parsed as a string for command {commandNameBuilder}, arg index {currentArgs.Count}");
                         return;
                     }
+
                     argsString = false;
                     argStart = true;
                     currentArgs.Add(arg);
@@ -236,15 +261,19 @@ public static class Executor
                 {
                     if (!Parameter.FromString(argBuilder, out var arg) || arg.ParamType != ParameterType.List)
                     {
-                        ArgumentSyntaxError($"argument {argBuilder} failed to parse as a list, make sure the values in the list are all the same", commandNameBuilder, currentArgs.Count);
+                        ArgumentSyntaxError(
+                            $"argument {argBuilder} failed to parse as a list, make sure the values in the list are all the same",
+                            commandNameBuilder, currentArgs.Count);
                         return;
                     }
+
                     argStart = true;
                     argsList = false;
                     currentArgs.Add(arg);
                     argBuilder = "";
                     argsCommaFinding = true;
                 }
+
                 continue;
             }
 

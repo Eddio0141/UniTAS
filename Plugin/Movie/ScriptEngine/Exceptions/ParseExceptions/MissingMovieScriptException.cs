@@ -2,5 +2,7 @@
 
 public class MissingMovieScriptException : MovieParseException
 {
-    public MissingMovieScriptException() : base("Missing script") { }
+    public MissingMovieScriptException() : base("Missing script")
+    {
+    }
 }

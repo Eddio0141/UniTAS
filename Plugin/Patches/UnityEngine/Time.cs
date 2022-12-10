@@ -5,6 +5,7 @@ using UniTASPlugin.FakeGameState;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.ReverseInvoker;
 using TimeOrig = UnityEngine.Time;
+
 // ReSharper disable InconsistentNaming
 // ReSharper disable IdentifierTypo
 // ReSharper disable UnusedMember.Local
@@ -33,7 +34,8 @@ internal static class Time
             // if TAS is running / preparing and we aren't setting the frametime, reject
             // TODO below
             //return !(TAS.Running || TAS.PreparingRun);
-            return !(kernel.Resolve<VirtualEnvironment>().RunVirtualEnvironment && !kernel.Resolve<PatchReverseInvoker>().Invoking);
+            return !(kernel.Resolve<VirtualEnvironment>().RunVirtualEnvironment &&
+                     !kernel.Resolve<PatchReverseInvoker>().Invoking);
         }
     }
 
@@ -53,7 +55,8 @@ internal static class Time
             // if TAS is running / preparing and we aren't setting the frametime, reject
             // TODO below
             //return !(TAS.Running || TAS.PreparingRun);
-            return !(kernel.Resolve<VirtualEnvironment>().RunVirtualEnvironment && !kernel.Resolve<PatchReverseInvoker>().Invoking);
+            return !(kernel.Resolve<VirtualEnvironment>().RunVirtualEnvironment &&
+                     !kernel.Resolve<PatchReverseInvoker>().Invoking);
         }
     }
 
@@ -81,8 +84,11 @@ internal static class Time
             return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        private static readonly Traverse inFixedTimeStep = Traverse.Create(typeof(TimeOrig)).Property("inFixedTimeStep");
-        private static readonly Traverse fixedUnscaledTime = Traverse.Create(typeof(TimeOrig)).Property("fixedUnscaledTime");
+        private static readonly Traverse
+            inFixedTimeStep = Traverse.Create(typeof(TimeOrig)).Property("inFixedTimeStep");
+
+        private static readonly Traverse fixedUnscaledTime =
+            Traverse.Create(typeof(TimeOrig)).Property("fixedUnscaledTime");
 
         private static void Postfix(ref float __result)
         {
@@ -103,8 +109,11 @@ internal static class Time
             return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        private static readonly Traverse inFixedTimeStep = Traverse.Create(typeof(TimeOrig)).Property("inFixedTimeStep");
-        private static readonly Traverse fixedUnscaledTimeAsDouble = Traverse.Create(typeof(TimeOrig)).Property("fixedUnscaledTimeAsDouble");
+        private static readonly Traverse
+            inFixedTimeStep = Traverse.Create(typeof(TimeOrig)).Property("inFixedTimeStep");
+
+        private static readonly Traverse fixedUnscaledTimeAsDouble =
+            Traverse.Create(typeof(TimeOrig)).Property("fixedUnscaledTimeAsDouble");
 
         private static void Postfix(ref double __result)
         {

@@ -36,7 +36,7 @@ internal static class Main
         testy = (float)position.Field("y").GetValue();
         testz = (float)position.Field("z").GetValue();
 
-        Test = new State(/*sceneIndex,*/ time, frameCount, fixedUpdateIndex/*cursorVisible, cursorLockState,*/);
+        Test = new State( /*sceneIndex,*/ time, frameCount, fixedUpdateIndex /*cursorVisible, cursorLockState,*/);
         Plugin.Log.LogDebug("Saved test state");
     }
 
@@ -47,7 +47,8 @@ internal static class Main
         pendingLoad = true;
         pendingLoadFixedUpdateIndex = state.FixedUpdateIndex;
         pendingState = state;
-        Plugin.Log.LogDebug(/*$"Scene: {state.Scene}, */$"Time: {state.Time}, FrameCount: {state.FrameCount}, FixedUpdateIndex: {state.FixedUpdateIndex}");
+        Plugin.Log.LogDebug( /*$"Scene: {state.Scene}, */
+            $"Time: {state.Time}, FrameCount: {state.FrameCount}, FixedUpdateIndex: {state.FixedUpdateIndex}");
     }
 
     public static void Update()
@@ -77,6 +78,7 @@ internal static class Main
         _ = position.Field("y").SetValue(testy);
         _ = position.Field("z").SetValue(testz);
 
-        Plugin.Log.LogDebug($"Load operation finished, time: {DateTime.Now}, frameCount: {GameTime.RenderedFrameCountOffset}");
+        Plugin.Log.LogDebug(
+            $"Load operation finished, time: {DateTime.Now}, frameCount: {GameTime.RenderedFrameCountOffset}");
     }
 }

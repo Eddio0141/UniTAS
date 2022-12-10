@@ -18,10 +18,10 @@ public static partial class FileSystem
         switch (device)
         {
             case DeviceType.Windows:
-                {
-                    Root = new("C:", null);
-                    break;
-                }
+            {
+                Root = new("C:", null);
+                break;
+            }
             default:
                 throw new ArgumentOutOfRangeException();
         }
@@ -54,6 +54,7 @@ public static partial class FileSystem
         {
             currentRoot = currentRoot.AddDir(dir);
         }
+
         return currentRoot;
     }
 
@@ -72,6 +73,7 @@ public static partial class FileSystem
             if (dir == null)
                 return null;
         }
+
         return dir;
     }
 

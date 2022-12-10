@@ -14,6 +14,7 @@ internal class RandomWrap
             _ = initState.GetValue(seed);
             return;
         }
+
         // TODO does this work?
         Random.seed = seed;
     }

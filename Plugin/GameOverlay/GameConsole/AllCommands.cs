@@ -9,7 +9,8 @@ public static class AllCommands
 {
     public static List<Command> Commands { get; } = new()
     {
-        new("test", "", args => {
+        new("test", "", args =>
+        {
             Console.Print("testing");
             Console.Print($"all args: {string.Join(", ", args.Select(x => x.ToString()).ToArray())}");
             Console.Print($"arg types: {string.Join(", ", args.Select(x => x.ParamType.ToString()).ToArray())}");
@@ -25,19 +26,22 @@ public static class AllCommands
                 Console.Print(cmd.Name);
             }
         }),
-        new("clear", "Clears the terminal.", args => {
+        new("clear", "Clears the terminal.", args =>
+        {
             if (!ValidateArgCount(args, 0))
                 return;
             Console.Clear();
         }, usage: "clear();"),
-        new("help", "Help for the terminal or a specific command. Run commands(); for list of commands.", args => {
+        new("help", "Help for the terminal or a specific command. Run commands(); for list of commands.", args =>
+        {
             if (!ValidateArgCount(args, 0, 1))
                 return;
             Command helpCmd;
             if (args.Length == 0)
             {
                 helpCmd = Commands.Find(c => c.Name == "help");
-            } else if (!args[0].GetString(out var findName))
+            }
+            else if (!args[0].GetString(out var findName))
             {
                 Console.Print("Argument needs to be the command name string");
                 return;
@@ -50,8 +54,10 @@ public static class AllCommands
                     Console.Print("Command not found");
                     return;
                 }
+
                 helpCmd = Commands[helpCmdIndex];
             }
+
             Console.Print($"Command {helpCmd.Name}");
             if (helpCmd.Aliases.Length > 0)
                 Console.Print($"aliases: {string.Join(" ", helpCmd.Aliases)}");
@@ -60,12 +66,14 @@ public static class AllCommands
             if (helpCmd.Usage != "")
                 Console.Print($"usage: {helpCmd.Usage}");
         }, "Help(); / Help(\"echo\");"),
-        new("quit", "Quits the game.", args => {
+        new("quit", "Quits the game.", args =>
+        {
             if (!ValidateArgCount(args, 0))
                 return;
             Application.Quit();
         }, usage: "quit();"),
-        new("echo", "Prints the given text to the console.", args => {
+        new("echo", "Prints the given text to the console.", args =>
+        {
             if (!ValidateArgCount(args, 1))
                 return;
             Console.Print(args[0].ToString());
@@ -86,11 +94,13 @@ public static class AllCommands
                     Console.Print("Argument 0 isn't a string");
                     return;
                 }
+
                 if (!DateTime.TryParse(dateTimeString, out var dateTime))
                 {
                     Console.Print("Invalid DateTime value");
                     return;
                 }
+
                 Console.Print($"Restarting with time {dateTime}");
                 GameRestart.SoftRestart(dateTime);
             }
@@ -104,6 +114,7 @@ public static class AllCommands
             Console.Print($"Invalid argument count, expected {count} args, got {args.Length}");
             return false;
         }
+
         return true;
     }
 
@@ -114,11 +125,13 @@ public static class AllCommands
             Console.Print($"Invalid argument count, expected at least {minInclusive} args, got {args.Length}");
             return false;
         }
+
         if (args.Length > maxInclusive)
         {
             Console.Print($"Invalid argument count, expected at most {maxInclusive} args, got {args.Length}");
             return false;
         }
+
         return true;
     }
 }

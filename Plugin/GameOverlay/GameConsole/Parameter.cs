@@ -50,6 +50,7 @@ public class Parameter
             value = valueString;
             return true;
         }
+
         value = null;
         return false;
     }
@@ -61,6 +62,7 @@ public class Parameter
             value = valueInt;
             return true;
         }
+
         value = 0;
         return false;
     }
@@ -72,6 +74,7 @@ public class Parameter
             value = valueFloat;
             return true;
         }
+
         value = 0;
         return false;
     }
@@ -83,6 +86,7 @@ public class Parameter
             value = valueBool;
             return true;
         }
+
         value = false;
         return false;
     }
@@ -94,6 +98,7 @@ public class Parameter
             value = valueList;
             return true;
         }
+
         value = null;
         return false;
     }
@@ -118,21 +123,25 @@ public class Parameter
             parameter = new(value);
             return true;
         }
+
         if (int.TryParse(value, out var intValue))
         {
             parameter = new(intValue);
             return true;
         }
+
         if (float.TryParse(value, out var floatValue))
         {
             parameter = new(floatValue);
             return true;
         }
+
         if (bool.TryParse(value, out var boolValue))
         {
             parameter = new(boolValue);
             return true;
         }
+
         if (value.StartsWith("[") && value.EndsWith("]"))
         {
             var listString = value.Substring(1, value.Length - 2);
@@ -142,6 +151,7 @@ public class Parameter
                 parameter = null;
                 return false;
             }
+
             var list = new List<Parameter>();
             var listStringSplit = listString.Split(',');
             ParameterType? listType = null;
@@ -152,6 +162,7 @@ public class Parameter
                     parameter = null;
                     return false;
                 }
+
                 if (listType == null)
                 {
                     listType = listParam.ParamType;
@@ -161,8 +172,10 @@ public class Parameter
                     parameter = null;
                     return false;
                 }
+
                 list.Add(listParam);
             }
+
             parameter = new(list.ToArray());
             return true;
         }

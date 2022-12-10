@@ -2,7 +2,8 @@
 
 public class BitwiseShiftRightOpCode : BitwiseBase
 {
-    public BitwiseShiftRightOpCode(RegisterType resultRegister, RegisterType left, RegisterType right) : base(resultRegister, left, right)
+    public BitwiseShiftRightOpCode(RegisterType resultRegister, RegisterType left, RegisterType right) : base(
+        resultRegister, left, right)
     {
     }
 }

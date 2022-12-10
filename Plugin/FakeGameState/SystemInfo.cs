@@ -22,6 +22,7 @@ public static class SystemInfo
                     if (variant.ToString() == DeviceType)
                         foundDesktop = true;
                 }
+
                 if (!foundDesktop)
                     Plugin.Log.LogError($"DeviceType enum doesn't contain {DeviceType}, fix this");
             }

@@ -8,6 +8,7 @@ using UniTASPlugin.Exceptions;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
 using Object = UnityEngine.Object;
+
 // ReSharper disable StringLiteralTypo
 
 namespace UniTASPlugin;
@@ -31,7 +32,8 @@ internal static class GameTracker
         }
 
         // initial game state values
-        var gameAssemblyNames = new[] {
+        var gameAssemblyNames = new[]
+        {
             "Assembly-CSharp",
             "Assembly-CSharp-firstpass",
             "Assembly-UnityScript",
@@ -74,51 +76,59 @@ internal static class GameTracker
         // game specific type exclusion
         var exclusionGameAndType = new Dictionary<string, List<string>>
         {
-            { "It Steals", new List<string>
+            {
+                "It Steals", new List<string>
                 {
-                "SteamManager"
+                    "SteamManager"
                 }
             },
-            { "Keep Talking and Nobody Explodes", new List<string>
+            {
+                "Keep Talking and Nobody Explodes", new List<string>
                 {
-                /*
-                "Oculus.Platform*",
-                "DigitalOpus.MB.Core*",
-                "LTGUI*",
-                "LeanTween*",
-                "LTDescr*",
-                "LTRect*",
-                "LeanTest*",
-                "BindingsExample*",
-                "I2.Loc*",
-                */
-            }
+                    /*
+                    "Oculus.Platform*",
+                    "DigitalOpus.MB.Core*",
+                    "LTGUI*",
+                    "LeanTween*",
+                    "LTDescr*",
+                    "LTRect*",
+                    "LeanTest*",
+                    "BindingsExample*",
+                    "I2.Loc*",
+                    */
+                }
             }
         };
         // game specific field exclusion
         var exclusionGameAndField = new Dictionary<string, List<string>>
         {
-            { "Keep Talking and Nobody Explodes", new List<string>
+            {
+                "Keep Talking and Nobody Explodes", new List<string>
                 {
-                "InControl.TouchManager.OnSetup"
+                    "InControl.TouchManager.OnSetup"
                 }
             }
         };
         // TODO does System.Action affect stuff?
 
         var gameName = Helper.GameName();
-        var gameAssemblies = AccessTools.AllAssemblies().Where(a => gameAssemblyNames.Contains(a.GetName().Name)).ToArray();
+        var gameAssemblies = AccessTools.AllAssemblies().Where(a => gameAssemblyNames.Contains(a.GetName().Name))
+            .ToArray();
         var allGameTypes = gameAssemblies
             .SelectMany(a => a.GetTypes())
             .Where(t => !exclusionTypes
-            .Any(ex => t.FullName != null && (ex == t.FullName || ex.EndsWith("*") && t.FullName.StartsWith(ex.Remove(ex.Length - 1, 1)))));
+                .Any(ex => t.FullName != null && (ex == t.FullName ||
+                                                  ex.EndsWith("*") &&
+                                                  t.FullName.StartsWith(ex.Remove(ex.Length - 1, 1)))));
         if (exclusionGameAndType.ContainsKey(gameName))
         {
             var excludeNames = exclusionGameAndType[gameName];
             allGameTypes =
                 allGameTypes.Where(t => !excludeNames
-                .Any(ex => t.FullName == ex || ex.EndsWith("*") && t.FullName.StartsWith(ex.Remove(ex.Length - 1, 1))));
+                    .Any(ex => t.FullName == ex ||
+                               ex.EndsWith("*") && t.FullName.StartsWith(ex.Remove(ex.Length - 1, 1))));
         }
+
         var exclusionFields = new List<string>();
         if (exclusionGameAndField.ContainsKey(gameName))
             exclusionFields = exclusionGameAndField[gameName];
@@ -150,6 +160,7 @@ internal static class GameTracker
                     Plugin.Log.LogDebug($"Detected instance field: {fieldName}, skipping");
                     continue;
                 }
+
                 // check field exclusion
                 if (exclusionFields.Contains(fieldName))
                 {
@@ -183,6 +194,7 @@ internal static class GameTracker
                     Plugin.Log.LogWarning($"failed to get field value for {fieldName}, ex: {ex}");
                     continue;
                 }
+
                 {
                     var fieldValueString = fieldValue == null ? "null" : fieldValue.ToString();
                     Plugin.Log.LogDebug($"cloning field {fieldName} with value {fieldValueString}");
@@ -236,7 +248,8 @@ internal static class GameTracker
                     catch (DeepCopyMaxRecursion)
                     {
                         failedClone = true;
-                        Plugin.Log.LogWarning($"max recursion reached, excluding field type {fieldType} from deep copy");
+                        Plugin.Log.LogWarning(
+                            $"max recursion reached, excluding field type {fieldType} from deep copy");
                         //fieldTypeIgnore.Add(fieldType);
                     }
                     catch (Exception ex)
@@ -258,8 +271,10 @@ internal static class GameTracker
         foreach (var scene in asyncSceneLoads)
         {
             Plugin.Log.LogDebug($"force loading scene, name: {scene.sceneName} {scene.sceneBuildIndex}");
-            SceneHelper.LoadSceneAsyncNameIndexInternal(scene.sceneName, scene.sceneBuildIndex, scene.parameters, scene.isAdditive, true);
+            SceneHelper.LoadSceneAsyncNameIndexInternal(scene.sceneName, scene.sceneBuildIndex, scene.parameters,
+                scene.isAdditive, true);
         }
+
         asyncSceneLoads.Clear();
     }
 
@@ -271,7 +286,8 @@ internal static class GameTracker
         public bool? isAdditive;
         public ulong UID;
 
-        public AsyncSceneLoadData(string sceneName, int sceneBuildIndex, object parameters, bool? isAdditive, AsyncOperationWrap wrap)
+        public AsyncSceneLoadData(string sceneName, int sceneBuildIndex, object parameters, bool? isAdditive,
+            AsyncOperationWrap wrap)
         {
             this.sceneName = sceneName;
             this.sceneBuildIndex = sceneBuildIndex;
@@ -284,7 +300,8 @@ internal static class GameTracker
     private static readonly List<AsyncSceneLoadData> asyncSceneLoads = new();
     private static readonly List<AsyncSceneLoadData> asyncSceneLoadsStall = new();
 
-    public static void AsyncSceneLoad(string sceneName, int sceneBuildIndex, object parameters, bool? isAdditive, AsyncOperationWrap wrap)
+    public static void AsyncSceneLoad(string sceneName, int sceneBuildIndex, object parameters, bool? isAdditive,
+        AsyncOperationWrap wrap)
     {
         asyncSceneLoads.Add(new(sceneName, sceneBuildIndex, parameters, isAdditive, wrap));
     }
@@ -307,8 +324,10 @@ internal static class GameTracker
                 return;
             var sceneToLoad = asyncSceneLoadsStall[sceneToLoadIndex];
             asyncSceneLoadsStall.RemoveAt(sceneToLoadIndex);
-            SceneHelper.LoadSceneAsyncNameIndexInternal(sceneToLoad.sceneName, sceneToLoad.sceneBuildIndex, sceneToLoad.parameters, sceneToLoad.isAdditive, true);
-            Plugin.Log.LogDebug($"force loading scene, name: {sceneToLoad.sceneName} build index: {sceneToLoad.sceneBuildIndex}");
+            SceneHelper.LoadSceneAsyncNameIndexInternal(sceneToLoad.sceneName, sceneToLoad.sceneBuildIndex,
+                sceneToLoad.parameters, sceneToLoad.isAdditive, true);
+            Plugin.Log.LogDebug(
+                $"force loading scene, name: {sceneToLoad.sceneName} build index: {sceneToLoad.sceneBuildIndex}");
         }
         else
         {

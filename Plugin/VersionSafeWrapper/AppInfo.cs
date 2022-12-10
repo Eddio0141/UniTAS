@@ -37,6 +37,7 @@ public static class AppInfo
                     foundMultipleExe = true;
                     break;
                 }
+
                 foundExe = path;
             }
         }

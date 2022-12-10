@@ -10,13 +10,15 @@ public class State
     // time stuff
     public readonly DateTime Time;
     public readonly ulong FrameCount;
+
     public readonly int FixedUpdateIndex;
     // cursor stuff
     // TODO sort out depending on unity version
     //public readonly bool CursorVisible;
     //public readonly UnityHooks.CursorLockModeType CursorLockState;
 
-    public State(/*int scene,*/ DateTime time, ulong frameCount, int fixedUpdateIndex /*bool cursorVisible, UnityHooks.CursorLockModeType cursorLockState,*/)
+    public State( /*int scene,*/ DateTime time, ulong frameCount,
+        int fixedUpdateIndex /*bool cursorVisible, UnityHooks.CursorLockModeType cursorLockState,*/)
     {
         // TODO sort out depending on unity version
         //Scene = scene;

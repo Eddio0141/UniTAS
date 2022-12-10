@@ -9,7 +9,9 @@ public class ScriptMethodModel
     public OpCodeBase[] OpCodes { get; }
     public string Name { get; }
 
-    public ScriptMethodModel() : this(null, new OpCodeBase[0]) { }
+    public ScriptMethodModel() : this(null, new OpCodeBase[0])
+    {
+    }
 
     public ScriptMethodModel(string name, IEnumerable<OpCodeBase> opCodes)
     {

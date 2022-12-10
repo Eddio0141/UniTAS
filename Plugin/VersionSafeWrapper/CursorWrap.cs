@@ -9,7 +9,10 @@ internal static class CursorWrap
     private static readonly bool ScreenLockCursorExists = ScreenLockCursorTraverse.PropertyExists();
     private static readonly bool ScreenShowCursorExists = ScreenShowCursorTraverse.PropertyExists();
     private static readonly bool CursorTypeExists = CursorTraverse.TypeExists();
-    private static readonly bool LockModeTypeExists = Traverse.CreateWithType("UnityEngine.CursorLockMode").TypeExists();
+
+    private static readonly bool LockModeTypeExists =
+        Traverse.CreateWithType("UnityEngine.CursorLockMode").TypeExists();
+
     private static readonly bool CursorLockStateExists = CursorLockStateTraverse.PropertyExists();
     private static readonly Type CursorLockModeType = AccessTools.TypeByName("UnityEngine.CursorLockMode");
     private static Traverse CursorTraverse => Traverse.CreateWithType("UnityEngine.Cursor");
@@ -39,11 +42,13 @@ internal static class CursorWrap
                 CursorVisibleTraverse.SetValue(value);
                 return;
             }
+
             if (!ScreenShowCursorExists)
             {
                 Plugin.Log.LogError("Failed to set Screen.showCursor property");
                 return;
             }
+
             ScreenShowCursorTraverse.SetValue(value);
         }
     }
@@ -62,20 +67,24 @@ internal static class CursorWrap
                 }
                 else
                 {
-                    Plugin.Log.LogError("UnityEngine.CursorLockMode exists but the UnityEngine.Cursor.lockState is missing");
+                    Plugin.Log.LogError(
+                        "UnityEngine.CursorLockMode exists but the UnityEngine.Cursor.lockState is missing");
                 }
             }
             else
             {
                 Plugin.Log.LogError("UnityEngine.CursorLockMode exists but the None variant is missing");
             }
+
             return;
         }
+
         if (!ScreenLockCursorExists)
         {
             Plugin.Log.LogError("Failed to unlock cursor, lockCursor property not found");
             return;
         }
+
         ScreenLockCursorTraverse.SetValue(false);
     }
 }

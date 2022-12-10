@@ -14,7 +14,9 @@ public partial class DefaultMoviePropertiesParser
     {
         public const string Key = "os";
 
-        public OsKey() : base(Key, new string[0], new[] { FromSaveState.Key }) { }
+        public OsKey() : base(Key, new string[0], new[] { FromSaveState.Key })
+        {
+        }
 
         public override object Parse(string input) => Enum.Parse(typeof(Os), input);
     }
@@ -23,7 +25,9 @@ public partial class DefaultMoviePropertiesParser
     {
         public const string Key = "datetime";
 
-        public StartTimeKey() : base(Key, new[] { SeedKey.Key }, new[] { FromSaveState.Key }) { }
+        public StartTimeKey() : base(Key, new[] { SeedKey.Key }, new[] { FromSaveState.Key })
+        {
+        }
 
         public override object Parse(string input)
         {
@@ -36,7 +40,9 @@ public partial class DefaultMoviePropertiesParser
     {
         public const string Key = "seed";
 
-        public SeedKey() : base(Key, new[] { StartTimeKey.Key }, new[] { FromSaveState.Key }) { }
+        public SeedKey() : base(Key, new[] { StartTimeKey.Key }, new[] { FromSaveState.Key })
+        {
+        }
 
         public override object Parse(string input) => new DateTime(long.Parse(input));
     }
@@ -45,7 +51,9 @@ public partial class DefaultMoviePropertiesParser
     {
         public const string Key = "frametime";
 
-        public FrameTimeKey() : base(Key, new[] { FtKey.Key, FpsKey.Key }, new[] { FromSaveState.Key }) { }
+        public FrameTimeKey() : base(Key, new[] { FtKey.Key, FpsKey.Key }, new[] { FromSaveState.Key })
+        {
+        }
 
         public override object Parse(string input) => float.Parse(input);
     }
@@ -54,7 +62,9 @@ public partial class DefaultMoviePropertiesParser
     {
         public const string Key = "ft";
 
-        public FtKey() : base(Key, new[] { FrameTimeKey.Key, FpsKey.Key }, new[] { FromSaveState.Key }) { }
+        public FtKey() : base(Key, new[] { FrameTimeKey.Key, FpsKey.Key }, new[] { FromSaveState.Key })
+        {
+        }
 
         public override object Parse(string input) => float.Parse(input);
     }
@@ -63,7 +73,9 @@ public partial class DefaultMoviePropertiesParser
     {
         public const string Key = "fps";
 
-        public FpsKey() : base(Key, new[] { FtKey.Key, FpsKey.Key }, new[] { FromSaveState.Key }) { }
+        public FpsKey() : base(Key, new[] { FtKey.Key, FpsKey.Key }, new[] { FromSaveState.Key })
+        {
+        }
 
         public override object Parse(string input) => 1f / float.Parse(input);
     }
@@ -72,7 +84,9 @@ public partial class DefaultMoviePropertiesParser
     {
         public const string Key = "resolution";
 
-        public ResolutionKey() : base(Key, new string[0], new[] { FromSaveState.Key }) { }
+        public ResolutionKey() : base(Key, new string[0], new[] { FromSaveState.Key })
+        {
+        }
 
         public override object Parse(string input)
         {
@@ -92,7 +106,9 @@ public partial class DefaultMoviePropertiesParser
     {
         public const string Key = "unfocused";
 
-        public Unfocused() : base(Key, new string[0], new[] { FromSaveState.Key }) { }
+        public Unfocused() : base(Key, new string[0], new[] { FromSaveState.Key })
+        {
+        }
 
         public override object Parse(string input) => false;
     }
@@ -101,7 +117,9 @@ public partial class DefaultMoviePropertiesParser
     {
         public const string Key = "fullscreen";
 
-        public FullScreen() : base(Key, new string[0], new[] { FromSaveState.Key }) { }
+        public FullScreen() : base(Key, new string[0], new[] { FromSaveState.Key })
+        {
+        }
 
         public override object Parse(string input) => true;
     }
@@ -122,7 +140,8 @@ public partial class DefaultMoviePropertiesParser
             Unfocused.Key,
             FullScreen.Key
         })
-        { }
+        {
+        }
 
         public override object Parse(string input) => input;
     }
@@ -131,7 +150,9 @@ public partial class DefaultMoviePropertiesParser
     {
         public const string Key = "name";
 
-        public NameKey() : base(Key) { }
+        public NameKey() : base(Key)
+        {
+        }
 
         public override object Parse(string input) => input;
     }
@@ -140,7 +161,9 @@ public partial class DefaultMoviePropertiesParser
     {
         public const string Key = "desc";
 
-        public DescriptionKey() : base(Key) { }
+        public DescriptionKey() : base(Key)
+        {
+        }
 
         public override object Parse(string input) => input;
     }
@@ -149,7 +172,9 @@ public partial class DefaultMoviePropertiesParser
     {
         public const string Key = "author";
 
-        public AuthorKey() : base(Key) { }
+        public AuthorKey() : base(Key)
+        {
+        }
 
         public override object Parse(string input) => input;
     }
@@ -158,7 +183,9 @@ public partial class DefaultMoviePropertiesParser
     {
         public const string Key = "endsave";
 
-        public EndSaveKey() : base(Key) { }
+        public EndSaveKey() : base(Key)
+        {
+        }
 
         public override object Parse(string input) => input;
     }

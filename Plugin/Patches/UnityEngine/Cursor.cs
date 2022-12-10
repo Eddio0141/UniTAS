@@ -4,6 +4,7 @@ using HarmonyLib;
 using UniTASPlugin.GameOverlay;
 using UniTASPlugin.ReverseInvoker;
 using UnityEngine;
+
 // ReSharper disable UnusedMember.Local
 // ReSharper disable InconsistentNaming
 
@@ -53,7 +54,8 @@ internal static class Cursor
     {
         private static MethodBase TargetMethod()
         {
-            return AccessTools.Method(CursorHelper.CursorType(), "SetCursor", new[] { typeof(Texture2D), typeof(Vector2), CursorHelper.CursorLockMode() });
+            return AccessTools.Method(CursorHelper.CursorType(), "SetCursor",
+                new[] { typeof(Texture2D), typeof(Vector2), CursorHelper.CursorLockMode() });
         }
 
         private static Exception Cleanup(MethodBase original, Exception ex)

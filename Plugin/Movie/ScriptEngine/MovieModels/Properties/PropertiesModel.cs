@@ -11,7 +11,8 @@ public class PropertiesModel
 
     public string EndSavePath { get; }
 
-    public PropertiesModel(string name, string description, string author, string endSavePath, StartupPropertiesModel startupPropertiesModel)
+    public PropertiesModel(string name, string description, string author, string endSavePath,
+        StartupPropertiesModel startupPropertiesModel)
     {
         Name = name;
         Description = description;

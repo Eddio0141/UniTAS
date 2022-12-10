@@ -9,14 +9,17 @@ internal static class SceneHelper
 {
     private static readonly Type SceneManager = AccessTools.TypeByName("UnityEngine.SceneManagement.SceneManager");
 
-    private static readonly Type LoadSceneParametersType = AccessTools.TypeByName("UnityEngine.SceneManagement.LoadSceneParameters");
+    private static readonly Type LoadSceneParametersType =
+        AccessTools.TypeByName("UnityEngine.SceneManagement.LoadSceneParameters");
 
     private static MethodInfo LoadSceneAsyncNameIndexInternal()
     {
         const string methodName = "LoadSceneAsyncNameIndexInternal";
-        var method = SceneManager.GetMethod(methodName, AccessTools.all, null, new[] { typeof(string), typeof(int), typeof(bool), typeof(bool) }, null);
+        var method = SceneManager.GetMethod(methodName, AccessTools.all, null,
+            new[] { typeof(string), typeof(int), typeof(bool), typeof(bool) }, null);
         return method ?? (LoadSceneParametersType != null
-            ? SceneManager.GetMethod(methodName, AccessTools.all, null, new[] { typeof(string), typeof(int), LoadSceneParametersType, typeof(bool) }, null)
+            ? SceneManager.GetMethod(methodName, AccessTools.all, null,
+                new[] { typeof(string), typeof(int), LoadSceneParametersType, typeof(bool) }, null)
             : null);
     }
 
@@ -31,10 +34,12 @@ internal static class SceneHelper
                 return;
             }
         }
+
         Application.LoadLevel(0);
     }
 
-    public static void LoadSceneAsyncNameIndexInternal(string sceneName, int sceneBuildIndex, object parameters, bool? isAdditive, bool mustCompleteNextFrame)
+    public static void LoadSceneAsyncNameIndexInternal(string sceneName, int sceneBuildIndex, object parameters,
+        bool? isAdditive, bool mustCompleteNextFrame)
     {
         var loader = LoadSceneAsyncNameIndexInternal();
         if (loader == null)
@@ -42,6 +47,7 @@ internal static class SceneHelper
             Plugin.Log.LogError("Load scene async doesn't exist in this version of unity");
             return;
         }
+
         _ = isAdditive.HasValue
             ? loader.Invoke(null, new object[] { sceneName, sceneBuildIndex, (bool)isAdditive, mustCompleteNextFrame })
             : loader.Invoke(null, new[] { sceneName, sceneBuildIndex, parameters, mustCompleteNextFrame });

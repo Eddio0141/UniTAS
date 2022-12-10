@@ -25,6 +25,7 @@ public class Dir : Entry
             dir = new(name, this);
             Children.Add(dir);
         }
+
         return dir;
     }
 
@@ -36,6 +37,7 @@ public class Dir : Entry
             file = new(name, this);
             Children.Add(file);
         }
+
         return file;
     }
 
@@ -52,6 +54,7 @@ public class Dir : Entry
             if (child is Dir dir && dir.Name == name)
                 return dir;
         }
+
         return null;
     }
 
@@ -62,6 +65,7 @@ public class Dir : Entry
             if (child is File file && file.Name == name)
                 return file;
         }
+
         return null;
     }
 
@@ -75,6 +79,7 @@ public class Dir : Entry
             else if (child is Dir dir)
                 result.AddRange(dir.GetFilesRecursive());
         }
+
         return result.ToArray();
     }
 
@@ -89,6 +94,7 @@ public class Dir : Entry
                 result.AddRange(dir.GetDirsRecursive());
             }
         }
+
         return result.ToArray();
     }
 }

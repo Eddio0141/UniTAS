@@ -2,5 +2,7 @@
 
 public class MissingResolutionFieldException : MovieParseException
 {
-    public MissingResolutionFieldException(string side) : base($"Missing resolution field {side}") { }
+    public MissingResolutionFieldException(string side) : base($"Missing resolution field {side}")
+    {
+    }
 }

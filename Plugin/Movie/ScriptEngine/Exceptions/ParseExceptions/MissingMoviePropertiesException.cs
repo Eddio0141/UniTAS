@@ -2,5 +2,7 @@
 
 public class MissingMoviePropertiesException : MovieParseException
 {
-    public MissingMoviePropertiesException() : base("Missing properties") { }
+    public MissingMoviePropertiesException() : base("Missing properties")
+    {
+    }
 }

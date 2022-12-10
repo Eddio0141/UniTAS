@@ -2,7 +2,8 @@
 
 public class BitwiseXorOpCode : BitwiseBase
 {
-    public BitwiseXorOpCode(RegisterType resultRegister, RegisterType left, RegisterType right) : base(resultRegister, left, right)
+    public BitwiseXorOpCode(RegisterType resultRegister, RegisterType left, RegisterType right) : base(resultRegister,
+        left, right)
     {
     }
 }

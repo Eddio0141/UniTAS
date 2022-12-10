@@ -32,7 +32,10 @@ public static partial class FileSystem
                 DeleteFile(Path);
         }
 
-        public OpenHandle(string path, FileOptions options, FileAccess access, FileShare share) : this(path, 0, options, access, share) { }
+        public OpenHandle(string path, FileOptions options, FileAccess access, FileShare share) : this(path, 0, options,
+            access, share)
+        {
+        }
     }
 
     public static class OsHelpers
@@ -47,50 +50,50 @@ public static partial class FileSystem
             switch (mode)
             {
                 case FileMode.CreateNew:
-                    {
-                        var check = GetFile(path);
-                        if (check != null)
-                            throw new IOException();
-                        goto case FileMode.Create;
-                    }
+                {
+                    var check = GetFile(path);
+                    if (check != null)
+                        throw new IOException();
+                    goto case FileMode.Create;
+                }
                 case FileMode.Create:
-                    {
-                        var pathDir = Directory.GetParent(path);
-                        var dir = FileSystem.CreateDir(pathDir.FullName);
-                        var filename = Path.GetFileName(path);
-                        _ = dir.AddFile(filename);
-                        break;
-                    }
+                {
+                    var pathDir = Directory.GetParent(path);
+                    var dir = FileSystem.CreateDir(pathDir.FullName);
+                    var filename = Path.GetFileName(path);
+                    _ = dir.AddFile(filename);
+                    break;
+                }
                 case FileMode.Open:
-                    {
-                        file = GetFile(path);
-                        if (file == null)
-                            throw new FileNotFoundException();
-                        break;
-                    }
+                {
+                    file = GetFile(path);
+                    if (file == null)
+                        throw new FileNotFoundException();
+                    break;
+                }
                 case FileMode.OpenOrCreate:
-                    {
-                        file = GetFile(path);
-                        if (file == null)
-                            goto case FileMode.Create;
-                        break;
-                    }
+                {
+                    file = GetFile(path);
+                    if (file == null)
+                        goto case FileMode.Create;
+                    break;
+                }
                 case FileMode.Truncate:
-                    {
-                        file = GetFile(path);
-                        if (file == null)
-                            throw new FileNotFoundException();
-                        file.Data = new byte[0];
-                        break;
-                    }
+                {
+                    file = GetFile(path);
+                    if (file == null)
+                        throw new FileNotFoundException();
+                    file.Data = new byte[0];
+                    break;
+                }
                 case FileMode.Append:
-                    {
-                        file = GetFile(path);
-                        if (file == null)
-                            file = FileSystem.CreateDir(Directory.GetParent(path).FullName).AddFile(Path.GetFileName(path));
-                        handle = new OpenHandle(path, file.Data.Length, options, access, share);
-                        break;
-                    }
+                {
+                    file = GetFile(path);
+                    if (file == null)
+                        file = FileSystem.CreateDir(Directory.GetParent(path).FullName).AddFile(Path.GetFileName(path));
+                    handle = new OpenHandle(path, file.Data.Length, options, access, share);
+                    break;
+                }
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -204,6 +207,7 @@ public static partial class FileSystem
                 Array.Copy(data, newData, length);
                 file.Data = newData;
             }
+
             WriteFile(file);
         }
 
@@ -461,7 +465,8 @@ public static partial class FileSystem
             AccessFile(file);
         }
 
-        public static string[] GetPaths(string path, string searchPattern, bool includeFiles, bool includeDirs, SearchOption searchOption)
+        public static string[] GetPaths(string path, string searchPattern, bool includeFiles, bool includeDirs,
+            SearchOption searchOption)
         {
             var pathDir = GetDir(path);
             var paths = new List<string>();
@@ -493,6 +498,7 @@ public static partial class FileSystem
                 if (Regex.IsMatch(entry.Name, searchPatternRegex))
                     paths.Add(entry.FullName);
             }
+
             return paths.ToArray();
         }
 

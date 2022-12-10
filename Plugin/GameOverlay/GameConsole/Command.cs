@@ -19,8 +19,11 @@ public class Command
         Action = action ?? throw new ArgumentNullException(nameof(action));
     }
 
-    public Command(string name, string description, Action<Parameter[]> action, string usage = "", string[] aliases = null)
-        : this(name, description, aliases, usage, action) { }
+    public Command(string name, string description, Action<Parameter[]> action, string usage = "",
+        string[] aliases = null)
+        : this(name, description, aliases, usage, action)
+    {
+    }
 
     public void Invoke(Parameter[] parameters)
     {

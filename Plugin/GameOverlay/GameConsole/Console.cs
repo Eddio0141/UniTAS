@@ -5,6 +5,7 @@ namespace UniTASPlugin.GameOverlay.GameConsole;
 public static class Console
 {
     private static bool opened;
+
     public static bool Opened
     {
         get => opened;
@@ -75,6 +76,7 @@ public static class Console
                 Opened = false;
             }
         }
+
         if (windowJustOpened)
         {
             GUI.FocusControl(INPUT_CONTROL_NAME);
@@ -86,6 +88,7 @@ public static class Console
             content = "";
             scrollPos = Vector2.zero;
         }
+
         if (GUILayout.Button("Run", GUILayout.ExpandWidth(false)))
         {
             Executor.Process(input);

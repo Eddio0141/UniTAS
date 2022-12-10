@@ -2,5 +2,7 @@
 
 public class InvalidPropertyKeyException : MovieParseException
 {
-    public InvalidPropertyKeyException(string key) : base($"Property key {key} doesn't exist") { }
+    public InvalidPropertyKeyException(string key) : base($"Property key {key} doesn't exist")
+    {
+    }
 }

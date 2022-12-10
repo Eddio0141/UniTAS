@@ -7,6 +7,7 @@ using ObjectOrig = UnityEngine.Object;
 using AssetBundleOrig = UnityEngine.AssetBundle;
 using AssetBundleCreateRequestOrig = UnityEngine.AssetBundleCreateRequest;
 using AsyncOpOrig = UnityEngine.AsyncOperation;
+
 // ReSharper disable InconsistentNaming
 // ReSharper disable UnusedMember.Local
 // ReSharper disable RedundantAssignment
@@ -30,7 +31,8 @@ internal static class AssetBundle
         private static bool Prefix(string path, uint crc, ulong offset, ref AssetBundleCreateRequestOrig __result)
         {
             // LoadFromFile fails with null return if operation fails, __result.assetBundle will also reflect that if async load fails too
-            var loadFromFile_Internal = Traverse.Create(typeof(AssetBundleOrig)).Method("LoadFromFile_Internal", new[] { typeof(string), typeof(uint), typeof(ulong) });
+            var loadFromFile_Internal = Traverse.Create(typeof(AssetBundleOrig)).Method("LoadFromFile_Internal",
+                new[] { typeof(string), typeof(uint), typeof(ulong) });
             var loadResult = loadFromFile_Internal.GetValue(path, crc, offset);
             // create a new instance, assign an UID to this instance, and make the override getter return a fake AssetBundle instance for UID with whats required in it
             __result = new AssetBundleCreateRequestOrig();
@@ -52,7 +54,8 @@ internal static class AssetBundle
 
         private static bool Prefix(byte[] binary, uint crc, ref AssetBundleCreateRequestOrig __result)
         {
-            var loadFromMemory_Internal = Traverse.Create(typeof(AssetBundleOrig)).Method("LoadFromMemory_Internal", new[] { typeof(byte[]), typeof(uint) });
+            var loadFromMemory_Internal = Traverse.Create(typeof(AssetBundleOrig))
+                .Method("LoadFromMemory_Internal", new[] { typeof(byte[]), typeof(uint) });
             var loadResult = loadFromMemory_Internal.GetValue(binary, crc);
             __result = new AssetBundleCreateRequestOrig();
             var wrap = new AsyncOperationWrap(__result);
@@ -71,9 +74,11 @@ internal static class AssetBundle
             return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        private static bool Prefix(Stream stream, uint crc, uint managedReadBufferSize, ref AssetBundleCreateRequestOrig __result)
+        private static bool Prefix(Stream stream, uint crc, uint managedReadBufferSize,
+            ref AssetBundleCreateRequestOrig __result)
         {
-            var loadFromStreamInternal = Traverse.Create(typeof(AssetBundleOrig)).Method("LoadFromStreamInternal", new[] { typeof(Stream), typeof(uint), typeof(uint) });
+            var loadFromStreamInternal = Traverse.Create(typeof(AssetBundleOrig)).Method("LoadFromStreamInternal",
+                new[] { typeof(Stream), typeof(uint), typeof(uint) });
             var loadResult = loadFromStreamInternal.GetValue(stream, crc, managedReadBufferSize);
             __result = new AssetBundleCreateRequestOrig();
             var wrap = new AsyncOperationWrap(__result);
@@ -94,7 +99,8 @@ internal static class AssetBundle
 
         private static bool Prefix(string name, Type type, ref AssetBundleCreateRequestOrig __result)
         {
-            var loadAsset_Internal = Traverse.Create(typeof(AssetBundleOrig)).Method("LoadAsset_Internal", new[] { typeof(string), typeof(Type) });
+            var loadAsset_Internal = Traverse.Create(typeof(AssetBundleOrig))
+                .Method("LoadAsset_Internal", new[] { typeof(string), typeof(Type) });
             var loadResult = loadAsset_Internal.GetValue(name, type);
             __result = new AssetBundleCreateRequestOrig();
             var wrap = new AsyncOperationWrap(__result);
@@ -115,7 +121,8 @@ internal static class AssetBundle
 
         private static bool Prefix(string name, Type type, ref AssetBundleCreateRequestOrig __result)
         {
-            var loadAssetWithSubAssets_Internal = Traverse.Create(typeof(AssetBundleOrig)).Method("LoadAssetWithSubAssets_Internal", new[] { typeof(string), typeof(Type) });
+            var loadAssetWithSubAssets_Internal = Traverse.Create(typeof(AssetBundleOrig))
+                .Method("LoadAssetWithSubAssets_Internal", new[] { typeof(string), typeof(Type) });
             var loadResult = loadAssetWithSubAssets_Internal.GetValue(name, type);
             __result = new AssetBundleCreateRequestOrig();
             var wrap = new AsyncOperationWrap(__result);

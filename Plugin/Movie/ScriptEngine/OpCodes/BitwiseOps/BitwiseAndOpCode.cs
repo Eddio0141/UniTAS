@@ -2,7 +2,8 @@
 
 public class BitwiseAndOpCode : BitwiseBase
 {
-    public BitwiseAndOpCode(RegisterType resultRegister, RegisterType left, RegisterType right) : base(resultRegister, left, right)
+    public BitwiseAndOpCode(RegisterType resultRegister, RegisterType left, RegisterType right) : base(resultRegister,
+        left, right)
     {
     }
 }
