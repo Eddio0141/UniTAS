@@ -36,7 +36,7 @@ internal static class Main
         testy = (float)position.Field("y").GetValue();
         testz = (float)position.Field("z").GetValue();
 
-        Test = new State( /*sceneIndex,*/ time, frameCount, fixedUpdateIndex /*cursorVisible, cursorLockState,*/);
+        Test = new( /*sceneIndex,*/ time, frameCount, fixedUpdateIndex /*cursorVisible, cursorLockState,*/);
         Plugin.Log.LogDebug("Saved test state");
     }
 

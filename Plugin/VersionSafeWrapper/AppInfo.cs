@@ -43,7 +43,7 @@ public static class AppInfo
         }
 
         if (foundExe == "" && !foundMultipleExe)
-            throw new Exception("Could not find exe in game root dir");
+            throw new("Could not find exe in game root dir");
 
         if (!foundMultipleExe)
         {

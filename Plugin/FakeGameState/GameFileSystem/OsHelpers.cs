@@ -91,7 +91,7 @@ public static partial class FileSystem
                     file = GetFile(path);
                     if (file == null)
                         file = FileSystem.CreateDir(Directory.GetParent(path).FullName).AddFile(Path.GetFileName(path));
-                    handle = new OpenHandle(path, file.Data.Length, options, access, share);
+                    handle = new(path, file.Data.Length, options, access, share);
                     break;
                 }
                 default:
@@ -99,7 +99,7 @@ public static partial class FileSystem
             }
 
             if (mode != FileMode.Append)
-                handle = new OpenHandle(path, options, access, share);
+                handle = new(path, options, access, share);
 
             openHandles.Add(path, handle);
         }

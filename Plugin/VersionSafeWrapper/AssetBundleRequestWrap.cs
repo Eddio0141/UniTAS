@@ -9,12 +9,12 @@ internal static class AssetBundleRequestWrap
 
     public static void NewFakeInstance(AsyncOperationWrap wrap, Object obj)
     {
-        InstanceTracker.Add(wrap.UID, new KeyValuePair<Object, Object[]>(obj, null));
+        InstanceTracker.Add(wrap.UID, new(obj, null));
     }
 
     public static void NewFakeInstance(AsyncOperationWrap wrap, Object[] objs)
     {
-        InstanceTracker.Add(wrap.UID, new KeyValuePair<Object, Object[]>(null, objs));
+        InstanceTracker.Add(wrap.UID, new(null, objs));
     }
 
     public static void FinalizeCall(ulong uid)

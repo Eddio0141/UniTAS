@@ -35,7 +35,7 @@ internal static class AssetBundle
                 new[] { typeof(string), typeof(uint), typeof(ulong) });
             var loadResult = loadFromFile_Internal.GetValue(path, crc, offset);
             // create a new instance, assign an UID to this instance, and make the override getter return a fake AssetBundle instance for UID with whats required in it
-            __result = new AssetBundleCreateRequestOrig();
+            __result = new();
             var wrap = new AsyncOperationWrap(__result);
             wrap.AssignUID();
             AssetBundleCreateRequestWrap.NewFakeInstance(wrap, (AssetBundleOrig)loadResult);
@@ -57,7 +57,7 @@ internal static class AssetBundle
             var loadFromMemory_Internal = Traverse.Create(typeof(AssetBundleOrig))
                 .Method("LoadFromMemory_Internal", new[] { typeof(byte[]), typeof(uint) });
             var loadResult = loadFromMemory_Internal.GetValue(binary, crc);
-            __result = new AssetBundleCreateRequestOrig();
+            __result = new();
             var wrap = new AsyncOperationWrap(__result);
             wrap.AssignUID();
             AssetBundleCreateRequestWrap.NewFakeInstance(wrap, (AssetBundleOrig)loadResult);
@@ -80,7 +80,7 @@ internal static class AssetBundle
             var loadFromStreamInternal = Traverse.Create(typeof(AssetBundleOrig)).Method("LoadFromStreamInternal",
                 new[] { typeof(Stream), typeof(uint), typeof(uint) });
             var loadResult = loadFromStreamInternal.GetValue(stream, crc, managedReadBufferSize);
-            __result = new AssetBundleCreateRequestOrig();
+            __result = new();
             var wrap = new AsyncOperationWrap(__result);
             wrap.AssignUID();
             AssetBundleCreateRequestWrap.NewFakeInstance(wrap, (AssetBundleOrig)loadResult);
@@ -102,7 +102,7 @@ internal static class AssetBundle
             var loadAsset_Internal = Traverse.Create(typeof(AssetBundleOrig))
                 .Method("LoadAsset_Internal", new[] { typeof(string), typeof(Type) });
             var loadResult = loadAsset_Internal.GetValue(name, type);
-            __result = new AssetBundleCreateRequestOrig();
+            __result = new();
             var wrap = new AsyncOperationWrap(__result);
             wrap.AssignUID();
             AssetBundleRequestWrap.NewFakeInstance(wrap, (ObjectOrig)loadResult);
@@ -124,7 +124,7 @@ internal static class AssetBundle
             var loadAssetWithSubAssets_Internal = Traverse.Create(typeof(AssetBundleOrig))
                 .Method("LoadAssetWithSubAssets_Internal", new[] { typeof(string), typeof(Type) });
             var loadResult = loadAssetWithSubAssets_Internal.GetValue(name, type);
-            __result = new AssetBundleCreateRequestOrig();
+            __result = new();
             var wrap = new AsyncOperationWrap(__result);
             wrap.AssignUID();
             AssetBundleRequestWrap.NewFakeInstance(wrap, (ObjectOrig[])loadResult);

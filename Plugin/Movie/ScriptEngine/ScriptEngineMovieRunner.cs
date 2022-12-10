@@ -44,12 +44,11 @@ public partial class ScriptEngineMovieRunner : IMovieRunner
         // TODO warnings
 
         // init engine
-        _engine = new ScriptEngineLowLevelEngine(_mainScript, _externalMethods);
+        _engine = new(_mainScript, _externalMethods);
 
         // set env
         // TODO apply environment
         var env = _virtualEnvironmentService.GetVirtualEnv();
-        env.InputState.ResetStates();
         env.RunVirtualEnvironment = true;
         env.FrameTime = startupProperties?.FrameTime ?? throw new NotImplementedException();
         env.Restart = startupProperties != null;
