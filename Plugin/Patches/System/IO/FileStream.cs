@@ -9,6 +9,7 @@ using UniTASPlugin.FakeGameState.GameFileSystem;
 using DirOrig = System.IO.Directory;
 using FileStreamOrig = System.IO.FileStream;
 using PathOrig = System.IO.Path;
+
 // ReSharper disable InconsistentNaming
 // ReSharper disable UnusedMember.Local
 // ReSharper disable StringLiteralTypo
@@ -22,11 +23,13 @@ internal static class FileStream
     {
         public static Traverse WriteInternalTraverse(FileStreamOrig instance)
         {
-            return Traverse.Create(instance).Method("WriteInternal", new[] { typeof(byte[]), typeof(int), typeof(int) });
+            return Traverse.Create(instance)
+                .Method("WriteInternal", new[] { typeof(byte[]), typeof(int), typeof(int) });
         }
     }
 
-    [HarmonyPatch(typeof(FileStreamOrig), MethodType.Constructor, typeof(string), typeof(FileMode), typeof(FileAccess), typeof(FileShare), typeof(int), typeof(bool), typeof(FileOptions))]
+    [HarmonyPatch(typeof(FileStreamOrig), MethodType.Constructor, typeof(string), typeof(FileMode), typeof(FileAccess),
+        typeof(FileShare), typeof(int), typeof(bool), typeof(FileOptions))]
     private class Ctor__string__FileMode__FileAccess__FileShare__int__bool__FileOptions
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
@@ -34,9 +37,10 @@ internal static class FileStream
             return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        private static bool Prefix(ref FileStreamOrig __instance, ref string path, FileMode mode, FileAccess access, ref FileShare share, ref int bufferSize, bool anonymous, FileOptions options)
+        private static bool Prefix(ref FileStreamOrig __instance, ref string path, FileMode mode, FileAccess access,
+            ref FileShare share, ref int bufferSize, bool anonymous, FileOptions options)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             var instanceTraverse = Traverse.Create(__instance);
             _ = instanceTraverse.Field("name").SetValue("[Unknown]");
@@ -44,22 +48,26 @@ internal static class FileStream
             {
                 throw new ArgumentNullException(nameof(path));
             }
+
             if (path.Length == 0)
             {
                 throw new ArgumentException("Path is empty");
             }
+
             _ = instanceTraverse.Field("anonymous").SetValue(anonymous);
             share &= ~FileShare.Inheritable;
             if (bufferSize <= 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(bufferSize), "Positive number required.");
             }
+
             if (mode is < FileMode.CreateNew or > FileMode.Append)
             {
                 if (anonymous)
                 {
                     throw new ArgumentException("Enum value was out of legal range.", nameof(mode));
                 }
+
                 throw new ArgumentOutOfRangeException(nameof(mode), "Enum value was out of legal range.");
             }
 
@@ -67,6 +75,7 @@ internal static class FileStream
             {
                 throw new ArgumentOutOfRangeException(nameof(access), "Enum value was out of legal range.");
             }
+
             if (share is < FileShare.None or > (FileShare.Read | FileShare.Write | FileShare.Delete))
             {
                 throw new ArgumentOutOfRangeException(nameof(share), "Enum value was out of legal range.");
@@ -81,18 +90,22 @@ internal static class FileStream
             path = pathTraverse.Method("InsecureGetFullPath", new[] { typeof(string) }).GetValue<string>(path);
             if (DirOrig.Exists(path))
             {
-                var getSecureFileName = Traverse.Create(typeof(FileStreamOrig)).Method("GetSecureFileName", new[] { typeof(string) });
+                var getSecureFileName = Traverse.Create(typeof(FileStreamOrig))
+                    .Method("GetSecureFileName", new[] { typeof(string) });
                 throw new UnauthorizedAccessException(
                     $"Access to the path '{getSecureFileName.GetValue(path, false)}' is denied.");
             }
+
             if (mode == FileMode.Append && (access & FileAccess.Read) == FileAccess.Read)
             {
                 throw new ArgumentException("Append access can be requested only in write-only mode.");
             }
+
             if ((access & FileAccess.Write) == 0 && mode != FileMode.Open && mode != FileMode.OpenOrCreate)
             {
                 throw new ArgumentException($"Combining FileMode: {access} with FileAccess: {mode} is invalid.");
             }
+
             var directoryName = PathOrig.GetDirectoryName(path);
             // ReSharper disable once PossibleNullReferenceException
             if (directoryName.Length > 0 && !DirOrig.Exists(PathOrig.GetFullPath(directoryName)))
@@ -100,6 +113,7 @@ internal static class FileStream
                 var arg = anonymous ? directoryName : PathOrig.GetFullPath(path);
                 throw new DirectoryNotFoundException($"Could not find a part of the path \"{arg}\".");
             }
+
             //if (!anonymous)
             //{
             _ = instanceTraverse.Field("name").SetValue(path);
@@ -117,6 +131,7 @@ internal static class FileStream
                     bufferSize = (int)((length < 1000L) ? 1000L : length);
                 }
             }
+
             _ = instanceTraverse.Method("InitBuffer", new[] { typeof(int), typeof(bool) }).GetValue(bufferSize, false);
             if (mode == FileMode.Append)
             {
@@ -124,6 +139,7 @@ internal static class FileStream
                 _ = instanceTraverse.Field("append_startpos").SetValue(__instance.Position);
                 return false;
             }
+
             _ = instanceTraverse.Field("append_startpos").SetValue(0L);
             return false;
         }
@@ -139,12 +155,13 @@ internal static class FileStream
 
         private static bool Prefix(ref long __result, ref FileStreamOrig __instance, long offset, SeekOrigin origin)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             if (!__instance.CanSeek)
             {
                 throw new NotSupportedException("The stream does not support seeking");
             }
+
             var num = origin switch
             {
                 SeekOrigin.Begin => offset,
@@ -156,13 +173,16 @@ internal static class FileStream
             {
                 throw new IOException("Attempted to Seek before the beginning of the stream");
             }
+
             var instanceTraverse = Traverse.Create(__instance);
             if (num < instanceTraverse.Field("append_startpos").GetValue<long>())
             {
                 throw new IOException("Can't seek back over pre-existing data in append mode");
             }
+
             _ = instanceTraverse.Method("FlushBuffer").GetValue();
-            var seekResult = FileSystem.OsHelpers.Seek(instanceTraverse.Field("name").GetValue<string>(), num, SeekOrigin.Begin);
+            var seekResult = FileSystem.OsHelpers.Seek(instanceTraverse.Field("name").GetValue<string>(), num,
+                SeekOrigin.Begin);
             _ = instanceTraverse.Field("buf_start").SetValue(seekResult);
             __result = seekResult;
             return false;
@@ -179,12 +199,13 @@ internal static class FileStream
 
         private static bool Prefix(ref long __result, ref FileStreamOrig __instance)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             if (!__instance.CanSeek)
             {
                 throw new NotSupportedException("The stream does not support seeking");
             }
+
             var instanceTraverse = Traverse.Create(__instance);
             _ = instanceTraverse.Method("FlushBufferIfDirty").GetValue();
             __result = FileSystem.OsHelpers.Length(instanceTraverse.Field("name").GetValue<string>());
@@ -202,19 +223,23 @@ internal static class FileStream
 
         private static bool Prefix(ref long __result, ref FileStreamOrig __instance)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             if (!__instance.CanSeek)
             {
                 throw new NotSupportedException("The stream does not support seeking");
             }
+
             var instanceTraverse = Traverse.Create(__instance);
             if (!instanceTraverse.Field("isExposed").GetValue<bool>())
             {
-                __result = instanceTraverse.Field("buf_start").GetValue<long>() + instanceTraverse.Field("buf_offset").GetValue<int>();
+                __result = instanceTraverse.Field("buf_start").GetValue<long>() +
+                           instanceTraverse.Field("buf_offset").GetValue<int>();
                 return false;
             }
-            __result = FileSystem.OsHelpers.Seek(instanceTraverse.Field("name").GetValue<string>(), 0, SeekOrigin.Current);
+
+            __result = FileSystem.OsHelpers.Seek(instanceTraverse.Field("name").GetValue<string>(), 0,
+                SeekOrigin.Current);
             return false;
         }
     }
@@ -229,28 +254,33 @@ internal static class FileStream
 
         private static bool Prefix(ref FileStreamOrig __instance, byte[] array, int offset, int count)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             if (array == null)
             {
                 throw new ArgumentNullException(nameof(array));
             }
+
             if (offset < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(offset), "< 0");
             }
+
             if (count < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(count), "< 0");
             }
+
             if (offset > array.Length - count)
             {
                 throw new ArgumentException("Reading would overrun buffer");
             }
+
             if (!__instance.CanWrite)
             {
                 throw new NotSupportedException("Stream does not support writing");
             }
+
             var instanceTraverse = Traverse.Create(__instance);
             if (instanceTraverse.Field("async").GetValue<bool>())
             {
@@ -258,6 +288,7 @@ internal static class FileStream
                 __instance.EndWrite(asyncResult);
                 return false;
             }
+
             _ = Helper.WriteInternalTraverse(__instance).GetValue(array, offset, count);
             return false;
         }
@@ -273,7 +304,7 @@ internal static class FileStream
 
         private static bool Prefix(ref FileStreamOrig __instance, bool disposing)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             Exception ex = null;
             var instanceTraverse = Traverse.Create(__instance);
@@ -296,9 +327,11 @@ internal static class FileStream
                         _ = buf_recycleTraverse.SetValue(buf);
                     }
                 }
+
                 _ = bufTraverse.SetValue(null);
                 GC.SuppressFinalize(__instance);
             }
+
             if (ex != null)
             {
                 throw ex;
@@ -318,12 +351,13 @@ internal static class FileStream
 
         private static bool Prefix(ref FileStreamOrig __instance, long value)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             if (value < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(value), "Non-negative number required.");
             }
+
             _ = __instance.Seek(value, SeekOrigin.Begin);
             return false;
         }
@@ -339,7 +373,7 @@ internal static class FileStream
 
         private static bool Prefix(ref FileStreamOrig __instance, byte[] src, ref int offset, ref int count)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             var instanceTraverse = Traverse.Create(__instance);
             var flushBufferTraverse = instanceTraverse.Method("FlushBuffer");
@@ -353,6 +387,7 @@ internal static class FileStream
                 {
                     _ = FileSystem.OsHelpers.Seek(name, buf_startTraverse.GetValue<long>(), SeekOrigin.Begin);
                 }
+
                 var i = count;
                 while (i > 0)
                 {
@@ -360,21 +395,26 @@ internal static class FileStream
                     i -= num;
                     offset += num;
                 }
+
                 _ = buf_startTraverse.SetValue(buf_startTraverse.GetValue<long>() + count);
                 return false;
             }
+
             var num2 = 0;
             while (count > 0)
             {
-                var num3 = instanceTraverse.Method("WriteSegment", new[] { typeof(byte[]), typeof(int), typeof(int) }).GetValue<int>(src, offset + num2, count);
+                var num3 = instanceTraverse.Method("WriteSegment", new[] { typeof(byte[]), typeof(int), typeof(int) })
+                    .GetValue<int>(src, offset + num2, count);
                 num2 += num3;
                 count -= num3;
                 if (count == 0)
                 {
                     break;
                 }
+
                 _ = flushBufferTraverse.GetValue();
             }
+
             return false;
         }
     }
@@ -389,12 +429,13 @@ internal static class FileStream
 
         private static bool Prefix(ref FileStreamOrig __instance, byte value)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             if (!__instance.CanWrite)
             {
                 throw new NotSupportedException("Stream does not support writing");
             }
+
             var instanceTraverse = Traverse.Create(__instance);
             var buf_offsetTraverse = instanceTraverse.Field("buf_offset");
             var bufTraverse = instanceTraverse.Field("buf");
@@ -406,6 +447,7 @@ internal static class FileStream
             {
                 _ = flushBufferTraverse.GetValue();
             }
+
             if (buf_sizeTraverse.GetValue<int>() == 0)
             {
                 bufTraverse.GetValue<byte[]>()[0] = value;
@@ -414,6 +456,7 @@ internal static class FileStream
                 _ = flushBufferTraverse.GetValue();
                 return false;
             }
+
             var array = bufTraverse.GetValue<byte[]>();
             var num = buf_offsetTraverse.GetValue<int>();
             _ = buf_offsetTraverse.SetValue(num + 1);
@@ -422,6 +465,7 @@ internal static class FileStream
             {
                 _ = buf_lengthTraverse.SetValue(buf_offsetTraverse.GetValue<int>());
             }
+
             _ = buf_dirtyTraverse.SetValue(true);
             return false;
         }
@@ -465,20 +509,23 @@ internal static class FileStream
 
         private static bool Prefix(ref FileStreamOrig __instance, long value)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             if (!__instance.CanSeek)
             {
                 throw new NotSupportedException("The stream does not support seeking");
             }
+
             if (!__instance.CanWrite)
             {
                 throw new NotSupportedException("The stream does not support writing");
             }
+
             if (value < 0L)
             {
                 throw new ArgumentOutOfRangeException(nameof(value), "value is less than 0");
             }
+
             var instanceTraverse = Traverse.Create(__instance);
             _ = instanceTraverse.Method("FlushBuffer").GetValue();
             FileSystem.OsHelpers.SetLength(instanceTraverse.Field("name").GetValue<string>(), value);
@@ -486,6 +533,7 @@ internal static class FileStream
             {
                 __instance.Position = value;
             }
+
             return false;
         }
     }
@@ -514,9 +562,10 @@ internal static class FileStream
 
         private static bool Prefix(ref FileStreamOrig __instance, ref int __result, byte[] buf, int offset, int count)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
-            var num = FileSystem.OsHelpers.Read(Traverse.Create(__instance).Field("name").GetValue<string>(), buf, offset, count);
+            var num = FileSystem.OsHelpers.Read(Traverse.Create(__instance).Field("name").GetValue<string>(), buf,
+                offset, count);
             __result = num;
             return false;
         }
@@ -532,12 +581,13 @@ internal static class FileStream
 
         private static bool Prefix(ref int __result, ref FileStreamOrig __instance)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             if (!__instance.CanRead)
             {
                 throw new NotSupportedException("Stream does not support reading");
             }
+
             var instanceTraverse = Traverse.Create(__instance);
             var buf_lengthTraverse = instanceTraverse.Field("buf_length");
             var buf_offsetTraverse = instanceTraverse.Field("buf_offset");
@@ -553,17 +603,20 @@ internal static class FileStream
                         return false;
                     }
                 }
+
                 var array = bufTraverse.GetValue<byte[]>();
                 var num = buf_offsetTraverse.GetValue<int>();
                 _ = buf_offsetTraverse.SetValue(num + 1);
                 __result = array[num];
                 return false;
             }
+
             if (instanceTraverse.Method("ReadData").GetValue<int>(null, bufTraverse.GetValue<byte[]>(), 0, 1) == 0)
             {
                 __result = -1;
                 return false;
             }
+
             __result = bufTraverse.GetValue<byte[]>()[0];
             return false;
         }
@@ -577,35 +630,42 @@ internal static class FileStream
             return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        private static bool Prefix(ref int __result, ref FileStreamOrig __instance, [In][Out] byte[] array, int offset, int count)
+        private static bool Prefix(ref int __result, ref FileStreamOrig __instance, [In] [Out] byte[] array, int offset,
+            int count)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             if (array == null)
             {
                 throw new ArgumentNullException(nameof(array));
             }
+
             if (!__instance.CanRead)
             {
                 throw new NotSupportedException("Stream does not support reading");
             }
+
             var num = array.Length;
             if (offset < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(offset), "< 0");
             }
+
             if (count < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(count), "< 0");
             }
+
             if (offset > num)
             {
                 throw new ArgumentException("destination offset is beyond array size");
             }
+
             if (offset > num - count)
             {
                 throw new ArgumentException("Reading would overrun buffer");
             }
+
             var instanceTraverse = Traverse.Create(__instance);
             if (instanceTraverse.Field("async").GetValue<bool>())
             {
@@ -613,7 +673,9 @@ internal static class FileStream
                 __result = __instance.EndRead(asyncResult);
                 return false;
             }
-            __result = instanceTraverse.Method("ReadInternal", new[] { typeof(byte[]), typeof(int), typeof(int) }).GetValue<int>(array, offset, count);
+
+            __result = instanceTraverse.Method("ReadInternal", new[] { typeof(byte[]), typeof(int), typeof(int) })
+                .GetValue<int>(array, offset, count);
             return false;
         }
     }
@@ -630,13 +692,14 @@ internal static class FileStream
 
         private static bool Prefix(ref IntPtr __result, ref FileStreamOrig __instance)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             var instanceTraverse = Traverse.Create(__instance);
             if (!instanceTraverse.Field("isExposed").GetValue<bool>())
             {
                 _ = instanceTraverse.Method("ExposeHandle").GetValue();
             }
+
             __result = IntPtr.Zero;
             return false;
         }
@@ -652,7 +715,7 @@ internal static class FileStream
 
         private static bool Prefix(ref object __result)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             __result = null;
             return false;
@@ -669,7 +732,7 @@ internal static class FileStream
 
         private static bool Prefix(ref FileStreamOrig __instance)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             var instanceTraverse = Traverse.Create(__instance);
             var buf_dirtyTraverse = instanceTraverse.Field("buf_dirty");
@@ -683,15 +746,18 @@ internal static class FileStream
                 {
                     _ = FileSystem.OsHelpers.Seek(name, buf_startTraverse.GetValue<long>(), SeekOrigin.Begin);
                 }
+
                 var i = buf_lengthTraverse.GetValue<int>();
                 var num = 0;
                 while (i > 0)
                 {
-                    var num2 = FileSystem.OsHelpers.Write(name, instanceTraverse.Field("buf").GetValue<byte[]>(), num, buf_lengthTraverse.GetValue<int>());
+                    var num2 = FileSystem.OsHelpers.Write(name, instanceTraverse.Field("buf").GetValue<byte[]>(), num,
+                        buf_lengthTraverse.GetValue<int>());
                     i -= num2;
                     num += num2;
                 }
             }
+
             _ = buf_startTraverse.SetValue(buf_startTraverse.GetValue<long>() + buf_offsetTraverse.GetValue<int>());
             _ = buf_lengthTraverse.SetValue(0);
             _ = buf_offsetTraverse.SetValue(0);
@@ -710,7 +776,7 @@ internal static class FileStream
 
         private static bool Prefix(ref FileStreamOrig __instance, ref object __result, object cancellationToken)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             var flushMethod = AccessTools.Method(typeof(FileStreamOrig), "FlushAsync");
             __result = flushMethod.GetBaseDefinition().Invoke(__instance, new[] { cancellationToken });
@@ -728,7 +794,7 @@ internal static class FileStream
 
         private static bool Prefix(ref FileStreamOrig __instance)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             _ = Traverse.Create(__instance).Method("FlushBuffer").GetValue();
             return false;
@@ -745,7 +811,7 @@ internal static class FileStream
 
         private static bool Prefix(ref FileStreamOrig __instance)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             _ = Traverse.Create(__instance).Method("FlushBuffer").GetValue();
             return false;
@@ -764,40 +830,49 @@ internal static class FileStream
 
         private static void writeInternal(object instance, byte[] src, int offset, int count)
         {
-            _ = Traverse.Create(instance).Method("WriteInternal", new[] { typeof(byte[]), typeof(int), typeof(int) }).GetValue(src, offset, count);
+            _ = Traverse.Create(instance).Method("WriteInternal", new[] { typeof(byte[]), typeof(int), typeof(int) })
+                .GetValue(src, offset, count);
         }
 
-        private static bool Prefix(ref IAsyncResult __result, ref FileStreamOrig __instance, byte[] array, int offset, int numBytes, AsyncCallback userCallback, object stateObject)
+        private static bool Prefix(ref IAsyncResult __result, ref FileStreamOrig __instance, byte[] array, int offset,
+            int numBytes, AsyncCallback userCallback, object stateObject)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             if (!__instance.CanWrite)
             {
                 throw new NotSupportedException("This stream does not support writing");
             }
+
             if (array == null)
             {
                 throw new ArgumentNullException(nameof(array));
             }
+
             if (numBytes < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(numBytes), "Must be >= 0");
             }
+
             if (offset < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(offset), "Must be >= 0");
             }
+
             if (numBytes > array.Length - offset)
             {
                 throw new ArgumentException("array too small. numBytes/offset wrong.");
             }
+
             var instanceTraverse = Traverse.Create(__instance);
             if (!instanceTraverse.Field("async").GetValue<bool>())
             {
                 var beginWrite = AccessTools.Method(typeof(FileStreamOrig), "BeginWrite");
-                __result = (IAsyncResult)beginWrite.GetBaseDefinition().Invoke(__instance, new[] { array, offset, numBytes, userCallback, stateObject });
+                __result = (IAsyncResult)beginWrite.GetBaseDefinition().Invoke(__instance,
+                    new[] { array, offset, numBytes, userCallback, stateObject });
                 return false;
             }
+
             var fileStreamAsyncResultType = AccessTools.TypeByName("System.IO.FileStreamAsyncResult");
             var fileStreamAsyncResultCtor = AccessTools.Constructor(fileStreamAsyncResultType);
             var fileStreamAsyncResult = fileStreamAsyncResultCtor.Invoke(new[] { userCallback, stateObject });
@@ -805,7 +880,8 @@ internal static class FileStream
             _ = fileStreamAsyncResultTraverse.Field("BytesRead").SetValue(-1);
             _ = fileStreamAsyncResultTraverse.Field("Count").SetValue(numBytes);
             _ = fileStreamAsyncResultTraverse.Field("OriginalCount").SetValue(numBytes);
-            __result = new WriteDelegate(writeInternal).BeginInvoke(__instance, array, offset, numBytes, userCallback, stateObject);
+            __result = new WriteDelegate(writeInternal).BeginInvoke(__instance, array, offset, numBytes, userCallback,
+                stateObject);
             return false;
         }
     }
@@ -822,41 +898,51 @@ internal static class FileStream
 
         private static int readInternal(object instance, byte[] dest, int offset, int count)
         {
-            return Traverse.Create(instance).Method("ReadInternal", new[] { typeof(byte[]), typeof(int), typeof(int) }).GetValue<int>(dest, offset, count);
+            return Traverse.Create(instance).Method("ReadInternal", new[] { typeof(byte[]), typeof(int), typeof(int) })
+                .GetValue<int>(dest, offset, count);
         }
 
-        private static bool Prefix(ref IAsyncResult __result, ref FileStreamOrig __instance, byte[] array, int offset, int numBytes, AsyncCallback userCallback, object stateObject)
+        private static bool Prefix(ref IAsyncResult __result, ref FileStreamOrig __instance, byte[] array, int offset,
+            int numBytes, AsyncCallback userCallback, object stateObject)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             if (!__instance.CanRead)
             {
                 throw new NotSupportedException("This stream does not support reading");
             }
+
             if (array == null)
             {
                 throw new ArgumentNullException(nameof(array));
             }
+
             if (numBytes < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(numBytes), "Must be >= 0");
             }
+
             if (offset < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(offset), "Must be >= 0");
             }
+
             if (numBytes > array.Length - offset)
             {
                 throw new ArgumentException("Buffer too small. numBytes/offset wrong.");
             }
+
             var instanceTraverse = Traverse.Create(__instance);
             if (!instanceTraverse.Field("async").GetValue<bool>())
             {
                 var beginRead = AccessTools.Method(typeof(FileStreamOrig), "BeginRead");
-                __result = (IAsyncResult)beginRead.GetBaseDefinition().Invoke(__instance, new[] { array, offset, numBytes, userCallback, stateObject });
+                __result = (IAsyncResult)beginRead.GetBaseDefinition().Invoke(__instance,
+                    new[] { array, offset, numBytes, userCallback, stateObject });
                 return false;
             }
-            __result = new ReadDelegate(readInternal).BeginInvoke(__instance, array, offset, numBytes, userCallback, stateObject);
+
+            __result = new ReadDelegate(readInternal).BeginInvoke(__instance, array, offset, numBytes, userCallback,
+                stateObject);
             return false;
         }
     }
@@ -869,18 +955,21 @@ internal static class FileStream
             return PatcherHelper.Cleanup_IgnoreException(original, ex);
         }
 
-        private static bool Prefix(ref FileStreamOrig __instance, FileAccess access, bool ownsHandle, int bufferSize, bool isAsync, bool isConsoleWrapper)
+        private static bool Prefix(ref FileStreamOrig __instance, FileAccess access, bool ownsHandle, int bufferSize,
+            bool isAsync, bool isConsoleWrapper)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             if (access is < FileAccess.Read or > FileAccess.ReadWrite)
             {
                 throw new ArgumentOutOfRangeException(nameof(access));
             }
+
             if (!isConsoleWrapper && bufferSize <= 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(bufferSize), "Positive number required.");
             }
+
             var instanceTraverse = Traverse.Create(__instance);
             _ = instanceTraverse.Field("canseek").SetValue(true);
             _ = instanceTraverse.Method("ExposeHandle").GetValue();
@@ -888,13 +977,16 @@ internal static class FileStream
             _ = instanceTraverse.Field("owner").SetValue(ownsHandle);
             _ = instanceTraverse.Field("async").SetValue(isAsync);
             _ = instanceTraverse.Field("anonymous").SetValue(false);
-            _ = instanceTraverse.Field("buf_start").SetValue(FileSystem.OsHelpers.Seek(instanceTraverse.Field("name").GetValue<string>(), 0, SeekOrigin.Current));
+            _ = instanceTraverse.Field("buf_start")
+                .SetValue(FileSystem.OsHelpers.Seek(instanceTraverse.Field("name").GetValue<string>(), 0,
+                    SeekOrigin.Current));
             _ = instanceTraverse.Field("append_startpos").SetValue(0);
             return false;
         }
     }
 
-    [HarmonyPatch(typeof(FileStreamOrig), MethodType.Constructor, typeof(IntPtr), typeof(FileAccess), typeof(bool), typeof(int), typeof(bool), typeof(bool))]
+    [HarmonyPatch(typeof(FileStreamOrig), MethodType.Constructor, typeof(IntPtr), typeof(FileAccess), typeof(bool),
+        typeof(int), typeof(bool), typeof(bool))]
     private class ctor__IntPtr__FileAccess__bool__int__bool__bool
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
@@ -906,11 +998,13 @@ internal static class FileStream
         {
             return Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking
                 ? true
-                : throw new InvalidOperationException("This constructor is not supported by the virtual file system, if this happens then patch more methods to prevent this.");
+                : throw new InvalidOperationException(
+                    "This constructor is not supported by the virtual file system, if this happens then patch more methods to prevent this.");
         }
     }
 
-    [HarmonyPatch(typeof(FileStreamOrig), MethodType.Constructor, typeof(SafeFileHandle), typeof(FileAccess), typeof(int), typeof(bool))]
+    [HarmonyPatch(typeof(FileStreamOrig), MethodType.Constructor, typeof(SafeFileHandle), typeof(FileAccess),
+        typeof(int), typeof(bool))]
     private class ctor__SafeFileHandle__FileAccess__int_bool
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
@@ -922,7 +1016,8 @@ internal static class FileStream
         {
             return Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking
                 ? true
-                : throw new InvalidOperationException("This constructor is not supported by the virtual file system, if this happens then patch more methods to prevent this.");
+                : throw new InvalidOperationException(
+                    "This constructor is not supported by the virtual file system, if this happens then patch more methods to prevent this.");
         }
     }
 
@@ -936,26 +1031,30 @@ internal static class FileStream
 
         private static bool Prefix(ref int __result, ref FileStreamOrig __instance, IAsyncResult asyncResult)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             if (asyncResult == null)
             {
                 throw new ArgumentNullException(nameof(asyncResult));
             }
+
             var instanceTraverse = Traverse.Create(__instance);
             if (!instanceTraverse.Field("async").GetValue<bool>())
             {
                 var endRead = AccessTools.Method(typeof(FileStreamOrig), "EndRead", new[] { typeof(IAsyncResult) });
                 return (bool)endRead.GetBaseDefinition().Invoke(__instance, new object[] { asyncResult });
             }
+
             if (asyncResult is not AsyncResult asyncResult2)
             {
                 throw new ArgumentException("Invalid IAsyncResult", nameof(asyncResult));
             }
+
             if (asyncResult2.AsyncDelegate is not ReadDelegate readDelegate)
             {
                 throw new ArgumentException("Invalid IAsyncResult", nameof(asyncResult));
             }
+
             __result = readDelegate.EndInvoke(asyncResult);
             return false;
         }
@@ -971,12 +1070,13 @@ internal static class FileStream
 
         private static bool Prefix(ref FileStreamOrig __instance, IAsyncResult asyncResult)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             if (asyncResult == null)
             {
                 throw new ArgumentNullException(nameof(asyncResult));
             }
+
             var instanceTraverse = Traverse.Create(__instance);
             if (!instanceTraverse.Field("async").GetValue<bool>())
             {
@@ -984,14 +1084,17 @@ internal static class FileStream
                 _ = endRead.Invoke(__instance, new object[] { asyncResult });
                 return false;
             }
+
             if (asyncResult is not AsyncResult asyncResult2)
             {
                 throw new ArgumentException("Invalid IAsyncResult", nameof(asyncResult));
             }
+
             if (asyncResult2.AsyncDelegate is not WriteDelegate writeDelegate)
             {
                 throw new ArgumentException("Invalid IAsyncResult", nameof(asyncResult));
             }
+
             writeDelegate.EndInvoke(asyncResult);
             return false;
         }
