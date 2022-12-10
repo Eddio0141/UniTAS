@@ -50,8 +50,8 @@ public partial class ScriptEngineMovieRunner : IMovieRunner
         // TODO apply environment
         var env = _virtualEnvironmentService.GetVirtualEnv();
         env.RunVirtualEnvironment = true;
-        env.FrameTime = startupProperties?.FrameTime ?? throw new NotImplementedException();
         env.Restart = startupProperties != null;
+        env.FrameTime = startupProperties?.FrameTime ?? throw new NotImplementedException();
         // TODO other stuff like save state load, hide cursor, etc
 
         MovieEnd = false;
