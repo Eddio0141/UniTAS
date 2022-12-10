@@ -1,6 +1,4 @@
-﻿using UniTASPlugin.GameEnvironment;
-
-namespace UniTASPlugin.Movie;
+﻿namespace UniTASPlugin.Movie;
 
 public interface IMovieRunner
 {

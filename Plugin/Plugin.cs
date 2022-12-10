@@ -2,26 +2,22 @@
 using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
-using Ninject;
-using Ninject.Modules;
+using UniTASFunkyInjector;
 using UniTASPlugin.FakeGameState;
 using UniTASPlugin.FakeGameState.GameFileSystem;
 using UniTASPlugin.GameOverlay;
 using UniTASPlugin.Movie.ScriptEngine;
-using UniTASPlugin.NInjectModules;
 using UniTASPlugin.UpdateHelper;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
 using SystemInfo = UniTASPlugin.FakeGameState.SystemInfo;
-
-// ReSharper disable UnusedMember.Local
 
 namespace UniTASPlugin;
 
 [BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
 public class Plugin : BaseUnityPlugin
 {
-    public static readonly IKernel Kernel = InitKernel();
+    public static readonly FunkyInjectorContainer Kernel = ContainerRegister.Init();
 
     private ManualLogSource _logger;
 
@@ -70,33 +66,20 @@ public class Plugin : BaseUnityPlugin
         Logger.LogInfo($"Plugin {MyPluginInfo.PLUGIN_NAME} is loaded!");
     }
 
-    private static IKernel InitKernel()
-    {
-        var modules = new INinjectModule[]
-        {
-            new MovieEngineModule(),
-            new GameEnvironmentModule(),
-            new PatchReverseInvokerModule(),
-            new OnUpdateModule()
-        };
-
-        return new StandardKernel(modules);
-    }
-
     // unity execution order is Awake() -> FixedUpdate() -> Update()
     private void Update()
     {
         // TODO if possible, put this at the first call of Update
         FixedUpdateIndex++;
-        var updateList = Kernel.GetAll<IOnUpdate>();
+        var updateList = Kernel.ResolveAll<IOnUpdate>();
         foreach (var update in updateList)
         {
             update.Update(Time.deltaTime);
         }
 
-        var movieRunner = Kernel.Get<ScriptEngineMovieRunner>();
+        var movieRunner = Kernel.Resolve<ScriptEngineMovieRunner>();
         movieRunner.Update();
-        Overlay.Update();
+        //Overlay.Update();
         GameCapture.Update();
     }
 

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using HarmonyLib;
-using Ninject;
+
 // ReSharper disable InconsistentNaming
 // ReSharper disable UnusedMember.Local
 // ReSharper disable RedundantAssignment
@@ -21,7 +21,7 @@ internal class SystemInfo
 
         private static bool Prefix(ref object __result)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
             var deviceType = AccessTools.TypeByName("UnityEngine.DeviceType");
             __result = Enum.Parse(deviceType, FakeGameState.SystemInfo.DeviceType);

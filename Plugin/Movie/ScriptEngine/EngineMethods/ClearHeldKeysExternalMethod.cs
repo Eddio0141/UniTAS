@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.Movie.ScriptEngine.ValueTypes;
 
-namespace UniTASPlugin.Movie.ScriptEngine.EngineMethods.Exceptions;
+namespace UniTASPlugin.Movie.ScriptEngine.EngineMethods;
 
 public class ClearHeldKeysExternalMethod : EngineExternalMethod
 {

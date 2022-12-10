@@ -1,7 +1,6 @@
 ﻿using System.Linq;
-using Ninject;
 using UniTASPlugin.GameOverlay.GameConsole;
-using UniTASPlugin.Movie.ScriptEngine;
+using UniTASPlugin.Movie;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
 
@@ -68,20 +67,19 @@ internal static class Overlay
 
     public static void Update()
     {
-        var kernel = Plugin.Kernel;
-        var movieRunner = kernel.Get<ScriptEngineMovieRunner>();
-        if (!movieRunner.IsRunning && Input.GetKeyDown(KeyCode.F10))
+        var movieRunner = Plugin.Kernel.Resolve<IMovieRunner>();
+        if (movieRunner.MovieEnd && Input.GetKeyDown(KeyCode.F10))
         {
             Enabled = !Enabled;
         }
 
-        if (!movieRunner.IsRunning && Input.GetKeyDown(KeyCode.F11))
+        if (movieRunner.MovieEnd && Input.GetKeyDown(KeyCode.F11))
         {
             CursorWrap.UnlockCursor();
             Plugin.Log.LogDebug($"Unlocked cursor");
         }
 
-        if (!movieRunner.IsRunning && Input.GetKeyDown(KeyCode.BackQuote))
+        if (movieRunner.MovieEnd && Input.GetKeyDown(KeyCode.BackQuote))
         {
             Console.Opened = !Console.Opened;
         }
@@ -136,7 +134,7 @@ internal static class Overlay
             return;
 
         var kernel = Plugin.Kernel;
-        var movieRunner = kernel.Get<ScriptEngineMovieRunner>();
+        var movieRunner = kernel.Resolve<IMovieRunner>();
 
         GUI.DrawTexture(new Rect(MENU_X, MENU_Y, MENU_SIZE_X, MENU_SIZE_Y), BGSurround);
         GUI.Box(new Rect(MENU_X, MENU_Y, MENU_SIZE_X, MENU_SIZE_Y), $"{MyPluginInfo.PLUGIN_NAME} Menu");
@@ -153,8 +151,8 @@ internal static class Overlay
                 filePath = GUILayout.TextField(filePath);
                 if (GUILayout.Button("Run", GUILayout.Width(40)))
                 {
-                    var rev = Plugin.Kernel.Get<PatchReverseInvoker>();
-                    if (rev.Invoke(System.IO.File.Exists, filePath) && !movieRunner.IsRunning)
+                    var rev = Plugin.Kernel.Resolve<PatchReverseInvoker>();
+                    if (rev.Invoke(System.IO.File.Exists, filePath) && movieRunner.MovieEnd)
                     {
                         var text = rev.Invoke(System.IO.File.ReadAllText, filePath);
                         try
@@ -179,10 +177,10 @@ internal static class Overlay
             default:
                 // debug
             {
-                if (GUILayout.Button("test TAS") && !movieRunner.IsRunning)
+                if (GUILayout.Button("test TAS") && movieRunner.MovieEnd)
                 {
                     var path = "";
-                    var rev = Plugin.Kernel.Get<PatchReverseInvoker>();
+                    var rev = Plugin.Kernel.Resolve<PatchReverseInvoker>();
                     if (rev.Invoke(System.IO.File.Exists, "C:\\Users\\Yuki\\Documents\\test.uti"))
                         path = "C:\\Users\\Yuki\\Documents\\test.uti";
                     else if (rev.Invoke(System.IO.File.Exists,

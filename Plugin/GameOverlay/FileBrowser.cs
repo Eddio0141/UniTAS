@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Ninject;
 using UnityEngine;
 
 namespace UniTASPlugin.GameOverlay;
@@ -206,7 +205,7 @@ public class FileBrowser
 
         try
         {
-            var drives = Plugin.Kernel.Get<PatchReverseInvoker>().Invoke(System.IO.DriveInfo.GetDrives);
+            var drives = Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoke(System.IO.DriveInfo.GetDrives);
             foreach (var drive in drives)
             {
                 quickAccessPathsBuilder.Add(drive.Name);
@@ -252,14 +251,14 @@ public class FileBrowser
         confirmSave.Update();
         if (confirmSave.FinalResult(out var overwriteSave) && overwriteSave)
         {
-            finalPath = Plugin.Kernel.Get<PatchReverseInvoker>().Invoke(System.IO.Path.Combine, currentDir, selectedFileText);
+            finalPath = Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoke(System.IO.Path.Combine, currentDir, selectedFileText);
             gotFinalPath = false;
             opened = false;
         }
 
         if (dirChanged)
         {
-            var rev = Plugin.Kernel.Get<PatchReverseInvoker>();
+            var rev = Plugin.Kernel.Resolve<PatchReverseInvoker>();
             if (rev.Invoke(System.IO.Directory.Exists, changingDir))
             {
                 try
@@ -393,7 +392,7 @@ public class FileBrowser
         }
         if (GUILayout.Button("^", GUILayout.Width(20)) && !confirmSave.Opened)
         {
-            changingDir = Plugin.Kernel.Get<PatchReverseInvoker>().Invoke(System.IO.Path.GetDirectoryName, currentDir);
+            changingDir = Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoke(System.IO.Path.GetDirectoryName, currentDir);
             dirChanged = true;
         }
         currentDirText = GUILayout.TextField(currentDirText);
@@ -438,7 +437,7 @@ public class FileBrowser
             var name = displayNames[i];
             if (GUILayout.Button(name) && !confirmSave.Opened)
             {
-                if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoke(System.IO.Directory.Exists, path))
+                if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoke(System.IO.Directory.Exists, path))
                 {
                     changingDir = path;
                     dirChanged = true;
@@ -458,7 +457,7 @@ public class FileBrowser
         selectedFileText = GUILayout.TextField(selectedFileText);
         if (GUILayout.Button(selectText, GUILayout.Width(50)) && !confirmSave.Opened)
         {
-            var rev = Plugin.Kernel.Get<PatchReverseInvoker>();
+            var rev = Plugin.Kernel.Resolve<PatchReverseInvoker>();
             var combinedPath = rev.Invoke(System.IO.Path.Combine, currentDir, selectedFileText);
             switch (browserType)
             {

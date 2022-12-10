@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Reflection;
 using HarmonyLib;
-using Ninject;
 using UniTASPlugin.FakeGameState;
 using EnvOrig = System.Environment;
 // ReSharper disable InconsistentNaming
@@ -23,7 +22,7 @@ internal static class Environment
 
         private static bool Prefix(ref int __result)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
             __result = (int)(GameTime.RealtimeSinceStartup * 1000f);
             return false;

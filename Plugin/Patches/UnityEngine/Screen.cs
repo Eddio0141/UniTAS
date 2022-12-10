@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Reflection;
 using HarmonyLib;
-using Ninject;
 using UniTASPlugin.GameOverlay;
 using ScreenOrig = UnityEngine.Screen;
 // ReSharper disable InconsistentNaming
@@ -23,7 +22,7 @@ internal static class Screen
 
         private static bool Prefix(ref bool value)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
             Overlay.UnityCursorVisible = value;
             if (Overlay.ShowCursor)
@@ -44,7 +43,7 @@ class widthGetter
 
     static bool Prefix(ref int __result)
     {
-   if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+   if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
    return true;
         __result = TAS.Screen.Width;
         return false;
@@ -61,7 +60,7 @@ class heightGetter
 
     static bool Prefix(ref int __result)
     {
-   if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+   if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
    return true;
         __result = TAS.Screen.Height;
         return false;

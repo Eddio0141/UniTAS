@@ -3,7 +3,6 @@ using System.Globalization;
 using System.Reflection;
 using System.Text;
 using HarmonyLib;
-using Ninject;
 using UniTASPlugin.FakeGameState.GameFileSystem;
 using DirOrig = System.IO.Directory;
 using PathOrig = System.IO.Path;
@@ -48,7 +47,7 @@ internal static class Path
 
         private static bool Prefix(ref int __result, string path)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
             if (path != null)
             {
@@ -75,7 +74,7 @@ internal static class Path
 
         private static bool Prefix(ref string __result, string path1, string path2)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
             if (path1 == null)
             {
@@ -129,7 +128,7 @@ internal static class Path
 
         private static bool Prefix(ref bool __result, string path)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
             if (string.IsNullOrEmpty(path))
             {
@@ -159,7 +158,7 @@ internal static class Path
 
         private static bool Prefix(ref string __result, string s)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
             var length = s.Length;
             var num = 0;
@@ -248,7 +247,7 @@ internal static class Path
 
         private static bool Prefix(ref string __result, string path)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
             if (path == string.Empty)
             {
@@ -304,7 +303,7 @@ internal static class Path
 
         private static bool Prefix(ref string __result, string path)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
             if (path == null)
             {
@@ -336,7 +335,7 @@ internal static class Path
 
         private static bool Prefix(ref string __result, ref string path)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
             if (path.Length < 2)
             {
@@ -378,7 +377,7 @@ internal static class Path
 
         private static bool Prefix(ref bool __result, char c)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
             __result = c == FileSystem.ExternalHelpers.DirectorySeparatorChar || c == FileSystem.ExternalHelpers.AltDirectorySeparatorChar;
             return false;
@@ -395,7 +394,7 @@ internal static class Path
 
         private static bool Prefix(ref string __result, string path)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
             if (path == null)
             {
@@ -479,7 +478,7 @@ internal static class Path
 
         private static bool Prefix(ref string __result)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
             var temp_path = Traverse.Create(typeof(PathOrig)).Method("get_temp_path").GetValue<string>();
             if (temp_path.Length > 0 && temp_path[temp_path.Length - 1] != FileSystem.ExternalHelpers.DirectorySeparatorChar)
@@ -502,7 +501,7 @@ internal static class Path
 
         private static bool Prefix(ref bool __result, string path)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
             if (path == null || path.Trim().Length == 0)
             {
@@ -529,7 +528,7 @@ internal static class Path
 
         private static bool Prefix(ref string __result, string path)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
             var num = 2;
             while (num < path.Length && !Helper.PathIsDirectorySeparator(path[num]))
@@ -559,7 +558,7 @@ internal static class Path
 
         private static bool Prefix(ref bool __result, string root, string path)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
             if (root.Length < 2 || path.Length < 2)
             {
@@ -594,7 +593,7 @@ internal static class Path
 
         private static bool Prefix(ref bool __result, string subset, string path)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
             if (subset.Length > path.Length)
             {
@@ -629,7 +628,7 @@ internal static class Path
 
         private static bool Prefix(ref string __result, string[] paths)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
             if (paths == null)
             {
@@ -687,7 +686,7 @@ internal static class Path
 
         private static bool Prefix(ref string __result)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
             __result = FileSystem.ExternalHelpers.DirectorySeparatorStr;
             return false;
@@ -704,7 +703,7 @@ internal static class Path
 
         private static bool Prefix(ref string __result, string path1, string path2)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
             if (path1 == null || path2 == null)
             {

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Reflection;
 using HarmonyLib;
-using Ninject;
 using UniTASPlugin.FakeGameState;
 using DateTimeOrig = System.DateTime;
 // ReSharper disable InconsistentNaming
@@ -23,7 +22,7 @@ internal static class DateTime
 
         private static bool Prefix(ref DateTimeOrig __result)
         {
-            if (Plugin.Kernel.Get<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
             __result = GameTime.CurrentTime;
             return false;
