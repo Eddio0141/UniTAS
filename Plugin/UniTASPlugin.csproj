@@ -42,10 +42,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="UpdateHelper\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <ProjectReference Include="..\UniTASFunkyInjector\UniTASFunkyInjector.csproj" />
     </ItemGroup>
 
