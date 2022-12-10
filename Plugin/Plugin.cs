@@ -21,17 +21,15 @@ public class Plugin : BaseUnityPlugin
 
     private ManualLogSource _logger;
 
-    public int FixedUpdateIndex { get; private set; } = -1;
+    private static Plugin instance;
 
-    public static Plugin Instance;
-
-    public static ManualLogSource Log => Instance._logger;
+    public static ManualLogSource Log => instance._logger;
 
     private void Awake()
     {
-        if (Instance != null)
+        if (instance != null)
             return;
-        Instance = this;
+        instance = this;
         _logger = Logger;
 
         Logger.LogInfo("init patch");
@@ -69,8 +67,6 @@ public class Plugin : BaseUnityPlugin
     // unity execution order is Awake() -> FixedUpdate() -> Update()
     private void Update()
     {
-        // TODO if possible, put this at the first call of Update
-        FixedUpdateIndex++;
         var updateList = Kernel.ResolveAll<IOnUpdate>();
         foreach (var update in updateList)
         {
@@ -85,8 +81,12 @@ public class Plugin : BaseUnityPlugin
 
     private void FixedUpdate()
     {
-        // TODO if possible, put this at the first call of FixedUpdate
-        FixedUpdateIndex = -1;
+        var updateList = Kernel.ResolveAll<IOnFixedUpdate>();
+        foreach (var update in updateList)
+        {
+            update.FixedUpdate(Time.fixedDeltaTime);
+        }
+
         // this needs to be called before checking pending soft restart or it will cause a 1 frame desync
         //TAS.FixedUpdate();
         GameRestart.FixedUpdate();
