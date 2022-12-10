@@ -35,8 +35,8 @@ public class Plugin : BaseUnityPlugin
         _logger = Logger;
 
         Logger.LogInfo("init patch");
-        //Harmony harmony = new($"{MyPluginInfo.PLUGIN_GUID}HarmonyPatch");
-        //harmony.PatchAll();
+        Harmony harmony = new($"{MyPluginInfo.PLUGIN_GUID}HarmonyPatch");
+        harmony.PatchAll();
         Logger.LogInfo("post init patch");
 
         // init fake file system
