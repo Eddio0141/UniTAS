@@ -112,6 +112,6 @@ public partial class ScriptEngineMovieRunner : IMovieRunner
     {
         var env = _virtualEnvironmentService.GetVirtualEnv();
         env.RunVirtualEnvironment = false;
-        TimeWrap.CaptureFrameTime = 0;
+        // TODO TimeWrap.CaptureFrameTime = 0;
     }
 }
