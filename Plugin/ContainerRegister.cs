@@ -1,6 +1,7 @@
 using UniTASFunkyInjector;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.GameEnvironment.InnerState.Input;
+using UniTASPlugin.Interfaces.Update;
 using UniTASPlugin.Movie;
 using UniTASPlugin.Movie.ScriptEngine;
 using UniTASPlugin.Movie.ScriptEngine.EngineMethods;
@@ -8,7 +9,7 @@ using UniTASPlugin.Movie.ScriptEngine.ParseInterfaces;
 using UniTASPlugin.Movie.ScriptEngine.Parsers;
 using UniTASPlugin.Movie.ScriptEngine.Parsers.MoviePropertiesParser;
 using UniTASPlugin.Movie.ScriptEngine.Parsers.MovieScriptParser;
-using UniTASPlugin.UpdateHelper;
+using UniTASPlugin.ReverseInvoker;
 
 namespace UniTASPlugin;
 

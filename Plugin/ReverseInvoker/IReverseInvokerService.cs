@@ -1,4 +1,4 @@
-namespace UniTASPlugin;
+namespace UniTASPlugin.ReverseInvoker;
 
 public interface IReverseInvokerService
 {

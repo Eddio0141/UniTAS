@@ -2,6 +2,7 @@
 using System.Reflection;
 using HarmonyLib;
 using UniTASPlugin.GameOverlay;
+using UniTASPlugin.ReverseInvoker;
 using ScreenOrig = UnityEngine.Screen;
 // ReSharper disable InconsistentNaming
 // ReSharper disable UnusedMember.Local

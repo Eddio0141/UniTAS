@@ -1,4 +1,4 @@
-﻿using UniTASPlugin.UpdateHelper;
+﻿using UniTASPlugin.Interfaces.Update;
 
 namespace UniTASPlugin.GameEnvironment.InnerState.Input;
 

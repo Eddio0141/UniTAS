@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace UniTASPlugin;
+namespace UniTASPlugin.ReverseInvoker;
 
 public class PatchReverseInvoker
 {

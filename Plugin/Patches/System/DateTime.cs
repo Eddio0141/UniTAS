@@ -2,6 +2,7 @@
 using System.Reflection;
 using HarmonyLib;
 using UniTASPlugin.FakeGameState;
+using UniTASPlugin.ReverseInvoker;
 using DateTimeOrig = System.DateTime;
 // ReSharper disable InconsistentNaming
 // ReSharper disable UnusedMember.Local

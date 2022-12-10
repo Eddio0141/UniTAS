@@ -2,6 +2,7 @@
 using System.Reflection;
 using HarmonyLib;
 using UniTASPlugin.GameOverlay;
+using UniTASPlugin.ReverseInvoker;
 using UnityEngine;
 // ReSharper disable UnusedMember.Local
 // ReSharper disable InconsistentNaming

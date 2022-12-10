@@ -2,6 +2,7 @@
 using System.Reflection;
 using HarmonyLib;
 using UniTASPlugin.FakeGameState;
+using UniTASPlugin.ReverseInvoker;
 using EnvOrig = System.Environment;
 // ReSharper disable InconsistentNaming
 // ReSharper disable RedundantAssignment

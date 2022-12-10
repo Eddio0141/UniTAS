@@ -2,6 +2,7 @@
 using System.Reflection;
 using HarmonyLib;
 using UniTASPlugin.GameEnvironment;
+using UniTASPlugin.ReverseInvoker;
 using UnityEngine;
 using InputOrig = UnityEngine.Input;
 

@@ -1,4 +1,4 @@
-using UniTASPlugin.UpdateHelper;
+using UniTASPlugin.Interfaces.Update;
 using UniTASPlugin.VersionSafeWrapper;
 
 namespace UniTASPlugin.GameEnvironment;

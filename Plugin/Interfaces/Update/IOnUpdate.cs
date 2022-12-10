@@ -1,4 +1,4 @@
-﻿namespace UniTASPlugin.UpdateHelper;
+﻿namespace UniTASPlugin.Interfaces.Update;
 
 public interface IOnUpdate
 {

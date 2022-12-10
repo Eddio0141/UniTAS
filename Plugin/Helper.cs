@@ -8,6 +8,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using HarmonyLib;
 using UniTASPlugin.Exceptions;
+using UniTASPlugin.ReverseInvoker;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
 

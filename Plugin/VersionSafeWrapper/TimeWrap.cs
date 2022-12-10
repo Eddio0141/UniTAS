@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using UniTASPlugin.ReverseInvoker;
 using UnityEngine;
 
 namespace UniTASPlugin.VersionSafeWrapper;

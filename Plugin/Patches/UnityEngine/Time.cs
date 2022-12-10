@@ -3,6 +3,7 @@ using System.Reflection;
 using HarmonyLib;
 using UniTASPlugin.FakeGameState;
 using UniTASPlugin.GameEnvironment;
+using UniTASPlugin.ReverseInvoker;
 using TimeOrig = UnityEngine.Time;
 // ReSharper disable InconsistentNaming
 // ReSharper disable IdentifierTypo

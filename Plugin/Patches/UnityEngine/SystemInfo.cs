@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using HarmonyLib;
+using UniTASPlugin.ReverseInvoker;
 
 // ReSharper disable InconsistentNaming
 // ReSharper disable UnusedMember.Local
