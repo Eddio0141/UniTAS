@@ -22,8 +22,14 @@ public static class ContainerRegister
         VirtualEnvRegisters(container);
         PatchReverseInvokerRegisters(container);
         OnUpdateRegisters(container);
+        ReverseInvokerRegisters(container);
 
         return container;
+    }
+
+    private static void ReverseInvokerRegisters(FunkyInjectorContainer container)
+    {
+        container.Register(ComponentStarter.For<IReverseInvokerService>().ImplementedBy<ReverseInvokerFactory>());
     }
 
     private static void OnUpdateRegisters(FunkyInjectorContainer container)
@@ -72,5 +78,6 @@ public static class ContainerRegister
     {
         container.Register(
             ComponentStarter.For<IVirtualEnvironmentService>().ImplementedBy<VirtualEnvironmentFactory>());
+        container.Register(ComponentStarter.For<IOnUpdate>().ImplementedBy<VirtualEnvironmentApplier>());
     }
 }
