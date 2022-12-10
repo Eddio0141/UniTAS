@@ -5,7 +5,7 @@ namespace UniTASPlugin.VersionSafeWrapper;
 
 public static class TimeWrap
 {
-    private static readonly bool CaptureDeltaTimeExists = CaptureDeltaTimeTraverse.PropertyExists();
+    public static readonly bool CaptureDeltaTimeExists = CaptureDeltaTimeTraverse.PropertyExists();
     private static Traverse CaptureDeltaTimeTraverse => Traverse.Create<Time>().Property("captureDeltaTime");
 
     public static float CaptureFrameTime
@@ -15,7 +15,8 @@ public static class TimeWrap
         {
             if (CaptureDeltaTimeExists)
             {
-                CaptureDeltaTimeTraverse.SetValue(value);
+                var rev = Plugin.Kernel.Resolve<IReverseInvokerService>().GetReverseInvoker();
+                rev.Invoke(() => CaptureDeltaTimeTraverse.SetValue(value));
             }
             else
             {
