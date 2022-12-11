@@ -26,8 +26,15 @@ public static class ContainerRegister
         OnUpdateRegisters(container);
         ReverseInvokerRegisters(container);
         FixedUpdateSyncRegisters(container);
+        GameRestartRegisters(container);
 
         return container;
+    }
+
+    private static void GameRestartRegisters(FunkyInjectorContainer container)
+    {
+        container.Register(ComponentStarter.For<IGameRestart>().ImplementedBy<GameRestart>());
+        container.Register(ComponentStarter.For<GameRestart>().LifestyleSingleton());
     }
 
     private static void FixedUpdateSyncRegisters(FunkyInjectorContainer container)

@@ -3,8 +3,8 @@ using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
 using UniTASFunkyInjector;
-using UniTASPlugin.FakeGameState;
 using UniTASPlugin.FakeGameState.GameFileSystem;
+using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.GameOverlay;
 using UniTASPlugin.Interfaces.Update;
 using UniTASPlugin.Movie.ScriptEngine;
@@ -54,7 +54,8 @@ public class Plugin : BaseUnityPlugin
         Logger.LogInfo($"All axis names: {string.Join(", ", Input.GetJoystickNames())}");
 
         // init random seed
-        RandomWrap.InitState((int)GameTime.Seed());
+        var env = Kernel.Resolve<IVirtualEnvironmentService>().GetVirtualEnv();
+        RandomWrap.InitState((int)env.Seed);
 
         GameTracker.Init();
         SystemInfo.Init();
@@ -89,7 +90,6 @@ public class Plugin : BaseUnityPlugin
 
         // this needs to be called before checking pending soft restart or it will cause a 1 frame desync
         //TAS.FixedUpdate();
-        GameRestart.FixedUpdate();
     }
 
     private void LateUpdate()

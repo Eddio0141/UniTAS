@@ -1,16 +1,17 @@
 ﻿using System;
 using HarmonyLib;
 using UniTASPlugin.FakeGameState;
+using UniTASPlugin.GameEnvironment.InnerState;
 using Object = UnityEngine.Object;
 
 namespace UniTASPlugin.SaveState;
 
 internal static class Main
 {
-    private static State Test;
-    private static bool pendingLoad;
-    private static int pendingLoadFixedUpdateIndex;
-    private static State pendingState;
+    // private static State Test;
+    // private static bool pendingLoad;
+    // private static int pendingLoadFixedUpdateIndex;
+    // private static State pendingState;
 
     private static object testInstance;
     private static float testx;
@@ -22,8 +23,8 @@ internal static class Main
         // TODO only use this if unity version has it
         //var scene = SceneManager.GetActiveScene();
         //var sceneIndex = Scene.buildIndex(scene);
-        var time = DateTime.Now;
-        var frameCount = GameTime.RenderedFrameCountOffset;
+        // var time = DateTime.Now;
+        // var frameCount = GameTime.RenderedFrameCountOffset;
         //var fixedUpdateIndex = Plugin.Instance.FixedUpdateIndex;
         // TODO only save this state if unity version has it
         //var cursorVisible = Cursor.visible;
@@ -43,12 +44,12 @@ internal static class Main
     public static void Load()
     {
         Plugin.Log.LogDebug("We are loading the test state");
-        var state = Test;
-        pendingLoad = true;
-        pendingLoadFixedUpdateIndex = state.FixedUpdateIndex;
-        pendingState = state;
-        Plugin.Log.LogDebug( /*$"Scene: {state.Scene}, */
-            $"Time: {state.Time}, FrameCount: {state.FrameCount}, FixedUpdateIndex: {state.FixedUpdateIndex}");
+        // var state = Test;
+        // pendingLoad = true;
+        // pendingLoadFixedUpdateIndex = state.FixedUpdateIndex;
+        // pendingState = state;
+        // Plugin.Log.LogDebug( /*$"Scene: {state.Scene}, */
+        //     $"Time: {state.Time}, FrameCount: {state.FrameCount}, FixedUpdateIndex: {state.FixedUpdateIndex}");
     }
 
     public static void Update()
@@ -78,7 +79,7 @@ internal static class Main
         _ = position.Field("y").SetValue(testy);
         _ = position.Field("z").SetValue(testz);
 
-        Plugin.Log.LogDebug(
-            $"Load operation finished, time: {DateTime.Now}, frameCount: {GameTime.RenderedFrameCountOffset}");
+        // Plugin.Log.LogDebug(
+        //     $"Load operation finished, time: {DateTime.Now}, frameCount: {GameTime.RenderedFrameCountOffset}");
     }
 }
