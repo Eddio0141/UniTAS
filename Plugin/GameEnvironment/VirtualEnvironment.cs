@@ -24,9 +24,11 @@ public class VirtualEnvironment
         }
     }
 
-    public Os Os { get; } = Os.Windows;
+    public Os Os { get; set; } = Os.Windows;
     public WindowState WindowState { get; } = new(1920, 1080, false, true);
     public InputState InputState { get; } = new();
     public float FrameTime { get; set; }
-    public bool Restart { get; set; }
+    public GameTime GameTime { get; } = new();
+
+    public long Seed => GameTime.CurrentTime.Ticks;
 }

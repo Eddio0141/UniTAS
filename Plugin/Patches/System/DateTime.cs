@@ -2,6 +2,8 @@
 using System.Reflection;
 using HarmonyLib;
 using UniTASPlugin.FakeGameState;
+using UniTASPlugin.GameEnvironment;
+using UniTASPlugin.GameEnvironment.InnerState;
 using UniTASPlugin.ReverseInvoker;
 using DateTimeOrig = System.DateTime;
 
@@ -26,7 +28,8 @@ internal static class DateTime
         {
             if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
-            __result = GameTime.CurrentTime;
+            var gameTime = Plugin.Kernel.Resolve<IVirtualEnvironmentService>().GetVirtualEnv().GameTime;
+            __result = gameTime.CurrentTime;
             return false;
         }
     }

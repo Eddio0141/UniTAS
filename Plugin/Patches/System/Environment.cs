@@ -2,6 +2,8 @@
 using System.Reflection;
 using HarmonyLib;
 using UniTASPlugin.FakeGameState;
+using UniTASPlugin.GameEnvironment;
+using UniTASPlugin.GameEnvironment.InnerState;
 using UniTASPlugin.ReverseInvoker;
 using EnvOrig = System.Environment;
 
@@ -26,7 +28,8 @@ internal static class Environment
         {
             if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
-            __result = (int)(GameTime.RealtimeSinceStartup * 1000f);
+            var gameTime = Plugin.Kernel.Resolve<IVirtualEnvironmentService>().GetVirtualEnv().GameTime;
+            __result = (int)(gameTime.RealtimeSinceStartup * 1000f);
             return false;
         }
     }
