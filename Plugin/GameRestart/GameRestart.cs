@@ -29,8 +29,8 @@ public class GameRestart : IGameRestart
     /// <param name="time"></param>
     public void SoftRestart(DateTime time)
     {
-        _syncFixedUpdate.OnSync(SoftRestartOperation);
         softRestartTime = time;
+        _syncFixedUpdate.OnSync(SoftRestartOperation);
         Plugin.Log.LogInfo("Soft restarting, pending FixedUpdate call");
     }
 
