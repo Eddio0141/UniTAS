@@ -57,6 +57,6 @@ public class ScriptEngineMovieParser : IMovieParser
 
         var script = new ScriptModel(mainMethod, definedMethods);
 
-        return new MovieModel(properties, script);
+        return new(properties, script);
     }
 }

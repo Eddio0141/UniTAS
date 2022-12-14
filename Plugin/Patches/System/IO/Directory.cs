@@ -104,7 +104,7 @@ internal static class Directory
             if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             Helper.PathValidate(path);
-            __result = new string(FileSystem.ExternalHelpers.DirectorySeparatorChar, 1);
+            __result = new(FileSystem.ExternalHelpers.DirectorySeparatorChar, 1);
             return false;
         }
     }
@@ -483,8 +483,8 @@ internal static class Directory
         {
             if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
-            __result = new DirectorySecurity();
-            __result.AddAccessRule(new FileSystemAccessRule("Everyone", FileSystemRights.FullControl,
+            __result = new();
+            __result.AddAccessRule(new("Everyone", FileSystemRights.FullControl,
                 AccessControlType.Allow));
             return false;
         }

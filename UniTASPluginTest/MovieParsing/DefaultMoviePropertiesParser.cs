@@ -39,8 +39,8 @@ unfocused
 fullscreen
 endsave end_save";
         var expected = new PropertiesModel("test TAS", "a test TAS", "yuu0141", "end_save",
-            new StartupPropertiesModel(Os.Windows, new DateTime(2002, 3, 28), 0.001f,
-                new WindowState(900, 600, true, false)));
+            new StartupPropertiesModel(Os.Windows, new(2002, 3, 28), 0.001f,
+                new(900, 600, true, false)));
         var actual = parser.Parse(input);
 
         actual.Should().BeEquivalentTo(expected);
