@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
@@ -7,6 +8,7 @@ using UniTASPlugin.FakeGameState.GameFileSystem;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.GameOverlay;
 using UniTASPlugin.Interfaces.Update;
+using UniTASPlugin.Movie;
 using UniTASPlugin.Movie.ScriptEngine;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
@@ -25,12 +27,20 @@ public class Plugin : BaseUnityPlugin
 
     public static ManualLogSource Log => instance._logger;
 
+    private IOnUpdate[] _onUpdates;
+    private IOnFixedUpdate[] _onFixedUpdates;
+    private IMovieRunner _movieRunner;
+
     private void Awake()
     {
         if (instance != null)
             return;
         instance = this;
         _logger = Logger;
+
+        _onUpdates = Kernel.ResolveAll<IOnUpdate>().ToArray();
+        _onFixedUpdates = Kernel.ResolveAll<IOnFixedUpdate>().ToArray();
+        _movieRunner = Kernel.Resolve<IMovieRunner>();
 
         Logger.LogInfo("init patch");
         Harmony harmony = new($"{MyPluginInfo.PLUGIN_GUID}HarmonyPatch");
@@ -68,22 +78,19 @@ public class Plugin : BaseUnityPlugin
     // unity execution order is Awake() -> FixedUpdate() -> Update()
     private void Update()
     {
-        var updateList = Kernel.ResolveAll<IOnUpdate>();
-        foreach (var update in updateList)
+        foreach (var update in _onUpdates)
         {
             update.Update(Time.deltaTime);
         }
 
-        var movieRunner = Kernel.Resolve<ScriptEngineMovieRunner>();
-        movieRunner.Update();
+        _movieRunner.Update();
         //Overlay.Update();
-        GameCapture.Update();
+        //GameCapture.Update();
     }
 
     private void FixedUpdate()
     {
-        var updateList = Kernel.ResolveAll<IOnFixedUpdate>();
-        foreach (var update in updateList)
+        foreach (var update in _onFixedUpdates)
         {
             update.FixedUpdate(Time.fixedDeltaTime);
         }
