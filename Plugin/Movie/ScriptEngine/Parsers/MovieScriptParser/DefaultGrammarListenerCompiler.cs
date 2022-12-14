@@ -35,7 +35,10 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
     {
         public string Name { get; }
         public List<OpCodeBase> OpCodes { get; } = new();
+
         public int ReturnCount { get; set; } = -1;
+
+        // TODO use set
         public int ArgCount { get; set; } = -1;
 
         public MethodBuilder(string name)
@@ -499,17 +502,39 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
     private void InsertOpCodeAndUpdateOffset(int index, OpCodeBase opCode)
     {
-        switch (_buildingType)
+        var opCodes = _buildingType switch
         {
-            case OpCodeBuildingType.BuildingMainMethod:
-                _mainBuilder.Insert(index, opCode);
-                break;
-            case OpCodeBuildingType.BuildingMethod:
-                _methodBuilders.Peek().OpCodes.Insert(index, opCode);
-                break;
-            default:
-                throw new ArgumentOutOfRangeException();
+            OpCodeBuildingType.BuildingMainMethod => _mainBuilder,
+            OpCodeBuildingType.BuildingMethod => _methodBuilders.Peek().OpCodes,
+            _ => throw new ArgumentOutOfRangeException()
+        };
+
+        // recursively update offset pointing to index after this op code
+        // if the offset is pointing to the index we are inserting at, ignore it
+        for (var i = 0; i < index; i++)
+        {
+            var opCodePrev = opCodes[i];
+            if (opCodePrev is not JumpBase jump) continue;
+
+            if (jump.Offset + i > index)
+            {
+                jump.Offset++;
+            }
         }
+
+        for (var i = index; i < opCodes.Count; i++)
+        {
+            var opCodePrev = opCodes[i];
+            if (opCodePrev is not JumpBase jump) continue;
+
+            // if jump is pointing to index or before, we need to update offset
+            if ((i == index && jump.Offset + i < index) || jump.Offset + i <= index)
+            {
+                jump.Offset--;
+            }
+        }
+
+        opCodes.Insert(index, opCode);
 
         // update offsets
         var tempMoveList = new List<KeyValuePair<KeyValuePair<int, RegisterType>, string>>();
@@ -586,7 +611,11 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         {
             var startOfLoopOffset = _startOfLoopOffsets.Pop();
             var offset = startOfLoopOffset.Key;
-            offset++;
+            if (offset > index && startOfLoopOffset.Value == CurrentBuildingMethodName())
+            {
+                offset++;
+            }
+
             tempMoveList3.Add(new(offset, startOfLoopOffset.Value));
         }
 
@@ -1172,7 +1201,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         var index = ifNotTrueOffsetRegister.Key;
         var exprRegister = ifNotTrueOffsetRegister.Value;
 
-        InsertOpCodeAndUpdateOffset(index, new JumpIfFalse(GetOpCodeInsertLocation() + 1, exprRegister));
+        InsertOpCodeAndUpdateOffset(index, new JumpIfFalse(GetOpCodeInsertLocation() - index + 2, exprRegister));
     }
 
     public override void EnterElseIfStatement(ElseIfStatementContext context)
@@ -1266,7 +1295,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
                 var startIndex = _startOfLoopOffsets.Pop().Key;
 
                 AddOpCode(new PopStackOpCode(loopCountStoreRegister));
-                AddOpCode(new JumpOpCode(startIndex - GetOpCodeInsertLocation() - 1));
+                AddOpCode(new JumpOpCode(startIndex - GetOpCodeInsertLocation()));
 
                 // jumps from start of loop, and middle of loop (break)
 
@@ -1274,14 +1303,14 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
                 var loopExprJumpIndex = endOfLoopExprOffset.Key;
 
                 InsertOpCodeAndUpdateOffset(loopExprJumpIndex,
-                    new JumpIfEqZero(GetOpCodeInsertLocation() + 1, loopCountStoreRegister));
+                    new JumpIfEqZero(GetOpCodeInsertLocation() - loopExprJumpIndex + 1, loopCountStoreRegister));
 
                 var endOfLoopOffsets = _endOfLoopOffsets.Pop();
                 var indexes = endOfLoopOffsets.Key;
 
                 foreach (var index in indexes)
                 {
-                    InsertOpCodeAndUpdateOffset(index, new JumpOpCode(GetOpCodeInsertLocation() + 1));
+                    InsertOpCodeAndUpdateOffset(index, new JumpOpCode(GetOpCodeInsertLocation() - index + 1));
                 }
 
                 break;
