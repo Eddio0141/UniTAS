@@ -1,9 +1,10 @@
-﻿using System.Linq;
-using UniTASPlugin.GameOverlay.GameConsole;
+﻿using System;
+using System.Linq;
 using UniTASPlugin.Movie;
 using UniTASPlugin.ReverseInvoker;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
+using Console = UniTASPlugin.GameOverlay.GameConsole.Console;
 
 namespace UniTASPlugin.GameOverlay;
 
@@ -58,7 +59,7 @@ internal static class Overlay
         BGSurround.Apply();
 
         // hide normal cursor
-        CursorWrap.Visible = false;
+        //CursorWrap.Visible = false;
     }
 
     public static void SetCursorTexture(Texture2D texture)
@@ -162,7 +163,7 @@ internal static class Overlay
                         }
                         catch (System.Exception e)
                         {
-                            Plugin.Log.LogError(e.Message);
+                            Plugin.Log.LogError(e);
                         }
                     }
                 }
@@ -195,8 +196,14 @@ internal static class Overlay
                     }
                     catch (System.Exception e)
                     {
-                        Plugin.Log.LogError(e.Message);
+                        Plugin.Log.LogError(e);
                     }
+                }
+
+                if (GUILayout.Button("Soft restart") && movieRunner.MovieEnd)
+                {
+                    var restart = kernel.Resolve<IGameRestart>();
+                    restart.SoftRestart(new(2000, 1, 1));
                 }
 
                 break;
