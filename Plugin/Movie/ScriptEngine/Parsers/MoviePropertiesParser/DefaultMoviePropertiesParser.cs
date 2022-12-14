@@ -103,7 +103,7 @@ public partial class DefaultMoviePropertiesParser : IMoviePropertyParser
 
             foreach (var conflictKey in foundKey.ConflictKeys)
             {
-                conflictKeys.Add(new KeyValuePair<string, string>(conflictKey, foundKey.Name));
+                conflictKeys.Add(new(conflictKey, foundKey.Name));
             }
 
             var parsedValue = foundKey.Parse(split.Length < 2 ? "" : split[1].TrimStart());
@@ -157,13 +157,13 @@ public partial class DefaultMoviePropertiesParser : IMoviePropertyParser
         }
 
         if (loadSaveStatePath != null)
-            return new PropertiesModel(name, description, author, endSavePath, loadSaveStatePath);
+            return new(name, description, author, endSavePath, loadSaveStatePath);
         if (resolution == null)
             throw new UnknownMovieStartOptionException();
 
         var windowState = new WindowState(resolution.Value.Key, resolution.Value.Value, isFullScreen.Value,
-            isFocused.Value);
+            isFocused != null && isFocused.Value);
         var startupProperties = new StartupPropertiesModel(os.Value, startTime.Value, frameTime.Value, windowState);
-        return new PropertiesModel(name, description, author, endSavePath, startupProperties);
+        return new(name, description, author, endSavePath, startupProperties);
     }
 }
