@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.Movie.ScriptEngine.EngineMethods;
@@ -18,16 +17,18 @@ public partial class ScriptEngineMovieRunner : IMovieRunner
     private readonly IMovieParser _parser;
 
     private readonly IVirtualEnvironmentService _virtualEnvironmentService;
+    private readonly IGameRestart _gameRestart;
 
     private ScriptEngineLowLevelEngine _engine;
     private ScriptModel _mainScript;
 
     public ScriptEngineMovieRunner(IMovieParser parser, IEnumerable<EngineExternalMethod> externMethods,
-        IVirtualEnvironmentService vEnvService)
+        IVirtualEnvironmentService vEnvService, IGameRestart gameRestart)
     {
         _parser = parser;
         _externalMethods = externMethods.ToArray();
         _virtualEnvironmentService = vEnvService;
+        _gameRestart = gameRestart;
     }
 
     public bool IsRunning => !MovieEnd;
@@ -50,8 +51,12 @@ public partial class ScriptEngineMovieRunner : IMovieRunner
         // TODO apply environment
         var env = _virtualEnvironmentService.GetVirtualEnv();
         env.RunVirtualEnvironment = true;
-        // TODO restart game, env.Restart = startupProperties != null;
-        env.FrameTime = startupProperties?.FrameTime ?? throw new NotImplementedException();
+        if (startupProperties != null)
+        {
+            _gameRestart.SoftRestart(startupProperties.StartTime);
+            env.FrameTime = startupProperties.FrameTime;
+        }
+
         // TODO other stuff like save state load, hide cursor, etc
 
         MovieEnd = false;
@@ -59,7 +64,7 @@ public partial class ScriptEngineMovieRunner : IMovieRunner
 
     public void Update()
     {
-        if (!IsRunning)
+        if (MovieEnd)
             return;
 
         ConcurrentRunnersPreUpdate();
