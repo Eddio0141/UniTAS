@@ -516,7 +516,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
             var opCodePrev = opCodes[i];
             if (opCodePrev is not JumpBase jump) continue;
 
-            if (jump.Offset + i > index)
+            if (jump.Offset + i >= index)
             {
                 jump.Offset++;
             }
@@ -1189,7 +1189,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
 
         foreach (var index in indexes)
         {
-            InsertOpCodeAndUpdateOffset(index, new JumpOpCode(GetOpCodeInsertLocation() + 1));
+            InsertOpCodeAndUpdateOffset(index, new JumpOpCode(GetOpCodeInsertLocation() - index + 1));
         }
     }
 
@@ -1201,7 +1201,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         var index = ifNotTrueOffsetRegister.Key;
         var exprRegister = ifNotTrueOffsetRegister.Value;
 
-        InsertOpCodeAndUpdateOffset(index, new JumpIfFalse(GetOpCodeInsertLocation() - index + 2, exprRegister));
+        InsertOpCodeAndUpdateOffset(index, new JumpIfFalse(GetOpCodeInsertLocation() - index + 1, exprRegister));
     }
 
     public override void EnterElseIfStatement(ElseIfStatementContext context)
@@ -1273,6 +1273,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
     {
         switch (context.Parent)
         {
+            // not the last else if or it's the first if
             case IfStatementContext ifStatement when
                 (ifStatement.elseIfStatement() != null || ifStatement.elseStatement() != null):
             case ElseIfStatementContext elseIfStatement when (elseIfStatement.elseIfStatement() != null ||
