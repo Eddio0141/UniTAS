@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using HarmonyLib;
-using UniTASPlugin.FakeGameState;
 using UniTASPlugin.GameEnvironment;
-using UniTASPlugin.GameEnvironment.InnerState;
 using UniTASPlugin.ReverseInvoker;
 using EnvOrig = System.Environment;
 

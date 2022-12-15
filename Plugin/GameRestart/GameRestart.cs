@@ -1,7 +1,6 @@
 ﻿using System;
 using UniTASPlugin.FixedUpdateSync;
 using UniTASPlugin.GameEnvironment;
-using UniTASPlugin.Interfaces.Update;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
 using Object = UnityEngine.Object;
