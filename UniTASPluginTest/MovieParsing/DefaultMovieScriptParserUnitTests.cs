@@ -361,6 +361,45 @@ loop 10 {
     }
 
     [Fact]
+    public void LoopWithIf()
+    {
+        var script = Setup(@"loop 5 {
+    if true {
+        break
+    }
+}");
+
+        var definedMethod = script.MainMethod;
+
+        var actual = new ScriptMethodModel(null, new OpCodeBase[]
+        {
+            // loop 5
+            new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(5)),
+            new JumpIfEqZero(16, RegisterType.Temp0),
+            new ConstToRegisterOpCode(RegisterType.Temp1, new IntValueType(1)),
+            new SubOpCode(RegisterType.Temp0, RegisterType.Temp0, RegisterType.Temp1),
+            new PushStackOpCode(RegisterType.Temp0),
+            new EnterScopeOpCode(),
+            // if true
+            new ConstToRegisterOpCode(RegisterType.Temp0, new BoolValueType(true)),
+            new JumpIfFalse(7, RegisterType.Temp0),
+            new EnterScopeOpCode(),
+            // break
+            new ExitScopeOpCode(),
+            new ExitScopeOpCode(),
+            new PopStackOpCode(RegisterType.Temp0),
+            new JumpOpCode(5),
+            new ExitScopeOpCode(),
+            // loop end
+            new ExitScopeOpCode(),
+            new PopStackOpCode(RegisterType.Temp0),
+            new JumpOpCode(-15)
+        });
+
+        definedMethod.Should().BeEquivalentTo(actual);
+    }
+
+    [Fact]
     public void LoopBreakContinue()
     {
         var script = Setup(@"fn method(){}
@@ -370,6 +409,8 @@ loop $value {
         break
     } else if $value == 4 {
         continue
+    } else {
+        method()
     }
 }");
 
@@ -382,7 +423,7 @@ loop $value {
             new SetVariableOpCode(RegisterType.Temp0, "value"),
             new VarToRegisterOpCode(RegisterType.Temp0, "value"),
             // loop $value
-            new JumpIfEqZero(29, RegisterType.Temp0),
+            new JumpIfEqZero(33, RegisterType.Temp0),
             new ConstToRegisterOpCode(RegisterType.Temp1, new IntValueType(1)),
             new SubOpCode(RegisterType.Temp0, RegisterType.Temp0, RegisterType.Temp1),
             new PushStackOpCode(RegisterType.Temp0),
@@ -397,24 +438,29 @@ loop $value {
             new ExitScopeOpCode(),
             new ExitScopeOpCode(),
             new PopStackOpCode(RegisterType.Temp0),
-            new JumpOpCode(16),
+            new JumpOpCode(20),
             new ExitScopeOpCode(),
-            new JumpOpCode(11),
+            new JumpOpCode(15),
             // else if
             new VarToRegisterOpCode(RegisterType.Temp0, "value"),
             new ConstToRegisterOpCode(RegisterType.Temp1, new IntValueType(4)),
             new EqualOpCode(RegisterType.Temp0, RegisterType.Temp0, RegisterType.Temp1),
-            new JumpIfFalse(7, RegisterType.Temp0),
+            new JumpIfFalse(8, RegisterType.Temp0),
             new EnterScopeOpCode(),
             new ExitScopeOpCode(),
             new ExitScopeOpCode(),
             new PopStackOpCode(RegisterType.Temp0),
             new JumpOpCode(-24),
+            new JumpOpCode(5),
+            new ExitScopeOpCode(),
+            // else
+            new EnterScopeOpCode(),
+            new GotoMethodOpCode("method"),
             new ExitScopeOpCode(),
             // loop end
             new ExitScopeOpCode(),
             new PopStackOpCode(RegisterType.Temp0),
-            new JumpOpCode(-28)
+            new JumpOpCode(-32)
         });
 
         definedMethod.Should().BeEquivalentTo(actual);
@@ -730,6 +776,55 @@ $concurrent1 = register(""concurrent"", true) | $concurrent2 = register(""concur
             new PopStackOpCode(RegisterType.Temp2),
             // $concurrent2 = 
             new SetVariableOpCode(RegisterType.Ret, "concurrent2")
+        });
+
+        definedMethod.Should().BeEquivalentTo(actual);
+    }
+
+    [Fact]
+    public void HugeLoops()
+    {
+        var script =
+            Setup(@"fn get_args(arg1) { }
+loop 500 { ; }
+get_args(""checkpoint 1"");
+loop 500 { ; }
+get_args(""checkpoint 2"")");
+        var definedMethod = script.MainMethod;
+
+        var actual = new ScriptMethodModel(null, new OpCodeBase[]
+        {
+            // loop 500 { ; }
+            new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(500)),
+            new JumpIfEqZero(9, RegisterType.Temp0),
+            new ConstToRegisterOpCode(RegisterType.Temp1, new IntValueType(1)),
+            new SubOpCode(RegisterType.Temp0, RegisterType.Temp0, RegisterType.Temp1),
+            new PushStackOpCode(RegisterType.Temp0),
+            new EnterScopeOpCode(),
+            new FrameAdvanceOpCode(),
+            new ExitScopeOpCode(),
+            new PopStackOpCode(RegisterType.Temp0),
+            new JumpOpCode(-8),
+            // get_args("checkpoint 1")
+            new ConstToRegisterOpCode(RegisterType.Temp0, new StringValueType("checkpoint 1")),
+            new PushArgOpCode(RegisterType.Temp0),
+            new GotoMethodOpCode("get_args"),
+            new FrameAdvanceOpCode(),
+            // loop 500 { ; }
+            new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(500)),
+            new JumpIfEqZero(9, RegisterType.Temp0),
+            new ConstToRegisterOpCode(RegisterType.Temp1, new IntValueType(1)),
+            new SubOpCode(RegisterType.Temp0, RegisterType.Temp0, RegisterType.Temp1),
+            new PushStackOpCode(RegisterType.Temp0),
+            new EnterScopeOpCode(),
+            new FrameAdvanceOpCode(),
+            new ExitScopeOpCode(),
+            new PopStackOpCode(RegisterType.Temp0),
+            new JumpOpCode(-8),
+            // get_args("checkpoint 2")
+            new ConstToRegisterOpCode(RegisterType.Temp0, new StringValueType("checkpoint 2")),
+            new PushArgOpCode(RegisterType.Temp0),
+            new GotoMethodOpCode("get_args")
         });
 
         definedMethod.Should().BeEquivalentTo(actual);
