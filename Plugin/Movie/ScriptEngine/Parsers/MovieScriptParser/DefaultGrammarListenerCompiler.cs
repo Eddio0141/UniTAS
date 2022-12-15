@@ -1375,7 +1375,7 @@ public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListe
         }
 
         AddOpCode(new PopStackOpCode(_loopExprUsingRegisters.Peek()));
-        AddOpCode(new JumpOpCode(_startOfLoopOffsets.Peek().Key));
+        AddOpCode(new JumpOpCode(_startOfLoopOffsets.Peek().Key - GetOpCodeInsertLocation()));
     }
 
     public override void EnterReturnAction(ReturnActionContext context)
