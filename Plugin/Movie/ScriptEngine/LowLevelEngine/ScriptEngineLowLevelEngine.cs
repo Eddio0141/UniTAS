@@ -213,8 +213,7 @@ public partial class ScriptEngineLowLevelEngine
     }
 
     private LeftRightResultValues<T> ValidateTypeAndGetRegister<T>(RegisterType left, RegisterType? right,
-        // ReSharper disable once MethodOverloadWithOptionalParameter
-        RegisterType? result = null)
+        RegisterType? result)
         where T : ValueType
     {
         var leftRegister = _registers[(int)left];
