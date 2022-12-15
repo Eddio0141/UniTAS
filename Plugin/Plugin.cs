@@ -9,7 +9,6 @@ using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.GameOverlay;
 using UniTASPlugin.Interfaces.Update;
 using UniTASPlugin.Movie;
-using UniTASPlugin.Movie.ScriptEngine;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
 using SystemInfo = UniTASPlugin.FakeGameState.SystemInfo;

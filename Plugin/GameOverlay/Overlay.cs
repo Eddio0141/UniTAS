@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using UniTASPlugin.Movie;
 using UniTASPlugin.ReverseInvoker;
 using UniTASPlugin.VersionSafeWrapper;
