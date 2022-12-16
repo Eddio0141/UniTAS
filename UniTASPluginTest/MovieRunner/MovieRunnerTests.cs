@@ -16,13 +16,13 @@ public class MovieRunnerTests
         var externMethods = getDefinedMethods.ToList();
         var runner = new ScriptEngineMovieRunner(
             new ScriptEngineMovieParser(new DefaultMovieSectionSplitter(), new DefaultMoviePropertiesParser(),
-                new DefaultMovieScriptParser(externMethods)), externMethods, new FakeVEnvService(),
+                new DefaultMovieScriptParser(externMethods)), externMethods, new FakeVEnvFactory(),
             new FakeRestartService());
 
         return runner;
     }
 
-    private class FakeVEnvService : IVirtualEnvironmentService
+    private class FakeVEnvFactory : IVirtualEnvironmentFactory
     {
         public VirtualEnvironment GetVirtualEnv()
         {

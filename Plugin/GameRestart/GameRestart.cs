@@ -12,12 +12,12 @@ public class GameRestart : IGameRestart
 {
     private DateTime softRestartTime;
 
-    private readonly IVirtualEnvironmentService _virtualEnvironmentService;
+    private readonly IVirtualEnvironmentFactory _virtualEnvironmentFactory;
     private readonly ISyncFixedUpdate _syncFixedUpdate;
 
-    public GameRestart(IVirtualEnvironmentService virtualEnvironmentService, ISyncFixedUpdate syncFixedUpdate)
+    public GameRestart(IVirtualEnvironmentFactory virtualEnvironmentFactory, ISyncFixedUpdate syncFixedUpdate)
     {
-        _virtualEnvironmentService = virtualEnvironmentService;
+        _virtualEnvironmentFactory = virtualEnvironmentFactory;
         _syncFixedUpdate = syncFixedUpdate;
     }
 
@@ -101,7 +101,7 @@ public class GameRestart : IGameRestart
         }
 
         Plugin.Log.LogDebug("finished setting fields, loading scene");
-        var env = _virtualEnvironmentService.GetVirtualEnv();
+        var env = _virtualEnvironmentFactory.GetVirtualEnv();
         env.GameTime.StartupTime = softRestartTime;
         SceneHelper.LoadScene(0);
 
