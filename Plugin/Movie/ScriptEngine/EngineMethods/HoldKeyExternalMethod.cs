@@ -9,11 +9,11 @@ namespace UniTASPlugin.Movie.ScriptEngine.EngineMethods;
 
 public class HoldKeyExternalMethod : EngineExternalMethod
 {
-    private readonly IVirtualEnvironmentService _virtualEnvironmentService;
+    private readonly IVirtualEnvironmentFactory _virtualEnvironmentFactory;
 
-    public HoldKeyExternalMethod(IVirtualEnvironmentService virtualEnvironmentService) : base("hold_key", 1)
+    public HoldKeyExternalMethod(IVirtualEnvironmentFactory virtualEnvironmentFactory) : base("hold_key", 1)
     {
-        _virtualEnvironmentService = virtualEnvironmentService;
+        _virtualEnvironmentFactory = virtualEnvironmentFactory;
     }
 
     public override List<ValueType> Invoke(IEnumerable<IEnumerable<ValueType>> args, ScriptEngineMovieRunner runner)
@@ -24,7 +24,7 @@ public class HoldKeyExternalMethod : EngineExternalMethod
         if (!Enum.IsDefined(typeof(UnityEngine.KeyCode), keyCodeRaw.Value)) return new();
         var keyCode = (UnityEngine.KeyCode)Enum.Parse(typeof(UnityEngine.KeyCode), keyCodeRaw.Value);
 
-        _virtualEnvironmentService.GetVirtualEnv().InputState.KeyboardState.Keys.Add((int)keyCode);
+        _virtualEnvironmentFactory.GetVirtualEnv().InputState.KeyboardState.Keys.Add((int)keyCode);
 
         return new();
     }

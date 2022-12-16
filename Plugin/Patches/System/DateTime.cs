@@ -26,7 +26,7 @@ internal static class DateTime
         {
             if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return true;
-            var gameTime = Plugin.Kernel.Resolve<IVirtualEnvironmentService>().GetVirtualEnv().GameTime;
+            var gameTime = Plugin.Kernel.Resolve<IVirtualEnvironmentFactory>().GetVirtualEnv().GameTime;
             __result = gameTime.CurrentTime;
             return false;
         }

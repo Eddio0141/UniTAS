@@ -16,18 +16,18 @@ public partial class ScriptEngineMovieRunner : IMovieRunner
 
     private readonly IMovieParser _parser;
 
-    private readonly IVirtualEnvironmentService _virtualEnvironmentService;
+    private readonly IVirtualEnvironmentFactory _virtualEnvironmentFactory;
     private readonly IGameRestart _gameRestart;
 
     private ScriptEngineLowLevelEngine _engine;
     private ScriptModel _mainScript;
 
     public ScriptEngineMovieRunner(IMovieParser parser, IEnumerable<EngineExternalMethod> externMethods,
-        IVirtualEnvironmentService vEnvService, IGameRestart gameRestart)
+        IVirtualEnvironmentFactory vEnvFactory, IGameRestart gameRestart)
     {
         _parser = parser;
         _externalMethods = externMethods.ToArray();
-        _virtualEnvironmentService = vEnvService;
+        _virtualEnvironmentFactory = vEnvFactory;
         _gameRestart = gameRestart;
     }
 
@@ -49,7 +49,7 @@ public partial class ScriptEngineMovieRunner : IMovieRunner
 
         // set env
         // TODO apply environment
-        var env = _virtualEnvironmentService.GetVirtualEnv();
+        var env = _virtualEnvironmentFactory.GetVirtualEnv();
         env.RunVirtualEnvironment = true;
         if (startupProperties != null)
         {
@@ -114,7 +114,7 @@ public partial class ScriptEngineMovieRunner : IMovieRunner
 
     private void AtMovieEnd()
     {
-        var env = _virtualEnvironmentService.GetVirtualEnv();
+        var env = _virtualEnvironmentFactory.GetVirtualEnv();
         env.RunVirtualEnvironment = false;
         // TODO TimeWrap.CaptureFrameTime = 0;
     }

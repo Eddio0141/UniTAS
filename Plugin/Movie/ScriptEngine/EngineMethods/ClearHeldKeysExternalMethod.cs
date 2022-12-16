@@ -6,16 +6,16 @@ namespace UniTASPlugin.Movie.ScriptEngine.EngineMethods;
 
 public class ClearHeldKeysExternalMethod : EngineExternalMethod
 {
-    private readonly IVirtualEnvironmentService _virtualEnvironmentService;
+    private readonly IVirtualEnvironmentFactory _virtualEnvironmentFactory;
 
-    public ClearHeldKeysExternalMethod(IVirtualEnvironmentService virtualEnvironmentService) : base("clear_held_keys")
+    public ClearHeldKeysExternalMethod(IVirtualEnvironmentFactory virtualEnvironmentFactory) : base("clear_held_keys")
     {
-        _virtualEnvironmentService = virtualEnvironmentService;
+        _virtualEnvironmentFactory = virtualEnvironmentFactory;
     }
 
     public override List<ValueType> Invoke(IEnumerable<IEnumerable<ValueType>> args, ScriptEngineMovieRunner runner)
     {
-        _virtualEnvironmentService.GetVirtualEnv().InputState.KeyboardState.Keys.Clear();
+        _virtualEnvironmentFactory.GetVirtualEnv().InputState.KeyboardState.Keys.Clear();
         return new();
     }
 }

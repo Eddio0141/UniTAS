@@ -1,6 +1,6 @@
 namespace UniTASPlugin.GameEnvironment;
 
-public class VirtualEnvironmentFactory : IVirtualEnvironmentService
+public class VirtualEnvironmentFactory : IVirtualEnvironmentFactory
 {
     private static VirtualEnvironment _instance = new();
 

@@ -6,17 +6,17 @@ namespace UniTASPlugin.Movie.ScriptEngine.EngineMethods;
 
 public class GetFrameTimeExternalMethod : EngineExternalMethod
 {
-    private readonly IVirtualEnvironmentService _virtualEnvironmentService;
+    private readonly IVirtualEnvironmentFactory _virtualEnvironmentFactory;
 
-    public GetFrameTimeExternalMethod(IVirtualEnvironmentService virtualEnvironmentService) : base("get_frametime", 0,
+    public GetFrameTimeExternalMethod(IVirtualEnvironmentFactory virtualEnvironmentFactory) : base("get_frametime", 0,
         1)
     {
-        _virtualEnvironmentService = virtualEnvironmentService;
+        _virtualEnvironmentFactory = virtualEnvironmentFactory;
     }
 
     public override List<ValueType> Invoke(IEnumerable<IEnumerable<ValueType>> args, ScriptEngineMovieRunner runner)
     {
-        var frameTime = _virtualEnvironmentService.GetVirtualEnv().FrameTime;
+        var frameTime = _virtualEnvironmentFactory.GetVirtualEnv().FrameTime;
 
         return new() { new FloatValueType(frameTime) };
     }

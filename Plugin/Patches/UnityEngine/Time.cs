@@ -71,7 +71,7 @@ internal static class Time
         {
             if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return;
-            var gameTime = Plugin.Kernel.Resolve<IVirtualEnvironmentService>().GetVirtualEnv().GameTime;
+            var gameTime = Plugin.Kernel.Resolve<IVirtualEnvironmentFactory>().GetVirtualEnv().GameTime;
             __result = (float)(__result - gameTime.FixedUnscaledTimeOffset);
         }
     }
@@ -95,7 +95,7 @@ internal static class Time
             if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return;
             // When called from inside MonoBehaviour's FixedUpdate, it returns TimeOrig.fixedUnscaledTime
-            var gameTime = Plugin.Kernel.Resolve<IVirtualEnvironmentService>().GetVirtualEnv().GameTime;
+            var gameTime = Plugin.Kernel.Resolve<IVirtualEnvironmentFactory>().GetVirtualEnv().GameTime;
             __result = inFixedTimeStep.PropertyExists() && inFixedTimeStep.GetValue<bool>()
                 ? fixedUnscaledTime.GetValue<float>()
                 : (float)(__result - gameTime.UnscaledTimeOffset);
@@ -125,7 +125,7 @@ internal static class Time
                 __result = fixedUnscaledTimeAsDouble.GetValue<double>();
             else
             {
-                var gameTime = Plugin.Kernel.Resolve<IVirtualEnvironmentService>().GetVirtualEnv().GameTime;
+                var gameTime = Plugin.Kernel.Resolve<IVirtualEnvironmentFactory>().GetVirtualEnv().GameTime;
                 __result -= gameTime.UnscaledTimeOffset;
             }
         }
@@ -143,7 +143,7 @@ internal static class Time
         {
             if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return;
-            var gameTime = Plugin.Kernel.Resolve<IVirtualEnvironmentService>().GetVirtualEnv().GameTime;
+            var gameTime = Plugin.Kernel.Resolve<IVirtualEnvironmentFactory>().GetVirtualEnv().GameTime;
             __result -= gameTime.FixedUnscaledTimeOffset;
         }
     }
@@ -160,7 +160,7 @@ internal static class Time
         {
             if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return;
-            var gameTime = Plugin.Kernel.Resolve<IVirtualEnvironmentService>().GetVirtualEnv().GameTime;
+            var gameTime = Plugin.Kernel.Resolve<IVirtualEnvironmentFactory>().GetVirtualEnv().GameTime;
             __result = (int)((ulong)__result - gameTime.FrameCountRestartOffset);
         }
     }
@@ -177,7 +177,7 @@ internal static class Time
         {
             if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return;
-            var gameTime = Plugin.Kernel.Resolve<IVirtualEnvironmentService>().GetVirtualEnv().GameTime;
+            var gameTime = Plugin.Kernel.Resolve<IVirtualEnvironmentFactory>().GetVirtualEnv().GameTime;
             __result = (int)((ulong)__result - gameTime.RenderedFrameCountOffset);
         }
     }
@@ -194,7 +194,7 @@ internal static class Time
         {
             if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return;
-            var gameTime = Plugin.Kernel.Resolve<IVirtualEnvironmentService>().GetVirtualEnv().GameTime;
+            var gameTime = Plugin.Kernel.Resolve<IVirtualEnvironmentFactory>().GetVirtualEnv().GameTime;
             __result = (float)(__result - gameTime.SecondsSinceStartUpOffset);
         }
     }
@@ -211,7 +211,7 @@ internal static class Time
         {
             if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return;
-            var gameTime = Plugin.Kernel.Resolve<IVirtualEnvironmentService>().GetVirtualEnv().GameTime;
+            var gameTime = Plugin.Kernel.Resolve<IVirtualEnvironmentFactory>().GetVirtualEnv().GameTime;
             __result -= gameTime.SecondsSinceStartUpOffset;
         }
     }
@@ -228,7 +228,7 @@ internal static class Time
         {
             if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return;
-            var gameTime = Plugin.Kernel.Resolve<IVirtualEnvironmentService>().GetVirtualEnv().GameTime;
+            var gameTime = Plugin.Kernel.Resolve<IVirtualEnvironmentFactory>().GetVirtualEnv().GameTime;
             __result = (float)(__result - gameTime.ScaledTimeOffset);
         }
     }
@@ -245,7 +245,7 @@ internal static class Time
         {
             if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return;
-            var gameTime = Plugin.Kernel.Resolve<IVirtualEnvironmentService>().GetVirtualEnv().GameTime;
+            var gameTime = Plugin.Kernel.Resolve<IVirtualEnvironmentFactory>().GetVirtualEnv().GameTime;
             __result -= gameTime.ScaledTimeOffset;
         }
     }
@@ -262,7 +262,7 @@ internal static class Time
         {
             if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return;
-            var gameTime = Plugin.Kernel.Resolve<IVirtualEnvironmentService>().GetVirtualEnv().GameTime;
+            var gameTime = Plugin.Kernel.Resolve<IVirtualEnvironmentFactory>().GetVirtualEnv().GameTime;
             __result = (float)(__result - gameTime.ScaledFixedTimeOffset);
         }
     }
@@ -279,7 +279,7 @@ internal static class Time
         {
             if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
                 return;
-            var gameTime = Plugin.Kernel.Resolve<IVirtualEnvironmentService>().GetVirtualEnv().GameTime;
+            var gameTime = Plugin.Kernel.Resolve<IVirtualEnvironmentFactory>().GetVirtualEnv().GameTime;
             __result -= gameTime.ScaledFixedTimeOffset;
         }
     }
