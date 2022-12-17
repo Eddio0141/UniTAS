@@ -86,19 +86,29 @@ public partial class ScriptEngineLowLevelEngine
 
         if (_methodIndex < 0)
         {
-            foreach (var foundVarInStack in _mainVars
-                         .Select(varStack => varStack.FirstOrDefault(x => x.Name == name))
-                         .Where(foundVarInStack => foundVarInStack != null))
+            foreach (var varStack in _mainVars)
             {
-                return foundVarInStack.Value;
+                foreach (var var in varStack)
+                {
+                    if (var.Name == name)
+                    {
+                        return var.Value;
+                    }
+                }
             }
+
+            throw new UsingUndefinedVariableException(name);
         }
 
-        foreach (var foundVarInStack in _vars
-                     .Select(varStack => varStack.FirstOrDefault(x => x.Name == name))
-                     .Where(foundVarInStack => foundVarInStack != null))
+        foreach (var varStack in _vars)
         {
-            return foundVarInStack.Value;
+            foreach (var var in varStack)
+            {
+                if (var.Name == name)
+                {
+                    return var.Value;
+                }
+            }
         }
 
         throw new UsingUndefinedVariableException(name);
@@ -212,29 +222,25 @@ public partial class ScriptEngineLowLevelEngine
         return new(newLeft, null, result == null ? null : _registers[(int)result]);
     }
 
-    private LeftRightResultValues<T> ValidateTypeAndGetRegister<T>(RegisterType left, RegisterType? right,
-        RegisterType? result)
+    private LeftRightResultValues<T> ValidateTypeAndGetRegister<T>(RegisterType left, RegisterType right,
+        RegisterType result)
         where T : ValueType
     {
         var leftRegister = _registers[(int)left];
         var leftValue = leftRegister.InnerValue;
         ValidateRegisterNonTuple<T>(leftRegister);
-        var rightRegister = right == null ? null : _registers[(int)right];
-        var rightValue = rightRegister?.InnerValue;
-        if (rightValue != null)
-        {
-            ValidateRegisterNonTuple<T>(rightRegister);
-        }
+        var rightRegister = _registers[(int)right];
+        var rightValue = rightRegister.InnerValue;
+        ValidateRegisterNonTuple<T>(rightRegister);
 
-        if (leftValue is not T newLeft || (rightValue != null && rightValue is not T))
+        if (leftValue is not T newLeft || rightValue is not T newRight)
         {
             var valueType = leftValue is not T ? leftValue.GetType().ToString() : rightValue.GetType().ToString();
 
             throw new ValueTypeMismatchException(typeof(T).ToString(), valueType);
         }
 
-        return new(newLeft, right == null ? null : (T)rightValue,
-            result == null ? null : _registers[(int)result]);
+        return new(newLeft, newRight, _registers[(int)result]);
     }
 
     private LeftRightResultValuesRaw ValidateTypeAndGetRegister(RegisterType left, RegisterType right,
@@ -631,7 +637,7 @@ public partial class ScriptEngineLowLevelEngine
                     switch (resultValue.Count)
                     {
                         case 1:
-                            resultRegister.InnerValue = resultValue.First();
+                            resultRegister.InnerValue = resultValue[0];
                             break;
                         case > 1:
                             resultRegister.TupleValues = resultValue;
@@ -649,7 +655,7 @@ public partial class ScriptEngineLowLevelEngine
                     var register = _registers[(int)popArgOpCode.Register];
                     if (arg.Count == 1)
                     {
-                        register.InnerValue = arg.First();
+                        register.InnerValue = arg[0];
                     }
                     else
                     {
@@ -698,7 +704,11 @@ public partial class ScriptEngineLowLevelEngine
                     if (source.IsTuple)
                     {
                         dest.IsTuple = true;
-                        dest.TupleValues = new(source.TupleValues.Select(v => (ValueType)v.Clone()));
+                        dest.TupleValues = new();
+                        foreach (var value in source.TupleValues)
+                        {
+                            dest.TupleValues.Add((ValueType)value.Clone());
+                        }
                     }
                     else
                     {
@@ -715,7 +725,7 @@ public partial class ScriptEngineLowLevelEngine
                     var var = GetVariable(varToRegisterOpCode.Name);
                     if (var.Count == 1)
                     {
-                        register.InnerValue = var.First();
+                        register.InnerValue = var[0];
                     }
                     else
                     {
@@ -760,22 +770,40 @@ public partial class ScriptEngineLowLevelEngine
 
                     if (_methodIndex < 0)
                     {
-                        foreach (var foundVarInStack in _mainVars
-                                     .Select(varStack => varStack.FirstOrDefault(x => x.Name == setVariableOpCode.Name))
-                                     .Where(foundVarInStack => foundVarInStack != null))
+                        foreach (var varStack in _mainVars)
                         {
-                            foundVar = foundVarInStack;
-                            break;
+                            foreach (var var in varStack)
+                            {
+                                if (var.Name == setVariableOpCode.Name)
+                                {
+                                    foundVar = var;
+                                    break;
+                                }
+                            }
+
+                            if (foundVar != null)
+                            {
+                                break;
+                            }
                         }
                     }
                     else
                     {
-                        foreach (var foundVarInStack in _vars
-                                     .Select(varStack => varStack.FirstOrDefault(x => x.Name == setVariableOpCode.Name))
-                                     .Where(foundVarInStack => foundVarInStack != null))
+                        foreach (var varStack in _vars)
                         {
-                            foundVar = foundVarInStack;
-                            break;
+                            foreach (var var in varStack)
+                            {
+                                if (var.Name == setVariableOpCode.Name)
+                                {
+                                    foundVar = var;
+                                    break;
+                                }
+                            }
+
+                            if (foundVar != null)
+                            {
+                                break;
+                            }
                         }
                     }
 
@@ -822,7 +850,7 @@ public partial class ScriptEngineLowLevelEngine
                 {
                     _pc++;
                     var source = _registers[(int)popTupleOpCode.Source];
-                    var poppedValue = source.TupleValues.First();
+                    var poppedValue = source.TupleValues[0];
                     source.TupleValues.RemoveAt(0);
                     _registers[(int)popTupleOpCode.Dest].InnerValue = poppedValue;
                     break;
