@@ -18,13 +18,20 @@ public class VirtualEnvironmentApplier : IOnUpdate
 
     public void Update(float deltaTime)
     {
+        ApplyEnv();
+        UpdateState();
+    }
+
+    private void UpdateState()
+    {
+        var env = _virtualEnvironmentFactory.GetVirtualEnv();
+        env.InputState.Update();
+    }
+
+    private void ApplyEnv()
+    {
         var env = _virtualEnvironmentFactory.GetVirtualEnv();
         if (!env.RunVirtualEnvironment) return;
-
-        if (deltaTime == 0)
-        {
-            TimeWrap.CaptureFrameTime = 0;
-        }
 
         // frameTime
         TimeWrap.CaptureFrameTime = env.FrameTime;

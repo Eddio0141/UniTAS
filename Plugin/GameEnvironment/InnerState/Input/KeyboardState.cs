@@ -17,7 +17,7 @@ public class KeyboardState : InputDeviceBase
         _keysPrev = new();
     }
 
-    public override void Update(float deltaTime)
+    public override void Update()
     {
         KeysDown.Clear();
         KeysUp.Clear();

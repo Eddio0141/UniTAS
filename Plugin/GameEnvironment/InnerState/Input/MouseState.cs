@@ -24,7 +24,7 @@ public class MouseState : InputDeviceBase
         ResetState();
     }
 
-    public override void Update(float deltaTime)
+    public override void Update()
     {
         LeftClickUp = _leftClickPrev && !LeftClick;
         LeftClickDown = !_leftClickPrev && LeftClick;

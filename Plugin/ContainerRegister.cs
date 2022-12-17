@@ -1,7 +1,6 @@
 using StructureMap;
 using UniTASPlugin.FixedUpdateSync;
 using UniTASPlugin.GameEnvironment;
-using UniTASPlugin.GameEnvironment.InnerState.Input;
 using UniTASPlugin.Interfaces.Update;
 using UniTASPlugin.Movie;
 using UniTASPlugin.Movie.ScriptEngine;
@@ -56,10 +55,6 @@ public static class ContainerRegister
             // priority
             _.For<IOnUpdate>().Use<FixedUpdateTracker>();
             _.For<IOnFixedUpdate>().Use<FixedUpdateTracker>();
-
-            _.For<IOnUpdate>().Use<MouseState>();
-            _.For<IOnUpdate>().Use<AxisState>();
-            _.For<IOnUpdate>().Use<KeyboardState>();
         });
     }
 
