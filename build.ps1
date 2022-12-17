@@ -32,3 +32,6 @@ Copy-Item "Plugin/bin/$buildType/net35/*.dll" "$buildOutputPlugin" -Force
 
 # Copy patcher dlls
 Copy-Item "Patcher/bin/$buildType/net35/*.dll" "$buildOutputPatcher" -Force
+
+# Copy external plugin dlls
+Copy-Item "Plugin/Extern-Assemblies/*.dll" "$buildOutputPlugin" -Force
