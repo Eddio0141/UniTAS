@@ -14,7 +14,13 @@ public class PrintExternalMethod : EngineExternalMethod
         // TODO add more way of logging
         foreach (var arg in args)
         {
-            Plugin.Log.LogInfo(arg.ToString());
+            var values = new List<string>();
+            foreach (var value in arg)
+            {
+                values.Add(value.ToString());
+            }
+
+            Plugin.Log.LogInfo(string.Join(", ", values.ToArray()));
         }
 
         return new();
