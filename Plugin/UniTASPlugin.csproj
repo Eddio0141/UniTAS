@@ -20,6 +20,9 @@
         <Compile Remove="dependency\**" />
         <EmbeddedResource Remove="dependency\**" />
         <None Remove="dependency\**" />
+        <Compile Remove="Extern-Assemblies\**" />
+        <EmbeddedResource Remove="Extern-Assemblies\**" />
+        <None Remove="Extern-Assemblies\**" />
     </ItemGroup>
 
     <ItemGroup>
