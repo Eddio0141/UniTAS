@@ -65,7 +65,15 @@ public partial class ScriptEngineMovieRunner : IMovieRunner
     public void Update()
     {
         if (MovieEnd)
+        {
+            var env = _virtualEnvironmentFactory.GetVirtualEnv();
+            if (env.RunVirtualEnvironment)
+            {
+                env.RunVirtualEnvironment = false;
+            }
+
             return;
+        }
 
         ConcurrentRunnersPreUpdate();
         _engine.ExecUntilStop(this);
@@ -115,7 +123,6 @@ public partial class ScriptEngineMovieRunner : IMovieRunner
     private void AtMovieEnd()
     {
         var env = _virtualEnvironmentFactory.GetVirtualEnv();
-        env.RunVirtualEnvironment = false;
-        // TODO TimeWrap.CaptureFrameTime = 0;
+        env.FrameTime = 0;
     }
 }
