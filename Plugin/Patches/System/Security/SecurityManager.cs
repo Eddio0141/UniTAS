@@ -26,7 +26,7 @@ internal static class SecurityManager
 
         private static bool Prefix()
         {
-            return Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking;
+            return Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking;
         }
     }
 }

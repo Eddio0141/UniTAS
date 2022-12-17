@@ -82,7 +82,7 @@ public static class AllCommands
         {
             if (!ValidateArgCount(args, 0, 1))
                 return;
-            var restart = Plugin.Kernel.Resolve<IGameRestart>();
+            var restart = Plugin.Kernel.GetInstance<IGameRestart>();
             if (args.Length == 0)
             {
                 Console.Print($"Restarting with time {DateTime.Now}");

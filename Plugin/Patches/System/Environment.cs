@@ -24,9 +24,9 @@ internal static class Environment
 
         private static bool Prefix(ref int __result)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking)
                 return true;
-            var gameTime = Plugin.Kernel.Resolve<IVirtualEnvironmentFactory>().GetVirtualEnv().GameTime;
+            var gameTime = Plugin.Kernel.GetInstance<IVirtualEnvironmentFactory>().GetVirtualEnv().GameTime;
             __result = (int)(gameTime.RealtimeSinceStartup * 1000f);
             return false;
         }

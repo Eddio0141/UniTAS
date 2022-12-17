@@ -3,7 +3,7 @@ using System.Linq;
 using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
-using UniTASFunkyInjector;
+using StructureMap;
 using UniTASPlugin.FakeGameState.GameFileSystem;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.GameOverlay;
@@ -18,7 +18,7 @@ namespace UniTASPlugin;
 [BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
 public class Plugin : BaseUnityPlugin
 {
-    public static readonly FunkyInjectorContainer Kernel = ContainerRegister.Init();
+    public static readonly IContainer Kernel = ContainerRegister.Init();
 
     private ManualLogSource _logger;
 
@@ -37,9 +37,9 @@ public class Plugin : BaseUnityPlugin
         instance = this;
         _logger = Logger;
 
-        _onUpdates = Kernel.ResolveAll<IOnUpdate>().ToArray();
-        _onFixedUpdates = Kernel.ResolveAll<IOnFixedUpdate>().ToArray();
-        _movieRunner = Kernel.Resolve<IMovieRunner>();
+        _onUpdates = Kernel.GetAllInstances<IOnUpdate>().ToArray();
+        _onFixedUpdates = Kernel.GetAllInstances<IOnFixedUpdate>().ToArray();
+        _movieRunner = Kernel.GetInstance<IMovieRunner>();
 
         Logger.LogInfo("init patch");
         Harmony harmony = new($"{MyPluginInfo.PLUGIN_GUID}HarmonyPatch");
@@ -60,10 +60,10 @@ public class Plugin : BaseUnityPlugin
 
         // all axis names for help
         // why is this broken TODO
-        Logger.LogInfo($"All axis names: {string.Join(", ", Input.GetJoystickNames())}");
+        //Logger.LogInfo($"All axis names: {string.Join(", ", Input.GetJoystickNames())}");
 
         // init random seed
-        var env = Kernel.Resolve<IVirtualEnvironmentService>().GetVirtualEnv();
+        var env = Kernel.GetInstance<IVirtualEnvironmentFactory>().GetVirtualEnv();
         RandomWrap.InitState((int)env.Seed);
 
         GameTracker.Init();

@@ -24,9 +24,9 @@ internal static class DateTime
 
         private static bool Prefix(ref DateTimeOrig __result)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking)
                 return true;
-            var gameTime = Plugin.Kernel.Resolve<IVirtualEnvironmentFactory>().GetVirtualEnv().GameTime;
+            var gameTime = Plugin.Kernel.GetInstance<IVirtualEnvironmentFactory>().GetVirtualEnv().GameTime;
             __result = gameTime.CurrentTime;
             return false;
         }

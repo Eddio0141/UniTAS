@@ -68,7 +68,7 @@ internal static class Overlay
 
     public static void Update()
     {
-        var movieRunner = Plugin.Kernel.Resolve<IMovieRunner>();
+        var movieRunner = Plugin.Kernel.GetInstance<IMovieRunner>();
         if (movieRunner.MovieEnd && Input.GetKeyDown(KeyCode.F10))
         {
             Enabled = !Enabled;
@@ -135,7 +135,7 @@ internal static class Overlay
             return;
 
         var kernel = Plugin.Kernel;
-        var movieRunner = kernel.Resolve<IMovieRunner>();
+        var movieRunner = kernel.GetInstance<IMovieRunner>();
 
         GUI.DrawTexture(new(MENU_X, MENU_Y, MENU_SIZE_X, MENU_SIZE_Y), BGSurround);
         GUI.Box(new(MENU_X, MENU_Y, MENU_SIZE_X, MENU_SIZE_Y), $"{MyPluginInfo.PLUGIN_NAME} Menu");
@@ -152,7 +152,7 @@ internal static class Overlay
                 filePath = GUILayout.TextField(filePath);
                 if (GUILayout.Button("Run", GUILayout.Width(40)))
                 {
-                    var rev = Plugin.Kernel.Resolve<PatchReverseInvoker>();
+                    var rev = Plugin.Kernel.GetInstance<PatchReverseInvoker>();
                     if (rev.Invoke(System.IO.File.Exists, filePath) && movieRunner.MovieEnd)
                     {
                         var text = rev.Invoke(System.IO.File.ReadAllText, filePath);
@@ -181,7 +181,7 @@ internal static class Overlay
                 if (GUILayout.Button("test TAS") && movieRunner.MovieEnd)
                 {
                     var path = "";
-                    var rev = Plugin.Kernel.Resolve<PatchReverseInvoker>();
+                    var rev = Plugin.Kernel.GetInstance<PatchReverseInvoker>();
                     if (rev.Invoke(System.IO.File.Exists, "C:\\Users\\Yuki\\Documents\\test.uti"))
                         path = "C:\\Users\\Yuki\\Documents\\test.uti";
                     else if (rev.Invoke(System.IO.File.Exists,
@@ -201,7 +201,7 @@ internal static class Overlay
 
                 if (GUILayout.Button("Soft restart") && movieRunner.MovieEnd)
                 {
-                    var restart = kernel.Resolve<IGameRestart>();
+                    var restart = kernel.GetInstance<IGameRestart>();
                     restart.SoftRestart(new(2000, 1, 1));
                 }
 

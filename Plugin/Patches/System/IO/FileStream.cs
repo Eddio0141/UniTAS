@@ -41,7 +41,7 @@ internal static class FileStream
         private static bool Prefix(ref FileStreamOrig __instance, ref string path, FileMode mode, FileAccess access,
             ref FileShare share, ref int bufferSize, bool anonymous, FileOptions options)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             var instanceTraverse = Traverse.Create(__instance);
             _ = instanceTraverse.Field("name").SetValue("[Unknown]");
@@ -156,7 +156,7 @@ internal static class FileStream
 
         private static bool Prefix(ref long __result, ref FileStreamOrig __instance, long offset, SeekOrigin origin)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             if (!__instance.CanSeek)
             {
@@ -200,7 +200,7 @@ internal static class FileStream
 
         private static bool Prefix(ref long __result, ref FileStreamOrig __instance)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             if (!__instance.CanSeek)
             {
@@ -224,7 +224,7 @@ internal static class FileStream
 
         private static bool Prefix(ref long __result, ref FileStreamOrig __instance)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             if (!__instance.CanSeek)
             {
@@ -255,7 +255,7 @@ internal static class FileStream
 
         private static bool Prefix(ref FileStreamOrig __instance, byte[] array, int offset, int count)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             if (array == null)
             {
@@ -305,7 +305,7 @@ internal static class FileStream
 
         private static bool Prefix(ref FileStreamOrig __instance, bool disposing)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             Exception ex = null;
             var instanceTraverse = Traverse.Create(__instance);
@@ -352,7 +352,7 @@ internal static class FileStream
 
         private static bool Prefix(ref FileStreamOrig __instance, long value)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             if (value < 0)
             {
@@ -374,7 +374,7 @@ internal static class FileStream
 
         private static bool Prefix(ref FileStreamOrig __instance, byte[] src, ref int offset, ref int count)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             var instanceTraverse = Traverse.Create(__instance);
             var flushBufferTraverse = instanceTraverse.Method("FlushBuffer");
@@ -430,7 +430,7 @@ internal static class FileStream
 
         private static bool Prefix(ref FileStreamOrig __instance, byte value)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             if (!__instance.CanWrite)
             {
@@ -482,7 +482,7 @@ internal static class FileStream
 
         private static bool Prefix()
         {
-            return Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking;
+            return Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking;
         }
     }
 
@@ -496,7 +496,7 @@ internal static class FileStream
 
         private static bool Prefix()
         {
-            return Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking;
+            return Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking;
         }
     }
 
@@ -510,7 +510,7 @@ internal static class FileStream
 
         private static bool Prefix(ref FileStreamOrig __instance, long value)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             if (!__instance.CanSeek)
             {
@@ -549,7 +549,7 @@ internal static class FileStream
 
         private static bool Prefix()
         {
-            return Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking;
+            return Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking;
         }
     }
 
@@ -563,7 +563,7 @@ internal static class FileStream
 
         private static bool Prefix(ref FileStreamOrig __instance, ref int __result, byte[] buf, int offset, int count)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             var num = FileSystem.OsHelpers.Read(Traverse.Create(__instance).Field("name").GetValue<string>(), buf,
                 offset, count);
@@ -582,7 +582,7 @@ internal static class FileStream
 
         private static bool Prefix(ref int __result, ref FileStreamOrig __instance)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             if (!__instance.CanRead)
             {
@@ -634,7 +634,7 @@ internal static class FileStream
         private static bool Prefix(ref int __result, ref FileStreamOrig __instance, [In] [Out] byte[] array, int offset,
             int count)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             if (array == null)
             {
@@ -693,7 +693,7 @@ internal static class FileStream
 
         private static bool Prefix(ref IntPtr __result, ref FileStreamOrig __instance)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             var instanceTraverse = Traverse.Create(__instance);
             if (!instanceTraverse.Field("isExposed").GetValue<bool>())
@@ -716,7 +716,7 @@ internal static class FileStream
 
         private static bool Prefix(ref object __result)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             __result = null;
             return false;
@@ -733,7 +733,7 @@ internal static class FileStream
 
         private static bool Prefix(ref FileStreamOrig __instance)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             var instanceTraverse = Traverse.Create(__instance);
             var buf_dirtyTraverse = instanceTraverse.Field("buf_dirty");
@@ -777,7 +777,7 @@ internal static class FileStream
 
         private static bool Prefix(ref FileStreamOrig __instance, ref object __result, object cancellationToken)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             var flushMethod = AccessTools.Method(typeof(FileStreamOrig), "FlushAsync");
             __result = flushMethod.GetBaseDefinition().Invoke(__instance, new[] { cancellationToken });
@@ -795,7 +795,7 @@ internal static class FileStream
 
         private static bool Prefix(ref FileStreamOrig __instance)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             _ = Traverse.Create(__instance).Method("FlushBuffer").GetValue();
             return false;
@@ -812,7 +812,7 @@ internal static class FileStream
 
         private static bool Prefix(ref FileStreamOrig __instance)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             _ = Traverse.Create(__instance).Method("FlushBuffer").GetValue();
             return false;
@@ -838,7 +838,7 @@ internal static class FileStream
         private static bool Prefix(ref IAsyncResult __result, ref FileStreamOrig __instance, byte[] array, int offset,
             int numBytes, AsyncCallback userCallback, object stateObject)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             if (!__instance.CanWrite)
             {
@@ -906,7 +906,7 @@ internal static class FileStream
         private static bool Prefix(ref IAsyncResult __result, ref FileStreamOrig __instance, byte[] array, int offset,
             int numBytes, AsyncCallback userCallback, object stateObject)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             if (!__instance.CanRead)
             {
@@ -959,7 +959,7 @@ internal static class FileStream
         private static bool Prefix(ref FileStreamOrig __instance, FileAccess access, bool ownsHandle, int bufferSize,
             bool isAsync, bool isConsoleWrapper)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             if (access is < FileAccess.Read or > FileAccess.ReadWrite)
             {
@@ -997,7 +997,7 @@ internal static class FileStream
 
         private static bool Prefix()
         {
-            return Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking
+            return Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking
                 ? true
                 : throw new InvalidOperationException(
                     "This constructor is not supported by the virtual file system, if this happens then patch more methods to prevent this.");
@@ -1015,7 +1015,7 @@ internal static class FileStream
 
         private static bool Prefix()
         {
-            return Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking
+            return Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking
                 ? true
                 : throw new InvalidOperationException(
                     "This constructor is not supported by the virtual file system, if this happens then patch more methods to prevent this.");
@@ -1032,7 +1032,7 @@ internal static class FileStream
 
         private static bool Prefix(ref int __result, ref FileStreamOrig __instance, IAsyncResult asyncResult)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             if (asyncResult == null)
             {
@@ -1071,7 +1071,7 @@ internal static class FileStream
 
         private static bool Prefix(ref FileStreamOrig __instance, IAsyncResult asyncResult)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             if (asyncResult == null)
             {

@@ -19,7 +19,7 @@ public static class GameCapture
 
     private static void CaptureFrame()
     {
-        var rev = Plugin.Kernel.Resolve<PatchReverseInvoker>();
+        var rev = Plugin.Kernel.GetInstance<PatchReverseInvoker>();
         _ = $"{captureFolder}{rev.GetProperty(() => Path.DirectorySeparatorChar)}{captureCount}.png";
         // TODO sort out depending on unity version
         //ScreenCapture.CaptureScreenshot(path);
@@ -29,7 +29,7 @@ public static class GameCapture
     public static bool StartCapture(string path)
     {
         // check if path is a valid folder
-        var rev = Plugin.Kernel.Resolve<PatchReverseInvoker>();
+        var rev = Plugin.Kernel.GetInstance<PatchReverseInvoker>();
         if (!rev.Invoke(Directory.Exists, path))
             return false;
 
