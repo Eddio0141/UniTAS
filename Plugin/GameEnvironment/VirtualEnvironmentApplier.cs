@@ -21,25 +21,23 @@ public class VirtualEnvironmentApplier : IOnUpdate
         var env = _virtualEnvironmentFactory.GetVirtualEnv();
         if (!env.RunVirtualEnvironment) return;
 
-        // frameTime
-        if (TimeWrap.CaptureDeltaTimeExists)
+        if (deltaTime == 0)
         {
-            TimeWrap.CaptureFrameTime = env.FrameTime;
+            TimeWrap.CaptureFrameTime = 0;
         }
-        else
+
+        // frameTime
+        TimeWrap.CaptureFrameTime = env.FrameTime;
+
+        if (!TimeWrap.CaptureDeltaTimeExists)
         {
             // is it a round number?
             var fps = 1f / env.FrameTime;
-            if (fps == (int)fps)
-            {
-                TimeWrap.CaptureFrameTime = env.FrameTime;
-            }
-            else
+            if (fps != (int)fps)
             {
                 // warn user
                 Plugin.Log.LogWarning(
                     "Frame time is not an integer FPS and can't apply accurately, rounding to nearest integer FPS");
-                TimeWrap.CaptureFrameTime = 1f / (int)fps;
             }
         }
     }
