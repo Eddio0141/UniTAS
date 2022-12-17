@@ -1,11 +1,18 @@
+using StructureMap;
+
 namespace UniTASPlugin.GameEnvironment;
 
 public class VirtualEnvironmentFactory : IVirtualEnvironmentFactory
 {
-    private static VirtualEnvironment _instance = new();
+    private readonly IContainer _container;
+
+    public VirtualEnvironmentFactory(IContainer container)
+    {
+        _container = container;
+    }
 
     public VirtualEnvironment GetVirtualEnv()
     {
-        return _instance;
+        return _container.GetInstance<VirtualEnvironment>();
     }
 }

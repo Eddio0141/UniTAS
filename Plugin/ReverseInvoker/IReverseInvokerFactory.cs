@@ -1,6 +1,6 @@
 namespace UniTASPlugin.ReverseInvoker;
 
-public interface IReverseInvokerService
+public interface IReverseInvokerFactory
 {
     PatchReverseInvoker GetReverseInvoker();
 }

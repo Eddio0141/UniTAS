@@ -42,8 +42,4 @@
         </Reference>
     </ItemGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="..\UniTASFunkyInjector\UniTASFunkyInjector.csproj" />
-    </ItemGroup>
-
 </Project>

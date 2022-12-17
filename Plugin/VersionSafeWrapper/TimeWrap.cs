@@ -16,7 +16,7 @@ public static class TimeWrap
         {
             if (CaptureDeltaTimeExists)
             {
-                var rev = Plugin.Kernel.Resolve<IReverseInvokerService>().GetReverseInvoker();
+                var rev = Plugin.Kernel.GetInstance<IReverseInvokerFactory>().GetReverseInvoker();
                 rev.Invoke(() => CaptureDeltaTimeTraverse.SetValue(value));
             }
             else

@@ -28,7 +28,7 @@ internal static class DriveInfo
 
         private static bool Prefix(string path, [Out] ulong availableFreeSpace, out ulong totalSize, out ulong totalFreeSpace)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             FileSystem.ExternalHelpers.GetDiskFreeSpace(path, out availableFreeSpace, out totalSize, out totalFreeSpace);
             return false;

@@ -1,11 +1,18 @@
+using StructureMap;
+
 namespace UniTASPlugin.ReverseInvoker;
 
-public class ReverseInvokerFactory : IReverseInvokerService
+public class ReverseInvokerFactory : IReverseInvokerFactory
 {
-    private static readonly PatchReverseInvoker patchReverseInvoker = new();
+    private readonly IContainer _container;
+
+    public ReverseInvokerFactory(IContainer container)
+    {
+        _container = container;
+    }
 
     public PatchReverseInvoker GetReverseInvoker()
     {
-        return patchReverseInvoker;
+        return _container.GetInstance<PatchReverseInvoker>();
     }
 }
