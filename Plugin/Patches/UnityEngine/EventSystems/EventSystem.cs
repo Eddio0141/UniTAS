@@ -35,9 +35,9 @@ internal static class EventSystem
 
         private static bool Prefix(ref bool __result)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking)
                 return true;
-            if (!Plugin.Kernel.Resolve<VirtualEnvironment>().RunVirtualEnvironment) return true;
+            if (!Plugin.Kernel.GetInstance<VirtualEnvironment>().RunVirtualEnvironment) return true;
             __result = true;
             return false;
         }

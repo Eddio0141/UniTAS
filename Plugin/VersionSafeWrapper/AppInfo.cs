@@ -1,5 +1,4 @@
-﻿using System;
-using HarmonyLib;
+﻿using HarmonyLib;
 using UniTASPlugin.ReverseInvoker;
 
 namespace UniTASPlugin.VersionSafeWrapper;
@@ -21,7 +20,7 @@ public static class AppInfo
         var foundExe = "";
         var foundMultipleExe = false;
         var rootDir = Helper.GameRootDir();
-        var rev = Plugin.Kernel.Resolve<PatchReverseInvoker>();
+        var rev = Plugin.Kernel.GetInstance<PatchReverseInvoker>();
         var rootFiles = rev.Invoke(System.IO.Directory.GetFiles, rootDir);
 
         // iterate over exes in game root dir
@@ -43,7 +42,7 @@ public static class AppInfo
         }
 
         if (foundExe == "" && !foundMultipleExe)
-            throw new Exception("Could not find exe in game root dir");
+            throw new("Could not find exe in game root dir");
 
         if (!foundMultipleExe)
         {

@@ -2,7 +2,7 @@
 
 public abstract class JumpBase : OpCodeBase
 {
-    public int Offset { get; }
+    public int Offset { get; set; }
 
     protected JumpBase(int offset)
     {

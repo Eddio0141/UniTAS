@@ -38,7 +38,7 @@ public static class Console
         {
             var width = Screen.width * WIDTH_MULT;
             var height = Screen.height * HEIGHT_MULT;
-            windowRect = new Rect(Screen.width / 2 - width / 2, Screen.height / 2 - height / 2, width, height);
+            windowRect = new(Screen.width / 2 - width / 2, Screen.height / 2 - height / 2, width, height);
             windowJustOpened = true;
             justOpened = false;
         }
@@ -51,7 +51,7 @@ public static class Console
         if (windowJustOpened)
             GUI.FocusWindow(id);
 
-        GUI.DragWindow(new Rect(0, 0, 20000, 20));
+        GUI.DragWindow(new(0, 0, 20000, 20));
 
         GUILayout.BeginVertical();
         scrollPos = GUILayout.BeginScrollView(scrollPos);

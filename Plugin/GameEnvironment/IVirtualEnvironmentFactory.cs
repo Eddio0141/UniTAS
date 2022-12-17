@@ -1,6 +1,6 @@
 namespace UniTASPlugin.GameEnvironment;
 
-public interface IVirtualEnvironmentService
+public interface IVirtualEnvironmentFactory
 {
     VirtualEnvironment GetVirtualEnv();
 }

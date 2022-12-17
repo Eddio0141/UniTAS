@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.Movie.ScriptEngine.EngineMethods;
@@ -17,17 +16,19 @@ public partial class ScriptEngineMovieRunner : IMovieRunner
 
     private readonly IMovieParser _parser;
 
-    private readonly IVirtualEnvironmentService _virtualEnvironmentService;
+    private readonly IVirtualEnvironmentFactory _virtualEnvironmentFactory;
+    private readonly IGameRestart _gameRestart;
 
     private ScriptEngineLowLevelEngine _engine;
     private ScriptModel _mainScript;
 
     public ScriptEngineMovieRunner(IMovieParser parser, IEnumerable<EngineExternalMethod> externMethods,
-        IVirtualEnvironmentService vEnvService)
+        IVirtualEnvironmentFactory vEnvFactory, IGameRestart gameRestart)
     {
         _parser = parser;
         _externalMethods = externMethods.ToArray();
-        _virtualEnvironmentService = vEnvService;
+        _virtualEnvironmentFactory = vEnvFactory;
+        _gameRestart = gameRestart;
     }
 
     public bool IsRunning => !MovieEnd;
@@ -44,15 +45,18 @@ public partial class ScriptEngineMovieRunner : IMovieRunner
         // TODO warnings
 
         // init engine
-        _engine = new ScriptEngineLowLevelEngine(_mainScript, _externalMethods);
+        _engine = new(_mainScript, _externalMethods);
 
         // set env
         // TODO apply environment
-        var env = _virtualEnvironmentService.GetVirtualEnv();
-        env.InputState.ResetStates();
+        var env = _virtualEnvironmentFactory.GetVirtualEnv();
         env.RunVirtualEnvironment = true;
-        env.FrameTime = startupProperties?.FrameTime ?? throw new NotImplementedException();
-        env.Restart = startupProperties != null;
+        if (startupProperties != null)
+        {
+            _gameRestart.SoftRestart(startupProperties.StartTime);
+            env.FrameTime = startupProperties.FrameTime;
+        }
+
         // TODO other stuff like save state load, hide cursor, etc
 
         MovieEnd = false;
@@ -60,7 +64,7 @@ public partial class ScriptEngineMovieRunner : IMovieRunner
 
     public void Update()
     {
-        if (!IsRunning)
+        if (MovieEnd)
             return;
 
         ConcurrentRunnersPreUpdate();
@@ -110,7 +114,7 @@ public partial class ScriptEngineMovieRunner : IMovieRunner
 
     private void AtMovieEnd()
     {
-        var env = _virtualEnvironmentService.GetVirtualEnv();
+        var env = _virtualEnvironmentFactory.GetVirtualEnv();
         env.RunVirtualEnvironment = false;
         // TODO TimeWrap.CaptureFrameTime = 0;
     }

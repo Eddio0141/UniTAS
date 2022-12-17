@@ -82,10 +82,11 @@ public static class AllCommands
         {
             if (!ValidateArgCount(args, 0, 1))
                 return;
+            var restart = Plugin.Kernel.GetInstance<IGameRestart>();
             if (args.Length == 0)
             {
                 Console.Print($"Restarting with time {DateTime.Now}");
-                GameRestart.SoftRestart(DateTime.Now);
+                restart.SoftRestart(DateTime.Now);
             }
             else
             {
@@ -102,7 +103,7 @@ public static class AllCommands
                 }
 
                 Console.Print($"Restarting with time {dateTime}");
-                GameRestart.SoftRestart(dateTime);
+                restart.SoftRestart(DateTime.Now);
             }
         }, usage: "soft_restart(); / soft_restart(\"DateTime string\");")
     };

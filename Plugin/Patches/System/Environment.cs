@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using HarmonyLib;
-using UniTASPlugin.FakeGameState;
+using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.ReverseInvoker;
 using EnvOrig = System.Environment;
 
@@ -24,9 +24,10 @@ internal static class Environment
 
         private static bool Prefix(ref int __result)
         {
-            if (Plugin.Kernel.Resolve<PatchReverseInvoker>().Invoking)
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking)
                 return true;
-            __result = (int)(GameTime.RealtimeSinceStartup * 1000f);
+            var gameTime = Plugin.Kernel.GetInstance<IVirtualEnvironmentFactory>().GetVirtualEnv().GameTime;
+            __result = (int)(gameTime.RealtimeSinceStartup * 1000f);
             return false;
         }
     }

@@ -1,4 +1,5 @@
 using FluentAssertions;
+using UniTASPlugin;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.Movie.ScriptEngine;
 using UniTASPlugin.Movie.ScriptEngine.EngineMethods;
@@ -15,9 +16,25 @@ public class MovieRunnerTests
         var externMethods = getDefinedMethods.ToList();
         var runner = new ScriptEngineMovieRunner(
             new ScriptEngineMovieParser(new DefaultMovieSectionSplitter(), new DefaultMoviePropertiesParser(),
-                new DefaultMovieScriptParser(externMethods)), externMethods, new FakeVEnvService());
+                new DefaultMovieScriptParser(externMethods)), externMethods, new FakeVEnvFactory(),
+            new FakeRestartService());
 
         return runner;
+    }
+
+    private class FakeVEnvFactory : IVirtualEnvironmentFactory
+    {
+        public VirtualEnvironment GetVirtualEnv()
+        {
+            return new();
+        }
+    }
+
+    private class FakeRestartService : IGameRestart
+    {
+        public void SoftRestart(DateTime time)
+        {
+        }
     }
 
     [Fact]
@@ -73,11 +90,47 @@ get_args(-5)";
         runner.IsRunning.Should().BeFalse();
     }
 
-    private class FakeVEnvService : IVirtualEnvironmentService
+    [Fact]
+    public void MultipleFrameAdvance()
     {
-        public VirtualEnvironment GetVirtualEnv()
+        var externGetArgs = new ScriptEngineLowLevelTests.TestExternGetArgs();
+
+        var runner = Setup(new EngineExternalMethod[] { externGetArgs });
+        // ReSharper disable once StringLiteralTypo
+        const string input = @"name test TAS
+author yuu0141
+desc a test TAS
+os Windows
+datetime 03/28/2002
+ft 0.01
+resolution 900 600
+unfocused
+fullscreen
+endsave end_save
+---
+loop 500 { ; }
+get_args(""checkpoint 1"");
+loop 500 { ; }
+get_args(""checkpoint 2"")";
+        runner.RunFromInput(input);
+
+        for (var i = 0; i < 500; i++)
         {
-            return new VirtualEnvironment();
+            runner.Update();
         }
+
+        runner.IsRunning.Should().BeTrue();
+
+        externGetArgs.Args.Should().BeEmpty();
+        runner.Update();
+        externGetArgs.Args.Should().ContainInOrder("checkpoint 1");
+
+        for (var i = 0; i < 501; i++)
+        {
+            runner.Update();
+        }
+
+        runner.IsRunning.Should().BeFalse();
+        externGetArgs.Args.Should().ContainInOrder("checkpoint 1", "checkpoint 2");
     }
 }

@@ -15,7 +15,7 @@ public static class PatcherHelper
     public static bool InvokedFromCriticalNamespace()
     {
         return true;
-        // var rev = Plugin.Kernel.Resolve<PatchReverseInvoker>();
+        // var rev = Plugin.Kernel.GetInstance<PatchReverseInvoker>();
         // var trace = rev.Invoke(() => new StackTrace());
         //
         // var criticalNamespaces = new[]

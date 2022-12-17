@@ -1,23 +1,24 @@
 ﻿using System;
-using UniTASPlugin.FakeGameState;
+using UniTASPlugin.FixedUpdateSync;
+using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace UniTASPlugin;
 
-internal class GameRestart
+// ReSharper disable once ClassNeverInstantiated.Global
+public class GameRestart : IGameRestart
 {
-    private static bool pendingFixedUpdateSoftRestart;
-    private static DateTime softRestartTime;
+    private DateTime softRestartTime;
 
-    public static void FixedUpdate()
+    private readonly IVirtualEnvironmentFactory _virtualEnvironmentFactory;
+    private readonly ISyncFixedUpdate _syncFixedUpdate;
+
+    public GameRestart(IVirtualEnvironmentFactory virtualEnvironmentFactory, ISyncFixedUpdate syncFixedUpdate)
     {
-        if (pendingFixedUpdateSoftRestart)
-        {
-            SoftRestartOperation();
-            pendingFixedUpdateSoftRestart = false;
-        }
+        _virtualEnvironmentFactory = virtualEnvironmentFactory;
+        _syncFixedUpdate = syncFixedUpdate;
     }
 
     /// <summary>
@@ -25,14 +26,14 @@ internal class GameRestart
     /// Mainly used for TAS movie playback.
     /// </summary>
     /// <param name="time"></param>
-    public static void SoftRestart(DateTime time)
+    public void SoftRestart(DateTime time)
     {
-        pendingFixedUpdateSoftRestart = true;
         softRestartTime = time;
+        _syncFixedUpdate.OnSync(SoftRestartOperation);
         Plugin.Log.LogInfo("Soft restarting, pending FixedUpdate call");
     }
 
-    private static void SoftRestartOperation()
+    private void SoftRestartOperation()
     {
         Plugin.Log.LogInfo("Soft restarting");
 
@@ -46,7 +47,7 @@ internal class GameRestart
                 continue;
 
             // force coroutines to stop
-            (obj as MonoBehaviour).StopAllCoroutines();
+            ((MonoBehaviour)obj).StopAllCoroutines();
 
             var id = obj.GetInstanceID();
 
@@ -84,6 +85,7 @@ internal class GameRestart
             {
                 var value = fieldAndValue.Value;
                 var valueString = value == null ? "null" : value.ToString();
+                if (fieldAndValue.Key.DeclaringType == null) continue;
                 Plugin.Log.LogDebug(
                     $"setting field: {fieldAndValue.Key.DeclaringType.FullName}.{fieldAndValue.Key} to {valueString}");
                 try
@@ -99,12 +101,13 @@ internal class GameRestart
         }
 
         Plugin.Log.LogDebug("finished setting fields, loading scene");
-        GameTime.ResetState(softRestartTime);
+        var env = _virtualEnvironmentFactory.GetVirtualEnv();
+        env.GameTime.StartupTime = softRestartTime;
         SceneHelper.LoadScene(0);
 
         Plugin.Log.LogDebug("random setting state");
 
-        RandomWrap.InitState((int)GameTime.Seed());
+        RandomWrap.InitState((int)env.Seed);
 
         Plugin.Log.LogInfo("Finish soft restarting");
         Plugin.Log.LogInfo($"System time: {DateTime.Now}, milliseconds: {DateTime.Now.Millisecond}");

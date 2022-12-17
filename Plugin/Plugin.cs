@@ -1,13 +1,14 @@
 ﻿using System;
+using System.Linq;
 using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
-using UniTASFunkyInjector;
-using UniTASPlugin.FakeGameState;
+using StructureMap;
 using UniTASPlugin.FakeGameState.GameFileSystem;
+using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.GameOverlay;
 using UniTASPlugin.Interfaces.Update;
-using UniTASPlugin.Movie.ScriptEngine;
+using UniTASPlugin.Movie;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
 using SystemInfo = UniTASPlugin.FakeGameState.SystemInfo;
@@ -17,22 +18,28 @@ namespace UniTASPlugin;
 [BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
 public class Plugin : BaseUnityPlugin
 {
-    public static readonly FunkyInjectorContainer Kernel = ContainerRegister.Init();
+    public static readonly IContainer Kernel = ContainerRegister.Init();
 
     private ManualLogSource _logger;
 
-    public int FixedUpdateIndex { get; private set; } = -1;
+    private static Plugin instance;
 
-    public static Plugin Instance;
+    public static ManualLogSource Log => instance._logger;
 
-    public static ManualLogSource Log => Instance._logger;
+    private IOnUpdate[] _onUpdates;
+    private IOnFixedUpdate[] _onFixedUpdates;
+    private IMovieRunner _movieRunner;
 
     private void Awake()
     {
-        if (Instance != null)
+        if (instance != null)
             return;
-        Instance = this;
+        instance = this;
         _logger = Logger;
+
+        _onUpdates = Kernel.GetAllInstances<IOnUpdate>().ToArray();
+        _onFixedUpdates = Kernel.GetAllInstances<IOnFixedUpdate>().ToArray();
+        _movieRunner = Kernel.GetInstance<IMovieRunner>();
 
         Logger.LogInfo("init patch");
         Harmony harmony = new($"{MyPluginInfo.PLUGIN_GUID}HarmonyPatch");
@@ -53,10 +60,11 @@ public class Plugin : BaseUnityPlugin
 
         // all axis names for help
         // why is this broken TODO
-        Logger.LogInfo($"All axis names: {string.Join(", ", Input.GetJoystickNames())}");
+        //Logger.LogInfo($"All axis names: {string.Join(", ", Input.GetJoystickNames())}");
 
         // init random seed
-        RandomWrap.InitState((int)GameTime.Seed());
+        var env = Kernel.GetInstance<IVirtualEnvironmentFactory>().GetVirtualEnv();
+        RandomWrap.InitState((int)env.Seed);
 
         GameTracker.Init();
         SystemInfo.Init();
@@ -69,27 +77,25 @@ public class Plugin : BaseUnityPlugin
     // unity execution order is Awake() -> FixedUpdate() -> Update()
     private void Update()
     {
-        // TODO if possible, put this at the first call of Update
-        FixedUpdateIndex++;
-        var updateList = Kernel.ResolveAll<IOnUpdate>();
-        foreach (var update in updateList)
+        foreach (var update in _onUpdates)
         {
             update.Update(Time.deltaTime);
         }
 
-        var movieRunner = Kernel.Resolve<ScriptEngineMovieRunner>();
-        movieRunner.Update();
+        _movieRunner.Update();
         //Overlay.Update();
-        GameCapture.Update();
+        //GameCapture.Update();
     }
 
     private void FixedUpdate()
     {
-        // TODO if possible, put this at the first call of FixedUpdate
-        FixedUpdateIndex = -1;
+        foreach (var update in _onFixedUpdates)
+        {
+            update.FixedUpdate(Time.fixedDeltaTime);
+        }
+
         // this needs to be called before checking pending soft restart or it will cause a 1 frame desync
         //TAS.FixedUpdate();
-        GameRestart.FixedUpdate();
     }
 
     private void LateUpdate()

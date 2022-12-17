@@ -213,8 +213,7 @@ public partial class ScriptEngineLowLevelEngine
     }
 
     private LeftRightResultValues<T> ValidateTypeAndGetRegister<T>(RegisterType left, RegisterType? right,
-        // ReSharper disable once MethodOverloadWithOptionalParameter
-        RegisterType? result = null)
+        RegisterType? result)
         where T : ValueType
     {
         var leftRegister = _registers[(int)left];
@@ -334,32 +333,6 @@ public partial class ScriptEngineLowLevelEngine
                     // we exit from loop
                     ValidatePcOffset();
                     return;
-                }
-                case JumpIfEqOpCode jumpIfEqOpCode:
-                {
-                    var values = ValidateTypeAndGetRegister(jumpIfEqOpCode.Left, jumpIfEqOpCode.Right);
-                    var jump = values.Left switch
-                    {
-                        BoolValueType boolValueType => boolValueType.Value == ((BoolValueType)values.Right).Value,
-                        FloatValueType floatValueType => Math.Abs(floatValueType.Value -
-                                                                  ((FloatValueType)values.Right).Value) <
-                                                         0.0001f,
-                        IntValueType intValueType => intValueType.Value == ((IntValueType)values.Right).Value,
-                        StringValueType stringValueType => stringValueType.Value ==
-                                                           ((StringValueType)values.Right).Value,
-                        _ => throw new ArgumentOutOfRangeException()
-                    };
-
-                    if (jump)
-                    {
-                        _pc += jumpIfEqOpCode.Offset;
-                    }
-                    else
-                    {
-                        _pc++;
-                    }
-
-                    break;
                 }
                 case JumpIfEqZero jumpIfEqZero:
                 {

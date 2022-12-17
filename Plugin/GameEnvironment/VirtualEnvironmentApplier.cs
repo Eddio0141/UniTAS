@@ -9,16 +9,16 @@ namespace UniTASPlugin.GameEnvironment;
 // ReSharper disable once ClassNeverInstantiated.Global
 public class VirtualEnvironmentApplier : IOnUpdate
 {
-    private readonly IVirtualEnvironmentService _virtualEnvironmentService;
+    private readonly IVirtualEnvironmentFactory _virtualEnvironmentFactory;
 
-    public VirtualEnvironmentApplier(IVirtualEnvironmentService virtualEnvironmentService)
+    public VirtualEnvironmentApplier(IVirtualEnvironmentFactory virtualEnvironmentFactory)
     {
-        _virtualEnvironmentService = virtualEnvironmentService;
+        _virtualEnvironmentFactory = virtualEnvironmentFactory;
     }
 
     public void Update(float deltaTime)
     {
-        var env = _virtualEnvironmentService.GetVirtualEnv();
+        var env = _virtualEnvironmentFactory.GetVirtualEnv();
         if (!env.RunVirtualEnvironment) return;
 
         // frameTime

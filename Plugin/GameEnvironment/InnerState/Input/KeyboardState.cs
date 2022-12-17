@@ -11,10 +11,10 @@ public class KeyboardState : InputDeviceBase
 
     public KeyboardState()
     {
-        Keys = new List<int>();
-        KeysDown = new List<int>();
-        KeysUp = new List<int>();
-        _keysPrev = new List<int>();
+        Keys = new();
+        KeysDown = new();
+        KeysUp = new();
+        _keysPrev = new();
     }
 
     public override void Update(float deltaTime)
