@@ -26,7 +26,7 @@ public class UnHoldKeyExternalMethod : EngineExternalMethod
         var keyCode = (UnityEngine.KeyCode)Enum.Parse(typeof(UnityEngine.KeyCode), keyCodeRaw.Value);
 
         _virtualEnvironmentFactory.GetVirtualEnv().InputState.KeyboardState.Keys
-            .RemoveAt((int)keyCode);
+            .Remove((int)keyCode);
 
         return new();
     }
