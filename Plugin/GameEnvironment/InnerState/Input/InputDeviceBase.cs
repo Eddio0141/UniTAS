@@ -2,8 +2,8 @@
 
 namespace UniTASPlugin.GameEnvironment.InnerState.Input;
 
-public abstract class InputDeviceBase : IOnUpdate
+public abstract class InputDeviceBase
 {
-    public abstract void Update(float deltaTime);
+    public abstract void Update();
     public abstract void ResetState();
 }

@@ -12,4 +12,11 @@ public class InputState
         AxisState.ResetState();
         KeyboardState.ResetState();
     }
+
+    public void Update()
+    {
+        MouseState.Update();
+        AxisState.Update();
+        KeyboardState.Update();
+    }
 }

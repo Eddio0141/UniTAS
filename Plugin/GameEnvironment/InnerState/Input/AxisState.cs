@@ -11,7 +11,7 @@ public class AxisState : InputDeviceBase
         Values = new Dictionary<string, float>();
     }
 
-    public override void Update(float deltaTime)
+    public override void Update()
     {
     }
 
