@@ -10,7 +10,7 @@ public class FixedUpdateTracker : IOnUpdate, IOnFixedUpdate, ISyncFixedUpdate
     private int _fixedUpdateIndex = -1;
     private readonly List<Action> _onSyncCallbacks = new();
 
-    public void Update(float deltaTime)
+    public void Update()
     {
         _fixedUpdateIndex = -1;
         foreach (var onSyncCallback in _onSyncCallbacks)
@@ -21,7 +21,7 @@ public class FixedUpdateTracker : IOnUpdate, IOnFixedUpdate, ISyncFixedUpdate
         _onSyncCallbacks.Clear();
     }
 
-    public void FixedUpdate(float fixedDeltaTime)
+    public void FixedUpdate()
     {
         _fixedUpdateIndex++;
     }

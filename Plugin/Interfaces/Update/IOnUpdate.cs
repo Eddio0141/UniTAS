@@ -2,5 +2,5 @@
 
 public interface IOnUpdate
 {
-    void Update(float deltaTime);
+    void Update();
 }
