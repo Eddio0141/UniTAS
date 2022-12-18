@@ -5,6 +5,9 @@ When the opcodes are ran for the current frame
 - It will process the "main" sections of the opcodes such as the main scope, or subroutines
 - It will process the concurrently running methods, which the script can subscribe with through built in method
 
+# Execution start
+It will execute a frame where the user can configure what keys should be pressed, and set up other stuff
+
 # Executing external methods
 ## Basic idea
 Script engine will hold a list of pre-defined methods
