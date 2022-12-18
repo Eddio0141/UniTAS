@@ -43,7 +43,7 @@ public class GameTime : IOnUpdate
     public double ScaledFixedTimeOffset { get; private set; }
     public float RealtimeSinceStartup { get; private set; }
 
-    public void Update(float deltaTime)
+    public void Update()
     {
         RealtimeSinceStartup = Time.realtimeSinceStartup;
     }

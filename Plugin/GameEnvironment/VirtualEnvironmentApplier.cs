@@ -16,7 +16,7 @@ public class VirtualEnvironmentApplier : IOnUpdate
         _virtualEnvironmentFactory = virtualEnvironmentFactory;
     }
 
-    public void Update(float deltaTime)
+    public void Update()
     {
         ApplyEnv();
         UpdateState();
