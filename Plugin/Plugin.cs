@@ -8,7 +8,6 @@ using UniTASPlugin.FakeGameState.GameFileSystem;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.GameOverlay;
 using UniTASPlugin.Interfaces.Update;
-using UniTASPlugin.Movie;
 using UniTASPlugin.VersionSafeWrapper;
 using UnityEngine;
 using SystemInfo = UniTASPlugin.FakeGameState.SystemInfo;
@@ -26,9 +25,7 @@ public class Plugin : BaseUnityPlugin
 
     public static ManualLogSource Log => instance._logger;
 
-    private IOnUpdate[] _onUpdates;
     private IOnFixedUpdate[] _onFixedUpdates;
-    private IMovieRunner _movieRunner;
 
     private void Awake()
     {
@@ -37,9 +34,7 @@ public class Plugin : BaseUnityPlugin
         instance = this;
         _logger = Logger;
 
-        _onUpdates = Kernel.GetAllInstances<IOnUpdate>().ToArray();
         _onFixedUpdates = Kernel.GetAllInstances<IOnFixedUpdate>().ToArray();
-        _movieRunner = Kernel.GetInstance<IMovieRunner>();
 
         Logger.LogInfo("init patch");
         Harmony harmony = new($"{MyPluginInfo.PLUGIN_GUID}HarmonyPatch");
@@ -58,9 +53,7 @@ public class Plugin : BaseUnityPlugin
             Logger.LogInfo(
                 $"Game company name: {companyNameProperty.GetValue<string>()}"); //product name: {Application.productName}, version: {Application.version}");
 
-        // all axis names for help
-        // why is this broken TODO
-        //Logger.LogInfo($"All axis names: {string.Join(", ", Input.GetJoystickNames())}");
+        // TODO all axis names for help
 
         // init random seed
         var env = Kernel.GetInstance<IVirtualEnvironmentFactory>().GetVirtualEnv();
@@ -70,28 +63,32 @@ public class Plugin : BaseUnityPlugin
         SystemInfo.Init();
         Overlay.Init();
 
+        // TODO remove this test
+        var pluginType = typeof(Plugin);
+        var methods = pluginType.GetMethods();
+        if (methods.Any(x => x.Name == "Update") && pluginType.IsAssignableFrom(typeof(MonoBehaviour)))
+        {
+            Logger.LogDebug("Plugin has Update method");
+        }
+
+        Logger.LogDebug($"Plugin assignable from MonoBehaviour: {pluginType.IsAssignableFrom(typeof(MonoBehaviour))}");
+        Logger.LogDebug($"Plugin is subclass of MonoBehaviour: {pluginType.IsSubclassOf(typeof(MonoBehaviour))}");
+
+        foreach (var method in Traverse.Create<Plugin>().Methods())
+        {
+            Logger.LogDebug($"Plugin method: {method}");
+        }
+
         Logger.LogInfo($"System time: {DateTime.Now}");
         Logger.LogInfo($"Plugin {MyPluginInfo.PLUGIN_NAME} is loaded!");
     }
 
-    // unity execution order is Awake() -> FixedUpdate() -> Update()
-    private void Update()
-    {
-        foreach (var update in _onUpdates)
-        {
-            update.Update(Time.deltaTime);
-        }
-
-        _movieRunner.Update();
-        //Overlay.Update();
-        //GameCapture.Update();
-    }
-
+    // execution order is Awake -> FixedUpdate -> Update
     private void FixedUpdate()
     {
         foreach (var update in _onFixedUpdates)
         {
-            update.FixedUpdate(Time.fixedDeltaTime);
+            update.FixedUpdate();
         }
 
         // this needs to be called before checking pending soft restart or it will cause a 1 frame desync
