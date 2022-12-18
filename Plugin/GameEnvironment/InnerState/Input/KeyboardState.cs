@@ -22,11 +22,13 @@ public class KeyboardState : InputDeviceBase
         KeysDown.Clear();
         KeysUp.Clear();
 
-        foreach (var key in _keysPrev)
+        for (var i = 0; i < _keysPrev.Count; i++)
         {
+            var key = _keysPrev[i];
             if (Keys.Contains(key)) continue;
             KeysUp.Add(key);
-            _ = _keysPrev.Remove(key);
+            _keysPrev.RemoveAt(i);
+            i--;
         }
 
         foreach (var key in Keys)
