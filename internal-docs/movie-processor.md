@@ -5,8 +5,14 @@ When the opcodes are ran for the current frame
 - It will process the "main" sections of the opcodes such as the main scope, or subroutines
 - It will process the concurrently running methods, which the script can subscribe with through built in method
 
-# Execution start
-It will execute a frame where the user can configure what keys should be pressed, and set up other stuff
+# Execution overview in updates
+- Set env through save state, startup properties, etc
+- Wait for FixedUpdate sync to savestate / soft restart
+- SYNCED
+- Loop start
+- Update input -> executes a frame of the engine, sets env
+- Update other scripts -> env is applied to everything
+- Loop end
 
 # Executing external methods
 ## Basic idea
