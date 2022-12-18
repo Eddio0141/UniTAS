@@ -19,6 +19,8 @@ public static class ContainerRegister
     {
         var container = new Container();
 
+        container.Configure(_ => _.For<PluginWrapper>().Singleton());
+
         // priority
         FixedUpdateSyncRegisters(container);
 
