@@ -19,11 +19,12 @@ public static class ContainerRegister
     {
         var container = new Container();
 
+        // priority
         FixedUpdateSyncRegisters(container);
+
         GameRestartRegisters(container);
         MovieEngineRegisters(container);
         VirtualEnvRegisters(container);
-        OnUpdateRegisters(container);
         ReverseInvokerRegisters(container);
 
         return container;
@@ -36,7 +37,13 @@ public static class ContainerRegister
 
     private static void FixedUpdateSyncRegisters(IContainer container)
     {
-        container.Configure(_ => { _.For<ISyncFixedUpdate>().Singleton().Use<FixedUpdateTracker>(); });
+        container.Configure(_ =>
+        {
+            _.For<FixedUpdateTracker>().Singleton();
+            _.For<IOnUpdate>().Use(c => c.GetInstance<FixedUpdateTracker>());
+            _.For<IOnFixedUpdate>().Use(c => c.GetInstance<FixedUpdateTracker>());
+            _.For<ISyncFixedUpdate>().Use(c => c.GetInstance<FixedUpdateTracker>());
+        });
     }
 
     private static void ReverseInvokerRegisters(IContainer container)
@@ -45,16 +52,6 @@ public static class ContainerRegister
         {
             _.For<IReverseInvokerFactory>().Use<ReverseInvokerFactory>();
             _.For<PatchReverseInvoker>().Singleton();
-        });
-    }
-
-    private static void OnUpdateRegisters(IContainer container)
-    {
-        container.Configure(_ =>
-        {
-            // priority
-            _.For<IOnUpdate>().Use<FixedUpdateTracker>();
-            _.For<IOnFixedUpdate>().Use<FixedUpdateTracker>();
         });
     }
 
