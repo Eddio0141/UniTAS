@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using UniTASPlugin.Exceptions;
-using UniTASPlugin.VersionSafeWrapper;
+using UniTASPlugin.SafeWrappers;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
