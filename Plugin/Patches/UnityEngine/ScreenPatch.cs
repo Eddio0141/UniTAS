@@ -12,14 +12,14 @@ using ScreenOrig = UnityEngine.Screen;
 namespace UniTASPlugin.Patches.UnityEngine;
 
 [HarmonyPatch]
-internal static class Screen
+internal static class ScreenPatch
 {
     [HarmonyPatch(typeof(ScreenOrig), "showCursor", MethodType.Setter)]
     internal class set_showCursor
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(ref bool value)

@@ -20,11 +20,11 @@ internal static class Helper
 }
 
 [HarmonyPatch(typeof(Resources), "LoadAsyncInternal")]
-internal class LoadAsyncInternal
+internal class LoadAsyncInternalPatch
 {
     private static Exception Cleanup(MethodBase original, Exception ex)
     {
-        return PatcherHelper.Cleanup_IgnoreException(original, ex);
+        return PatcherHelper.CleanupIgnoreException(original, ex);
     }
 
     private static bool Prefix(string path, Type type, ref object __result)

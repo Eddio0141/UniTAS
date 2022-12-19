@@ -63,10 +63,10 @@ public static class ContainerRegister
         container.Configure(_ =>
         {
             // parser binds
-            _.For<IMoviePropertyParser>().Use<DefaultMoviePropertiesParser>();
-            _.For<IMovieScriptParser>().Use<DefaultMovieScriptParser>();
+            _.For<IMoviePropertyParser>().Use<MoviePropertyParser>();
+            _.For<IMovieScriptParser>().Use<MovieScriptParser>();
             _.For<IMovieSectionSplitter>().Use<DefaultMovieSectionSplitter>();
-            _.For<IMovieParser>().Use<ScriptEngineMovieParser>();
+            _.For<IMovieParser>().Use<MovieParser>();
 
             // runner binds
             _.For<IMovieRunner>().Singleton().Use<ScriptEngineMovieRunner>();

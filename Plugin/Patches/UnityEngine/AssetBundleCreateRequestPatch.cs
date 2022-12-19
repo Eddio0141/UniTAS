@@ -20,7 +20,7 @@ internal static class AssetBundleCreateRequestPatch
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(AssetBundleCreateRequestOrig __instance, ref AssetBundleOrig __result)

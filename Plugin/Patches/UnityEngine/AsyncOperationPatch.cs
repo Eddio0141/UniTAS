@@ -19,7 +19,7 @@ internal static class AsyncOperationPatch
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(bool value, AsyncOpOrig __instance)
@@ -34,7 +34,7 @@ internal static class AsyncOperationPatch
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(ref bool __result, AsyncOpOrig __instance)
@@ -51,7 +51,7 @@ internal static class AsyncOperationPatch
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(ref float __result, AsyncOpOrig __instance)
@@ -66,7 +66,7 @@ internal static class AsyncOperationPatch
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(ref bool __result, AsyncOpOrig __instance)
@@ -81,7 +81,7 @@ internal static class AsyncOperationPatch
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static void Prefix(AsyncOpOrig __instance)

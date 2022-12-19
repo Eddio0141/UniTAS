@@ -17,7 +17,7 @@ using DateTimeOrig = System.DateTime;
 namespace UniTASPlugin.Patches.System.IO;
 
 [HarmonyPatch]
-internal static class Directory
+internal static class DirectoryPatch
 {
     private static class Helper
     {
@@ -43,7 +43,7 @@ internal static class Directory
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(string path, ref bool __result)
@@ -60,7 +60,7 @@ internal static class Directory
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(ref string[] __result, string path, string searchPattern, bool includeFiles,
@@ -78,7 +78,7 @@ internal static class Directory
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(ref IEnumerable<string> __result, string path, string searchPattern,
@@ -96,7 +96,7 @@ internal static class Directory
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(ref string __result, string path)
@@ -114,7 +114,7 @@ internal static class Directory
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(ref DirectoryInfo __result, string path)
@@ -162,7 +162,7 @@ internal static class Directory
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(ref DirectoryInfo __result, string path)
@@ -188,7 +188,7 @@ internal static class Directory
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(string path)
@@ -223,7 +223,7 @@ internal static class Directory
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(string path)
@@ -261,7 +261,7 @@ internal static class Directory
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(ref DateTimeOrig __result, string path)
@@ -278,7 +278,7 @@ internal static class Directory
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(ref DateTimeOrig __result, string path)
@@ -295,7 +295,7 @@ internal static class Directory
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(ref DateTimeOrig __result, string path)
@@ -312,7 +312,7 @@ internal static class Directory
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(ref bool __result, string path)
@@ -331,7 +331,7 @@ internal static class Directory
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(string sourceDirName, string destDirName)
@@ -385,7 +385,7 @@ internal static class Directory
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix()
@@ -399,7 +399,7 @@ internal static class Directory
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(string path, DateTimeOrig creationTime)
@@ -416,7 +416,7 @@ internal static class Directory
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(string path, DateTimeOrig lastAccessTime)
@@ -433,7 +433,7 @@ internal static class Directory
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(string path, DateTimeOrig lastWriteTime)
@@ -450,7 +450,7 @@ internal static class Directory
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(ref string __result, string fullPath, bool thisDirOnly)
@@ -476,7 +476,7 @@ internal static class Directory
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(ref DirectorySecurity __result)
@@ -495,7 +495,7 @@ internal static class Directory
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(ref string __result)
@@ -512,7 +512,7 @@ internal static class Directory
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(string path)

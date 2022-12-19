@@ -16,8 +16,8 @@ public class MovieRunnerTests
     {
         var externMethods = getDefinedMethods.ToList();
         var runner = new ScriptEngineMovieRunner(
-            new ScriptEngineMovieParser(new DefaultMovieSectionSplitter(), new DefaultMoviePropertiesParser(),
-                new DefaultMovieScriptParser(externMethods)), externMethods, new FakeVEnvFactory(),
+            new MovieParser(new DefaultMovieSectionSplitter(), new MoviePropertyParser(),
+                new MovieScriptParser(externMethods)), externMethods, new FakeVEnvFactory(),
             new FakeRestartService(), new FakeFixedUpdateService());
 
         return runner;

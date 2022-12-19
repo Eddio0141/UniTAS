@@ -14,7 +14,7 @@ namespace UniTASPlugin.Patches.UnityEngine.SceneManagment;
 [HarmonyPatch]
 internal static class SceneManagerPatch
 {
-    internal static class Helper
+    private static class Helper
     {
         private const string Namespace = "UnityEngine.SceneManagement";
 
@@ -58,7 +58,7 @@ internal static class SceneManagerPatch
 
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static void Prefix(ref bool immediately)
@@ -77,7 +77,7 @@ internal static class SceneManagerPatch
 
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(object scene, object options)
@@ -102,7 +102,7 @@ internal static class SceneManagerPatch
 
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(string sceneName, int sceneBuildIndex, bool isAdditive, bool mustCompleteNextFrame,
@@ -126,7 +126,7 @@ internal static class SceneManagerPatch
 
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(bool mustCompleteNextFrame, string sceneName, int sceneBuildIndex, object parameters,

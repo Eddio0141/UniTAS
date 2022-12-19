@@ -17,7 +17,7 @@ internal static class ObjectPatch
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static void Prefix(ObjectOrig target)
@@ -31,7 +31,7 @@ internal static class ObjectPatch
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static void Prefix(ObjectOrig obj)
@@ -45,7 +45,7 @@ internal static class ObjectPatch
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static void Prefix(ObjectOrig obj)

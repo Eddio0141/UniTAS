@@ -11,7 +11,7 @@
 
 /*
 [HarmonyPatch]
-internal static class DriveInfo
+internal static class DriveInfoPatch
 {
     [HarmonyPatch]
     private class GetDiskFreeSpace

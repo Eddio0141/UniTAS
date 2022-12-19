@@ -25,7 +25,7 @@ internal static class AssetBundlePatch
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(string path, uint crc, ulong offset, ref AssetBundleCreateRequestOrig __result)
@@ -49,7 +49,7 @@ internal static class AssetBundlePatch
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(byte[] binary, uint crc, ref AssetBundleCreateRequestOrig __result)
@@ -71,7 +71,7 @@ internal static class AssetBundlePatch
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(Stream stream, uint crc, uint managedReadBufferSize,
@@ -94,7 +94,7 @@ internal static class AssetBundlePatch
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(string name, Type type, ref AssetBundleCreateRequestOrig __result)
@@ -116,7 +116,7 @@ internal static class AssetBundlePatch
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(string name, Type type, ref AssetBundleCreateRequestOrig __result)
@@ -137,7 +137,7 @@ internal static class AssetBundlePatch
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(bool unloadAllLoadedObjects, ref object __result)

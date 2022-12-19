@@ -9,7 +9,7 @@ using AppOrig = UnityEngine.Application;
 namespace UniTASPlugin.Patches.UnityEngine;
 
 [HarmonyPatch]
-internal static class Application
+internal static class ApplicationPatch
 {
     [HarmonyPatch(typeof(AppOrig), "LoadLevelAsync")]
     private class LoadLevelAsync
@@ -22,7 +22,7 @@ internal static class Application
 
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static void Prefix(ref bool mustCompleteNextFrame)
