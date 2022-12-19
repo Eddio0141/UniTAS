@@ -10,15 +10,15 @@ A tool that lets you TAS unity games
 - It can run TAS consistently, but still have many issues that needs to be resolved to run on big games
 - Currently no convenient tool that installs this TAS tool to some unity game, you have to manually install BepInEx for your unity game and drag all the dlls in the right place
 
+# Supporting unity versions
+For now, anything that BepInEx 5.4.21 can support, ranging from unity 3 to latest, and games that use Mono and not Il2cpp
+
+# VR Support
+No plans for now
+
 # How to build
 - Make sure you have .NET SDK 6.0 installed on your system
 - Run either `build.sh` for linux or `build.ps1` for windows
   - Takes either `Debug` or `Release` as an argument for choosing building config
   - Passing in nothing will build `Debug` automatically
 - Check `build/Debug` or `build/Release` for built files
-
-# VR Support
-No plans now
-
-# Supporting unity versions
-For now, anything that BepInEx 5.4.21 can support, ranging from unity 3 to latest, and games that use Mono and not Il2cpp
