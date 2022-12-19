@@ -36,7 +36,7 @@ internal static class CursorPatch
 
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static void Prefix(ref bool value)
@@ -60,7 +60,7 @@ internal static class CursorPatch
 
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static void Prefix(Texture2D texture)

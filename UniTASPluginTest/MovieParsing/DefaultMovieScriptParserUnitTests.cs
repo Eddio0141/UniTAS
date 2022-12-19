@@ -21,7 +21,7 @@ public class DefaultMovieScriptParserUnitTests
 {
     private static ScriptModel Setup(string input)
     {
-        var parser = new DefaultMovieScriptParser(new[] { new PrintExternalMethod() });
+        var parser = new MovieScriptParser(new[] { new PrintExternalMethod() });
         var methods = parser.Parse(input).ToList();
         var mainMethod = methods.First(x => x.Name == null);
         var definedMethods = methods.Where(x => x.Name != null);
@@ -41,7 +41,7 @@ public class DefaultMovieScriptParserUnitTests
         var definedMethod = script.Methods[0];
 
         var actual = new ScriptMethodModel("method",
-            new OpCodeBase[]
+            new OpCode[]
             {
                 new PopArgOpCode(RegisterType.Temp0),
                 new SetVariableOpCode(RegisterType.Temp0, "arg2"),
@@ -63,7 +63,7 @@ $value /= 4
 $value %= 5");
         var definedMethod = script.MainMethod;
 
-        var actual = new ScriptMethodModel(null, new OpCodeBase[]
+        var actual = new ScriptMethodModel(null, new OpCode[]
         {
             new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(4)),
             new SetVariableOpCode(RegisterType.Temp0, "value"),
@@ -102,7 +102,7 @@ $value4 = true
 $value5 = false");
         var definedMethod = script.MainMethod;
 
-        var actual = new ScriptMethodModel(null, new OpCodeBase[]
+        var actual = new ScriptMethodModel(null, new OpCode[]
         {
             new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(10)),
             new SetVariableOpCode(RegisterType.Temp0, "value"),
@@ -131,7 +131,7 @@ $value5 = false");
         var script = Setup("$value = -((1 + 2) - 3 * 4 / 5) % 6");
         var definedMethod = script.MainMethod;
 
-        var actual = new ScriptMethodModel(null, new OpCodeBase[]
+        var actual = new ScriptMethodModel(null, new OpCode[]
         {
             new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(1)),
             new ConstToRegisterOpCode(RegisterType.Temp1, new IntValueType(2)),
@@ -200,7 +200,7 @@ if $value == 0 {
 }");
         var definedMethod = script.MainMethod;
 
-        var actual = new ScriptMethodModel(null, new OpCodeBase[]
+        var actual = new ScriptMethodModel(null, new OpCode[]
         {
             new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(0)),
             new SetVariableOpCode(RegisterType.Temp0, "value"),
@@ -252,7 +252,7 @@ if $value == 0 {
 }");
         var definedMethod = script.MainMethod;
 
-        var actual = new ScriptMethodModel(null, new OpCodeBase[]
+        var actual = new ScriptMethodModel(null, new OpCode[]
         {
             new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(0)),
             new SetVariableOpCode(RegisterType.Temp0, "value"),
@@ -280,7 +280,7 @@ loop $value {
 
         var definedMethod = script.MainMethod;
 
-        var actual = new ScriptMethodModel(null, new OpCodeBase[]
+        var actual = new ScriptMethodModel(null, new OpCode[]
         {
             new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(5)),
             new SetVariableOpCode(RegisterType.Temp0, "value"),
@@ -311,7 +311,7 @@ loop 10 {
 
         var definedMethod = script.MainMethod;
 
-        var actual = new ScriptMethodModel(null, new OpCodeBase[]
+        var actual = new ScriptMethodModel(null, new OpCode[]
         {
             new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(0)),
             new SetVariableOpCode(RegisterType.Temp0, "loop_index"),
@@ -343,7 +343,7 @@ loop 10 {
 
         var definedMethod = script.MainMethod;
 
-        var actual = new ScriptMethodModel(null, new OpCodeBase[]
+        var actual = new ScriptMethodModel(null, new OpCode[]
         {
             new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(2)),
             new JumpIfEqZero(9, RegisterType.Temp0),
@@ -371,7 +371,7 @@ loop 10 {
 
         var definedMethod = script.MainMethod;
 
-        var actual = new ScriptMethodModel(null, new OpCodeBase[]
+        var actual = new ScriptMethodModel(null, new OpCode[]
         {
             // loop 5
             new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(5)),
@@ -416,7 +416,7 @@ loop $value {
 
         var definedMethod = script.MainMethod;
 
-        var actual = new ScriptMethodModel(null, new OpCodeBase[]
+        var actual = new ScriptMethodModel(null, new OpCode[]
         {
             // $value = 5
             new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(5)),
@@ -474,7 +474,7 @@ $value = method(1)");
 
         var definedMethod = script.Methods[0];
 
-        var actual = new ScriptMethodModel("method", new OpCodeBase[]
+        var actual = new ScriptMethodModel("method", new OpCode[]
         {
             new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(5)),
             new MoveOpCode(RegisterType.Temp0, RegisterType.Ret),
@@ -491,7 +491,7 @@ $value = method(1)");
 
         var definedMethod = script.MainMethod;
 
-        var actual = new ScriptMethodModel(null, new OpCodeBase[]
+        var actual = new ScriptMethodModel(null, new OpCode[]
         {
             new ReturnOpCode()
         });
@@ -511,7 +511,7 @@ $(value7, value8) = method()");
 
         var definedMethod = script.MainMethod;
 
-        var actual = new ScriptMethodModel(null, new OpCodeBase[]
+        var actual = new ScriptMethodModel(null, new OpCode[]
         {
             // $value = (50, "test", -1.0)
             new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(50)),
@@ -571,7 +571,7 @@ $value3 = (10, /*""thing"",,*/ ""thing2"")");
 
         var definedMethod = script.MainMethod;
 
-        var actual = new ScriptMethodModel(null, new OpCodeBase[]
+        var actual = new ScriptMethodModel(null, new OpCode[]
         {
             new ConstToRegisterOpCode(RegisterType.Temp0, new StringValueType("thingy")),
             new SetVariableOpCode(RegisterType.Temp0, "value"),
@@ -595,7 +595,7 @@ $value3 = (10, /*""thing"",,*/ ""thing2"")");
 
         var definedMethod = script.MainMethod;
 
-        var actual = new ScriptMethodModel(null, new OpCodeBase[]
+        var actual = new ScriptMethodModel(null, new OpCode[]
         {
             new ConstToRegisterOpCode(RegisterType.Temp0, new StringValueType("th\"i\"ngy")),
             new SetVariableOpCode(RegisterType.Temp0, "value")
@@ -624,7 +624,7 @@ $value3 = (10, /*""thing"",,*/ ""thing2"")");
         var script = Setup("$value = -(1)");
         var definedMethod = script.MainMethod;
 
-        var actual = new ScriptMethodModel(null, new OpCodeBase[]
+        var actual = new ScriptMethodModel(null, new OpCode[]
         {
             new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(-1)),
             new FlipNegativeOpCode(RegisterType.Temp0, RegisterType.Temp0),
@@ -645,7 +645,7 @@ $value5 = (string)$value");
 
         var definedMethod = script.MainMethod;
 
-        var actual = new ScriptMethodModel(null, new OpCodeBase[]
+        var actual = new ScriptMethodModel(null, new OpCode[]
         {
             // $value = (int)"10"
             new ConstToRegisterOpCode(RegisterType.Temp0, new StringValueType("10")),
@@ -712,7 +712,7 @@ $value5 = (string)$value");
 get_args((10, 20), ""third item"", (40, 50))");
         var definedMethod = script.MainMethod;
 
-        var actual = new ScriptMethodModel(null, new OpCodeBase[]
+        var actual = new ScriptMethodModel(null, new OpCode[]
         {
             // 10, 20
             new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(10)),
@@ -746,7 +746,7 @@ get_args((10, 20), ""third item"", (40, 50))");
 $concurrent1 = register(""concurrent"", true) | $concurrent2 = register(""concurrent"", false)");
         var definedMethod = script.MainMethod;
 
-        var actual = new ScriptMethodModel(null, new OpCodeBase[]
+        var actual = new ScriptMethodModel(null, new OpCode[]
         {
             // "concurrent", true
             new ConstToRegisterOpCode(RegisterType.Temp0, new StringValueType("concurrent")),
@@ -792,7 +792,7 @@ loop 500 { ; }
 get_args(""checkpoint 2"")");
         var definedMethod = script.MainMethod;
 
-        var actual = new ScriptMethodModel(null, new OpCodeBase[]
+        var actual = new ScriptMethodModel(null, new OpCode[]
         {
             // loop 500 { ; }
             new ConstToRegisterOpCode(RegisterType.Temp0, new IntValueType(500)),

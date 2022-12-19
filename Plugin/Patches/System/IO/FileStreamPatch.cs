@@ -18,7 +18,7 @@ using PathOrig = System.IO.Path;
 namespace UniTASPlugin.Patches.System.IO;
 
 [HarmonyPatch]
-internal static class FileStream
+internal static class FileStreamPatch
 {
     private static class Helper
     {
@@ -35,7 +35,7 @@ internal static class FileStream
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(ref FileStreamOrig __instance, ref string path, FileMode mode, FileAccess access,
@@ -151,7 +151,7 @@ internal static class FileStream
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(ref long __result, ref FileStreamOrig __instance, long offset, SeekOrigin origin)
@@ -195,7 +195,7 @@ internal static class FileStream
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(ref long __result, ref FileStreamOrig __instance)
@@ -219,7 +219,7 @@ internal static class FileStream
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(ref long __result, ref FileStreamOrig __instance)
@@ -250,7 +250,7 @@ internal static class FileStream
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(ref FileStreamOrig __instance, byte[] array, int offset, int count)
@@ -300,7 +300,7 @@ internal static class FileStream
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(ref FileStreamOrig __instance, bool disposing)
@@ -347,7 +347,7 @@ internal static class FileStream
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(ref FileStreamOrig __instance, long value)
@@ -369,7 +369,7 @@ internal static class FileStream
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(ref FileStreamOrig __instance, byte[] src, ref int offset, ref int count)
@@ -425,7 +425,7 @@ internal static class FileStream
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(ref FileStreamOrig __instance, byte value)
@@ -477,7 +477,7 @@ internal static class FileStream
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix()
@@ -491,7 +491,7 @@ internal static class FileStream
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix()
@@ -505,7 +505,7 @@ internal static class FileStream
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(ref FileStreamOrig __instance, long value)
@@ -544,7 +544,7 @@ internal static class FileStream
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix()
@@ -558,7 +558,7 @@ internal static class FileStream
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(ref FileStreamOrig __instance, ref int __result, byte[] buf, int offset, int count)
@@ -577,7 +577,7 @@ internal static class FileStream
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(ref int __result, ref FileStreamOrig __instance)
@@ -628,7 +628,7 @@ internal static class FileStream
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(ref int __result, ref FileStreamOrig __instance, [In] [Out] byte[] array, int offset,
@@ -688,7 +688,7 @@ internal static class FileStream
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(ref IntPtr __result, ref FileStreamOrig __instance)
@@ -711,7 +711,7 @@ internal static class FileStream
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(ref object __result)
@@ -728,7 +728,7 @@ internal static class FileStream
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(ref FileStreamOrig __instance)
@@ -772,7 +772,7 @@ internal static class FileStream
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(ref FileStreamOrig __instance, ref object __result, object cancellationToken)
@@ -790,7 +790,7 @@ internal static class FileStream
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(ref FileStreamOrig __instance)
@@ -807,7 +807,7 @@ internal static class FileStream
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(ref FileStreamOrig __instance)
@@ -826,7 +826,7 @@ internal static class FileStream
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static void writeInternal(object instance, byte[] src, int offset, int count)
@@ -894,7 +894,7 @@ internal static class FileStream
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static int readInternal(object instance, byte[] dest, int offset, int count)
@@ -953,7 +953,7 @@ internal static class FileStream
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(ref FileStreamOrig __instance, FileAccess access, bool ownsHandle, int bufferSize,
@@ -992,7 +992,7 @@ internal static class FileStream
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix()
@@ -1010,7 +1010,7 @@ internal static class FileStream
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix()
@@ -1027,7 +1027,7 @@ internal static class FileStream
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(ref int __result, ref FileStreamOrig __instance, IAsyncResult asyncResult)
@@ -1066,7 +1066,7 @@ internal static class FileStream
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.Cleanup_IgnoreException(original, ex);
+            return PatcherHelper.CleanupIgnoreException(original, ex);
         }
 
         private static bool Prefix(ref FileStreamOrig __instance, IAsyncResult asyncResult)

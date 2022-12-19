@@ -10,7 +10,7 @@ public class DefaultMovieParseFail
 {
     private static ScriptModel Setup(string input)
     {
-        var parser = new DefaultMovieScriptParser(new[] { new PrintExternalMethod() });
+        var parser = new MovieScriptParser(new[] { new PrintExternalMethod() });
         var methods = parser.Parse(input).ToList();
         var mainMethod = methods.First(x => x.Name == null);
         var definedMethods = methods.Where(x => x.Name != null);
