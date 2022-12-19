@@ -4,6 +4,7 @@ using UniTASPlugin.FixedUpdateSync;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.GameRestart;
 using UniTASPlugin.Movie.ScriptEngine.EngineMethods;
+using UniTASPlugin.Movie.ScriptEngine.Exceptions.ScriptEngineExceptions;
 using UniTASPlugin.Movie.ScriptEngine.LowLevelEngine;
 using UniTASPlugin.Movie.ScriptEngine.MovieModels.Script;
 using UniTASPlugin.Movie.ScriptEngine.ParseInterfaces;
@@ -39,11 +40,17 @@ public partial class ScriptEngineMovieRunner : IMovieRunner
     public bool IsRunning => !MovieEnd;
     public bool MovieEnd { get; private set; } = true;
     private bool _cleanUp;
+    private bool _setup;
 
     public ulong FrameCount { get; private set; }
 
     public void RunFromInput(string input)
     {
+        if (IsRunning) throw new MovieAlreadyRunningException();
+        if (_setup) throw new MovieAlreadyRunningException();
+
+        _setup = true;
+
         // parse
         var movie = _parser.Parse(input);
         _mainScript = movie.Script;
@@ -75,16 +82,11 @@ public partial class ScriptEngineMovieRunner : IMovieRunner
         {
             if (_gameRestart.PendingRestart)
             {
-                _syncFixedUpdate.OnSync(() =>
-                {
-                    MovieEnd = false;
-                    _cleanUp = false;
-                }, 1, 1);
+                _syncFixedUpdate.OnSync(() => { MovieEnd = false; }, 1, 1);
             }
             else
             {
                 MovieEnd = false;
-                _cleanUp = false;
             }
         }, 1);
     }
@@ -93,13 +95,12 @@ public partial class ScriptEngineMovieRunner : IMovieRunner
     {
         if (_cleanUp)
         {
-            MovieEnd = true;
             var env = _virtualEnvironmentFactory.GetVirtualEnv();
             env.RunVirtualEnvironment = false;
-
+            _cleanUp = false;
             return;
         }
-        
+
         if (MovieEnd) return;
 
         ConcurrentRunnersPreUpdate();
@@ -119,6 +120,7 @@ public partial class ScriptEngineMovieRunner : IMovieRunner
         var env = _virtualEnvironmentFactory.GetVirtualEnv();
         env.FrameTime = 0;
         _cleanUp = true;
+        _setup = false;
         MovieEnd = true;
     }
 }
