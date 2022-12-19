@@ -7,7 +7,7 @@ using UnityEngine;
 namespace UniTASPlugin.FixedUpdateSync;
 
 // ReSharper disable once ClassNeverInstantiated.Global
-public class FixedUpdateTracker : IOnFixedUpdate, ISyncFixedUpdate, IOnUpdate
+public class SyncFixedUpdate : IOnFixedUpdate, ISyncFixedUpdate, IOnUpdate
 {
     private readonly List<SyncData> _onSyncCallbacks = new();
     private int _fixedUpdateIndex;
