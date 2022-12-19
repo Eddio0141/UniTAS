@@ -91,8 +91,6 @@ public partial class ScriptEngineMovieRunner : IMovieRunner
 
     public void Update()
     {
-        if (MovieEnd) return;
-
         if (_cleanUp)
         {
             MovieEnd = true;
@@ -101,6 +99,8 @@ public partial class ScriptEngineMovieRunner : IMovieRunner
 
             return;
         }
+        
+        if (MovieEnd) return;
 
         ConcurrentRunnersPreUpdate();
         _engine.ExecUntilStop(this);
@@ -119,5 +119,6 @@ public partial class ScriptEngineMovieRunner : IMovieRunner
         var env = _virtualEnvironmentFactory.GetVirtualEnv();
         env.FrameTime = 0;
         _cleanUp = true;
+        MovieEnd = true;
     }
 }
