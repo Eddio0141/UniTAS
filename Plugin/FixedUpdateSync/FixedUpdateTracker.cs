@@ -79,7 +79,7 @@ public class FixedUpdateTracker : IOnFixedUpdate, ISyncFixedUpdate, IOnUpdate
         _onSyncCallbacks.Add(new(callback, syncOffset, cycleOffset));
     }
 
-    private struct SyncData
+    private class SyncData
     {
         public Action Callback { get; }
         public uint SyncOffset { get; }
