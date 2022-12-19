@@ -1,7 +1,8 @@
 ﻿using System.Linq;
+using UniTASPlugin.GameRestart;
 using UniTASPlugin.Movie;
 using UniTASPlugin.ReverseInvoker;
-using UniTASPlugin.VersionSafeWrapper;
+using UniTASPlugin.SafeWrappers;
 using UnityEngine;
 using Console = UniTASPlugin.GameOverlay.GameConsole.Console;
 

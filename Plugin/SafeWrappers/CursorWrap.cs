@@ -2,7 +2,7 @@
 using HarmonyLib;
 using Screen = UnityEngine.Screen;
 
-namespace UniTASPlugin.VersionSafeWrapper;
+namespace UniTASPlugin.SafeWrappers;
 
 internal static class CursorWrap
 {

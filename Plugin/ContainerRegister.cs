@@ -1,6 +1,7 @@
 using StructureMap;
 using UniTASPlugin.FixedUpdateSync;
 using UniTASPlugin.GameEnvironment;
+using UniTASPlugin.GameRestart;
 using UniTASPlugin.Interfaces.Update;
 using UniTASPlugin.Movie;
 using UniTASPlugin.Movie.ScriptEngine;
@@ -34,7 +35,7 @@ public static class ContainerRegister
 
     private static void GameRestartRegisters(IContainer container)
     {
-        container.Configure(_ => { _.For<IGameRestart>().Singleton().Use<GameRestart>(); });
+        container.Configure(_ => { _.For<IGameRestart>().Singleton().Use<GameRestart.GameRestart>(); });
     }
 
     private static void FixedUpdateSyncRegisters(IContainer container)

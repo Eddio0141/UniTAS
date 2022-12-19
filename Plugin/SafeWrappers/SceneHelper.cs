@@ -3,7 +3,7 @@ using System.Reflection;
 using HarmonyLib;
 using UnityEngine;
 
-namespace UniTASPlugin.VersionSafeWrapper;
+namespace UniTASPlugin.SafeWrappers;
 
 internal static class SceneHelper
 {

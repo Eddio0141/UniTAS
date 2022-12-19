@@ -2,7 +2,7 @@
 using System.Linq;
 using HarmonyLib;
 
-namespace UniTASPlugin.VersionSafeWrapper;
+namespace UniTASPlugin.SafeWrappers;
 
 public static class NewInputSystem
 {
