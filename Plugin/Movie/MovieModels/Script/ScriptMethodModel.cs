@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using UniTASPlugin.Movie.MovieRunner.LowLevel.OpCodes;
+using UniTASPlugin.Movie.LowLevel.OpCodes;
 
-namespace UniTASPlugin.Movie.MovieRunner.MovieModels.Script;
+namespace UniTASPlugin.Movie.MovieModels.Script;
 
 public class ScriptMethodModel
 {

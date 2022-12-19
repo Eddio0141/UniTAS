@@ -1,6 +1,6 @@
-﻿using UniTASPlugin.Movie.MovieRunner.MovieModels;
+﻿using UniTASPlugin.Movie.MovieModels;
 
-namespace UniTASPlugin.Movie.MovieRunner.ParseInterfaces;
+namespace UniTASPlugin.Movie.ParseInterfaces;
 
 public interface IMovieParser
 {

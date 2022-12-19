@@ -1,12 +1,12 @@
 using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
 using FluentAssertions;
-using UniTASPlugin.Movie.MovieRunner;
-using UniTASPlugin.Movie.MovieRunner.EngineMethods;
-using UniTASPlugin.Movie.MovieRunner.LowLevel;
-using UniTASPlugin.Movie.MovieRunner.MovieModels.Script;
-using UniTASPlugin.Movie.MovieRunner.Parsers.MovieScriptParser;
-using ValueType = UniTASPlugin.Movie.MovieRunner.ValueTypes.ValueType;
+using UniTASPlugin.Movie;
+using UniTASPlugin.Movie.EngineMethods;
+using UniTASPlugin.Movie.LowLevel;
+using UniTASPlugin.Movie.MovieModels.Script;
+using UniTASPlugin.Movie.Parsers.MovieScriptParser;
+using ValueType = UniTASPlugin.Movie.ValueTypes.ValueType;
 
 namespace UniTASPluginTest.MovieRunner;
 
@@ -34,7 +34,7 @@ public class ScriptEngineLowLevelTests
         }
     }
 
-    private static ScriptEngineLowLevelEngine Setup(string input,
+    private static LowLevelEngine Setup(string input,
         IEnumerable<EngineExternalMethod> getDefinedMethods)
     {
         var externMethods = getDefinedMethods.ToList();
@@ -44,7 +44,7 @@ public class ScriptEngineLowLevelTests
         var commonTokenStream = new CommonTokenStream(speakLexer);
         var speakParser = new MovieGrammarParser(commonTokenStream);
         var program = speakParser.script();
-        var listener = new DefaultGrammarListenerCompiler(externMethods);
+        var listener = new ScriptCompiler(externMethods);
         ParseTreeWalker.Default.Walk(listener, program);
         var methods = listener.Compile().ToList();
         var mainMethod = methods.First(x => x.Name == null);

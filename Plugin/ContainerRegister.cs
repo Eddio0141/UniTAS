@@ -4,12 +4,11 @@ using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.GameRestart;
 using UniTASPlugin.Interfaces.Update;
 using UniTASPlugin.Movie;
-using UniTASPlugin.Movie.MovieRunner;
-using UniTASPlugin.Movie.MovieRunner.EngineMethods;
-using UniTASPlugin.Movie.MovieRunner.ParseInterfaces;
-using UniTASPlugin.Movie.MovieRunner.Parsers;
-using UniTASPlugin.Movie.MovieRunner.Parsers.MoviePropertyParser;
-using UniTASPlugin.Movie.MovieRunner.Parsers.MovieScriptParser;
+using UniTASPlugin.Movie.EngineMethods;
+using UniTASPlugin.Movie.ParseInterfaces;
+using UniTASPlugin.Movie.Parsers;
+using UniTASPlugin.Movie.Parsers.MoviePropertyParser;
+using UniTASPlugin.Movie.Parsers.MovieScriptParser;
 using UniTASPlugin.ReverseInvoker;
 
 namespace UniTASPlugin;
@@ -65,7 +64,7 @@ public static class ContainerRegister
             // parser binds
             _.For<IMoviePropertyParser>().Use<MoviePropertyParser>();
             _.For<IMovieScriptParser>().Use<MovieScriptParser>();
-            _.For<IMovieSectionSplitter>().Use<DefaultMovieSectionSplitter>();
+            _.For<IMovieSectionSplitter>().Use<MovieSectionSplitter>();
             _.For<IMovieParser>().Use<MovieParser>();
 
             // runner binds

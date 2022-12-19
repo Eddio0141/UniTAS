@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using UniTASPlugin.Movie.MovieRunner.ValueTypes;
+using UniTASPlugin.Movie.ValueTypes;
 
-namespace UniTASPlugin.Movie.MovieRunner.EngineMethods;
+namespace UniTASPlugin.Movie.EngineMethods;
 
 public abstract class EngineExternalMethod
 {

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using ValueType = UniTASPlugin.Movie.MovieRunner.ValueTypes.ValueType;
+using ValueType = UniTASPlugin.Movie.ValueTypes.ValueType;
 
-namespace UniTASPlugin.Movie.MovieRunner.LowLevel.Register;
+namespace UniTASPlugin.Movie.LowLevel.Register;
 
 public class Register : ICloneable
 {

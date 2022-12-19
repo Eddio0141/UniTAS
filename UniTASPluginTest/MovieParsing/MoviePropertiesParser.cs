@@ -8,7 +8,7 @@ using UniTASPlugin.Movie.Parsers.MoviePropertyParser;
 
 namespace UniTASPluginTest.MovieParsing;
 
-public class DefaultMoviePropertiesParser
+public class MoviePropertiesParser
 {
     [Fact]
     public void StartFromSaveState()

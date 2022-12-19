@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using UniTASPlugin.GameEnvironment;
-using UniTASPlugin.Movie.MovieRunner.ValueTypes;
-using ValueType = UniTASPlugin.Movie.MovieRunner.ValueTypes.ValueType;
+using UniTASPlugin.Movie.ValueTypes;
+using ValueType = UniTASPlugin.Movie.ValueTypes.ValueType;
 
-namespace UniTASPlugin.Movie.MovieRunner.EngineMethods;
+namespace UniTASPlugin.Movie.EngineMethods;
 
 public class SetFpsExternalMethod : EngineExternalMethod
 {

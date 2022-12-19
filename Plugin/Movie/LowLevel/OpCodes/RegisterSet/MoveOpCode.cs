@@ -1,6 +1,6 @@
-﻿using UniTASPlugin.Movie.MovieRunner.LowLevel.Register;
+﻿using UniTASPlugin.Movie.LowLevel.Register;
 
-namespace UniTASPlugin.Movie.MovieRunner.LowLevel.OpCodes.RegisterSet;
+namespace UniTASPlugin.Movie.LowLevel.OpCodes.RegisterSet;
 
 public class MoveOpCode : RegisterSet
 {

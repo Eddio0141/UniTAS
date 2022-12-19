@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace UniTASPlugin.Movie.MovieRunner.ValueTypes;
+namespace UniTASPlugin.Movie.ValueTypes;
 
 public abstract class ValueType : ICloneable
 {

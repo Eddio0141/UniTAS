@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace UniTASPlugin.Movie.MovieRunner.MovieModels.Script;
+namespace UniTASPlugin.Movie.MovieModels.Script;
 
 public class ScriptModel
 {

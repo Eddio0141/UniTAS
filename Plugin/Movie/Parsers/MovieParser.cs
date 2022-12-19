@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using BepInEx;
-using UniTASPlugin.Movie.MovieRunner.Exceptions.ParseExceptions;
-using UniTASPlugin.Movie.MovieRunner.MovieModels;
-using UniTASPlugin.Movie.MovieRunner.MovieModels.Script;
-using UniTASPlugin.Movie.MovieRunner.ParseInterfaces;
+using UniTASPlugin.Movie.Exceptions.ParseExceptions;
+using UniTASPlugin.Movie.MovieModels;
+using UniTASPlugin.Movie.MovieModels.Script;
+using UniTASPlugin.Movie.ParseInterfaces;
 
-namespace UniTASPlugin.Movie.MovieRunner.Parsers;
+namespace UniTASPlugin.Movie.Parsers;
 
 public class MovieParser : IMovieParser
 {

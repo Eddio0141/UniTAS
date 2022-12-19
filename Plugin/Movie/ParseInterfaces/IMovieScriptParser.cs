@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using UniTASPlugin.Movie.MovieRunner.MovieModels.Script;
+using UniTASPlugin.Movie.MovieModels.Script;
 
-namespace UniTASPlugin.Movie.MovieRunner.ParseInterfaces;
+namespace UniTASPlugin.Movie.ParseInterfaces;
 
 public interface IMovieScriptParser
 {

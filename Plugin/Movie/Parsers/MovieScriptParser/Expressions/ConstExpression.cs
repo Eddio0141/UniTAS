@@ -1,6 +1,6 @@
-﻿using UniTASPlugin.Movie.MovieRunner.ValueTypes;
+﻿using UniTASPlugin.Movie.ValueTypes;
 
-namespace UniTASPlugin.Movie.MovieRunner.Parsers.MovieScriptParser.Expressions;
+namespace UniTASPlugin.Movie.Parsers.MovieScriptParser.Expressions;
 
 public class ConstExpression : Expression
 {
