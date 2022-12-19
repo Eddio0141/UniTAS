@@ -40,9 +40,9 @@ public class ScriptEngineLowLevelTests
         var externMethods = getDefinedMethods.ToList();
 
         var inputStream = new AntlrInputStream(input);
-        var speakLexer = new MovieScriptDefaultGrammarLexer(inputStream);
+        var speakLexer = new MovieGrammarLexer(inputStream);
         var commonTokenStream = new CommonTokenStream(speakLexer);
-        var speakParser = new MovieScriptDefaultGrammarParser(commonTokenStream);
+        var speakParser = new MovieGrammarParser(commonTokenStream);
         var program = speakParser.script();
         var listener = new DefaultGrammarListenerCompiler(externMethods);
         ParseTreeWalker.Default.Walk(listener, program);

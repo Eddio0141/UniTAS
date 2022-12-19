@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-// Generated from MovieScriptDefaultGrammar.g4 by ANTLR 4.9.3
+// Generated from MovieGrammar.g4 by ANTLR 4.9.3
 
 // Unreachable code detected
 #pragma warning disable 0162
@@ -29,7 +29,7 @@ using DFA = Antlr4.Runtime.Dfa.DFA;
 
 [System.CodeDom.Compiler.GeneratedCode("ANTLR", "4.9.3")]
 
-public partial class MovieScriptDefaultGrammarLexer : Lexer {
+public partial class MovieGrammarLexer : Lexer {
 	protected static DFA[] decisionToDFA;
 	protected static PredictionContextCache sharedContextCache = new PredictionContextCache();
 	public const int
@@ -65,10 +65,10 @@ public partial class MovieScriptDefaultGrammarLexer : Lexer {
 	};
 
 
-	public MovieScriptDefaultGrammarLexer(ICharStream input)
+	public MovieGrammarLexer(ICharStream input)
 	: this(input, Console.Out, Console.Error) { }
 
-	public MovieScriptDefaultGrammarLexer(ICharStream input, TextWriter output, TextWriter errorOutput)
+	public MovieGrammarLexer(ICharStream input, TextWriter output, TextWriter errorOutput)
 	: base(input, output, errorOutput)
 	{
 		Interpreter = new LexerATNSimulator(this, _ATN, decisionToDFA, sharedContextCache);
@@ -106,7 +106,7 @@ public partial class MovieScriptDefaultGrammarLexer : Lexer {
 		}
 	}
 
-	public override string GrammarFileName { get { return "MovieScriptDefaultGrammar.g4"; } }
+	public override string GrammarFileName { get { return "MovieGrammar.g4"; } }
 
 	public override string[] RuleNames { get { return ruleNames; } }
 
@@ -116,7 +116,7 @@ public partial class MovieScriptDefaultGrammarLexer : Lexer {
 
 	public override string SerializedAtn { get { return new string(_serializedATN); } }
 
-	static MovieScriptDefaultGrammarLexer() {
+	static MovieGrammarLexer() {
 		decisionToDFA = new DFA[_ATN.NumberOfDecisions];
 		for (int i = 0; i < _ATN.NumberOfDecisions; i++) {
 			decisionToDFA[i] = new DFA(_ATN.GetDecisionState(i), i);

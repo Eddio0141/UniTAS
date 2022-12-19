@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-// Generated from MovieScriptDefaultGrammar.g4 by ANTLR 4.9.3
+// Generated from MovieGrammar.g4 by ANTLR 4.9.3
 
 // Unreachable code detected
 #pragma warning disable 0162
@@ -32,7 +32,7 @@ using DFA = Antlr4.Runtime.Dfa.DFA;
 
 [System.CodeDom.Compiler.GeneratedCode("ANTLR", "4.9.3")]
 
-public partial class MovieScriptDefaultGrammarParser : Parser {
+public partial class MovieGrammarParser : Parser {
 	protected static DFA[] decisionToDFA;
 	protected static PredictionContextCache sharedContextCache = new PredictionContextCache();
 	public const int
@@ -97,22 +97,22 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 		}
 	}
 
-	public override string GrammarFileName { get { return "MovieScriptDefaultGrammar.g4"; } }
+	public override string GrammarFileName { get { return "MovieGrammar.g4"; } }
 
 	public override string[] RuleNames { get { return ruleNames; } }
 
 	public override string SerializedAtn { get { return new string(_serializedATN); } }
 
-	static MovieScriptDefaultGrammarParser() {
+	static MovieGrammarParser() {
 		decisionToDFA = new DFA[_ATN.NumberOfDecisions];
 		for (int i = 0; i < _ATN.NumberOfDecisions; i++) {
 			decisionToDFA[i] = new DFA(_ATN.GetDecisionState(i), i);
 		}
 	}
 
-		public MovieScriptDefaultGrammarParser(ITokenStream input) : this(input, Console.Out, Console.Error) { }
+		public MovieGrammarParser(ITokenStream input) : this(input, Console.Out, Console.Error) { }
 
-		public MovieScriptDefaultGrammarParser(ITokenStream input, TextWriter output, TextWriter errorOutput)
+		public MovieGrammarParser(ITokenStream input, TextWriter output, TextWriter errorOutput)
 		: base(input, output, errorOutput)
 	{
 		Interpreter = new ParserATNSimulator(this, _ATN, decisionToDFA, sharedContextCache);
@@ -122,10 +122,10 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 		[System.Diagnostics.DebuggerNonUserCode] public ProgramContext program() {
 			return GetRuleContext<ProgramContext>(0);
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode Eof() { return GetToken(MovieScriptDefaultGrammarParser.Eof, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode[] NEWLINE() { return GetTokens(MovieScriptDefaultGrammarParser.NEWLINE); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode Eof() { return GetToken(MovieGrammarParser.Eof, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode[] NEWLINE() { return GetTokens(MovieGrammarParser.NEWLINE); }
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode NEWLINE(int i) {
-			return GetToken(MovieScriptDefaultGrammarParser.NEWLINE, i);
+			return GetToken(MovieGrammarParser.NEWLINE, i);
 		}
 		public ScriptContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
@@ -134,12 +134,12 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 		public override int RuleIndex { get { return RULE_script; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.EnterScript(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.ExitScript(this);
 		}
 	}
@@ -187,9 +187,9 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 		[System.Diagnostics.DebuggerNonUserCode] public ProgramContext program() {
 			return GetRuleContext<ProgramContext>(0);
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode[] NEWLINE() { return GetTokens(MovieScriptDefaultGrammarParser.NEWLINE); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode[] NEWLINE() { return GetTokens(MovieGrammarParser.NEWLINE); }
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode NEWLINE(int i) {
-			return GetToken(MovieScriptDefaultGrammarParser.NEWLINE, i);
+			return GetToken(MovieGrammarParser.NEWLINE, i);
 		}
 		[System.Diagnostics.DebuggerNonUserCode] public ActionWithSeparatorContext actionWithSeparator() {
 			return GetRuleContext<ActionWithSeparatorContext>(0);
@@ -207,12 +207,12 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 		public override int RuleIndex { get { return RULE_program; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.EnterProgram(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.ExitProgram(this);
 		}
 	}
@@ -315,14 +315,14 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 	}
 
 	public partial class ScopedProgramContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode SCOPE_OPEN() { return GetToken(MovieScriptDefaultGrammarParser.SCOPE_OPEN, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode SCOPE_CLOSE() { return GetToken(MovieScriptDefaultGrammarParser.SCOPE_CLOSE, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode SCOPE_OPEN() { return GetToken(MovieGrammarParser.SCOPE_OPEN, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode SCOPE_CLOSE() { return GetToken(MovieGrammarParser.SCOPE_CLOSE, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public ProgramContext program() {
 			return GetRuleContext<ProgramContext>(0);
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode[] NEWLINE() { return GetTokens(MovieScriptDefaultGrammarParser.NEWLINE); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode[] NEWLINE() { return GetTokens(MovieGrammarParser.NEWLINE); }
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode NEWLINE(int i) {
-			return GetToken(MovieScriptDefaultGrammarParser.NEWLINE, i);
+			return GetToken(MovieGrammarParser.NEWLINE, i);
 		}
 		public ScopedProgramContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
@@ -331,12 +331,12 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 		public override int RuleIndex { get { return RULE_scopedProgram; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.EnterScopedProgram(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.ExitScopedProgram(this);
 		}
 	}
@@ -391,8 +391,8 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 	}
 
 	public partial class ActionSeparatorContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ACTIONSEPARATOR() { return GetToken(MovieScriptDefaultGrammarParser.ACTIONSEPARATOR, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode NEWLINE() { return GetToken(MovieScriptDefaultGrammarParser.NEWLINE, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ACTIONSEPARATOR() { return GetToken(MovieGrammarParser.ACTIONSEPARATOR, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode NEWLINE() { return GetToken(MovieGrammarParser.NEWLINE, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public FrameAdvanceContext frameAdvance() {
 			return GetRuleContext<FrameAdvanceContext>(0);
 		}
@@ -403,12 +403,12 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 		public override int RuleIndex { get { return RULE_actionSeparator; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.EnterActionSeparator(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.ExitActionSeparator(this);
 		}
 	}
@@ -489,12 +489,12 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 		public override int RuleIndex { get { return RULE_action; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.EnterAction(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.ExitAction(this);
 		}
 	}
@@ -598,12 +598,12 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 		public override int RuleIndex { get { return RULE_actionWithSeparator; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.EnterActionWithSeparator(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.ExitActionWithSeparator(this);
 		}
 	}
@@ -658,7 +658,7 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 	}
 
 	public partial class FrameAdvanceContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode SEMICOLON() { return GetToken(MovieScriptDefaultGrammarParser.SEMICOLON, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode SEMICOLON() { return GetToken(MovieGrammarParser.SEMICOLON, 0); }
 		public FrameAdvanceContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
 		{
@@ -666,12 +666,12 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 		public override int RuleIndex { get { return RULE_frameAdvance; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.EnterFrameAdvance(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.ExitFrameAdvance(this);
 		}
 	}
@@ -706,12 +706,12 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 		public override int RuleIndex { get { return RULE_breakAction; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.EnterBreakAction(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.ExitBreakAction(this);
 		}
 	}
@@ -746,12 +746,12 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 		public override int RuleIndex { get { return RULE_continueAction; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.EnterContinueAction(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.ExitContinueAction(this);
 		}
 	}
@@ -792,12 +792,12 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 		public override int RuleIndex { get { return RULE_returnAction; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.EnterReturnAction(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.ExitReturnAction(this);
 		}
 	}
@@ -841,8 +841,8 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 	}
 
 	public partial class VariableContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode DOLLAR() { return GetToken(MovieScriptDefaultGrammarParser.DOLLAR, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode IDENTIFIER_STRING() { return GetToken(MovieScriptDefaultGrammarParser.IDENTIFIER_STRING, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode DOLLAR() { return GetToken(MovieGrammarParser.DOLLAR, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode IDENTIFIER_STRING() { return GetToken(MovieGrammarParser.IDENTIFIER_STRING, 0); }
 		public VariableContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
 		{
@@ -850,12 +850,12 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 		public override int RuleIndex { get { return RULE_variable; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.EnterVariable(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.ExitVariable(this);
 		}
 	}
@@ -891,12 +891,12 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 		[System.Diagnostics.DebuggerNonUserCode] public ExpressionContext expression() {
 			return GetRuleContext<ExpressionContext>(0);
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ASSIGN() { return GetToken(MovieScriptDefaultGrammarParser.ASSIGN, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode PLUS_ASSIGN() { return GetToken(MovieScriptDefaultGrammarParser.PLUS_ASSIGN, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode MINUS_ASSIGN() { return GetToken(MovieScriptDefaultGrammarParser.MINUS_ASSIGN, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode MULTIPLY_ASSIGN() { return GetToken(MovieScriptDefaultGrammarParser.MULTIPLY_ASSIGN, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode DIVIDE_ASSIGN() { return GetToken(MovieScriptDefaultGrammarParser.DIVIDE_ASSIGN, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode MODULO_ASSIGN() { return GetToken(MovieScriptDefaultGrammarParser.MODULO_ASSIGN, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ASSIGN() { return GetToken(MovieGrammarParser.ASSIGN, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode PLUS_ASSIGN() { return GetToken(MovieGrammarParser.PLUS_ASSIGN, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode MINUS_ASSIGN() { return GetToken(MovieGrammarParser.MINUS_ASSIGN, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode MULTIPLY_ASSIGN() { return GetToken(MovieGrammarParser.MULTIPLY_ASSIGN, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode DIVIDE_ASSIGN() { return GetToken(MovieGrammarParser.DIVIDE_ASSIGN, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode MODULO_ASSIGN() { return GetToken(MovieGrammarParser.MODULO_ASSIGN, 0); }
 		public VariableAssignmentContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
 		{
@@ -904,12 +904,12 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 		public override int RuleIndex { get { return RULE_variableAssignment; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.EnterVariableAssignment(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.ExitVariableAssignment(this);
 		}
 	}
@@ -952,7 +952,7 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 		[System.Diagnostics.DebuggerNonUserCode] public VariableContext variable() {
 			return GetRuleContext<VariableContext>(0);
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ASSIGN() { return GetToken(MovieScriptDefaultGrammarParser.ASSIGN, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ASSIGN() { return GetToken(MovieGrammarParser.ASSIGN, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public TupleExpressionContext tupleExpression() {
 			return GetRuleContext<TupleExpressionContext>(0);
 		}
@@ -963,12 +963,12 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 		public override int RuleIndex { get { return RULE_tupleAssignment; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.EnterTupleAssignment(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.ExitTupleAssignment(this);
 		}
 	}
@@ -1003,9 +1003,9 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 		public TupleVarContext firstVar;
 		public TupleVarContext _tupleVar;
 		public IList<TupleVarContext> _vars = new List<TupleVarContext>();
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode TUPLE_DECONSTRUCTOR_START() { return GetToken(MovieScriptDefaultGrammarParser.TUPLE_DECONSTRUCTOR_START, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ROUND_BRACKET_CLOSE() { return GetToken(MovieScriptDefaultGrammarParser.ROUND_BRACKET_CLOSE, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ASSIGN() { return GetToken(MovieScriptDefaultGrammarParser.ASSIGN, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode TUPLE_DECONSTRUCTOR_START() { return GetToken(MovieGrammarParser.TUPLE_DECONSTRUCTOR_START, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ROUND_BRACKET_CLOSE() { return GetToken(MovieGrammarParser.ROUND_BRACKET_CLOSE, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ASSIGN() { return GetToken(MovieGrammarParser.ASSIGN, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public TupleExpressionContext tupleExpression() {
 			return GetRuleContext<TupleExpressionContext>(0);
 		}
@@ -1021,9 +1021,9 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 		[System.Diagnostics.DebuggerNonUserCode] public TupleVarContext tupleVar(int i) {
 			return GetRuleContext<TupleVarContext>(i);
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode[] COMMA() { return GetTokens(MovieScriptDefaultGrammarParser.COMMA); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode[] COMMA() { return GetTokens(MovieGrammarParser.COMMA); }
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode COMMA(int i) {
-			return GetToken(MovieScriptDefaultGrammarParser.COMMA, i);
+			return GetToken(MovieGrammarParser.COMMA, i);
 		}
 		public VariableTupleSeparationContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
@@ -1032,12 +1032,12 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 		public override int RuleIndex { get { return RULE_variableTupleSeparation; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.EnterVariableTupleSeparation(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.ExitVariableTupleSeparation(this);
 		}
 	}
@@ -1117,8 +1117,8 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 	public partial class TupleVarContext : ParserRuleContext {
 		public IToken varIgnore;
 		public IToken varName;
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode IGNORE_VARIABLE_NAME() { return GetToken(MovieScriptDefaultGrammarParser.IGNORE_VARIABLE_NAME, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode IDENTIFIER_STRING() { return GetToken(MovieScriptDefaultGrammarParser.IDENTIFIER_STRING, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode IGNORE_VARIABLE_NAME() { return GetToken(MovieGrammarParser.IGNORE_VARIABLE_NAME, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode IDENTIFIER_STRING() { return GetToken(MovieGrammarParser.IDENTIFIER_STRING, 0); }
 		public TupleVarContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
 		{
@@ -1126,12 +1126,12 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 		public override int RuleIndex { get { return RULE_tupleVar; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.EnterTupleVar(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.ExitTupleVar(this);
 		}
 	}
@@ -1174,8 +1174,8 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 	}
 
 	public partial class TupleExpressionContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ROUND_BRACKET_OPEN() { return GetToken(MovieScriptDefaultGrammarParser.ROUND_BRACKET_OPEN, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ROUND_BRACKET_CLOSE() { return GetToken(MovieScriptDefaultGrammarParser.ROUND_BRACKET_CLOSE, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ROUND_BRACKET_OPEN() { return GetToken(MovieGrammarParser.ROUND_BRACKET_OPEN, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ROUND_BRACKET_CLOSE() { return GetToken(MovieGrammarParser.ROUND_BRACKET_CLOSE, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public ExpressionContext[] expression() {
 			return GetRuleContexts<ExpressionContext>();
 		}
@@ -1188,9 +1188,9 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 		[System.Diagnostics.DebuggerNonUserCode] public TupleExpressionContext tupleExpression(int i) {
 			return GetRuleContext<TupleExpressionContext>(i);
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode[] COMMA() { return GetTokens(MovieScriptDefaultGrammarParser.COMMA); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode[] COMMA() { return GetTokens(MovieGrammarParser.COMMA); }
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode COMMA(int i) {
-			return GetToken(MovieScriptDefaultGrammarParser.COMMA, i);
+			return GetToken(MovieGrammarParser.COMMA, i);
 		}
 		public TupleExpressionContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
@@ -1199,12 +1199,12 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 		public override int RuleIndex { get { return RULE_tupleExpression; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.EnterTupleExpression(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.ExitTupleExpression(this);
 		}
 	}
@@ -1299,56 +1299,56 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 		[System.Diagnostics.DebuggerNonUserCode] public ExpressionContext expression(int i) {
 			return GetRuleContext<ExpressionContext>(i);
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode AND() { return GetToken(MovieScriptDefaultGrammarParser.AND, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OR() { return GetToken(MovieScriptDefaultGrammarParser.OR, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode AND() { return GetToken(MovieGrammarParser.AND, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode OR() { return GetToken(MovieGrammarParser.OR, 0); }
 		public AndOrContext(ExpressionContext context) { CopyFrom(context); }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.EnterAndOr(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.ExitAndOr(this);
 		}
 	}
 	public partial class CastExpressionContext : ExpressionContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ROUND_BRACKET_OPEN() { return GetToken(MovieScriptDefaultGrammarParser.ROUND_BRACKET_OPEN, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ROUND_BRACKET_OPEN() { return GetToken(MovieGrammarParser.ROUND_BRACKET_OPEN, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public BasicTypeContext basicType() {
 			return GetRuleContext<BasicTypeContext>(0);
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ROUND_BRACKET_CLOSE() { return GetToken(MovieScriptDefaultGrammarParser.ROUND_BRACKET_CLOSE, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ROUND_BRACKET_CLOSE() { return GetToken(MovieGrammarParser.ROUND_BRACKET_CLOSE, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public ExpressionContext expression() {
 			return GetRuleContext<ExpressionContext>(0);
 		}
 		public CastExpressionContext(ExpressionContext context) { CopyFrom(context); }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.EnterCastExpression(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.ExitCastExpression(this);
 		}
 	}
 	public partial class ParenthesesContext : ExpressionContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ROUND_BRACKET_OPEN() { return GetToken(MovieScriptDefaultGrammarParser.ROUND_BRACKET_OPEN, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ROUND_BRACKET_OPEN() { return GetToken(MovieGrammarParser.ROUND_BRACKET_OPEN, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public ExpressionContext expression() {
 			return GetRuleContext<ExpressionContext>(0);
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ROUND_BRACKET_CLOSE() { return GetToken(MovieScriptDefaultGrammarParser.ROUND_BRACKET_CLOSE, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ROUND_BRACKET_CLOSE() { return GetToken(MovieGrammarParser.ROUND_BRACKET_CLOSE, 0); }
 		public ParenthesesContext(ExpressionContext context) { CopyFrom(context); }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.EnterParentheses(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.ExitParentheses(this);
 		}
 	}
@@ -1361,35 +1361,35 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 		[System.Diagnostics.DebuggerNonUserCode] public ExpressionContext expression(int i) {
 			return GetRuleContext<ExpressionContext>(i);
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode MULTIPLY() { return GetToken(MovieScriptDefaultGrammarParser.MULTIPLY, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode DIVIDE() { return GetToken(MovieScriptDefaultGrammarParser.DIVIDE, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode MODULO() { return GetToken(MovieScriptDefaultGrammarParser.MODULO, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode MULTIPLY() { return GetToken(MovieGrammarParser.MULTIPLY, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode DIVIDE() { return GetToken(MovieGrammarParser.DIVIDE, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode MODULO() { return GetToken(MovieGrammarParser.MODULO, 0); }
 		public MultiplyDivideContext(ExpressionContext context) { CopyFrom(context); }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.EnterMultiplyDivide(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.ExitMultiplyDivide(this);
 		}
 	}
 	public partial class NotContext : ExpressionContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode NOT() { return GetToken(MovieScriptDefaultGrammarParser.NOT, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode NOT() { return GetToken(MovieGrammarParser.NOT, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public ExpressionContext expression() {
 			return GetRuleContext<ExpressionContext>(0);
 		}
 		public NotContext(ExpressionContext context) { CopyFrom(context); }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.EnterNot(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.ExitNot(this);
 		}
 	}
@@ -1400,21 +1400,21 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 		[System.Diagnostics.DebuggerNonUserCode] public ExpressionContext expression(int i) {
 			return GetRuleContext<ExpressionContext>(i);
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode EQUAL() { return GetToken(MovieScriptDefaultGrammarParser.EQUAL, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode NOT_EQUAL() { return GetToken(MovieScriptDefaultGrammarParser.NOT_EQUAL, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode LESS() { return GetToken(MovieScriptDefaultGrammarParser.LESS, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode LESS_EQUAL() { return GetToken(MovieScriptDefaultGrammarParser.LESS_EQUAL, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode GREATER() { return GetToken(MovieScriptDefaultGrammarParser.GREATER, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode GREATER_EQUAL() { return GetToken(MovieScriptDefaultGrammarParser.GREATER_EQUAL, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode EQUAL() { return GetToken(MovieGrammarParser.EQUAL, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode NOT_EQUAL() { return GetToken(MovieGrammarParser.NOT_EQUAL, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode LESS() { return GetToken(MovieGrammarParser.LESS, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode LESS_EQUAL() { return GetToken(MovieGrammarParser.LESS_EQUAL, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode GREATER() { return GetToken(MovieGrammarParser.GREATER, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode GREATER_EQUAL() { return GetToken(MovieGrammarParser.GREATER_EQUAL, 0); }
 		public CompareContext(ExpressionContext context) { CopyFrom(context); }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.EnterCompare(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.ExitCompare(this);
 		}
 	}
@@ -1427,17 +1427,17 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 		[System.Diagnostics.DebuggerNonUserCode] public ExpressionContext expression(int i) {
 			return GetRuleContext<ExpressionContext>(i);
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode PLUS() { return GetToken(MovieScriptDefaultGrammarParser.PLUS, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode MINUS() { return GetToken(MovieScriptDefaultGrammarParser.MINUS, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode PLUS() { return GetToken(MovieGrammarParser.PLUS, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode MINUS() { return GetToken(MovieGrammarParser.MINUS, 0); }
 		public AddSubtractContext(ExpressionContext context) { CopyFrom(context); }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.EnterAddSubtract(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.ExitAddSubtract(this);
 		}
 	}
@@ -1448,18 +1448,18 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 		[System.Diagnostics.DebuggerNonUserCode] public ExpressionContext expression(int i) {
 			return GetRuleContext<ExpressionContext>(i);
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode BITWISE_AND() { return GetToken(MovieScriptDefaultGrammarParser.BITWISE_AND, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode BITWISE_OR() { return GetToken(MovieScriptDefaultGrammarParser.BITWISE_OR, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode BITWISE_XOR() { return GetToken(MovieScriptDefaultGrammarParser.BITWISE_XOR, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode BITWISE_AND() { return GetToken(MovieGrammarParser.BITWISE_AND, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode BITWISE_OR() { return GetToken(MovieGrammarParser.BITWISE_OR, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode BITWISE_XOR() { return GetToken(MovieGrammarParser.BITWISE_XOR, 0); }
 		public BitwiseContext(ExpressionContext context) { CopyFrom(context); }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.EnterBitwise(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.ExitBitwise(this);
 		}
 	}
@@ -1470,17 +1470,17 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 		[System.Diagnostics.DebuggerNonUserCode] public ExpressionContext expression(int i) {
 			return GetRuleContext<ExpressionContext>(i);
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode BITWISE_SHIFT_LEFT() { return GetToken(MovieScriptDefaultGrammarParser.BITWISE_SHIFT_LEFT, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode BITWISE_SHIFT_RIGHT() { return GetToken(MovieScriptDefaultGrammarParser.BITWISE_SHIFT_RIGHT, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode BITWISE_SHIFT_LEFT() { return GetToken(MovieGrammarParser.BITWISE_SHIFT_LEFT, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode BITWISE_SHIFT_RIGHT() { return GetToken(MovieGrammarParser.BITWISE_SHIFT_RIGHT, 0); }
 		public BitwiseShiftContext(ExpressionContext context) { CopyFrom(context); }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.EnterBitwiseShift(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.ExitBitwiseShift(this);
 		}
 	}
@@ -1506,29 +1506,29 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 		public TerminatorContext(ExpressionContext context) { CopyFrom(context); }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.EnterTerminator(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.ExitTerminator(this);
 		}
 	}
 	public partial class FlipSignContext : ExpressionContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode MINUS() { return GetToken(MovieScriptDefaultGrammarParser.MINUS, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode MINUS() { return GetToken(MovieGrammarParser.MINUS, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public ExpressionContext expression() {
 			return GetRuleContext<ExpressionContext>(0);
 		}
 		public FlipSignContext(ExpressionContext context) { CopyFrom(context); }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.EnterFlipSign(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.ExitFlipSign(this);
 		}
 	}
@@ -1816,12 +1816,12 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 		public override int RuleIndex { get { return RULE_basicType; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.EnterBasicType(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.ExitBasicType(this);
 		}
 	}
@@ -1878,7 +1878,7 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 	}
 
 	public partial class StringContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode STRING() { return GetToken(MovieScriptDefaultGrammarParser.STRING, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode STRING() { return GetToken(MovieGrammarParser.STRING, 0); }
 		public StringContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
 		{
@@ -1886,12 +1886,12 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 		public override int RuleIndex { get { return RULE_string; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.EnterString(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.ExitString(this);
 		}
 	}
@@ -1919,7 +1919,7 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 	}
 
 	public partial class IntTypeContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode INT() { return GetToken(MovieScriptDefaultGrammarParser.INT, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode INT() { return GetToken(MovieGrammarParser.INT, 0); }
 		public IntTypeContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
 		{
@@ -1927,12 +1927,12 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 		public override int RuleIndex { get { return RULE_intType; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.EnterIntType(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.ExitIntType(this);
 		}
 	}
@@ -1960,7 +1960,7 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 	}
 
 	public partial class FloatTypeContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode FLOAT() { return GetToken(MovieScriptDefaultGrammarParser.FLOAT, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode FLOAT() { return GetToken(MovieGrammarParser.FLOAT, 0); }
 		public FloatTypeContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
 		{
@@ -1968,12 +1968,12 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 		public override int RuleIndex { get { return RULE_floatType; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.EnterFloatType(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.ExitFloatType(this);
 		}
 	}
@@ -2008,12 +2008,12 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 		public override int RuleIndex { get { return RULE_bool; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.EnterBool(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.ExitBool(this);
 		}
 	}
@@ -2068,12 +2068,12 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 		public override int RuleIndex { get { return RULE_ifStatement; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.EnterIfStatement(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.ExitIfStatement(this);
 		}
 	}
@@ -2157,12 +2157,12 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 		public override int RuleIndex { get { return RULE_elseIfStatement; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.EnterElseIfStatement(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.ExitElseIfStatement(this);
 		}
 	}
@@ -2237,12 +2237,12 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 		public override int RuleIndex { get { return RULE_elseStatement; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.EnterElseStatement(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.ExitElseStatement(this);
 		}
 	}
@@ -2272,9 +2272,9 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 	}
 
 	public partial class MethodCallContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode IDENTIFIER_STRING() { return GetToken(MovieScriptDefaultGrammarParser.IDENTIFIER_STRING, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ROUND_BRACKET_OPEN() { return GetToken(MovieScriptDefaultGrammarParser.ROUND_BRACKET_OPEN, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ROUND_BRACKET_CLOSE() { return GetToken(MovieScriptDefaultGrammarParser.ROUND_BRACKET_CLOSE, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode IDENTIFIER_STRING() { return GetToken(MovieGrammarParser.IDENTIFIER_STRING, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ROUND_BRACKET_OPEN() { return GetToken(MovieGrammarParser.ROUND_BRACKET_OPEN, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ROUND_BRACKET_CLOSE() { return GetToken(MovieGrammarParser.ROUND_BRACKET_CLOSE, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public MethodCallArgsContext methodCallArgs() {
 			return GetRuleContext<MethodCallArgsContext>(0);
 		}
@@ -2285,12 +2285,12 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 		public override int RuleIndex { get { return RULE_methodCall; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.EnterMethodCall(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.ExitMethodCall(this);
 		}
 	}
@@ -2333,7 +2333,7 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 	}
 
 	public partial class MethodCallArgsContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode COMMA() { return GetToken(MovieScriptDefaultGrammarParser.COMMA, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode COMMA() { return GetToken(MovieGrammarParser.COMMA, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public MethodCallArgsContext methodCallArgs() {
 			return GetRuleContext<MethodCallArgsContext>(0);
 		}
@@ -2350,12 +2350,12 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 		public override int RuleIndex { get { return RULE_methodCallArgs; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.EnterMethodCallArgs(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.ExitMethodCallArgs(this);
 		}
 	}
@@ -2428,9 +2428,9 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 	}
 
 	public partial class MethodDefContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode IDENTIFIER_STRING() { return GetToken(MovieScriptDefaultGrammarParser.IDENTIFIER_STRING, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ROUND_BRACKET_OPEN() { return GetToken(MovieScriptDefaultGrammarParser.ROUND_BRACKET_OPEN, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ROUND_BRACKET_CLOSE() { return GetToken(MovieScriptDefaultGrammarParser.ROUND_BRACKET_CLOSE, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode IDENTIFIER_STRING() { return GetToken(MovieGrammarParser.IDENTIFIER_STRING, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ROUND_BRACKET_OPEN() { return GetToken(MovieGrammarParser.ROUND_BRACKET_OPEN, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ROUND_BRACKET_CLOSE() { return GetToken(MovieGrammarParser.ROUND_BRACKET_CLOSE, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public ScopedProgramContext scopedProgram() {
 			return GetRuleContext<ScopedProgramContext>(0);
 		}
@@ -2444,12 +2444,12 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 		public override int RuleIndex { get { return RULE_methodDef; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.EnterMethodDef(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.ExitMethodDef(this);
 		}
 	}
@@ -2496,8 +2496,8 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 	}
 
 	public partial class MethodDefArgsContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode IDENTIFIER_STRING() { return GetToken(MovieScriptDefaultGrammarParser.IDENTIFIER_STRING, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode COMMA() { return GetToken(MovieScriptDefaultGrammarParser.COMMA, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode IDENTIFIER_STRING() { return GetToken(MovieGrammarParser.IDENTIFIER_STRING, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode COMMA() { return GetToken(MovieGrammarParser.COMMA, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public MethodDefArgsContext methodDefArgs() {
 			return GetRuleContext<MethodDefArgsContext>(0);
 		}
@@ -2508,12 +2508,12 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 		public override int RuleIndex { get { return RULE_methodDefArgs; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.EnterMethodDefArgs(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.ExitMethodDefArgs(this);
 		}
 	}
@@ -2571,12 +2571,12 @@ public partial class MovieScriptDefaultGrammarParser : Parser {
 		public override int RuleIndex { get { return RULE_loop; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void EnterRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.EnterLoop(this);
 		}
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override void ExitRule(IParseTreeListener listener) {
-			IMovieScriptDefaultGrammarListener typedListener = listener as IMovieScriptDefaultGrammarListener;
+			IMovieGrammarListener typedListener = listener as IMovieGrammarListener;
 			if (typedListener != null) typedListener.ExitLoop(this);
 		}
 	}

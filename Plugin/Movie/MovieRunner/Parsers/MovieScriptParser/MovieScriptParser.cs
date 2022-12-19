@@ -20,9 +20,9 @@ public class MovieScriptParser : IMovieScriptParser
     public IEnumerable<ScriptMethodModel> Parse(string input)
     {
         var inputStream = new AntlrInputStream(input);
-        var speakLexer = new MovieScriptDefaultGrammarLexer(inputStream);
+        var speakLexer = new MovieGrammarLexer(inputStream);
         var commonTokenStream = new CommonTokenStream(speakLexer);
-        var speakParser = new MovieScriptDefaultGrammarParser(commonTokenStream);
+        var speakParser = new MovieGrammarParser(commonTokenStream);
         speakParser.RemoveErrorListeners();
         speakParser.AddErrorListener(new ErrorListener());
         var script = speakParser.script();
