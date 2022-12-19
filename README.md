@@ -22,5 +22,3 @@ No plans now
 
 # Supporting unity versions
 For now, anything that BepInEx 5.4.21 can support, ranging from unity 3 to latest, and games that use Mono and not Il2cpp
-
-- How to know if the patch works? Check debug output of the plugin by enabling debug print through `GAME_DIR\BepInEx\config\BepInEx.cfg`, field `[Logging.Disk] LogLevel` or `[Logging.Console] Loglevel` and it will show all methods that failed to patch in the `GAME_DIR\BepInEx\LogOutput.log` or the console
