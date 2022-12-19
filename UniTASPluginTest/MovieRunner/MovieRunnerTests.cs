@@ -1,7 +1,7 @@
 using FluentAssertions;
-using UniTASPlugin;
 using UniTASPlugin.FixedUpdateSync;
 using UniTASPlugin.GameEnvironment;
+using UniTASPlugin.GameRestart;
 using UniTASPlugin.Movie.ScriptEngine;
 using UniTASPlugin.Movie.ScriptEngine.EngineMethods;
 using UniTASPlugin.Movie.ScriptEngine.Parsers;
@@ -25,7 +25,7 @@ public class MovieRunnerTests
 
     private class FakeFixedUpdateService : ISyncFixedUpdate
     {
-        public void OnSync(Action callback)
+        public void OnSync(Action callback, uint syncOffset = 0, ulong cycleOffset = 0)
         {
             callback();
         }
@@ -41,6 +41,8 @@ public class MovieRunnerTests
 
     private class FakeRestartService : IGameRestart
     {
+        public bool PendingRestart => false;
+
         public void SoftRestart(DateTime time)
         {
         }
