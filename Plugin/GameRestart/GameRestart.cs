@@ -1,7 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using HarmonyLib;
 using UniTASPlugin.FixedUpdateSync;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.LegacySafeWrappers;
+using UniTASPlugin.UnitySafeWrappers.Interfaces;
 
 namespace UniTASPlugin.GameRestart;
 
@@ -12,24 +17,101 @@ public class GameRestart : IGameRestart
 
     private readonly IVirtualEnvironmentFactory _virtualEnvironmentFactory;
     private readonly ISyncFixedUpdate _syncFixedUpdate;
+    private readonly IUnityWrapper _unityWrapper;
+
+    private readonly List<KeyValuePair<Type, List<StaticFieldStorage>>> _staticFields = new();
 
     public bool PendingRestart { get; private set; }
 
-    public GameRestart(IVirtualEnvironmentFactory virtualEnvironmentFactory, ISyncFixedUpdate syncFixedUpdate)
+    public GameRestart(IVirtualEnvironmentFactory virtualEnvironmentFactory, ISyncFixedUpdate syncFixedUpdate,
+        IUnityWrapper unityWrapper)
     {
         _virtualEnvironmentFactory = virtualEnvironmentFactory;
         _syncFixedUpdate = syncFixedUpdate;
+        _unityWrapper = unityWrapper;
+
+        StoreStaticFields();
+    }
+
+    // TODO remove this when we have a better way to handle static fields
+    private void StoreStaticFields()
+    {
+        // ReSharper disable StringLiteralTypo
+        var gameAssemblyNames = new[]
+        {
+            "Assembly-CSharp",
+            "Assembly-CSharp-firstpass",
+            "Assembly-UnityScript",
+            "Assembly-UnityScript-firstpass"
+        };
+        // ReSharper restore StringLiteralTypo
+
+        var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+        foreach (var assembly in assemblies)
+        {
+            if (!gameAssemblyNames.Contains(assembly.GetName().Name))
+            {
+                continue;
+            }
+
+            var types = assembly.GetTypes();
+            foreach (var type in types)
+            {
+                var fields = type.GetFields(AccessTools.all);
+                if (fields.Length == 0)
+                {
+                    continue;
+                }
+
+                var staticFields = new List<StaticFieldStorage>();
+                foreach (var field in fields)
+                {
+                    if (!field.IsStatic || field.IsLiteral)
+                    {
+                        continue;
+                    }
+
+                    var value = field.GetValue(null);
+                    // TODO remove hardcoded dependency
+                    var valueClone = Helper.MakeDeepCopy(value, type);
+
+                    // TODO remove hardcoded dependency
+                    Plugin.Log.LogDebug($"Storing static field {type.FullName}.{field.Name} with value {valueClone}");
+                    var staticFieldStorage = new StaticFieldStorage(field, valueClone);
+                    staticFields.Add(staticFieldStorage);
+                }
+
+                _staticFields.Add(new(type, staticFields));
+            }
+        }
+    }
+
+    private void SetStaticFields()
+    {
+        foreach (var typeAndStaticFields in _staticFields)
+        {
+            var type = typeAndStaticFields.Key;
+            var staticFields = typeAndStaticFields.Value;
+            foreach (var staticField in staticFields)
+            {
+                // TODO remove hardcoded dependency
+                Plugin.Log.LogDebug(
+                    $"Setting static field {type.FullName}.{staticField.Field.Name} to value {staticField.Value}");
+                staticField.Field.SetValue(null, staticField.Value);
+            }
+        }
     }
 
     /// <summary>
     /// Soft restart the game. This will not reload the game, but tries to reset the game state.
-    /// Mainly used for TAS movie playback.
     /// </summary>
-    /// <param name="time"></param>
+    /// <param name="time">Time to start the game at</param>
     public void SoftRestart(DateTime time)
     {
         PendingRestart = true;
         softRestartTime = time;
+        StopScriptExecution();
+        SetStaticFields();
         _syncFixedUpdate.OnSync(SoftRestartOperation, 1);
         Plugin.Log.LogInfo("Soft restarting, pending FixedUpdate call");
     }
@@ -37,69 +119,6 @@ public class GameRestart : IGameRestart
     private void SoftRestartOperation()
     {
         Plugin.Log.LogInfo("Soft restarting");
-
-        // release mouse lock
-        //CursorWrap.Visible = true;
-        //CursorWrap.UnlockCursor();
-
-        // foreach (var obj in Object.FindObjectsOfType(typeof(MonoBehaviour)))
-        // {
-        //     if (obj.GetType() == typeof(Plugin))
-        //         continue;
-        //
-        //     // force coroutines to stop
-        //     ((MonoBehaviour)obj).StopAllCoroutines();
-        //
-        //     var id = obj.GetInstanceID();
-        //
-        //     if (!GameTracker.DontDestroyOnLoadIDs.Contains(id))
-        //         continue;
-        //     if (GameTracker.FirstObjIDs.Contains(id))
-        //         continue;
-        //
-        //     // destroy all objects that are marked DontDestroyOnLoad and wasn't loaded in the first scene
-        //     Plugin.Log.LogDebug($"Destroying {obj.name}");
-        //     Object.Destroy(obj);
-        // }
-
-        // very game specific behavior
-        /*
-        switch (Helper.GameName())
-        {
-            case "Cat Quest":
-                {
-                    // reset Game.instance.gameData.ai.behaviours
-                    Traverse.CreateWithType("Game").Property("instance").Property("gameData").Property("ai").Field("behaviours").Method("Clear").GetValue();
-                    break;
-                }
-            default:
-                break;
-        }
-        */
-
-        // load stored values
-        // foreach (var typeAndFieldAndValue in GameTracker.InitialValues)
-        // {
-        //     var fieldsAndValues = typeAndFieldAndValue.Value;
-        //
-        //     foreach (var fieldAndValue in fieldsAndValues)
-        //     {
-        //         var value = fieldAndValue.Value;
-        //         var valueString = value == null ? "null" : value.ToString();
-        //         if (fieldAndValue.Key.DeclaringType == null) continue;
-        //         Plugin.Log.LogDebug(
-        //             $"setting field: {fieldAndValue.Key.DeclaringType.FullName}.{fieldAndValue.Key} to {valueString}");
-        //         try
-        //         {
-        //             fieldAndValue.Key.SetValue(null, value);
-        //         }
-        //         catch (Exception ex)
-        //         {
-        //             Plugin.Log.LogWarning(
-        //                 $"Failed to set field: {fieldAndValue.Key.DeclaringType.FullName}.{fieldAndValue.Key} to {value} with exception: {ex}");
-        //         }
-        //     }
-        // }
 
         Plugin.Log.LogDebug("finished setting fields, loading scene");
         var env = _virtualEnvironmentFactory.GetVirtualEnv();
@@ -112,7 +131,43 @@ public class GameRestart : IGameRestart
 
         Plugin.Log.LogInfo("Finish soft restarting");
         Plugin.Log.LogInfo($"System time: {DateTime.Now}");
-        
+
         PendingRestart = false;
+    }
+
+    private void StopScriptExecution()
+    {
+        var allMonoBehaviours =
+            _unityWrapper.Object.FindObjectsOfType(_unityWrapper.MonoBehaviour.GetMonoBehaviourType());
+
+        // TODO remove hardcoded dependencies
+        var ignoreTypes = new[]
+        {
+            "UniTASPlugin.Plugin",
+            "UnityEngine.EventSystems.EventSystem"
+        };
+
+        foreach (var monoBehaviour in allMonoBehaviours)
+        {
+            if (ignoreTypes.Contains(monoBehaviour.GetType().FullName))
+            {
+                continue;
+            }
+
+            _unityWrapper.MonoBehaviour.StopAllCoroutines(monoBehaviour);
+            _unityWrapper.Object.Destroy(monoBehaviour);
+        }
+    }
+
+    private class StaticFieldStorage
+    {
+        public FieldInfo Field { get; }
+        public object Value { get; }
+
+        public StaticFieldStorage(FieldInfo field, object value)
+        {
+            Field = field;
+            Value = value;
+        }
     }
 }
