@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace UniTASPlugin.SafeWrappers;
+namespace UniTASPlugin.LegacySafeWrappers;
 
 internal static class AssetBundleRequestWrap
 {

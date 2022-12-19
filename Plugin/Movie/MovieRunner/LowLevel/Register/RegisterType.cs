@@ -1,4 +1,4 @@
-﻿namespace UniTASPlugin.Movie.ScriptEngine;
+﻿namespace UniTASPlugin.Movie.MovieRunner.LowLevel.Register;
 
 public enum RegisterType
 {

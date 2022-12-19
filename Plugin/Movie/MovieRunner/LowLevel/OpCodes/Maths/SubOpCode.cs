@@ -1,4 +1,6 @@
-﻿namespace UniTASPlugin.Movie.ScriptEngine.OpCodes.Maths;
+﻿using UniTASPlugin.Movie.MovieRunner.LowLevel.Register;
+
+namespace UniTASPlugin.Movie.MovieRunner.LowLevel.OpCodes.Maths;
 
 public class SubOpCode : MathOp
 {

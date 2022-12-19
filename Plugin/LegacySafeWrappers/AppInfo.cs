@@ -1,7 +1,7 @@
 ﻿using HarmonyLib;
 using UniTASPlugin.ReverseInvoker;
 
-namespace UniTASPlugin.SafeWrappers;
+namespace UniTASPlugin.LegacySafeWrappers;
 
 public static class AppInfo
 {

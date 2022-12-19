@@ -1,4 +1,4 @@
-namespace UniTASPlugin.Movie.ScriptEngine.EngineMethods.Exceptions;
+namespace UniTASPlugin.Movie.MovieRunner.EngineMethods.Exceptions;
 
 public class RegisterExternalMethodException : ExternalMethodRuntimeException
 {

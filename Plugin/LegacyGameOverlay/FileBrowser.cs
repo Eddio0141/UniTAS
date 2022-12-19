@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UniTASPlugin.ReverseInvoker;
 using UnityEngine;
 
-namespace UniTASPlugin.GameOverlay;
+namespace UniTASPlugin.LegacyGameOverlay;
 
 public class FileBrowser
 {

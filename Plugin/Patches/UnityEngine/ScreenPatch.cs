@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using HarmonyLib;
-using UniTASPlugin.GameOverlay;
+using UniTASPlugin.LegacyGameOverlay;
 using UniTASPlugin.ReverseInvoker;
 using ScreenOrig = UnityEngine.Screen;
 

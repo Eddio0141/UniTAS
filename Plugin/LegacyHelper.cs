@@ -7,9 +7,9 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
 using HarmonyLib;
-using UniTASPlugin.Exceptions;
+using UniTASPlugin.LegacyExceptions;
+using UniTASPlugin.LegacySafeWrappers;
 using UniTASPlugin.ReverseInvoker;
-using UniTASPlugin.SafeWrappers;
 using UnityEngine;
 
 namespace UniTASPlugin;

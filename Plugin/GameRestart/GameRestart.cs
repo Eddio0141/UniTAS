@@ -1,7 +1,7 @@
 ﻿using System;
 using UniTASPlugin.FixedUpdateSync;
 using UniTASPlugin.GameEnvironment;
-using UniTASPlugin.SafeWrappers;
+using UniTASPlugin.LegacySafeWrappers;
 
 namespace UniTASPlugin.GameRestart;
 

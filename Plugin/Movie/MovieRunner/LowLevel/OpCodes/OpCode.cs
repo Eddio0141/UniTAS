@@ -1,4 +1,4 @@
-﻿namespace UniTASPlugin.Movie.ScriptEngine.OpCodes;
+﻿namespace UniTASPlugin.Movie.MovieRunner.LowLevel.OpCodes;
 
 public abstract class OpCode
 {

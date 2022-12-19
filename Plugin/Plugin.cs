@@ -4,13 +4,13 @@ using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
 using StructureMap;
-using UniTASPlugin.FakeGameState.GameFileSystem;
 using UniTASPlugin.GameEnvironment;
-using UniTASPlugin.GameOverlay;
 using UniTASPlugin.Interfaces.Update;
-using UniTASPlugin.SafeWrappers;
+using UniTASPlugin.LegacyFakeGameState.GameFileSystem;
+using UniTASPlugin.LegacyGameOverlay;
+using UniTASPlugin.LegacySafeWrappers;
 using UnityEngine;
-using SystemInfo = UniTASPlugin.FakeGameState.SystemInfo;
+using SystemInfo = UniTASPlugin.LegacyFakeGameState.SystemInfo;
 
 namespace UniTASPlugin;
 

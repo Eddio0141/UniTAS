@@ -1,7 +1,7 @@
 ﻿using HarmonyLib;
 using Object = UnityEngine.Object;
 
-namespace UniTASPlugin.SaveState;
+namespace UniTASPlugin.LegacySaveState;
 
 internal static class Main
 {

@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Globalization;
 using UniTASPlugin.GameEnvironment.InnerState;
-using UniTASPlugin.Movie.ScriptEngine.Exceptions.ParseExceptions;
+using UniTASPlugin.Movie.MovieRunner.Exceptions.ParseExceptions;
 
 // ReSharper disable StringLiteralTypo
 
-namespace UniTASPlugin.Movie.ScriptEngine.Parsers.MoviePropertiesParser;
+namespace UniTASPlugin.Movie.MovieRunner.Parsers.MoviePropertyParser;
 
 public partial class MoviePropertyParser
 {

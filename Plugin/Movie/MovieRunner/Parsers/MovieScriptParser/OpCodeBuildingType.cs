@@ -1,4 +1,4 @@
-namespace UniTASPlugin.Movie.ScriptEngine.Parsers.MovieScriptParser;
+namespace UniTASPlugin.Movie.MovieRunner.Parsers.MovieScriptParser;
 
 public enum OpCodeBuildingType
 {

@@ -4,7 +4,7 @@ using System.Linq;
 using UniTASPlugin.GameRestart;
 using UnityEngine;
 
-namespace UniTASPlugin.GameOverlay.GameConsole;
+namespace UniTASPlugin.LegacyGameOverlay.GameConsole;
 
 public static class AllCommands
 {

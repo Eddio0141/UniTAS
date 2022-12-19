@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace UniTASPlugin.GameOverlay;
+namespace UniTASPlugin.LegacyGameOverlay;
 
 public class ConfirmBox
 {

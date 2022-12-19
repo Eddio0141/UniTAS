@@ -2,11 +2,11 @@ using FluentAssertions;
 using UniTASPlugin.FixedUpdateSync;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.GameRestart;
-using UniTASPlugin.Movie.ScriptEngine;
-using UniTASPlugin.Movie.ScriptEngine.EngineMethods;
-using UniTASPlugin.Movie.ScriptEngine.Parsers;
-using UniTASPlugin.Movie.ScriptEngine.Parsers.MoviePropertiesParser;
-using UniTASPlugin.Movie.ScriptEngine.Parsers.MovieScriptParser;
+using UniTASPlugin.Movie.MovieRunner;
+using UniTASPlugin.Movie.MovieRunner.EngineMethods;
+using UniTASPlugin.Movie.MovieRunner.Parsers;
+using UniTASPlugin.Movie.MovieRunner.Parsers.MoviePropertyParser;
+using UniTASPlugin.Movie.MovieRunner.Parsers.MovieScriptParser;
 
 namespace UniTASPluginTest.MovieRunner;
 

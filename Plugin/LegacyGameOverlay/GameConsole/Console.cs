@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace UniTASPlugin.GameOverlay.GameConsole;
+namespace UniTASPlugin.LegacyGameOverlay.GameConsole;
 
 public static class Console
 {

@@ -2,7 +2,7 @@
 using HarmonyLib;
 using UnityEngine;
 
-namespace UniTASPlugin.SafeWrappers;
+namespace UniTASPlugin.LegacySafeWrappers;
 
 internal class AsyncOperationWrap
 {

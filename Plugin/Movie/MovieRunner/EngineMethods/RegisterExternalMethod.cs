@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
-using UniTASPlugin.Movie.ScriptEngine.EngineMethods.Exceptions;
-using UniTASPlugin.Movie.ScriptEngine.ValueTypes;
+using UniTASPlugin.Movie.MovieRunner.EngineMethods.Exceptions;
+using UniTASPlugin.Movie.MovieRunner.ValueTypes;
 
-namespace UniTASPlugin.Movie.ScriptEngine.EngineMethods;
+namespace UniTASPlugin.Movie.MovieRunner.EngineMethods;
 
 public class RegisterExternalMethod : EngineExternalMethod
 {

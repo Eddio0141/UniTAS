@@ -1,6 +1,6 @@
 using System;
 
-namespace UniTASPlugin.Movie.ScriptEngine.EngineMethods.Exceptions;
+namespace UniTASPlugin.Movie.MovieRunner.EngineMethods.Exceptions;
 
 public class ExternalMethodRuntimeException : Exception
 {

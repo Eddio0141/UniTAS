@@ -1,4 +1,4 @@
-﻿namespace UniTASPlugin.Movie.ScriptEngine.Parsers.MovieScriptParser.Expressions;
+﻿namespace UniTASPlugin.Movie.MovieRunner.Parsers.MovieScriptParser.Expressions;
 
 public class VariableExpression : Expression
 {
