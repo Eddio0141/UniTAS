@@ -13,7 +13,7 @@ using InputOrig = UnityEngine.Input;
 namespace UniTASPlugin.Patches.UnityEngine;
 
 [HarmonyPatch]
-public class Input
+public class InputPatch
 {
     private static IVirtualEnvironmentFactory _virtualEnvironmentFactory;
     private static IReverseInvokerFactory _reverseInvokerFactory;
