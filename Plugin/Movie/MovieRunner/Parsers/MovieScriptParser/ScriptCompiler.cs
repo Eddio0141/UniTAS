@@ -18,11 +18,11 @@ using UniTASPlugin.Movie.ScriptEngine.OpCodes.StackOp;
 using UniTASPlugin.Movie.ScriptEngine.OpCodes.Tuple;
 using UniTASPlugin.Movie.ScriptEngine.Parsers.MovieScriptParser.Expressions;
 using UniTASPlugin.Movie.ScriptEngine.ValueTypes;
-using static MovieScriptDefaultGrammarParser;
+using static MovieGrammarParser;
 
 namespace UniTASPlugin.Movie.ScriptEngine.Parsers.MovieScriptParser;
 
-public class DefaultGrammarListenerCompiler : MovieScriptDefaultGrammarBaseListener
+public class DefaultGrammarListenerCompiler : MovieGrammarBaseListener
 {
     private readonly EngineExternalMethod[] _externalMethods;
 
