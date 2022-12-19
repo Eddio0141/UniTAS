@@ -1,23 +1,23 @@
 ﻿using FluentAssertions;
-using UniTASPlugin.Movie.MovieRunner.EngineMethods;
-using UniTASPlugin.Movie.MovieRunner.Exceptions.ParseExceptions;
-using UniTASPlugin.Movie.MovieRunner.LowLevel.OpCodes;
-using UniTASPlugin.Movie.MovieRunner.LowLevel.OpCodes.Jump;
-using UniTASPlugin.Movie.MovieRunner.LowLevel.OpCodes.Logic;
-using UniTASPlugin.Movie.MovieRunner.LowLevel.OpCodes.Maths;
-using UniTASPlugin.Movie.MovieRunner.LowLevel.OpCodes.Method;
-using UniTASPlugin.Movie.MovieRunner.LowLevel.OpCodes.RegisterSet;
-using UniTASPlugin.Movie.MovieRunner.LowLevel.OpCodes.Scope;
-using UniTASPlugin.Movie.MovieRunner.LowLevel.OpCodes.StackOp;
-using UniTASPlugin.Movie.MovieRunner.LowLevel.OpCodes.Tuple;
-using UniTASPlugin.Movie.MovieRunner.LowLevel.Register;
-using UniTASPlugin.Movie.MovieRunner.MovieModels.Script;
-using UniTASPlugin.Movie.MovieRunner.Parsers.MovieScriptParser;
-using UniTASPlugin.Movie.MovieRunner.ValueTypes;
+using UniTASPlugin.Movie.EngineMethods;
+using UniTASPlugin.Movie.Exceptions.ParseExceptions;
+using UniTASPlugin.Movie.LowLevel.OpCodes;
+using UniTASPlugin.Movie.LowLevel.OpCodes.Jump;
+using UniTASPlugin.Movie.LowLevel.OpCodes.Logic;
+using UniTASPlugin.Movie.LowLevel.OpCodes.Maths;
+using UniTASPlugin.Movie.LowLevel.OpCodes.Method;
+using UniTASPlugin.Movie.LowLevel.OpCodes.RegisterSet;
+using UniTASPlugin.Movie.LowLevel.OpCodes.Scope;
+using UniTASPlugin.Movie.LowLevel.OpCodes.StackOp;
+using UniTASPlugin.Movie.LowLevel.OpCodes.Tuple;
+using UniTASPlugin.Movie.LowLevel.Register;
+using UniTASPlugin.Movie.MovieModels.Script;
+using UniTASPlugin.Movie.Parsers.MovieScriptParser;
+using UniTASPlugin.Movie.ValueTypes;
 
 namespace UniTASPluginTest.MovieParsing;
 
-public class DefaultMovieScriptParserUnitTests
+public class MovieParserUnitTests
 {
     private static ScriptModel Setup(string input)
     {
