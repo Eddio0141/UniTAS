@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using HarmonyLib;
-using UniTASPlugin.SafeWrappers;
+using UniTASPlugin.LegacySafeWrappers;
 using ObjectOrig = UnityEngine.Object;
 using AssetBundleRequestOrig = UnityEngine.AssetBundleRequest;
 

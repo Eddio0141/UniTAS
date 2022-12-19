@@ -1,4 +1,4 @@
-﻿namespace UniTASPlugin.Movie.ScriptEngine.OpCodes.Method;
+﻿namespace UniTASPlugin.Movie.MovieRunner.LowLevel.OpCodes.Method;
 
 public class GotoMethodOpCode : OpCode
 {

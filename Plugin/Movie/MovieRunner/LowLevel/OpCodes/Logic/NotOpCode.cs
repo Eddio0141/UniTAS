@@ -1,4 +1,6 @@
-﻿namespace UniTASPlugin.Movie.ScriptEngine.OpCodes.Logic;
+﻿using UniTASPlugin.Movie.MovieRunner.LowLevel.Register;
+
+namespace UniTASPlugin.Movie.MovieRunner.LowLevel.OpCodes.Logic;
 
 public class NotOpCode : Logic
 {

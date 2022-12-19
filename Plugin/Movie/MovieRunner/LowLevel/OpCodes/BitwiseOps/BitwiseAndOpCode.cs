@@ -1,4 +1,6 @@
-﻿namespace UniTASPlugin.Movie.ScriptEngine.OpCodes.BitwiseOps;
+﻿using UniTASPlugin.Movie.MovieRunner.LowLevel.Register;
+
+namespace UniTASPlugin.Movie.MovieRunner.LowLevel.OpCodes.BitwiseOps;
 
 public class BitwiseAndOpCode : Bitwise
 {

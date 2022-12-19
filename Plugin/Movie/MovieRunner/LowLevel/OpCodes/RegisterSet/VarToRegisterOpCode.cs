@@ -1,4 +1,6 @@
-﻿namespace UniTASPlugin.Movie.ScriptEngine.OpCodes.RegisterSet;
+﻿using UniTASPlugin.Movie.MovieRunner.LowLevel.Register;
+
+namespace UniTASPlugin.Movie.MovieRunner.LowLevel.OpCodes.RegisterSet;
 
 public class VarToRegisterOpCode : RegisterSet
 {

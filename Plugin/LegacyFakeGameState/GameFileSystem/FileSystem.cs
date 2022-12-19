@@ -2,7 +2,7 @@
 using System.IO;
 using System.Linq;
 
-namespace UniTASPlugin.FakeGameState.GameFileSystem;
+namespace UniTASPlugin.LegacyFakeGameState.GameFileSystem;
 
 public static partial class FileSystem
 {

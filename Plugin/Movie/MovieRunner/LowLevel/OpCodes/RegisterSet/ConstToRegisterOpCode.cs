@@ -1,6 +1,7 @@
-﻿using UniTASPlugin.Movie.ScriptEngine.ValueTypes;
+﻿using UniTASPlugin.Movie.MovieRunner.LowLevel.Register;
+using UniTASPlugin.Movie.MovieRunner.ValueTypes;
 
-namespace UniTASPlugin.Movie.ScriptEngine.OpCodes.RegisterSet;
+namespace UniTASPlugin.Movie.MovieRunner.LowLevel.OpCodes.RegisterSet;
 
 public class ConstToRegisterOpCode : RegisterSet
 {

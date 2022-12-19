@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace UniTASPlugin.Exceptions;
+namespace UniTASPlugin.LegacyExceptions;
 
 internal class MissingSomethingStatic : Exception
 {

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UniTASPlugin.Interfaces.Update;
-using UniTASPlugin.SafeWrappers;
+using UniTASPlugin.LegacySafeWrappers;
 using UnityEngine;
 
 namespace UniTASPlugin.FixedUpdateSync;

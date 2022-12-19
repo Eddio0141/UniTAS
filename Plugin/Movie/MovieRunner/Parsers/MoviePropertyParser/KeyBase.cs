@@ -1,4 +1,4 @@
-﻿namespace UniTASPlugin.Movie.ScriptEngine.Parsers.MoviePropertiesParser;
+﻿namespace UniTASPlugin.Movie.MovieRunner.Parsers.MoviePropertyParser;
 
 public partial class MoviePropertyParser
 {

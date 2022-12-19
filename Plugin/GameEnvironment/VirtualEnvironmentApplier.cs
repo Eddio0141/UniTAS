@@ -1,5 +1,5 @@
 using UniTASPlugin.Interfaces.Update;
-using UniTASPlugin.SafeWrappers;
+using UniTASPlugin.LegacySafeWrappers;
 
 namespace UniTASPlugin.GameEnvironment;
 

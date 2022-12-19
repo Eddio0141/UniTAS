@@ -2,11 +2,11 @@
 using System.Linq;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
-using UniTASPlugin.Movie.ScriptEngine.EngineMethods;
-using UniTASPlugin.Movie.ScriptEngine.MovieModels.Script;
-using UniTASPlugin.Movie.ScriptEngine.ParseInterfaces;
+using UniTASPlugin.Movie.MovieRunner.EngineMethods;
+using UniTASPlugin.Movie.MovieRunner.MovieModels.Script;
+using UniTASPlugin.Movie.MovieRunner.ParseInterfaces;
 
-namespace UniTASPlugin.Movie.ScriptEngine.Parsers.MovieScriptParser;
+namespace UniTASPlugin.Movie.MovieRunner.Parsers.MovieScriptParser;
 
 public class MovieScriptParser : IMovieScriptParser
 {

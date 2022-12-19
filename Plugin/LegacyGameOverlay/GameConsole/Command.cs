@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace UniTASPlugin.GameOverlay.GameConsole;
+namespace UniTASPlugin.LegacyGameOverlay.GameConsole;
 
 public class Command
 {

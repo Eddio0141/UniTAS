@@ -4,8 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using HarmonyLib;
-using UniTASPlugin.Exceptions;
-using UniTASPlugin.SafeWrappers;
+using UniTASPlugin.LegacyExceptions;
+using UniTASPlugin.LegacySafeWrappers;
 using UnityEngine;
 using Object = UnityEngine.Object;
 

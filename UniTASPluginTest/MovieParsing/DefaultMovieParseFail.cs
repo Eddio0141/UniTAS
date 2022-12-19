@@ -1,8 +1,8 @@
 ﻿using Antlr4.Runtime.Misc;
 using FluentAssertions;
-using UniTASPlugin.Movie.ScriptEngine.EngineMethods;
-using UniTASPlugin.Movie.ScriptEngine.MovieModels.Script;
-using UniTASPlugin.Movie.ScriptEngine.Parsers.MovieScriptParser;
+using UniTASPlugin.Movie.MovieRunner.EngineMethods;
+using UniTASPlugin.Movie.MovieRunner.MovieModels.Script;
+using UniTASPlugin.Movie.MovieRunner.Parsers.MovieScriptParser;
 
 namespace UniTASPluginTest.MovieParsing;
 

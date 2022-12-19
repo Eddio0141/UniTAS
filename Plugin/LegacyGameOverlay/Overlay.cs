@@ -1,12 +1,12 @@
 ﻿using System.Linq;
 using UniTASPlugin.GameRestart;
+using UniTASPlugin.LegacySafeWrappers;
 using UniTASPlugin.Movie;
 using UniTASPlugin.ReverseInvoker;
-using UniTASPlugin.SafeWrappers;
 using UnityEngine;
-using Console = UniTASPlugin.GameOverlay.GameConsole.Console;
+using Console = UniTASPlugin.LegacyGameOverlay.GameConsole.Console;
 
-namespace UniTASPlugin.GameOverlay;
+namespace UniTASPlugin.LegacyGameOverlay;
 
 internal static class Overlay
 {

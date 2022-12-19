@@ -2,7 +2,7 @@
 using System.IO;
 using System.Text;
 
-namespace UniTASPlugin.FakeGameState.GameFileSystem;
+namespace UniTASPlugin.LegacyFakeGameState.GameFileSystem;
 
 public class File : Entry
 {

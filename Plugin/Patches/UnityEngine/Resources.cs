@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using HarmonyLib;
-using UniTASPlugin.SafeWrappers;
+using UniTASPlugin.LegacySafeWrappers;
 using UnityEngine;
 using AsyncOpOrig = UnityEngine.AsyncOperation;
 

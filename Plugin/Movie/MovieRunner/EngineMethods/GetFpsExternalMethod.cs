@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using UniTASPlugin.GameEnvironment;
-using UniTASPlugin.Movie.ScriptEngine.ValueTypes;
+using UniTASPlugin.Movie.MovieRunner.ValueTypes;
 
-namespace UniTASPlugin.Movie.ScriptEngine.EngineMethods;
+namespace UniTASPlugin.Movie.MovieRunner.EngineMethods;
 
 public class GetFpsExternalMethod : EngineExternalMethod
 {

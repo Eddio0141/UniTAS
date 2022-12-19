@@ -2,7 +2,7 @@
 using System.IO;
 using System.Reflection;
 using HarmonyLib;
-using UniTASPlugin.SafeWrappers;
+using UniTASPlugin.LegacySafeWrappers;
 using ObjectOrig = UnityEngine.Object;
 using AssetBundleOrig = UnityEngine.AssetBundle;
 using AssetBundleCreateRequestOrig = UnityEngine.AssetBundleCreateRequest;

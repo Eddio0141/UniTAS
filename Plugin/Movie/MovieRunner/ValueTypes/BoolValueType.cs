@@ -1,4 +1,4 @@
-﻿namespace UniTASPlugin.Movie.ScriptEngine.ValueTypes;
+﻿namespace UniTASPlugin.Movie.MovieRunner.ValueTypes;
 
 public class BoolValueType : ValueType
 {

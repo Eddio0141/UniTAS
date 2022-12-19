@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using UniTASPlugin.GameEnvironment.InnerState;
-using UniTASPlugin.Movie.ScriptEngine.Exceptions.ParseExceptions;
-using UniTASPlugin.Movie.ScriptEngine.MovieModels.Properties;
-using UniTASPlugin.Movie.ScriptEngine.ParseInterfaces;
+using UniTASPlugin.Movie.MovieRunner.Exceptions.ParseExceptions;
+using UniTASPlugin.Movie.MovieRunner.MovieModels.Properties;
+using UniTASPlugin.Movie.MovieRunner.ParseInterfaces;
 
-namespace UniTASPlugin.Movie.ScriptEngine.Parsers.MoviePropertiesParser;
+namespace UniTASPlugin.Movie.MovieRunner.Parsers.MoviePropertyParser;
 
 public partial class MoviePropertyParser : IMoviePropertyParser
 {

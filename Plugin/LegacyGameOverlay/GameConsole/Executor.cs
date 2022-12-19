@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace UniTASPlugin.GameOverlay.GameConsole;
+namespace UniTASPlugin.LegacyGameOverlay.GameConsole;
 
 public static class Executor
 {

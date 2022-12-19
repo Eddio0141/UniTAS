@@ -1,28 +1,29 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UniTASPlugin.Movie.ScriptEngine.EngineMethods;
-using UniTASPlugin.Movie.ScriptEngine.Exceptions.ScriptEngineExceptions;
-using UniTASPlugin.Movie.ScriptEngine.MovieModels.Script;
-using UniTASPlugin.Movie.ScriptEngine.OpCodes;
-using UniTASPlugin.Movie.ScriptEngine.OpCodes.BitwiseOps;
-using UniTASPlugin.Movie.ScriptEngine.OpCodes.Jump;
-using UniTASPlugin.Movie.ScriptEngine.OpCodes.Logic;
-using UniTASPlugin.Movie.ScriptEngine.OpCodes.Maths;
-using UniTASPlugin.Movie.ScriptEngine.OpCodes.Method;
-using UniTASPlugin.Movie.ScriptEngine.OpCodes.RegisterSet;
-using UniTASPlugin.Movie.ScriptEngine.OpCodes.Scope;
-using UniTASPlugin.Movie.ScriptEngine.OpCodes.StackOp;
-using UniTASPlugin.Movie.ScriptEngine.OpCodes.Tuple;
-using UniTASPlugin.Movie.ScriptEngine.ValueTypes;
-using ValueType = UniTASPlugin.Movie.ScriptEngine.ValueTypes.ValueType;
+using UniTASPlugin.Movie.MovieRunner.EngineMethods;
+using UniTASPlugin.Movie.MovieRunner.Exceptions.ScriptEngineExceptions;
+using UniTASPlugin.Movie.MovieRunner.LowLevel.OpCodes;
+using UniTASPlugin.Movie.MovieRunner.LowLevel.OpCodes.BitwiseOps;
+using UniTASPlugin.Movie.MovieRunner.LowLevel.OpCodes.Jump;
+using UniTASPlugin.Movie.MovieRunner.LowLevel.OpCodes.Logic;
+using UniTASPlugin.Movie.MovieRunner.LowLevel.OpCodes.Maths;
+using UniTASPlugin.Movie.MovieRunner.LowLevel.OpCodes.Method;
+using UniTASPlugin.Movie.MovieRunner.LowLevel.OpCodes.RegisterSet;
+using UniTASPlugin.Movie.MovieRunner.LowLevel.OpCodes.Scope;
+using UniTASPlugin.Movie.MovieRunner.LowLevel.OpCodes.StackOp;
+using UniTASPlugin.Movie.MovieRunner.LowLevel.OpCodes.Tuple;
+using UniTASPlugin.Movie.MovieRunner.LowLevel.Register;
+using UniTASPlugin.Movie.MovieRunner.MovieModels.Script;
+using UniTASPlugin.Movie.MovieRunner.ValueTypes;
+using ValueType = UniTASPlugin.Movie.MovieRunner.ValueTypes.ValueType;
 
-namespace UniTASPlugin.Movie.ScriptEngine.LowLevelEngine;
+namespace UniTASPlugin.Movie.MovieRunner.LowLevel;
 
 public partial class ScriptEngineLowLevelEngine
 {
-    private readonly Register[] _registers;
-    private readonly Stack<Register>[] _registerStack;
+    private readonly Register.Register[] _registers;
+    private readonly Stack<Register.Register>[] _registerStack;
     private readonly Stack<List<ValueType>> _argStack = new();
 
     private readonly OpCode[] _mainMethod;
@@ -45,8 +46,8 @@ public partial class ScriptEngineLowLevelEngine
     public ScriptEngineLowLevelEngine(ScriptModel script, IEnumerable<EngineExternalMethod> methods)
     {
         var registerCount = Enum.GetNames(typeof(RegisterType)).Length;
-        _registers = new Register[registerCount];
-        _registerStack = new Stack<Register>[registerCount];
+        _registers = new Register.Register[registerCount];
+        _registerStack = new Stack<Register.Register>[registerCount];
         for (var i = 0; i < registerCount; i++)
         {
             _registers[i] = new();
@@ -165,9 +166,9 @@ public partial class ScriptEngineLowLevelEngine
     {
         public TValue Left { get; }
         public TValue Right { get; }
-        public Register Result { get; }
+        public Register.Register Result { get; }
 
-        public LeftRightResultValues(TValue left, TValue right, Register result)
+        public LeftRightResultValues(TValue left, TValue right, Register.Register result)
         {
             Left = left;
             Right = right;
@@ -179,9 +180,9 @@ public partial class ScriptEngineLowLevelEngine
     {
         public ValueType Left { get; }
         public ValueType Right { get; }
-        public Register Result { get; }
+        public Register.Register Result { get; }
 
-        public LeftRightResultValuesRaw(ValueType left, ValueType right, Register result)
+        public LeftRightResultValuesRaw(ValueType left, ValueType right, Register.Register result)
         {
             Left = left;
             Right = right;
@@ -189,7 +190,7 @@ public partial class ScriptEngineLowLevelEngine
         }
     }
 
-    private void ValidateRegisterNonTuple<T>(Register register)
+    private void ValidateRegisterNonTuple<T>(Register.Register register)
     {
         if (register.IsTuple)
         {
@@ -197,7 +198,7 @@ public partial class ScriptEngineLowLevelEngine
         }
     }
 
-    private void ValidateRegisterNonTuple(Register register)
+    private void ValidateRegisterNonTuple(Register.Register register)
     {
         if (register.IsTuple)
         {
@@ -843,7 +844,7 @@ public partial class ScriptEngineLowLevelEngine
                 {
                     _pc++;
                     var register = _registers[(int)pushStackOpCode.Register];
-                    _registerStack[(int)pushStackOpCode.Register].Push((Register)register.Clone());
+                    _registerStack[(int)pushStackOpCode.Register].Push((Register.Register)register.Clone());
                     break;
                 }
                 case PopTupleOpCode popTupleOpCode:

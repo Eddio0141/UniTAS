@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace UniTASPlugin.SaveState;
+namespace UniTASPlugin.LegacySaveState;
 
 public class State
 {

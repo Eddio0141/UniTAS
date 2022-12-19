@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using UniTASPlugin.Movie.ScriptEngine.ParseInterfaces;
+using UniTASPlugin.Movie.MovieRunner.ParseInterfaces;
 
-namespace UniTASPlugin.Movie.ScriptEngine.Parsers;
+namespace UniTASPlugin.Movie.MovieRunner.Parsers;
 
 public class DefaultMovieSectionSplitter : IMovieSectionSplitter
 {

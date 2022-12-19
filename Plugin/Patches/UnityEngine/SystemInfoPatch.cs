@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using HarmonyLib;
+using UniTASPlugin.LegacyFakeGameState;
 using UniTASPlugin.ReverseInvoker;
 
 // ReSharper disable InconsistentNaming
@@ -25,7 +26,7 @@ internal class SystemInfoPatch
             if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking)
                 return true;
             var deviceType = AccessTools.TypeByName("UnityEngine.DeviceType");
-            __result = Enum.Parse(deviceType, FakeGameState.SystemInfo.DeviceType);
+            __result = Enum.Parse(deviceType, SystemInfo.DeviceType);
             return false;
         }
     }

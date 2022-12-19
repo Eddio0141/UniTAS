@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace UniTASPlugin.Movie.ScriptEngine.ParseInterfaces;
+namespace UniTASPlugin.Movie.MovieRunner.ParseInterfaces;
 
 public interface IMovieSectionSplitter
 {
