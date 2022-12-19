@@ -1,11 +1,9 @@
 ﻿using System;
 using UniTASPlugin.FixedUpdateSync;
 using UniTASPlugin.GameEnvironment;
-using UniTASPlugin.VersionSafeWrapper;
-using UnityEngine;
-using Object = UnityEngine.Object;
+using UniTASPlugin.SafeWrappers;
 
-namespace UniTASPlugin;
+namespace UniTASPlugin.GameRestart;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 public class GameRestart : IGameRestart
@@ -14,6 +12,8 @@ public class GameRestart : IGameRestart
 
     private readonly IVirtualEnvironmentFactory _virtualEnvironmentFactory;
     private readonly ISyncFixedUpdate _syncFixedUpdate;
+
+    public bool PendingRestart { get; private set; }
 
     public GameRestart(IVirtualEnvironmentFactory virtualEnvironmentFactory, ISyncFixedUpdate syncFixedUpdate)
     {
@@ -28,8 +28,9 @@ public class GameRestart : IGameRestart
     /// <param name="time"></param>
     public void SoftRestart(DateTime time)
     {
+        PendingRestart = true;
         softRestartTime = time;
-        _syncFixedUpdate.OnSync(SoftRestartOperation);
+        _syncFixedUpdate.OnSync(SoftRestartOperation, 1);
         Plugin.Log.LogInfo("Soft restarting, pending FixedUpdate call");
     }
 
@@ -38,28 +39,28 @@ public class GameRestart : IGameRestart
         Plugin.Log.LogInfo("Soft restarting");
 
         // release mouse lock
-        CursorWrap.Visible = true;
-        CursorWrap.UnlockCursor();
+        //CursorWrap.Visible = true;
+        //CursorWrap.UnlockCursor();
 
-        foreach (var obj in Object.FindObjectsOfType(typeof(MonoBehaviour)))
-        {
-            if (obj.GetType() == typeof(Plugin))
-                continue;
-
-            // force coroutines to stop
-            ((MonoBehaviour)obj).StopAllCoroutines();
-
-            var id = obj.GetInstanceID();
-
-            if (!GameTracker.DontDestroyOnLoadIDs.Contains(id))
-                continue;
-            if (GameTracker.FirstObjIDs.Contains(id))
-                continue;
-
-            // destroy all objects that are marked DontDestroyOnLoad and wasn't loaded in the first scene
-            Plugin.Log.LogDebug($"Destroying {obj.name}");
-            Object.Destroy(obj);
-        }
+        // foreach (var obj in Object.FindObjectsOfType(typeof(MonoBehaviour)))
+        // {
+        //     if (obj.GetType() == typeof(Plugin))
+        //         continue;
+        //
+        //     // force coroutines to stop
+        //     ((MonoBehaviour)obj).StopAllCoroutines();
+        //
+        //     var id = obj.GetInstanceID();
+        //
+        //     if (!GameTracker.DontDestroyOnLoadIDs.Contains(id))
+        //         continue;
+        //     if (GameTracker.FirstObjIDs.Contains(id))
+        //         continue;
+        //
+        //     // destroy all objects that are marked DontDestroyOnLoad and wasn't loaded in the first scene
+        //     Plugin.Log.LogDebug($"Destroying {obj.name}");
+        //     Object.Destroy(obj);
+        // }
 
         // very game specific behavior
         /*
@@ -77,28 +78,28 @@ public class GameRestart : IGameRestart
         */
 
         // load stored values
-        foreach (var typeAndFieldAndValue in GameTracker.InitialValues)
-        {
-            var fieldsAndValues = typeAndFieldAndValue.Value;
-
-            foreach (var fieldAndValue in fieldsAndValues)
-            {
-                var value = fieldAndValue.Value;
-                var valueString = value == null ? "null" : value.ToString();
-                if (fieldAndValue.Key.DeclaringType == null) continue;
-                Plugin.Log.LogDebug(
-                    $"setting field: {fieldAndValue.Key.DeclaringType.FullName}.{fieldAndValue.Key} to {valueString}");
-                try
-                {
-                    fieldAndValue.Key.SetValue(null, value);
-                }
-                catch (Exception ex)
-                {
-                    Plugin.Log.LogWarning(
-                        $"Failed to set field: {fieldAndValue.Key.DeclaringType.FullName}.{fieldAndValue.Key} to {value} with exception: {ex}");
-                }
-            }
-        }
+        // foreach (var typeAndFieldAndValue in GameTracker.InitialValues)
+        // {
+        //     var fieldsAndValues = typeAndFieldAndValue.Value;
+        //
+        //     foreach (var fieldAndValue in fieldsAndValues)
+        //     {
+        //         var value = fieldAndValue.Value;
+        //         var valueString = value == null ? "null" : value.ToString();
+        //         if (fieldAndValue.Key.DeclaringType == null) continue;
+        //         Plugin.Log.LogDebug(
+        //             $"setting field: {fieldAndValue.Key.DeclaringType.FullName}.{fieldAndValue.Key} to {valueString}");
+        //         try
+        //         {
+        //             fieldAndValue.Key.SetValue(null, value);
+        //         }
+        //         catch (Exception ex)
+        //         {
+        //             Plugin.Log.LogWarning(
+        //                 $"Failed to set field: {fieldAndValue.Key.DeclaringType.FullName}.{fieldAndValue.Key} to {value} with exception: {ex}");
+        //         }
+        //     }
+        // }
 
         Plugin.Log.LogDebug("finished setting fields, loading scene");
         var env = _virtualEnvironmentFactory.GetVirtualEnv();
@@ -110,6 +111,8 @@ public class GameRestart : IGameRestart
         RandomWrap.InitState((int)env.Seed);
 
         Plugin.Log.LogInfo("Finish soft restarting");
-        Plugin.Log.LogInfo($"System time: {DateTime.Now}, milliseconds: {DateTime.Now.Millisecond}");
+        Plugin.Log.LogInfo($"System time: {DateTime.Now}");
+        
+        PendingRestart = false;
     }
 }
