@@ -2,7 +2,7 @@
 using UniTASPlugin.ReverseInvoker;
 using UnityEngine;
 
-namespace UniTASPlugin.VersionSafeWrapper;
+namespace UniTASPlugin.SafeWrappers;
 
 public static class TimeWrap
 {

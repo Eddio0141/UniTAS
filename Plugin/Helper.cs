@@ -9,7 +9,7 @@ using System.Threading;
 using HarmonyLib;
 using UniTASPlugin.Exceptions;
 using UniTASPlugin.ReverseInvoker;
-using UniTASPlugin.VersionSafeWrapper;
+using UniTASPlugin.SafeWrappers;
 using UnityEngine;
 
 namespace UniTASPlugin;
