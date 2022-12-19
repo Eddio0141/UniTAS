@@ -1,9 +1,9 @@
 using System.Collections.Generic;
-using UniTASPlugin.Movie.MovieRunner.ValueTypes;
+using UniTASPlugin.Movie.ValueTypes;
 
-namespace UniTASPlugin.Movie.MovieRunner.LowLevel;
+namespace UniTASPlugin.Movie.LowLevel;
 
-public partial class ScriptEngineLowLevelEngine
+public partial class LowLevelEngine
 {
     private class VariableInfo
     {

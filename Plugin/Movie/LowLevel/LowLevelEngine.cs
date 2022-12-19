@@ -1,26 +1,26 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UniTASPlugin.Movie.MovieRunner.EngineMethods;
-using UniTASPlugin.Movie.MovieRunner.Exceptions.ScriptEngineExceptions;
-using UniTASPlugin.Movie.MovieRunner.LowLevel.OpCodes;
-using UniTASPlugin.Movie.MovieRunner.LowLevel.OpCodes.BitwiseOps;
-using UniTASPlugin.Movie.MovieRunner.LowLevel.OpCodes.Jump;
-using UniTASPlugin.Movie.MovieRunner.LowLevel.OpCodes.Logic;
-using UniTASPlugin.Movie.MovieRunner.LowLevel.OpCodes.Maths;
-using UniTASPlugin.Movie.MovieRunner.LowLevel.OpCodes.Method;
-using UniTASPlugin.Movie.MovieRunner.LowLevel.OpCodes.RegisterSet;
-using UniTASPlugin.Movie.MovieRunner.LowLevel.OpCodes.Scope;
-using UniTASPlugin.Movie.MovieRunner.LowLevel.OpCodes.StackOp;
-using UniTASPlugin.Movie.MovieRunner.LowLevel.OpCodes.Tuple;
-using UniTASPlugin.Movie.MovieRunner.LowLevel.Register;
-using UniTASPlugin.Movie.MovieRunner.MovieModels.Script;
-using UniTASPlugin.Movie.MovieRunner.ValueTypes;
-using ValueType = UniTASPlugin.Movie.MovieRunner.ValueTypes.ValueType;
+using UniTASPlugin.Movie.EngineMethods;
+using UniTASPlugin.Movie.Exceptions.ScriptEngineExceptions;
+using UniTASPlugin.Movie.LowLevel.OpCodes;
+using UniTASPlugin.Movie.LowLevel.OpCodes.BitwiseOps;
+using UniTASPlugin.Movie.LowLevel.OpCodes.Jump;
+using UniTASPlugin.Movie.LowLevel.OpCodes.Logic;
+using UniTASPlugin.Movie.LowLevel.OpCodes.Maths;
+using UniTASPlugin.Movie.LowLevel.OpCodes.Method;
+using UniTASPlugin.Movie.LowLevel.OpCodes.RegisterSet;
+using UniTASPlugin.Movie.LowLevel.OpCodes.Scope;
+using UniTASPlugin.Movie.LowLevel.OpCodes.StackOp;
+using UniTASPlugin.Movie.LowLevel.OpCodes.Tuple;
+using UniTASPlugin.Movie.LowLevel.Register;
+using UniTASPlugin.Movie.MovieModels.Script;
+using UniTASPlugin.Movie.ValueTypes;
+using ValueType = UniTASPlugin.Movie.ValueTypes.ValueType;
 
-namespace UniTASPlugin.Movie.MovieRunner.LowLevel;
+namespace UniTASPlugin.Movie.LowLevel;
 
-public partial class ScriptEngineLowLevelEngine
+public partial class LowLevelEngine
 {
     private readonly Register.Register[] _registers;
     private readonly Stack<Register.Register>[] _registerStack;
@@ -43,7 +43,7 @@ public partial class ScriptEngineLowLevelEngine
 
     public bool FinishedExecuting { get; private set; }
 
-    public ScriptEngineLowLevelEngine(ScriptModel script, IEnumerable<EngineExternalMethod> methods)
+    public LowLevelEngine(ScriptModel script, IEnumerable<EngineExternalMethod> methods)
     {
         var registerCount = Enum.GetNames(typeof(RegisterType)).Length;
         _registers = new Register.Register[registerCount];
