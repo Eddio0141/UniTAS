@@ -15,7 +15,7 @@ namespace UniTASPlugin.Patches.UnityEngine;
 #pragma warning disable IDE1006
 
 [HarmonyPatch]
-internal static class Time
+internal static class TimePatch
 {
     [HarmonyPatch(typeof(TimeOrig), nameof(TimeOrig.captureFramerate), MethodType.Setter)]
     private class set_captureFramerate
