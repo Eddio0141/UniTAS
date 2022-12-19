@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using UniTASPlugin.Movie.MovieRunner.ParseInterfaces;
+using UniTASPlugin.Movie.ParseInterfaces;
 
-namespace UniTASPlugin.Movie.MovieRunner.Parsers;
+namespace UniTASPlugin.Movie.Parsers;
 
-public class DefaultMovieSectionSplitter : IMovieSectionSplitter
+public class MovieSectionSplitter : IMovieSectionSplitter
 {
     public IEnumerable<string> Split(string input)
     {

@@ -1,6 +1,6 @@
-﻿using UniTASPlugin.Movie.MovieRunner.LowLevel.Register;
+﻿using UniTASPlugin.Movie.LowLevel.Register;
 
-namespace UniTASPlugin.Movie.MovieRunner.LowLevel.OpCodes.Jump;
+namespace UniTASPlugin.Movie.LowLevel.OpCodes.Jump;
 
 public class JumpIfFalse : Jump
 {

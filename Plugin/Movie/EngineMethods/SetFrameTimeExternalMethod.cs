@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using UniTASPlugin.GameEnvironment;
-using UniTASPlugin.Movie.MovieRunner.ValueTypes;
+using UniTASPlugin.Movie.ValueTypes;
 
-namespace UniTASPlugin.Movie.MovieRunner.EngineMethods;
+namespace UniTASPlugin.Movie.EngineMethods;
 
 public class SetFrameTimeExternalMethod : EngineExternalMethod
 {

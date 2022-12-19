@@ -2,11 +2,11 @@
 using System.Linq;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
-using UniTASPlugin.Movie.MovieRunner.EngineMethods;
-using UniTASPlugin.Movie.MovieRunner.MovieModels.Script;
-using UniTASPlugin.Movie.MovieRunner.ParseInterfaces;
+using UniTASPlugin.Movie.EngineMethods;
+using UniTASPlugin.Movie.MovieModels.Script;
+using UniTASPlugin.Movie.ParseInterfaces;
 
-namespace UniTASPlugin.Movie.MovieRunner.Parsers.MovieScriptParser;
+namespace UniTASPlugin.Movie.Parsers.MovieScriptParser;
 
 public class MovieScriptParser : IMovieScriptParser
 {
@@ -26,7 +26,7 @@ public class MovieScriptParser : IMovieScriptParser
         speakParser.RemoveErrorListeners();
         speakParser.AddErrorListener(new ErrorListener());
         var script = speakParser.script();
-        var listener = new DefaultGrammarListenerCompiler(_getDefinedMethods);
+        var listener = new ScriptCompiler(_getDefinedMethods);
         ParseTreeWalker.Default.Walk(listener, script);
         return listener.Compile();
     }

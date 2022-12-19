@@ -1,4 +1,4 @@
-﻿namespace UniTASPlugin.Movie.MovieRunner.LowLevel.OpCodes;
+﻿namespace UniTASPlugin.Movie.LowLevel.OpCodes;
 
 public class FrameAdvanceOpCode : OpCode
 {

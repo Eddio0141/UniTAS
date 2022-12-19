@@ -2,7 +2,7 @@
 using Antlr4.Runtime;
 using Antlr4.Runtime.Misc;
 
-namespace UniTASPlugin.Movie.MovieRunner.Parsers.MovieScriptParser;
+namespace UniTASPlugin.Movie.Parsers.MovieScriptParser;
 
 public class ErrorListener : BaseErrorListener
 {

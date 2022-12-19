@@ -1,4 +1,4 @@
-﻿namespace UniTASPlugin.Movie.MovieRunner.LowLevel.OpCodes.Scope;
+﻿namespace UniTASPlugin.Movie.LowLevel.OpCodes.Scope;
 
 public class ExitScopeOpCode : OpCode
 {

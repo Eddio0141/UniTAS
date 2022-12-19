@@ -1,6 +1,6 @@
-﻿using UniTASPlugin.Movie.MovieRunner.LowLevel.Register;
+﻿using UniTASPlugin.Movie.LowLevel.Register;
 
-namespace UniTASPlugin.Movie.MovieRunner.LowLevel.OpCodes.Logic;
+namespace UniTASPlugin.Movie.LowLevel.OpCodes.Logic;
 
 public class GreaterOpCode : LogicComparison
 {

@@ -3,18 +3,18 @@ using System.Linq;
 using UniTASPlugin.FixedUpdateSync;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.GameRestart;
-using UniTASPlugin.Movie.MovieRunner.EngineMethods;
-using UniTASPlugin.Movie.MovieRunner.Exceptions.ScriptEngineExceptions;
-using UniTASPlugin.Movie.MovieRunner.LowLevel;
-using UniTASPlugin.Movie.MovieRunner.MovieModels.Script;
-using UniTASPlugin.Movie.MovieRunner.ParseInterfaces;
+using UniTASPlugin.Movie.EngineMethods;
+using UniTASPlugin.Movie.Exceptions.ScriptEngineExceptions;
+using UniTASPlugin.Movie.LowLevel;
+using UniTASPlugin.Movie.MovieModels.Script;
+using UniTASPlugin.Movie.ParseInterfaces;
 
-namespace UniTASPlugin.Movie.MovieRunner;
+namespace UniTASPlugin.Movie;
 
 public partial class ScriptEngineMovieRunner : IMovieRunner
 {
-    private readonly List<ScriptEngineLowLevelEngine> _concurrentRunnersPostUpdate = new();
-    private readonly List<ScriptEngineLowLevelEngine> _concurrentRunnersPreUpdate = new();
+    private readonly List<LowLevelEngine> _concurrentRunnersPostUpdate = new();
+    private readonly List<LowLevelEngine> _concurrentRunnersPreUpdate = new();
     private readonly EngineExternalMethod[] _externalMethods;
 
     private readonly IMovieParser _parser;
@@ -24,7 +24,7 @@ public partial class ScriptEngineMovieRunner : IMovieRunner
 
     private readonly ISyncFixedUpdate _syncFixedUpdate;
 
-    private ScriptEngineLowLevelEngine _engine;
+    private LowLevelEngine _engine;
     private ScriptModel _mainScript;
 
     public ScriptEngineMovieRunner(IMovieParser parser, IEnumerable<EngineExternalMethod> externMethods,

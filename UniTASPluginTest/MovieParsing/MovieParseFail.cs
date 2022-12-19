@@ -6,7 +6,7 @@ using UniTASPlugin.Movie.Parsers.MovieScriptParser;
 
 namespace UniTASPluginTest.MovieParsing;
 
-public class DefaultMovieParseFail
+public class MovieParseFail
 {
     private static ScriptModel Setup(string input)
     {

@@ -1,6 +1,6 @@
-﻿using UniTASPlugin.Movie.MovieRunner.LowLevel.Register;
+﻿using UniTASPlugin.Movie.LowLevel.Register;
 
-namespace UniTASPlugin.Movie.MovieRunner.LowLevel.OpCodes.StackOp;
+namespace UniTASPlugin.Movie.LowLevel.OpCodes.StackOp;
 
 public class PopStackOpCode : OpCode
 {
