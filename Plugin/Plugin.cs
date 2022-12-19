@@ -8,7 +8,7 @@ using UniTASPlugin.FakeGameState.GameFileSystem;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.GameOverlay;
 using UniTASPlugin.Interfaces.Update;
-using UniTASPlugin.VersionSafeWrapper;
+using UniTASPlugin.SafeWrappers;
 using UnityEngine;
 using SystemInfo = UniTASPlugin.FakeGameState.SystemInfo;
 
@@ -62,22 +62,6 @@ public class Plugin : BaseUnityPlugin
         GameTracker.Init();
         SystemInfo.Init();
         Overlay.Init();
-
-        // TODO remove this test
-        var pluginType = typeof(Plugin);
-        var methods = pluginType.GetMethods();
-        if (methods.Any(x => x.Name == "Update") && pluginType.IsAssignableFrom(typeof(MonoBehaviour)))
-        {
-            Logger.LogDebug("Plugin has Update method");
-        }
-
-        Logger.LogDebug($"Plugin assignable from MonoBehaviour: {pluginType.IsAssignableFrom(typeof(MonoBehaviour))}");
-        Logger.LogDebug($"Plugin is subclass of MonoBehaviour: {pluginType.IsSubclassOf(typeof(MonoBehaviour))}");
-
-        foreach (var method in Traverse.Create<Plugin>().Methods())
-        {
-            Logger.LogDebug($"Plugin method: {method}");
-        }
 
         Logger.LogInfo($"System time: {DateTime.Now}");
         Logger.LogInfo($"Plugin {MyPluginInfo.PLUGIN_NAME} is loaded!");
