@@ -20,7 +20,7 @@ public class ScriptEngineLowLevelTests
         {
         }
 
-        public override List<ValueType> Invoke(IEnumerable<IEnumerable<ValueType>> args, ScriptEngineMovieRunner runner)
+        public override List<ValueType> Invoke(IEnumerable<IEnumerable<ValueType>> args, UniTASPlugin.Movie.MovieRunner runner)
         {
             foreach (var argTuple in args)
             {

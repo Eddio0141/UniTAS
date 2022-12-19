@@ -265,7 +265,7 @@ public partial class LowLevelEngine
         return new(leftValue, rightValue, result == null ? null : _registers[(int)result]);
     }
 
-    public void ExecUntilStop(ScriptEngineMovieRunner runner)
+    public void ExecUntilStop(MovieRunner runner)
     {
         var opCodes = _methodIndex < 0 ? _mainMethod : _methods[_methodIndex].OpCodes;
 

@@ -13,7 +13,7 @@ public class ClearHeldKeysExternalMethod : EngineExternalMethod
         _virtualEnvironmentFactory = virtualEnvironmentFactory;
     }
 
-    public override List<ValueType> Invoke(IEnumerable<IEnumerable<ValueType>> args, ScriptEngineMovieRunner runner)
+    public override List<ValueType> Invoke(IEnumerable<IEnumerable<ValueType>> args, MovieRunner runner)
     {
         _virtualEnvironmentFactory.GetVirtualEnv().InputState.KeyboardState.Keys.Clear();
         return new();
