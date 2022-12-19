@@ -55,16 +55,16 @@ public class FixedUpdateTracker : IOnFixedUpdate, ISyncFixedUpdate, IOnUpdate
         {
             var onSyncCallback = _onSyncCallbacks[i];
 
-            if (onSyncCallback.CycleOffset > 0)
-            {
-                onSyncCallback.CycleOffset--;
-                continue;
-            }
-
             // remove on match
             if ((onSyncCallback.SyncOffset == 0 && _fixedUpdateIndex == 0) ||
                 (onSyncCallback.SyncOffset != 0 && maxUpdateCount - onSyncCallback.SyncOffset == _fixedUpdateIndex))
             {
+                if (onSyncCallback.CycleOffset > 0)
+                {
+                    onSyncCallback.CycleOffset--;
+                    continue;
+                }
+
                 onSyncCallback.Callback.Invoke();
                 _onSyncCallbacks.RemoveAt(i);
                 i--;
