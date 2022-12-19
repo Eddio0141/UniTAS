@@ -11,7 +11,7 @@ using UniTASPlugin.Movie.ValueTypes;
 
 namespace UniTASPlugin.Movie;
 
-public partial class ScriptEngineMovieRunner
+public partial class MovieRunner
 {
     public int RegisterConcurrentMethod(string methodName, bool preUpdate,
         IEnumerable<IEnumerable<ValueType>> defaultArgs)

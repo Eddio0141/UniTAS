@@ -11,7 +11,7 @@ public class RegisterExternalMethod : EngineExternalMethod
     {
     }
 
-    public override List<ValueType> Invoke(IEnumerable<IEnumerable<ValueType>> args, ScriptEngineMovieRunner runner)
+    public override List<ValueType> Invoke(IEnumerable<IEnumerable<ValueType>> args, MovieRunner runner)
     {
         var argsList = args.Select(x => x.ToList()).ToList();
         switch (argsList.Count)

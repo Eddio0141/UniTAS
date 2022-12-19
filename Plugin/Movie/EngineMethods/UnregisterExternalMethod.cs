@@ -10,7 +10,7 @@ public class UnregisterExternalMethod : EngineExternalMethod
     {
     }
 
-    public override List<ValueType> Invoke(IEnumerable<IEnumerable<ValueType>> args, ScriptEngineMovieRunner runner)
+    public override List<ValueType> Invoke(IEnumerable<IEnumerable<ValueType>> args, MovieRunner runner)
     {
         var argsList = args.ToList();
 

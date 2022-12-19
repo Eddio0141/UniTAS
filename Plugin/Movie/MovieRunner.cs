@@ -11,7 +11,7 @@ using UniTASPlugin.Movie.ParseInterfaces;
 
 namespace UniTASPlugin.Movie;
 
-public partial class ScriptEngineMovieRunner : IMovieRunner
+public partial class MovieRunner : IMovieRunner
 {
     private readonly List<LowLevelEngine> _concurrentRunnersPostUpdate = new();
     private readonly List<LowLevelEngine> _concurrentRunnersPreUpdate = new();
@@ -27,7 +27,7 @@ public partial class ScriptEngineMovieRunner : IMovieRunner
     private LowLevelEngine _engine;
     private ScriptModel _mainScript;
 
-    public ScriptEngineMovieRunner(IMovieParser parser, IEnumerable<EngineExternalMethod> externMethods,
+    public MovieRunner(IMovieParser parser, IEnumerable<EngineExternalMethod> externMethods,
         IVirtualEnvironmentFactory vEnvFactory, IGameRestart gameRestart, ISyncFixedUpdate syncFixedUpdate)
     {
         _parser = parser;

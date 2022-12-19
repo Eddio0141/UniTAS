@@ -16,5 +16,5 @@ public abstract class EngineExternalMethod
         ArgReturnCount = argReturnCount;
     }
 
-    public abstract List<ValueType> Invoke(IEnumerable<IEnumerable<ValueType>> args, ScriptEngineMovieRunner runner);
+    public abstract List<ValueType> Invoke(IEnumerable<IEnumerable<ValueType>> args, MovieRunner runner);
 }

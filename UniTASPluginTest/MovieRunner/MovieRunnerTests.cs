@@ -12,10 +12,10 @@ namespace UniTASPluginTest.MovieRunner;
 
 public class MovieRunnerTests
 {
-    private static ScriptEngineMovieRunner Setup(IEnumerable<EngineExternalMethod> getDefinedMethods)
+    private static UniTASPlugin.Movie.MovieRunner Setup(IEnumerable<EngineExternalMethod> getDefinedMethods)
     {
         var externMethods = getDefinedMethods.ToList();
-        var runner = new ScriptEngineMovieRunner(
+        var runner = new UniTASPlugin.Movie.MovieRunner(
             new MovieParser(new MovieSectionSplitter(), new MoviePropertyParser(),
                 new MovieScriptParser(externMethods)), externMethods, new FakeVEnvFactory(),
             new FakeRestartService(), new FakeFixedUpdateService());
