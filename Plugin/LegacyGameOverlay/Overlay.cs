@@ -186,9 +186,9 @@ internal static class Overlay
                     if (rev.Invoke(System.IO.File.Exists, "C:\\Users\\Yuki\\Documents\\test.uti"))
                         path = "C:\\Users\\Yuki\\Documents\\test.uti";
                     else if (rev.Invoke(System.IO.File.Exists,
-                                 "C:\\Program Files (x86)\\Steam\\steamapps\\common\\It Steals\\test.uti"))
+                                 "/home/yuu0141/test.uti"))
                         path =
-                            "\"C:\\\\Program Files (x86)\\\\Steam\\\\steamapps\\\\common\\\\It Steals\\\\test.uti\"";
+                            "/home/yuu0141/test.uti";
                     var file = rev.Invoke(System.IO.File.ReadAllText, path);
                     try
                     {
