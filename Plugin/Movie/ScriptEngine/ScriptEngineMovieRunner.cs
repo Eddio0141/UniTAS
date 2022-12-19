@@ -2,6 +2,7 @@
 using System.Linq;
 using UniTASPlugin.FixedUpdateSync;
 using UniTASPlugin.GameEnvironment;
+using UniTASPlugin.GameRestart;
 using UniTASPlugin.Movie.ScriptEngine.EngineMethods;
 using UniTASPlugin.Movie.ScriptEngine.LowLevelEngine;
 using UniTASPlugin.Movie.ScriptEngine.MovieModels.Script;
@@ -37,7 +38,9 @@ public partial class ScriptEngineMovieRunner : IMovieRunner
 
     public bool IsRunning => !MovieEnd;
     public bool MovieEnd { get; private set; } = true;
-    private bool _finished;
+    private bool _cleanUp;
+
+    public ulong FrameCount { get; private set; }
 
     public void RunFromInput(string input)
     {
@@ -54,7 +57,7 @@ public partial class ScriptEngineMovieRunner : IMovieRunner
         _concurrentRunnersPreUpdate.Clear();
         _engine = new(_mainScript, _externalMethods);
 
-        // set env
+        // set env from properties
         // TODO apply environment
         var env = _virtualEnvironmentFactory.GetVirtualEnv();
         env.RunVirtualEnvironment = true;
@@ -67,20 +70,34 @@ public partial class ScriptEngineMovieRunner : IMovieRunner
 
         // TODO other stuff like save state load, hide cursor, etc
 
-        _finished = false;
-        _syncFixedUpdate.OnSync(() => MovieEnd = false);
+        FrameCount = 0;
+        _syncFixedUpdate.OnSync(() =>
+        {
+            if (_gameRestart.PendingRestart)
+            {
+                _syncFixedUpdate.OnSync(() =>
+                {
+                    MovieEnd = false;
+                    _cleanUp = false;
+                }, 1, 1);
+            }
+            else
+            {
+                MovieEnd = false;
+                _cleanUp = false;
+            }
+        }, 1);
     }
 
     public void Update()
     {
-        if (MovieEnd)
+        if (MovieEnd) return;
+
+        if (_cleanUp)
         {
-            if (_finished)
-            {
-                var env = _virtualEnvironmentFactory.GetVirtualEnv();
-                env.RunVirtualEnvironment = false;
-                _finished = false;
-            }
+            MovieEnd = true;
+            var env = _virtualEnvironmentFactory.GetVirtualEnv();
+            env.RunVirtualEnvironment = false;
 
             return;
         }
@@ -91,15 +108,16 @@ public partial class ScriptEngineMovieRunner : IMovieRunner
 
         if (_engine.FinishedExecuting)
         {
-            MovieEnd = true;
             AtMovieEnd();
         }
+
+        FrameCount++;
     }
 
     private void AtMovieEnd()
     {
         var env = _virtualEnvironmentFactory.GetVirtualEnv();
         env.FrameTime = 0;
-        _finished = true;
+        _cleanUp = true;
     }
 }
