@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using HarmonyLib;
+using Mono.Cecil;
+using Mono.Cecil.Cil;
 using UniTASPlugin.FixedUpdateSync;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.LegacyExceptions;
@@ -21,6 +23,18 @@ public class GameRestart : IGameRestart
     private readonly IUnityWrapper _unityWrapper;
 
     private readonly List<KeyValuePair<Type, List<StaticFieldStorage>>> _staticFields = new();
+    private readonly List<Type> _dontDestroyOnLoads = new();
+
+    // ReSharper disable StringLiteralTypo
+    private static readonly string[] gameAssemblyNames =
+    {
+        "Assembly-CSharp",
+        "Assembly-CSharp-firstpass",
+        "Assembly-UnityScript",
+        "Assembly-UnityScript-firstpass"
+    };
+
+    // ReSharper restore StringLiteralTypo
 
     public bool PendingRestart { get; private set; }
 
@@ -32,21 +46,64 @@ public class GameRestart : IGameRestart
         _unityWrapper = unityWrapper;
 
         StoreStaticFields();
+        StoreDontDestroyOnLoads();
+    }
+
+    private void StoreDontDestroyOnLoads()
+    {
+        var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+        var objectTypeName = _unityWrapper.Object.ObjectType.FullName;
+
+        foreach (var assembly in assemblies)
+        {
+            if (!gameAssemblyNames.Contains(assembly.GetName().Name))
+            {
+                continue;
+            }
+
+            var assemblyDefinition = AssemblyDefinition.ReadAssembly(assembly.Location);
+            var types = assemblyDefinition.MainModule.Types;
+
+            // get all types that use DontDestroyOnLoad
+            foreach (var type in types)
+            {
+                var methods = type.Methods;
+                foreach (var method in methods)
+                {
+                    var instructions = method.Body.Instructions;
+                    if (!instructions.Any(instruction =>
+                            instruction.OpCode == OpCodes.Call &&
+                            instruction.Operand is MethodReference { Name: "DontDestroyOnLoad" } methodReference &&
+                            methodReference.DeclaringType.FullName == objectTypeName &&
+                            methodReference.Parameters.Count == 1 &&
+                            methodReference.Parameters[0].ParameterType.FullName ==
+                            objectTypeName &&
+                            methodReference.ReturnType.Name == "Void")) continue;
+
+                    Plugin.Log.LogDebug($"Found DontDestroyOnLoad type: {type.FullName}");
+                    var dontDestroyOnLoadType = assembly.GetType(type.FullName);
+                    _dontDestroyOnLoads.Add(dontDestroyOnLoadType);
+                    break;
+                }
+            }
+        }
+    }
+
+    private void DestroyDontDestroyOnLoads()
+    {
+        foreach (var type in _dontDestroyOnLoads)
+        {
+            var dontDestroyOnLoadObjects = _unityWrapper.Object.FindObjectsOfType(type);
+            foreach (var dontDestroyOnLoadObject in dontDestroyOnLoadObjects)
+            {
+                _unityWrapper.Object.Destroy(dontDestroyOnLoadObject);
+            }
+        }
     }
 
     // TODO remove this when we have a better way to handle static fields
     private void StoreStaticFields()
     {
-        // ReSharper disable StringLiteralTypo
-        var gameAssemblyNames = new[]
-        {
-            "Assembly-CSharp",
-            "Assembly-CSharp-firstpass",
-            "Assembly-UnityScript",
-            "Assembly-UnityScript-firstpass"
-        };
-        // ReSharper restore StringLiteralTypo
-
         var assemblies = AppDomain.CurrentDomain.GetAssemblies();
         foreach (var assembly in assemblies)
         {
@@ -124,6 +181,7 @@ public class GameRestart : IGameRestart
     {
         PendingRestart = true;
         softRestartTime = time;
+        DestroyDontDestroyOnLoads();
         StopScriptExecution();
         SetStaticFields();
         _syncFixedUpdate.OnSync(SoftRestartOperation, 1);
@@ -152,7 +210,7 @@ public class GameRestart : IGameRestart
     private void StopScriptExecution()
     {
         var allMonoBehaviours =
-            _unityWrapper.Object.FindObjectsOfType(_unityWrapper.MonoBehaviour.GetMonoBehaviourType());
+            _unityWrapper.Object.FindObjectsOfType(_unityWrapper.MonoBehaviour.MonoBehaviourType);
 
         // TODO remove hardcoded dependencies
         var ignoreTypes = new[]
