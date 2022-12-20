@@ -144,4 +144,40 @@ get_args(""checkpoint 2"")";
         runner.IsRunning.Should().BeFalse();
         externGetArgs.Args.Should().ContainInOrder("checkpoint 1", "checkpoint 2");
     }
+
+    [Fact]
+    public void VariableAccess()
+    {
+        var externGetArgs = new ScriptEngineLowLevelTests.TestExternGetArgs();
+
+        var runner = Setup(new EngineExternalMethod[] { externGetArgs });
+        // ReSharper disable once StringLiteralTypo
+        const string input = @"name test TAS
+author yuu0141
+desc a test TAS
+os Windows
+datetime 03/28/2002
+ft 0.01
+resolution 900 600
+unfocused
+fullscreen
+endsave end_save
+---
+fn test_access() {
+    get_args($test_var)
+}
+
+fn test_access2() {
+    $test_var = 2
+}
+
+$test_var = 0
+test_access()
+test_access2()
+get_args($test_var)";
+        runner.RunFromInput(input);
+        runner.Update();
+
+        externGetArgs.Args.Should().ContainInOrder("0", "2");
+    }
 }
