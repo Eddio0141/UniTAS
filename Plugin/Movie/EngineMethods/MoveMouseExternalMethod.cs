@@ -20,7 +20,7 @@ public class MoveMouseExternalMethod : EngineExternalMethod
         var xArg = argsList[0].First();
         if (xArg is not IntValueType x) return new();
 
-        var yArg = argsList[0].First();
+        var yArg = argsList[1].First();
         if (yArg is not IntValueType y) return new();
 
         var env = _virtualEnvironmentFactory.GetVirtualEnv();
