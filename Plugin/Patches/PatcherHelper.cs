@@ -8,7 +8,12 @@ public static class PatcherHelper
     public static Exception CleanupIgnoreException(MethodBase original, Exception ex)
     {
         if (ex != null)
-            Plugin.Log.LogDebug($"Failed to patch: {original}, exception: {ex}");
+        {
+            Plugin.Log.LogDebug(original == null
+                ? $"Failed to patch, exception: {ex}"
+                : $"Failed to patch {original}, exception: {ex}");
+        }
+
         return null;
     }
 
