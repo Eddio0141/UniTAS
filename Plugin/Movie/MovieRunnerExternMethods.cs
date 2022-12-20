@@ -73,7 +73,7 @@ public partial class MovieRunner
             runnerScript = new(new(null, wrapperMethod), new ScriptMethodModel[0]);
         }
 
-        var engine = new LowLevelEngine(runnerScript, _externalMethods);
+        var engine = new LowLevelEngine(runnerScript, _externalMethods, _engine);
 
         if (preUpdate)
         {

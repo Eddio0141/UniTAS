@@ -38,13 +38,19 @@ public partial class LowLevelEngine
     // basically global vars
     private readonly Stack<List<VariableInfo>> _mainVars = new();
 
+    // external vars
+    private readonly Stack<List<VariableInfo>> _externalVars;
+
     // storage for "paused" methods
     private readonly Stack<MethodInfo> _methodStack = new();
 
     public bool FinishedExecuting { get; private set; }
 
-    public LowLevelEngine(ScriptModel script, IEnumerable<EngineExternalMethod> methods)
+    public LowLevelEngine(ScriptModel script, IEnumerable<EngineExternalMethod> methods,
+        LowLevelEngine upperEngine = null)
     {
+        _externalVars = upperEngine == null ? new() : upperEngine._mainVars;
+
         var registerCount = Enum.GetNames(typeof(RegisterType)).Length;
         _registers = new Register.Register[registerCount];
         _registerStack = new Stack<Register.Register>[registerCount];
@@ -81,9 +87,21 @@ public partial class LowLevelEngine
 
     private List<ValueType> GetVariable(string name)
     {
+        // vars defined in external can be accessed from anywhere
         // vars defined in main can be found from anywhere
         // vars defined in method is stored in anywhere in that method
         // vars in scopes are pushed on a stack, popped later on scope exit
+
+        foreach (var varStack in _externalVars)
+        {
+            foreach (var var in varStack)
+            {
+                if (var.Name == name)
+                {
+                    return var.Value;
+                }
+            }
+        }
 
         foreach (var varStack in _mainVars)
         {
@@ -764,7 +782,7 @@ public partial class LowLevelEngine
                     _pc++;
                     VariableInfo foundVar = null;
 
-                    foreach (var varStack in _mainVars)
+                    foreach (var varStack in _externalVars)
                     {
                         foreach (var var in varStack)
                         {
@@ -783,7 +801,7 @@ public partial class LowLevelEngine
 
                     if (foundVar == null)
                     {
-                        foreach (var varStack in _vars)
+                        foreach (var varStack in _mainVars)
                         {
                             foreach (var var in varStack)
                             {
@@ -797,6 +815,26 @@ public partial class LowLevelEngine
                             if (foundVar != null)
                             {
                                 break;
+                            }
+                        }
+
+                        if (foundVar == null)
+                        {
+                            foreach (var varStack in _vars)
+                            {
+                                foreach (var var in varStack)
+                                {
+                                    if (var.Name == setVariableOpCode.Name)
+                                    {
+                                        foundVar = var;
+                                        break;
+                                    }
+                                }
+
+                                if (foundVar != null)
+                                {
+                                    break;
+                                }
                             }
                         }
                     }
