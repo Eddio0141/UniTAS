@@ -113,24 +113,44 @@ public partial class MovieRunner
 
     private void ConcurrentRunnersPreUpdate()
     {
-        foreach (var runner in _concurrentRunnersPreUpdate)
+        var count = _concurrentRunnersPreUpdate.Count;
+        var hashList = _concurrentRunnersPreUpdate.Select(x => x.GetHashCode()).ToList();
+        for (var i = 0; i < count; i++)
         {
+            var runner = _concurrentRunnersPreUpdate[i];
             runner.ExecUntilStop(this);
             if (runner.FinishedExecuting)
             {
                 runner.Reset();
+            }
+
+            // check if runner was removed
+            if (count != _concurrentRunnersPreUpdate.Count)
+            {
+                count = _concurrentRunnersPreUpdate.Count;
+                i = hashList.IndexOf(runner.GetHashCode());
             }
         }
     }
 
     private void ConcurrentRunnersPostUpdate()
     {
-        foreach (var runner in _concurrentRunnersPostUpdate)
+        var count = _concurrentRunnersPostUpdate.Count;
+        var hashList = _concurrentRunnersPostUpdate.Select(x => x.GetHashCode()).ToList();
+        for (var i = 0; i < count; i++)
         {
+            var runner = _concurrentRunnersPostUpdate[i];
             runner.ExecUntilStop(this);
             if (runner.FinishedExecuting)
             {
                 runner.Reset();
+            }
+
+            // check if runner was removed
+            if (count != _concurrentRunnersPostUpdate.Count)
+            {
+                count = _concurrentRunnersPostUpdate.Count;
+                i = hashList.IndexOf(runner.GetHashCode());
             }
         }
     }
