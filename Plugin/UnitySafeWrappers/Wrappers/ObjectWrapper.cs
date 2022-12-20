@@ -7,6 +7,8 @@ namespace UniTASPlugin.UnitySafeWrappers.Wrappers;
 
 public class ObjectWrapper : IObjectWrapper
 {
+    public Type ObjectType => typeof(Object);
+
     public void Destroy(object obj)
     {
         Object.Destroy((Object)obj);
