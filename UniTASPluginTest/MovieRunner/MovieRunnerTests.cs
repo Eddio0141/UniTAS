@@ -150,7 +150,7 @@ get_args(""checkpoint 2"")";
     {
         var externGetArgs = new ScriptEngineLowLevelTests.TestExternGetArgs();
 
-        var runner = Setup(new EngineExternalMethod[] { externGetArgs });
+        var runner = Setup(new EngineExternalMethod[] { externGetArgs, new RegisterExternalMethod() });
         // ReSharper disable once StringLiteralTypo
         const string input = @"name test TAS
 author yuu0141
@@ -174,10 +174,13 @@ fn test_access2() {
 $test_var = 0
 test_access()
 test_access2()
+get_args($test_var)
+register(""test_access"", true);
 get_args($test_var)";
         runner.RunFromInput(input);
         runner.Update();
+        runner.Update();
 
-        externGetArgs.Args.Should().ContainInOrder("0", "2");
+        externGetArgs.Args.Should().ContainInOrder("0", "2", "2", "2");
     }
 }
