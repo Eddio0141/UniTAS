@@ -6,10 +6,7 @@ namespace UniTASPlugin.UnitySafeWrappers.Wrappers;
 
 public class MonoBehaviourWrapper : IMonoBehaviourWrapper
 {
-    public Type GetMonoBehaviourType()
-    {
-        return typeof(MonoBehaviour);
-    }
+    public Type MonoBehaviourType => typeof(MonoBehaviour);
 
     public void StopAllCoroutines(object instance)
     {
