@@ -35,7 +35,7 @@ public static class ContainerRegister
             c.For<ISyncFixedUpdate>().Use(x => x.GetInstance<SyncFixedUpdate>());
             c.For<IOnUpdate>().Use(x => x.GetInstance<SyncFixedUpdate>());
 
-            c.For<PatchReverseInvoker>().Singleton();
+            c.For<IPatchReverseInvoker>().Singleton().Use<PatchReverseInvoker>();
 
             c.For<IMovieRunner>().Singleton().Use<MovieRunner>();
 
