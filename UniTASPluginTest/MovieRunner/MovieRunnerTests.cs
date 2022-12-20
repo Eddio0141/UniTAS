@@ -2,21 +2,21 @@ using FluentAssertions;
 using UniTASPlugin.FixedUpdateSync;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.GameRestart;
-using UniTASPlugin.Movie.MovieRunner;
-using UniTASPlugin.Movie.MovieRunner.EngineMethods;
-using UniTASPlugin.Movie.MovieRunner.Parsers;
-using UniTASPlugin.Movie.MovieRunner.Parsers.MoviePropertyParser;
-using UniTASPlugin.Movie.MovieRunner.Parsers.MovieScriptParser;
+using UniTASPlugin.Movie;
+using UniTASPlugin.Movie.EngineMethods;
+using UniTASPlugin.Movie.Parsers;
+using UniTASPlugin.Movie.Parsers.MoviePropertyParser;
+using UniTASPlugin.Movie.Parsers.MovieScriptParser;
 
 namespace UniTASPluginTest.MovieRunner;
 
 public class MovieRunnerTests
 {
-    private static ScriptEngineMovieRunner Setup(IEnumerable<EngineExternalMethod> getDefinedMethods)
+    private static UniTASPlugin.Movie.MovieRunner Setup(IEnumerable<EngineExternalMethod> getDefinedMethods)
     {
         var externMethods = getDefinedMethods.ToList();
-        var runner = new ScriptEngineMovieRunner(
-            new MovieParser(new DefaultMovieSectionSplitter(), new MoviePropertyParser(),
+        var runner = new UniTASPlugin.Movie.MovieRunner(
+            new MovieParser(new MovieSectionSplitter(), new MoviePropertyParser(),
                 new MovieScriptParser(externMethods)), externMethods, new FakeVEnvFactory(),
             new FakeRestartService(), new FakeFixedUpdateService());
 

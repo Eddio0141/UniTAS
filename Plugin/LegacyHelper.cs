@@ -237,6 +237,32 @@ public static class Helper
             return arrayResult;
         }
 
+        // is type a collection?
+        if (typeof(ICollection).IsAssignableFrom(type))
+        {
+            var addableResult = Activator.CreateInstance(resultType);
+            var addOperation = AccessTools.FirstMethod(resultType,
+                m => m.Name == "Add" && m.GetParameters().Length == 1);
+            if (addOperation is null)
+            {
+                throw new($"Cannot add to collection, source type: {type}, result type: {resultType}");
+            }
+
+            var addInvoker = MethodInvoker.GetHandler(addOperation);
+            var elementType = addOperation.GetParameters()[0].ParameterType;
+            var i = 0;
+            foreach (var element in source as IEnumerable)
+            {
+                var iStr = i++.ToString();
+                var path = pathRoot.Length > 0 ? pathRoot + "." + iStr : iStr;
+                var newElement = MakeDeepCopy(element, elementType, processor, path);
+                addInvoker(addableResult, newElement);
+            }
+
+            MakeDeepCopyRecursionDepth--;
+            return addableResult;
+        }
+
         var ns = type.Namespace;
         if (ns == "System" || (ns?.StartsWith("System.") ?? false))
         {
@@ -247,9 +273,21 @@ public static class Helper
         var result = AccessTools.CreateInstance(resultType == typeof(object) ? type : resultType);
         Traverse.IterateFields(source, result, (name, src, dst) =>
         {
+            // stupid hack to get FieldInfo from Traverse
+            var srcField = Traverse.Create(src).Field("_info").GetValue<FieldInfo>();
+            if (srcField is null)
+            {
+                throw new NullReferenceException("srcField is null, this should never happen");
+            }
+
+            if (srcField.IsStatic || srcField.IsLiteral)
+            {
+                return;
+            }
+
             var path = pathRoot.Length > 0 ? pathRoot + "." + name : name;
             var value = processor is not null ? processor(path, src, dst) : src.GetValue();
-            _ = dst.SetValue(MakeDeepCopy(value, dst.GetValueType(), processor, path));
+            dst.SetValue(MakeDeepCopy(value, dst.GetValueType(), processor, path));
         });
         MakeDeepCopyRecursionDepth--;
         return result;
