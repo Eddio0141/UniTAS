@@ -85,20 +85,15 @@ public partial class LowLevelEngine
         // vars defined in method is stored in anywhere in that method
         // vars in scopes are pushed on a stack, popped later on scope exit
 
-        if (_methodIndex < 0)
+        foreach (var varStack in _mainVars)
         {
-            foreach (var varStack in _mainVars)
+            foreach (var var in varStack)
             {
-                foreach (var var in varStack)
+                if (var.Name == name)
                 {
-                    if (var.Name == name)
-                    {
-                        return var.Value;
-                    }
+                    return var.Value;
                 }
             }
-
-            throw new UsingUndefinedVariableException(name);
         }
 
         foreach (var varStack in _vars)
@@ -769,26 +764,24 @@ public partial class LowLevelEngine
                     _pc++;
                     VariableInfo foundVar = null;
 
-                    if (_methodIndex < 0)
+                    foreach (var varStack in _mainVars)
                     {
-                        foreach (var varStack in _mainVars)
+                        foreach (var var in varStack)
                         {
-                            foreach (var var in varStack)
+                            if (var.Name == setVariableOpCode.Name)
                             {
-                                if (var.Name == setVariableOpCode.Name)
-                                {
-                                    foundVar = var;
-                                    break;
-                                }
-                            }
-
-                            if (foundVar != null)
-                            {
+                                foundVar = var;
                                 break;
                             }
                         }
+
+                        if (foundVar != null)
+                        {
+                            break;
+                        }
                     }
-                    else
+
+                    if (foundVar == null)
                     {
                         foreach (var varStack in _vars)
                         {
