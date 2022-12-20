@@ -237,6 +237,32 @@ public static class Helper
             return arrayResult;
         }
 
+        // is type a collection?
+        if (typeof(ICollection).IsAssignableFrom(type))
+        {
+            var addableResult = Activator.CreateInstance(resultType);
+            var addOperation = AccessTools.FirstMethod(resultType,
+                m => m.Name == "Add" && m.GetParameters().Length == 1);
+            if (addOperation is null)
+            {
+                throw new($"Cannot add to collection, source type: {type}, result type: {resultType}");
+            }
+
+            var addInvoker = MethodInvoker.GetHandler(addOperation);
+            var elementType = addOperation.GetParameters()[0].ParameterType;
+            var i = 0;
+            foreach (var element in source as IEnumerable)
+            {
+                var iStr = i++.ToString();
+                var path = pathRoot.Length > 0 ? pathRoot + "." + iStr : iStr;
+                var newElement = MakeDeepCopy(element, elementType, processor, path);
+                addInvoker(addableResult, newElement);
+            }
+
+            MakeDeepCopyRecursionDepth--;
+            return addableResult;
+        }
+
         var ns = type.Namespace;
         if (ns == "System" || (ns?.StartsWith("System.") ?? false))
         {
