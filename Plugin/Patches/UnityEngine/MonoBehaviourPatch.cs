@@ -58,8 +58,12 @@ public class MonoBehaviourPatch
         // ReSharper disable once UnusedParameter.Local
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            Plugin.Log.LogError(
-                $"Error patching MonoBehaviour.Update in all types, closing tool since continuing can cause desyncs: {ex}");
+            if (ex != null)
+            {
+                Plugin.Log.LogError(
+                    $"Error patching MonoBehaviour.Update in all types, closing tool since continuing can cause desyncs: {ex}");
+            }
+
             return ex;
         }
     }
@@ -109,8 +113,12 @@ public class MonoBehaviourPatch
         // ReSharper disable once UnusedParameter.Local
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            Plugin.Log.LogError(
-                $"Error patching MonoBehaviour.OnGUI in all types, closing tool since continuing can cause desyncs: {ex}");
+            if (ex != null)
+            {
+                Plugin.Log.LogError(
+                    $"Error patching MonoBehaviour.OnGUI in all types, closing tool since continuing can cause desyncs: {ex}");
+            }
+
             return ex;
         }
     }
