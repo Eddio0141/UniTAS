@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace UniTASPlugin.LegacySafeWrappers;
 
-internal class AsyncOperationWrap
+public class AsyncOperationWrap
 {
     public AsyncOperation instance { get; private set; }
 
