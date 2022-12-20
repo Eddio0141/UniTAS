@@ -222,23 +222,23 @@ public static class Helper
 
         if (type.IsArray && resultType.IsArray)
         {
-            var elementType = resultType.GetElementType();
-            var length = ((Array)source).Length;
-            var arrayResult = Activator.CreateInstance(resultType, length) as object[];
-            var originalArray = source as object[];
-            for (var i = 0; i < length; i++)
+            var newElementType = resultType.GetElementType();
+            var array = source as Array;
+            var newArray = Array.CreateInstance(newElementType, array.Length);
+            for (var i = 0; i < array.Length; i++)
             {
                 var iStr = i.ToString();
                 var path = pathRoot.Length > 0 ? pathRoot + "." + iStr : iStr;
-                arrayResult[i] = MakeDeepCopy(originalArray[i], elementType, processor, path);
+                var newElement = MakeDeepCopy(array.GetValue(i), newElementType, processor, path);
+                newArray.SetValue(newElement, i);
             }
 
             MakeDeepCopyRecursionDepth--;
-            return arrayResult;
+            return newArray;
         }
 
         // is type a collection?
-        if (typeof(ICollection).IsAssignableFrom(type))
+        if (typeof(ICollection).IsAssignableFrom(type) && typeof(ICollection).IsAssignableFrom(resultType))
         {
             var addableResult = Activator.CreateInstance(resultType);
             var addOperation = AccessTools.FirstMethod(resultType,
