@@ -66,6 +66,7 @@ public class GameRestart : IGameRestart
                 var staticFields = new List<StaticFieldStorage>();
                 foreach (var field in fields)
                 {
+                    // ignore if not static or const
                     if (!field.IsStatic || field.IsLiteral)
                     {
                         continue;
@@ -73,10 +74,9 @@ public class GameRestart : IGameRestart
 
                     var value = field.GetValue(null);
                     // TODO remove hardcoded dependency
+                    Plugin.Log.LogDebug(
+                        $"Cloning and storing static field {type.FullName}.{field.Name} with value {value}");
                     var valueClone = Helper.MakeDeepCopy(value, value.GetType());
-
-                    // TODO remove hardcoded dependency
-                    Plugin.Log.LogDebug($"Storing static field {type.FullName}.{field.Name} with value {valueClone}");
                     var staticFieldStorage = new StaticFieldStorage(field, valueClone);
                     staticFields.Add(staticFieldStorage);
                 }
