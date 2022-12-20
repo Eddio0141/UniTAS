@@ -22,6 +22,15 @@
 `move_mouse(x: int, y: int)`
 - Moves mouse to there
 
+`left_click(clicked: bool)`
+- Click / unclick mouse left
+
+`right_click(clicked: bool)`
+- Click / unclick mouse right
+
+`middle_click(clicked: bool)`
+- Click / unclick mouse middle
+
 ## Controller
 
 # Game fps
