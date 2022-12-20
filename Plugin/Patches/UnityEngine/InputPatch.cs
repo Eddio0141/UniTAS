@@ -16,13 +16,13 @@ namespace UniTASPlugin.Patches.UnityEngine;
 public class InputPatch
 {
     private static IVirtualEnvironmentFactory _virtualEnvironmentFactory;
-    private static IReverseInvokerFactory _reverseInvokerFactory;
+    private static IPatchReverseInvoker _reverseInvoker;
 
     private static IVirtualEnvironmentFactory virtualEnvironmentFactory =>
         _virtualEnvironmentFactory ??= Plugin.Kernel.GetInstance<IVirtualEnvironmentFactory>();
 
-    private static IReverseInvokerFactory reverseInvokerFactory =>
-        _reverseInvokerFactory ??= Plugin.Kernel.GetInstance<IReverseInvokerFactory>();
+    private static IPatchReverseInvoker reverseInvoker =>
+        _reverseInvoker ??= Plugin.Kernel.GetInstance<IPatchReverseInvoker>();
 
     // TODO not sure what this is
     /*
@@ -43,7 +43,7 @@ public class InputPatch
 
         private static bool Prefix(ref int __result)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (reverseInvoker.Invoking)
                 return false;
 
             var env = virtualEnvironmentFactory.GetVirtualEnv();
@@ -64,7 +64,7 @@ public class InputPatch
 
         private static bool Prefix(ref bool __result)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (reverseInvoker.Invoking)
                 return true;
             var env = virtualEnvironmentFactory.GetVirtualEnv();
             if (!env.RunVirtualEnvironment) return true;
@@ -85,7 +85,7 @@ public class InputPatch
 
         private static bool Prefix(int index, ref object ret)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (reverseInvoker.Invoking)
                 return true;
             var env = virtualEnvironmentFactory.GetVirtualEnv();
             return !env.RunVirtualEnvironment;
@@ -105,7 +105,7 @@ public class InputPatch
 
         private static bool Prefix(ref int __result)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (reverseInvoker.Invoking)
                 return true;
             var env = virtualEnvironmentFactory.GetVirtualEnv();
             return !env.RunVirtualEnvironment;
@@ -123,7 +123,7 @@ public class InputPatch
 
         private static bool Prefix(int deviceID, ref Vector3 __result)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (reverseInvoker.Invoking)
                 return true;
             var env = virtualEnvironmentFactory.GetVirtualEnv();
             return !env.RunVirtualEnvironment;
@@ -156,7 +156,7 @@ public class InputPatch
 
         private static bool Prefix(object key, ref bool __result)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (reverseInvoker.Invoking)
                 return true;
             var env = virtualEnvironmentFactory.GetVirtualEnv();
             if (!env.RunVirtualEnvironment) return true;
@@ -177,7 +177,7 @@ public class InputPatch
 
         private static bool Prefix( /*string name, ref bool __result*/)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (reverseInvoker.Invoking)
                 return true;
             var env = virtualEnvironmentFactory.GetVirtualEnv();
             return !env.RunVirtualEnvironment;
@@ -197,7 +197,7 @@ public class InputPatch
 
         private static bool Prefix( /*string name, ref bool __result*/)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (reverseInvoker.Invoking)
                 return true;
             var env = virtualEnvironmentFactory.GetVirtualEnv();
             return !env.RunVirtualEnvironment;
@@ -217,7 +217,7 @@ public class InputPatch
 
         private static bool Prefix(object key, ref bool __result)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (reverseInvoker.Invoking)
                 return true;
             var env = virtualEnvironmentFactory.GetVirtualEnv();
             if (!env.RunVirtualEnvironment) return true;
@@ -238,7 +238,7 @@ public class InputPatch
 
         private static bool Prefix( /*string name*/)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (reverseInvoker.Invoking)
                 return true;
             var env = virtualEnvironmentFactory.GetVirtualEnv();
             return !env.RunVirtualEnvironment;
@@ -258,7 +258,7 @@ public class InputPatch
 
         private static bool Prefix(object key, ref bool __result)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (reverseInvoker.Invoking)
                 return true;
             var env = virtualEnvironmentFactory.GetVirtualEnv();
             if (!env.RunVirtualEnvironment) return true;
@@ -279,7 +279,7 @@ public class InputPatch
 
         private static bool Prefix(string axisName, ref float __result)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (reverseInvoker.Invoking)
                 return true;
             var env = virtualEnvironmentFactory.GetVirtualEnv();
             if (!env.RunVirtualEnvironment) return true;
@@ -302,7 +302,7 @@ public class InputPatch
 
         private static bool Prefix(string axisName, ref float __result)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (reverseInvoker.Invoking)
                 return true;
             var env = virtualEnvironmentFactory.GetVirtualEnv();
             if (!env.RunVirtualEnvironment) return true;
@@ -326,7 +326,7 @@ public class InputPatch
 
         private static bool Prefix(string buttonName)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (reverseInvoker.Invoking)
                 return true;
             var env = virtualEnvironmentFactory.GetVirtualEnv();
             return !env.RunVirtualEnvironment;
@@ -344,7 +344,7 @@ public class InputPatch
 
         private static bool Prefix(string buttonName)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (reverseInvoker.Invoking)
                 return true;
             var env = virtualEnvironmentFactory.GetVirtualEnv();
             return !env.RunVirtualEnvironment;
@@ -362,7 +362,7 @@ public class InputPatch
 
         private static bool Prefix(string buttonName)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (reverseInvoker.Invoking)
                 return true;
             var env = virtualEnvironmentFactory.GetVirtualEnv();
             return !env.RunVirtualEnvironment;
@@ -380,7 +380,7 @@ public class InputPatch
 
         private static bool Prefix(ref bool __result, int button)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (reverseInvoker.Invoking)
                 return true;
             var env = virtualEnvironmentFactory.GetVirtualEnv();
             if (!env.RunVirtualEnvironment) return true;
@@ -405,7 +405,7 @@ public class InputPatch
 
         private static bool Prefix(ref bool __result, int button)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (reverseInvoker.Invoking)
                 return true;
             var env = virtualEnvironmentFactory.GetVirtualEnv();
             if (!env.RunVirtualEnvironment) return true;
@@ -430,7 +430,7 @@ public class InputPatch
 
         private static bool Prefix(ref bool __result, int button)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (reverseInvoker.Invoking)
                 return true;
             var env = virtualEnvironmentFactory.GetVirtualEnv();
             if (!env.RunVirtualEnvironment) return true;
@@ -455,7 +455,7 @@ public class InputPatch
 
         private static bool Prefix()
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (reverseInvoker.Invoking)
                 return true;
             // TODO make this work
             // Resets all input. After ResetInputAxes all axes return to 0 and all buttons return to 0 for one frame.
@@ -477,7 +477,7 @@ public class InputPatch
 
         private static bool Prefix(int index, ref AccelerationEvent __result)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (reverseInvoker.Invoking)
                 return true;
             var env = virtualEnvironmentFactory.GetVirtualEnv();
             return !env.RunVirtualEnvironment;
@@ -496,7 +496,7 @@ public class InputPatch
 
         private static bool Prefix(ref bool __result)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (reverseInvoker.Invoking)
                 return true;
             var env = virtualEnvironmentFactory.GetVirtualEnv();
             if (!env.RunVirtualEnvironment) return true;
@@ -517,7 +517,7 @@ public class InputPatch
 
         private static bool Prefix(ref bool __result)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (reverseInvoker.Invoking)
                 return true;
             // TODO make sure this gets called before Update calls
             var env = virtualEnvironmentFactory.GetVirtualEnv();
@@ -539,7 +539,7 @@ public class InputPatch
 
         private static bool Prefix()
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (reverseInvoker.Invoking)
                 return true;
             var env = virtualEnvironmentFactory.GetVirtualEnv();
             return !env.RunVirtualEnvironment;
@@ -560,7 +560,7 @@ public class InputPatch
 
         private static bool Prefix(ref Vector3 __result)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (reverseInvoker.Invoking)
                 return true;
             var env = virtualEnvironmentFactory.GetVirtualEnv();
             if (!env.RunVirtualEnvironment) return true;
@@ -582,7 +582,7 @@ public class InputPatch
 
         private static bool Prefix(ref Vector3 ret)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (reverseInvoker.Invoking)
                 return true;
             var env = virtualEnvironmentFactory.GetVirtualEnv();
             if (!env.RunVirtualEnvironment) return true;
@@ -602,7 +602,7 @@ public class InputPatch
 
         private static bool Prefix(ref bool __result)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (reverseInvoker.Invoking)
                 return true;
             var env = virtualEnvironmentFactory.GetVirtualEnv();
             if (!env.RunVirtualEnvironment) return true;
@@ -622,7 +622,7 @@ public class InputPatch
 
         private static bool Prefix(bool value)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (reverseInvoker.Invoking)
                 return true;
             var env = virtualEnvironmentFactory.GetVirtualEnv();
             return !env.RunVirtualEnvironment;
@@ -640,7 +640,7 @@ public class InputPatch
 
         private static bool Prefix(ref bool __result)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (reverseInvoker.Invoking)
                 return true;
             var env = virtualEnvironmentFactory.GetVirtualEnv();
             if (!env.RunVirtualEnvironment) return true;
@@ -660,7 +660,7 @@ public class InputPatch
 
         private static bool Prefix(ref DeviceOrientation __result)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (reverseInvoker.Invoking)
                 return true;
             var env = virtualEnvironmentFactory.GetVirtualEnv();
             if (!env.RunVirtualEnvironment) return true;
@@ -680,7 +680,7 @@ public class InputPatch
 
         private static bool Prefix(ref Vector3 __result)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (reverseInvoker.Invoking)
                 return true;
             var env = virtualEnvironmentFactory.GetVirtualEnv();
             if (!env.RunVirtualEnvironment) return true;
@@ -700,7 +700,7 @@ public class InputPatch
 
         private static bool Prefix(ref int __result)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (reverseInvoker.Invoking)
                 return true;
             var env = virtualEnvironmentFactory.GetVirtualEnv();
             if (!env.RunVirtualEnvironment) return true;
@@ -739,7 +739,7 @@ public class InputPatch
 
         private static bool Prefix(ref int __result)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (reverseInvoker.Invoking)
                 return true;
             var env = virtualEnvironmentFactory.GetVirtualEnv();
             if (!env.RunVirtualEnvironment) return true;
@@ -760,7 +760,7 @@ public class InputPatch
 
         private static bool Prefix(ref Touch __result)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (reverseInvoker.Invoking)
                 return true;
             var env = virtualEnvironmentFactory.GetVirtualEnv();
             return !env.RunVirtualEnvironment;
@@ -797,7 +797,7 @@ public class InputPatch
 
         private static bool Prefix(ref Vector3 __result)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (reverseInvoker.Invoking)
                 return true;
             var env = virtualEnvironmentFactory.GetVirtualEnv();
             if (!env.RunVirtualEnvironment) return true;

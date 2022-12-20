@@ -2,7 +2,8 @@
 
 namespace UniTASPlugin.ReverseInvoker;
 
-public class PatchReverseInvoker
+// ReSharper disable once ClassNeverInstantiated.Global
+public class PatchReverseInvoker : IPatchReverseInvoker
 {
     public bool Invoking { get; private set; }
 
