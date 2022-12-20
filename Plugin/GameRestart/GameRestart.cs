@@ -76,7 +76,7 @@ public class GameRestart : IGameRestart
                     // TODO remove hardcoded dependency
                     Plugin.Log.LogDebug(
                         $"Cloning and storing static field {type.FullName}.{field.Name} with value {value}");
-                    var valueClone = Helper.MakeDeepCopy(value, value.GetType());
+                    var valueClone = Helper.MakeDeepCopy(value, field.FieldType);
                     var staticFieldStorage = new StaticFieldStorage(field, valueClone);
                     staticFields.Add(staticFieldStorage);
                 }
