@@ -73,7 +73,7 @@ public class GameRestart : IGameRestart
 
                     var value = field.GetValue(null);
                     // TODO remove hardcoded dependency
-                    var valueClone = Helper.MakeDeepCopy(value, type);
+                    var valueClone = Helper.MakeDeepCopy(value, value.GetType());
 
                     // TODO remove hardcoded dependency
                     Plugin.Log.LogDebug($"Storing static field {type.FullName}.{field.Name} with value {valueClone}");
@@ -97,7 +97,9 @@ public class GameRestart : IGameRestart
                 // TODO remove hardcoded dependency
                 Plugin.Log.LogDebug(
                     $"Setting static field {type.FullName}.{staticField.Field.Name} to value {staticField.Value}");
-                staticField.Field.SetValue(null, staticField.Value);
+                // TODO remove hardcoded dependency
+                var fieldClone = Helper.MakeDeepCopy(staticField.Value, staticField.Value.GetType());
+                staticField.Field.SetValue(null, fieldClone);
             }
         }
     }
