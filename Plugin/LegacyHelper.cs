@@ -240,23 +240,17 @@ public static class Helper
         // is type a collection?
         if (typeof(ICollection).IsAssignableFrom(type) && typeof(ICollection).IsAssignableFrom(resultType))
         {
+            var resultTypeInterface = resultType.GetInterfaces()
+                .First(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(ICollection<>));
             var addableResult = Activator.CreateInstance(resultType);
-            var addOperation = AccessTools.FirstMethod(resultType,
+            var sourceCollection = source as ICollection;
+            var newElementType = resultTypeInterface.GetGenericArguments()[0];
+            var addOperation = AccessTools.FirstMethod(resultTypeInterface,
                 m => m.Name == "Add" && m.GetParameters().Length == 1);
-            if (addOperation is null)
+            foreach (var element in sourceCollection)
             {
-                throw new($"Cannot add to collection, source type: {type}, result type: {resultType}");
-            }
-
-            var addInvoker = MethodInvoker.GetHandler(addOperation);
-            var elementType = addOperation.GetParameters()[0].ParameterType;
-            var i = 0;
-            foreach (var element in source as IEnumerable)
-            {
-                var iStr = i++.ToString();
-                var path = pathRoot.Length > 0 ? pathRoot + "." + iStr : iStr;
-                var newElement = MakeDeepCopy(element, elementType, processor, path);
-                addInvoker(addableResult, newElement);
+                var newElement = MakeDeepCopy(element, newElementType, processor, pathRoot);
+                addOperation.Invoke(addableResult, new[] { newElement });
             }
 
             MakeDeepCopyRecursionDepth--;
