@@ -5,6 +5,7 @@ using System.Reflection;
 using HarmonyLib;
 using UniTASPlugin.FixedUpdateSync;
 using UniTASPlugin.GameEnvironment;
+using UniTASPlugin.LegacyExceptions;
 using UniTASPlugin.LegacySafeWrappers;
 using UniTASPlugin.UnitySafeWrappers.Interfaces;
 
@@ -75,8 +76,19 @@ public class GameRestart : IGameRestart
                     var value = field.GetValue(null);
                     // TODO remove hardcoded dependency
                     Plugin.Log.LogDebug(
-                        $"Cloning and storing static field {type.FullName}.{field.Name} with value {value}");
-                    var valueClone = Helper.MakeDeepCopy(value, field.FieldType);
+                        $"Cloning and storing static field {type.FullName}.{field.Name} with value " + (value == null
+                            ? "null"
+                            : value.ToString()));
+                    object valueClone = null;
+                    try
+                    {
+                        valueClone = Helper.MakeDeepCopy(value, field.FieldType);
+                    }
+                    catch (DeepCopyMaxRecursion)
+                    {
+                        // ignore it
+                    }
+
                     var staticFieldStorage = new StaticFieldStorage(field, valueClone);
                     staticFields.Add(staticFieldStorage);
                 }
