@@ -98,7 +98,7 @@ public class GameRestart : IGameRestart
                 Plugin.Log.LogDebug(
                     $"Setting static field {type.FullName}.{staticField.Field.Name} to value {staticField.Value}");
                 // TODO remove hardcoded dependency
-                var fieldClone = Helper.MakeDeepCopy(staticField.Value, staticField.Value.GetType());
+                var fieldClone = Helper.MakeDeepCopy(staticField.Value, staticField.Field.FieldType);
                 staticField.Field.SetValue(null, fieldClone);
             }
         }
