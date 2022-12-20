@@ -273,9 +273,21 @@ public static class Helper
         var result = AccessTools.CreateInstance(resultType == typeof(object) ? type : resultType);
         Traverse.IterateFields(source, result, (name, src, dst) =>
         {
+            // stupid hack to get FieldInfo from Traverse
+            var srcField = Traverse.Create(src).Field("_info").GetValue<FieldInfo>();
+            if (srcField is null)
+            {
+                throw new NullReferenceException("srcField is null, this should never happen");
+            }
+
+            if (srcField.IsStatic || srcField.IsLiteral)
+            {
+                return;
+            }
+
             var path = pathRoot.Length > 0 ? pathRoot + "." + name : name;
             var value = processor is not null ? processor(path, src, dst) : src.GetValue();
-            _ = dst.SetValue(MakeDeepCopy(value, dst.GetValueType(), processor, path));
+            dst.SetValue(MakeDeepCopy(value, dst.GetValueType(), processor, path));
         });
         MakeDeepCopyRecursionDepth--;
         return result;
