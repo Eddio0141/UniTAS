@@ -4,6 +4,7 @@ using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.GameEnvironment.InnerState;
 using UniTASPlugin.GameRestart;
 using UniTASPlugin.Interfaces.Update;
+using UniTASPlugin.MonoBehaviourController;
 using UniTASPlugin.Movie;
 using UniTASPlugin.Movie.EngineMethods;
 using UniTASPlugin.ReverseInvoker;
@@ -44,6 +45,8 @@ public static class ContainerRegister
             c.For<IOnUpdate>().Singleton().Use<GameTime>();
 
             c.For<IOnUpdate>().Use<VirtualEnvironmentApplier>();
+
+            c.For<IMonoBehaviourController>().Singleton().Use<MonoBehaviourController.MonoBehaviourController>();
         });
 
         return container;
