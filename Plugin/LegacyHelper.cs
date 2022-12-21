@@ -179,9 +179,9 @@ public static class Helper
         }
 
         // is type a collection?
-        if (typeof(ICollection).IsAssignableFrom(type) && typeof(ICollection).IsAssignableFrom(resultType))
+        if (typeof(IEnumerable).IsAssignableFrom(type) && typeof(IEnumerable).IsAssignableFrom(resultType))
         {
-            var sourceCollection = (ICollection)source;
+            var sourceCollection = (IEnumerable)source;
 
             var resultTypeInterface = resultType.GetInterfaces()
                 .First(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
