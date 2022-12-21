@@ -12,6 +12,7 @@ using UniTASPlugin.Interfaces.StartEvent;
 using UniTASPlugin.Interfaces.Update;
 using UniTASPlugin.LegacyExceptions;
 using UniTASPlugin.LegacySafeWrappers;
+using UniTASPlugin.Logger;
 using UniTASPlugin.MonoBehaviourController;
 using UniTASPlugin.UnitySafeWrappers.Interfaces;
 
@@ -26,6 +27,7 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
     private readonly ISyncFixedUpdate _syncFixedUpdate;
     private readonly IUnityWrapper _unityWrapper;
     private readonly IMonoBehaviourController _monoBehaviourController;
+    private readonly ILogger _logger;
 
     private readonly List<KeyValuePair<Type, List<StaticFieldStorage>>> _staticFields = new();
     private readonly List<Type> _dontDestroyOnLoads = new();
@@ -45,12 +47,13 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
     private bool _pendingResumePausedExecution;
 
     public GameRestart(IVirtualEnvironmentFactory virtualEnvironmentFactory, ISyncFixedUpdate syncFixedUpdate,
-        IUnityWrapper unityWrapper, IMonoBehaviourController monoBehaviourController)
+        IUnityWrapper unityWrapper, IMonoBehaviourController monoBehaviourController, ILogger logger)
     {
         _virtualEnvironmentFactory = virtualEnvironmentFactory;
         _syncFixedUpdate = syncFixedUpdate;
         _unityWrapper = unityWrapper;
         _monoBehaviourController = monoBehaviourController;
+        _logger = logger;
 
         StoreStaticFields();
         StoreDontDestroyOnLoads();
@@ -94,7 +97,7 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
                         continue;
                     }
 
-                    Plugin.Log.LogDebug($"Found DontDestroyOnLoad type: {type.FullName}");
+                    _logger.LogDebug($"Found DontDestroyOnLoad type: {type.FullName}");
                     _dontDestroyOnLoads.Add(type.ResolveReflection());
                     break;
                 }
@@ -169,8 +172,7 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
                         if (processedField) continue;
                         // lazy solution right now so we store null for fields that are not set in the static constructor
                         var field = fields[i];
-                        // TODO remove hardcoded dependency
-                        Plugin.Log.LogDebug(
+                        _logger.LogDebug(
                             $"Found static field: {type.FullName}.{field.Name} with value of null");
                         staticFields.Add(new(field.ResolveReflection(), null));
                     }
@@ -204,8 +206,7 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
                             continue;
 
                         var value = field.GetValue(null);
-                        // TODO remove hardcoded dependency
-                        Plugin.Log.LogDebug(
+                        _logger.LogDebug(
                             $"Cloning and storing static field {type.FullName}.{field.Name} with value " +
                             (value == null
                                 ? "null"
@@ -244,8 +245,7 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
                 var valueString = staticField.Value == null
                     ? "null"
                     : staticField.Value.ToString();
-                // TODO remove hardcoded dependency
-                Plugin.Log.LogDebug(
+                _logger.LogDebug(
                     $"Setting static field {type.FullName}.{staticField.Field.Name} to value {valueString}");
                 // TODO remove hardcoded dependency
                 var fieldClone = Helper.MakeDeepCopy(staticField.Value, staticField.Field.FieldType);
@@ -266,23 +266,23 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
         StopScriptExecution();
         SetStaticFields();
         _syncFixedUpdate.OnSync(SoftRestartOperation, 1);
-        Plugin.Log.LogDebug("Soft restarting, pending FixedUpdate call");
+        _logger.LogDebug("Soft restarting, pending FixedUpdate call");
     }
 
     private void SoftRestartOperation()
     {
-        Plugin.Log.LogInfo("Soft restarting");
+        _logger.LogInfo("Soft restarting");
 
         var env = _virtualEnvironmentFactory.GetVirtualEnv();
         env.GameTime.StartupTime = _softRestartTime;
         SceneHelper.LoadScene(0);
 
-        Plugin.Log.LogDebug("random setting state");
+        _logger.LogDebug("random setting state");
 
         RandomWrap.InitState((int)env.Seed);
 
-        Plugin.Log.LogInfo("Finish soft restarting");
-        Plugin.Log.LogInfo($"System time: {DateTime.Now}");
+        _logger.LogInfo("Finish soft restarting");
+        _logger.LogInfo($"System time: {DateTime.Now}");
 
         PendingRestart = false;
         _pendingResumePausedExecution = true;
@@ -290,7 +290,7 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
 
     private void StopScriptExecution()
     {
-        Plugin.Log.LogDebug("Stopping MonoBehaviour execution");
+        _logger.LogDebug("Stopping MonoBehaviour execution");
         _monoBehaviourController.PausedExecution = true;
     }
 
@@ -320,7 +320,7 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
         if (!_pendingResumePausedExecution) return;
         _pendingResumePausedExecution = false;
         _monoBehaviourController.PausedExecution = false;
-        Plugin.Log.LogDebug("Resuming MonoBehaviour execution");
+        _logger.LogDebug("Resuming MonoBehaviour execution");
     }
 
     private class StaticFieldStorage
