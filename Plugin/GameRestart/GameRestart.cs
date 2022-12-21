@@ -241,9 +241,12 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
             var staticFields = typeAndStaticFields.Value;
             foreach (var staticField in staticFields)
             {
+                var valueString = staticField.Value == null
+                    ? "null"
+                    : staticField.Value.ToString();
                 // TODO remove hardcoded dependency
                 Plugin.Log.LogDebug(
-                    $"Setting static field {type.FullName}.{staticField.Field.Name} to value {staticField.Value}");
+                    $"Setting static field {type.FullName}.{staticField.Field.Name} to value {valueString}");
                 // TODO remove hardcoded dependency
                 var fieldClone = Helper.MakeDeepCopy(staticField.Value, staticField.Field.FieldType);
                 staticField.Field.SetValue(null, fieldClone);
