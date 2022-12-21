@@ -76,15 +76,22 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
                 var methods = type.Methods;
                 foreach (var method in methods)
                 {
+                    if (!method.HasBody) continue;
+
                     var instructions = method.Body.Instructions;
-                    if (!instructions.Any(instruction =>
-                            instruction.OpCode == OpCodes.Call &&
-                            instruction.Operand is MethodReference { Name: "DontDestroyOnLoad" } methodReference &&
-                            methodReference.DeclaringType.FullName == objectTypeName &&
-                            methodReference.Parameters.Count == 1 &&
-                            methodReference.Parameters[0].ParameterType.FullName ==
-                            objectTypeName &&
-                            methodReference.ReturnType.Name == "Void")) continue;
+                    if (!instructions.Any(instruction => instruction.OpCode == OpCodes.Call &&
+                                                         instruction.Operand is MethodReference
+                                                         {
+                                                             Name: "DontDestroyOnLoad",
+                                                             Parameters.Count : 1,
+                                                             ReturnType.Name: "Void",
+                                                         } methodReference &&
+                                                         methodReference.DeclaringType.FullName == objectTypeName &&
+                                                         methodReference.Parameters[0].ParameterType.FullName ==
+                                                         objectTypeName))
+                    {
+                        continue;
+                    }
 
                     Plugin.Log.LogDebug($"Found DontDestroyOnLoad type: {type.FullName}");
                     var dontDestroyOnLoadType = assembly.GetType(type.FullName);
@@ -119,45 +126,109 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
                 continue;
             }
 
-            var types = assembly.GetTypes();
-            foreach (var type in types)
             {
-                var fields = type.GetFields(AccessTools.all);
-                if (fields.Length == 0)
+                var assemblyDefinition = AssemblyDefinition.ReadAssembly(assembly.Location);
+                var types = assemblyDefinition.MainModule.Types;
+
+                foreach (var type in types)
                 {
-                    continue;
-                }
+                    var staticFields = new List<StaticFieldStorage>();
 
-                var staticFields = new List<StaticFieldStorage>();
-                foreach (var field in fields)
+                    var fields = type.Fields.Where(x => x.IsStatic && !x.IsLiteral).ToArray();
+                    if (fields.Length == 0) continue;
+
+                    var processedFields = new bool[fields.Length];
+
+                    var staticConstructor = type.Methods.FirstOrDefault(x => x.IsStatic && x.IsConstructor);
+
+                    if (staticConstructor != null)
+                    {
+                        if (!staticConstructor.HasBody) continue;
+                        var instructions = staticConstructor.Body.Instructions;
+                        foreach (var instruction in instructions)
+                        {
+                            // we label processedFields as true when we find a field that is set in the static constructor
+                            if (instruction.OpCode == OpCodes.Stsfld &&
+                                instruction.Operand is FieldReference fieldReference)
+                            {
+                                for (var i = 0; i < fields.Length; i++)
+                                {
+                                    if (fields[i].Name == fieldReference.Name)
+                                    {
+                                        processedFields[i] = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    for (var i = 0; i < processedFields.Length; i++)
+                    {
+                        var processedField = processedFields[i];
+                        if (processedField) continue;
+                        // lazy solution right now so we store null for fields that are not set in the static constructor
+                        var fieldInfo = assembly.GetType(type.FullName).GetField(fields[i].Name);
+                        // TODO remove hardcoded dependency
+                        Plugin.Log.LogDebug(
+                            $"Found static field: {type.FullName}.{fields[i].Name} with value of null");
+                        staticFields.Add(new(fieldInfo, null));
+                    }
+
+                    if (staticFields.Count > 0)
+                    {
+                        var fieldType = assembly.GetType(type.FullName);
+                        _staticFields.Add(new(fieldType, staticFields));
+                    }
+                }
+            }
+
+            {
+                var types = assembly.GetTypes();
+                foreach (var type in types)
                 {
-                    // ignore if not static or const
-                    if (!field.IsStatic || field.IsLiteral)
+                    var fields = type.GetFields(AccessTools.all);
+                    if (fields.Length == 0) continue;
+
+                    var typeAlreadyDefinedIndex = _staticFields.FindIndex(x => x.Key == type);
+
+                    var staticFields = new List<StaticFieldStorage>();
+                    foreach (var field in fields)
                     {
-                        continue;
+                        // ignore if not static or const
+                        if (!field.IsStatic || field.IsLiteral) continue;
+
+                        // ignore if already defined in the assembly definition
+                        if (typeAlreadyDefinedIndex > -1 &&
+                            _staticFields[typeAlreadyDefinedIndex].Value.Any(x => x.Field == field))
+                            continue;
+
+                        var value = field.GetValue(null);
+                        // TODO remove hardcoded dependency
+                        Plugin.Log.LogDebug(
+                            $"Cloning and storing static field {type.FullName}.{field.Name} with value " +
+                            (value == null
+                                ? "null"
+                                : value.ToString()));
+                        object valueClone = null;
+                        try
+                        {
+                            valueClone = Helper.MakeDeepCopy(value, field.FieldType);
+                        }
+                        catch (DeepCopyMaxRecursion)
+                        {
+                            // ignore it
+                        }
+
+                        var staticFieldStorage = new StaticFieldStorage(field, valueClone);
+                        staticFields.Add(staticFieldStorage);
                     }
 
-                    var value = field.GetValue(null);
-                    // TODO remove hardcoded dependency
-                    Plugin.Log.LogDebug(
-                        $"Cloning and storing static field {type.FullName}.{field.Name} with value " + (value == null
-                            ? "null"
-                            : value.ToString()));
-                    object valueClone = null;
-                    try
+                    if (staticFields.Count > 0)
                     {
-                        valueClone = Helper.MakeDeepCopy(value, field.FieldType);
+                        _staticFields.Add(new(type, staticFields));
                     }
-                    catch (DeepCopyMaxRecursion)
-                    {
-                        // ignore it
-                    }
-
-                    var staticFieldStorage = new StaticFieldStorage(field, valueClone);
-                    staticFields.Add(staticFieldStorage);
                 }
-
-                _staticFields.Add(new(type, staticFields));
             }
         }
     }
