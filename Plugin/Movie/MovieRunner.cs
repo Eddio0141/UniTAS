@@ -3,6 +3,7 @@ using System.Linq;
 using UniTASPlugin.FixedUpdateSync;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.GameRestart;
+using UniTASPlugin.Interfaces.Update;
 using UniTASPlugin.Movie.EngineMethods;
 using UniTASPlugin.Movie.Exceptions.ScriptEngineExceptions;
 using UniTASPlugin.Movie.LowLevel;
@@ -11,7 +12,7 @@ using UniTASPlugin.Movie.ParseInterfaces;
 
 namespace UniTASPlugin.Movie;
 
-public partial class MovieRunner : IMovieRunner
+public partial class MovieRunner : IMovieRunner, IOnPreUpdates
 {
     private readonly List<LowLevelEngine> _concurrentRunnersPostUpdate = new();
     private readonly List<LowLevelEngine> _concurrentRunnersPreUpdate = new();
@@ -90,7 +91,7 @@ public partial class MovieRunner : IMovieRunner
         }, 1);
     }
 
-    public void Update()
+    public void PreUpdate()
     {
         if (_cleanUp)
         {

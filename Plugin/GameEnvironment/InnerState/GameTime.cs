@@ -6,7 +6,7 @@ using UnityEngine;
 namespace UniTASPlugin.GameEnvironment.InnerState;
 
 // ReSharper disable once ClassNeverInstantiated.Global
-public class GameTime : IOnUpdate
+public class GameTime : IOnPreUpdates
 {
     private DateTime _startupTime = new(2000, 1, 1);
 
@@ -43,7 +43,7 @@ public class GameTime : IOnUpdate
     public double ScaledFixedTimeOffset { get; private set; }
     public float RealtimeSinceStartup { get; private set; }
 
-    public void Update()
+    public void PreUpdate()
     {
         RealtimeSinceStartup = Time.realtimeSinceStartup;
     }

@@ -20,7 +20,7 @@ namespace UniTASPlugin.GameRestart;
 // ReSharper disable once ClassNeverInstantiated.Global
 public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixedUpdate
 {
-    private DateTime softRestartTime;
+    private DateTime _softRestartTime;
 
     private readonly IVirtualEnvironmentFactory _virtualEnvironmentFactory;
     private readonly ISyncFixedUpdate _syncFixedUpdate;
@@ -261,7 +261,7 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
     public void SoftRestart(DateTime time)
     {
         PendingRestart = true;
-        softRestartTime = time;
+        _softRestartTime = time;
         DestroyDontDestroyOnLoads();
         StopScriptExecution();
         SetStaticFields();
@@ -274,7 +274,7 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
         Plugin.Log.LogInfo("Soft restarting");
 
         var env = _virtualEnvironmentFactory.GetVirtualEnv();
-        env.GameTime.StartupTime = softRestartTime;
+        env.GameTime.StartupTime = _softRestartTime;
         SceneHelper.LoadScene(0);
 
         Plugin.Log.LogDebug("random setting state");
