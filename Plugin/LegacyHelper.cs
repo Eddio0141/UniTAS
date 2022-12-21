@@ -223,7 +223,7 @@ public static class Helper
         if (type.IsArray && resultType.IsArray)
         {
             var newElementType = resultType.GetElementType();
-            var array = source as Array;
+            var array = (Array)source;
             var newArray = Array.CreateInstance(newElementType, array.Length);
             for (var i = 0; i < array.Length; i++)
             {
@@ -241,9 +241,9 @@ public static class Helper
         if (typeof(ICollection).IsAssignableFrom(type) && typeof(ICollection).IsAssignableFrom(resultType))
         {
             var resultTypeInterface = resultType.GetInterfaces()
-                .First(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(ICollection<>));
+                .First(i => i.GetGenericTypeDefinition() == typeof(ICollection<>));
             var addableResult = Activator.CreateInstance(resultType);
-            var sourceCollection = source as ICollection;
+            var sourceCollection = (ICollection)source;
             var newElementType = resultTypeInterface.GetGenericArguments()[0];
             var addOperation = AccessTools.FirstMethod(resultTypeInterface,
                 m => m.Name == "Add" && m.GetParameters().Length == 1);
