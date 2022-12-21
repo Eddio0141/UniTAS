@@ -5,6 +5,7 @@ using System.Reflection;
 using HarmonyLib;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using MonoMod.Utils;
 using UniTASPlugin.FixedUpdateSync;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.Interfaces.StartEvent;
@@ -94,8 +95,7 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
                     }
 
                     Plugin.Log.LogDebug($"Found DontDestroyOnLoad type: {type.FullName}");
-                    var dontDestroyOnLoadType = assembly.GetType(type.FullName);
-                    _dontDestroyOnLoads.Add(dontDestroyOnLoadType);
+                    _dontDestroyOnLoads.Add(type.ResolveReflection());
                     break;
                 }
             }
@@ -168,16 +168,16 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
                         var processedField = processedFields[i];
                         if (processedField) continue;
                         // lazy solution right now so we store null for fields that are not set in the static constructor
-                        var fieldInfo = assembly.GetType(type.FullName).GetField(fields[i].Name);
+                        var field = fields[i];
                         // TODO remove hardcoded dependency
                         Plugin.Log.LogDebug(
-                            $"Found static field: {type.FullName}.{fields[i].Name} with value of null");
-                        staticFields.Add(new(fieldInfo, null));
+                            $"Found static field: {type.FullName}.{field.Name} with value of null");
+                        staticFields.Add(new(field.ResolveReflection(), null));
                     }
 
                     if (staticFields.Count > 0)
                     {
-                        var fieldType = assembly.GetType(type.FullName);
+                        var fieldType = type.ResolveReflection();
                         _staticFields.Add(new(fieldType, staticFields));
                     }
                 }
