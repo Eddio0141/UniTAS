@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Linq;
 using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
 using StructureMap;
 using UniTASPlugin.GameEnvironment;
-using UniTASPlugin.Interfaces.Update;
 using UniTASPlugin.LegacyFakeGameState.GameFileSystem;
 using UniTASPlugin.LegacyGameOverlay;
 using UniTASPlugin.LegacySafeWrappers;
@@ -25,7 +23,7 @@ public class Plugin : BaseUnityPlugin
 
     public static ManualLogSource Log => instance._logger;
 
-    private IOnFixedUpdate[] _onFixedUpdates;
+    private PluginWrapper _pluginWrapper;
 
     private void Awake()
     {
@@ -34,7 +32,7 @@ public class Plugin : BaseUnityPlugin
         instance = this;
         _logger = Logger;
 
-        _onFixedUpdates = Kernel.GetAllInstances<IOnFixedUpdate>().ToArray();
+        _pluginWrapper = Kernel.GetInstance<PluginWrapper>();
 
         Logger.LogInfo("init patch");
         Harmony harmony = new($"{MyPluginInfo.PLUGIN_GUID}HarmonyPatch");
@@ -67,21 +65,14 @@ public class Plugin : BaseUnityPlugin
         Logger.LogInfo($"Plugin {MyPluginInfo.PLUGIN_NAME} is loaded!");
     }
 
-    // execution order is Awake -> FixedUpdate -> Update
     private void FixedUpdate()
     {
-        foreach (var update in _onFixedUpdates)
-        {
-            update.FixedUpdate();
-        }
-
-        // this needs to be called before checking pending soft restart or it will cause a 1 frame desync
-        //TAS.FixedUpdate();
+        _pluginWrapper.FixedUpdate();
     }
 
     private void LateUpdate()
     {
-        GameTracker.LateUpdate();
+        _pluginWrapper.LateUpdate();
     }
 
     private void OnGUI()
