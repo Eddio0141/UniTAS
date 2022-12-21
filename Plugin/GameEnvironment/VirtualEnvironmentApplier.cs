@@ -8,7 +8,7 @@ namespace UniTASPlugin.GameEnvironment;
 ///     Helper for apply game environment settings that doesn't apply on it's own.
 /// </summary>
 // ReSharper disable once ClassNeverInstantiated.Global
-public class VirtualEnvironmentApplier : IOnUpdate
+public class VirtualEnvironmentApplier : IOnPreUpdates
 {
     private readonly IVirtualEnvironmentFactory _virtualEnvironmentFactory;
 
@@ -17,7 +17,7 @@ public class VirtualEnvironmentApplier : IOnUpdate
         _virtualEnvironmentFactory = virtualEnvironmentFactory;
     }
 
-    public void Update()
+    public void PreUpdate()
     {
         ApplyEnv();
         UpdateState();

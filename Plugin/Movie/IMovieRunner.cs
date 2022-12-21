@@ -6,5 +6,4 @@ public interface IMovieRunner
     public ulong FrameCount { get; }
 
     void RunFromInput(string input);
-    void Update();
 }

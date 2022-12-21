@@ -86,13 +86,13 @@ unregister($concurrent1, true);
 get_args(-5)";
         runner.RunFromInput(input);
 
-        runner.Update();
-        runner.Update();
-        runner.Update();
+        runner.PreUpdate();
+        runner.PreUpdate();
+        runner.PreUpdate();
         runner.IsRunning.Should().BeTrue();
-        runner.Update();
+        runner.PreUpdate();
         runner.IsRunning.Should().BeTrue();
-        runner.Update();
+        runner.PreUpdate();
 
         externGetArgs.Args.Should()
             .ContainInOrder("concurrent", "True", "1", "-1", "3", "2", "-2", "4", "1", "-3", "5", "2", "-4", "3", "-5",
@@ -126,18 +126,18 @@ get_args(""checkpoint 2"")";
 
         for (var i = 0; i < 500; i++)
         {
-            runner.Update();
+            runner.PreUpdate();
         }
 
         runner.IsRunning.Should().BeTrue();
 
         externGetArgs.Args.Should().BeEmpty();
-        runner.Update();
+        runner.PreUpdate();
         externGetArgs.Args.Should().ContainInOrder("checkpoint 1");
 
         for (var i = 0; i < 501; i++)
         {
-            runner.Update();
+            runner.PreUpdate();
         }
 
         runner.IsRunning.Should().BeFalse();
@@ -177,8 +177,8 @@ get_args($test_var)
 register(""test_access"", true);
 get_args($test_var)";
         runner.RunFromInput(input);
-        runner.Update();
-        runner.Update();
+        runner.PreUpdate();
+        runner.PreUpdate();
 
         externGetArgs.Args.Should().ContainInOrder("0", "2", "2", "2");
     }
