@@ -59,6 +59,29 @@ public class MonoBehaviourPatch
         monoBehaviourController ??= Plugin.Kernel.GetInstance<IMonoBehaviourController>();
 
     [HarmonyPatch]
+    private class AwakeMultiple
+    {
+        public static IEnumerable<MethodBase> TargetMethods() => GetEventMethods("Awake");
+
+        public static void Prefix()
+        {
+            PluginWrapper.Awake();
+        }
+
+        // ReSharper disable once UnusedParameter.Local
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            if (ex != null)
+            {
+                Plugin.Log.LogError(
+                    $"Error patching MonoBehaviour.Awake in all types, closing tool since continuing can cause desyncs: {ex}");
+            }
+
+            return ex;
+        }
+    }
+
+    [HarmonyPatch]
     private class UpdateMultiple
     {
         public static IEnumerable<MethodBase> TargetMethods() => GetEventMethods("Update");
@@ -82,13 +105,13 @@ public class MonoBehaviourPatch
     }
 
     [HarmonyPatch]
-    private class OnGUIMultiple
+    private class OnEnableMultiple
     {
-        public static IEnumerable<MethodBase> TargetMethods() => GetEventMethods("OnGUI");
+        public static IEnumerable<MethodBase> TargetMethods() => GetEventMethods("OnEnable");
 
         public static void Prefix()
         {
-            PluginWrapper.OnGUI();
+            PluginWrapper.OnEnable();
         }
 
         // ReSharper disable once UnusedParameter.Local
@@ -97,7 +120,30 @@ public class MonoBehaviourPatch
             if (ex != null)
             {
                 Plugin.Log.LogError(
-                    $"Error patching MonoBehaviour.OnGUI in all types, closing tool since continuing can cause desyncs: {ex}");
+                    $"Error patching MonoBehaviour.OnEnable in all types, closing tool since continuing can cause desyncs: {ex}");
+            }
+
+            return ex;
+        }
+    }
+
+    [HarmonyPatch]
+    private class StartMultiple
+    {
+        public static IEnumerable<MethodBase> TargetMethods() => GetEventMethods("Start");
+
+        public static void Prefix()
+        {
+            PluginWrapper.Start();
+        }
+
+        // ReSharper disable once UnusedParameter.Local
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            if (ex != null)
+            {
+                Plugin.Log.LogError(
+                    $"Error patching MonoBehaviour.Start in all types, closing tool since continuing can cause desyncs: {ex}");
             }
 
             return ex;
@@ -179,7 +225,9 @@ public class MonoBehaviourPatch
 
         private static readonly string[] ExcludeNamespaces =
         {
+            "TMPro",
             "UnityEngine",
+            "Unity",
             "UniTASPlugin",
             "BepInEx"
         };
@@ -196,8 +244,8 @@ public class MonoBehaviourPatch
                     foreach (var type in types)
                     {
                         // TODO remove hardcoded type name
-                        if (!type.IsAbstract && type.IsSubclassOf(typeof(MonoBehaviour)) && (type.Namespace == null ||
-                                !ExcludeNamespaces.Any(type.Namespace.StartsWith)))
+                        if (!type.IsAbstract && type.IsSubclassOf(typeof(MonoBehaviour)) && (type.FullName == null ||
+                                !ExcludeNamespaces.Any(type.FullName.StartsWith)))
                         {
                             Plugin.Log.LogDebug($"type name: {type.FullName}");
                             monoBehaviourTypes.Add(type);
