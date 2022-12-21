@@ -7,6 +7,8 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using UniTASPlugin.FixedUpdateSync;
 using UniTASPlugin.GameEnvironment;
+using UniTASPlugin.Interfaces.StartEvent;
+using UniTASPlugin.Interfaces.Update;
 using UniTASPlugin.LegacyExceptions;
 using UniTASPlugin.LegacySafeWrappers;
 using UniTASPlugin.MonoBehaviourController;
@@ -15,7 +17,7 @@ using UniTASPlugin.UnitySafeWrappers.Interfaces;
 namespace UniTASPlugin.GameRestart;
 
 // ReSharper disable once ClassNeverInstantiated.Global
-public class GameRestart : IGameRestart
+public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixedUpdate
 {
     private DateTime softRestartTime;
 
@@ -39,6 +41,7 @@ public class GameRestart : IGameRestart
     // ReSharper restore StringLiteralTypo
 
     public bool PendingRestart { get; private set; }
+    private bool _pendingResumePausedExecution;
 
     public GameRestart(IVirtualEnvironmentFactory virtualEnvironmentFactory, ISyncFixedUpdate syncFixedUpdate,
         IUnityWrapper unityWrapper, IMonoBehaviourController monoBehaviourController)
@@ -186,18 +189,15 @@ public class GameRestart : IGameRestart
         PendingRestart = true;
         softRestartTime = time;
         DestroyDontDestroyOnLoads();
-        //StopScriptExecution();
+        StopScriptExecution();
         SetStaticFields();
         _syncFixedUpdate.OnSync(SoftRestartOperation, 1);
-        Plugin.Log.LogInfo("Soft restarting, pending FixedUpdate call");
+        Plugin.Log.LogDebug("Soft restarting, pending FixedUpdate call");
     }
 
     private void SoftRestartOperation()
     {
         Plugin.Log.LogInfo("Soft restarting");
-
-        _monoBehaviourController.PausedExecution = false;
-        Plugin.Log.LogDebug("Resuming MonoBehaviour execution");
 
         var env = _virtualEnvironmentFactory.GetVirtualEnv();
         env.GameTime.StartupTime = softRestartTime;
@@ -211,12 +211,42 @@ public class GameRestart : IGameRestart
         Plugin.Log.LogInfo($"System time: {DateTime.Now}");
 
         PendingRestart = false;
+        _pendingResumePausedExecution = true;
     }
 
     private void StopScriptExecution()
     {
         Plugin.Log.LogDebug("Stopping MonoBehaviour execution");
         _monoBehaviourController.PausedExecution = true;
+    }
+
+    public void Awake()
+    {
+        PendingResumePausedExecution();
+    }
+
+    public void OnEnable()
+    {
+        PendingResumePausedExecution();
+    }
+
+    public void Start()
+    {
+        PendingResumePausedExecution();
+    }
+
+    // plugin will call this as a backup
+    public void FixedUpdate()
+    {
+        PendingResumePausedExecution();
+    }
+
+    private void PendingResumePausedExecution()
+    {
+        if (!_pendingResumePausedExecution) return;
+        _pendingResumePausedExecution = false;
+        _monoBehaviourController.PausedExecution = false;
+        Plugin.Log.LogDebug("Resuming MonoBehaviour execution");
     }
 
     private class StaticFieldStorage
