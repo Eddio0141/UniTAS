@@ -57,7 +57,6 @@ public class Plugin : BaseUnityPlugin
         var env = Kernel.GetInstance<IVirtualEnvironmentFactory>().GetVirtualEnv();
         RandomWrap.InitState((int)env.Seed);
 
-        GameTracker.Init();
         SystemInfo.Init();
         Overlay.Init();
 
