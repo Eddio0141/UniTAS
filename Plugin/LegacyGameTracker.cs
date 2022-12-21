@@ -2,7 +2,6 @@
 using System.Linq;
 using UniTASPlugin.LegacySafeWrappers;
 using UnityEngine;
-using Object = UnityEngine.Object;
 
 // ReSharper disable StringLiteralTypo
 
@@ -10,22 +9,6 @@ namespace UniTASPlugin;
 
 public static class GameTracker
 {
-    private static List<int> FirstObjIDs { get; } = new();
-    private static List<int> DontDestroyOnLoadIDs { get; } = new();
-
-    public static void Init()
-    {
-        var objs = Object.FindObjectsOfType(typeof(MonoBehaviour));
-        foreach (var obj in objs)
-        {
-            var id = obj.GetInstanceID();
-            if (DontDestroyOnLoadIDs.Contains(id))
-            {
-                FirstObjIDs.Add(id);
-            }
-        }
-    }
-
     public static void LateUpdate()
     {
         foreach (var scene in asyncSceneLoads)
@@ -119,22 +102,5 @@ public static class GameTracker
     {
         var uid = new AsyncOperationWrap(instance).UID;
         return uid != 0 && asyncSceneLoadsStall.Any(x => x.UID == uid);
-    }
-
-    public static void DontDestroyOnLoadCall(Object @object)
-    {
-        if (@object == null)
-            return;
-        var id = @object.GetInstanceID();
-        if (DontDestroyOnLoadIDs.Contains(id))
-            return;
-        DontDestroyOnLoadIDs.Add(id);
-    }
-
-    public static void DestroyObject(Object @object)
-    {
-        if (@object == null)
-            return;
-        _ = DontDestroyOnLoadIDs.Remove(@object.GetInstanceID());
     }
 }
