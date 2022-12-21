@@ -26,8 +26,7 @@ public class Plugin : BaseUnityPlugin
 
     private void Awake()
     {
-        if (instance != null)
-            return;
+        if (instance != null) return;
         instance = this;
         _logger = Logger;
 
