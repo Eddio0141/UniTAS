@@ -3,6 +3,7 @@ using UniTASPlugin.FixedUpdateSync;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.GameEnvironment.InnerState;
 using UniTASPlugin.GameRestart;
+using UniTASPlugin.Interfaces.StartEvent;
 using UniTASPlugin.Interfaces.Update;
 using UniTASPlugin.MonoBehaviourController;
 using UniTASPlugin.Movie;
@@ -29,11 +30,16 @@ public static class ContainerRegister
 
             c.For<PluginWrapper>().Singleton();
 
-            c.For<IGameRestart>().Singleton().Use<GameRestart.GameRestart>();
+            c.For<GameRestart.GameRestart>().Singleton();
+            c.For<IGameRestart>().Use(x => x.GetInstance<GameRestart.GameRestart>());
+            c.For<IOnAwake>().Use(x => x.GetInstance<GameRestart.GameRestart>());
+            c.For<IOnEnable>().Use(x => x.GetInstance<GameRestart.GameRestart>());
+            c.For<IOnStart>().Use(x => x.GetInstance<GameRestart.GameRestart>());
+            c.For<IOnFixedUpdate>().Use(x => x.GetInstance<GameRestart.GameRestart>());
 
             c.For<SyncFixedUpdate>().Singleton();
-            c.For<IOnFixedUpdate>().Use(x => x.GetInstance<SyncFixedUpdate>());
             c.For<ISyncFixedUpdate>().Use(x => x.GetInstance<SyncFixedUpdate>());
+            c.For<IOnFixedUpdate>().Use(x => x.GetInstance<SyncFixedUpdate>());
             c.For<IOnUpdate>().Use(x => x.GetInstance<SyncFixedUpdate>());
 
             c.For<PatchReverseInvoker>().Singleton();
