@@ -30,6 +30,11 @@ public static class ContainerRegister
 
             c.For<PluginWrapper>().Singleton();
 
+            c.For<MovieRunner>().Singleton();
+            c.For<IMovieRunner>().Use(x => x.GetInstance<MovieRunner>());
+            c.For<IOnUpdate>().Use(x => x.GetInstance<MovieRunner>());
+            c.For<IOnFixedUpdate>().Use(x => x.GetInstance<MovieRunner>());
+
             c.For<GameRestart.GameRestart>().Singleton();
             c.For<IGameRestart>().Use(x => x.GetInstance<GameRestart.GameRestart>());
             c.For<IOnAwake>().Use(x => x.GetInstance<GameRestart.GameRestart>());
@@ -43,8 +48,6 @@ public static class ContainerRegister
             c.For<IOnUpdate>().Use(x => x.GetInstance<SyncFixedUpdate>());
 
             c.For<PatchReverseInvoker>().Singleton();
-
-            c.For<IMovieRunner>().Singleton().Use<MovieRunner>();
 
             c.For<VirtualEnvironment>().Singleton();
 

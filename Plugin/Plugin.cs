@@ -17,10 +17,9 @@ public class Plugin : BaseUnityPlugin
 {
     public static readonly IContainer Kernel = ContainerRegister.Init();
 
-    private ManualLogSource _logger;
-
     private static Plugin instance;
 
+    private ManualLogSource _logger;
     public static ManualLogSource Log => instance._logger;
 
     private PluginWrapper _pluginWrapper;
