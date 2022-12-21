@@ -1,3 +1,4 @@
+using System;
 using UniTASPlugin.Interfaces.Update;
 using UniTASPlugin.LegacySafeWrappers;
 
@@ -40,7 +41,7 @@ public class VirtualEnvironmentApplier : IOnUpdate
         {
             // is it a round number?
             var fps = 1f / env.FrameTime;
-            if (fps != (int)fps)
+            if (Math.Abs(fps - (int)fps) > 0.0001)
             {
                 // warn user
                 Plugin.Log.LogWarning(

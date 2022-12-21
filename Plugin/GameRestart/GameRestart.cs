@@ -9,6 +9,7 @@ using UniTASPlugin.FixedUpdateSync;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.LegacyExceptions;
 using UniTASPlugin.LegacySafeWrappers;
+using UniTASPlugin.MonoBehaviourController;
 using UniTASPlugin.UnitySafeWrappers.Interfaces;
 
 namespace UniTASPlugin.GameRestart;
@@ -21,6 +22,7 @@ public class GameRestart : IGameRestart
     private readonly IVirtualEnvironmentFactory _virtualEnvironmentFactory;
     private readonly ISyncFixedUpdate _syncFixedUpdate;
     private readonly IUnityWrapper _unityWrapper;
+    private readonly IMonoBehaviourController _monoBehaviourController;
 
     private readonly List<KeyValuePair<Type, List<StaticFieldStorage>>> _staticFields = new();
     private readonly List<Type> _dontDestroyOnLoads = new();
@@ -39,11 +41,12 @@ public class GameRestart : IGameRestart
     public bool PendingRestart { get; private set; }
 
     public GameRestart(IVirtualEnvironmentFactory virtualEnvironmentFactory, ISyncFixedUpdate syncFixedUpdate,
-        IUnityWrapper unityWrapper)
+        IUnityWrapper unityWrapper, IMonoBehaviourController monoBehaviourController)
     {
         _virtualEnvironmentFactory = virtualEnvironmentFactory;
         _syncFixedUpdate = syncFixedUpdate;
         _unityWrapper = unityWrapper;
+        _monoBehaviourController = monoBehaviourController;
 
         StoreStaticFields();
         StoreDontDestroyOnLoads();
@@ -96,6 +99,7 @@ public class GameRestart : IGameRestart
             var dontDestroyOnLoadObjects = _unityWrapper.Object.FindObjectsOfType(type);
             foreach (var dontDestroyOnLoadObject in dontDestroyOnLoadObjects)
             {
+                _unityWrapper.MonoBehaviour.StopAllCoroutines(dontDestroyOnLoadObject);
                 _unityWrapper.Object.Destroy(dontDestroyOnLoadObject);
             }
         }
@@ -192,7 +196,9 @@ public class GameRestart : IGameRestart
     {
         Plugin.Log.LogInfo("Soft restarting");
 
-        Plugin.Log.LogDebug("finished setting fields, loading scene");
+        _monoBehaviourController.PausedExecution = false;
+        Plugin.Log.LogDebug("Resuming MonoBehaviour execution");
+
         var env = _virtualEnvironmentFactory.GetVirtualEnv();
         env.GameTime.StartupTime = softRestartTime;
         SceneHelper.LoadScene(0);
@@ -209,26 +215,8 @@ public class GameRestart : IGameRestart
 
     private void StopScriptExecution()
     {
-        var allMonoBehaviours =
-            _unityWrapper.Object.FindObjectsOfType(_unityWrapper.MonoBehaviour.MonoBehaviourType);
-
-        // TODO remove hardcoded dependencies
-        var ignoreTypes = new[]
-        {
-            "UniTASPlugin.Plugin",
-            "UnityEngine.EventSystems.EventSystem"
-        };
-
-        foreach (var monoBehaviour in allMonoBehaviours)
-        {
-            if (ignoreTypes.Contains(monoBehaviour.GetType().FullName))
-            {
-                continue;
-            }
-
-            _unityWrapper.MonoBehaviour.StopAllCoroutines(monoBehaviour);
-            _unityWrapper.Object.Destroy(monoBehaviour);
-        }
+        Plugin.Log.LogDebug("Stopping MonoBehaviour execution");
+        _monoBehaviourController.PausedExecution = true;
     }
 
     private class StaticFieldStorage

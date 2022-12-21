@@ -46,8 +46,7 @@ public partial class MovieRunner : IMovieRunner
 
     public void RunFromInput(string input)
     {
-        if (IsRunning) throw new MovieAlreadyRunningException();
-        if (_setup) throw new MovieAlreadyRunningException();
+        if (IsRunning || _setup) throw new MovieAlreadyRunningException();
 
         _setup = true;
 
