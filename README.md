@@ -13,9 +13,6 @@ A tool that lets you TAS unity games
 # Supporting unity versions
 For now, anything that BepInEx 5.4.21 can support, ranging from unity 3 to latest, and games that use Mono and not Il2cpp
 
-# VR Support
-No plans for now
-
 # How to build
 - Make sure you have .NET SDK 6.0 installed on your system
 - Run either `build.sh` for linux or `build.ps1` for windows
