@@ -1,8 +1,5 @@
-using System.Collections.Generic;
-using System.Linq;
 using UniTASPlugin.Interfaces.StartEvent;
 using UniTASPlugin.Interfaces.Update;
-using UniTASPlugin.Movie;
 
 namespace UniTASPlugin;
 
@@ -10,23 +7,24 @@ namespace UniTASPlugin;
 public class PluginWrapper
 {
     private bool _updated;
+    private bool _calledPreUpdate;
 
-    private readonly IMovieRunner _movieRunner;
     private readonly IOnUpdate[] _onUpdates;
     private readonly IOnFixedUpdate[] _onFixedUpdates;
     private readonly IOnAwake[] _onAwakes;
     private readonly IOnStart[] _onStarts;
     private readonly IOnEnable[] _onEnables;
+    private readonly IOnPreUpdates[] _onPreUpdates;
 
-    public PluginWrapper(IMovieRunner movieRunner, IEnumerable<IOnUpdate> onUpdates, IOnFixedUpdate[] onFixedUpdates,
-        IOnAwake[] onAwakes, IOnStart[] onStarts, IOnEnable[] onEnables)
+    public PluginWrapper(IOnUpdate[] onUpdates, IOnFixedUpdate[] onFixedUpdates,
+        IOnAwake[] onAwakes, IOnStart[] onStarts, IOnEnable[] onEnables, IOnPreUpdates[] onPreUpdates)
     {
-        _movieRunner = movieRunner;
         _onFixedUpdates = onFixedUpdates;
         _onAwakes = onAwakes;
         _onStarts = onStarts;
         _onEnables = onEnables;
-        _onUpdates = onUpdates.ToArray();
+        _onPreUpdates = onPreUpdates;
+        _onUpdates = onUpdates;
     }
 
     // calls awake before any other script
@@ -61,7 +59,8 @@ public class PluginWrapper
         if (_updated) return;
         _updated = true;
 
-        _movieRunner.Update();
+        CallOnPreUpdate();
+
         foreach (var update in _onUpdates)
         {
             update.Update();
@@ -75,7 +74,13 @@ public class PluginWrapper
     public void LateUpdate()
     {
         _updated = false;
+        _calledPreUpdate = false;
         GameTracker.LateUpdate();
+    }
+
+    public void PreFixedUpdate()
+    {
+        CallOnPreUpdate();
     }
 
     // right now I don't call this update before other scripts so I don't need to check if it was already called
@@ -84,6 +89,18 @@ public class PluginWrapper
         foreach (var update in _onFixedUpdates)
         {
             update.FixedUpdate();
+        }
+    }
+
+    private void CallOnPreUpdate()
+    {
+        if (!_calledPreUpdate)
+        {
+            _calledPreUpdate = true;
+            foreach (var onPreUpdate in _onPreUpdates)
+            {
+                onPreUpdate.PreUpdate();
+            }
         }
     }
 }

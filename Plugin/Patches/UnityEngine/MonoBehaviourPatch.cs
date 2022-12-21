@@ -73,8 +73,31 @@ public class MonoBehaviourPatch
         {
             if (ex != null)
             {
-                Plugin.Log.LogError(
+                Plugin.Log.LogFatal(
                     $"Error patching MonoBehaviour.Awake in all types, closing tool since continuing can cause desyncs: {ex}");
+            }
+
+            return ex;
+        }
+    }
+
+    [HarmonyPatch]
+    private class FixedUpdateMultiple
+    {
+        public static IEnumerable<MethodBase> TargetMethods() => GetEventMethods("FixedUpdate");
+
+        public static void Prefix()
+        {
+            PluginWrapper.PreFixedUpdate();
+        }
+
+        // ReSharper disable once UnusedParameter.Local
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            if (ex != null)
+            {
+                Plugin.Log.LogFatal(
+                    $"Error patching MonoBehaviour.FixedUpdate in all types, closing tool since continuing can cause desyncs: {ex}");
             }
 
             return ex;
@@ -96,7 +119,7 @@ public class MonoBehaviourPatch
         {
             if (ex != null)
             {
-                Plugin.Log.LogError(
+                Plugin.Log.LogFatal(
                     $"Error patching MonoBehaviour.Update in all types, closing tool since continuing can cause desyncs: {ex}");
             }
 
@@ -119,7 +142,7 @@ public class MonoBehaviourPatch
         {
             if (ex != null)
             {
-                Plugin.Log.LogError(
+                Plugin.Log.LogFatal(
                     $"Error patching MonoBehaviour.OnEnable in all types, closing tool since continuing can cause desyncs: {ex}");
             }
 
@@ -142,7 +165,7 @@ public class MonoBehaviourPatch
         {
             if (ex != null)
             {
-                Plugin.Log.LogError(
+                Plugin.Log.LogFatal(
                     $"Error patching MonoBehaviour.Start in all types, closing tool since continuing can cause desyncs: {ex}");
             }
 
@@ -281,7 +304,7 @@ public class MonoBehaviourPatch
         {
             if (ex != null)
             {
-                Plugin.Log.LogError(
+                Plugin.Log.LogFatal(
                     $"Error patching MonoBehaviour event methods in all types, closing tool since continuing can cause desyncs: {ex}");
             }
 
