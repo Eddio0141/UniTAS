@@ -2,7 +2,6 @@ using FluentAssertions;
 using UniTASPlugin.FixedUpdateSync;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.GameRestart;
-using UniTASPlugin.Movie;
 using UniTASPlugin.Movie.EngineMethods;
 using UniTASPlugin.Movie.Parsers;
 using UniTASPlugin.Movie.Parsers.MoviePropertyParser;
