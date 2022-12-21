@@ -1,6 +1,7 @@
 using System;
 using UniTASPlugin.Interfaces.Update;
 using UniTASPlugin.LegacySafeWrappers;
+using UniTASPlugin.Logger;
 
 namespace UniTASPlugin.GameEnvironment;
 
@@ -11,10 +12,12 @@ namespace UniTASPlugin.GameEnvironment;
 public class VirtualEnvironmentApplier : IOnPreUpdates
 {
     private readonly IVirtualEnvironmentFactory _virtualEnvironmentFactory;
+    private readonly ILogger _logger;
 
-    public VirtualEnvironmentApplier(IVirtualEnvironmentFactory virtualEnvironmentFactory)
+    public VirtualEnvironmentApplier(IVirtualEnvironmentFactory virtualEnvironmentFactory, ILogger logger)
     {
         _virtualEnvironmentFactory = virtualEnvironmentFactory;
+        _logger = logger;
     }
 
     public void PreUpdate()
@@ -44,7 +47,7 @@ public class VirtualEnvironmentApplier : IOnPreUpdates
             if (Math.Abs(fps - (int)fps) > 0.0001)
             {
                 // warn user
-                Plugin.Log.LogWarning(
+                _logger.LogWarning(
                     "Frame time is not an integer FPS and can't apply accurately, rounding to nearest integer FPS");
             }
         }
