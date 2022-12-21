@@ -240,18 +240,23 @@ public static class Helper
         // is type a collection?
         if (typeof(ICollection).IsAssignableFrom(type) && typeof(ICollection).IsAssignableFrom(resultType))
         {
-            var resultTypeInterface = resultType.GetInterfaces()
-                .First(i => i.GetGenericTypeDefinition() == typeof(ICollection<>));
-            var addableResult = Activator.CreateInstance(resultType);
             var sourceCollection = (ICollection)source;
-            var newElementType = resultTypeInterface.GetGenericArguments()[0];
-            var addOperation = AccessTools.FirstMethod(resultTypeInterface,
-                m => m.Name == "Add" && m.GetParameters().Length == 1);
+
+            var resultTypeInterface = resultType.GetInterfaces()
+                .First(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
+            var resultTypeGenericArgument = resultTypeInterface.GetGenericArguments()[0];
+            var iEnumerableType = typeof(IEnumerable<>).MakeGenericType(resultTypeGenericArgument);
+
+            var tempResultList =
+                (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(resultTypeGenericArgument));
             foreach (var element in sourceCollection)
             {
-                var newElement = MakeDeepCopy(element, newElementType, processor, pathRoot);
-                addOperation.Invoke(addableResult, new[] { newElement });
+                var newElement = MakeDeepCopy(element, resultTypeGenericArgument, processor, pathRoot);
+                tempResultList.Add(newElement);
             }
+
+            var addableResult = AccessTools.Constructor(resultType, new[] { iEnumerableType })
+                .Invoke(new object[] { tempResultList });
 
             MakeDeepCopyRecursionDepth--;
             return addableResult;
