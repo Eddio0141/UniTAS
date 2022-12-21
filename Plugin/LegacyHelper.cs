@@ -8,7 +8,6 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using HarmonyLib;
 using UniTASPlugin.LegacyExceptions;
-using UniTASPlugin.LegacySafeWrappers;
 using UniTASPlugin.ReverseInvoker;
 using UnityEngine;
 
@@ -35,69 +34,11 @@ public static class Helper
         return versionRaw;
     }
 
-    public static bool ValueHasDecimalPoints(float value)
-    {
-        return value.ToString().Contains(".");
-    }
-
-    public static Assembly[] GetGameAssemblies()
-    {
-        var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-        var resetIgnoreAssemblies = new[]
-        {
-            "mscorlib",
-            "BepInEx.Preloader",
-            "BepInEx",
-            "System.Core",
-            "0Harmony",
-            "System",
-            "HarmonyXInterop",
-            "System.Configuration",
-            "System.Xml",
-            "DemystifyExceptions",
-            "StartupProfiler",
-            "Purchasing.Common",
-            "netstandard",
-            "UniTASPlugin"
-        };
-        var resetIgnoreAssmelibes_startsWith = new[]
-        {
-            "Unity.",
-            "UnityEngine.",
-            "Mono.",
-            "MonoMod.",
-            "HarmonyDTFAssembly"
-        };
-
-        return assemblies.Where(assembly =>
-        {
-            foreach (var assemblyCheck in resetIgnoreAssmelibes_startsWith)
-                if (assembly.FullName.StartsWith(assemblyCheck))
-                    return false;
-            foreach (var assemblyCheck in resetIgnoreAssemblies)
-                if (assembly.FullName == assemblyCheck)
-                    return false;
-            return true;
-        }).ToArray();
-    }
-
     public static string GameRootDir()
     {
         var appBase = AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
         var rev = Plugin.Kernel.GetInstance<PatchReverseInvoker>();
         return appBase ?? rev.Invoke(System.IO.Path.GetFullPath, ".");
-    }
-
-    public static string GameName()
-    {
-        return AppInfo.ProductName();
-    }
-
-    public static string GameExePath()
-    {
-        // TODO other platform support that's not windows
-        var rev = Plugin.Kernel.GetInstance<PatchReverseInvoker>();
-        return rev.Invoke(System.IO.Path.Combine, GameRootDir(), $"{GameName()}.exe");
     }
 
     /// <summary>
@@ -130,7 +71,7 @@ public static class Helper
         result = (T)MakeDeepCopy(source, typeof(T), processor, pathRoot);
     }
 
-    private static int MakeDeepCopyRecursionDepth;
+    private static int makeDeepCopyRecursionDepth;
 
     private const int MakeDeepCopyRecursionDepthLimit = 500;
 
@@ -143,16 +84,16 @@ public static class Helper
     public static object MakeDeepCopy(object source, Type resultType,
         Func<string, Traverse, Traverse, object> processor = null, string pathRoot = "")
     {
-        MakeDeepCopyRecursionDepth++;
-        if (MakeDeepCopyRecursionDepth > MakeDeepCopyRecursionDepthLimit)
+        makeDeepCopyRecursionDepth++;
+        if (makeDeepCopyRecursionDepth > MakeDeepCopyRecursionDepthLimit)
         {
-            MakeDeepCopyRecursionDepth = 0;
+            makeDeepCopyRecursionDepth = 0;
             throw new DeepCopyMaxRecursion();
         }
 
         if (source is null || resultType is null)
         {
-            MakeDeepCopyRecursionDepth--;
+            makeDeepCopyRecursionDepth--;
             return null;
         }
 
@@ -161,13 +102,13 @@ public static class Helper
 
         if (type.IsPrimitive)
         {
-            MakeDeepCopyRecursionDepth--;
+            makeDeepCopyRecursionDepth--;
             return source;
         }
 
         if (type.IsEnum)
         {
-            MakeDeepCopyRecursionDepth--;
+            makeDeepCopyRecursionDepth--;
             return Enum.ToObject(resultType, (int)source);
         }
 
@@ -202,7 +143,7 @@ public static class Helper
                     var addableResult = Activator.CreateInstance(resultType);
                     var newElementType = resultType.GetGenericArguments()[0];
                     var i = 0;
-                    foreach (var element in source as IEnumerable)
+                    foreach (var element in (IEnumerable)source)
                     {
                         var iStr = i++.ToString();
                         var path = pathRoot.Length > 0 ? pathRoot + "." + iStr : iStr;
@@ -210,7 +151,7 @@ public static class Helper
                         _ = addInvoker(addableResult, newElement);
                     }
 
-                    MakeDeepCopyRecursionDepth--;
+                    makeDeepCopyRecursionDepth--;
                     return addableResult;
                 }
             }
@@ -224,7 +165,7 @@ public static class Helper
         {
             var newElementType = resultType.GetElementType();
             var array = (Array)source;
-            var newArray = Array.CreateInstance(newElementType, array.Length);
+            var newArray = Array.CreateInstance(newElementType ?? throw new InvalidOperationException(), array.Length);
             for (var i = 0; i < array.Length; i++)
             {
                 var iStr = i.ToString();
@@ -233,7 +174,7 @@ public static class Helper
                 newArray.SetValue(newElement, i);
             }
 
-            MakeDeepCopyRecursionDepth--;
+            makeDeepCopyRecursionDepth--;
             return newArray;
         }
 
@@ -258,14 +199,14 @@ public static class Helper
             var addableResult = AccessTools.Constructor(resultType, new[] { iEnumerableType })
                 .Invoke(new object[] { tempResultList });
 
-            MakeDeepCopyRecursionDepth--;
+            makeDeepCopyRecursionDepth--;
             return addableResult;
         }
 
         var ns = type.Namespace;
         if (ns == "System" || (ns?.StartsWith("System.") ?? false))
         {
-            MakeDeepCopyRecursionDepth--;
+            makeDeepCopyRecursionDepth--;
             return source;
         }
 
@@ -288,7 +229,7 @@ public static class Helper
             var value = processor is not null ? processor(path, src, dst) : src.GetValue();
             dst.SetValue(MakeDeepCopy(value, dst.GetValueType(), processor, path));
         });
-        MakeDeepCopyRecursionDepth--;
+        makeDeepCopyRecursionDepth--;
         return result;
     }
 
