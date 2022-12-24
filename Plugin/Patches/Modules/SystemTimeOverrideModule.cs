@@ -2,7 +2,6 @@ using System;
 using System.Reflection;
 using HarmonyLib;
 using UniTASPlugin.GameEnvironment;
-using UniTASPlugin.LegacyPatches;
 using UniTASPlugin.Patches.PatchGroups;
 using UniTASPlugin.Patches.PatchTypes;
 using UniTASPlugin.ReverseInvoker;
@@ -31,7 +30,7 @@ public class SystemTimeOverrideModule
         {
             private static Exception Cleanup(MethodBase original, Exception ex)
             {
-                return PatcherHelper.CleanupIgnoreException(original, ex);
+                return PatchHelper.CleanupIgnoreFail(original, ex);
             }
 
             private static bool Prefix(ref DateTime __result)
@@ -40,6 +39,24 @@ public class SystemTimeOverrideModule
                     return true;
                 var gameTime = VirtualEnvironmentFactory.GetVirtualEnv().GameTime;
                 __result = gameTime.CurrentTime;
+                return false;
+            }
+        }
+
+        [HarmonyPatch(typeof(Environment), nameof(Environment.TickCount), MethodType.Getter)]
+        private class get_TickCount
+        {
+            private static Exception Cleanup(MethodBase original, Exception ex)
+            {
+                return PatchHelper.CleanupIgnoreFail(original, ex);
+            }
+
+            private static bool Prefix(ref int __result)
+            {
+                if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
+                    return true;
+                var gameTime = VirtualEnvironmentFactory.GetVirtualEnv().GameTime;
+                __result = (int)(gameTime.RealtimeSinceStartup * 1000f);
                 return false;
             }
         }
