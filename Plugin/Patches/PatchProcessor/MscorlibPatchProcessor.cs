@@ -3,7 +3,7 @@ using UniTASPlugin.GameInfo;
 using UniTASPlugin.Logger;
 using UniTASPlugin.Patches.PatchTypes;
 
-namespace UniTASPlugin.Patches.PatchTypeProcessor;
+namespace UniTASPlugin.Patches.PatchProcessor;
 
 public class MscorlibPatchProcessor : PatchProcessor
 {
