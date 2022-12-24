@@ -16,4 +16,8 @@ public class PatchGroup : Attribute
     public PatchGroup(string version) : this(version, version)
     {
     }
+
+    public PatchGroup()
+    {
+    }
 }
