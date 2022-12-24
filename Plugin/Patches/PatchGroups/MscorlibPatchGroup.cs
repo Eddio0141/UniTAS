@@ -4,7 +4,7 @@ public class MscorlibPatchGroup : PatchGroup
 {
     public string RangeStart { get; }
     public string RangeEnd { get; }
-    public bool NetStandard21 { get; }
+    public bool? NetStandard21 { get; }
 
     public MscorlibPatchGroup(string rangeStart, string rangeEnd, bool netStandard21)
     {
