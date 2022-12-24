@@ -1,5 +1,8 @@
+using System.Collections.Generic;
+using System.Linq;
 using UniTASPlugin.Interfaces.StartEvent;
 using UniTASPlugin.Interfaces.Update;
+using UniTASPlugin.Patches.PatchProcessor;
 
 namespace UniTASPlugin;
 
@@ -16,15 +19,22 @@ public class PluginWrapper
     private readonly IOnEnable[] _onEnables;
     private readonly IOnPreUpdates[] _onPreUpdates;
 
-    public PluginWrapper(IOnUpdate[] onUpdates, IOnFixedUpdate[] onFixedUpdates,
-        IOnAwake[] onAwakes, IOnStart[] onStarts, IOnEnable[] onEnables, IOnPreUpdates[] onPreUpdates)
+    public PluginWrapper(IEnumerable<IOnUpdate> onUpdates, IEnumerable<IOnFixedUpdate> onFixedUpdates,
+        IEnumerable<IOnAwake> onAwakes, IEnumerable<IOnStart> onStarts, IEnumerable<IOnEnable> onEnables,
+        IEnumerable<IOnPreUpdates> onPreUpdates,
+        IEnumerable<PatchProcessor> patchProcessors)
     {
-        _onFixedUpdates = onFixedUpdates;
-        _onAwakes = onAwakes;
-        _onStarts = onStarts;
-        _onEnables = onEnables;
-        _onPreUpdates = onPreUpdates;
-        _onUpdates = onUpdates;
+        _onFixedUpdates = onFixedUpdates.ToArray();
+        _onAwakes = onAwakes.ToArray();
+        _onStarts = onStarts.ToArray();
+        _onEnables = onEnables.ToArray();
+        _onPreUpdates = onPreUpdates.ToArray();
+        _onUpdates = onUpdates.ToArray();
+
+        foreach (var patchProcessor in patchProcessors)
+        {
+            patchProcessor.ProcessModules();
+        }
     }
 
     // calls awake before any other script
