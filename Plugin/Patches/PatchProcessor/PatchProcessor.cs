@@ -55,7 +55,20 @@ public abstract class PatchProcessor
             {
                 foreach (var group in patchGroups)
                 {
-                    PatchAllInGroup(group);
+                    var patchGroupAttribute = (PatchGroup)group.GetCustomAttributes(typeof(PatchGroup), false).First();
+                    ulong? versionStart = patchGroupAttribute.RangeStart == null
+                        ? null
+                        : VersionStringToNumber(patchGroupAttribute.RangeStart);
+                    ulong? versionEnd = patchGroupAttribute.RangeEnd == null
+                        ? null
+                        : VersionStringToNumber(patchGroupAttribute.RangeEnd);
+
+                    // patch group version check
+                    if (versionStart == null || versionEnd == null ||
+                        (versionStart <= version && version <= versionEnd))
+                    {
+                        PatchAllInGroup(group);
+                    }
                 }
 
                 continue;
@@ -68,6 +81,8 @@ public abstract class PatchProcessor
             foreach (var patchGroup in patchGroups)
             {
                 var patchGroupAttribute = (PatchGroup)patchGroup.GetCustomAttributes(typeof(PatchGroup), false).First();
+                if (patchGroupAttribute.RangeStart == null || patchGroupAttribute.RangeEnd == null) continue;
+
                 var versionStart = VersionStringToNumber(patchGroupAttribute.RangeStart);
                 var versionEnd = VersionStringToNumber(patchGroupAttribute.RangeEnd);
 
