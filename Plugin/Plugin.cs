@@ -44,6 +44,7 @@ public class Plugin : BaseUnityPlugin
 
         var gameInfo = Kernel.GetInstance<IGameInfo>();
         Logger.LogInfo($"Internally found unity version: {gameInfo.UnityVersion}");
+        Logger.LogInfo($"Internally found mscorlib version: {gameInfo.MscorlibVersion}");
         Logger.LogInfo($"Game product name: {AppInfo.ProductName()}");
         // TODO complete fixing this
         var companyNameProperty = Traverse.Create(typeof(Application)).Property("companyName");
