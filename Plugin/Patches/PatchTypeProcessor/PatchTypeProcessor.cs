@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using UniTASPlugin.Logger;
 
-namespace UniTASPlugin.Patches.ModuleProcessor;
+namespace UniTASPlugin.Patches.PatchTypeProcessor;
 
-public abstract class PatchModuleProcessor
+public abstract class PatchTypeProcessor
 {
     private readonly ILogger _logger;
 
-    protected PatchModuleProcessor(ILogger logger)
+    protected PatchTypeProcessor(ILogger logger)
     {
         _logger = logger;
     }
