@@ -34,4 +34,6 @@ public class GameInfo : IGameInfo
             return versionRaw;
         }
     }
+
+    public string MscorlibVersion => typeof(object).Assembly.GetName().Version.ToString();
 }
