@@ -14,7 +14,7 @@ using DateTimeOrig = System.DateTime;
 // ReSharper disable UnusedMember.Local
 // ReSharper disable InconsistentNaming
 
-namespace UniTASPlugin.Patches.System.IO;
+namespace UniTASPlugin.LegacyPatches.System.IO;
 
 [HarmonyPatch]
 internal static class DirectoryPatch
@@ -48,7 +48,8 @@ internal static class DirectoryPatch
 
         private static bool Prefix(string path, ref bool __result)
         {
-            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking ||
+                PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             __result = FileSystem.DirectoryExists(path);
             return false;
@@ -66,7 +67,8 @@ internal static class DirectoryPatch
         private static bool Prefix(ref string[] __result, string path, string searchPattern, bool includeFiles,
             bool includeDirs, SearchOption searchOption)
         {
-            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking ||
+                PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             __result = FileSystem.OsHelpers.GetPaths(path, searchPattern, includeFiles, includeDirs, searchOption);
             return false;
@@ -84,7 +86,8 @@ internal static class DirectoryPatch
         private static bool Prefix(ref IEnumerable<string> __result, string path, string searchPattern,
             SearchOption searchOption, bool includeFiles, bool includeDirs)
         {
-            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking ||
+                PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             __result = FileSystem.OsHelpers.GetPaths(path, searchPattern, includeFiles, includeDirs, searchOption);
             return false;
@@ -101,7 +104,8 @@ internal static class DirectoryPatch
 
         private static bool Prefix(ref string __result, string path)
         {
-            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking ||
+                PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             Helper.PathValidate(path);
             __result = new(FileSystem.ExternalHelpers.DirectorySeparatorChar, 1);
@@ -119,7 +123,8 @@ internal static class DirectoryPatch
 
         private static bool Prefix(ref DirectoryInfo __result, string path)
         {
-            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking ||
+                PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             if (path == null)
             {
@@ -167,7 +172,8 @@ internal static class DirectoryPatch
 
         private static bool Prefix(ref DirectoryInfo __result, string path)
         {
-            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking ||
+                PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             var dirInfoConstructor =
                 AccessTools.Constructor(typeof(DirectoryInfo), new[] { typeof(string), typeof(bool) });
@@ -193,7 +199,8 @@ internal static class DirectoryPatch
 
         private static bool Prefix(string path)
         {
-            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking ||
+                PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             Helper.PathValidate(path);
             if (Helper.EnvironmentIsRunningOnWindows() && path == ":")
@@ -228,7 +235,8 @@ internal static class DirectoryPatch
 
         private static bool Prefix(string path)
         {
-            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking ||
+                PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             // only do this if symlink exists
             /*
@@ -266,7 +274,8 @@ internal static class DirectoryPatch
 
         private static bool Prefix(ref DateTimeOrig __result, string path)
         {
-            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking ||
+                PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             __result = FileSystem.OsHelpers.DirAccessTime(path);
             return false;
@@ -283,7 +292,8 @@ internal static class DirectoryPatch
 
         private static bool Prefix(ref DateTimeOrig __result, string path)
         {
-            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking ||
+                PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             __result = FileSystem.OsHelpers.DirWriteTime(path);
             return false;
@@ -300,7 +310,8 @@ internal static class DirectoryPatch
 
         private static bool Prefix(ref DateTimeOrig __result, string path)
         {
-            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking ||
+                PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             __result = FileSystem.OsHelpers.DirCreationTime(path);
             return false;
@@ -317,7 +328,8 @@ internal static class DirectoryPatch
 
         private static bool Prefix(ref bool __result, string path)
         {
-            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking ||
+                PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             __result =
                 FileSystem.ExternalHelpers.DirectorySeparatorChar == '/' && path == "/" ||
@@ -336,7 +348,8 @@ internal static class DirectoryPatch
 
         private static bool Prefix(string sourceDirName, string destDirName)
         {
-            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking ||
+                PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             if (sourceDirName == null)
             {
@@ -404,7 +417,8 @@ internal static class DirectoryPatch
 
         private static bool Prefix(string path, DateTimeOrig creationTime)
         {
-            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking ||
+                PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             FileSystem.OsHelpers.SetDirCreationTime(path, creationTime);
             return false;
@@ -421,7 +435,8 @@ internal static class DirectoryPatch
 
         private static bool Prefix(string path, DateTimeOrig lastAccessTime)
         {
-            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking ||
+                PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             FileSystem.OsHelpers.SetDirAccessTime(path, lastAccessTime);
             return false;
@@ -438,7 +453,8 @@ internal static class DirectoryPatch
 
         private static bool Prefix(string path, DateTimeOrig lastWriteTime)
         {
-            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking ||
+                PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             FileSystem.OsHelpers.SetDirWriteTime(path, lastWriteTime);
             return false;
@@ -455,7 +471,8 @@ internal static class DirectoryPatch
 
         private static bool Prefix(ref string __result, string fullPath, bool thisDirOnly)
         {
-            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking ||
+                PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             var result = thisDirOnly
                 ? fullPath.EndsWith(FileSystem.ExternalHelpers.DirectorySeparatorStr) ||
@@ -481,7 +498,8 @@ internal static class DirectoryPatch
 
         private static bool Prefix(ref DirectorySecurity __result)
         {
-            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking ||
+                PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             __result = new();
             __result.AddAccessRule(new("Everyone", FileSystemRights.FullControl,
@@ -500,7 +518,8 @@ internal static class DirectoryPatch
 
         private static bool Prefix(ref string __result)
         {
-            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking ||
+                PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             __result = FileSystem.OsHelpers.WorkingDir().FullName;
             return false;
@@ -517,7 +536,8 @@ internal static class DirectoryPatch
 
         private static bool Prefix(string path)
         {
-            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking ||
+                PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             if (path == null)
             {

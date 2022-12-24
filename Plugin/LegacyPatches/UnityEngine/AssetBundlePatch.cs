@@ -13,7 +13,7 @@ using AsyncOpOrig = UnityEngine.AsyncOperation;
 // ReSharper disable RedundantAssignment
 // ReSharper disable CommentTypo
 
-namespace UniTASPlugin.Patches.UnityEngine;
+namespace UniTASPlugin.LegacyPatches.UnityEngine;
 
 [HarmonyPatch]
 internal static class AssetBundlePatch

@@ -10,7 +10,7 @@ using InputOrig = UnityEngine.Input;
 // ReSharper disable UnusedMember.Local
 // ReSharper disable UnusedParameter.Local
 
-namespace UniTASPlugin.Patches.UnityEngine;
+namespace UniTASPlugin.LegacyPatches.UnityEngine;
 
 [HarmonyPatch]
 public class InputPatch

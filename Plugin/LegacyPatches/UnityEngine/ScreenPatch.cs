@@ -9,7 +9,7 @@ using ScreenOrig = UnityEngine.Screen;
 // ReSharper disable UnusedMember.Local
 // ReSharper disable CommentTypo
 
-namespace UniTASPlugin.Patches.UnityEngine;
+namespace UniTASPlugin.LegacyPatches.UnityEngine;
 
 [HarmonyPatch]
 internal static class ScreenPatch

@@ -9,7 +9,7 @@ using AsyncOpOrig = UnityEngine.AsyncOperation;
 // ReSharper disable RedundantAssignment
 // ReSharper disable InconsistentNaming
 
-namespace UniTASPlugin.Patches.UnityEngine.SceneManagment;
+namespace UniTASPlugin.LegacyPatches.UnityEngine.SceneManagment;
 
 [HarmonyPatch]
 internal static class SceneManagerPatch

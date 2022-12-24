@@ -10,7 +10,7 @@ using TimeOrig = UnityEngine.Time;
 // ReSharper disable UnusedMember.Local
 // ReSharper disable CommentTypo
 
-namespace UniTASPlugin.Patches.UnityEngine;
+namespace UniTASPlugin.LegacyPatches.UnityEngine;
 
 #pragma warning disable IDE1006
 
