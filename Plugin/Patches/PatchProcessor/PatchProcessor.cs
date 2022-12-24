@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using HarmonyLib;
 using UniTASPlugin.Logger;
+using UniTASPlugin.Patches.PatchGroups;
 using UniTASPlugin.Patches.PatchTypes;
 
 namespace UniTASPlugin.Patches.PatchProcessor;
@@ -17,15 +17,18 @@ public abstract class PatchProcessor
     }
 
     protected abstract Type TargetPatchType { get; }
-    protected abstract string Version { get; }
+
+    /// Method to determine if the patch group should be used
+    protected abstract IEnumerable<int> ChoosePatch(PatchType patchType, PatchGroup[] patchGroups);
 
     public void ProcessModules()
     {
         // TODO replace this later
         var pluginAssembly = typeof(Plugin).Assembly;
 
-        // list of patch groups, and PatchType
-        var targetModulesAndPatchGroups = new List<KeyValuePair<List<Type>, PatchType>>();
+        // list of patch groups, patch group attributes, and PatchTypes for each modules
+        var patchGroupsAttributesAndPatchType =
+            new List<KeyValuePair<KeyValuePair<Type[], PatchGroup[]>, PatchType>>();
         foreach (var type in pluginAssembly.GetTypes())
         {
             var attributes = type.GetCustomAttributes(TargetPatchType, false);
@@ -33,126 +36,37 @@ public abstract class PatchProcessor
 
             _logger.LogInfo($"Found patch module {type.FullName}");
 
-            var patchType = (PatchType)attributes[0];
             var patchGroups = new List<Type>();
+            var patchGroupAttributes = new List<PatchGroup>();
 
             foreach (var innerType in type.GetNestedTypes(AccessTools.all))
             {
-                if (innerType.GetCustomAttributes(typeof(PatchGroup), false).Length == 0) continue;
+                var innerAttributes = innerType.GetCustomAttributes(typeof(PatchGroup), false);
+                if (innerAttributes.Length == 0) continue;
 
                 patchGroups.Add(innerType);
+                patchGroupAttributes.Add(innerAttributes[0] as PatchGroup);
             }
 
-            targetModulesAndPatchGroups.Add(new(patchGroups, patchType));
+            patchGroupsAttributesAndPatchType.Add(new(new(patchGroups.ToArray(), patchGroupAttributes.ToArray()),
+                (PatchType)attributes[0]));
         }
 
-        var version = VersionStringToNumber(Version);
-
-        foreach (var targetModulesAndPatchGroup in targetModulesAndPatchGroups)
+        foreach (var patchGroupsAndPatchType in patchGroupsAttributesAndPatchType)
         {
-            var patchGroups = targetModulesAndPatchGroup.Key;
-            var patchType = targetModulesAndPatchGroup.Value;
+            var patchType = patchGroupsAndPatchType.Value;
+            var patchGroupsAndAttributes = patchGroupsAndPatchType.Key;
 
-            // different process
-            if (patchType is { PatchAllGroups: true })
+            var chosenIndexes = ChoosePatch(patchType, patchGroupsAndAttributes.Value);
+
+            foreach (var chosenIndex in chosenIndexes)
             {
-                foreach (var group in patchGroups)
-                {
-                    var patchGroupAttribute = (PatchGroup)group.GetCustomAttributes(typeof(PatchGroup), false).First();
-                    ulong? versionStart = patchGroupAttribute.RangeStart == null
-                        ? null
-                        : VersionStringToNumber(patchGroupAttribute.RangeStart);
-                    ulong? versionEnd = patchGroupAttribute.RangeEnd == null
-                        ? null
-                        : VersionStringToNumber(patchGroupAttribute.RangeEnd);
+                var patchGroup = patchGroupsAndAttributes.Key[chosenIndex];
 
-                    // patch group version check
-                    if (versionStart == null || versionEnd == null ||
-                        (versionStart <= version && version <= versionEnd))
-                    {
-                        PatchAllInGroup(group);
-                    }
-                }
+                _logger.LogInfo($"Applying patch group {patchGroup.FullName}");
 
-                continue;
+                Harmony.CreateAndPatchAll(patchGroup);
             }
-
-            Type chosenGroup = null;
-            var chosenRangeStart = 0ul;
-            var chosenRangeEnd = 0ul;
-
-            foreach (var patchGroup in patchGroups)
-            {
-                var patchGroupAttribute = (PatchGroup)patchGroup.GetCustomAttributes(typeof(PatchGroup), false).First();
-                if (patchGroupAttribute.RangeStart == null || patchGroupAttribute.RangeEnd == null) continue;
-
-                var versionStart = VersionStringToNumber(patchGroupAttribute.RangeStart);
-                var versionEnd = VersionStringToNumber(patchGroupAttribute.RangeEnd);
-
-                if (chosenGroup == null)
-                {
-                    chosenGroup = patchGroup;
-                    chosenRangeStart = versionStart;
-                    chosenRangeEnd = versionEnd;
-                    continue;
-                }
-
-                if (versionStart <= version && version <= versionEnd)
-                {
-                    chosenGroup = patchGroup;
-                    break;
-                }
-
-                // prioritise the patch group that is closest to the current version, but lower than version
-
-                if (versionEnd < version && versionEnd > chosenRangeEnd)
-                {
-                    chosenGroup = patchGroup;
-                    chosenRangeStart = versionStart;
-                    chosenRangeEnd = versionEnd;
-                    continue;
-                }
-
-                if (versionStart > version && versionStart < chosenRangeStart)
-                {
-                    chosenGroup = patchGroup;
-                    chosenRangeStart = versionStart;
-                    chosenRangeEnd = versionEnd;
-                }
-            }
-
-            if (chosenGroup == null) continue;
-
-            // patch everything in the chosen patch group
-            PatchAllInGroup(chosenGroup);
         }
-    }
-
-    private void PatchAllInGroup(Type patchGroup)
-    {
-        foreach (var patch in patchGroup.GetNestedTypes(AccessTools.all))
-        {
-            _logger.LogDebug($"Attempting patch for {patch.FullName}");
-            Harmony.CreateAndPatchAll(patch);
-        }
-    }
-
-    private static ulong VersionStringToNumber(string version)
-    {
-        var versionParts = version.Split(new[] { '.' }, StringSplitOptions.RemoveEmptyEntries);
-        var versionNumber = 0ul;
-        var multiplier = (ulong)Math.Pow(10, versionParts.Length - 1);
-        foreach (var versionPart in versionParts)
-        {
-            if (!ulong.TryParse(versionPart, out var versionPartNumber))
-            {
-                versionPartNumber = 0;
-            }
-
-            versionNumber += versionPartNumber * multiplier;
-            multiplier /= 10;
-        }
-
-        return versionNumber;
     }
 }
