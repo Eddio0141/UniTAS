@@ -2,6 +2,7 @@ using System;
 using System.Reflection;
 using HarmonyLib;
 using UniTASPlugin.GameEnvironment;
+using UniTASPlugin.Patches.PatchGroups;
 using UniTASPlugin.Patches.PatchTypes;
 using UniTASPlugin.ReverseInvoker;
 using UnityEngine;
@@ -24,7 +25,7 @@ public class LegacyInputModule
     private static readonly IVirtualEnvironmentFactory VirtualEnvironmentFactory =
         Plugin.Kernel.GetInstance<IVirtualEnvironmentFactory>();
 
-    [PatchGroup]
+    [UnityPatchGroup]
     private class AllVersions
     {
         // gets called from GetKey

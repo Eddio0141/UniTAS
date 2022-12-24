@@ -11,6 +11,7 @@
   - Derive into a patch type, such as `UnityPatch` that modules can use as an attribute, choosing what kind of patch we are using for later processing
 - All classes using `PatchGroup` defined inside a **module** will be processed later, ill just call it patch group or something
 - Each class instances using `PatchGroup` will contain multiple harmony patches, which will be used when the patch group is selected
+- Patch group needs to be inherited into a more specific one that lets you choose what it's targetting
 
 ## Processing
 - Use `PatchProcessor` to process a certain patch type like `UnityPatch`, then rest you have to implement in the processor classes
@@ -21,17 +22,8 @@
 
 ## Base attribute for patch group
 ```cs
-public class PatchGroup : Attribute
+public abstract class PatchGroup : Attribute
 {
-    public string RangeStart { get; }
-    public string RangeEnd { get; }
-
-    public PatchGroup(string rangeStart, string rangeEnd)
-    {
-        RangeStart = rangeStart;
-        RangeEnd = rangeEnd;
-    }
-    public PatchGroup(string version) : this(module, version, version) { }
 }
 ```
 
