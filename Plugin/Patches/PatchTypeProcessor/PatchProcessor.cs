@@ -5,11 +5,11 @@ using UniTASPlugin.Logger;
 
 namespace UniTASPlugin.Patches.PatchTypeProcessor;
 
-public abstract class PatchTypeProcessor
+public abstract class PatchProcessor
 {
     private readonly ILogger _logger;
 
-    protected PatchTypeProcessor(ILogger logger)
+    protected PatchProcessor(ILogger logger)
     {
         _logger = logger;
     }
