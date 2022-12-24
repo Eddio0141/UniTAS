@@ -6,7 +6,7 @@ using AppOrig = UnityEngine.Application;
 // ReSharper disable UnusedMember.Local
 // ReSharper disable RedundantAssignment
 
-namespace UniTASPlugin.Patches.UnityEngine;
+namespace UniTASPlugin.LegacyPatches.UnityEngine;
 
 [HarmonyPatch]
 internal static class ApplicationPatch

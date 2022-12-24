@@ -13,7 +13,7 @@ using DateTimeOrig = System.DateTime;
 // ReSharper disable UnusedMember.Local
 // ReSharper disable InconsistentNaming
 
-namespace UniTASPlugin.Patches.System.IO;
+namespace UniTASPlugin.LegacyPatches.System.IO;
 
 [HarmonyPatch]
 internal static class FilePatch
@@ -28,7 +28,8 @@ internal static class FilePatch
 
         private static bool Prefix(ref bool __result, string path)
         {
-            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking ||
+                PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             __result = !string.IsNullOrEmpty(path) &&
                        path.IndexOfAny(FileSystem.ExternalHelpers.InvalidPathChars) < 0 && FileSystem.FileExists(path);
@@ -46,7 +47,8 @@ internal static class FilePatch
 
         private static bool Prefix(string sourceFileName, string destFileName, bool overwrite)
         {
-            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking ||
+                PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             FileSystem.OsHelpers.Copy(PathOrig.GetFullPath(sourceFileName), PathOrig.GetFullPath(destFileName),
                 overwrite);
@@ -64,7 +66,8 @@ internal static class FilePatch
 
         private static bool Prefix(ref string __result, string sourceFileName, string destFileName, bool overwrite)
         {
-            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking ||
+                PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             var fullPathInternal = PathOrig.GetFullPath(sourceFileName);
             var fullPathInternal2 = PathOrig.GetFullPath(destFileName);
@@ -84,7 +87,8 @@ internal static class FilePatch
 
         private static bool Prefix(string path)
         {
-            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking ||
+                PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             FileSystem.OsHelpers.DeleteFile(path);
             return false;
@@ -101,7 +105,8 @@ internal static class FilePatch
 
         private static bool Prefix(ref FileSecurity __result)
         {
-            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking ||
+                PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             __result = new FileSecurity();
             __result.AddAccessRule(new FileSystemAccessRule("Everyone", FileSystemRights.FullControl,
@@ -134,7 +139,8 @@ internal static class FilePatch
 
         private static bool Prefix(ref FileAttributes __result, string path)
         {
-            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking ||
+                PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             __result = FileSystem.OsHelpers.GetFileAttributes(path) ?? FileAttributes.Normal;
             return false;
@@ -151,7 +157,8 @@ internal static class FilePatch
 
         private static bool Prefix(string path, FileAttributes fileAttributes)
         {
-            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking ||
+                PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             FileSystem.OsHelpers.SetFileAttributes(path, fileAttributes);
             return false;
@@ -168,7 +175,8 @@ internal static class FilePatch
 
         private static bool Prefix(ref DateTimeOrig __result, string path)
         {
-            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking ||
+                PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             __result = FileSystem.OsHelpers.FileCreationTime(path);
             return false;
@@ -185,7 +193,8 @@ internal static class FilePatch
 
         private static bool Prefix(string sourceFileName, string destFileName)
         {
-            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking ||
+                PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             if (sourceFileName == null)
             {
@@ -247,7 +256,8 @@ internal static class FilePatch
         private static bool Prefix(string sourceFileName, string destinationFileName,
             string destinationBackupFileName /*, bool ignoreMetadataErrors*/)
         {
-            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking ||
+                PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             if (sourceFileName == null)
             {
@@ -343,7 +353,8 @@ internal static class FilePatch
 
         private static bool Prefix(ref DateTimeOrig __result, string path)
         {
-            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking ||
+                PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             __result = FileSystem.OsHelpers.FileAccessTime(path);
             return false;
@@ -360,7 +371,8 @@ internal static class FilePatch
 
         private static bool Prefix(ref DateTimeOrig __result, string path)
         {
-            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking ||
+                PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             __result = FileSystem.OsHelpers.FileWriteTime(path);
             return false;
@@ -377,7 +389,8 @@ internal static class FilePatch
 
         private static bool Prefix(string path, DateTimeOrig creationTime)
         {
-            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking ||
+                PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             FileSystem.OsHelpers.SetFileCreationTime(path, creationTime);
             return false;
@@ -394,7 +407,8 @@ internal static class FilePatch
 
         private static bool Prefix(string path, DateTimeOrig lastAccessTime)
         {
-            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking ||
+                PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             FileSystem.OsHelpers.SetFileAccessTime(path, lastAccessTime);
             return false;
@@ -411,7 +425,8 @@ internal static class FilePatch
 
         private static bool Prefix(string path, DateTimeOrig lastWriteTime)
         {
-            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking || PatcherHelper.InvokedFromCriticalNamespace())
+            if (Plugin.Kernel.GetInstance<PatchReverseInvoker>().Invoking ||
+                PatcherHelper.InvokedFromCriticalNamespace())
                 return true;
             FileSystem.OsHelpers.SetFileWriteTime(path, lastWriteTime);
             return false;

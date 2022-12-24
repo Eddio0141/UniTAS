@@ -8,7 +8,7 @@ using Object = UnityEngine.Object;
 
 // ReSharper disable UnusedMember.Local
 
-namespace UniTASPlugin.Patches.UnityEngine;
+namespace UniTASPlugin.LegacyPatches.UnityEngine;
 
 [HarmonyPatch]
 public class ObjectPatch

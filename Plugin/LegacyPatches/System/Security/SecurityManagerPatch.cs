@@ -5,7 +5,7 @@ using UniTASPlugin.ReverseInvoker;
 
 // ReSharper disable UnusedMember.Local
 
-namespace UniTASPlugin.Patches.System.Security;
+namespace UniTASPlugin.LegacyPatches.System.Security;
 
 [HarmonyPatch]
 internal static class SecurityManagerPatch

@@ -8,7 +8,7 @@ using UnityEngine;
 
 // ReSharper disable UnusedMember.Local
 
-namespace UniTASPlugin.Patches.UnityEngine;
+namespace UniTASPlugin.LegacyPatches.UnityEngine;
 
 [HarmonyPatch]
 public class MonoBehaviourPatch

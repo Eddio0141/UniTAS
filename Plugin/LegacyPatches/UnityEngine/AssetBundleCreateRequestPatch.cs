@@ -9,7 +9,7 @@ using AssetBundleCreateRequestOrig = UnityEngine.AssetBundleCreateRequest;
 // ReSharper disable UnusedMember.Local
 // ReSharper disable SuggestBaseTypeForParameter
 
-namespace UniTASPlugin.Patches.UnityEngine;
+namespace UniTASPlugin.LegacyPatches.UnityEngine;
 
 [HarmonyPatch]
 internal static class AssetBundleCreateRequestPatch

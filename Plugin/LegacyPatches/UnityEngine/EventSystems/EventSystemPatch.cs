@@ -7,7 +7,7 @@ using UniTASPlugin.ReverseInvoker;
 // ReSharper disable InconsistentNaming
 // ReSharper disable UnusedMember.Local
 
-namespace UniTASPlugin.Patches.UnityEngine.EventSystems;
+namespace UniTASPlugin.LegacyPatches.UnityEngine.EventSystems;
 
 [HarmonyPatch]
 internal static class EventSystemPatch

@@ -9,7 +9,7 @@ using EnvOrig = System.Environment;
 // ReSharper disable RedundantAssignment
 // ReSharper disable UnusedMember.Local
 
-namespace UniTASPlugin.Patches.System;
+namespace UniTASPlugin.LegacyPatches.System;
 
 [HarmonyPatch]
 internal static class EnvironmentPatch

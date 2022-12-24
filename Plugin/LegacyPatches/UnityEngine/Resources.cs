@@ -9,7 +9,7 @@ using AsyncOpOrig = UnityEngine.AsyncOperation;
 // ReSharper disable InconsistentNaming
 // ReSharper disable RedundantAssignment
 
-namespace UniTASPlugin.Patches.UnityEngine;
+namespace UniTASPlugin.LegacyPatches.UnityEngine;
 
 internal static class Helper
 {

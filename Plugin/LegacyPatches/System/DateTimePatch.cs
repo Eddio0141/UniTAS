@@ -9,7 +9,7 @@ using DateTimeOrig = System.DateTime;
 // ReSharper disable UnusedMember.Local
 // ReSharper disable RedundantAssignment
 
-namespace UniTASPlugin.Patches.System;
+namespace UniTASPlugin.LegacyPatches.System;
 
 [HarmonyPatch]
 internal static class DateTimePatch

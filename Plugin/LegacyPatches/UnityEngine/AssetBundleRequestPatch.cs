@@ -9,7 +9,7 @@ using AssetBundleRequestOrig = UnityEngine.AssetBundleRequest;
 // ReSharper disable InconsistentNaming
 // ReSharper disable UnusedMember.Local
 
-namespace UniTASPlugin.Patches.UnityEngine;
+namespace UniTASPlugin.LegacyPatches.UnityEngine;
 
 [HarmonyPatch]
 internal static class AssetBundleRequestPatch

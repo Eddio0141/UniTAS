@@ -8,7 +8,7 @@ using UniTASPlugin.ReverseInvoker;
 // ReSharper disable UnusedMember.Local
 // ReSharper disable RedundantAssignment
 
-namespace UniTASPlugin.Patches.UnityEngine;
+namespace UniTASPlugin.LegacyPatches.UnityEngine;
 
 [HarmonyPatch]
 internal class SystemInfoPatch

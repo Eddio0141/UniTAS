@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 
-namespace UniTASPlugin.Patches;
+namespace UniTASPlugin.LegacyPatches;
 
 public static class PatcherHelper
 {
