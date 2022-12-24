@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using UniTASPlugin.Interfaces.StartEvent;
 using UniTASPlugin.Interfaces.Update;
+using UniTASPlugin.Patches.PatchProcessor;
 
 namespace UniTASPlugin;
 
@@ -17,7 +19,8 @@ public class PluginWrapper
     private readonly IOnPreUpdates[] _onPreUpdates;
 
     public PluginWrapper(IOnUpdate[] onUpdates, IOnFixedUpdate[] onFixedUpdates,
-        IOnAwake[] onAwakes, IOnStart[] onStarts, IOnEnable[] onEnables, IOnPreUpdates[] onPreUpdates)
+        IOnAwake[] onAwakes, IOnStart[] onStarts, IOnEnable[] onEnables, IOnPreUpdates[] onPreUpdates,
+        IEnumerable<PatchProcessor> patchProcessors)
     {
         _onFixedUpdates = onFixedUpdates;
         _onAwakes = onAwakes;
@@ -25,6 +28,11 @@ public class PluginWrapper
         _onEnables = onEnables;
         _onPreUpdates = onPreUpdates;
         _onUpdates = onUpdates;
+
+        foreach (var patchProcessor in patchProcessors)
+        {
+            patchProcessor.ProcessModules();
+        }
     }
 
     // calls awake before any other script
