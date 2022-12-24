@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -9,31 +8,11 @@ using System.Threading;
 using HarmonyLib;
 using UniTASPlugin.LegacyExceptions;
 using UniTASPlugin.ReverseInvoker;
-using UnityEngine;
 
 namespace UniTASPlugin;
 
 public static class Helper
 {
-    public static string GetUnityVersion()
-    {
-        const string unityPlayerPath = @".\UnityPlayer.dll";
-        string versionRaw;
-        var rev = Plugin.Kernel.GetInstance<PatchReverseInvoker>();
-        if (rev.Invoke(System.IO.File.Exists, unityPlayerPath))
-        {
-            var fullPath = rev.Invoke(System.IO.Path.GetFullPath, unityPlayerPath);
-            var fileVersion = FileVersionInfo.GetVersionInfo(fullPath);
-            versionRaw = fileVersion.FileVersion;
-        }
-        else
-        {
-            versionRaw = Application.unityVersion;
-        }
-
-        return versionRaw;
-    }
-
     public static string GameRootDir()
     {
         var appBase = AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
