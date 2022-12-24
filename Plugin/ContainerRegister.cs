@@ -8,6 +8,7 @@ using UniTASPlugin.Interfaces.Update;
 using UniTASPlugin.MonoBehaviourController;
 using UniTASPlugin.Movie;
 using UniTASPlugin.Movie.EngineMethods;
+using UniTASPlugin.Patches.PatchProcessor;
 using UniTASPlugin.ReverseInvoker;
 
 namespace UniTASPlugin;
@@ -25,7 +26,8 @@ public static class ContainerRegister
 
                 // scanner.AddAllTypesOf(typeof(IOnUpdate));
                 // scanner.AddAllTypesOf(typeof(IOnFixedUpdate));
-                scanner.AddAllTypesOf(typeof(EngineExternalMethod));
+                scanner.AddAllTypesOf<EngineExternalMethod>();
+                scanner.AddAllTypesOf<PatchProcessor>();
             });
 
             c.For<PluginWrapper>().Singleton();
