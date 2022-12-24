@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UniTASPlugin.Logger;
 
-namespace UniTASPlugin.Patches.PatchTypeProcessor;
+namespace UniTASPlugin.Patches.PatchProcessor;
 
 public abstract class PatchProcessor
 {
