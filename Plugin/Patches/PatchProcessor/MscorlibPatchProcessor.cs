@@ -31,7 +31,8 @@ public class MscorlibPatchProcessor : PatchProcessor
                 var patchGroup = patchGroups[i];
                 var mscorlibPatchGroup = (MscorlibPatchGroup)patchGroup;
 
-                if (isNetstandard21 != mscorlibPatchGroup.NetStandard21) continue;
+                if (mscorlibPatchGroup.NetStandard21 != null &&
+                    isNetstandard21 != mscorlibPatchGroup.NetStandard21) continue;
 
                 ulong? versionStart = mscorlibPatchGroup.RangeStart == null
                     ? null
