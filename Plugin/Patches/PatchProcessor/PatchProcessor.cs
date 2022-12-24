@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using HarmonyLib;
 using UniTASPlugin.Logger;
 using UniTASPlugin.Patches.PatchTypes;
 
@@ -30,10 +31,12 @@ public abstract class PatchProcessor
             var attributes = type.GetCustomAttributes(TargetPatchType, false);
             if (attributes.Length == 0) continue;
 
+            _logger.LogInfo($"Found patch module {type.FullName}");
+
             var patchType = (PatchType)attributes[0];
             var patchGroups = new List<Type>();
 
-            foreach (var innerType in type.GetNestedTypes())
+            foreach (var innerType in type.GetNestedTypes(AccessTools.all))
             {
                 if (innerType.GetCustomAttributes(typeof(PatchGroup), false).Length == 0) continue;
 
@@ -127,10 +130,10 @@ public abstract class PatchProcessor
 
     private void PatchAllInGroup(Type patchGroup)
     {
-        foreach (var patch in patchGroup.GetNestedTypes())
+        foreach (var patch in patchGroup.GetNestedTypes(AccessTools.all))
         {
-            _logger.LogDebug($"Attempting patch for {patch.Name}");
-            HarmonyLib.Harmony.CreateAndPatchAll(patch);
+            _logger.LogDebug($"Attempting patch for {patch.FullName}");
+            Harmony.CreateAndPatchAll(patch);
         }
     }
 
