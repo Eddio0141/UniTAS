@@ -9,11 +9,11 @@
 # Implementation
 - There is a class that patch types can derive from called `PatchType`
   - Derive into a patch type, such as `UnityPatch` that modules can use as an attribute, choosing what kind of patch we are using for later processing
-- All classes using `PatchVersions` defined inside a **module** will be processed later, ill just call it patch group or something
-- Each class instances using `PatchVersions` will contain multiple harmony patches, which will be used when the patch group is selected
+- All classes using `PatchGroup` defined inside a **module** will be processed later, ill just call it patch group or something
+- Each class instances using `PatchGroup` will contain multiple harmony patches, which will be used when the patch group is selected
 
 ## Processing
-- Use `PatchModuleProcessor` to process a certain patch type like `UnityPatch`, then rest you have to implement in the processor classes
+- Use `PatchProcessor` to process a certain patch type like `UnityPatch`, then rest you have to implement in the processor classes
 
 # Implementation structure
 - Assuming already made a patch module such as `UnityPatch`, apply attribute onto a module class
@@ -21,17 +21,17 @@
 
 ## Base attribute for patch group
 ```cs
-public class PatchVersions : Attribute
+public class PatchGroup : Attribute
 {
     public string RangeStart { get; }
     public string RangeEnd { get; }
 
-    public PatchVersions(string rangeStart, string rangeEnd)
+    public PatchGroup(string rangeStart, string rangeEnd)
     {
         RangeStart = rangeStart;
         RangeEnd = rangeEnd;
     }
-    public PatchVersions(string version) : this(module, version, version) { }
+    public PatchGroup(string version) : this(module, version, version) { }
 }
 ```
 
@@ -46,7 +46,7 @@ public class InputPatchModule
 
 ## Base processor
 ```cs
-public abstract class PatchModuleProcessor
+public abstract class PatchProcessor
 {
     /// Patch type the processor is targetting
     protected abstract Type TargetPatchType();
@@ -54,7 +54,7 @@ public abstract class PatchModuleProcessor
     /// Method to determine if the patch group should be used
     /// Return an index on which group should be used
     /// Version is supplied for determining what should be used
-    protected abstract int ChoosePatch(string version, IEnumarable<PatchVersions> patchGroups);
+    protected abstract int ChoosePatch(string version, IEnumarable<PatchGroup> patchGroups);
 
     public void ProcessModules()
     {
