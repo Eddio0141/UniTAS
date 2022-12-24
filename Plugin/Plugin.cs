@@ -4,6 +4,7 @@ using BepInEx.Logging;
 using HarmonyLib;
 using StructureMap;
 using UniTASPlugin.GameEnvironment;
+using UniTASPlugin.GameInfo;
 using UniTASPlugin.LegacyFakeGameState.GameFileSystem;
 using UniTASPlugin.LegacyGameOverlay;
 using UniTASPlugin.LegacySafeWrappers;
@@ -41,7 +42,8 @@ public class Plugin : BaseUnityPlugin
         // TODO way of getting device type
         FileSystem.Init(DeviceType.Windows);
 
-        Logger.LogInfo($"Internally found unity version: {Helper.GetUnityVersion()}");
+        var gameInfo = Kernel.GetInstance<IGameInfo>();
+        Logger.LogInfo($"Internally found unity version: {gameInfo.UnityVersion}");
         Logger.LogInfo($"Game product name: {AppInfo.ProductName()}");
         // TODO complete fixing this
         var companyNameProperty = Traverse.Create(typeof(Application)).Property("companyName");
