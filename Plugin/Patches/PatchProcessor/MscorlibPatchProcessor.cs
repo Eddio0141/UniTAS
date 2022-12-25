@@ -22,7 +22,6 @@ public class MscorlibPatchProcessor : PatchProcessor
     {
         var mscorlibVersion = VersionStringToNumber(_gameInfo.MscorlibVersion);
         var netstandardVersion = _gameInfo.NetStandardVersion;
-        var isNetstandard21 = netstandardVersion == "2.1.0.0";
 
         if (patchType.PatchAllGroups)
         {
@@ -31,19 +30,14 @@ public class MscorlibPatchProcessor : PatchProcessor
                 var patchGroup = patchGroups[i];
                 var mscorlibPatchGroup = (MscorlibPatchGroup)patchGroup;
 
-                if (mscorlibPatchGroup.NetStandard21 != null &&
-                    isNetstandard21 != mscorlibPatchGroup.NetStandard21) continue;
+                if (mscorlibPatchGroup.NetStandardVersion != null &&
+                    netstandardVersion != mscorlibPatchGroup.NetStandardVersion) continue;
 
-                ulong? versionStart = mscorlibPatchGroup.RangeStart == null
-                    ? null
-                    : VersionStringToNumber(mscorlibPatchGroup.RangeStart);
-                ulong? versionEnd = mscorlibPatchGroup.RangeEnd == null
-                    ? null
-                    : VersionStringToNumber(mscorlibPatchGroup.RangeEnd);
+                var versionStart = VersionStringToNumber(mscorlibPatchGroup.RangeStart);
+                var versionEnd = VersionStringToNumber(mscorlibPatchGroup.RangeEnd, ulong.MaxValue);
 
                 // patch group version check
-                if (versionStart == null || versionEnd == null ||
-                    (versionStart <= mscorlibVersion && mscorlibVersion <= versionEnd))
+                if (versionStart <= mscorlibVersion && mscorlibVersion <= versionEnd)
                 {
                     yield return i;
                 }
@@ -54,35 +48,16 @@ public class MscorlibPatchProcessor : PatchProcessor
         {
             var patchGroup = patchGroups[i];
             var mscorlibPatchGroup = (MscorlibPatchGroup)patchGroup;
-            if (mscorlibPatchGroup.RangeStart == null || mscorlibPatchGroup.RangeEnd == null) continue;
 
             var versionStart = VersionStringToNumber(mscorlibPatchGroup.RangeStart);
-            var versionEnd = VersionStringToNumber(mscorlibPatchGroup.RangeEnd);
+            var versionEnd = VersionStringToNumber(mscorlibPatchGroup.RangeEnd, ulong.MaxValue);
 
             if (versionStart > mscorlibVersion || mscorlibVersion > versionEnd ||
-                mscorlibPatchGroup.NetStandard21 != isNetstandard21) continue;
+                (mscorlibPatchGroup.NetStandardVersion != null &&
+                 mscorlibPatchGroup.NetStandardVersion != netstandardVersion)) continue;
 
             yield return i;
             yield break;
         }
-    }
-
-    private static ulong VersionStringToNumber(string version)
-    {
-        var versionParts = version.Split(new[] { '.' }, StringSplitOptions.RemoveEmptyEntries);
-        var versionNumber = 0ul;
-        var multiplier = (ulong)Math.Pow(10, versionParts.Length - 1);
-        foreach (var versionPart in versionParts)
-        {
-            if (!ulong.TryParse(versionPart, out var versionPartNumber))
-            {
-                versionPartNumber = 0;
-            }
-
-            versionNumber += versionPartNumber * multiplier;
-            multiplier /= 10;
-        }
-
-        return versionNumber;
     }
 }
