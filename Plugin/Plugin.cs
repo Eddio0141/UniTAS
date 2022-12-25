@@ -5,7 +5,6 @@ using HarmonyLib;
 using StructureMap;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.GameInfo;
-using UniTASPlugin.LegacyFakeGameState.GameFileSystem;
 using UniTASPlugin.LegacyGameOverlay;
 using UniTASPlugin.LegacySafeWrappers;
 using UnityEngine;
@@ -38,13 +37,9 @@ public class Plugin : BaseUnityPlugin
         harmony.PatchAll();
         Logger.LogInfo("post init patch");
 
-        // init fake file system
-        // TODO way of getting device type
-        FileSystem.Init(DeviceType.Windows);
-
         var gameInfo = Kernel.GetInstance<IGameInfo>();
         Logger.LogInfo($"Internally found unity version: {gameInfo.UnityVersion}");
-        Logger.LogInfo($"Game product name: {AppInfo.ProductName()}");
+        Logger.LogInfo($"Game product name: {gameInfo.ProductName}");
         Logger.LogDebug($"Mscorlib version: {gameInfo.MscorlibVersion}");
         Logger.LogDebug($"Netstandard version: {gameInfo.NetStandardVersion}");
         // TODO complete fixing this
