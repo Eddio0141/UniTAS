@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
+using HarmonyLib;
 using UniTASPlugin.ReverseInvoker;
 using UnityEngine;
 
@@ -56,6 +57,8 @@ public class GameInfo : IGameInfo
 
     private bool _gotNetStandardVersion;
     private string _netStandardVersion;
+    private string _gameDirectory;
+    private string _productName;
 
     public string NetStandardVersion
     {
@@ -77,6 +80,123 @@ public class GameInfo : IGameInfo
             _netStandardVersion = netStandardAssembly.GetName().Version.ToString();
             _gotNetStandardVersion = true;
             return _netStandardVersion;
+        }
+    }
+
+    public string GameDirectory
+    {
+        get
+        {
+            if (_gameDirectory != null) return _gameDirectory;
+            var appBase = AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
+            _gameDirectory =
+                appBase ?? _reverseInvokerFactory.GetReverseInvoker().Invoke(System.IO.Path.GetFullPath, ".");
+            return _gameDirectory;
+        }
+    }
+
+    public string ProductName
+    {
+        get
+        {
+            if (_productName != null) return _productName;
+
+            var productNameTraverse = Traverse.Create<Application>().Property("productName");
+            if (productNameTraverse.PropertyExists())
+            {
+                _productName = productNameTraverse.GetValue<string>();
+                return _productName;
+            }
+
+            // fallback, try get in c# way
+            var rev = _reverseInvokerFactory.GetReverseInvoker();
+            var os = rev.GetProperty(() => Environment.OSVersion);
+
+            switch (os.Platform)
+            {
+                case PlatformID.Win32NT:
+                {
+                    const string crashHandlerExe = "UnityCrashHandler64.exe";
+                    var foundExe = "";
+                    var foundMultipleExe = false;
+                    var rootDir = GameDirectory;
+                    var rootFiles = rev.Invoke(System.IO.Directory.GetFiles, rootDir);
+
+                    // iterate over exes in game root dir
+                    foreach (var path in rootFiles)
+                    {
+                        if (path == crashHandlerExe)
+                            continue;
+
+                        if (path.EndsWith(".exe"))
+                        {
+                            if (foundExe != "")
+                            {
+                                foundMultipleExe = true;
+                                break;
+                            }
+
+                            foundExe = path;
+                        }
+                    }
+
+                    if (foundExe == "")
+                        throw new("Could not find exe in game root dir");
+
+                    if (!foundMultipleExe)
+                    {
+                        _productName = rev.Invoke(System.IO.Path.GetFileNameWithoutExtension, foundExe);
+                        return _productName;
+                    }
+
+                    // use game dir name and see if it matches exe
+                    var gameDirName = rev.Invoke(a => new System.IO.DirectoryInfo(a), rootDir).Name;
+
+                    if (rev.Invoke(System.IO.File.Exists,
+                            rev.Invoke(System.IO.Path.Combine, rootDir, $"{gameDirName}.exe")))
+                    {
+                        _productName = gameDirName;
+                        return gameDirName;
+                    }
+
+                    throw new("Could not find product name, report this issue on github to get support");
+                }
+                case PlatformID.Unix:
+                {
+                    var rootDir = GameDirectory;
+                    var rootFiles = rev.Invoke(System.IO.Directory.GetFiles, rootDir);
+
+                    var exeExtensions = new[] { ".x86_64", ".x86" };
+
+                    // iterate over exes in game root dir
+                    foreach (var rootFile in rootFiles)
+                    {
+                        foreach (var exeExtension in exeExtensions)
+                        {
+                            if (rootFile.EndsWith(exeExtension))
+                            {
+                                _productName = rev.Invoke(System.IO.Path.GetFileNameWithoutExtension, rootFile);
+                                return _productName;
+                            }
+                        }
+                    }
+
+                    throw new("Could not find product name, report this issue on github to get support");
+                }
+                // case PlatformID.Win32S:
+                //     break;
+                // case PlatformID.Win32Windows:
+                //     break;
+                // case PlatformID.WinCE:
+                //     break;
+                // case PlatformID.Xbox:
+                //     break;
+                // case PlatformID.MacOSX:
+                //     break;
+                default:
+                    throw new PlatformNotSupportedException(
+                        "Unsupported platform to get product name, report this issue on github to get support");
+            }
         }
     }
 }
