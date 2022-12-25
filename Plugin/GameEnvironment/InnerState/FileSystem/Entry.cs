@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace UniTASPlugin.LegacyFakeGameState.GameFileSystem;
+namespace UniTASPlugin.GameEnvironment.InnerState.FileSystem;
 
 public abstract class Entry
 {
