@@ -2,7 +2,7 @@
 using System.IO;
 using System.Text;
 
-namespace UniTASPlugin.LegacyFakeGameState.GameFileSystem;
+namespace UniTASPlugin.GameEnvironment.InnerState.FileSystem;
 
 public class File : Entry
 {
@@ -11,7 +11,7 @@ public class File : Entry
     public string Text
     {
         get => Encoding.UTF8.GetString(Data);
-        set => Encoding.UTF8.GetBytes(value);
+        set => Data = Encoding.UTF8.GetBytes(value);
     }
 
     public string Extension { get; }

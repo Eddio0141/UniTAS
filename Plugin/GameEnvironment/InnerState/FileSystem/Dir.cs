@@ -1,13 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 
-namespace UniTASPlugin.LegacyFakeGameState.GameFileSystem;
+namespace UniTASPlugin.GameEnvironment.InnerState.FileSystem;
 
 public class Dir : Entry
 {
     public List<Entry> Children { get; private set; }
 
-    public Dir(string name, Dir parent) : base(name, parent, FileAttributes.Directory)
+    public Dir(string name, Dir parent = null) : base(name, parent, FileAttributes.Directory)
     {
         Children = new();
     }
