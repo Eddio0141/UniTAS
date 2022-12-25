@@ -27,16 +27,11 @@ public class UnityPatchProcessor : PatchProcessor
                 var group = patchGroups[i];
                 var groupUnityPatch = (UnityPatchGroup)group;
 
-                ulong? versionStart = groupUnityPatch.RangeStart == null
-                    ? null
-                    : VersionStringToNumber(groupUnityPatch.RangeStart);
-                ulong? versionEnd = groupUnityPatch.RangeEnd == null
-                    ? null
-                    : VersionStringToNumber(groupUnityPatch.RangeEnd);
+                var versionStart = VersionStringToNumber(groupUnityPatch.RangeStart);
+                var versionEnd = VersionStringToNumber(groupUnityPatch.RangeEnd, ulong.MaxValue);
 
                 // patch group version check
-                if (versionStart == null || versionEnd == null ||
-                    (versionStart <= version && version <= versionEnd))
+                if (versionStart <= version && version <= versionEnd)
                 {
                     yield return i;
                 }
@@ -49,35 +44,15 @@ public class UnityPatchProcessor : PatchProcessor
         {
             var patchGroup = patchGroups[i];
             var unityPatchGroup = (UnityPatchGroup)patchGroup;
-            if (unityPatchGroup.RangeStart == null || unityPatchGroup.RangeEnd == null) continue;
 
             var versionStart = VersionStringToNumber(unityPatchGroup.RangeStart);
-            var versionEnd = VersionStringToNumber(unityPatchGroup.RangeEnd);
+            var versionEnd = VersionStringToNumber(unityPatchGroup.RangeEnd, ulong.MaxValue);
 
             if (versionStart > version || version > versionEnd) continue;
 
             yield return i;
             yield break;
         }
-    }
-
-    private static ulong VersionStringToNumber(string version)
-    {
-        var versionParts = version.Split(new[] { '.' }, StringSplitOptions.RemoveEmptyEntries);
-        var versionNumber = 0ul;
-        var multiplier = (ulong)Math.Pow(10, versionParts.Length - 1);
-        foreach (var versionPart in versionParts)
-        {
-            if (!ulong.TryParse(versionPart, out var versionPartNumber))
-            {
-                versionPartNumber = 0;
-            }
-
-            versionNumber += versionPartNumber * multiplier;
-            multiplier /= 10;
-        }
-
-        return versionNumber;
     }
 
     protected override Type TargetPatchType => typeof(UnityPatch);

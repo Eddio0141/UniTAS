@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using HarmonyLib;
 using UniTASPlugin.Logger;
 using UniTASPlugin.Patches.PatchGroups;
@@ -68,5 +69,23 @@ public abstract class PatchProcessor
                 Harmony.CreateAndPatchAll(patchGroup);
             }
         }
+    }
+
+    /// <summary>
+    /// Helper function to convert a version string to a comparable integer
+    /// </summary>
+    /// <param name="version">Version number, all characters that is a . is removed, all non-numeric characters are set to 0</param>
+    /// <param name="fallback">Fallback value in case the operation "fails"</param>
+    /// <returns>A equal version number</returns>
+    protected static ulong VersionStringToNumber(string version, ulong fallback = 0)
+    {
+        if (version == null) return fallback;
+
+        version = version.Replace(".", "");
+
+        // replace all non-numeric characters with 0
+        var versionNumber = ulong.Parse(Regex.Replace(version, "[^0-9]", "0"));
+
+        return versionNumber;
     }
 }
