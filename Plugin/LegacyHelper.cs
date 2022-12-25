@@ -7,19 +7,11 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using HarmonyLib;
 using UniTASPlugin.LegacyExceptions;
-using UniTASPlugin.ReverseInvoker;
 
 namespace UniTASPlugin;
 
 public static class Helper
 {
-    public static string GameRootDir()
-    {
-        var appBase = AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
-        var rev = Plugin.Kernel.GetInstance<PatchReverseInvoker>();
-        return appBase ?? rev.Invoke(System.IO.Path.GetFullPath, ".");
-    }
-
     /// <summary>
     /// A cache for the <see cref="ICollection{T}.Add"/> or similar Add methods for different types.
     /// </summary>
