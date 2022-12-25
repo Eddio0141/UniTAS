@@ -59,6 +59,8 @@ public class GameInfo : IGameInfo
     private string _netStandardVersion;
     private string _gameDirectory;
     private string _productName;
+    private bool _gotNet20Subset;
+    private bool _net20Subset;
 
     public string NetStandardVersion
     {
@@ -80,6 +82,24 @@ public class GameInfo : IGameInfo
             _netStandardVersion = netStandardAssembly.GetName().Version.ToString();
             _gotNetStandardVersion = true;
             return _netStandardVersion;
+        }
+    }
+
+    /// <summary>
+    /// Assumes if net20 subset is present
+    /// </summary>
+    public bool Net20Subset
+    {
+        get
+        {
+            if (_gotNet20Subset) return _net20Subset;
+
+            // find File.GetAccessControl
+            var getAccessControl = typeof(System.IO.File).GetMethod("GetAccessControl", new[] { typeof(string) });
+
+            _gotNet20Subset = true;
+            _net20Subset = getAccessControl == null;
+            return _net20Subset;
         }
     }
 
