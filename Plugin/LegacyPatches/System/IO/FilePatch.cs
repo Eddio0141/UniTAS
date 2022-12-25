@@ -3,7 +3,7 @@ using System.IO;
 using System.Reflection;
 using System.Security.AccessControl;
 using HarmonyLib;
-using UniTASPlugin.LegacyFakeGameState.GameFileSystem;
+using UniTASPlugin.GameEnvironment.InnerState.FileSystem.OsFileSystems;
 using UniTASPlugin.ReverseInvoker;
 using DirectoryOrig = System.IO.Directory;
 using FileOrig = System.IO.File;

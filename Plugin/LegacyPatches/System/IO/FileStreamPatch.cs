@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.Remoting.Messaging;
 using HarmonyLib;
 using Microsoft.Win32.SafeHandles;
-using UniTASPlugin.LegacyFakeGameState.GameFileSystem;
+using UniTASPlugin.GameEnvironment.InnerState.FileSystem.OsFileSystems;
 using UniTASPlugin.ReverseInvoker;
 using DirOrig = System.IO.Directory;
 using FileStreamOrig = System.IO.FileStream;
