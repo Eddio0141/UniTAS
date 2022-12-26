@@ -29,6 +29,8 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
     private readonly IMonoBehaviourController _monoBehaviourController;
     private readonly ILogger _logger;
 
+    private readonly IOnGameRestart[] _onGameRestart;
+
     private readonly List<KeyValuePair<Type, List<StaticFieldStorage>>> _staticFields = new();
     private readonly List<Type> _dontDestroyOnLoads = new();
 
@@ -47,13 +49,15 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
     private bool _pendingResumePausedExecution;
 
     public GameRestart(IVirtualEnvironmentFactory virtualEnvironmentFactory, ISyncFixedUpdate syncFixedUpdate,
-        IUnityWrapper unityWrapper, IMonoBehaviourController monoBehaviourController, ILogger logger)
+        IUnityWrapper unityWrapper, IMonoBehaviourController monoBehaviourController, ILogger logger,
+        IOnGameRestart[] onGameRestart)
     {
         _virtualEnvironmentFactory = virtualEnvironmentFactory;
         _syncFixedUpdate = syncFixedUpdate;
         _unityWrapper = unityWrapper;
         _monoBehaviourController = monoBehaviourController;
         _logger = logger;
+        _onGameRestart = onGameRestart;
 
         StoreStaticFields();
         StoreDontDestroyOnLoads();
@@ -265,8 +269,17 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
         DestroyDontDestroyOnLoads();
         StopScriptExecution();
         SetStaticFields();
+        OnGameRestart();
         _syncFixedUpdate.OnSync(SoftRestartOperation, 1);
         _logger.LogDebug("Soft restarting, pending FixedUpdate call");
+    }
+
+    private void OnGameRestart()
+    {
+        foreach (var gameRestart in _onGameRestart)
+        {
+            gameRestart.OnGameRestart();
+        }
     }
 
     private void SoftRestartOperation()
