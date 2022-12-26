@@ -36,11 +36,13 @@ public class WindowsFileSystem : FileSystem
 
     protected override string GetDirectoryName(string path)
     {
-        throw new System.NotImplementedException();
+        var lastSlash = path.LastIndexOfAny(PathSeparatorChars);
+        return lastSlash == -1 ? path : path.Substring(0, lastSlash);
     }
 
     protected override string GetFileName(string path)
     {
-        throw new System.NotImplementedException();
+        var lastSlash = path.LastIndexOfAny(PathSeparatorChars);
+        return lastSlash == -1 ? path : path.Substring(lastSlash + 1);
     }
 }
