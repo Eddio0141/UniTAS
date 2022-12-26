@@ -487,5 +487,266 @@ public partial class MonoIOPatchModule
                 return false;
             }
         }
+
+        [HarmonyPatch]
+        private class Lock
+        {
+            private static MethodBase TargetMethod()
+            {
+                return AccessTools.Method(MonoIOType, "Lock",
+                    new[] { typeof(IntPtr), typeof(long), typeof(long), MonoIOErrorType });
+            }
+
+            private static bool Prefix(IntPtr handle, long position, long length)
+            {
+                var rev = ReverseInvokerFactory.GetReverseInvoker();
+                if (rev.Invoking) return true;
+
+                FileSystemManager.Lock(handle, position, length);
+
+                return false;
+            }
+        }
+
+        [HarmonyPatch]
+        private class Unlock
+        {
+            private static MethodBase TargetMethod()
+            {
+                return AccessTools.Method(MonoIOType, "Unlock",
+                    new[] { typeof(IntPtr), typeof(long), typeof(long), MonoIOErrorType });
+            }
+
+            private static bool Prefix(IntPtr handle, long position, long length)
+            {
+                var rev = ReverseInvokerFactory.GetReverseInvoker();
+                if (rev.Invoking) return true;
+
+                FileSystemManager.Unlock(handle, position, length);
+
+                return false;
+            }
+        }
+
+        [HarmonyPatch]
+        private class ConsoleOutput_get
+        {
+            private static MethodBase TargetMethod()
+            {
+                return AccessTools.PropertyGetter(MonoIOType, "ConsoleOutput");
+            }
+
+            private static bool Prefix(ref IntPtr __result)
+            {
+                var rev = ReverseInvokerFactory.GetReverseInvoker();
+                if (rev.Invoking) return true;
+
+                __result = FileSystemManager.ConsoleOutput;
+
+                return false;
+            }
+        }
+
+        [HarmonyPatch]
+        private class ConsoleInput_get
+        {
+            private static MethodBase TargetMethod()
+            {
+                return AccessTools.PropertyGetter(MonoIOType, "ConsoleInput");
+            }
+
+            private static bool Prefix(ref IntPtr __result)
+            {
+                var rev = ReverseInvokerFactory.GetReverseInvoker();
+                if (rev.Invoking) return true;
+
+                __result = FileSystemManager.ConsoleInput;
+
+                return false;
+            }
+        }
+
+        [HarmonyPatch]
+        private class ConsoleError_get
+        {
+            private static MethodBase TargetMethod()
+            {
+                return AccessTools.PropertyGetter(MonoIOType, "ConsoleError");
+            }
+
+            private static bool Prefix(ref IntPtr __result)
+            {
+                var rev = ReverseInvokerFactory.GetReverseInvoker();
+                if (rev.Invoking) return true;
+
+                __result = FileSystemManager.ConsoleError;
+
+                return false;
+            }
+        }
+
+        [HarmonyPatch]
+        private class CreatePipe
+        {
+            private static MethodBase TargetMethod()
+            {
+                return AccessTools.Method(MonoIOType, "CreatePipe",
+                    new[] { typeof(IntPtr), typeof(IntPtr) });
+            }
+
+            private static bool Prefix(ref IntPtr read_handle, ref IntPtr write_handle, ref bool __result)
+            {
+                var rev = ReverseInvokerFactory.GetReverseInvoker();
+                if (rev.Invoking) return true;
+
+                FileSystemManager.CreatePipe(out read_handle, out write_handle);
+                __result = true;
+
+                return false;
+            }
+        }
+
+        [HarmonyPatch]
+        private class DuplicateHandle
+        {
+            private static MethodBase TargetMethod()
+            {
+                return AccessTools.Method(MonoIOType, "DuplicateHandle",
+                    new[]
+                    {
+                        typeof(IntPtr), typeof(IntPtr), typeof(IntPtr), typeof(IntPtr), typeof(int), typeof(int),
+                        typeof(int)
+                    });
+            }
+
+            private static bool Prefix(IntPtr source_process_handle, IntPtr source_handle, IntPtr target_process_handle,
+                ref IntPtr target_handle, int access, int inherit, int options, ref bool __result)
+            {
+                var rev = ReverseInvokerFactory.GetReverseInvoker();
+                if (rev.Invoking) return true;
+
+                FileSystemManager.DuplicateHandle(source_process_handle, source_handle, target_process_handle,
+                    out target_handle, access, inherit, options);
+                __result = true;
+
+                return false;
+            }
+        }
+
+        [HarmonyPatch]
+        private class VolumeSeparatorChar_get
+        {
+            private static MethodBase TargetMethod()
+            {
+                return AccessTools.PropertyGetter(MonoIOType, "VolumeSeparatorChar");
+            }
+
+            private static bool Prefix(ref char __result)
+            {
+                var rev = ReverseInvokerFactory.GetReverseInvoker();
+                if (rev.Invoking) return true;
+
+                __result = FileSystemManager.VolumeSeparatorChar;
+
+                return false;
+            }
+        }
+
+        [HarmonyPatch]
+        private class DirectorySeparatorChar_get
+        {
+            private static MethodBase TargetMethod()
+            {
+                return AccessTools.PropertyGetter(MonoIOType, "DirectorySeparatorChar");
+            }
+
+            private static bool Prefix(ref char __result)
+            {
+                var rev = ReverseInvokerFactory.GetReverseInvoker();
+                if (rev.Invoking) return true;
+
+                __result = FileSystemManager.DirectorySeparatorChar;
+
+                return false;
+            }
+        }
+
+        [HarmonyPatch]
+        private class AltDirectorySeparatorChar_get
+        {
+            private static MethodBase TargetMethod()
+            {
+                return AccessTools.PropertyGetter(MonoIOType, "AltDirectorySeparatorChar");
+            }
+
+            private static bool Prefix(ref char __result)
+            {
+                var rev = ReverseInvokerFactory.GetReverseInvoker();
+                if (rev.Invoking) return true;
+
+                __result = FileSystemManager.AltDirectorySeparatorChar;
+
+                return false;
+            }
+        }
+
+        [HarmonyPatch]
+        private class PathSeparator_get
+        {
+            private static MethodBase TargetMethod()
+            {
+                return AccessTools.PropertyGetter(MonoIOType, "PathSeparator");
+            }
+
+            private static bool Prefix(ref char __result)
+            {
+                var rev = ReverseInvokerFactory.GetReverseInvoker();
+                if (rev.Invoking) return true;
+
+                __result = FileSystemManager.PathSeparator;
+
+                return false;
+            }
+        }
+
+        [HarmonyPatch]
+        private class GetTempPath
+        {
+            private static MethodBase TargetMethod()
+            {
+                return AccessTools.Method(MonoIOType, "GetTempPath", new[] { typeof(string) });
+            }
+
+            private static bool Prefix(ref string path, ref int __result)
+            {
+                var rev = ReverseInvokerFactory.GetReverseInvoker();
+                if (rev.Invoking) return true;
+
+                FileSystemManager.GetTempPath(out path);
+                __result = path.Length;
+
+                return false;
+            }
+        }
+
+        [HarmonyPatch]
+        private class RemapPath
+        {
+            private static MethodBase TargetMethod()
+            {
+                return AccessTools.Method(MonoIOType, "RemapPath", new[] { typeof(string), typeof(string) });
+            }
+
+            private static bool Prefix(string path, ref string newPath, ref bool __result)
+            {
+                var rev = ReverseInvokerFactory.GetReverseInvoker();
+                if (rev.Invoking) return true;
+
+                FileSystemManager.RemapPath(path, out newPath);
+                __result = true;
+
+                return false;
+            }
+        }
     }
 }
