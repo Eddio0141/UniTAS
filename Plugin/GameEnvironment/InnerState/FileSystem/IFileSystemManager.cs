@@ -36,4 +36,24 @@ public interface IFileSystemManager
     void SetLength(IntPtr handle, long length);
 
     void SetFileTime(IntPtr handle, long creationTime, long lastAccessTime, long lastWriteTime);
+
+    void Lock(IntPtr handle, long position, long length);
+    void Unlock(IntPtr handle, long position, long length);
+
+    IntPtr ConsoleOutput { get; }
+    IntPtr ConsoleInput { get; }
+    IntPtr ConsoleError { get; }
+
+    void CreatePipe(out IntPtr readPipe, out IntPtr writePipe);
+
+    void DuplicateHandle(IntPtr sourceProcessHandle, IntPtr sourceHandle, IntPtr targetProcessHandle,
+        out IntPtr targetHandle, int access, int inherit, int options);
+
+    char VolumeSeparatorChar { get; }
+    char DirectorySeparatorChar { get; }
+    char AltDirectorySeparatorChar { get; }
+    char PathSeparator { get; }
+
+    void GetTempPath(out string path);
+    void RemapPath(string path, out string newPath);
 }
