@@ -25,8 +25,13 @@ public class WindowsFileSystem : FileSystem
 
     public override bool DirEqualsVolume => DirectorySeparatorChar == VolumeSeparatorChar;
 
-    public WindowsFileSystem(Dir root) : base(root)
+    public WindowsFileSystem() : base(new())
     {
+        var cDrive = Root.AddDir("C:");
+        var windows = cDrive.AddDir("Windows");
+        var temp = windows.AddDir("Temp");
+
+        InitDirs(temp);
     }
 
     protected override bool PathIsAbsolute(string path)

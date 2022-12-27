@@ -19,6 +19,8 @@ public class FileSystemManager : IFileSystemManager, IOnGameRestart
     private readonly IGameInfo _gameInfo;
     private readonly IVirtualEnvironmentFactory _virtualEnvironmentFactory;
 
+    private OsFileSystems.FileSystem _currentFileSystem;
+
     public FileSystemManager(IGameInfo gameInfo, IVirtualEnvironmentFactory virtualEnvironmentFactory)
     {
         _gameInfo = gameInfo;
@@ -31,15 +33,23 @@ public class FileSystemManager : IFileSystemManager, IOnGameRestart
     {
         var gameDirPath = _gameInfo.GameDirectory;
 
-        var windowsPc = new Dir("PC");
-        windowsPc.AddDir("C:");
-        _windowsFileSystem = new WindowsFileSystem(windowsPc);
+        _windowsFileSystem = new WindowsFileSystem();
         var gameDirWindows = _windowsFileSystem.CreateDir(PathToWindows(gameDirPath));
         _windowsFileSystem.CurrentDir = gameDirWindows;
+
+        var env = _virtualEnvironmentFactory.GetVirtualEnv();
+
+        _currentFileSystem = (env.Os) switch
+        {
+            Os.Windows => _windowsFileSystem,
+            _ => throw new ArgumentOutOfRangeException()
+        };
     }
 
     public void OnGameRestart()
     {
+        Init();
+
         var env = _virtualEnvironmentFactory.GetVirtualEnv();
 
         switch (env.Os)
@@ -107,6 +117,17 @@ public class FileSystemManager : IFileSystemManager, IOnGameRestart
         throw new NotImplementedException($"Unknown path type, path: {path}");
     }
 
+    private string PathToCurrentOS(string path)
+    {
+        var env = _virtualEnvironmentFactory.GetVirtualEnv();
+
+        return env.Os switch
+        {
+            Os.Windows => PathToWindows(path),
+            _ => throw new ArgumentOutOfRangeException()
+        };
+    }
+
     private static string PathToWindows(string path)
     {
         var pathType = PathType(path);
@@ -123,5 +144,175 @@ public class FileSystemManager : IFileSystemManager, IOnGameRestart
             default:
                 throw new NotImplementedException($"Unknown path type, path: {path}");
         }
+    }
+
+    public void CreateDirectory(string path)
+    {
+        path = PathToCurrentOS(path);
+        _currentFileSystem.CreateDir(path);
+    }
+
+    public void DeleteDirectory(string path)
+    {
+        path = PathToCurrentOS(path);
+        _currentFileSystem.DeleteDir(path);
+    }
+
+    public string[] GetFileSystemEntries(string path, string pathWithPattern, int attrs, int mask)
+    {
+        path = PathToCurrentOS(path);
+        pathWithPattern = PathToCurrentOS(pathWithPattern);
+        return _currentFileSystem.GetFileSystemEntries(path, pathWithPattern, (FileAttributes)attrs,
+            (FileAttributes)mask);
+    }
+
+    public string CurrentDirectory
+    {
+        get => _currentFileSystem.CurrentDir.Path;
+        set
+        {
+            var dir = _currentFileSystem.GetDir(value);
+            if (dir == null) return;
+            _currentFileSystem.CurrentDir = dir;
+        }
+    }
+
+    public void MoveFile(string sourceFileName, string destFileName)
+    {
+        sourceFileName = PathToCurrentOS(sourceFileName);
+        destFileName = PathToCurrentOS(destFileName);
+        _currentFileSystem.MoveFile(sourceFileName, destFileName);
+    }
+
+    public void CopyFile(string sourceFileName, string destFileName, bool overwrite)
+    {
+        sourceFileName = PathToCurrentOS(sourceFileName);
+        destFileName = PathToCurrentOS(destFileName);
+        _currentFileSystem.CopyFile(sourceFileName, destFileName, overwrite);
+    }
+
+    public void DeleteFile(string path)
+    {
+        path = PathToCurrentOS(path);
+        _currentFileSystem.DeleteFile(path);
+    }
+
+    public void ReplaceFile(string sourceFileName, string destinationFileName, string destinationBackupFileName,
+        bool ignoreMetadataErrors)
+    {
+        sourceFileName = PathToCurrentOS(sourceFileName);
+        destinationFileName = PathToCurrentOS(destinationFileName);
+        destinationBackupFileName = PathToCurrentOS(destinationBackupFileName);
+        _currentFileSystem.ReplaceFile(sourceFileName, destinationFileName, destinationBackupFileName,
+            ignoreMetadataErrors);
+    }
+
+    public FileAttributes GetFileAttributes(string path)
+    {
+        path = PathToCurrentOS(path);
+        return _currentFileSystem.GetAttributes(path);
+    }
+
+    public void SetFileAttributes(string path, FileAttributes fileAttributes)
+    {
+        path = PathToCurrentOS(path);
+        _currentFileSystem.SetAttributes(path, fileAttributes);
+    }
+
+    public FileType GetFileType(IntPtr handle)
+    {
+        // TODO we only have a normal file type
+        return FileType.Disk;
+    }
+
+    public FileStat GetFileStat(string path)
+    {
+        path = PathToCurrentOS(path);
+        return _currentFileSystem.GetFileStat(path);
+    }
+
+    public IntPtr Open(string path, FileMode mode, FileAccess access, FileShare share, FileOptions options)
+    {
+        path = PathToCurrentOS(path);
+        return _currentFileSystem.Open(path, mode, access, share, options);
+    }
+
+    public void Close(IntPtr handle)
+    {
+        _currentFileSystem.Close(handle);
+    }
+
+    public int Read(IntPtr handle, byte[] dest, int destOffset, int count)
+    {
+        return _currentFileSystem.Read(handle, dest, destOffset, count);
+    }
+
+    public int Write(IntPtr handle, in byte[] src, int srcOffset, int count)
+    {
+        return _currentFileSystem.Write(handle, src, srcOffset, count);
+    }
+
+    public long Seek(IntPtr handle, long offset, SeekOrigin origin)
+    {
+        return _currentFileSystem.Seek(handle, offset, origin);
+    }
+
+    public long GetLength(IntPtr handle)
+    {
+        return _currentFileSystem.GetLength(handle);
+    }
+
+    public void SetLength(IntPtr handle, long length)
+    {
+        _currentFileSystem.SetLength(handle, length);
+    }
+
+    public void SetFileTime(IntPtr handle, long creationTime, long lastAccessTime, long lastWriteTime)
+    {
+        _currentFileSystem.SetFileTime(handle, creationTime, lastAccessTime, lastWriteTime);
+    }
+
+    // public void Lock(IntPtr handle, long position, long length)
+    // {
+    // TODO
+    //     // _currentFileSystem.Lock(handle, position, length);
+    // }
+
+    // public void Unlock(IntPtr handle, long position, long length)
+    // {
+    // TODO
+    //     throw new NotImplementedException();
+    // }
+
+    public IntPtr ConsoleOutput => _currentFileSystem.ConsoleOutputHandle.Handle;
+    public IntPtr ConsoleInput => _currentFileSystem.ConsoleInputHandle.Handle;
+    public IntPtr ConsoleError => _currentFileSystem.ConsoleErrorHandle.Handle;
+
+    // TODO
+    // public void CreatePipe(out IntPtr readPipe, out IntPtr writePipe)
+    // {
+    //     throw new NotImplementedException();
+    // }
+
+    // TODO
+    // public void DuplicateHandle(IntPtr sourceProcessHandle, IntPtr sourceHandle, IntPtr targetProcessHandle,
+    //     out IntPtr targetHandle, int access, int inherit, int options)
+    // {
+    //     throw new NotImplementedException();
+    // }
+
+    public char VolumeSeparatorChar => _currentFileSystem.VolumeSeparatorChar;
+    public char DirectorySeparatorChar => _currentFileSystem.DirectorySeparatorChar;
+    public char AltDirectorySeparatorChar => _currentFileSystem.AltDirectorySeparatorChar;
+    public char PathSeparator => _currentFileSystem.PathSeparator;
+
+    public void GetTempPath(out string path)
+    {
+        path = _currentFileSystem.GetTempPath();
+    }
+
+    public void RemapPath(string path, out string newPath)
+    {
+        throw new NotImplementedException();
     }
 }

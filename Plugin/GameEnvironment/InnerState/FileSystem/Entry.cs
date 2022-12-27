@@ -12,7 +12,7 @@ public abstract class Entry
     public DateTime WriteTime { get; set; }
     public FileAttributes Attributes { get; set; }
 
-    public string FullName => Parent == null ? Name : Path.Combine(Parent.FullName, Name);
+    public string Path => Parent == null ? (Name ?? "") : System.IO.Path.Combine(Parent.Path, Name);
 
     protected Entry(string name, Dir parent, FileAttributes attributes)
     {
@@ -22,5 +22,20 @@ public abstract class Entry
         AccessTime = CreationTime;
         WriteTime = CreationTime;
         Attributes = attributes;
+    }
+
+    protected Entry(Entry entry)
+    {
+        Name = entry.Name;
+        Parent = entry.Parent;
+        CreationTime = entry.CreationTime;
+        AccessTime = entry.AccessTime;
+        WriteTime = entry.WriteTime;
+        Attributes = entry.Attributes;
+    }
+
+    public void Delete()
+    {
+        Parent?.Delete(this);
     }
 }

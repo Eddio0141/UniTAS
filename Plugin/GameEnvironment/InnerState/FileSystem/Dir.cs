@@ -5,9 +5,9 @@ namespace UniTASPlugin.GameEnvironment.InnerState.FileSystem;
 
 public class Dir : Entry
 {
-    public List<Entry> Children { get; private set; }
+    public List<Entry> Children { get; }
 
-    public Dir(string name, Dir parent = null) : base(name, parent, FileAttributes.Directory)
+    public Dir(string name = null, Dir parent = null) : base(name, parent, FileAttributes.Directory)
     {
         Children = new();
     }

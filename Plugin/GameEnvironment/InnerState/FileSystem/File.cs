@@ -14,19 +14,16 @@ public class File : Entry
         set => Data = Encoding.UTF8.GetBytes(value);
     }
 
-    public string Extension { get; }
-
-    public File(string name, Dir parent, byte[] data) : base(name, parent, FileAttributes.Normal)
+    public File(string name, Dir parent = null, byte[] data = null) : base(name, parent, FileAttributes.Normal)
     {
         Data = data;
         CreationTime = DateTime.Now;
+        if (data == null)
+            Data = new byte[0];
     }
 
-    public File(string name, Dir parent, string data) : this(name, parent, Encoding.UTF8.GetBytes(data))
+    public File(File file) : base(file)
     {
-    }
-
-    public File(string name, Dir parent) : this(name, parent, new byte[0])
-    {
+        Data = file.Data;
     }
 }

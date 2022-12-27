@@ -29,25 +29,28 @@ public interface IFileSystemManager
 
     int Read(IntPtr handle, byte[] dest, int destOffset, int count);
     int Write(IntPtr handle, in byte[] src, int srcOffset, int count);
+
     long Seek(IntPtr handle, long offset, SeekOrigin origin);
-    void Flush(IntPtr handle);
+    // void Flush(IntPtr handle);
 
     long GetLength(IntPtr handle);
     void SetLength(IntPtr handle, long length);
 
     void SetFileTime(IntPtr handle, long creationTime, long lastAccessTime, long lastWriteTime);
 
-    void Lock(IntPtr handle, long position, long length);
-    void Unlock(IntPtr handle, long position, long length);
+    // TODO: implement
+    // void Lock(IntPtr handle, long position, long length);
+    // void Unlock(IntPtr handle, long position, long length);
 
     IntPtr ConsoleOutput { get; }
     IntPtr ConsoleInput { get; }
     IntPtr ConsoleError { get; }
 
-    void CreatePipe(out IntPtr readPipe, out IntPtr writePipe);
-
-    void DuplicateHandle(IntPtr sourceProcessHandle, IntPtr sourceHandle, IntPtr targetProcessHandle,
-        out IntPtr targetHandle, int access, int inherit, int options);
+    // TODO implement
+    // void CreatePipe(out IntPtr readPipe, out IntPtr writePipe);
+    // TODO implement
+    // void DuplicateHandle(IntPtr sourceProcessHandle, IntPtr sourceHandle, IntPtr targetProcessHandle,
+    //     out IntPtr targetHandle, int access, int inherit, int options);
 
     char VolumeSeparatorChar { get; }
     char DirectorySeparatorChar { get; }
