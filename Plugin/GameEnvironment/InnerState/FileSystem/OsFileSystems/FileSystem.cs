@@ -461,6 +461,11 @@ public abstract class FileSystem
         return _tempDir.Path;
     }
 
+    public void DumpHandles()
+    {
+        _handles.Clear();
+    }
+
     protected abstract bool PathIsAbsolute(string path);
     protected abstract string GetDirectoryName(string path);
     protected abstract string GetFileName(string path);
