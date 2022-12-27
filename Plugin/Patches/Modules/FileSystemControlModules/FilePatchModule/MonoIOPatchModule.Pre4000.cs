@@ -413,12 +413,12 @@ public partial class MonoIOPatchModule
                     new[] { typeof(IntPtr), MonoIOErrorType });
             }
 
-            private static bool Prefix(IntPtr handle, ref bool __result)
+            private static bool Prefix( /*IntPtr handle,*/ ref bool __result)
             {
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
 
-                FileSystemManager.Flush(handle);
+                // FileSystemManager.Flush(handle);
                 __result = true;
 
                 return false;
@@ -497,12 +497,13 @@ public partial class MonoIOPatchModule
                     new[] { typeof(IntPtr), typeof(long), typeof(long), MonoIOErrorType });
             }
 
-            private static bool Prefix(IntPtr handle, long position, long length)
+            private static bool Prefix( /*IntPtr handle, long position, long length*/)
             {
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
 
-                FileSystemManager.Lock(handle, position, length);
+                // TODO: Implement Lock
+                // FileSystemManager.Lock(handle, position, length);
 
                 return false;
             }
@@ -517,12 +518,13 @@ public partial class MonoIOPatchModule
                     new[] { typeof(IntPtr), typeof(long), typeof(long), MonoIOErrorType });
             }
 
-            private static bool Prefix(IntPtr handle, long position, long length)
+            private static bool Prefix( /*IntPtr handle, long position, long length*/)
             {
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
 
-                FileSystemManager.Unlock(handle, position, length);
+                // TODO: Implement Unlock
+                // FileSystemManager.Unlock(handle, position, length);
 
                 return false;
             }
@@ -599,7 +601,8 @@ public partial class MonoIOPatchModule
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
 
-                FileSystemManager.CreatePipe(out read_handle, out write_handle);
+                // TODO Implement CreatePipe
+                // FileSystemManager.CreatePipe(out read_handle, out write_handle);
                 __result = true;
 
                 return false;
@@ -625,8 +628,9 @@ public partial class MonoIOPatchModule
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
 
-                FileSystemManager.DuplicateHandle(source_process_handle, source_handle, target_process_handle,
-                    out target_handle, access, inherit, options);
+                // TODO Implement DuplicateHandle
+                // FileSystemManager.DuplicateHandle(source_process_handle, source_handle, target_process_handle,
+                //     out target_handle, access, inherit, options);
                 __result = true;
 
                 return false;
