@@ -26,7 +26,8 @@ public partial class MonoIOPatchModule
 
             private static MethodBase TargetMethod()
             {
-                return AccessTools.Method(MonoIOType, "CreateDirectory", new[] { typeof(string), MonoIOErrorType });
+                return AccessTools.Method(MonoIOType, "CreateDirectory",
+                    new[] { typeof(string), MonoIOErrorType.MakeByRefType() });
             }
 
             private static bool Prefix(string path, ref bool __result)
@@ -51,7 +52,8 @@ public partial class MonoIOPatchModule
 
             private static MethodBase TargetMethod()
             {
-                return AccessTools.Method(MonoIOType, "RemoveDirectory", new[] { typeof(string), MonoIOErrorType });
+                return AccessTools.Method(MonoIOType, "RemoveDirectory",
+                    new[] { typeof(string), MonoIOErrorType.MakeByRefType() });
             }
 
             private static bool Prefix(string path, ref bool __result)
@@ -79,7 +81,7 @@ public partial class MonoIOPatchModule
                 return AccessTools.Method(MonoIOType, "GetFileSystemEntries",
                     new[]
                     {
-                        typeof(string), typeof(string), typeof(int), typeof(bool), MonoIOErrorType
+                        typeof(string), typeof(string), typeof(int), typeof(bool), MonoIOErrorType.MakeByRefType()
                     });
             }
 
@@ -105,7 +107,7 @@ public partial class MonoIOPatchModule
 
             private static MethodBase TargetMethod()
             {
-                return AccessTools.Method(MonoIOType, "GetCurrentDirectory", new[] { MonoIOErrorType });
+                return AccessTools.Method(MonoIOType, "GetCurrentDirectory", new[] { MonoIOErrorType.MakeByRefType() });
             }
 
             private static bool Prefix(ref string __result)
@@ -129,7 +131,8 @@ public partial class MonoIOPatchModule
 
             private static MethodBase TargetMethod()
             {
-                return AccessTools.Method(MonoIOType, "SetCurrentDirectory", new[] { typeof(string), MonoIOErrorType });
+                return AccessTools.Method(MonoIOType, "SetCurrentDirectory",
+                    new[] { typeof(string), MonoIOErrorType.MakeByRefType() });
             }
 
             private static bool Prefix(string path, ref bool __result)
@@ -155,7 +158,7 @@ public partial class MonoIOPatchModule
             private static MethodBase TargetMethod()
             {
                 return AccessTools.Method(MonoIOType, "MoveFile",
-                    new[] { typeof(string), typeof(string), MonoIOErrorType });
+                    new[] { typeof(string), typeof(string), MonoIOErrorType.MakeByRefType() });
             }
 
             private static bool Prefix(string path, string dest, ref bool __result)
@@ -181,7 +184,7 @@ public partial class MonoIOPatchModule
             private static MethodBase TargetMethod()
             {
                 return AccessTools.Method(MonoIOType, "CopyFile",
-                    new[] { typeof(string), typeof(string), typeof(bool), MonoIOErrorType });
+                    new[] { typeof(string), typeof(string), typeof(bool), MonoIOErrorType.MakeByRefType() });
             }
 
             private static bool Prefix(string path, string dest, bool overwrite, ref bool __result)
@@ -206,7 +209,8 @@ public partial class MonoIOPatchModule
 
             private static MethodBase TargetMethod()
             {
-                return AccessTools.Method(MonoIOType, "DeleteFile", new[] { typeof(string), MonoIOErrorType });
+                return AccessTools.Method(MonoIOType, "DeleteFile",
+                    new[] { typeof(string), MonoIOErrorType.MakeByRefType() });
             }
 
             private static bool Prefix(string path, ref bool __result)
@@ -232,7 +236,10 @@ public partial class MonoIOPatchModule
             private static MethodBase TargetMethod()
             {
                 return AccessTools.Method(MonoIOType, "ReplaceFile",
-                    new[] { typeof(string), typeof(string), typeof(string), typeof(bool), MonoIOErrorType });
+                    new[]
+                    {
+                        typeof(string), typeof(string), typeof(string), typeof(bool), MonoIOErrorType.MakeByRefType()
+                    });
             }
 
             private static bool Prefix(string sourceFileName, string destinationFileName,
@@ -260,7 +267,7 @@ public partial class MonoIOPatchModule
             private static MethodBase TargetMethod()
             {
                 return AccessTools.Method(MonoIOType, "GetFileAttributes",
-                    new[] { typeof(string), MonoIOErrorType });
+                    new[] { typeof(string), MonoIOErrorType.MakeByRefType() });
             }
 
             private static bool Prefix(string path, ref FileAttributes __result)
@@ -285,7 +292,7 @@ public partial class MonoIOPatchModule
             private static MethodBase TargetMethod()
             {
                 return AccessTools.Method(MonoIOType, "SetFileAttributes",
-                    new[] { typeof(string), typeof(FileAttributes), MonoIOErrorType });
+                    new[] { typeof(string), typeof(FileAttributes), MonoIOErrorType.MakeByRefType() });
             }
 
             private static bool Prefix(string path, FileAttributes attrs, ref bool __result)
@@ -310,7 +317,8 @@ public partial class MonoIOPatchModule
 
             private static MethodBase TargetMethod()
             {
-                return AccessTools.Method(MonoIOType, "GetFileType", new[] { typeof(IntPtr), MonoIOErrorType });
+                return AccessTools.Method(MonoIOType, "GetFileType",
+                    new[] { typeof(IntPtr), MonoIOErrorType.MakeByRefType() });
             }
 
             private static bool Prefix(IntPtr handle, ref object __result)
@@ -336,7 +344,7 @@ public partial class MonoIOPatchModule
             private static MethodBase TargetMethod()
             {
                 return AccessTools.Method(MonoIOType, "GetFileStat",
-                    new[] { typeof(string), MonoIOStatType, MonoIOErrorType });
+                    new[] { typeof(string), MonoIOStatType.MakeByRefType(), MonoIOErrorType.MakeByRefType() });
             }
 
             private static bool Prefix(string path, ref object stat, ref bool __result)
@@ -374,7 +382,7 @@ public partial class MonoIOPatchModule
                     new[]
                     {
                         typeof(string), typeof(FileMode), typeof(FileAccess), typeof(FileShare), typeof(FileOptions),
-                        MonoIOErrorType
+                        MonoIOErrorType.MakeByRefType()
                     });
             }
 
@@ -403,7 +411,7 @@ public partial class MonoIOPatchModule
                 return AccessTools.Method(MonoIOType, "Close",
                     new[]
                     {
-                        typeof(IntPtr), MonoIOErrorType
+                        typeof(IntPtr), MonoIOErrorType.MakeByRefType()
                     });
             }
 
@@ -430,7 +438,10 @@ public partial class MonoIOPatchModule
             private static MethodBase TargetMethod()
             {
                 return AccessTools.Method(MonoIOType, "Read",
-                    new[] { typeof(IntPtr), typeof(byte[]), typeof(int), typeof(int), MonoIOErrorType });
+                    new[]
+                    {
+                        typeof(IntPtr), typeof(byte[]), typeof(int), typeof(int), MonoIOErrorType.MakeByRefType()
+                    });
             }
 
             private static bool Prefix(IntPtr handle, byte[] dest, int dest_offset, int count, ref int __result)
@@ -455,15 +466,19 @@ public partial class MonoIOPatchModule
             private static MethodBase TargetMethod()
             {
                 return AccessTools.Method(MonoIOType, "Write",
-                    new[] { typeof(IntPtr), typeof(byte[]), typeof(int), typeof(int), MonoIOErrorType });
+                    new[]
+                    {
+                        typeof(IntPtr), typeof(byte[]).MakeByRefType(), typeof(int), typeof(int),
+                        MonoIOErrorType.MakeByRefType()
+                    });
             }
 
-            private static bool Prefix(IntPtr handle, in byte[] dest, int src_offset, int count, ref int __result)
+            private static bool Prefix(IntPtr handle, in byte[] src, int src_offset, int count, ref int __result)
             {
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
 
-                __result = FileSystemManager.Write(handle, dest, src_offset, count);
+                __result = FileSystemManager.Write(handle, src, src_offset, count);
 
                 return false;
             }
@@ -480,7 +495,7 @@ public partial class MonoIOPatchModule
             private static MethodBase TargetMethod()
             {
                 return AccessTools.Method(MonoIOType, "Seek",
-                    new[] { typeof(IntPtr), typeof(long), typeof(SeekOrigin), MonoIOErrorType });
+                    new[] { typeof(IntPtr), typeof(long), typeof(SeekOrigin), MonoIOErrorType.MakeByRefType() });
             }
 
             private static bool Prefix(IntPtr handle, long offset, SeekOrigin origin, ref long __result)
@@ -505,7 +520,7 @@ public partial class MonoIOPatchModule
             private static MethodBase TargetMethod()
             {
                 return AccessTools.Method(MonoIOType, "Flush",
-                    new[] { typeof(IntPtr), MonoIOErrorType });
+                    new[] { typeof(IntPtr), MonoIOErrorType.MakeByRefType() });
             }
 
             private static bool Prefix( /*IntPtr handle,*/ ref bool __result)
@@ -531,7 +546,7 @@ public partial class MonoIOPatchModule
             private static MethodBase TargetMethod()
             {
                 return AccessTools.Method(MonoIOType, "GetLength",
-                    new[] { typeof(IntPtr), MonoIOErrorType });
+                    new[] { typeof(IntPtr), MonoIOErrorType.MakeByRefType() });
             }
 
             private static bool Prefix(IntPtr handle, ref long __result)
@@ -556,7 +571,7 @@ public partial class MonoIOPatchModule
             private static MethodBase TargetMethod()
             {
                 return AccessTools.Method(MonoIOType, "SetLength",
-                    new[] { typeof(IntPtr), typeof(long), MonoIOErrorType });
+                    new[] { typeof(IntPtr), typeof(long), MonoIOErrorType.MakeByRefType() });
             }
 
             private static bool Prefix(IntPtr handle, long length, ref bool __result)
@@ -582,7 +597,10 @@ public partial class MonoIOPatchModule
             private static MethodBase TargetMethod()
             {
                 return AccessTools.Method(MonoIOType, "SetFileTime",
-                    new[] { typeof(IntPtr), typeof(long), typeof(long), typeof(long), MonoIOErrorType });
+                    new[]
+                    {
+                        typeof(IntPtr), typeof(long), typeof(long), typeof(long), MonoIOErrorType.MakeByRefType()
+                    });
             }
 
             private static bool Prefix(IntPtr handle, long creation_time, long last_access_time, long last_write_time,
@@ -609,7 +627,7 @@ public partial class MonoIOPatchModule
             private static MethodBase TargetMethod()
             {
                 return AccessTools.Method(MonoIOType, "Lock",
-                    new[] { typeof(IntPtr), typeof(long), typeof(long), MonoIOErrorType });
+                    new[] { typeof(IntPtr), typeof(long), typeof(long), MonoIOErrorType.MakeByRefType() });
             }
 
             private static bool Prefix( /*IntPtr handle, long position, long length*/)
@@ -635,7 +653,7 @@ public partial class MonoIOPatchModule
             private static MethodBase TargetMethod()
             {
                 return AccessTools.Method(MonoIOType, "Unlock",
-                    new[] { typeof(IntPtr), typeof(long), typeof(long), MonoIOErrorType });
+                    new[] { typeof(IntPtr), typeof(long), typeof(long), MonoIOErrorType.MakeByRefType() });
             }
 
             private static bool Prefix( /*IntPtr handle, long position, long length*/)
@@ -733,7 +751,7 @@ public partial class MonoIOPatchModule
             private static MethodBase TargetMethod()
             {
                 return AccessTools.Method(MonoIOType, "CreatePipe",
-                    new[] { typeof(IntPtr), typeof(IntPtr) });
+                    new[] { typeof(IntPtr).MakeByRefType(), typeof(IntPtr).MakeByRefType() });
             }
 
             private static bool Prefix( /*ref IntPtr read_handle, ref IntPtr write_handle,*/ ref bool __result)
@@ -762,7 +780,8 @@ public partial class MonoIOPatchModule
                 return AccessTools.Method(MonoIOType, "DuplicateHandle",
                     new[]
                     {
-                        typeof(IntPtr), typeof(IntPtr), typeof(IntPtr), typeof(IntPtr), typeof(int), typeof(int),
+                        typeof(IntPtr), typeof(IntPtr), typeof(IntPtr), typeof(IntPtr).MakeByRefType(), typeof(int),
+                        typeof(int),
                         typeof(int)
                     });
             }
@@ -889,7 +908,7 @@ public partial class MonoIOPatchModule
 
             private static MethodBase TargetMethod()
             {
-                return AccessTools.Method(MonoIOType, "GetTempPath", new[] { typeof(string) });
+                return AccessTools.Method(MonoIOType, "GetTempPath", new[] { typeof(string).MakeByRefType() });
             }
 
             private static bool Prefix(ref string path, ref int __result)
@@ -914,7 +933,8 @@ public partial class MonoIOPatchModule
 
             private static MethodBase TargetMethod()
             {
-                return AccessTools.Method(MonoIOType, "RemapPath", new[] { typeof(string), typeof(string) });
+                return AccessTools.Method(MonoIOType, "RemapPath",
+                    new[] { typeof(string), typeof(string).MakeByRefType() });
             }
 
             private static bool Prefix(string path, ref string newPath, ref bool __result)

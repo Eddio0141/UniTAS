@@ -5,6 +5,7 @@ using HarmonyLib;
 using UniTASPlugin.GameEnvironment.InnerState.FileSystem.OsFileSystems;
 using UniTASPlugin.GameInfo;
 using UniTASPlugin.GameRestart;
+using UniTASPlugin.Logger;
 
 namespace UniTASPlugin.GameEnvironment.InnerState.FileSystem;
 
@@ -12,25 +13,29 @@ namespace UniTASPlugin.GameEnvironment.InnerState.FileSystem;
 /// Manages virtual file systems of the game
 /// Contains multiple instances of file systems
 /// </summary>
+// ReSharper disable once ClassNeverInstantiated.Global
 public class FileSystemManager : IFileSystemManager, IOnGameRestart
 {
     private OsFileSystems.FileSystem _windowsFileSystem;
 
     private readonly IGameInfo _gameInfo;
     private readonly IVirtualEnvironmentFactory _virtualEnvironmentFactory;
+    private readonly ILogger _logger;
 
     private OsFileSystems.FileSystem _currentFileSystem;
 
-    public FileSystemManager(IGameInfo gameInfo, IVirtualEnvironmentFactory virtualEnvironmentFactory)
+    public FileSystemManager(IGameInfo gameInfo, IVirtualEnvironmentFactory virtualEnvironmentFactory, ILogger logger)
     {
         _gameInfo = gameInfo;
         _virtualEnvironmentFactory = virtualEnvironmentFactory;
+        _logger = logger;
 
         Init();
     }
 
-    public void Init()
+    private void Init()
     {
+        _logger.LogDebug("Init file system manager");
         var gameDirPath = _gameInfo.GameDirectory;
 
         _windowsFileSystem = new WindowsFileSystem();
@@ -39,7 +44,7 @@ public class FileSystemManager : IFileSystemManager, IOnGameRestart
 
         var env = _virtualEnvironmentFactory.GetVirtualEnv();
 
-        _currentFileSystem = (env.Os) switch
+        _currentFileSystem = env.Os switch
         {
             Os.Windows => _windowsFileSystem,
             _ => throw new ArgumentOutOfRangeException()
