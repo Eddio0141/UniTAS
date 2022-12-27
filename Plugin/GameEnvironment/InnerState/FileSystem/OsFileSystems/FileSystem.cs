@@ -316,7 +316,7 @@ public abstract class FileSystem
         _handles.Add(handle);
 
         _nextHandle += 1;
-        if (_nextHandle == 0)
+        if (_nextHandle == -1)
             _nextHandle = ConsoleErrorHandleIndex;
 
         return handle.Handle;
