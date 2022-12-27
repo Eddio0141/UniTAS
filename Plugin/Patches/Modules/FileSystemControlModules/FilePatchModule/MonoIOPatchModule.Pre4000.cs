@@ -596,7 +596,7 @@ public partial class MonoIOPatchModule
                     new[] { typeof(IntPtr), typeof(IntPtr) });
             }
 
-            private static bool Prefix(ref IntPtr read_handle, ref IntPtr write_handle, ref bool __result)
+            private static bool Prefix( /*ref IntPtr read_handle, ref IntPtr write_handle,*/ ref bool __result)
             {
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
@@ -622,8 +622,9 @@ public partial class MonoIOPatchModule
                     });
             }
 
-            private static bool Prefix(IntPtr source_process_handle, IntPtr source_handle, IntPtr target_process_handle,
-                ref IntPtr target_handle, int access, int inherit, int options, ref bool __result)
+            private static bool
+                Prefix( /*IntPtr source_process_handle, IntPtr source_handle, IntPtr target_process_handle,
+                ref IntPtr target_handle, int access, int inherit, int options,*/ ref bool __result)
             {
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
