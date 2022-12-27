@@ -315,4 +315,9 @@ public class FileSystemManager : IFileSystemManager, IOnGameRestart
     {
         throw new NotImplementedException();
     }
+
+    public void DumpHandles()
+    {
+        _currentFileSystem.DumpHandles();
+    }
 }
