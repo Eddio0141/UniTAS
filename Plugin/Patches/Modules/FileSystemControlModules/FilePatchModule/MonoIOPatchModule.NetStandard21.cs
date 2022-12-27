@@ -12,13 +12,18 @@ namespace UniTASPlugin.Patches.Modules.FileSystemControlModules.FilePatchModule;
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 public partial class MonoIOPatchModule
 {
-    [MscorlibPatchGroup(null, null, "2.1.0.0")]
+    [MscorlibPatchGroup /*(null, null, "2.1.0.0")*/]
     [SuppressMessage("ReSharper", "ClassNeverInstantiated.Local")]
     private class NetStandard21
     {
         [HarmonyPatch]
         private class CreateDirectory
         {
+            private static Exception Cleanup(MethodBase original, Exception ex)
+            {
+                return PatchHelper.CleanupIgnoreFail(original, ex);
+            }
+
             private static MethodBase TargetMethod()
             {
                 return AccessTools.Method(MonoIOType, "CreateDirectory", new[] { typeof(char*), MonoIOErrorType });
@@ -39,6 +44,11 @@ public partial class MonoIOPatchModule
         [HarmonyPatch]
         private class RemoveDirectory
         {
+            private static Exception Cleanup(MethodBase original, Exception ex)
+            {
+                return PatchHelper.CleanupIgnoreFail(original, ex);
+            }
+
             private static MethodBase TargetMethod()
             {
                 return AccessTools.Method(MonoIOType, "RemoveDirectory", new[] { typeof(char*), MonoIOErrorType });
@@ -59,6 +69,11 @@ public partial class MonoIOPatchModule
         [HarmonyPatch]
         private class GetCurrentDirectory
         {
+            private static Exception Cleanup(MethodBase original, Exception ex)
+            {
+                return PatchHelper.CleanupIgnoreFail(original, ex);
+            }
+
             private static MethodBase TargetMethod()
             {
                 return AccessTools.Method(MonoIOType, "GetCurrentDirectory", new[] { MonoIOErrorType });
@@ -78,6 +93,11 @@ public partial class MonoIOPatchModule
         [HarmonyPatch]
         private class SetCurrentDirectory
         {
+            private static Exception Cleanup(MethodBase original, Exception ex)
+            {
+                return PatchHelper.CleanupIgnoreFail(original, ex);
+            }
+
             private static MethodBase TargetMethod()
             {
                 return AccessTools.Method(MonoIOType, "SetCurrentDirectory", new[] { typeof(char*), MonoIOErrorType });
@@ -98,6 +118,11 @@ public partial class MonoIOPatchModule
         [HarmonyPatch]
         private class MoveFile
         {
+            private static Exception Cleanup(MethodBase original, Exception ex)
+            {
+                return PatchHelper.CleanupIgnoreFail(original, ex);
+            }
+
             private static MethodBase TargetMethod()
             {
                 return AccessTools.Method(MonoIOType, "MoveFile",
@@ -119,6 +144,11 @@ public partial class MonoIOPatchModule
         [HarmonyPatch]
         private class CopyFile
         {
+            private static Exception Cleanup(MethodBase original, Exception ex)
+            {
+                return PatchHelper.CleanupIgnoreFail(original, ex);
+            }
+
             private static MethodBase TargetMethod()
             {
                 return AccessTools.Method(MonoIOType, "CopyFile",
@@ -140,6 +170,11 @@ public partial class MonoIOPatchModule
         [HarmonyPatch]
         private class DeleteFile
         {
+            private static Exception Cleanup(MethodBase original, Exception ex)
+            {
+                return PatchHelper.CleanupIgnoreFail(original, ex);
+            }
+
             private static MethodBase TargetMethod()
             {
                 return AccessTools.Method(MonoIOType, "DeleteFile", new[] { typeof(char*), MonoIOErrorType });
@@ -160,6 +195,11 @@ public partial class MonoIOPatchModule
         [HarmonyPatch]
         private class ReplaceFile
         {
+            private static Exception Cleanup(MethodBase original, Exception ex)
+            {
+                return PatchHelper.CleanupIgnoreFail(original, ex);
+            }
+
             private static MethodBase TargetMethod()
             {
                 return AccessTools.Method(MonoIOType, "ReplaceFile",
@@ -183,6 +223,11 @@ public partial class MonoIOPatchModule
         [HarmonyPatch]
         private class GetFileAttributes
         {
+            private static Exception Cleanup(MethodBase original, Exception ex)
+            {
+                return PatchHelper.CleanupIgnoreFail(original, ex);
+            }
+
             private static MethodBase TargetMethod()
             {
                 return AccessTools.Method(MonoIOType, "GetFileAttributes", new[] { typeof(char*), MonoIOErrorType });
@@ -202,6 +247,11 @@ public partial class MonoIOPatchModule
         [HarmonyPatch]
         private class SetFileAttributes
         {
+            private static Exception Cleanup(MethodBase original, Exception ex)
+            {
+                return PatchHelper.CleanupIgnoreFail(original, ex);
+            }
+
             private static MethodBase TargetMethod()
             {
                 return AccessTools.Method(MonoIOType, "SetFileAttributes",
@@ -223,6 +273,11 @@ public partial class MonoIOPatchModule
         [HarmonyPatch]
         private class GetFileType
         {
+            private static Exception Cleanup(MethodBase original, Exception ex)
+            {
+                return PatchHelper.CleanupIgnoreFail(original, ex);
+            }
+
             private static MethodBase TargetMethod()
             {
                 return AccessTools.Method(MonoIOType, "GetFileType", new[] { typeof(IntPtr), MonoIOErrorType });
@@ -243,6 +298,11 @@ public partial class MonoIOPatchModule
         [HarmonyPatch]
         private class FindFirstFile
         {
+            private static Exception Cleanup(MethodBase original, Exception ex)
+            {
+                return PatchHelper.CleanupIgnoreFail(original, ex);
+            }
+
             private static MethodBase TargetMethod()
             {
                 return AccessTools.Method(MonoIOType, "FindFirstFile",
@@ -264,6 +324,11 @@ public partial class MonoIOPatchModule
         [HarmonyPatch]
         private class FindNextFile
         {
+            private static Exception Cleanup(MethodBase original, Exception ex)
+            {
+                return PatchHelper.CleanupIgnoreFail(original, ex);
+            }
+
             private static MethodBase TargetMethod()
             {
                 return AccessTools.Method(MonoIOType, "FindNextFile",
@@ -286,6 +351,11 @@ public partial class MonoIOPatchModule
         [HarmonyPatch]
         private class FindCloseFile
         {
+            private static Exception Cleanup(MethodBase original, Exception ex)
+            {
+                return PatchHelper.CleanupIgnoreFail(original, ex);
+            }
+
             private static MethodBase TargetMethod()
             {
                 return AccessTools.Method(MonoIOType, "FindCloseFile", new[] { typeof(IntPtr) });
@@ -306,6 +376,11 @@ public partial class MonoIOPatchModule
         [HarmonyPatch]
         private class GetFileStat
         {
+            private static Exception Cleanup(MethodBase original, Exception ex)
+            {
+                return PatchHelper.CleanupIgnoreFail(original, ex);
+            }
+
             private static MethodBase TargetMethod()
             {
                 return AccessTools.Method(MonoIOType, "GetFileStat",
@@ -336,6 +411,11 @@ public partial class MonoIOPatchModule
         [HarmonyPatch]
         private class Open
         {
+            private static Exception Cleanup(MethodBase original, Exception ex)
+            {
+                return PatchHelper.CleanupIgnoreFail(original, ex);
+            }
+
             private static MethodBase TargetMethod()
             {
                 return AccessTools.Method(MonoIOType, "Open",
@@ -361,6 +441,11 @@ public partial class MonoIOPatchModule
         [HarmonyPatch]
         private class Cancel_internal
         {
+            private static Exception Cleanup(MethodBase original, Exception ex)
+            {
+                return PatchHelper.CleanupIgnoreFail(original, ex);
+            }
+
             private static MethodBase TargetMethod()
             {
                 return AccessTools.Method(MonoIOType, "Cancel_internal", new[] { typeof(IntPtr), MonoIOErrorType });
@@ -381,6 +466,11 @@ public partial class MonoIOPatchModule
         [HarmonyPatch]
         private class Close
         {
+            private static Exception Cleanup(MethodBase original, Exception ex)
+            {
+                return PatchHelper.CleanupIgnoreFail(original, ex);
+            }
+
             private static MethodBase TargetMethod()
             {
                 return AccessTools.Method(MonoIOType, "Close",
@@ -405,6 +495,11 @@ public partial class MonoIOPatchModule
         [HarmonyPatch]
         private class Read
         {
+            private static Exception Cleanup(MethodBase original, Exception ex)
+            {
+                return PatchHelper.CleanupIgnoreFail(original, ex);
+            }
+
             private static MethodBase TargetMethod()
             {
                 return AccessTools.Method(MonoIOType, "Read",
@@ -425,6 +520,11 @@ public partial class MonoIOPatchModule
         [HarmonyPatch]
         private class Write
         {
+            private static Exception Cleanup(MethodBase original, Exception ex)
+            {
+                return PatchHelper.CleanupIgnoreFail(original, ex);
+            }
+
             private static MethodBase TargetMethod()
             {
                 return AccessTools.Method(MonoIOType, "Write",
@@ -445,6 +545,11 @@ public partial class MonoIOPatchModule
         [HarmonyPatch]
         private class Seek
         {
+            private static Exception Cleanup(MethodBase original, Exception ex)
+            {
+                return PatchHelper.CleanupIgnoreFail(original, ex);
+            }
+
             private static MethodBase TargetMethod()
             {
                 return AccessTools.Method(MonoIOType, "Seek",
@@ -466,6 +571,11 @@ public partial class MonoIOPatchModule
         [HarmonyPatch]
         private class Flush
         {
+            private static Exception Cleanup(MethodBase original, Exception ex)
+            {
+                return PatchHelper.CleanupIgnoreFail(original, ex);
+            }
+
             private static MethodBase TargetMethod()
             {
                 return AccessTools.Method(MonoIOType, "Flush",
@@ -487,6 +597,11 @@ public partial class MonoIOPatchModule
         [HarmonyPatch]
         private class GetLength
         {
+            private static Exception Cleanup(MethodBase original, Exception ex)
+            {
+                return PatchHelper.CleanupIgnoreFail(original, ex);
+            }
+
             private static MethodBase TargetMethod()
             {
                 return AccessTools.Method(MonoIOType, "GetLength",
@@ -507,6 +622,11 @@ public partial class MonoIOPatchModule
         [HarmonyPatch]
         private class SetLength
         {
+            private static Exception Cleanup(MethodBase original, Exception ex)
+            {
+                return PatchHelper.CleanupIgnoreFail(original, ex);
+            }
+
             private static MethodBase TargetMethod()
             {
                 return AccessTools.Method(MonoIOType, "SetLength",
@@ -528,6 +648,11 @@ public partial class MonoIOPatchModule
         [HarmonyPatch]
         private class SetFileTime
         {
+            private static Exception Cleanup(MethodBase original, Exception ex)
+            {
+                return PatchHelper.CleanupIgnoreFail(original, ex);
+            }
+
             private static MethodBase TargetMethod()
             {
                 return AccessTools.Method(MonoIOType, "SetFileTime",
@@ -550,6 +675,11 @@ public partial class MonoIOPatchModule
         [HarmonyPatch]
         private class Lock
         {
+            private static Exception Cleanup(MethodBase original, Exception ex)
+            {
+                return PatchHelper.CleanupIgnoreFail(original, ex);
+            }
+
             private static MethodBase TargetMethod()
             {
                 return AccessTools.Method(MonoIOType, "Lock",
@@ -571,6 +701,11 @@ public partial class MonoIOPatchModule
         [HarmonyPatch]
         private class Unlock
         {
+            private static Exception Cleanup(MethodBase original, Exception ex)
+            {
+                return PatchHelper.CleanupIgnoreFail(original, ex);
+            }
+
             private static MethodBase TargetMethod()
             {
                 return AccessTools.Method(MonoIOType, "Unlock",
@@ -592,6 +727,11 @@ public partial class MonoIOPatchModule
         [HarmonyPatch]
         private class ConsoleOutput_get
         {
+            private static Exception Cleanup(MethodBase original, Exception ex)
+            {
+                return PatchHelper.CleanupIgnoreFail(original, ex);
+            }
+
             private static MethodBase TargetMethod()
             {
                 return AccessTools.PropertyGetter(MonoIOType, "ConsoleOutput");
@@ -611,6 +751,11 @@ public partial class MonoIOPatchModule
         [HarmonyPatch]
         private class ConsoleInput_get
         {
+            private static Exception Cleanup(MethodBase original, Exception ex)
+            {
+                return PatchHelper.CleanupIgnoreFail(original, ex);
+            }
+
             private static MethodBase TargetMethod()
             {
                 return AccessTools.PropertyGetter(MonoIOType, "ConsoleInput");
@@ -630,6 +775,11 @@ public partial class MonoIOPatchModule
         [HarmonyPatch]
         private class ConsoleError_get
         {
+            private static Exception Cleanup(MethodBase original, Exception ex)
+            {
+                return PatchHelper.CleanupIgnoreFail(original, ex);
+            }
+
             private static MethodBase TargetMethod()
             {
                 return AccessTools.PropertyGetter(MonoIOType, "ConsoleError");
@@ -649,6 +799,11 @@ public partial class MonoIOPatchModule
         [HarmonyPatch]
         private class CreatePipe
         {
+            private static Exception Cleanup(MethodBase original, Exception ex)
+            {
+                return PatchHelper.CleanupIgnoreFail(original, ex);
+            }
+
             private static MethodBase TargetMethod()
             {
                 return AccessTools.Method(MonoIOType, "CreatePipe",
@@ -671,6 +826,11 @@ public partial class MonoIOPatchModule
         [HarmonyPatch]
         private class DuplicateHandle
         {
+            private static Exception Cleanup(MethodBase original, Exception ex)
+            {
+                return PatchHelper.CleanupIgnoreFail(original, ex);
+            }
+
             private static MethodBase TargetMethod()
             {
                 return AccessTools.Method(MonoIOType, "DuplicateHandle",
@@ -700,6 +860,11 @@ public partial class MonoIOPatchModule
         [HarmonyPatch]
         private class VolumeSeparatorChar_get
         {
+            private static Exception Cleanup(MethodBase original, Exception ex)
+            {
+                return PatchHelper.CleanupIgnoreFail(original, ex);
+            }
+
             private static MethodBase TargetMethod()
             {
                 return AccessTools.PropertyGetter(MonoIOType, "VolumeSeparatorChar");
@@ -719,6 +884,11 @@ public partial class MonoIOPatchModule
         [HarmonyPatch]
         private class DirectorySeparatorChar_get
         {
+            private static Exception Cleanup(MethodBase original, Exception ex)
+            {
+                return PatchHelper.CleanupIgnoreFail(original, ex);
+            }
+
             private static MethodBase TargetMethod()
             {
                 return AccessTools.PropertyGetter(MonoIOType, "DirectorySeparatorChar");
@@ -738,6 +908,11 @@ public partial class MonoIOPatchModule
         [HarmonyPatch]
         private class AltDirectorySeparatorChar_get
         {
+            private static Exception Cleanup(MethodBase original, Exception ex)
+            {
+                return PatchHelper.CleanupIgnoreFail(original, ex);
+            }
+
             private static MethodBase TargetMethod()
             {
                 return AccessTools.PropertyGetter(MonoIOType, "AltDirectorySeparatorChar");
@@ -757,6 +932,11 @@ public partial class MonoIOPatchModule
         [HarmonyPatch]
         private class PathSeparator_get
         {
+            private static Exception Cleanup(MethodBase original, Exception ex)
+            {
+                return PatchHelper.CleanupIgnoreFail(original, ex);
+            }
+
             private static MethodBase TargetMethod()
             {
                 return AccessTools.PropertyGetter(MonoIOType, "PathSeparator");
@@ -776,6 +956,11 @@ public partial class MonoIOPatchModule
         [HarmonyPatch]
         private class RemapPath
         {
+            private static Exception Cleanup(MethodBase original, Exception ex)
+            {
+                return PatchHelper.CleanupIgnoreFail(original, ex);
+            }
+
             private static MethodBase TargetMethod()
             {
                 return AccessTools.Method(MonoIOType, "RemapPath", new[] { typeof(string), typeof(string) });
@@ -796,6 +981,11 @@ public partial class MonoIOPatchModule
         [HarmonyPatch]
         private class DumpHandles
         {
+            private static Exception Cleanup(MethodBase original, Exception ex)
+            {
+                return PatchHelper.CleanupIgnoreFail(original, ex);
+            }
+
             private static MethodBase TargetMethod()
             {
                 return AccessTools.Method(MonoIOType, "DumpHandles", Type.EmptyTypes);

@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
@@ -12,12 +13,17 @@ namespace UniTASPlugin.Patches.Modules.FileSystemControlModules.FilePatchModule;
 [SuppressMessage("ReSharper", "UnusedMember.Local")]
 public partial class PathPatchModule
 {
-    [MscorlibPatchGroup("3.9.9.9")]
+    [MscorlibPatchGroup /*("3.9.9.9")*/]
     private class Pre4000
     {
         [HarmonyPatch]
         private class get_temp_path
         {
+            private static Exception Cleanup(MethodBase original, Exception ex)
+            {
+                return PatchHelper.CleanupIgnoreFail(original, ex);
+            }
+
             private static MethodBase TargetMethod()
             {
                 return AccessTools.Method(typeof(Path), "get_temp_path");
