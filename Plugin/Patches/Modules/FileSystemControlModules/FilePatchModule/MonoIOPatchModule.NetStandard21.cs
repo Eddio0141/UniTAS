@@ -846,7 +846,10 @@ public partial class MonoIOPatchModule
             private static MethodBase TargetMethod()
             {
                 return AccessTools.Method(MonoIOType, "CreatePipe",
-                    new[] { typeof(IntPtr), typeof(IntPtr), MonoIOErrorType.MakeByRefType() });
+                    new[]
+                    {
+                        typeof(IntPtr).MakeByRefType(), typeof(IntPtr).MakeByRefType(), MonoIOErrorType.MakeByRefType()
+                    });
             }
 
             private static bool Prefix( /*ref IntPtr read_handle, ref IntPtr write_handle,*/ ref bool __result)
