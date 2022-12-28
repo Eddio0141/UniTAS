@@ -318,7 +318,7 @@ public class FileSystemManager : IFileSystemManager, IOnGameRestart
 
     public void RemapPath(string path, out string newPath)
     {
-        throw new NotImplementedException();
+        newPath = OsFileSystems.FileSystem.RemapPath(path);
     }
 
     public void DumpHandles()
