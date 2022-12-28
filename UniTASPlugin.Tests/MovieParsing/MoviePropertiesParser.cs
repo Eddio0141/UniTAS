@@ -6,7 +6,7 @@ using UniTASPlugin.Movie.Parsers.MoviePropertyParser;
 
 // ReSharper disable StringLiteralTypo
 
-namespace UniTASPluginTest.MovieParsing;
+namespace UniTASPlugin.Tests.MovieParsing;
 
 public class MoviePropertiesParser
 {

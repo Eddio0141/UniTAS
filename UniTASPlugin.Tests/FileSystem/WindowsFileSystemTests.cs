@@ -1,0 +1,16 @@
+using FluentAssertions;
+using UniTASPlugin.GameEnvironment.InnerState.FileSystem.OsFileSystems;
+
+namespace UniTASPlugin.Tests.FileSystem;
+
+public class WindowsFileSystemTests
+{
+    [Fact]
+    public void InitFileSystem()
+    {
+        var fileSystem = new WindowsFileSystem();
+
+        fileSystem.DirectoryExists("C:").Should().BeTrue();
+        fileSystem.GetTempPath().Should().BeEquivalentTo("C:\\Windows\\Temp");
+    }
+}

@@ -5,7 +5,7 @@ VisualStudioVersion = 17.2.32630.192
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UniTASPlugin", "UniTASPlugin.csproj", "{A423BBB7-C9FB-483F-A8D1-CC9FEC595124}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UniTASPluginTest", "..\UniTASPluginTest\UniTASPluginTest.csproj", "{70035C2A-E551-4DA2-A0AC-1596ECF0CFE8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UniTASPlugin.Tests", "..\UniTASPlugin.Tests\UniTASPlugin.Tests.csproj", "{70035C2A-E551-4DA2-A0AC-1596ECF0CFE8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
