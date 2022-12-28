@@ -34,18 +34,18 @@ public class WindowsFileSystem : FileSystem
         InitDirs(temp);
     }
 
-    protected override bool PathIsAbsolute(string path)
+    public override bool PathIsAbsolute(string path)
     {
         return path.Contains(":");
     }
 
-    protected override string GetDirectoryName(string path)
+    public override string GetDirectoryName(string path)
     {
         var lastSlash = path.LastIndexOfAny(PathSeparatorChars);
         return lastSlash == -1 ? path : path.Substring(0, lastSlash);
     }
 
-    protected override string GetFileName(string path)
+    public override string GetFileName(string path)
     {
         var lastSlash = path.LastIndexOfAny(PathSeparatorChars);
         return lastSlash == -1 ? path : path.Substring(lastSlash + 1);
