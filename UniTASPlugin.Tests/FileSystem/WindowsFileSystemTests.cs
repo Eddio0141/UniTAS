@@ -11,6 +11,7 @@ public class WindowsFileSystemTests
         var fileSystem = new WindowsFileSystem();
 
         fileSystem.DirectoryExists("C:").Should().BeTrue();
+        fileSystem.PathIsAbsolute("C:").Should().BeTrue();
         fileSystem.GetTempPath().Should().BeEquivalentTo("C:\\Windows\\Temp");
     }
 }
