@@ -66,7 +66,10 @@ public abstract class GroupPatchProcessor : PatchProcessor
 
                 _logger.LogInfo($"Using patch group {patchGroup.FullName}");
 
-                yield return new(patchType.Priority, patchGroup);
+                foreach (var innerPatch in patchGroup.GetNestedTypes(AccessTools.all))
+                {
+                    yield return new(patchType.Priority, innerPatch);
+                }
             }
         }
     }
