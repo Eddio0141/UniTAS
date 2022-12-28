@@ -13,7 +13,7 @@ namespace UniTASPlugin.Patches.Modules.FileSystemControlModules.FilePatchModule;
 [SuppressMessage("ReSharper", "UnusedMember.Local")]
 public partial class PathPatchModule
 {
-    [MscorlibPatchGroup /*("3.9.9.9")*/]
+    [MscorlibPatchGroup("3.9.9.9")]
     private class Pre4000
     {
         [HarmonyPatch]

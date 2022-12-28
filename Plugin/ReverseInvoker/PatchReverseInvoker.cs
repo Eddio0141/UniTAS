@@ -4,7 +4,7 @@ namespace UniTASPlugin.ReverseInvoker;
 
 public class PatchReverseInvoker
 {
-    public bool Invoking { get; private set; }
+    public bool Invoking { get; set; }
 
     public TRet Invoke<TRet>(Func<TRet> method)
     {

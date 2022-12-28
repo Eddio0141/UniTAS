@@ -35,7 +35,7 @@ public class PluginWrapper
 
         Harmony harmony = new($"{MyPluginInfo.PLUGIN_GUID}HarmonyPatch");
 
-        var sortedPatches = patchProcessors.SelectMany(x => x.ProcessModules()).OrderBy(x => x.Key)
+        var sortedPatches = patchProcessors.SelectMany(x => x.ProcessModules()).OrderByDescending(x => x.Key)
             .Select(x => x.Value);
         foreach (var patch in sortedPatches)
         {
