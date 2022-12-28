@@ -1,8 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
+using HarmonyLib;
 using UniTASPlugin.Interfaces.StartEvent;
 using UniTASPlugin.Interfaces.Update;
-using UniTASPlugin.Patches.PatchProcessor;
+using UniTASPlugin.Logger;
+using PatchProcessor = UniTASPlugin.Patches.PatchProcessor.PatchProcessor;
 
 namespace UniTASPlugin;
 
@@ -22,7 +24,7 @@ public class PluginWrapper
     public PluginWrapper(IEnumerable<IOnUpdate> onUpdates, IEnumerable<IOnFixedUpdate> onFixedUpdates,
         IEnumerable<IOnAwake> onAwakes, IEnumerable<IOnStart> onStarts, IEnumerable<IOnEnable> onEnables,
         IEnumerable<IOnPreUpdates> onPreUpdates,
-        IEnumerable<PatchProcessor> patchProcessors)
+        IEnumerable<PatchProcessor> patchProcessors, ILogger logger)
     {
         _onFixedUpdates = onFixedUpdates.ToArray();
         _onAwakes = onAwakes.ToArray();
@@ -31,9 +33,14 @@ public class PluginWrapper
         _onPreUpdates = onPreUpdates.ToArray();
         _onUpdates = onUpdates.ToArray();
 
-        foreach (var patchProcessor in patchProcessors)
+        Harmony harmony = new($"{MyPluginInfo.PLUGIN_GUID}HarmonyPatch");
+
+        var sortedPatches = patchProcessors.SelectMany(x => x.ProcessModules()).OrderBy(x => x.Key)
+            .Select(x => x.Value);
+        foreach (var patch in sortedPatches)
         {
-            patchProcessor.ProcessModules();
+            logger.LogDebug($"Patching {patch.FullName}");
+            harmony.PatchAll(patch);
         }
     }
 

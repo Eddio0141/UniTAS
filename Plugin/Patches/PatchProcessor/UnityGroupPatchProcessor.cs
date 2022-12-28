@@ -7,16 +7,17 @@ using UniTASPlugin.Patches.PatchTypes;
 
 namespace UniTASPlugin.Patches.PatchProcessor;
 
-public class UnityPatchProcessor : PatchProcessor
+// ReSharper disable once UnusedType.Global
+public class UnityGroupPatchProcessor : GroupPatchProcessor
 {
     private readonly IGameInfo _gameInfo;
 
-    public UnityPatchProcessor(ILogger logger, IGameInfo gameInfo) : base(logger)
+    public UnityGroupPatchProcessor(ILogger logger, IGameInfo gameInfo) : base(logger)
     {
         _gameInfo = gameInfo;
     }
 
-    protected override IEnumerable<int> ChoosePatch(PatchType patchType, PatchGroup[] patchGroups)
+    protected override IEnumerable<int> ChoosePatch(ModulePatchType patchType, PatchGroup[] patchGroups)
     {
         var version = VersionStringToNumber(_gameInfo.UnityVersion);
 

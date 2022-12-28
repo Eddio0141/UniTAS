@@ -4,17 +4,10 @@ namespace UniTASPlugin.Patches.PatchTypes;
 
 public abstract class PatchType : Attribute
 {
-    /// <summary>
-    /// Patches all patch groups that meets the patch group requirements
-    /// </summary>
-    public bool PatchAllGroups { get; }
+    public int Priority { get; }
 
-    protected PatchType(bool patchAllGroups)
+    protected PatchType(int priority = 0)
     {
-        PatchAllGroups = patchAllGroups;
-    }
-
-    protected PatchType() : this(false)
-    {
+        Priority = priority;
     }
 }
