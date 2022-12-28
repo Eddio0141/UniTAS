@@ -198,8 +198,10 @@ public class FileBrowser
 
         var quickAccessPathsBuilder = new List<string>
         {
-            Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
-            Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+            Plugin.Kernel.GetInstance<PatchReverseInvoker>()
+                .Invoke(() => Environment.GetFolderPath(Environment.SpecialFolder.Desktop)),
+            Plugin.Kernel.GetInstance<PatchReverseInvoker>()
+                .Invoke(() => Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)),
             homePath,
             Plugin.Kernel.GetInstance<IGameInfo>().GameDirectory
         };
