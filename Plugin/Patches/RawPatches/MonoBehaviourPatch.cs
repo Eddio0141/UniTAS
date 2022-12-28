@@ -4,13 +4,15 @@ using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using UniTASPlugin.MonoBehaviourController;
+using UniTASPlugin.Patches.PatchTypes;
 using UnityEngine;
 
 // ReSharper disable UnusedMember.Local
 
-namespace UniTASPlugin.LegacyPatches.UnityEngine;
+namespace UniTASPlugin.Patches.RawPatches;
 
-[HarmonyPatch]
+[RawPatch]
+// ReSharper disable once ClassNeverInstantiated.Global
 public class MonoBehaviourPatch
 {
     /// <summary>
@@ -50,13 +52,13 @@ public class MonoBehaviourPatch
         }
     }
 
-    private static PluginWrapper pluginWrapper;
-    private static PluginWrapper PluginWrapper => pluginWrapper ??= Plugin.Kernel.GetInstance<PluginWrapper>();
+    private static PluginWrapper _pluginWrapper;
+    private static PluginWrapper PluginWrapper => _pluginWrapper ??= Plugin.Kernel.GetInstance<PluginWrapper>();
 
-    private static IMonoBehaviourController monoBehaviourController;
+    private static IMonoBehaviourController _monoBehaviourController;
 
     private static IMonoBehaviourController MonoBehaviourController =>
-        monoBehaviourController ??= Plugin.Kernel.GetInstance<IMonoBehaviourController>();
+        _monoBehaviourController ??= Plugin.Kernel.GetInstance<IMonoBehaviourController>();
 
     [HarmonyPatch]
     private class AwakeMultiple
