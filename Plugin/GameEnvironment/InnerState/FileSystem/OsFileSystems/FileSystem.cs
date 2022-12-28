@@ -466,6 +466,11 @@ public abstract class FileSystem
         _handles.Clear();
     }
 
+    public static string RemapPath(string path)
+    {
+        return path;
+    }
+
     protected abstract bool PathIsAbsolute(string path);
     protected abstract string GetDirectoryName(string path);
     protected abstract string GetFileName(string path);
