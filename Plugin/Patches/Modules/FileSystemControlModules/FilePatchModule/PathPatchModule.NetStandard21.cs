@@ -14,7 +14,7 @@ namespace UniTASPlugin.Patches.Modules.FileSystemControlModules.FilePatchModule;
 [SuppressMessage("ReSharper", "UnusedMember.Local")]
 public partial class PathPatchModule
 {
-    [MscorlibPatchGroup /*(null, null, "2.1.0.0")*/]
+    [MscorlibPatchGroup(null, null, "2.1.0.0")]
     private class NetStandard21
     {
         [HarmonyPatch]
