@@ -360,14 +360,22 @@ public abstract class FileSystem
         if (file == null)
             return -1;
 
+        // allocate more space if needed
         var data = file.Data;
         var dataLength = data.Length;
 
-        var writeCount = Math.Min(count, dataLength - fileHandle.Position);
-        Array.Copy(buffer, offset, data, fileHandle.Position, writeCount);
-        fileHandle.Position += writeCount;
+        if (fileHandle.Position + count > dataLength)
+        {
+            var newData = new byte[fileHandle.Position + count];
+            Array.Copy(data, newData, dataLength);
+            file.Data = newData;
+            data = newData;
+        }
 
-        return (int)writeCount;
+        Array.Copy(buffer, offset, data, fileHandle.Position, count);
+        fileHandle.Position += count;
+
+        return count;
     }
 
     public long Seek(IntPtr handle, long offset, SeekOrigin origin)
