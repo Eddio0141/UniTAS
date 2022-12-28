@@ -7,7 +7,7 @@ using UniTASPlugin.Movie.Parsers;
 using UniTASPlugin.Movie.Parsers.MoviePropertyParser;
 using UniTASPlugin.Movie.Parsers.MovieScriptParser;
 
-namespace UniTASPluginTest.MovieRunner;
+namespace UniTASPlugin.Tests.MovieRunner;
 
 public class MovieRunnerTests
 {

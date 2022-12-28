@@ -17,26 +17,26 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Remove="dependency\**" />
-        <EmbeddedResource Remove="dependency\**" />
-        <None Remove="dependency\**" />
-        <Compile Remove="Extern-Assemblies\**" />
-        <EmbeddedResource Remove="Extern-Assemblies\**" />
-        <None Remove="Extern-Assemblies\**" />
+        <Compile Remove="dependency\**"/>
+        <EmbeddedResource Remove="dependency\**"/>
+        <None Remove="dependency\**"/>
+        <Compile Remove="Extern-Assemblies\**"/>
+        <EmbeddedResource Remove="Extern-Assemblies\**"/>
+        <None Remove="Extern-Assemblies\**"/>
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Antlr4.Runtime.Standard" Version="4.9.0" />
-        <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
-        <PackageReference Include="BepInEx.Core" Version="5.*" />
-        <PackageReference Include="BepInEx.PluginInfoProps" Version="2.*" />
-        <PackageReference Include="MonoMod.Utils" Version="22.5.1.1" />
-        <PackageReference Include="StructureMap" Version="2.6.3" />
-        <PackageReference Include="UnityEngine.Modules" Version="3.4.0" IncludeAssets="compile" />
+        <PackageReference Include="Antlr4.Runtime.Standard" Version="4.9.0"/>
+        <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all"/>
+        <PackageReference Include="BepInEx.Core" Version="5.*"/>
+        <PackageReference Include="BepInEx.PluginInfoProps" Version="2.*"/>
+        <PackageReference Include="MonoMod.Utils" Version="22.5.1.1"/>
+        <PackageReference Include="StructureMap" Version="2.6.3"/>
+        <PackageReference Include="UnityEngine.Modules" Version="3.4.0" IncludeAssets="compile"/>
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
-        <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all"/>
     </ItemGroup>
 
     <ItemGroup>

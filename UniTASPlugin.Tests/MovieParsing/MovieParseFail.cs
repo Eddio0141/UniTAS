@@ -5,7 +5,7 @@ using UniTASPlugin.Movie.EngineMethods;
 using UniTASPlugin.Movie.MovieModels.Script;
 using UniTASPlugin.Movie.Parsers.MovieScriptParser;
 
-namespace UniTASPluginTest.MovieParsing;
+namespace UniTASPlugin.Tests.MovieParsing;
 
 public class MovieParseFail
 {

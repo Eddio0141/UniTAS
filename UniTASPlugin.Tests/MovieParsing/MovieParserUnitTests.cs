@@ -16,7 +16,7 @@ using UniTASPlugin.Movie.MovieModels.Script;
 using UniTASPlugin.Movie.Parsers.MovieScriptParser;
 using UniTASPlugin.Movie.ValueTypes;
 
-namespace UniTASPluginTest.MovieParsing;
+namespace UniTASPlugin.Tests.MovieParsing;
 
 public class MovieParserUnitTests
 {
