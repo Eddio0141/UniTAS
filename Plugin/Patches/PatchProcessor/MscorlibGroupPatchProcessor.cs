@@ -7,18 +7,18 @@ using UniTASPlugin.Patches.PatchTypes;
 
 namespace UniTASPlugin.Patches.PatchProcessor;
 
-public class MscorlibPatchProcessor : PatchProcessor
+public class MscorlibGroupPatchProcessor : GroupPatchProcessor
 {
     private readonly IGameInfo _gameInfo;
 
-    public MscorlibPatchProcessor(ILogger logger, IGameInfo gameInfo) : base(logger)
+    public MscorlibGroupPatchProcessor(ILogger logger, IGameInfo gameInfo) : base(logger)
     {
         _gameInfo = gameInfo;
     }
 
     protected override Type TargetPatchType => typeof(MscorlibPatch);
 
-    protected override IEnumerable<int> ChoosePatch(PatchType patchType, PatchGroup[] patchGroups)
+    protected override IEnumerable<int> ChoosePatch(ModulePatchType patchType, PatchGroup[] patchGroups)
     {
         var mscorlibVersion = VersionStringToNumber(_gameInfo.MscorlibVersion);
         var netstandardVersion = _gameInfo.NetStandardVersion;
@@ -46,6 +46,8 @@ public class MscorlibPatchProcessor : PatchProcessor
                     yield return i;
                 }
             }
+
+            yield break;
         }
 
         for (var i = 0; i < patchGroups.Length; i++)

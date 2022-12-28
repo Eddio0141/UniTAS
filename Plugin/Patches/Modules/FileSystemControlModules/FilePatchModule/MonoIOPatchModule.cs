@@ -7,7 +7,7 @@ using UniTASPlugin.ReverseInvoker;
 
 namespace UniTASPlugin.Patches.Modules.FileSystemControlModules.FilePatchModule;
 
-[MscorlibPatch(true)]
+[MscorlibPatch]
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public partial class MonoIOPatchModule

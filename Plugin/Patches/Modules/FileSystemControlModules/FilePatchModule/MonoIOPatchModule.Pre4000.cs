@@ -13,7 +13,7 @@ namespace UniTASPlugin.Patches.Modules.FileSystemControlModules.FilePatchModule;
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 public partial class MonoIOPatchModule
 {
-    [MscorlibPatchGroup /*("3.9.9.9")*/]
+    [MscorlibPatchGroup("3.9.9.9")]
     private class Pre4000
     {
         [HarmonyPatch]

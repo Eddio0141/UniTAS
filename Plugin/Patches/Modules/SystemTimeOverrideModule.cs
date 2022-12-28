@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using HarmonyLib;
 using UniTASPlugin.GameEnvironment;
@@ -14,6 +15,7 @@ using UniTASPlugin.ReverseInvoker;
 namespace UniTASPlugin.Patches.Modules;
 
 [MscorlibPatch(true)]
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Local")]
 public class SystemTimeOverrideModule
 {
     private static readonly ReverseInvokerFactory ReverseInvokerFactory =

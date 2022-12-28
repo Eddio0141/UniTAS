@@ -12,7 +12,7 @@ namespace UniTASPlugin.Patches.Modules.FileSystemControlModules.FilePatchModule;
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 public partial class MonoIOPatchModule
 {
-    [MscorlibPatchGroup /*(null, null, "2.1.0.0")*/]
+    [MscorlibPatchGroup(null, null, "2.1.0.0")]
     [SuppressMessage("ReSharper", "ClassNeverInstantiated.Local")]
     private class NetStandard21
     {

@@ -3,14 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using HarmonyLib;
+using UniTASPlugin.Patches.PatchTypes;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
 // ReSharper disable UnusedMember.Local
 
-namespace UniTASPlugin.LegacyPatches.UnityEngine;
+namespace UniTASPlugin.Patches.RawPatches;
 
-[HarmonyPatch]
+[RawPatch]
+// ReSharper disable once ClassNeverInstantiated.Global
 public class ObjectPatch
 {
     [HarmonyPatch]

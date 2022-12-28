@@ -1,6 +1,6 @@
 namespace UniTASPlugin.Patches.PatchTypes;
 
-public class UnityPatch : PatchType
+public class UnityPatch : ModulePatchType
 {
     public UnityPatch(bool patchAllGroups) : base(patchAllGroups)
     {

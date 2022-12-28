@@ -17,25 +17,20 @@ public class Plugin : BaseUnityPlugin
 {
     public static readonly IContainer Kernel = ContainerRegister.Init();
 
-    private static Plugin instance;
+    private static Plugin _instance;
 
     private ManualLogSource _logger;
-    public static ManualLogSource Log => instance._logger;
+    public static ManualLogSource Log => _instance._logger;
 
     private PluginWrapper _pluginWrapper;
 
     private void Awake()
     {
-        if (instance != null) return;
-        instance = this;
+        if (_instance != null) return;
+        _instance = this;
         _logger = Logger;
 
         _pluginWrapper = Kernel.GetInstance<PluginWrapper>();
-
-        Logger.LogInfo("init patch");
-        Harmony harmony = new($"{MyPluginInfo.PLUGIN_GUID}HarmonyPatch");
-        harmony.PatchAll();
-        Logger.LogInfo("post init patch");
 
         var gameInfo = Kernel.GetInstance<IGameInfo>();
         Logger.LogInfo($"Internally found unity version: {gameInfo.UnityVersion}");
