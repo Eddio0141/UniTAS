@@ -39,7 +39,6 @@ public class PluginWrapper
             .Select(x => x.Value);
         foreach (var patch in sortedPatches)
         {
-            logger.LogDebug($"Patching {patch.FullName}");
             harmony.PatchAll(patch);
         }
     }
