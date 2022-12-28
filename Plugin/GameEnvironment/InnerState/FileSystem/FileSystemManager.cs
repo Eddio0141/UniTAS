@@ -145,7 +145,26 @@ public class FileSystemManager : IFileSystemManager, IOnGameRestart
         switch (pathType.Value)
         {
             case PlatformID.Unix:
-                return path.Replace("/", "\\");
+            {
+                path = path.Replace("/", "\\");
+
+                // change common unix root to windows root
+                if (path.StartsWith("\\"))
+                {
+                    path = $"C:{path}";
+                }
+                else if (path.StartsWith("~"))
+                {
+                    // home directory TODO
+                    path = path.Replace("~", "C:\\Users\\USER");
+                }
+                else if (path.StartsWith("\\home"))
+                {
+                    path = path.Replace("\\home", "C:\\Users");
+                }
+
+                return path;
+            }
             default:
                 throw new NotImplementedException($"Unknown path type, path: {path}");
         }
