@@ -471,7 +471,7 @@ public abstract class FileSystem
         return path;
     }
 
-    protected abstract bool PathIsAbsolute(string path);
-    protected abstract string GetDirectoryName(string path);
-    protected abstract string GetFileName(string path);
+    public abstract bool PathIsAbsolute(string path);
+    public abstract string GetDirectoryName(string path);
+    public abstract string GetFileName(string path);
 }
