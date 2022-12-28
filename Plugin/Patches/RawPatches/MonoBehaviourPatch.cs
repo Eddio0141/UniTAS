@@ -272,7 +272,6 @@ public class MonoBehaviourPatch
                         if (!type.IsAbstract && type.IsSubclassOf(typeof(MonoBehaviour)) && (type.FullName == null ||
                                 !ExcludeNamespaces.Any(type.FullName.StartsWith)))
                         {
-                            Plugin.Log.LogDebug($"type name: {type.FullName}");
                             monoBehaviourTypes.Add(type);
                         }
                     }
