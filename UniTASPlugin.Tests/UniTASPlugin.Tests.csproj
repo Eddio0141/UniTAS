@@ -16,6 +16,10 @@
         <RootNamespace>UniTASPlugin.Tests</RootNamespace>
 
         <OutputType>Library</OutputType>
+
+        <Configurations>Debug;Release;ReleaseTrace</Configurations>
+
+        <Platforms>AnyCPU</Platforms>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">

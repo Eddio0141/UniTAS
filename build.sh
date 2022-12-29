@@ -17,7 +17,13 @@ PROJECTS=(
 # Build projects
 for PROJECT in "${PROJECTS[@]}"; do
     echo "Building $PROJECT"
-    dotnet build "$PROJECT" -c $BUILD_TYPE
+
+    # If patcher and $BUILD_TYPE is ReleaseTrace, build with Release
+    if [ "$PROJECT" = "Patcher" ] && [ "$BUILD_TYPE" = "ReleaseTrace" ]; then
+        dotnet build "$PROJECT" -c "Release"
+    else
+        dotnet build "$PROJECT" -c $BUILD_TYPE
+    fi
 done
 
 echo "Copying dlls to output folders"
@@ -27,7 +33,11 @@ OUTPUT_PLUGIN_DIR="$OUTPUT_DIR/Plugin"
 OUTPUT_PATCHER_DIR="$OUTPUT_DIR/Patcher"
 
 SOURCE_PLUGIN_DIR="Plugin/bin/$BUILD_TYPE/net35"
-SOURCE_PATCHER_DIR="Patcher/bin/$BUILD_TYPE/net35"
+if [ "$BUILD_TYPE" = "ReleaseTrace" ]; then
+    SOURCE_PATCHER_DIR="Patcher/bin/Release/net35"
+else
+    SOURCE_PATCHER_DIR="Patcher/bin/$BUILD_TYPE/net35"
+fi
 
 SOURCE_PLUGIN_EXTERNS_DIR="Plugin/Extern-Assemblies"
 
