@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using HarmonyLib;
 using UniTASPlugin.ReverseInvoker;
@@ -107,10 +108,12 @@ public class GameInfo : IGameInfo
     {
         get
         {
+            var rev = _reverseInvokerFactory.GetReverseInvoker();
+            rev.Invoking = true;
             if (_gameDirectory != null) return _gameDirectory;
             var appBase = AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
-            _gameDirectory =
-                appBase ?? _reverseInvokerFactory.GetReverseInvoker().Invoke(System.IO.Path.GetFullPath, ".");
+            _gameDirectory = appBase ?? Path.GetFullPath(".");
+            rev.Invoking = false;
             return _gameDirectory;
         }
     }
