@@ -5,6 +5,7 @@ using System.Reflection;
 using HarmonyLib;
 using UniTASPlugin.MonoBehaviourController;
 using UniTASPlugin.Patches.PatchTypes;
+using UniTASPlugin.ReverseInvoker;
 using UnityEngine;
 
 // ReSharper disable UnusedMember.Local
@@ -22,6 +23,8 @@ public class MonoBehaviourPatch
     /// <returns></returns>
     private static IEnumerable<MethodBase> GetEventMethods(string methodName)
     {
+        var rev = ReverseInvokerFactory.GetReverseInvoker();
+        rev.Invoking = true;
         var monoBehaviourTypes = new List<Type>();
         var assemblies = AppDomain.CurrentDomain.GetAssemblies();
         foreach (var assembly in assemblies)
@@ -50,15 +53,22 @@ public class MonoBehaviourPatch
             if (updateMethod != null)
                 yield return updateMethod;
         }
+
+        rev.Invoking = false;
     }
 
-    private static PluginWrapper _pluginWrapper;
-    private static PluginWrapper PluginWrapper => _pluginWrapper ??= Plugin.Kernel.GetInstance<PluginWrapper>();
+    private static PluginWrapper pluginWrapper;
+    private static PluginWrapper PluginWrapper => pluginWrapper ??= Plugin.Kernel.GetInstance<PluginWrapper>();
 
-    private static IMonoBehaviourController _monoBehaviourController;
+    private static ReverseInvokerFactory reverseInvokerFactory;
+
+    private static ReverseInvokerFactory ReverseInvokerFactory =>
+        reverseInvokerFactory ??= Plugin.Kernel.GetInstance<ReverseInvokerFactory>();
+
+    private static IMonoBehaviourController monoBehaviourController;
 
     private static IMonoBehaviourController MonoBehaviourController =>
-        _monoBehaviourController ??= Plugin.Kernel.GetInstance<IMonoBehaviourController>();
+        monoBehaviourController ??= Plugin.Kernel.GetInstance<IMonoBehaviourController>();
 
     [HarmonyPatch]
     private class AwakeMultiple
