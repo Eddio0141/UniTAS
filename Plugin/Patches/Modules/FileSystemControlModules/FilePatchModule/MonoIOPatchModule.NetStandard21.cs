@@ -1,11 +1,13 @@
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
 using HarmonyLib;
 using UniTASPlugin.Patches.PatchGroups;
+#if TRACE
+using System.Collections.Generic;
+using System.Diagnostics;
+#endif
 
 namespace UniTASPlugin.Patches.Modules.FileSystemControlModules.FilePatchModule;
 
@@ -14,7 +16,9 @@ namespace UniTASPlugin.Patches.Modules.FileSystemControlModules.FilePatchModule;
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 public partial class MonoIOPatchModule
 {
-    public static List<string> Log = new();
+#if TRACE
+    public static readonly List<string> Log = new();
+#endif
 
     [MscorlibPatchGroup(null, null, "2.1.0.0")]
     [SuppressMessage("ReSharper", "ClassNeverInstantiated.Local")]
@@ -36,16 +40,16 @@ public partial class MonoIOPatchModule
 
             private static unsafe bool Prefix(char* path, ref bool __result)
             {
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Log.Add($"trace{new StackTrace()}");
-                return true;
-                // var rev = ReverseInvokerFactory.GetReverseInvoker();
-                // if (rev.Invoking) return true;
-                //
-                // FileSystemManager.CreateDirectory(new(path));
-                // __result = true;
-                //
-                // return false;
+                var rev = ReverseInvokerFactory.GetReverseInvoker();
+                if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
+
+                FileSystemManager.CreateDirectory(new(path));
+                __result = true;
+
+                return false;
             }
         }
 
@@ -65,16 +69,16 @@ public partial class MonoIOPatchModule
 
             private static unsafe bool Prefix(char* path, ref bool __result)
             {
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Log.Add($"trace{new StackTrace()}");
-                return true;
-                // var rev = ReverseInvokerFactory.GetReverseInvoker();
-                // if (rev.Invoking) return true;
-                //
-                // FileSystemManager.DeleteDirectory(new(path));
-                // __result = true;
-                //
-                // return false;
+                var rev = ReverseInvokerFactory.GetReverseInvoker();
+                if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
+
+                FileSystemManager.DeleteDirectory(new(path));
+                __result = true;
+
+                return false;
             }
         }
 
@@ -93,15 +97,15 @@ public partial class MonoIOPatchModule
 
             private static bool Prefix(ref string __result)
             {
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Log.Add($"trace{new StackTrace()}");
-                return true;
-                // var rev = ReverseInvokerFactory.GetReverseInvoker();
-                // if (rev.Invoking) return true;
-                //
-                // __result = FileSystemManager.CurrentDirectory;
-                //
-                // return false;
+                var rev = ReverseInvokerFactory.GetReverseInvoker();
+                if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
+
+                __result = FileSystemManager.CurrentDirectory;
+
+                return false;
             }
         }
 
@@ -121,16 +125,16 @@ public partial class MonoIOPatchModule
 
             private static unsafe bool Prefix(char* path, ref bool __result)
             {
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Log.Add($"trace{new StackTrace()}");
-                return true;
-                // var rev = ReverseInvokerFactory.GetReverseInvoker();
-                // if (rev.Invoking) return true;
-                //
-                // FileSystemManager.CurrentDirectory = new(path);
-                // __result = true;
-                //
-                // return false;
+                var rev = ReverseInvokerFactory.GetReverseInvoker();
+                if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
+
+                FileSystemManager.CurrentDirectory = new(path);
+                __result = true;
+
+                return false;
             }
         }
 
@@ -153,16 +157,16 @@ public partial class MonoIOPatchModule
 
             private static unsafe bool Prefix(char* path, char* dest, ref bool __result)
             {
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Log.Add($"trace{new StackTrace()}");
-                return true;
-                // var rev = ReverseInvokerFactory.GetReverseInvoker();
-                // if (rev.Invoking) return true;
-                //
-                // FileSystemManager.MoveFile(new(path), new(dest));
-                // __result = true;
-                //
-                // return false;
+                var rev = ReverseInvokerFactory.GetReverseInvoker();
+                if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
+
+                FileSystemManager.MoveFile(new(path), new(dest));
+                __result = true;
+
+                return false;
             }
         }
 
@@ -186,16 +190,16 @@ public partial class MonoIOPatchModule
 
             private static unsafe bool Prefix(char* path, char* dest, bool overwrite, ref bool __result)
             {
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Log.Add($"trace{new StackTrace()}");
-                return true;
-                // var rev = ReverseInvokerFactory.GetReverseInvoker();
-                // if (rev.Invoking) return true;
-                //
-                // FileSystemManager.CopyFile(new(path), new(dest), overwrite);
-                // __result = true;
-                //
-                // return false;
+                var rev = ReverseInvokerFactory.GetReverseInvoker();
+                if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
+
+                FileSystemManager.CopyFile(new(path), new(dest), overwrite);
+                __result = true;
+
+                return false;
             }
         }
 
@@ -215,16 +219,16 @@ public partial class MonoIOPatchModule
 
             private static unsafe bool Prefix(char* path, ref bool __result)
             {
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Log.Add($"trace{new StackTrace()}");
-                return true;
-                // var rev = ReverseInvokerFactory.GetReverseInvoker();
-                // if (rev.Invoking) return true;
-                //
-                // FileSystemManager.DeleteFile(new(path));
-                // __result = true;
-                //
-                // return false;
+                var rev = ReverseInvokerFactory.GetReverseInvoker();
+                if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
+
+                FileSystemManager.DeleteFile(new(path));
+                __result = true;
+
+                return false;
             }
         }
 
@@ -249,17 +253,17 @@ public partial class MonoIOPatchModule
             private static unsafe bool Prefix(char* sourceFileName, char* destinationFileName,
                 char* destinationBackupFileName, bool ignoreMetadataErrors, ref bool __result)
             {
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Log.Add($"trace{new StackTrace()}");
-                return true;
-                // var rev = ReverseInvokerFactory.GetReverseInvoker();
-                // if (rev.Invoking) return true;
-                //
-                // FileSystemManager.ReplaceFile(new(sourceFileName), new(destinationFileName),
-                //     new(destinationBackupFileName), ignoreMetadataErrors);
-                // __result = true;
-                //
-                // return false;
+                var rev = ReverseInvokerFactory.GetReverseInvoker();
+                if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
+
+                FileSystemManager.ReplaceFile(new(sourceFileName), new(destinationFileName),
+                    new(destinationBackupFileName), ignoreMetadataErrors);
+                __result = true;
+
+                return false;
             }
         }
 
@@ -279,15 +283,15 @@ public partial class MonoIOPatchModule
 
             private static unsafe bool Prefix(char* path, ref FileAttributes __result)
             {
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Log.Add($"trace{new StackTrace()}");
-                return true;
-                // var rev = ReverseInvokerFactory.GetReverseInvoker();
-                // if (rev.Invoking) return true;
-                //
-                // __result = FileSystemManager.GetFileAttributes(new(path));
-                //
-                // return false;
+                var rev = ReverseInvokerFactory.GetReverseInvoker();
+                if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
+
+                __result = FileSystemManager.GetFileAttributes(new(path));
+
+                return false;
             }
         }
 
@@ -307,16 +311,16 @@ public partial class MonoIOPatchModule
 
             private static unsafe bool Prefix(char* path, FileAttributes attrs, ref bool __result)
             {
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Log.Add($"trace{new StackTrace()}");
-                return true;
-                // var rev = ReverseInvokerFactory.GetReverseInvoker();
-                // if (rev.Invoking) return true;
-                //
-                // FileSystemManager.SetFileAttributes(new(path), attrs);
-                // __result = true;
-                //
-                // return false;
+                var rev = ReverseInvokerFactory.GetReverseInvoker();
+                if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
+
+                FileSystemManager.SetFileAttributes(new(path), attrs);
+                __result = true;
+
+                return false;
             }
         }
 
@@ -336,16 +340,16 @@ public partial class MonoIOPatchModule
 
             private static bool Prefix(IntPtr handle, ref object __result)
             {
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Log.Add($"trace{new StackTrace()}");
-                return true;
-                // var rev = ReverseInvokerFactory.GetReverseInvoker();
-                // if (rev.Invoking) return true;
-                //
-                // var fileType = (int)FileSystemManager.GetFileType(handle);
-                // __result = Enum.ToObject(MonoFileType, fileType);
-                //
-                // return false;
+                var rev = ReverseInvokerFactory.GetReverseInvoker();
+                if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
+
+                var fileType = (int)FileSystemManager.GetFileType(handle);
+                __result = Enum.ToObject(MonoFileType, fileType);
+
+                return false;
             }
         }
 
@@ -370,15 +374,15 @@ public partial class MonoIOPatchModule
             private static bool Prefix( /*char* pathWithPattern, ref string fileName, ref int fileAttr,
                 ref int error, ref IntPtr __result*/)
             {
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Log.Add($"trace{new StackTrace()}");
-                return true;
-                // var rev = ReverseInvokerFactory.GetReverseInvoker();
-                // if (rev.Invoking) return true;
-                //
-                // // TODO: Implement FindFirstFile
-                //
-                // return false;
+                var rev = ReverseInvokerFactory.GetReverseInvoker();
+                if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
+
+                // TODO: Implement FindFirstFile
+
+                return false;
             }
         }
 
@@ -403,16 +407,16 @@ public partial class MonoIOPatchModule
             private static bool Prefix( /*IntPtr hnd, ref string fileName, ref int fileAttr, ref int error, */
                 ref bool __result)
             {
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Log.Add($"trace{new StackTrace()}");
-                return true;
-                // var rev = ReverseInvokerFactory.GetReverseInvoker();
-                // if (rev.Invoking) return true;
-                //
-                // // TODO: Implement FindNextFile
-                // __result = false;
-                //
-                // return false;
+                var rev = ReverseInvokerFactory.GetReverseInvoker();
+                if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
+
+                // TODO: Implement FindNextFile
+                __result = false;
+
+                return false;
             }
         }
 
@@ -431,16 +435,16 @@ public partial class MonoIOPatchModule
 
             private static bool Prefix( /*IntPtr hnd, */ ref bool __result)
             {
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Log.Add($"trace{new StackTrace()}");
-                return true;
-                // var rev = ReverseInvokerFactory.GetReverseInvoker();
-                // if (rev.Invoking) return true;
-                //
-                // // TODO: Implement FindCloseFile
-                // __result = false;
-                //
-                // return false;
+                var rev = ReverseInvokerFactory.GetReverseInvoker();
+                if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
+
+                // TODO: Implement FindCloseFile
+                __result = false;
+
+                return false;
             }
         }
 
@@ -463,25 +467,25 @@ public partial class MonoIOPatchModule
 
             private static unsafe bool Prefix(char* path, ref object stat, ref bool __result)
             {
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Log.Add($"trace{new StackTrace()}");
-                return true;
-                // var rev = ReverseInvokerFactory.GetReverseInvoker();
-                // if (rev.Invoking) return true;
-                //
-                // var fileStat = FileSystemManager.GetFileStat(new(path));
-                // stat = AccessTools.CreateInstance(MonoIOStatType);
-                // var statTraverse = Traverse.Create(stat);
-                // statTraverse.Field("Name").SetValue(fileStat.Name);
-                // statTraverse.Field("Attributes").SetValue(fileStat.Attributes);
-                // statTraverse.Field("Length").SetValue(fileStat.Length);
-                // statTraverse.Field("CreationTime").SetValue(fileStat.CreationTime);
-                // statTraverse.Field("LastAccessTime").SetValue(fileStat.LastAccessTime);
-                // statTraverse.Field("LastWriteTime").SetValue(fileStat.LastWriteTime);
-                //
-                // __result = true;
-                //
-                // return false;
+                var rev = ReverseInvokerFactory.GetReverseInvoker();
+                if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
+
+                var fileStat = FileSystemManager.GetFileStat(new(path));
+                stat = AccessTools.CreateInstance(MonoIOStatType);
+                var statTraverse = Traverse.Create(stat);
+                statTraverse.Field("Name").SetValue(fileStat.Name);
+                statTraverse.Field("Attributes").SetValue(fileStat.Attributes);
+                statTraverse.Field("Length").SetValue(fileStat.Length);
+                statTraverse.Field("CreationTime").SetValue(fileStat.CreationTime);
+                statTraverse.Field("LastAccessTime").SetValue(fileStat.LastAccessTime);
+                statTraverse.Field("LastWriteTime").SetValue(fileStat.LastWriteTime);
+
+                __result = true;
+
+                return false;
             }
         }
 
@@ -507,15 +511,15 @@ public partial class MonoIOPatchModule
             private static unsafe bool Prefix(char* filename, FileMode mode, FileAccess access, FileShare share,
                 FileOptions options, ref IntPtr __result)
             {
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Log.Add($"trace{new StackTrace()}");
-                return true;
-                // var rev = ReverseInvokerFactory.GetReverseInvoker();
-                // if (rev.Invoking) return true;
-                //
-                // __result = FileSystemManager.Open(new(filename), mode, access, share, options);
-                //
-                // return false;
+                var rev = ReverseInvokerFactory.GetReverseInvoker();
+                if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
+
+                __result = FileSystemManager.Open(new(filename), mode, access, share, options);
+
+                return false;
             }
         }
 
@@ -535,16 +539,16 @@ public partial class MonoIOPatchModule
 
             private static bool Prefix( /*IntPtr handle,*/ ref bool __result)
             {
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Log.Add($"trace{new StackTrace()}");
-                return true;
-                // var rev = ReverseInvokerFactory.GetReverseInvoker();
-                // if (rev.Invoking) return true;
-                //
-                // // TODO Implement Cancel_internal
-                // __result = false;
-                //
-                // return false;
+                var rev = ReverseInvokerFactory.GetReverseInvoker();
+                if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
+
+                // TODO Implement Cancel_internal
+                __result = false;
+
+                return false;
             }
         }
 
@@ -567,16 +571,16 @@ public partial class MonoIOPatchModule
 
             private static bool Prefix(IntPtr handle, ref bool __result)
             {
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Log.Add($"handle: {handle}, trace{new StackTrace()}");
-                return true;
-                // var rev = ReverseInvokerFactory.GetReverseInvoker();
-                // if (rev.Invoking) return true;
-                //
-                // FileSystemManager.Close(handle);
-                // __result = true;
-                //
-                // return false;
+                var rev = ReverseInvokerFactory.GetReverseInvoker();
+                if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
+
+                FileSystemManager.Close(handle);
+                __result = true;
+
+                return false;
             }
         }
 
@@ -599,15 +603,15 @@ public partial class MonoIOPatchModule
 
             private static bool Prefix(IntPtr handle, byte[] dest, int dest_offset, int count, ref int __result)
             {
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Log.Add($"handle: {handle}, trace{new StackTrace()}");
-                return true;
-                // var rev = ReverseInvokerFactory.GetReverseInvoker();
-                // if (rev.Invoking) return true;
-                //
-                // __result = FileSystemManager.Read(handle, dest, dest_offset, count);
-                //
-                // return false;
+                var rev = ReverseInvokerFactory.GetReverseInvoker();
+                if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
+
+                __result = FileSystemManager.Read(handle, dest, dest_offset, count);
+
+                return false;
             }
         }
 
@@ -630,15 +634,15 @@ public partial class MonoIOPatchModule
 
             private static bool Prefix(IntPtr handle, ref byte[] src, int src_offset, int count, ref int __result)
             {
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Log.Add($"handle: {handle}, trace{new StackTrace()}");
-                return true;
-                // var rev = ReverseInvokerFactory.GetReverseInvoker();
-                // if (rev.Invoking) return true;
-                //
-                // __result = FileSystemManager.Write(handle, src, src_offset, count);
-                //
-                // return false;
+                var rev = ReverseInvokerFactory.GetReverseInvoker();
+                if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
+
+                __result = FileSystemManager.Write(handle, src, src_offset, count);
+
+                return false;
             }
         }
 
@@ -658,15 +662,15 @@ public partial class MonoIOPatchModule
 
             private static bool Prefix(IntPtr handle, long offset, SeekOrigin origin, ref long __result)
             {
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Log.Add($"handle: {handle}, trace{new StackTrace()}");
-                return true;
-                // var rev = ReverseInvokerFactory.GetReverseInvoker();
-                // if (rev.Invoking) return true;
-                //
-                // __result = FileSystemManager.Seek(handle, offset, origin);
-                //
-                // return false;
+                var rev = ReverseInvokerFactory.GetReverseInvoker();
+                if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
+
+                __result = FileSystemManager.Seek(handle, offset, origin);
+
+                return false;
             }
         }
 
@@ -684,18 +688,18 @@ public partial class MonoIOPatchModule
                     new[] { typeof(IntPtr), MonoIOErrorType.MakeByRefType() });
             }
 
-            private static bool Prefix(IntPtr handle, ref bool __result)
+            private static bool Prefix( /*IntPtr handle, */ ref bool __result)
             {
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Log.Add($"handle: {handle}, trace{new StackTrace()}");
-                return true;
-                // var rev = ReverseInvokerFactory.GetReverseInvoker();
-                // if (rev.Invoking) return true;
-                //
-                // // FileSystemManager.Flush(handle);
-                // __result = true;
-                //
-                // return false;
+                var rev = ReverseInvokerFactory.GetReverseInvoker();
+                if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
+
+                // FileSystemManager.Flush(handle);
+                __result = true;
+
+                return false;
             }
         }
 
@@ -715,15 +719,15 @@ public partial class MonoIOPatchModule
 
             private static bool Prefix(IntPtr handle, ref long __result)
             {
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Log.Add($"handle: {handle}, trace{new StackTrace()}");
-                return true;
-                // var rev = ReverseInvokerFactory.GetReverseInvoker();
-                // if (rev.Invoking) return true;
-                //
-                // __result = FileSystemManager.GetLength(handle);
-                //
-                // return false;
+                var rev = ReverseInvokerFactory.GetReverseInvoker();
+                if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
+
+                __result = FileSystemManager.GetLength(handle);
+
+                return false;
             }
         }
 
@@ -743,16 +747,16 @@ public partial class MonoIOPatchModule
 
             private static bool Prefix(IntPtr handle, long length, ref bool __result)
             {
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Log.Add($"trace{new StackTrace()}");
-                return true;
-                // var rev = ReverseInvokerFactory.GetReverseInvoker();
-                // if (rev.Invoking) return true;
-                //
-                // FileSystemManager.SetLength(handle, length);
-                // __result = true;
-                //
-                // return false;
+                var rev = ReverseInvokerFactory.GetReverseInvoker();
+                if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
+
+                FileSystemManager.SetLength(handle, length);
+                __result = true;
+
+                return false;
             }
         }
 
@@ -776,16 +780,16 @@ public partial class MonoIOPatchModule
             private static bool Prefix(IntPtr handle, long creation_time, long last_access_time, long last_write_time,
                 ref bool __result)
             {
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Log.Add($"trace{new StackTrace()}");
-                return true;
-                // var rev = ReverseInvokerFactory.GetReverseInvoker();
-                // if (rev.Invoking) return true;
-                //
-                // FileSystemManager.SetFileTime(handle, creation_time, last_access_time, last_write_time);
-                // __result = true;
-                //
-                // return false;
+                var rev = ReverseInvokerFactory.GetReverseInvoker();
+                if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
+
+                FileSystemManager.SetFileTime(handle, creation_time, last_access_time, last_write_time);
+                __result = true;
+
+                return false;
             }
         }
 
@@ -803,18 +807,18 @@ public partial class MonoIOPatchModule
                     new[] { typeof(IntPtr), typeof(long), typeof(long), MonoIOErrorType.MakeByRefType() });
             }
 
-            private static bool Prefix(IntPtr handle, long position, long length)
+            private static bool Prefix( /*IntPtr handle, long position, long length*/)
             {
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Log.Add($"handle: {handle}, trace{new StackTrace()}");
-                return true;
-                // var rev = ReverseInvokerFactory.GetReverseInvoker();
-                // if (rev.Invoking) return true;
-                //
-                // // TODO: Implement Lock
-                // // FileSystemManager.Lock(handle, position, length);
-                //
-                // return false;
+                var rev = ReverseInvokerFactory.GetReverseInvoker();
+                if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
+
+                // TODO: Implement Lock
+                // FileSystemManager.Lock(handle, position, length);
+
+                return false;
             }
         }
 
@@ -832,18 +836,18 @@ public partial class MonoIOPatchModule
                     new[] { typeof(IntPtr), typeof(long), typeof(long), MonoIOErrorType.MakeByRefType() });
             }
 
-            private static bool Prefix(IntPtr handle, long position, long length)
+            private static bool Prefix( /*IntPtr handle, long position, long length*/)
             {
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Log.Add($"handle: {handle}, trace{new StackTrace()}");
-                return true;
-                // var rev = ReverseInvokerFactory.GetReverseInvoker();
-                // if (rev.Invoking) return true;
-                //
-                // // TODO: Implement Unlock
-                // // FileSystemManager.Unlock(handle, position, length);
-                //
-                // return false;
+                var rev = ReverseInvokerFactory.GetReverseInvoker();
+                if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
+
+                // TODO: Implement Unlock
+                // FileSystemManager.Unlock(handle, position, length);
+
+                return false;
             }
         }
 
@@ -862,19 +866,15 @@ public partial class MonoIOPatchModule
 
             private static bool Prefix(ref IntPtr __result)
             {
-                return true;
-                // var rev = ReverseInvokerFactory.GetReverseInvoker();
-                // if (rev.Invoking) return true;
-                //
-                // __result = FileSystemManager.ConsoleOutput;
-                //
-                // return false;
-            }
+                var rev = ReverseInvokerFactory.GetReverseInvoker();
+                if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
 
-            private static void Postfix(IntPtr __result)
-            {
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Log.Add($"handle: {__result}");
+                __result = FileSystemManager.ConsoleOutput;
+
+                return false;
             }
         }
 
@@ -895,16 +895,13 @@ public partial class MonoIOPatchModule
             {
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
 
                 __result = FileSystemManager.ConsoleInput;
 
                 return false;
-            }
-
-            private static void Postfix(IntPtr __result)
-            {
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Log.Add($"handle: {__result}");
             }
         }
 
@@ -925,16 +922,13 @@ public partial class MonoIOPatchModule
             {
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
 
                 __result = FileSystemManager.ConsoleError;
 
                 return false;
-            }
-
-            private static void Postfix(IntPtr __result)
-            {
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Log.Add($"handle: {__result}");
             }
         }
 
@@ -957,17 +951,17 @@ public partial class MonoIOPatchModule
 
             private static bool Prefix( /*ref IntPtr read_handle, ref IntPtr write_handle,*/ ref bool __result)
             {
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Log.Add($"trace{new StackTrace()}");
-                return true;
-                // var rev = ReverseInvokerFactory.GetReverseInvoker();
-                // if (rev.Invoking) return true;
-                //
-                // // TODO Implement CreatePipe
-                // // FileSystemManager.CreatePipe(out read_handle, out write_handle);
-                // __result = true;
-                //
-                // return false;
+                var rev = ReverseInvokerFactory.GetReverseInvoker();
+                if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
+
+                // TODO Implement CreatePipe
+                // FileSystemManager.CreatePipe(out read_handle, out write_handle);
+                __result = true;
+
+                return false;
             }
         }
 
@@ -994,18 +988,18 @@ public partial class MonoIOPatchModule
                 Prefix( /*IntPtr source_process_handle, IntPtr source_handle, IntPtr target_process_handle,
                 ref IntPtr target_handle, int access, int inherit, int options,*/ ref bool __result)
             {
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Log.Add($"trace{new StackTrace()}");
-                return true;
-                // var rev = ReverseInvokerFactory.GetReverseInvoker();
-                // if (rev.Invoking) return true;
-                //
-                // // TODO Implement DuplicateHandle
-                // // FileSystemManager.DuplicateHandle(source_process_handle, source_handle, target_process_handle,
-                // //     out target_handle, access, inherit, options);
-                // __result = true;
-                //
-                // return false;
+                var rev = ReverseInvokerFactory.GetReverseInvoker();
+                if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
+
+                // TODO Implement DuplicateHandle
+                // FileSystemManager.DuplicateHandle(source_process_handle, source_handle, target_process_handle,
+                //     out target_handle, access, inherit, options);
+                __result = true;
+
+                return false;
             }
         }
 
@@ -1024,15 +1018,15 @@ public partial class MonoIOPatchModule
 
             private static bool Prefix(ref char __result)
             {
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Log.Add($"trace{new StackTrace()}");
-                return true;
-                // var rev = ReverseInvokerFactory.GetReverseInvoker();
-                // if (rev.Invoking) return true;
-                //
-                // __result = FileSystemManager.VolumeSeparatorChar;
-                //
-                // return false;
+                var rev = ReverseInvokerFactory.GetReverseInvoker();
+                if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
+
+                __result = FileSystemManager.VolumeSeparatorChar;
+
+                return false;
             }
         }
 
@@ -1051,15 +1045,15 @@ public partial class MonoIOPatchModule
 
             private static bool Prefix(ref char __result)
             {
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Log.Add($"trace{new StackTrace()}");
-                return true;
-                // var rev = ReverseInvokerFactory.GetReverseInvoker();
-                // if (rev.Invoking) return true;
-                //
-                // __result = FileSystemManager.DirectorySeparatorChar;
-                //
-                // return false;
+                var rev = ReverseInvokerFactory.GetReverseInvoker();
+                if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
+
+                __result = FileSystemManager.DirectorySeparatorChar;
+
+                return false;
             }
         }
 
@@ -1078,15 +1072,15 @@ public partial class MonoIOPatchModule
 
             private static bool Prefix(ref char __result)
             {
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Log.Add($"trace{new StackTrace()}");
-                return true;
-                // var rev = ReverseInvokerFactory.GetReverseInvoker();
-                // if (rev.Invoking) return true;
-                //
-                // __result = FileSystemManager.AltDirectorySeparatorChar;
-                //
-                // return false;
+                var rev = ReverseInvokerFactory.GetReverseInvoker();
+                if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
+
+                __result = FileSystemManager.AltDirectorySeparatorChar;
+
+                return false;
             }
         }
 
@@ -1105,15 +1099,15 @@ public partial class MonoIOPatchModule
 
             private static bool Prefix(ref char __result)
             {
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Log.Add($"trace{new StackTrace()}");
-                return true;
-                // var rev = ReverseInvokerFactory.GetReverseInvoker();
-                // if (rev.Invoking) return true;
-                //
-                // __result = FileSystemManager.PathSeparator;
-                //
-                // return false;
+                var rev = ReverseInvokerFactory.GetReverseInvoker();
+                if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
+
+                __result = FileSystemManager.PathSeparator;
+
+                return false;
             }
         }
 
@@ -1133,16 +1127,16 @@ public partial class MonoIOPatchModule
 
             private static bool Prefix(string path, ref string newPath, ref bool __result)
             {
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Log.Add($"trace{new StackTrace()}");
-                return true;
-                // var rev = ReverseInvokerFactory.GetReverseInvoker();
-                // if (rev.Invoking) return true;
-                //
-                // FileSystemManager.RemapPath(path, out newPath);
-                // __result = true;
-                //
-                // return false;
+                var rev = ReverseInvokerFactory.GetReverseInvoker();
+                if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
+
+                FileSystemManager.RemapPath(path, out newPath);
+                __result = true;
+
+                return false;
             }
         }
 
@@ -1161,15 +1155,15 @@ public partial class MonoIOPatchModule
 
             private static bool Prefix()
             {
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Log.Add($"trace{new StackTrace()}");
-                return true;
-                // var rev = ReverseInvokerFactory.GetReverseInvoker();
-                // if (rev.Invoking) return true;
-                //
-                // FileSystemManager.DumpHandles();
-                //
-                // return false;
+                var rev = ReverseInvokerFactory.GetReverseInvoker();
+                if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
+
+                FileSystemManager.DumpHandles();
+
+                return false;
             }
         }
     }
