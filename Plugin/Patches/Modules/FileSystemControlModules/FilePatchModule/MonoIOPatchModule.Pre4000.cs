@@ -4,6 +4,9 @@ using System.IO;
 using System.Reflection;
 using HarmonyLib;
 using UniTASPlugin.Patches.PatchGroups;
+#if TRACE
+using System.Diagnostics;
+#endif
 
 namespace UniTASPlugin.Patches.Modules.FileSystemControlModules.FilePatchModule;
 
@@ -34,6 +37,9 @@ public partial class MonoIOPatchModule
             {
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
 
                 FileSystemManager.CreateDirectory(path);
                 __result = true;
@@ -60,6 +66,9 @@ public partial class MonoIOPatchModule
             {
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
 
                 FileSystemManager.DeleteDirectory(path);
                 __result = true;
@@ -90,6 +99,9 @@ public partial class MonoIOPatchModule
             {
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
 
                 __result = FileSystemManager.GetFileSystemEntries(path, path_with_pattern, attrs, mask);
 
@@ -114,6 +126,9 @@ public partial class MonoIOPatchModule
             {
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
 
                 __result = FileSystemManager.CurrentDirectory;
 
@@ -139,6 +154,9 @@ public partial class MonoIOPatchModule
             {
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
 
                 FileSystemManager.CurrentDirectory = path;
                 __result = true;
@@ -165,6 +183,9 @@ public partial class MonoIOPatchModule
             {
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
 
                 FileSystemManager.MoveFile(path, dest);
                 __result = true;
@@ -191,6 +212,9 @@ public partial class MonoIOPatchModule
             {
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
 
                 FileSystemManager.CopyFile(path, dest, overwrite);
                 __result = true;
@@ -217,6 +241,9 @@ public partial class MonoIOPatchModule
             {
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
 
                 FileSystemManager.DeleteFile(path);
                 __result = true;
@@ -247,6 +274,9 @@ public partial class MonoIOPatchModule
             {
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
 
                 FileSystemManager.ReplaceFile(sourceFileName, destinationFileName, destinationBackupFileName,
                     ignoreMetadataErrors);
@@ -274,6 +304,9 @@ public partial class MonoIOPatchModule
             {
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
 
                 __result = FileSystemManager.GetFileAttributes(path);
 
@@ -299,6 +332,9 @@ public partial class MonoIOPatchModule
             {
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
 
                 FileSystemManager.SetFileAttributes(path, attrs);
                 __result = true;
@@ -325,6 +361,9 @@ public partial class MonoIOPatchModule
             {
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
 
                 var fileType = (int)FileSystemManager.GetFileType(handle);
                 __result = Enum.ToObject(MonoFileType, fileType);
@@ -351,6 +390,9 @@ public partial class MonoIOPatchModule
             {
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
 
                 var fileStat = FileSystemManager.GetFileStat(path);
                 stat = AccessTools.CreateInstance(MonoIOStatType);
@@ -391,6 +433,9 @@ public partial class MonoIOPatchModule
             {
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
 
                 __result = FileSystemManager.Open(filename, mode, access, share, options);
 
@@ -419,6 +464,9 @@ public partial class MonoIOPatchModule
             {
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
 
                 FileSystemManager.Close(handle);
                 __result = true;
@@ -448,6 +496,9 @@ public partial class MonoIOPatchModule
             {
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
 
                 __result = FileSystemManager.Read(handle, dest, dest_offset, count);
 
@@ -477,6 +528,9 @@ public partial class MonoIOPatchModule
             {
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
 
                 __result = FileSystemManager.Write(handle, src, src_offset, count);
 
@@ -502,6 +556,9 @@ public partial class MonoIOPatchModule
             {
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
 
                 __result = FileSystemManager.Seek(handle, offset, origin);
 
@@ -527,6 +584,9 @@ public partial class MonoIOPatchModule
             {
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
 
                 // FileSystemManager.Flush(handle);
                 __result = true;
@@ -553,6 +613,9 @@ public partial class MonoIOPatchModule
             {
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
 
                 __result = FileSystemManager.GetLength(handle);
 
@@ -578,6 +641,9 @@ public partial class MonoIOPatchModule
             {
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
 
                 FileSystemManager.SetLength(handle, length);
                 __result = true;
@@ -608,6 +674,9 @@ public partial class MonoIOPatchModule
             {
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
 
                 FileSystemManager.SetFileTime(handle, creation_time, last_access_time, last_write_time);
                 __result = true;
@@ -634,6 +703,9 @@ public partial class MonoIOPatchModule
             {
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
 
                 // TODO: Implement Lock
                 // FileSystemManager.Lock(handle, position, length);
@@ -660,6 +732,9 @@ public partial class MonoIOPatchModule
             {
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
 
                 // TODO: Implement Unlock
                 // FileSystemManager.Unlock(handle, position, length);
@@ -685,6 +760,9 @@ public partial class MonoIOPatchModule
             {
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
 
                 __result = FileSystemManager.ConsoleOutput;
 
@@ -709,6 +787,9 @@ public partial class MonoIOPatchModule
             {
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
 
                 __result = FileSystemManager.ConsoleInput;
 
@@ -733,6 +814,9 @@ public partial class MonoIOPatchModule
             {
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
 
                 __result = FileSystemManager.ConsoleError;
 
@@ -758,6 +842,9 @@ public partial class MonoIOPatchModule
             {
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
 
                 // TODO Implement CreatePipe
                 // FileSystemManager.CreatePipe(out read_handle, out write_handle);
@@ -792,6 +879,9 @@ public partial class MonoIOPatchModule
             {
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
 
                 // TODO Implement DuplicateHandle
                 // FileSystemManager.DuplicateHandle(source_process_handle, source_handle, target_process_handle,
@@ -819,6 +909,9 @@ public partial class MonoIOPatchModule
             {
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
 
                 __result = FileSystemManager.VolumeSeparatorChar;
 
@@ -843,6 +936,9 @@ public partial class MonoIOPatchModule
             {
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
 
                 __result = FileSystemManager.DirectorySeparatorChar;
 
@@ -867,6 +963,9 @@ public partial class MonoIOPatchModule
             {
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
 
                 __result = FileSystemManager.AltDirectorySeparatorChar;
 
@@ -891,6 +990,9 @@ public partial class MonoIOPatchModule
             {
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
 
                 __result = FileSystemManager.PathSeparator;
 
@@ -915,6 +1017,9 @@ public partial class MonoIOPatchModule
             {
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
 
                 FileSystemManager.GetTempPath(out path);
                 __result = path.Length;
@@ -941,6 +1046,9 @@ public partial class MonoIOPatchModule
             {
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
+#if TRACE
+                Log.Add(new StackTrace().ToString());
+#endif
 
                 FileSystemManager.RemapPath(path, out newPath);
                 __result = true;
