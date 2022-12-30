@@ -3,8 +3,10 @@ using System.Linq;
 using HarmonyLib;
 using UniTASPlugin.Interfaces.StartEvent;
 using UniTASPlugin.Interfaces.Update;
-using UniTASPlugin.Logger;
 using PatchProcessor = UniTASPlugin.Patches.PatchProcessor.PatchProcessor;
+#if TRACE
+using UniTASPlugin.Patches.Modules.FileSystemControlModules.FilePatchModule;
+#endif
 
 namespace UniTASPlugin;
 
@@ -24,7 +26,7 @@ public class PluginWrapper
     public PluginWrapper(IEnumerable<IOnUpdate> onUpdates, IEnumerable<IOnFixedUpdate> onFixedUpdates,
         IEnumerable<IOnAwake> onAwakes, IEnumerable<IOnStart> onStarts, IEnumerable<IOnEnable> onEnables,
         IEnumerable<IOnPreUpdates> onPreUpdates,
-        IEnumerable<PatchProcessor> patchProcessors, ILogger logger)
+        IEnumerable<PatchProcessor> patchProcessors)
     {
         _onFixedUpdates = onFixedUpdates.ToArray();
         _onAwakes = onAwakes.ToArray();
@@ -86,6 +88,20 @@ public class PluginWrapper
         //GameCapture.Update();
     }
 
+#if TRACE
+    private static void MonoIOPatchModuleTracePrints()
+    {
+        var logCount = MonoIOPatchModule.Log.Count;
+        for (var i = 0; i < logCount; i++)
+        {
+            var log = MonoIOPatchModule.Log[i];
+            Plugin.Log.LogDebug(log);
+        }
+
+        MonoIOPatchModule.Log.RemoveRange(0, logCount);
+    }
+#endif
+
     // right now I don't call this update before other scripts so I don't need to check if it was already called
     public void LateUpdate()
     {
@@ -110,13 +126,16 @@ public class PluginWrapper
 
     private void CallOnPreUpdate()
     {
-        if (!_calledPreUpdate)
+        if (_calledPreUpdate) return;
+        _calledPreUpdate = true;
+
+#if TRACE
+        MonoIOPatchModuleTracePrints();
+#endif
+
+        foreach (var onPreUpdate in _onPreUpdates)
         {
-            _calledPreUpdate = true;
-            foreach (var onPreUpdate in _onPreUpdates)
-            {
-                onPreUpdate.PreUpdate();
-            }
+            onPreUpdate.PreUpdate();
         }
     }
 }
