@@ -53,7 +53,7 @@ public partial class PathPatchModule
             {
                 return AccessTools.Method(typeof(Path), "GetFullPathName", new[]
                 {
-                    typeof(string), typeof(int), typeof(StringBuilder), typeof(IntPtr)
+                    typeof(string), typeof(int), typeof(StringBuilder), typeof(IntPtr).MakeByRefType()
                 });
             }
 
