@@ -8,7 +8,7 @@ namespace UniTASPlugin.GameEnvironment.InnerState;
 // ReSharper disable once ClassNeverInstantiated.Global
 public class GameTime : IOnPreUpdates
 {
-    private DateTime _startupTime = new(2000, 1, 1);
+    private DateTime _startupTime;
 
     /// <summary>
     /// Setting the start up time causes the game to update other time related variables, which requires this to be ran in the main thread.

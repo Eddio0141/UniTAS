@@ -17,17 +17,17 @@ public class Plugin : BaseUnityPlugin
 {
     public static readonly IContainer Kernel = ContainerRegister.Init();
 
-    private static Plugin _instance;
+    private static Plugin instance;
 
     private ManualLogSource _logger;
-    public static ManualLogSource Log => _instance._logger;
+    public static ManualLogSource Log => instance._logger;
 
     private PluginWrapper _pluginWrapper;
 
     private void Awake()
     {
-        if (_instance != null) return;
-        _instance = this;
+        if (instance != null) return;
+        instance = this;
         _logger = Logger;
 
         _pluginWrapper = Kernel.GetInstance<PluginWrapper>();
@@ -46,6 +46,7 @@ public class Plugin : BaseUnityPlugin
         // TODO all axis names for help
 
         // init random seed
+        // TODO make this happen after 
         var env = Kernel.GetInstance<IVirtualEnvironmentFactory>().GetVirtualEnv();
         RandomWrap.InitState((int)env.Seed);
 

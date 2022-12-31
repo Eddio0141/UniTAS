@@ -278,7 +278,7 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
     {
         foreach (var gameRestart in _onGameRestart)
         {
-            gameRestart.OnGameRestart();
+            gameRestart.OnGameRestart(_softRestartTime);
         }
     }
 
@@ -286,12 +286,11 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
     {
         _logger.LogInfo("Soft restarting");
 
-        var env = _virtualEnvironmentFactory.GetVirtualEnv();
-        env.GameTime.StartupTime = _softRestartTime;
         SceneHelper.LoadScene(0);
 
         _logger.LogDebug("random setting state");
 
+        var env = _virtualEnvironmentFactory.GetVirtualEnv();
         RandomWrap.InitState((int)env.Seed);
 
         _logger.LogInfo("Finish soft restarting");
