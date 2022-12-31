@@ -1,8 +1,11 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
+using UniTASPlugin.GameRestart;
 using UniTASPlugin.Interfaces.StartEvent;
 using UniTASPlugin.Interfaces.Update;
+using UniTASPlugin.ReverseInvoker;
 using PatchProcessor = UniTASPlugin.Patches.PatchProcessor.PatchProcessor;
 #if TRACE
 using UniTASPlugin.Patches.Modules.FileSystemControlModules.FilePatchModule;
@@ -26,7 +29,8 @@ public class PluginWrapper
     public PluginWrapper(IEnumerable<IOnUpdate> onUpdates, IEnumerable<IOnFixedUpdate> onFixedUpdates,
         IEnumerable<IOnAwake> onAwakes, IEnumerable<IOnStart> onStarts, IEnumerable<IOnEnable> onEnables,
         IEnumerable<IOnPreUpdates> onPreUpdates,
-        IEnumerable<PatchProcessor> patchProcessors)
+        IEnumerable<PatchProcessor> patchProcessors, IEnumerable<IOnGameRestart> onGameRestarts,
+        IReverseInvokerFactory reverseInvokerFactory)
     {
         _onFixedUpdates = onFixedUpdates.ToArray();
         _onAwakes = onAwakes.ToArray();
@@ -42,6 +46,14 @@ public class PluginWrapper
         foreach (var patch in sortedPatches)
         {
             harmony.PatchAll(patch);
+        }
+
+        var rev = reverseInvokerFactory.GetReverseInvoker();
+        var actualTime = rev.Invoke(() => DateTime.Now);
+
+        foreach (var onGameRestart in onGameRestarts)
+        {
+            onGameRestart.OnGameRestart(actualTime);
         }
     }
 

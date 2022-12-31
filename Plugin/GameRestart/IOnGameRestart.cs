@@ -1,6 +1,8 @@
+using System;
+
 namespace UniTASPlugin.GameRestart;
 
 public interface IOnGameRestart
 {
-    void OnGameRestart();
+    void OnGameRestart(DateTime startupTime);
 }

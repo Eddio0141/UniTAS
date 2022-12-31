@@ -52,6 +52,7 @@ public static class ContainerRegister
             c.For<PatchReverseInvoker>().Singleton();
 
             c.For<VirtualEnvironment>().Singleton();
+            c.For<IOnGameRestart>().Use(x => x.GetInstance<VirtualEnvironment>());
 
             c.For<IOnPreUpdates>().Singleton().Use<GameTime>();
 

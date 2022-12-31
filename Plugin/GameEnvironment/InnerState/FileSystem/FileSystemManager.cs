@@ -29,8 +29,6 @@ public class FileSystemManager : IFileSystemManager, IOnGameRestart
         _gameInfo = gameInfo;
         _virtualEnvironmentFactory = virtualEnvironmentFactory;
         _logger = logger;
-
-        Init();
     }
 
     private void Init()
@@ -51,7 +49,7 @@ public class FileSystemManager : IFileSystemManager, IOnGameRestart
         };
     }
 
-    public void OnGameRestart()
+    public void OnGameRestart(DateTime startupTime)
     {
         Init();
 
