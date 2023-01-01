@@ -8,7 +8,6 @@ using UniTASPlugin.GameInfo;
 using UniTASPlugin.LegacyGameOverlay;
 using UniTASPlugin.LegacySafeWrappers;
 using UnityEngine;
-using SystemInfo = UniTASPlugin.LegacyFakeGameState.SystemInfo;
 
 namespace UniTASPlugin;
 
@@ -49,9 +48,6 @@ public class Plugin : BaseUnityPlugin
         // TODO make this happen after 
         var env = Kernel.GetInstance<IVirtualEnvironmentFactory>().GetVirtualEnv();
         RandomWrap.InitState((int)env.Seed);
-
-        SystemInfo.Init();
-        Overlay.Init();
 
         Logger.LogInfo($"System time: {DateTime.Now}");
         Logger.LogInfo($"Plugin {MyPluginInfo.PLUGIN_NAME} is loaded!");

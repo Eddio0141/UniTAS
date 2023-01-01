@@ -146,19 +146,19 @@ public class FileSystemManager : IFileSystemManager, IOnGameRestart
             {
                 path = path.Replace("/", "\\");
 
-                // change common unix root to windows root
-                if (path.StartsWith("\\"))
-                {
-                    path = $"C:{path}";
-                }
-                else if (path.StartsWith("~"))
+                // change common unix paths to windows paths
+                if (path.StartsWith("~"))
                 {
                     // home directory TODO
                     path = path.Replace("~", "C:\\Users\\USER");
                 }
-                else if (path.StartsWith("\\home"))
+                else if (path.Contains("\\home"))
                 {
                     path = path.Replace("\\home", "C:\\Users");
+                }
+                else if (path.StartsWith("\\"))
+                {
+                    path = $"C:{path}";
                 }
 
                 return path;
