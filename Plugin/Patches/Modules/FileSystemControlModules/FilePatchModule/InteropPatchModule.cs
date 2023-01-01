@@ -545,6 +545,33 @@ public class InteropPatchModule
                     Plugin.Log.LogDebug(new StackTrace());
 #endif
             }
+
+            private static void Postfix(object output)
+            {
+#if TRACE
+                if (ReverseInvokerFactory.GetReverseInvoker().Invoking) return;
+                var fileStatus = Traverse.Create(output);
+                var flags = fileStatus.Field("Flags").GetValue<int>();
+                var mode = fileStatus.Field("Mode").GetValue<int>();
+                var uid = fileStatus.Field("Uid").GetValue<uint>();
+                var gid = fileStatus.Field("Gid").GetValue<uint>();
+                var size = fileStatus.Field("Size").GetValue<long>();
+                var atime = fileStatus.Field("ATime").GetValue<long>();
+                var atimeNsec = fileStatus.Field("ATimeNsec").GetValue<long>();
+                var mtime = fileStatus.Field("MTime").GetValue<long>();
+                var mtimeNsec = fileStatus.Field("MTimeNsec").GetValue<long>();
+                var ctime = fileStatus.Field("CTime").GetValue<long>();
+                var ctimeNsec = fileStatus.Field("CTimeNsec").GetValue<long>();
+                var birthTime = fileStatus.Field("BirthTime").GetValue<long>();
+                var birthTimeNsec = fileStatus.Field("BirthTimeNsec").GetValue<long>();
+                var dev = fileStatus.Field("Dev").GetValue<long>();
+                var ino = fileStatus.Field("Ino").GetValue<long>();
+                var userFlags = fileStatus.Field("UserFlags").GetValue<uint>();
+
+                Plugin.Log.LogDebug(
+                    $"Stat2 postfix: flags: {flags}, mode: {mode}, uid: {uid}, gid: {gid}, size: {size}, atime: {atime}, atimeNsec: {atimeNsec}, mtime: {mtime}, mtimeNsec: {mtimeNsec}, ctime: {ctime}, ctimeNsec: {ctimeNsec}, birthTime: {birthTime}, birthTimeNsec: {birthTimeNsec}, dev: {dev}, ino: {ino}, userFlags: {userFlags}");
+#endif
+            }
         }
 
         [HarmonyPatch]
