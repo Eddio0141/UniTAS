@@ -1,10 +1,10 @@
 ﻿using System.Linq;
 using UniTASPlugin.GameRestart;
+using UniTASPlugin.LegacyGameOverlay.GameConsole;
 using UniTASPlugin.LegacySafeWrappers;
 using UniTASPlugin.Movie;
 using UniTASPlugin.ReverseInvoker;
 using UnityEngine;
-using Console = UniTASPlugin.LegacyGameOverlay.GameConsole.Console;
 
 namespace UniTASPlugin.LegacyGameOverlay;
 
@@ -16,7 +16,7 @@ internal static class Overlay
     private static readonly Texture2D cursorDefaultTexture = new(2, 2);
     private static Texture2D currentTexture = new(2, 2);
 
-    public static void Init()
+    static Overlay()
     {
         var alpha = new Color(0, 0, 0, 0);
         var black = Color.black;

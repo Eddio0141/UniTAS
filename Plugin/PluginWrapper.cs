@@ -39,6 +39,14 @@ public class PluginWrapper
         _onPreUpdates = onPreUpdates.ToArray();
         _onUpdates = onUpdates.ToArray();
 
+        var rev = reverseInvokerFactory.GetReverseInvoker();
+        var actualTime = rev.Invoke(() => DateTime.Now);
+
+        foreach (var onGameRestart in onGameRestarts)
+        {
+            onGameRestart.OnGameRestart(actualTime);
+        }
+
         Harmony harmony = new($"{MyPluginInfo.PLUGIN_GUID}HarmonyPatch");
 
         var sortedPatches = patchProcessors.SelectMany(x => x.ProcessModules()).OrderByDescending(x => x.Key)
@@ -46,14 +54,6 @@ public class PluginWrapper
         foreach (var patch in sortedPatches)
         {
             harmony.PatchAll(patch);
-        }
-
-        var rev = reverseInvokerFactory.GetReverseInvoker();
-        var actualTime = rev.Invoke(() => DateTime.Now);
-
-        foreach (var onGameRestart in onGameRestarts)
-        {
-            onGameRestart.OnGameRestart(actualTime);
         }
     }
 

@@ -124,6 +124,7 @@ public abstract class FileSystem
 
     public File GetFile(string path)
     {
+        Plugin.Log.LogDebug($"path: {path}");
         var dir = GetDir(GetDirectoryName(path));
         return dir?.GetFile(GetFileName(path));
     }
@@ -297,7 +298,9 @@ public abstract class FileSystem
 
     public IntPtr Open(string path, FileMode mode, FileAccess access, FileShare share, FileOptions options)
     {
+        Plugin.Log.LogDebug($"path: {path}, mode: {mode}, access: {access}, share: {share}, options: {options}");
         var file = GetFile(path);
+        Plugin.Log.LogDebug($"file: {file?.Path}");
         if (file == null)
         {
             if (mode == FileMode.Open)
