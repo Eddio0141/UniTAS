@@ -131,7 +131,7 @@ public class FileSystemManager : IFileSystemManager, IOnGameRestart
         };
     }
 
-    private static string PathToWindows(string path)
+    public static string PathToWindows(string path)
     {
         var pathType = PathType(path);
 
