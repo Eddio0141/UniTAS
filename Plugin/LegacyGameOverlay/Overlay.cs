@@ -117,18 +117,18 @@ internal static class Overlay
     private const int TAS_MOVIE_BROWSER_WIDTH = 1000;
     private const int TAS_MOVIE_BROWSER_HEIGHT = 400;
 
-    private static readonly FileBrowser tasMovieBrowser = new(
-        Application.dataPath, new(
-            Screen.width / 2 - TAS_MOVIE_BROWSER_WIDTH / 2,
-            Screen.height / 2 - TAS_MOVIE_BROWSER_HEIGHT / 2,
-            TAS_MOVIE_BROWSER_WIDTH,
-            TAS_MOVIE_BROWSER_HEIGHT),
-        "Select TAS Movie", 0, FileBrowser.FileBrowserType.Open, new[]
-        {
-            new FileBrowser.Extension("UniTAS Movie", new[] { "*.uti" }),
-            new FileBrowser.Extension("Text file", new[] { "*.txt" }),
-            new()
-        });
+    // private static readonly FileBrowser tasMovieBrowser = new(
+    //     Application.dataPath, new(
+    //         Screen.width / 2 - TAS_MOVIE_BROWSER_WIDTH / 2,
+    //         Screen.height / 2 - TAS_MOVIE_BROWSER_HEIGHT / 2,
+    //         TAS_MOVIE_BROWSER_WIDTH,
+    //         TAS_MOVIE_BROWSER_HEIGHT),
+    //     "Select TAS Movie", 0, FileBrowser.FileBrowserType.Open, new[]
+    //     {
+    //         new FileBrowser.Extension("UniTAS Movie", new[] { "*.uti" }),
+    //         new FileBrowser.Extension("Text file", new[] { "*.txt" }),
+    //         new()
+    //     });
 
     private static void DrawGUI()
     {
@@ -170,7 +170,7 @@ internal static class Overlay
 
                 if (GUILayout.Button("Browse", GUILayout.Width(60)))
                 {
-                    tasMovieBrowser.Open();
+                    // tasMovieBrowser.Open();
                 }
 
                 GUILayout.EndHorizontal();
@@ -212,7 +212,7 @@ internal static class Overlay
 
         GUILayout.EndArea();
 
-        tasMovieBrowser.Update();
-        tasMovieBrowser.GetFinalPath(ref filePath);
+        // tasMovieBrowser.Update();
+        // tasMovieBrowser.GetFinalPath(ref filePath);
     }
 }
