@@ -9,14 +9,14 @@ using FileSystem = UniTASPlugin.GameEnvironment.InnerState.FileSystem.FileSystem
 
 namespace UniTASPlugin.Patches.Modules.FileSystemControlModules.FilePatchModule;
 
-[SuppressMessage("ReSharper", "InconsistentNaming")]
-[SuppressMessage("ReSharper", "ClassNeverInstantiated.Local")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Local")]
+[SuppressMessage("ReSharper", "InconsistentNaming")]
 [SuppressMessage("ReSharper", "UnusedMember.Local")]
 public partial class PathPatchModule
 {
-    [MscorlibPatchGroup(null, null, "2.1.0.0")]
-    private class NetStandard21
+    [MscorlibPatchGroup("4.0.0.0")]
+    private class V4000
     {
         [HarmonyPatch]
         private class get_temp_path
