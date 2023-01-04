@@ -2,12 +2,11 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using HarmonyLib;
 using UniTASPlugin.GameEnvironment.InnerState.FileSystem;
-using UniTASPlugin.Patches.PatchTypes;
 using UniTASPlugin.ReverseInvoker;
 
 namespace UniTASPlugin.Patches.Modules.FileSystemControlModules.FilePatchModule;
 
-[MscorlibPatch]
+// [MscorlibPatch]
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public partial class MonoIOPatchModule

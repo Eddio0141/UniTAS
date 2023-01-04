@@ -909,9 +909,6 @@ public partial class MonoIOPatchModule
             {
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
-#if TRACE
-                Log.Add(new StackTrace().ToString());
-#endif
 
                 __result = FileSystemManager.VolumeSeparatorChar;
 
@@ -936,9 +933,6 @@ public partial class MonoIOPatchModule
             {
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
-#if TRACE
-                Log.Add(new StackTrace().ToString());
-#endif
 
                 __result = FileSystemManager.DirectorySeparatorChar;
 
@@ -963,9 +957,6 @@ public partial class MonoIOPatchModule
             {
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
-#if TRACE
-                Log.Add(new StackTrace().ToString());
-#endif
 
                 __result = FileSystemManager.AltDirectorySeparatorChar;
 
@@ -990,9 +981,6 @@ public partial class MonoIOPatchModule
             {
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
-#if TRACE
-                Log.Add(new StackTrace().ToString());
-#endif
 
                 __result = FileSystemManager.PathSeparator;
 

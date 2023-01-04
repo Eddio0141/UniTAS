@@ -5,7 +5,6 @@ using HarmonyLib;
 using Microsoft.Win32.SafeHandles;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.Patches.PatchGroups;
-using UniTASPlugin.Patches.PatchTypes;
 using UniTASPlugin.ReverseInvoker;
 #if TRACE
 using System.Diagnostics;
@@ -13,7 +12,7 @@ using System.Diagnostics;
 
 namespace UniTASPlugin.Patches.Modules.FileSystemControlModules.FilePatchModule;
 
-[MscorlibPatch]
+// [MscorlibPatch]
 [SuppressMessage("ReSharper", "UnusedMember.Local")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Local")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
