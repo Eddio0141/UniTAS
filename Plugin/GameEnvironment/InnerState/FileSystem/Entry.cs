@@ -3,6 +3,8 @@ using System.IO;
 
 namespace UniTASPlugin.GameEnvironment.InnerState.FileSystem;
 
+// TODO make OS specific overrides instead of this
+
 public abstract class Entry
 {
     public string Name { get; set; }
@@ -12,7 +14,8 @@ public abstract class Entry
     public DateTime WriteTime { get; set; }
     public FileAttributes Attributes { get; set; }
 
-    public string Path => Parent == null ? (Name ?? "") : System.IO.Path.Combine(Parent.Path, Name);
+    // TODO fix this
+    public string Path => Parent == null ? Name ?? "" : System.IO.Path.Combine(Parent.Path, Name);
 
     protected Entry(string name, Dir parent, FileAttributes attributes)
     {
