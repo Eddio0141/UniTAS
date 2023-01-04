@@ -55,6 +55,9 @@ public class PluginWrapper
         {
             harmony.PatchAll(patch);
         }
+
+        // this is to make sure Path fields are property set, not sure if theres a better place to put this
+        // AccessTools.Constructor(typeof(System.IO.Path), searchForStatic: true).Invoke(null, null);
     }
 
     // calls awake before any other script
