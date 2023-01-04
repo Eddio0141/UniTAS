@@ -1,10 +1,23 @@
 ﻿using System;
+using System.IO;
+using HarmonyLib;
 
 namespace UniTASPlugin.ReverseInvoker;
 
+// ReSharper disable once ClassNeverInstantiated.Global
 public class PatchReverseInvoker
 {
-    public bool Invoking { get; private set; }
+    private bool _invoking;
+
+    public bool Invoking
+    {
+        get => _invoking;
+        set
+        {
+            _invoking = value;
+            AccessTools.Constructor(typeof(Path), searchForStatic: true).Invoke(null, null);
+        }
+    }
 
     public TRet Invoke<TRet>(Func<TRet> method)
     {
@@ -26,21 +39,6 @@ public class PatchReverseInvoker
     {
         Invoking = true;
         var ret = method.Invoke(arg1, arg2);
-        Invoking = false;
-        return ret;
-    }
-
-    public void SetProperty<T>(Action<T> property, T value)
-    {
-        Invoking = true;
-        property.Invoke(value);
-        Invoking = false;
-    }
-
-    public T GetProperty<T>(Func<T> property)
-    {
-        Invoking = true;
-        var ret = property.Invoke();
         Invoking = false;
         return ret;
     }

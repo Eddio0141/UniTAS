@@ -11,7 +11,13 @@ $dotnetProjects = @(
 
 # Build each project
 foreach ($project in $dotnetProjects) {
-    dotnet build "$project" -c "$buildType"
+    # If patcher and $buildType is ReleaseTrace, build with Release
+    if ($project -eq "Patcher" -and $buildType -eq "ReleaseTrace") {
+        dotnet build "$project" -c "Release"
+    }
+    else {
+        dotnet build "$project" -c "$buildType"
+    }
 }
 
 # Create output folders
@@ -31,7 +37,11 @@ if (!(Test-Path $buildOutput)) {
 Copy-Item "Plugin/bin/$buildType/net35/*.dll" "$buildOutputPlugin" -Force
 
 # Copy patcher dlls
-Copy-Item "Patcher/bin/$buildType/net35/*.dll" "$buildOutputPatcher" -Force
+if ($buildType -eq "ReleaseTrace") {
+    Copy-Item "Patcher/bin/Release/net35/*.dll" "$buildOutputPatcher" -Force
+} else {
+    Copy-Item "Patcher/bin/$buildType/net35/*.dll" "$buildOutputPatcher" -Force
+}
 
 # Copy external plugin dlls
 Copy-Item "Plugin/Extern-Assemblies/*.dll" "$buildOutputPlugin" -Force

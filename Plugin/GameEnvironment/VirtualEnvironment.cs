@@ -1,12 +1,14 @@
-﻿using UniTASPlugin.GameEnvironment.InnerState;
+﻿using System;
+using UniTASPlugin.GameEnvironment.InnerState;
 using UniTASPlugin.GameEnvironment.InnerState.Input;
+using UniTASPlugin.GameRestart;
 
 namespace UniTASPlugin.GameEnvironment;
 
 /// <summary>
 /// A class holding current virtual environment of the system the game is running on
 /// </summary>
-public class VirtualEnvironment
+public partial class VirtualEnvironment : IOnGameRestart
 {
     private bool _runVirtualEnvironment;
 
@@ -31,4 +33,17 @@ public class VirtualEnvironment
     public GameTime GameTime { get; } = new();
 
     public long Seed => GameTime.CurrentTime.Ticks;
+    public Random SystemRandom { get; private set; }
+
+    public UnityPaths UnityPaths { get; private set; }
+    public string Username { get; set; } = "User";
+
+    public void OnGameRestart(DateTime startupTime)
+    {
+        GameTime.StartupTime = startupTime;
+        SystemRandom = new((int)Seed);
+
+        InputState.ResetStates();
+        UnityPaths = new(Os, Username);
+    }
 }

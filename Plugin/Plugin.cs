@@ -5,11 +5,9 @@ using HarmonyLib;
 using StructureMap;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.GameInfo;
-using UniTASPlugin.LegacyFakeGameState.GameFileSystem;
 using UniTASPlugin.LegacyGameOverlay;
 using UniTASPlugin.LegacySafeWrappers;
 using UnityEngine;
-using SystemInfo = UniTASPlugin.LegacyFakeGameState.SystemInfo;
 
 namespace UniTASPlugin;
 
@@ -33,18 +31,9 @@ public class Plugin : BaseUnityPlugin
 
         _pluginWrapper = Kernel.GetInstance<PluginWrapper>();
 
-        Logger.LogInfo("init patch");
-        Harmony harmony = new($"{MyPluginInfo.PLUGIN_GUID}HarmonyPatch");
-        harmony.PatchAll();
-        Logger.LogInfo("post init patch");
-
-        // init fake file system
-        // TODO way of getting device type
-        FileSystem.Init(DeviceType.Windows);
-
         var gameInfo = Kernel.GetInstance<IGameInfo>();
         Logger.LogInfo($"Internally found unity version: {gameInfo.UnityVersion}");
-        Logger.LogInfo($"Game product name: {AppInfo.ProductName()}");
+        Logger.LogInfo($"Game product name: {gameInfo.ProductName}");
         Logger.LogDebug($"Mscorlib version: {gameInfo.MscorlibVersion}");
         Logger.LogDebug($"Netstandard version: {gameInfo.NetStandardVersion}");
         // TODO complete fixing this
@@ -56,11 +45,9 @@ public class Plugin : BaseUnityPlugin
         // TODO all axis names for help
 
         // init random seed
+        // TODO make this happen after 
         var env = Kernel.GetInstance<IVirtualEnvironmentFactory>().GetVirtualEnv();
         RandomWrap.InitState((int)env.Seed);
-
-        SystemInfo.Init();
-        Overlay.Init();
 
         Logger.LogInfo($"System time: {DateTime.Now}");
         Logger.LogInfo($"Plugin {MyPluginInfo.PLUGIN_NAME} is loaded!");

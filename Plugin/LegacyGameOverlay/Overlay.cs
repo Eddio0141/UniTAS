@@ -1,10 +1,10 @@
 ﻿using System.Linq;
 using UniTASPlugin.GameRestart;
+using UniTASPlugin.LegacyGameOverlay.GameConsole;
 using UniTASPlugin.LegacySafeWrappers;
 using UniTASPlugin.Movie;
 using UniTASPlugin.ReverseInvoker;
 using UnityEngine;
-using Console = UniTASPlugin.LegacyGameOverlay.GameConsole.Console;
 
 namespace UniTASPlugin.LegacyGameOverlay;
 
@@ -16,7 +16,7 @@ internal static class Overlay
     private static readonly Texture2D cursorDefaultTexture = new(2, 2);
     private static Texture2D currentTexture = new(2, 2);
 
-    public static void Init()
+    static Overlay()
     {
         var alpha = new Color(0, 0, 0, 0);
         var black = Color.black;
@@ -117,18 +117,18 @@ internal static class Overlay
     private const int TAS_MOVIE_BROWSER_WIDTH = 1000;
     private const int TAS_MOVIE_BROWSER_HEIGHT = 400;
 
-    private static readonly FileBrowser tasMovieBrowser = new(
-        Application.dataPath, new(
-            Screen.width / 2 - TAS_MOVIE_BROWSER_WIDTH / 2,
-            Screen.height / 2 - TAS_MOVIE_BROWSER_HEIGHT / 2,
-            TAS_MOVIE_BROWSER_WIDTH,
-            TAS_MOVIE_BROWSER_HEIGHT),
-        "Select TAS Movie", 0, FileBrowser.FileBrowserType.Open, new[]
-        {
-            new FileBrowser.Extension("UniTAS Movie", new[] { "*.uti" }),
-            new FileBrowser.Extension("Text file", new[] { "*.txt" }),
-            new()
-        });
+    // private static readonly FileBrowser tasMovieBrowser = new(
+    //     Application.dataPath, new(
+    //         Screen.width / 2 - TAS_MOVIE_BROWSER_WIDTH / 2,
+    //         Screen.height / 2 - TAS_MOVIE_BROWSER_HEIGHT / 2,
+    //         TAS_MOVIE_BROWSER_WIDTH,
+    //         TAS_MOVIE_BROWSER_HEIGHT),
+    //     "Select TAS Movie", 0, FileBrowser.FileBrowserType.Open, new[]
+    //     {
+    //         new FileBrowser.Extension("UniTAS Movie", new[] { "*.uti" }),
+    //         new FileBrowser.Extension("Text file", new[] { "*.txt" }),
+    //         new()
+    //     });
 
     private static void DrawGUI()
     {
@@ -170,7 +170,7 @@ internal static class Overlay
 
                 if (GUILayout.Button("Browse", GUILayout.Width(60)))
                 {
-                    tasMovieBrowser.Open();
+                    // tasMovieBrowser.Open();
                 }
 
                 GUILayout.EndHorizontal();
@@ -212,7 +212,7 @@ internal static class Overlay
 
         GUILayout.EndArea();
 
-        tasMovieBrowser.Update();
-        tasMovieBrowser.GetFinalPath(ref filePath);
+        // tasMovieBrowser.Update();
+        // tasMovieBrowser.GetFinalPath(ref filePath);
     }
 }

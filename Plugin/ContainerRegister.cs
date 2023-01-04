@@ -2,6 +2,7 @@ using StructureMap;
 using UniTASPlugin.FixedUpdateSync;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.GameEnvironment.InnerState;
+using UniTASPlugin.GameEnvironment.InnerState.FileSystem;
 using UniTASPlugin.GameRestart;
 using UniTASPlugin.Interfaces.StartEvent;
 using UniTASPlugin.Interfaces.Update;
@@ -48,15 +49,21 @@ public static class ContainerRegister
             c.For<IOnFixedUpdate>().Use(x => x.GetInstance<SyncFixedUpdate>());
             c.For<IOnUpdate>().Use(x => x.GetInstance<SyncFixedUpdate>());
 
+            // before FileSystemManager
             c.For<PatchReverseInvoker>().Singleton();
 
             c.For<VirtualEnvironment>().Singleton();
+            c.For<IOnGameRestart>().Use(x => x.GetInstance<VirtualEnvironment>());
 
             c.For<IOnPreUpdates>().Singleton().Use<GameTime>();
 
             c.For<IOnPreUpdates>().Use<VirtualEnvironmentApplier>();
 
             c.For<IMonoBehaviourController>().Singleton().Use<MonoBehaviourController.MonoBehaviourController>();
+
+            c.For<FileSystemManager>().Singleton();
+            c.For<IOnGameRestart>().Use(x => x.GetInstance<FileSystemManager>());
+            c.For<IFileSystemManager>().Use(x => x.GetInstance<FileSystemManager>());
         });
 
         return container;

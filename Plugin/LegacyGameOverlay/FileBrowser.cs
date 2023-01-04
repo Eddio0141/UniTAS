@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using UniTASPlugin.GameInfo;
 using UniTASPlugin.ReverseInvoker;
 using UnityEngine;
 
@@ -197,10 +198,12 @@ public class FileBrowser
 
         var quickAccessPathsBuilder = new List<string>
         {
-            Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
-            Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+            Plugin.Kernel.GetInstance<PatchReverseInvoker>()
+                .Invoke(() => Environment.GetFolderPath(Environment.SpecialFolder.Desktop)),
+            Plugin.Kernel.GetInstance<PatchReverseInvoker>()
+                .Invoke(() => Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)),
             homePath,
-            Helper.GameRootDir()
+            Plugin.Kernel.GetInstance<IGameInfo>().GameDirectory
         };
         var quickAccessNamesBuilder = new List<string>
         {

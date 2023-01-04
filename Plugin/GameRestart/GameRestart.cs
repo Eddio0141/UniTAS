@@ -10,7 +10,6 @@ using UniTASPlugin.FixedUpdateSync;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.Interfaces.StartEvent;
 using UniTASPlugin.Interfaces.Update;
-using UniTASPlugin.LegacyExceptions;
 using UniTASPlugin.LegacySafeWrappers;
 using UniTASPlugin.Logger;
 using UniTASPlugin.MonoBehaviourController;
@@ -29,7 +28,9 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
     private readonly IMonoBehaviourController _monoBehaviourController;
     private readonly ILogger _logger;
 
-    private readonly List<KeyValuePair<Type, List<StaticFieldStorage>>> _staticFields = new();
+    private readonly IOnGameRestart[] _onGameRestart;
+
+    private readonly List<StaticFieldStorage> _staticFields = new();
     private readonly List<Type> _dontDestroyOnLoads = new();
 
     // ReSharper disable StringLiteralTypo
@@ -47,13 +48,15 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
     private bool _pendingResumePausedExecution;
 
     public GameRestart(IVirtualEnvironmentFactory virtualEnvironmentFactory, ISyncFixedUpdate syncFixedUpdate,
-        IUnityWrapper unityWrapper, IMonoBehaviourController monoBehaviourController, ILogger logger)
+        IUnityWrapper unityWrapper, IMonoBehaviourController monoBehaviourController, ILogger logger,
+        IOnGameRestart[] onGameRestart)
     {
         _virtualEnvironmentFactory = virtualEnvironmentFactory;
         _syncFixedUpdate = syncFixedUpdate;
         _unityWrapper = unityWrapper;
         _monoBehaviourController = monoBehaviourController;
         _logger = logger;
+        _onGameRestart = onGameRestart;
 
         StoreStaticFields();
         StoreDontDestroyOnLoads();
@@ -129,128 +132,31 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
                 continue;
             }
 
+            var types = assembly.GetTypes();
+
+            foreach (var type in types)
             {
-                var assemblyDefinition = AssemblyDefinition.ReadAssembly(assembly.Location);
-                var types = assemblyDefinition.MainModule.Types;
+                var fields = type.GetFields(AccessTools.all).Where(x => x.IsStatic && !x.IsLiteral).ToArray();
+                if (fields.Length == 0) continue;
 
-                foreach (var type in types)
-                {
-                    var staticFields = new List<StaticFieldStorage>();
-
-                    var fields = type.Fields.Where(x => x.IsStatic && !x.IsLiteral).ToArray();
-                    if (fields.Length == 0) continue;
-
-                    var processedFields = new bool[fields.Length];
-
-                    var staticConstructor = type.Methods.FirstOrDefault(x => x.IsStatic && x.IsConstructor);
-
-                    if (staticConstructor != null)
-                    {
-                        if (!staticConstructor.HasBody) continue;
-                        var instructions = staticConstructor.Body.Instructions;
-                        foreach (var instruction in instructions)
-                        {
-                            // we label processedFields as true when we find a field that is set in the static constructor
-                            if (instruction.OpCode == OpCodes.Stsfld &&
-                                instruction.Operand is FieldReference fieldReference)
-                            {
-                                for (var i = 0; i < fields.Length; i++)
-                                {
-                                    if (fields[i].Name == fieldReference.Name)
-                                    {
-                                        processedFields[i] = true;
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    for (var i = 0; i < processedFields.Length; i++)
-                    {
-                        var processedField = processedFields[i];
-                        if (processedField) continue;
-                        // lazy solution right now so we store null for fields that are not set in the static constructor
-                        var field = fields[i];
-                        _logger.LogDebug(
-                            $"Found static field: {type.FullName}.{field.Name} with value of null");
-                        staticFields.Add(new(field.ResolveReflection(), null));
-                    }
-
-                    if (staticFields.Count > 0)
-                    {
-                        var fieldType = type.ResolveReflection();
-                        _staticFields.Add(new(fieldType, staticFields));
-                    }
-                }
-            }
-
-            {
-                var types = assembly.GetTypes();
-                foreach (var type in types)
-                {
-                    var fields = type.GetFields(AccessTools.all);
-                    if (fields.Length == 0) continue;
-
-                    var typeAlreadyDefinedIndex = _staticFields.FindIndex(x => x.Key == type);
-
-                    var staticFields = new List<StaticFieldStorage>();
-                    foreach (var field in fields)
-                    {
-                        // ignore if not static or const
-                        if (!field.IsStatic || field.IsLiteral) continue;
-
-                        // ignore if already defined in the assembly definition
-                        if (typeAlreadyDefinedIndex > -1 &&
-                            _staticFields[typeAlreadyDefinedIndex].Value.Any(x => x.Field == field))
-                            continue;
-
-                        var value = field.GetValue(null);
-                        _logger.LogDebug(
-                            $"Cloning and storing static field {type.FullName}.{field.Name} with value " +
-                            (value == null
-                                ? "null"
-                                : value.ToString()));
-                        object valueClone = null;
-                        try
-                        {
-                            valueClone = Helper.MakeDeepCopy(value, field.FieldType);
-                        }
-                        catch (DeepCopyMaxRecursion)
-                        {
-                            // ignore it
-                        }
-
-                        var staticFieldStorage = new StaticFieldStorage(field, valueClone);
-                        staticFields.Add(staticFieldStorage);
-                    }
-
-                    if (staticFields.Count > 0)
-                    {
-                        _staticFields.Add(new(type, staticFields));
-                    }
-                }
+                _logger.LogDebug(
+                    $"type: {type.FullName} has {fields.Length} static fields, and static constructor: {type.TypeInitializer != null}");
+                _staticFields.Add(new(fields, type.TypeInitializer));
             }
         }
     }
 
     private void SetStaticFields()
     {
-        foreach (var typeAndStaticFields in _staticFields)
+        _logger.LogDebug("setting static fields");
+        foreach (var staticFields in _staticFields)
         {
-            var type = typeAndStaticFields.Key;
-            var staticFields = typeAndStaticFields.Value;
-            foreach (var staticField in staticFields)
+            foreach (var field in staticFields.Fields)
             {
-                var valueString = staticField.Value == null
-                    ? "null"
-                    : staticField.Value.ToString();
-                _logger.LogDebug(
-                    $"Setting static field {type.FullName}.{staticField.Field.Name} to value {valueString}");
-                // TODO remove hardcoded dependency
-                var fieldClone = Helper.MakeDeepCopy(staticField.Value, staticField.Field.FieldType);
-                staticField.Field.SetValue(null, fieldClone);
+                field.SetValue(null, null);
             }
+
+            staticFields.StaticConstructor?.Invoke(null);
         }
     }
 
@@ -265,20 +171,28 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
         DestroyDontDestroyOnLoads();
         StopScriptExecution();
         SetStaticFields();
+        OnGameRestart();
         _syncFixedUpdate.OnSync(SoftRestartOperation, 1);
         _logger.LogDebug("Soft restarting, pending FixedUpdate call");
+    }
+
+    private void OnGameRestart()
+    {
+        foreach (var gameRestart in _onGameRestart)
+        {
+            gameRestart.OnGameRestart(_softRestartTime);
+        }
     }
 
     private void SoftRestartOperation()
     {
         _logger.LogInfo("Soft restarting");
 
-        var env = _virtualEnvironmentFactory.GetVirtualEnv();
-        env.GameTime.StartupTime = _softRestartTime;
         SceneHelper.LoadScene(0);
 
         _logger.LogDebug("random setting state");
 
+        var env = _virtualEnvironmentFactory.GetVirtualEnv();
         RandomWrap.InitState((int)env.Seed);
 
         _logger.LogInfo("Finish soft restarting");
@@ -325,13 +239,13 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
 
     private class StaticFieldStorage
     {
-        public FieldInfo Field { get; }
-        public object Value { get; }
+        public FieldInfo[] Fields { get; }
+        public ConstructorInfo StaticConstructor { get; }
 
-        public StaticFieldStorage(FieldInfo field, object value)
+        public StaticFieldStorage(FieldInfo[] fields, ConstructorInfo staticConstructor)
         {
-            Field = field;
-            Value = value;
+            Fields = fields;
+            StaticConstructor = staticConstructor;
         }
     }
 }

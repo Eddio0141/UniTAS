@@ -1,6 +1,6 @@
 namespace UniTASPlugin.Patches.PatchTypes;
 
-public class MscorlibPatch : PatchType
+public class MscorlibPatch : ModulePatchType
 {
     public MscorlibPatch(bool patchAllGroups) : base(patchAllGroups)
     {
