@@ -8,7 +8,7 @@ namespace UniTASPlugin.GameEnvironment;
 /// <summary>
 /// A class holding current virtual environment of the system the game is running on
 /// </summary>
-public class VirtualEnvironment : IOnGameRestart
+public partial class VirtualEnvironment : IOnGameRestart
 {
     private bool _runVirtualEnvironment;
 
@@ -33,7 +33,10 @@ public class VirtualEnvironment : IOnGameRestart
     public GameTime GameTime { get; } = new();
 
     public long Seed => GameTime.CurrentTime.Ticks;
-    public Random SystemRandom { get; private set; } = new();
+    public Random SystemRandom { get; private set; }
+
+    public UnityPaths UnityPaths { get; private set; }
+    public string Username { get; set; } = "User";
 
     public void OnGameRestart(DateTime startupTime)
     {
@@ -41,5 +44,6 @@ public class VirtualEnvironment : IOnGameRestart
         SystemRandom = new((int)Seed);
 
         InputState.ResetStates();
+        UnityPaths = new(Os, Username);
     }
 }
