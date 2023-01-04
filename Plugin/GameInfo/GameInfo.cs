@@ -133,7 +133,7 @@ public class GameInfo : IGameInfo
 
             // fallback, try get in c# way
             var rev = _reverseInvokerFactory.GetReverseInvoker();
-            var os = rev.GetProperty(() => Environment.OSVersion);
+            var os = rev.Invoke(() => Environment.OSVersion);
 
             switch (os.Platform)
             {

@@ -20,7 +20,7 @@ public static class GameCapture
     private static void CaptureFrame()
     {
         var rev = Plugin.Kernel.GetInstance<PatchReverseInvoker>();
-        _ = $"{captureFolder}{rev.GetProperty(() => Path.DirectorySeparatorChar)}{captureCount}.png";
+        _ = $"{captureFolder}{rev.Invoke(() => Path.DirectorySeparatorChar)}{captureCount}.png";
         // TODO sort out depending on unity version
         //ScreenCapture.CaptureScreenshot(path);
         captureCount++;
