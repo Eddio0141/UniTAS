@@ -5,12 +5,11 @@ using System.Linq;
 using System.Reflection;
 using BepInEx.Logging;
 using HarmonyLib;
-using UniTASPlugin.Patches.PatchTypes;
 using UniTASPlugin.ReverseInvoker;
 
 namespace UniTASPlugin.Patches.RawPatches;
 
-[RawPatch(1000)]
+// [RawPatch(1000)]
 [SuppressMessage("ReSharper", "UnusedMember.Local")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 [SuppressMessage("ReSharper", "InconsistentNaming")]

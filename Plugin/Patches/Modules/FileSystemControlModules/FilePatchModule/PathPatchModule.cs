@@ -1,11 +1,10 @@
 using System.Diagnostics.CodeAnalysis;
 using UniTASPlugin.GameEnvironment.InnerState.FileSystem;
-using UniTASPlugin.Patches.PatchTypes;
 using UniTASPlugin.ReverseInvoker;
 
 namespace UniTASPlugin.Patches.Modules.FileSystemControlModules.FilePatchModule;
 
-[MscorlibPatch]
+// [MscorlibPatch(true)]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public partial class PathPatchModule
 {

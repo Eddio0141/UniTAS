@@ -5,7 +5,6 @@ using System.Reflection;
 using System.Text;
 using HarmonyLib;
 using UniTASPlugin.Patches.PatchGroups;
-using FileSystem = UniTASPlugin.GameEnvironment.InnerState.FileSystem.FileSystemManager;
 
 namespace UniTASPlugin.Patches.Modules.FileSystemControlModules.FilePatchModule;
 
@@ -64,7 +63,7 @@ public partial class PathPatchModule
                 var rev = ReverseInvokerFactory.GetReverseInvoker();
                 if (rev.Invoking) return true;
 
-                var newPath = FileSystem.PathToWindows(path);
+                var newPath = FileSystemManager.PathToWindows(path);
                 buffer.Append(newPath);
                 __result = newPath.Length;
 
