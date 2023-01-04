@@ -60,4 +60,6 @@ public interface IFileSystemManager
     void GetTempPath(out string path);
     void RemapPath(string path, out string newPath);
     void DumpHandles();
+
+    string PathToWindows(string path);
 }
