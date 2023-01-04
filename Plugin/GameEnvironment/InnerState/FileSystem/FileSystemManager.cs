@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using HarmonyLib;
 using UniTASPlugin.GameEnvironment.InnerState.FileSystem.OsFileSystems;
 using UniTASPlugin.GameInfo;
 using UniTASPlugin.GameRestart;
@@ -52,37 +51,6 @@ public class FileSystemManager : IFileSystemManager, IOnGameRestart
     public void OnGameRestart(DateTime startupTime)
     {
         Init();
-
-        var env = _virtualEnvironmentFactory.GetVirtualEnv();
-
-        switch (env.Os)
-        {
-            case Os.Windows:
-            {
-#pragma warning disable CS0618
-                var invalidPathCharsField = AccessTools.Field(typeof(Path), nameof(Path.InvalidPathChars));
-#pragma warning restore CS0618
-                invalidPathCharsField.SetValue(null, _windowsFileSystem.InvalidPathChars);
-                var altDirectorySeparatorCharField =
-                    AccessTools.Field(typeof(Path), nameof(Path.AltDirectorySeparatorChar));
-                altDirectorySeparatorCharField.SetValue(null, _windowsFileSystem.AltDirectorySeparatorChar);
-                var directorySeparatorCharField = AccessTools.Field(typeof(Path), nameof(Path.DirectorySeparatorChar));
-                directorySeparatorCharField.SetValue(null, _windowsFileSystem.DirectorySeparatorChar);
-                var pathSeparatorField = AccessTools.Field(typeof(Path), nameof(Path.PathSeparator));
-                pathSeparatorField.SetValue(null, _windowsFileSystem.PathSeparator);
-                var directorySeparatorStrField = AccessTools.Field(typeof(Path), "DirectorySeparatorStr");
-                directorySeparatorStrField.SetValue(null, _windowsFileSystem.DirectorySeparatorStr);
-                var volumeSeparatorCharField = AccessTools.Field(typeof(Path), nameof(Path.VolumeSeparatorChar));
-                volumeSeparatorCharField.SetValue(null, _windowsFileSystem.VolumeSeparatorChar);
-                var pathSeparatorCharsField = AccessTools.Field(typeof(Path), "PathSeparatorChars");
-                pathSeparatorCharsField.SetValue(null, _windowsFileSystem.PathSeparatorChars);
-                var dirEqualsVolumeField = AccessTools.Field(typeof(Path), "dirEqualsVolume");
-                dirEqualsVolumeField.SetValue(null, _windowsFileSystem.DirEqualsVolume);
-                break;
-            }
-            default:
-                throw new ArgumentOutOfRangeException();
-        }
     }
 
     /// <summary>
@@ -131,7 +99,7 @@ public class FileSystemManager : IFileSystemManager, IOnGameRestart
         };
     }
 
-    public static string PathToWindows(string path)
+    public string PathToWindows(string path)
     {
         var pathType = PathType(path);
 
@@ -144,13 +112,14 @@ public class FileSystemManager : IFileSystemManager, IOnGameRestart
         {
             case PlatformID.Unix:
             {
+                var env = _virtualEnvironmentFactory.GetVirtualEnv();
+
                 path = path.Replace("/", "\\");
 
                 // change common unix paths to windows paths
                 if (path.StartsWith("~"))
                 {
-                    // home directory TODO
-                    path = path.Replace("~", "C:\\Users\\USER");
+                    path = path.Replace("~", $"C:\\Users\\{env.Username}");
                 }
                 else if (path.Contains("\\home"))
                 {
@@ -159,6 +128,21 @@ public class FileSystemManager : IFileSystemManager, IOnGameRestart
                 else if (path.StartsWith("\\"))
                 {
                     path = $"C:{path}";
+                }
+
+                // replace username with new user
+                if (path.Contains("\\Users\\"))
+                {
+                    var pathParts = path.Split('\\');
+                    if (pathParts.Length > 2)
+                    {
+                        var newUser = env.Username;
+                        var oldUser = pathParts[2];
+                        if (!string.IsNullOrEmpty(oldUser) && newUser != oldUser)
+                        {
+                            path = path.Replace($"\\Users\\{oldUser}", $"\\Users\\{newUser}");
+                        }
+                    }
                 }
 
                 return path;
