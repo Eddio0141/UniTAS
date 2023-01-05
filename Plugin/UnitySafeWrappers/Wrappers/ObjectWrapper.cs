@@ -9,9 +9,9 @@ public class ObjectWrapper : IObjectWrapper
 {
     public Type ObjectType => typeof(Object);
 
-    public void Destroy(object obj)
+    public void DestroyImmediate(object obj)
     {
-        Object.Destroy((Object)obj);
+        Object.DestroyImmediate((Object)obj);
     }
 
     public IEnumerable<object> FindObjectsOfType(Type type)
