@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using System;
+using HarmonyLib;
 using UniTASPlugin.ReverseInvoker;
 using UnityEngine;
 
@@ -14,19 +15,26 @@ public static class TimeWrap
         get => CaptureDeltaTimeExists ? CaptureDeltaTimeTraverse.GetValue<float>() : 1.0f / Time.captureFramerate;
         set
         {
+            var rev = Plugin.Kernel.GetInstance<IReverseInvokerFactory>().GetReverseInvoker();
             if (CaptureDeltaTimeExists)
             {
-                var rev = Plugin.Kernel.GetInstance<IReverseInvokerFactory>().GetReverseInvoker();
                 rev.Invoke(() => CaptureDeltaTimeTraverse.SetValue(value));
             }
             else
             {
-                Time.captureFramerate = (int)(1 / value);
+                rev.Invoke(() => Time.captureFramerate = (int)Math.Round(1.0f / value));
             }
         }
     }
 
-    public static bool FrameTimeNotSet => CaptureDeltaTimeExists
-        ? CaptureDeltaTimeTraverse.GetValue<float>() == 0
-        : Time.captureFramerate == 0;
+    public static bool FrameTimeNotSet
+    {
+        get
+        {
+            var rev = Plugin.Kernel.GetInstance<IReverseInvokerFactory>().GetReverseInvoker();
+            return CaptureDeltaTimeExists
+                ? rev.Invoke(() => CaptureDeltaTimeTraverse.GetValue<float>() == 0)
+                : rev.Invoke(() => Time.captureFramerate == 0);
+        }
+    }
 }
