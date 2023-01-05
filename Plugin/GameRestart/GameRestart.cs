@@ -3,9 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using HarmonyLib;
-using Mono.Cecil;
-using Mono.Cecil.Cil;
-using MonoMod.Utils;
 using UniTASPlugin.FixedUpdateSync;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.Interfaces.StartEvent;
@@ -31,7 +28,6 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
     private readonly IOnGameRestart[] _onGameRestart;
 
     private readonly List<StaticFieldStorage> _staticFields = new();
-    private readonly List<Type> _dontDestroyOnLoads = new();
 
     // ReSharper disable StringLiteralTypo
     private static readonly string[] gameAssemblyNames =
@@ -59,64 +55,24 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
         _onGameRestart = onGameRestart;
 
         StoreStaticFields();
-        StoreDontDestroyOnLoads();
-    }
-
-    private void StoreDontDestroyOnLoads()
-    {
-        var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-        var objectTypeName = _unityWrapper.Object.ObjectType.FullName;
-
-        foreach (var assembly in assemblies)
-        {
-            if (!gameAssemblyNames.Contains(assembly.GetName().Name))
-            {
-                continue;
-            }
-
-            var assemblyDefinition = AssemblyDefinition.ReadAssembly(assembly.Location);
-            var types = assemblyDefinition.MainModule.Types;
-
-            // get all types that use DontDestroyOnLoad
-            foreach (var type in types)
-            {
-                var methods = type.Methods;
-                foreach (var method in methods)
-                {
-                    if (!method.HasBody) continue;
-
-                    var instructions = method.Body.Instructions;
-                    if (!instructions.Any(instruction => instruction.OpCode == OpCodes.Call &&
-                                                         instruction.Operand is MethodReference
-                                                         {
-                                                             Name: "DontDestroyOnLoad",
-                                                             Parameters.Count : 1,
-                                                             ReturnType.Name: "Void",
-                                                         } methodReference &&
-                                                         methodReference.DeclaringType.FullName == objectTypeName &&
-                                                         methodReference.Parameters[0].ParameterType.FullName ==
-                                                         objectTypeName))
-                    {
-                        continue;
-                    }
-
-                    _logger.LogDebug($"Found DontDestroyOnLoad type: {type.FullName}");
-                    _dontDestroyOnLoads.Add(type.ResolveReflection());
-                    break;
-                }
-            }
-        }
     }
 
     private void DestroyDontDestroyOnLoads()
     {
-        foreach (var type in _dontDestroyOnLoads)
+        var allObjects = _unityWrapper.Object.FindObjectsOfType(_unityWrapper.Object.ObjectType);
+        foreach (var obj in allObjects)
         {
-            var dontDestroyOnLoadObjects = _unityWrapper.Object.FindObjectsOfType(type);
-            foreach (var dontDestroyOnLoadObject in dontDestroyOnLoadObjects)
+            if (obj is Plugin) continue;
+            try
             {
-                _unityWrapper.MonoBehaviour.StopAllCoroutines(dontDestroyOnLoadObject);
-                _unityWrapper.Object.Destroy(dontDestroyOnLoadObject);
+                _logger.LogDebug($"Attempting destruction of {obj.GetType().FullName}");
+                _unityWrapper.MonoBehaviour.StopAllCoroutines(obj);
+                _unityWrapper.Object.DestroyImmediate(obj);
+            }
+            catch (Exception)
+            {
+                // ignored
+                _logger.LogDebug("Failed to destroy");
             }
         }
     }
