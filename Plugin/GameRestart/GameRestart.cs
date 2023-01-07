@@ -154,8 +154,14 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
             if (genericTypeFound == null) continue;
 
             // skip if generic type is generic itself
-            if (genericInstanceType.GenericArguments.Any(x => x is GenericParameter)) continue;
+            // recursively check
+            if (FindGenericType(genericInstanceType))
+            {
+                _logger.LogDebug($"Skipping generic type {genericInstanceType.FullName}");
+                continue;
+            }
 
+            _logger.LogDebug($"Resolving generic type {genericInstanceType.FullName}");
             var allGenericTypes = genericInstanceType.GenericArguments
                 .Select(x => x.ResolveReflection()).ToList();
 
@@ -191,6 +197,21 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
                 _staticFields.Add(new(fields, genericTypeDefinition.TypeInitializer));
             }
         }
+    }
+
+    private static bool FindGenericType(IGenericInstance genericInstanceType)
+    {
+        foreach (var genericArg in genericInstanceType.GenericArguments)
+        {
+            switch (genericArg)
+            {
+                case GenericParameter:
+                case GenericInstanceType innerGenericInstance when FindGenericType(innerGenericInstance):
+                    return true;
+            }
+        }
+
+        return false;
     }
 
     private void SetStaticFields()
