@@ -33,10 +33,7 @@ public class TimePatch
         private static bool Prefix()
         {
             var rev = ReverseInvokerFactory.GetReverseInvoker();
-            if (rev.Invoking)
-                return true;
-            // if TAS is running / preparing and we aren't setting the frametime, reject
-            return !(VirtualEnvironmentFactory.GetVirtualEnv().RunVirtualEnvironment && !rev.Invoking);
+            return rev.Invoking;
         }
     }
 
@@ -51,9 +48,7 @@ public class TimePatch
         private static bool Prefix()
         {
             var rev = ReverseInvokerFactory.GetReverseInvoker();
-            if (rev.Invoking)
-                return true;
-            return !(VirtualEnvironmentFactory.GetVirtualEnv().RunVirtualEnvironment && !rev.Invoking);
+            return rev.Invoking;
         }
     }
 
