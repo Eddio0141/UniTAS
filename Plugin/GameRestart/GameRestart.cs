@@ -61,20 +61,19 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
 
     private void DestroyDontDestroyOnLoads()
     {
-        var allObjects = _unityWrapper.Object.FindObjectsOfType(_unityWrapper.Object.ObjectType);
+        var allObjects = _unityWrapper.Object.FindObjectsOfType(_unityWrapper.Object.ObjectType).ToArray();
+        _logger.LogDebug($"Attempting destruction of {allObjects.Length} objects");
         foreach (var obj in allObjects)
         {
             if (obj is Plugin) continue;
             try
             {
-                _logger.LogDebug($"Attempting destruction of {obj.GetType().FullName}");
                 _unityWrapper.MonoBehaviour.StopAllCoroutines(obj);
                 _unityWrapper.Object.DestroyImmediate(obj);
             }
             catch (Exception)
             {
                 // ignored
-                _logger.LogDebug("Failed to destroy");
             }
         }
     }
@@ -153,6 +152,9 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
             var genericTypeFound = genericType.FirstOrDefault(x => x == actualType);
 
             if (genericTypeFound == null) continue;
+
+            // skip if generic type is generic itself
+            if (genericInstanceType.GenericArguments.Any(x => x is GenericParameter)) continue;
 
             var allGenericTypes = genericInstanceType.GenericArguments
                 .Select(x => x.ResolveReflection()).ToList();
