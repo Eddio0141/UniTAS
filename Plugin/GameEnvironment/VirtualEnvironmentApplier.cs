@@ -1,4 +1,3 @@
-using System;
 using UniTASPlugin.Interfaces.Update;
 using UniTASPlugin.LegacySafeWrappers;
 using UniTASPlugin.Logger;
@@ -6,7 +5,7 @@ using UniTASPlugin.Logger;
 namespace UniTASPlugin.GameEnvironment;
 
 /// <summary>
-///     Helper for apply game environment settings that doesn't apply on it's own.
+/// Helper for apply game environment settings that doesn't apply on it's own.
 /// </summary>
 // ReSharper disable once ClassNeverInstantiated.Global
 public class VirtualEnvironmentApplier : IOnPreUpdates
@@ -40,16 +39,16 @@ public class VirtualEnvironmentApplier : IOnPreUpdates
         // frameTime
         TimeWrap.CaptureFrameTime = env.FrameTime;
 
-        if (!TimeWrap.CaptureDeltaTimeExists)
-        {
-            // is it a round number?
-            var fps = 1f / env.FrameTime;
-            if (Math.Abs(fps - (int)fps) > 0.0001)
-            {
-                // warn user
-                _logger.LogWarning(
-                    "Frame time is not an integer FPS and can't apply accurately, rounding to nearest integer FPS");
-            }
-        }
+        // if (!TimeWrap.CaptureDeltaTimeExists)
+        // {
+        //     // is it a round number?
+        //     var fps = 1f / env.FrameTime;
+        //     if (Math.Abs(fps - (int)fps) > 0.0001)
+        //     {
+        //         // warn user
+        //         _logger.LogWarning(
+        //             "Frame time is not an integer FPS and can't apply accurately, rounding to nearest integer FPS");
+        //     }
+        // }
     }
 }
