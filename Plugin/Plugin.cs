@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
@@ -28,6 +29,17 @@ public class Plugin : BaseUnityPlugin
         if (instance != null) return;
         instance = this;
         _logger = Logger;
+
+        var traceCount = Trace.Listeners.Count;
+        for (var i = 0; i < traceCount; i++)
+        {
+            var listener = Trace.Listeners[i];
+            if (listener is TraceLogSource) continue;
+
+            Trace.Listeners.RemoveAt(i);
+            i--;
+            traceCount--;
+        }
 
         _pluginWrapper = Kernel.GetInstance<PluginWrapper>();
 
