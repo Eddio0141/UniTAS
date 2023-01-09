@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using BepInEx;
 using HarmonyLib;
 using Mono.Cecil;
 using MonoMod.Utils;
@@ -65,7 +66,12 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
         _logger.LogDebug($"Attempting destruction of {allObjects.Length} objects");
         foreach (var obj in allObjects)
         {
-            if (obj is Plugin) continue;
+            if (obj is BaseUnityPlugin)
+            {
+                _logger.LogDebug($"Found BepInEx type: {obj.GetType().FullName}, skipping");
+                continue;
+            }
+
             try
             {
                 _unityWrapper.MonoBehaviour.StopAllCoroutines(obj);
