@@ -1,6 +1,5 @@
 using UniTASPlugin.Interfaces.Update;
 using UniTASPlugin.LegacySafeWrappers;
-using UniTASPlugin.Logger;
 
 namespace UniTASPlugin.GameEnvironment;
 
@@ -11,12 +10,11 @@ namespace UniTASPlugin.GameEnvironment;
 public class VirtualEnvironmentApplier : IOnPreUpdates
 {
     private readonly IVirtualEnvironmentFactory _virtualEnvironmentFactory;
-    private readonly ILogger _logger;
+    private float _lastFrameTime;
 
-    public VirtualEnvironmentApplier(IVirtualEnvironmentFactory virtualEnvironmentFactory, ILogger logger)
+    public VirtualEnvironmentApplier(IVirtualEnvironmentFactory virtualEnvironmentFactory)
     {
         _virtualEnvironmentFactory = virtualEnvironmentFactory;
-        _logger = logger;
     }
 
     public void PreUpdate()
@@ -34,21 +32,18 @@ public class VirtualEnvironmentApplier : IOnPreUpdates
     private void ApplyEnv()
     {
         var env = _virtualEnvironmentFactory.GetVirtualEnv();
-        if (!env.RunVirtualEnvironment) return;
+        if (!env.RunVirtualEnvironment)
+        {
+            _lastFrameTime = -1f;
+            return;
+        }
 
-        // frameTime
-        TimeWrap.CaptureFrameTime = env.FrameTime;
-
-        // if (!TimeWrap.CaptureDeltaTimeExists)
-        // {
-        //     // is it a round number?
-        //     var fps = 1f / env.FrameTime;
-        //     if (Math.Abs(fps - (int)fps) > 0.0001)
-        //     {
-        //         // warn user
-        //         _logger.LogWarning(
-        //             "Frame time is not an integer FPS and can't apply accurately, rounding to nearest integer FPS");
-        //     }
-        // }
+        // ReSharper disable once CompareOfFloatsByEqualityOperator
+        if (_lastFrameTime != env.FrameTime)
+        {
+            _lastFrameTime = env.FrameTime;
+            // frameTime
+            TimeWrap.CaptureFrameTime = env.FrameTime;
+        }
     }
 }
