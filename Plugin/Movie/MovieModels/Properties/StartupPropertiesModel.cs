@@ -17,4 +17,9 @@ public class StartupPropertiesModel
         FrameTime = frameTime;
         WindowState = windowState;
     }
+
+    public override string ToString()
+    {
+        return $"Os: {Os}, StartTime: {StartTime}, FrameTime: {FrameTime}, WindowState: {WindowState}";
+    }
 }

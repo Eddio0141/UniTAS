@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using HarmonyLib;
 using UniTASPlugin.ReverseInvoker;
 using UnityEngine;
@@ -18,10 +19,12 @@ public static class TimeWrap
             var rev = Plugin.Kernel.GetInstance<IReverseInvokerFactory>().GetReverseInvoker();
             if (CaptureDeltaTimeExists)
             {
+                Trace.Write($"Setting captureDeltaTime to {value}");
                 rev.Invoke(() => CaptureDeltaTimeTraverse.SetValue(value));
             }
             else
             {
+                Trace.Write($"Setting captureFramerate to {(int)Math.Round(1.0f / value)}");
                 rev.Invoke(() => Time.captureFramerate = (int)Math.Round(1.0f / value));
             }
         }

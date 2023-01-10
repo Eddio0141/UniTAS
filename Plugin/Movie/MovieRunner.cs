@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using UniTASPlugin.FixedUpdateSync;
 using UniTASPlugin.GameEnvironment;
@@ -71,6 +72,7 @@ public partial class MovieRunner : IMovieRunner, IOnPreUpdates
 
         if (startupProperties != null)
         {
+            Trace.Write($"Using startup property: {startupProperties}");
             env.FrameTime = startupProperties.FrameTime;
             _gameRestart.SoftRestart(startupProperties.StartTime);
         }
