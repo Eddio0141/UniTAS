@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using HarmonyLib;
@@ -280,9 +281,10 @@ public class MonoBehaviourPatch
                     {
                         // TODO remove hardcoded type name
                         if (!type.IsAbstract && type.IsSubclassOf(typeof(MonoBehaviour)) && (type.FullName == null ||
-                                !ExcludeNamespaces.Any(type.FullName.StartsWith)))
+                                !ExcludeNamespaces.Any(x => type.Namespace != null && type.Namespace.StartsWith(x))))
                         {
                             monoBehaviourTypes.Add(type);
+                            Trace.Write($"Target MonoBehavior patch type: {type.Name}");
                         }
                     }
                 }
