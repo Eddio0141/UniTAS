@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using UniTASPlugin.Interfaces.Update;
 using UniTASPlugin.LegacySafeWrappers;
 using UnityEngine;
@@ -19,7 +20,11 @@ public class SyncFixedUpdate : IOnFixedUpdate, ISyncFixedUpdate, IOnUpdate
     public void FixedUpdate()
     {
         // TODO remove hardcoded dependency
-        if (TimeWrap.FrameTimeNotSet) return;
+        if (TimeWrap.FrameTimeNotSet)
+        {
+            Trace.WriteIf(_onSyncCallbacks.Count > 0, "Reached invalid counter, frametime not set 1");
+            return;
+        }
 
         _fixedUpdateIndex = 0;
 
@@ -36,6 +41,7 @@ public class SyncFixedUpdate : IOnFixedUpdate, ISyncFixedUpdate, IOnUpdate
         // because this tracker works with fixed frame rate, we can't use the tracker unless the fixed frame rate is set
         if (TimeWrap.FrameTimeNotSet)
         {
+            Trace.WriteIf(_onSyncCallbacks.Count > 0, "Reached invalid counter, frametime not set 2");
             _invalidIndexCounter = true;
             return;
         }
@@ -43,6 +49,8 @@ public class SyncFixedUpdate : IOnFixedUpdate, ISyncFixedUpdate, IOnUpdate
         if (Math.Abs(_lastDeltaTime - Time.deltaTime) > 0.00001 ||
             Math.Abs(_lastFixedDeltaTime - Time.fixedDeltaTime) > 0.00001)
         {
+            Trace.WriteIf(_onSyncCallbacks.Count > 0,
+                $"Reached invalid counter, skipping sync fixed update invoke, last delta time: {_lastDeltaTime}, delta time: {Time.deltaTime}, fixed delta time: {Time.fixedDeltaTime}");
             _invalidIndexCounter = true;
             _lastDeltaTime = Time.deltaTime;
             return;
@@ -62,9 +70,11 @@ public class SyncFixedUpdate : IOnFixedUpdate, ISyncFixedUpdate, IOnUpdate
                 if (onSyncCallback.CycleOffset > 0)
                 {
                     onSyncCallback.CycleOffset--;
+                    Trace.Write($"OnSyncCallback cycle offset > 0, count left: {onSyncCallback.CycleOffset}");
                     continue;
                 }
 
+                Trace.Write("OnSyncCallback cycle offset == 0, invoking");
                 onSyncCallback.Callback.Invoke();
                 _onSyncCallbacks.RemoveAt(i);
                 i--;
@@ -76,6 +86,7 @@ public class SyncFixedUpdate : IOnFixedUpdate, ISyncFixedUpdate, IOnUpdate
 
     public void OnSync(Action callback, uint syncOffset = 0, ulong cycleOffset = 0)
     {
+        Trace.Write($"Added on sync callback with sync offset: {syncOffset}, cycle offset: {cycleOffset}");
         _onSyncCallbacks.Add(new(callback, syncOffset, cycleOffset));
     }
 

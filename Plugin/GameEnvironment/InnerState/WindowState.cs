@@ -14,4 +14,9 @@ public class WindowState
         IsFullscreen = isFullscreen;
         IsFocused = isFocused;
     }
+
+    public override string ToString()
+    {
+        return $"Width: {Width}, Height: {Height}, IsFullscreen: {IsFullscreen}, IsFocused: {IsFocused}";
+    }
 }
