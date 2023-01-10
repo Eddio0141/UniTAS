@@ -19,6 +19,7 @@ public class SyncFixedUpdate : IOnFixedUpdate, ISyncFixedUpdate, IOnUpdate
 
     public void FixedUpdate()
     {
+        Trace.WriteIf(_onSyncCallbacks.Count > 0, $"on sync callback count: {_onSyncCallbacks.Count}");
         // TODO remove hardcoded dependency
         if (TimeWrap.FrameTimeNotSet)
         {
@@ -46,8 +47,9 @@ public class SyncFixedUpdate : IOnFixedUpdate, ISyncFixedUpdate, IOnUpdate
             return;
         }
 
-        if (Math.Abs(_lastDeltaTime - Time.deltaTime) > 0.00001 ||
-            Math.Abs(_lastFixedDeltaTime - Time.fixedDeltaTime) > 0.00001)
+        // ReSharper disable CompareOfFloatsByEqualityOperator
+        if (_lastDeltaTime != Time.deltaTime || _lastFixedDeltaTime != Time.fixedDeltaTime)
+            // ReSharper restore CompareOfFloatsByEqualityOperator
         {
             Trace.WriteIf(_onSyncCallbacks.Count > 0,
                 $"Reached invalid counter, skipping sync fixed update invoke, last delta time: {_lastDeltaTime}, delta time: {Time.deltaTime}, fixed delta time: {Time.fixedDeltaTime}");
@@ -58,6 +60,9 @@ public class SyncFixedUpdate : IOnFixedUpdate, ISyncFixedUpdate, IOnUpdate
 
         // TODO remove hardcoded dependency
         var maxUpdateCount = (int)Math.Round(Time.fixedDeltaTime / Time.deltaTime);
+
+        Trace.WriteIf(_onSyncCallbacks.Count > 0,
+            $"Max update count: {maxUpdateCount}, fixed delta time: {Time.fixedDeltaTime}, delta time: {Time.deltaTime}, callbacks left: {_onSyncCallbacks.Count}");
 
         for (var i = 0; i < _onSyncCallbacks.Count; i++)
         {

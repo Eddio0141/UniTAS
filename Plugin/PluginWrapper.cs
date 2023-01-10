@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using HarmonyLib;
 using UniTASPlugin.GameRestart;
@@ -38,6 +39,13 @@ public class PluginWrapper
         _onEnables = onEnables.ToArray();
         _onPreUpdates = onPreUpdates.ToArray();
         _onUpdates = onUpdates.ToArray();
+
+        Trace.Write($"Registered OnUpdate count: {_onUpdates.Length}");
+        Trace.Write($"Registered OnFixedUpdate count: {_onFixedUpdates.Length}");
+        Trace.Write($"Registered OnAwake count: {_onAwakes.Length}");
+        Trace.Write($"Registered OnStart count: {_onStarts.Length}");
+        Trace.Write($"Registered OnEnable count: {_onEnables.Length}");
+        Trace.Write($"Registered OnPreUpdate count: {_onPreUpdates.Length}");
 
         var rev = reverseInvokerFactory.GetReverseInvoker();
         var actualTime = rev.Invoke(() => DateTime.Now);
@@ -110,7 +118,7 @@ public class PluginWrapper
         for (var i = 0; i < logCount; i++)
         {
             var log = MonoIOPatchModule.Log[i];
-            Plugin.Log.LogDebug(log);
+            Trace.Write(log);
         }
 
         MonoIOPatchModule.Log.RemoveRange(0, logCount);
