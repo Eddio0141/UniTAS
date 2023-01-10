@@ -73,11 +73,11 @@ public partial class MoviePropertyParser
     {
         public const string Key = "fps";
 
-        public FpsKey() : base(Key, new[] { FtKey.Key, FpsKey.Key }, new[] { FromSaveState.Key })
+        public FpsKey() : base(Key, new[] { FrameTimeKey.Key, FtKey.Key }, new[] { FromSaveState.Key })
         {
         }
 
-        public override object Parse(string input) => 1f / float.Parse(input);
+        public override object Parse(string input) => float.Parse(input);
     }
 
     private class ResolutionKey : Key
