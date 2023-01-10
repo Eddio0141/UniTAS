@@ -123,7 +123,7 @@ public partial class MoviePropertyParser : IMoviePropertyParser
                     frameTime = (float?)parsedValue;
                     break;
                 case FpsKey.Key:
-                    frameTime = (float?)parsedValue;
+                    frameTime = 1f / (float?)parsedValue;
                     break;
                 case ResolutionKey.Key:
                     resolution = (KeyValuePair<int, int>?)parsedValue;
