@@ -284,7 +284,7 @@ public class MonoBehaviourPatch
                                 !ExcludeNamespaces.Any(x => type.Namespace != null && type.Namespace.StartsWith(x))))
                         {
                             monoBehaviourTypes.Add(type);
-                            Trace.Write($"Target MonoBehavior patch type: {type.Name}");
+                            Trace.Write($"Target MonoBehavior pause patch type: {type.FullName}");
                         }
                     }
                 }

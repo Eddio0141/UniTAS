@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using BepInEx;
@@ -112,8 +113,14 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
 
                 if (fields.Length == 0) continue;
 
-                _logger.LogDebug(
-                    $"type: {type.FullName} has {fields.Length} static fields, and static constructor: {type.TypeInitializer != null}");
+#if TRACE
+                Trace.Write(
+                    $"storing static fields for type: {type.FullName}, field count: {fields.Length}, and static constructor: {type.TypeInitializer != null}");
+                foreach (var field in fields)
+                {
+                    Trace.Write($"found field {type.FullName}.{field.Name}");
+                }
+#endif
                 _staticFields.Add(new(fields, type.TypeInitializer));
             }
         }
@@ -163,11 +170,11 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
             // recursively check
             if (FindGenericType(genericInstanceType))
             {
-                _logger.LogDebug($"Skipping generic type {genericInstanceType.FullName}");
+                Trace.Write($"Skipping generic type {genericInstanceType.FullName} for static field storage");
                 continue;
             }
 
-            _logger.LogDebug($"Resolving generic type {genericInstanceType.FullName}");
+            Trace.Write($"Resolving generic type {genericInstanceType.FullName} for static field storage");
             var allGenericTypes = genericInstanceType.GenericArguments
                 .Select(x => x.ResolveReflection()).ToList();
 
@@ -198,7 +205,7 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
 
                 if (fields.Length == 0) continue;
 
-                _logger.LogDebug(
+                Trace.Write(
                     $"type: {genericTypeDefinition.FullName} has {fields.Length} static fields, and static constructor: {genericTypeDefinition.TypeInitializer != null}");
                 _staticFields.Add(new(fields, genericTypeDefinition.TypeInitializer));
             }
@@ -227,12 +234,12 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
         {
             foreach (var field in staticFields.Fields)
             {
-                _logger.LogDebug(
+                Trace.Write(
                     $"Setting static field: {field.DeclaringType?.FullName ?? "unknown_type"}.{field.Name} to null");
                 field.SetValue(null, null);
             }
 
-            _logger.LogDebug(
+            Trace.Write(
                 $"Invoking static constructor for {staticFields.StaticConstructor?.DeclaringType?.FullName ?? "unknown_type"}");
             staticFields.StaticConstructor?.Invoke(null, null);
         }
