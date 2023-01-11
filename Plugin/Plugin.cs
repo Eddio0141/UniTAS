@@ -65,6 +65,11 @@ public class Plugin : BaseUnityPlugin
         Logger.LogInfo($"Plugin {MyPluginInfo.PLUGIN_NAME} is loaded!");
     }
 
+    private void Update()
+    {
+        _pluginWrapper.Update();
+    }
+
     private void FixedUpdate()
     {
         _pluginWrapper.FixedUpdate();
