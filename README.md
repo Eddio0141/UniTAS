@@ -3,6 +3,9 @@ A tool that lets you TAS unity games
 
 # The tool doesn't bypass anti cheat or anything, use at your own risk
 
+# What games work
+Check [working-games](docs/working-games.md) for tested games
+
 # Stuff you might want to know
 - The tool is still in a very early stage
 - Parts of the code could be getting refactored for the sake of cleaning up trash I wrote, usually those file / folder names have `Legacy` on them
