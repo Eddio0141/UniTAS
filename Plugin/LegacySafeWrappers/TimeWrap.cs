@@ -24,8 +24,9 @@ public static class TimeWrap
             }
             else
             {
-                Trace.Write($"Setting captureFramerate to {(int)Math.Round(1.0f / value)}");
-                rev.Invoke(() => Time.captureFramerate = (int)Math.Round(1.0f / value));
+                var fps = value > 0f ? (int)Math.Round(1.0f / value) : 0;
+                Trace.Write($"Setting captureFramerate to {fps}");
+                rev.Invoke(() => Time.captureFramerate = fps);
             }
         }
     }
