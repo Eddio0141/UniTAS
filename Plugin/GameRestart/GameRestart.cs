@@ -7,6 +7,7 @@ using BepInEx;
 using HarmonyLib;
 using Mono.Cecil;
 using MonoMod.Utils;
+using UniTASPlugin.Extensions;
 using UniTASPlugin.FixedUpdateSync;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.Interfaces.StartEvent;
@@ -32,17 +33,6 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
     private readonly IOnGameRestart[] _onGameRestart;
 
     private readonly List<StaticFieldStorage> _staticFields = new();
-
-    // ReSharper disable StringLiteralTypo
-    private static readonly string[] gameAssemblyNames =
-    {
-        "Assembly-CSharp",
-        "Assembly-CSharp-firstpass",
-        "Assembly-UnityScript",
-        "Assembly-UnityScript-firstpass"
-    };
-
-    // ReSharper restore StringLiteralTypo
 
     public bool PendingRestart { get; private set; }
     private bool _pendingResumePausedExecution;
@@ -90,12 +80,39 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
         var assemblies = AppDomain.CurrentDomain.GetAssemblies();
         var genericType = new List<Type>();
 
+        // ReSharper disable StringLiteralTypo
+        var assemblyExclusions = new[]
+        {
+            "UnityEngine.*",
+            "UnityEngine",
+            "Unity.*",
+            "System.*",
+            "System",
+            "netstandard",
+            "mscorlib",
+            "Mono.*",
+            "Mono",
+            "BepInEx.*",
+            "BepInEx",
+            "MonoMod.*",
+            "0Harmony",
+            "HarmonyXInterop",
+            // TODO plan to remove this patcher
+            "UniTASPatcher",
+            MyPluginInfo.PLUGIN_NAME,
+            "StructureMap",
+            "Antlr4.Runtime.Standard"
+        };
+        // ReSharper restore StringLiteralTypo
+
         foreach (var assembly in assemblies)
         {
-            if (!gameAssemblyNames.Contains(assembly.GetName().Name))
+            if (assemblyExclusions.Any(x => assembly.GetName().Name.Like(x)))
             {
                 continue;
             }
+
+            Trace.Write($"Processing assembly {assembly.GetName().Name} for static fields and constructor");
 
             var types = assembly.GetTypes();
 
@@ -127,7 +144,7 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
 
         if (genericType.Count == 0) return;
 
-        // find all types for each generic type
+// find all types for each generic type
         var assemblyDefinitions = new List<AssemblyDefinition>();
         foreach (var assembly in assemblies)
         {
@@ -142,11 +159,11 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
             }
         }
 
-        // Link of generic types, and list of generic args (so a list of lists)
+// Link of generic types, and list of generic args (so a list of lists)
         var genericTypeUsedGenericTypes = new Dictionary<Type, List<List<Type>>>();
 
-        // this is cursed but it works
-        // iterates through all il instructions in all methods in all types in all assemblies to find usage of generic types
+// this is cursed but it works
+// iterates through all il instructions in all methods in all types in all assemblies to find usage of generic types
         foreach (var instruction in from assemblyDefinition in assemblyDefinitions
                  from moduleDefinition in assemblyDefinition.Modules
                  from typeDefinition in moduleDefinition.Types
@@ -190,8 +207,8 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
             }
         }
 
-        // now we have a list of all generic types and their generic args
-        // iterate through each generic type and go through the static field process again
+// now we have a list of all generic types and their generic args
+// iterate through each generic type and go through the static field process again
         foreach (var typeUsedGenericTypes in genericTypeUsedGenericTypes)
         {
             var type = typeUsedGenericTypes.Key;
@@ -308,7 +325,7 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
         PendingResumePausedExecution();
     }
 
-    // plugin will call this as a backup
+// plugin will call this as a backup
     public void FixedUpdate()
     {
         PendingResumePausedExecution();
