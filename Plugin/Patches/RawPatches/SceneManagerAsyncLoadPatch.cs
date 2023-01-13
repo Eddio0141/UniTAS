@@ -94,6 +94,7 @@ public class SceneManagerAsyncLoadPatch
         private static bool Prefix(string sceneName, int sceneBuildIndex, bool isAdditive, bool mustCompleteNextFrame,
             ref AsyncOperation __result)
         {
+            __result = new();
             return AsyncSceneLoad(mustCompleteNextFrame, sceneName, sceneBuildIndex, null, isAdditive,
                 ref __result);
         }
@@ -118,6 +119,7 @@ public class SceneManagerAsyncLoadPatch
         private static bool Prefix(bool mustCompleteNextFrame, string sceneName, int sceneBuildIndex, object parameters,
             ref AsyncOperation __result)
         {
+            __result = new();
             return AsyncSceneLoad(mustCompleteNextFrame, sceneName, sceneBuildIndex, parameters, null,
                 ref __result);
         }
