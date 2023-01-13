@@ -290,7 +290,7 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
     {
         _logger.LogInfo("Soft restarting");
 
-        SceneHelper.LoadScene(0);
+        _unityWrapper.SceneWrapper.LoadScene(0);
 
         _logger.LogDebug("random setting state");
 
