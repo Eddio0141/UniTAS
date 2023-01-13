@@ -1,22 +1,24 @@
 ﻿using System;
 using System.Reflection;
 using HarmonyLib;
-using AppOrig = UnityEngine.Application;
+using UniTASPlugin.LegacyPatches;
+using UniTASPlugin.Patches.PatchTypes;
+using UnityEngine;
 
 // ReSharper disable UnusedMember.Local
 // ReSharper disable RedundantAssignment
 
-namespace UniTASPlugin.LegacyPatches.UnityEngine;
+namespace UniTASPlugin.Patches.RawPatches;
 
-[HarmonyPatch]
-internal static class ApplicationPatch
+[RawPatch]
+public static class LegacyAsyncSceneLoadPatch
 {
-    [HarmonyPatch(typeof(AppOrig), "LoadLevelAsync")]
+    [HarmonyPatch(typeof(Application), "LoadLevelAsync")]
     private class LoadLevelAsync
     {
         private static MethodBase TargetMethod()
         {
-            return AccessTools.Method(typeof(AppOrig), "LoadLevelAsync",
+            return AccessTools.Method(typeof(Application), nameof(Application.LoadLevelAsync),
                 new[] { typeof(string), typeof(int), typeof(bool), typeof(bool) });
         }
 

@@ -130,7 +130,6 @@ public class PluginWrapper
     {
         _updated = false;
         _calledPreUpdate = false;
-        GameTracker.LateUpdate();
     }
 
     public void PreFixedUpdate()

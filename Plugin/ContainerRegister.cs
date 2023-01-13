@@ -1,4 +1,5 @@
 using StructureMap;
+using UniTASPlugin.AsyncSceneLoadTracker;
 using UniTASPlugin.FixedUpdateSync;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.GameEnvironment.InnerState;
@@ -64,6 +65,8 @@ public static class ContainerRegister
             c.For<FileSystemManager>().Singleton();
             c.For<IOnGameRestart>().Use(x => x.GetInstance<FileSystemManager>());
             c.For<IFileSystemManager>().Use(x => x.GetInstance<FileSystemManager>());
+
+            c.For<AsyncOperationTracker>().Singleton();
         });
 
         return container;
