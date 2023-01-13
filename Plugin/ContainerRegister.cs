@@ -67,6 +67,9 @@ public static class ContainerRegister
             c.For<IFileSystemManager>().Use(x => x.GetInstance<FileSystemManager>());
 
             c.For<AsyncOperationTracker>().Singleton();
+            c.For<ISceneLoadTracker>().Use(x => x.GetInstance<AsyncOperationTracker>());
+            c.For<IAssetBundleCreateRequestTracker>().Use(x => x.GetInstance<AsyncOperationTracker>());
+            c.For<IAssetBundleRequestTracker>().Use(x => x.GetInstance<AsyncOperationTracker>());
         });
 
         return container;
