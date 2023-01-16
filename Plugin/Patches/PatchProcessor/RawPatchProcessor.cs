@@ -33,6 +33,8 @@ public class RawPatchProcessor : PatchProcessor
 
             foreach (var innerType in type.GetNestedTypes(AccessTools.all))
             {
+                var innerTypeHarmonyPatch = innerType.GetCustomAttributes(typeof(HarmonyPatch), false);
+                if (innerTypeHarmonyPatch.Length == 0) continue;
                 yield return new(rawPatch.Priority, innerType);
             }
         }
