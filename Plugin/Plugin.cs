@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Diagnostics;
 using BepInEx;
 using BepInEx.Logging;
@@ -21,6 +22,7 @@ public class Plugin : BaseUnityPlugin
 
     private ManualLogSource _logger;
     public static ManualLogSource Log => instance._logger;
+    public static Harmony Harmony => instance._pluginWrapper.Harmony;
 
     private PluginWrapper _pluginWrapper;
 
@@ -40,6 +42,9 @@ public class Plugin : BaseUnityPlugin
             i--;
             traceCount--;
         }
+
+        StartCoroutine(EndOfFrame());
+        StartCoroutine(EndOfFixedUpdate());
 
         _pluginWrapper = Kernel.GetInstance<PluginWrapper>();
 
@@ -73,15 +78,37 @@ public class Plugin : BaseUnityPlugin
     private void FixedUpdate()
     {
         _pluginWrapper.FixedUpdate();
+        // Trace.Write($"FixedUpdate, {Time.frameCount}");
     }
 
     private void LateUpdate()
     {
         _pluginWrapper.LateUpdate();
+        // Trace.Write($"LateUpdate, {Time.frameCount}");
     }
 
     private void OnGUI()
     {
         Overlay.OnGUI();
+    }
+
+    private static IEnumerator EndOfFrame()
+    {
+        while (true)
+        {
+            yield return new WaitForEndOfFrame();
+            // Trace.Write($"EndOfFrame, {Time.frameCount}");
+        }
+        // ReSharper disable once IteratorNeverReturns
+    }
+
+    private static IEnumerator EndOfFixedUpdate()
+    {
+        while (true)
+        {
+            yield return new WaitForFixedUpdate();
+            // Trace.Write($"EndOfFixedUpdate, {Time.frameCount}");
+        }
+        // ReSharper disable once IteratorNeverReturns
     }
 }
