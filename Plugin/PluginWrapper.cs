@@ -27,6 +27,8 @@ public class PluginWrapper
     private readonly IOnEnable[] _onEnables;
     private readonly IOnPreUpdates[] _onPreUpdates;
 
+    public Harmony Harmony { get; } = new($"{MyPluginInfo.PLUGIN_GUID}HarmonyPatch");
+
     public PluginWrapper(IEnumerable<IOnUpdate> onUpdates, IEnumerable<IOnFixedUpdate> onFixedUpdates,
         IEnumerable<IOnAwake> onAwakes, IEnumerable<IOnStart> onStarts, IEnumerable<IOnEnable> onEnables,
         IEnumerable<IOnPreUpdates> onPreUpdates,
@@ -55,13 +57,11 @@ public class PluginWrapper
             onGameRestart.OnGameRestart(actualTime);
         }
 
-        Harmony harmony = new($"{MyPluginInfo.PLUGIN_GUID}HarmonyPatch");
-
         var sortedPatches = patchProcessors.SelectMany(x => x.ProcessModules()).OrderByDescending(x => x.Key)
             .Select(x => x.Value);
         foreach (var patch in sortedPatches)
         {
-            harmony.PatchAll(patch);
+            Harmony.PatchAll(patch);
         }
 
         // this is to make sure Path fields are property set, not sure if theres a better place to put this
