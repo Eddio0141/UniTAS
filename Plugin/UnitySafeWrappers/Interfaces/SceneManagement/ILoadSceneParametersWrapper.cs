@@ -4,7 +4,8 @@ namespace UniTASPlugin.UnitySafeWrappers.Interfaces.SceneManagement;
 
 public interface ILoadSceneParametersWrapper
 {
-    object Instance { get; }
+    void CreateInstance();
+    object Instance { get; set; }
     LoadSceneMode? LoadSceneMode { get; set; }
     LocalPhysicsMode? LocalPhysicsMode { get; set; }
 }
