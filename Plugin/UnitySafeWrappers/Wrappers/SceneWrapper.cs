@@ -28,24 +28,20 @@ public class SceneWrapper : ISceneWrapper
     {
         _loadSceneParametersWrapper = loadSceneParametersWrapper;
         const string loadSceneAsyncNameIndexInternal = "LoadSceneAsyncNameIndexInternal";
-        _loadSceneAsyncNameIndexInternal = _sceneManager.GetMethod(loadSceneAsyncNameIndexInternal, AccessTools.all,
+        _loadSceneAsyncNameIndexInternal = _sceneManager?.GetMethod(loadSceneAsyncNameIndexInternal, AccessTools.all,
             null, new[] { typeof(string), typeof(int), typeof(bool), typeof(bool) }, null);
 
-        if (_loadSceneAsyncNameIndexInternal == null)
+        if (_loadSceneAsyncNameIndexInternal == null && _loadSceneParametersType != null)
         {
-            if (_loadSceneParametersType == null)
-            {
-                throw new InvalidOperationException("Could not find LoadSceneAsyncNameIndexInternal method");
-            }
-
-            _loadSceneAsyncNameIndexInternal = _sceneManager.GetMethod(loadSceneAsyncNameIndexInternal, AccessTools.all,
+            _loadSceneAsyncNameIndexInternal = _sceneManager?.GetMethod(loadSceneAsyncNameIndexInternal,
+                AccessTools.all,
                 null,
                 new[] { typeof(string), typeof(int), _loadSceneParametersType, typeof(bool) }, null);
         }
 
-        _loadScene = _sceneManager.GetMethod("LoadScene", AccessTools.all, null, new[] { typeof(int) }, null);
+        _loadScene = _sceneManager?.GetMethod("LoadScene", AccessTools.all, null, new[] { typeof(int) }, null);
 
-        _applicationLoadLevelAsync = AccessTools.TypeByName("UnityEngine.Application").GetMethod("LoadLevelAsync",
+        _applicationLoadLevelAsync = AccessTools.TypeByName("UnityEngine.Application")?.GetMethod("LoadLevelAsync",
             AccessTools.all, null, new[] { typeof(string), typeof(int), typeof(bool), typeof(bool) }, null);
     }
 
