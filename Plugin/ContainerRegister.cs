@@ -70,6 +70,7 @@ public static class ContainerRegister
             c.For<ISceneLoadTracker>().Use(x => x.GetInstance<AsyncOperationTracker>());
             c.For<IAssetBundleCreateRequestTracker>().Use(x => x.GetInstance<AsyncOperationTracker>());
             c.For<IAssetBundleRequestTracker>().Use(x => x.GetInstance<AsyncOperationTracker>());
+            c.For<IOnLastUpdate>().Use(x => x.GetInstance<AsyncOperationTracker>());
         });
 
         return container;

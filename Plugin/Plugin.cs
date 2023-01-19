@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections;
 using System.Diagnostics;
+using System.Linq;
 using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
 using StructureMap;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.GameInfo;
+using UniTASPlugin.Interfaces.Update;
 using UniTASPlugin.LegacyGameOverlay;
 using UniTASPlugin.LegacySafeWrappers;
 using UnityEngine;
@@ -17,6 +19,7 @@ namespace UniTASPlugin;
 public class Plugin : BaseUnityPlugin
 {
     public static readonly IContainer Kernel = ContainerRegister.Init();
+    private readonly IOnLastUpdate[] _onLastUpdates = Kernel.GetAllInstances<IOnLastUpdate>().ToArray();
 
     private static Plugin instance;
 
@@ -92,11 +95,16 @@ public class Plugin : BaseUnityPlugin
         Overlay.OnGUI();
     }
 
-    private static IEnumerator EndOfFrame()
+    private IEnumerator EndOfFrame()
     {
         while (true)
         {
             yield return new WaitForEndOfFrame();
+            foreach (var lastUpdate in _onLastUpdates)
+            {
+                // TODO move this to the patch thing
+                lastUpdate.OnLastUpdate();
+            }
             // Trace.Write($"EndOfFrame, {Time.frameCount}");
         }
         // ReSharper disable once IteratorNeverReturns
