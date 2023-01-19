@@ -1,4 +1,7 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
@@ -291,6 +294,90 @@ public class AsyncOperationPatch
             _ = resultTraverse.Field("m_Path").SetValue(path);
             _ = resultTraverse.Field("m_Type").SetValue(type);
             return false;
+        }
+    }
+
+    // use this to track what has been already patched or not for IEnumerator.MoveNext
+    private static readonly List<MethodInfo> _patchedIEnumeratorMoveNext = new();
+
+    private static void TryPatchMethodFromCoroutineInvoke(IEnumerator routine)
+    {
+        var targetPatch = routine.GetType().GetMethod("MoveNext", AccessTools.all);
+        if (targetPatch == null)
+        {
+            throw new InvalidOperationException("IEnumerator.MoveNext not found");
+        }
+
+        if (_patchedIEnumeratorMoveNext.Contains(targetPatch))
+        {
+            return;
+        }
+
+        Trace.Write($"patching {targetPatch}");
+        _patchedIEnumeratorMoveNext.Add(targetPatch);
+
+        Plugin.Harmony.Patch(targetPatch, new(typeof(IEnumeratorPatch), nameof(IEnumeratorPatch.Prefix)));
+    }
+
+    [HarmonyPatch(typeof(MonoBehaviour), nameof(MonoBehaviour.StartCoroutine), typeof(string), typeof(object))]
+    private class StartCoroutineStringPatch
+    {
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static void Prefix(string methodName, object value)
+        {
+        }
+    }
+
+    [HarmonyPatch(typeof(MonoBehaviour), "StartCoroutineManaged", typeof(string), typeof(object))]
+    private class StartCoroutineManaged
+    {
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static void Prefix(string methodName, object value)
+        {
+        }
+    }
+
+    [HarmonyPatch(typeof(MonoBehaviour), nameof(MonoBehaviour.StartCoroutine_Auto), typeof(IEnumerator))]
+    private class StartCoroutineAutoPatch
+    {
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static void Prefix(IEnumerator routine)
+        {
+            TryPatchMethodFromCoroutineInvoke(routine);
+        }
+    }
+
+    [HarmonyPatch(typeof(MonoBehaviour), "StartCoroutineManaged2", typeof(IEnumerator))]
+    private class StartCoroutineManaged2
+    {
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static void Prefix(IEnumerator enumerator)
+        {
+            TryPatchMethodFromCoroutineInvoke(enumerator);
+        }
+    }
+
+    private class IEnumeratorPatch
+    {
+        public static void Prefix(IEnumerator __instance)
+        {
+            // Trace.Write($"Invoked {__instance.GetType().FullName}");
         }
     }
 }

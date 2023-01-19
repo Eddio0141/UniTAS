@@ -1,28 +1,19 @@
 using System.Collections.Generic;
 using System.Diagnostics;
+using UniTASPlugin.Interfaces.Update;
 using UniTASPlugin.UnitySafeWrappers.Interfaces;
+using UniTASPlugin.UnitySafeWrappers.Wrappers;
 
 namespace UniTASPlugin.AsyncSceneLoadTracker;
 
-public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateRequestTracker, IAssetBundleRequestTracker
+// ReSharper disable once ClassNeverInstantiated.Global
+public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateRequestTracker, IAssetBundleRequestTracker,
+    IOnLastUpdate
 {
     private readonly List<AsyncSceneLoadData> _asyncLoads = new();
     private readonly List<AsyncSceneLoadData> _asyncLoadStalls = new();
     private readonly Dictionary<int, object> _assetBundleCreateRequests = new();
     private readonly Dictionary<int, AssetBundleRequestData> _assetBundleRequests = new();
-
-    // TODO add late update to load _asyncLoads scenes
-    /*
-     * 
-            foreach (var scene in asyncSceneLoads)
-            {
-                Plugin.Log.LogDebug($"force loading scene, name: {scene.sceneName} {scene.sceneBuildIndex}");
-                SceneHelper.LoadSceneAsyncNameIndexInternal(scene.sceneName, scene.sceneBuildIndex, scene.parameters,
-                    scene.isAdditive, true);
-            }
-    
-            asyncSceneLoads.Clear();
-     */
 
     private class AssetBundleRequestData
     {
@@ -43,6 +34,19 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         _sceneWrapper = sceneWrapper;
     }
 
+    public void OnLastUpdate()
+    {
+        foreach (var scene in _asyncLoads)
+        {
+            Trace.Write(
+                $"force loading scene, name: {scene.SceneName}, index: {scene.SceneBuildIndex}, manually loading in loop");
+            _sceneWrapper.LoadSceneAsync(scene.SceneName, scene.SceneBuildIndex, scene.LoadSceneMode,
+                scene.LocalPhysicsMode, true);
+        }
+
+        _asyncLoads.Clear();
+    }
+
     public void NewAssetBundleRequest(object asyncOperation, object assetBundleRequest)
     {
         _assetBundleRequests.Add(asyncOperation.GetHashCode(), new(assetBundleRequest));
@@ -53,11 +57,10 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         _assetBundleRequests.Add(asyncOperation.GetHashCode(), new(multipleResults: assetBundleRequestArray));
     }
 
-    public void AsyncSceneLoad(string sceneName, int sceneBuildIndex, object parameters, bool? isAdditive,
-        object asyncOperation)
+    public void AsyncSceneLoad(string sceneName, int sceneBuildIndex, LoadSceneMode loadSceneMode,
+        LocalPhysicsMode localPhysicsMode, object asyncOperation)
     {
-        _asyncLoads.Add(new(sceneName, sceneBuildIndex, parameters, isAdditive,
-            asyncOperation.GetHashCode()));
+        _asyncLoads.Add(new(sceneName, sceneBuildIndex, asyncOperation.GetHashCode(), loadSceneMode, localPhysicsMode));
     }
 
     public void AllowSceneActivation(bool allow, object asyncOperation)
@@ -70,8 +73,8 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
             var sceneToLoad = _asyncLoadStalls.Find(x => x.AsyncOperationInstanceHash == hash);
             if (sceneToLoad == null) return;
             _asyncLoadStalls.Remove(sceneToLoad);
-            _sceneWrapper.LoadSceneAsync(sceneToLoad.SceneName, sceneToLoad.SceneBuildIndex, sceneToLoad.Parameters,
-                sceneToLoad.IsAdditive, true);
+            _sceneWrapper.LoadSceneAsync(sceneToLoad.SceneName, sceneToLoad.SceneBuildIndex, sceneToLoad.LoadSceneMode,
+                sceneToLoad.LocalPhysicsMode, true);
             Trace.Write(
                 $"force loading scene, name: {sceneToLoad.SceneName}, build index: {sceneToLoad.SceneBuildIndex}");
         }
@@ -127,18 +130,18 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
     {
         public string SceneName { get; }
         public int SceneBuildIndex { get; }
-        public object Parameters { get; }
-        public bool? IsAdditive { get; }
         public int AsyncOperationInstanceHash { get; }
+        public LoadSceneMode LoadSceneMode { get; }
+        public LocalPhysicsMode LocalPhysicsMode { get; }
 
-        public AsyncSceneLoadData(string sceneName, int sceneBuildIndex, object parameters, bool? isAdditive,
-            int asyncOperationInstanceHash)
+        public AsyncSceneLoadData(string sceneName, int sceneBuildIndex, int asyncOperationInstanceHash,
+            LoadSceneMode loadSceneMode, LocalPhysicsMode localPhysicsMode)
         {
             SceneName = sceneName;
             SceneBuildIndex = sceneBuildIndex;
-            Parameters = parameters;
-            IsAdditive = isAdditive;
             AsyncOperationInstanceHash = asyncOperationInstanceHash;
+            LoadSceneMode = loadSceneMode;
+            LocalPhysicsMode = localPhysicsMode;
         }
     }
 }
