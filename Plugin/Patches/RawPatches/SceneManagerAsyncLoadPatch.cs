@@ -5,6 +5,8 @@ using System.Reflection;
 using HarmonyLib;
 using UniTASPlugin.AsyncSceneLoadTracker;
 using UniTASPlugin.Patches.PatchTypes;
+using UniTASPlugin.UnitySafeWrappers.Interfaces.SceneManagement;
+using UniTASPlugin.UnitySafeWrappers.Wrappers;
 using UnityEngine;
 
 namespace UniTASPlugin.Patches.RawPatches;
@@ -26,12 +28,42 @@ public class SceneManagerAsyncLoadPatch
 
     private static readonly ISceneLoadTracker SceneLoadTracker = Plugin.Kernel.GetInstance<ISceneLoadTracker>();
 
+    private static readonly ILoadSceneParametersWrapper LoadSceneParametersWrapper =
+        Plugin.Kernel.GetInstance<ILoadSceneParametersWrapper>();
+
     private static bool AsyncSceneLoad(bool mustCompleteNextFrame, string sceneName, int sceneBuildIndex,
         object parameters, bool? isAdditive, ref AsyncOperation __result)
     {
         if (mustCompleteNextFrame) return true;
         Trace.Write($"async scene load, instance id: {__result.GetHashCode()}");
-        SceneLoadTracker.AsyncSceneLoad(sceneName, sceneBuildIndex, parameters, isAdditive, __result);
+
+        if (parameters != null)
+        {
+            LoadSceneParametersWrapper.Instance = parameters;
+
+            if (LoadSceneParametersWrapper.LoadSceneMode == null ||
+                LoadSceneParametersWrapper.LocalPhysicsMode == null)
+            {
+                throw new InvalidOperationException("Property shouldn't be null here");
+            }
+
+            var loadSceneModeValue = (int)LoadSceneParametersWrapper.LoadSceneMode;
+            var localPhysicsModeValue = (int)LoadSceneParametersWrapper.LocalPhysicsMode;
+
+            SceneLoadTracker.AsyncSceneLoad(sceneName, sceneBuildIndex, (LoadSceneMode)loadSceneModeValue,
+                (LocalPhysicsMode)localPhysicsModeValue, __result);
+            return false;
+        }
+
+        if (isAdditive == null)
+        {
+            throw new ArgumentNullException(nameof(isAdditive));
+        }
+
+        SceneLoadTracker.AsyncSceneLoad(sceneName, sceneBuildIndex,
+            isAdditive.Value ? LoadSceneMode.Additive : LoadSceneMode.Single,
+            LocalPhysicsMode.None, __result);
+
         return false;
     }
 
