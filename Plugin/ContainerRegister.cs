@@ -8,6 +8,7 @@ using UniTASPlugin.GameRestart;
 using UniTASPlugin.Interfaces.StartEvent;
 using UniTASPlugin.Interfaces.Update;
 using UniTASPlugin.MonoBehaviourController;
+using UniTASPlugin.MonoBehCoroutineEndOfFrameTracker;
 using UniTASPlugin.Movie;
 using UniTASPlugin.Movie.EngineMethods;
 using UniTASPlugin.Patches.PatchProcessor;
@@ -71,6 +72,9 @@ public static class ContainerRegister
             c.For<IAssetBundleCreateRequestTracker>().Use(x => x.GetInstance<AsyncOperationTracker>());
             c.For<IAssetBundleRequestTracker>().Use(x => x.GetInstance<AsyncOperationTracker>());
             c.For<IOnLastUpdate>().Use(x => x.GetInstance<AsyncOperationTracker>());
+
+            c.For<EndOfFrameTracker>().Singleton();
+            c.For<IEndOfFrameTracker>().Use(x => x.GetInstance<EndOfFrameTracker>());
         });
 
         return container;
