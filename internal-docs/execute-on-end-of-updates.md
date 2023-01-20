@@ -48,6 +48,6 @@ This is very hard or probably impossible, because how you can mix logic within t
 - When the `MoveNext` gets invoked on some type, monitor the return value
   - If `false`, means the iteration has finished and we remove from the hash list
   - Also check `Current` as it tells the type of wait we doing, and update the status of the tracker for this instance
-- When the `MoveNext` is returning WaitForFixedUpdate, check status of all tracking instance
+- When the `MoveNext` is returning WaitForEndOfFrame, check status of all tracking instance
   - If there is any instance that hasn't been updated yet, don't execute final code
   - Else execute final update code
