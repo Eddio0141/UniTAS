@@ -1,12 +1,12 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
 using HarmonyLib;
 using UniTASPlugin.AsyncSceneLoadTracker;
+using UniTASPlugin.MonoBehCoroutineEndOfFrameTracker;
 using UniTASPlugin.Patches.PatchTypes;
 using UnityEngine;
 
@@ -31,6 +31,8 @@ public class AsyncOperationPatch
 
     private static readonly IAssetBundleRequestTracker AssetBundleRequestTracker =
         Plugin.Kernel.GetInstance<IAssetBundleRequestTracker>();
+
+    private static readonly IEndOfFrameTracker EndOfFrameTracker = Plugin.Kernel.GetInstance<IEndOfFrameTracker>();
 
     [HarmonyPatch(typeof(AsyncOperation), "allowSceneActivation", MethodType.Setter)]
     private class SetAllowSceneActivation
@@ -300,9 +302,12 @@ public class AsyncOperationPatch
     // use this to track what has been already patched or not for IEnumerator.MoveNext
     private static readonly List<MethodInfo> _patchedIEnumeratorMoveNext = new();
 
-    private static void TryPatchMethodFromCoroutineInvoke(IEnumerator routine)
+    private static void StartCoroutineInvoke(IEnumerator routine)
     {
-        var targetPatch = routine.GetType().GetMethod("MoveNext", AccessTools.all);
+        EndOfFrameTracker.NewCoroutine(routine);
+
+        // patch the IEnumerator.MoveNext
+        var targetPatch = routine.GetType().GetMethod(nameof(IEnumerator.MoveNext), AccessTools.all);
         if (targetPatch == null)
         {
             throw new InvalidOperationException("IEnumerator.MoveNext not found");
@@ -313,10 +318,9 @@ public class AsyncOperationPatch
             return;
         }
 
-        Trace.Write($"patching {targetPatch}");
         _patchedIEnumeratorMoveNext.Add(targetPatch);
 
-        Plugin.Harmony.Patch(targetPatch, new(typeof(IEnumeratorPatch), nameof(IEnumeratorPatch.Prefix)));
+        Plugin.Harmony.Patch(targetPatch, new(typeof(IEnumeratorPatch), nameof(IEnumeratorPatch.Postfix)));
     }
 
     [HarmonyPatch(typeof(MonoBehaviour), nameof(MonoBehaviour.StartCoroutine), typeof(string), typeof(object))]
@@ -355,7 +359,7 @@ public class AsyncOperationPatch
 
         private static void Prefix(IEnumerator routine)
         {
-            TryPatchMethodFromCoroutineInvoke(routine);
+            StartCoroutineInvoke(routine);
         }
     }
 
@@ -369,15 +373,19 @@ public class AsyncOperationPatch
 
         private static void Prefix(IEnumerator enumerator)
         {
-            TryPatchMethodFromCoroutineInvoke(enumerator);
+            StartCoroutineInvoke(enumerator);
         }
     }
 
     private class IEnumeratorPatch
     {
-        public static void Prefix(IEnumerator __instance)
+        public static void Postfix(IEnumerator __instance, bool __result)
         {
-            // Trace.Write($"Invoked {__instance.GetType().FullName}");
+            EndOfFrameTracker.MoveNextInvoke(__instance);
+            if (__result)
+            {
+                EndOfFrameTracker.CoroutineEnd(__instance);
+            }
         }
     }
 }
