@@ -2,12 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using HarmonyLib;
 using UniTASPlugin.GameRestart;
 using UniTASPlugin.Interfaces.StartEvent;
 using UniTASPlugin.Interfaces.Update;
+using UniTASPlugin.Patches.PatchProcessor;
 using UniTASPlugin.ReverseInvoker;
-using PatchProcessor = UniTASPlugin.Patches.PatchProcessor.PatchProcessor;
 #if TRACE
 using UniTASPlugin.Patches.Modules.FileSystemControlModules.FilePatchModule;
 #endif
@@ -26,8 +25,6 @@ public class PluginWrapper
     private readonly IOnStart[] _onStarts;
     private readonly IOnEnable[] _onEnables;
     private readonly IOnPreUpdates[] _onPreUpdates;
-
-    public Harmony Harmony { get; } = new($"{MyPluginInfo.PLUGIN_GUID}HarmonyPatch");
 
     public PluginWrapper(IEnumerable<IOnUpdate> onUpdates, IEnumerable<IOnFixedUpdate> onFixedUpdates,
         IEnumerable<IOnAwake> onAwakes, IEnumerable<IOnStart> onStarts, IEnumerable<IOnEnable> onEnables,
@@ -61,8 +58,11 @@ public class PluginWrapper
             .Select(x => x.Value);
         foreach (var patch in sortedPatches)
         {
-            Harmony.PatchAll(patch);
+            Plugin.Harmony.PatchAll(patch);
         }
+
+        // this needs to be ran after the patches are applied
+        Plugin.StartEndOfFrameLoop();
 
         // this is to make sure Path fields are property set, not sure if theres a better place to put this
         // AccessTools.Constructor(typeof(System.IO.Path), searchForStatic: true).Invoke(null, null);

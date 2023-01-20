@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections;
 using System.Diagnostics;
-using System.Linq;
 using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
 using StructureMap;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.GameInfo;
-using UniTASPlugin.Interfaces.Update;
 using UniTASPlugin.LegacyGameOverlay;
 using UniTASPlugin.LegacySafeWrappers;
 using UnityEngine;
@@ -19,15 +17,16 @@ namespace UniTASPlugin;
 public class Plugin : BaseUnityPlugin
 {
     public static readonly IContainer Kernel = ContainerRegister.Init();
-    private readonly IOnLastUpdate[] _onLastUpdates = Kernel.GetAllInstances<IOnLastUpdate>().ToArray();
 
     private static Plugin instance;
 
     private ManualLogSource _logger;
     public static ManualLogSource Log => instance._logger;
-    public static Harmony Harmony => instance._pluginWrapper.Harmony;
+    public static readonly Harmony Harmony = new($"{MyPluginInfo.PLUGIN_GUID}HarmonyPatch");
 
     private PluginWrapper _pluginWrapper;
+
+    private bool _endOfFrameLoopRunning;
 
     private void Awake()
     {
@@ -45,9 +44,6 @@ public class Plugin : BaseUnityPlugin
             i--;
             traceCount--;
         }
-
-        StartCoroutine(EndOfFrame());
-        StartCoroutine(EndOfFixedUpdate());
 
         _pluginWrapper = Kernel.GetInstance<PluginWrapper>();
 
@@ -95,27 +91,22 @@ public class Plugin : BaseUnityPlugin
         Overlay.OnGUI();
     }
 
-    private IEnumerator EndOfFrame()
+    /// <summary>
+    /// This method has to be ran once after all BepInEx patches are loaded
+    /// </summary>
+    public static void StartEndOfFrameLoop()
+    {
+        if (instance == null) return;
+        if (instance._endOfFrameLoopRunning) return;
+        instance._endOfFrameLoopRunning = true;
+        instance.StartCoroutine(EndOfFrame());
+    }
+
+    private static IEnumerator EndOfFrame()
     {
         while (true)
         {
             yield return new WaitForEndOfFrame();
-            foreach (var lastUpdate in _onLastUpdates)
-            {
-                // TODO move this to the patch thing
-                lastUpdate.OnLastUpdate();
-            }
-            // Trace.Write($"EndOfFrame, {Time.frameCount}");
-        }
-        // ReSharper disable once IteratorNeverReturns
-    }
-
-    private static IEnumerator EndOfFixedUpdate()
-    {
-        while (true)
-        {
-            yield return new WaitForFixedUpdate();
-            // Trace.Write($"EndOfFixedUpdate, {Time.frameCount}");
         }
         // ReSharper disable once IteratorNeverReturns
     }
