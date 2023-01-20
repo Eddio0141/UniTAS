@@ -1,8 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using UniTASPlugin.AsyncSceneLoadTracker;
@@ -299,53 +301,91 @@ public class AsyncOperationPatch
         }
     }
 
-    // use this to track what has been already patched or not for IEnumerator.MoveNext
-    private static readonly List<MethodInfo> _patchedIEnumeratorMoveNext = new();
+    // use this to track what has been already patched or not
+    private static readonly List<Type> _patchedIEnumerators = new();
+    private static bool _isInvokingIEnumeratorStringCtor;
 
     private static void StartCoroutineInvoke(IEnumerator routine)
     {
         EndOfFrameTracker.NewCoroutine(routine);
 
+        var routineType = routine.GetType();
+        if (_patchedIEnumerators.Contains(routineType))
+        {
+            return;
+        }
+
+        _patchedIEnumerators.Add(routineType);
+
         // patch the IEnumerator.MoveNext
-        var targetPatch = routine.GetType().GetMethod(nameof(IEnumerator.MoveNext), AccessTools.all);
+        var targetPatch = routineType.GetMethod(nameof(IEnumerator.MoveNext), AccessTools.all);
         if (targetPatch == null)
         {
             throw new InvalidOperationException("IEnumerator.MoveNext not found");
         }
 
-        if (_patchedIEnumeratorMoveNext.Contains(targetPatch))
-        {
-            return;
-        }
-
-        _patchedIEnumeratorMoveNext.Add(targetPatch);
-
-        Plugin.Harmony.Patch(targetPatch, new(typeof(IEnumeratorPatch), nameof(IEnumeratorPatch.Postfix)));
+        Trace.Write($"Patching {routineType} IEnumerator.MoveNext");
+        Plugin.Harmony.Patch(targetPatch, postfix: new(typeof(IEnumeratorPatch), nameof(IEnumeratorPatch.Postfix)));
     }
 
-    [HarmonyPatch(typeof(MonoBehaviour), nameof(MonoBehaviour.StartCoroutine), typeof(string), typeof(object))]
+    [HarmonyPatch]
     private class StartCoroutineStringPatch
     {
+        private static IEnumerable<MethodBase> TargetMethods()
+        {
+            yield return AccessTools.Method(typeof(MonoBehaviour), nameof(MonoBehaviour.StartCoroutine),
+                new[] { typeof(string), typeof(object) });
+            yield return AccessTools.Method(typeof(MonoBehaviour), "StartCoroutineManaged",
+                new[] { typeof(string), typeof(object) });
+        }
+
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static void Prefix(string methodName, object value)
+        private static void Prefix(object __instance)
         {
-        }
-    }
+            var allEnumeratorTypes = __instance.GetType().GetNestedTypes(AccessTools.all)
+                .Where(x => !_patchedIEnumerators.Contains(x) && x.GetInterface(nameof(IEnumerator)) != null &&
+                            x.GetConstructors().Length > 0)
+                .ToList();
 
-    [HarmonyPatch(typeof(MonoBehaviour), "StartCoroutineManaged", typeof(string), typeof(object))]
-    private class StartCoroutineManaged
-    {
-        private static Exception Cleanup(MethodBase original, Exception ex)
-        {
-            return PatchHelper.CleanupIgnoreFail(original, ex);
+            Trace.WriteIf(allEnumeratorTypes.Count > 0,
+                $"Found patching IEnumerator types: {string.Join(", ", allEnumeratorTypes.Select(x => x.FullName).ToArray())}");
+
+            if (allEnumeratorTypes.Count > 0)
+            {
+                _patchedIEnumerators.AddRange(allEnumeratorTypes);
+            }
+
+            // finding patch methods
+            var moveNextMethods = allEnumeratorTypes
+                .Select(x => x.GetMethod(nameof(IEnumerator.MoveNext), AccessTools.all))
+                .Where(x => x != null);
+            var ctorMethods = allEnumeratorTypes
+                .Select(x => x.GetConstructors().First());
+
+            foreach (var moveNextMethod in moveNextMethods)
+            {
+                Trace.Write($"Patching IEnumerator.MoveNext for {moveNextMethod.DeclaringType?.FullName}");
+                Plugin.Harmony.Patch(moveNextMethod,
+                    postfix: new(typeof(IEnumeratorPatch), nameof(IEnumeratorPatch.Postfix)));
+            }
+
+            foreach (var ctorMethod in ctorMethods)
+            {
+                Trace.Write($"Patching IEnumerator ctor for {ctorMethod.DeclaringType?.FullName}");
+                Plugin.Harmony.Patch(ctorMethod,
+                    postfix: new(typeof(IEnumeratorPatchStringCtor), nameof(IEnumeratorPatchStringCtor.Postfix)));
+            }
+
+            _isInvokingIEnumeratorStringCtor = true;
         }
 
-        private static void Prefix(string methodName, object value)
+        private static void Postfix()
         {
+            _isInvokingIEnumeratorStringCtor = false;
         }
     }
 
@@ -382,10 +422,21 @@ public class AsyncOperationPatch
         public static void Postfix(IEnumerator __instance, bool __result)
         {
             EndOfFrameTracker.MoveNextInvoke(__instance);
-            if (__result)
+            if (!__result)
             {
                 EndOfFrameTracker.CoroutineEnd(__instance);
             }
+        }
+    }
+
+    // ReSharper disable once ClassNeverInstantiated.Local
+    private class IEnumeratorPatchStringCtor
+    {
+        public static void Postfix(IEnumerator __instance)
+        {
+            if (!_isInvokingIEnumeratorStringCtor) return;
+            EndOfFrameTracker.NewCoroutine(__instance);
+            _isInvokingIEnumeratorStringCtor = false;
         }
     }
 }
