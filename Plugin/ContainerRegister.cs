@@ -4,6 +4,7 @@ using UniTASPlugin.FixedUpdateSync;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.GameEnvironment.InnerState;
 using UniTASPlugin.GameEnvironment.InnerState.FileSystem;
+using UniTASPlugin.GameObjectTracker;
 using UniTASPlugin.GameRestart;
 using UniTASPlugin.Interfaces.StartEvent;
 using UniTASPlugin.Interfaces.Update;
@@ -75,6 +76,9 @@ public static class ContainerRegister
 
             c.For<EndOfFrameTracker>().Singleton();
             c.For<IEndOfFrameTracker>().Use(x => x.GetInstance<EndOfFrameTracker>());
+
+            c.For<ObjectTracker>().Singleton();
+            c.For<IObjectTracker>().Use(x => x.GetInstance<ObjectTracker>());
         });
 
         return container;
