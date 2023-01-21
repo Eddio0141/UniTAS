@@ -4,10 +4,11 @@ namespace UniTASPlugin.MonoBehCoroutineEndOfFrameTracker;
 
 public interface IEndOfFrameTracker
 {
-    void NewCoroutine(IEnumerator coroutine, object monoBehaviourInstance = null,
+    void NewCoroutine(IEnumerator enumerator, object coroutine, object monoBehaviourInstance = null,
         string stringCoroutineMethodName = null);
 
-    void MoveNextInvoke(IEnumerator coroutine);
-    void CoroutineEnd(IEnumerator coroutine);
+    void MoveNextInvoke(IEnumerator enumerator);
+    void CoroutineEnd(IEnumerator enumerator);
     void CoroutineEnd(object monoBehaviourInstance, string coroutineMethodName);
+    void CoroutineEnd(object coroutine);
 }
