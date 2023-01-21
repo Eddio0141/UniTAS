@@ -503,7 +503,7 @@ public class AsyncOperationPatch
         // Stops all coroutines named methodName running on this behaviour
         private static void Prefix(MonoBehaviour __instance)
         {
-            EndOfFrameTracker.CoroutineEnd(__instance);
+            EndOfFrameTracker.CoroutineEndAll(__instance);
         }
     }
 }
