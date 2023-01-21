@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using UniTASPlugin.GameObjectTracker;
 using UniTASPlugin.Interfaces.Update;
 using UnityEngine;
 
@@ -19,9 +20,19 @@ public class EndOfFrameTracker : IEndOfFrameTracker
 
     private readonly IOnLastUpdate[] _onLastUpdates;
 
-    public EndOfFrameTracker(IOnLastUpdate[] onLastUpdates)
+    public EndOfFrameTracker(IOnLastUpdate[] onLastUpdates, IObjectTracker objectTracker)
     {
         _onLastUpdates = onLastUpdates;
+        objectTracker.OnDestroyObject += OnObjectDestroyed;
+    }
+
+    private void OnObjectDestroyed(int hash)
+    {
+        var status = _allStatus.Find(x => x.MonoBehHash == hash);
+        if (status != null)
+        {
+            _allStatus.Remove(status);
+        }
     }
 
     public void NewCoroutine(IEnumerator enumerator, object coroutine, object monoBehaviourInstance = null,
