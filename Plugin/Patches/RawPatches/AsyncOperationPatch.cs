@@ -491,4 +491,19 @@ public class AsyncOperationPatch
             EndOfFrameTracker.CoroutineEnd(routine);
         }
     }
+
+    [HarmonyPatch(typeof(MonoBehaviour), nameof(MonoBehaviour.StopAllCoroutines), new Type[0])]
+    private class MonoBehaviourStopAllCoroutinesPatch
+    {
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        // Stops all coroutines named methodName running on this behaviour
+        private static void Prefix(MonoBehaviour __instance)
+        {
+            EndOfFrameTracker.CoroutineEnd(__instance);
+        }
+    }
 }

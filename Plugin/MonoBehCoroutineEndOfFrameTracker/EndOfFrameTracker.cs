@@ -134,6 +134,20 @@ public class EndOfFrameTracker : IEndOfFrameTracker
         }
     }
 
+    public void CoroutineEndAll(object monoBehaviourInstance)
+    {
+        var monoBehHash = monoBehaviourInstance.GetHashCode();
+        var trackingStatuses = _allStatus.FindAll(x => monoBehHash == x.MonoBehHash);
+
+        foreach (var trackingStatus in trackingStatuses)
+        {
+            Trace.Write(
+                $"Coroutine end, {trackingStatus.EnumeratorHash}, wait count: {_waitCount}, {_waitCount2}, using counter 1: {trackingStatus.UsingWaitCounter1}");
+
+            _allStatus.Remove(trackingStatus);
+        }
+    }
+
     private class CoroutineTrackingStatus
     {
         public int EnumeratorHash { get; }
