@@ -305,10 +305,11 @@ public class AsyncOperationPatch
     private static readonly List<Type> _patchedIEnumerators = new();
     private static string _invokingIEnumeratorStringCtorMethodName;
     private static object _invokingIEnumeratorStringMonoBehInstance;
+    private static object _invokingIEnumeratorStringCoroutine;
 
-    private static void StartCoroutineInvoke(IEnumerator routine)
+    private static void StartCoroutineInvoke(IEnumerator routine, Coroutine coroutineReturnValue)
     {
-        EndOfFrameTracker.NewCoroutine(routine);
+        EndOfFrameTracker.NewCoroutine(routine, coroutineReturnValue);
 
         var routineType = routine.GetType();
         if (_patchedIEnumerators.Contains(routineType))
@@ -399,9 +400,9 @@ public class AsyncOperationPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static void Prefix(IEnumerator routine)
+        private static void Postfix(IEnumerator routine, Coroutine __result)
         {
-            StartCoroutineInvoke(routine);
+            StartCoroutineInvoke(routine, __result);
         }
     }
 
@@ -413,9 +414,9 @@ public class AsyncOperationPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static void Prefix(IEnumerator enumerator)
+        private static void Postfix(IEnumerator enumerator, Coroutine __result)
         {
-            StartCoroutineInvoke(enumerator);
+            StartCoroutineInvoke(enumerator, __result);
         }
     }
 
@@ -437,10 +438,12 @@ public class AsyncOperationPatch
         public static void Postfix(IEnumerator __instance)
         {
             if (_invokingIEnumeratorStringCtorMethodName == null) return;
-            EndOfFrameTracker.NewCoroutine(__instance, _invokingIEnumeratorStringMonoBehInstance,
+            EndOfFrameTracker.NewCoroutine(__instance, _invokingIEnumeratorStringCoroutine,
+                _invokingIEnumeratorStringMonoBehInstance,
                 _invokingIEnumeratorStringCtorMethodName);
             _invokingIEnumeratorStringCtorMethodName = null;
             _invokingIEnumeratorStringMonoBehInstance = null;
+            _invokingIEnumeratorStringCoroutine = null;
         }
     }
 
@@ -456,6 +459,36 @@ public class AsyncOperationPatch
         private static void Prefix(MonoBehaviour __instance, string methodName)
         {
             EndOfFrameTracker.CoroutineEnd(__instance, methodName);
+        }
+    }
+
+    [HarmonyPatch(typeof(MonoBehaviour), "StopCoroutineFromEnumeratorManaged", typeof(IEnumerator))]
+    private class StopCoroutineFromEnumeratorManagedPatch
+    {
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        // Stops all coroutines named methodName running on this behaviour
+        private static void Prefix(IEnumerator routine)
+        {
+            EndOfFrameTracker.CoroutineEnd(routine);
+        }
+    }
+
+    [HarmonyPatch(typeof(MonoBehaviour), "StopCoroutineManaged", typeof(Coroutine))]
+    private class StopCoroutineManagedPatch
+    {
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        // Stops all coroutines named methodName running on this behaviour
+        private static void Prefix(Coroutine routine)
+        {
+            EndOfFrameTracker.CoroutineEnd(routine);
         }
     }
 }
