@@ -97,8 +97,6 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
             "MonoMod.*",
             "0Harmony",
             "HarmonyXInterop",
-            // TODO plan to remove this patcher
-            "UniTASPatcher",
             MyPluginInfo.PLUGIN_NAME,
             "StructureMap",
             "Antlr4.Runtime.Standard"
