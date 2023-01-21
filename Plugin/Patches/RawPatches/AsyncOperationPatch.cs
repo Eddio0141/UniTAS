@@ -303,7 +303,8 @@ public class AsyncOperationPatch
 
     // use this to track what has been already patched or not
     private static readonly List<Type> _patchedIEnumerators = new();
-    private static bool _isInvokingIEnumeratorStringCtor;
+    private static string _invokingIEnumeratorStringCtorMethodName;
+    private static object _invokingIEnumeratorStringMonoBehInstance;
 
     private static void StartCoroutineInvoke(IEnumerator routine)
     {
@@ -344,7 +345,7 @@ public class AsyncOperationPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static void Prefix(object __instance)
+        private static void Prefix(object __instance, string methodName)
         {
             var allEnumeratorTypes = __instance.GetType().GetNestedTypes(AccessTools.all)
                 .Where(x => !_patchedIEnumerators.Contains(x) && x.GetInterface(nameof(IEnumerator)) != null &&
@@ -380,12 +381,13 @@ public class AsyncOperationPatch
                     postfix: new(typeof(IEnumeratorPatchStringCtor), nameof(IEnumeratorPatchStringCtor.Postfix)));
             }
 
-            _isInvokingIEnumeratorStringCtor = true;
+            _invokingIEnumeratorStringMonoBehInstance = __instance;
+            _invokingIEnumeratorStringCtorMethodName = methodName;
         }
 
         private static void Postfix()
         {
-            _isInvokingIEnumeratorStringCtor = false;
+            _invokingIEnumeratorStringCtorMethodName = null;
         }
     }
 
@@ -434,9 +436,26 @@ public class AsyncOperationPatch
     {
         public static void Postfix(IEnumerator __instance)
         {
-            if (!_isInvokingIEnumeratorStringCtor) return;
-            EndOfFrameTracker.NewCoroutine(__instance);
-            _isInvokingIEnumeratorStringCtor = false;
+            if (_invokingIEnumeratorStringCtorMethodName == null) return;
+            EndOfFrameTracker.NewCoroutine(__instance, _invokingIEnumeratorStringMonoBehInstance,
+                _invokingIEnumeratorStringCtorMethodName);
+            _invokingIEnumeratorStringCtorMethodName = null;
+            _invokingIEnumeratorStringMonoBehInstance = null;
+        }
+    }
+
+    [HarmonyPatch(typeof(MonoBehaviour), nameof(MonoBehaviour.StopCoroutine), typeof(string))]
+    private class MonoBehaviourStopCoroutinePatch
+    {
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        // Stops all coroutines named methodName running on this behaviour
+        private static void Prefix(MonoBehaviour __instance, string methodName)
+        {
+            EndOfFrameTracker.CoroutineEnd(__instance, methodName);
         }
     }
 }
