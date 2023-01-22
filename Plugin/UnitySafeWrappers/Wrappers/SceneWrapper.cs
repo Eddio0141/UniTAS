@@ -7,6 +7,7 @@ using UnityEngine;
 
 namespace UniTASPlugin.UnitySafeWrappers.Wrappers;
 
+// ReSharper disable once UnusedType.Global
 public class SceneWrapper : ISceneWrapper
 {
     private readonly ILoadSceneParametersWrapper _loadSceneParametersWrapper;
@@ -16,9 +17,16 @@ public class SceneWrapper : ISceneWrapper
     private readonly Type _loadSceneParametersType =
         AccessTools.TypeByName("UnityEngine.SceneManagement.LoadSceneParameters");
 
+    private readonly Type _sceneManagerAPIInternal =
+        AccessTools.TypeByName("UnityEngine.SceneManagement.SceneManagerAPIInternal");
+
+    // load level async
+    private readonly MethodInfo _loadSceneAsyncNameIndexInternalInjected;
+
+    // fallback load level async 1
     private readonly MethodInfo _loadSceneAsyncNameIndexInternal;
 
-    // fallback load level async
+    // fallback load level async 2
     private readonly MethodInfo _applicationLoadLevelAsync;
 
     // non-async load level
@@ -43,11 +51,25 @@ public class SceneWrapper : ISceneWrapper
 
         _applicationLoadLevelAsync = AccessTools.TypeByName("UnityEngine.Application")?.GetMethod("LoadLevelAsync",
             AccessTools.all, null, new[] { typeof(string), typeof(int), typeof(bool), typeof(bool) }, null);
+
+        _loadSceneAsyncNameIndexInternalInjected = _sceneManagerAPIInternal?.GetMethod(
+            "LoadSceneAsyncNameIndexInternal_Injected", AccessTools.all,
+            null, new[] { typeof(string), typeof(int), _loadSceneParametersType?.MakeByRefType(), typeof(bool) }, null);
     }
 
     public void LoadSceneAsync(string sceneName, int sceneBuildIndex, LoadSceneMode loadSceneMode,
         LocalPhysicsMode localPhysicsMode, bool mustCompleteNextFrame)
     {
+        if (_loadSceneAsyncNameIndexInternalInjected != null)
+        {
+            _loadSceneParametersWrapper.CreateInstance();
+            _loadSceneParametersWrapper.LoadSceneMode = loadSceneMode;
+            _loadSceneParametersWrapper.LocalPhysicsMode = localPhysicsMode;
+            _loadSceneAsyncNameIndexInternalInjected.Invoke(null,
+                new[] { sceneName, sceneBuildIndex, _loadSceneParametersWrapper.Instance, mustCompleteNextFrame });
+            return;
+        }
+
         if (_loadSceneAsyncNameIndexInternal != null)
         {
             _loadSceneParametersWrapper.CreateInstance();
