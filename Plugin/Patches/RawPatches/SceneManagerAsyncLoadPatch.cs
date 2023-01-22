@@ -21,10 +21,18 @@ public class SceneManagerAsyncLoadPatch
     private const string Namespace = "UnityEngine.SceneManagement";
     private static readonly Type SceneManager = AccessTools.TypeByName($"{Namespace}.SceneManager");
     private static readonly Type UnloadSceneOptions = AccessTools.TypeByName($"{Namespace}.UnloadSceneOptions");
+    private static readonly Type LoadSceneParametersType = AccessTools.TypeByName($"{Namespace}.LoadSceneParameters");
+
+    private static readonly Type SceneManagerAPIInternal =
+        AccessTools.TypeByName($"{Namespace}.SceneManagerAPIInternal");
 
     private static readonly MethodInfo UnloadSceneNameIndexInternal = AccessTools.Method(SceneManager,
         "UnloadSceneNameIndexInternal",
         new[] { typeof(string), typeof(int), typeof(bool), UnloadSceneOptions, typeof(bool) });
+
+    private static readonly MethodInfo LoadSceneAsyncNameIndexInternalInjected =
+        AccessTools.Method(SceneManagerAPIInternal, "LoadSceneAsyncNameIndexInternal_Injected",
+            new[] { typeof(string), typeof(int), LoadSceneParametersType.MakeByRefType(), typeof(bool) });
 
     private static readonly ISceneLoadTracker SceneLoadTracker = Plugin.Kernel.GetInstance<ISceneLoadTracker>();
 
@@ -87,6 +95,26 @@ public class SceneManagerAsyncLoadPatch
     }
 
     [HarmonyPatch]
+    private class APIInternalUnloadSceneNameIndexInternalPatch
+    {
+        private static MethodBase TargetMethod()
+        {
+            return AccessTools.Method(SceneManagerAPIInternal, "UnloadSceneNameIndexInternal",
+                new[] { typeof(string), typeof(int), typeof(bool), UnloadSceneOptions, typeof(bool).MakeByRefType() });
+        }
+
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static void Prefix(ref bool immediately)
+        {
+            immediately = true;
+        }
+    }
+
+    [HarmonyPatch]
     private class UnloadSceneAsyncInternalInjectedPatch
     {
         private static MethodBase TargetMethod()
@@ -113,6 +141,11 @@ public class SceneManagerAsyncLoadPatch
     {
         private static MethodBase TargetMethod()
         {
+            if (LoadSceneAsyncNameIndexInternalInjected != null)
+            {
+                return null;
+            }
+
             // string sceneName, int sceneBuildIndex, bool isAdditive, bool mustCompleteNextFrame
             return AccessTools.Method(SceneManager, "LoadSceneAsyncNameIndexInternal",
                 new[] { typeof(string), typeof(int), typeof(bool), typeof(bool) });
@@ -137,10 +170,14 @@ public class SceneManagerAsyncLoadPatch
     {
         private static MethodBase TargetMethod()
         {
+            if (LoadSceneAsyncNameIndexInternalInjected != null)
+            {
+                return null;
+            }
+
             // string sceneName, int sceneBuildIndex, LoadSceneParameters parameters, bool mustCompleteNextFrame
-            var loadSceneParametersType = AccessTools.TypeByName("UnityEngine.SceneManagement.LoadSceneParameters");
             return AccessTools.Method(SceneManager, "LoadSceneAsyncNameIndexInternal",
-                new[] { typeof(string), typeof(int), loadSceneParametersType, typeof(bool) });
+                new[] { typeof(string), typeof(int), LoadSceneParametersType, typeof(bool) });
         }
 
         private static Exception Cleanup(MethodBase original, Exception ex)
@@ -149,6 +186,28 @@ public class SceneManagerAsyncLoadPatch
         }
 
         private static bool Prefix(bool mustCompleteNextFrame, string sceneName, int sceneBuildIndex, object parameters,
+            ref AsyncOperation __result)
+        {
+            __result = new();
+            return AsyncSceneLoad(mustCompleteNextFrame, sceneName, sceneBuildIndex, parameters, null,
+                ref __result);
+        }
+    }
+
+    [HarmonyPatch]
+    private class LoadSceneAsyncNameIndexInternalInjectedPatch
+    {
+        private static MethodBase TargetMethod()
+        {
+            return LoadSceneAsyncNameIndexInternalInjected;
+        }
+
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static bool Prefix(string sceneName, int sceneBuildIndex, object parameters, bool mustCompleteNextFrame,
             ref AsyncOperation __result)
         {
             __result = new();
