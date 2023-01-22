@@ -33,8 +33,28 @@ public class ObjectTracker : IObjectTracker
         OnDestroyObject?.Invoke(hash);
     }
 
-    public event Action<int> OnNewObject;
-    public event Action<int> OnDestroyObject;
+    private event Action<int> OnNewObject;
+    private event Action<int> OnDestroyObject;
+
+    public void SubscribeToNewObject(Action<int> action)
+    {
+        OnNewObject += action;
+    }
+
+    public void SubscribeToDestroyObject(Action<int> action)
+    {
+        OnDestroyObject += action;
+    }
+
+    public void UnsubscribeFromNewObject(Action<int> action)
+    {
+        OnNewObject -= action;
+    }
+
+    public void UnsubscribeFromDestroyObject(Action<int> action)
+    {
+        OnDestroyObject -= action;
+    }
 
     private class ObjectTrackingStatus
     {

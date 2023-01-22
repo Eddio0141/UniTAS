@@ -23,7 +23,7 @@ public class EndOfFrameTracker : IEndOfFrameTracker
     public EndOfFrameTracker(IOnLastUpdate[] onLastUpdates, IObjectTracker objectTracker)
     {
         _onLastUpdates = onLastUpdates;
-        objectTracker.OnDestroyObject += OnObjectDestroyed;
+        objectTracker.SubscribeToDestroyObject(OnObjectDestroyed);
     }
 
     private void OnObjectDestroyed(int hash)
@@ -171,9 +171,9 @@ public class EndOfFrameTracker : IEndOfFrameTracker
         public CoroutineTrackingStatus(IEnumerator enumerator, object coroutine, object monoBeh,
             string stringCoroutineMethodName)
         {
-            CoroutineHash = coroutine.GetHashCode();
-            MonoBehHash = monoBeh.GetHashCode();
-            EnumeratorHash = enumerator.GetHashCode();
+            CoroutineHash = coroutine?.GetHashCode() ?? 0;
+            MonoBehHash = monoBeh?.GetHashCode() ?? 0;
+            EnumeratorHash = enumerator?.GetHashCode() ?? 0;
             StringCoroutineMethodName = stringCoroutineMethodName;
         }
     }

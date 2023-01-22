@@ -6,7 +6,11 @@ public interface IObjectTracker
 {
     void NewObject(object obj);
     void DestroyObject(object obj);
+    void DestroyObjects(int sceneIndex);
 
-    event Action<int> OnNewObject;
-    event Action<int> OnDestroyObject;
+    void SubscribeToNewObject(Action<int> action);
+    void SubscribeToDestroyObject(Action<int> action);
+
+    void UnsubscribeFromNewObject(Action<int> action);
+    void UnsubscribeFromDestroyObject(Action<int> action);
 }
