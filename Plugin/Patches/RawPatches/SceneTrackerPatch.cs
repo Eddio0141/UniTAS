@@ -87,13 +87,15 @@ public class SceneTrackerPatch
 
         private static void Prefix(string monoLevelName, int index, bool additive)
         {
+            // additive in older versions of unity simply adds the object to the current scene
+            if (additive) return;
             var sceneIndex = index != -1
                 ? index
                 : SceneIndexName.GetSceneIndex(monoLevelName) ??
                   throw new InvalidOperationException("Scene index not found");
             var name = monoLevelName ?? SceneIndexName.GetSceneName(sceneIndex) ??
                 throw new InvalidOperationException("Scene name not found");
-            SceneTracker.LoadScene(sceneIndex, name, additive);
+            SceneTracker.LoadScene(sceneIndex, name, false);
         }
     }
 
