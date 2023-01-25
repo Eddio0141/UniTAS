@@ -11,14 +11,19 @@ namespace UniTASPlugin.UnitySafeWrappers.Wrappers;
 public class SceneWrapper : ISceneWrapper
 {
     private readonly ILoadSceneParametersWrapper _loadSceneParametersWrapper;
+    private readonly ISceneWrap _sceneWrap;
 
-    private readonly Type _sceneManager = AccessTools.TypeByName("UnityEngine.SceneManagement.SceneManager");
+    private const string SceneManagementNamespace = "UnityEngine.SceneManagement";
+
+    private readonly Type _sceneManager = AccessTools.TypeByName($"{SceneManagementNamespace}.SceneManager");
+
+    private readonly PropertyInfo _totalSceneCount;
 
     private readonly Type _loadSceneParametersType =
-        AccessTools.TypeByName("UnityEngine.SceneManagement.LoadSceneParameters");
+        AccessTools.TypeByName($"{SceneManagementNamespace}.LoadSceneParameters");
 
     private readonly Type _sceneManagerAPIInternal =
-        AccessTools.TypeByName("UnityEngine.SceneManagement.SceneManagerAPIInternal");
+        AccessTools.TypeByName($"{SceneManagementNamespace}.SceneManagerAPIInternal");
 
     // load level async
     private readonly MethodInfo _loadSceneAsyncNameIndexInternalInjected;
@@ -32,9 +37,12 @@ public class SceneWrapper : ISceneWrapper
     // non-async load level
     private readonly MethodInfo _loadScene;
 
-    public SceneWrapper(ILoadSceneParametersWrapper loadSceneParametersWrapper)
+    private readonly MethodInfo _getActiveScene;
+
+    public SceneWrapper(ILoadSceneParametersWrapper loadSceneParametersWrapper, ISceneWrap sceneWrap)
     {
         _loadSceneParametersWrapper = loadSceneParametersWrapper;
+        _sceneWrap = sceneWrap;
         const string loadSceneAsyncNameIndexInternal = "LoadSceneAsyncNameIndexInternal";
         _loadSceneAsyncNameIndexInternal = _sceneManager?.GetMethod(loadSceneAsyncNameIndexInternal, AccessTools.all,
             null, new[] { typeof(string), typeof(int), typeof(bool), typeof(bool) }, null);
@@ -55,6 +63,10 @@ public class SceneWrapper : ISceneWrapper
         _loadSceneAsyncNameIndexInternalInjected = _sceneManagerAPIInternal?.GetMethod(
             "LoadSceneAsyncNameIndexInternal_Injected", AccessTools.all,
             null, new[] { typeof(string), typeof(int), _loadSceneParametersType?.MakeByRefType(), typeof(bool) }, null);
+
+        _totalSceneCount = _sceneManager?.GetProperty("sceneCountInBuildSettings", AccessTools.all);
+
+        _getActiveScene = _sceneManager?.GetMethod("GetActiveScene", AccessTools.all);
     }
 
     public void LoadSceneAsync(string sceneName, int sceneBuildIndex, LoadSceneMode loadSceneMode,
@@ -100,5 +112,46 @@ public class SceneWrapper : ISceneWrapper
         }
 
         Application.LoadLevel(0);
+    }
+
+    public int TotalSceneCount
+    {
+        get
+        {
+            if (_totalSceneCount != null)
+            {
+                return (int)_totalSceneCount.GetValue(null, null);
+            }
+
+            return Application.levelCount;
+        }
+    }
+
+    public int ActiveSceneIndex
+    {
+        get
+        {
+            if (_getActiveScene != null)
+            {
+                _sceneWrap.Instance = _getActiveScene.Invoke(null, null);
+                return _sceneWrap.BuildIndex;
+            }
+
+            return Application.loadedLevel;
+        }
+    }
+
+    public string ActiveSceneName
+    {
+        get
+        {
+            if (_getActiveScene != null)
+            {
+                _sceneWrap.Instance = _getActiveScene.Invoke(null, null);
+                return _sceneWrap.Name;
+            }
+
+            return Application.loadedLevelName;
+        }
     }
 }

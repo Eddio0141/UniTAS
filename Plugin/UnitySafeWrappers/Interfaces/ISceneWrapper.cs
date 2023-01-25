@@ -8,4 +8,9 @@ public interface ISceneWrapper
         LocalPhysicsMode localPhysicsMode, bool mustCompleteNextFrame);
 
     void LoadScene(int buildIndex);
+
+    int TotalSceneCount { get; }
+
+    int ActiveSceneIndex { get; }
+    string ActiveSceneName { get; }
 }
