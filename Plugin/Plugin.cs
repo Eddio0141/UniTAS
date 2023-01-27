@@ -31,8 +31,9 @@ public class Plugin : BaseUnityPlugin
     private List<IPluginInitialLoad> _initialLoadPluginProcessors;
 
     private IMonoBehEventInvoker _monoBehEventInvoker;
+    private bool _fullyLoaded;
 
-    private bool _gameRestarted;
+    private IGameInitialRestart _gameInitialRestart;
 
     private void Awake()
     {
@@ -67,12 +68,20 @@ public class Plugin : BaseUnityPlugin
         }
 
         _monoBehEventInvoker = Kernel.GetInstance<IMonoBehEventInvoker>();
+        _gameInitialRestart = Kernel.GetInstance<IGameInitialRestart>();
     }
 
     private void Update()
     {
         // Trace.Write("Update invoke");
         ProcessInitialStart();
+        if (!_fullyLoaded && _gameInitialRestart.FinishedRestart)
+        {
+            // initial start has finished, load the rest of the plugin
+            LoadPluginFull();
+            _fullyLoaded = true;
+        }
+
         _monoBehEventInvoker.Update();
     }
 
@@ -90,8 +99,7 @@ public class Plugin : BaseUnityPlugin
 
     private void OnGUI()
     {
-        // TODO eventually remove this
-        if (_gameRestarted)
+        if (_fullyLoaded)
         {
             Overlay.OnGUI();
         }
@@ -124,9 +132,7 @@ public class Plugin : BaseUnityPlugin
         if (_initialLoadPluginProcessors.Count == 0)
         {
             _initialStartProcessed = true;
-            Kernel.GetInstance<IGameInitialRestart>().InitialRestart();
-            // initial start has finished, load the rest of the plugin
-            LoadPluginFull();
+            _gameInitialRestart.InitialRestart();
         }
     }
 
@@ -135,7 +141,5 @@ public class Plugin : BaseUnityPlugin
         ContainerRegister.ConfigAfterInit(Kernel);
 
         Kernel.GetInstance<PluginWrapper>();
-
-        _gameRestarted = true;
     }
 }

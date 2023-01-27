@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Linq;
-using BepInEx;
 using UniTASPlugin.FixedUpdateSync;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.Interfaces.StartEvent;
@@ -45,26 +43,7 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
 
     private void DestroyDontDestroyOnLoads()
     {
-        var allObjects = _unityWrapper.Object.FindObjectsOfType(_unityWrapper.Object.ObjectType).ToArray();
-        _logger.LogDebug($"Attempting destruction of {allObjects.Length} objects");
-        foreach (var obj in allObjects)
-        {
-            if (obj is BaseUnityPlugin)
-            {
-                _logger.LogDebug($"Found BepInEx type: {obj.GetType().FullName}, skipping");
-                continue;
-            }
-
-            try
-            {
-                _unityWrapper.MonoBehaviour.StopAllCoroutines(obj);
-                _unityWrapper.Object.DestroyImmediate(obj);
-            }
-            catch (Exception)
-            {
-                // ignored
-            }
-        }
+        // TODO make this cleaner
     }
 
     /// <summary>
