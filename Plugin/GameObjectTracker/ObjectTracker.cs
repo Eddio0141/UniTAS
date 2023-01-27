@@ -1,12 +1,32 @@
 using System;
 using System.Collections.Generic;
+using UniTASPlugin.Trackers;
+using UniTASPlugin.Trackers.SceneTracker;
 
 namespace UniTASPlugin.GameObjectTracker;
 
 // ReSharper disable once ClassNeverInstantiated.Global
-public class ObjectTracker : IObjectTracker
+public class ObjectTracker : IObjectTracker, IObjectInfo
 {
     private readonly List<ObjectTrackingStatus> _trackedObjects = new();
+
+    public ObjectTracker(ILoadedSceneInfo loadedSceneInfo)
+    {
+        loadedSceneInfo.SubscribeOnSceneLoad(SceneLoadCallback);
+        loadedSceneInfo.SubscribeOnSceneUnload(SceneUnloadCallback);
+    }
+
+    private void SceneLoadCallback(SceneLoadInfo loadInfo)
+    {
+        if (loadInfo.Additive) return;
+
+        _trackedObjects.RemoveAll(x => !x.DontDestroyOnLoad);
+    }
+
+    private void SceneUnloadCallback(SceneInfo sceneInfo)
+    {
+        _trackedObjects.RemoveAll(x => !x.DontDestroyOnLoad && sceneInfo.SceneIndex == x.SceneInfo.SceneIndex);
+    }
 
     public void NewObject(object obj)
     {
@@ -17,7 +37,7 @@ public class ObjectTracker : IObjectTracker
         }
 
         _trackedObjects.Add(new(obj));
-        OnNewObject?.Invoke(hash);
+        // OnNewObject?.Invoke(hash);
     }
 
     public void DestroyObject(object obj)
@@ -33,32 +53,24 @@ public class ObjectTracker : IObjectTracker
         OnDestroyObject?.Invoke(hash);
     }
 
-    private event Action<int> OnNewObject;
+    // private event Action<int> OnNewObject;
     private event Action<int> OnDestroyObject;
 
-    public void SubscribeToNewObject(Action<int> action)
-    {
-        OnNewObject += action;
-    }
+    // public void SubscribeToNewObject(Action<int> action)
+    // {
+    //     OnNewObject += action;
+    // }
 
     public void SubscribeToDestroyObject(Action<int> action)
     {
         OnDestroyObject += action;
     }
 
-    public void UnsubscribeFromNewObject(Action<int> action)
-    {
-        OnNewObject -= action;
-    }
-
-    public void UnsubscribeFromDestroyObject(Action<int> action)
-    {
-        OnDestroyObject -= action;
-    }
-
     private class ObjectTrackingStatus
     {
         public int Hash { get; }
+        public SceneInfo SceneInfo { get; }
+        public bool DontDestroyOnLoad { get; set; }
 
         public ObjectTrackingStatus(object obj)
         {

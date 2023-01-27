@@ -16,6 +16,7 @@ using UniTASPlugin.Movie.EngineMethods;
 using UniTASPlugin.Patches.PatchProcessor;
 using UniTASPlugin.ReverseInvoker;
 using UniTASPlugin.Trackers.SceneIndexNameTracker;
+using UniTASPlugin.Trackers.SceneTracker;
 
 namespace UniTASPlugin;
 
@@ -81,12 +82,17 @@ public static class ContainerRegister
 
             c.For<ObjectTracker>().Singleton();
             c.For<IObjectTracker>().Use(x => x.GetInstance<ObjectTracker>());
+            c.For<IObjectInfo>().Use(x => x.GetInstance<ObjectTracker>());
 
             // note: this code on initial load needs to run before destroying game objects
             c.For<SceneIndexNameTracker>().Singleton();
             c.For<ISceneIndexName>().Use(x => x.GetInstance<SceneIndexNameTracker>());
             c.For<IPluginInitialLoad>().Use(x => x.GetInstance<SceneIndexNameTracker>());
             c.For<IOnUpdate>().Use(x => x.GetInstance<SceneIndexNameTracker>());
+
+            c.For<SceneTracker>().Singleton();
+            c.For<ISceneTracker>().Use(x => x.GetInstance<SceneTracker>());
+            c.For<ILoadedSceneInfo>().Use(x => x.GetInstance<SceneTracker>());
         });
 
         return container;
