@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace UniTASPlugin.UnitySafeWrappers.Wrappers;
 
-// ReSharper disable once UnusedType.Global
+// ReSharper disable once ClassNeverInstantiated.Global
 public class SceneWrapper : ISceneWrapper
 {
     private readonly ILoadSceneParametersWrapper _loadSceneParametersWrapper;
