@@ -115,7 +115,26 @@ public static class ContainerRegister
                 // scanner.AddAllTypesOf(typeof(IOnFixedUpdate));
                 scanner.AddAllTypesOf<EngineExternalMethod>();
                 scanner.AddAllTypesOf<PatchProcessor>();
+
+                // exclude all from first register
                 scanner.Exclude(type => type.IsSubclassOf(typeof(OnPluginInitProcessor)));
+                scanner.ExcludeType<MonoBehEventInvoker>();
+                scanner.ExcludeType<StaticFieldStorage.StaticFieldStorage>();
+                scanner.ExcludeType<SyncFixedUpdate>();
+                scanner.ExcludeType<SceneIndexNameTracker>();
+                scanner.ExcludeType<GameInfo.GameInfo>();
+                scanner.ExcludeType<GameInitialRestart.GameInitialRestart>();
+                scanner.ExcludeType<MonoBehaviourController.MonoBehaviourController>();
+                scanner.ExcludeType<SceneWrapper>();
+                scanner.ExcludeType<LoadSceneParametersWrapper>();
+                scanner.ExcludeType<SceneWrap>();
+                scanner.ExcludeType<UnityWrapper>();
+                scanner.ExcludeType<ObjectWrapper>();
+                scanner.ExcludeType<MonoBehaviourWrapper>();
+                scanner.ExcludeType<Logger.Logger>();
+                scanner.ExcludeType<PatchReverseInvoker>();
+                scanner.ExcludeType<VirtualEnvironment>();
+                scanner.ExcludeType<VirtualEnvironmentApplier>();
             });
 
             c.For<PluginWrapper>().Singleton();
@@ -153,6 +172,12 @@ public static class ContainerRegister
             c.For<SceneTracker>().Singleton();
             c.For<ISceneTracker>().Use(x => x.GetInstance<SceneTracker>());
             c.For<ILoadedSceneInfo>().Use(x => x.GetInstance<SceneTracker>());
+
+            // re-register MonoBehEventInvoker with new instance
+            c.For<MonoBehEventInvoker>().Singleton();
+            c.For<IMonoBehEventInvoker>().Use(x => x.GetInstance<MonoBehEventInvoker>());
         });
+
+        container.GetInstance<IMonoBehEventInvoker>();
     }
 }
