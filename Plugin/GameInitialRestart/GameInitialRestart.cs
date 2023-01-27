@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using BepInEx;
 using UniTASPlugin.FixedUpdateSync;
+using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.GameRestart;
 using UniTASPlugin.Interfaces.StartEvent;
 using UniTASPlugin.Interfaces.Update;
@@ -24,6 +25,8 @@ public class GameInitialRestart : IGameInitialRestart, IOnAwake, IOnEnable, IOnS
     private readonly IOnGameRestart[] _onGameRestart;
     private readonly IReverseInvokerFactory _reverseInvokerFactory;
 
+    private readonly IVirtualEnvironmentFactory _virtualEnvironmentFactory;
+
     private bool _pendingResumePausedExecution;
 
     private bool _restartOperationStarted;
@@ -31,7 +34,8 @@ public class GameInitialRestart : IGameInitialRestart, IOnAwake, IOnEnable, IOnS
 
     public GameInitialRestart(IUnityWrapper unityWrapper, ILogger logger,
         IMonoBehaviourController monoBehaviourController, IStaticFieldManipulator staticFieldManipulator,
-        ISyncFixedUpdate syncFixedUpdate, IOnGameRestart[] onGameRestart, IReverseInvokerFactory reverseInvokerFactory)
+        ISyncFixedUpdate syncFixedUpdate, IOnGameRestart[] onGameRestart, IReverseInvokerFactory reverseInvokerFactory,
+        IVirtualEnvironmentFactory virtualEnvironmentFactory)
     {
         _unityWrapper = unityWrapper;
         _logger = logger;
@@ -40,19 +44,26 @@ public class GameInitialRestart : IGameInitialRestart, IOnAwake, IOnEnable, IOnS
         _syncFixedUpdate = syncFixedUpdate;
         _onGameRestart = onGameRestart;
         _reverseInvokerFactory = reverseInvokerFactory;
+        _virtualEnvironmentFactory = virtualEnvironmentFactory;
     }
 
     public void InitialRestart()
     {
         if (_restartOperationStarted) return;
         _restartOperationStarted = true;
+
+        // TODO fix this hack
+        var env = _virtualEnvironmentFactory.GetVirtualEnv();
+        env.RunVirtualEnvironment = true;
+        env.FrameTime = 0.001f;
+
         _logger.LogDebug("Stopping MonoBehaviour execution");
         _monoBehaviourController.PausedExecution = true;
         DestroyAllGameObjects();
         _staticFieldManipulator.ResetStaticFields();
         OnGameRestart();
         _syncFixedUpdate.OnSync(SoftRestartOperation, 1);
-        _logger.LogDebug("Initial restarting, pending FixedUpdate call");
+        _logger.LogDebug("Initial restart, pending FixedUpdate call");
     }
 
     private void OnGameRestart()
@@ -70,6 +81,10 @@ public class GameInitialRestart : IGameInitialRestart, IOnAwake, IOnEnable, IOnS
         _unityWrapper.SceneWrapper.LoadScene(0);
         _pendingResumePausedExecution = true;
         FinishedRestart = true;
+
+        // TODO fix this hack
+        var env = _virtualEnvironmentFactory.GetVirtualEnv();
+        env.FrameTime = 0f;
     }
 
     private void DestroyAllGameObjects()
