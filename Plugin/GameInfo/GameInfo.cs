@@ -8,6 +8,7 @@ using UnityEngine;
 
 namespace UniTASPlugin.GameInfo;
 
+// ReSharper disable once UnusedType.Global
 public class GameInfo : IGameInfo
 {
     private readonly IReverseInvokerFactory _reverseInvokerFactory;
@@ -27,9 +28,9 @@ public class GameInfo : IGameInfo
 
             const string unityPlayerPath = @".\UnityPlayer.dll";
             var rev = _reverseInvokerFactory.GetReverseInvoker();
-            if (rev.Invoke(System.IO.File.Exists, unityPlayerPath))
+            if (rev.Invoke(File.Exists, unityPlayerPath))
             {
-                var fullPath = rev.Invoke(System.IO.Path.GetFullPath, unityPlayerPath);
+                var fullPath = rev.Invoke(Path.GetFullPath, unityPlayerPath);
                 var fileVersion = FileVersionInfo.GetVersionInfo(fullPath);
                 _unityVersion = fileVersion.FileVersion;
             }
@@ -96,7 +97,7 @@ public class GameInfo : IGameInfo
             if (_gotNet20Subset) return _net20Subset;
 
             // find File.GetAccessControl
-            var getAccessControl = typeof(System.IO.File).GetMethod("GetAccessControl", new[] { typeof(string) });
+            var getAccessControl = typeof(File).GetMethod("GetAccessControl", new[] { typeof(string) });
 
             _gotNet20Subset = true;
             _net20Subset = getAccessControl == null;
@@ -143,7 +144,7 @@ public class GameInfo : IGameInfo
                     var foundExe = "";
                     var foundMultipleExe = false;
                     var rootDir = GameDirectory;
-                    var rootFiles = rev.Invoke(System.IO.Directory.GetFiles, rootDir);
+                    var rootFiles = rev.Invoke(Directory.GetFiles, rootDir);
 
                     // iterate over exes in game root dir
                     foreach (var path in rootFiles)
@@ -168,15 +169,15 @@ public class GameInfo : IGameInfo
 
                     if (!foundMultipleExe)
                     {
-                        _productName = rev.Invoke(System.IO.Path.GetFileNameWithoutExtension, foundExe);
+                        _productName = rev.Invoke(Path.GetFileNameWithoutExtension, foundExe);
                         return _productName;
                     }
 
                     // use game dir name and see if it matches exe
-                    var gameDirName = rev.Invoke(a => new System.IO.DirectoryInfo(a), rootDir).Name;
+                    var gameDirName = rev.Invoke(a => new DirectoryInfo(a), rootDir).Name;
 
-                    if (rev.Invoke(System.IO.File.Exists,
-                            rev.Invoke(System.IO.Path.Combine, rootDir, $"{gameDirName}.exe")))
+                    if (rev.Invoke(File.Exists,
+                            rev.Invoke(Path.Combine, rootDir, $"{gameDirName}.exe")))
                     {
                         _productName = gameDirName;
                         return gameDirName;
@@ -187,7 +188,7 @@ public class GameInfo : IGameInfo
                 case PlatformID.Unix:
                 {
                     var rootDir = GameDirectory;
-                    var rootFiles = rev.Invoke(System.IO.Directory.GetFiles, rootDir);
+                    var rootFiles = rev.Invoke(Directory.GetFiles, rootDir);
 
                     var exeExtensions = new[] { ".x86_64", ".x86" };
 
@@ -198,7 +199,7 @@ public class GameInfo : IGameInfo
                         {
                             if (rootFile.EndsWith(exeExtension))
                             {
-                                _productName = rev.Invoke(System.IO.Path.GetFileNameWithoutExtension, rootFile);
+                                _productName = rev.Invoke(Path.GetFileNameWithoutExtension, rootFile);
                                 return _productName;
                             }
                         }
