@@ -1,14 +1,15 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
 using StructureMap;
-using UniTASPlugin.GameEnvironment;
-using UniTASPlugin.GameInfo;
+using UniTASPlugin.GameInitialRestart;
+using UniTASPlugin.Interfaces;
 using UniTASPlugin.LegacyGameOverlay;
-using UniTASPlugin.LegacySafeWrappers;
+using UniTASPlugin.Patches.PatchProcessor;
 using UnityEngine;
 
 namespace UniTASPlugin;
@@ -24,9 +25,14 @@ public class Plugin : BaseUnityPlugin
     public static ManualLogSource Log => instance._logger;
     public static readonly Harmony Harmony = new($"{MyPluginInfo.PLUGIN_GUID}HarmonyPatch");
 
-    private PluginWrapper _pluginWrapper;
-
     private bool _endOfFrameLoopRunning;
+
+    private bool _initialStartProcessed;
+    private List<IPluginInitialLoad> _initialLoadPluginProcessors;
+
+    private IMonoBehEventInvoker _monoBehEventInvoker;
+
+    private bool _gameRestarted;
 
     private void Awake()
     {
@@ -45,50 +51,50 @@ public class Plugin : BaseUnityPlugin
             traceCount--;
         }
 
-        _pluginWrapper = Kernel.GetInstance<PluginWrapper>();
+        _initialLoadPluginProcessors = Kernel.GetAllInstances<IPluginInitialLoad>().ToList();
+        foreach (var processor in _initialLoadPluginProcessors)
+        {
+            processor.OnInitialLoad();
+        }
 
-        var gameInfo = Kernel.GetInstance<IGameInfo>();
-        Logger.LogInfo($"Internally found unity version: {gameInfo.UnityVersion}");
-        Logger.LogInfo($"Game product name: {gameInfo.ProductName}");
-        Logger.LogDebug($"Mscorlib version: {gameInfo.MscorlibVersion}");
-        Logger.LogDebug($"Netstandard version: {gameInfo.NetStandardVersion}");
-        // TODO complete fixing this
-        var companyNameProperty = Traverse.Create(typeof(Application)).Property("companyName");
-        if (companyNameProperty.PropertyExists())
-            Logger.LogInfo(
-                $"Game company name: {companyNameProperty.GetValue<string>()}"); //product name: {Application.productName}, version: {Application.version}");
+        var patchProcessors = Kernel.GetAllInstances<OnPluginInitProcessor>();
+        var sortedPatches = patchProcessors.SelectMany(x => x.ProcessModules()).OrderByDescending(x => x.Key)
+            .Select(x => x.Value);
+        foreach (var patch in sortedPatches)
+        {
+            Trace.Write($"Patching {patch.FullName} on init");
+            Harmony.PatchAll(patch);
+        }
 
-        // TODO all axis names for help
-
-        // init random seed
-        // TODO make this happen after 
-        var env = Kernel.GetInstance<IVirtualEnvironmentFactory>().GetVirtualEnv();
-        RandomWrap.InitState((int)env.Seed);
-
-        Logger.LogInfo($"System time: {DateTime.Now}");
-        Logger.LogInfo($"Plugin {MyPluginInfo.PLUGIN_NAME} is loaded!");
+        _monoBehEventInvoker = Kernel.GetInstance<IMonoBehEventInvoker>();
     }
 
     private void Update()
     {
-        _pluginWrapper.Update();
+        // Trace.Write("Update invoke");
+        ProcessInitialStart();
+        _monoBehEventInvoker.Update();
     }
 
     private void FixedUpdate()
     {
-        _pluginWrapper.FixedUpdate();
         // Trace.Write($"FixedUpdate, {Time.frameCount}");
+        _monoBehEventInvoker.FixedUpdate();
     }
 
     private void LateUpdate()
     {
-        _pluginWrapper.LateUpdate();
         // Trace.Write($"LateUpdate, {Time.frameCount}");
+        _monoBehEventInvoker.LateUpdate();
     }
 
     private void OnGUI()
     {
-        Overlay.OnGUI();
+        // TODO eventually remove this
+        if (_gameRestarted)
+        {
+            Overlay.OnGUI();
+        }
     }
 
     /// <summary>
@@ -109,5 +115,27 @@ public class Plugin : BaseUnityPlugin
             yield return new WaitForEndOfFrame();
         }
         // ReSharper disable once IteratorNeverReturns
+    }
+
+    private void ProcessInitialStart()
+    {
+        if (_initialStartProcessed) return;
+        _initialLoadPluginProcessors.RemoveAll(x => x.FinishedOperation);
+        if (_initialLoadPluginProcessors.Count == 0)
+        {
+            _initialStartProcessed = true;
+            Kernel.GetInstance<IGameInitialRestart>().InitialRestart();
+            // initial start has finished, load the rest of the plugin
+            LoadPluginFull();
+        }
+    }
+
+    private void LoadPluginFull()
+    {
+        ContainerRegister.ConfigAfterInit(Kernel);
+
+        Kernel.GetInstance<PluginWrapper>();
+
+        _gameRestarted = true;
     }
 }
