@@ -28,11 +28,40 @@ public class MonoBehEventInvoker : IMonoBehEventInvoker
         _onFixedUpdates = onFixedUpdates;
 
         Trace.Write($"Registered OnAwake count: {_onAwakes.Length}");
+        foreach (var onAwake in _onAwakes)
+        {
+            Trace.Write($"Type: {onAwake.GetType()}");
+        }
+
         Trace.Write($"Registered OnStart count: {_onStarts.Length}");
+        foreach (var onStart in _onStarts)
+        {
+            Trace.Write($"Type: {onStart.GetType()}");
+        }
+
         Trace.Write($"Registered OnEnable count: {_onEnables.Length}");
+        foreach (var onEnable in _onEnables)
+        {
+            Trace.Write($"Type: {onEnable.GetType()}");
+        }
+
         Trace.Write($"Registered OnPreUpdate count: {_onPreUpdates.Length}");
+        foreach (var onPreUpdate in _onPreUpdates)
+        {
+            Trace.Write($"Type: {onPreUpdate.GetType()}");
+        }
+
         Trace.Write($"Registered OnUpdate count: {_onUpdates.Length}");
+        foreach (var onUpdate in _onUpdates)
+        {
+            Trace.Write($"Type: {onUpdate.GetType()}");
+        }
+
         Trace.Write($"Registered OnFixedUpdate count: {_onFixedUpdates.Length}");
+        foreach (var onFixedUpdate in _onFixedUpdates)
+        {
+            Trace.Write($"Type: {onFixedUpdate.GetType()}");
+        }
     }
 
     // calls awake before any other script
