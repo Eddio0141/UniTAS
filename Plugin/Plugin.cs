@@ -6,6 +6,7 @@ using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
 using StructureMap;
+using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.GameInitialRestart;
 using UniTASPlugin.Interfaces;
 using UniTASPlugin.LegacyGameOverlay;
@@ -60,7 +61,8 @@ public class Plugin : BaseUnityPlugin
 
         var patchProcessors = Kernel.GetAllInstances<OnPluginInitProcessor>();
         var sortedPatches = patchProcessors.SelectMany(x => x.ProcessModules()).OrderByDescending(x => x.Key)
-            .Select(x => x.Value);
+            .Select(x => x.Value).ToList();
+        Trace.Write($"Patching {sortedPatches.Count} patches on init");
         foreach (var patch in sortedPatches)
         {
             Trace.Write($"Patching {patch.FullName} on init");
@@ -80,9 +82,18 @@ public class Plugin : BaseUnityPlugin
             // initial start has finished, load the rest of the plugin
             LoadPluginFull();
             _fullyLoaded = true;
+            StartCoroutine(SetInitialFrametime());
         }
 
         _monoBehEventInvoker.Update();
+    }
+
+    private static IEnumerator SetInitialFrametime()
+    {
+        yield return null;
+        // TODO fix this hack, from initial game restart code
+        var env = Kernel.GetInstance<IVirtualEnvironmentFactory>().GetVirtualEnv();
+        env.RunVirtualEnvironment = false;
     }
 
     private void FixedUpdate()
@@ -136,7 +147,7 @@ public class Plugin : BaseUnityPlugin
         }
     }
 
-    private void LoadPluginFull()
+    private static void LoadPluginFull()
     {
         ContainerRegister.ConfigAfterInit(Kernel);
 
