@@ -5,7 +5,7 @@ using UniTASPlugin.Logger;
 
 namespace UniTASPlugin.Patches.PatchProcessor;
 
-// ReSharper disable once ClassNeverInstantiated.Global
+// ReSharper disable once UnusedType.Global
 public class RawPatchOnPluginInitProcessor : OnPluginInitProcessor
 {
     private readonly ILogger _logger;
