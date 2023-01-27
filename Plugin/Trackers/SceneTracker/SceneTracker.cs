@@ -39,4 +39,9 @@ public class SceneTracker : ISceneTracker, ILoadedSceneInfo
     {
         OnSceneLoad += callback;
     }
+
+    public void SubscribeOnSceneUnload(Action<SceneInfo> callback)
+    {
+        OnSceneUnload += callback;
+    }
 }
