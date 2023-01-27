@@ -28,7 +28,7 @@ public class RawPatchOnPluginInitProcessor : OnPluginInitProcessor
 
             var rawPatch = (PatchTypes.RawPatchOnPluginInit)attributes[0];
 
-            _logger.LogInfo($"Found raw patch module {type.FullName}");
+            _logger.LogInfo($"Found raw patch module for plugin init patch {type.FullName}");
 
             foreach (var innerType in type.GetNestedTypes(AccessTools.all))
             {
