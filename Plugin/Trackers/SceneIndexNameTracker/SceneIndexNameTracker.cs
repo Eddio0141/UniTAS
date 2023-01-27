@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using UniTASPlugin.Interfaces;
 using UniTASPlugin.Interfaces.Update;
@@ -17,12 +18,15 @@ public class SceneIndexNameTracker : IPluginInitialLoad, ISceneIndexName, IOnUpd
 
     private int? _testingSceneIndex;
     private int _sceneCount;
+    private bool _waitingForSceneLoad;
 
     public SceneIndexNameTracker(IMonoBehaviourController monoBehaviourController, ISceneWrapper sceneWrapper)
     {
         _monoBehaviourController = monoBehaviourController;
         _sceneWrapper = sceneWrapper;
     }
+
+    public bool FinishedOperation { get; private set; }
 
     public void OnInitialLoad()
     {
@@ -39,8 +43,13 @@ public class SceneIndexNameTracker : IPluginInitialLoad, ISceneIndexName, IOnUpd
             return;
         }
 
-        // load scene
-        _sceneWrapper.LoadScene(_testingSceneIndex.Value);
+        if (!_waitingForSceneLoad)
+        {
+            // load scene
+            _sceneWrapper.LoadScene(_testingSceneIndex.Value);
+            _waitingForSceneLoad = true;
+            return;
+        }
 
         // get scene info
         _sceneInfos.Add(new(_testingSceneIndex.Value, _sceneWrapper.ActiveSceneName));
@@ -48,14 +57,20 @@ public class SceneIndexNameTracker : IPluginInitialLoad, ISceneIndexName, IOnUpd
         if (_testingSceneIndex.Value == _sceneCount - 1)
         {
             // done
+            foreach (var sceneInfo in _sceneInfos)
+            {
+                Trace.Write($"Found scene name {sceneInfo.SceneName} with build index {sceneInfo.SceneIndex}");
+            }
+
             _monoBehaviourController.PausedExecution = false;
             _testingSceneIndex = null;
+            FinishedOperation = true;
+            return;
         }
-        else
-        {
-            // next scene
-            _testingSceneIndex++;
-        }
+
+        // next scene
+        _testingSceneIndex++;
+        _waitingForSceneLoad = false;
     }
 
     public int? GetSceneIndex(string sceneName)
