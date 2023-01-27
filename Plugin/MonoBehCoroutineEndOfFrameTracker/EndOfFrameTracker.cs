@@ -20,7 +20,7 @@ public class EndOfFrameTracker : IEndOfFrameTracker
 
     private readonly IOnLastUpdate[] _onLastUpdates;
 
-    public EndOfFrameTracker(IOnLastUpdate[] onLastUpdates, IObjectTracker objectTracker)
+    public EndOfFrameTracker(IOnLastUpdate[] onLastUpdates, IObjectInfo objectTracker)
     {
         _onLastUpdates = onLastUpdates;
         objectTracker.SubscribeToDestroyObject(OnObjectDestroyed);
