@@ -53,6 +53,8 @@ public class Plugin : BaseUnityPlugin
             traceCount--;
         }
 
+        Trace.Write(Kernel.WhatDoIHave());
+
         _initialLoadPluginProcessors = Kernel.GetAllInstances<IPluginInitialLoad>().ToList();
         foreach (var processor in _initialLoadPluginProcessors)
         {
@@ -60,7 +62,9 @@ public class Plugin : BaseUnityPlugin
         }
 
         var patchProcessors = Kernel.GetAllInstances<OnPluginInitProcessor>();
-        var sortedPatches = patchProcessors.SelectMany(x => x.ProcessModules()).OrderByDescending(x => x.Key)
+        var sortedPatches = patchProcessors
+            .SelectMany(x => x.ProcessModules())
+            .OrderByDescending(x => x.Key)
             .Select(x => x.Value).ToList();
         Trace.Write($"Patching {sortedPatches.Count} patches on init");
         foreach (var patch in sortedPatches)
@@ -150,6 +154,8 @@ public class Plugin : BaseUnityPlugin
     private static void LoadPluginFull()
     {
         ContainerRegister.ConfigAfterInit(Kernel);
+
+        Trace.Write(Kernel.WhatDoIHave());
 
         Kernel.GetInstance<PluginWrapper>();
     }

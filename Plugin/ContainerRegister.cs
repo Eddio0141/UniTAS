@@ -1,4 +1,7 @@
+using System;
 using StructureMap;
+using StructureMap.Configuration.DSL;
+using StructureMap.Graph;
 using UniTASPlugin.AsyncSceneLoadTracker;
 using UniTASPlugin.FixedUpdateSync;
 using UniTASPlugin.GameEnvironment;
@@ -30,12 +33,39 @@ namespace UniTASPlugin;
 
 public static class ContainerRegister
 {
+    private class PatchProcessorPluginInit : IRegistrationConvention
+    {
+        public void Process(Type type, Registry registry)
+        {
+            if (type.IsClass && !type.IsAbstract && type.IsSubclassOf(typeof(OnPluginInitProcessor)))
+            {
+                registry.For(typeof(OnPluginInitProcessor)).Add(type);
+            }
+        }
+    }
+
+    private class PatchProcessorPostPluginInit : IRegistrationConvention
+    {
+        public void Process(Type type, Registry registry)
+        {
+            if (type.IsClass && !type.IsAbstract &&
+                type.IsSubclassOf(typeof(PatchProcessor)) && !type.IsSubclassOf(typeof(OnPluginInitProcessor)))
+            {
+                registry.For(typeof(PatchProcessor)).Add(type);
+            }
+        }
+    }
+
     public static Container Init()
     {
         // we load the minimal requirements to run the plugin at setup
         var container = new Container(c =>
         {
-            c.Scan(scanner => { scanner.AddAllTypesOf<OnPluginInitProcessor>(); });
+            c.Scan(scanner =>
+            {
+                scanner.TheCallingAssembly();
+                scanner.Convention<PatchProcessorPluginInit>();
+            });
 
             c.For<MonoBehEventInvoker>().Singleton();
             c.For<IMonoBehEventInvoker>().Use(x => x.GetInstance<MonoBehEventInvoker>());
@@ -111,13 +141,13 @@ public static class ContainerRegister
                 scanner.TheCallingAssembly();
                 scanner.WithDefaultConventions();
 
+                scanner.Convention<PatchProcessorPostPluginInit>();
+
                 // scanner.AddAllTypesOf(typeof(IOnUpdate));
                 // scanner.AddAllTypesOf(typeof(IOnFixedUpdate));
                 scanner.AddAllTypesOf<EngineExternalMethod>();
-                scanner.AddAllTypesOf<PatchProcessor>();
 
                 // exclude all from first register
-                scanner.Exclude(type => type.IsSubclassOf(typeof(OnPluginInitProcessor)));
                 scanner.ExcludeType<MonoBehEventInvoker>();
                 scanner.ExcludeType<StaticFieldStorage.StaticFieldStorage>();
                 scanner.ExcludeType<SyncFixedUpdate>();

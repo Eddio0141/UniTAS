@@ -8,6 +8,7 @@ using UniTASPlugin.GameInfo;
 using UniTASPlugin.GameRestart;
 using UniTASPlugin.LegacySafeWrappers;
 using UniTASPlugin.Logger;
+using UniTASPlugin.Patches.PatchProcessor;
 using UniTASPlugin.ReverseInvoker;
 using UnityEngine;
 using PatchProcessor = UniTASPlugin.Patches.PatchProcessor.PatchProcessor;
@@ -49,7 +50,10 @@ public class PluginWrapper
             onGameRestart.OnGameRestart(actualTime);
         }
 
-        var sortedPatches = patchProcessors.SelectMany(x => x.ProcessModules()).OrderByDescending(x => x.Key)
+        var sortedPatches = patchProcessors
+            .Where(x => x is not OnPluginInitProcessor)
+            .SelectMany(x => x.ProcessModules())
+            .OrderByDescending(x => x.Key)
             .Select(x => x.Value);
         foreach (var patch in sortedPatches)
         {
