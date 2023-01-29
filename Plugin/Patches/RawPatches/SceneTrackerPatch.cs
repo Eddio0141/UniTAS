@@ -99,16 +99,15 @@ public class SceneTrackerPatch
         }
     }
 
+    private const string loadSceneAsyncNameIndexInternal = "LoadSceneAsyncNameIndexInternal";
+
     [HarmonyPatch]
     private class SceneManagerLoadSceneAsyncPatch
     {
-        private static IEnumerable<MethodBase> TargetMethods()
+        private static MethodBase TargetMethod()
         {
-            const string loadSceneAsyncNameIndexInternal = "LoadSceneAsyncNameIndexInternal";
-            yield return AccessTools.Method(SceneManagerType, loadSceneAsyncNameIndexInternal,
-                             new[] { typeof(string), typeof(int), typeof(bool), typeof(bool) }) ??
-                         AccessTools.Method(SceneManagerType, loadSceneAsyncNameIndexInternal,
-                             new[] { typeof(string), typeof(int), LoadSceneParametersType, typeof(bool) });
+            return AccessTools.Method(SceneManagerType, loadSceneAsyncNameIndexInternal,
+                new[] { typeof(string), typeof(int), typeof(bool), typeof(bool) });
         }
 
         private static Exception Cleanup(MethodBase original, Exception ex)
@@ -125,6 +124,34 @@ public class SceneTrackerPatch
             var name = sceneName ?? SceneIndexName.GetSceneName(sceneIndex) ??
                 throw new InvalidOperationException("Scene name not found");
             SceneTracker.LoadScene(sceneIndex, name, isAdditive);
+        }
+    }
+
+    [HarmonyPatch]
+    private class SceneManagerLoadSceneAsyncPatch2
+    {
+        private static MethodBase TargetMethod()
+        {
+            return AccessTools.Method(SceneManagerType, loadSceneAsyncNameIndexInternal,
+                new[] { typeof(string), typeof(int), LoadSceneParametersType, typeof(bool) });
+        }
+
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static void Prefix(string sceneName, int sceneBuildIndex, object parameters)
+        {
+            var sceneIndex = sceneBuildIndex != -1
+                ? sceneBuildIndex
+                : SceneIndexName.GetSceneIndex(sceneName) ??
+                  throw new InvalidOperationException("Scene index not found");
+            var name = sceneName ?? SceneIndexName.GetSceneName(sceneIndex) ??
+                throw new InvalidOperationException("Scene name not found");
+            LoadSceneParametersWrapper.Instance = parameters;
+            SceneTracker.LoadScene(sceneIndex, name,
+                LoadSceneParametersWrapper.LoadSceneMode == LoadSceneMode.Additive);
         }
     }
 
