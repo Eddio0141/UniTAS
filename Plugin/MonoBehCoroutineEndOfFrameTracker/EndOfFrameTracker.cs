@@ -28,22 +28,20 @@ public class EndOfFrameTracker : IEndOfFrameTracker
 
     private void OnObjectDestroyed(int hash)
     {
-        var status = _allStatus.Find(x => x.MonoBehHash == hash);
-        if (status != null)
-        {
-            _allStatus.Remove(status);
-        }
+        _allStatus.RemoveAll(x => x.MonoBehHash == hash);
     }
 
     public void NewCoroutine(IEnumerator enumerator, object coroutine, object monoBehaviourInstance = null,
         string stringCoroutineMethodName = null)
     {
-        Trace.Write($"New coroutine, {enumerator}");
+        Trace.Write(
+            $"New coroutine, {enumerator}, enumerator {enumerator?.GetHashCode()}, coroutine {coroutine?.GetHashCode()}, monoBeh {monoBehaviourInstance?.GetHashCode()}");
         _allStatus.Add(new(enumerator, coroutine, monoBehaviourInstance, stringCoroutineMethodName));
     }
 
     public void MoveNextInvoke(IEnumerator enumerator)
     {
+        // Trace.Write($"MoveNext invoke, coroutine: {enumerator}, {enumerator.GetHashCode()}");
         // the execution cycle is as follows
         // first something runs then yield return WaitForEndOfFrame or something else (or coroutine ends for some reason)
         // then when the next MoveNext is called, that is when the yield return stop is reached, then we can do our stuff
@@ -69,13 +67,13 @@ public class EndOfFrameTracker : IEndOfFrameTracker
                 _waitCount2--;
             }
 
-            Trace.Write(
-                $"MoveNext invoke, coroutine: {enumerator}, wait count: {_waitCount}, {_waitCount2}, using counter 1: {trackingStatus.UsingWaitCounter1}");
+            // Trace.Write(
+            //     $"MoveNext invoke, coroutine: {enumerator}, wait count: {_waitCount}, {_waitCount2}, using counter 1: {trackingStatus.UsingWaitCounter1}");
             trackingStatus.UsingWaitCounter1 = !usingCounter1;
 
             if (usingCounter1 && _waitCount == 0 || !usingCounter1 && _waitCount2 == 0)
             {
-                Trace.Write("Invoking OnLastUpdate");
+                // Trace.Write("Invoking OnLastUpdate");
                 foreach (var onLastUpdate in _onLastUpdates)
                 {
                     onLastUpdate.OnLastUpdate();
@@ -97,8 +95,8 @@ public class EndOfFrameTracker : IEndOfFrameTracker
                 _waitCount2++;
             }
 
-            Trace.Write(
-                $"waiting for end of frame, coroutine: {enumerator}, wait count: {_waitCount}, {_waitCount2}, using counter 1: {trackingStatus.UsingWaitCounter1}");
+            // Trace.Write(
+            //     $"waiting for end of frame, coroutine: {enumerator}, wait count: {_waitCount}, {_waitCount2}, using counter 1: {trackingStatus.UsingWaitCounter1}");
         }
     }
 
@@ -111,7 +109,7 @@ public class EndOfFrameTracker : IEndOfFrameTracker
         }
 
         Trace.Write(
-            $"Coroutine end, {enumerator}, wait count: {_waitCount}, {_waitCount2}, using counter 1: {trackingStatus.UsingWaitCounter1}");
+            $"Coroutine end, {enumerator}, hash: {enumerator.GetHashCode()}");
 
         _allStatus.Remove(trackingStatus);
     }
@@ -124,8 +122,8 @@ public class EndOfFrameTracker : IEndOfFrameTracker
 
         foreach (var trackingStatus in trackingStatuses)
         {
-            Trace.Write(
-                $"Coroutine end, {trackingStatus.EnumeratorHash}, wait count: {_waitCount}, {_waitCount2}, using counter 1: {trackingStatus.UsingWaitCounter1}");
+            // Trace.Write(
+            //     $"Coroutine end, {trackingStatus.EnumeratorHash}, wait count: {_waitCount}, {_waitCount2}, using counter 1: {trackingStatus.UsingWaitCounter1}");
 
             _allStatus.Remove(trackingStatus);
         }
@@ -138,8 +136,8 @@ public class EndOfFrameTracker : IEndOfFrameTracker
 
         foreach (var trackingStatus in trackingStatuses)
         {
-            Trace.Write(
-                $"Coroutine end, {trackingStatus.EnumeratorHash}, wait count: {_waitCount}, {_waitCount2}, using counter 1: {trackingStatus.UsingWaitCounter1}");
+            // Trace.Write(
+            //     $"Coroutine end, {trackingStatus.EnumeratorHash}, wait count: {_waitCount}, {_waitCount2}, using counter 1: {trackingStatus.UsingWaitCounter1}");
 
             _allStatus.Remove(trackingStatus);
         }
@@ -152,8 +150,8 @@ public class EndOfFrameTracker : IEndOfFrameTracker
 
         foreach (var trackingStatus in trackingStatuses)
         {
-            Trace.Write(
-                $"Coroutine end, {trackingStatus.EnumeratorHash}, wait count: {_waitCount}, {_waitCount2}, using counter 1: {trackingStatus.UsingWaitCounter1}");
+            // Trace.Write(
+            //     $"Coroutine end, {trackingStatus.EnumeratorHash}, wait count: {_waitCount}, {_waitCount2}, using counter 1: {trackingStatus.UsingWaitCounter1}");
 
             _allStatus.Remove(trackingStatus);
         }
