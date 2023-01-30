@@ -1,7 +1,4 @@
-using System;
 using StructureMap;
-using StructureMap.Configuration.DSL;
-using StructureMap.Graph;
 using UniTASPlugin.AsyncSceneLoadTracker;
 using UniTASPlugin.FixedUpdateSync;
 using UniTASPlugin.GameEnvironment;
@@ -33,17 +30,6 @@ namespace UniTASPlugin;
 
 public static class ContainerRegister
 {
-    private class PatchProcessorPluginInit : IRegistrationConvention
-    {
-        public void Process(Type type, Registry registry)
-        {
-            if (type.IsClass && !type.IsAbstract && type.IsSubclassOf(typeof(OnPluginInitProcessor)))
-            {
-                registry.For(typeof(OnPluginInitProcessor)).Add(type);
-            }
-        }
-    }
-
     public static Container Init()
     {
         // we load the minimal requirements to run the plugin at setup
@@ -52,8 +38,13 @@ public static class ContainerRegister
             c.Scan(scanner =>
             {
                 scanner.TheCallingAssembly();
-                scanner.Convention<PatchProcessorPluginInit>();
+                scanner.WithDefaultConventions();
+
+                scanner.AddAllTypesOf<EngineExternalMethod>();
+                scanner.AddAllTypesOf<PatchProcessor>();
             });
+
+            c.For<PluginWrapper>().Singleton();
 
             c.For<IMonoBehEventInvoker>().Singleton().Use<MonoBehEventInvoker>();
 
@@ -63,17 +54,19 @@ public static class ContainerRegister
             c.Forward<ISyncFixedUpdate, IOnFixedUpdate>();
             c.Forward<ISyncFixedUpdate, IOnUpdate>();
 
-            c.For<ISceneIndexName>().Singleton().Use<SceneIndexNameTracker>();
-            c.Forward<ISceneIndexName, IPluginInitialLoad>();
-            c.Forward<ISceneIndexName, IOnUpdate>();
+            c.For<SceneIndexNameTracker>().Singleton();
+            c.For<ISceneIndexName>().Use(x => x.GetInstance<SceneIndexNameTracker>());
+            c.For<IPluginInitialLoad>().Use(x => x.GetInstance<SceneIndexNameTracker>());
+            c.For<IOnUpdate>().Use(x => x.GetInstance<SceneIndexNameTracker>());
 
             c.For<IGameInfo>().Singleton().Use<GameInfo.GameInfo>();
 
-            c.For<IGameInitialRestart>().Singleton().Use<GameInitialRestart.GameInitialRestart>();
-            c.Forward<IGameInitialRestart, IOnAwake>();
-            c.Forward<IGameInitialRestart, IOnEnable>();
-            c.Forward<IGameInitialRestart, IOnStart>();
-            c.Forward<IGameInitialRestart, IOnFixedUpdate>();
+            c.For<GameInitialRestart.GameInitialRestart>().Singleton();
+            c.For<IGameInitialRestart>().Use(x => x.GetInstance<GameInitialRestart.GameInitialRestart>());
+            c.For<IOnAwake>().Use(x => x.GetInstance<GameInitialRestart.GameInitialRestart>());
+            c.For<IOnEnable>().Use(x => x.GetInstance<GameInitialRestart.GameInitialRestart>());
+            c.For<IOnStart>().Use(x => x.GetInstance<GameInitialRestart.GameInitialRestart>());
+            c.For<IOnFixedUpdate>().Use(x => x.GetInstance<GameInitialRestart.GameInitialRestart>());
 
             c.For<IMonoBehaviourController>().Singleton().Use<MonoBehaviourController.MonoBehaviourController>();
 
@@ -101,53 +94,16 @@ public static class ContainerRegister
             c.For<VirtualEnvironmentApplier>().Singleton();
             c.For<IOnPreUpdates>().Use(x => x.GetInstance<VirtualEnvironmentApplier>());
 
-            c.For<IVirtualEnvironmentFactory>().Use<VirtualEnvironmentFactory>();
-        });
+            c.For<MovieRunner>().Singleton();
+            c.For<IMovieRunner>().Use(x => x.GetInstance<MovieRunner>());
+            c.For<IOnPreUpdates>().Use(x => x.GetInstance<MovieRunner>());
 
-        return container;
-    }
-
-    public static void ConfigAfterInit(IContainer container)
-    {
-        container.Configure(c =>
-        {
-            c.Scan(scanner =>
-            {
-                scanner.TheCallingAssembly();
-                scanner.WithDefaultConventions();
-
-                // scanner.AddAllTypesOf(typeof(IOnUpdate));
-                // scanner.AddAllTypesOf(typeof(IOnFixedUpdate));
-                scanner.AddAllTypesOf<EngineExternalMethod>();
-                scanner.AddAllTypesOf<PatchProcessor>();
-
-                // exclude all from first register
-                scanner.ExcludeType<IMonoBehEventInvoker>();
-                scanner.ExcludeType<IStaticFieldManipulator>();
-                scanner.ExcludeType<ISyncFixedUpdate>();
-                scanner.ExcludeType<ISceneIndexName>();
-                scanner.ExcludeType<IGameInfo>();
-                scanner.ExcludeType<IGameInitialRestart>();
-                scanner.ExcludeType<IMonoBehaviourController>();
-                scanner.ExcludeType<ISceneWrapper>();
-                scanner.ExcludeType<ILoadSceneParametersWrapper>();
-                scanner.ExcludeType<ISceneWrap>();
-                scanner.ExcludeType<IUnityWrapper>();
-                scanner.ExcludeType<IObjectWrapper>();
-                scanner.ExcludeType<IMonoBehaviourWrapper>();
-                scanner.ExcludeType<ILogger>();
-            });
-
-            c.For<PluginWrapper>().Singleton();
-
-            c.For<IMovieRunner>().Singleton().Use<MovieRunner>();
-            c.Forward<IMovieRunner, IOnPreUpdates>();
-
-            c.For<IGameRestart>().Singleton().Use<GameRestart.GameRestart>();
-            c.Forward<IGameRestart, IOnAwake>();
-            c.Forward<IGameRestart, IOnEnable>();
-            c.Forward<IGameRestart, IOnStart>();
-            c.Forward<IGameRestart, IOnFixedUpdate>();
+            c.For<GameRestart.GameRestart>().Singleton();
+            c.For<IGameRestart>().Use(x => x.GetInstance<GameRestart.GameRestart>());
+            c.For<IOnEnable>().Use(x => x.GetInstance<GameRestart.GameRestart>());
+            c.For<IOnStart>().Use(x => x.GetInstance<GameRestart.GameRestart>());
+            c.For<IOnFixedUpdate>().Use(x => x.GetInstance<GameRestart.GameRestart>());
+            c.For<IOnAwake>().Use(x => x.GetInstance<GameRestart.GameRestart>());
 
             c.For<IOnPreUpdates>().Singleton().Use<GameTime>();
 
@@ -171,11 +127,8 @@ public static class ContainerRegister
             c.For<SceneTracker>().Singleton();
             c.For<ISceneTracker>().Use(x => x.GetInstance<SceneTracker>());
             c.For<ILoadedSceneInfo>().Use(x => x.GetInstance<SceneTracker>());
-
-            // re-register MonoBehEventInvoker with new instance
-            c.For<IMonoBehEventInvoker>().Singleton().Use<MonoBehEventInvoker>();
         });
 
-        container.GetInstance<IMonoBehEventInvoker>();
+        return container;
     }
 }
