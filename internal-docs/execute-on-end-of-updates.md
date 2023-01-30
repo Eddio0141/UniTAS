@@ -18,7 +18,7 @@ This is very hard or probably impossible, because how you can mix logic within t
 - Register our coroutine that invokes `yield WaitForEndOfFrame`
 - Need to test this, but if the order of coroutine executed is by registered order, then it might be possible to force load our coroutine to be last by re-registering when a new coroutine is invoked
 
-### Plan 3
+## ~~Plan 3~~ Too tricky to get working
 - Have a list of registered coroutines
 - In unity, each coroutine gets executed through `UnityEngine.SetupCoroutine.InvokeMoveNext`, this method takes an `IEnumerator`, which we can use to check which coroutine is running
 - After the coroutines are all done running, execute our code
@@ -33,7 +33,20 @@ This is very hard or probably impossible, because how you can mix logic within t
   - Yes
 
 ### Plan 4
-- Because a coroutine can't be registered when `yield return new WaitForEndOfFrame()`, the latest you can register a coroutine is 
+- A coroutine can't be registered when `yield return new WaitForEndOfFrame()`
+- There are multiple places where I have to consider
+  - `OnDestroy` is the last update you can run anything before the next cycle
+    - Track via `Destroy` calls and match by hash
+  - `OnDisable` is the next
+    - Track via component enabled status set to false
+  - Default case I can handle by adding a coroutine via `OnGUI`
+    - I first track all `MonoBehaviour` object instance
+    - I have a list of which instance hasn't ran `OnGUI` yet
+    - When the list is empty, I run the code
+- Those updates don't matter
+  - `OnApplicationPause` because you can't really change the scene from here
+  - `OnApplicationQuit` since application is closing so no point
+  - I don't need to direcly interact with `yield return new WaitForEndOfFrame()` because I handle it in an easier way
 
 #### Info
 - The method `MonoBehaviour.StartCoroutine(string, object)` and `MonoBehaviour.StartCoroutine(string)` will always search for a method returning `IEnumerator`
@@ -43,19 +56,3 @@ This is very hard or probably impossible, because how you can mix logic within t
 - If choosing the method without the `object` overload, it will use the first method that matches name and return type, with no argument
 - If choosing the method with `object` overload, it will use the first method that matches name, return type, and if the `object` Type can be assigned to the argument Type
   - This will be done in declared order, so if you pass a `float` and methods for arguments `int` and `float` is declared in order, it will choose `int` because its assignable
-
-# Implementation (of plan 3)
-- Patch StartCoroutine methods
-  - This patch will create a patch for the `IEnumerator.MoveNext` method if not already done for that method
-  - We store the `IEnumerator` instance hash in a list somewhere on `StartCoroutine` invoke prefix
-  - This list will also contain status for the instances
-- When the `MoveNext` gets invoked on some type, monitor the return value
-  - If `false`, means the iteration has finished and we remove from the hash list
-  - Also check `Current` as it tells the type of wait we doing, and update the status of the tracker for this instance
-    - Edge case on determining coroutine ends
-      - When the object is destroyed, we need to check if the coroutine tracking instances belong to that instance, and remove tracking on match
-      - When the object is destroyed via scene load / unload, we also need to destroy the MonoBehaviour objects that has coroutines
-      - When the StopCoroutine and other variants of it is invoked on something, we need to remove tracking for those
-- When the `MoveNext` is returning WaitForEndOfFrame, check status of all tracking instance
-  - If there is any instance that hasn't been updated yet, don't execute final code
-  - Else execute final update code
