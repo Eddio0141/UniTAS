@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using UniTASPlugin.AsyncSceneLoadTracker;
+using UniTASPlugin.Extensions;
 using UniTASPlugin.MonoBehCoroutineEndOfFrameTracker;
 using UniTASPlugin.Patches.PatchTypes;
 using UnityEngine;
@@ -305,7 +306,6 @@ public class AsyncOperationPatch
     private static readonly List<Type> _patchedIEnumerators = new();
     private static string _invokingIEnumeratorStringCtorMethodName;
     private static object _invokingIEnumeratorStringMonoBehInstance;
-    private static object _invokingIEnumeratorStringCoroutine;
 
     private static void StartCoroutineInvoke(IEnumerator routine, Coroutine coroutineReturnValue)
     {
@@ -350,7 +350,7 @@ public class AsyncOperationPatch
         {
             var allEnumeratorTypes = __instance.GetType().GetNestedTypes(AccessTools.all)
                 .Where(x => !_patchedIEnumerators.Contains(x) && x.GetInterface(nameof(IEnumerator)) != null &&
-                            x.GetConstructors().Length > 0)
+                            x.GetConstructors().Length > 0 && x.Name.Like($"<{methodName}>d__*"))
                 .ToList();
 
             Trace.WriteIf(allEnumeratorTypes.Count > 0,
@@ -388,7 +388,14 @@ public class AsyncOperationPatch
 
         private static void Postfix()
         {
+            if (_invokingIEnumeratorStringCtorMethodName != null)
+            {
+                Plugin.Log.LogWarning(
+                    $"IEnumerator invoke didn't get tracked properly, name: {_invokingIEnumeratorStringCtorMethodName}, monoBeh instance: {_invokingIEnumeratorStringMonoBehInstance?.GetHashCode()}");
+            }
+
             _invokingIEnumeratorStringCtorMethodName = null;
+            _invokingIEnumeratorStringMonoBehInstance = null;
         }
     }
 
@@ -438,12 +445,10 @@ public class AsyncOperationPatch
         public static void Postfix(IEnumerator __instance)
         {
             if (_invokingIEnumeratorStringCtorMethodName == null) return;
-            EndOfFrameTracker.NewCoroutine(__instance, _invokingIEnumeratorStringCoroutine,
-                _invokingIEnumeratorStringMonoBehInstance,
+            EndOfFrameTracker.NewCoroutine(__instance, null, _invokingIEnumeratorStringMonoBehInstance,
                 _invokingIEnumeratorStringCtorMethodName);
             _invokingIEnumeratorStringCtorMethodName = null;
             _invokingIEnumeratorStringMonoBehInstance = null;
-            _invokingIEnumeratorStringCoroutine = null;
         }
     }
 
@@ -456,7 +461,7 @@ public class AsyncOperationPatch
         }
 
         // Stops all coroutines named methodName running on this behaviour
-        private static void Prefix(MonoBehaviour __instance, string methodName)
+        private static void Postfix(MonoBehaviour __instance, string methodName)
         {
             EndOfFrameTracker.CoroutineEnd(__instance, methodName);
         }
@@ -471,7 +476,7 @@ public class AsyncOperationPatch
         }
 
         // Stops all coroutines named methodName running on this behaviour
-        private static void Prefix(IEnumerator routine)
+        private static void Postfix(IEnumerator routine)
         {
             EndOfFrameTracker.CoroutineEnd(routine);
         }
@@ -486,7 +491,7 @@ public class AsyncOperationPatch
         }
 
         // Stops all coroutines named methodName running on this behaviour
-        private static void Prefix(Coroutine routine)
+        private static void Postfix(Coroutine routine)
         {
             EndOfFrameTracker.CoroutineEnd(routine);
         }
@@ -501,7 +506,7 @@ public class AsyncOperationPatch
         }
 
         // Stops all coroutines named methodName running on this behaviour
-        private static void Prefix(MonoBehaviour __instance)
+        private static void Postfix(MonoBehaviour __instance)
         {
             EndOfFrameTracker.CoroutineEndAll(__instance);
         }
