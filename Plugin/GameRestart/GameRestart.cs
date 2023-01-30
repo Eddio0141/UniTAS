@@ -43,7 +43,7 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
 
     private void DestroyDontDestroyOnLoads()
     {
-        // TODO make this cleaner
+        // TODO clear all DontDestroyOnLoad objects
     }
 
     /// <summary>
