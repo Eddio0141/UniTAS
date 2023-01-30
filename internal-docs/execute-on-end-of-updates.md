@@ -22,6 +22,7 @@ This is very hard or probably impossible, because how you can mix logic within t
 - Have a list of registered coroutines
 - In unity, each coroutine gets executed through `UnityEngine.SetupCoroutine.InvokeMoveNext`, this method takes an `IEnumerator`, which we can use to check which coroutine is running
 - After the coroutines are all done running, execute our code
+- This is VERY hard to do
 ---
 - [x] Check if the timing of the invoke is related with when the `yield` is supposed to be invoked
   - It does as expected and also as written on the unity execution order docs
@@ -30,6 +31,9 @@ This is very hard or probably impossible, because how you can mix logic within t
   - Careful not to patch something more than once as coroutine can be registered more than 1 time
 - [x] Does timing of `MoveNext` in iterator match `UnityEngine.SetupCoroutine.InvokeMoveNext`
   - Yes
+
+### Plan 4
+- Because a coroutine can't be registered when `yield return new WaitForEndOfFrame()`, the latest you can register a coroutine is 
 
 #### Info
 - The method `MonoBehaviour.StartCoroutine(string, object)` and `MonoBehaviour.StartCoroutine(string)` will always search for a method returning `IEnumerator`
@@ -48,6 +52,10 @@ This is very hard or probably impossible, because how you can mix logic within t
 - When the `MoveNext` gets invoked on some type, monitor the return value
   - If `false`, means the iteration has finished and we remove from the hash list
   - Also check `Current` as it tells the type of wait we doing, and update the status of the tracker for this instance
+    - Edge case on determining coroutine ends
+      - When the object is destroyed, we need to check if the coroutine tracking instances belong to that instance, and remove tracking on match
+      - When the object is destroyed via scene load / unload, we also need to destroy the MonoBehaviour objects that has coroutines
+      - When the StopCoroutine and other variants of it is invoked on something, we need to remove tracking for those
 - When the `MoveNext` is returning WaitForEndOfFrame, check status of all tracking instance
   - If there is any instance that hasn't been updated yet, don't execute final code
   - Else execute final update code
