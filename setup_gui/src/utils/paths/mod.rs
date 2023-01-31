@@ -29,3 +29,9 @@ pub fn unitas_dir() -> Result<PathBuf, self::error::Error> {
     create_dir_if_not_exists(&path)?;
     Ok(path)
 }
+
+pub fn history_path() -> Result<PathBuf, self::error::Error> {
+    let mut path = data_storage_dir()?;
+    path.push("history.json");
+    Ok(path)
+}
