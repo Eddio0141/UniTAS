@@ -1,2 +1,3 @@
-mod game_dir_checks;
-mod cli;
+pub mod cli;
+pub mod local_versions;
+pub mod paths;
