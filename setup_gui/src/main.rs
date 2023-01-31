@@ -14,8 +14,18 @@
 //! - List locally availiable BepInEx versions
 //! - Offline mode
 
+use clap::Parser;
+use utils::cli::Cli;
+
 mod error;
 mod prelude;
 mod utils;
 
-fn main() {}
+fn main() {
+    let cli = Cli::parse();
+
+    if let Err(error) = cli.process() {
+        eprintln!("{}", error);
+        std::process::exit(1);
+    }
+}
