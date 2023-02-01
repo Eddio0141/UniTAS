@@ -74,6 +74,8 @@ This is very hard or probably impossible, because how you can mix logic within t
 
 ## New `MonoBehaviour` instance
 - If the instance has `OnGUI`, keep hold of it in list `_monoBehWithOnGUI`
+- Detecting this has to be done through checking in `Instantiate`, `AddComponent`, scene load -> `MonoBehaviour` ctor match
+  - Another way to probably do this is adding the method `LateUpdate` if it doesn't exist, and if the `MonoBehaviour` class has `OnGUI` defined in it
 
 ## Detecting `MonoBehaviour` class destruction
 - Using finilizer doesn't work, so I have to track `Destroy` methods
