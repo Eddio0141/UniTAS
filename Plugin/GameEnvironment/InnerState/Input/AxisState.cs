@@ -8,7 +8,7 @@ public class AxisState : InputDeviceBase
 
     public AxisState()
     {
-        Values = new Dictionary<string, float>();
+        Values = new();
     }
 
     public override void Update()

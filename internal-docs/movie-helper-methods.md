@@ -32,6 +32,8 @@
 - Click / unclick mouse middle
 
 ## Controller
+`move_axis(name: string, value: float)`
+- Moves axis `name` to value `value`
 
 # Game fps
 `set_fps(fps: float)`
