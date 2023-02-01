@@ -7,12 +7,11 @@ using ValueType = UniTASPlugin.Movie.ValueTypes.ValueType;
 
 namespace UniTASPlugin.Movie.EngineMethods;
 
-public class UnHoldKeyExternalMethod : EngineExternalMethod
+public class ReleaseKeyExternalMethod : EngineExternalMethod
 {
     private readonly IVirtualEnvironmentFactory _virtualEnvironmentFactory;
 
-    // ReSharper disable once StringLiteralTypo
-    public UnHoldKeyExternalMethod(IVirtualEnvironmentFactory virtualEnvironmentFactory) : base("unhold_key", 1)
+    public ReleaseKeyExternalMethod(IVirtualEnvironmentFactory virtualEnvironmentFactory) : base("release_key", 1)
     {
         _virtualEnvironmentFactory = virtualEnvironmentFactory;
     }

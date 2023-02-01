@@ -12,7 +12,7 @@
 `hold_key(key: string)`
 - Holds keyboard key
 
-`unhold_key(key: string)`
+`release_key(key: string)`
 - Removes held key
 
 `clear_held_keys()`
@@ -34,6 +34,15 @@
 ## Controller
 `move_axis(name: string, value: float)`
 - Moves axis `name` to value `value`
+
+`hold_button(button_name: string)`
+- Holds button `button_name`
+
+`release_button(button_name: string)`
+- Releases button `button_name`
+
+`clear_held_buttons()`
+- Releases all held buttons
 
 # Game fps
 `set_fps(fps: float)`

@@ -5,6 +5,7 @@ public class InputState
     public MouseState MouseState { get; } = new();
     public AxisState AxisState { get; } = new();
     public KeyboardState KeyboardState { get; } = new();
+    public ButtonState ButtonState { get; } = new();
 
     public void ResetStates()
     {
