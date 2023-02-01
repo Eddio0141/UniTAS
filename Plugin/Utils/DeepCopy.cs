@@ -1,23 +1,22 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text.RegularExpressions;
 using System.Threading;
 using HarmonyLib;
-using UniTASPlugin.LegacyExceptions;
+using UniTASPlugin.Utils.Exceptions;
 
-namespace UniTASPlugin;
+namespace UniTASPlugin.Utils;
 
-public static class Helper
+public static class DeepCopy
 {
     /// <summary>
     /// A cache for the <see cref="ICollection{T}.Add"/> or similar Add methods for different types.
     /// </summary>
-    private static readonly Dictionary<Type, FastInvokeHandler> addHandlerCache = new();
+    private static readonly Dictionary<Type, FastInvokeHandler> AddHandlerCache = new();
 
-    private static readonly ReaderWriterLock addHandlerCacheLock = new();
+    private static readonly ReaderWriterLock AddHandlerCacheLock = new();
 
     /// <summary>Makes a deep copy of any object</summary>
     /// <typeparam name="T">The type of the instance that should be created; for legacy reasons, this must be a class or interface</typeparam>
@@ -42,9 +41,9 @@ public static class Helper
         result = (T)MakeDeepCopy(source, typeof(T), processor, pathRoot);
     }
 
-    private static int makeDeepCopyRecursionDepth;
+    private static int _makeDeepCopyRecursionDepth;
 
-    private const int MakeDeepCopyRecursionDepthLimit = 500;
+    private const int MakeDeepCopyRecursionDepthLimit = 200;
 
     /// <summary>Makes a deep copy of any object</summary>
     /// <param name="source">The original object</param>
@@ -55,16 +54,16 @@ public static class Helper
     public static object MakeDeepCopy(object source, Type resultType,
         Func<string, Traverse, Traverse, object> processor = null, string pathRoot = "")
     {
-        makeDeepCopyRecursionDepth++;
-        if (makeDeepCopyRecursionDepth > MakeDeepCopyRecursionDepthLimit)
+        _makeDeepCopyRecursionDepth++;
+        if (_makeDeepCopyRecursionDepth > MakeDeepCopyRecursionDepthLimit)
         {
-            makeDeepCopyRecursionDepth = 0;
-            throw new DeepCopyMaxRecursion();
+            _makeDeepCopyRecursionDepth = 0;
+            throw new DeepCopyMaxRecursionException();
         }
 
         if (source is null || resultType is null)
         {
-            makeDeepCopyRecursionDepth--;
+            _makeDeepCopyRecursionDepth--;
             return null;
         }
 
@@ -73,22 +72,22 @@ public static class Helper
 
         if (type.IsPrimitive)
         {
-            makeDeepCopyRecursionDepth--;
+            _makeDeepCopyRecursionDepth--;
             return source;
         }
 
         if (type.IsEnum)
         {
-            makeDeepCopyRecursionDepth--;
+            _makeDeepCopyRecursionDepth--;
             return Enum.ToObject(resultType, (int)source);
         }
 
         if (type.IsGenericType && resultType.IsGenericType)
         {
-            addHandlerCacheLock.AcquireReaderLock(200);
+            AddHandlerCacheLock.AcquireReaderLock(200);
             try
             {
-                if (!addHandlerCache.TryGetValue(resultType, out var addInvoker))
+                if (!AddHandlerCache.TryGetValue(resultType, out var addInvoker))
                 {
                     var addOperation = AccessTools.FirstMethod(resultType,
                         m => m.Name == "Add" && m.GetParameters().Length == 1);
@@ -97,15 +96,15 @@ public static class Helper
                         addInvoker = MethodInvoker.GetHandler(addOperation);
                     }
 
-                    _ = addHandlerCacheLock.UpgradeToWriterLock(200);
-                    addHandlerCacheLock.AcquireWriterLock(200);
+                    _ = AddHandlerCacheLock.UpgradeToWriterLock(200);
+                    AddHandlerCacheLock.AcquireWriterLock(200);
                     try
                     {
-                        addHandlerCache[resultType] = addInvoker;
+                        AddHandlerCache[resultType] = addInvoker;
                     }
                     finally
                     {
-                        addHandlerCacheLock.ReleaseWriterLock();
+                        AddHandlerCacheLock.ReleaseWriterLock();
                     }
                 }
 
@@ -122,13 +121,13 @@ public static class Helper
                         _ = addInvoker(addableResult, newElement);
                     }
 
-                    makeDeepCopyRecursionDepth--;
+                    _makeDeepCopyRecursionDepth--;
                     return addableResult;
                 }
             }
             finally
             {
-                addHandlerCacheLock.ReleaseReaderLock();
+                AddHandlerCacheLock.ReleaseReaderLock();
             }
         }
 
@@ -145,7 +144,7 @@ public static class Helper
                 newArray.SetValue(newElement, i);
             }
 
-            makeDeepCopyRecursionDepth--;
+            _makeDeepCopyRecursionDepth--;
             return newArray;
         }
 
@@ -170,14 +169,14 @@ public static class Helper
             var addableResult = AccessTools.Constructor(resultType, new[] { iEnumerableType })
                 .Invoke(new object[] { tempResultList });
 
-            makeDeepCopyRecursionDepth--;
+            _makeDeepCopyRecursionDepth--;
             return addableResult;
         }
 
         var ns = type.Namespace;
         if (ns == "System" || (ns?.StartsWith("System.") ?? false))
         {
-            makeDeepCopyRecursionDepth--;
+            _makeDeepCopyRecursionDepth--;
             return source;
         }
 
@@ -200,12 +199,7 @@ public static class Helper
             var value = processor is not null ? processor(path, src, dst) : src.GetValue();
             dst.SetValue(MakeDeepCopy(value, dst.GetValueType(), processor, path));
         });
-        makeDeepCopyRecursionDepth--;
+        _makeDeepCopyRecursionDepth--;
         return result;
-    }
-
-    public static string WildCardToRegular(string value)
-    {
-        return "^" + Regex.Escape(value).Replace("\\?", ".").Replace("\\*", ".*") + "$";
     }
 }
