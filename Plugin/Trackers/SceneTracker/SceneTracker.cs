@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UniTASPlugin.Logger;
 
 namespace UniTASPlugin.Trackers.SceneTracker;
 
@@ -8,8 +9,16 @@ public class SceneTracker : ISceneTracker, ILoadedSceneInfo
 {
     private readonly List<SceneInfo> _loadedScenes = new();
 
+    private readonly ILogger _logger;
+
+    public SceneTracker(ILogger logger)
+    {
+        _logger = logger;
+    }
+
     public void LoadScene(int sceneIndex, string sceneName, bool additive)
     {
+        _logger.LogDebug($"Loading scene, name: {sceneName}, index: {sceneIndex}, additive: {additive}");
         var sceneInfo = new SceneInfo(sceneIndex, sceneName);
         if (additive)
         {
@@ -26,6 +35,7 @@ public class SceneTracker : ISceneTracker, ILoadedSceneInfo
 
     public void UnloadScene(int sceneIndex, string sceneName)
     {
+        _logger.LogDebug($"Unloading scene, name: {sceneName}, index: {sceneIndex}");
         var sceneInfo = _loadedScenes.Find(x => x.SceneIndex == sceneIndex || x.SceneName == sceneName);
         if (sceneInfo == null) return;
         OnSceneUnload?.Invoke(sceneInfo);

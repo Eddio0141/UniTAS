@@ -12,6 +12,7 @@ using UniTASPlugin.Interfaces;
 using UniTASPlugin.LegacyGameOverlay;
 using UniTASPlugin.Patches.PatchProcessor;
 using UnityEngine;
+using PatchProcessor = UniTASPlugin.Patches.PatchProcessor.PatchProcessor;
 
 namespace UniTASPlugin;
 
@@ -20,10 +21,10 @@ public class Plugin : BaseUnityPlugin
 {
     public static readonly IContainer Kernel = ContainerRegister.Init();
 
-    private static Plugin instance;
+    private static Plugin _instance;
 
     private ManualLogSource _logger;
-    public static ManualLogSource Log => instance._logger;
+    public static ManualLogSource Log => _instance._logger;
     public static readonly Harmony Harmony = new($"{MyPluginInfo.PLUGIN_GUID}HarmonyPatch");
 
     private bool _endOfFrameLoopRunning;
@@ -38,8 +39,8 @@ public class Plugin : BaseUnityPlugin
 
     private void Awake()
     {
-        if (instance != null) return;
-        instance = this;
+        if (_instance != null) return;
+        _instance = this;
         _logger = Logger;
 
         var traceCount = Trace.Listeners.Count;
@@ -61,8 +62,9 @@ public class Plugin : BaseUnityPlugin
             processor.OnInitialLoad();
         }
 
-        var patchProcessors = Kernel.GetAllInstances<OnPluginInitProcessor>();
+        var patchProcessors = Kernel.GetAllInstances<PatchProcessor>();
         var sortedPatches = patchProcessors
+            .Where(x => x is OnPluginInitProcessor)
             .SelectMany(x => x.ProcessModules())
             .OrderByDescending(x => x.Key)
             .Select(x => x.Value).ToList();
@@ -125,10 +127,10 @@ public class Plugin : BaseUnityPlugin
     /// </summary>
     public static void StartEndOfFrameLoop()
     {
-        if (instance == null) return;
-        if (instance._endOfFrameLoopRunning) return;
-        instance._endOfFrameLoopRunning = true;
-        instance.StartCoroutine(EndOfFrame());
+        if (_instance == null) return;
+        if (_instance._endOfFrameLoopRunning) return;
+        _instance._endOfFrameLoopRunning = true;
+        _instance.StartCoroutine(EndOfFrame());
     }
 
     private static IEnumerator EndOfFrame()
@@ -153,9 +155,9 @@ public class Plugin : BaseUnityPlugin
 
     private static void LoadPluginFull()
     {
-        ContainerRegister.ConfigAfterInit(Kernel);
-
-        Trace.Write(Kernel.WhatDoIHave());
+        // ContainerRegister.ConfigAfterInit(Kernel);
+        //
+        // Trace.Write(Kernel.WhatDoIHave());
 
         Kernel.GetInstance<PluginWrapper>();
     }
