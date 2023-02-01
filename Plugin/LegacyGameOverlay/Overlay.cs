@@ -1,6 +1,5 @@
 ﻿using System.Linq;
 using UniTASPlugin.GameRestart;
-using UniTASPlugin.LegacyGameOverlay.GameConsole;
 using UniTASPlugin.LegacySafeWrappers;
 using UniTASPlugin.Movie;
 using UniTASPlugin.ReverseInvoker;
@@ -80,16 +79,10 @@ internal static class Overlay
             CursorWrap.UnlockCursor();
             Plugin.Log.LogDebug($"Unlocked cursor");
         }
-
-        if (movieRunner.MovieEnd && Input.GetKeyDown(KeyCode.BackQuote))
-        {
-            Console.Opened = !Console.Opened;
-        }
     }
 
     public static void OnGUI()
     {
-        Console.Update();
         DrawGUI();
 
         if (ShowCursor && UnityCursorVisible)
