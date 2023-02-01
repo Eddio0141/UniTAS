@@ -36,6 +36,7 @@ public class SyncFixedUpdate : IOnFixedUpdate, ISyncFixedUpdate, IOnUpdate
 
     public void Update()
     {
+        // Trace.Write($"Callback count, {_onSyncCallbacks.Count}");
         if (_invalidIndexCounter) return;
 
         // TODO remove hardcoded dependency
@@ -93,6 +94,7 @@ public class SyncFixedUpdate : IOnFixedUpdate, ISyncFixedUpdate, IOnUpdate
     {
         Trace.Write($"Added on sync callback with sync offset: {syncOffset}, cycle offset: {cycleOffset}");
         _onSyncCallbacks.Add(new(callback, syncOffset, cycleOffset));
+        Trace.Write($"Total on sync callback count: {_onSyncCallbacks.Count}");
     }
 
     private class SyncData
