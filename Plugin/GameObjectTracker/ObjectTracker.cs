@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using UniTASPlugin.Logger;
 using UniTASPlugin.Trackers;
 using UniTASPlugin.Trackers.SceneTracker;
 
@@ -31,6 +33,7 @@ public class ObjectTracker : IObjectTracker, IObjectInfo
     public void NewObject(object obj)
     {
         var hash = obj.GetHashCode();
+        Trace.Write($"New object, hash: {hash}");
         if (_trackedObjects.Exists(x => x.Hash == hash))
         {
             throw new InvalidOperationException("Object already tracked");
@@ -43,6 +46,7 @@ public class ObjectTracker : IObjectTracker, IObjectInfo
     public void DestroyObject(object obj)
     {
         var hash = obj.GetHashCode();
+        Trace.Write($"Destroy object, hash: {hash}");
         var status = _trackedObjects.Find(x => x.Hash == hash);
         if (status == null)
         {
