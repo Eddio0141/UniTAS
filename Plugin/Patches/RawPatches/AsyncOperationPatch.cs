@@ -7,10 +7,10 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using HarmonyLib;
-using UniTASPlugin.AsyncSceneLoadTracker;
 using UniTASPlugin.Extensions;
-using UniTASPlugin.MonoBehCoroutineEndOfFrameTracker;
 using UniTASPlugin.Patches.PatchTypes;
+using UniTASPlugin.Trackers.AsyncSceneLoadTracker;
+using UniTASPlugin.Trackers.MonoBehCoroutineEndOfFrameTracker;
 using UnityEngine;
 
 namespace UniTASPlugin.Patches.RawPatches;

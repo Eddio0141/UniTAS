@@ -1,6 +1,6 @@
 using System;
 
-namespace UniTASPlugin.GameObjectTracker;
+namespace UniTASPlugin.Trackers.GameObjectTracker;
 
 public interface IObjectInfo
 {

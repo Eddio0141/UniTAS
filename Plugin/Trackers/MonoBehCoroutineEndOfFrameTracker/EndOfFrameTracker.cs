@@ -2,11 +2,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using UniTASPlugin.GameObjectTracker;
 using UniTASPlugin.Interfaces.Update;
+using UniTASPlugin.Trackers.GameObjectTracker;
 using UnityEngine;
 
-namespace UniTASPlugin.MonoBehCoroutineEndOfFrameTracker;
+namespace UniTASPlugin.Trackers.MonoBehCoroutineEndOfFrameTracker;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 public class EndOfFrameTracker : IEndOfFrameTracker
