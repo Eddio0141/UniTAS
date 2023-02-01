@@ -7,6 +7,7 @@ using UniTASPlugin.LegacySafeWrappers;
 using UniTASPlugin.Logger;
 using UniTASPlugin.MonoBehaviourController;
 using UniTASPlugin.StaticFieldStorage;
+using UniTASPlugin.Trackers.DontDestroyOnLoadTracker;
 using UniTASPlugin.UnitySafeWrappers.Interfaces;
 
 namespace UniTASPlugin.GameRestart;
@@ -24,13 +25,15 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
 
     private readonly IOnGameRestart[] _onGameRestart;
     private readonly IStaticFieldManipulator _staticFieldManipulator;
+    private readonly IDontDestroyOnLoadInfo _dontDestroyOnLoadInfo;
 
     public bool PendingRestart { get; private set; }
     private bool _pendingResumePausedExecution;
 
     public GameRestart(IVirtualEnvironmentFactory virtualEnvironmentFactory, ISyncFixedUpdate syncFixedUpdate,
         IUnityWrapper unityWrapper, IMonoBehaviourController monoBehaviourController, ILogger logger,
-        IOnGameRestart[] onGameRestart, IStaticFieldManipulator staticFieldManipulator)
+        IOnGameRestart[] onGameRestart, IStaticFieldManipulator staticFieldManipulator,
+        IDontDestroyOnLoadInfo dontDestroyOnLoadInfo)
     {
         _virtualEnvironmentFactory = virtualEnvironmentFactory;
         _syncFixedUpdate = syncFixedUpdate;
@@ -39,11 +42,17 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
         _logger = logger;
         _onGameRestart = onGameRestart;
         _staticFieldManipulator = staticFieldManipulator;
+        _dontDestroyOnLoadInfo = dontDestroyOnLoadInfo;
     }
 
     private void DestroyDontDestroyOnLoads()
     {
-        // TODO clear all DontDestroyOnLoad objects
+        var dontDestroyOnLoads = _dontDestroyOnLoadInfo.DontDestroyOnLoadObjects;
+        foreach (var obj in dontDestroyOnLoads)
+        {
+            _logger.LogDebug($"Removing DontDestroyOnLoad object, hash: {obj.GetHashCode()}");
+            _unityWrapper.Object.DestroyImmediate(obj);
+        }
     }
 
     /// <summary>
@@ -54,7 +63,8 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
     {
         PendingRestart = true;
         _softRestartTime = time;
-        StopScriptExecution();
+        _logger.LogDebug("Stopping MonoBehaviour execution");
+        _monoBehaviourController.PausedExecution = true;
         DestroyDontDestroyOnLoads();
         _staticFieldManipulator.ResetStaticFields();
         OnGameRestart();
@@ -88,12 +98,6 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
         _pendingResumePausedExecution = true;
     }
 
-    private void StopScriptExecution()
-    {
-        _logger.LogDebug("Stopping MonoBehaviour execution");
-        _monoBehaviourController.PausedExecution = true;
-    }
-
     public void Awake()
     {
         PendingResumePausedExecution();
@@ -109,7 +113,7 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
         PendingResumePausedExecution();
     }
 
-// plugin will call this as a backup
+    // plugin will call this as a backup
     public void FixedUpdate()
     {
         PendingResumePausedExecution();

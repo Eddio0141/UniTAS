@@ -7,5 +7,6 @@ public interface IObjectWrapper
 {
     Type ObjectType { get; }
     void DestroyImmediate(object obj);
+    void Destroy(object obj);
     IEnumerable<object> FindObjectsOfType(Type type);
 }
