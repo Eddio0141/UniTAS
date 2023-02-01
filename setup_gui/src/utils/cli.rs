@@ -35,6 +35,8 @@ impl Cli {
                 LocalVersions::from_dir(&paths::bepinex_dir()?)?
             ),
             Command::GameDirHistory => todo!(),
+            Command::DownloadUniTAS { version } => todo!(),
+            Command::DownloadBepInEx { version } => todo!(),
         }
 
         Ok(())
@@ -67,6 +69,12 @@ pub enum Command {
     #[command(name = "local-bepinex-versions")]
     LocalBepInExVersions,
     GameDirHistory,
+    DownloadUniTAS {
+        version: VersionSelection,
+    },
+    DownloadBepInEx {
+        version: VersionSelection,
+    },
 }
 
 #[derive(Clone)]
@@ -103,20 +111,18 @@ impl TryFrom<GameDirSelection> for PathBuf {
 #[derive(Clone)]
 pub enum VersionSelection {
     Stable,
-    Master,
+    Branch(String),
     SemVer(Version),
 }
 
-impl FromStr for VersionSelection {
-    type Err = semver::Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let result = match s.to_lowercase().as_str() {
-            "master" => Self::Master,
-            "stable" => Self::Stable,
-            _ => Self::SemVer(Version::from_str(s)?),
-        };
-
-        Ok(result)
+impl From<&str> for VersionSelection {
+    fn from(value: &str) -> Self {
+        if let "stable" = value.to_lowercase().as_str() {
+            Self::Stable
+        } else if let Ok(sem_ver) = Version::from_str(value) {
+            Self::SemVer(sem_ver)
+        } else {
+            Self::Branch(value.to_string())
+        }
     }
 }
