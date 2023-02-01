@@ -48,7 +48,7 @@ This is very hard or probably impossible, because how you can mix logic within t
   - `OnApplicationQuit` since application is closing so no point
   - I don't need to direcly interact with `yield return new WaitForEndOfFrame()` because I handle it in an easier way
 
-#### Info
+# Info
 - The method `MonoBehaviour.StartCoroutine(string, object)` and `MonoBehaviour.StartCoroutine(string)` will always search for a method returning `IEnumerator`
 - **Order of selection**
   - declared order
@@ -56,3 +56,38 @@ This is very hard or probably impossible, because how you can mix logic within t
 - If choosing the method without the `object` overload, it will use the first method that matches name and return type, with no argument
 - If choosing the method with `object` overload, it will use the first method that matches name, return type, and if the `object` Type can be assigned to the argument Type
   - This will be done in declared order, so if you pass a `float` and methods for arguments `int` and `float` is declared in order, it will choose `int` because its assignable
+## Some tests
+- If you register coroutine via `StartCoroutine`, and they yield return the same timing, does the order of the coroutine run as registered order
+    - [x] Same script
+      - It runs in order always
+    - [x] Different script with execution order set
+      - Runs in script exec order as expected
+- [x] If you run a coroutine inside yield, does it run at the same timing
+  - Not if you're registering after the `yield return`
+  - If registered before `yield`, it gets prioritised for some reason to run before the coroutine you ran this in
+
+# Implementation of plan 4
+## Cycle of checks
+- Before update cycle, reset `_processedOnGUI` and fill with `MonoBehaviour` objects that has `OnGUI` method
+- On each tracked `MonoBehaviour` objects, when `OnGUI` is ran, remove entry from `_processedOnGUI`
+- When `_processedOnGUI` && `_processedOnDestroy` && `_processedOnDisable` is empty, run end of update code
+
+## New `MonoBehaviour` instance
+- If the instance has `OnGUI`, keep hold of it in list `_monoBehWithOnGUI`
+
+## Detecting `MonoBehaviour` class destruction
+- Using finilizer doesn't work, so I have to track `Destroy` methods
+- On matching hash, remove from all tracking list
+
+## New coroutine register
+- Stop the old coroutine
+- Register new coroutine on Postfix
+- Make sure to not create an infinite loop by registering my own coroutine
+
+## Script disable
+- Does the class have the event function?
+  - If so, add entry to list `_processedOnDisable`
+
+## `MonoBehaviour` destruction
+- Does the class have the event function?
+  - If so, add entry to list `_processedOnDestroy`
