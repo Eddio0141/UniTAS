@@ -342,4 +342,64 @@ public class LegacyInputPatch
             return false;
         }
     }
+
+    [HarmonyPatch(typeof(Input), nameof(Input.GetButton))]
+    private class GetButton
+    {
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static bool Prefix(string buttonName, ref bool __result)
+        {
+            if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
+                return true;
+            var env = VirtualEnvironmentFactory.GetVirtualEnv();
+            if (!env.RunVirtualEnvironment) return true;
+
+            __result = env.InputState.ButtonState.Buttons.Contains(buttonName);
+            return false;
+        }
+    }
+
+    [HarmonyPatch(typeof(Input), nameof(Input.GetButtonDown))]
+    private class GetButtonDown
+    {
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static bool Prefix(string buttonName, ref bool __result)
+        {
+            if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
+                return true;
+            var env = VirtualEnvironmentFactory.GetVirtualEnv();
+            if (!env.RunVirtualEnvironment) return true;
+
+            __result = env.InputState.ButtonState.ButtonsDown.Contains(buttonName);
+            return false;
+        }
+    }
+
+    [HarmonyPatch(typeof(Input), nameof(Input.GetButtonUp))]
+    private class GetButtonUp
+    {
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static bool Prefix(string buttonName, ref bool __result)
+        {
+            if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
+                return true;
+            var env = VirtualEnvironmentFactory.GetVirtualEnv();
+            if (!env.RunVirtualEnvironment) return true;
+
+            __result = env.InputState.ButtonState.ButtonsUp.Contains(buttonName);
+            return false;
+        }
+    }
 }

@@ -131,60 +131,6 @@ public class InputPatch
         }
     }
 
-    [HarmonyPatch(typeof(InputOrig), nameof(InputOrig.GetButton))]
-    private class GetButton
-    {
-        private static Exception Cleanup(MethodBase original, Exception ex)
-        {
-            return PatcherHelper.CleanupIgnoreException(original, ex);
-        }
-
-        private static bool Prefix(string buttonName)
-        {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
-                return true;
-            var env = virtualEnvironmentFactory.GetVirtualEnv();
-            return !env.RunVirtualEnvironment;
-            // TODO
-        }
-    }
-
-    [HarmonyPatch(typeof(InputOrig), nameof(InputOrig.GetButtonDown))]
-    private class GetButtonDown
-    {
-        private static Exception Cleanup(MethodBase original, Exception ex)
-        {
-            return PatcherHelper.CleanupIgnoreException(original, ex);
-        }
-
-        private static bool Prefix(string buttonName)
-        {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
-                return true;
-            var env = virtualEnvironmentFactory.GetVirtualEnv();
-            return !env.RunVirtualEnvironment;
-            // TODO
-        }
-    }
-
-    [HarmonyPatch(typeof(InputOrig), nameof(InputOrig.GetButtonUp))]
-    private class GetButtonUp
-    {
-        private static Exception Cleanup(MethodBase original, Exception ex)
-        {
-            return PatcherHelper.CleanupIgnoreException(original, ex);
-        }
-
-        private static bool Prefix(string buttonName)
-        {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
-                return true;
-            var env = virtualEnvironmentFactory.GetVirtualEnv();
-            return !env.RunVirtualEnvironment;
-            // TODO
-        }
-    }
-
     [HarmonyPatch(typeof(InputOrig), nameof(InputOrig.GetAccelerationEvent))]
     private class GetAccelerationEvent
     {

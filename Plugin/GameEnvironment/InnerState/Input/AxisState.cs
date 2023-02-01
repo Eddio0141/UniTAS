@@ -4,7 +4,7 @@ namespace UniTASPlugin.GameEnvironment.InnerState.Input;
 
 public class AxisState : InputDeviceBase
 {
-    public Dictionary<string, float> Values { get; set; }
+    public Dictionary<string, float> Values { get; }
 
     public AxisState()
     {

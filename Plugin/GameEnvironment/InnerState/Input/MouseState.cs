@@ -2,7 +2,7 @@
 
 public class MouseState : InputDeviceBase
 {
-    public bool MousePresent { get; set; }
+    public bool MousePresent { get; }
     public float XPos { get; set; }
     public float YPos { get; set; }
     public bool LeftClick { get; set; }

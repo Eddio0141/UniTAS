@@ -4,7 +4,7 @@ namespace UniTASPlugin.GameEnvironment.InnerState.Input;
 
 public class KeyboardState : InputDeviceBase
 {
-    public List<int> Keys { get; set; }
+    public List<int> Keys { get; }
     public List<int> KeysDown { get; }
     public List<int> KeysUp { get; }
     private readonly List<int> _keysPrev;
