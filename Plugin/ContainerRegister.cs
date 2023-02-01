@@ -17,8 +17,6 @@ using UniTASPlugin.Patches.PatchProcessor;
 using UniTASPlugin.ReverseInvoker;
 using UniTASPlugin.StaticFieldStorage;
 using UniTASPlugin.Trackers.AsyncSceneLoadTracker;
-using UniTASPlugin.Trackers.GameObjectTracker;
-using UniTASPlugin.Trackers.MonoBehCoroutineEndOfFrameTracker;
 using UniTASPlugin.Trackers.SceneIndexNameTracker;
 using UniTASPlugin.Trackers.SceneTracker;
 using UniTASPlugin.UnitySafeWrappers.Interfaces;
@@ -116,13 +114,6 @@ public static class ContainerRegister
             c.For<IAssetBundleCreateRequestTracker>().Use(x => x.GetInstance<AsyncOperationTracker>());
             c.For<IAssetBundleRequestTracker>().Use(x => x.GetInstance<AsyncOperationTracker>());
             c.For<IOnLastUpdate>().Use(x => x.GetInstance<AsyncOperationTracker>());
-
-            c.For<EndOfFrameTracker>().Singleton();
-            c.For<IEndOfFrameTracker>().Use(x => x.GetInstance<EndOfFrameTracker>());
-
-            c.For<ObjectTracker>().Singleton();
-            c.For<IObjectTracker>().Use(x => x.GetInstance<ObjectTracker>());
-            c.For<IObjectInfo>().Use(x => x.GetInstance<ObjectTracker>());
 
             c.For<SceneTracker>().Singleton();
             c.For<ISceneTracker>().Use(x => x.GetInstance<SceneTracker>());
