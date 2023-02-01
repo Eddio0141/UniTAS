@@ -17,6 +17,7 @@ using UniTASPlugin.Patches.PatchProcessor;
 using UniTASPlugin.ReverseInvoker;
 using UniTASPlugin.StaticFieldStorage;
 using UniTASPlugin.Trackers.AsyncSceneLoadTracker;
+using UniTASPlugin.Trackers.DontDestroyOnLoadTracker;
 using UniTASPlugin.Trackers.SceneIndexNameTracker;
 using UniTASPlugin.Trackers.SceneTracker;
 using UniTASPlugin.UnitySafeWrappers.Interfaces;
@@ -118,6 +119,10 @@ public static class ContainerRegister
             c.For<SceneTracker>().Singleton();
             c.For<ISceneTracker>().Use(x => x.GetInstance<SceneTracker>());
             c.For<ILoadedSceneInfo>().Use(x => x.GetInstance<SceneTracker>());
+
+            c.For<DontDestroyOnLoadTracker>().Singleton();
+            c.For<IDontDestroyOnLoadTracker>().Use(x => x.GetInstance<DontDestroyOnLoadTracker>());
+            c.For<IDontDestroyOnLoadInfo>().Use(x => x.GetInstance<DontDestroyOnLoadTracker>());
         });
 
         return container;
