@@ -13,6 +13,7 @@
 //! - List locally availiable UniTAS versions
 //! - List locally availiable BepInEx versions
 //! - Offline mode
+//! - Download UniTAS and BepInEx versions
 
 use clap::Parser;
 use utils::cli::Cli;
