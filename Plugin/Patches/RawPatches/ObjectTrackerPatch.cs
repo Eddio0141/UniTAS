@@ -6,8 +6,8 @@ using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using UniTASPlugin.Extensions;
-using UniTASPlugin.GameObjectTracker;
 using UniTASPlugin.Patches.PatchTypes;
+using UniTASPlugin.Trackers.GameObjectTracker;
 using Object = UnityEngine.Object;
 
 namespace UniTASPlugin.Patches.RawPatches;

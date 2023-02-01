@@ -1,4 +1,4 @@
-namespace UniTASPlugin.GameObjectTracker;
+namespace UniTASPlugin.Trackers.GameObjectTracker;
 
 public interface IObjectTracker
 {

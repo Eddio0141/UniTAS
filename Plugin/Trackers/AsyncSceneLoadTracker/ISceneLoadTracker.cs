@@ -1,6 +1,6 @@
 using UniTASPlugin.UnitySafeWrappers.Wrappers;
 
-namespace UniTASPlugin.AsyncSceneLoadTracker;
+namespace UniTASPlugin.Trackers.AsyncSceneLoadTracker;
 
 public interface ISceneLoadTracker
 {

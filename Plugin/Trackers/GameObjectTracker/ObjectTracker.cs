@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using UniTASPlugin.Logger;
-using UniTASPlugin.Trackers;
 using UniTASPlugin.Trackers.SceneTracker;
 
-namespace UniTASPlugin.GameObjectTracker;
+namespace UniTASPlugin.Trackers.GameObjectTracker;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 public class ObjectTracker : IObjectTracker, IObjectInfo

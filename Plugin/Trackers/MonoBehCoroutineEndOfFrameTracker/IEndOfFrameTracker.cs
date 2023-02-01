@@ -1,6 +1,6 @@
 using System.Collections;
 
-namespace UniTASPlugin.MonoBehCoroutineEndOfFrameTracker;
+namespace UniTASPlugin.Trackers.MonoBehCoroutineEndOfFrameTracker;
 
 public interface IEndOfFrameTracker
 {

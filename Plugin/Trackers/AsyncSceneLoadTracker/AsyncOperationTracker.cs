@@ -4,7 +4,7 @@ using UniTASPlugin.Interfaces.Update;
 using UniTASPlugin.UnitySafeWrappers.Interfaces;
 using UniTASPlugin.UnitySafeWrappers.Wrappers;
 
-namespace UniTASPlugin.AsyncSceneLoadTracker;
+namespace UniTASPlugin.Trackers.AsyncSceneLoadTracker;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateRequestTracker, IAssetBundleRequestTracker,
