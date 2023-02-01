@@ -1,16 +1,10 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using HarmonyLib;
-using UniTASPlugin.Extensions;
 using UniTASPlugin.Patches.PatchTypes;
 using UniTASPlugin.Trackers.AsyncSceneLoadTracker;
-using UniTASPlugin.Trackers.MonoBehCoroutineEndOfFrameTracker;
 using UnityEngine;
 
 namespace UniTASPlugin.Patches.RawPatches;
@@ -34,8 +28,6 @@ public class AsyncOperationPatch
 
     private static readonly IAssetBundleRequestTracker AssetBundleRequestTracker =
         Plugin.Kernel.GetInstance<IAssetBundleRequestTracker>();
-
-    private static readonly IEndOfFrameTracker EndOfFrameTracker = Plugin.Kernel.GetInstance<IEndOfFrameTracker>();
 
     [HarmonyPatch(typeof(AsyncOperation), "allowSceneActivation", MethodType.Setter)]
     private class SetAllowSceneActivation
@@ -299,216 +291,6 @@ public class AsyncOperationPatch
             _ = resultTraverse.Field("m_Path").SetValue(path);
             _ = resultTraverse.Field("m_Type").SetValue(type);
             return false;
-        }
-    }
-
-    // use this to track what has been already patched or not
-    private static readonly List<Type> _patchedIEnumerators = new();
-    private static string _invokingIEnumeratorStringCtorMethodName;
-    private static object _invokingIEnumeratorStringMonoBehInstance;
-
-    private static void StartCoroutineInvoke(IEnumerator routine, Coroutine coroutineReturnValue)
-    {
-        EndOfFrameTracker.NewCoroutine(routine, coroutineReturnValue);
-
-        var routineType = routine.GetType();
-        if (_patchedIEnumerators.Contains(routineType))
-        {
-            return;
-        }
-
-        _patchedIEnumerators.Add(routineType);
-
-        // patch the IEnumerator.MoveNext
-        var targetPatch = routineType.GetMethod(nameof(IEnumerator.MoveNext), AccessTools.all);
-        if (targetPatch == null)
-        {
-            throw new InvalidOperationException("IEnumerator.MoveNext not found");
-        }
-
-        Trace.Write($"Patching {routineType} IEnumerator.MoveNext");
-        Plugin.Harmony.Patch(targetPatch, postfix: new(typeof(IEnumeratorPatch), nameof(IEnumeratorPatch.Postfix)));
-    }
-
-    [HarmonyPatch]
-    private class StartCoroutineStringPatch
-    {
-        private static IEnumerable<MethodBase> TargetMethods()
-        {
-            yield return AccessTools.Method(typeof(MonoBehaviour), nameof(MonoBehaviour.StartCoroutine),
-                new[] { typeof(string), typeof(object) });
-            yield return AccessTools.Method(typeof(MonoBehaviour), "StartCoroutineManaged",
-                new[] { typeof(string), typeof(object) });
-        }
-
-        private static Exception Cleanup(MethodBase original, Exception ex)
-        {
-            return PatchHelper.CleanupIgnoreFail(original, ex);
-        }
-
-        private static void Prefix(object __instance, string methodName)
-        {
-            var allEnumeratorTypes = __instance.GetType().GetNestedTypes(AccessTools.all)
-                .Where(x => !_patchedIEnumerators.Contains(x) && x.GetInterface(nameof(IEnumerator)) != null &&
-                            x.GetConstructors().Length > 0 && x.Name.Like($"<{methodName}>d__*"))
-                .ToList();
-
-            Trace.WriteIf(allEnumeratorTypes.Count > 0,
-                $"Found patching IEnumerator types: {string.Join(", ", allEnumeratorTypes.Select(x => x.FullName).ToArray())}");
-
-            if (allEnumeratorTypes.Count > 0)
-            {
-                _patchedIEnumerators.AddRange(allEnumeratorTypes);
-            }
-
-            // finding patch methods
-            var moveNextMethods = allEnumeratorTypes
-                .Select(x => x.GetMethod(nameof(IEnumerator.MoveNext), AccessTools.all))
-                .Where(x => x != null);
-            var ctorMethods = allEnumeratorTypes
-                .Select(x => x.GetConstructors().First());
-
-            foreach (var moveNextMethod in moveNextMethods)
-            {
-                Trace.Write($"Patching IEnumerator.MoveNext for {moveNextMethod.DeclaringType?.FullName}");
-                Plugin.Harmony.Patch(moveNextMethod,
-                    postfix: new(typeof(IEnumeratorPatch), nameof(IEnumeratorPatch.Postfix)));
-            }
-
-            foreach (var ctorMethod in ctorMethods)
-            {
-                Trace.Write($"Patching IEnumerator ctor for {ctorMethod.DeclaringType?.FullName}");
-                Plugin.Harmony.Patch(ctorMethod,
-                    postfix: new(typeof(IEnumeratorPatchStringCtor), nameof(IEnumeratorPatchStringCtor.Postfix)));
-            }
-
-            _invokingIEnumeratorStringMonoBehInstance = __instance;
-            _invokingIEnumeratorStringCtorMethodName = methodName;
-        }
-
-        private static void Postfix()
-        {
-            if (_invokingIEnumeratorStringCtorMethodName != null)
-            {
-                Plugin.Log.LogWarning(
-                    $"IEnumerator invoke didn't get tracked properly, name: {_invokingIEnumeratorStringCtorMethodName}, monoBeh instance: {_invokingIEnumeratorStringMonoBehInstance?.GetHashCode()}");
-            }
-
-            _invokingIEnumeratorStringCtorMethodName = null;
-            _invokingIEnumeratorStringMonoBehInstance = null;
-        }
-    }
-
-    [HarmonyPatch(typeof(MonoBehaviour), nameof(MonoBehaviour.StartCoroutine_Auto), typeof(IEnumerator))]
-    private class StartCoroutineAutoPatch
-    {
-        private static Exception Cleanup(MethodBase original, Exception ex)
-        {
-            return PatchHelper.CleanupIgnoreFail(original, ex);
-        }
-
-        private static void Postfix(IEnumerator routine, Coroutine __result)
-        {
-            StartCoroutineInvoke(routine, __result);
-        }
-    }
-
-    [HarmonyPatch(typeof(MonoBehaviour), "StartCoroutineManaged2", typeof(IEnumerator))]
-    private class StartCoroutineManaged2
-    {
-        private static Exception Cleanup(MethodBase original, Exception ex)
-        {
-            return PatchHelper.CleanupIgnoreFail(original, ex);
-        }
-
-        private static void Postfix(IEnumerator enumerator, Coroutine __result)
-        {
-            StartCoroutineInvoke(enumerator, __result);
-        }
-    }
-
-    private class IEnumeratorPatch
-    {
-        public static void Postfix(IEnumerator __instance, bool __result)
-        {
-            EndOfFrameTracker.MoveNextInvoke(__instance);
-            if (!__result)
-            {
-                EndOfFrameTracker.CoroutineEnd(__instance);
-            }
-        }
-    }
-
-    // ReSharper disable once ClassNeverInstantiated.Local
-    private class IEnumeratorPatchStringCtor
-    {
-        public static void Postfix(IEnumerator __instance)
-        {
-            if (_invokingIEnumeratorStringCtorMethodName == null) return;
-            EndOfFrameTracker.NewCoroutine(__instance, null, _invokingIEnumeratorStringMonoBehInstance,
-                _invokingIEnumeratorStringCtorMethodName);
-            _invokingIEnumeratorStringCtorMethodName = null;
-            _invokingIEnumeratorStringMonoBehInstance = null;
-        }
-    }
-
-    [HarmonyPatch(typeof(MonoBehaviour), nameof(MonoBehaviour.StopCoroutine), typeof(string))]
-    private class MonoBehaviourStopCoroutinePatch
-    {
-        private static Exception Cleanup(MethodBase original, Exception ex)
-        {
-            return PatchHelper.CleanupIgnoreFail(original, ex);
-        }
-
-        // Stops all coroutines named methodName running on this behaviour
-        private static void Postfix(MonoBehaviour __instance, string methodName)
-        {
-            EndOfFrameTracker.CoroutineEnd(__instance, methodName);
-        }
-    }
-
-    [HarmonyPatch(typeof(MonoBehaviour), "StopCoroutineFromEnumeratorManaged", typeof(IEnumerator))]
-    private class StopCoroutineFromEnumeratorManagedPatch
-    {
-        private static Exception Cleanup(MethodBase original, Exception ex)
-        {
-            return PatchHelper.CleanupIgnoreFail(original, ex);
-        }
-
-        // Stops all coroutines named methodName running on this behaviour
-        private static void Postfix(IEnumerator routine)
-        {
-            EndOfFrameTracker.CoroutineEnd(routine);
-        }
-    }
-
-    [HarmonyPatch(typeof(MonoBehaviour), "StopCoroutineManaged", typeof(Coroutine))]
-    private class StopCoroutineManagedPatch
-    {
-        private static Exception Cleanup(MethodBase original, Exception ex)
-        {
-            return PatchHelper.CleanupIgnoreFail(original, ex);
-        }
-
-        // Stops all coroutines named methodName running on this behaviour
-        private static void Postfix(Coroutine routine)
-        {
-            EndOfFrameTracker.CoroutineEnd(routine);
-        }
-    }
-
-    [HarmonyPatch(typeof(MonoBehaviour), nameof(MonoBehaviour.StopAllCoroutines), new Type[0])]
-    private class MonoBehaviourStopAllCoroutinesPatch
-    {
-        private static Exception Cleanup(MethodBase original, Exception ex)
-        {
-            return PatchHelper.CleanupIgnoreFail(original, ex);
-        }
-
-        // Stops all coroutines named methodName running on this behaviour
-        private static void Postfix(MonoBehaviour __instance)
-        {
-            EndOfFrameTracker.CoroutineEndAll(__instance);
         }
     }
 }

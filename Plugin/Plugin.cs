@@ -9,6 +9,7 @@ using StructureMap;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.GameInitialRestart;
 using UniTASPlugin.Interfaces;
+using UniTASPlugin.Interfaces.Update;
 using UniTASPlugin.LegacyGameOverlay;
 using UniTASPlugin.Patches.PatchProcessor;
 using UnityEngine;
@@ -36,6 +37,8 @@ public class Plugin : BaseUnityPlugin
     private bool _fullyLoaded;
 
     private IGameInitialRestart _gameInitialRestart;
+
+    private IOnLastUpdate[] _onLastUpdates;
 
     private void Awake()
     {
@@ -130,14 +133,18 @@ public class Plugin : BaseUnityPlugin
         if (_instance == null) return;
         if (_instance._endOfFrameLoopRunning) return;
         _instance._endOfFrameLoopRunning = true;
-        _instance.StartCoroutine(EndOfFrame());
+        _instance.StartCoroutine(_instance.EndOfFrame());
     }
 
-    private static IEnumerator EndOfFrame()
+    private IEnumerator EndOfFrame()
     {
         while (true)
         {
             yield return new WaitForEndOfFrame();
+            foreach (var update in _onLastUpdates)
+            {
+                update.OnLastUpdate();
+            }
         }
         // ReSharper disable once IteratorNeverReturns
     }
@@ -153,12 +160,13 @@ public class Plugin : BaseUnityPlugin
         }
     }
 
-    private static void LoadPluginFull()
+    private void LoadPluginFull()
     {
         // ContainerRegister.ConfigAfterInit(Kernel);
         //
         // Trace.Write(Kernel.WhatDoIHave());
 
         Kernel.GetInstance<PluginWrapper>();
+        _onLastUpdates = Kernel.GetAllInstances<IOnLastUpdate>().ToArray();
     }
 }
