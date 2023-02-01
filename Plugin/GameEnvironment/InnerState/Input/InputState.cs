@@ -12,6 +12,7 @@ public class InputState
         MouseState.ResetState();
         AxisState.ResetState();
         KeyboardState.ResetState();
+        ButtonState.ResetState();
     }
 
     public void Update()
@@ -19,5 +20,6 @@ public class InputState
         MouseState.Update();
         AxisState.Update();
         KeyboardState.Update();
+        ButtonState.Update();
     }
 }
