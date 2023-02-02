@@ -84,6 +84,7 @@ impl Action {
                 };
 
                 let name = name.to_string();
+                let branch = branch.replace('/', "%2F");
 
                 // because github doesn't allow us to download artifacts directly, we use nightly.link
                 let url = format!(

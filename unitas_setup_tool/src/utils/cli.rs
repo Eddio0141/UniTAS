@@ -58,9 +58,9 @@ pub enum Command {
     Install {
         game_dir_selection: GameDirSelection,
         #[arg(default_value = "stable")]
-        unitas_version: VersionSelection,
+        unitas_version: DownloadVersion,
         #[arg(default_value = "stable")]
-        bepinex_version: VersionSelection,
+        bepinex_version: DownloadVersion,
         #[arg(short, long)]
         offline: bool,
     },
@@ -76,11 +76,11 @@ pub enum Command {
     GameDirHistory,
     #[command(name = "download-unitas")]
     DownloadUniTAS {
-        version: VersionSelection,
+        version: DownloadVersion,
     },
     #[command(name = "download-bepinex")]
     DownloadBepInEx {
-        version: VersionSelection,
+        version: DownloadVersion,
     },
 }
 
@@ -115,14 +115,14 @@ impl TryFrom<GameDirSelection> for PathBuf {
     }
 }
 
-#[derive(Clone)]
-pub enum VersionSelection {
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub enum DownloadVersion {
     Stable,
     Branch(String),
     SemVer(Version),
 }
 
-impl From<&str> for VersionSelection {
+impl From<&str> for DownloadVersion {
     fn from(value: &str) -> Self {
         if let "stable" = value.to_lowercase().as_str() {
             Self::Stable
@@ -134,7 +134,15 @@ impl From<&str> for VersionSelection {
     }
 }
 
-impl Display for VersionSelection {
+impl FromStr for DownloadVersion {
+    type Err = crate::error::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(Self::from(s))
+    }
+}
+
+impl Display for DownloadVersion {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Stable => write!(f, "stable"),
