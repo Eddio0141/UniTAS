@@ -6,7 +6,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use semver::Version;
+use crate::{prelude::Wrap, utils::assembly_version::AssemblyVersion};
 
 #[derive(Default)]
 pub struct DirInfo {
@@ -124,8 +124,8 @@ impl Display for GamePlatform {
 
 #[derive(Default)]
 pub struct InstalledInfo {
-    unitas_version: Option<InstalledVersion>,
-    bepinex_version: Option<InstalledVersion>,
+    unitas_version: Option<AssemblyVersion>,
+    bepinex_version: Option<AssemblyVersion>,
 }
 
 impl InstalledInfo {
@@ -143,28 +143,25 @@ impl InstalledInfo {
         })
     }
 
-    fn bepinex_version(game_dir: &Path) -> Result<Option<InstalledVersion>, super::error::Error> {
-        // TODO
-        return Ok(None);
-    }
+    fn bepinex_version(game_dir: &Path) -> Result<Option<AssemblyVersion>, super::error::Error> {
+        // checks in BepInEx/core/BepInEx.dll
+        let bepinex_dir = game_dir.join("BepInEx");
+        let bepinex_core_dir = bepinex_dir.join("core");
+        let bepinex_dll = bepinex_core_dir.join("BepInEx.dll");
 
-    fn unitas_version(game_dir: &Path) -> Result<Option<InstalledVersion>, super::error::Error> {
-        // TODO
-        return Ok(None);
-    }
-}
-
-pub enum InstalledVersion {
-    Branch(String),
-    Semver(Version),
-}
-
-impl Display for InstalledVersion {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            InstalledVersion::Branch(branch) => write!(f, "branch {}", branch),
-            InstalledVersion::Semver(version) => write!(f, "version {}", version),
+        if !bepinex_dll.try_exists()? {
+            return Ok(None);
         }
+
+        // because it's a dll, we to use pelite to read the version info
+        let version_info = AssemblyVersion::try_from(Wrap(bepinex_dll.as_path()))?;
+
+        Ok(Some(version_info))
+    }
+
+    fn unitas_version(game_dir: &Path) -> Result<Option<AssemblyVersion>, super::error::Error> {
+        // TODO
+        Ok(None)
     }
 }
 
@@ -214,7 +211,7 @@ fn is_unity_dir(dir: &Path) -> Result<bool, io::Error> {
 
         let managed_dir = data_dir.path().join("Managed");
 
-        if !managed_dir.exists() {
+        if !managed_dir.try_exists()? {
             continue;
         }
 
@@ -222,7 +219,7 @@ fn is_unity_dir(dir: &Path) -> Result<bool, io::Error> {
         let unity_engine_dll = managed_dir.join("UnityEngine.dll");
         let unity_engine_core_module_dll = managed_dir.join("UnityEngine.CoreModule.dll");
 
-        if unity_engine_dll.exists() || unity_engine_core_module_dll.exists() {
+        if unity_engine_dll.try_exists()? || unity_engine_core_module_dll.try_exists()? {
             return Ok(true);
         }
     }
