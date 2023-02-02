@@ -1,6 +1,12 @@
 pub mod error;
 
-use std::path::PathBuf;
+use std::{
+    fs::{self, File},
+    path::PathBuf,
+};
+
+use anyhow::Result;
+use zip::ZipArchive;
 
 use self::error::Error;
 
@@ -76,6 +82,39 @@ pub async fn download_bepinex(version: &DownloadVersion) -> Result<PathBuf, Erro
             action.extract_to_dir(&dest_path).await?;
 
             // because BepInEx has zip files inside zip files, we need to extract the inner zip
+            let files = std::fs::read_dir(&dest_path)?;
+            let mut tasks = Vec::new();
+
+            for file in files {
+                let file = file?;
+                let file_path = file.path();
+
+                if let Some(extension) = file_path.extension() {
+                    if extension != "zip" {
+                        continue;
+                    }
+                } else {
+                    continue;
+                }
+
+                let file_name_without_extension = file_path.file_stem().unwrap();
+
+                let dest_path = dest_path.join(file_name_without_extension);
+                tokio::fs::create_dir_all(&dest_path).await?;
+
+                tasks.push(tokio::spawn(async move {
+                    let mut archive = ZipArchive::new(File::open(&file_path)?)?;
+                    archive.extract(dest_path)?;
+
+                    // delete the zip file
+                    fs::remove_file(file_path)?;
+                    Ok::<_, Error>(())
+                }));
+            }
+
+            for task in tasks {
+                task.await??;
+            }
         }
         DownloadVersion::SemVer(_) => todo!(),
     }
