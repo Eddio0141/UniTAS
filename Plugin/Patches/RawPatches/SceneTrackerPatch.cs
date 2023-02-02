@@ -12,7 +12,8 @@ using UnityEngine;
 
 namespace UniTASPlugin.Patches.RawPatches;
 
-[RawPatch(1000)]
+// TODO disable this patch for now
+// [RawPatch(1000)]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 [SuppressMessage("ReSharper", "UnusedMember.Local")]
 [SuppressMessage("ReSharper", "InconsistentNaming")]

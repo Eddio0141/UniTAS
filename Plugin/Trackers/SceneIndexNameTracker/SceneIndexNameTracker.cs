@@ -26,14 +26,17 @@ public class SceneIndexNameTracker : IPluginInitialLoad, ISceneIndexName, IOnUpd
         _sceneWrapper = sceneWrapper;
     }
 
-    public bool FinishedOperation { get; private set; }
+    // disabled for now
+    public bool FinishedOperation { get; private set; } = true;
 
     public void OnInitialLoad()
     {
         // when iterating through all scenes, we must pause execution of mono beh
         _sceneCount = _sceneWrapper.TotalSceneCount;
         _monoBehaviourController.PausedExecution = true;
-        _testingSceneIndex = 0;
+        // disabled for now
+        _testingSceneIndex = null;
+        // _testingSceneIndex = 0;
     }
 
     public void Update()
