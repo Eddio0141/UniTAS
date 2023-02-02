@@ -1,8 +1,8 @@
 //! Get version info for semantically versioned dir names in a dir.
 
-use std::{fmt::Display, path::Path, str::FromStr};
+use std::{fmt::Display, path::Path};
 
-use super::cli::DownloadVersion;
+use super::{cli::DownloadVersion, paths};
 
 pub struct LocalVersions {
     pub versions: Vec<DownloadVersion>,
@@ -12,17 +12,42 @@ impl LocalVersions {
     pub fn from_dir(dir: &Path) -> crate::prelude::Result<Self> {
         let mut versions = Vec::new();
 
-        for entry in dir.read_dir()? {
-            let path = entry?.path();
+        let stable_dir = paths::local_stable_path(&dir);
+        let tag_dir = paths::local_tag_path(&dir);
+        let branch_dir = paths::local_branch_path(&dir);
 
-            if path.is_dir() {
+        paths::create_dir_if_not_exists(&stable_dir)?;
+        paths::create_dir_if_not_exists(&tag_dir)?;
+        paths::create_dir_if_not_exists(&branch_dir)?;
+
+        let entries = [
+            stable_dir.read_dir()?,
+            tag_dir.read_dir()?,
+            branch_dir.read_dir()?,
+        ];
+
+        let version_handles = [
+            |_: &str| DownloadVersion::Stable,
+            |file_name: &str| DownloadVersion::Tag(file_name.to_string()),
+            |file_name: &str| DownloadVersion::Branch(file_name.to_string()),
+        ];
+
+        for (entry, version_handle) in entries.into_iter().zip(version_handles.iter()) {
+            for entry in entry {
+                let path = entry?.path();
+
+                if !path.is_dir() {
+                    continue;
+                }
+
                 let Some(file_name) = path.file_name() else {
-                    continue;
-                };
+                            continue;
+                        };
                 let Some(file_name) = file_name.to_str() else {
-                    continue;
-                };
-                let version = DownloadVersion::from_str(file_name)?;
+                            continue;
+                        };
+
+                let version = version_handle(file_name);
                 versions.push(version);
             }
         }

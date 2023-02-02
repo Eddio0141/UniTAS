@@ -1,7 +1,10 @@
-use std::{fmt::Display, path::PathBuf, str::FromStr};
+use std::{
+    fmt::Display,
+    path::{Path, PathBuf},
+    str::FromStr,
+};
 
-use clap::{command, Parser, Subcommand};
-use semver::Version;
+use clap::{command, Args, Parser, Subcommand};
 
 use super::{download, game_dir::dir_info::DirInfo, local_versions::LocalVersions, paths};
 
@@ -40,11 +43,11 @@ impl Cli {
             ),
             Command::GameDirHistory => todo!(),
             Command::DownloadUniTAS { version } => {
-                let dest_path = download::download_unitas(version).await?;
+                let dest_path = download::download_unitas(&version.into()).await?;
                 println!("Downloaded UniTAS to {}", dest_path.display());
             }
             Command::DownloadBepInEx { version } => {
-                let dest_path = download::download_bepinex(version).await?;
+                let dest_path = download::download_bepinex(&version.into()).await?;
                 println!("Downloaded BepInEx to {}", dest_path.display());
             }
         }
@@ -60,10 +63,10 @@ pub enum Command {
     },
     Install {
         game_dir_selection: GameDirSelection,
-        #[arg(default_value = "stable")]
-        unitas_version: DownloadVersion,
-        #[arg(default_value = "stable")]
-        bepinex_version: DownloadVersion,
+        #[command(flatten)]
+        unitas_version: DownloadVersionArg,
+        #[command(flatten)]
+        bepinex_version: DownloadVersionArg,
         #[arg(short, long)]
         offline: bool,
     },
@@ -79,11 +82,13 @@ pub enum Command {
     GameDirHistory,
     #[command(name = "download-unitas")]
     DownloadUniTAS {
-        version: DownloadVersion,
+        #[command(flatten)]
+        version: DownloadVersionArg,
     },
     #[command(name = "download-bepinex")]
     DownloadBepInEx {
-        version: DownloadVersion,
+        #[command(flatten)]
+        version: DownloadVersionArg,
     },
 }
 
@@ -118,30 +123,68 @@ impl TryFrom<GameDirSelection> for PathBuf {
     }
 }
 
-#[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub enum DownloadVersion {
-    Stable,
-    Branch(String),
-    SemVer(Version),
+#[derive(Args, Clone)]
+pub struct DownloadVersionArg {
+    #[arg(long, required_unless_present_any = &["tag", "branch"])]
+    pub stable: bool,
+    #[arg(long, required_unless_present_any = &["stable", "branch"])]
+    pub tag: Option<String>,
+    #[arg(long, required_unless_present_any = &["stable", "tag"])]
+    pub branch: Option<String>,
 }
 
-impl From<&str> for DownloadVersion {
-    fn from(value: &str) -> Self {
-        if let "stable" = value.to_lowercase().as_str() {
-            Self::Stable
-        } else if let Ok(sem_ver) = Version::from_str(value) {
-            Self::SemVer(sem_ver)
-        } else {
-            Self::Branch(value.to_string())
+impl Default for DownloadVersionArg {
+    fn default() -> Self {
+        Self {
+            stable: true,
+            tag: None,
+            branch: None,
         }
     }
 }
 
-impl FromStr for DownloadVersion {
-    type Err = crate::error::Error;
+impl Display for DownloadVersionArg {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        if self.stable {
+            write!(f, "stable")
+        } else if let Some(tag) = &self.tag {
+            write!(f, "tag {}", tag)
+        } else if let Some(branch) = &self.branch {
+            write!(f, "branch {}", branch)
+        } else {
+            unreachable!()
+        }
+    }
+}
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Self::from(s))
+impl From<&DownloadVersionArg> for DownloadVersion {
+    fn from(value: &DownloadVersionArg) -> Self {
+        if value.stable {
+            Self::Stable
+        } else if let Some(tag) = &value.tag {
+            Self::Tag(tag.clone())
+        } else if let Some(branch) = &value.branch {
+            Self::Branch(branch.clone())
+        } else {
+            unreachable!()
+        }
+    }
+}
+
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub enum DownloadVersion {
+    Stable,
+    Tag(String),
+    Branch(String),
+}
+
+impl From<DownloadVersion> for PathBuf {
+    fn from(value: DownloadVersion) -> Self {
+        match value {
+            DownloadVersion::Stable => PathBuf::from("stable"),
+            DownloadVersion::Tag(tag) => Path::new("tag").join(PathBuf::from(tag)),
+            DownloadVersion::Branch(branch) => Path::new("branch").join(PathBuf::from(branch)),
+        }
     }
 }
 
@@ -149,8 +192,8 @@ impl Display for DownloadVersion {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Stable => write!(f, "stable"),
-            Self::Branch(branch) => write!(f, "{branch}"),
-            Self::SemVer(sem_ver) => write!(f, "{sem_ver}"),
+            Self::Tag(tag) => write!(f, "tag {tag}"),
+            Self::Branch(branch) => write!(f, "branch {branch}"),
         }
     }
 }

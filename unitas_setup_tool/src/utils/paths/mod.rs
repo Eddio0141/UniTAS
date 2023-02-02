@@ -2,7 +2,7 @@ pub mod error;
 
 use std::path::{Path, PathBuf};
 
-fn create_dir_if_not_exists(path: &Path) -> Result<(), self::error::Error> {
+pub fn create_dir_if_not_exists(path: &Path) -> Result<(), self::error::Error> {
     if !path.is_dir() {
         std::fs::create_dir_all(path)?;
     }
@@ -34,4 +34,20 @@ pub fn history_path() -> Result<PathBuf, self::error::Error> {
     let mut path = data_storage_dir()?;
     path.push("history.json");
     Ok(path)
+}
+
+pub const TAG_DIR_NAME: &str = "tag";
+pub const BRANCH_DIR_NAME: &str = "branch";
+pub const STABLE_DIR_NAME: &str = "stable";
+
+pub fn local_tag_path(path: &Path) -> PathBuf {
+    path.join(TAG_DIR_NAME)
+}
+
+pub fn local_branch_path(path: &Path) -> PathBuf {
+    path.join(BRANCH_DIR_NAME)
+}
+
+pub fn local_stable_path(path: &Path) -> PathBuf {
+    path.join(STABLE_DIR_NAME)
 }

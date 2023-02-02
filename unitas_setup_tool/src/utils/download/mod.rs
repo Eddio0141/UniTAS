@@ -55,7 +55,7 @@ pub async fn download_unitas(version: &DownloadVersion) -> Result<PathBuf, Error
 
             action.extract_to_dir(&dest_path).await?;
         }
-        DownloadVersion::SemVer(_) => todo!(),
+        DownloadVersion::Tag(_) => todo!(),
     }
 
     Ok(dest_path)
@@ -116,7 +116,7 @@ pub async fn download_bepinex(version: &DownloadVersion) -> Result<PathBuf, Erro
                 task.await??;
             }
         }
-        DownloadVersion::SemVer(_) => todo!(),
+        DownloadVersion::Tag(_) => todo!(),
     }
 
     Ok(dest_path)
