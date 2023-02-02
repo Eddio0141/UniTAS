@@ -57,7 +57,9 @@ pub enum Command {
     },
     Install {
         game_dir_selection: GameDirSelection,
+        #[arg(default_value = "stable")]
         unitas_version: VersionSelection,
+        #[arg(default_value = "stable")]
         bepinex_version: VersionSelection,
         #[arg(short, long)]
         offline: bool,
