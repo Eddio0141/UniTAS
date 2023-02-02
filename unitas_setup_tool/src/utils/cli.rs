@@ -31,11 +31,11 @@ impl Cli {
                 game_dir_selection,
                 remove_bepinex,
             } => todo!(),
-            Command::LocalUniTASVersions => println!(
+            Command::LocalUniTAS => println!(
                 "Locally available UniTAS versions\n{}",
                 LocalVersions::from_dir(&paths::unitas_dir()?)?
             ),
-            Command::LocalBepInExVersions => println!(
+            Command::LocalBepInEx => println!(
                 "Locally available BepInEx versions\n{}",
                 LocalVersions::from_dir(&paths::bepinex_dir()?)?
             ),
@@ -51,32 +51,30 @@ impl Cli {
 #[derive(Subcommand)]
 pub enum Command {
     GetInfo {
-        #[arg(short, long)]
         game_dir_selection: GameDirSelection,
     },
     Install {
-        #[arg(short, long)]
         game_dir_selection: GameDirSelection,
-        #[arg(short, long)]
         unitas_version: VersionSelection,
-        #[arg(short, long)]
         bepinex_version: VersionSelection,
         #[arg(short, long)]
         offline: bool,
     },
     Uninstall {
-        #[arg(short, long)]
         game_dir_selection: GameDirSelection,
+        #[arg(short, long)]
         remove_bepinex: bool,
     },
-    #[command(name = "local-unitas-versions")]
-    LocalUniTASVersions,
-    #[command(name = "local-bepinex-versions")]
-    LocalBepInExVersions,
+    #[command(name = "local-unitas")]
+    LocalUniTAS,
+    #[command(name = "local-bepinex")]
+    LocalBepInEx,
     GameDirHistory,
+    #[command(name = "download-unitas")]
     DownloadUniTAS {
         version: VersionSelection,
     },
+    #[command(name = "download-bepinex")]
     DownloadBepInEx {
         version: VersionSelection,
     },

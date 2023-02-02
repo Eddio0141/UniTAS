@@ -2,7 +2,7 @@ pub mod error;
 
 use std::{
     fs::File,
-    io::BufReader,
+    io::{self, BufReader},
     path::{Path, PathBuf},
 };
 
@@ -18,7 +18,15 @@ pub struct History {
 impl History {
     pub fn load() -> Result<Self, self::error::Error> {
         let path = paths::history_path()?;
-        let file = File::open(path)?;
+        let file = match File::open(path) {
+            Ok(file) => file,
+            Err(err) if err.kind() == io::ErrorKind::NotFound => {
+                return Ok(Self {
+                    entries: Vec::new(),
+                })
+            }
+            Err(err) => return Err(err.into()),
+        };
         let reader = BufReader::new(file);
         let history = serde_json::from_reader(reader)?;
 
