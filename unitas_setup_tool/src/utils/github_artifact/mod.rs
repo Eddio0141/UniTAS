@@ -37,7 +37,12 @@ pub struct Action {
 }
 
 impl Action {
-    pub async fn get_latest_action(owner: &str, repo: &str, branch: &str) -> Result<Self, Error> {
+    pub async fn get_latest_action(
+        owner: &str,
+        repo: &str,
+        branch: &str,
+        workflow_file_name: &str,
+    ) -> Result<Self, Error> {
         let url = format!(
             "https://api.github.com/repos/{owner}/{repo}/actions/runs?branch={branch}&event=push&status=success"
         );
@@ -88,7 +93,7 @@ impl Action {
 
                 // because github doesn't allow us to download artifacts directly, we use nightly.link
                 let url = format!(
-                    "https://nightly.link/{owner}/{repo}/workflows/build-on-push/{branch}/{name}.zip"
+                    "https://nightly.link/{owner}/{repo}/workflows/{workflow_file_name}/{branch}/{name}.zip"
                 );
 
                 Ok(Artifact { name, url })

@@ -9,9 +9,16 @@ use super::{cli::DownloadVersion, github_artifact::Action, paths};
 const UNITAS_OWNER: &str = "eddio0141";
 const UNITAS_REPO: &str = "UniTAS";
 
+const UNITAS_WORKFLOW_FILE_NAME: &str = "build-on-push.yml";
+
 const UNITAS_RELEASE: &str = "Release";
 const UNIX_RELEASE: &str = "ubuntu-latest";
 const WINDOWS_RELEASE: &str = "windows-latest";
+
+const BEPINEX_OWNER: &str = "BepInEx";
+const BEPINEX_REPO: &str = "BepInEx";
+
+const BEPINEX_WORKFLOW_FILE_NAME: &str = "build.yml";
 
 /// Downloads UniTAS by version selection from GitHub
 /// - `version` - The version to download
@@ -23,7 +30,13 @@ pub async fn download_unitas(version: &DownloadVersion) -> Result<PathBuf, Error
     match version {
         DownloadVersion::Stable => todo!(),
         DownloadVersion::Branch(branch) => {
-            let mut action = Action::get_latest_action(UNITAS_OWNER, UNITAS_REPO, branch).await?;
+            let mut action = Action::get_latest_action(
+                UNITAS_OWNER,
+                UNITAS_REPO,
+                branch,
+                UNITAS_WORKFLOW_FILE_NAME,
+            )
+            .await?;
 
             let windows_release = format!("{WINDOWS_RELEASE}-{UNITAS_RELEASE}");
             let unix_release = format!("{UNIX_RELEASE}-{UNITAS_RELEASE}");
@@ -35,6 +48,34 @@ pub async fn download_unitas(version: &DownloadVersion) -> Result<PathBuf, Error
             });
 
             action.extract_to_dir(&dest_path).await?;
+        }
+        DownloadVersion::SemVer(_) => todo!(),
+    }
+
+    Ok(dest_path)
+}
+
+/// Downloads BepInEx by version selection from GitHub
+/// - `version` - The version to download
+/// - returns the path to the downloaded BepInEx directory
+pub async fn download_bepinex(version: &DownloadVersion) -> Result<PathBuf, Error> {
+    let version_string = version.to_string().replace('/', "-");
+    let dest_path = paths::bepinex_dir()?.join(version_string);
+
+    match version {
+        DownloadVersion::Stable => todo!(),
+        DownloadVersion::Branch(branch) => {
+            let action = Action::get_latest_action(
+                BEPINEX_OWNER,
+                BEPINEX_REPO,
+                branch,
+                BEPINEX_WORKFLOW_FILE_NAME,
+            )
+            .await?;
+
+            action.extract_to_dir(&dest_path).await?;
+
+            // because BepInEx has zip files inside zip files, we need to extract the inner zip
         }
         DownloadVersion::SemVer(_) => todo!(),
     }

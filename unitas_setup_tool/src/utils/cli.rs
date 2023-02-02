@@ -43,7 +43,10 @@ impl Cli {
                 let dest_path = download::download_unitas(version).await?;
                 println!("Downloaded UniTAS to {}", dest_path.display());
             }
-            Command::DownloadBepInEx { version } => todo!(),
+            Command::DownloadBepInEx { version } => {
+                let dest_path = download::download_bepinex(version).await?;
+                println!("Downloaded BepInEx to {}", dest_path.display());
+            }
         }
 
         Ok(())
