@@ -1,6 +1,6 @@
 //! Main errors
 
-use crate::utils::{history, paths};
+use crate::utils::*;
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
@@ -12,4 +12,6 @@ pub enum Error {
     PathError(#[from] paths::error::Error),
     #[error(transparent)]
     HistoryError(#[from] history::error::Error),
+    #[error(transparent)]
+    GameDirError(#[from] game_dir::error::Error),
 }

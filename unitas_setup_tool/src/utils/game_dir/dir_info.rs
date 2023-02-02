@@ -1,42 +1,128 @@
 #[cfg(target_family = "unix")]
 use std::os::unix::prelude::PermissionsExt;
 use std::{
+    fmt::Display,
     io,
     path::{Path, PathBuf},
 };
 
 use semver::Version;
 
+#[derive(Default)]
 pub struct DirInfo {
+    is_unity_dir: bool,
     game_platform: GamePlatform,
-    installed_info: Option<InstalledInfo>,
+    installed_info: InstalledInfo,
 }
 
 impl DirInfo {
     pub fn from_dir(game_dir: &Path) -> Result<Self, super::error::Error> {
+        let is_unity_dir = is_unity_dir(game_dir)?;
+
+        if !is_unity_dir {
+            return Ok(Default::default());
+        }
+
         let game_platform = DirInfo::game_platform(game_dir)?;
         let installed_info = match InstalledInfo::from_dir(game_dir) {
-            Ok(info) => Some(info),
-            Err(super::error::Error::NotUnityGameDir) => None,
+            Ok(info) => info,
+            Err(super::error::Error::NotUnityGameDir) => {
+                unreachable!("is_unity_dir() should have returned false")
+            }
             Err(err) => return Err(err),
         };
 
         Ok(DirInfo {
+            is_unity_dir,
             game_platform,
             installed_info,
         })
     }
 
     fn game_platform(game_dir: &Path) -> Result<GamePlatform, super::error::Error> {
-        todo!()
+        // if the game dir contains a .exe file, it's probably a Windows game
+        // otherwise, if the current platform is Unix based, it's probably a Unix game
+
+        let files = game_dir.read_dir()?;
+
+        for file in files {
+            let file = file?;
+            let file_name = file.file_name();
+            let file_name = file_name.to_string_lossy();
+
+            if file_name.ends_with(".exe") {
+                return Ok(GamePlatform::Windows);
+            }
+        }
+
+        let default_case = if cfg!(target_family = "unix") {
+            GamePlatform::Unix
+        } else {
+            GamePlatform::Unknown
+        };
+
+        Ok(default_case)
     }
 }
 
+impl Display for DirInfo {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let Self {
+            is_unity_dir,
+            game_platform,
+            installed_info,
+        } = self;
+
+        if !is_unity_dir {
+            writeln!(f, "Not a Unity game directory")?;
+            return Ok(());
+        }
+
+        writeln!(f, "Game Platform: {}", game_platform)?;
+        let default = "Not Installed".to_string();
+
+        writeln!(
+            f,
+            "UniTAS Version: {}",
+            installed_info
+                .unitas_version
+                .as_ref()
+                .map(|version| version.to_string())
+                .unwrap_or(default.clone())
+        )?;
+        writeln!(
+            f,
+            "BepInEx Version: {}",
+            installed_info
+                .bepinex_version
+                .as_ref()
+                .map(|version| version.to_string())
+                .unwrap_or(default.clone())
+        )?;
+
+        Ok(())
+    }
+}
+
+#[derive(Default)]
 pub enum GamePlatform {
+    #[default]
+    Unknown,
     Windows,
     Unix,
 }
 
+impl Display for GamePlatform {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            GamePlatform::Unknown => write!(f, "Unknown"),
+            GamePlatform::Windows => write!(f, "Windows"),
+            GamePlatform::Unix => write!(f, "Unix"),
+        }
+    }
+}
+
+#[derive(Default)]
 pub struct InstalledInfo {
     unitas_version: Option<InstalledVersion>,
     bepinex_version: Option<InstalledVersion>,
@@ -58,11 +144,13 @@ impl InstalledInfo {
     }
 
     fn bepinex_version(game_dir: &Path) -> Result<Option<InstalledVersion>, super::error::Error> {
-        todo!()
+        // TODO
+        return Ok(None);
     }
 
     fn unitas_version(game_dir: &Path) -> Result<Option<InstalledVersion>, super::error::Error> {
-        todo!()
+        // TODO
+        return Ok(None);
     }
 }
 
@@ -71,18 +159,35 @@ pub enum InstalledVersion {
     Semver(Version),
 }
 
+impl Display for InstalledVersion {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            InstalledVersion::Branch(branch) => write!(f, "branch {}", branch),
+            InstalledVersion::Semver(version) => write!(f, "version {}", version),
+        }
+    }
+}
+
 /// Returns true if the directory is a Unity game directory.
 /// - Checks {dir}/{game_name}_Data/Managed/UnityEngine.dll or UnityEngine.CoreModule.dll
 fn is_unity_dir(dir: &Path) -> Result<bool, io::Error> {
     let all_exe = all_exe_in_dir(dir)?
         .iter()
         .filter_map(|exe| {
+            let exe_extension = exe.extension().map(|ext| ext.to_string_lossy());
+            let exe_extension = exe_extension.map(|exe_extension| format!(".{exe_extension}"));
+
             exe.file_name().map(|name| {
                 let name = name.to_string_lossy().to_string();
-                // remove .exe
-                name.strip_suffix(".exe")
-                    .map(|name| name.to_string())
-                    .unwrap_or(name)
+
+                // remove extension
+                match exe_extension {
+                    Some(exe_extension) => name
+                        .strip_suffix(&exe_extension)
+                        .map(|name| name.to_string())
+                        .unwrap_or(name),
+                    None => name,
+                }
             })
         })
         .collect::<Vec<_>>();
@@ -99,7 +204,7 @@ fn is_unity_dir(dir: &Path) -> Result<bool, io::Error> {
         let data_dir_name = data_dir_name.as_os_str().to_string_lossy();
 
         // match with exe name
-        let Some(data_dir_name) = data_dir_name.strip_suffix("_Data") else{
+        let Some(data_dir_name) = data_dir_name.strip_suffix("_Data") else {
             continue;
         };
         let data_dir_name = data_dir_name.to_string();
