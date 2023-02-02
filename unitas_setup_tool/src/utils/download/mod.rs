@@ -30,8 +30,7 @@ const BEPINEX_WORKFLOW_FILE_NAME: &str = "build.yml";
 /// - `version` - The version to download
 /// - returns the path to the downloaded UniTAS directory
 pub async fn download_unitas(version: &DownloadVersion) -> Result<PathBuf, Error> {
-    let version_string = version.to_string().replace('/', "-");
-    let dest_path = paths::unitas_dir()?.join(version_string);
+    let dest_path = paths::unitas_dir()?.join(PathBuf::from(version));
 
     match version {
         DownloadVersion::Stable => todo!(),
@@ -65,8 +64,7 @@ pub async fn download_unitas(version: &DownloadVersion) -> Result<PathBuf, Error
 /// - `version` - The version to download
 /// - returns the path to the downloaded BepInEx directory
 pub async fn download_bepinex(version: &DownloadVersion) -> Result<PathBuf, Error> {
-    let version_string = version.to_string().replace('/', "-");
-    let dest_path = paths::bepinex_dir()?.join(version_string);
+    let dest_path = paths::bepinex_dir()?.join(PathBuf::from(version));
 
     match version {
         DownloadVersion::Stable => todo!(),

@@ -1,7 +1,6 @@
 use std::{
     fmt::Display,
     path::{Path, PathBuf},
-    str::FromStr,
 };
 
 use clap::{command, Args, Parser, Subcommand};
@@ -178,12 +177,15 @@ pub enum DownloadVersion {
     Branch(String),
 }
 
-impl From<DownloadVersion> for PathBuf {
-    fn from(value: DownloadVersion) -> Self {
+impl From<&DownloadVersion> for PathBuf {
+    fn from(value: &DownloadVersion) -> Self {
         match value {
             DownloadVersion::Stable => PathBuf::from("stable"),
             DownloadVersion::Tag(tag) => Path::new("tag").join(PathBuf::from(tag)),
-            DownloadVersion::Branch(branch) => Path::new("branch").join(PathBuf::from(branch)),
+            DownloadVersion::Branch(branch) => {
+                let branch = branch.replace('/', "-");
+                Path::new("branch").join(PathBuf::from(branch))
+            }
         }
     }
 }
