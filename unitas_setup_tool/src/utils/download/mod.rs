@@ -1,12 +1,10 @@
 pub mod error;
 
-use std::{fs, io::Cursor, path::PathBuf};
-
-use zip::ZipArchive;
+use std::path::PathBuf;
 
 use self::error::Error;
 
-use super::{cli::VersionSelection, github_artifact::Action, paths};
+use super::{cli::DownloadVersion, github_artifact::Action, paths};
 
 const UNITAS_OWNER: &str = "eddio0141";
 const UNITAS_REPO: &str = "UniTAS";
@@ -18,12 +16,13 @@ const WINDOWS_RELEASE: &str = "windows-latest";
 /// Downloads UniTAS by version selection from GitHub
 /// - `version` - The version to download
 /// - returns the path to the downloaded UniTAS directory
-pub async fn download_unitas(version: &VersionSelection) -> Result<PathBuf, Error> {
-    let dest_path = paths::unitas_dir()?.join(version.to_string());
+pub async fn download_unitas(version: &DownloadVersion) -> Result<PathBuf, Error> {
+    let version_string = version.to_string().replace('/', "-");
+    let dest_path = paths::unitas_dir()?.join(version_string);
 
     match version {
-        VersionSelection::Stable => todo!(),
-        VersionSelection::Branch(branch) => {
+        DownloadVersion::Stable => todo!(),
+        DownloadVersion::Branch(branch) => {
             let mut action = Action::get_latest_action(UNITAS_OWNER, UNITAS_REPO, branch).await?;
 
             let windows_release = format!("{WINDOWS_RELEASE}-{UNITAS_RELEASE}");
@@ -37,7 +36,7 @@ pub async fn download_unitas(version: &VersionSelection) -> Result<PathBuf, Erro
 
             action.extract_to_dir(&dest_path).await?;
         }
-        VersionSelection::SemVer(_) => todo!(),
+        DownloadVersion::SemVer(_) => todo!(),
     }
 
     Ok(dest_path)

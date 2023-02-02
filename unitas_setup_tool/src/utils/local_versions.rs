@@ -2,10 +2,10 @@
 
 use std::{fmt::Display, path::Path, str::FromStr};
 
-use semver::Version;
+use super::cli::DownloadVersion;
 
 pub struct LocalVersions {
-    pub versions: Vec<Version>,
+    pub versions: Vec<DownloadVersion>,
 }
 
 impl LocalVersions {
@@ -22,7 +22,7 @@ impl LocalVersions {
                 let Some(file_name) = file_name.to_str() else {
                     continue;
                 };
-                let version = Version::from_str(file_name)?;
+                let version = DownloadVersion::from_str(file_name)?;
                 versions.push(version);
             }
         }
