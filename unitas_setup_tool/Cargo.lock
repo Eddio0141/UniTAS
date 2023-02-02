@@ -342,19 +342,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "setup_gui"
-version = "0.1.0"
-dependencies = [
- "clap",
- "dirs",
- "semver",
- "serde",
- "serde_json",
- "thiserror",
- "toml",
-]
-
-[[package]]
 name = "strsim"
 version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -439,6 +426,19 @@ name = "unicode-ident"
 version = "1.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "84a22b9f218b40614adcb3f4ff08b703773ad44fa9423e4e0d346d5db86e4ebc"
+
+[[package]]
+name = "unitas_setup_tool"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "dirs",
+ "semver",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "toml",
+]
 
 [[package]]
 name = "version_check"
