@@ -12,7 +12,7 @@ fn create_dir_if_not_exists(path: &Path) -> Result<(), self::error::Error> {
 
 fn data_storage_dir() -> Result<PathBuf, self::error::Error> {
     let mut path = dirs::data_local_dir().ok_or(self::error::Error::NoLocalDataDir)?;
-    path.push("UniTAS");
+    path.push(env!("CARGO_PKG_NAME"));
     Ok(path)
 }
 
