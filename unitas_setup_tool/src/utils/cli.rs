@@ -19,7 +19,9 @@ impl Cli {
     pub fn process(&self) -> crate::prelude::Result<()> {
         match &self.command {
             Command::GetInfo { game_dir_selection } => {
-                DirInfo::from_dir(PathBuf::try_from(game_dir_selection.clone())?.as_path());
+                let dir_info =
+                    DirInfo::from_dir(PathBuf::try_from(game_dir_selection.clone())?.as_path())?;
+                println!("{}", dir_info);
             }
             Command::Install {
                 game_dir_selection,
