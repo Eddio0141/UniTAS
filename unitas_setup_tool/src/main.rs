@@ -22,10 +22,11 @@ mod error;
 mod prelude;
 mod utils;
 
-fn main() {
+#[tokio::main]
+async fn main() {
     let cli = Cli::parse();
 
-    if let Err(error) = cli.process() {
+    if let Err(error) = cli.process().await {
         eprintln!("{}", error);
         std::process::exit(1);
     }

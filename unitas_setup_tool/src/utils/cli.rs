@@ -6,7 +6,7 @@ use std::{
 use clap::{command, Parser, Subcommand};
 use semver::Version;
 
-use super::{game_dir::dir_info::DirInfo, local_versions::LocalVersions, paths};
+use super::{download, game_dir::dir_info::DirInfo, local_versions::LocalVersions, paths};
 
 #[derive(Parser)]
 #[command(author, version, about)]
@@ -16,7 +16,7 @@ pub struct Cli {
 }
 
 impl Cli {
-    pub fn process(&self) -> crate::prelude::Result<()> {
+    pub async fn process(&self) -> crate::prelude::Result<()> {
         match &self.command {
             Command::GetInfo { game_dir_selection } => {
                 let dir_info =
@@ -42,7 +42,7 @@ impl Cli {
                 LocalVersions::from_dir(&paths::bepinex_dir()?)?
             ),
             Command::GameDirHistory => todo!(),
-            Command::DownloadUniTAS { version } => todo!(),
+            Command::DownloadUniTAS { version } => download::download_unitas(version).await?,
             Command::DownloadBepInEx { version } => todo!(),
         }
 

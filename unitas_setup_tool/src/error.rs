@@ -14,4 +14,6 @@ pub enum Error {
     HistoryError(#[from] history::error::Error),
     #[error(transparent)]
     GameDirError(#[from] game_dir::error::Error),
+    #[error("Failed to download UniTAS: {0}")]
+    DownloadUniTASError(#[from] download::error::Error),
 }
