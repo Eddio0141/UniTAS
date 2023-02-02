@@ -153,15 +153,24 @@ impl InstalledInfo {
             return Ok(None);
         }
 
-        // because it's a dll, we to use pelite to read the version info
         let version_info = AssemblyVersion::try_from(Wrap(bepinex_dll.as_path()))?;
 
         Ok(Some(version_info))
     }
 
     fn unitas_version(game_dir: &Path) -> Result<Option<AssemblyVersion>, super::error::Error> {
-        // TODO
-        Ok(None)
+        // checks in BepInEx/plugins/UniTASPlugin.dll
+        let bepinex_dir = game_dir.join("BepInEx");
+        let bepinex_plugins_dir = bepinex_dir.join("plugins");
+        let unitas_dll = bepinex_plugins_dir.join("UniTASPlugin.dll");
+
+        if !unitas_dll.try_exists()? {
+            return Ok(None);
+        }
+
+        let version_info = AssemblyVersion::try_from(Wrap(unitas_dll.as_path()))?;
+
+        Ok(Some(version_info))
     }
 }
 
