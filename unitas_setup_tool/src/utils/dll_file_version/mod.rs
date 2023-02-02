@@ -25,7 +25,7 @@ impl TryFrom<Wrap<&Path>> for AssemblyVersion {
         // version_info -> strings -> FileVersion
         // version_info -> strings -> AssemblyVersion
 
-        let mut version_info = match version_info.fixed() {
+        let version_info = match version_info.fixed() {
             // for now i just get dwFileVersion
             Some(fixed) => fixed.dwFileVersion.to_string(),
             None => 'version_string_return: {
