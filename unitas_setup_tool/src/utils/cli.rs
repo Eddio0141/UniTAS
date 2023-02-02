@@ -1,7 +1,4 @@
-use std::{
-    path::{Path, PathBuf},
-    str::FromStr,
-};
+use std::{fmt::Display, path::PathBuf, str::FromStr};
 
 use clap::{command, Parser, Subcommand};
 use semver::Version;
@@ -42,7 +39,10 @@ impl Cli {
                 LocalVersions::from_dir(&paths::bepinex_dir()?)?
             ),
             Command::GameDirHistory => todo!(),
-            Command::DownloadUniTAS { version } => download::download_unitas(version).await?,
+            Command::DownloadUniTAS { version } => {
+                let dest_path = download::download_unitas(version).await?;
+                println!("Downloaded UniTAS to {}", dest_path.display());
+            }
             Command::DownloadBepInEx { version } => todo!(),
         }
 
@@ -130,6 +130,16 @@ impl From<&str> for VersionSelection {
             Self::SemVer(sem_ver)
         } else {
             Self::Branch(value.to_string())
+        }
+    }
+}
+
+impl Display for VersionSelection {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Stable => write!(f, "stable"),
+            Self::Branch(branch) => write!(f, "{branch}"),
+            Self::SemVer(sem_ver) => write!(f, "{sem_ver}"),
         }
     }
 }

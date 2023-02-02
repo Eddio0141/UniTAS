@@ -1,11 +1,34 @@
+use std::{fs, io::Cursor, path::Path};
+
+use zip::ZipArchive;
+
+use crate::prelude::Wrap;
+
 use self::error::Error;
 
 pub mod error;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Artifact {
     pub name: String,
     pub url: String,
+}
+
+impl Artifact {
+    pub async fn extract_to_dir(&self, dest_path: &Path) -> Result<(), Error> {
+        let response = reqwest::get(&self.url).await?;
+        let bytes = response.bytes().await?;
+
+        // create directory
+        fs::create_dir_all(&dest_path)?;
+
+        // unzip
+        let mut archive = ZipArchive::new(Cursor::new(bytes))?;
+
+        archive.extract(dest_path)?;
+
+        Ok(())
+    }
 }
 
 #[derive(Debug)]
@@ -19,9 +42,7 @@ impl Action {
             "https://api.github.com/repos/{owner}/{repo}/actions/runs?branch={branch}&event=push&status=success"
         );
         // github requires us to have User-Agent header
-        let client = reqwest::Client::builder()
-            .user_agent(env!("CARGO_PKG_NAME"))
-            .build()?;
+        let client = Wrap::<reqwest::Client>::github_api_client()?;
 
         let response = client.get(&url).send().await?;
         let text = response.text().await?;
@@ -30,7 +51,6 @@ impl Action {
                 error,
                 response: text,
             })?;
-        // TODO get index by get
         let artifacts = json
             .get("workflow_runs")
             .ok_or(Error::CantFindWorkflowRuns)?
@@ -48,25 +68,59 @@ impl Action {
                 error,
                 response: text,
             })?;
-        let artifacts = json.get("artifacts").ok_or(Error::UnexpectedArtifactsJsonData)?
+        let artifacts = json
+            .get("artifacts")
+            .ok_or(Error::UnexpectedArtifactsJsonData)?
             .as_array()
             .ok_or(Error::UnexpectedArtifactsJsonData)?
             .iter()
             .map(|artifact| {
-                let (Some(name), Some(url)) = (artifact.get("name"), artifact.get("archive_download_url")) else {
+                let Some(name) = artifact.get("name") else {
                     return Err(Error::UnexpectedArtifactsJsonData);
                 };
 
-                let (Some(name), Some(url)) = (name.as_str(), url.as_str()) else {
+                let Some(name) = name.as_str() else {
                     return Err(Error::UnexpectedArtifactsJsonData);
                 };
 
-                let (name, url) = (name.to_string(), url.to_string());
+                let name = name.to_string();
+
+                // because github doesn't allow us to download artifacts directly, we use nightly.link
+                let url = format!(
+                    "https://nightly.link/{owner}/{repo}/workflows/build-on-push/{branch}/{name}.zip"
+                );
 
                 Ok(Artifact { name, url })
             })
             .collect::<Result<Vec<_>, Error>>()?;
 
         Ok(Self { artifacts })
+    }
+
+    pub async fn extract_to_dir(&self, dest_path: &Path) -> Result<(), Error> {
+        // spawn tasks
+        let mut tasks = Vec::new();
+        for artifact in &self.artifacts {
+            let dest_path = dest_path.to_path_buf();
+            let artifact = artifact.clone();
+            let task = tokio::spawn(async move { artifact.extract_to_dir(&dest_path).await });
+            tasks.push(task);
+        }
+
+        // wait for tasks
+        for task in tasks {
+            task.await??;
+        }
+
+        Ok(())
+    }
+}
+
+impl Wrap<reqwest::Client> {
+    pub fn github_api_client() -> Result<reqwest::Client, reqwest::Error> {
+        // github requires us to have User-Agent header
+        reqwest::Client::builder()
+            .user_agent(env!("CARGO_PKG_NAME"))
+            .build()
     }
 }

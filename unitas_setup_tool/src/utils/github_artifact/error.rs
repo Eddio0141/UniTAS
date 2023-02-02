@@ -14,4 +14,10 @@ pub enum Error {
         error: serde_json::Error,
         response: String,
     },
+    #[error("IO error: {0}")]
+    Io(#[from] std::io::Error),
+    #[error("Unzip error: {0}")]
+    UnzipError(#[from] zip::result::ZipError),
+    #[error("Thread join error: {0}")]
+    JoinError(#[from] tokio::task::JoinError),
 }
