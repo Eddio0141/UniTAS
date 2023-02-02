@@ -1,9 +1,12 @@
-use std::{path::PathBuf, str::FromStr};
+use std::{
+    path::{Path, PathBuf},
+    str::FromStr,
+};
 
 use clap::{command, Parser, Subcommand};
 use semver::Version;
 
-use super::{local_versions::LocalVersions, paths};
+use super::{game_dir::dir_info::DirInfo, local_versions::LocalVersions, paths};
 
 #[derive(Parser)]
 #[command(author, version, about)]
@@ -15,7 +18,9 @@ pub struct Cli {
 impl Cli {
     pub fn process(&self) -> crate::prelude::Result<()> {
         match &self.command {
-            Command::GetInfo { game_dir_selection } => todo!(),
+            Command::GetInfo { game_dir_selection } => {
+                DirInfo::from_dir(PathBuf::try_from(game_dir_selection.clone())?.as_path());
+            }
             Command::Install {
                 game_dir_selection,
                 unitas_version,
@@ -101,8 +106,8 @@ impl TryFrom<GameDirSelection> for PathBuf {
             GameDirSelection::Path(path) => Ok(path),
             GameDirSelection::History(index) => {
                 let history = crate::utils::history::History::load()?;
-                let path = history.index(index)?;
-                Ok(path.to_path_buf())
+                let entry = history.index(index)?;
+                Ok(entry.to_path_buf())
             }
         }
     }
