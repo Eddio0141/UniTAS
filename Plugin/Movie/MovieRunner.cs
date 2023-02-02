@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using UniTASPlugin.FixedUpdateSync;
@@ -8,6 +9,7 @@ using UniTASPlugin.Interfaces.Update;
 using UniTASPlugin.Movie.EngineMethods;
 using UniTASPlugin.Movie.Exceptions.ScriptEngineExceptions;
 using UniTASPlugin.Movie.LowLevel;
+using UniTASPlugin.Movie.MovieModels;
 using UniTASPlugin.Movie.MovieModels.Script;
 using UniTASPlugin.Movie.ParseInterfaces;
 
@@ -53,7 +55,17 @@ public partial class MovieRunner : IMovieRunner, IOnPreUpdates
         _setup = true;
 
         // parse
-        var movie = _parser.Parse(input);
+        MovieModel movie;
+        try
+        {
+            movie = _parser.Parse(input);
+        }
+        catch (Exception)
+        {
+            _setup = false;
+            throw;
+        }
+
         _mainScript = movie.Script;
         var properties = movie.Properties;
         var startupProperties = properties.StartupProperties;
