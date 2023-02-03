@@ -10,7 +10,7 @@ use zip::ZipArchive;
 
 use self::error::Error;
 
-use super::{cli::DownloadVersion, github_artifact::Action, paths};
+use super::{cli::DownloadVersion, github_artifact::Build, paths};
 
 const UNITAS_OWNER: &str = "eddio0141";
 const UNITAS_REPO: &str = "UniTAS";
@@ -35,7 +35,7 @@ pub async fn download_unitas(version: &DownloadVersion) -> Result<PathBuf, Error
     match version {
         DownloadVersion::Stable => todo!(),
         DownloadVersion::Branch(branch) => {
-            let mut action = Action::get_latest_action(
+            let mut action = Build::get_latest_action_build(
                 UNITAS_OWNER,
                 UNITAS_REPO,
                 branch,
@@ -69,7 +69,7 @@ pub async fn download_bepinex(version: &DownloadVersion) -> Result<PathBuf, Erro
     match version {
         DownloadVersion::Stable => todo!(),
         DownloadVersion::Branch(branch) => {
-            let action = Action::get_latest_action(
+            let action = Build::get_latest_action_build(
                 BEPINEX_OWNER,
                 BEPINEX_REPO,
                 branch,

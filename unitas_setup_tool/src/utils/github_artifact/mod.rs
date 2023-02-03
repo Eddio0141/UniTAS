@@ -32,12 +32,12 @@ impl Artifact {
 }
 
 #[derive(Debug)]
-pub struct Action {
+pub struct Build {
     pub artifacts: Vec<Artifact>,
 }
 
-impl Action {
-    pub async fn get_latest_action(
+impl Build {
+    pub async fn get_latest_action_build(
         owner: &str,
         repo: &str,
         branch: &str,
