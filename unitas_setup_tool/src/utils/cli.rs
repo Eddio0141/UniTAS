@@ -3,9 +3,11 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use clap::{command, Args, Parser, Subcommand};
+use clap::{command, ArgAction, Args, Parser, Subcommand};
 
-use super::{download, game_dir::dir_info::DirInfo, local_versions::LocalVersions, paths};
+use super::{
+    download, game_dir::dir_info::DirInfo, history, install, local_versions::LocalVersions, paths,
+};
 
 #[derive(Parser)]
 #[command(author, version, about)]
@@ -27,7 +29,15 @@ impl Cli {
                 unitas_version,
                 bepinex_version,
                 offline,
-            } => todo!(),
+            } => {
+                install::install(
+                    game_dir_selection.clone(),
+                    unitas_version.into(),
+                    DownloadVersionArg::from(bepinex_version).into(),
+                    *offline,
+                )
+                .await?;
+            }
             Command::Uninstall {
                 game_dir_selection,
                 remove_bepinex,
@@ -65,7 +75,7 @@ pub enum Command {
         #[command(flatten)]
         unitas_version: DownloadVersionArg,
         #[command(flatten)]
-        bepinex_version: DownloadVersionArg,
+        bepinex_version: DownloadVersionArgBepInEx,
         #[arg(short, long)]
         offline: bool,
     },
@@ -108,7 +118,7 @@ impl From<&str> for GameDirSelection {
 }
 
 impl TryFrom<GameDirSelection> for PathBuf {
-    type Error = crate::error::Error;
+    type Error = history::error::Error;
 
     fn try_from(value: GameDirSelection) -> Result<Self, Self::Error> {
         match value {
@@ -130,6 +140,26 @@ pub struct DownloadVersionArg {
     pub tag: Option<String>,
     #[arg(long, required_unless_present_any = &["stable", "tag"])]
     pub branch: Option<String>,
+}
+
+#[derive(Args, Clone)]
+pub struct DownloadVersionArgBepInEx {
+    #[arg(long, required_unless_present_any = &["bepinex_tag", "bepinex_branch"])]
+    pub bepinex_stable: bool,
+    #[arg(long, required_unless_present_any = &["bepinex_stable", "bepinex_branch"])]
+    pub bepinex_tag: Option<String>,
+    #[arg(long, required_unless_present_any = &["bepinex_stable", "bepinex_tag"])]
+    pub bepinex_branch: Option<String>,
+}
+
+impl From<&DownloadVersionArgBepInEx> for DownloadVersionArg {
+    fn from(value: &DownloadVersionArgBepInEx) -> Self {
+        Self {
+            stable: value.bepinex_stable.to_owned(),
+            tag: value.bepinex_tag.to_owned(),
+            branch: value.bepinex_branch.to_owned(),
+        }
+    }
 }
 
 impl Default for DownloadVersionArg {
@@ -164,6 +194,20 @@ impl From<&DownloadVersionArg> for DownloadVersion {
             Self::Tag(tag.clone())
         } else if let Some(branch) = &value.branch {
             Self::Branch(branch.clone())
+        } else {
+            unreachable!()
+        }
+    }
+}
+
+impl From<DownloadVersionArg> for DownloadVersion {
+    fn from(value: DownloadVersionArg) -> Self {
+        if value.stable {
+            Self::Stable
+        } else if let Some(tag) = value.tag {
+            Self::Tag(tag)
+        } else if let Some(branch) = value.branch {
+            Self::Branch(branch)
         } else {
             unreachable!()
         }
