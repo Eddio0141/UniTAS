@@ -10,9 +10,9 @@ use crate::{prelude::Wrap, utils::assembly_version::AssemblyVersion};
 
 #[derive(Default)]
 pub struct DirInfo {
-    is_unity_dir: bool,
-    game_platform: GamePlatform,
-    installed_info: InstalledInfo,
+    pub is_unity_dir: bool,
+    pub game_platform: GamePlatform,
+    pub installed_info: InstalledInfo,
 }
 
 impl DirInfo {

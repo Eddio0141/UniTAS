@@ -18,4 +18,8 @@ pub enum Error {
     DownloadUniTASError(#[from] download::error::Error),
     #[error("Invalid downloaded version: {0}")]
     InvalidDownloadVersion(String),
+    #[error(transparent)]
+    LocalVersionsError(#[from] local_versions::Error),
+    #[error(transparent)]
+    InstallError(#[from] install::Error),
 }

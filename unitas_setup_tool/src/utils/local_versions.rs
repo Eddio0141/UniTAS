@@ -8,8 +8,16 @@ pub struct LocalVersions {
     pub versions: Vec<DownloadVersion>,
 }
 
+#[derive(Debug, thiserror::Error)]
+pub enum Error {
+    #[error(transparent)]
+    PathsError(#[from] paths::error::Error),
+    #[error("IO error: {0}")]
+    Io(#[from] std::io::Error),
+}
+
 impl LocalVersions {
-    pub fn from_dir(dir: &Path) -> crate::prelude::Result<Self> {
+    pub fn from_dir(dir: &Path) -> Result<Self, Error> {
         let mut versions = Vec::new();
 
         let stable_dir = paths::local_stable_path(&dir);
