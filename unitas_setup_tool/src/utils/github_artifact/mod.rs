@@ -19,6 +19,8 @@ impl Artifact {
         let response = reqwest::get(&self.url).await?;
         let bytes = response.bytes().await?;
 
+        let dest_path = dest_path.join(&self.name);
+
         // create directory
         fs::create_dir_all(&dest_path)?;
 
@@ -37,7 +39,7 @@ pub struct Build {
 }
 
 impl Build {
-    pub async fn get_latest_action_build(
+    pub async fn latest_action_build(
         owner: &str,
         repo: &str,
         branch: &str,
@@ -95,6 +97,49 @@ impl Build {
                 let url = format!(
                     "https://nightly.link/{owner}/{repo}/workflows/{workflow_file_name}/{branch}/{name}.zip"
                 );
+
+                Ok(Artifact { name, url })
+            })
+            .collect::<Result<Vec<_>, Error>>()?;
+
+        Ok(Self { artifacts })
+    }
+
+    pub async fn latest_stable_build(owner: &str, repo: &str) -> Result<Self, Error> {
+        let url = format!("https://api.github.com/repos/{owner}/{repo}/releases/latest");
+
+        // github requires us to have User-Agent header
+        let client = Wrap::<reqwest::Client>::github_api_client()?;
+
+        let response = client.get(&url).send().await?;
+        let text = response.text().await?;
+        let json: serde_json::Value =
+            serde_json::from_str(&text).map_err(|error| Error::JsonParseError {
+                error,
+                response: text,
+            })?;
+
+        let artifacts = json
+            .get("assets")
+            .ok_or(Error::UnexpectedArtifactsJsonData)?
+            .as_array()
+            .ok_or(Error::UnexpectedArtifactsJsonData)?
+            .iter()
+            .map(|artifact| {
+                let url = artifact
+                    .get("browser_download_url")
+                    .ok_or(Error::UnexpectedArtifactsJsonData)?
+                    .as_str()
+                    .ok_or(Error::UnexpectedArtifactsJsonData)?
+                    .to_string();
+
+                // because the name is all the same, we get a unique name from the url
+                let name = url
+                    .split('/')
+                    .last()
+                    .ok_or(Error::UnexpectedArtifactsJsonData)?;
+
+                let name = name.strip_suffix(".zip").unwrap_or(name).to_string();
 
                 Ok(Artifact { name, url })
             })

@@ -33,9 +33,13 @@ pub async fn download_unitas(version: &DownloadVersion) -> Result<PathBuf, Error
     let dest_path = paths::unitas_dir()?.join(PathBuf::from(version));
 
     match version {
-        DownloadVersion::Stable => todo!(),
+        DownloadVersion::Stable => {
+            let build = Build::latest_stable_build(UNITAS_OWNER, UNITAS_REPO).await?;
+
+            build.extract_to_dir(&dest_path).await?;
+        }
         DownloadVersion::Branch(branch) => {
-            let mut action = Build::get_latest_action_build(
+            let mut build = Build::latest_action_build(
                 UNITAS_OWNER,
                 UNITAS_REPO,
                 branch,
@@ -48,11 +52,11 @@ pub async fn download_unitas(version: &DownloadVersion) -> Result<PathBuf, Error
 
             // for now we get unix and windows artifacts
             // remove from vec
-            action.artifacts.retain(|artifact| {
+            build.artifacts.retain(|artifact| {
                 artifact.name == windows_release || artifact.name == unix_release
             });
 
-            action.extract_to_dir(&dest_path).await?;
+            build.extract_to_dir(&dest_path).await?;
         }
         DownloadVersion::Tag(_) => todo!(),
     }
@@ -67,9 +71,13 @@ pub async fn download_bepinex(version: &DownloadVersion) -> Result<PathBuf, Erro
     let dest_path = paths::bepinex_dir()?.join(PathBuf::from(version));
 
     match version {
-        DownloadVersion::Stable => todo!(),
+        DownloadVersion::Stable => {
+            let build = Build::latest_stable_build(BEPINEX_OWNER, BEPINEX_REPO).await?;
+
+            build.extract_to_dir(&dest_path).await?;
+        }
         DownloadVersion::Branch(branch) => {
-            let action = Build::get_latest_action_build(
+            let action = Build::latest_action_build(
                 BEPINEX_OWNER,
                 BEPINEX_REPO,
                 branch,
@@ -79,8 +87,13 @@ pub async fn download_bepinex(version: &DownloadVersion) -> Result<PathBuf, Erro
 
             action.extract_to_dir(&dest_path).await?;
 
+            let inner_folder = fs::read_dir(&dest_path)?
+                .next()
+                .ok_or(Error::EmptyDownloadFolder)??
+                .path();
+
             // because BepInEx has zip files inside zip files, we need to extract the inner zip
-            let files = std::fs::read_dir(&dest_path)?;
+            let files = std::fs::read_dir(&inner_folder)?;
             let mut tasks = Vec::new();
 
             for file in files {
@@ -113,6 +126,9 @@ pub async fn download_bepinex(version: &DownloadVersion) -> Result<PathBuf, Erro
             for task in tasks {
                 task.await??;
             }
+
+            // delete the inner folder
+            tokio::fs::remove_dir(inner_folder).await?;
         }
         DownloadVersion::Tag(_) => todo!(),
     }
