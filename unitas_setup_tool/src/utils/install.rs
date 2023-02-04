@@ -3,62 +3,33 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use anyhow::Context;
+use anyhow::{bail, Context, Result};
+use log::*;
 
 use crate::utils::download;
 
 use super::{
     cli::{DownloadVersion, GameDirSelection},
-    game_dir::{
-        self,
-        dir_info::{DirInfo, GamePlatform},
-    },
-    history,
-    local_versions::{self, LocalVersions},
+    game_dir::dir_info::{DirInfo, GamePlatform},
+    local_versions::LocalVersions,
     paths,
 };
-
-#[derive(Debug, thiserror::Error)]
-pub enum Error {
-    #[error("IO error: {0}")]
-    Io(#[from] std::io::Error),
-    #[error(transparent)]
-    DirInfoError(#[from] game_dir::error::Error),
-    #[error(transparent)]
-    HistoryLoadError(#[from] history::error::Error),
-    #[error("Not an unity game dir")]
-    NotUnityGameDir,
-    #[error(transparent)]
-    PathsError(#[from] paths::error::Error),
-    #[error(transparent)]
-    LocalVersionsError(#[from] local_versions::Error),
-    #[error("Version not found, remove the --offline flag to download it")]
-    VersionNotFound,
-    #[error(transparent)]
-    DownloadError(#[from] download::error::Error),
-    #[error("Thread join error: {0}")]
-    ThreadJoinError(#[from] tokio::task::JoinError),
-    #[error("Unknown game platform")]
-    UnknownGamePlatform,
-    #[error(transparent)]
-    Other(#[from] anyhow::Error),
-}
 
 pub async fn install(
     game_dir: GameDirSelection,
     unitas_version: DownloadVersion,
     bepinex_version: DownloadVersion,
     offline: bool,
-) -> Result<(), Error> {
+) -> Result<()> {
     let game_dir = PathBuf::try_from(game_dir)?;
     let dir_info = DirInfo::from_dir(&game_dir)?;
 
     if !dir_info.is_unity_dir {
-        return Err(Error::NotUnityGameDir);
+        bail!("Game directory is not a Unity game directory");
     }
 
     if matches!(&dir_info.game_platform, GamePlatform::Unknown) {
-        return Err(Error::UnknownGamePlatform);
+        bail!("Game platform is unknown");
     }
 
     {
@@ -78,39 +49,36 @@ pub async fn install(
     install_bepinex(&game_dir, bepinex_version, &dir_info).await?;
     install_unitas(&game_dir, unitas_version).await?;
 
-    todo!()
+    info!("Installed UniTAS successfully");
+
+    Ok(())
 }
 
-async fn dl_bepinex_if_missing(
-    bepinex_version: DownloadVersion,
-    offline: bool,
-) -> Result<(), Error> {
+async fn dl_bepinex_if_missing(bepinex_version: DownloadVersion, offline: bool) -> Result<()> {
     let installed_bepinex = LocalVersions::from_dir(&paths::bepinex_dir()?)?;
 
     if !installed_bepinex.versions.contains(&bepinex_version) {
         // download if not offline
         if offline {
-            return Err(Error::VersionNotFound);
+            bail!("BepInEx version not found and offline mode is enabled");
         }
 
-        let dest_path = download::download_bepinex(&bepinex_version.into()).await?;
-        println!("Downloaded BepInEx to {}", dest_path.display());
+        download::download_bepinex(&bepinex_version.into()).await?;
     }
 
     Ok(())
 }
 
-async fn dl_unitas_if_missing(unitas_version: DownloadVersion, offline: bool) -> Result<(), Error> {
+async fn dl_unitas_if_missing(unitas_version: DownloadVersion, offline: bool) -> Result<()> {
     let installed_unitas = LocalVersions::from_dir(&paths::unitas_dir()?)?;
 
     if !installed_unitas.versions.contains(&unitas_version) {
         // download if not offline
         if offline {
-            return Err(Error::VersionNotFound);
+            bail!("UniTAS version not found and offline mode is enabled");
         }
 
-        let dest_path = download::download_unitas(&unitas_version.into()).await?;
-        println!("Downloaded UniTAS to {}", dest_path.display());
+        download::download_unitas(&unitas_version.into()).await?;
     }
 
     Ok(())
@@ -120,7 +88,7 @@ async fn install_bepinex(
     game_dir: &Path,
     bepinex_version: DownloadVersion,
     dir_info: &DirInfo,
-) -> Result<(), Error> {
+) -> Result<()> {
     // overwrite install without overwriting the config and other important files
     let bepinex_dir = paths::bepinex_dir()?;
     let bepinex_dir = match bepinex_version {
@@ -156,6 +124,7 @@ async fn install_bepinex(
             .context("Could not find a BepInEx dir with the correct platform")
     }?;
 
+    // path to overwrite and if it's a directory
     let overwrite_paths = [
         Path::new("changelog.txt"),
         Path::new("doorstop_libs"),
@@ -164,21 +133,42 @@ async fn install_bepinex(
 
     let mut copy_tasks = Vec::new();
     for overwrite_path in overwrite_paths {
-        let overwrite_path = bepinex_dir.join(overwrite_path);
-        let dest_path = game_dir.join(&overwrite_path);
+        let source_path = bepinex_dir.join(overwrite_path);
+        if !source_path.exists() {
+            continue;
+        }
+
+        let dest_path = game_dir.join(overwrite_path);
+        let game_dir = game_dir.to_owned();
         copy_tasks.push(tokio::spawn(async move {
-            fs::copy(&overwrite_path, dest_path).context("Could not copy BepInEx files")
+            debug!(
+                "Copying {} to {}",
+                source_path.display(),
+                dest_path.display()
+            );
+            if source_path.is_dir() {
+                fs_extra::dir::copy(
+                    source_path,
+                    game_dir,
+                    &fs_extra::dir::CopyOptions::new()
+                        .overwrite(true)
+                        .copy_inside(true),
+                )
+                .context("Could not copy BepInEx files")
+            } else {
+                fs::copy(source_path, dest_path).context("Could not copy BepInEx files")
+            }
         }));
     }
 
     for task in copy_tasks {
-        task.await.unwrap()?;
+        dbg!(task.await.unwrap())?;
     }
 
     Ok(())
 }
 
-async fn install_unitas(game_dir: &Path, unitas_version: DownloadVersion) -> Result<(), Error> {
+async fn install_unitas(game_dir: &Path, unitas_version: DownloadVersion) -> Result<()> {
     // overwrite install without overwriting the config and other important files
     let unitas_dir = paths::unitas_dir()?;
     let unitas_dir = match unitas_version {
