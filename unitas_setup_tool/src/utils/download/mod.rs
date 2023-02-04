@@ -58,7 +58,11 @@ pub async fn download_unitas(version: &DownloadVersion) -> Result<PathBuf, Error
 
             build.extract_to_dir(&dest_path).await?;
         }
-        DownloadVersion::Tag(_) => todo!(),
+        DownloadVersion::Tag(tag) => {
+            let build = Build::release_by_tag(UNITAS_OWNER, UNITAS_REPO, tag).await?;
+
+            build.extract_to_dir(&dest_path).await?;
+        }
     }
 
     Ok(dest_path)
@@ -130,7 +134,11 @@ pub async fn download_bepinex(version: &DownloadVersion) -> Result<PathBuf, Erro
             // delete the inner folder
             tokio::fs::remove_dir(inner_folder).await?;
         }
-        DownloadVersion::Tag(_) => todo!(),
+        DownloadVersion::Tag(tag) => {
+            let build = Build::release_by_tag(BEPINEX_OWNER, BEPINEX_REPO, tag).await?;
+
+            build.extract_to_dir(&dest_path).await?;
+        }
     }
 
     Ok(dest_path)

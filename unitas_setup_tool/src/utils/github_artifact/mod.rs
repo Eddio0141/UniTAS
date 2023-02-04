@@ -148,6 +148,49 @@ impl Build {
         Ok(Self { artifacts })
     }
 
+    pub async fn release_by_tag(owner: &str, repo: &str, tag: &str) -> Result<Self, Error> {
+        let url = format!("https://api.github.com/repos/{owner}/{repo}/releases/tags/{tag}");
+
+        // github requires us to have User-Agent header
+        let client = Wrap::<reqwest::Client>::github_api_client()?;
+
+        let response = client.get(&url).send().await?;
+        let text = response.text().await?;
+        let json: serde_json::Value =
+            serde_json::from_str(&text).map_err(|error| Error::JsonParseError {
+                error,
+                response: text,
+            })?;
+
+        let artifacts = json
+            .get("assets")
+            .ok_or(Error::UnexpectedArtifactsJsonData)?
+            .as_array()
+            .ok_or(Error::UnexpectedArtifactsJsonData)?
+            .iter()
+            .map(|artifact| {
+                let url = artifact
+                    .get("browser_download_url")
+                    .ok_or(Error::UnexpectedArtifactsJsonData)?
+                    .as_str()
+                    .ok_or(Error::UnexpectedArtifactsJsonData)?
+                    .to_string();
+
+                // because the name is all the same, we get a unique name from the url
+                let name = url
+                    .split('/')
+                    .last()
+                    .ok_or(Error::UnexpectedArtifactsJsonData)?;
+
+                let name = name.strip_suffix(".zip").unwrap_or(name).to_string();
+
+                Ok(Artifact { name, url })
+            })
+            .collect::<Result<Vec<_>, Error>>()?;
+
+        Ok(Self { artifacts })
+    }
+
     pub async fn extract_to_dir(&self, dest_path: &Path) -> Result<(), Error> {
         // spawn tasks
         let mut tasks = Vec::new();
