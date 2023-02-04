@@ -118,7 +118,10 @@ async fn install_bepinex(
 
                 let exclusion = ["IL2CPP", "NetLauncher", platform];
 
-                if path.is_file() || exclusion.contains(&file_name.as_ref()) {
+                if path.is_file()
+                    || exclusion.contains(&file_name.as_ref())
+                    || !file_name.contains(platform)
+                {
                     return None;
                 }
 
@@ -196,7 +199,7 @@ async fn install_bepinex(
     }
 
     for task in tasks {
-        dbg!(task.await.unwrap())?;
+        task.await.unwrap()?;
     }
 
     Ok(())
