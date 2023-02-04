@@ -3,11 +3,17 @@ use std::{
     path::{Path, PathBuf},
 };
 
+use anyhow::Context;
 use clap::{command, Args, Parser, Subcommand};
 use log::*;
 
 use super::{
-    download, game_dir::dir_info::DirInfo, history, install, local_versions::LocalVersions, paths,
+    download,
+    game_dir::dir_info::DirInfo,
+    history::{self, History},
+    install,
+    local_versions::LocalVersions,
+    paths,
 };
 
 #[derive(Parser)]
@@ -18,9 +24,18 @@ pub struct Cli {
 }
 
 impl Cli {
+    async fn save_path_history(game_dir_selection: &GameDirSelection) -> anyhow::Result<()> {
+        let mut history = History::load().context("Failed to load game dir history")?;
+        history.add(game_dir_selection.clone().try_into()?);
+        history.save().context("Failed to save game dir history")?;
+        Ok(())
+    }
+
     pub async fn process(&self) -> crate::prelude::Result<()> {
         match &self.command {
             Command::GetInfo { game_dir_selection } => {
+                Cli::save_path_history(game_dir_selection).await?;
+
                 info!("Getting info for {game_dir_selection}");
                 let dir_info =
                     DirInfo::from_dir(PathBuf::try_from(game_dir_selection.clone())?.as_path())?;
@@ -32,6 +47,8 @@ impl Cli {
                 bepinex_version,
                 offline,
             } => {
+                Cli::save_path_history(game_dir_selection).await?;
+
                 info!("Installing UniTAS {unitas_version} and BepInEx {} to {game_dir_selection} with offline = {offline}", DownloadVersionArg::from(bepinex_version));
                 install::install(
                     game_dir_selection.clone(),
@@ -45,7 +62,9 @@ impl Cli {
             Command::Uninstall {
                 game_dir_selection,
                 remove_bepinex,
-            } => todo!(),
+            } => {
+                Cli::save_path_history(game_dir_selection).await?;
+            },
             Command::LocalUniTAS => info!(
                 "Locally available UniTAS versions\n{}",
                 LocalVersions::from_dir(&paths::unitas_dir()?)?
@@ -54,7 +73,10 @@ impl Cli {
                 "Locally available BepInEx versions\n{}",
                 LocalVersions::from_dir(&paths::bepinex_dir()?)?
             ),
-            Command::GameDirHistory => todo!(),
+            Command::History => {
+                let history = History::load().context("Failed to load game dir history")?;
+                info!("Game dir history\n{}", history);
+            }
             Command::DownloadUniTAS { version } => {
                 info!("Downloading UniTAS {}", version);
                 download::download_unitas(&version.into()).await?;
@@ -94,7 +116,7 @@ pub enum Command {
     LocalUniTAS,
     #[command(name = "local-bepinex")]
     LocalBepInEx,
-    GameDirHistory,
+    History,
     #[command(name = "download-unitas")]
     DownloadUniTAS {
         #[command(flatten)]
