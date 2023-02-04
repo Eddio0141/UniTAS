@@ -4,6 +4,7 @@ use std::{
 };
 
 use clap::{command, Args, Parser, Subcommand};
+use log::*;
 
 use super::{
     download, game_dir::dir_info::DirInfo, history, install, local_versions::LocalVersions, paths,
@@ -20,9 +21,10 @@ impl Cli {
     pub async fn process(&self) -> crate::prelude::Result<()> {
         match &self.command {
             Command::GetInfo { game_dir_selection } => {
+                info!("Getting info for {game_dir_selection}");
                 let dir_info =
                     DirInfo::from_dir(PathBuf::try_from(game_dir_selection.clone())?.as_path())?;
-                println!("{}", dir_info);
+                info!("{dir_info}");
             }
             Command::Install {
                 game_dir_selection,
@@ -30,6 +32,7 @@ impl Cli {
                 bepinex_version,
                 offline,
             } => {
+                info!("Installing UniTAS {unitas_version} and BepInEx {} to {game_dir_selection} with offline = {offline}", DownloadVersionArg::from(bepinex_version));
                 install::install(
                     game_dir_selection.clone(),
                     unitas_version.into(),
@@ -42,22 +45,24 @@ impl Cli {
                 game_dir_selection,
                 remove_bepinex,
             } => todo!(),
-            Command::LocalUniTAS => println!(
+            Command::LocalUniTAS => info!(
                 "Locally available UniTAS versions\n{}",
                 LocalVersions::from_dir(&paths::unitas_dir()?)?
             ),
-            Command::LocalBepInEx => println!(
+            Command::LocalBepInEx => info!(
                 "Locally available BepInEx versions\n{}",
                 LocalVersions::from_dir(&paths::bepinex_dir()?)?
             ),
             Command::GameDirHistory => todo!(),
             Command::DownloadUniTAS { version } => {
-                let dest_path = download::download_unitas(&version.into()).await?;
-                println!("Downloaded UniTAS to {}", dest_path.display());
+                info!("Downloading UniTAS {}", version);
+                download::download_unitas(&version.into()).await?;
+                info!("Finished downloading");
             }
             Command::DownloadBepInEx { version } => {
-                let dest_path = download::download_bepinex(&version.into()).await?;
-                println!("Downloaded BepInEx to {}", dest_path.display());
+                info!("Downloading BepInEx {}", version);
+                download::download_bepinex(&version.into()).await?;
+                info!("Finished downloading");
             }
         }
 
@@ -127,6 +132,21 @@ impl TryFrom<GameDirSelection> for PathBuf {
                 let history = crate::utils::history::History::load()?;
                 let entry = history.index(index)?;
                 Ok(entry.to_path_buf())
+            }
+        }
+    }
+}
+
+impl Display for GameDirSelection {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            GameDirSelection::Path(path) => write!(f, "{}", path.display()),
+            GameDirSelection::History(index) => {
+                if let Ok(path) = PathBuf::try_from(self.clone()) {
+                    write!(f, "{}", path.display())
+                } else {
+                    write!(f, "history entry {}", index)
+                }
             }
         }
     }

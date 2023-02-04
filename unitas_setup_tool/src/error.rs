@@ -19,5 +19,5 @@ pub enum Error {
     #[error(transparent)]
     LocalVersionsError(#[from] local_versions::Error),
     #[error(transparent)]
-    InstallError(#[from] install::Error),
+    Other(#[from] anyhow::Error),
 }

@@ -6,6 +6,7 @@ use std::{
 };
 
 use anyhow::Result;
+use log::info;
 use zip::ZipArchive;
 
 use self::error::Error;
@@ -29,13 +30,16 @@ const BEPINEX_WORKFLOW_FILE_NAME: &str = "build.yml";
 /// Downloads UniTAS by version selection from GitHub
 /// - `version` - The version to download
 /// - returns the path to the downloaded UniTAS directory
-pub async fn download_unitas(version: &DownloadVersion) -> Result<PathBuf, Error> {
+pub async fn download_unitas(version: &DownloadVersion) -> Result<(), Error> {
     let dest_path = paths::unitas_dir()?.join(PathBuf::from(version));
+
+    info!("Downloading to {}", dest_path.display());
 
     match version {
         DownloadVersion::Stable => {
             let build = Build::latest_stable_build(UNITAS_OWNER, UNITAS_REPO).await?;
 
+            info!("Extracting");
             build.extract_to_dir(&dest_path).await?;
         }
         DownloadVersion::Branch(branch) => {
@@ -56,28 +60,32 @@ pub async fn download_unitas(version: &DownloadVersion) -> Result<PathBuf, Error
                 artifact.name == windows_release || artifact.name == unix_release
             });
 
+            info!("Extracting");
             build.extract_to_dir(&dest_path).await?;
         }
         DownloadVersion::Tag(tag) => {
             let build = Build::release_by_tag(UNITAS_OWNER, UNITAS_REPO, tag).await?;
 
+            info!("Extracting");
             build.extract_to_dir(&dest_path).await?;
         }
     }
 
-    Ok(dest_path)
+    Ok(())
 }
 
 /// Downloads BepInEx by version selection from GitHub
 /// - `version` - The version to download
 /// - returns the path to the downloaded BepInEx directory
-pub async fn download_bepinex(version: &DownloadVersion) -> Result<PathBuf, Error> {
+pub async fn download_bepinex(version: &DownloadVersion) -> Result<(), Error> {
     let dest_path = paths::bepinex_dir()?.join(PathBuf::from(version));
 
+    info!("Downloading to {}", dest_path.display());
     match version {
         DownloadVersion::Stable => {
             let build = Build::latest_stable_build(BEPINEX_OWNER, BEPINEX_REPO).await?;
 
+            info!("Extracting");
             build.extract_to_dir(&dest_path).await?;
         }
         DownloadVersion::Branch(branch) => {
@@ -89,8 +97,10 @@ pub async fn download_bepinex(version: &DownloadVersion) -> Result<PathBuf, Erro
             )
             .await?;
 
+            info!("Extracting");
             action.extract_to_dir(&dest_path).await?;
 
+            info!("Extracting inner zip files");
             let inner_folder = fs::read_dir(&dest_path)?
                 .next()
                 .ok_or(Error::EmptyDownloadFolder)??
@@ -132,14 +142,16 @@ pub async fn download_bepinex(version: &DownloadVersion) -> Result<PathBuf, Erro
             }
 
             // delete the inner folder
+            info!("Deleting inner folder");
             tokio::fs::remove_dir(inner_folder).await?;
         }
         DownloadVersion::Tag(tag) => {
             let build = Build::release_by_tag(BEPINEX_OWNER, BEPINEX_REPO, tag).await?;
 
+            info!("Extracting");
             build.extract_to_dir(&dest_path).await?;
         }
     }
 
-    Ok(dest_path)
+    Ok(())
 }

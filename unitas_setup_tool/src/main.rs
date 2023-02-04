@@ -16,6 +16,7 @@
 //! - Download UniTAS and BepInEx versions
 
 use clap::Parser;
+use log::*;
 use utils::cli::Cli;
 
 mod error;
@@ -24,10 +25,15 @@ mod utils;
 
 #[tokio::main]
 async fn main() {
+    env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info"))
+        .format_timestamp(None)
+        .init();
+
+    info!("Starting Cli parsing");
     let cli = Cli::parse();
 
     if let Err(error) = cli.process().await {
-        eprintln!("{}", error);
+        error!("{}", error);
         std::process::exit(1);
     }
 }
