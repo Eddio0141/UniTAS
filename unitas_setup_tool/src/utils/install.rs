@@ -3,7 +3,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use anyhow::{bail, Context, Result};
+use anyhow::{anyhow, bail, Context, Result};
 use log::*;
 
 use crate::utils::download;
@@ -46,9 +46,12 @@ pub async fn install(
         }
     }
 
+    info!("Installing BepInEx");
     install_bepinex(&game_dir, bepinex_version, &dir_info).await?;
-    install_unitas(&game_dir, unitas_version).await?;
+    info!("Installed BepInEx successfully");
 
+    info!("Installing UniTAS");
+    install_unitas(&game_dir, unitas_version).await?;
     info!("Installed UniTAS successfully");
 
     Ok(())
@@ -131,7 +134,21 @@ async fn install_bepinex(
         Path::new("BepInEx/core"),
     ];
 
-    let mut copy_tasks = Vec::new();
+    let mut tasks = Vec::new();
+
+    // remove cache dir
+    {
+        let game_dir = game_dir.to_owned();
+        tasks.push(tokio::spawn(async move {
+            let cache_dir = game_dir.join("BepInEx/cache");
+            if cache_dir.exists() {
+                info!("Removing BepInEx cache dir: {}", cache_dir.display());
+                fs::remove_dir_all(cache_dir).context("Could not remove BepInEx cache dir")?;
+            }
+            Ok(())
+        }));
+    }
+
     for overwrite_path in overwrite_paths {
         let source_path = bepinex_dir.join(overwrite_path);
         if !source_path.exists() {
@@ -139,29 +156,46 @@ async fn install_bepinex(
         }
 
         let dest_path = game_dir.join(overwrite_path);
-        let game_dir = game_dir.to_owned();
-        copy_tasks.push(tokio::spawn(async move {
+        tasks.push(tokio::spawn(async move {
             debug!(
                 "Copying {} to {}",
                 source_path.display(),
                 dest_path.display()
             );
             if source_path.is_dir() {
+                // for some reason fs_extra::dir::copy dest dir must point to a parent dir
+                let dest_path = dest_path.parent().ok_or(anyhow!(
+                    "Could not get parent dir of {}",
+                    dest_path.display()
+                ))?;
+
                 fs_extra::dir::copy(
-                    source_path,
-                    game_dir,
-                    &fs_extra::dir::CopyOptions::new()
-                        .overwrite(true)
-                        .copy_inside(true),
+                    &source_path,
+                    &dest_path,
+                    &fs_extra::dir::CopyOptions::new().overwrite(true),
                 )
-                .context("Could not copy BepInEx files")
+                .with_context(|| {
+                    format!(
+                        "Could not copy BepInEx folder from {} to {}",
+                        source_path.display(),
+                        dest_path.display()
+                    )
+                })?;
             } else {
-                fs::copy(source_path, dest_path).context("Could not copy BepInEx files")
+                fs::copy(&source_path, &dest_path).with_context(|| {
+                    format!(
+                        "Could not copy BepInEx file from {} to {}",
+                        source_path.display(),
+                        dest_path.display()
+                    )
+                })?;
             }
+
+            Ok::<_, anyhow::Error>(())
         }));
     }
 
-    for task in copy_tasks {
+    for task in tasks {
         dbg!(task.await.unwrap())?;
     }
 
@@ -176,8 +210,23 @@ async fn install_unitas(game_dir: &Path, unitas_version: DownloadVersion) -> Res
         DownloadVersion::Tag(tag) => unitas_dir.join(paths::TAG_DIR_NAME).join(tag),
         DownloadVersion::Branch(branch) => unitas_dir.join(paths::BRANCH_DIR_NAME).join(branch),
     };
+    let unitas_dir = unitas_dir.join(format!(
+        "{}-{}",
+        download::UNITAS_UNIX_RELEASE,
+        download::UNITAS_RELEASE
+    ));
+    // add other dirs if we add more BepInEx stuff
+    let unitas_dir = unitas_dir.join("plugins");
 
-    tokio::fs::copy(unitas_dir, game_dir).await?;
+    let dest_dir = game_dir.join("BepInEx");
+
+    debug!("Copying {} to {}", unitas_dir.display(), dest_dir.display());
+    fs_extra::dir::copy(
+        unitas_dir,
+        dest_dir,
+        &fs_extra::dir::CopyOptions::new().overwrite(true),
+    )
+    .context("Could not copy UniTAS files")?;
 
     Ok(())
 }
