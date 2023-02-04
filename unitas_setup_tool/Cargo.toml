@@ -9,6 +9,7 @@ edition = "2021"
 anyhow = "1.0.68"
 clap = { version = "4.1.4", features = ["derive"] }
 dirs = "4.0.0"
+goblin = "0.6.0"
 pelite = "0.10.0"
 reqwest = "0.11.14"
 semver = "1.0.16"

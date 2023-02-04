@@ -6,7 +6,12 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use crate::{prelude::Wrap, utils::assembly_version::AssemblyVersion};
+use anyhow::anyhow;
+
+use crate::{
+    prelude::Wrap,
+    utils::{assembly_version::AssemblyVersion, exe_info::FileBitness},
+};
 
 #[derive(Default)]
 pub struct DirInfo {
@@ -51,7 +56,17 @@ impl DirInfo {
             let file_name = file_name.to_string_lossy();
 
             if file_name.ends_with(".exe") {
-                return Ok(GamePlatform::Windows);
+                let bitness = FileBitness::from_exe(&file.path())?;
+                let platform = match bitness {
+                    FileBitness::X86 => GamePlatform::Windowsx86,
+                    FileBitness::X64 => GamePlatform::Windowsx64,
+                    FileBitness::Other => {
+                        return Err(super::error::Error::Other(anyhow!(
+                            "File is not a windows executable, despite having .exe extension"
+                        )));
+                    }
+                };
+                return Ok(platform);
             }
         }
 
@@ -108,7 +123,8 @@ impl Display for DirInfo {
 pub enum GamePlatform {
     #[default]
     Unknown,
-    Windows,
+    Windowsx86,
+    Windowsx64,
     Unix,
 }
 
@@ -116,7 +132,8 @@ impl Display for GamePlatform {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             GamePlatform::Unknown => write!(f, "Unknown"),
-            GamePlatform::Windows => write!(f, "Windows"),
+            GamePlatform::Windowsx86 => write!(f, "Windows x86"),
+            GamePlatform::Windowsx64 => write!(f, "Windows x64"),
             GamePlatform::Unix => write!(f, "Unix"),
         }
     }

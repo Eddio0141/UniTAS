@@ -18,8 +18,8 @@ const UNITAS_REPO: &str = "UniTAS";
 const UNITAS_WORKFLOW_FILE_NAME: &str = "build-on-push.yml";
 
 const UNITAS_RELEASE: &str = "Release";
-const UNIX_RELEASE: &str = "ubuntu-latest";
-const WINDOWS_RELEASE: &str = "windows-latest";
+pub const UNITAS_UNIX_RELEASE: &str = "ubuntu-latest";
+const UNITAS_WINDOWS_RELEASE: &str = "windows-latest";
 
 const BEPINEX_OWNER: &str = "BepInEx";
 const BEPINEX_REPO: &str = "BepInEx";
@@ -47,8 +47,8 @@ pub async fn download_unitas(version: &DownloadVersion) -> Result<PathBuf, Error
             )
             .await?;
 
-            let windows_release = format!("{WINDOWS_RELEASE}-{UNITAS_RELEASE}");
-            let unix_release = format!("{UNIX_RELEASE}-{UNITAS_RELEASE}");
+            let windows_release = format!("{UNITAS_WINDOWS_RELEASE}-{UNITAS_RELEASE}");
+            let unix_release = format!("{UNITAS_UNIX_RELEASE}-{UNITAS_RELEASE}");
 
             // for now we get unix and windows artifacts
             // remove from vec
