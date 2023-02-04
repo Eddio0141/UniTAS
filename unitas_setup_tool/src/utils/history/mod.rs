@@ -1,6 +1,7 @@
 pub mod error;
 
 use std::{
+    fmt::Display,
     fs::File,
     io::{self, BufReader},
     path::{Path, PathBuf},
@@ -52,6 +53,18 @@ impl History {
     }
 
     pub fn add(&mut self, path: PathBuf) {
+        // remove duplicates
+        self.entries.retain(|entry| entry != &path);
         self.entries.insert(0, path);
+    }
+}
+
+impl Display for History {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        for (index, entry) in self.entries.iter().enumerate() {
+            writeln!(f, "{}: {}", index, entry.display())?;
+        }
+
+        Ok(())
     }
 }
