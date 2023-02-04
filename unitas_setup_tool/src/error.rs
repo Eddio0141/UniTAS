@@ -16,8 +16,6 @@ pub enum Error {
     GameDirError(#[from] game_dir::error::Error),
     #[error("Failed to download UniTAS: {0}")]
     DownloadUniTASError(#[from] download::error::Error),
-    #[error("Invalid downloaded version: {0}")]
-    InvalidDownloadVersion(String),
     #[error(transparent)]
     LocalVersionsError(#[from] local_versions::Error),
     #[error(transparent)]

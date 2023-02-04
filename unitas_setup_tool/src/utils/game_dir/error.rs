@@ -8,8 +8,8 @@ pub enum Error {
     NotUnityGameDir,
     #[error("IO error: {0}")]
     Io(#[from] io::Error),
-    #[error("Can't get BepInEx dll version")]
-    BepInExVersionNotFound,
     #[error(transparent)]
     DllFileVersionError(#[from] dll_file_version::error::Error),
+    #[error(transparent)]
+    Other(#[from] anyhow::Error),
 }

@@ -3,7 +3,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use clap::{command, ArgAction, Args, Parser, Subcommand};
+use clap::{command, Args, Parser, Subcommand};
 
 use super::{
     download, game_dir::dir_info::DirInfo, history, install, local_versions::LocalVersions, paths,
@@ -135,20 +135,26 @@ impl TryFrom<GameDirSelection> for PathBuf {
 #[derive(Args, Clone)]
 pub struct DownloadVersionArg {
     #[arg(long, required_unless_present_any = &["tag", "branch"])]
+    /// Download the latest stable release
     pub stable: bool,
     #[arg(long, required_unless_present_any = &["stable", "branch"])]
+    /// Download a specific release by tag
     pub tag: Option<String>,
     #[arg(long, required_unless_present_any = &["stable", "tag"])]
+    /// Download a nightly build from a specific branch
     pub branch: Option<String>,
 }
 
 #[derive(Args, Clone)]
 pub struct DownloadVersionArgBepInEx {
     #[arg(long, required_unless_present_any = &["bepinex_tag", "bepinex_branch"])]
+    /// Download the latest stable release
     pub bepinex_stable: bool,
     #[arg(long, required_unless_present_any = &["bepinex_stable", "bepinex_branch"])]
+    /// Download a specific release by tag
     pub bepinex_tag: Option<String>,
     #[arg(long, required_unless_present_any = &["bepinex_stable", "bepinex_tag"])]
+    /// Download a nightly build from a specific branch
     pub bepinex_branch: Option<String>,
 }
 
