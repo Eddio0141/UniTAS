@@ -16,4 +16,6 @@ pub enum Error {
     PathsError(#[from] paths::error::Error),
     #[error("Failed to unzip file: {0}")]
     UnzipError(#[from] zip::result::ZipError),
+    #[error("Empty download folder")]
+    EmptyDownloadFolder,
 }
