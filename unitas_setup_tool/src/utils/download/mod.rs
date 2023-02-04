@@ -18,7 +18,7 @@ const UNITAS_REPO: &str = "UniTAS";
 
 const UNITAS_WORKFLOW_FILE_NAME: &str = "build-on-push.yml";
 
-const UNITAS_RELEASE: &str = "Release";
+pub const UNITAS_RELEASE: &str = "Release";
 pub const UNITAS_UNIX_RELEASE: &str = "ubuntu-latest";
 const UNITAS_WINDOWS_RELEASE: &str = "windows-latest";
 

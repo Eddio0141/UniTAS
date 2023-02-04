@@ -40,6 +40,7 @@ impl Cli {
                     *offline,
                 )
                 .await?;
+                info!("Installed everything successfully");
             }
             Command::Uninstall {
                 game_dir_selection,
