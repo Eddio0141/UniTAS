@@ -98,9 +98,11 @@ impl Cli {
 
 #[derive(Subcommand)]
 pub enum Command {
+    /// Gets installed info about UniTAS and BepInEx
     GetInfo {
         game_dir_selection: GameDirSelection,
     },
+    /// Installs UniTAS and BepInEx to the specified game directory
     Install {
         game_dir_selection: GameDirSelection,
         #[command(flatten)]
@@ -108,22 +110,29 @@ pub enum Command {
         #[command(flatten)]
         bepinex_version: DownloadVersionArgBepInEx,
         #[arg(short, long)]
+        /// Installs without downloading, will fail if the specified versions are not already downloaded
         offline: bool,
     },
+    /// Uninstalls UniTAS from the specified game directory
     Uninstall {
         game_dir_selection: GameDirSelection,
     },
     #[command(name = "local-unitas")]
+    /// Lists locally available UniTAS versions
     LocalUniTAS,
     #[command(name = "local-bepinex")]
+    /// Lists locally available BepInEx versions
     LocalBepInEx,
+    /// Lists the game directory history
     History,
     #[command(name = "download-unitas")]
+    /// Downloads a UniTAS version
     DownloadUniTAS {
         #[command(flatten)]
         version: DownloadVersionArg,
     },
     #[command(name = "download-bepinex")]
+    /// Downloads a BepInEx version
     DownloadBepInEx {
         #[command(flatten)]
         version: DownloadVersionArg,
