@@ -23,3 +23,11 @@ mkdir -p "$OUTPUT_PLUGIN_DIR"
 # Only copy dlls
 cp "Plugin/bin/$BUILD_TYPE/net35"/*.dll "$OUTPUT_PLUGIN_DIR"
 cp "$SOURCE_PLUGIN_EXTERNS_DIR"/*.dll "$OUTPUT_PLUGIN_DIR"
+
+# Build set up tool
+cd unitas_setup_tool
+cargo build --release
+
+# Copy setup tool to output directory
+cp target/release/unitas_setup_tool ../$OUTPUT_DIR
+cd ..
