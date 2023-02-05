@@ -190,10 +190,10 @@ impl Display for GameDirSelection {
 /// If no version is specified, the latest stable release will be downloaded
 #[derive(Default)]
 pub struct DownloadVersionArg {
-    #[arg(long, required_unless_present = "branch")]
+    #[arg(long, conflicts_with = "branch")]
     /// Download a specific release by tag
     pub tag: Option<String>,
-    #[arg(long, required_unless_present = "tag")]
+    #[arg(long, conflicts_with = "tag")]
     /// Download a nightly build from a specific branch
     pub branch: Option<String>,
 }
@@ -202,10 +202,10 @@ pub struct DownloadVersionArg {
 /// Download a specific version
 /// If no version is specified, the latest stable release will be downloaded
 pub struct DownloadVersionArgBepInEx {
-    #[arg(long, required_unless_present = "bepinex_branch")]
+    #[arg(long, conflicts_with = "bepinex_branch")]
     /// Download a specific release by tag
     pub bepinex_tag: Option<String>,
-    #[arg(long, required_unless_present = "bepinex_tag")]
+    #[arg(long, conflicts_with = "bepinex_tag")]
     /// Download a nightly build from a specific branch
     pub bepinex_branch: Option<String>,
 }
