@@ -24,14 +24,14 @@ mkdir -p "$OUTPUT_PLUGIN_DIR"
 cp "Plugin/bin/$BUILD_TYPE/net35"/*.dll "$OUTPUT_PLUGIN_DIR"
 cp "$SOURCE_PLUGIN_EXTERNS_DIR"/*.dll "$OUTPUT_PLUGIN_DIR"
 
-# Build set up tool
+# Build and copy set up tool
 cd unitas_setup_tool
 if [ "$BUILD_TYPE" = "Debug" ]; then
     cargo build
+    cp target/debug/unitas_setup_tool ../$OUTPUT_DIR
 else
     cargo build --release
+    cp target/release/unitas_setup_tool ../$OUTPUT_DIR
 fi
 
-# Copy setup tool to output directory
-cp target/release/unitas_setup_tool ../$OUTPUT_DIR
 cd ..
