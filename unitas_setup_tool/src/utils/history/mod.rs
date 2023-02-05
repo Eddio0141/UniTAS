@@ -43,13 +43,12 @@ impl History {
     }
 
     pub fn index(&self, index: usize) -> Result<&Path, self::error::Error> {
-        self.entries
-            .get(index)
-            .map(|path| path.as_path())
-            .ok_or_else(|| self::error::Error::HistoryIndexOutOfRange {
+        self.entries.get(index).map(|path| path.as_path()).ok_or(
+            self::error::Error::HistoryIndexOutOfRange {
                 index,
                 history_size: self.entries.len(),
-            })
+            },
+        )
     }
 
     pub fn add(&mut self, path: PathBuf) {

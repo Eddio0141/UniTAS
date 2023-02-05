@@ -20,7 +20,7 @@ pub enum Error {
 
 impl FileBitness {
     pub fn from_exe(path: &Path) -> Result<Self> {
-        let bytes = fs::read(&path).context("Failed to read file")?;
+        let bytes = fs::read(path).context("Failed to read file")?;
 
         let pe = Object::parse(&bytes).context("Failed to get PE info")?;
 

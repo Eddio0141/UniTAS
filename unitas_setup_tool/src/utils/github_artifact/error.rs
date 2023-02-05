@@ -7,9 +7,9 @@ pub enum Error {
     #[error("Can't find workflow runs from json data")]
     CantFindWorkflowRuns,
     #[error("Request error: {0}")]
-    RequestError(#[from] reqwest::Error),
+    Request(#[from] reqwest::Error),
     #[error("Json parse error: {error}, response: {response}")]
-    JsonParseError {
+    JsonParse {
         #[source]
         error: serde_json::Error,
         response: String,
