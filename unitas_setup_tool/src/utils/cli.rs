@@ -7,6 +7,8 @@ use anyhow::Context;
 use clap::{command, Args, Parser, Subcommand};
 use log::*;
 
+use crate::utils::uninstall;
+
 use super::{
     download,
     game_dir::dir_info::DirInfo,
@@ -34,12 +36,12 @@ impl Cli {
     pub async fn process(&self) -> crate::prelude::Result<()> {
         match &self.command {
             Command::GetInfo { game_dir_selection } => {
-                Cli::save_path_history(game_dir_selection).await?;
-
                 info!("Getting info for {game_dir_selection}");
                 let dir_info =
                     DirInfo::from_dir(PathBuf::try_from(game_dir_selection.clone())?.as_path())?;
                 info!("{dir_info}");
+
+                Cli::save_path_history(game_dir_selection).await?;
             }
             Command::Install {
                 game_dir_selection,
@@ -47,8 +49,6 @@ impl Cli {
                 bepinex_version,
                 offline,
             } => {
-                Cli::save_path_history(game_dir_selection).await?;
-
                 info!("Installing UniTAS {unitas_version} and BepInEx {} to {game_dir_selection} with offline = {offline}", DownloadVersionArg::from(bepinex_version));
                 install::install(
                     game_dir_selection.clone(),
@@ -58,13 +58,16 @@ impl Cli {
                 )
                 .await?;
                 info!("Installed everything successfully");
-            }
-            Command::Uninstall {
-                game_dir_selection,
-                remove_bepinex,
-            } => {
+
                 Cli::save_path_history(game_dir_selection).await?;
-            },
+            }
+            Command::Uninstall { game_dir_selection } => {
+                info!("Uninstalling UniTAS from {game_dir_selection}");
+                uninstall::uninstall(game_dir_selection).await?;
+                info!("Uninstalled successfully");
+
+                Cli::save_path_history(game_dir_selection).await?;
+            }
             Command::LocalUniTAS => info!(
                 "Locally available UniTAS versions\n{}",
                 LocalVersions::from_dir(&paths::unitas_dir()?)?
@@ -109,8 +112,6 @@ pub enum Command {
     },
     Uninstall {
         game_dir_selection: GameDirSelection,
-        #[arg(short, long)]
-        remove_bepinex: bool,
     },
     #[command(name = "local-unitas")]
     LocalUniTAS,

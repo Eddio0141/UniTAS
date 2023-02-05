@@ -29,7 +29,7 @@ async fn main() {
         .format_timestamp(None)
         .init();
 
-    info!("Starting Cli parsing");
+    debug!("Starting Cli parsing");
     let cli = Cli::parse();
 
     if let Err(error) = cli.process().await {
