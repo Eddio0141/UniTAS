@@ -29,7 +29,7 @@ jobs:
     - name: Test plugin
       working-directory: ./Plugin
       run: dotnet test --configuration ${{ matrix.configuration }}
-    - name: Test set up tool
+    - name: Clippy for set up tool
       working-directory: ./unitas_setup_tool
       run: cargo clippy --all-targets --all-features -- -D warnings
     - name: Build windows
