@@ -93,7 +93,7 @@ impl Display for DirInfo {
             return Ok(());
         }
 
-        writeln!(f, "Game Platform: {}", game_platform)?;
+        writeln!(f, "Game Platform: {game_platform}")?;
         let default = "Not Installed".to_string();
 
         writeln!(
@@ -112,7 +112,7 @@ impl Display for DirInfo {
                 .bepinex_version
                 .as_ref()
                 .map(|version| version.to_string())
-                .unwrap_or(default.clone())
+                .unwrap_or(default)
         )?;
 
         Ok(())

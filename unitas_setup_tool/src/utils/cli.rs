@@ -169,7 +169,7 @@ impl Display for GameDirSelection {
                 if let Ok(path) = PathBuf::try_from(self.clone()) {
                     write!(f, "{}", path.display())
                 } else {
-                    write!(f, "history entry {}", index)
+                    write!(f, "history entry {index}")
                 }
             }
         }
@@ -227,9 +227,9 @@ impl Display for DownloadVersionArg {
         if self.stable {
             write!(f, "stable")
         } else if let Some(tag) = &self.tag {
-            write!(f, "tag {}", tag)
+            write!(f, "tag {tag}")
         } else if let Some(branch) = &self.branch {
-            write!(f, "branch {}", branch)
+            write!(f, "branch {branch}")
         } else {
             unreachable!()
         }

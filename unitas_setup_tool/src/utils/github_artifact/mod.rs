@@ -54,7 +54,7 @@ impl Build {
         let response = client.get(&url).send().await?;
         let text = response.text().await?;
         let json: serde_json::Value =
-            serde_json::from_str(&text).map_err(|error| Error::JsonParseError {
+            serde_json::from_str(&text).map_err(|error| Error::JsonParse {
                 error,
                 response: text,
             })?;
@@ -71,7 +71,7 @@ impl Build {
         let response = client.get(&artifacts).send().await?;
         let text = response.text().await?;
         let json: serde_json::Value =
-            serde_json::from_str(&text).map_err(|error| Error::JsonParseError {
+            serde_json::from_str(&text).map_err(|error| Error::JsonParse {
                 error,
                 response: text,
             })?;
@@ -114,7 +114,7 @@ impl Build {
         let response = client.get(&url).send().await?;
         let text = response.text().await?;
         let json: serde_json::Value =
-            serde_json::from_str(&text).map_err(|error| Error::JsonParseError {
+            serde_json::from_str(&text).map_err(|error| Error::JsonParse {
                 error,
                 response: text,
             })?;
@@ -157,7 +157,7 @@ impl Build {
         let response = client.get(&url).send().await?;
         let text = response.text().await?;
         let json: serde_json::Value =
-            serde_json::from_str(&text).map_err(|error| Error::JsonParseError {
+            serde_json::from_str(&text).map_err(|error| Error::JsonParse {
                 error,
                 response: text,
             })?;

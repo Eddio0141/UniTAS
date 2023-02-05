@@ -66,7 +66,7 @@ async fn dl_bepinex_if_missing(bepinex_version: DownloadVersion, offline: bool) 
             bail!("BepInEx version not found and offline mode is enabled");
         }
 
-        download::download_bepinex(&bepinex_version.into()).await?;
+        download::download_bepinex(&bepinex_version).await?;
     }
 
     Ok(())
@@ -81,7 +81,7 @@ async fn dl_unitas_if_missing(unitas_version: DownloadVersion, offline: bool) ->
             bail!("UniTAS version not found and offline mode is enabled");
         }
 
-        download::download_unitas(&unitas_version.into()).await?;
+        download::download_unitas(&unitas_version).await?;
     }
 
     Ok(())
@@ -174,7 +174,7 @@ async fn install_bepinex(
 
                 fs_extra::dir::copy(
                     &source_path,
-                    &dest_path,
+                    dest_path,
                     &fs_extra::dir::CopyOptions::new().overwrite(true),
                 )
                 .with_context(|| {

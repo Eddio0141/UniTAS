@@ -20,9 +20,9 @@ impl LocalVersions {
     pub fn from_dir(dir: &Path) -> Result<Self, Error> {
         let mut versions = Vec::new();
 
-        let stable_dir = paths::local_stable_path(&dir);
-        let tag_dir = paths::local_tag_path(&dir);
-        let branch_dir = paths::local_branch_path(&dir);
+        let stable_dir = paths::local_stable_path(dir);
+        let tag_dir = paths::local_tag_path(dir);
+        let branch_dir = paths::local_branch_path(dir);
 
         paths::create_dir_if_not_exists(&stable_dir)?;
         paths::create_dir_if_not_exists(&tag_dir)?;
@@ -69,7 +69,7 @@ impl LocalVersions {
 impl Display for LocalVersions {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for version in &self.versions {
-            writeln!(f, "{}", version)?;
+            writeln!(f, "{version}")?;
         }
 
         Ok(())
