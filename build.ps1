@@ -4,6 +4,7 @@ param(
 )
 
 $buildOutput = "build/$buildType"
+$buildOutput = (Resolve-Path $buildOutput).Path
 
 # Dotnet builds
 $buildOutputPlugin = "$buildOutput/plugins"
@@ -22,7 +23,7 @@ Copy-Item "Plugin/bin/$buildType/net35/*.dll" "$buildOutputPlugin" -Force
 Copy-Item "Plugin/Extern-Assemblies/*.dll" "$buildOutputPlugin" -Force
 
 # Build and copy set up tool
-Push-Location "unitas_setup_tool"
+Push-Location -Path "unitas_setup_tool"
 if ($buildType -eq "Debug") {
     cargo build
     Copy-Item "target/debug/unitas_setup_tool.exe" "$buildOutput" -Force
@@ -30,3 +31,5 @@ if ($buildType -eq "Debug") {
     cargo build --release
     Copy-Item "target/release/unitas_setup_tool.exe" "$buildOutput" -Force
 }
+
+Pop-Location
