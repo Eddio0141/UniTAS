@@ -26,7 +26,11 @@ cp "$SOURCE_PLUGIN_EXTERNS_DIR"/*.dll "$OUTPUT_PLUGIN_DIR"
 
 # Build set up tool
 cd unitas_setup_tool
-cargo build --release
+if [ "$BUILD_TYPE" = "Debug" ]; then
+    cargo build
+else
+    cargo build --release
+fi
 
 # Copy setup tool to output directory
 cp target/release/unitas_setup_tool ../$OUTPUT_DIR
