@@ -17,8 +17,9 @@ Check [working-games](docs/working-games.md) for tested games
 For now, anything that BepInEx 5.4.21 can support, ranging from unity 3 to latest, and games that use Mono and not Il2cpp
 
 # How to build
-- Make sure you have .NET SDK 6.0 installed on your system
+- Make sure you have [.NET SDK 6.0](https://dotnet.microsoft.com/en-us/download) and [rust](https://www.rust-lang.org/tools/install) installed on your system
 - Run either `build.sh` for linux or `build.ps1` for windows
   - Takes either `Debug` or `Release` as an argument for choosing building config
+  - `ReleaseTrace` builds with a `Release` profile but with trace logging for the plugin
   - Passing in nothing will build `Debug` automatically
-- Check `build/Debug` or `build/Release` for built files
+- Check `build` directory for built files
