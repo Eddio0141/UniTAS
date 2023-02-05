@@ -196,7 +196,6 @@ public class LegacyInputPatch
             if (!env.RunVirtualEnvironment) return true;
             if (env.InputState.AxisState.Values.TryGetValue(axisName, out var value))
             {
-                // TODO whats diff between Raw and normal
                 __result = value;
             }
 
