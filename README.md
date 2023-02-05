@@ -28,7 +28,7 @@ For now, anything that BepInEx 5.4.21 can support, ranging from unity 3 to lates
 - You can check command usage with `--help` as well like so: `unitas_setup_tool install --help`
 
 ### Installing stable
-`unitas_setup_tool install --stable --bepinex-stable <GAME_DIR_SELECTION>`
+`unitas_setup_tool install <GAME_DIR_SELECTION>`
 
 ### Installing nightly builds of BepInEx / UniTAS
 `unitas_setup_tool install --branch <BRANCH> --bepinex-branch <BRANCH>`
