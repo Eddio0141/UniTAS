@@ -9,3 +9,4 @@ pub mod history;
 pub mod install;
 pub mod local_versions;
 pub mod paths;
+pub mod uninstall;
