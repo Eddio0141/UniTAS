@@ -188,6 +188,7 @@ impl Display for GameDirSelection {
 #[derive(Args, Clone)]
 /// Download a specific version
 /// If no version is specified, the latest stable release will be downloaded
+#[derive(Default)]
 pub struct DownloadVersionArg {
     #[arg(long, required_unless_present = "branch")]
     /// Download a specific release by tag
@@ -214,15 +215,6 @@ impl From<&DownloadVersionArgBepInEx> for DownloadVersionArg {
         Self {
             tag: value.bepinex_tag.to_owned(),
             branch: value.bepinex_branch.to_owned(),
-        }
-    }
-}
-
-impl Default for DownloadVersionArg {
-    fn default() -> Self {
-        Self {
-            tag: None,
-            branch: None,
         }
     }
 }
