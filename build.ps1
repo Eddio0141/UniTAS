@@ -23,7 +23,11 @@ Copy-Item "Plugin/Extern-Assemblies/*.dll" "$buildOutputPlugin" -Force
 
 # Build set up tool
 Push-Location "unitas_setup_tool"
-cargo build --release
+if ($buildType -eq "Debug") {
+    cargo build
+} else {
+    cargo build --release
+}
 
 # Copy set up tool
 Copy-Item "target/release/unitas_setup_tool.exe" "$buildOutput" -Force
