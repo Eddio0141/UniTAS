@@ -4,7 +4,6 @@ param(
 )
 
 $buildOutput = "build/$buildType"
-$buildOutput = (Resolve-Path $buildOutput).Path
 
 # Dotnet builds
 $buildOutputPlugin = "$buildOutput/plugins"
@@ -15,6 +14,9 @@ if (!(Test-Path "$buildOutput")) {
     New-Item -ItemType Directory -Path "$buildOutput" > $null
     New-Item -ItemType Directory -Path "$buildOutputPlugin" > $null
 }
+
+# Get full build output path
+$buildOutput = (Resolve-Path $buildOutput).Path
 
 # Copy plugin dlls
 Copy-Item "Plugin/bin/$buildType/net35/*.dll" "$buildOutputPlugin" -Force
