@@ -21,13 +21,12 @@ Copy-Item "Plugin/bin/$buildType/net35/*.dll" "$buildOutputPlugin" -Force
 # Copy external plugin dlls
 Copy-Item "Plugin/Extern-Assemblies/*.dll" "$buildOutputPlugin" -Force
 
-# Build set up tool
+# Build and copy set up tool
 Push-Location "unitas_setup_tool"
 if ($buildType -eq "Debug") {
     cargo build
+    Copy-Item "target/debug/unitas_setup_tool.exe" "$buildOutput" -Force
 } else {
     cargo build --release
+    Copy-Item "target/release/unitas_setup_tool.exe" "$buildOutput" -Force
 }
-
-# Copy set up tool
-Copy-Item "target/release/unitas_setup_tool.exe" "$buildOutput" -Force
