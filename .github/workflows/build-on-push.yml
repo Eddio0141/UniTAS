@@ -24,7 +24,7 @@ jobs:
     - name: Rust cache
       uses: Swatinem/rust-cache@v2.2.0
       with:
-        workspaces: ". -> ./unitas_setup_tool"
+        workspaces: "./unitas_setup_tool"
     - name: Test plugin
       working-directory: ./Plugin
       run: dotnet test --configuration ${{ matrix.configuration }}
