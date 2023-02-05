@@ -23,8 +23,9 @@ jobs:
         override: true
         components: rustfmt, clippy
     - name: Rust cache
-      working-directory: ./unitas_setup_tool
       uses: Swatinem/rust-cache@v2.2.0
+      with:
+        workspaces: ". -> ./unitas_setup_tool/target"
     - name: Test plugin
       working-directory: ./Plugin
       run: dotnet test --configuration ${{ matrix.configuration }}
