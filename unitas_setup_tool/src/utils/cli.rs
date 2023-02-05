@@ -186,27 +186,25 @@ impl Display for GameDirSelection {
 }
 
 #[derive(Args, Clone)]
+/// Download a specific version
+/// If no version is specified, the latest stable release will be downloaded
 pub struct DownloadVersionArg {
-    #[arg(long, required_unless_present_any = &["tag", "branch"])]
-    /// Download the latest stable release
-    pub stable: bool,
-    #[arg(long, required_unless_present_any = &["stable", "branch"])]
+    #[arg(long, required_unless_present = "branch")]
     /// Download a specific release by tag
     pub tag: Option<String>,
-    #[arg(long, required_unless_present_any = &["stable", "tag"])]
+    #[arg(long, required_unless_present = "tag")]
     /// Download a nightly build from a specific branch
     pub branch: Option<String>,
 }
 
 #[derive(Args, Clone)]
+/// Download a specific version
+/// If no version is specified, the latest stable release will be downloaded
 pub struct DownloadVersionArgBepInEx {
-    #[arg(long, required_unless_present_any = &["bepinex_tag", "bepinex_branch"])]
-    /// Download the latest stable release
-    pub bepinex_stable: bool,
-    #[arg(long, required_unless_present_any = &["bepinex_stable", "bepinex_branch"])]
+    #[arg(long, required_unless_present = "bepinex_branch")]
     /// Download a specific release by tag
     pub bepinex_tag: Option<String>,
-    #[arg(long, required_unless_present_any = &["bepinex_stable", "bepinex_tag"])]
+    #[arg(long, required_unless_present = "bepinex_tag")]
     /// Download a nightly build from a specific branch
     pub bepinex_branch: Option<String>,
 }
@@ -214,7 +212,6 @@ pub struct DownloadVersionArgBepInEx {
 impl From<&DownloadVersionArgBepInEx> for DownloadVersionArg {
     fn from(value: &DownloadVersionArgBepInEx) -> Self {
         Self {
-            stable: value.bepinex_stable.to_owned(),
             tag: value.bepinex_tag.to_owned(),
             branch: value.bepinex_branch.to_owned(),
         }
@@ -224,7 +221,6 @@ impl From<&DownloadVersionArgBepInEx> for DownloadVersionArg {
 impl Default for DownloadVersionArg {
     fn default() -> Self {
         Self {
-            stable: true,
             tag: None,
             branch: None,
         }
@@ -233,42 +229,36 @@ impl Default for DownloadVersionArg {
 
 impl Display for DownloadVersionArg {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        if self.stable {
-            write!(f, "stable")
-        } else if let Some(tag) = &self.tag {
+        if let Some(tag) = &self.tag {
             write!(f, "tag {tag}")
         } else if let Some(branch) = &self.branch {
             write!(f, "branch {branch}")
         } else {
-            unreachable!()
+            write!(f, "stable")
         }
     }
 }
 
 impl From<&DownloadVersionArg> for DownloadVersion {
     fn from(value: &DownloadVersionArg) -> Self {
-        if value.stable {
-            Self::Stable
-        } else if let Some(tag) = &value.tag {
+        if let Some(tag) = &value.tag {
             Self::Tag(tag.clone())
         } else if let Some(branch) = &value.branch {
             Self::Branch(branch.clone())
         } else {
-            unreachable!()
+            Self::Stable
         }
     }
 }
 
 impl From<DownloadVersionArg> for DownloadVersion {
     fn from(value: DownloadVersionArg) -> Self {
-        if value.stable {
-            Self::Stable
-        } else if let Some(tag) = value.tag {
+        if let Some(tag) = value.tag {
             Self::Tag(tag)
         } else if let Some(branch) = value.branch {
             Self::Branch(branch)
         } else {
-            unreachable!()
+            Self::Stable
         }
     }
 }
