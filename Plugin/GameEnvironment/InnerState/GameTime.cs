@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using HarmonyLib;
 using UniTASPlugin.Interfaces.Update;
 using UnityEngine;
@@ -18,6 +19,8 @@ public class GameTime : IOnPreUpdates
         get => _startupTime;
         set
         {
+            Trace.Write($"Setting startup time to {value}");
+            Trace.Write($"Before {this}");
             _startupTime = value;
             RenderedFrameCountOffset += (ulong)Time.renderedFrameCount;
             SecondsSinceStartUpOffset += Time.realtimeSinceStartup;
@@ -30,6 +33,7 @@ public class GameTime : IOnPreUpdates
                 UnscaledTimeOffset += unscaledTime.GetValue<float>();
             ScaledTimeOffset += Time.time;
             ScaledFixedTimeOffset += Time.fixedTime;
+            Trace.Write($"After {this}");
         }
     }
 
@@ -46,5 +50,18 @@ public class GameTime : IOnPreUpdates
     public void PreUpdate()
     {
         RealtimeSinceStartup = Time.realtimeSinceStartup;
+    }
+
+    public override string ToString()
+    {
+        return $"StartupTime: {StartupTime} " +
+               $"CurrentTime: {CurrentTime} " +
+               $"RenderedFrameCountOffset: {RenderedFrameCountOffset} " +
+               $"SecondsSinceStartUpOffset: {SecondsSinceStartUpOffset} " +
+               $"FrameCountRestartOffset: {FrameCountRestartOffset} " +
+               $"FixedUnscaledTimeOffset: {FixedUnscaledTimeOffset} " +
+               $"UnscaledTimeOffset: {UnscaledTimeOffset} " +
+               $"ScaledTimeOffset: {ScaledTimeOffset} " +
+               $"ScaledFixedTimeOffset: {ScaledFixedTimeOffset}";
     }
 }
