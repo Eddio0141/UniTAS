@@ -26,7 +26,7 @@ jobs:
       with:
         workspaces: "./unitas_setup_tool"
     - name: Test plugin
-      working-directory: ./Plugin
+      working-directory: ./UniTASPlugin
       run: dotnet test --configuration ${{ matrix.configuration }}
     - name: Clippy for set up tool
       working-directory: ./unitas_setup_tool
