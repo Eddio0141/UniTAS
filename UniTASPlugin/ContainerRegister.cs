@@ -85,7 +85,7 @@ public static class ContainerRegister
 
             // before FileSystemManager
             c.For<PatchReverseInvoker>().Singleton();
-            c.For<IReverseInvokerFactory>().Use<ReverseInvokerFactory>();
+            c.For<IPatchReverseInvoker>().Use(x => x.GetInstance<PatchReverseInvoker>());
 
             c.For<VirtualEnvironment>().Singleton();
             c.For<IOnGameRestart>().Use(x => x.GetInstance<VirtualEnvironment>());

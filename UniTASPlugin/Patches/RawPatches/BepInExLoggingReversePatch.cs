@@ -5,7 +5,6 @@ using System.Linq;
 using System.Reflection;
 using BepInEx.Logging;
 using HarmonyLib;
-using UniTASPlugin.ReverseInvoker;
 
 namespace UniTASPlugin.Patches.RawPatches;
 
@@ -15,9 +14,6 @@ namespace UniTASPlugin.Patches.RawPatches;
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 public class BepInExLoggingReversePatch
 {
-    private static readonly IReverseInvokerFactory
-        ReverseInvokerFactory = Plugin.Kernel.GetInstance<IReverseInvokerFactory>();
-
     [HarmonyPatch]
     private class ConsoleLogListenerPatch
     {
@@ -57,14 +53,14 @@ public class BepInExLoggingReversePatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static void Prefix()
-        {
-            ReverseInvokerFactory.GetReverseInvoker().Invoking = true;
-        }
-
-        private static void Postfix()
-        {
-            ReverseInvokerFactory.GetReverseInvoker().Invoking = false;
-        }
+        // private static void Prefix()
+        // {
+        //     ReverseInvokerFactory.GetReverseInvoker().Invoking = true;
+        // }
+        //
+        // private static void Postfix()
+        // {
+        //     ReverseInvokerFactory.GetReverseInvoker().Invoking = false;
+        // }
     }
 }

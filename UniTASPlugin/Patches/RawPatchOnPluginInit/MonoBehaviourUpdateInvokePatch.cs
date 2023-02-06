@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
 using UniTASPlugin.Interfaces;
-using UniTASPlugin.ReverseInvoker;
 using UnityEngine;
 
 // ReSharper disable UnusedMember.Local
@@ -21,8 +20,6 @@ public class MonoBehaviourUpdateInvokePatch
     /// <returns></returns>
     private static IEnumerable<MethodBase> GetEventMethods(string methodName)
     {
-        var rev = ReverseInvokerFactory.GetReverseInvoker();
-        rev.Invoking = true;
         var monoBehaviourTypes = new List<Type>();
         var assemblies = AppDomain.CurrentDomain.GetAssemblies();
         foreach (var assembly in assemblies)
@@ -51,15 +48,10 @@ public class MonoBehaviourUpdateInvokePatch
             if (updateMethod != null)
                 yield return updateMethod;
         }
-
-        rev.Invoking = false;
     }
 
     private static readonly IMonoBehEventInvoker
         MonoBehEventInvoker = Plugin.Kernel.GetInstance<IMonoBehEventInvoker>();
-
-    private static readonly ReverseInvokerFactory ReverseInvokerFactory =
-        Plugin.Kernel.GetInstance<ReverseInvokerFactory>();
 
     [HarmonyPatch]
     private class AwakeMultiple

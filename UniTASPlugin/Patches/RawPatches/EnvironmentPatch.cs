@@ -4,7 +4,6 @@ using System.Reflection;
 using HarmonyLib;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.GameEnvironment.InnerState;
-using UniTASPlugin.ReverseInvoker;
 
 namespace UniTASPlugin.Patches.RawPatches;
 
@@ -12,11 +11,9 @@ namespace UniTASPlugin.Patches.RawPatches;
 [SuppressMessage("ReSharper", "UnusedMember.Local")]
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[SuppressMessage("ReSharper", "RedundantAssignment")]
 public class EnvironmentPatch
 {
-    private static readonly IReverseInvokerFactory ReverseInvokerFactory =
-        Plugin.Kernel.GetInstance<ReverseInvokerFactory>();
-
     private static readonly VirtualEnvironment VirtualEnvironment =
         Plugin.Kernel.GetInstance<VirtualEnvironment>();
 
@@ -30,11 +27,7 @@ public class EnvironmentPatch
 
         private static bool Prefix(ref bool __result)
         {
-            if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                return true;
-
             __result = VirtualEnvironment.Os == Os.Windows;
-
             return false;
         }
     }

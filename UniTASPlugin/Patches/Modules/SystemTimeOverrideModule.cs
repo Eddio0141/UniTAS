@@ -16,10 +16,11 @@ namespace UniTASPlugin.Patches.Modules;
 
 [MscorlibPatch(true)]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Local")]
+[SuppressMessage("ReSharper", "RedundantAssignment")]
 public class SystemTimeOverrideModule
 {
-    private static readonly ReverseInvokerFactory ReverseInvokerFactory =
-        Plugin.Kernel.GetInstance<ReverseInvokerFactory>();
+    private static readonly IPatchReverseInvoker ReverseInvoker =
+        Plugin.Kernel.GetInstance<IPatchReverseInvoker>();
 
     private static readonly VirtualEnvironment VirtualEnvironment =
         Plugin.Kernel.GetInstance<VirtualEnvironment>();
@@ -37,11 +38,16 @@ public class SystemTimeOverrideModule
 
             private static bool Prefix(ref DateTime __result)
             {
-                if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
+                if (ReverseInvoker.InnerCall())
                     return true;
                 var gameTime = VirtualEnvironment.GameTime;
                 __result = gameTime.CurrentTime;
                 return false;
+            }
+
+            private static void Postfix()
+            {
+                ReverseInvoker.Return();
             }
         }
 
@@ -55,8 +61,6 @@ public class SystemTimeOverrideModule
 
             private static bool Prefix(ref int __result)
             {
-                if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    return true;
                 var gameTime = VirtualEnvironment.GameTime;
                 __result = (int)(gameTime.RealtimeSinceStartup * 1000f);
                 return false;

@@ -16,8 +16,8 @@ namespace UniTASPlugin.Patches.RawPatches;
 [SuppressMessage("ReSharper", "UnusedMember.Local")]
 public class TimePatch
 {
-    private static readonly IReverseInvokerFactory
-        ReverseInvokerFactory = Plugin.Kernel.GetInstance<IReverseInvokerFactory>();
+    private static readonly IPatchReverseInvoker
+        ReverseInvoker = Plugin.Kernel.GetInstance<IPatchReverseInvoker>();
 
     private static readonly VirtualEnvironment VirtualEnvironment =
         Plugin.Kernel.GetInstance<VirtualEnvironment>();
@@ -32,8 +32,12 @@ public class TimePatch
 
         private static bool Prefix()
         {
-            var rev = ReverseInvokerFactory.GetReverseInvoker();
-            return rev.Invoking;
+            return ReverseInvoker.InnerCall();
+        }
+
+        private static void Postfix()
+        {
+            ReverseInvoker.Return();
         }
     }
 
@@ -47,8 +51,12 @@ public class TimePatch
 
         private static bool Prefix()
         {
-            var rev = ReverseInvokerFactory.GetReverseInvoker();
-            return rev.Invoking;
+            return ReverseInvoker.InnerCall();
+        }
+
+        private static void Postfix()
+        {
+            ReverseInvoker.Return();
         }
     }
 
@@ -62,8 +70,6 @@ public class TimePatch
 
         private static void Postfix(ref float __result)
         {
-            if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                return;
             var gameTime = VirtualEnvironment.GameTime;
             __result = (float)(__result - gameTime.FixedUnscaledTimeOffset);
         }
@@ -85,8 +91,6 @@ public class TimePatch
 
         private static void Postfix(ref float __result)
         {
-            if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                return;
             // When called from inside MonoBehaviour's FixedUpdate, it returns Time.fixedUnscaledTime
             var gameTime = VirtualEnvironment.GameTime;
             __result = inFixedTimeStep.PropertyExists() && inFixedTimeStep.GetValue<bool>()
@@ -111,8 +115,6 @@ public class TimePatch
 
         private static void Postfix(ref double __result)
         {
-            if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                return;
             // When called from inside MonoBehaviour's FixedUpdate, it returns Time.fixedUnscaledTimeAsDouble
             if (inFixedTimeStep.PropertyExists() && inFixedTimeStep.GetValue<bool>())
                 __result = fixedUnscaledTimeAsDouble.GetValue<double>();
@@ -134,8 +136,6 @@ public class TimePatch
 
         private static void Postfix(ref double __result)
         {
-            if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                return;
             var gameTime = VirtualEnvironment.GameTime;
             __result -= gameTime.FixedUnscaledTimeOffset;
         }
@@ -151,8 +151,6 @@ public class TimePatch
 
         private static void Postfix(ref int __result)
         {
-            if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                return;
             var gameTime = VirtualEnvironment.GameTime;
             __result = (int)((ulong)__result - gameTime.FrameCountRestartOffset);
         }
@@ -168,8 +166,6 @@ public class TimePatch
 
         private static void Postfix(ref int __result)
         {
-            if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                return;
             var gameTime = VirtualEnvironment.GameTime;
             __result = (int)((ulong)__result - gameTime.RenderedFrameCountOffset);
         }
@@ -185,8 +181,6 @@ public class TimePatch
 
         private static void Postfix(ref float __result)
         {
-            if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                return;
             var gameTime = VirtualEnvironment.GameTime;
             __result = (float)(__result - gameTime.SecondsSinceStartUpOffset);
         }
@@ -202,8 +196,6 @@ public class TimePatch
 
         private static void Postfix(ref double __result)
         {
-            if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                return;
             var gameTime = VirtualEnvironment.GameTime;
             __result -= gameTime.SecondsSinceStartUpOffset;
         }
@@ -219,8 +211,6 @@ public class TimePatch
 
         private static void Postfix(ref float __result)
         {
-            if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                return;
             var gameTime = VirtualEnvironment.GameTime;
             __result = (float)(__result - gameTime.ScaledTimeOffset);
         }
@@ -236,8 +226,6 @@ public class TimePatch
 
         private static void Postfix(ref double __result)
         {
-            if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                return;
             var gameTime = VirtualEnvironment.GameTime;
             __result -= gameTime.ScaledTimeOffset;
         }
@@ -253,8 +241,6 @@ public class TimePatch
 
         private static void Postfix(ref float __result)
         {
-            if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                return;
             var gameTime = VirtualEnvironment.GameTime;
             __result = (float)(__result - gameTime.ScaledFixedTimeOffset);
         }
@@ -270,8 +256,6 @@ public class TimePatch
 
         private static void Postfix(ref double __result)
         {
-            if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                return;
             var gameTime = VirtualEnvironment.GameTime;
             __result -= gameTime.ScaledFixedTimeOffset;
         }

@@ -16,8 +16,8 @@ namespace UniTASPlugin.Patches.RawPatches;
 public class UnityPathFileSystemPatch
 {
     // TODO add all path patches
-    private static readonly IReverseInvokerFactory
-        ReverseInvokerFactory = Plugin.Kernel.GetInstance<IReverseInvokerFactory>();
+    private static readonly PatchReverseInvoker
+        ReverseInvoker = Plugin.Kernel.GetInstance<PatchReverseInvoker>();
 
     private static readonly VirtualEnvironment VirtualEnvironment =
         Plugin.Kernel.GetInstance<VirtualEnvironment>();
@@ -32,11 +32,16 @@ public class UnityPathFileSystemPatch
 
         private static bool Prefix(ref string __result)
         {
-            if (ReverseInvokerFactory.GetReverseInvoker().Invoking) return true;
+            if (ReverseInvoker.InnerCall()) return true;
 
             __result = VirtualEnvironment.UnityPaths.PersistentDataPath;
 
             return false;
+        }
+
+        private static void Postfix()
+        {
+            ReverseInvoker.Return();
         }
     }
 }

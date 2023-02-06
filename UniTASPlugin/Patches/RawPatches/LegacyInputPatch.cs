@@ -18,8 +18,8 @@ namespace UniTASPlugin.Patches.RawPatches;
 [RawPatch]
 public class LegacyInputPatch
 {
-    private static readonly IReverseInvokerFactory ReverseInvokerFactory =
-        Plugin.Kernel.GetInstance<IReverseInvokerFactory>();
+    private static readonly IPatchReverseInvoker ReverseInvoker =
+        Plugin.Kernel.GetInstance<IPatchReverseInvoker>();
 
     private static readonly VirtualEnvironment VirtualEnvironment =
         Plugin.Kernel.GetInstance<VirtualEnvironment>();
@@ -35,11 +35,16 @@ public class LegacyInputPatch
 
         private static bool Prefix(object key, ref bool __result)
         {
-            if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (ReverseInvoker.InnerCall())
                 return true;
             if (!VirtualEnvironment.RunVirtualEnvironment) return true;
             __result = VirtualEnvironment.InputState.KeyboardState.Keys.Contains((int)(KeyCode)key);
             return false;
+        }
+
+        private static void Postfix()
+        {
+            ReverseInvoker.Return();
         }
     }
 
@@ -54,10 +59,15 @@ public class LegacyInputPatch
 
         private static bool Prefix( /*string name, ref bool __result*/)
         {
-            if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (ReverseInvoker.InnerCall())
                 return true;
             return !VirtualEnvironment.RunVirtualEnvironment;
             // TODO
+        }
+
+        private static void Postfix()
+        {
+            ReverseInvoker.Return();
         }
     }
 
@@ -72,10 +82,15 @@ public class LegacyInputPatch
 
         private static bool Prefix( /*string name, ref bool __result*/)
         {
-            if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (ReverseInvoker.InnerCall())
                 return true;
             return !VirtualEnvironment.RunVirtualEnvironment;
             // TODO
+        }
+
+        private static void Postfix()
+        {
+            ReverseInvoker.Return();
         }
     }
 
@@ -90,11 +105,16 @@ public class LegacyInputPatch
 
         private static bool Prefix(object key, ref bool __result)
         {
-            if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (ReverseInvoker.InnerCall())
                 return true;
             if (!VirtualEnvironment.RunVirtualEnvironment) return true;
             __result = VirtualEnvironment.InputState.KeyboardState.KeysUp.Contains((int)(KeyCode)key);
             return false;
+        }
+
+        private static void Postfix()
+        {
+            ReverseInvoker.Return();
         }
     }
 
@@ -109,10 +129,15 @@ public class LegacyInputPatch
 
         private static bool Prefix( /*string name*/)
         {
-            if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (ReverseInvoker.InnerCall())
                 return true;
             return !VirtualEnvironment.RunVirtualEnvironment;
             // TODO
+        }
+
+        private static void Postfix()
+        {
+            ReverseInvoker.Return();
         }
     }
 
@@ -127,11 +152,16 @@ public class LegacyInputPatch
 
         private static bool Prefix(object key, ref bool __result)
         {
-            if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (ReverseInvoker.InnerCall())
                 return true;
             if (!VirtualEnvironment.RunVirtualEnvironment) return true;
             __result = VirtualEnvironment.InputState.KeyboardState.KeysDown.Contains((int)(KeyCode)key);
             return false;
+        }
+
+        private static void Postfix()
+        {
+            ReverseInvoker.Return();
         }
     }
 
@@ -161,7 +191,7 @@ public class LegacyInputPatch
 
         private static bool Prefix(string axisName, ref float __result)
         {
-            if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (ReverseInvoker.InnerCall())
                 return true;
             if (!VirtualEnvironment.RunVirtualEnvironment) return true;
             if (VirtualEnvironment.InputState.AxisState.Values.TryGetValue(axisName, out var value))
@@ -170,6 +200,11 @@ public class LegacyInputPatch
             }
 
             return false;
+        }
+
+        private static void Postfix()
+        {
+            ReverseInvoker.Return();
         }
     }
 
@@ -183,7 +218,7 @@ public class LegacyInputPatch
 
         private static bool Prefix(string axisName, ref float __result)
         {
-            if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (ReverseInvoker.InnerCall())
                 return true;
             if (!VirtualEnvironment.RunVirtualEnvironment) return true;
             if (VirtualEnvironment.InputState.AxisState.Values.TryGetValue(axisName, out var value))
@@ -192,6 +227,11 @@ public class LegacyInputPatch
             }
 
             return false;
+        }
+
+        private static void Postfix()
+        {
+            ReverseInvoker.Return();
         }
     }
 
@@ -205,12 +245,17 @@ public class LegacyInputPatch
 
         private static bool Prefix(ref Vector3 __result)
         {
-            if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (ReverseInvoker.InnerCall())
                 return true;
             if (!VirtualEnvironment.RunVirtualEnvironment) return true;
             var mouseState = VirtualEnvironment.InputState.MouseState;
             __result = new(mouseState.XPos, mouseState.YPos);
             return false;
+        }
+
+        private static void Postfix()
+        {
+            ReverseInvoker.Return();
         }
     }
 
@@ -226,12 +271,17 @@ public class LegacyInputPatch
 
         private static bool Prefix(ref Vector3 ret)
         {
-            if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (ReverseInvoker.InnerCall())
                 return true;
             if (!VirtualEnvironment.RunVirtualEnvironment) return true;
             var mouseState = VirtualEnvironment.InputState.MouseState;
             ret = new(mouseState.XPos, mouseState.YPos);
             return false;
+        }
+
+        private static void Postfix()
+        {
+            ReverseInvoker.Return();
         }
     }
 
@@ -245,7 +295,7 @@ public class LegacyInputPatch
 
         private static bool Prefix(ref bool __result, int button)
         {
-            if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (ReverseInvoker.InnerCall())
                 return true;
             if (!VirtualEnvironment.RunVirtualEnvironment) return true;
             __result = button switch
@@ -256,6 +306,11 @@ public class LegacyInputPatch
                 _ => false
             };
             return false;
+        }
+
+        private static void Postfix()
+        {
+            ReverseInvoker.Return();
         }
     }
 
@@ -269,7 +324,7 @@ public class LegacyInputPatch
 
         private static bool Prefix(ref bool __result, int button)
         {
-            if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (ReverseInvoker.InnerCall())
                 return true;
             if (!VirtualEnvironment.RunVirtualEnvironment) return true;
             __result = button switch
@@ -280,6 +335,11 @@ public class LegacyInputPatch
                 _ => false
             };
             return false;
+        }
+
+        private static void Postfix()
+        {
+            ReverseInvoker.Return();
         }
     }
 
@@ -293,7 +353,7 @@ public class LegacyInputPatch
 
         private static bool Prefix(ref bool __result, int button)
         {
-            if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (ReverseInvoker.InnerCall())
                 return true;
             if (!VirtualEnvironment.RunVirtualEnvironment) return true;
             __result = button switch
@@ -304,6 +364,11 @@ public class LegacyInputPatch
                 _ => false
             };
             return false;
+        }
+
+        private static void Postfix()
+        {
+            ReverseInvoker.Return();
         }
     }
 
@@ -317,7 +382,7 @@ public class LegacyInputPatch
 
         private static bool Prefix()
         {
-            if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (ReverseInvoker.InnerCall())
                 return true;
             // TODO make this work
             // Resets all input. After ResetInputAxes all axes return to 0 and all buttons return to 0 for one frame.
@@ -325,6 +390,11 @@ public class LegacyInputPatch
             if (!VirtualEnvironment.RunVirtualEnvironment) return true;
             VirtualEnvironment.InputState.AxisState.Values.Clear();
             return false;
+        }
+
+        private static void Postfix()
+        {
+            ReverseInvoker.Return();
         }
     }
 
@@ -338,12 +408,17 @@ public class LegacyInputPatch
 
         private static bool Prefix(string buttonName, ref bool __result)
         {
-            if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (ReverseInvoker.InnerCall())
                 return true;
             if (!VirtualEnvironment.RunVirtualEnvironment) return true;
 
             __result = VirtualEnvironment.InputState.ButtonState.Buttons.Contains(buttonName);
             return false;
+        }
+
+        private static void Postfix()
+        {
+            ReverseInvoker.Return();
         }
     }
 
@@ -357,12 +432,17 @@ public class LegacyInputPatch
 
         private static bool Prefix(string buttonName, ref bool __result)
         {
-            if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (ReverseInvoker.InnerCall())
                 return true;
             if (!VirtualEnvironment.RunVirtualEnvironment) return true;
 
             __result = VirtualEnvironment.InputState.ButtonState.ButtonsDown.Contains(buttonName);
             return false;
+        }
+
+        private static void Postfix()
+        {
+            ReverseInvoker.Return();
         }
     }
 
@@ -376,12 +456,17 @@ public class LegacyInputPatch
 
         private static bool Prefix(string buttonName, ref bool __result)
         {
-            if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (ReverseInvoker.InnerCall())
                 return true;
             if (!VirtualEnvironment.RunVirtualEnvironment) return true;
 
             __result = VirtualEnvironment.InputState.ButtonState.ButtonsUp.Contains(buttonName);
             return false;
+        }
+
+        private static void Postfix()
+        {
+            ReverseInvoker.Return();
         }
     }
 }
