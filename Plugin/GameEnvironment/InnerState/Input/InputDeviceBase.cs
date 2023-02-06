@@ -1,6 +1,4 @@
-﻿using UniTASPlugin.Interfaces.Update;
-
-namespace UniTASPlugin.GameEnvironment.InnerState.Input;
+﻿namespace UniTASPlugin.GameEnvironment.InnerState.Input;
 
 public abstract class InputDeviceBase
 {

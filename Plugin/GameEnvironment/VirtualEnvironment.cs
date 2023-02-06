@@ -8,7 +8,7 @@ namespace UniTASPlugin.GameEnvironment;
 /// <summary>
 /// A class holding current virtual environment of the system the game is running on
 /// </summary>
-public partial class VirtualEnvironment : IOnGameRestart
+public class VirtualEnvironment : IOnGameRestart
 {
     private bool _runVirtualEnvironment;
 
