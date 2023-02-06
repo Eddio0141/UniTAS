@@ -6,9 +6,10 @@ param(
 $buildOutput = "build/$buildType"
 
 # Dotnet builds
+$pluginSource = "UniTASPlugin"
 $buildOutputPlugin = "$buildOutput/plugins"
 
-dotnet build "Plugin" -c "$buildType"
+dotnet build "$pluginSource" -c "$buildType"
 
 if (!(Test-Path "$buildOutput")) {
     New-Item -ItemType Directory -Path "$buildOutput" > $null
@@ -19,10 +20,10 @@ if (!(Test-Path "$buildOutput")) {
 $buildOutput = (Resolve-Path $buildOutput).Path
 
 # Copy plugin dlls
-Copy-Item "Plugin/bin/$buildType/net35/*.dll" "$buildOutputPlugin" -Force
+Copy-Item "$pluginSource/bin/$buildType/net35/*.dll" "$buildOutputPlugin" -Force
 
 # Copy external plugin dlls
-Copy-Item "Plugin/Extern-Assemblies/*.dll" "$buildOutputPlugin" -Force
+Copy-Item "$pluginSource/Extern-Assemblies/*.dll" "$buildOutputPlugin" -Force
 
 # Build and copy set up tool
 Push-Location -Path "unitas_setup_tool"

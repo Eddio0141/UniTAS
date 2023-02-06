@@ -10,10 +10,12 @@ fi
 
 OUTPUT_DIR="build/$BUILD_TYPE"
 OUTPUT_PLUGIN_DIR="$OUTPUT_DIR/plugins"
-SOURCE_PLUGIN_EXTERNS_DIR="Plugin/Extern-Assemblies"
+
+SOURCE_PLUGIN_DIR="UniTASPlugin"
+SOURCE_PLUGIN_EXTERNS_DIR="$SOURCE_PLUGIN_DIR/Extern-Assemblies"
 
 # Dotnet builds
-dotnet build "Plugin" -c $BUILD_TYPE
+dotnet build "$SOURCE_PLUGIN_DIR" -c $BUILD_TYPE
 
 echo "Copying dlls to output folders"
 
@@ -21,7 +23,7 @@ echo "Copying dlls to output folders"
 mkdir -p "$OUTPUT_PLUGIN_DIR"
 
 # Only copy dlls
-cp "Plugin/bin/$BUILD_TYPE/net35"/*.dll "$OUTPUT_PLUGIN_DIR"
+cp "$SOURCE_PLUGIN_DIR/bin/$BUILD_TYPE/net35"/*.dll "$OUTPUT_PLUGIN_DIR"
 cp "$SOURCE_PLUGIN_EXTERNS_DIR"/*.dll "$OUTPUT_PLUGIN_DIR"
 
 # Build and copy set up tool
