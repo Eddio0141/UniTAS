@@ -14,6 +14,7 @@ namespace UniTASPlugin.Patches.Modules.FileSystemControlModules.FilePatchModule;
 [SuppressMessage("ReSharper", "UnusedMember.Local")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 [SuppressMessage("ReSharper", "InconsistentNaming")]
+[SuppressMessage("ReSharper", "RedundantAssignment")]
 public partial class MonoIOPatchModule
 {
 #if TRACE
@@ -40,8 +41,6 @@ public partial class MonoIOPatchModule
 
             private static unsafe bool Prefix(char* path, ref bool __result)
             {
-                var rev = ReverseInvokerFactory.GetReverseInvoker();
-                if (rev.Invoking) return true;
 #if TRACE
                 Log.Add(new StackTrace().ToString());
 #endif
@@ -69,8 +68,6 @@ public partial class MonoIOPatchModule
 
             private static unsafe bool Prefix(char* path, ref bool __result)
             {
-                var rev = ReverseInvokerFactory.GetReverseInvoker();
-                if (rev.Invoking) return true;
 #if TRACE
                 Log.Add(new StackTrace().ToString());
 #endif
@@ -97,8 +94,6 @@ public partial class MonoIOPatchModule
 
             private static bool Prefix(ref string __result)
             {
-                var rev = ReverseInvokerFactory.GetReverseInvoker();
-                if (rev.Invoking) return true;
 #if TRACE
                 Log.Add(new StackTrace().ToString());
 #endif
@@ -125,8 +120,6 @@ public partial class MonoIOPatchModule
 
             private static unsafe bool Prefix(char* path, ref bool __result)
             {
-                var rev = ReverseInvokerFactory.GetReverseInvoker();
-                if (rev.Invoking) return true;
 #if TRACE
                 Log.Add(new StackTrace().ToString());
 #endif
@@ -157,8 +150,6 @@ public partial class MonoIOPatchModule
 
             private static unsafe bool Prefix(char* path, char* dest, ref bool __result)
             {
-                var rev = ReverseInvokerFactory.GetReverseInvoker();
-                if (rev.Invoking) return true;
 #if TRACE
                 Log.Add(new StackTrace().ToString());
 #endif
@@ -190,8 +181,6 @@ public partial class MonoIOPatchModule
 
             private static unsafe bool Prefix(char* path, char* dest, bool overwrite, ref bool __result)
             {
-                var rev = ReverseInvokerFactory.GetReverseInvoker();
-                if (rev.Invoking) return true;
 #if TRACE
                 Log.Add(new StackTrace().ToString());
 #endif
@@ -219,8 +208,6 @@ public partial class MonoIOPatchModule
 
             private static unsafe bool Prefix(char* path, ref bool __result)
             {
-                var rev = ReverseInvokerFactory.GetReverseInvoker();
-                if (rev.Invoking) return true;
 #if TRACE
                 Log.Add(new StackTrace().ToString());
 #endif
@@ -253,8 +240,6 @@ public partial class MonoIOPatchModule
             private static unsafe bool Prefix(char* sourceFileName, char* destinationFileName,
                 char* destinationBackupFileName, bool ignoreMetadataErrors, ref bool __result)
             {
-                var rev = ReverseInvokerFactory.GetReverseInvoker();
-                if (rev.Invoking) return true;
 #if TRACE
                 Log.Add(new StackTrace().ToString());
 #endif
@@ -283,8 +268,6 @@ public partial class MonoIOPatchModule
 
             private static unsafe bool Prefix(char* path, ref FileAttributes __result)
             {
-                var rev = ReverseInvokerFactory.GetReverseInvoker();
-                if (rev.Invoking) return true;
 #if TRACE
                 Log.Add(new StackTrace().ToString());
 #endif
@@ -311,8 +294,6 @@ public partial class MonoIOPatchModule
 
             private static unsafe bool Prefix(char* path, FileAttributes attrs, ref bool __result)
             {
-                var rev = ReverseInvokerFactory.GetReverseInvoker();
-                if (rev.Invoking) return true;
 #if TRACE
                 Log.Add(new StackTrace().ToString());
 #endif
@@ -340,8 +321,6 @@ public partial class MonoIOPatchModule
 
             private static bool Prefix(IntPtr handle, ref object __result)
             {
-                var rev = ReverseInvokerFactory.GetReverseInvoker();
-                if (rev.Invoking) return true;
 #if TRACE
                 Log.Add(new StackTrace().ToString());
 #endif
@@ -374,8 +353,6 @@ public partial class MonoIOPatchModule
             private static bool Prefix( /*char* pathWithPattern, ref string fileName, ref int fileAttr,
                 ref int error, ref IntPtr __result*/)
             {
-                var rev = ReverseInvokerFactory.GetReverseInvoker();
-                if (rev.Invoking) return true;
 #if TRACE
                 Log.Add(new StackTrace().ToString());
 #endif
@@ -407,8 +384,6 @@ public partial class MonoIOPatchModule
             private static bool Prefix( /*IntPtr hnd, ref string fileName, ref int fileAttr, ref int error, */
                 ref bool __result)
             {
-                var rev = ReverseInvokerFactory.GetReverseInvoker();
-                if (rev.Invoking) return true;
 #if TRACE
                 Log.Add(new StackTrace().ToString());
 #endif
@@ -435,8 +410,6 @@ public partial class MonoIOPatchModule
 
             private static bool Prefix( /*IntPtr hnd, */ ref bool __result)
             {
-                var rev = ReverseInvokerFactory.GetReverseInvoker();
-                if (rev.Invoking) return true;
 #if TRACE
                 Log.Add(new StackTrace().ToString());
 #endif
@@ -467,8 +440,6 @@ public partial class MonoIOPatchModule
 
             private static unsafe bool Prefix(char* path, ref object stat, ref bool __result)
             {
-                var rev = ReverseInvokerFactory.GetReverseInvoker();
-                if (rev.Invoking) return true;
 #if TRACE
                 Log.Add(new StackTrace().ToString());
 #endif
@@ -511,8 +482,6 @@ public partial class MonoIOPatchModule
             private static unsafe bool Prefix(char* filename, FileMode mode, FileAccess access, FileShare share,
                 FileOptions options, ref IntPtr __result)
             {
-                var rev = ReverseInvokerFactory.GetReverseInvoker();
-                if (rev.Invoking) return true;
 #if TRACE
                 Log.Add(new StackTrace().ToString());
 #endif
@@ -539,8 +508,6 @@ public partial class MonoIOPatchModule
 
             private static bool Prefix( /*IntPtr handle,*/ ref bool __result)
             {
-                var rev = ReverseInvokerFactory.GetReverseInvoker();
-                if (rev.Invoking) return true;
 #if TRACE
                 Log.Add(new StackTrace().ToString());
 #endif
@@ -571,8 +538,6 @@ public partial class MonoIOPatchModule
 
             private static bool Prefix(IntPtr handle, ref bool __result)
             {
-                var rev = ReverseInvokerFactory.GetReverseInvoker();
-                if (rev.Invoking) return true;
 #if TRACE
                 Log.Add(new StackTrace().ToString());
 #endif
@@ -603,8 +568,6 @@ public partial class MonoIOPatchModule
 
             private static bool Prefix(IntPtr handle, byte[] dest, int dest_offset, int count, ref int __result)
             {
-                var rev = ReverseInvokerFactory.GetReverseInvoker();
-                if (rev.Invoking) return true;
 #if TRACE
                 Log.Add(new StackTrace().ToString());
 #endif
@@ -634,8 +597,6 @@ public partial class MonoIOPatchModule
 
             private static bool Prefix(IntPtr handle, ref byte[] src, int src_offset, int count, ref int __result)
             {
-                var rev = ReverseInvokerFactory.GetReverseInvoker();
-                if (rev.Invoking) return true;
 #if TRACE
                 Log.Add(new StackTrace().ToString());
 #endif
@@ -662,8 +623,6 @@ public partial class MonoIOPatchModule
 
             private static bool Prefix(IntPtr handle, long offset, SeekOrigin origin, ref long __result)
             {
-                var rev = ReverseInvokerFactory.GetReverseInvoker();
-                if (rev.Invoking) return true;
 #if TRACE
                 Log.Add(new StackTrace().ToString());
 #endif
@@ -690,8 +649,6 @@ public partial class MonoIOPatchModule
 
             private static bool Prefix( /*IntPtr handle, */ ref bool __result)
             {
-                var rev = ReverseInvokerFactory.GetReverseInvoker();
-                if (rev.Invoking) return true;
 #if TRACE
                 Log.Add(new StackTrace().ToString());
 #endif
@@ -719,8 +676,6 @@ public partial class MonoIOPatchModule
 
             private static bool Prefix(IntPtr handle, ref long __result)
             {
-                var rev = ReverseInvokerFactory.GetReverseInvoker();
-                if (rev.Invoking) return true;
 #if TRACE
                 Log.Add(new StackTrace().ToString());
 #endif
@@ -747,8 +702,6 @@ public partial class MonoIOPatchModule
 
             private static bool Prefix(IntPtr handle, long length, ref bool __result)
             {
-                var rev = ReverseInvokerFactory.GetReverseInvoker();
-                if (rev.Invoking) return true;
 #if TRACE
                 Log.Add(new StackTrace().ToString());
 #endif
@@ -780,8 +733,6 @@ public partial class MonoIOPatchModule
             private static bool Prefix(IntPtr handle, long creation_time, long last_access_time, long last_write_time,
                 ref bool __result)
             {
-                var rev = ReverseInvokerFactory.GetReverseInvoker();
-                if (rev.Invoking) return true;
 #if TRACE
                 Log.Add(new StackTrace().ToString());
 #endif
@@ -809,8 +760,6 @@ public partial class MonoIOPatchModule
 
             private static bool Prefix( /*IntPtr handle, long position, long length*/)
             {
-                var rev = ReverseInvokerFactory.GetReverseInvoker();
-                if (rev.Invoking) return true;
 #if TRACE
                 Log.Add(new StackTrace().ToString());
 #endif
@@ -838,8 +787,6 @@ public partial class MonoIOPatchModule
 
             private static bool Prefix( /*IntPtr handle, long position, long length*/)
             {
-                var rev = ReverseInvokerFactory.GetReverseInvoker();
-                if (rev.Invoking) return true;
 #if TRACE
                 Log.Add(new StackTrace().ToString());
 #endif
@@ -866,8 +813,6 @@ public partial class MonoIOPatchModule
 
             private static bool Prefix(ref IntPtr __result)
             {
-                var rev = ReverseInvokerFactory.GetReverseInvoker();
-                if (rev.Invoking) return true;
 #if TRACE
                 Log.Add(new StackTrace().ToString());
 #endif
@@ -893,8 +838,6 @@ public partial class MonoIOPatchModule
 
             private static bool Prefix(ref IntPtr __result)
             {
-                var rev = ReverseInvokerFactory.GetReverseInvoker();
-                if (rev.Invoking) return true;
 #if TRACE
                 Log.Add(new StackTrace().ToString());
 #endif
@@ -920,8 +863,6 @@ public partial class MonoIOPatchModule
 
             private static bool Prefix(ref IntPtr __result)
             {
-                var rev = ReverseInvokerFactory.GetReverseInvoker();
-                if (rev.Invoking) return true;
 #if TRACE
                 Log.Add(new StackTrace().ToString());
 #endif
@@ -951,8 +892,6 @@ public partial class MonoIOPatchModule
 
             private static bool Prefix( /*ref IntPtr read_handle, ref IntPtr write_handle,*/ ref bool __result)
             {
-                var rev = ReverseInvokerFactory.GetReverseInvoker();
-                if (rev.Invoking) return true;
 #if TRACE
                 Log.Add(new StackTrace().ToString());
 #endif
@@ -988,8 +927,6 @@ public partial class MonoIOPatchModule
                 Prefix( /*IntPtr source_process_handle, IntPtr source_handle, IntPtr target_process_handle,
                 ref IntPtr target_handle, int access, int inherit, int options,*/ ref bool __result)
             {
-                var rev = ReverseInvokerFactory.GetReverseInvoker();
-                if (rev.Invoking) return true;
 #if TRACE
                 Log.Add(new StackTrace().ToString());
 #endif
@@ -1018,9 +955,6 @@ public partial class MonoIOPatchModule
 
             private static bool Prefix(ref char __result)
             {
-                var rev = ReverseInvokerFactory.GetReverseInvoker();
-                if (rev.Invoking) return true;
-
                 __result = FileSystemManager.VolumeSeparatorChar;
 
                 return false;
@@ -1042,9 +976,6 @@ public partial class MonoIOPatchModule
 
             private static bool Prefix(ref char __result)
             {
-                var rev = ReverseInvokerFactory.GetReverseInvoker();
-                if (rev.Invoking) return true;
-
                 __result = FileSystemManager.DirectorySeparatorChar;
 
                 return false;
@@ -1066,9 +997,6 @@ public partial class MonoIOPatchModule
 
             private static bool Prefix(ref char __result)
             {
-                var rev = ReverseInvokerFactory.GetReverseInvoker();
-                if (rev.Invoking) return true;
-
                 __result = FileSystemManager.AltDirectorySeparatorChar;
 
                 return false;
@@ -1090,9 +1018,6 @@ public partial class MonoIOPatchModule
 
             private static bool Prefix(ref char __result)
             {
-                var rev = ReverseInvokerFactory.GetReverseInvoker();
-                if (rev.Invoking) return true;
-
                 __result = FileSystemManager.PathSeparator;
 
                 return false;
@@ -1115,8 +1040,6 @@ public partial class MonoIOPatchModule
 
             private static bool Prefix(string path, ref string newPath, ref bool __result)
             {
-                var rev = ReverseInvokerFactory.GetReverseInvoker();
-                if (rev.Invoking) return true;
 #if TRACE
                 Log.Add(new StackTrace().ToString());
 #endif
@@ -1143,8 +1066,6 @@ public partial class MonoIOPatchModule
 
             private static bool Prefix()
             {
-                var rev = ReverseInvokerFactory.GetReverseInvoker();
-                if (rev.Invoking) return true;
 #if TRACE
                 Log.Add(new StackTrace().ToString());
 #endif

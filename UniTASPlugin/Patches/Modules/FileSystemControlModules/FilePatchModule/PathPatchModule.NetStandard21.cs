@@ -12,6 +12,7 @@ namespace UniTASPlugin.Patches.Modules.FileSystemControlModules.FilePatchModule;
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Local")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 [SuppressMessage("ReSharper", "UnusedMember.Local")]
+[SuppressMessage("ReSharper", "RedundantAssignment")]
 public partial class PathPatchModule
 {
     [MscorlibPatchGroup(null, null, "2.1.0.0")]
@@ -32,9 +33,6 @@ public partial class PathPatchModule
 
             private static bool Prefix(ref string __result)
             {
-                var rev = ReverseInvokerFactory.GetReverseInvoker();
-                if (rev.Invoking) return true;
-
                 FileSystemManager.GetTempPath(out __result);
 
                 return false;
@@ -60,9 +58,6 @@ public partial class PathPatchModule
             private static bool Prefix(string path, StringBuilder buffer, /*int numBufferChars, 
                 ref IntPtr lpFilePartOrNull,*/ ref int __result)
             {
-                var rev = ReverseInvokerFactory.GetReverseInvoker();
-                if (rev.Invoking) return true;
-
                 var newPath = FileSystemManager.PathToWindows(path);
                 buffer.Append(newPath);
                 __result = newPath.Length;

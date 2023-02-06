@@ -5,9 +5,9 @@ using HarmonyLib;
 using Microsoft.Win32.SafeHandles;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.Patches.PatchGroups;
-using UniTASPlugin.ReverseInvoker;
+
 #if TRACE
-using System.Diagnostics;
+// using System.Diagnostics;
 #endif
 
 namespace UniTASPlugin.Patches.Modules.FileSystemControlModules.FilePatchModule;
@@ -16,6 +16,8 @@ namespace UniTASPlugin.Patches.Modules.FileSystemControlModules.FilePatchModule;
 [SuppressMessage("ReSharper", "UnusedMember.Local")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Local")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[SuppressMessage("ReSharper", "InconsistentNaming")]
+[SuppressMessage("ReSharper", "UnusedParameter.Local")]
 public class InteropPatchModule
 {
     private static readonly Type InteropType = AccessTools.TypeByName("Interop");
@@ -24,9 +26,6 @@ public class InteropPatchModule
     private static readonly Type FileStatusType = InteropSysType.GetNestedType("FileStatus", AccessTools.all);
     private static readonly Type UTimBufType = InteropSysType.GetNestedType("UTimBuf", AccessTools.all);
     private static readonly Type TimeValPairType = InteropSysType.GetNestedType("TimeValPair", AccessTools.all);
-
-    private static readonly ReverseInvokerFactory ReverseInvokerFactory =
-        Plugin.Kernel.GetInstance<ReverseInvokerFactory>();
 
     private static readonly VirtualEnvironment VirtualEnvironment =
         Plugin.Kernel.GetInstance<VirtualEnvironment>();
@@ -50,9 +49,6 @@ public class InteropPatchModule
 
             private static unsafe bool Prefix(ref byte* buffer, int length)
             {
-                var rev = ReverseInvokerFactory.GetReverseInvoker();
-                if (rev.Invoking) return true;
-
 // #if TRACE
 //                 Plugin.Log.LogDebug(new StackTrace());
 // #endif
@@ -85,8 +81,7 @@ public class InteropPatchModule
             private static void Prefix(string path, ref IntPtr __result)
             {
 #if TRACE
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Plugin.Log.LogDebug(new StackTrace());
+
 #endif
             }
         }
@@ -107,8 +102,7 @@ public class InteropPatchModule
             private static void Prefix(ref int __result)
             {
 #if TRACE
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Plugin.Log.LogDebug(new StackTrace());
+
 #endif
             }
         }
@@ -134,8 +128,7 @@ public class InteropPatchModule
                 ref int __result)
             {
 #if TRACE
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Plugin.Log.LogDebug(new StackTrace());
+
 #endif
             }
         }
@@ -156,8 +149,7 @@ public class InteropPatchModule
             private static void Prefix(IntPtr dir, ref int __result)
             {
 #if TRACE
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Plugin.Log.LogDebug(new StackTrace());
+
 #endif
             }
         }
@@ -179,8 +171,7 @@ public class InteropPatchModule
             private static void Prefix(string path, byte[] buffer, int bufferSize, ref int __result)
             {
 #if TRACE
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Plugin.Log.LogDebug(new StackTrace());
+
 #endif
             }
         }
@@ -202,8 +193,7 @@ public class InteropPatchModule
             private static void Prefix(SafeFileHandle fd, ref object output, ref int __result)
             {
 #if TRACE
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Plugin.Log.LogDebug(new StackTrace());
+
 #endif
             }
         }
@@ -225,8 +215,7 @@ public class InteropPatchModule
             private static void Prefix(string path, ref object output, ref int __result)
             {
 #if TRACE
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Plugin.Log.LogDebug(new StackTrace());
+
 #endif
             }
         }
@@ -248,8 +237,7 @@ public class InteropPatchModule
             private static void Prefix(string path, ref object output, ref int __result)
             {
 #if TRACE
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Plugin.Log.LogDebug(new StackTrace());
+
 #endif
             }
         }
@@ -271,8 +259,7 @@ public class InteropPatchModule
             private static void Prefix(string target, string linkPath, ref int __result)
             {
 #if TRACE
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Plugin.Log.LogDebug(new StackTrace());
+
 #endif
             }
         }
@@ -294,8 +281,7 @@ public class InteropPatchModule
             private static void Prefix(string path, int mode, ref int __result)
             {
 #if TRACE
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Plugin.Log.LogDebug(new StackTrace());
+
 #endif
             }
         }
@@ -317,8 +303,7 @@ public class InteropPatchModule
             private static void Prefix(SafeFileHandle source, SafeFileHandle destination, ref int __result)
             {
 #if TRACE
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Plugin.Log.LogDebug(new StackTrace());
+
 #endif
             }
         }
@@ -339,8 +324,7 @@ public class InteropPatchModule
             private static void Prefix(ref uint __result)
             {
 #if TRACE
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Plugin.Log.LogDebug(new StackTrace());
+
 #endif
             }
         }
@@ -361,8 +345,7 @@ public class InteropPatchModule
             private static void Prefix(ref uint __result)
             {
 #if TRACE
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Plugin.Log.LogDebug(new StackTrace());
+
 #endif
             }
         }
@@ -385,8 +368,7 @@ public class InteropPatchModule
             private static void Prefix(string path, uint flags, ref int __result)
             {
 #if TRACE
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Plugin.Log.LogDebug(new StackTrace());
+
 #endif
             }
         }
@@ -409,8 +391,7 @@ public class InteropPatchModule
             private static void Prefix(ref int __result)
             {
 #if TRACE
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Plugin.Log.LogDebug(new StackTrace());
+
 #endif
             }
         }
@@ -431,8 +412,7 @@ public class InteropPatchModule
             private static void Prefix(string source, string link, ref int __result)
             {
 #if TRACE
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Plugin.Log.LogDebug(new StackTrace());
+
 #endif
             }
         }
@@ -453,8 +433,7 @@ public class InteropPatchModule
             private static void Prefix(string path, int mode, ref int __result)
             {
 #if TRACE
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Plugin.Log.LogDebug(new StackTrace());
+
 #endif
             }
         }
@@ -475,8 +454,7 @@ public class InteropPatchModule
             private static void Prefix(string oldPath, string newPath, ref int __result)
             {
 #if TRACE
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Plugin.Log.LogDebug(new StackTrace());
+
 #endif
             }
         }
@@ -497,8 +475,7 @@ public class InteropPatchModule
             private static void Prefix(string path, ref int __result)
             {
 #if TRACE
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Plugin.Log.LogDebug(new StackTrace());
+
 #endif
             }
         }
@@ -520,15 +497,13 @@ public class InteropPatchModule
             private static void Prefix(ref byte path, ref object output, ref int __result)
             {
 #if TRACE
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Plugin.Log.LogDebug(new StackTrace());
+
 #endif
             }
 
             private static void Postfix(object output)
             {
 #if TRACE
-                if (ReverseInvokerFactory.GetReverseInvoker().Invoking) return;
                 var fileStatus = Traverse.Create(output);
                 var flags = fileStatus.Field("Flags").GetValue<int>();
                 var mode = fileStatus.Field("Mode").GetValue<int>();
@@ -570,8 +545,7 @@ public class InteropPatchModule
             private static void Prefix(ref byte path, ref object output, ref int __result)
             {
 #if TRACE
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Plugin.Log.LogDebug(new StackTrace());
+
 #endif
             }
         }
@@ -593,8 +567,7 @@ public class InteropPatchModule
             private static void Prefix(string path, ref object time, ref int __result)
             {
 #if TRACE
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Plugin.Log.LogDebug(new StackTrace());
+
 #endif
             }
         }
@@ -616,8 +589,7 @@ public class InteropPatchModule
             private static void Prefix(string path, ref object times, ref int __result)
             {
 #if TRACE
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Plugin.Log.LogDebug(new StackTrace());
+
 #endif
             }
         }
@@ -638,8 +610,7 @@ public class InteropPatchModule
             private static void Prefix(string pathname, ref int __result)
             {
 #if TRACE
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Plugin.Log.LogDebug(new StackTrace());
+
 #endif
             }
         }
@@ -665,8 +636,7 @@ public class InteropPatchModule
                 ref int __result)
             {
 #if TRACE
-                if (!ReverseInvokerFactory.GetReverseInvoker().Invoking)
-                    Plugin.Log.LogDebug(new StackTrace());
+
 #endif
             }
         }

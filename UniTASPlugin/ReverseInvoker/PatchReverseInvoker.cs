@@ -38,6 +38,13 @@ public class PatchReverseInvoker : IPatchReverseInvoker
         _depth--;
     }
 
+    public void Invoke(Action method)
+    {
+        StartInvoke();
+        method.Invoke();
+        FinishInvoke();
+    }
+
     public TRet Invoke<TRet>(Func<TRet> method)
     {
         StartInvoke();

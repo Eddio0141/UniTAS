@@ -2,7 +2,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using HarmonyLib;
 using UniTASPlugin.GameEnvironment.InnerState.FileSystem;
-using UniTASPlugin.ReverseInvoker;
 
 namespace UniTASPlugin.Patches.Modules.FileSystemControlModules.FilePatchModule;
 
@@ -22,9 +21,6 @@ public partial class MonoIOPatchModule
 
     private static Type monoIOStatType;
     private static Type MonoIOStatType => monoIOStatType ??= AccessTools.TypeByName("System.IO.MonoIOStat");
-
-    private static readonly IReverseInvokerFactory ReverseInvokerFactory =
-        Plugin.Kernel.GetInstance<IReverseInvokerFactory>();
 
     private static readonly IFileSystemManager FileSystemManager =
         Plugin.Kernel.GetInstance<IFileSystemManager>();

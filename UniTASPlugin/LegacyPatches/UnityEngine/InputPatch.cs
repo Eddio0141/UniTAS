@@ -17,8 +17,8 @@ public class InputPatch
 {
     private static readonly VirtualEnvironment VirtualEnvironment = Plugin.Kernel.GetInstance<VirtualEnvironment>();
 
-    private static readonly IReverseInvokerFactory reverseInvokerFactory =
-        Plugin.Kernel.GetInstance<IReverseInvokerFactory>();
+    private static readonly IPatchReverseInvoker PatchReverseInvoker =
+        Plugin.Kernel.GetInstance<IPatchReverseInvoker>();
 
     // TODO not sure what this is
     /*
@@ -39,13 +39,18 @@ public class InputPatch
 
         private static bool Prefix(ref int __result)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
-                return false;
+            if (PatchReverseInvoker.InnerCall())
+                return true;
 
             if (VirtualEnvironment.RunVirtualEnvironment) return true;
             // TODO
             __result = 0;
             return false;
+        }
+
+        private static void Postfix()
+        {
+            PatchReverseInvoker.Return();
         }
     }
 
@@ -59,12 +64,17 @@ public class InputPatch
 
         private static bool Prefix(ref bool __result)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (PatchReverseInvoker.InnerCall())
                 return true;
             if (VirtualEnvironment.RunVirtualEnvironment) return true;
             // TODO option to present mouse
             __result = true;
             return false;
+        }
+
+        private static void Postfix()
+        {
+            PatchReverseInvoker.Return();
         }
     }
 
@@ -79,10 +89,15 @@ public class InputPatch
 
         private static bool Prefix(int index, ref object ret)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (PatchReverseInvoker.InnerCall())
                 return true;
             return !VirtualEnvironment.RunVirtualEnvironment;
             // TODO
+        }
+
+        private static void Postfix()
+        {
+            PatchReverseInvoker.Return();
         }
     }
 
@@ -98,10 +113,15 @@ public class InputPatch
 
         private static bool Prefix(ref int __result)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (PatchReverseInvoker.InnerCall())
                 return true;
             return !VirtualEnvironment.RunVirtualEnvironment;
             // TODO
+        }
+
+        private static void Postfix()
+        {
+            PatchReverseInvoker.Return();
         }
     }
 
@@ -115,10 +135,15 @@ public class InputPatch
 
         private static bool Prefix(int deviceID, ref Vector3 __result)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (PatchReverseInvoker.InnerCall())
                 return true;
             return !VirtualEnvironment.RunVirtualEnvironment;
             // TODO what is this function call
+        }
+
+        private static void Postfix()
+        {
+            PatchReverseInvoker.Return();
         }
     }
 
@@ -132,11 +157,16 @@ public class InputPatch
 
         private static bool Prefix(int index, ref AccelerationEvent __result)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (PatchReverseInvoker.InnerCall())
                 return true;
             return !VirtualEnvironment.RunVirtualEnvironment;
             // TODO
             // this gets called in accelerationEvents getter, check when implementing
+        }
+
+        private static void Postfix()
+        {
+            PatchReverseInvoker.Return();
         }
     }
 
@@ -150,13 +180,18 @@ public class InputPatch
 
         private static bool Prefix(ref bool __result)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (PatchReverseInvoker.InnerCall())
                 return true;
             if (VirtualEnvironment.RunVirtualEnvironment) return true;
             var inputState = VirtualEnvironment.InputState;
             __result = inputState.KeyboardState.Keys.Count > 0 || inputState.MouseState.LeftClick ||
                        inputState.MouseState.RightClick || inputState.MouseState.MiddleClick;
             return false;
+        }
+
+        private static void Postfix()
+        {
+            PatchReverseInvoker.Return();
         }
     }
 
@@ -170,7 +205,7 @@ public class InputPatch
 
         private static bool Prefix(ref bool __result)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (PatchReverseInvoker.InnerCall())
                 return true;
             // TODO make sure this gets called before Update calls
             if (VirtualEnvironment.RunVirtualEnvironment) return true;
@@ -178,6 +213,11 @@ public class InputPatch
             __result = inputState.KeyboardState.KeysDown.Count > 0 || inputState.MouseState.LeftClickDown ||
                        inputState.MouseState.RightClickDown || inputState.MouseState.MiddleClickDown;
             return false;
+        }
+
+        private static void Postfix()
+        {
+            PatchReverseInvoker.Return();
         }
     }
 
@@ -191,13 +231,18 @@ public class InputPatch
 
         private static bool Prefix()
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (PatchReverseInvoker.InnerCall())
                 return true;
             return !VirtualEnvironment.RunVirtualEnvironment;
             // Returns the keyboard input entered this frame
             // Only ASCII characters are contained in the inputString.
             // Character "\n" represents return or enter.
             // TODO
+        }
+
+        private static void Postfix()
+        {
+            PatchReverseInvoker.Return();
         }
     }
 
@@ -211,12 +256,17 @@ public class InputPatch
 
         private static bool Prefix(ref bool __result)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (PatchReverseInvoker.InnerCall())
                 return true;
             if (VirtualEnvironment.RunVirtualEnvironment) return true;
             // TODO
             __result = false;
             return false;
+        }
+
+        private static void Postfix()
+        {
+            PatchReverseInvoker.Return();
         }
     }
 
@@ -230,10 +280,15 @@ public class InputPatch
 
         private static bool Prefix(bool value)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (PatchReverseInvoker.InnerCall())
                 return true;
             return !VirtualEnvironment.RunVirtualEnvironment;
             // TODO handle this
+        }
+
+        private static void Postfix()
+        {
+            PatchReverseInvoker.Return();
         }
     }
 
@@ -247,12 +302,17 @@ public class InputPatch
 
         private static bool Prefix(ref bool __result)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (PatchReverseInvoker.InnerCall())
                 return true;
             if (VirtualEnvironment.RunVirtualEnvironment) return true;
             // TODO
             __result = false;
             return false;
+        }
+
+        private static void Postfix()
+        {
+            PatchReverseInvoker.Return();
         }
     }
 
@@ -266,12 +326,17 @@ public class InputPatch
 
         private static bool Prefix(ref DeviceOrientation __result)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (PatchReverseInvoker.InnerCall())
                 return true;
             if (VirtualEnvironment.RunVirtualEnvironment) return true;
             // TODO
             __result = DeviceOrientation.Unknown;
             return false;
+        }
+
+        private static void Postfix()
+        {
+            PatchReverseInvoker.Return();
         }
     }
 
@@ -285,12 +350,17 @@ public class InputPatch
 
         private static bool Prefix(ref Vector3 __result)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (PatchReverseInvoker.InnerCall())
                 return true;
             if (VirtualEnvironment.RunVirtualEnvironment) return true;
             // TODO
             __result = Vector3.zero;
             return false;
+        }
+
+        private static void Postfix()
+        {
+            PatchReverseInvoker.Return();
         }
     }
 
@@ -304,13 +374,18 @@ public class InputPatch
 
         private static bool Prefix(ref int __result)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (PatchReverseInvoker.InnerCall())
                 return true;
             if (VirtualEnvironment.RunVirtualEnvironment) return true;
             // TODO
             // this gets called in accelerationEvents getter, check there if implementing
             __result = 0;
             return false;
+        }
+
+        private static void Postfix()
+        {
+            PatchReverseInvoker.Return();
         }
     }
 
@@ -342,13 +417,18 @@ public class InputPatch
 
         private static bool Prefix(ref int __result)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (PatchReverseInvoker.InnerCall())
                 return true;
             if (VirtualEnvironment.RunVirtualEnvironment) return true;
             // TODO
             // this gets called in touches getter, check if implementing
             __result = 0;
             return false;
+        }
+
+        private static void Postfix()
+        {
+            PatchReverseInvoker.Return();
         }
     }
 
@@ -362,11 +442,16 @@ public class InputPatch
 
         private static bool Prefix(ref Touch __result)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (PatchReverseInvoker.InnerCall())
                 return true;
             return !VirtualEnvironment.RunVirtualEnvironment;
             // TODO
             // this gets called in touches getter, check if implementing
+        }
+
+        private static void Postfix()
+        {
+            PatchReverseInvoker.Return();
         }
     }
 
@@ -398,12 +483,17 @@ public class InputPatch
 
         private static bool Prefix(ref Vector3 __result)
         {
-            if (reverseInvokerFactory.GetReverseInvoker().Invoking)
+            if (PatchReverseInvoker.InnerCall())
                 return true;
             if (VirtualEnvironment.RunVirtualEnvironment) return true;
             // TODO what is this call
             __result = Vector3.zero;
             return false;
+        }
+
+        private static void Postfix()
+        {
+            PatchReverseInvoker.Return();
         }
     }
 }

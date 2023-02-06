@@ -11,6 +11,7 @@ namespace UniTASPlugin.Patches.Modules.FileSystemControlModules.FilePatchModule;
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Local")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 [SuppressMessage("ReSharper", "UnusedMember.Local")]
+[SuppressMessage("ReSharper", "RedundantAssignment")]
 public partial class PathPatchModule
 {
     [MscorlibPatchGroup("3.9.9.9")]
@@ -31,9 +32,6 @@ public partial class PathPatchModule
 
             private static bool Prefix(ref string __result)
             {
-                var rev = ReverseInvokerFactory.GetReverseInvoker();
-                if (rev.Invoking) return true;
-
                 FileSystemManager.GetTempPath(out __result);
 
                 return false;

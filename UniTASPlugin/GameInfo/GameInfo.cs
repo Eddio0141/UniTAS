@@ -8,14 +8,14 @@ using UnityEngine;
 
 namespace UniTASPlugin.GameInfo;
 
-// ReSharper disable once UnusedType.Global
+// ReSharper disable once ClassNeverInstantiated.Global
 public class GameInfo : IGameInfo
 {
-    private readonly IReverseInvokerFactory _reverseInvokerFactory;
+    private readonly IPatchReverseInvoker _reverseInvoker;
 
-    public GameInfo(IReverseInvokerFactory reverseInvokerFactory)
+    public GameInfo(IPatchReverseInvoker reverseInvoker)
     {
-        _reverseInvokerFactory = reverseInvokerFactory;
+        _reverseInvoker = reverseInvoker;
     }
 
     private string _unityVersion;
@@ -27,10 +27,9 @@ public class GameInfo : IGameInfo
             if (_unityVersion != null) return _unityVersion;
 
             const string unityPlayerPath = @".\UnityPlayer.dll";
-            var rev = _reverseInvokerFactory.GetReverseInvoker();
-            if (rev.Invoke(File.Exists, unityPlayerPath))
+            if (_reverseInvoker.Invoke(File.Exists, unityPlayerPath))
             {
-                var fullPath = rev.Invoke(Path.GetFullPath, unityPlayerPath);
+                var fullPath = _reverseInvoker.Invoke(Path.GetFullPath, unityPlayerPath);
                 var fileVersion = FileVersionInfo.GetVersionInfo(fullPath);
                 _unityVersion = fileVersion.FileVersion;
             }
@@ -109,12 +108,12 @@ public class GameInfo : IGameInfo
     {
         get
         {
-            var rev = _reverseInvokerFactory.GetReverseInvoker();
-            rev.Invoking = true;
             if (_gameDirectory != null) return _gameDirectory;
-            var appBase = AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
-            _gameDirectory = appBase ?? Path.GetFullPath(".");
-            rev.Invoking = false;
+            _reverseInvoker.Invoke(() =>
+            {
+                var appBase = AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
+                _gameDirectory = appBase ?? Path.GetFullPath(".");
+            });
             return _gameDirectory;
         }
     }
@@ -133,8 +132,7 @@ public class GameInfo : IGameInfo
             }
 
             // fallback, try get in c# way
-            var rev = _reverseInvokerFactory.GetReverseInvoker();
-            var os = rev.Invoke(() => Environment.OSVersion);
+            var os = _reverseInvoker.Invoke(() => Environment.OSVersion);
 
             switch (os.Platform)
             {
@@ -144,7 +142,7 @@ public class GameInfo : IGameInfo
                     var foundExe = "";
                     var foundMultipleExe = false;
                     var rootDir = GameDirectory;
-                    var rootFiles = rev.Invoke(Directory.GetFiles, rootDir);
+                    var rootFiles = _reverseInvoker.Invoke(Directory.GetFiles, rootDir);
 
                     // iterate over exes in game root dir
                     foreach (var path in rootFiles)
@@ -169,15 +167,15 @@ public class GameInfo : IGameInfo
 
                     if (!foundMultipleExe)
                     {
-                        _productName = rev.Invoke(Path.GetFileNameWithoutExtension, foundExe);
+                        _productName = _reverseInvoker.Invoke(Path.GetFileNameWithoutExtension, foundExe);
                         return _productName;
                     }
 
                     // use game dir name and see if it matches exe
-                    var gameDirName = rev.Invoke(a => new DirectoryInfo(a), rootDir).Name;
+                    var gameDirName = _reverseInvoker.Invoke(a => new DirectoryInfo(a), rootDir).Name;
 
-                    if (rev.Invoke(File.Exists,
-                            rev.Invoke(Path.Combine, rootDir, $"{gameDirName}.exe")))
+                    if (_reverseInvoker.Invoke(File.Exists,
+                            _reverseInvoker.Invoke(Path.Combine, rootDir, $"{gameDirName}.exe")))
                     {
                         _productName = gameDirName;
                         return gameDirName;
@@ -188,7 +186,7 @@ public class GameInfo : IGameInfo
                 case PlatformID.Unix:
                 {
                     var rootDir = GameDirectory;
-                    var rootFiles = rev.Invoke(Directory.GetFiles, rootDir);
+                    var rootFiles = _reverseInvoker.Invoke(Directory.GetFiles, rootDir);
 
                     var exeExtensions = new[] { ".x86_64", ".x86" };
 
@@ -199,7 +197,7 @@ public class GameInfo : IGameInfo
                         {
                             if (rootFile.EndsWith(exeExtension))
                             {
-                                _productName = rev.Invoke(Path.GetFileNameWithoutExtension, rootFile);
+                                _productName = _reverseInvoker.Invoke(Path.GetFileNameWithoutExtension, rootFile);
                                 return _productName;
                             }
                         }

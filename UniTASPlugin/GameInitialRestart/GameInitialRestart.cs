@@ -23,7 +23,7 @@ public class GameInitialRestart : IGameInitialRestart, IOnAwake, IOnEnable, IOnS
     private readonly IStaticFieldManipulator _staticFieldManipulator;
     private readonly ISyncFixedUpdate _syncFixedUpdate;
     private readonly IOnGameRestart[] _onGameRestart;
-    private readonly IReverseInvokerFactory _reverseInvokerFactory;
+    private readonly IPatchReverseInvoker _reverseInvoker;
 
     private readonly VirtualEnvironment _virtualEnvironment;
 
@@ -34,7 +34,7 @@ public class GameInitialRestart : IGameInitialRestart, IOnAwake, IOnEnable, IOnS
 
     public GameInitialRestart(IUnityWrapper unityWrapper, ILogger logger,
         IMonoBehaviourController monoBehaviourController, IStaticFieldManipulator staticFieldManipulator,
-        ISyncFixedUpdate syncFixedUpdate, IOnGameRestart[] onGameRestart, IReverseInvokerFactory reverseInvokerFactory,
+        ISyncFixedUpdate syncFixedUpdate, IOnGameRestart[] onGameRestart, IPatchReverseInvoker reverseInvoker,
         VirtualEnvironment virtualEnvironment)
     {
         _unityWrapper = unityWrapper;
@@ -43,7 +43,7 @@ public class GameInitialRestart : IGameInitialRestart, IOnAwake, IOnEnable, IOnS
         _staticFieldManipulator = staticFieldManipulator;
         _syncFixedUpdate = syncFixedUpdate;
         _onGameRestart = onGameRestart;
-        _reverseInvokerFactory = reverseInvokerFactory;
+        _reverseInvoker = reverseInvoker;
         _virtualEnvironment = virtualEnvironment;
     }
 
@@ -66,7 +66,7 @@ public class GameInitialRestart : IGameInitialRestart, IOnAwake, IOnEnable, IOnS
 
     private void OnGameRestart()
     {
-        var restartTime = _reverseInvokerFactory.GetReverseInvoker().Invoke(() => DateTime.Now);
+        var restartTime = _reverseInvoker.Invoke(() => DateTime.Now);
         foreach (var gameRestart in _onGameRestart)
         {
             gameRestart.OnGameRestart(restartTime);
