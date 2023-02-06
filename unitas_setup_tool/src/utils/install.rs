@@ -134,6 +134,8 @@ async fn install_bepinex(
     let overwrite_paths = [
         Path::new("changelog.txt").to_owned(),
         Path::new("doorstop_libs").to_owned(),
+        Path::new("winhttp.dll").to_owned(),
+        Path::new("doorstop_config.ini").to_owned(),
         Path::new("BepInEx").join("core"),
     ];
 
