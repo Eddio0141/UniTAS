@@ -8,7 +8,9 @@ use super::cli::GameDirSelection;
 pub async fn uninstall(game_dir_selection: &GameDirSelection) -> Result<()> {
     let dir = PathBuf::try_from(game_dir_selection.clone())?;
 
-    let remove_paths = vec![Path::new("BepInEx/plugins/UniTASPlugin.dll")];
+    let remove_paths = vec![Path::new("BepInEx")
+        .join("plugins")
+        .join("UniTASPlugin.dll")];
 
     for remove_path in remove_paths {
         let path = dir.join(remove_path);

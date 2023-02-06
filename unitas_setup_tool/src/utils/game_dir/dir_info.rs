@@ -103,7 +103,7 @@ impl Display for DirInfo {
                 .unitas_version
                 .as_ref()
                 .map(|version| version.to_string())
-                .unwrap_or(default.clone())
+                .unwrap_or_else(|| default.clone())
         )?;
         writeln!(
             f,
