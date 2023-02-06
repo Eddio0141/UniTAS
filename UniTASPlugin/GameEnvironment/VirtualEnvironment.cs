@@ -28,22 +28,32 @@ public class VirtualEnvironment : IOnGameRestart
 
     public Os Os { get; set; } = Os.Windows;
     public WindowState WindowState { get; } = new(1920, 1080, false, true);
-    public InputState InputState { get; } = new();
-    public float FrameTime { get; set; }
-    public GameTime GameTime { get; } = new();
+    public InputState InputState { get; }
 
+    public float FrameTime { get; set; }
+    public GameTime GameTime { get; }
+
+    // TODO move to own class
     public long Seed => GameTime.CurrentTime.Ticks;
     public Random SystemRandom { get; private set; }
 
     public UnityPaths UnityPaths { get; private set; }
     public string Username { get; set; } = "User";
 
+    public VirtualEnvironment(InputState inputState, GameTime gameTime)
+    {
+        InputState = inputState;
+        GameTime = gameTime;
+    }
+
     public void OnGameRestart(DateTime startupTime)
     {
-        GameTime.StartupTime = startupTime;
         SystemRandom = new((int)Seed);
-
-        InputState.ResetStates();
         UnityPaths = new(Os, Username);
+    }
+
+    public void Update()
+    {
+        InputState.Update();
     }
 }

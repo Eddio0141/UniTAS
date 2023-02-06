@@ -25,7 +25,7 @@ public class VirtualEnvironmentApplier : IOnPreUpdates
 
     private void UpdateState()
     {
-        _virtualEnvironment.InputState.Update();
+        _virtualEnvironment.Update();
     }
 
     private void ApplyEnv()

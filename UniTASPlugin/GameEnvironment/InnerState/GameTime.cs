@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Diagnostics;
 using HarmonyLib;
+using UniTASPlugin.GameRestart;
 using UniTASPlugin.Interfaces.Update;
 using UnityEngine;
 
 namespace UniTASPlugin.GameEnvironment.InnerState;
 
 // ReSharper disable once ClassNeverInstantiated.Global
-public class GameTime : IOnPreUpdates
+public class GameTime : IOnPreUpdates, IOnGameRestart
 {
     private DateTime _startupTime;
 
@@ -63,5 +64,10 @@ public class GameTime : IOnPreUpdates
                $"UnscaledTimeOffset: {UnscaledTimeOffset} " +
                $"ScaledTimeOffset: {ScaledTimeOffset} " +
                $"ScaledFixedTimeOffset: {ScaledFixedTimeOffset}";
+    }
+
+    public void OnGameRestart(DateTime startupTime)
+    {
+        StartupTime = startupTime;
     }
 }

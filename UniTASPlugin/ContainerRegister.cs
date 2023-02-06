@@ -3,6 +3,7 @@ using UniTASPlugin.FixedUpdateSync;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.GameEnvironment.InnerState;
 using UniTASPlugin.GameEnvironment.InnerState.FileSystem;
+using UniTASPlugin.GameEnvironment.InnerState.Input;
 using UniTASPlugin.GameInfo;
 using UniTASPlugin.GameInitialRestart;
 using UniTASPlugin.GameRestart;
@@ -106,6 +107,10 @@ public static class ContainerRegister
 
             c.For<GameTime>().Singleton();
             c.For<IOnPreUpdates>().Use(x => x.GetInstance<GameTime>());
+            c.For<IOnGameRestart>().Use(x => x.GetInstance<GameTime>());
+
+            c.For<InputState>().Singleton();
+            c.For<IOnGameRestart>().Use(x => x.GetInstance<InputState>());
 
             c.For<FileSystemManager>().Singleton();
             c.For<IOnGameRestart>().Use(x => x.GetInstance<FileSystemManager>());

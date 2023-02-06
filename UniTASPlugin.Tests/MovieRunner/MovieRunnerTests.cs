@@ -15,7 +15,7 @@ public class MovieRunnerTests
         var externMethods = getDefinedMethods.ToList();
         var runner = new UniTASPlugin.Movie.MovieRunner(
             new MovieParser(new MovieSectionSplitter(), new MoviePropertyParser(),
-                new MovieScriptParser(externMethods)), externMethods, new(),
+                new MovieScriptParser(externMethods)), externMethods, new(null, null),
             new FakeRestartService(), new FakeFixedUpdateService());
 
         return runner;

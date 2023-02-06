@@ -17,7 +17,8 @@ public class UnityPaths
                 // %userprofile%\AppData\LocalLow\<companyname>\<productname>
                 // TODO get product name
                 // TODO get company name
-                PersistentDataPath = $@"C:\Users\{username}\AppData\LocalLow\DefaultCompany\DefaultProduct";
+                PersistentDataPath =
+                    $@"C:\Users\{username}\AppData\LocalLow\DefaultCompany\DefaultProduct";
                 break;
             }
             default:

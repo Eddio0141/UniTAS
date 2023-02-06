@@ -1,11 +1,20 @@
-﻿namespace UniTASPlugin.GameEnvironment.InnerState.Input;
+﻿using System;
+using UniTASPlugin.GameRestart;
 
-public class InputState
+namespace UniTASPlugin.GameEnvironment.InnerState.Input;
+
+// ReSharper disable once ClassNeverInstantiated.Global
+public class InputState : IOnGameRestart
 {
     public MouseState MouseState { get; } = new();
     public AxisState AxisState { get; } = new();
     public KeyboardState KeyboardState { get; } = new();
     public ButtonState ButtonState { get; } = new();
+
+    public void OnGameRestart(DateTime startupTime)
+    {
+        ResetStates();
+    }
 
     public void ResetStates()
     {
