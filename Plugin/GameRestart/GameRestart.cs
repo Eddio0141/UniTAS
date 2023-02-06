@@ -67,7 +67,6 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
         _monoBehaviourController.PausedExecution = true;
         DestroyDontDestroyOnLoads();
         _staticFieldManipulator.ResetStaticFields();
-        OnGameRestart();
         _syncFixedUpdate.OnSync(SoftRestartOperation, 1);
         _logger.LogDebug("Soft restarting, pending FixedUpdate call");
     }
@@ -84,6 +83,7 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
     {
         _logger.LogInfo("Soft restarting");
 
+        OnGameRestart();
         _unityWrapper.SceneWrapper.LoadScene(0);
 
         _logger.LogDebug("random setting state");
@@ -92,7 +92,8 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
         RandomWrap.InitState((int)env.Seed);
 
         _logger.LogInfo("Finish soft restarting");
-        _logger.LogInfo($"System time: {DateTime.Now}");
+        var actualTime = DateTime.Now;
+        _logger.LogInfo($"System time: {actualTime}");
 
         PendingRestart = false;
         _pendingResumePausedExecution = true;

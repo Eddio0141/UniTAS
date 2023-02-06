@@ -5,11 +5,9 @@ using System.Linq;
 using HarmonyLib;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.GameInfo;
-using UniTASPlugin.GameRestart;
 using UniTASPlugin.LegacySafeWrappers;
 using UniTASPlugin.Logger;
 using UniTASPlugin.Patches.PatchProcessor;
-using UniTASPlugin.ReverseInvoker;
 using UnityEngine;
 using PatchProcessor = UniTASPlugin.Patches.PatchProcessor.PatchProcessor;
 
@@ -18,8 +16,7 @@ namespace UniTASPlugin;
 // ReSharper disable once ClassNeverInstantiated.Global
 public class PluginWrapper
 {
-    public PluginWrapper(IEnumerable<PatchProcessor> patchProcessors, IEnumerable<IOnGameRestart> onGameRestarts,
-        IReverseInvokerFactory reverseInvokerFactory, IGameInfo gameInfo, ILogger logger,
+    public PluginWrapper(IEnumerable<PatchProcessor> patchProcessors, IGameInfo gameInfo, ILogger logger,
         IVirtualEnvironmentFactory virtualEnvironmentFactory)
     {
         logger.LogInfo($"Internally found unity version: {gameInfo.UnityVersion}");
@@ -41,14 +38,6 @@ public class PluginWrapper
 
         logger.LogInfo($"System time: {DateTime.Now}");
         logger.LogInfo($"Plugin {MyPluginInfo.PLUGIN_NAME} is loaded!");
-
-        var rev = reverseInvokerFactory.GetReverseInvoker();
-        var actualTime = rev.Invoke(() => DateTime.Now);
-
-        foreach (var onGameRestart in onGameRestarts)
-        {
-            onGameRestart.OnGameRestart(actualTime);
-        }
 
         var sortedPatches = patchProcessors
             .Where(x => x is not OnPluginInitProcessor)

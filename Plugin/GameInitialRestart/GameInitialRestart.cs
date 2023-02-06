@@ -61,7 +61,6 @@ public class GameInitialRestart : IGameInitialRestart, IOnAwake, IOnEnable, IOnS
         _monoBehaviourController.PausedExecution = true;
         DestroyAllGameObjects();
         _staticFieldManipulator.ResetStaticFields();
-        OnGameRestart();
         _syncFixedUpdate.OnSync(SoftRestartOperation, 1);
         _logger.LogDebug("Initial restart, pending FixedUpdate call");
     }
@@ -78,6 +77,7 @@ public class GameInitialRestart : IGameInitialRestart, IOnAwake, IOnEnable, IOnS
     private void SoftRestartOperation()
     {
         _logger.LogInfo("Restarting");
+        OnGameRestart();
         _unityWrapper.SceneWrapper.LoadScene(0);
         _pendingResumePausedExecution = true;
         FinishedRestart = true;
