@@ -51,7 +51,7 @@
 
     <ItemGroup>
         <Reference Include="PresentationFramework">
-            <HintPath>..\..\..\..\..\..\Program Files\Reference Assemblies\Microsoft\Framework\v3.0\PresentationFramework.dll</HintPath>
+            <HintPath>.\Extern-Assemblies\PresentationFramework.dll</HintPath>
         </Reference>
     </ItemGroup>
 
