@@ -33,7 +33,6 @@ public class VirtualEnvironment : IOnGameRestart
     public float FrameTime { get; set; }
     public GameTime GameTime { get; }
 
-    // TODO move to own class
     public long Seed => GameTime.CurrentTime.Ticks;
     public Random SystemRandom { get; private set; }
 
