@@ -29,7 +29,7 @@ public class PatchReverseInvoker : IPatchReverseInvoker
 
     public void Return()
     {
-        if (_depth == 0)
+        if (_depth == 1)
         {
             _logger.LogError($"Something went wrong returning from reverse invoking, {new StackTrace()}");
             return;
@@ -76,11 +76,12 @@ public class PatchReverseInvoker : IPatchReverseInvoker
 
     private void FinishInvoke()
     {
-        if (_depth != 0)
+        if (_depth != 1)
         {
             _logger.LogError(
-                $"Depth isn't matching 0 after reverse invoking, something went wrong, {new StackTrace()}");
-            _depth = 0;
+                $"Depth isn't matching 1 after reverse invoking, something went wrong, {new StackTrace()}");
         }
+
+        _depth = 0;
     }
 }
