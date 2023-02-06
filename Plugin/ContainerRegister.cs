@@ -104,7 +104,8 @@ public static class ContainerRegister
             c.For<IOnFixedUpdate>().Use(x => x.GetInstance<GameRestart.GameRestart>());
             c.For<IOnAwake>().Use(x => x.GetInstance<GameRestart.GameRestart>());
 
-            c.For<IOnPreUpdates>().Singleton().Use<GameTime>();
+            c.For<GameTime>().Singleton();
+            c.For<IOnPreUpdates>().Use(x => x.GetInstance<GameTime>());
 
             c.For<FileSystemManager>().Singleton();
             c.For<IOnGameRestart>().Use(x => x.GetInstance<FileSystemManager>());
