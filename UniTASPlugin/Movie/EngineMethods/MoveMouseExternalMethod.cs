@@ -7,11 +7,11 @@ namespace UniTASPlugin.Movie.EngineMethods;
 
 public class MoveMouseExternalMethod : EngineExternalMethod
 {
-    private readonly IVirtualEnvironmentFactory _virtualEnvironmentFactory;
+    private readonly VirtualEnvironment _virtualEnvironment;
 
-    public MoveMouseExternalMethod(IVirtualEnvironmentFactory virtualEnvironmentFactory) : base("move_mouse", 2)
+    public MoveMouseExternalMethod(VirtualEnvironment virtualEnvironmentFactory) : base("move_mouse", 2)
     {
-        _virtualEnvironmentFactory = virtualEnvironmentFactory;
+        _virtualEnvironment = virtualEnvironmentFactory;
     }
 
     public override List<ValueType> Invoke(IEnumerable<IEnumerable<ValueType>> args, MovieRunner runner)
@@ -23,9 +23,8 @@ public class MoveMouseExternalMethod : EngineExternalMethod
         var yArg = argsList[1].First();
         if (yArg is not IntValueType y) return new();
 
-        var env = _virtualEnvironmentFactory.GetVirtualEnv();
-        env.InputState.MouseState.XPos = x.Value;
-        env.InputState.MouseState.YPos = y.Value;
+        _virtualEnvironment.InputState.MouseState.XPos = x.Value;
+        _virtualEnvironment.InputState.MouseState.YPos = y.Value;
 
         return new();
     }

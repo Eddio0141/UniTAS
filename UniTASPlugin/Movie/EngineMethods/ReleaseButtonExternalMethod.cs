@@ -7,11 +7,11 @@ namespace UniTASPlugin.Movie.EngineMethods;
 
 public class ReleaseButtonExternalMethod : EngineExternalMethod
 {
-    private readonly IVirtualEnvironmentFactory _virtualEnvironmentFactory;
+    private readonly VirtualEnvironment _virtualEnvironment;
 
-    public ReleaseButtonExternalMethod(IVirtualEnvironmentFactory virtualEnvironmentFactory) : base("release_button", 1)
+    public ReleaseButtonExternalMethod(VirtualEnvironment virtualEnvironmentFactory) : base("release_button", 1)
     {
-        _virtualEnvironmentFactory = virtualEnvironmentFactory;
+        _virtualEnvironment = virtualEnvironmentFactory;
     }
 
     public override List<ValueType> Invoke(IEnumerable<IEnumerable<ValueType>> args, MovieRunner runner)
@@ -19,7 +19,7 @@ public class ReleaseButtonExternalMethod : EngineExternalMethod
         var buttonName = args.First().First();
         if (buttonName is not StringValueType buttonNameString) return new();
 
-        _virtualEnvironmentFactory.GetVirtualEnv().InputState.ButtonState.Buttons.Remove(buttonNameString.Value);
+        _virtualEnvironment.InputState.ButtonState.Buttons.Remove(buttonNameString.Value);
 
         return new();
     }

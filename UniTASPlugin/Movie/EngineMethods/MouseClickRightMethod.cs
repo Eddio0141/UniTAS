@@ -7,11 +7,11 @@ namespace UniTASPlugin.Movie.EngineMethods;
 
 public class MouseClickRightMethod : EngineExternalMethod
 {
-    private readonly IVirtualEnvironmentFactory _virtualEnvironmentFactory;
+    private readonly VirtualEnvironment _virtualEnvironment;
 
-    public MouseClickRightMethod(IVirtualEnvironmentFactory virtualEnvironmentFactory) : base("right_click", 1)
+    public MouseClickRightMethod(VirtualEnvironment virtualEnvironmentFactory) : base("right_click", 1)
     {
-        _virtualEnvironmentFactory = virtualEnvironmentFactory;
+        _virtualEnvironment = virtualEnvironmentFactory;
     }
 
     public override List<ValueType> Invoke(IEnumerable<IEnumerable<ValueType>> args, MovieRunner runner)
@@ -19,8 +19,7 @@ public class MouseClickRightMethod : EngineExternalMethod
         var arg = args.First().First();
         if (arg is not BoolValueType boolValue) return new();
 
-        var env = _virtualEnvironmentFactory.GetVirtualEnv();
-        env.InputState.MouseState.LeftClick = boolValue.Value;
+        _virtualEnvironment.InputState.MouseState.LeftClick = boolValue.Value;
 
         return new();
     }

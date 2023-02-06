@@ -8,11 +8,11 @@ namespace UniTASPlugin.Movie.EngineMethods;
 
 public class SetFpsExternalMethod : EngineExternalMethod
 {
-    private readonly IVirtualEnvironmentFactory _virtualEnvironmentFactory;
+    private readonly VirtualEnvironment _virtualEnvironment;
 
-    public SetFpsExternalMethod(IVirtualEnvironmentFactory virtualEnvironmentFactory) : base("set_fps", 1)
+    public SetFpsExternalMethod(VirtualEnvironment virtualEnvironmentFactory) : base("set_fps", 1)
     {
-        _virtualEnvironmentFactory = virtualEnvironmentFactory;
+        _virtualEnvironment = virtualEnvironmentFactory;
     }
 
     public override List<ValueType> Invoke(IEnumerable<IEnumerable<ValueType>> args, MovieRunner runner)
@@ -32,7 +32,7 @@ public class SetFpsExternalMethod : EngineExternalMethod
                 return new();
         }
 
-        _virtualEnvironmentFactory.GetVirtualEnv().FrameTime = 1 / fps;
+        _virtualEnvironment.FrameTime = 1 / fps;
 
         return new();
     }

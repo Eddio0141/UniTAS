@@ -9,12 +9,12 @@ namespace UniTASPlugin.GameEnvironment;
 // ReSharper disable once ClassNeverInstantiated.Global
 public class VirtualEnvironmentApplier : IOnPreUpdates
 {
-    private readonly IVirtualEnvironmentFactory _virtualEnvironmentFactory;
+    private readonly VirtualEnvironment _virtualEnvironment;
     private float _lastFrameTime;
 
-    public VirtualEnvironmentApplier(IVirtualEnvironmentFactory virtualEnvironmentFactory)
+    public VirtualEnvironmentApplier(VirtualEnvironment virtualEnvironment)
     {
-        _virtualEnvironmentFactory = virtualEnvironmentFactory;
+        _virtualEnvironment = virtualEnvironment;
     }
 
     public void PreUpdate()
@@ -25,25 +25,23 @@ public class VirtualEnvironmentApplier : IOnPreUpdates
 
     private void UpdateState()
     {
-        var env = _virtualEnvironmentFactory.GetVirtualEnv();
-        env.InputState.Update();
+        _virtualEnvironment.InputState.Update();
     }
 
     private void ApplyEnv()
     {
-        var env = _virtualEnvironmentFactory.GetVirtualEnv();
-        if (!env.RunVirtualEnvironment)
+        if (!_virtualEnvironment.RunVirtualEnvironment)
         {
             _lastFrameTime = -1f;
             return;
         }
 
         // ReSharper disable once CompareOfFloatsByEqualityOperator
-        if (_lastFrameTime != env.FrameTime)
+        if (_lastFrameTime != _virtualEnvironment.FrameTime)
         {
-            _lastFrameTime = env.FrameTime;
+            _lastFrameTime = _virtualEnvironment.FrameTime;
             // frameTime
-            TimeWrap.CaptureFrameTime = env.FrameTime;
+            TimeWrap.CaptureFrameTime = _virtualEnvironment.FrameTime;
         }
     }
 }

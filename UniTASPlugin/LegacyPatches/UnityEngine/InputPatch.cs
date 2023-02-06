@@ -15,14 +15,10 @@ namespace UniTASPlugin.LegacyPatches.UnityEngine;
 [HarmonyPatch]
 public class InputPatch
 {
-    private static IVirtualEnvironmentFactory _virtualEnvironmentFactory;
-    private static IReverseInvokerFactory _reverseInvokerFactory;
+    private static readonly VirtualEnvironment VirtualEnvironment = Plugin.Kernel.GetInstance<VirtualEnvironment>();
 
-    private static IVirtualEnvironmentFactory virtualEnvironmentFactory =>
-        _virtualEnvironmentFactory ??= Plugin.Kernel.GetInstance<IVirtualEnvironmentFactory>();
-
-    private static IReverseInvokerFactory reverseInvokerFactory =>
-        _reverseInvokerFactory ??= Plugin.Kernel.GetInstance<IReverseInvokerFactory>();
+    private static readonly IReverseInvokerFactory reverseInvokerFactory =
+        Plugin.Kernel.GetInstance<IReverseInvokerFactory>();
 
     // TODO not sure what this is
     /*
@@ -46,8 +42,7 @@ public class InputPatch
             if (reverseInvokerFactory.GetReverseInvoker().Invoking)
                 return false;
 
-            var env = virtualEnvironmentFactory.GetVirtualEnv();
-            if (!env.RunVirtualEnvironment) return true;
+            if (VirtualEnvironment.RunVirtualEnvironment) return true;
             // TODO
             __result = 0;
             return false;
@@ -66,8 +61,7 @@ public class InputPatch
         {
             if (reverseInvokerFactory.GetReverseInvoker().Invoking)
                 return true;
-            var env = virtualEnvironmentFactory.GetVirtualEnv();
-            if (!env.RunVirtualEnvironment) return true;
+            if (VirtualEnvironment.RunVirtualEnvironment) return true;
             // TODO option to present mouse
             __result = true;
             return false;
@@ -87,8 +81,7 @@ public class InputPatch
         {
             if (reverseInvokerFactory.GetReverseInvoker().Invoking)
                 return true;
-            var env = virtualEnvironmentFactory.GetVirtualEnv();
-            return !env.RunVirtualEnvironment;
+            return !VirtualEnvironment.RunVirtualEnvironment;
             // TODO
         }
     }
@@ -107,8 +100,7 @@ public class InputPatch
         {
             if (reverseInvokerFactory.GetReverseInvoker().Invoking)
                 return true;
-            var env = virtualEnvironmentFactory.GetVirtualEnv();
-            return !env.RunVirtualEnvironment;
+            return !VirtualEnvironment.RunVirtualEnvironment;
             // TODO
         }
     }
@@ -125,8 +117,7 @@ public class InputPatch
         {
             if (reverseInvokerFactory.GetReverseInvoker().Invoking)
                 return true;
-            var env = virtualEnvironmentFactory.GetVirtualEnv();
-            return !env.RunVirtualEnvironment;
+            return !VirtualEnvironment.RunVirtualEnvironment;
             // TODO what is this function call
         }
     }
@@ -143,8 +134,7 @@ public class InputPatch
         {
             if (reverseInvokerFactory.GetReverseInvoker().Invoking)
                 return true;
-            var env = virtualEnvironmentFactory.GetVirtualEnv();
-            return !env.RunVirtualEnvironment;
+            return !VirtualEnvironment.RunVirtualEnvironment;
             // TODO
             // this gets called in accelerationEvents getter, check when implementing
         }
@@ -162,9 +152,8 @@ public class InputPatch
         {
             if (reverseInvokerFactory.GetReverseInvoker().Invoking)
                 return true;
-            var env = virtualEnvironmentFactory.GetVirtualEnv();
-            if (!env.RunVirtualEnvironment) return true;
-            var inputState = env.InputState;
+            if (VirtualEnvironment.RunVirtualEnvironment) return true;
+            var inputState = VirtualEnvironment.InputState;
             __result = inputState.KeyboardState.Keys.Count > 0 || inputState.MouseState.LeftClick ||
                        inputState.MouseState.RightClick || inputState.MouseState.MiddleClick;
             return false;
@@ -184,9 +173,8 @@ public class InputPatch
             if (reverseInvokerFactory.GetReverseInvoker().Invoking)
                 return true;
             // TODO make sure this gets called before Update calls
-            var env = virtualEnvironmentFactory.GetVirtualEnv();
-            if (!env.RunVirtualEnvironment) return true;
-            var inputState = env.InputState;
+            if (VirtualEnvironment.RunVirtualEnvironment) return true;
+            var inputState = VirtualEnvironment.InputState;
             __result = inputState.KeyboardState.KeysDown.Count > 0 || inputState.MouseState.LeftClickDown ||
                        inputState.MouseState.RightClickDown || inputState.MouseState.MiddleClickDown;
             return false;
@@ -205,8 +193,7 @@ public class InputPatch
         {
             if (reverseInvokerFactory.GetReverseInvoker().Invoking)
                 return true;
-            var env = virtualEnvironmentFactory.GetVirtualEnv();
-            return !env.RunVirtualEnvironment;
+            return !VirtualEnvironment.RunVirtualEnvironment;
             // Returns the keyboard input entered this frame
             // Only ASCII characters are contained in the inputString.
             // Character "\n" represents return or enter.
@@ -226,8 +213,7 @@ public class InputPatch
         {
             if (reverseInvokerFactory.GetReverseInvoker().Invoking)
                 return true;
-            var env = virtualEnvironmentFactory.GetVirtualEnv();
-            if (!env.RunVirtualEnvironment) return true;
+            if (VirtualEnvironment.RunVirtualEnvironment) return true;
             // TODO
             __result = false;
             return false;
@@ -246,8 +232,7 @@ public class InputPatch
         {
             if (reverseInvokerFactory.GetReverseInvoker().Invoking)
                 return true;
-            var env = virtualEnvironmentFactory.GetVirtualEnv();
-            return !env.RunVirtualEnvironment;
+            return !VirtualEnvironment.RunVirtualEnvironment;
             // TODO handle this
         }
     }
@@ -264,8 +249,7 @@ public class InputPatch
         {
             if (reverseInvokerFactory.GetReverseInvoker().Invoking)
                 return true;
-            var env = virtualEnvironmentFactory.GetVirtualEnv();
-            if (!env.RunVirtualEnvironment) return true;
+            if (VirtualEnvironment.RunVirtualEnvironment) return true;
             // TODO
             __result = false;
             return false;
@@ -284,8 +268,7 @@ public class InputPatch
         {
             if (reverseInvokerFactory.GetReverseInvoker().Invoking)
                 return true;
-            var env = virtualEnvironmentFactory.GetVirtualEnv();
-            if (!env.RunVirtualEnvironment) return true;
+            if (VirtualEnvironment.RunVirtualEnvironment) return true;
             // TODO
             __result = DeviceOrientation.Unknown;
             return false;
@@ -304,8 +287,7 @@ public class InputPatch
         {
             if (reverseInvokerFactory.GetReverseInvoker().Invoking)
                 return true;
-            var env = virtualEnvironmentFactory.GetVirtualEnv();
-            if (!env.RunVirtualEnvironment) return true;
+            if (VirtualEnvironment.RunVirtualEnvironment) return true;
             // TODO
             __result = Vector3.zero;
             return false;
@@ -324,8 +306,7 @@ public class InputPatch
         {
             if (reverseInvokerFactory.GetReverseInvoker().Invoking)
                 return true;
-            var env = virtualEnvironmentFactory.GetVirtualEnv();
-            if (!env.RunVirtualEnvironment) return true;
+            if (VirtualEnvironment.RunVirtualEnvironment) return true;
             // TODO
             // this gets called in accelerationEvents getter, check there if implementing
             __result = 0;
@@ -363,8 +344,7 @@ public class InputPatch
         {
             if (reverseInvokerFactory.GetReverseInvoker().Invoking)
                 return true;
-            var env = virtualEnvironmentFactory.GetVirtualEnv();
-            if (!env.RunVirtualEnvironment) return true;
+            if (VirtualEnvironment.RunVirtualEnvironment) return true;
             // TODO
             // this gets called in touches getter, check if implementing
             __result = 0;
@@ -384,8 +364,7 @@ public class InputPatch
         {
             if (reverseInvokerFactory.GetReverseInvoker().Invoking)
                 return true;
-            var env = virtualEnvironmentFactory.GetVirtualEnv();
-            return !env.RunVirtualEnvironment;
+            return !VirtualEnvironment.RunVirtualEnvironment;
             // TODO
             // this gets called in touches getter, check if implementing
         }
@@ -421,8 +400,7 @@ public class InputPatch
         {
             if (reverseInvokerFactory.GetReverseInvoker().Invoking)
                 return true;
-            var env = virtualEnvironmentFactory.GetVirtualEnv();
-            if (!env.RunVirtualEnvironment) return true;
+            if (VirtualEnvironment.RunVirtualEnvironment) return true;
             // TODO what is this call
             __result = Vector3.zero;
             return false;

@@ -17,7 +17,7 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
 {
     private DateTime _softRestartTime;
 
-    private readonly IVirtualEnvironmentFactory _virtualEnvironmentFactory;
+    private readonly VirtualEnvironment _virtualEnvironment;
     private readonly ISyncFixedUpdate _syncFixedUpdate;
     private readonly IUnityWrapper _unityWrapper;
     private readonly IMonoBehaviourController _monoBehaviourController;
@@ -30,12 +30,12 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
     public bool PendingRestart { get; private set; }
     private bool _pendingResumePausedExecution;
 
-    public GameRestart(IVirtualEnvironmentFactory virtualEnvironmentFactory, ISyncFixedUpdate syncFixedUpdate,
+    public GameRestart(VirtualEnvironment virtualEnvironment, ISyncFixedUpdate syncFixedUpdate,
         IUnityWrapper unityWrapper, IMonoBehaviourController monoBehaviourController, ILogger logger,
         IOnGameRestart[] onGameRestart, IStaticFieldManipulator staticFieldManipulator,
         IDontDestroyOnLoadInfo dontDestroyOnLoadInfo)
     {
-        _virtualEnvironmentFactory = virtualEnvironmentFactory;
+        _virtualEnvironment = virtualEnvironment;
         _syncFixedUpdate = syncFixedUpdate;
         _unityWrapper = unityWrapper;
         _monoBehaviourController = monoBehaviourController;
@@ -88,8 +88,7 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
 
         _logger.LogDebug("random setting state");
 
-        var env = _virtualEnvironmentFactory.GetVirtualEnv();
-        RandomWrap.InitState((int)env.Seed);
+        RandomWrap.InitState((int)_virtualEnvironment.Seed);
 
         _logger.LogInfo("Finish soft restarting");
         var actualTime = DateTime.Now;

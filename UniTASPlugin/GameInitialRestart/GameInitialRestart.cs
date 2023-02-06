@@ -25,7 +25,7 @@ public class GameInitialRestart : IGameInitialRestart, IOnAwake, IOnEnable, IOnS
     private readonly IOnGameRestart[] _onGameRestart;
     private readonly IReverseInvokerFactory _reverseInvokerFactory;
 
-    private readonly IVirtualEnvironmentFactory _virtualEnvironmentFactory;
+    private readonly VirtualEnvironment _virtualEnvironment;
 
     private bool _pendingResumePausedExecution;
 
@@ -35,7 +35,7 @@ public class GameInitialRestart : IGameInitialRestart, IOnAwake, IOnEnable, IOnS
     public GameInitialRestart(IUnityWrapper unityWrapper, ILogger logger,
         IMonoBehaviourController monoBehaviourController, IStaticFieldManipulator staticFieldManipulator,
         ISyncFixedUpdate syncFixedUpdate, IOnGameRestart[] onGameRestart, IReverseInvokerFactory reverseInvokerFactory,
-        IVirtualEnvironmentFactory virtualEnvironmentFactory)
+        VirtualEnvironment virtualEnvironment)
     {
         _unityWrapper = unityWrapper;
         _logger = logger;
@@ -44,7 +44,7 @@ public class GameInitialRestart : IGameInitialRestart, IOnAwake, IOnEnable, IOnS
         _syncFixedUpdate = syncFixedUpdate;
         _onGameRestart = onGameRestart;
         _reverseInvokerFactory = reverseInvokerFactory;
-        _virtualEnvironmentFactory = virtualEnvironmentFactory;
+        _virtualEnvironment = virtualEnvironment;
     }
 
     public void InitialRestart()
@@ -53,9 +53,8 @@ public class GameInitialRestart : IGameInitialRestart, IOnAwake, IOnEnable, IOnS
         _restartOperationStarted = true;
 
         // TODO fix this hack
-        var env = _virtualEnvironmentFactory.GetVirtualEnv();
-        env.RunVirtualEnvironment = true;
-        env.FrameTime = 0.001f;
+        _virtualEnvironment.RunVirtualEnvironment = true;
+        _virtualEnvironment.FrameTime = 0.001f;
 
         _logger.LogDebug("Stopping MonoBehaviour execution");
         _monoBehaviourController.PausedExecution = true;
@@ -83,8 +82,7 @@ public class GameInitialRestart : IGameInitialRestart, IOnAwake, IOnEnable, IOnS
         FinishedRestart = true;
 
         // TODO fix this hack
-        var env = _virtualEnvironmentFactory.GetVirtualEnv();
-        env.FrameTime = 0f;
+        _virtualEnvironment.FrameTime = 0f;
     }
 
     private void DestroyAllGameObjects()

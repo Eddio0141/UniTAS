@@ -91,18 +91,17 @@ public class Plugin : BaseUnityPlugin
             // initial start has finished, load the rest of the plugin
             LoadPluginFull();
             _fullyLoaded = true;
-            StartCoroutine(SetInitialFrametime());
+            StartCoroutine(SetInitialFrameTime());
         }
 
         _monoBehEventInvoker.Update();
     }
 
-    private static IEnumerator SetInitialFrametime()
+    private static IEnumerator SetInitialFrameTime()
     {
         yield return null;
         // TODO fix this hack, from initial game restart code
-        var env = Kernel.GetInstance<IVirtualEnvironmentFactory>().GetVirtualEnv();
-        env.RunVirtualEnvironment = false;
+        Kernel.GetInstance<VirtualEnvironment>().RunVirtualEnvironment = false;
     }
 
     private void FixedUpdate()

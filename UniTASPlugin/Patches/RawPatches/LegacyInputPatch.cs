@@ -21,8 +21,8 @@ public class LegacyInputPatch
     private static readonly IReverseInvokerFactory ReverseInvokerFactory =
         Plugin.Kernel.GetInstance<IReverseInvokerFactory>();
 
-    private static readonly IVirtualEnvironmentFactory VirtualEnvironmentFactory =
-        Plugin.Kernel.GetInstance<IVirtualEnvironmentFactory>();
+    private static readonly VirtualEnvironment VirtualEnvironment =
+        Plugin.Kernel.GetInstance<VirtualEnvironment>();
 
     // gets called from GetKey
     [HarmonyPatch(typeof(Input), nameof(Input.GetKeyInt))]
@@ -37,9 +37,8 @@ public class LegacyInputPatch
         {
             if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
                 return true;
-            var env = VirtualEnvironmentFactory.GetVirtualEnv();
-            if (!env.RunVirtualEnvironment) return true;
-            __result = env.InputState.KeyboardState.Keys.Contains((int)(KeyCode)key);
+            if (!VirtualEnvironment.RunVirtualEnvironment) return true;
+            __result = VirtualEnvironment.InputState.KeyboardState.Keys.Contains((int)(KeyCode)key);
             return false;
         }
     }
@@ -57,8 +56,7 @@ public class LegacyInputPatch
         {
             if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
                 return true;
-            var env = VirtualEnvironmentFactory.GetVirtualEnv();
-            return !env.RunVirtualEnvironment;
+            return !VirtualEnvironment.RunVirtualEnvironment;
             // TODO
         }
     }
@@ -76,8 +74,7 @@ public class LegacyInputPatch
         {
             if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
                 return true;
-            var env = VirtualEnvironmentFactory.GetVirtualEnv();
-            return !env.RunVirtualEnvironment;
+            return !VirtualEnvironment.RunVirtualEnvironment;
             // TODO
         }
     }
@@ -95,9 +92,8 @@ public class LegacyInputPatch
         {
             if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
                 return true;
-            var env = VirtualEnvironmentFactory.GetVirtualEnv();
-            if (!env.RunVirtualEnvironment) return true;
-            __result = env.InputState.KeyboardState.KeysUp.Contains((int)(KeyCode)key);
+            if (!VirtualEnvironment.RunVirtualEnvironment) return true;
+            __result = VirtualEnvironment.InputState.KeyboardState.KeysUp.Contains((int)(KeyCode)key);
             return false;
         }
     }
@@ -115,8 +111,7 @@ public class LegacyInputPatch
         {
             if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
                 return true;
-            var env = VirtualEnvironmentFactory.GetVirtualEnv();
-            return !env.RunVirtualEnvironment;
+            return !VirtualEnvironment.RunVirtualEnvironment;
             // TODO
         }
     }
@@ -134,9 +129,8 @@ public class LegacyInputPatch
         {
             if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
                 return true;
-            var env = VirtualEnvironmentFactory.GetVirtualEnv();
-            if (!env.RunVirtualEnvironment) return true;
-            __result = env.InputState.KeyboardState.KeysDown.Contains((int)(KeyCode)key);
+            if (!VirtualEnvironment.RunVirtualEnvironment) return true;
+            __result = VirtualEnvironment.InputState.KeyboardState.KeysDown.Contains((int)(KeyCode)key);
             return false;
         }
     }
@@ -169,9 +163,8 @@ public class LegacyInputPatch
         {
             if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
                 return true;
-            var env = VirtualEnvironmentFactory.GetVirtualEnv();
-            if (!env.RunVirtualEnvironment) return true;
-            if (env.InputState.AxisState.Values.TryGetValue(axisName, out var value))
+            if (!VirtualEnvironment.RunVirtualEnvironment) return true;
+            if (VirtualEnvironment.InputState.AxisState.Values.TryGetValue(axisName, out var value))
             {
                 __result = value;
             }
@@ -192,9 +185,8 @@ public class LegacyInputPatch
         {
             if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
                 return true;
-            var env = VirtualEnvironmentFactory.GetVirtualEnv();
-            if (!env.RunVirtualEnvironment) return true;
-            if (env.InputState.AxisState.Values.TryGetValue(axisName, out var value))
+            if (!VirtualEnvironment.RunVirtualEnvironment) return true;
+            if (VirtualEnvironment.InputState.AxisState.Values.TryGetValue(axisName, out var value))
             {
                 __result = value;
             }
@@ -215,9 +207,8 @@ public class LegacyInputPatch
         {
             if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
                 return true;
-            var env = VirtualEnvironmentFactory.GetVirtualEnv();
-            if (!env.RunVirtualEnvironment) return true;
-            var mouseState = env.InputState.MouseState;
+            if (!VirtualEnvironment.RunVirtualEnvironment) return true;
+            var mouseState = VirtualEnvironment.InputState.MouseState;
             __result = new(mouseState.XPos, mouseState.YPos);
             return false;
         }
@@ -237,9 +228,8 @@ public class LegacyInputPatch
         {
             if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
                 return true;
-            var env = VirtualEnvironmentFactory.GetVirtualEnv();
-            if (!env.RunVirtualEnvironment) return true;
-            var mouseState = env.InputState.MouseState;
+            if (!VirtualEnvironment.RunVirtualEnvironment) return true;
+            var mouseState = VirtualEnvironment.InputState.MouseState;
             ret = new(mouseState.XPos, mouseState.YPos);
             return false;
         }
@@ -257,13 +247,12 @@ public class LegacyInputPatch
         {
             if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
                 return true;
-            var env = VirtualEnvironmentFactory.GetVirtualEnv();
-            if (!env.RunVirtualEnvironment) return true;
+            if (!VirtualEnvironment.RunVirtualEnvironment) return true;
             __result = button switch
             {
-                0 => env.InputState.MouseState.LeftClick,
-                1 => env.InputState.MouseState.RightClick,
-                2 => env.InputState.MouseState.MiddleClick,
+                0 => VirtualEnvironment.InputState.MouseState.LeftClick,
+                1 => VirtualEnvironment.InputState.MouseState.RightClick,
+                2 => VirtualEnvironment.InputState.MouseState.MiddleClick,
                 _ => false
             };
             return false;
@@ -282,13 +271,12 @@ public class LegacyInputPatch
         {
             if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
                 return true;
-            var env = VirtualEnvironmentFactory.GetVirtualEnv();
-            if (!env.RunVirtualEnvironment) return true;
+            if (!VirtualEnvironment.RunVirtualEnvironment) return true;
             __result = button switch
             {
-                0 => env.InputState.MouseState.LeftClickDown,
-                1 => env.InputState.MouseState.RightClickDown,
-                2 => env.InputState.MouseState.MiddleClickDown,
+                0 => VirtualEnvironment.InputState.MouseState.LeftClickDown,
+                1 => VirtualEnvironment.InputState.MouseState.RightClickDown,
+                2 => VirtualEnvironment.InputState.MouseState.MiddleClickDown,
                 _ => false
             };
             return false;
@@ -307,13 +295,12 @@ public class LegacyInputPatch
         {
             if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
                 return true;
-            var env = VirtualEnvironmentFactory.GetVirtualEnv();
-            if (!env.RunVirtualEnvironment) return true;
+            if (!VirtualEnvironment.RunVirtualEnvironment) return true;
             __result = button switch
             {
-                0 => env.InputState.MouseState.LeftClickUp,
-                1 => env.InputState.MouseState.RightClickUp,
-                2 => env.InputState.MouseState.MiddleClickUp,
+                0 => VirtualEnvironment.InputState.MouseState.LeftClickUp,
+                1 => VirtualEnvironment.InputState.MouseState.RightClickUp,
+                2 => VirtualEnvironment.InputState.MouseState.MiddleClickUp,
                 _ => false
             };
             return false;
@@ -335,9 +322,8 @@ public class LegacyInputPatch
             // TODO make this work
             // Resets all input. After ResetInputAxes all axes return to 0 and all buttons return to 0 for one frame.
             // TODO also make sure movie overwrites input on the same frame after reset
-            var env = VirtualEnvironmentFactory.GetVirtualEnv();
-            if (!env.RunVirtualEnvironment) return true;
-            env.InputState.AxisState.Values.Clear();
+            if (!VirtualEnvironment.RunVirtualEnvironment) return true;
+            VirtualEnvironment.InputState.AxisState.Values.Clear();
             return false;
         }
     }
@@ -354,10 +340,9 @@ public class LegacyInputPatch
         {
             if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
                 return true;
-            var env = VirtualEnvironmentFactory.GetVirtualEnv();
-            if (!env.RunVirtualEnvironment) return true;
+            if (!VirtualEnvironment.RunVirtualEnvironment) return true;
 
-            __result = env.InputState.ButtonState.Buttons.Contains(buttonName);
+            __result = VirtualEnvironment.InputState.ButtonState.Buttons.Contains(buttonName);
             return false;
         }
     }
@@ -374,10 +359,9 @@ public class LegacyInputPatch
         {
             if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
                 return true;
-            var env = VirtualEnvironmentFactory.GetVirtualEnv();
-            if (!env.RunVirtualEnvironment) return true;
+            if (!VirtualEnvironment.RunVirtualEnvironment) return true;
 
-            __result = env.InputState.ButtonState.ButtonsDown.Contains(buttonName);
+            __result = VirtualEnvironment.InputState.ButtonState.ButtonsDown.Contains(buttonName);
             return false;
         }
     }
@@ -394,10 +378,9 @@ public class LegacyInputPatch
         {
             if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
                 return true;
-            var env = VirtualEnvironmentFactory.GetVirtualEnv();
-            if (!env.RunVirtualEnvironment) return true;
+            if (!VirtualEnvironment.RunVirtualEnvironment) return true;
 
-            __result = env.InputState.ButtonState.ButtonsUp.Contains(buttonName);
+            __result = VirtualEnvironment.InputState.ButtonState.ButtonsUp.Contains(buttonName);
             return false;
         }
     }

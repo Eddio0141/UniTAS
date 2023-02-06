@@ -17,7 +17,7 @@ namespace UniTASPlugin;
 public class PluginWrapper
 {
     public PluginWrapper(IEnumerable<PatchProcessor> patchProcessors, IGameInfo gameInfo, ILogger logger,
-        IVirtualEnvironmentFactory virtualEnvironmentFactory)
+        VirtualEnvironment virtualEnvironment)
     {
         logger.LogInfo($"Internally found unity version: {gameInfo.UnityVersion}");
         logger.LogInfo($"Game product name: {gameInfo.ProductName}");
@@ -33,8 +33,7 @@ public class PluginWrapper
 
         // init random seed
         // TODO make this happen after 
-        var env = virtualEnvironmentFactory.GetVirtualEnv();
-        RandomWrap.InitState((int)env.Seed);
+        RandomWrap.InitState((int)virtualEnvironment.Seed);
 
         logger.LogInfo($"System time: {DateTime.Now}");
         logger.LogInfo($"Plugin {MyPluginInfo.PLUGIN_NAME} is loaded!");

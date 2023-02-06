@@ -18,37 +18,18 @@ namespace UniTASPlugin.Patches.Modules.FileSystemControlModules.FilePatchModule;
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public class InteropPatchModule
 {
-    private static Type interopType;
-    private static Type InteropType => interopType ??= AccessTools.TypeByName("Interop");
-
-    private static Type interopSysType;
-
-    private static Type InteropSysType =>
-        interopSysType ??= InteropType.GetNestedType("Sys", AccessTools.all);
-
-    private static Type directoryEntryType;
-
-    private static Type DirectoryEntryType =>
-        directoryEntryType ??= InteropSysType.GetNestedType("DirectoryEntry", AccessTools.all);
-
-    private static Type fileStatusType;
-
-    private static Type FileStatusType =>
-        fileStatusType ??= InteropSysType.GetNestedType("FileStatus", AccessTools.all);
-
-    private static Type uTimBufType;
-    private static Type UTimBufType => uTimBufType ??= InteropSysType.GetNestedType("UTimBuf", AccessTools.all);
-
-    private static Type timeValPairType;
-
-    private static Type TimeValPairType =>
-        timeValPairType ??= InteropSysType.GetNestedType("TimeValPair", AccessTools.all);
+    private static readonly Type InteropType = AccessTools.TypeByName("Interop");
+    private static readonly Type InteropSysType = InteropType.GetNestedType("Sys", AccessTools.all);
+    private static readonly Type DirectoryEntryType = InteropSysType.GetNestedType("DirectoryEntry", AccessTools.all);
+    private static readonly Type FileStatusType = InteropSysType.GetNestedType("FileStatus", AccessTools.all);
+    private static readonly Type UTimBufType = InteropSysType.GetNestedType("UTimBuf", AccessTools.all);
+    private static readonly Type TimeValPairType = InteropSysType.GetNestedType("TimeValPair", AccessTools.all);
 
     private static readonly ReverseInvokerFactory ReverseInvokerFactory =
         Plugin.Kernel.GetInstance<ReverseInvokerFactory>();
 
-    private static readonly IVirtualEnvironmentFactory VirtualEnvironmentFactory =
-        Plugin.Kernel.GetInstance<IVirtualEnvironmentFactory>();
+    private static readonly VirtualEnvironment VirtualEnvironment =
+        Plugin.Kernel.GetInstance<VirtualEnvironment>();
 
     [MscorlibPatchGroup(null, null, "2.1.0.0")]
     private class NetStandard21
@@ -76,9 +57,8 @@ public class InteropPatchModule
 //                 Plugin.Log.LogDebug(new StackTrace());
 // #endif
 
-                var env = VirtualEnvironmentFactory.GetVirtualEnv();
                 var randBytes = new byte[length];
-                env.SystemRandom.NextBytes(randBytes);
+                VirtualEnvironment.SystemRandom.NextBytes(randBytes);
 
                 for (var i = 0; i < length; i++)
                 {

@@ -18,15 +18,15 @@ public class FileSystemManager : IFileSystemManager, IOnGameRestart
     private OsFileSystems.FileSystem _windowsFileSystem;
 
     private readonly IGameInfo _gameInfo;
-    private readonly IVirtualEnvironmentFactory _virtualEnvironmentFactory;
+    private readonly VirtualEnvironment _virtualEnvironment;
     private readonly ILogger _logger;
 
     private OsFileSystems.FileSystem _currentFileSystem;
 
-    public FileSystemManager(IGameInfo gameInfo, IVirtualEnvironmentFactory virtualEnvironmentFactory, ILogger logger)
+    public FileSystemManager(IGameInfo gameInfo, VirtualEnvironment virtualEnvironment, ILogger logger)
     {
         _gameInfo = gameInfo;
-        _virtualEnvironmentFactory = virtualEnvironmentFactory;
+        _virtualEnvironment = virtualEnvironment;
         _logger = logger;
     }
 
@@ -39,9 +39,7 @@ public class FileSystemManager : IFileSystemManager, IOnGameRestart
         var gameDirWindows = _windowsFileSystem.CreateDir(PathToWindows(gameDirPath));
         _windowsFileSystem.CurrentDir = gameDirWindows;
 
-        var env = _virtualEnvironmentFactory.GetVirtualEnv();
-
-        _currentFileSystem = env.Os switch
+        _currentFileSystem = _virtualEnvironment.Os switch
         {
             Os.Windows => _windowsFileSystem,
             _ => throw new ArgumentOutOfRangeException()
@@ -90,9 +88,7 @@ public class FileSystemManager : IFileSystemManager, IOnGameRestart
 
     private string PathToCurrentOS(string path)
     {
-        var env = _virtualEnvironmentFactory.GetVirtualEnv();
-
-        return env.Os switch
+        return _virtualEnvironment.Os switch
         {
             Os.Windows => PathToWindows(path),
             _ => throw new ArgumentOutOfRangeException()
@@ -112,14 +108,12 @@ public class FileSystemManager : IFileSystemManager, IOnGameRestart
         {
             case PlatformID.Unix:
             {
-                var env = _virtualEnvironmentFactory.GetVirtualEnv();
-
                 path = path.Replace("/", "\\");
 
                 // change common unix paths to windows paths
                 if (path.StartsWith("~"))
                 {
-                    path = path.Replace("~", $"C:\\Users\\{env.Username}");
+                    path = path.Replace("~", $"C:\\Users\\{_virtualEnvironment.Username}");
                 }
                 else if (path.Contains("\\home"))
                 {
@@ -136,7 +130,7 @@ public class FileSystemManager : IFileSystemManager, IOnGameRestart
                     var pathParts = path.Split('\\');
                     if (pathParts.Length > 2)
                     {
-                        var newUser = env.Username;
+                        var newUser = _virtualEnvironment.Username;
                         var oldUser = pathParts[2];
                         if (!string.IsNullOrEmpty(oldUser) && newUser != oldUser)
                         {

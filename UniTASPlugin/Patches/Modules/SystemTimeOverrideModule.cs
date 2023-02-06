@@ -21,8 +21,8 @@ public class SystemTimeOverrideModule
     private static readonly ReverseInvokerFactory ReverseInvokerFactory =
         Plugin.Kernel.GetInstance<ReverseInvokerFactory>();
 
-    private static readonly IVirtualEnvironmentFactory VirtualEnvironmentFactory =
-        Plugin.Kernel.GetInstance<IVirtualEnvironmentFactory>();
+    private static readonly VirtualEnvironment VirtualEnvironment =
+        Plugin.Kernel.GetInstance<VirtualEnvironment>();
 
     [MscorlibPatchGroup]
     private class AllVersions
@@ -39,7 +39,7 @@ public class SystemTimeOverrideModule
             {
                 if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
                     return true;
-                var gameTime = VirtualEnvironmentFactory.GetVirtualEnv().GameTime;
+                var gameTime = VirtualEnvironment.GameTime;
                 __result = gameTime.CurrentTime;
                 return false;
             }
@@ -57,7 +57,7 @@ public class SystemTimeOverrideModule
             {
                 if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
                     return true;
-                var gameTime = VirtualEnvironmentFactory.GetVirtualEnv().GameTime;
+                var gameTime = VirtualEnvironment.GameTime;
                 __result = (int)(gameTime.RealtimeSinceStartup * 1000f);
                 return false;
             }

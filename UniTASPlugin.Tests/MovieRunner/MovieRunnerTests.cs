@@ -1,6 +1,5 @@
 using FluentAssertions;
 using UniTASPlugin.FixedUpdateSync;
-using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.GameRestart;
 using UniTASPlugin.Movie.EngineMethods;
 using UniTASPlugin.Movie.Parsers;
@@ -16,7 +15,7 @@ public class MovieRunnerTests
         var externMethods = getDefinedMethods.ToList();
         var runner = new UniTASPlugin.Movie.MovieRunner(
             new MovieParser(new MovieSectionSplitter(), new MoviePropertyParser(),
-                new MovieScriptParser(externMethods)), externMethods, new FakeVEnvFactory(),
+                new MovieScriptParser(externMethods)), externMethods, new(),
             new FakeRestartService(), new FakeFixedUpdateService());
 
         return runner;
@@ -27,14 +26,6 @@ public class MovieRunnerTests
         public void OnSync(Action callback, uint syncOffset = 0, ulong cycleOffset = 0)
         {
             callback();
-        }
-    }
-
-    private class FakeVEnvFactory : IVirtualEnvironmentFactory
-    {
-        public VirtualEnvironment GetVirtualEnv()
-        {
-            return new();
         }
     }
 

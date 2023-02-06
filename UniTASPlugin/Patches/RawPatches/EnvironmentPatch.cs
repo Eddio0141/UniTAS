@@ -17,8 +17,8 @@ public class EnvironmentPatch
     private static readonly IReverseInvokerFactory ReverseInvokerFactory =
         Plugin.Kernel.GetInstance<ReverseInvokerFactory>();
 
-    private static readonly IVirtualEnvironmentFactory VirtualEnvironmentFactory =
-        Plugin.Kernel.GetInstance<IVirtualEnvironmentFactory>();
+    private static readonly VirtualEnvironment VirtualEnvironment =
+        Plugin.Kernel.GetInstance<VirtualEnvironment>();
 
     [HarmonyPatch(typeof(Environment), "IsRunningOnWindows", MethodType.Getter)]
     private class IsRunningOnWindows
@@ -33,8 +33,7 @@ public class EnvironmentPatch
             if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
                 return true;
 
-            var env = VirtualEnvironmentFactory.GetVirtualEnv();
-            __result = env.Os == Os.Windows;
+            __result = VirtualEnvironment.Os == Os.Windows;
 
             return false;
         }

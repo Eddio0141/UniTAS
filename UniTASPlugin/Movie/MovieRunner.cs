@@ -23,7 +23,7 @@ public partial class MovieRunner : IMovieRunner, IOnPreUpdates
 
     private readonly IMovieParser _parser;
 
-    private readonly IVirtualEnvironmentFactory _virtualEnvironmentFactory;
+    private readonly VirtualEnvironment _virtualEnvironment;
     private readonly IGameRestart _gameRestart;
 
     private readonly ISyncFixedUpdate _syncFixedUpdate;
@@ -32,11 +32,11 @@ public partial class MovieRunner : IMovieRunner, IOnPreUpdates
     private ScriptModel _mainScript;
 
     public MovieRunner(IMovieParser parser, IEnumerable<EngineExternalMethod> externMethods,
-        IVirtualEnvironmentFactory vEnvFactory, IGameRestart gameRestart, ISyncFixedUpdate syncFixedUpdate)
+        VirtualEnvironment vEnv, IGameRestart gameRestart, ISyncFixedUpdate syncFixedUpdate)
     {
         _parser = parser;
         _externalMethods = externMethods.ToArray();
-        _virtualEnvironmentFactory = vEnvFactory;
+        _virtualEnvironment = vEnv;
         _gameRestart = gameRestart;
         _syncFixedUpdate = syncFixedUpdate;
     }
@@ -79,13 +79,12 @@ public partial class MovieRunner : IMovieRunner, IOnPreUpdates
 
         // set env from properties
         // TODO apply environment
-        var env = _virtualEnvironmentFactory.GetVirtualEnv();
-        env.RunVirtualEnvironment = true;
+        _virtualEnvironment.RunVirtualEnvironment = true;
 
         if (startupProperties != null)
         {
             Trace.Write($"Using startup property: {startupProperties}");
-            env.FrameTime = startupProperties.FrameTime;
+            _virtualEnvironment.FrameTime = startupProperties.FrameTime;
             _gameRestart.SoftRestart(startupProperties.StartTime);
         }
 
@@ -109,8 +108,7 @@ public partial class MovieRunner : IMovieRunner, IOnPreUpdates
     {
         if (_cleanUp)
         {
-            var env = _virtualEnvironmentFactory.GetVirtualEnv();
-            env.RunVirtualEnvironment = false;
+            _virtualEnvironment.RunVirtualEnvironment = false;
             _cleanUp = false;
             return;
         }
@@ -131,8 +129,7 @@ public partial class MovieRunner : IMovieRunner, IOnPreUpdates
 
     private void AtMovieEnd()
     {
-        var env = _virtualEnvironmentFactory.GetVirtualEnv();
-        env.FrameTime = 0;
+        _virtualEnvironment.FrameTime = 0;
         _cleanUp = true;
         _setup = false;
         MovieEnd = true;

@@ -7,11 +7,11 @@ namespace UniTASPlugin.Movie.EngineMethods;
 
 public class MoveAxisExternalMethod : EngineExternalMethod
 {
-    private readonly IVirtualEnvironmentFactory _virtualEnvironmentFactory;
+    private readonly VirtualEnvironment _virtualEnvironment;
 
-    public MoveAxisExternalMethod(IVirtualEnvironmentFactory virtualEnvironmentFactory) : base("move_axis", 2)
+    public MoveAxisExternalMethod(VirtualEnvironment virtualEnvironmentFactory) : base("move_axis", 2)
     {
-        _virtualEnvironmentFactory = virtualEnvironmentFactory;
+        _virtualEnvironment = virtualEnvironmentFactory;
     }
 
     public override List<ValueType> Invoke(IEnumerable<IEnumerable<ValueType>> args, MovieRunner runner)
@@ -23,8 +23,7 @@ public class MoveAxisExternalMethod : EngineExternalMethod
         var valueArg = argsList[1].First();
         if (valueArg is not FloatValueType value) return new();
 
-        var env = _virtualEnvironmentFactory.GetVirtualEnv();
-        env.InputState.AxisState.Values[axis.Value] = value.Value;
+        _virtualEnvironment.InputState.AxisState.Values[axis.Value] = value.Value;
 
         return new();
     }

@@ -19,8 +19,8 @@ public class UnityPathFileSystemPatch
     private static readonly IReverseInvokerFactory
         ReverseInvokerFactory = Plugin.Kernel.GetInstance<IReverseInvokerFactory>();
 
-    private static readonly IVirtualEnvironmentFactory VirtualEnvironmentFactory =
-        Plugin.Kernel.GetInstance<IVirtualEnvironmentFactory>();
+    private static readonly VirtualEnvironment VirtualEnvironment =
+        Plugin.Kernel.GetInstance<VirtualEnvironment>();
 
     [HarmonyPatch(typeof(Application), nameof(Application.persistentDataPath), MethodType.Getter)]
     private class ApplicationPersistentDataPath
@@ -34,8 +34,7 @@ public class UnityPathFileSystemPatch
         {
             if (ReverseInvokerFactory.GetReverseInvoker().Invoking) return true;
 
-            var env = VirtualEnvironmentFactory.GetVirtualEnv();
-            __result = env.UnityPaths.PersistentDataPath;
+            __result = VirtualEnvironment.UnityPaths.PersistentDataPath;
 
             return false;
         }

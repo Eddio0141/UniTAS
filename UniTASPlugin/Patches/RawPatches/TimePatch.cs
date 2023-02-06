@@ -19,8 +19,8 @@ public class TimePatch
     private static readonly IReverseInvokerFactory
         ReverseInvokerFactory = Plugin.Kernel.GetInstance<IReverseInvokerFactory>();
 
-    private static readonly IVirtualEnvironmentFactory VirtualEnvironmentFactory =
-        Plugin.Kernel.GetInstance<IVirtualEnvironmentFactory>();
+    private static readonly VirtualEnvironment VirtualEnvironment =
+        Plugin.Kernel.GetInstance<VirtualEnvironment>();
 
     [HarmonyPatch(typeof(Time), nameof(Time.captureFramerate), MethodType.Setter)]
     private class set_captureFramerate
@@ -64,7 +64,7 @@ public class TimePatch
         {
             if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
                 return;
-            var gameTime = VirtualEnvironmentFactory.GetVirtualEnv().GameTime;
+            var gameTime = VirtualEnvironment.GameTime;
             __result = (float)(__result - gameTime.FixedUnscaledTimeOffset);
         }
     }
@@ -88,7 +88,7 @@ public class TimePatch
             if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
                 return;
             // When called from inside MonoBehaviour's FixedUpdate, it returns Time.fixedUnscaledTime
-            var gameTime = VirtualEnvironmentFactory.GetVirtualEnv().GameTime;
+            var gameTime = VirtualEnvironment.GameTime;
             __result = inFixedTimeStep.PropertyExists() && inFixedTimeStep.GetValue<bool>()
                 ? fixedUnscaledTime.GetValue<float>()
                 : (float)(__result - gameTime.UnscaledTimeOffset);
@@ -118,7 +118,7 @@ public class TimePatch
                 __result = fixedUnscaledTimeAsDouble.GetValue<double>();
             else
             {
-                var gameTime = VirtualEnvironmentFactory.GetVirtualEnv().GameTime;
+                var gameTime = VirtualEnvironment.GameTime;
                 __result -= gameTime.UnscaledTimeOffset;
             }
         }
@@ -136,7 +136,7 @@ public class TimePatch
         {
             if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
                 return;
-            var gameTime = VirtualEnvironmentFactory.GetVirtualEnv().GameTime;
+            var gameTime = VirtualEnvironment.GameTime;
             __result -= gameTime.FixedUnscaledTimeOffset;
         }
     }
@@ -153,7 +153,7 @@ public class TimePatch
         {
             if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
                 return;
-            var gameTime = VirtualEnvironmentFactory.GetVirtualEnv().GameTime;
+            var gameTime = VirtualEnvironment.GameTime;
             __result = (int)((ulong)__result - gameTime.FrameCountRestartOffset);
         }
     }
@@ -170,7 +170,7 @@ public class TimePatch
         {
             if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
                 return;
-            var gameTime = VirtualEnvironmentFactory.GetVirtualEnv().GameTime;
+            var gameTime = VirtualEnvironment.GameTime;
             __result = (int)((ulong)__result - gameTime.RenderedFrameCountOffset);
         }
     }
@@ -187,7 +187,7 @@ public class TimePatch
         {
             if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
                 return;
-            var gameTime = VirtualEnvironmentFactory.GetVirtualEnv().GameTime;
+            var gameTime = VirtualEnvironment.GameTime;
             __result = (float)(__result - gameTime.SecondsSinceStartUpOffset);
         }
     }
@@ -204,7 +204,7 @@ public class TimePatch
         {
             if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
                 return;
-            var gameTime = VirtualEnvironmentFactory.GetVirtualEnv().GameTime;
+            var gameTime = VirtualEnvironment.GameTime;
             __result -= gameTime.SecondsSinceStartUpOffset;
         }
     }
@@ -221,7 +221,7 @@ public class TimePatch
         {
             if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
                 return;
-            var gameTime = VirtualEnvironmentFactory.GetVirtualEnv().GameTime;
+            var gameTime = VirtualEnvironment.GameTime;
             __result = (float)(__result - gameTime.ScaledTimeOffset);
         }
     }
@@ -238,7 +238,7 @@ public class TimePatch
         {
             if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
                 return;
-            var gameTime = VirtualEnvironmentFactory.GetVirtualEnv().GameTime;
+            var gameTime = VirtualEnvironment.GameTime;
             __result -= gameTime.ScaledTimeOffset;
         }
     }
@@ -255,7 +255,7 @@ public class TimePatch
         {
             if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
                 return;
-            var gameTime = VirtualEnvironmentFactory.GetVirtualEnv().GameTime;
+            var gameTime = VirtualEnvironment.GameTime;
             __result = (float)(__result - gameTime.ScaledFixedTimeOffset);
         }
     }
@@ -272,7 +272,7 @@ public class TimePatch
         {
             if (ReverseInvokerFactory.GetReverseInvoker().Invoking)
                 return;
-            var gameTime = VirtualEnvironmentFactory.GetVirtualEnv().GameTime;
+            var gameTime = VirtualEnvironment.GameTime;
             __result -= gameTime.ScaledFixedTimeOffset;
         }
     }

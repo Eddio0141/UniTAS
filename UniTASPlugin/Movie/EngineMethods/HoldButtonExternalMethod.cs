@@ -7,11 +7,11 @@ namespace UniTASPlugin.Movie.EngineMethods;
 
 public class HoldButtonExternalMethod : EngineExternalMethod
 {
-    private readonly IVirtualEnvironmentFactory _virtualEnvironmentFactory;
+    private readonly VirtualEnvironment _virtualEnvironment;
 
-    public HoldButtonExternalMethod(IVirtualEnvironmentFactory virtualEnvironmentFactory) : base("hold_button", 1)
+    public HoldButtonExternalMethod(VirtualEnvironment virtualEnvironmentFactory) : base("hold_button", 1)
     {
-        _virtualEnvironmentFactory = virtualEnvironmentFactory;
+        _virtualEnvironment = virtualEnvironmentFactory;
     }
 
     public override List<ValueType> Invoke(IEnumerable<IEnumerable<ValueType>> args, MovieRunner runner)
@@ -19,7 +19,7 @@ public class HoldButtonExternalMethod : EngineExternalMethod
         var buttonName = args.First().First();
         if (buttonName is not StringValueType buttonNameString) return new();
 
-        _virtualEnvironmentFactory.GetVirtualEnv().InputState.ButtonState.Buttons.Add(buttonNameString.Value);
+        _virtualEnvironment.InputState.ButtonState.Buttons.Add(buttonNameString.Value);
 
         return new();
     }
