@@ -10,33 +10,10 @@ namespace UniTASPlugin.GameEnvironment.InnerState;
 // ReSharper disable once ClassNeverInstantiated.Global
 public class GameTime : IOnPreUpdates, IOnGameRestart
 {
-    private DateTime _startupTime;
-
     /// <summary>
-    /// Setting the start up time causes the game to update other time related variables, which requires this to be ran in the main thread.
+    /// 
     /// </summary>
-    public DateTime StartupTime
-    {
-        get => _startupTime;
-        set
-        {
-            Trace.Write($"Setting startup time to {value}");
-            Trace.Write($"Before {this}");
-            _startupTime = value;
-            RenderedFrameCountOffset += (ulong)Time.renderedFrameCount;
-            SecondsSinceStartUpOffset += Time.realtimeSinceStartup;
-            FrameCountRestartOffset += (ulong)Time.frameCount - 1;
-            var fixedUnscaledTime = Traverse.Create(typeof(Time)).Property("fixedUnscaledTime");
-            if (fixedUnscaledTime.PropertyExists())
-                FixedUnscaledTimeOffset += fixedUnscaledTime.GetValue<float>();
-            var unscaledTime = Traverse.Create(typeof(Time)).Property("unscaledTime");
-            if (unscaledTime.PropertyExists())
-                UnscaledTimeOffset += unscaledTime.GetValue<float>();
-            ScaledTimeOffset += Time.time;
-            ScaledFixedTimeOffset += Time.fixedTime;
-            Trace.Write($"After {this}");
-        }
-    }
+    private DateTime StartupTime { get; set; }
 
     public DateTime CurrentTime => StartupTime + TimeSpan.FromSeconds(RealtimeSinceStartup);
     public ulong RenderedFrameCountOffset { get; private set; }
@@ -63,11 +40,29 @@ public class GameTime : IOnPreUpdates, IOnGameRestart
                $"FixedUnscaledTimeOffset: {FixedUnscaledTimeOffset} " +
                $"UnscaledTimeOffset: {UnscaledTimeOffset} " +
                $"ScaledTimeOffset: {ScaledTimeOffset} " +
-               $"ScaledFixedTimeOffset: {ScaledFixedTimeOffset}";
+               $"ScaledFixedTimeOffset: {ScaledFixedTimeOffset} " +
+               $"RealtimeSinceStartup: {RealtimeSinceStartup}";
     }
 
+    // setting the start up time causes the game to update other time related variables, which requires this to be ran in the main thread
     public void OnGameRestart(DateTime startupTime)
     {
         StartupTime = startupTime;
+
+        Trace.Write($"Setting startup time to {StartupTime}");
+        Trace.Write($"Before {this}");
+        RenderedFrameCountOffset += (ulong)Time.renderedFrameCount;
+        SecondsSinceStartUpOffset += Time.realtimeSinceStartup;
+        FrameCountRestartOffset += (ulong)Time.frameCount - 1;
+        var fixedUnscaledTime = Traverse.Create(typeof(Time)).Property("fixedUnscaledTime");
+        if (fixedUnscaledTime.PropertyExists())
+            FixedUnscaledTimeOffset += fixedUnscaledTime.GetValue<float>();
+        var unscaledTime = Traverse.Create(typeof(Time)).Property("unscaledTime");
+        if (unscaledTime.PropertyExists())
+            UnscaledTimeOffset += unscaledTime.GetValue<float>();
+        ScaledTimeOffset += Time.time;
+        ScaledFixedTimeOffset += Time.fixedTime;
+        RealtimeSinceStartup = 0f;
+        Trace.Write($"After {this}");
     }
 }
