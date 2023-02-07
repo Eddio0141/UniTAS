@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using HarmonyLib;
 using UniTASPlugin.Interfaces;
@@ -9,7 +10,8 @@ using UnityEngine;
 
 namespace UniTASPlugin.Patches.RawPatchOnPluginInit;
 
-[PatchTypes.RawPatchOnPluginInit]
+[PatchTypes.RawPatchOnPluginInit(1000)]
+[SuppressMessage("ReSharper", "InconsistentNaming")]
 // ReSharper disable once ClassNeverInstantiated.Global
 public class MonoBehaviourUpdateInvokePatch
 {
