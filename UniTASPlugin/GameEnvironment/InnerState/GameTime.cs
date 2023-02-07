@@ -2,13 +2,14 @@
 using System.Diagnostics;
 using HarmonyLib;
 using UniTASPlugin.GameRestart;
+using UniTASPlugin.Interfaces.StartEvent;
 using UniTASPlugin.Interfaces.Update;
 using UnityEngine;
 
 namespace UniTASPlugin.GameEnvironment.InnerState;
 
 // ReSharper disable once ClassNeverInstantiated.Global
-public class GameTime : IOnPreUpdates, IOnGameRestartResume
+public class GameTime : IOnPreUpdates, IOnGameRestartResume, IOnStart
 {
     private DateTime StartupTime { get; set; }
 
@@ -22,8 +23,11 @@ public class GameTime : IOnPreUpdates, IOnGameRestartResume
     public double ScaledFixedTimeOffset { get; private set; }
     public float RealtimeSinceStartup { get; private set; }
 
+    private bool _pendingFrameCountReset;
+
     public void PreUpdate()
     {
+        HandlePendingFrameCountReset();
         RealtimeSinceStartup = Time.realtimeSinceStartup;
     }
 
@@ -48,7 +52,6 @@ public class GameTime : IOnPreUpdates, IOnGameRestartResume
         StartupTime = startupTime;
 
         Trace.Write($"Setting startup time to {StartupTime}");
-        Trace.Write($"Before {this}");
         RenderedFrameCountOffset += (ulong)Time.renderedFrameCount;
         SecondsSinceStartUpOffset += Time.realtimeSinceStartup;
         FrameCountRestartOffset += (ulong)Time.frameCount;
@@ -61,6 +64,22 @@ public class GameTime : IOnPreUpdates, IOnGameRestartResume
         ScaledTimeOffset += Time.time;
         ScaledFixedTimeOffset += Time.fixedTime;
         RealtimeSinceStartup = 0f;
-        Trace.Write($"After {this}");
+        Trace.Write($"New game time state: {this}");
+
+        _pendingFrameCountReset = true;
+    }
+
+    public void Start()
+    {
+        HandlePendingFrameCountReset();
+    }
+
+    private void HandlePendingFrameCountReset()
+    {
+        if (!_pendingFrameCountReset) return;
+        _pendingFrameCountReset = false;
+
+        // TODO figure out if i do this with other frame counts
+        FrameCountRestartOffset--;
     }
 }

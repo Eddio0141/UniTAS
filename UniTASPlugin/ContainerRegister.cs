@@ -96,6 +96,7 @@ public static class ContainerRegister
             c.ForSingletonOf<GameTime>().Use<GameTime>();
             c.For<IOnPreUpdates>().Use(x => x.GetInstance<GameTime>());
             c.For<IOnGameRestartResume>().Use(x => x.GetInstance<GameTime>());
+            c.For<IOnStart>().Use(x => x.GetInstance<GameTime>());
 
             // before VirtualEnvironment
             c.ForSingletonOf<VirtualEnvironmentApplier>().Use<VirtualEnvironmentApplier>();

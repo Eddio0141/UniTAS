@@ -154,4 +154,6 @@ public class GameInitialRestart : IGameInitialRestart, IOnAwake, IOnEnable, IOnS
         _monoBehaviourController.PausedExecution = false;
         _logger.LogDebug("Resuming MonoBehaviour execution");
     }
+    
+    // TODO probably should try combine this class into GameRestart
 }
