@@ -22,20 +22,9 @@ public class GameTime : IOnPreUpdates, IOnGameRestartResume
     public double ScaledFixedTimeOffset { get; private set; }
     public float RealtimeSinceStartup { get; private set; }
 
-    // A flag to indicate that the game has been restarted and the frame count has been reset
-    // Only Awake seems to have the default value of 0 for frame count
-    // TODO check other frame count properties and see if they have the same behavior
-    private bool _hasOffsetFrameCount;
-    private bool _hasRestartedOnce;
-
     public void PreUpdate()
     {
         RealtimeSinceStartup = Time.realtimeSinceStartup;
-        if (!_hasOffsetFrameCount)
-        {
-            _hasOffsetFrameCount = true;
-            FrameCountRestartOffset--
-        }
     }
 
     public override string ToString()
@@ -63,11 +52,6 @@ public class GameTime : IOnPreUpdates, IOnGameRestartResume
         RenderedFrameCountOffset += (ulong)Time.renderedFrameCount;
         SecondsSinceStartUpOffset += Time.realtimeSinceStartup;
         FrameCountRestartOffset += (ulong)Time.frameCount;
-        if (_hasRestartedOnce)
-        {
-            FrameCountRestartOffset++
-        }
-
         var fixedUnscaledTime = Traverse.Create(typeof(Time)).Property("fixedUnscaledTime");
         if (fixedUnscaledTime.PropertyExists())
             FixedUnscaledTimeOffset += fixedUnscaledTime.GetValue<float>();
@@ -78,8 +62,5 @@ public class GameTime : IOnPreUpdates, IOnGameRestartResume
         ScaledFixedTimeOffset += Time.fixedTime;
         RealtimeSinceStartup = 0f;
         Trace.Write($"After {this}");
-
-        _hasOffsetFrameCount = false;
-        _hasRestartedOnce = true;
     }
 }
