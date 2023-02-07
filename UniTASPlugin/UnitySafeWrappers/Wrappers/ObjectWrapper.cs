@@ -24,4 +24,14 @@ public class ObjectWrapper : IObjectWrapper
     {
         return Object.FindObjectsOfType(type);
     }
+
+    public bool IsInstanceNullOrDestroyed(object instance)
+    {
+        if (instance is not Object obj)
+        {
+            throw new ArgumentException("Instance is not of type UnityEngine.Object");
+        }
+
+        return obj == null;
+    }
 }

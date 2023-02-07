@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using UniTASPlugin.UnitySafeWrappers.Interfaces;
 using UnityEngine;
 
 namespace UniTASPlugin.Trackers.DontDestroyOnLoadTracker;
@@ -10,11 +11,18 @@ public class DontDestroyOnLoadTracker : IDontDestroyOnLoadTracker, IDontDestroyO
 {
     private readonly List<object> _dontDestroyOnLoadObjects = new();
 
+    private readonly IObjectWrapper _objectWrapper;
+
+    public DontDestroyOnLoadTracker(IObjectWrapper objectWrapper)
+    {
+        _objectWrapper = objectWrapper;
+    }
+
     public IEnumerable<object> DontDestroyOnLoadObjects
     {
         get
         {
-            _dontDestroyOnLoadObjects.RemoveAll(x => (Object)x == null);
+            _dontDestroyOnLoadObjects.RemoveAll(x => _objectWrapper.IsInstanceNullOrDestroyed(x));
             return _dontDestroyOnLoadObjects;
         }
     }

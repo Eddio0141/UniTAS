@@ -9,4 +9,5 @@ public interface IObjectWrapper
     void DestroyImmediate(object obj);
     void Destroy(object obj);
     IEnumerable<object> FindObjectsOfType(Type type);
+    bool IsInstanceNullOrDestroyed(object instance);
 }
