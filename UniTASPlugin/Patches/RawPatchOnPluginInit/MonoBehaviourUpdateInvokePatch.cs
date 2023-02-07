@@ -83,7 +83,7 @@ public class MonoBehaviourUpdateInvokePatch
 
         public static void Prefix()
         {
-            MonoBehEventInvoker.PreFixedUpdate();
+            MonoBehEventInvoker.FixedUpdate();
         }
 
         // ReSharper disable once UnusedParameter.Local

@@ -7,6 +7,5 @@ public interface IMonoBehEventInvoker
     void Start();
     void Update();
     void LateUpdate();
-    void PreFixedUpdate();
     void FixedUpdate();
 }
