@@ -44,7 +44,7 @@ public static class ContainerRegister
                 scanner.AddAllTypesOf<PatchProcessor>();
             });
 
-            c.For<PluginWrapper>().Singleton();
+            c.ForSingletonOf<PluginWrapper>().Use<PluginWrapper>();
 
             c.For<IMonoBehEventInvoker>().Singleton().Use<MonoBehEventInvoker>();
 
@@ -54,7 +54,7 @@ public static class ContainerRegister
             c.Forward<ISyncFixedUpdate, IOnFixedUpdate>();
             c.Forward<ISyncFixedUpdate, IOnUpdate>();
 
-            c.For<SceneIndexNameTracker>().Singleton();
+            c.ForSingletonOf<SceneIndexNameTracker>().Use<SceneIndexNameTracker>();
             c.For<ISceneIndexName>().Use(x => x.GetInstance<SceneIndexNameTracker>());
             c.For<IPluginInitialLoad>().Use(x => x.GetInstance<SceneIndexNameTracker>());
             c.For<IOnUpdate>().Use(x => x.GetInstance<SceneIndexNameTracker>());
@@ -85,16 +85,16 @@ public static class ContainerRegister
             c.For<ILogger>().Singleton().Use<Logger.Logger>();
 
             // before FileSystemManager
-            c.For<PatchReverseInvoker>().Singleton();
+            c.ForSingletonOf<PatchReverseInvoker>().Use<PatchReverseInvoker>();
             c.For<IPatchReverseInvoker>().Use(x => x.GetInstance<PatchReverseInvoker>());
 
-            c.For<VirtualEnvironment>().Singleton();
+            c.ForSingletonOf<VirtualEnvironment>().Use<VirtualEnvironment>();
             c.For<IOnGameRestart>().Use(x => x.GetInstance<VirtualEnvironment>());
 
-            c.For<VirtualEnvironmentApplier>().Singleton();
+            c.ForSingletonOf<VirtualEnvironmentApplier>().Use<VirtualEnvironmentApplier>();
             c.For<IOnPreUpdates>().Use(x => x.GetInstance<VirtualEnvironmentApplier>());
 
-            c.For<MovieRunner>().Singleton();
+            c.ForSingletonOf<MovieRunner>().Use<MovieRunner>();
             c.For<IMovieRunner>().Use(x => x.GetInstance<MovieRunner>());
             c.For<IOnPreUpdates>().Use(x => x.GetInstance<MovieRunner>());
 
@@ -105,28 +105,28 @@ public static class ContainerRegister
             c.For<IOnFixedUpdate>().Use(x => x.GetInstance<GameRestart.GameRestart>());
             c.For<IOnAwake>().Use(x => x.GetInstance<GameRestart.GameRestart>());
 
-            c.For<GameTime>().Singleton();
+            c.ForSingletonOf<GameTime>().Use<GameTime>();
             c.For<IOnPreUpdates>().Use(x => x.GetInstance<GameTime>());
             c.For<IOnGameRestart>().Use(x => x.GetInstance<GameTime>());
 
-            c.For<InputState>().Singleton();
+            c.ForSingletonOf<InputState>().Use<InputState>();
             c.For<IOnGameRestart>().Use(x => x.GetInstance<InputState>());
 
-            c.For<FileSystemManager>().Singleton();
+            c.ForSingletonOf<FileSystemManager>().Use<FileSystemManager>();
             c.For<IOnGameRestart>().Use(x => x.GetInstance<FileSystemManager>());
             c.For<IFileSystemManager>().Use(x => x.GetInstance<FileSystemManager>());
 
-            c.For<AsyncOperationTracker>().Singleton();
+            c.ForSingletonOf<AsyncOperationTracker>().Use<AsyncOperationTracker>();
             c.For<ISceneLoadTracker>().Use(x => x.GetInstance<AsyncOperationTracker>());
             c.For<IAssetBundleCreateRequestTracker>().Use(x => x.GetInstance<AsyncOperationTracker>());
             c.For<IAssetBundleRequestTracker>().Use(x => x.GetInstance<AsyncOperationTracker>());
             c.For<IOnLastUpdate>().Use(x => x.GetInstance<AsyncOperationTracker>());
 
-            c.For<SceneTracker>().Singleton();
+            c.ForSingletonOf<SceneTracker>().Use<SceneTracker>();
             c.For<ISceneTracker>().Use(x => x.GetInstance<SceneTracker>());
             c.For<ILoadedSceneInfo>().Use(x => x.GetInstance<SceneTracker>());
 
-            c.For<DontDestroyOnLoadTracker>().Singleton();
+            c.ForSingletonOf<DontDestroyOnLoadTracker>().Use<DontDestroyOnLoadTracker>();
             c.For<IDontDestroyOnLoadTracker>().Use(x => x.GetInstance<DontDestroyOnLoadTracker>());
             c.For<IDontDestroyOnLoadInfo>().Use(x => x.GetInstance<DontDestroyOnLoadTracker>());
         });
