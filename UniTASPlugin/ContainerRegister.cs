@@ -90,11 +90,22 @@ public static class ContainerRegister
             c.ForSingletonOf<PatchReverseInvoker>().Use<PatchReverseInvoker>();
             c.For<IPatchReverseInvoker>().Use(x => x.GetInstance<PatchReverseInvoker>());
 
-            c.ForSingletonOf<VirtualEnvironment>().Use<VirtualEnvironment>();
-            c.For<IOnGameRestart>().Use(x => x.GetInstance<VirtualEnvironment>());
+            // before VirtualEnvironment
+            c.ForSingletonOf<GameTime>().Use<GameTime>();
+            c.For<IOnPreUpdates>().Use(x => x.GetInstance<GameTime>());
+            c.For<IOnGameRestart>().Use(x => x.GetInstance<GameTime>());
 
+            // before VirtualEnvironment
             c.ForSingletonOf<VirtualEnvironmentApplier>().Use<VirtualEnvironmentApplier>();
             c.For<IOnPreUpdates>().Use(x => x.GetInstance<VirtualEnvironmentApplier>());
+
+            // after VirtualEnvironmentApplier
+            c.ForSingletonOf<InputState>().Use<InputState>();
+            c.For<IOnGameRestart>().Use(x => x.GetInstance<InputState>());
+            c.For<IOnPreUpdates>().Use(x => x.GetInstance<InputState>());
+
+            c.ForSingletonOf<VirtualEnvironment>().Use<VirtualEnvironment>();
+            c.For<IOnGameRestart>().Use(x => x.GetInstance<VirtualEnvironment>());
 
             c.ForSingletonOf<MovieRunner>().Use<MovieRunner>();
             c.For<IMovieRunner>().Use(x => x.GetInstance<MovieRunner>());
@@ -106,13 +117,6 @@ public static class ContainerRegister
             c.For<IOnStart>().Use(x => x.GetInstance<GameRestart.GameRestart>());
             c.For<IOnFixedUpdate>().Use(x => x.GetInstance<GameRestart.GameRestart>());
             c.For<IOnAwake>().Use(x => x.GetInstance<GameRestart.GameRestart>());
-
-            c.ForSingletonOf<GameTime>().Use<GameTime>();
-            c.For<IOnPreUpdates>().Use(x => x.GetInstance<GameTime>());
-            c.For<IOnGameRestart>().Use(x => x.GetInstance<GameTime>());
-
-            c.ForSingletonOf<InputState>().Use<InputState>();
-            c.For<IOnGameRestart>().Use(x => x.GetInstance<InputState>());
 
             c.ForSingletonOf<FileSystemManager>().Use<FileSystemManager>();
             c.For<IOnGameRestart>().Use(x => x.GetInstance<FileSystemManager>());

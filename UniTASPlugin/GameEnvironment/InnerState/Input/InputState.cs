@@ -1,10 +1,11 @@
 ﻿using System;
 using UniTASPlugin.GameRestart;
+using UniTASPlugin.Interfaces.Update;
 
 namespace UniTASPlugin.GameEnvironment.InnerState.Input;
 
 // ReSharper disable once ClassNeverInstantiated.Global
-public class InputState : IOnGameRestart
+public class InputState : IOnGameRestart, IOnPreUpdates
 {
     public MouseState MouseState { get; } = new();
     public AxisState AxisState { get; } = new();
@@ -24,7 +25,7 @@ public class InputState : IOnGameRestart
         ButtonState.ResetState();
     }
 
-    public void Update()
+    public void PreUpdate()
     {
         MouseState.Update();
         AxisState.Update();

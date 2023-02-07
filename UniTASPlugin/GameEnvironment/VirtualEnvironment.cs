@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using UniTASPlugin.GameEnvironment.InnerState;
 using UniTASPlugin.GameEnvironment.InnerState.Input;
 using UniTASPlugin.GameRestart;
@@ -48,11 +49,7 @@ public class VirtualEnvironment : IOnGameRestart
     public void OnGameRestart(DateTime startupTime)
     {
         SystemRandom = new((int)Seed);
+        Trace.Write($"Setting System.Random seed to {Seed}");
         UnityPaths = new(Os, Username);
-    }
-
-    public void Update()
-    {
-        InputState.Update();
     }
 }

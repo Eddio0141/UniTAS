@@ -19,17 +19,6 @@ public class VirtualEnvironmentApplier : IOnPreUpdates
 
     public void PreUpdate()
     {
-        ApplyEnv();
-        UpdateState();
-    }
-
-    private void UpdateState()
-    {
-        _virtualEnvironment.Update();
-    }
-
-    private void ApplyEnv()
-    {
         if (!_virtualEnvironment.RunVirtualEnvironment)
         {
             _lastFrameTime = -1f;
