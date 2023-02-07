@@ -79,7 +79,7 @@ public class GameTime : IOnPreUpdates, IOnGameRestartResume, IOnStart
         if (!_pendingFrameCountReset) return;
         _pendingFrameCountReset = false;
 
-        // TODO figure out if i do this with other frame counts
         FrameCountRestartOffset--;
+        RenderedFrameCountOffset--;
     }
 }
