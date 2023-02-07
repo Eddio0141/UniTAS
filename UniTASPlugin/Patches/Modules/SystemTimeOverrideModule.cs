@@ -61,12 +61,6 @@ public class SystemTimeOverrideModule
 
             private static bool Prefix(ref int __result)
             {
-                // __result = (int)VirtualEnvironment.GameTime.CurrentTime.Ticks;
-                // Plugin.Log.LogDebug($"Environment.TickCount: {__result}");
-                // return false;
-                Plugin.Log.LogDebug(
-                    $"Environment.TickCount, CurrentTime.Ticks: {(int)VirtualEnvironment.GameTime.CurrentTime.Ticks}, RealtimeSinceStartup: {(int)(VirtualEnvironment.GameTime.RealtimeSinceStartup * 1000f)}");
-                Plugin.Log.LogDebug(new System.Diagnostics.StackTrace());
                 __result = (int)(VirtualEnvironment.GameTime.RealtimeSinceStartup * 1000f);
                 return false;
             }

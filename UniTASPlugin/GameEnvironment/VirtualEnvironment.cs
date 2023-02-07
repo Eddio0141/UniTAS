@@ -9,7 +9,7 @@ namespace UniTASPlugin.GameEnvironment;
 /// <summary>
 /// A class holding current virtual environment of the system the game is running on
 /// </summary>
-public class VirtualEnvironment : IOnGameRestart
+public class VirtualEnvironment : IOnGameRestartResume
 {
     private bool _runVirtualEnvironment;
 
@@ -46,7 +46,7 @@ public class VirtualEnvironment : IOnGameRestart
         GameTime = gameTime;
     }
 
-    public void OnGameRestart(DateTime startupTime)
+    public void OnGameRestartResume(DateTime startupTime)
     {
         SystemRandom = new((int)Seed);
         Trace.Write($"Setting System.Random seed to {Seed}");

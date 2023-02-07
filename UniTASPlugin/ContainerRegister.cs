@@ -108,7 +108,7 @@ public static class ContainerRegister
             c.For<IOnPreUpdates>().Use(x => x.GetInstance<InputState>());
 
             c.ForSingletonOf<VirtualEnvironment>().Use<VirtualEnvironment>();
-            c.For<IOnGameRestart>().Use(x => x.GetInstance<VirtualEnvironment>());
+            c.For<IOnGameRestartResume>().Use(x => x.GetInstance<VirtualEnvironment>());
 
             c.ForSingletonOf<MovieRunner>().Use<MovieRunner>();
             c.For<IMovieRunner>().Use(x => x.GetInstance<MovieRunner>());
