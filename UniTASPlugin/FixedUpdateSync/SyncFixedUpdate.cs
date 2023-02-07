@@ -2,8 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using UniTASPlugin.Interfaces.Update;
-using UniTASPlugin.LegacySafeWrappers;
-using UnityEngine;
+using UniTASPlugin.UnitySafeWrappers.Interfaces;
 
 namespace UniTASPlugin.FixedUpdateSync;
 
@@ -17,20 +16,25 @@ public class SyncFixedUpdate : IOnFixedUpdate, ISyncFixedUpdate, IOnUpdate
     private float _lastDeltaTime;
     private float _lastFixedDeltaTime;
 
+    private readonly ITimeWrapper _timeWrap;
+
+    public SyncFixedUpdate(ITimeWrapper timeWrap)
+    {
+        _timeWrap = timeWrap;
+    }
+
     public void FixedUpdate()
     {
         Trace.WriteIf(_onSyncCallbacks.Count > 0, $"on sync callback count: {_onSyncCallbacks.Count}");
-        // TODO remove hardcoded dependency
-        if (TimeWrap.FrameTimeNotSet)
+        if (_timeWrap.CaptureFrameTime == 0)
         {
-            Trace.WriteIf(_onSyncCallbacks.Count > 0, "Reached invalid counter, frametime not set 1");
+            Trace.WriteIf(_onSyncCallbacks.Count > 0, "Reached invalid counter, frame-time not set 1");
             return;
         }
 
         _fixedUpdateIndex = 0;
 
-        // TODO remove hardcoded dependency
-        _lastFixedDeltaTime = Time.fixedDeltaTime;
+        _lastFixedDeltaTime = _timeWrap.FixedDeltaTime;
         _invalidIndexCounter = false;
     }
 
@@ -39,31 +43,29 @@ public class SyncFixedUpdate : IOnFixedUpdate, ISyncFixedUpdate, IOnUpdate
         // Trace.Write($"Callback count, {_onSyncCallbacks.Count}");
         if (_invalidIndexCounter) return;
 
-        // TODO remove hardcoded dependency
         // because this tracker works with fixed frame rate, we can't use the tracker unless the fixed frame rate is set
-        if (TimeWrap.FrameTimeNotSet)
+        if (_timeWrap.CaptureFrameTime == 0)
         {
-            Trace.WriteIf(_onSyncCallbacks.Count > 0, "Reached invalid counter, frametime not set 2");
+            Trace.WriteIf(_onSyncCallbacks.Count > 0, "Reached invalid counter, frame-time not set 2");
             _invalidIndexCounter = true;
             return;
         }
 
         // ReSharper disable CompareOfFloatsByEqualityOperator
-        if (_lastDeltaTime != Time.deltaTime || _lastFixedDeltaTime != Time.fixedDeltaTime)
+        if (_lastDeltaTime != _timeWrap.DeltaTime || _lastFixedDeltaTime != _timeWrap.FixedDeltaTime)
             // ReSharper restore CompareOfFloatsByEqualityOperator
         {
             Trace.WriteIf(_onSyncCallbacks.Count > 0,
-                $"Reached invalid counter, skipping sync fixed update invoke, last delta time: {_lastDeltaTime}, delta time: {Time.deltaTime}, fixed delta time: {Time.fixedDeltaTime}");
+                $"Reached invalid counter, skipping sync fixed update invoke, last delta time: {_lastDeltaTime}, delta time: {_timeWrap.DeltaTime}, fixed delta time: {_timeWrap.FixedDeltaTime}");
             _invalidIndexCounter = true;
-            _lastDeltaTime = Time.deltaTime;
+            _lastDeltaTime = _timeWrap.DeltaTime;
             return;
         }
 
-        // TODO remove hardcoded dependency
-        var maxUpdateCount = (int)Math.Round(Time.fixedDeltaTime / Time.deltaTime);
+        var maxUpdateCount = (int)Math.Round(_timeWrap.FixedDeltaTime / _timeWrap.DeltaTime);
 
         Trace.WriteIf(_onSyncCallbacks.Count > 0,
-            $"Max update count: {maxUpdateCount}, fixed delta time: {Time.fixedDeltaTime}, delta time: {Time.deltaTime}, callbacks left: {_onSyncCallbacks.Count}");
+            $"Max update count: {maxUpdateCount}, fixed delta time: {_timeWrap.FixedDeltaTime}, delta time: {_timeWrap.DeltaTime}, callbacks left: {_onSyncCallbacks.Count}");
 
         for (var i = 0; i < _onSyncCallbacks.Count; i++)
         {
@@ -80,7 +82,8 @@ public class SyncFixedUpdate : IOnFixedUpdate, ISyncFixedUpdate, IOnUpdate
                     continue;
                 }
 
-                Trace.Write("OnSyncCallback cycle offset == 0, invoking");
+                Trace.Write(
+                    $"OnSyncCallback cycle offset == 0, invoking at frame count {_timeWrap.FrameCount}, sync offset: {onSyncCallback.SyncOffset}, cycle offset: {onSyncCallback.CycleOffset}");
                 onSyncCallback.Callback.Invoke();
                 _onSyncCallbacks.RemoveAt(i);
                 i--;

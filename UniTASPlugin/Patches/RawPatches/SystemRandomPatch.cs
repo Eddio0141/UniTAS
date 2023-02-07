@@ -49,18 +49,4 @@ public class SystemRandomPatch
             return false;
         }
     }
-
-    [HarmonyPatch(typeof(Random), MethodType.Constructor, typeof(int))]
-    private class RandomCtor
-    {
-        private static Exception Cleanup(MethodBase original, Exception ex)
-        {
-            return PatchHelper.CleanupIgnoreFail(original, ex);
-        }
-
-        private static void Prefix(int Seed)
-        {
-            Trace.Write($"System.Random ctor with seed {Seed}");
-        }
-    }
 }

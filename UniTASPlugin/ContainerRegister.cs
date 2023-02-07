@@ -84,6 +84,8 @@ public static class ContainerRegister
 
             c.For<IRandomWrapper>().Singleton().Use<RandomWrapper>();
 
+            c.For<ITimeWrapper>().Singleton().Use<TimeWrapper>();
+
             c.For<ILogger>().Singleton().Use<Logger.Logger>();
 
             // before FileSystemManager
@@ -93,7 +95,7 @@ public static class ContainerRegister
             // before VirtualEnvironment
             c.ForSingletonOf<GameTime>().Use<GameTime>();
             c.For<IOnPreUpdates>().Use(x => x.GetInstance<GameTime>());
-            c.For<IOnGameRestart>().Use(x => x.GetInstance<GameTime>());
+            c.For<IOnGameRestartResume>().Use(x => x.GetInstance<GameTime>());
 
             // before VirtualEnvironment
             c.ForSingletonOf<VirtualEnvironmentApplier>().Use<VirtualEnvironmentApplier>();

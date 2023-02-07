@@ -23,6 +23,7 @@ public class GameInitialRestart : IGameInitialRestart, IOnAwake, IOnEnable, IOnS
     private readonly IStaticFieldManipulator _staticFieldManipulator;
     private readonly ISyncFixedUpdate _syncFixedUpdate;
     private readonly IOnGameRestart[] _onGameRestart;
+    private readonly IOnGameRestartResume[] _onGameRestartResume;
     private readonly IPatchReverseInvoker _reverseInvoker;
 
     private readonly VirtualEnvironment _virtualEnvironment;
@@ -32,10 +33,12 @@ public class GameInitialRestart : IGameInitialRestart, IOnAwake, IOnEnable, IOnS
     private bool _restartOperationStarted;
     public bool FinishedRestart { get; private set; }
 
+    private DateTime _softRestartTime;
+
     public GameInitialRestart(IUnityWrapper unityWrapper, ILogger logger,
         IMonoBehaviourController monoBehaviourController, IStaticFieldManipulator staticFieldManipulator,
         ISyncFixedUpdate syncFixedUpdate, IOnGameRestart[] onGameRestart, IPatchReverseInvoker reverseInvoker,
-        VirtualEnvironment virtualEnvironment)
+        VirtualEnvironment virtualEnvironment, IOnGameRestartResume[] onGameRestartResume)
     {
         _unityWrapper = unityWrapper;
         _logger = logger;
@@ -45,6 +48,7 @@ public class GameInitialRestart : IGameInitialRestart, IOnAwake, IOnEnable, IOnS
         _onGameRestart = onGameRestart;
         _reverseInvoker = reverseInvoker;
         _virtualEnvironment = virtualEnvironment;
+        _onGameRestartResume = onGameRestartResume;
     }
 
     public void InitialRestart()
@@ -60,16 +64,26 @@ public class GameInitialRestart : IGameInitialRestart, IOnAwake, IOnEnable, IOnS
         _monoBehaviourController.PausedExecution = true;
         DestroyAllGameObjects();
         _staticFieldManipulator.ResetStaticFields();
+
+        _softRestartTime = _reverseInvoker.Invoke(() => DateTime.Now);
+
         _syncFixedUpdate.OnSync(SoftRestartOperation, 1);
         _logger.LogDebug("Initial restart, pending FixedUpdate call");
     }
 
     private void OnGameRestart()
     {
-        var restartTime = _reverseInvoker.Invoke(() => DateTime.Now);
         foreach (var gameRestart in _onGameRestart)
         {
-            gameRestart.OnGameRestart(restartTime);
+            gameRestart.OnGameRestart(_softRestartTime);
+        }
+    }
+
+    private void OnGameRestartResume()
+    {
+        foreach (var gameRestart in _onGameRestartResume)
+        {
+            gameRestart.OnGameRestartResume(_softRestartTime);
         }
     }
 
@@ -77,7 +91,7 @@ public class GameInitialRestart : IGameInitialRestart, IOnAwake, IOnEnable, IOnS
     {
         _logger.LogInfo("Restarting");
         OnGameRestart();
-        _unityWrapper.SceneWrapper.LoadScene(0);
+        _unityWrapper.Scene.LoadScene(0);
         _pendingResumePausedExecution = true;
         FinishedRestart = true;
 
@@ -134,6 +148,9 @@ public class GameInitialRestart : IGameInitialRestart, IOnAwake, IOnEnable, IOnS
     {
         if (!_pendingResumePausedExecution) return;
         _pendingResumePausedExecution = false;
+
+        OnGameRestartResume();
+
         _monoBehaviourController.PausedExecution = false;
         _logger.LogDebug("Resuming MonoBehaviour execution");
     }

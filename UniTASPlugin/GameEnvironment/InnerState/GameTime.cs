@@ -8,11 +8,8 @@ using UnityEngine;
 namespace UniTASPlugin.GameEnvironment.InnerState;
 
 // ReSharper disable once ClassNeverInstantiated.Global
-public class GameTime : IOnPreUpdates, IOnGameRestart
+public class GameTime : IOnPreUpdates, IOnGameRestartResume
 {
-    /// <summary>
-    /// 
-    /// </summary>
     private DateTime StartupTime { get; set; }
 
     public DateTime CurrentTime => StartupTime + TimeSpan.FromSeconds(RealtimeSinceStartup);
@@ -25,9 +22,20 @@ public class GameTime : IOnPreUpdates, IOnGameRestart
     public double ScaledFixedTimeOffset { get; private set; }
     public float RealtimeSinceStartup { get; private set; }
 
+    // A flag to indicate that the game has been restarted and the frame count has been reset
+    // Only Awake seems to have the default value of 0 for frame count
+    // TODO check other frame count properties and see if they have the same behavior
+    private bool _hasOffsetFrameCount;
+    private bool _hasRestartedOnce;
+
     public void PreUpdate()
     {
         RealtimeSinceStartup = Time.realtimeSinceStartup;
+        if (!_hasOffsetFrameCount)
+        {
+            _hasOffsetFrameCount = true;
+            FrameCountRestartOffset--
+        }
     }
 
     public override string ToString()
@@ -44,8 +52,9 @@ public class GameTime : IOnPreUpdates, IOnGameRestart
                $"RealtimeSinceStartup: {RealtimeSinceStartup}";
     }
 
+
     // setting the start up time causes the game to update other time related variables, which requires this to be ran in the main thread
-    public void OnGameRestart(DateTime startupTime)
+    public void OnGameRestartResume(DateTime startupTime)
     {
         StartupTime = startupTime;
 
@@ -53,7 +62,12 @@ public class GameTime : IOnPreUpdates, IOnGameRestart
         Trace.Write($"Before {this}");
         RenderedFrameCountOffset += (ulong)Time.renderedFrameCount;
         SecondsSinceStartUpOffset += Time.realtimeSinceStartup;
-        FrameCountRestartOffset += (ulong)Time.frameCount - 1;
+        FrameCountRestartOffset += (ulong)Time.frameCount;
+        if (_hasRestartedOnce)
+        {
+            FrameCountRestartOffset++
+        }
+
         var fixedUnscaledTime = Traverse.Create(typeof(Time)).Property("fixedUnscaledTime");
         if (fixedUnscaledTime.PropertyExists())
             FixedUnscaledTimeOffset += fixedUnscaledTime.GetValue<float>();
@@ -64,5 +78,8 @@ public class GameTime : IOnPreUpdates, IOnGameRestart
         ScaledFixedTimeOffset += Time.fixedTime;
         RealtimeSinceStartup = 0f;
         Trace.Write($"After {this}");
+
+        _hasOffsetFrameCount = false;
+        _hasRestartedOnce = true;
     }
 }

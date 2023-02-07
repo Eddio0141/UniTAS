@@ -1,5 +1,5 @@
 using UniTASPlugin.Interfaces.Update;
-using UniTASPlugin.LegacySafeWrappers;
+using UniTASPlugin.UnitySafeWrappers.Interfaces;
 
 namespace UniTASPlugin.GameEnvironment;
 
@@ -10,11 +10,14 @@ namespace UniTASPlugin.GameEnvironment;
 public class VirtualEnvironmentApplier : IOnPreUpdates
 {
     private readonly VirtualEnvironment _virtualEnvironment;
+    private readonly ITimeWrapper _timeWrap;
+
     private float _lastFrameTime;
 
-    public VirtualEnvironmentApplier(VirtualEnvironment virtualEnvironment)
+    public VirtualEnvironmentApplier(VirtualEnvironment virtualEnvironment, ITimeWrapper timeWrap)
     {
         _virtualEnvironment = virtualEnvironment;
+        _timeWrap = timeWrap;
     }
 
     public void PreUpdate()
@@ -30,7 +33,7 @@ public class VirtualEnvironmentApplier : IOnPreUpdates
         {
             _lastFrameTime = _virtualEnvironment.FrameTime;
             // frameTime
-            TimeWrap.CaptureFrameTime = _virtualEnvironment.FrameTime;
+            _timeWrap.CaptureFrameTime = _virtualEnvironment.FrameTime;
         }
     }
 }

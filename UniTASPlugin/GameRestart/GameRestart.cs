@@ -23,6 +23,7 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
     private readonly ILogger _logger;
 
     private readonly IOnGameRestart[] _onGameRestart;
+    private readonly IOnGameRestartResume[] _onGameRestartResume;
     private readonly IStaticFieldManipulator _staticFieldManipulator;
     private readonly IDontDestroyOnLoadInfo _dontDestroyOnLoadInfo;
 
@@ -32,7 +33,7 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
     public GameRestart(VirtualEnvironment virtualEnvironment, ISyncFixedUpdate syncFixedUpdate,
         IUnityWrapper unityWrapper, IMonoBehaviourController monoBehaviourController, ILogger logger,
         IOnGameRestart[] onGameRestart, IStaticFieldManipulator staticFieldManipulator,
-        IDontDestroyOnLoadInfo dontDestroyOnLoadInfo)
+        IDontDestroyOnLoadInfo dontDestroyOnLoadInfo, IOnGameRestartResume[] onGameRestartResume)
     {
         _virtualEnvironment = virtualEnvironment;
         _syncFixedUpdate = syncFixedUpdate;
@@ -42,6 +43,7 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
         _onGameRestart = onGameRestart;
         _staticFieldManipulator = staticFieldManipulator;
         _dontDestroyOnLoadInfo = dontDestroyOnLoadInfo;
+        _onGameRestartResume = onGameRestartResume;
     }
 
     private void DestroyDontDestroyOnLoads()
@@ -78,20 +80,20 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
         }
     }
 
+    private void OnGameRestartResume()
+    {
+        foreach (var gameRestart in _onGameRestartResume)
+        {
+            gameRestart.OnGameRestartResume(_softRestartTime);
+        }
+    }
+
     private void SoftRestartOperation()
     {
         _logger.LogInfo("Soft restarting");
 
         OnGameRestart();
-        _unityWrapper.SceneWrapper.LoadScene(0);
-
-        _logger.LogDebug("random setting state");
-
-        _unityWrapper.Random.Seed = (int)_virtualEnvironment.Seed;
-
-        _logger.LogInfo("Finish soft restarting");
-        var actualTime = DateTime.Now;
-        _logger.LogInfo($"System time: {actualTime}");
+        _unityWrapper.Scene.LoadScene(0);
 
         PendingRestart = false;
         _pendingResumePausedExecution = true;
@@ -122,7 +124,19 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
     {
         if (!_pendingResumePausedExecution) return;
         _pendingResumePausedExecution = false;
+        OnGameRestartResume();
+
+        _logger.LogDebug("random setting state");
+
+        _unityWrapper.Random.Seed = (int)_virtualEnvironment.Seed;
+
+        _logger.LogInfo("Finish soft restarting");
+        var actualTime = DateTime.Now;
+        _logger.LogInfo($"System time: {actualTime}");
+
         _monoBehaviourController.PausedExecution = false;
         _logger.LogDebug("Resuming MonoBehaviour execution");
     }
+    
+    // TODO move setting random state to a separate class
 }
