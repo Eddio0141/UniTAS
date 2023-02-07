@@ -3,7 +3,6 @@ using UniTASPlugin.FixedUpdateSync;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.Interfaces.StartEvent;
 using UniTASPlugin.Interfaces.Update;
-using UniTASPlugin.LegacySafeWrappers;
 using UniTASPlugin.Logger;
 using UniTASPlugin.MonoBehaviourController;
 using UniTASPlugin.StaticFieldStorage;
@@ -88,7 +87,7 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
 
         _logger.LogDebug("random setting state");
 
-        RandomWrap.InitState((int)_virtualEnvironment.Seed);
+        _unityWrapper.Random.Seed = (int)_virtualEnvironment.Seed;
 
         _logger.LogInfo("Finish soft restarting");
         var actualTime = DateTime.Now;

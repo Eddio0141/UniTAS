@@ -7,12 +7,14 @@ public class UnityWrapper : IUnityWrapper
     public IObjectWrapper Object { get; }
     public IMonoBehaviourWrapper MonoBehaviour { get; }
     public ISceneWrapper SceneWrapper { get; }
+    public IRandomWrapper Random { get; }
 
     public UnityWrapper(IObjectWrapper objectWrapper, IMonoBehaviourWrapper monoBehaviourWrapper,
-        ISceneWrapper sceneWrapper)
+        ISceneWrapper sceneWrapper, IRandomWrapper random)
     {
         Object = objectWrapper;
         MonoBehaviour = monoBehaviourWrapper;
         SceneWrapper = sceneWrapper;
+        Random = random;
     }
 }

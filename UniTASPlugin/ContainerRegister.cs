@@ -82,6 +82,8 @@ public static class ContainerRegister
 
             c.For<IMonoBehaviourWrapper>().Singleton().Use<MonoBehaviourWrapper>();
 
+            c.For<IRandomWrapper>().Singleton().Use<RandomWrapper>();
+
             c.For<ILogger>().Singleton().Use<Logger.Logger>();
 
             // before FileSystemManager

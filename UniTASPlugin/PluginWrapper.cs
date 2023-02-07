@@ -5,9 +5,9 @@ using System.Linq;
 using HarmonyLib;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.GameInfo;
-using UniTASPlugin.LegacySafeWrappers;
 using UniTASPlugin.Logger;
 using UniTASPlugin.Patches.PatchProcessor;
+using UniTASPlugin.UnitySafeWrappers.Interfaces;
 using UnityEngine;
 using PatchProcessor = UniTASPlugin.Patches.PatchProcessor.PatchProcessor;
 
@@ -17,7 +17,7 @@ namespace UniTASPlugin;
 public class PluginWrapper
 {
     public PluginWrapper(IEnumerable<PatchProcessor> patchProcessors, IGameInfo gameInfo, ILogger logger,
-        VirtualEnvironment virtualEnvironment)
+        VirtualEnvironment virtualEnvironment, IRandomWrapper random)
     {
         logger.LogInfo($"Internally found unity version: {gameInfo.UnityVersion}");
         logger.LogInfo($"Game product name: {gameInfo.ProductName}");
@@ -33,7 +33,7 @@ public class PluginWrapper
 
         // init random seed
         // TODO make this happen after 
-        RandomWrap.InitState((int)virtualEnvironment.Seed);
+        random.Seed = (int)virtualEnvironment.Seed;
 
         logger.LogInfo($"System time: {DateTime.Now}");
         logger.LogInfo($"Plugin {MyPluginInfo.PLUGIN_NAME} is loaded!");
