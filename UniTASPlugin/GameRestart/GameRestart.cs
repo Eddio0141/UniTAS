@@ -51,7 +51,7 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
         var dontDestroyOnLoads = _dontDestroyOnLoadInfo.DontDestroyOnLoadObjects;
         foreach (var obj in dontDestroyOnLoads)
         {
-            _logger.LogDebug($"Removing DontDestroyOnLoad object, hash: {obj.GetHashCode()}");
+            _logger.LogDebug($"Removing DontDestroyOnLoad object {obj.GetType().FullName}, hash: {obj.GetHashCode()}");
             _unityWrapper.Object.DestroyImmediate(obj);
         }
     }
@@ -137,6 +137,6 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
         _monoBehaviourController.PausedExecution = false;
         _logger.LogDebug("Resuming MonoBehaviour execution");
     }
-    
+
     // TODO move setting random state to a separate class
 }
