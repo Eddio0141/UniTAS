@@ -33,8 +33,8 @@ public class SceneIndexNameTracker : IPluginInitialLoad, ISceneIndexName, IOnUpd
     {
         // when iterating through all scenes, we must pause execution of mono beh
         _sceneCount = _sceneWrapper.TotalSceneCount;
-        _monoBehaviourController.PausedExecution = true;
         // disabled for now
+        //_monoBehaviourController.PausedExecution = true;
         _testingSceneIndex = null;
         // _testingSceneIndex = 0;
     }
