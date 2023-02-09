@@ -82,7 +82,7 @@ public class StaticFieldStorage : IStaticFieldManipulator
                 var fields = AccessTools.GetDeclaredFields(type).Where(x =>
                     x.IsStatic && !x.IsLiteral).ToArray();
 
-                if (fields.Length == 0) continue;
+                if (fields.Length == 0 && type.TypeInitializer == null) continue;
 
 #if TRACE
                 Trace.Write(
@@ -174,7 +174,7 @@ public class StaticFieldStorage : IStaticFieldManipulator
                 var fields = AccessTools.GetDeclaredFields(genericTypeDefinition).Where(x =>
                     x.IsStatic && !x.IsLiteral).ToArray();
 
-                if (fields.Length == 0) continue;
+                if (fields.Length == 0 && genericTypeDefinition.TypeInitializer == null) continue;
 
                 Trace.Write(
                     $"type: {genericTypeDefinition.FullName} has {fields.Length} static fields, and static constructor: {genericTypeDefinition.TypeInitializer != null}");
