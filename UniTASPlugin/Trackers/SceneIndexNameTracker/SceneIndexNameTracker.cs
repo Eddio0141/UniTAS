@@ -34,6 +34,7 @@ public class SceneIndexNameTracker : IPluginInitialLoad, ISceneIndexName, IOnUpd
         // when iterating through all scenes, we must pause execution of mono beh
         _sceneCount = _sceneWrapper.TotalSceneCount;
         // disabled for now
+        // TODO paused execution needs to be ran AFTER patching, fix this
         //_monoBehaviourController.PausedExecution = true;
         _testingSceneIndex = null;
         // _testingSceneIndex = 0;
