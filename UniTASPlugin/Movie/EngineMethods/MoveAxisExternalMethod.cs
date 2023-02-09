@@ -21,9 +21,14 @@ public class MoveAxisExternalMethod : EngineExternalMethod
         if (axisArg is not StringValueType axis) return new();
 
         var valueArg = argsList[1].First();
-        if (valueArg is not FloatValueType value) return new();
+        var axisValue = valueArg switch
+        {
+            IntValueType intVal => intVal.Value,
+            FloatValueType floatVal => floatVal.Value,
+            _ => 0
+        };
 
-        _virtualEnvironment.InputState.AxisState.Values[axis.Value] = value.Value;
+        _virtualEnvironment.InputState.AxisState.Values[axis.Value] = axisValue;
 
         return new();
     }
