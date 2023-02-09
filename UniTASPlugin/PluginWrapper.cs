@@ -35,9 +35,6 @@ public class PluginWrapper
         // TODO make this happen after 
         random.Seed = (int)virtualEnvironment.Seed;
 
-        logger.LogInfo($"System time: {DateTime.Now}");
-        logger.LogInfo($"Plugin {MyPluginInfo.PLUGIN_NAME} is loaded!");
-
         var sortedPatches = patchProcessors
             .Where(x => x is not OnPluginInitProcessor)
             .SelectMany(x => x.ProcessModules())
@@ -54,6 +51,9 @@ public class PluginWrapper
 
         // this is to make sure Path fields are property set, not sure if theres a better place to put this
         // AccessTools.Constructor(typeof(System.IO.Path), searchForStatic: true).Invoke(null, null);
+
+        logger.LogInfo($"System time: {DateTime.Now}");
+        logger.LogInfo($"Plugin {MyPluginInfo.PLUGIN_NAME} is loaded!");
     }
 
 // #if TRACE
