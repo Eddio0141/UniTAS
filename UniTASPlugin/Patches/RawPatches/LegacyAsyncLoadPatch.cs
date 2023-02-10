@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Reflection;
 using HarmonyLib;
-using UniTASPlugin.LegacyPatches;
 using UniTASPlugin.Patches.PatchTypes;
 using UnityEngine;
 
@@ -24,7 +23,7 @@ public static class LegacyAsyncSceneLoadPatch
 
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.CleanupIgnoreException(original, ex);
+            return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
         private static void Prefix(ref bool mustCompleteNextFrame)

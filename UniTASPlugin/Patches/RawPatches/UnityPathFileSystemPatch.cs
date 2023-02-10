@@ -3,7 +3,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using HarmonyLib;
 using UniTASPlugin.GameEnvironment;
-using UniTASPlugin.LegacyPatches;
 using UniTASPlugin.ReverseInvoker;
 using UnityEngine;
 
@@ -27,7 +26,7 @@ public class UnityPathFileSystemPatch
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.CleanupIgnoreException(original, ex);
+            return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
         private static bool Prefix(ref string __result)

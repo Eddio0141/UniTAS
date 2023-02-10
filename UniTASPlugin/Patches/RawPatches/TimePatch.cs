@@ -3,7 +3,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using HarmonyLib;
 using UniTASPlugin.GameEnvironment;
-using UniTASPlugin.LegacyPatches;
 using UniTASPlugin.Patches.PatchTypes;
 using UniTASPlugin.ReverseInvoker;
 using UnityEngine;
@@ -27,7 +26,7 @@ public class TimePatch
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.CleanupIgnoreException(original, ex);
+            return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
         private static bool Prefix()
@@ -46,7 +45,7 @@ public class TimePatch
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.CleanupIgnoreException(original, ex);
+            return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
         private static bool Prefix()
@@ -65,7 +64,7 @@ public class TimePatch
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.CleanupIgnoreException(original, ex);
+            return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
         private static void Postfix(ref float __result)
@@ -80,7 +79,7 @@ public class TimePatch
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.CleanupIgnoreException(original, ex);
+            return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
         private static readonly Traverse
@@ -104,7 +103,7 @@ public class TimePatch
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.CleanupIgnoreException(original, ex);
+            return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
         private static readonly Traverse
@@ -131,7 +130,7 @@ public class TimePatch
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.CleanupIgnoreException(original, ex);
+            return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
         private static void Postfix(ref double __result)
@@ -146,7 +145,7 @@ public class TimePatch
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.CleanupIgnoreException(original, ex);
+            return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
         private static void Postfix(ref int __result)
@@ -161,7 +160,7 @@ public class TimePatch
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.CleanupIgnoreException(original, ex);
+            return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
         private static void Postfix(ref int __result)
@@ -176,7 +175,7 @@ public class TimePatch
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.CleanupIgnoreException(original, ex);
+            return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
         private static void Postfix(ref float __result)
@@ -191,7 +190,7 @@ public class TimePatch
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.CleanupIgnoreException(original, ex);
+            return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
         private static void Postfix(ref double __result)
@@ -206,7 +205,7 @@ public class TimePatch
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.CleanupIgnoreException(original, ex);
+            return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
         private static void Postfix(ref float __result)
@@ -221,7 +220,7 @@ public class TimePatch
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.CleanupIgnoreException(original, ex);
+            return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
         private static void Postfix(ref double __result)
@@ -236,7 +235,7 @@ public class TimePatch
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.CleanupIgnoreException(original, ex);
+            return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
         private static void Postfix(ref float __result)
@@ -251,7 +250,7 @@ public class TimePatch
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            return PatcherHelper.CleanupIgnoreException(original, ex);
+            return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
         private static void Postfix(ref double __result)
