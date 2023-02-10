@@ -1,6 +1,5 @@
 ﻿using System.Linq;
 using UniTASPlugin.GameRestart;
-using UniTASPlugin.LegacySafeWrappers;
 using UniTASPlugin.Movie;
 using UniTASPlugin.ReverseInvoker;
 using UnityEngine;
@@ -64,21 +63,6 @@ internal static class Overlay
     public static void SetCursorTexture(Texture2D texture)
     {
         currentTexture = texture ?? cursorDefaultTexture;
-    }
-
-    public static void Update()
-    {
-        var movieRunner = Plugin.Kernel.GetInstance<IMovieRunner>();
-        if (movieRunner.MovieEnd && Input.GetKeyDown(KeyCode.F10))
-        {
-            Enabled = !Enabled;
-        }
-
-        if (movieRunner.MovieEnd && Input.GetKeyDown(KeyCode.F11))
-        {
-            CursorWrap.UnlockCursor();
-            Plugin.Log.LogDebug($"Unlocked cursor");
-        }
     }
 
     public static void OnGUI()
