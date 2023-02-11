@@ -209,10 +209,19 @@ public class StaticFieldStorage : IStaticFieldManipulator
                     $"Setting static field: {field.DeclaringType?.FullName ?? "unknown_type"}.{field.Name} to null");
                 field.SetValue(null, null);
             }
+        }
 
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+
+        // TODO issue #120
+        _logger.LogDebug("calling static constructors");
+        foreach (var staticFields in _staticFields)
+        {
+            if (staticFields.StaticConstructor == null) continue;
             Trace.Write(
-                $"Invoking static constructor for {staticFields.StaticConstructor?.DeclaringType?.FullName ?? "unknown_type"}");
-            staticFields.StaticConstructor?.Invoke(null, null);
+                $"Calling static constructor for type: {staticFields.StaticConstructor.DeclaringType?.FullName ?? "unknown_type"}");
+            staticFields.StaticConstructor.Invoke(null, null);
         }
     }
 }
