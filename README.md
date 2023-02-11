@@ -27,7 +27,7 @@ A tool that lets you TAS unity games
 `unitas_setup_tool install --branch <BRANCH> --bepinex-branch <BRANCH>`
 
 # How to build
-- Make sure you have [.NET SDK 6.0](https://dotnet.microsoft.com/en-us/download) and [rust](https://www.rust-lang.org/tools/install) installed on your system
+- Make sure you have [.NET SDK 6.0 or 7.0](https://dotnet.microsoft.com/en-us/download) and [rust](https://www.rust-lang.org/tools/install) installed on your system
 - Run either `build.sh` for linux or `build.ps1` for windows
   - Takes either `Debug` or `Release` as an argument for choosing building config
   - `ReleaseTrace` builds with a `Release` profile but with trace logging for the plugin
