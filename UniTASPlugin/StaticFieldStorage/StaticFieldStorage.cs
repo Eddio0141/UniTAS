@@ -18,6 +18,8 @@ public class StaticFieldStorage : IStaticFieldManipulator
 
     private readonly List<StaticFieldInfo> _staticFields = new();
 
+    private bool _ranStaticConstructorOnce;
+
     private class StaticFieldInfo
     {
         public FieldInfo[] Fields { get; }
@@ -200,6 +202,22 @@ public class StaticFieldStorage : IStaticFieldManipulator
 
     public void ResetStaticFields()
     {
+        // this is to make sure all static ctors are called at least once before we reset the static fields
+        if (!_ranStaticConstructorOnce)
+        {
+            _ranStaticConstructorOnce = true;
+
+            // TODO issue #120
+            try
+            {
+                InvokeStaticCtors();
+            }
+            catch (Exception)
+            {
+                // simply ignore
+            }
+        }
+
         _logger.LogDebug("setting static fields");
         foreach (var staticFields in _staticFields)
         {
@@ -209,10 +227,24 @@ public class StaticFieldStorage : IStaticFieldManipulator
                     $"Setting static field: {field.DeclaringType?.FullName ?? "unknown_type"}.{field.Name} to null");
                 field.SetValue(null, null);
             }
+        }
 
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+
+        // TODO issue #120
+        InvokeStaticCtors();
+    }
+
+    private void InvokeStaticCtors()
+    {
+        _logger.LogDebug("calling static constructors");
+        foreach (var staticFields in _staticFields)
+        {
+            if (staticFields.StaticConstructor == null) continue;
             Trace.Write(
-                $"Invoking static constructor for {staticFields.StaticConstructor?.DeclaringType?.FullName ?? "unknown_type"}");
-            staticFields.StaticConstructor?.Invoke(null, null);
+                $"Calling static constructor for type: {staticFields.StaticConstructor.DeclaringType?.FullName ?? "unknown_type"}");
+            staticFields.StaticConstructor.Invoke(null, null);
         }
     }
 }

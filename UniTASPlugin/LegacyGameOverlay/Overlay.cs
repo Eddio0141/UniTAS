@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.IO;
+using System.Linq;
 using UniTASPlugin.GameRestart;
 using UniTASPlugin.LegacySafeWrappers;
 using UniTASPlugin.Movie;
@@ -178,6 +179,8 @@ internal static class Overlay
                     var rev = Plugin.Kernel.GetInstance<PatchReverseInvoker>();
                     if (rev.Invoke(System.IO.File.Exists, "C:\\Users\\Yuki\\Documents\\test.uti"))
                         path = "C:\\Users\\Yuki\\Documents\\test.uti";
+                    else if (File.Exists("C:\\Users\\yuu0141\\test.uti"))
+                        path = "C:\\Users\\yuu0141\\test.uti";
                     else if (rev.Invoke(System.IO.File.Exists,
                                  "/home/yuu0141/test.uti"))
                         path =
