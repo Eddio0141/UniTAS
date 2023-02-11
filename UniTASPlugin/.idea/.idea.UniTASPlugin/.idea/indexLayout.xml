@@ -2,6 +2,7 @@
 <project version="4">
   <component name="UserContentModel">
     <attachedFolders>
+      <Path>../../UniTAS</Path>
       <Path>../../UniTASPlugin</Path>
     </attachedFolders>
     <explicitIncludes />
