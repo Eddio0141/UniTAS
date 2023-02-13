@@ -69,10 +69,10 @@ internal static class Overlay
     {
         DrawGUI();
 
-        if (ShowCursor && UnityCursorVisible)
-            GUI.DrawTexture(
-                new(Input.mousePosition.x, Screen.height - Input.mousePosition.y, currentTexture.width,
-                    currentTexture.height), currentTexture);
+        // if (ShowCursor && UnityCursorVisible)
+        //     GUI.DrawTexture(
+        //         new(Input.mousePosition.x, Screen.height - Input.mousePosition.y, currentTexture.width,
+        //             currentTexture.height), currentTexture);
     }
 
     private static int _tabIndex;
@@ -115,8 +115,8 @@ internal static class Overlay
         var kernel = Plugin.Kernel;
         var movieRunner = kernel.GetInstance<IMovieRunner>();
 
-        GUI.DrawTexture(new(MENU_X, MENU_Y, MENU_SIZE_X, MENU_SIZE_Y), BGSurround);
-        GUI.Box(new(MENU_X, MENU_Y, MENU_SIZE_X, MENU_SIZE_Y), $"{MyPluginInfo.PLUGIN_NAME} Menu");
+        // GUI.DrawTexture(new(MENU_X, MENU_Y, MENU_SIZE_X, MENU_SIZE_Y), BGSurround);
+        // GUI.Box(new(MENU_X, MENU_Y, MENU_SIZE_X, MENU_SIZE_Y), $"{MyPluginInfo.PLUGIN_NAME} Menu");
         GUILayout.BeginArea(new(MENU_X + EDGE_SPACING, MENU_Y + EDGE_SPACING + 30, MENU_SIZE_X - EDGE_SPACING * 2,
             MENU_SIZE_Y - EDGE_SPACING * 2 - 30));
 

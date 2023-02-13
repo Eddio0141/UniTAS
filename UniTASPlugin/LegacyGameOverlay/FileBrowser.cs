@@ -387,12 +387,12 @@ public class FileBrowser
             dirChanged = false;
         }
 
-        windowRect = GUILayout.Window(id, windowRect, Window, title, GUI.skin.window);
+        // windowRect = GUILayout.Window(id, windowRect, Window, title, GUI.skin.window);
     }
 
     private void Window(int id)
     {
-        GUI.DragWindow(new(0, 0, 20000, 20));
+        // GUI.DragWindow(new(0, 0, 20000, 20));
 
         GUILayout.BeginHorizontal();
         if (GUILayout.Button("<", GUILayout.Width(20)) && !confirmSave.Opened && dirPrev.Count > 0)
@@ -435,7 +435,7 @@ public class FileBrowser
         var nextScrollPos = GUILayout.BeginScrollView(quickAccessScrollPos, GUILayout.Width(quickAccessWidth));
         GUILayout.BeginVertical();
         GUILayout.Label("Quick access", GUILayout.Width(quickAccessWidth - 30));
-        GUI.skin.button.alignment = TextAnchor.MiddleLeft;
+        // GUI.skin.button.alignment = TextAnchor.MiddleLeft;
         if (!confirmSave.Opened)
             quickAccessScrollPos = nextScrollPos;
         for (var i = 0; i < quickAccessPaths.Length; i++)
@@ -473,7 +473,7 @@ public class FileBrowser
             }
         }
 
-        GUI.skin.button.alignment = TextAnchor.MiddleCenter;
+        // GUI.skin.button.alignment = TextAnchor.MiddleCenter;
         GUILayout.EndScrollView();
         GUILayout.EndHorizontal();
 
