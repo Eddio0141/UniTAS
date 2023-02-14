@@ -8,6 +8,7 @@ using UniTASPlugin.MonoBehaviourController;
 using UniTASPlugin.StaticFieldStorage;
 using UniTASPlugin.Trackers.DontDestroyOnLoadTracker;
 using UniTASPlugin.UnitySafeWrappers.Interfaces;
+using Object = UnityEngine.Object;
 
 namespace UniTASPlugin.GameRestart;
 
@@ -52,7 +53,7 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
         foreach (var obj in dontDestroyOnLoads)
         {
             _logger.LogDebug($"Removing DontDestroyOnLoad object {obj.GetType().FullName}, hash: {obj.GetHashCode()}");
-            _unityWrapper.Object.DestroyImmediate(obj);
+            Object.DestroyImmediate(obj);
         }
     }
 

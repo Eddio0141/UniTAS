@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using UniTASPlugin.UnitySafeWrappers.Interfaces;
 using UnityEngine;
 
 namespace UniTASPlugin.Trackers.DontDestroyOnLoadTracker;
@@ -9,34 +8,22 @@ namespace UniTASPlugin.Trackers.DontDestroyOnLoadTracker;
 // ReSharper disable once ClassNeverInstantiated.Global
 public class DontDestroyOnLoadTracker : IDontDestroyOnLoadTracker, IDontDestroyOnLoadInfo
 {
-    private readonly List<object> _dontDestroyOnLoadObjects = new();
+    private readonly List<Object> _dontDestroyOnLoadObjects = new();
 
-    private readonly IObjectWrapper _objectWrapper;
-
-    public DontDestroyOnLoadTracker(IObjectWrapper objectWrapper)
-    {
-        _objectWrapper = objectWrapper;
-    }
-
-    public IEnumerable<object> DontDestroyOnLoadObjects
+    public IEnumerable<Object> DontDestroyOnLoadObjects
     {
         get
         {
-            _dontDestroyOnLoadObjects.RemoveAll(x => _objectWrapper.IsInstanceNullOrDestroyed(x));
+            _dontDestroyOnLoadObjects.RemoveAll(x => x == null);
             return _dontDestroyOnLoadObjects;
         }
     }
 
-    public void DontDestroyOnLoad(object obj)
+    public void DontDestroyOnLoad(Object obj)
     {
-        if (obj is not Object unityObject)
-        {
-            throw new System.ArgumentException("Object is not a Unity object");
-        }
+        if (DontDestroyOnLoadObjects.Any(x => x == obj)) return;
 
-        if (DontDestroyOnLoadObjects.Any(x => (Object)x == unityObject)) return;
-
-        Trace.Write($"DontDestroyOnLoad object, hash: {unityObject.GetHashCode()}");
-        _dontDestroyOnLoadObjects.Add(unityObject);
+        Trace.Write($"DontDestroyOnLoad object, hash: {obj.GetHashCode()}");
+        _dontDestroyOnLoadObjects.Add(obj);
     }
 }

@@ -78,10 +78,6 @@ public static class ContainerRegister
 
             c.For<IUnityWrapper>().Singleton().Use<UnityWrapper>();
 
-            c.For<IObjectWrapper>().Singleton().Use<ObjectWrapper>();
-
-            c.For<IMonoBehaviourWrapper>().Singleton().Use<MonoBehaviourWrapper>();
-
             c.For<IRandomWrapper>().Singleton().Use<RandomWrapper>();
 
             c.For<ITimeWrapper>().Singleton().Use<TimeWrapper>();

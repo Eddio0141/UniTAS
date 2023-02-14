@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using BepInEx;
 using UniTASPlugin.FixedUpdateSync;
 using UniTASPlugin.GameEnvironment;
@@ -11,6 +10,8 @@ using UniTASPlugin.MonoBehaviourController;
 using UniTASPlugin.ReverseInvoker;
 using UniTASPlugin.StaticFieldStorage;
 using UniTASPlugin.UnitySafeWrappers.Interfaces;
+using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace UniTASPlugin.GameInitialRestart;
 
@@ -101,7 +102,7 @@ public class GameInitialRestart : IGameInitialRestart, IOnAwake, IOnEnable, IOnS
 
     private void DestroyAllGameObjects()
     {
-        var allObjects = _unityWrapper.Object.FindObjectsOfType(_unityWrapper.Object.ObjectType).ToArray();
+        var allObjects = Object.FindObjectsOfType(typeof(Object));
         _logger.LogDebug($"Attempting destruction of {allObjects.Length} objects");
         foreach (var obj in allObjects)
         {
@@ -113,8 +114,12 @@ public class GameInitialRestart : IGameInitialRestart, IOnAwake, IOnEnable, IOnS
 
             try
             {
-                _unityWrapper.MonoBehaviour.StopAllCoroutines(obj);
-                _unityWrapper.Object.DestroyImmediate(obj);
+                if (obj is MonoBehaviour monoBehaviour)
+                {
+                    monoBehaviour.StopAllCoroutines();
+                }
+
+                Object.DestroyImmediate(obj);
             }
             catch (Exception)
             {
@@ -154,6 +159,6 @@ public class GameInitialRestart : IGameInitialRestart, IOnAwake, IOnEnable, IOnS
         _monoBehaviourController.PausedExecution = false;
         _logger.LogDebug("Resuming MonoBehaviour execution");
     }
-    
+
     // TODO probably should try combine this class into GameRestart
 }
