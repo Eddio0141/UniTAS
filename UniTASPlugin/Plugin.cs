@@ -10,7 +10,6 @@ using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.GameInitialRestart;
 using UniTASPlugin.Interfaces;
 using UniTASPlugin.Interfaces.Update;
-using UniTASPlugin.LegacyGameOverlay;
 using UniTASPlugin.Patches.PatchProcessor;
 using UnityEngine;
 using PatchProcessor = UniTASPlugin.Patches.PatchProcessor.PatchProcessor;
@@ -114,14 +113,6 @@ public class Plugin : BaseUnityPlugin
     {
         // Trace.Write($"LateUpdate, {Time.frameCount}");
         _monoBehEventInvoker.LateUpdate();
-    }
-
-    private void OnGUI()
-    {
-        if (_fullyLoaded)
-        {
-            Overlay.OnGUI();
-        }
     }
 
     /// <summary>
