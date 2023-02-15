@@ -45,13 +45,8 @@ public class TimeWrapper : ITimeWrapper
             {
                 var fps = value > 0f ? (int)Math.Round(1.0f / value) : 0;
                 Trace.Write($"Setting captureFramerate to {fps}");
-                _reverseInvoker.Invoke(() => Time.captureFramerate = fps);
+                _reverseInvoker.Invoke((setFps) => Time.captureFramerate = setFps, fps);
             }
         }
     }
-
-    public float FixedDeltaTime => Time.fixedDeltaTime;
-    public float DeltaTime => Time.deltaTime;
-
-    public int FrameCount => _reverseInvoker.Invoke(() => Time.frameCount);
 }

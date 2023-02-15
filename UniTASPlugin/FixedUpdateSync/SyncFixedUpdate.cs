@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using UniTASPlugin.Interfaces.Update;
 using UniTASPlugin.UnitySafeWrappers.Interfaces;
+using UnityEngine;
 
 namespace UniTASPlugin.FixedUpdateSync;
 
@@ -34,7 +35,7 @@ public class SyncFixedUpdate : IOnFixedUpdate, ISyncFixedUpdate, IOnUpdate
 
         _fixedUpdateIndex = 0;
 
-        _lastFixedDeltaTime = _timeWrap.FixedDeltaTime;
+        _lastFixedDeltaTime = Time.fixedDeltaTime;
         _invalidIndexCounter = false;
     }
 
@@ -52,20 +53,20 @@ public class SyncFixedUpdate : IOnFixedUpdate, ISyncFixedUpdate, IOnUpdate
         }
 
         // ReSharper disable CompareOfFloatsByEqualityOperator
-        if (_lastDeltaTime != _timeWrap.DeltaTime || _lastFixedDeltaTime != _timeWrap.FixedDeltaTime)
+        if (_lastDeltaTime != Time.deltaTime || _lastFixedDeltaTime != Time.fixedDeltaTime)
             // ReSharper restore CompareOfFloatsByEqualityOperator
         {
             Trace.WriteIf(_onSyncCallbacks.Count > 0,
-                $"Reached invalid counter, skipping sync fixed update invoke, last delta time: {_lastDeltaTime}, delta time: {_timeWrap.DeltaTime}, fixed delta time: {_timeWrap.FixedDeltaTime}");
+                $"Reached invalid counter, skipping sync fixed update invoke, last delta time: {_lastDeltaTime}, delta time: {Time.deltaTime}, fixed delta time: {Time.fixedDeltaTime}");
             _invalidIndexCounter = true;
-            _lastDeltaTime = _timeWrap.DeltaTime;
+            _lastDeltaTime = Time.deltaTime;
             return;
         }
 
-        var maxUpdateCount = (int)Math.Round(_timeWrap.FixedDeltaTime / _timeWrap.DeltaTime);
+        var maxUpdateCount = (int)Math.Round(Time.fixedDeltaTime / Time.deltaTime);
 
         Trace.WriteIf(_onSyncCallbacks.Count > 0,
-            $"Max update count: {maxUpdateCount}, fixed delta time: {_timeWrap.FixedDeltaTime}, delta time: {_timeWrap.DeltaTime}, callbacks left: {_onSyncCallbacks.Count}");
+            $"Max update count: {maxUpdateCount}, fixed delta time: {Time.fixedDeltaTime}, delta time: {Time.deltaTime}, callbacks left: {_onSyncCallbacks.Count}");
 
         for (var i = 0; i < _onSyncCallbacks.Count; i++)
         {
@@ -83,7 +84,7 @@ public class SyncFixedUpdate : IOnFixedUpdate, ISyncFixedUpdate, IOnUpdate
                 }
 
                 Trace.Write(
-                    $"OnSyncCallback cycle offset == 0, invoking at frame count {_timeWrap.FrameCount}, sync offset: {onSyncCallback.SyncOffset}, cycle offset: {onSyncCallback.CycleOffset}");
+                    $"OnSyncCallback cycle offset == 0, invoking at frame count {Time.frameCount}, sync offset: {onSyncCallback.SyncOffset}, cycle offset: {onSyncCallback.CycleOffset}");
                 onSyncCallback.Callback.Invoke();
                 _onSyncCallbacks.RemoveAt(i);
                 i--;

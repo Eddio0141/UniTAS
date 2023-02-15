@@ -4,7 +4,6 @@ using HarmonyLib;
 using UniTASPlugin.GameRestart;
 using UniTASPlugin.Interfaces.StartEvent;
 using UniTASPlugin.Interfaces.Update;
-using UniTASPlugin.UnitySafeWrappers.Interfaces;
 using UnityEngine;
 
 namespace UniTASPlugin.GameEnvironment.InnerState;
@@ -26,17 +25,10 @@ public class GameTime : IOnPreUpdates, IOnGameRestartResume, IOnStart
 
     private bool _pendingFrameCountReset;
 
-    private readonly ITimeWrapper _timeWrapper;
-
-    public GameTime(ITimeWrapper timeWrapper)
-    {
-        _timeWrapper = timeWrapper;
-    }
-
     public void PreUpdate()
     {
         HandlePendingFrameCountReset();
-        RealtimeSinceStartup += _timeWrapper.DeltaTime;
+        RealtimeSinceStartup += Time.deltaTime;
     }
 
     public override string ToString()
