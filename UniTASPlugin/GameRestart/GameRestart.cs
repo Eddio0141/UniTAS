@@ -53,7 +53,7 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
         foreach (var obj in dontDestroyOnLoads)
         {
             _logger.LogDebug($"Removing DontDestroyOnLoad object {obj.GetType().FullName}, hash: {obj.GetHashCode()}");
-            Object.DestroyImmediate(obj);
+            // Object.DestroyImmediate(obj);
         }
     }
 

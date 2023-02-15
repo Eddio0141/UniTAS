@@ -114,12 +114,12 @@ public class GameInitialRestart : IGameInitialRestart, IOnAwake, IOnEnable, IOnS
 
             try
             {
-                if (obj is MonoBehaviour monoBehaviour)
-                {
-                    monoBehaviour.StopAllCoroutines();
-                }
+                // if (obj is MonoBehaviour monoBehaviour)
+                // {
+                //     monoBehaviour.StopAllCoroutines();
+                // }
 
-                Object.DestroyImmediate(obj);
+                // Object.DestroyImmediate(obj);
             }
             catch (Exception)
             {
