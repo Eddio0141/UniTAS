@@ -21,6 +21,7 @@ using UniTASPlugin.Trackers.AsyncSceneLoadTracker;
 using UniTASPlugin.Trackers.DontDestroyOnLoadTracker;
 using UniTASPlugin.Trackers.SceneIndexNameTracker;
 using UniTASPlugin.Trackers.SceneTracker;
+using UniTASPlugin.UnitySafeWrappers;
 using UniTASPlugin.UnitySafeWrappers.Interfaces;
 using UniTASPlugin.UnitySafeWrappers.Interfaces.SceneManagement;
 using UniTASPlugin.UnitySafeWrappers.Wrappers;
@@ -32,7 +33,6 @@ public static class ContainerRegister
 {
     public static Container Init()
     {
-        // we load the minimal requirements to run the plugin at setup
         var container = new Container(c =>
         {
             c.Scan(scanner =>
@@ -134,6 +134,8 @@ public static class ContainerRegister
             c.ForSingletonOf<DontDestroyOnLoadTracker>().Use<DontDestroyOnLoadTracker>();
             c.For<IDontDestroyOnLoadTracker>().Use(x => x.GetInstance<DontDestroyOnLoadTracker>());
             c.For<IDontDestroyOnLoadInfo>().Use(x => x.GetInstance<DontDestroyOnLoadTracker>());
+
+            c.For<IUnityInstanceWrapFactory>().Singleton().Use<UnityInstanceWrapFactory>();
         });
 
         return container;
