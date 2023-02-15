@@ -7,6 +7,7 @@ using UniTASPlugin.GameEnvironment.InnerState.Input;
 using UniTASPlugin.GameInfo;
 using UniTASPlugin.GameInitialRestart;
 using UniTASPlugin.GameRestart;
+using UniTASPlugin.GUI.MainMenu.Tabs;
 using UniTASPlugin.Interfaces;
 using UniTASPlugin.Interfaces.StartEvent;
 using UniTASPlugin.Interfaces.Update;
@@ -40,6 +41,7 @@ public static class ContainerRegister
 
                 scanner.AddAllTypesOf<EngineExternalMethod>();
                 scanner.AddAllTypesOf<PatchProcessor>();
+                scanner.AddAllTypesOf<IMainMenuTab>();
             });
 
             c.ForSingletonOf<PluginWrapper>().Use<PluginWrapper>();
@@ -68,7 +70,7 @@ public static class ContainerRegister
 
             c.For<IMonoBehaviourController>().Singleton().Use<MonoBehaviourController.MonoBehaviourController>();
 
-            c.For<ISceneWrapper>().Singleton().Use<SceneWrapper>();
+            c.For<ISceneWrapper>().Singleton().Use<SceneManagerWrapper>();
 
             c.For<IUnityWrapper>().Singleton().Use<UnityWrapper>();
 
