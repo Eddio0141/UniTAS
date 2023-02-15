@@ -1,33 +1,27 @@
 using System;
 using HarmonyLib;
-using UniTASPlugin.UnitySafeWrappers.Interfaces.SceneManagement;
 
 namespace UniTASPlugin.UnitySafeWrappers.Wrappers.SceneManagement;
 
-// ReSharper disable once UnusedType.Global
-public class LoadSceneParametersWrapper : ILoadSceneParametersWrapper
+public class LoadSceneParametersWrapper : UnityInstanceWrap
 {
     private Traverse _instanceTraverse;
-    private object _instance;
+
+    protected override Type WrappedType { get; } =
+        AccessTools.TypeByName("UnityEngine.SceneManagement.LoadSceneParameters");
+
     private const string LoadSceneModeField = "loadSceneMode";
     private const string LocalPhysicsModeField = "localPhysicsMode";
 
-    private readonly Type _loadSceneParametersType =
-        AccessTools.TypeByName("UnityEngine.SceneManagement.LoadSceneParameters");
-
-    public void CreateInstance()
+    public override void NewInstance(params object[] args)
     {
-        Instance = Activator.CreateInstance(_loadSceneParametersType);
+        base.NewInstance(args);
+        _instanceTraverse = Traverse.Create(Instance);
     }
 
-    public object Instance
+    public LoadSceneParametersWrapper(object instance) : base(instance)
     {
-        get => _instance;
-        set
-        {
-            _instanceTraverse = Traverse.Create(value);
-            _instance = value;
-        }
+        _instanceTraverse = Traverse.Create(instance);
     }
 
     public LoadSceneMode? LoadSceneMode

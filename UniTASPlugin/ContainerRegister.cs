@@ -23,9 +23,7 @@ using UniTASPlugin.Trackers.SceneIndexNameTracker;
 using UniTASPlugin.Trackers.SceneTracker;
 using UniTASPlugin.UnitySafeWrappers;
 using UniTASPlugin.UnitySafeWrappers.Interfaces;
-using UniTASPlugin.UnitySafeWrappers.Interfaces.SceneManagement;
 using UniTASPlugin.UnitySafeWrappers.Wrappers;
-using UniTASPlugin.UnitySafeWrappers.Wrappers.SceneManagement;
 
 namespace UniTASPlugin;
 
@@ -71,10 +69,6 @@ public static class ContainerRegister
             c.For<IMonoBehaviourController>().Singleton().Use<MonoBehaviourController.MonoBehaviourController>();
 
             c.For<ISceneWrapper>().Singleton().Use<SceneWrapper>();
-
-            c.For<ILoadSceneParametersWrapper>().Singleton().Use<LoadSceneParametersWrapper>();
-
-            c.For<ISceneWrap>().Singleton().Use<SceneWrap>();
 
             c.For<IUnityWrapper>().Singleton().Use<UnityWrapper>();
 

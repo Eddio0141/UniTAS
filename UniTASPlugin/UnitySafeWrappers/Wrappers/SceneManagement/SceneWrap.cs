@@ -1,25 +1,26 @@
+using System;
 using HarmonyLib;
-using UniTASPlugin.UnitySafeWrappers.Interfaces.SceneManagement;
 
 namespace UniTASPlugin.UnitySafeWrappers.Wrappers.SceneManagement;
 
-// ReSharper disable once UnusedType.Global
-public class SceneWrap : ISceneWrap
+public class SceneWrap : UnityInstanceWrap
 {
     private Traverse _instanceTraverse;
-    private object _instance;
 
     private const string BuildIndexField = "buildIndex";
     private const string NameField = "name";
 
-    public object Instance
+    protected override Type WrappedType { get; } = AccessTools.TypeByName("UnityEngine.SceneManagement.Scene");
+
+    public SceneWrap(object instance) : base(instance)
     {
-        get => _instance;
-        set
-        {
-            _instanceTraverse = Traverse.Create(value);
-            _instance = value;
-        }
+        _instanceTraverse = Traverse.Create(instance);
+    }
+
+    public override void NewInstance(params object[] args)
+    {
+        base.NewInstance(args);
+        _instanceTraverse = Traverse.Create(Instance);
     }
 
     public int BuildIndex => _instanceTraverse.Property(BuildIndexField).GetValue<int>();
