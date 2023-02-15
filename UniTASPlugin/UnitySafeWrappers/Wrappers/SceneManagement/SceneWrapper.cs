@@ -3,7 +3,7 @@ using HarmonyLib;
 
 namespace UniTASPlugin.UnitySafeWrappers.Wrappers.SceneManagement;
 
-public class SceneWrap : UnityInstanceWrap
+public class SceneWrapper : UnityInstanceWrap
 {
     private Traverse _instanceTraverse;
 
@@ -12,7 +12,7 @@ public class SceneWrap : UnityInstanceWrap
 
     protected override Type WrappedType { get; } = AccessTools.TypeByName("UnityEngine.SceneManagement.Scene");
 
-    public SceneWrap(object instance) : base(instance)
+    public SceneWrapper(object instance) : base(instance)
     {
         _instanceTraverse = Traverse.Create(instance);
     }

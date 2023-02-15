@@ -5,8 +5,9 @@ using System.Reflection;
 using HarmonyLib;
 using UniTASPlugin.Patches.PatchTypes;
 using UniTASPlugin.Trackers.AsyncSceneLoadTracker;
-using UniTASPlugin.UnitySafeWrappers.Interfaces.SceneManagement;
+using UniTASPlugin.UnitySafeWrappers;
 using UniTASPlugin.UnitySafeWrappers.Wrappers;
+using UniTASPlugin.UnitySafeWrappers.Wrappers.SceneManagement;
 using UnityEngine;
 
 namespace UniTASPlugin.Patches.RawPatches;
@@ -36,8 +37,8 @@ public class SceneManagerAsyncLoadPatch
 
     private static readonly ISceneLoadTracker SceneLoadTracker = Plugin.Kernel.GetInstance<ISceneLoadTracker>();
 
-    private static readonly ILoadSceneParametersWrapper LoadSceneParametersWrapper =
-        Plugin.Kernel.GetInstance<ILoadSceneParametersWrapper>();
+    private static readonly UnityInstanceWrapFactory UnityInstanceWrapFactory =
+        Plugin.Kernel.GetInstance<UnityInstanceWrapFactory>();
 
     private static bool AsyncSceneLoad(bool mustCompleteNextFrame, string sceneName, int sceneBuildIndex,
         object parameters, bool? isAdditive, ref AsyncOperation __result)
@@ -47,16 +48,16 @@ public class SceneManagerAsyncLoadPatch
 
         if (parameters != null)
         {
-            LoadSceneParametersWrapper.Instance = parameters;
+            var instance = UnityInstanceWrapFactory.Create<LoadSceneParametersWrapper>(parameters);
 
-            if (LoadSceneParametersWrapper.LoadSceneMode == null ||
-                LoadSceneParametersWrapper.LocalPhysicsMode == null)
+            if (instance.LoadSceneMode == null ||
+                instance.LocalPhysicsMode == null)
             {
                 throw new InvalidOperationException("Property shouldn't be null here");
             }
 
-            var loadSceneModeValue = (int)LoadSceneParametersWrapper.LoadSceneMode;
-            var localPhysicsModeValue = (int)LoadSceneParametersWrapper.LocalPhysicsMode;
+            var loadSceneModeValue = (int)instance.LoadSceneMode;
+            var localPhysicsModeValue = (int)instance.LocalPhysicsMode;
 
             SceneLoadTracker.AsyncSceneLoad(sceneName, sceneBuildIndex, (LoadSceneMode)loadSceneModeValue,
                 (LocalPhysicsMode)localPhysicsModeValue, __result);

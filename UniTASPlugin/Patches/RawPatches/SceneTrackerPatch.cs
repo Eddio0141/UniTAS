@@ -5,8 +5,9 @@ using System.Reflection;
 using HarmonyLib;
 using UniTASPlugin.Trackers.SceneIndexNameTracker;
 using UniTASPlugin.Trackers.SceneTracker;
-using UniTASPlugin.UnitySafeWrappers.Interfaces.SceneManagement;
+using UniTASPlugin.UnitySafeWrappers;
 using UniTASPlugin.UnitySafeWrappers.Wrappers;
+using UniTASPlugin.UnitySafeWrappers.Wrappers.SceneManagement;
 using UnityEngine;
 
 namespace UniTASPlugin.Patches.RawPatches;
@@ -20,10 +21,9 @@ public class SceneTrackerPatch
 {
     private static readonly ISceneTracker SceneTracker = Plugin.Kernel.GetInstance<ISceneTracker>();
     private static readonly ISceneIndexName SceneIndexName = Plugin.Kernel.GetInstance<ISceneIndexName>();
-    private static readonly ISceneWrap SceneWrap = Plugin.Kernel.GetInstance<ISceneWrap>();
 
-    private static readonly ILoadSceneParametersWrapper LoadSceneParametersWrapper =
-        Plugin.Kernel.GetInstance<ILoadSceneParametersWrapper>();
+    private static readonly IUnityInstanceWrapFactory UnityInstanceWrapFactory =
+        Plugin.Kernel.GetInstance<IUnityInstanceWrapFactory>();
 
     private const string Namespace = "UnityEngine.SceneManagement";
 
@@ -59,8 +59,8 @@ public class SceneTrackerPatch
 
         private static void Prefix(string sceneName, int sceneBuildIndex, object parameters)
         {
-            LoadSceneParametersWrapper.Instance = parameters;
-            var additive = LoadSceneParametersWrapper.LoadSceneMode == LoadSceneMode.Additive;
+            var instance = UnityInstanceWrapFactory.Create<LoadSceneParametersWrapper>(parameters);
+            var additive = instance.LoadSceneMode == LoadSceneMode.Additive;
             var sceneIndex = sceneBuildIndex != -1
                 ? sceneBuildIndex
                 : SceneIndexName.GetSceneIndex(sceneName) ??
@@ -149,9 +149,9 @@ public class SceneTrackerPatch
                   throw new InvalidOperationException("Scene index not found");
             var name = sceneName ?? SceneIndexName.GetSceneName(sceneIndex) ??
                 throw new InvalidOperationException("Scene name not found");
-            LoadSceneParametersWrapper.Instance = parameters;
+            var instance = UnityInstanceWrapFactory.Create<LoadSceneParametersWrapper>(parameters);
             SceneTracker.LoadScene(sceneIndex, name,
-                LoadSceneParametersWrapper.LoadSceneMode == LoadSceneMode.Additive);
+                instance.LoadSceneMode == LoadSceneMode.Additive);
         }
     }
 
@@ -213,8 +213,8 @@ public class SceneTrackerPatch
 
         private static void Prefix(object scene)
         {
-            SceneWrap.Instance = scene;
-            SceneTracker.UnloadScene(SceneWrap.BuildIndex, SceneWrap.Name);
+            var sceneWrap = UnityInstanceWrapFactory.Create<SceneWrapper>(scene);
+            SceneTracker.UnloadScene(sceneWrap.BuildIndex, sceneWrap.Name);
         }
     }
 

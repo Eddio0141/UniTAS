@@ -2,16 +2,15 @@ using System;
 using System.Reflection;
 using HarmonyLib;
 using UniTASPlugin.UnitySafeWrappers.Interfaces;
-using UniTASPlugin.UnitySafeWrappers.Interfaces.SceneManagement;
+using UniTASPlugin.UnitySafeWrappers.Wrappers.SceneManagement;
 using UnityEngine;
 
 namespace UniTASPlugin.UnitySafeWrappers.Wrappers;
 
 // ReSharper disable once ClassNeverInstantiated.Global
-public class SceneWrapper : ISceneWrapper
+public class SceneManagerWrapper : ISceneWrapper
 {
-    private readonly ILoadSceneParametersWrapper _loadSceneParametersWrapper;
-    private readonly ISceneWrap _sceneWrap;
+    private readonly IUnityInstanceWrapFactory _unityInstanceWrapFactory;
 
     private const string SceneManagementNamespace = "UnityEngine.SceneManagement";
 
@@ -39,10 +38,9 @@ public class SceneWrapper : ISceneWrapper
 
     private readonly MethodInfo _getActiveScene;
 
-    public SceneWrapper(ILoadSceneParametersWrapper loadSceneParametersWrapper, ISceneWrap sceneWrap)
+    public SceneManagerWrapper(IUnityInstanceWrapFactory unityInstanceWrapFactory)
     {
-        _loadSceneParametersWrapper = loadSceneParametersWrapper;
-        _sceneWrap = sceneWrap;
+        _unityInstanceWrapFactory = unityInstanceWrapFactory;
         const string loadSceneAsyncNameIndexInternal = "LoadSceneAsyncNameIndexInternal";
         _loadSceneAsyncNameIndexInternal = _sceneManager?.GetMethod(loadSceneAsyncNameIndexInternal, AccessTools.all,
             null, new[] { typeof(string), typeof(int), typeof(bool), typeof(bool) }, null);
@@ -74,21 +72,21 @@ public class SceneWrapper : ISceneWrapper
     {
         if (_loadSceneAsyncNameIndexInternalInjected != null)
         {
-            _loadSceneParametersWrapper.CreateInstance();
-            _loadSceneParametersWrapper.LoadSceneMode = loadSceneMode;
-            _loadSceneParametersWrapper.LocalPhysicsMode = localPhysicsMode;
+            var instance = _unityInstanceWrapFactory.CreateNew<LoadSceneParametersWrapper>();
+            instance.LoadSceneMode = loadSceneMode;
+            instance.LocalPhysicsMode = localPhysicsMode;
             _loadSceneAsyncNameIndexInternalInjected.Invoke(null,
-                new[] { sceneName, sceneBuildIndex, _loadSceneParametersWrapper.Instance, mustCompleteNextFrame });
+                new[] { sceneName, sceneBuildIndex, instance.Instance, mustCompleteNextFrame });
             return;
         }
 
         if (_loadSceneAsyncNameIndexInternal != null)
         {
-            _loadSceneParametersWrapper.CreateInstance();
-            _loadSceneParametersWrapper.LoadSceneMode = loadSceneMode;
-            _loadSceneParametersWrapper.LocalPhysicsMode = localPhysicsMode;
+            var instance = _unityInstanceWrapFactory.CreateNew<LoadSceneParametersWrapper>();
+            instance.LoadSceneMode = loadSceneMode;
+            instance.LocalPhysicsMode = localPhysicsMode;
             _loadSceneAsyncNameIndexInternal?.Invoke(null,
-                new[] { sceneName, sceneBuildIndex, _loadSceneParametersWrapper.Instance, mustCompleteNextFrame });
+                new[] { sceneName, sceneBuildIndex, instance.Instance, mustCompleteNextFrame });
             return;
         }
 
@@ -133,8 +131,9 @@ public class SceneWrapper : ISceneWrapper
         {
             if (_getActiveScene != null)
             {
-                _sceneWrap.Instance = _getActiveScene.Invoke(null, null);
-                return _sceneWrap.BuildIndex;
+                var sceneWrapInstance =
+                    _unityInstanceWrapFactory.Create<SceneWrapper>(_getActiveScene.Invoke(null, null));
+                return sceneWrapInstance.BuildIndex;
             }
 
             return Application.loadedLevel;
@@ -147,8 +146,9 @@ public class SceneWrapper : ISceneWrapper
         {
             if (_getActiveScene != null)
             {
-                _sceneWrap.Instance = _getActiveScene.Invoke(null, null);
-                return _sceneWrap.Name;
+                var sceneWrapInstance =
+                    _unityInstanceWrapFactory.Create<SceneWrapper>(_getActiveScene.Invoke(null, null));
+                return sceneWrapInstance.Name;
             }
 
             return Application.loadedLevelName;
