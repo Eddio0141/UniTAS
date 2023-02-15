@@ -16,9 +16,10 @@ public class MonoBehEventInvoker : IMonoBehEventInvoker
     private readonly IOnPreUpdates[] _onPreUpdates;
     private readonly IOnUpdate[] _onUpdates;
     private readonly IOnFixedUpdate[] _onFixedUpdates;
+    private readonly IOnGUI[] _onGUIs;
 
     public MonoBehEventInvoker(IOnAwake[] onAwakes, IOnStart[] onStarts, IOnEnable[] onEnables,
-        IOnPreUpdates[] onPreUpdates, IOnUpdate[] onUpdates, IOnFixedUpdate[] onFixedUpdates)
+        IOnPreUpdates[] onPreUpdates, IOnUpdate[] onUpdates, IOnFixedUpdate[] onFixedUpdates, IOnGUI[] onGUIs)
     {
         _onAwakes = onAwakes;
         _onStarts = onStarts;
@@ -26,6 +27,7 @@ public class MonoBehEventInvoker : IMonoBehEventInvoker
         _onPreUpdates = onPreUpdates;
         _onUpdates = onUpdates;
         _onFixedUpdates = onFixedUpdates;
+        _onGUIs = onGUIs;
     }
 
     // calls awake before any other script
@@ -90,6 +92,15 @@ public class MonoBehEventInvoker : IMonoBehEventInvoker
         foreach (var update in _onFixedUpdates)
         {
             update.FixedUpdate();
+        }
+    }
+
+    public void OnGUI()
+    {
+        // currently, this doesn't get called before other scripts
+        foreach (var onGui in _onGUIs)
+        {
+            onGui.OnGUI();
         }
     }
 

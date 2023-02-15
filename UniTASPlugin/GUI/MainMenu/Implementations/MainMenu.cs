@@ -26,7 +26,11 @@ public partial class MainMenu : IOnGUI
 
     private void RenderTab()
     {
+        // for tabs to be on the left side of the window
+        GUILayout.BeginHorizontal();
         _currentTab = GUILayout.Toolbar(_currentTab, _tabNames);
+        GUILayout.EndHorizontal();
+
         _tabs[_currentTab].Render();
     }
 }

@@ -115,6 +115,12 @@ public class Plugin : BaseUnityPlugin
         _monoBehEventInvoker.LateUpdate();
     }
 
+    private void OnGUI()
+    {
+        // Trace.Write("OnGUI invoke");
+        _monoBehEventInvoker.OnGUI();
+    }
+
     /// <summary>
     /// This method has to be ran once after all BepInEx patches are loaded
     /// </summary>
