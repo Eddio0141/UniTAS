@@ -1,4 +1,5 @@
 ﻿using Antlr4.Runtime.Misc;
+using BepInEx.Logging;
 using FluentAssertions;
 using UniTASPlugin.Logger;
 using UniTASPlugin.Movie.EngineMethods;
@@ -9,21 +10,13 @@ namespace UniTASPlugin.Tests.MovieParsing;
 
 public class MovieParseFail
 {
-    private class FakeLogger : ILogger
+    private class FakeLogger : IMovieLogger
     {
-        public void LogFatal(object data)
-        {
-        }
-
         public void LogError(object data)
         {
         }
 
         public void LogWarning(object data)
-        {
-        }
-
-        public void LogMessage(object data)
         {
         }
 
@@ -34,6 +27,8 @@ public class MovieParseFail
         public void LogDebug(object data)
         {
         }
+
+        public event EventHandler<LogEventArgs>? OnLog;
     }
 
     private static ScriptModel Setup(string input)

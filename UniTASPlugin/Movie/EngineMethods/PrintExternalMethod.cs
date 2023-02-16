@@ -6,9 +6,9 @@ namespace UniTASPlugin.Movie.EngineMethods;
 
 public class PrintExternalMethod : EngineExternalMethod
 {
-    private readonly ILogger _logger;
+    private readonly IMovieLogger _logger;
 
-    public PrintExternalMethod(ILogger logger) : base("print", -1)
+    public PrintExternalMethod(IMovieLogger logger) : base("print", -1)
     {
         _logger = logger;
     }
@@ -23,7 +23,7 @@ public class PrintExternalMethod : EngineExternalMethod
                 values.Add(value.ToString());
             }
 
-            _logger.LogMessage(string.Join(", ", values.ToArray()));
+            _logger.LogInfo(string.Join(", ", values.ToArray()));
         }
 
         return new();

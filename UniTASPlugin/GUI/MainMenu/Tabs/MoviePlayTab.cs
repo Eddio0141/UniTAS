@@ -1,3 +1,8 @@
+using System;
+using System.IO;
+using BepInEx.Logging;
+using UniTASPlugin.Logger;
+using UniTASPlugin.Movie;
 using UnityEngine;
 
 namespace UniTASPlugin.GUI.MainMenu.Tabs;
@@ -9,6 +14,16 @@ public class MoviePlayTab : IMainMenuTab
     public string Name => "Movie Play";
 
     private string _tasRunInfo = string.Empty;
+
+    private readonly IMovieLogger _movieLogger;
+    private readonly IMovieRunner _movieRunner;
+
+    public MoviePlayTab(IMovieLogger movieLogger, IMovieRunner movieRunner)
+    {
+        _movieLogger = movieLogger;
+        _movieRunner = movieRunner;
+        movieLogger.OnLog += OnMovieLog;
+    }
 
     public void Render(int windowID)
     {
@@ -43,13 +58,49 @@ public class MoviePlayTab : IMainMenuTab
 
         if (GUILayout.Button("Run"))
         {
+            RunMovieWithLogs();
         }
 
         GUILayout.EndHorizontal();
     }
 
+    private void RunMovieWithLogs()
+    {
+        // clear log at movie run
+        _tasRunInfo = string.Empty;
+
+        // initial checks
+        if (!File.Exists(_tasPath))
+        {
+            _movieLogger.LogError("TAS movie file does not exist!");
+            return;
+        }
+
+        _movieLogger.LogInfo("Starting TAS movie...");
+
+        // run movie
+        try
+        {
+            var movie = File.ReadAllText(_tasPath);
+            _movieRunner.RunFromInput(movie);
+        }
+        catch (IOException e)
+        {
+            _movieLogger.LogError($"Failed to read TAS movie file\n{e}");
+        }
+        catch (Exception e)
+        {
+            _movieLogger.LogError($"Failed to run TAS movie\n{e}");
+        }
+    }
+
     private void TASRunInfo()
     {
         GUILayout.TextArea(_tasRunInfo, GUILayout.ExpandHeight(true), GUILayout.ExpandWidth(true));
+    }
+
+    private void OnMovieLog(object data, LogEventArgs args)
+    {
+        _tasRunInfo += args.Data + Environment.NewLine;
     }
 }
