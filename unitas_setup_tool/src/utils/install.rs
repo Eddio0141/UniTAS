@@ -58,7 +58,7 @@ pub async fn install(
 }
 
 async fn dl_bepinex_if_missing(bepinex_version: DownloadVersion, offline: bool) -> Result<()> {
-    let installed_bepinex = LocalVersions::from_dir(&paths::bepinex_dir()?)?;
+    let installed_bepinex = LocalVersions::from_dir(&paths::local_bepinex_dir()?)?;
 
     if !installed_bepinex.versions.contains(&bepinex_version) {
         // download if not offline
@@ -73,7 +73,7 @@ async fn dl_bepinex_if_missing(bepinex_version: DownloadVersion, offline: bool) 
 }
 
 async fn dl_unitas_if_missing(unitas_version: DownloadVersion, offline: bool) -> Result<()> {
-    let installed_unitas = LocalVersions::from_dir(&paths::unitas_dir()?)?;
+    let installed_unitas = LocalVersions::from_dir(&paths::local_unitas_dir()?)?;
 
     if !installed_unitas.versions.contains(&unitas_version) {
         // download if not offline
@@ -93,7 +93,7 @@ async fn install_bepinex(
     dir_info: &DirInfo,
 ) -> Result<()> {
     // overwrite install without overwriting the config and other important files
-    let bepinex_dir = paths::bepinex_dir()?;
+    let bepinex_dir = paths::local_bepinex_dir()?;
     let bepinex_dir = match bepinex_version {
         DownloadVersion::Stable => bepinex_dir.join(paths::STABLE_DIR_NAME),
         DownloadVersion::Tag(tag) => bepinex_dir.join(paths::TAG_DIR_NAME).join(tag),
@@ -198,7 +198,7 @@ async fn install_bepinex(
 
 async fn install_unitas(game_dir: &Path, unitas_version: DownloadVersion) -> Result<()> {
     // overwrite install without overwriting the config and other important files
-    let unitas_dir = paths::unitas_dir()?;
+    let unitas_dir = paths::local_unitas_dir()?;
     let unitas_dir = match unitas_version {
         DownloadVersion::Stable => unitas_dir.join(paths::STABLE_DIR_NAME),
         DownloadVersion::Tag(tag) => unitas_dir.join(paths::TAG_DIR_NAME).join(tag),
@@ -210,7 +210,7 @@ async fn install_unitas(game_dir: &Path, unitas_version: DownloadVersion) -> Res
         download::UNITAS_RELEASE
     ));
     // add other dirs if we add more BepInEx stuff
-    let unitas_dir = unitas_dir.join("plugins");
+    let unitas_dir = unitas_dir.join(paths::unitas_plugins_dir());
     let dest_dir = game_dir.join("BepInEx").join("plugins");
 
     debug!("Copying {} to {}", unitas_dir.display(), dest_dir.display());

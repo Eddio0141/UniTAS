@@ -10,7 +10,7 @@ use anyhow::anyhow;
 
 use crate::{
     prelude::Wrap,
-    utils::{assembly_version::AssemblyVersion, exe_info::FileBitness},
+    utils::{assembly_version::AssemblyVersion, exe_info::FileBitness, paths},
 };
 
 #[derive(Default)]
@@ -178,8 +178,9 @@ impl InstalledInfo {
     fn unitas_version(game_dir: &Path) -> Result<Option<AssemblyVersion>, super::error::Error> {
         // checks in BepInEx/plugins/UniTASPlugin.dll
         let bepinex_dir = game_dir.join("BepInEx");
-        let bepinex_plugins_dir = bepinex_dir.join("plugins");
-        let unitas_dll = bepinex_plugins_dir.join("UniTASPlugin.dll");
+        let unitas_dll = bepinex_dir
+            .join(paths::unitas_plugins_dir())
+            .join("UniTASPlugin.dll");
 
         if !unitas_dll.try_exists()? {
             return Ok(None);
