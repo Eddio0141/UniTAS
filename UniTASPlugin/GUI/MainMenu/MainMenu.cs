@@ -4,10 +4,10 @@ using UniTASPlugin.GUI.MainMenu.Tabs;
 using UniTASPlugin.Interfaces.Update;
 using UnityEngine;
 
-namespace UniTASPlugin.GUI.MainMenu.Implementations;
+namespace UniTASPlugin.GUI.MainMenu;
 
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-public partial class MainMenu : IOnGUI
+public class MainMenu : IOnGUI
 {
     private readonly IMainMenuTab[] _tabs;
     private readonly string[] _tabNames;

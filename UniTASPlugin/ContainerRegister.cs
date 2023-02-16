@@ -7,7 +7,7 @@ using UniTASPlugin.GameEnvironment.InnerState.Input;
 using UniTASPlugin.GameInfo;
 using UniTASPlugin.GameInitialRestart;
 using UniTASPlugin.GameRestart;
-using UniTASPlugin.GUI.MainMenu.Implementations;
+using UniTASPlugin.GUI.MainMenu;
 using UniTASPlugin.GUI.MainMenu.Tabs;
 using UniTASPlugin.Interfaces;
 using UniTASPlugin.Interfaces.StartEvent;
