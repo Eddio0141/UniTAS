@@ -80,6 +80,7 @@ public static class ContainerRegister
             c.For<ITimeWrapper>().Singleton().Use<TimeWrapper>();
 
             c.For<ILogger>().Singleton().Use<Logger.Logger>();
+            c.For<IMovieLogger>().Singleton().Use<MovieLogger>();
 
             // before FileSystemManager
             c.ForSingletonOf<PatchReverseInvoker>().Use<PatchReverseInvoker>();
