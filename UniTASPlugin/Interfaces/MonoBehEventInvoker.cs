@@ -1,10 +1,11 @@
+using System;
 using UniTASPlugin.Interfaces.StartEvent;
 using UniTASPlugin.Interfaces.Update;
 
 namespace UniTASPlugin.Interfaces;
 
 // ReSharper disable once ClassNeverInstantiated.Global
-public class MonoBehEventInvoker : IMonoBehEventInvoker
+public class MonoBehEventInvoker : IMonoBehEventInvoker, IUpdateEvents
 {
     private bool _updated;
     private bool _calledFixedUpdate;
@@ -114,4 +115,6 @@ public class MonoBehEventInvoker : IMonoBehEventInvoker
             onPreUpdate.PreUpdate();
         }
     }
+
+    public event Action OnGUIEvent;
 }

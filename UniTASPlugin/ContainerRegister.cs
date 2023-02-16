@@ -48,6 +48,7 @@ public static class ContainerRegister
             c.ForSingletonOf<PluginWrapper>().Use<PluginWrapper>();
 
             c.For<IMonoBehEventInvoker>().Singleton().Use<MonoBehEventInvoker>();
+            c.Forward<IMonoBehEventInvoker, IUpdateEvents>();
 
             c.For<IStaticFieldManipulator>().Singleton().Use<StaticFieldStorage.StaticFieldStorage>();
 
