@@ -2,6 +2,6 @@ namespace UniTASPlugin.GUI.MainMenu.Tabs;
 
 public interface IMainMenuTab
 {
-    void Render();
+    void Render(int windowID);
     string Name { get; }
 }

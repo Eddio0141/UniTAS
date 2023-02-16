@@ -4,7 +4,7 @@ namespace UniTASPlugin.GUI.MainMenu.Tabs;
 
 public class TestTab : IMainMenuTab
 {
-    public void Render()
+    public void Render(int windowID)
     {
         GUILayout.Label("I am a test tab!");
     }
