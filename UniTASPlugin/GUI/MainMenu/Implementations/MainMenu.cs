@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using UniTASPlugin.GUI.MainMenu.Tabs;
 using UniTASPlugin.Interfaces.Update;
@@ -5,11 +6,13 @@ using UnityEngine;
 
 namespace UniTASPlugin.GUI.MainMenu.Implementations;
 
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public partial class MainMenu : IOnGUI
 {
     private readonly IMainMenuTab[] _tabs;
     private readonly string[] _tabNames;
     private int _currentTab;
+    private Vector2 _scrollPosition;
 
     public MainMenu(IMainMenuTab[] tabs)
     {
@@ -26,11 +29,12 @@ public partial class MainMenu : IOnGUI
 
     private void RenderTab()
     {
-        // for tabs to be on the left side of the window
         GUILayout.BeginHorizontal();
-        _currentTab = GUILayout.Toolbar(_currentTab, _tabNames);
-        GUILayout.EndHorizontal();
+        _scrollPosition = GUILayout.BeginScrollView(_scrollPosition, GUILayout.Width(100));
+        _currentTab = GUILayout.SelectionGrid(_currentTab, _tabNames, 1);
+        GUILayout.EndScrollView();
 
         _tabs[_currentTab].Render();
+        GUILayout.EndHorizontal();
     }
 }
