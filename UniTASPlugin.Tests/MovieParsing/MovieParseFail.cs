@@ -16,19 +16,13 @@ public class MovieParseFail
         {
         }
 
-        public void LogWarning(object data)
-        {
-        }
-
         public void LogInfo(object data)
         {
         }
 
-        public void LogDebug(object data)
-        {
-        }
-
+#pragma warning disable 67
         public event EventHandler<LogEventArgs>? OnLog;
+#pragma warning restore 67
     }
 
     private static ScriptModel Setup(string input)
