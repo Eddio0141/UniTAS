@@ -1,13 +1,12 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using UniTASPlugin.GUI.MainMenu.Tabs;
-using UniTASPlugin.Interfaces.Update;
 using UnityEngine;
 
 namespace UniTASPlugin.GUI.MainMenu;
 
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-public class MainMenu : IOnGUI
+public class MainMenu : Window
 {
     private readonly IMainMenuTab[] _tabs;
     private readonly string[] _tabNames;
@@ -15,7 +14,8 @@ public class MainMenu : IOnGUI
     private int _currentTab;
     private Vector2 _scrollPosition;
 
-    private Rect _windowRect = new(0, 0, 600, 200);
+    protected override Rect DefaultWindowRect { get; } = new(0, 0, 600, 200);
+    protected override string WindowName => $"{MyPluginInfo.PLUGIN_NAME} Menu";
 
     public MainMenu(IMainMenuTab[] tabs)
     {
@@ -23,7 +23,7 @@ public class MainMenu : IOnGUI
         _tabNames = tabs.Select(tab => tab.Name).ToArray();
     }
 
-    public void OnGUI()
+    protected override void OnGUI(int id)
     {
         if (_maxTabNameLength == 0)
         {
@@ -31,15 +31,7 @@ public class MainMenu : IOnGUI
             _maxTabNameLength = _tabNames.Max(name => (int)UnityEngine.GUI.skin.label.CalcSize(new(name)).x) + 20;
         }
 
-        _windowRect = GUILayout.Window(0, _windowRect, Window, $"{MyPluginInfo.PLUGIN_NAME} Menu");
-    }
-
-    private void Window(int id)
-    {
         RenderTab(id);
-
-        // make window draggable
-        UnityEngine.GUI.DragWindow();
     }
 
     private void RenderTab(int id)
