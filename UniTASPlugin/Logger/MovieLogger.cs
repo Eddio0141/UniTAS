@@ -8,36 +8,30 @@ namespace UniTASPlugin.Logger;
 /// </summary>
 public class MovieLogger : IMovieLogger
 {
-    private readonly ILogger _logger;
-
     private readonly ManualLogSource _logSource = new("Movie playback");
 
-    public MovieLogger(ILogger logger)
+    public MovieLogger()
     {
-        _logger = logger;
+        BepInEx.Logging.Logger.Sources.Add(_logSource);
     }
 
     public void LogError(object data)
     {
-        _logger.LogError(data);
         _logSource.LogError(data);
     }
 
     public void LogWarning(object data)
     {
-        _logger.LogWarning(data);
         _logSource.LogWarning(data);
     }
 
     public void LogInfo(object data)
     {
-        _logger.LogInfo(data);
         _logSource.LogInfo(data);
     }
 
     public void LogDebug(object data)
     {
-        _logger.LogDebug(data);
         _logSource.LogDebug(data);
     }
 
