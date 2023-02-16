@@ -7,7 +7,7 @@ $buildOutput = "build/$buildType"
 
 # Dotnet builds
 $pluginSource = "UniTASPlugin"
-$buildOutputPlugin = "$buildOutput/plugins"
+$buildOutputPlugin = "$buildOutput/plugins/UniTAS"
 
 dotnet build "$pluginSource" -c "$buildType"
 
