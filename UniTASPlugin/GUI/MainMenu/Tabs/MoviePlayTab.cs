@@ -14,6 +14,7 @@ public class MoviePlayTab : IMainMenuTab
     public string Name => "Movie Play";
 
     private string _tasRunInfo = string.Empty;
+    private Vector2 _tasRunInfoScroll;
 
     private readonly IMovieLogger _movieLogger;
     private readonly IMovieRunner _movieRunner;
@@ -96,11 +97,18 @@ public class MoviePlayTab : IMainMenuTab
 
     private void TASRunInfo()
     {
+        _tasRunInfoScroll = GUILayout.BeginScrollView(_tasRunInfoScroll);
+        
         GUILayout.TextArea(_tasRunInfo, GUILayout.ExpandHeight(true), GUILayout.ExpandWidth(true));
+        
+        GUILayout.EndScrollView();
     }
 
     private void OnMovieLog(object data, LogEventArgs args)
     {
-        _tasRunInfo += args.Data + Environment.NewLine;
+        _tasRunInfo += $"[{args.Level}] {args.Data}{Environment.NewLine}";
+
+        // automatically scroll to bottom
+        _tasRunInfoScroll.y = float.MaxValue;
     }
 }
