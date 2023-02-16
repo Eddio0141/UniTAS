@@ -2,11 +2,11 @@ using UnityEngine;
 
 namespace UniTASPlugin.GUI.MainMenu.Tabs;
 
-public class TasTab : IMainMenuTab
+public class MoviePlayTab : IMainMenuTab
 {
     private string _tasPath = string.Empty;
 
-    public string Name => "TAS";
+    public string Name => "Movie Play";
 
     public void Render(int windowID)
     {
@@ -23,19 +23,19 @@ public class TasTab : IMainMenuTab
     private void OperationButtons()
     {
         GUILayout.BeginHorizontal();
-        
+
         if (GUILayout.Button("Browse"))
         {
         }
-        
+
         if (GUILayout.Button("Recent"))
         {
         }
-        
+
         if (GUILayout.Button("Run"))
         {
         }
-        
+
         GUILayout.EndHorizontal();
     }
 
