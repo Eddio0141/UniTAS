@@ -1,4 +1,5 @@
-﻿using UniTASPlugin.Interfaces.Update;
+﻿using UniTASPlugin.Interfaces;
+using UniTASPlugin.Interfaces.Update;
 using UnityEngine;
 
 namespace UniTASPlugin.GUI;
@@ -12,11 +13,19 @@ public abstract class Window : IOnGUI
     private Rect _windowRect;
 
     protected abstract Rect DefaultWindowRect { get; }
-    protected abstract string WindowName { get; }
+    private readonly string _windowName;
 
-    protected Window()
+    private readonly IUpdateEvents _updateEvents;
+
+    private static int _globalId;
+    private readonly int _id;
+
+    protected Window(IUpdateEvents updateEvents, string windowName = null)
     {
-        Init();
+        _updateEvents = updateEvents;
+        _windowName = windowName;
+        _id = _globalId;
+        _globalId++;
     }
 
     private void Init()
@@ -24,9 +33,20 @@ public abstract class Window : IOnGUI
         _windowRect = DefaultWindowRect;
     }
 
+    public void Show()
+    {
+        Init();
+        _updateEvents.OnGUIEvent += OnGUI;
+    }
+
+    public void Close()
+    {
+        _updateEvents.OnGUIEvent -= OnGUI;
+    }
+
     public void OnGUI()
     {
-        _windowRect = GUILayout.Window(0, _windowRect, RenderWindow, WindowName);
+        _windowRect = GUILayout.Window(_id, _windowRect, RenderWindow, _windowName);
     }
 
     private void RenderWindow(int id)

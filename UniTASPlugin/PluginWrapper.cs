@@ -5,6 +5,8 @@ using System.Linq;
 using HarmonyLib;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.GameInfo;
+using UniTASPlugin.GUI.MainMenu;
+using UniTASPlugin.GUI.WindowFactory;
 using UniTASPlugin.Logger;
 using UniTASPlugin.Patches.PatchProcessor;
 using UniTASPlugin.UnitySafeWrappers.Interfaces;
@@ -17,7 +19,7 @@ namespace UniTASPlugin;
 public class PluginWrapper
 {
     public PluginWrapper(IEnumerable<PatchProcessor> patchProcessors, IGameInfo gameInfo, ILogger logger,
-        VirtualEnvironment virtualEnvironment, IRandomWrapper random)
+        VirtualEnvironment virtualEnvironment, IRandomWrapper random, IWindowFactory windowFactory)
     {
         logger.LogInfo($"Internally found unity version: {gameInfo.UnityVersion}");
         logger.LogInfo($"Game product name: {gameInfo.ProductName}");
@@ -51,6 +53,8 @@ public class PluginWrapper
 
         // this is to make sure Path fields are property set, not sure if theres a better place to put this
         // AccessTools.Constructor(typeof(System.IO.Path), searchForStatic: true).Invoke(null, null);
+
+        windowFactory.Create<MainMenu>().Show();
 
         logger.LogInfo($"System time: {DateTime.Now}");
         logger.LogInfo($"Plugin {MyPluginInfo.PLUGIN_NAME} is loaded!");

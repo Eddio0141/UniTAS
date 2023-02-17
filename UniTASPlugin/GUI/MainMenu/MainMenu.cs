@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using UniTASPlugin.GUI.MainMenu.Tabs;
+using UniTASPlugin.Interfaces;
 using UnityEngine;
 
 namespace UniTASPlugin.GUI.MainMenu;
@@ -15,9 +16,9 @@ public class MainMenu : Window
     private Vector2 _scrollPosition;
 
     protected override Rect DefaultWindowRect { get; } = new(0, 0, 600, 200);
-    protected override string WindowName => $"{MyPluginInfo.PLUGIN_NAME} Menu";
 
-    public MainMenu(IMainMenuTab[] tabs)
+    public MainMenu(IUpdateEvents updateEvents, IMainMenuTab[] tabs) : base(updateEvents,
+        $"{MyPluginInfo.PLUGIN_NAME} Menu")
     {
         _tabs = tabs;
         _tabNames = tabs.Select(tab => tab.Name).ToArray();

@@ -103,6 +103,8 @@ public class MonoBehEventInvoker : IMonoBehEventInvoker, IUpdateEvents
         {
             onGui.OnGUI();
         }
+
+        OnGUIEvent?.Invoke();
     }
 
     private void CallOnPreUpdate()

@@ -2,5 +2,5 @@
 
 public interface IWindowFactory
 {
-    T Create<T>() where T : Window;
+    T Create<T>(string windowName = null) where T : Window;
 }

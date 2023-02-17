@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using BepInEx.Logging;
 using UniTASPlugin.GUI.WindowFactory;
-using UniTASPlugin.Interfaces;
 using UniTASPlugin.Logger;
 using UniTASPlugin.Movie;
 using UnityEngine;
@@ -21,17 +20,14 @@ public class MoviePlayTab : IMainMenuTab
     private readonly IMovieLogger _movieLogger;
     private readonly IMovieRunner _movieRunner;
     private readonly IWindowFactory _windowFactory;
-    private readonly IUpdateEvents _updateEvents;
 
     private Window _fileBrowserWindow;
 
-    public MoviePlayTab(IMovieLogger movieLogger, IMovieRunner movieRunner, IWindowFactory windowFactory,
-        IUpdateEvents updateEvents)
+    public MoviePlayTab(IMovieLogger movieLogger, IMovieRunner movieRunner, IWindowFactory windowFactory)
     {
         _movieLogger = movieLogger;
         _movieRunner = movieRunner;
         _windowFactory = windowFactory;
-        _updateEvents = updateEvents;
         movieLogger.OnLog += OnMovieLog;
     }
 
@@ -60,8 +56,8 @@ public class MoviePlayTab : IMainMenuTab
 
         if (GUILayout.Button("Browse"))
         {
-            _fileBrowserWindow = _windowFactory.Create<FileBrowser.FileBrowser>();
-            _updateEvents.OnGUIEvent += _fileBrowserWindow.OnGUI;
+            _fileBrowserWindow = _windowFactory.Create<FileBrowser.FileBrowser>("Select TAS Movie");
+            _fileBrowserWindow.Show();
         }
 
         if (GUILayout.Button("Recent"))

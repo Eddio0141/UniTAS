@@ -1,9 +1,23 @@
-﻿namespace UniTASPlugin.GUI.WindowFactory;
+﻿using StructureMap;
+
+namespace UniTASPlugin.GUI.WindowFactory;
 
 public class WindowFactory : IWindowFactory
 {
-    public T Create<T>() where T : Window
+    private readonly IContainer _container;
+
+    public WindowFactory(IContainer container)
     {
-        return (T)System.Activator.CreateInstance(typeof(T));
+        _container = container;
+    }
+
+    public T Create<T>(string windowName = null) where T : Window
+    {
+        if (windowName == null)
+        {
+            return _container.GetInstance<T>();
+        }
+
+        return _container.With("windowName").EqualTo(windowName).GetInstance<T>();
     }
 }

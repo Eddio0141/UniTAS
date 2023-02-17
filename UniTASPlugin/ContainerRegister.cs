@@ -7,7 +7,6 @@ using UniTASPlugin.GameEnvironment.InnerState.Input;
 using UniTASPlugin.GameInfo;
 using UniTASPlugin.GameInitialRestart;
 using UniTASPlugin.GameRestart;
-using UniTASPlugin.GUI.MainMenu;
 using UniTASPlugin.GUI.MainMenu.Tabs;
 using UniTASPlugin.Interfaces;
 using UniTASPlugin.Interfaces.StartEvent;
@@ -135,9 +134,6 @@ public static class ContainerRegister
             c.For<IDontDestroyOnLoadInfo>().Use(x => x.GetInstance<DontDestroyOnLoadTracker>());
 
             c.For<IUnityInstanceWrapFactory>().Singleton().Use<UnityInstanceWrapFactory>();
-
-            c.ForSingletonOf<MainMenu>();
-            c.For<IOnGUI>().Use(x => x.GetInstance<MainMenu>());
         });
 
         return container;
