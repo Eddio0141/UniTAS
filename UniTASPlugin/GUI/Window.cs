@@ -1,4 +1,5 @@
-﻿using UniTASPlugin.Interfaces;
+﻿using System.Diagnostics;
+using UniTASPlugin.Interfaces;
 using UniTASPlugin.Interfaces.Update;
 using UnityEngine;
 
@@ -36,6 +37,7 @@ public abstract class Window : IOnGUI
     public void Show()
     {
         Init();
+        Trace.Write($"Show window, ID: {_id}, Title: {_windowName}, rect: {_windowRect}");
         _updateEvents.OnGUIEvent += OnGUI;
     }
 

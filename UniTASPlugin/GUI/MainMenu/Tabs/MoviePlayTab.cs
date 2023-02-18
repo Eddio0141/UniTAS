@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using BepInEx.Logging;
-using UniTASPlugin.GUI.WindowFactory;
 using UniTASPlugin.Logger;
 using UniTASPlugin.Movie;
 using UnityEngine;
@@ -19,15 +18,11 @@ public class MoviePlayTab : IMainMenuTab
 
     private readonly IMovieLogger _movieLogger;
     private readonly IMovieRunner _movieRunner;
-    private readonly IWindowFactory _windowFactory;
 
-    private Window _fileBrowserWindow;
-
-    public MoviePlayTab(IMovieLogger movieLogger, IMovieRunner movieRunner, IWindowFactory windowFactory)
+    public MoviePlayTab(IMovieLogger movieLogger, IMovieRunner movieRunner)
     {
         _movieLogger = movieLogger;
         _movieRunner = movieRunner;
-        _windowFactory = windowFactory;
         movieLogger.OnLog += OnMovieLog;
     }
 
@@ -56,8 +51,6 @@ public class MoviePlayTab : IMainMenuTab
 
         if (GUILayout.Button("Browse"))
         {
-            _fileBrowserWindow = _windowFactory.Create<FileBrowser.FileBrowser>("Select TAS Movie");
-            _fileBrowserWindow.Show();
         }
 
         if (GUILayout.Button("Recent"))
