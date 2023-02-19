@@ -3,6 +3,7 @@ using System.Diagnostics;
 using UniTASPlugin.GameEnvironment.InnerState;
 using UniTASPlugin.GameEnvironment.InnerState.Input;
 using UniTASPlugin.GameRestart;
+using UniTASPlugin.GameRestart.EventInterfaces;
 
 namespace UniTASPlugin.GameEnvironment;
 
@@ -46,7 +47,7 @@ public class VirtualEnvironment : IOnGameRestartResume
         GameTime = gameTime;
     }
 
-    public void OnGameRestartResume(DateTime startupTime)
+    public void OnGameRestartResume(DateTime startupTime, bool preMonoBehaviourResume)
     {
         SystemRandom = new((int)Seed);
         Trace.Write($"Setting System.Random seed to {Seed}");

@@ -4,6 +4,7 @@ using System.IO;
 using UniTASPlugin.GameEnvironment.InnerState.FileSystem.OsFileSystems;
 using UniTASPlugin.GameInfo;
 using UniTASPlugin.GameRestart;
+using UniTASPlugin.GameRestart.EventInterfaces;
 using UniTASPlugin.Logger;
 
 namespace UniTASPlugin.GameEnvironment.InnerState.FileSystem;
@@ -46,7 +47,7 @@ public class FileSystemManager : IFileSystemManager, IOnGameRestart
         };
     }
 
-    public void OnGameRestart(DateTime startupTime)
+    public void OnGameRestart(DateTime startupTime, bool preSceneLoad)
     {
         Init();
     }

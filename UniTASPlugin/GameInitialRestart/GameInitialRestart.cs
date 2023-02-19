@@ -1,55 +1,49 @@
 using System;
 using BepInEx;
-using UniTASPlugin.FixedUpdateSync;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.GameRestart;
-using UniTASPlugin.Interfaces.StartEvent;
-using UniTASPlugin.Interfaces.Update;
+using UniTASPlugin.GameRestart.EventInterfaces;
 using UniTASPlugin.Logger;
-using UniTASPlugin.MonoBehaviourController;
 using UniTASPlugin.ReverseInvoker;
-using UniTASPlugin.StaticFieldStorage;
-using UniTASPlugin.UnitySafeWrappers.Interfaces;
-using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace UniTASPlugin.GameInitialRestart;
 
 // ReSharper disable once ClassNeverInstantiated.Global
-public class GameInitialRestart : IGameInitialRestart, IOnAwake, IOnEnable, IOnStart, IOnFixedUpdate
+public class GameInitialRestart : GameRestart.GameRestart, IGameInitialRestart, IOnPreGameRestart, IOnGameRestart,
+    IOnGameRestartResume
 {
-    private readonly IUnityWrapper _unityWrapper;
     private readonly ILogger _logger;
-    private readonly IMonoBehaviourController _monoBehaviourController;
-    private readonly IStaticFieldManipulator _staticFieldManipulator;
-    private readonly ISyncFixedUpdate _syncFixedUpdate;
-    private readonly IOnGameRestart[] _onGameRestart;
-    private readonly IOnGameRestartResume[] _onGameRestartResume;
-    private readonly IPatchReverseInvoker _reverseInvoker;
-
     private readonly VirtualEnvironment _virtualEnvironment;
-
-    private bool _pendingResumePausedExecution;
 
     private bool _restartOperationStarted;
     public bool FinishedRestart { get; private set; }
 
-    private DateTime _softRestartTime;
+    private readonly PatchReverseInvoker _reverseInvoker;
 
-    public GameInitialRestart(IUnityWrapper unityWrapper, ILogger logger,
-        IMonoBehaviourController monoBehaviourController, IStaticFieldManipulator staticFieldManipulator,
-        ISyncFixedUpdate syncFixedUpdate, IOnGameRestart[] onGameRestart, IPatchReverseInvoker reverseInvoker,
-        VirtualEnvironment virtualEnvironment, IOnGameRestartResume[] onGameRestartResume)
+    public GameInitialRestart(RestartParameters restartParameters, PatchReverseInvoker reverseInvoker) :
+        base(restartParameters)
     {
-        _unityWrapper = unityWrapper;
-        _logger = logger;
-        _monoBehaviourController = monoBehaviourController;
-        _staticFieldManipulator = staticFieldManipulator;
-        _syncFixedUpdate = syncFixedUpdate;
-        _onGameRestart = onGameRestart;
         _reverseInvoker = reverseInvoker;
-        _virtualEnvironment = virtualEnvironment;
-        _onGameRestartResume = onGameRestartResume;
+        _logger = restartParameters.Logger;
+        _virtualEnvironment = restartParameters.VirtualEnvironment;
+    }
+
+    public void OnPreGameRestart()
+    {
+        if (!_restartOperationStarted) return;
+
+        // TODO fix this hack
+        _virtualEnvironment.RunVirtualEnvironment = true;
+        _virtualEnvironment.FrameTime = 0.001f;
+    }
+
+    public void OnGameRestart(DateTime startupTime, bool preSceneLoad)
+    {
+        if (preSceneLoad || !_restartOperationStarted) return;
+
+        // TODO fix this hack
+        _virtualEnvironment.FrameTime = 0f;
     }
 
     public void InitialRestart()
@@ -57,50 +51,11 @@ public class GameInitialRestart : IGameInitialRestart, IOnAwake, IOnEnable, IOnS
         if (_restartOperationStarted) return;
         _restartOperationStarted = true;
 
-        // TODO fix this hack
-        _virtualEnvironment.RunVirtualEnvironment = true;
-        _virtualEnvironment.FrameTime = 0.001f;
-
-        _logger.LogDebug("Stopping MonoBehaviour execution");
-        _monoBehaviourController.PausedExecution = true;
-        DestroyAllGameObjects();
-        _staticFieldManipulator.ResetStaticFields();
-
-        _softRestartTime = _reverseInvoker.Invoke(() => DateTime.Now);
-
-        _syncFixedUpdate.OnSync(SoftRestartOperation, 1);
-        _logger.LogDebug("Initial restart, pending FixedUpdate call");
+        var time = _reverseInvoker.Invoke(() => DateTime.Now);
+        SoftRestart(time);
     }
 
-    private void OnGameRestart()
-    {
-        foreach (var gameRestart in _onGameRestart)
-        {
-            gameRestart.OnGameRestart(_softRestartTime);
-        }
-    }
-
-    private void OnGameRestartResume()
-    {
-        foreach (var gameRestart in _onGameRestartResume)
-        {
-            gameRestart.OnGameRestartResume(_softRestartTime);
-        }
-    }
-
-    private void SoftRestartOperation()
-    {
-        _logger.LogInfo("Restarting");
-        OnGameRestart();
-        _unityWrapper.Scene.LoadScene(0);
-        _pendingResumePausedExecution = true;
-        FinishedRestart = true;
-
-        // TODO fix this hack
-        _virtualEnvironment.FrameTime = 0f;
-    }
-
-    private void DestroyAllGameObjects()
+    protected override void DestroyGameObjects()
     {
         var allObjects = Object.FindObjectsOfType(typeof(Object));
         _logger.LogDebug($"Attempting destruction of {allObjects.Length} objects");
@@ -128,37 +83,10 @@ public class GameInitialRestart : IGameInitialRestart, IOnAwake, IOnEnable, IOnS
         }
     }
 
-    public void Awake()
+    public void OnGameRestartResume(DateTime startupTime, bool preMonoBehaviourResume)
     {
-        PendingResumePausedExecution();
+        if (!_restartOperationStarted || preMonoBehaviourResume) return;
+
+        FinishedRestart = true;
     }
-
-    public void OnEnable()
-    {
-        PendingResumePausedExecution();
-    }
-
-    public void Start()
-    {
-        PendingResumePausedExecution();
-    }
-
-// plugin will call this as a backup
-    public void FixedUpdate()
-    {
-        PendingResumePausedExecution();
-    }
-
-    private void PendingResumePausedExecution()
-    {
-        if (!_pendingResumePausedExecution) return;
-        _pendingResumePausedExecution = false;
-
-        OnGameRestartResume();
-
-        _monoBehaviourController.PausedExecution = false;
-        _logger.LogDebug("Resuming MonoBehaviour execution");
-    }
-
-    // TODO probably should try combine this class into GameRestart
 }

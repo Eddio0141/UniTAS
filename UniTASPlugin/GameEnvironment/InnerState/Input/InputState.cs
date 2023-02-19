@@ -1,5 +1,6 @@
 ﻿using System;
 using UniTASPlugin.GameRestart;
+using UniTASPlugin.GameRestart.EventInterfaces;
 using UniTASPlugin.Interfaces.Update;
 
 namespace UniTASPlugin.GameEnvironment.InnerState.Input;
@@ -12,7 +13,7 @@ public class InputState : IOnGameRestart, IOnPreUpdates
     public KeyboardState KeyboardState { get; } = new();
     public ButtonState ButtonState { get; } = new();
 
-    public void OnGameRestart(DateTime startupTime)
+    public void OnGameRestart(DateTime startupTime, bool preSceneLoad)
     {
         ResetStates();
     }

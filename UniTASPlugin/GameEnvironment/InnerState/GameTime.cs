@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using HarmonyLib;
-using UniTASPlugin.GameRestart;
+using UniTASPlugin.GameRestart.EventInterfaces;
 using UniTASPlugin.Interfaces.StartEvent;
 using UniTASPlugin.Interfaces.Update;
 using UnityEngine;
@@ -47,8 +47,10 @@ public class GameTime : IOnPreUpdates, IOnGameRestartResume, IOnStart
 
 
     // setting the start up time causes the game to update other time related variables, which requires this to be ran in the main thread
-    public void OnGameRestartResume(DateTime startupTime)
+    public void OnGameRestartResume(DateTime startupTime, bool preMonoBehaviourResume)
     {
+        if (!preMonoBehaviourResume) return;
+        
         StartupTime = startupTime;
 
         Trace.Write($"Setting startup time to {StartupTime}");
