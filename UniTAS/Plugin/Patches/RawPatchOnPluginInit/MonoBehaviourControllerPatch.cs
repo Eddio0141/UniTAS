@@ -113,7 +113,7 @@ public class MonoBehaviourControllerPatch
             "TMPro",
             "UnityEngine",
             "Unity",
-            "UniTASPlugin",
+            nameof(UniTAS),
             "BepInEx"
         };
 
