@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using UniTASPlugin.FixedUpdateSync;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.GameRestart.EventInterfaces;
@@ -86,7 +85,7 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
         _logger.LogDebug("Soft restarting, pending FixedUpdate call");
     }
 
-    private void OnGameRestart(bool preSceneLoad)
+    protected virtual void OnGameRestart(bool preSceneLoad)
     {
         foreach (var gameRestart in _onGameRestart)
         {
@@ -94,7 +93,7 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
         }
     }
 
-    private void OnGameRestartResume(bool preMonoBehaviourResume)
+    protected virtual void OnGameRestartResume(bool preMonoBehaviourResume)
     {
         foreach (var gameRestart in _onGameRestartResume)
         {
@@ -102,7 +101,7 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
         }
     }
 
-    private void OnPreGameRestart()
+    protected virtual void OnPreGameRestart()
     {
         foreach (var gameRestart in _onPreGameRestart)
         {

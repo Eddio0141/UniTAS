@@ -68,9 +68,6 @@ public static class ContainerRegister
 
             c.ForSingletonOf<GameInitialRestart.GameInitialRestart>().Use<GameInitialRestart.GameInitialRestart>();
             c.For<IGameInitialRestart>().Use(x => x.GetInstance<GameInitialRestart.GameInitialRestart>());
-            c.For<IOnPreGameRestart>().Use(x => x.GetInstance<GameInitialRestart.GameInitialRestart>());
-            c.For<IOnGameRestart>().Use(x => x.GetInstance<GameInitialRestart.GameInitialRestart>());
-            c.For<IOnGameRestartResume>().Use(x => x.GetInstance<GameInitialRestart.GameInitialRestart>());
 
             c.For<IMonoBehaviourController>().Singleton().Use<MonoBehaviourController.MonoBehaviourController>();
 

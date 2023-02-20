@@ -2,7 +2,6 @@ using System;
 using BepInEx;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.GameRestart;
-using UniTASPlugin.GameRestart.EventInterfaces;
 using UniTASPlugin.Logger;
 using UniTASPlugin.ReverseInvoker;
 using Object = UnityEngine.Object;
@@ -10,8 +9,7 @@ using Object = UnityEngine.Object;
 namespace UniTASPlugin.GameInitialRestart;
 
 // ReSharper disable once ClassNeverInstantiated.Global
-public class GameInitialRestart : GameRestart.GameRestart, IGameInitialRestart, IOnPreGameRestart, IOnGameRestart,
-    IOnGameRestartResume
+public class GameInitialRestart : GameRestart.GameRestart, IGameInitialRestart
 {
     private readonly ILogger _logger;
     private readonly VirtualEnvironment _virtualEnvironment;
@@ -19,9 +17,9 @@ public class GameInitialRestart : GameRestart.GameRestart, IGameInitialRestart, 
     private bool _restartOperationStarted;
     public bool FinishedRestart { get; private set; }
 
-    private readonly PatchReverseInvoker _reverseInvoker;
+    private readonly IPatchReverseInvoker _reverseInvoker;
 
-    public GameInitialRestart(RestartParameters restartParameters, PatchReverseInvoker reverseInvoker) :
+    public GameInitialRestart(RestartParameters restartParameters, IPatchReverseInvoker reverseInvoker) :
         base(restartParameters)
     {
         _reverseInvoker = reverseInvoker;
@@ -29,7 +27,7 @@ public class GameInitialRestart : GameRestart.GameRestart, IGameInitialRestart, 
         _virtualEnvironment = restartParameters.VirtualEnvironment;
     }
 
-    public void OnPreGameRestart()
+    protected override void OnPreGameRestart()
     {
         if (!_restartOperationStarted) return;
 
@@ -38,7 +36,7 @@ public class GameInitialRestart : GameRestart.GameRestart, IGameInitialRestart, 
         _virtualEnvironment.FrameTime = 0.001f;
     }
 
-    public void OnGameRestart(DateTime startupTime, bool preSceneLoad)
+    protected override void OnGameRestart(bool preSceneLoad)
     {
         if (preSceneLoad || !_restartOperationStarted) return;
 
@@ -83,8 +81,10 @@ public class GameInitialRestart : GameRestart.GameRestart, IGameInitialRestart, 
         }
     }
 
-    public void OnGameRestartResume(DateTime startupTime, bool preMonoBehaviourResume)
+    protected override void OnGameRestartResume(bool preMonoBehaviourResume)
     {
+        base.OnGameRestartResume(preMonoBehaviourResume);
+
         if (!_restartOperationStarted || preMonoBehaviourResume) return;
 
         FinishedRestart = true;
