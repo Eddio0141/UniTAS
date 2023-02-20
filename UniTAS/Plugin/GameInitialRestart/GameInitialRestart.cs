@@ -19,12 +19,13 @@ public class GameInitialRestart : GameRestart.GameRestart, IGameInitialRestart
 
     private readonly IPatchReverseInvoker _reverseInvoker;
 
-    public GameInitialRestart(RestartParameters restartParameters, IPatchReverseInvoker reverseInvoker) :
+    public GameInitialRestart(RestartParameters restartParameters, IPatchReverseInvoker reverseInvoker,
+        VirtualEnvironment virtualEnvironment) :
         base(restartParameters)
     {
         _reverseInvoker = reverseInvoker;
+        _virtualEnvironment = virtualEnvironment;
         _logger = restartParameters.Logger;
-        _virtualEnvironment = restartParameters.VirtualEnvironment;
     }
 
     protected override void OnPreGameRestart()
