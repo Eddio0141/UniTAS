@@ -6,7 +6,8 @@ param(
 $buildOutput = "build/$buildType"
 
 # Dotnet builds
-$pluginSource = "UniTASPlugin"
+$dotnetSource = "UniTAS"
+$pluginSource = "$dotnetSource/Plugin"
 $buildOutputPlugin = "$buildOutput/plugins/UniTAS"
 
 dotnet build "$pluginSource" -c "$buildType"
