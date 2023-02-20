@@ -4,7 +4,7 @@ description = "A tool to set up UniTAS for some unity games"
 edition = "2021"
 name = "unitas_setup_tool"
 publish = false
-version = "1.0.1"
+version = "1.1.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

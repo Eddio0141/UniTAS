@@ -70,11 +70,11 @@ impl Cli {
             }
             Command::LocalUniTAS => info!(
                 "Locally available UniTAS versions\n{}",
-                LocalVersions::from_dir(&paths::unitas_dir()?)?
+                LocalVersions::from_dir(&paths::local_unitas_dir()?)?
             ),
             Command::LocalBepInEx => info!(
                 "Locally available BepInEx versions\n{}",
-                LocalVersions::from_dir(&paths::bepinex_dir()?)?
+                LocalVersions::from_dir(&paths::local_bepinex_dir()?)?
             ),
             Command::History => {
                 let history = History::load().context("Failed to load game dir history")?;

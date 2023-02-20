@@ -3,14 +3,12 @@ use std::path::{Path, PathBuf};
 use anyhow::{Context, Result};
 use log::debug;
 
-use super::cli::GameDirSelection;
+use super::{cli::GameDirSelection, paths};
 
 pub async fn uninstall(game_dir_selection: &GameDirSelection) -> Result<()> {
     let dir = PathBuf::try_from(game_dir_selection.clone())?;
 
-    let remove_paths = vec![Path::new("BepInEx")
-        .join("plugins")
-        .join("UniTASPlugin.dll")];
+    let remove_paths = vec![Path::new("BepInEx").join(paths::unitas_plugins_dir())];
 
     for remove_path in remove_paths {
         let path = dir.join(remove_path);

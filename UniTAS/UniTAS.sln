@@ -1,0 +1,27 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plugin", "Plugin\Plugin.csproj", "{EDBAE011-402A-4FA7-8F6B-5A4BF77A7A38}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plugin.Tests", "Plugin.Tests\Plugin.Tests.csproj", "{A6328A10-5B87-48F1-9732-6B117A16AE37}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+		ReleaseTrace|Any CPU = ReleaseTrace|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EDBAE011-402A-4FA7-8F6B-5A4BF77A7A38}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EDBAE011-402A-4FA7-8F6B-5A4BF77A7A38}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EDBAE011-402A-4FA7-8F6B-5A4BF77A7A38}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EDBAE011-402A-4FA7-8F6B-5A4BF77A7A38}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EDBAE011-402A-4FA7-8F6B-5A4BF77A7A38}.ReleaseTrace|Any CPU.ActiveCfg = ReleaseTrace|Any CPU
+		{EDBAE011-402A-4FA7-8F6B-5A4BF77A7A38}.ReleaseTrace|Any CPU.Build.0 = ReleaseTrace|Any CPU
+		{A6328A10-5B87-48F1-9732-6B117A16AE37}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A6328A10-5B87-48F1-9732-6B117A16AE37}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A6328A10-5B87-48F1-9732-6B117A16AE37}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A6328A10-5B87-48F1-9732-6B117A16AE37}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A6328A10-5B87-48F1-9732-6B117A16AE37}.ReleaseTrace|Any CPU.ActiveCfg = Release|Any CPU
+		{A6328A10-5B87-48F1-9732-6B117A16AE37}.ReleaseTrace|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

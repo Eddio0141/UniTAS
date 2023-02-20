@@ -1,0 +1,25 @@
+﻿using System;
+using UniTAS.Plugin.GameEnvironment.InnerState;
+
+namespace UniTAS.Plugin.Movie.MovieModels.Properties;
+
+public class StartupPropertiesModel
+{
+    public Os Os { get; }
+    public DateTime StartTime { get; }
+    public float FrameTime { get; }
+    public WindowState WindowState { get; }
+
+    public StartupPropertiesModel(Os os, DateTime startTime, float frameTime, WindowState windowState)
+    {
+        Os = os;
+        StartTime = startTime;
+        FrameTime = frameTime;
+        WindowState = windowState;
+    }
+
+    public override string ToString()
+    {
+        return $"Os: {Os}, StartTime: {StartTime}, FrameTime: {FrameTime}, WindowState: {WindowState}";
+    }
+}

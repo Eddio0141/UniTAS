@@ -1,3 +1,5 @@
+//! Paths to various directories and files.
+
 pub mod error;
 
 use std::path::{Path, PathBuf};
@@ -16,14 +18,14 @@ fn data_storage_dir() -> Result<PathBuf, self::error::Error> {
     Ok(path)
 }
 
-pub fn bepinex_dir() -> Result<PathBuf, self::error::Error> {
+pub fn local_bepinex_dir() -> Result<PathBuf, self::error::Error> {
     let mut path = data_storage_dir()?;
     path.push("BepInEx");
     create_dir_if_not_exists(&path)?;
     Ok(path)
 }
 
-pub fn unitas_dir() -> Result<PathBuf, self::error::Error> {
+pub fn local_unitas_dir() -> Result<PathBuf, self::error::Error> {
     let mut path = data_storage_dir()?;
     path.push("UniTAS");
     create_dir_if_not_exists(&path)?;
@@ -34,6 +36,11 @@ pub fn history_path() -> Result<PathBuf, self::error::Error> {
     let mut path = data_storage_dir()?;
     path.push("history.json");
     Ok(path)
+}
+
+/// A path to the directory where UniTAS plugins are in an artifact.
+pub fn unitas_plugins_dir() -> PathBuf {
+    Path::new("plugins").join("UniTAS")
 }
 
 pub const TAG_DIR_NAME: &str = "tag";

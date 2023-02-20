@@ -6,13 +6,17 @@ param(
 $buildOutput = "build/$buildType"
 
 # Dotnet builds
-$pluginSource = "UniTASPlugin"
-$buildOutputPlugin = "$buildOutput/plugins"
+$dotnetSource = "UniTAS"
+$pluginSource = "$dotnetSource/Plugin"
+$buildOutputPlugin = "$buildOutput/plugins/UniTAS"
 
 dotnet build "$pluginSource" -c "$buildType"
 
 if (!(Test-Path "$buildOutput")) {
     New-Item -ItemType Directory -Path "$buildOutput" > $null
+}
+
+if (!(Test-Path "$buildOutputPlugin")) {
     New-Item -ItemType Directory -Path "$buildOutputPlugin" > $null
 }
 
