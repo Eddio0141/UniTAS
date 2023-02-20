@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using UniTASPlugin.FixedUpdateSync;
 using UniTASPlugin.GameEnvironment;
 using UniTASPlugin.GameRestart.EventInterfaces;
@@ -33,7 +34,8 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
     public bool PendingRestart { get; private set; }
     private bool _pendingResumePausedExecution;
 
-    protected GameRestart(RestartParameters restartParameters)
+    [SuppressMessage("ReSharper", "MemberCanBeProtected.Global")]
+    public GameRestart(RestartParameters restartParameters)
     {
         _virtualEnvironment = restartParameters.VirtualEnvironment;
         _syncFixedUpdate = restartParameters.SyncFixedUpdate;
