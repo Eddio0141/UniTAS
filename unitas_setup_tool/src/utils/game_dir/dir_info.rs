@@ -176,11 +176,11 @@ impl InstalledInfo {
     }
 
     fn unitas_version(game_dir: &Path) -> Result<Option<AssemblyVersion>, super::error::Error> {
-        // checks in BepInEx/plugins/UniTASPlugin.dll
+        // checks in BepInEx/plugins/UniTAS.Plugin.dll
         let bepinex_dir = game_dir.join("BepInEx");
         let unitas_dll = bepinex_dir
             .join(paths::unitas_plugins_dir())
-            .join("UniTASPlugin.dll");
+            .join("UniTAS.Plugin.dll");
 
         if !unitas_dll.try_exists()? {
             return Ok(None);
