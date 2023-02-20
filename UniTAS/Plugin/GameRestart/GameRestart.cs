@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using UniTAS.Plugin.FixedUpdateSync;
-using UniTAS.Plugin.GameEnvironment;
 using UniTAS.Plugin.GameRestart.EventInterfaces;
 using UniTAS.Plugin.Interfaces.StartEvent;
 using UniTAS.Plugin.Interfaces.Update;
@@ -18,7 +17,6 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
 {
     private DateTime _softRestartTime;
 
-    private readonly VirtualEnvironment _virtualEnvironment;
     private readonly ISyncFixedUpdate _syncFixedUpdate;
     private readonly IUnityWrapper _unityWrapper;
     private readonly IMonoBehaviourController _monoBehaviourController;
@@ -37,7 +35,6 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
     [SuppressMessage("ReSharper", "MemberCanBeProtected.Global")]
     public GameRestart(RestartParameters restartParameters)
     {
-        _virtualEnvironment = restartParameters.VirtualEnvironment;
         _syncFixedUpdate = restartParameters.SyncFixedUpdate;
         _unityWrapper = restartParameters.UnityWrapper;
         _monoBehaviourController = restartParameters.MonoBehaviourController;
@@ -148,10 +145,6 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
         if (!_pendingResumePausedExecution) return;
         OnGameRestartResume(true);
 
-        _logger.LogDebug("random setting state");
-
-        _unityWrapper.Random.Seed = (int)_virtualEnvironment.Seed;
-
         _logger.LogInfo("Finish soft restarting");
         var actualTime = DateTime.Now;
         _logger.LogInfo($"System time: {actualTime}");
@@ -162,6 +155,4 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
 
         _pendingResumePausedExecution = false;
     }
-
-    // TODO move setting random state to a separate class
 }
