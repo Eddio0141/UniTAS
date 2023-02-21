@@ -119,16 +119,6 @@ public class Plugin : BaseUnityPlugin
     {
         // Trace.Write("OnGUI invoke");
         _monoBehEventInvoker.OnGUI();
-        
-        _windowRect = UnityEngine.GUI.Window(5, _windowRect, DrawWindow, "My Window");
-    }
-    
-    // test imgui stuff
-    private Rect _windowRect = new(20, 20, 120, 50);
-
-    private void DrawWindow(int id)
-    {
-        UnityEngine.GUI.DragWindow();
     }
 
     /// <summary>
