@@ -397,6 +397,4 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 
-postbuild.ps1
-
 .antlr/
