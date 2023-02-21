@@ -8,9 +8,14 @@ $buildOutput = "build/$buildType"
 # Dotnet builds
 $dotnetSource = "UniTAS"
 $pluginSource = "$dotnetSource/Plugin"
+$patcherSource = "$dotnetSource/Patcher"
+
+# Build output paths
 $buildOutputPlugin = "$buildOutput/plugins/UniTAS"
+$buildOutputPatcher = "$buildOutput/patchers/UniTAS"
 
 dotnet build "$pluginSource" -c "$buildType"
+dotnet build "$patcherSource" -c "$buildType"
 
 if (!(Test-Path "$buildOutput")) {
     New-Item -ItemType Directory -Path "$buildOutput" > $null
@@ -18,6 +23,10 @@ if (!(Test-Path "$buildOutput")) {
 
 if (!(Test-Path "$buildOutputPlugin")) {
     New-Item -ItemType Directory -Path "$buildOutputPlugin" > $null
+}
+
+if (!(Test-Path "$buildOutputPatcher")) {
+    New-Item -ItemType Directory -Path "$buildOutputPatcher" > $null
 }
 
 # Get full build output path
@@ -28,6 +37,9 @@ Copy-Item "$pluginSource/bin/$buildType/net35/*.dll" "$buildOutputPlugin" -Force
 
 # Copy external plugin dlls
 Copy-Item "$pluginSource/Extern-Assemblies/*.dll" "$buildOutputPlugin" -Force
+
+# Copy patcher dlls
+Copy-Item "$patcherSource/bin/$buildType/net35/*.dll" "$buildOutputPatcher" -Force
 
 # Build and copy set up tool
 Push-Location -Path "unitas_setup_tool"
