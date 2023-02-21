@@ -1,6 +1,7 @@
 using StructureMap;
 using UniTAS.Plugin.FixedUpdateSync;
 using UniTAS.Plugin.GameEnvironment;
+using UniTAS.Plugin.GameInitialRestart;
 using UniTAS.Plugin.GameRestart;
 using UniTAS.Plugin.GameRestart.EventInterfaces;
 using UniTAS.Plugin.Logger;
@@ -185,5 +186,24 @@ public class KernelTests
         Assert.NotNull(patchReverseInvoker2);
 
         Assert.Equal(patchReverseInvoker, patchReverseInvoker2);
+    }
+
+    [Fact]
+    public void GameInitialRestart()
+    {
+        var kernel = Init();
+
+        var gameInitialRestart = kernel.GetInstance<IGameInitialRestart>();
+        Assert.NotNull(gameInitialRestart);
+
+        var gameInitialRestart2 = kernel.GetInstance<IGameInitialRestart>();
+        Assert.NotNull(gameInitialRestart2);
+
+        Assert.Equal(gameInitialRestart, gameInitialRestart2);
+
+        var gameRestart = kernel.GetInstance<IGameRestart>();
+
+        // reference should be different
+        Assert.True(gameInitialRestart != gameRestart);
     }
 }
