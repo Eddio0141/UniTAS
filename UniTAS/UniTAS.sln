@@ -29,7 +29,7 @@ Global
 		{47A3D730-E962-4CEA-9FAE-F020EF68649D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{47A3D730-E962-4CEA-9FAE-F020EF68649D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{47A3D730-E962-4CEA-9FAE-F020EF68649D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{47A3D730-E962-4CEA-9FAE-F020EF68649D}.ReleaseTrace|Any CPU.ActiveCfg = Debug|Any CPU
-		{47A3D730-E962-4CEA-9FAE-F020EF68649D}.ReleaseTrace|Any CPU.Build.0 = Debug|Any CPU
+		{47A3D730-E962-4CEA-9FAE-F020EF68649D}.ReleaseTrace|Any CPU.ActiveCfg = Release|Any CPU
+		{47A3D730-E962-4CEA-9FAE-F020EF68649D}.ReleaseTrace|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
