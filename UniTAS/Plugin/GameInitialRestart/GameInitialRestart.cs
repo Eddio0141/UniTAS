@@ -30,7 +30,7 @@ public class GameInitialRestart : GameRestart.GameRestart, IGameInitialRestart
 
     protected override void OnPreGameRestart()
     {
-        if (!_restartOperationStarted) return;
+        base.OnPreGameRestart();
 
         // TODO fix this hack
         _virtualEnvironment.RunVirtualEnvironment = true;
@@ -39,6 +39,8 @@ public class GameInitialRestart : GameRestart.GameRestart, IGameInitialRestart
 
     protected override void OnGameRestart(bool preSceneLoad)
     {
+        base.OnGameRestart(preSceneLoad);
+
         if (preSceneLoad || !_restartOperationStarted) return;
 
         // TODO fix this hack
