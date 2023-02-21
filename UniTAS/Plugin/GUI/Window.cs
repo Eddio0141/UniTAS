@@ -18,7 +18,8 @@ public abstract class Window : IOnGUI
 
     private readonly IUpdateEvents _updateEvents;
 
-    private static int _globalId;
+    // TODO this is a hack, but it works for now
+    private static int _globalId = 23134259;
     private readonly int _id;
 
     protected Window(IUpdateEvents updateEvents, string windowName = null)
