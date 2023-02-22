@@ -9,4 +9,14 @@ namespace UniTAS.Patcher.PatcherUtils;
 [AttributeUsage(AttributeTargets.Method)]
 public class PatcherAttribute : Attribute
 {
+    /// <summary>
+    /// Priority on patcher execution order
+    /// Higher priority will be executed first
+    /// </summary>
+    public int Priority { get; }
+
+    public PatcherAttribute(int priority = 0)
+    {
+        Priority = priority;
+    }
 }
