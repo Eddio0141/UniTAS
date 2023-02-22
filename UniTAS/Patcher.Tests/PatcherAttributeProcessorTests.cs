@@ -2,7 +2,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Mono.Cecil;
 using UniTAS.Patcher.PatcherUtils;
-using Xunit;
 
 namespace Patcher.Tests;
 
