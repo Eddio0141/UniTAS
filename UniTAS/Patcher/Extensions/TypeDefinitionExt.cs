@@ -11,8 +11,6 @@ public static class TypeDefinitionExt
         type.AddAllFields(originalType);
         type.AddAllProperties(originalType);
         type.AddAllMethods(originalType);
-
-        // TODO add all nested types
     }
 
     public static void AddAllFields(this TypeDefinition type, Type originalType)
