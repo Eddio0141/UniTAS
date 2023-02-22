@@ -11,7 +11,8 @@ public class TrackerClass
 {
     private static bool _isPatched;
 
-    [Patcher]
+    // before patching DontDestroyOnLoad
+    [Patcher(1000)]
     public static void Patch(AssemblyDefinition assembly)
     {
         // we simply attach the "Tracker" class to the project namespace
