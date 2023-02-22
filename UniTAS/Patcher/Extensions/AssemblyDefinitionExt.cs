@@ -9,9 +9,8 @@ public static class AssemblyDefinitionExt
     {
         var typeDef = new TypeDefinition(type.Namespace, type.Name, (TypeAttributes)type.Attributes,
             assembly.MainModule.ImportReference(type.BaseType));
+        assembly.MainModule.Types.Add(typeDef);
 
         typeDef.AddAllContents(type);
-
-        assembly.MainModule.Types.Add(typeDef);
     }
 }

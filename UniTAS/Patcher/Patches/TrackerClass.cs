@@ -15,8 +15,6 @@ public class TrackerClass
     [Patcher(1000)]
     public static void Patch(AssemblyDefinition assembly)
     {
-        // we simply attach the "Tracker" class to the project namespace
-
         if (_isPatched) return;
         _isPatched = true;
 
