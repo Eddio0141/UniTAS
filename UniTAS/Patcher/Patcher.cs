@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using Mono.Cecil;
-using UniTAS.Patcher.PatcherUtils;
 
 namespace UniTAS.Patcher;
 
@@ -10,18 +9,15 @@ public static class Patcher
 {
     // List of assemblies to patch
     [SuppressMessage("ReSharper", "UnusedMember.Global")]
-    public static IEnumerable<string> TargetDLLs { get; } = new[]
-    {
-        "UnityEngine.dll", "UnityEngine.CoreModule.dll"
-    };
+    public static IEnumerable<string> TargetDLLs { get; } = new string[0];
 
     // Patches the assemblies
     [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public static void Patch(ref AssemblyDefinition assembly)
     {
-        PatcherAttributeProcessor.Patch(ref assembly);
     }
 
+    // Invoked after all assemblies are patched
     [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public static void Finish()
     {
