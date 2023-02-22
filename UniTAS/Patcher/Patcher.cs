@@ -21,4 +21,11 @@ public static class Patcher
     {
         PatcherAttributeProcessor.Patch(ref assembly);
     }
+
+    [SuppressMessage("ReSharper", "UnusedMember.Global")]
+    public static void Finish()
+    {
+        var harmony = new HarmonyLib.Harmony("UniTAS.Patcher");
+        harmony.PatchAll();
+    }
 }

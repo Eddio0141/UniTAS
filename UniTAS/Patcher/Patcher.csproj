@@ -17,7 +17,7 @@
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-        <DefineConstants />
+        <DefineConstants>TRACE;</DefineConstants>
     </PropertyGroup>
 
     <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
@@ -26,5 +26,6 @@
 
     <ItemGroup>
       <PackageReference Include="BepInEx.Core" Version="5.4.21" />
+      <PackageReference Include="UnityEngine.Modules" Version="3.4.0"/>
     </ItemGroup>
 </Project>
