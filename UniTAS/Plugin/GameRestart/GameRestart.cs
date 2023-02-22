@@ -7,7 +7,6 @@ using UniTAS.Plugin.Interfaces.Update;
 using UniTAS.Plugin.Logger;
 using UniTAS.Plugin.MonoBehaviourController;
 using UniTAS.Plugin.StaticFieldStorage;
-using UniTAS.Plugin.Trackers.DontDestroyOnLoadTracker;
 using UniTAS.Plugin.UnitySafeWrappers.Interfaces;
 
 namespace UniTAS.Plugin.GameRestart;
@@ -27,7 +26,6 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
     private readonly IOnPreGameRestart[] _onPreGameRestart;
 
     private readonly IStaticFieldManipulator _staticFieldManipulator;
-    private readonly IDontDestroyOnLoadInfo _dontDestroyOnLoadInfo;
 
     public bool PendingRestart { get; private set; }
     private bool _pendingResumePausedExecution;
@@ -42,7 +40,6 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
         _onGameRestart = restartParameters.OnGameRestart;
         _onGameRestartResume = restartParameters.OnGameRestartResume;
         _staticFieldManipulator = restartParameters.StaticFieldManipulator;
-        _dontDestroyOnLoadInfo = restartParameters.DontDestroyOnLoadInfo;
         _onPreGameRestart = restartParameters.OnPreGameRestart;
     }
 
@@ -52,12 +49,7 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
     /// </summary>
     protected virtual void DestroyGameObjects()
     {
-        var dontDestroyOnLoads = _dontDestroyOnLoadInfo.DontDestroyOnLoadObjects;
-        foreach (var obj in dontDestroyOnLoads)
-        {
-            _logger.LogDebug($"Removing DontDestroyOnLoad object {obj.GetType().FullName}, hash: {obj.GetHashCode()}");
-            // Object.DestroyImmediate(obj);
-        }
+        // TODO: Implement this
     }
 
     /// <summary>

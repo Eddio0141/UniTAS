@@ -21,7 +21,6 @@ using UniTAS.Plugin.Patches.PatchProcessor;
 using UniTAS.Plugin.ReverseInvoker;
 using UniTAS.Plugin.StaticFieldStorage;
 using UniTAS.Plugin.Trackers.AsyncSceneLoadTracker;
-using UniTAS.Plugin.Trackers.DontDestroyOnLoadTracker;
 using UniTAS.Plugin.Trackers.SceneIndexNameTracker;
 using UniTAS.Plugin.Trackers.SceneTracker;
 using UniTAS.Plugin.UnitySafeWrappers;
@@ -135,10 +134,6 @@ public static class ContainerRegister
             c.ForSingletonOf<SceneTracker>().Use<SceneTracker>();
             c.For<ISceneTracker>().Use(x => x.GetInstance<SceneTracker>());
             c.For<ILoadedSceneInfo>().Use(x => x.GetInstance<SceneTracker>());
-
-            c.ForSingletonOf<DontDestroyOnLoadTracker>().Use<DontDestroyOnLoadTracker>();
-            c.For<IDontDestroyOnLoadTracker>().Use(x => x.GetInstance<DontDestroyOnLoadTracker>());
-            c.For<IDontDestroyOnLoadInfo>().Use(x => x.GetInstance<DontDestroyOnLoadTracker>());
 
             c.For<IUnityInstanceWrapFactory>().Singleton().Use<UnityInstanceWrapFactory>();
         });
