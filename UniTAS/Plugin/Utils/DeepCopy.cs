@@ -153,24 +153,36 @@ public static class DeepCopy
         {
             var sourceCollection = (IEnumerable)source;
 
-            var resultTypeInterface = resultType.GetInterfaces()
-                .First(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
+            Type resultTypeInterface;
+            if (resultType.IsInterface)
+            {
+                resultTypeInterface = resultType;
+            }
+            else
+            {
+                resultTypeInterface = resultType.GetInterfaces().First(i =>
+                    i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
+            }
+
             var resultTypeGenericArgument = resultTypeInterface.GetGenericArguments()[0];
             var iEnumerableType = typeof(IEnumerable<>).MakeGenericType(resultTypeGenericArgument);
 
-            var tempResultList =
-                (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(resultTypeGenericArgument));
-            foreach (var element in sourceCollection)
+            var ctor = AccessTools.Constructor(resultType, new[] { iEnumerableType });
+            if (ctor != null)
             {
-                var newElement = MakeDeepCopy(element, resultTypeGenericArgument, processor, pathRoot);
-                tempResultList.Add(newElement);
+                var tempResultList =
+                    (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(resultTypeGenericArgument));
+                foreach (var element in sourceCollection)
+                {
+                    var newElement = MakeDeepCopy(element, resultTypeGenericArgument, processor, pathRoot);
+                    tempResultList.Add(newElement);
+                }
+
+                var addableResult = ctor.Invoke(new object[] { tempResultList });
+
+                _makeDeepCopyRecursionDepth--;
+                return addableResult;
             }
-
-            var addableResult = AccessTools.Constructor(resultType, new[] { iEnumerableType })
-                .Invoke(new object[] { tempResultList });
-
-            _makeDeepCopyRecursionDepth--;
-            return addableResult;
         }
 
         var ns = type.Namespace;
