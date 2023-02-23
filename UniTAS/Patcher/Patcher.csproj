@@ -12,12 +12,12 @@
             https://api.nuget.org/v3/index.json;
             https://nuget.bepinex.dev/v3/index.json
         </RestoreAdditionalProjectSources>
-        <Configurations>Debug;Release</Configurations>
+        <Configurations>Debug;Release;ReleaseTrace</Configurations>
         <Platforms>AnyCPU</Platforms>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-        <DefineConstants>TRACE;</DefineConstants>
+        <DefineConstants>;</DefineConstants>
     </PropertyGroup>
 
     <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">

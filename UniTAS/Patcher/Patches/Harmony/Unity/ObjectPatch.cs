@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using HarmonyLib;
 using UniTAS.Patcher.Runtime;
@@ -14,10 +15,22 @@ public class ObjectPatch
     [HarmonyPatch(typeof(Object), nameof(Object.DontDestroyOnLoad))]
     private class DontDestroyOnLoadPatch
     {
+        private static readonly List<string> _initialExcludeNames = new()
+        {
+            "BepInEx_Manager"
+        };
+
         private static void Prefix(Object target)
         {
+            if (_initialExcludeNames.Contains(target.name))
+            {
+                Trace.Write($"Ignoring initial DontDestroyOnLoad tracking for {target.name}");
+                _initialExcludeNames.Remove(target.name);
+                return;
+            }
+
             Trace.Write(
-                $"DontDestroyOnLoad called!, target name: {target.name}, target type: {target.GetType()}");
+                $"DontDestroyOnLoad invoked, target name: {target.name}, target type: {target.GetType()}");
             Tracker.DontDestroyOnLoadObjects.Add(target);
         }
     }

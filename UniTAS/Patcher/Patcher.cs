@@ -9,7 +9,7 @@ namespace UniTAS.Patcher;
 [SuppressMessage("ReSharper", "UnusedType.Global")]
 public static class Patcher
 {
-    public static ManualLogSource Logger { get; } = new(typeof(Patcher).Namespace);
+    public static ManualLogSource Logger { get; } = BepInEx.Logging.Logger.CreateLogSource(Utils.ProjectName);
 
     // List of assemblies to patch
     [SuppressMessage("ReSharper", "UnusedMember.Global")]
@@ -21,7 +21,7 @@ public static class Patcher
     [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public static void Patch(ref AssemblyDefinition assembly)
     {
-        Logger.LogInfo($"Patching {PreloadPatcherProcessor.PreloadPatchers.Length} assemblies");
+        Logger.LogInfo($"Found {PreloadPatcherProcessor.PreloadPatchers.Length} preload patchers");
         foreach (var patcher in PreloadPatcherProcessor.PreloadPatchers)
         {
             patcher.Patch(ref assembly);
