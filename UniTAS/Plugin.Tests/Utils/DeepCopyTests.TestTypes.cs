@@ -1,4 +1,6 @@
-﻿#pragma warning disable CS0649
+﻿using System.Diagnostics.CodeAnalysis;
+
+#pragma warning disable CS0649
 #pragma warning disable CS8618
 namespace UniTAS.Plugin.Tests.Utils;
 
@@ -9,6 +11,11 @@ public partial class DeepCopyTests
         public int IntField;
         public string StringField;
         public SimpleType NestedType;
+
+        public static bool ThisShouldBeIgnored;
+
+        [SuppressMessage("ReSharper", "UnusedMember.Local")]
+        private const int ThisShouldBeIgnoredToo = 42;
     }
 
     private enum TestEnum
@@ -27,19 +34,19 @@ public partial class DeepCopyTests
         public int[] IntArray;
         public string[] StringArray;
     }
-    
+
     private class ListType
     {
         public List<int> IntList;
         public List<string> StringList;
     }
-    
+
     private class EnumerableType
     {
         public IEnumerable<int> IntEnumerable;
         public IEnumerable<string> StringEnumerable;
     }
-    
+
     private class DictionaryType
     {
         public Dictionary<int, string> IntStringDictionary;
