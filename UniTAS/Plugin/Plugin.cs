@@ -16,7 +16,7 @@ using PatchProcessor = UniTAS.Plugin.Patches.PatchProcessor.PatchProcessor;
 
 namespace UniTAS.Plugin;
 
-[BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
+[BepInPlugin("dev.yuu0141.unitas.plugin", MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
 public class Plugin : BaseUnityPlugin
 {
     public static readonly IContainer Kernel = ContainerRegister.Init();
@@ -25,7 +25,7 @@ public class Plugin : BaseUnityPlugin
 
     private ManualLogSource _logger;
     public static ManualLogSource Log => _instance._logger;
-    public static readonly Harmony Harmony = new($"{MyPluginInfo.PLUGIN_GUID}HarmonyPatch");
+    public static readonly Harmony Harmony = new("dev.yuu0141.unitas.plugin");
 
     private bool _endOfFrameLoopRunning;
 

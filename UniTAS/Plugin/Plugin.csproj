@@ -3,7 +3,8 @@
     <PropertyGroup>
         <TargetFramework>net35</TargetFramework>
         <AssemblyName>UniTAS.Plugin</AssemblyName>
-        <Description>UniTAS.Plugin</Description>
+        <Product>UniTAS.Plugin</Product>
+        <Description>UniTAS Plugin</Description>
         <RootNamespace>UniTAS.Plugin</RootNamespace>
         <Version>0.1.0</Version>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
