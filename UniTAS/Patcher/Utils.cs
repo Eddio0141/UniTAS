@@ -2,5 +2,5 @@
 
 public static class Utils
 {
-    public static string ProjectName { get; } = typeof(Patcher).Namespace;
+    public static string ProjectAssembly { get; } = typeof(Patcher).Namespace;
 }

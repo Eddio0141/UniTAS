@@ -56,8 +56,9 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
 
         foreach (var obj in objs)
         {
-            _logger.LogDebug($"Destroying {obj.name}");
-            Object.Destroy(obj);
+            var gameObject = (Object)obj;
+            _logger.LogDebug($"Destroying {gameObject.name}");
+            Object.Destroy(gameObject);
         }
     }
 

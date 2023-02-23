@@ -9,7 +9,7 @@ namespace UniTAS.Patcher;
 [SuppressMessage("ReSharper", "UnusedType.Global")]
 public static class Patcher
 {
-    public static ManualLogSource Logger { get; } = BepInEx.Logging.Logger.CreateLogSource(Utils.ProjectName);
+    public static ManualLogSource Logger { get; } = BepInEx.Logging.Logger.CreateLogSource(Utils.ProjectAssembly);
 
     // List of assemblies to patch
     [SuppressMessage("ReSharper", "UnusedMember.Global")]

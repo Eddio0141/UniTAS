@@ -57,7 +57,8 @@ public class StaticFieldStorage : IStaticFieldManipulator
             "HarmonyXInterop",
             MyPluginInfo.PLUGIN_NAME,
             "StructureMap",
-            "Antlr4.Runtime.Standard"
+            "Antlr4.Runtime.Standard",
+            UniTAS.Patcher.Utils.ProjectAssembly
         };
         // ReSharper restore StringLiteralTypo
 
