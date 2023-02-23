@@ -17,7 +17,8 @@ public class ObjectPatch
     {
         private static readonly List<string> _initialExcludeNames = new()
         {
-            "BepInEx_Manager"
+            "BepInEx_Manager",
+            "BepInEx_ThreadingHelper"
         };
 
         private static void Prefix(Object target)
