@@ -1,57 +1,30 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
+using BepInEx.Logging;
 using Mono.Cecil;
-using Mono.Cecil.Cil;
+using UniTAS.Patcher.PreloadPatchUtils;
 
 namespace UniTAS.Patcher;
 
 [SuppressMessage("ReSharper", "UnusedType.Global")]
 public static class Patcher
 {
+    public static ManualLogSource Logger { get; } = new(typeof(Patcher).Namespace);
+
     // List of assemblies to patch
     [SuppressMessage("ReSharper", "UnusedMember.Global")]
-    public static IEnumerable<string> TargetDLLs { get; } = new[] { "UnityEngine.CoreModule.dll", "UnityEngine.dll" };
+    public static IEnumerable<string> TargetDLLs => PreloadPatcherProcessor.TargetDLLs;
 
-    private static bool _patchedHarmonyEarlyPatcher;
+    private static readonly PreloadPatcherProcessor PreloadPatcherProcessor = new();
 
     // Patches the assemblies
     [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public static void Patch(ref AssemblyDefinition assembly)
     {
-        if (_patchedHarmonyEarlyPatcher) return;
-
-        // find MonoBehaviour
-        var monoBehaviour = assembly.MainModule.GetType("UnityEngine.MonoBehaviour");
-
-        if (monoBehaviour == null) return;
-        _patchedHarmonyEarlyPatcher = true;
-
-        // find static ctor
-        var staticCtor = monoBehaviour.Methods.FirstOrDefault(m => m.IsConstructor && m.IsStatic);
-
-        // add static ctor if not found
-        if (staticCtor == null)
+        Logger.LogInfo($"Patching {PreloadPatcherProcessor.PreloadPatchers.Length} assemblies");
+        foreach (var patcher in PreloadPatcherProcessor.PreloadPatchers)
         {
-            staticCtor = new(".cctor",
-                MethodAttributes.Static | MethodAttributes.Private | MethodAttributes.HideBySig
-                | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName,
-                assembly.MainModule.ImportReference(typeof(void)));
-
-            monoBehaviour.Methods.Add(staticCtor);
-            var il = staticCtor.Body.GetILProcessor();
-            il.Append(il.Create(OpCodes.Ret));
+            patcher.Patch(ref assembly);
         }
-
-        // harmony early patcher must be invoked before any MonoBehaviour events are invoked
-        var earlyPatcher = typeof(HarmonyEarlyPatcher);
-        var invoke =
-            assembly.MainModule.ImportReference(earlyPatcher.GetMethod(nameof(HarmonyEarlyPatcher.PatchHarmony)));
-
-        var firstInstruction = staticCtor.Body.Instructions.First();
-        var ilProcessor = staticCtor.Body.GetILProcessor();
-
-        // insert call to harmony early patcher
-        ilProcessor.InsertBefore(firstInstruction, ilProcessor.Create(OpCodes.Call, invoke));
     }
 }
