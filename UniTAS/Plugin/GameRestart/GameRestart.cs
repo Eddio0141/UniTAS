@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using UniTAS.Patcher.Runtime;
 using UniTAS.Plugin.FixedUpdateSync;
 using UniTAS.Plugin.GameRestart.EventInterfaces;
 using UniTAS.Plugin.Interfaces.StartEvent;
@@ -8,6 +9,7 @@ using UniTAS.Plugin.Logger;
 using UniTAS.Plugin.MonoBehaviourController;
 using UniTAS.Plugin.StaticFieldStorage;
 using UniTAS.Plugin.UnitySafeWrappers.Interfaces;
+using Object = UnityEngine.Object;
 
 namespace UniTAS.Plugin.GameRestart;
 
@@ -47,9 +49,16 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
     /// Destroys all necessary game objects to reset the game state.
     /// Default behaviour is to destroy all DontDestroyOnLoad objects.
     /// </summary>
-    protected virtual void DestroyGameObjects()
+    private void DestroyGameObjects()
     {
-        // TODO: Implement this
+        var objs = Tracker.DontDestroyOnLoadRootObjects;
+        _logger.LogDebug($"Destroying {objs.Count} DontDestroyOnLoad objects");
+
+        foreach (var obj in objs)
+        {
+            _logger.LogDebug($"Destroying {obj.name}");
+            Object.Destroy(obj);
+        }
     }
 
     /// <summary>

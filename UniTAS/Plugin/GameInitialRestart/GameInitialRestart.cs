@@ -1,17 +1,13 @@
 using System;
-using BepInEx;
 using UniTAS.Plugin.GameEnvironment;
 using UniTAS.Plugin.GameRestart;
-using UniTAS.Plugin.Logger;
 using UniTAS.Plugin.ReverseInvoker;
-using Object = UnityEngine.Object;
 
 namespace UniTAS.Plugin.GameInitialRestart;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 public class GameInitialRestart : GameRestart.GameRestart, IGameInitialRestart
 {
-    private readonly ILogger _logger;
     private readonly VirtualEnvironment _virtualEnvironment;
 
     private bool _restartOperationStarted;
@@ -25,7 +21,6 @@ public class GameInitialRestart : GameRestart.GameRestart, IGameInitialRestart
     {
         _reverseInvoker = reverseInvoker;
         _virtualEnvironment = virtualEnvironment;
-        _logger = restartParameters.Logger;
     }
 
     protected override void OnPreGameRestart()
@@ -54,34 +49,6 @@ public class GameInitialRestart : GameRestart.GameRestart, IGameInitialRestart
 
         var time = _reverseInvoker.Invoke(() => DateTime.Now);
         SoftRestart(time);
-    }
-
-    protected override void DestroyGameObjects()
-    {
-        var allObjects = Object.FindObjectsOfType(typeof(Object));
-        _logger.LogDebug($"Attempting destruction of {allObjects.Length} objects");
-        foreach (var obj in allObjects)
-        {
-            if (obj is BaseUnityPlugin)
-            {
-                _logger.LogDebug($"Found BepInEx type: {obj.GetType().FullName}, skipping");
-                continue;
-            }
-
-            try
-            {
-                // if (obj is MonoBehaviour monoBehaviour)
-                // {
-                //     monoBehaviour.StopAllCoroutines();
-                // }
-
-                // Object.DestroyImmediate(obj);
-            }
-            catch (Exception)
-            {
-                // ignored
-            }
-        }
     }
 
     protected override void OnGameRestartResume(bool preMonoBehaviourResume)
