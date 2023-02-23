@@ -32,7 +32,29 @@ public class ObjectPatch
 
             Trace.Write(
                 $"DontDestroyOnLoad invoked, target name: {target.name}, target type: {target.GetType()}");
-            Tracker.DontDestroyObjects.Add(target);
+
+            var obj = target switch
+            {
+                GameObject gameObject => gameObject,
+                Component component => component.gameObject,
+                _ => null
+            };
+
+            if (obj == null)
+            {
+                Trace.Write($"DontDestroyOnLoad target is neither GameObject nor Component, ignoring");
+                return;
+            }
+
+            // check if root
+            if (obj.transform.parent != null)
+            {
+                Trace.Write($"DontDestroyOnLoad target is not root, ignoring");
+                return;
+            }
+
+            Trace.Write($"DontDestroyOnLoad target is root, adding to tracker");
+            Tracker.DontDestroyGameObjects.Add(obj);
         }
     }
 }
