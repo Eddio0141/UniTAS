@@ -32,7 +32,7 @@ public class ObjectPatch
 
             Trace.Write(
                 $"DontDestroyOnLoad invoked, target name: {target.name}, target type: {target.GetType()}");
-            Tracker.DontDestroyOnLoadObjects.Add(target);
+            Tracker.DontDestroyObjects.Add(target);
         }
     }
 }
