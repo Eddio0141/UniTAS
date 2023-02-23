@@ -4,7 +4,6 @@ using UniTAS.Plugin.GameRestart.EventInterfaces;
 using UniTAS.Plugin.Logger;
 using UniTAS.Plugin.MonoBehaviourController;
 using UniTAS.Plugin.StaticFieldStorage;
-using UniTAS.Plugin.Trackers.DontDestroyOnLoadTracker;
 using UniTAS.Plugin.UnitySafeWrappers.Interfaces;
 
 namespace UniTAS.Plugin.GameRestart;
@@ -18,14 +17,13 @@ public class RestartParameters
     public ILogger Logger { get; }
     public IOnGameRestart[] OnGameRestart { get; }
     public IStaticFieldManipulator StaticFieldManipulator { get; }
-    public IDontDestroyOnLoadInfo DontDestroyOnLoadInfo { get; }
     public IOnGameRestartResume[] OnGameRestartResume { get; }
     public IOnPreGameRestart[] OnPreGameRestart { get; }
 
     public RestartParameters(ISyncFixedUpdate syncFixedUpdate,
         IUnityWrapper unityWrapper, IMonoBehaviourController monoBehaviourController, ILogger logger,
         IOnGameRestart[] onGameRestart, IStaticFieldManipulator staticFieldManipulator,
-        IDontDestroyOnLoadInfo dontDestroyOnLoadInfo, IOnGameRestartResume[] onGameRestartResume,
+        IOnGameRestartResume[] onGameRestartResume,
         IOnPreGameRestart[] onPreGameRestart)
 
     {
@@ -35,7 +33,6 @@ public class RestartParameters
         Logger = logger;
         OnGameRestart = onGameRestart;
         StaticFieldManipulator = staticFieldManipulator;
-        DontDestroyOnLoadInfo = dontDestroyOnLoadInfo;
         OnGameRestartResume = onGameRestartResume;
         OnPreGameRestart = onPreGameRestart;
     }

@@ -71,9 +71,6 @@ public class MonoBehEventInvoker : IMonoBehEventInvoker, IUpdateEvents
         {
             update.Update();
         }
-
-        //Overlay.Update();
-        //GameCapture.Update();
     }
 
     // right now I don't call this update before other scripts so I don't need to check if it was already called

@@ -8,7 +8,6 @@ using UniTAS.Plugin.Logger;
 using UniTAS.Plugin.MonoBehaviourController;
 using UniTAS.Plugin.ReverseInvoker;
 using UniTAS.Plugin.StaticFieldStorage;
-using UniTAS.Plugin.Trackers.DontDestroyOnLoadTracker;
 using UniTAS.Plugin.UnitySafeWrappers.Interfaces;
 
 namespace UniTAS.Plugin.Tests.Kernel;
@@ -135,20 +134,6 @@ public class KernelTests
         Assert.NotNull(staticFieldManipulator2);
 
         Assert.Equal(staticFieldManipulator, staticFieldManipulator2);
-    }
-
-    [Fact]
-    public void DontDestroyOnLoadInfo()
-    {
-        var kernel = Init();
-
-        var dontDestroyOnLoadInfo = kernel.GetInstance<IDontDestroyOnLoadInfo>();
-        Assert.NotNull(dontDestroyOnLoadInfo);
-
-        var dontDestroyOnLoadInfo2 = kernel.GetInstance<IDontDestroyOnLoadInfo>();
-        Assert.NotNull(dontDestroyOnLoadInfo2);
-
-        Assert.Equal(dontDestroyOnLoadInfo, dontDestroyOnLoadInfo2);
     }
 
     [Fact]

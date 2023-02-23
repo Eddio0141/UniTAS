@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using UniTAS.Patcher.Runtime;
 using UniTAS.Plugin.FixedUpdateSync;
 using UniTAS.Plugin.GameRestart.EventInterfaces;
 using UniTAS.Plugin.Interfaces.StartEvent;
@@ -7,8 +8,8 @@ using UniTAS.Plugin.Interfaces.Update;
 using UniTAS.Plugin.Logger;
 using UniTAS.Plugin.MonoBehaviourController;
 using UniTAS.Plugin.StaticFieldStorage;
-using UniTAS.Plugin.Trackers.DontDestroyOnLoadTracker;
 using UniTAS.Plugin.UnitySafeWrappers.Interfaces;
+using Object = UnityEngine.Object;
 
 namespace UniTAS.Plugin.GameRestart;
 
@@ -27,7 +28,6 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
     private readonly IOnPreGameRestart[] _onPreGameRestart;
 
     private readonly IStaticFieldManipulator _staticFieldManipulator;
-    private readonly IDontDestroyOnLoadInfo _dontDestroyOnLoadInfo;
 
     public bool PendingRestart { get; private set; }
     private bool _pendingResumePausedExecution;
@@ -42,7 +42,6 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
         _onGameRestart = restartParameters.OnGameRestart;
         _onGameRestartResume = restartParameters.OnGameRestartResume;
         _staticFieldManipulator = restartParameters.StaticFieldManipulator;
-        _dontDestroyOnLoadInfo = restartParameters.DontDestroyOnLoadInfo;
         _onPreGameRestart = restartParameters.OnPreGameRestart;
     }
 
@@ -50,13 +49,16 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
     /// Destroys all necessary game objects to reset the game state.
     /// Default behaviour is to destroy all DontDestroyOnLoad objects.
     /// </summary>
-    protected virtual void DestroyGameObjects()
+    private void DestroyGameObjects()
     {
-        var dontDestroyOnLoads = _dontDestroyOnLoadInfo.DontDestroyOnLoadObjects;
-        foreach (var obj in dontDestroyOnLoads)
+        var objs = Tracker.DontDestroyOnLoadRootObjects;
+        _logger.LogDebug($"Destroying {objs.Count} DontDestroyOnLoad objects");
+
+        foreach (var obj in objs)
         {
-            _logger.LogDebug($"Removing DontDestroyOnLoad object {obj.GetType().FullName}, hash: {obj.GetHashCode()}");
-            // Object.DestroyImmediate(obj);
+            var gameObject = (Object)obj;
+            _logger.LogDebug($"Destroying {gameObject.name}");
+            Object.Destroy(gameObject);
         }
     }
 
