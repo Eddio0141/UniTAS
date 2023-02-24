@@ -218,8 +218,12 @@ async fn install_unitas(game_dir: &Path, unitas_version: DownloadVersion) -> Res
                 .iter()
                 .find_map(|entry| {
                     let path = entry.path();
-                    if path.starts_with(UNITAS_BEPINEX_DIR) {
-                        Some(path)
+                    let Some(file_name) = path.file_name() else {
+                        return None;
+                    };
+                    let file_name = file_name.to_string_lossy().to_string();
+                    if file_name.starts_with(UNITAS_BEPINEX_DIR) {
+                        Some(path.join(file_name))
                     } else {
                         None
                     }
