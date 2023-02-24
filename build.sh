@@ -12,6 +12,9 @@ OUTPUT_DIR="build/$BUILD_TYPE"
 OUTPUT_PLUGIN_DIR="$OUTPUT_DIR/plugins/UniTAS"
 OUTPUT_PATCH_DIR="$OUTPUT_DIR/patchers/UniTAS"
 
+# Clean output directory
+rm -rf "$OUTPUT_DIR"
+
 DOTNET_SOURCE="UniTAS"
 
 SOURCE_PLUGIN_DIR="$DOTNET_SOURCE/Plugin"

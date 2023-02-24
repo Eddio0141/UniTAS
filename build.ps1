@@ -5,6 +5,11 @@ param(
 
 $buildOutput = "build/$buildType"
 
+# Clear build output
+if (Test-Path "$buildOutput") {
+    Remove-Item -Path "$buildOutput" -Recurse -Force
+}
+
 # Dotnet builds
 $dotnetSource = "UniTAS"
 $pluginSource = "$dotnetSource/Plugin"
