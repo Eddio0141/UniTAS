@@ -1376,7 +1376,7 @@ dependencies = [
 
 [[package]]
 name = "unitas_setup_tool"
-version = "1.1.0"
+version = "1.1.1"
 dependencies = [
  "anyhow",
  "clap",
