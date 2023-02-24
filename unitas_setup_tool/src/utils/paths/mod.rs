@@ -43,6 +43,11 @@ pub fn unitas_plugins_dir() -> PathBuf {
     Path::new("plugins").join("UniTAS")
 }
 
+/// A path to the directory where UniTAS patchers are in an artifact.
+pub fn unitas_patchers_dir() -> PathBuf {
+    Path::new("patchers").join("UniTAS")
+}
+
 pub const TAG_DIR_NAME: &str = "tag";
 pub const BRANCH_DIR_NAME: &str = "branch";
 pub const STABLE_DIR_NAME: &str = "stable";

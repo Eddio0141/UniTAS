@@ -6,7 +6,10 @@ use std::{
 use anyhow::{bail, Context, Result};
 use log::*;
 
-use crate::utils::{self, download};
+use crate::utils::{
+    self,
+    download::{self, UNITAS_BEPINEX_DIR},
+};
 
 use super::{
     cli::{DownloadVersion, GameDirSelection},
@@ -199,28 +202,76 @@ async fn install_bepinex(
 async fn install_unitas(game_dir: &Path, unitas_version: DownloadVersion) -> Result<()> {
     // overwrite install without overwriting the config and other important files
     let unitas_dir = paths::local_unitas_dir()?;
-    let unitas_dir = match unitas_version {
-        DownloadVersion::Stable => unitas_dir.join(paths::STABLE_DIR_NAME),
-        DownloadVersion::Tag(tag) => unitas_dir.join(paths::TAG_DIR_NAME).join(tag),
-        DownloadVersion::Branch(branch) => unitas_dir.join(paths::BRANCH_DIR_NAME).join(branch),
-    };
-    let unitas_dir = unitas_dir.join(format!(
-        "{}-{}",
-        download::UNITAS_UNIX_RELEASE,
-        download::UNITAS_RELEASE
-    ));
-    // add other dirs if we add more BepInEx stuff
-    let unitas_dir = unitas_dir.join(paths::unitas_plugins_dir());
-    let dest_dir = game_dir.join("BepInEx").join("plugins");
 
-    debug!("Copying {} to {}", unitas_dir.display(), dest_dir.display());
-    utils::fs::copy_dir_all(&unitas_dir, &dest_dir, true).with_context(|| {
-        format!(
-            "Could not copy UniTAS folder from {} to {}",
-            unitas_dir.display(),
+    let unitas_dir = match unitas_version {
+        DownloadVersion::Stable => {
+            let unitas_dir = unitas_dir.join(paths::STABLE_DIR_NAME);
+
+            let unitas_dir = fs::read_dir(&unitas_dir)?
+                .collect::<Result<Vec<_>, _>>()
+                .with_context(|| {
+                    format!(
+                        "Could not read dir: {}, can't get BepInEx dirs",
+                        unitas_dir.display()
+                    )
+                })?
+                .iter()
+                .find_map(|entry| {
+                    let path = entry.path();
+                    if path.starts_with(UNITAS_BEPINEX_DIR) {
+                        Some(path)
+                    } else {
+                        None
+                    }
+                })
+                .with_context(|| {
+                    format!(
+                        "Could not find a UniTAS BepInEx dir in {}",
+                        unitas_dir.display()
+                    )
+                })?;
+
+            unitas_dir
+        }
+        DownloadVersion::Tag(tag) => unitas_dir.join(paths::TAG_DIR_NAME).join(tag),
+        DownloadVersion::Branch(branch) => unitas_dir
+            .join(paths::BRANCH_DIR_NAME)
+            .join(branch)
+            .join(format!(
+                "{}-{}",
+                download::UNITAS_UNIX_BUILD_RELEASE,
+                download::UNITAS_BUILD_RELEASE
+            )),
+    };
+
+    let dest_dir = game_dir.join("BepInEx");
+
+    let source_dest_dirs = [
+        (
+            unitas_dir.join(paths::unitas_plugins_dir()),
+            (dest_dir.join("plugins").join("UniTAS")),
+        ),
+        (
+            unitas_dir.join(paths::unitas_patchers_dir()),
+            (dest_dir.join("patchers").join("UniTAS")),
+        ),
+    ];
+
+    for (source_dir, dest_dir) in source_dest_dirs {
+        debug!(
+            "Copying contents of {} to {}",
+            source_dir.display(),
             dest_dir.display()
-        )
-    })?;
+        );
+
+        utils::fs::copy_dir_all(&source_dir, &dest_dir, true).with_context(|| {
+            format!(
+                "Could not copy UniTAS folder from {} to {}",
+                source_dir.display(),
+                dest_dir.display()
+            )
+        })?;
+    }
 
     Ok(())
 }
