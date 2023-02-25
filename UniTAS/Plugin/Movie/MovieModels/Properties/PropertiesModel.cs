@@ -10,24 +10,28 @@ public class PropertiesModel
     public string LoadSaveStatePath { get; }
 
     public string EndSavePath { get; }
+    public string LuaScriptPath { get; }
 
     public PropertiesModel(string name, string description, string author, string endSavePath,
-        StartupPropertiesModel startupPropertiesModel)
+        StartupPropertiesModel startupPropertiesModel, string luaScriptPath)
     {
         Name = name;
         Description = description;
         Author = author;
         EndSavePath = endSavePath;
         StartupProperties = startupPropertiesModel;
+        LuaScriptPath = luaScriptPath;
         LoadSaveStatePath = null;
     }
 
-    public PropertiesModel(string name, string description, string author, string endSavePath, string loadSaveStatePath)
+    public PropertiesModel(string name, string description, string author, string endSavePath, string loadSaveStatePath,
+        string luaScriptPath)
     {
         Name = name;
         Description = description;
         Author = author;
         LoadSaveStatePath = loadSaveStatePath;
+        LuaScriptPath = luaScriptPath;
         EndSavePath = endSavePath;
         StartupProperties = null;
     }

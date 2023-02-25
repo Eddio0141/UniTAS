@@ -42,6 +42,7 @@
         <PackageReference Include="BepInEx.Core" Version="5.*" />
         <PackageReference Include="BepInEx.PluginInfoProps" Version="2.*" />
         <PackageReference Include="MonoMod.Utils" Version="22.5.1.1" />
+        <PackageReference Include="MoonSharp" Version="2.0.0" />
         <PackageReference Include="StructureMap" Version="2.6.3" />
         <PackageReference Include="UnityEngine.Modules" Version="3.4.0" IncludeAssets="compile" />
     </ItemGroup>
@@ -58,6 +59,10 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Patcher\Patcher.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Movie\EngineMethods" />
     </ItemGroup>
 
 </Project>

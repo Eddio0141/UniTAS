@@ -1,18 +1,5 @@
-Movie processor functionality
-
 # Overview
-When the opcodes are ran for the current frame
-- It will process the "main" sections of the opcodes such as the main scope, or subroutines
-- It will process the concurrently running methods, which the script can subscribe with through built in method
-
-# Execution overview in updates
-- Set env through save state, startup properties, etc
-- Wait for FixedUpdate sync to savestate / soft restart
-- SYNCED
-- Loop start
-- Update input -> executes a frame of the engine, sets env
-- Update other scripts -> env is applied to everything
-- Loop end
+I use lua for the movie, where defining movie properties also is done within the script itself
 
 # Executing external methods
 ## Basic idea
@@ -63,13 +50,4 @@ public class PrintToConsoleExternalMethod : EngineExternalMethod {
 		return null;
 	}
 }
-```
-
-### Add it to the engine
-```cs
-// engine class
-private const List<EngineExternalMethod> _methods = new() {
-	// ...,
-	new PrintToConsoleExternalMethod()
-};
 ```

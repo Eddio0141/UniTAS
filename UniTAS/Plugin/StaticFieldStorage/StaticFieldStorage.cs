@@ -58,7 +58,7 @@ public class StaticFieldStorage : IStaticFieldManipulator
             MyPluginInfo.PLUGIN_NAME,
             "StructureMap",
             "Antlr4.Runtime.Standard",
-            UniTAS.Patcher.Utils.ProjectAssembly
+            Patcher.Utils.ProjectAssembly
         };
         // ReSharper restore StringLiteralTypo
 

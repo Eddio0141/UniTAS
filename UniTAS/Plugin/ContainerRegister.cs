@@ -16,7 +16,6 @@ using UniTAS.Plugin.Interfaces.Update;
 using UniTAS.Plugin.Logger;
 using UniTAS.Plugin.MonoBehaviourController;
 using UniTAS.Plugin.Movie;
-using UniTAS.Plugin.Movie.EngineMethods;
 using UniTAS.Plugin.Patches.PatchProcessor;
 using UniTAS.Plugin.ReverseInvoker;
 using UniTAS.Plugin.StaticFieldStorage;
@@ -40,7 +39,6 @@ public static class ContainerRegister
                 scanner.TheCallingAssembly();
                 scanner.WithDefaultConventions();
 
-                scanner.AddAllTypesOf<EngineExternalMethod>();
                 scanner.AddAllTypesOf<PatchProcessor>();
                 scanner.AddAllTypesOf<IMainMenuTab>();
             });
