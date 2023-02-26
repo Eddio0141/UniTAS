@@ -35,4 +35,36 @@ i = i + 1
         movieRunner.Update();
         Assert.True(movieRunner.Finished);
     }
+
+    [Fact]
+    public void CoroutineWithoutYield()
+    {
+        const string input = @"
+i = 0
+i = i + 1
+";
+        var movieRunner = Setup(input);
+
+        Assert.False(movieRunner.Finished);
+        movieRunner.Update();
+        Assert.True(movieRunner.Finished);
+    }
+
+    [Fact]
+    public void CoroutineAlias()
+    {
+        const string input = @"
+i = 0
+adv()
+i = i + 1
+";
+
+        var movieRunner = Setup(input);
+
+        Assert.False(movieRunner.Finished);
+        movieRunner.Update();
+        Assert.False(movieRunner.Finished);
+        movieRunner.Update();
+        Assert.True(movieRunner.Finished);
+    }
 }
