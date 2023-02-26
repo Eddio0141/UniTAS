@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using MoonSharp.Interpreter;
 using UniTAS.Plugin.Movie.Engine;
 using UniTAS.Plugin.Movie.Parsers.EngineParser;
 
@@ -57,6 +58,39 @@ i = i + 1
 i = 0
 adv()
 i = i + 1
+";
+
+        var movieRunner = Setup(input);
+
+        Assert.False(movieRunner.Finished);
+        movieRunner.Update();
+        Assert.False(movieRunner.Finished);
+        movieRunner.Update();
+        Assert.True(movieRunner.Finished);
+    }
+
+    [Fact]
+    public void GlobalScopeInvalid()
+    {
+        const string input = @"
+USE_GLOBAL_SCOPE = true
+-- try use yield which should not be available
+adv()
+";
+
+        Assert.Throws<ScriptRuntimeException>(() => Setup(input));
+    }
+
+    [Fact]
+    public void GlobalScope()
+    {
+        const string input = @"
+USE_GLOBAL_SCOPE = true
+return function()
+    i = 0
+    adv()
+    i = i + 1
+end
 ";
 
         var movieRunner = Setup(input);
