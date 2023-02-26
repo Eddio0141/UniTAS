@@ -1,6 +1,10 @@
 # Overview
 I use lua for the movie, where defining movie properties also is done within the script itself
 
+# Config variables
+- USE_GLOBAL_SCOPE
+  - Set to true and the main script's scope will be global. This means the user must manually return the coroutine that will be used to run the movie
+
 # Executing external methods
 ## Basic idea
 Script engine will hold a list of pre-defined methods
