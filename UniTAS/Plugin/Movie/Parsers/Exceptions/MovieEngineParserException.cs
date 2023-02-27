@@ -1,4 +1,4 @@
-namespace UniTAS.Plugin.Movie.Parsers.Exception;
+namespace UniTAS.Plugin.Movie.Parsers.Exceptions;
 
 public class MovieEngineParserException : System.Exception
 {

@@ -2,7 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using MoonSharp.Interpreter;
 using UniTAS.Plugin.Movie.Engine;
 using UniTAS.Plugin.Movie.MovieModels.Properties;
-using UniTAS.Plugin.Movie.Parsers.Exception;
+using UniTAS.Plugin.Movie.Parsers.Exceptions;
 using UniTAS.Plugin.Movie.Parsers.MovieParser;
 
 namespace UniTAS.Plugin.Tests;

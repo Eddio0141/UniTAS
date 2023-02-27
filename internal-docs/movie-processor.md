@@ -4,16 +4,18 @@ I use lua for the movie, where defining movie properties also is done within the
 # Config variables
 - USE_GLOBAL_SCOPE
   - Set to true and the main script's scope will be global. This means the user must manually return the coroutine that will be used to run the movie
+- START_TIME
+  - Either a DateTime or ticks for setting the start time as
+- frametime / ft
+  - Frametime for the initial game frametime, conflicts with fps, and with each other
+- fps
+  - Fps for the inital game fps, conflicts with frametime variables
 
 ## Processing config variables
 ### Idea
 - Each config variable is a simple variable in the scope
 - Each config variable is parsed in an unique way normally
 - It needs to be gathered together in some type for convinient access
-
-### Implementation
-- Have a type to store all information about the movie properties
-- 
 
 # Executing external methods
 ## Basic idea

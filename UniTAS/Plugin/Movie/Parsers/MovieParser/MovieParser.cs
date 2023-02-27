@@ -1,14 +1,21 @@
-using System;
 using MoonSharp.Interpreter;
+using UniTAS.Plugin.Logger;
 using UniTAS.Plugin.Movie.Engine;
 using UniTAS.Plugin.Movie.MovieModels.Properties;
-using UniTAS.Plugin.Movie.Parsers.Exception;
+using UniTAS.Plugin.Movie.Parsers.Exceptions;
 using UniTAS.Plugin.Utils;
 
 namespace UniTAS.Plugin.Movie.Parsers.MovieParser;
 
-public class MovieParser : IMovieParser
+public partial class MovieParser : IMovieParser
 {
+    private readonly IMovieLogger _logger;
+
+    public MovieParser(IMovieLogger logger)
+    {
+        _logger = logger;
+    }
+
     public Tuple<IMovieEngine, PropertiesModel> Parse(string input)
     {
         var script = new Script();
@@ -63,20 +70,5 @@ public class MovieParser : IMovieParser
         var globalScope = script.Globals.Get(variable);
 
         return globalScope.Type == DataType.Boolean && globalScope.Boolean;
-    }
-
-    private static PropertiesModel ProcessProperties(Script script)
-    {
-        // var os = script.Globals.Get("GAME_OS");
-        var startTime = script.Globals.Get("START_TIME");
-        // var fps = script.Globals.Get("fps");
-        var frameTime = script.Globals.Get("frametime");
-
-        var properties = new PropertiesModel(new(
-            startTime.Type == DataType.String ? DateTime.Parse(startTime.String) : default,
-            frameTime.Type == DataType.Number ? (float)frameTime.Number : default
-        ));
-
-        return properties;
     }
 }
