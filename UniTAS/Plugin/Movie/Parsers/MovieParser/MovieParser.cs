@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using MoonSharp.Interpreter;
 using MoonSharp.Interpreter.Loaders;
 using UniTAS.Plugin.Logger;
@@ -9,6 +10,7 @@ using UniTAS.Plugin.Utils;
 
 namespace UniTAS.Plugin.Movie.Parsers.MovieParser;
 
+[SuppressMessage("ReSharper", "UnusedType.Global")]
 public partial class MovieParser : IMovieParser
 {
     private readonly IMovieLogger _logger;
@@ -23,11 +25,16 @@ public partial class MovieParser : IMovieParser
 
     public Tuple<IMovieEngine, PropertiesModel> Parse(string input)
     {
-        Script.DefaultOptions.DebugPrint = s => _logger.LogInfo(s);
-        // do NOT use unity script loader
-        Script.DefaultOptions.ScriptLoader = new FileSystemScriptLoader();
+        var script = new Script
+        {
+            Options =
+            {
+                DebugPrint = s => _logger.LogInfo(s),
+                // do NOT use unity loader
+                ScriptLoader = new FileSystemScriptLoader()
+            }
+        };
 
-        var script = new Script();
         var movieEngine = new MovieEngine(script);
 
         AddAliases(script);

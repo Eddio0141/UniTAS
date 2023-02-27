@@ -1,4 +1,3 @@
-using MoonSharp.Interpreter;
 using UniTAS.Plugin.Movie.Engine;
 using UniTAS.Plugin.Movie.MovieModels.Properties;
 using UniTAS.Plugin.Utils;

@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using MoonSharp.Interpreter;
 using StructureMap;
 using StructureMap.Pipeline;
 using UniTAS.Plugin.Movie.Engine;
