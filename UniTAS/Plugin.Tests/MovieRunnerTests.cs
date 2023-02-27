@@ -244,9 +244,9 @@ j = j + 4
     public void DebugPrint()
     {
         const string input = @"
-debug.print(""test"")
+print(""test"")
 i = 0
-debug.print(i)
+print(i)
 ";
 
         var (_, _, kernel) = Setup(input);
