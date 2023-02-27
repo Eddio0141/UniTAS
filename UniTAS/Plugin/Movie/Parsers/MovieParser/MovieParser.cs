@@ -12,48 +12,52 @@ public partial class MovieParser : IMovieParser
 {
     private readonly IMovieLogger _logger;
 
-    private readonly EngineMethodClass[] _engineMethodClasses;
+    private readonly IEngineMethodClassesFactory _engineMethodClassesFactory;
 
-    public MovieParser(IMovieLogger logger, EngineMethodClass[] engineMethodClasses)
+    public MovieParser(IMovieLogger logger, IEngineMethodClassesFactory engineMethodClassesFactory)
     {
         _logger = logger;
-        _engineMethodClasses = engineMethodClasses;
+        _engineMethodClassesFactory = engineMethodClassesFactory;
     }
 
     public Tuple<IMovieEngine, PropertiesModel> Parse(string input)
     {
+        Script.DefaultOptions.DebugPrint = s => _logger.LogInfo(s);
+
         var script = new Script();
+        var movieEngine = new MovieEngine(script);
+
         AddAliases(script);
-        AddEngineMethods(script);
+        AddEngineMethods(movieEngine);
 
         var wrappedInput = WrapInput(input);
-        var engine = script.DoString(wrappedInput);
+        var engineCoroutine = script.DoString(wrappedInput);
 
         // yield once to see if we are using global scope
-        engine = script.CreateCoroutine(engine);
-        engine.Coroutine.Resume();
+        engineCoroutine = script.CreateCoroutine(engineCoroutine);
+        engineCoroutine.Coroutine.Resume();
 
         var globalScope = GlobalScope(script);
         var properties = ProcessProperties(script);
         if (globalScope)
         {
-            engine = script.DoString(input);
+            engineCoroutine = script.DoString(input);
 
             // because we are using global scope, we expect a function to be returned
-            if (engine.Type != DataType.Function)
+            if (engineCoroutine.Type != DataType.Function)
             {
                 throw new NotReturningFunctionException("Expected a function to be returned from the global scope");
             }
         }
         else
         {
-            engine = script.DoString(wrappedInput);
+            engineCoroutine = script.DoString(wrappedInput);
         }
 
         // reset the engine
-        engine = script.CreateCoroutine(engine);
+        movieEngine.InitCoroutine(engineCoroutine);
 
-        return new(new MovieEngine(engine), properties);
+        return new(movieEngine, properties);
     }
 
     private static void AddAliases(Script script)
@@ -63,12 +67,14 @@ public partial class MovieParser : IMovieParser
         script.Globals.Set("adv", yield);
     }
 
-    private void AddEngineMethods(Script script)
+    private void AddEngineMethods(IMovieEngine engine)
     {
-        foreach (var methodClass in _engineMethodClasses)
+        var engineMethodClasses = _engineMethodClassesFactory.GetAll(engine);
+
+        foreach (var methodClass in engineMethodClasses)
         {
             UserData.RegisterType(methodClass.GetType());
-            script.Globals[methodClass.ClassName] = methodClass;
+            engine.Script.Globals[methodClass.ClassName] = methodClass;
         }
     }
 
