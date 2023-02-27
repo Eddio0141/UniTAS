@@ -62,7 +62,7 @@ public partial class MovieParser
         var frameTime = selectedVariable == "fps" ? 1f / valueParsed.Value : valueParsed.Value;
         if (frameTime <= 0)
         {
-            _logger.LogWarning($"Frame time must be greater than 0, using default value of 100 fps");
+            _logger.LogWarning("Frame time must be greater than 0, using default value of 100 fps");
             return 1f / 100f;
         }
 
