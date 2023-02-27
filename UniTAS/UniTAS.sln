@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Patcher", "Patcher\Patcher.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Patcher.Tests", "Patcher.Tests\Patcher.Tests.csproj", "{0C767EFA-674E-47F9-AE27-BE49C56AC85C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MoonSharp.Interpreter.net35-client", "..\moonsharp\src\MoonSharp.Interpreter\MoonSharp.Interpreter.net35-client.csproj", "{91EA9B9D-FE03-4273-BDAF-8AD42EDE1E59}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,5 +41,11 @@ Global
 		{0C767EFA-674E-47F9-AE27-BE49C56AC85C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0C767EFA-674E-47F9-AE27-BE49C56AC85C}.ReleaseTrace|Any CPU.ActiveCfg = Release|Any CPU
 		{0C767EFA-674E-47F9-AE27-BE49C56AC85C}.ReleaseTrace|Any CPU.Build.0 = Release|Any CPU
+		{91EA9B9D-FE03-4273-BDAF-8AD42EDE1E59}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{91EA9B9D-FE03-4273-BDAF-8AD42EDE1E59}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{91EA9B9D-FE03-4273-BDAF-8AD42EDE1E59}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{91EA9B9D-FE03-4273-BDAF-8AD42EDE1E59}.Release|Any CPU.Build.0 = Release|Any CPU
+		{91EA9B9D-FE03-4273-BDAF-8AD42EDE1E59}.ReleaseTrace|Any CPU.ActiveCfg = Release|Any CPU
+		{91EA9B9D-FE03-4273-BDAF-8AD42EDE1E59}.ReleaseTrace|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

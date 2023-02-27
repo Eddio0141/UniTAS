@@ -3,6 +3,7 @@
   <component name="UserContentModel">
     <attachedFolders>
       <Path>../../UniTAS</Path>
+      <Path>../moonsharp</Path>
     </attachedFolders>
     <explicitIncludes />
     <explicitExcludes />
