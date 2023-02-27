@@ -15,6 +15,7 @@ public class MovieRunnerTests
 {
     private class DummyLogger : IMovieLogger
     {
+        public List<string> Infos { get; } = new();
         public List<string> Warns { get; } = new();
 
         public void LogError(object data)
@@ -23,14 +24,17 @@ public class MovieRunnerTests
 
         public void LogInfo(object data)
         {
+            Infos.Add(data.ToString());
         }
 
         public void LogWarning(object data)
         {
-            Warns.Add(data.ToString() ?? string.Empty);
+            Warns.Add(data.ToString());
         }
 
+#pragma warning disable 67
         public event EventHandler<LogEventArgs>? OnLog;
+#pragma warning restore 67
     }
 
     private static (IMovieEngine, PropertiesModel, IContainer) Setup(string input)
@@ -205,6 +209,7 @@ end
 
 concurrent.register(preUpdate, true)
 
+adv()
 j = j + 1
 adv()
 j = j + 2
@@ -215,6 +220,10 @@ j = j + 4
 ";
 
         var movieRunner = Setup(input).Item1;
+        var script = movieRunner.Script;
+
+        Assert.Equal(0, script.Globals.Get("i").Number);
+        Assert.Equal(0, script.Globals.Get("j").Number);
 
         Assert.False(movieRunner.Finished);
         movieRunner.Update();
@@ -224,6 +233,26 @@ j = j + 4
         movieRunner.Update();
         Assert.False(movieRunner.Finished);
         movieRunner.Update();
+        Assert.False(movieRunner.Finished);
+        movieRunner.Update();
         Assert.True(movieRunner.Finished);
+    }
+
+    // TODO test concurrent class to contain the exact same functions as the lua script
+
+    [Fact]
+    public void DebugPrint()
+    {
+        const string input = @"
+debug.print(""test"")
+i = 0
+debug.print(i)
+";
+
+        var (_, _, kernel) = Setup(input);
+        var logger = kernel.GetInstance<DummyLogger>();
+
+        Assert.Equal("test", logger.Infos[0]);
+        Assert.Equal("0", logger.Infos[1]);
     }
 }
