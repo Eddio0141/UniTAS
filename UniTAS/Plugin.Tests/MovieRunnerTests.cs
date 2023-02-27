@@ -186,6 +186,44 @@ fps = 60
 
         var (_, _, kernel) = Setup(input);
 
-        Assert.Equal("START_TIME is not defined, using default value of 01/01/0001 00:00:00", kernel.GetInstance<DummyLogger>().Warns[0]);
+        Assert.Equal("START_TIME is not defined, using default value of 01/01/0001 00:00:00",
+            kernel.GetInstance<DummyLogger>().Warns[0]);
+    }
+
+    [Fact]
+    public void ConcurrentPreUpdate()
+    {
+        const string input = @"
+i = 0
+j = 0
+
+function preUpdate()
+    i = i + 1
+    adv()
+    i = i + 2
+end
+
+concurrent.register(preUpdate, true)
+
+j = j + 1
+adv()
+j = j + 2
+adv()
+j = j + 3
+adv()
+j = j + 4
+";
+
+        var movieRunner = Setup(input).Item1;
+
+        Assert.False(movieRunner.Finished);
+        movieRunner.Update();
+        Assert.False(movieRunner.Finished);
+        movieRunner.Update();
+        Assert.False(movieRunner.Finished);
+        movieRunner.Update();
+        Assert.False(movieRunner.Finished);
+        movieRunner.Update();
+        Assert.True(movieRunner.Finished);
     }
 }

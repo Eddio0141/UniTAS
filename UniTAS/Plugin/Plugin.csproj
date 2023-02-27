@@ -61,8 +61,4 @@
       <ProjectReference Include="..\Patcher\Patcher.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Movie\EngineMethods" />
-    </ItemGroup>
-
 </Project>

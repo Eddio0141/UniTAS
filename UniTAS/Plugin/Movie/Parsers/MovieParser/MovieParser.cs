@@ -1,6 +1,7 @@
 using MoonSharp.Interpreter;
 using UniTAS.Plugin.Logger;
 using UniTAS.Plugin.Movie.Engine;
+using UniTAS.Plugin.Movie.EngineMethods;
 using UniTAS.Plugin.Movie.MovieModels.Properties;
 using UniTAS.Plugin.Movie.Parsers.Exceptions;
 using UniTAS.Plugin.Utils;
@@ -11,15 +12,19 @@ public partial class MovieParser : IMovieParser
 {
     private readonly IMovieLogger _logger;
 
-    public MovieParser(IMovieLogger logger)
+    private readonly EngineMethodClass[] _engineMethodClasses;
+
+    public MovieParser(IMovieLogger logger, EngineMethodClass[] engineMethodClasses)
     {
         _logger = logger;
+        _engineMethodClasses = engineMethodClasses;
     }
 
     public Tuple<IMovieEngine, PropertiesModel> Parse(string input)
     {
         var script = new Script();
         AddAliases(script);
+        AddEngineMethods(script);
 
         var wrappedInput = WrapInput(input);
         var engine = script.DoString(wrappedInput);
@@ -56,6 +61,15 @@ public partial class MovieParser : IMovieParser
         // alias method to coroutine.yield as adv
         var yield = script.Globals.Get("coroutine").Table.Get("yield");
         script.Globals.Set("adv", yield);
+    }
+
+    private void AddEngineMethods(Script script)
+    {
+        foreach (var methodClass in _engineMethodClasses)
+        {
+            UserData.RegisterType(methodClass.GetType());
+            script.Globals[methodClass.ClassName] = methodClass;
+        }
     }
 
     private static string WrapInput(string input)
