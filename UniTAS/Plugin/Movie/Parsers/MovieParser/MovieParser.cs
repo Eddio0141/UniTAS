@@ -1,4 +1,5 @@
 using MoonSharp.Interpreter;
+using MoonSharp.Interpreter.Loaders;
 using UniTAS.Plugin.Logger;
 using UniTAS.Plugin.Movie.Engine;
 using UniTAS.Plugin.Movie.EngineMethods;
@@ -23,6 +24,8 @@ public partial class MovieParser : IMovieParser
     public Tuple<IMovieEngine, PropertiesModel> Parse(string input)
     {
         Script.DefaultOptions.DebugPrint = s => _logger.LogInfo(s);
+        // do NOT use unity script loader
+        Script.DefaultOptions.ScriptLoader = new FileSystemScriptLoader();
 
         var script = new Script();
         var movieEngine = new MovieEngine(script);
