@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using UniTAS.Plugin.FixedUpdateSync;
 using UniTAS.Plugin.GameEnvironment;
@@ -5,7 +6,7 @@ using UniTAS.Plugin.GameRestart;
 using UniTAS.Plugin.Interfaces.Update;
 using UniTAS.Plugin.Movie.Engine;
 using UniTAS.Plugin.Movie.Exceptions.ScriptEngineExceptions;
-using UniTAS.Plugin.Movie.Parsers.EngineParser;
+using UniTAS.Plugin.Movie.Parsers.MovieParser;
 
 namespace UniTAS.Plugin.Movie;
 
@@ -21,11 +22,11 @@ public class MovieRunner : IMovieRunner, IOnPreUpdates
     private bool _cleanUp;
     private bool _setup;
 
-    private readonly IMovieEngineParser _parser;
+    private readonly IMovieParser _parser;
     private IMovieEngine _engine;
 
     public MovieRunner(VirtualEnvironment vEnv, IGameRestart gameRestart, ISyncFixedUpdate syncFixedUpdate,
-        IMovieEngineParser parser)
+        IMovieParser parser)
     {
         _virtualEnvironment = vEnv;
         _gameRestart = gameRestart;
@@ -39,17 +40,19 @@ public class MovieRunner : IMovieRunner, IOnPreUpdates
 
         _setup = true;
 
-        _engine = _parser.Parse(input);
+        var parsed = _parser.Parse(input);
+        _engine = parsed.Item1;
+        var properties = parsed.Item2;
 
         // set env from properties
         _virtualEnvironment.RunVirtualEnvironment = true;
 
-        // if (startupProperties != null)
-        // {
-        //     Trace.Write($"Using startup property: {startupProperties}");
-        //     _virtualEnvironment.FrameTime = startupProperties.FrameTime;
-        //     _gameRestart.SoftRestart(startupProperties.StartTime);
-        // }
+        if (properties.StartupProperties != null)
+        {
+            Trace.Write($"Using startup property: {properties.StartupProperties}");
+            _virtualEnvironment.FrameTime = properties.StartupProperties.FrameTime;
+            _gameRestart.SoftRestart(properties.StartupProperties.StartTime);
+        }
 
         // TODO other stuff like save state load, hide cursor, etc
 

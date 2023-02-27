@@ -1,19 +1,23 @@
 using System.Diagnostics.CodeAnalysis;
 using MoonSharp.Interpreter;
 using UniTAS.Plugin.Movie.Engine;
-using UniTAS.Plugin.Movie.Parsers.EngineParser;
+using UniTAS.Plugin.Movie.MovieModels.Properties;
+using UniTAS.Plugin.Movie.Parsers.Exception;
+using UniTAS.Plugin.Movie.Parsers.MovieParser;
 
 namespace UniTAS.Plugin.Tests;
 
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Local")]
 public class MovieRunnerTests
 {
-    private static IMovieEngine Setup(string input)
+    private static (IMovieEngine, PropertiesModel) Setup(string input)
     {
         var kernel = ContainerRegister.Init();
 
-        var parser = kernel.GetInstance<IMovieEngineParser>();
-        return parser.Parse(input);
+        var parser = kernel.GetInstance<IMovieParser>();
+        var parsed = parser.Parse(input);
+
+        return (parsed.Item1, parsed.Item2);
     }
 
     [Fact]
@@ -26,7 +30,7 @@ i = i + 1
 coroutine.yield()
 i = i + 1
 ";
-        var movieRunner = Setup(input);
+        var movieRunner = Setup(input).Item1;
 
         Assert.False(movieRunner.Finished);
         movieRunner.Update();
@@ -44,7 +48,7 @@ i = i + 1
 i = 0
 i = i + 1
 ";
-        var movieRunner = Setup(input);
+        var movieRunner = Setup(input).Item1;
 
         Assert.False(movieRunner.Finished);
         movieRunner.Update();
@@ -60,7 +64,7 @@ adv()
 i = i + 1
 ";
 
-        var movieRunner = Setup(input);
+        var movieRunner = Setup(input).Item1;
 
         Assert.False(movieRunner.Finished);
         movieRunner.Update();
@@ -70,7 +74,7 @@ i = i + 1
     }
 
     [Fact]
-    public void GlobalScopeInvalid()
+    public void GlobalScopeInvalidYield()
     {
         const string input = @"
 USE_GLOBAL_SCOPE = true
@@ -93,12 +97,39 @@ return function()
 end
 ";
 
-        var movieRunner = Setup(input);
+        var movieRunner = Setup(input).Item1;
 
         Assert.False(movieRunner.Finished);
         movieRunner.Update();
         Assert.False(movieRunner.Finished);
         movieRunner.Update();
         Assert.True(movieRunner.Finished);
+    }
+
+    [Fact]
+    public void GlobalScopeInvalidNoReturn()
+    {
+        // don't return a function
+        const string input = @"
+USE_GLOBAL_SCOPE = true
+i = 0
+i = i + 1
+";
+
+        Assert.Throws<NotReturningFunctionException>(() => Setup(input));
+    }
+
+    [Fact]
+    public void PropertiesFull()
+    {
+        const string input = @"
+START_TIME = ""28/03/2021 12:00:00""
+frametime = 1/60
+";
+
+        var properties = Setup(input).Item2;
+
+        Assert.Equal(new(2021, 03, 28, 12, 00, 00), properties.StartupProperties.StartTime);
+        Assert.Equal(1 / 60f, properties.StartupProperties.FrameTime);
     }
 }

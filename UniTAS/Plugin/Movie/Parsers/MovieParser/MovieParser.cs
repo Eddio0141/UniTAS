@@ -1,12 +1,15 @@
+using System;
 using MoonSharp.Interpreter;
 using UniTAS.Plugin.Movie.Engine;
+using UniTAS.Plugin.Movie.MovieModels.Properties;
 using UniTAS.Plugin.Movie.Parsers.Exception;
+using UniTAS.Plugin.Utils;
 
-namespace UniTAS.Plugin.Movie.Parsers.EngineParser;
+namespace UniTAS.Plugin.Movie.Parsers.MovieParser;
 
-public class MovieEngineParser : IMovieEngineParser
+public class MovieParser : IMovieParser
 {
-    public IMovieEngine Parse(string input)
+    public Tuple<IMovieEngine, PropertiesModel> Parse(string input)
     {
         var script = new Script();
         AddAliases(script);
@@ -19,6 +22,7 @@ public class MovieEngineParser : IMovieEngineParser
         engine.Coroutine.Resume();
 
         var globalScope = GlobalScope(script);
+        var properties = ProcessProperties(script);
         if (globalScope)
         {
             engine = script.DoString(input);
@@ -37,7 +41,7 @@ public class MovieEngineParser : IMovieEngineParser
         // reset the engine
         engine = script.CreateCoroutine(engine);
 
-        return new MovieEngine(engine);
+        return new(new MovieEngine(engine), properties);
     }
 
     private static void AddAliases(Script script)
@@ -59,5 +63,20 @@ public class MovieEngineParser : IMovieEngineParser
         var globalScope = script.Globals.Get(variable);
 
         return globalScope.Type == DataType.Boolean && globalScope.Boolean;
+    }
+
+    private static PropertiesModel ProcessProperties(Script script)
+    {
+        // var os = script.Globals.Get("GAME_OS");
+        var startTime = script.Globals.Get("START_TIME");
+        // var fps = script.Globals.Get("fps");
+        var frameTime = script.Globals.Get("frametime");
+
+        var properties = new PropertiesModel(new(
+            startTime.Type == DataType.String ? DateTime.Parse(startTime.String) : default,
+            frameTime.Type == DataType.Number ? (float)frameTime.Number : default
+        ));
+
+        return properties;
     }
 }
