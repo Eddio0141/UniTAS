@@ -26,7 +26,9 @@ public partial class MovieParser
         DateTime startTime;
         if (startTimeRaw.Type == DataType.String)
         {
-            if (!DateTime.TryParse(startTimeRaw.String, out startTime))
+            // culture invariant
+            if (!DateTime.TryParse(startTimeRaw.String, null, System.Globalization.DateTimeStyles.AssumeUniversal,
+                    out startTime))
             {
                 startTime = default;
                 _logger.LogWarning($"START_TIME is invalid, using default time of {startTime}");

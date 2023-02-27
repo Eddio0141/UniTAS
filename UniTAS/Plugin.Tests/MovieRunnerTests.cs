@@ -162,7 +162,8 @@ frametime = 1/60
 
         var properties = Setup(input).Item2;
 
-        Assert.Equal(new(2021, 03, 28, 12, 00, 00), properties.StartupProperties.StartTime);
+        // 2021-03-28T13:00:00.0000000+01:00
+        Assert.Equal(new(2021, 3, 28, 13, 0, 0, DateTimeKind.Utc), properties.StartupProperties.StartTime);
         Assert.Equal(1 / 60f, properties.StartupProperties.FrameTime);
     }
 
