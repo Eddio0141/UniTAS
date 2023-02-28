@@ -110,7 +110,7 @@ i = i + 1
     public void GlobalScopeInvalidYield()
     {
         const string input = @"
-USE_GLOBAL_SCOPE = true
+GLOBAL_SCOPE = true
 -- try use yield which should not be available
 adv()
 ";
@@ -122,7 +122,7 @@ adv()
     public void GlobalScope()
     {
         const string input = @"
-USE_GLOBAL_SCOPE = true
+GLOBAL_SCOPE = true
 return function()
     i = 0
     adv()
@@ -144,7 +144,7 @@ end
     {
         // don't return a function
         const string input = @"
-USE_GLOBAL_SCOPE = true
+GLOBAL_SCOPE = true
 i = 0
 i = i + 1
 ";
