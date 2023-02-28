@@ -9,6 +9,8 @@ I use lua for the movie, where defining movie properties also is done within the
 ## TAS execution
 - The inputs and whatever you set before the first `yield` is the **first frame** and settings to be used
 - If there is no `yield` at the final set of action, that section is the **last frame**
+---
+DEV NOTE: even if a script has no `yield` method, you still need to resume the coroutine at least *ONCE*
 ### Examples
 ```lua
 -- some config
