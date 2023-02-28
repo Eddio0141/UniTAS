@@ -67,11 +67,19 @@ public partial class MovieParser : IMovieParser
         {
             Options =
             {
-                DebugPrint = s => _logger.LogInfo(s),
                 // do NOT use unity loader
                 ScriptLoader = new FileSystemScriptLoader()
             }
         };
+
+        if (movieEngine == null)
+        {
+            script.Options.DebugPrint = _ => { };
+        }
+        else
+        {
+            script.Options.DebugPrint = s => _logger.LogInfo(s);
+        }
 
         AddAliases(script);
 
