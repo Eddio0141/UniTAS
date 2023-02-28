@@ -32,7 +32,8 @@ public partial class MovieParser
                     out startTime))
             {
                 startTime = default;
-                _logger.LogWarning($"START_TIME is invalid, using default time of {startTime}");
+                _logger.LogWarning(
+                    $"START_TIME is invalid, using default time of {startTime.ToString(CultureInfo.InvariantCulture)}");
             }
         }
         else if (startTimeRaw.Type == DataType.Number)
@@ -43,7 +44,8 @@ public partial class MovieParser
         else
         {
             startTime = default;
-            _logger.LogWarning($"START_TIME is not defined, using default value of {startTime}");
+            _logger.LogWarning(
+                $"START_TIME is not defined, using default value of {startTime.ToString(CultureInfo.InvariantCulture)}");
         }
 
         return startTime;
