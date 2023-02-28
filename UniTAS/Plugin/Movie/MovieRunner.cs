@@ -80,9 +80,7 @@ public class MovieRunner : IMovieRunner, IOnPreUpdates
 
         if (MovieEnd) return;
 
-        // ConcurrentRunnersPreUpdate();
         _engine.Update();
-        // ConcurrentRunnersPostUpdate();
 
         if (_engine.Finished)
         {

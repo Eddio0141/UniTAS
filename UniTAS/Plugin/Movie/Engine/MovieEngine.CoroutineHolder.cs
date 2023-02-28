@@ -21,7 +21,7 @@ public partial class MovieEngine
         {
             if (_coroutine.Coroutine.State == CoroutineState.Dead)
             {
-                _coroutine = _engine.Script.CreateCoroutine(_method);
+                InitCoroutine();
             }
 
             _coroutine.Coroutine.Resume();

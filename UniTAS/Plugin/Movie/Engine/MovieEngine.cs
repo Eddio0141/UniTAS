@@ -8,8 +8,19 @@ public partial class MovieEngine : IMovieEngine
     private readonly List<CoroutineHolder> _preUpdateCoroutines = new();
     private readonly List<CoroutineHolder> _postUpdateCoroutines = new();
     private DynValue _coroutine;
+    private Script _script;
 
-    public Script Script { get; set; }
+    public Script Script
+    {
+        get => _script;
+        set
+        {
+            // because script instance is changing, clear the coroutines
+            _preUpdateCoroutines.Clear();
+            _postUpdateCoroutines.Clear();
+            _script = value;
+        }
+    }
 
     /// <summary>
     /// Creates a new MovieEngine from a coroutine
