@@ -212,46 +212,68 @@ concurrent.register(preUpdate, true)
 
 adv()
 j = j + 1
---adv()
---j = j + 2
---adv()
---j = j + 3
---adv()
---j = j + 4
+adv()
+j = j + 2
+adv()
+j = j + 3
+adv()
+j = j + 4
 ";
 
         // execution should be like this:
-        // --preUpdate--
         // i = 0
         // j = 0
-        // i = 1 + 1 (concurrent)
+        // i = 1 + 1 = 1 (concurrent)
+        // --update--
+        // i = i + 2 = 3 (concurrent)
+        // j = j + 1 = 1
+        // --update--
+        // i = i + 1 = 4 (concurrent)
+        // j = j + 2 = 3
+        // --update--
+        // i = i + 2 = 6 (concurrent)
+        // j = j + 3 = 6
+        // --update--
+        // i = i + 1 = 7 (concurrent)
+        // j = j + 4 = 10
+        
 
         var movieRunner = Setup(input).Item1;
         var script = movieRunner.Script;
 
+        Assert.Equal(DataType.Nil, script.Globals.Get("i").Type);
+        Assert.Equal(DataType.Nil, script.Globals.Get("j").Type);
+        Assert.False(movieRunner.Finished);
+        
+        movieRunner.Update();
+        
         Assert.Equal(1, script.Globals.Get("i").Number);
         Assert.Equal(0, script.Globals.Get("j").Number);
         Assert.False(movieRunner.Finished);
-
-        movieRunner.Update();
+        
+        movieRunner.Update(); // --update--
+        
         Assert.Equal(3, script.Globals.Get("i").Number);
         Assert.Equal(1, script.Globals.Get("j").Number);
         Assert.False(movieRunner.Finished);
-
-        movieRunner.Update();
-        Assert.Equal(3, script.Globals.Get("i").Number);
+        
+        movieRunner.Update(); // --update--
+        
+        Assert.Equal(4, script.Globals.Get("i").Number);
         Assert.Equal(3, script.Globals.Get("j").Number);
         Assert.False(movieRunner.Finished);
-
-        // movieRunner.Update();
-        // Assert.Equal(4, script.Globals.Get("i").Number);
-        // Assert.Equal(6, script.Globals.Get("j").Number);
-        // Assert.False(movieRunner.Finished);
-        //
-        // movieRunner.Update();
-        // Assert.False(movieRunner.Finished);
-        // movieRunner.Update();
-        // Assert.True(movieRunner.Finished);
+        
+        movieRunner.Update(); // --update--
+        
+        Assert.Equal(6, script.Globals.Get("i").Number);
+        Assert.Equal(6, script.Globals.Get("j").Number);
+        Assert.False(movieRunner.Finished);
+        
+        movieRunner.Update(); // --update--
+        
+        Assert.Equal(7, script.Globals.Get("i").Number);
+        Assert.Equal(10, script.Globals.Get("j").Number);
+        Assert.True(movieRunner.Finished);
     }
 
     // TODO test concurrent class to contain the exact same functions as the lua script
@@ -288,6 +310,7 @@ end
 
 
         var coroutine = ScriptRecycleSetup(script, input);
+        Assert.Equal(DataType.Nil, script.Globals.Get("i").Type);
         coroutine.Resume();
         Assert.Equal(0, script.Globals.Get("i").Number);
         coroutine.Resume();
@@ -296,7 +319,7 @@ end
         // recycle
         script = new();
         ScriptRecycleSetup(script, input);
-        Assert.Equal(0, script.Globals.Get("i").Number);
+        Assert.Equal(DataType.Nil, script.Globals.Get("i").Type);
     }
 
     private static Coroutine ScriptRecycleSetup(Script script, string input)
