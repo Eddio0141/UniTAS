@@ -24,12 +24,12 @@ public class MovieRunnerTests
 
         public void LogInfo(object data)
         {
-            Infos.Add(data.ToString());
+            Infos.Add(data.ToString() ?? string.Empty);
         }
 
         public void LogWarning(object data)
         {
-            Warns.Add(data.ToString());
+            Warns.Add(data.ToString() ?? string.Empty);
         }
 
 #pragma warning disable 67

@@ -4,7 +4,7 @@
         <AssemblyName>UniTAS.Plugin.Tests</AssemblyName>
         <RootNamespace>UniTAS.Plugin.Tests</RootNamespace>
         <RootNamespace>UniTAS.Plugin.Tests</RootNamespace>
-        <TargetFramework>net48</TargetFramework>
+        <TargetFramework>net6.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <RestoreAdditionalProjectSources>
