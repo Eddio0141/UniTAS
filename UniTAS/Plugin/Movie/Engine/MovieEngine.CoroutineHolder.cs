@@ -4,6 +4,9 @@ namespace UniTAS.Plugin.Movie.Engine;
 
 public partial class MovieEngine
 {
+    /// <summary>
+    /// A wrapper for a coroutine that will run indefinitely
+    /// </summary>
     private class CoroutineHolder
     {
         private readonly IMovieEngine _engine;
