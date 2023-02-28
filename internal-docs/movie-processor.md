@@ -1,8 +1,32 @@
 # Overview
 I use lua for the movie, where defining movie properties also is done within the script itself
 
+# Movie execution
+## Config
+- Because the config must be written somewhere, I've decided that if the script isn't `GLOBAL_SCOPE` then config values must be set before the first `yield`
+- If `GLOBAL_SCOPE` then it just has to be set in the global scope with the appropriate name
+
+## TAS execution
+- The inputs and whatever you set before the first `yield` is the **first frame** and settings to be used
+- If there is no `yield` at the final set of action, that section is the **last frame**
+### Examples
+```lua
+-- some config
+-- do whatever input stuff
+i = 0
+```
+- This movie is 1f long
+---
+```lua
+-- config
+-- input stuff
+adv()
+-- more input stuff
+```
+- This movie is 2f long
+
 # Config variables
-- USE_GLOBAL_SCOPE
+- GLOBAL_SCOPE
   - Set to true and the main script's scope will be global. This means the user must manually return the coroutine that will be used to run the movie
 - START_TIME
   - Either a DateTime or ticks for setting the start time as
