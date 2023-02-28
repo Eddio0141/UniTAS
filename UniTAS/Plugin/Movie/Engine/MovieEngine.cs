@@ -59,17 +59,18 @@ public partial class MovieEngine : IMovieEngine
 
     public bool Finished => _coroutine.Coroutine.State == CoroutineState.Dead;
 
-    public void RegisterPreUpdate(DynValue coroutine)
+    public void RegisterConcurrent(DynValue coroutine, bool preUpdate, params DynValue[] defaultArgs)
     {
         if (coroutine.Type != DataType.Function) return;
-        var coroutineWrap = new CoroutineHolder(this, coroutine);
-        coroutineWrap.Resume();
-        _preUpdateCoroutines.Add(coroutineWrap);
-    }
-
-    public void RegisterPostUpdate(DynValue coroutine)
-    {
-        if (coroutine.Type != DataType.Function) return;
-        _postUpdateCoroutines.Add(new(this, coroutine));
+        var coroutineWrap = new CoroutineHolder(this, coroutine, defaultArgs);
+        if (preUpdate)
+        {
+            coroutineWrap.Resume();
+            _preUpdateCoroutines.Add(coroutineWrap);
+        }
+        else
+        {
+            _postUpdateCoroutines.Add(coroutineWrap);
+        }
     }
 }

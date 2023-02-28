@@ -5,6 +5,7 @@ using UniTAS.Plugin.Movie.Engine;
 namespace UniTAS.Plugin.Movie.EngineMethods.Implementations;
 
 [SuppressMessage("ReSharper", "UnusedType.Global")]
+[SuppressMessage("ReSharper", "UnusedMember.Global")]
 public class Concurrent : EngineMethodClass
 {
     private readonly IMovieEngine _engine;
@@ -18,14 +19,6 @@ public class Concurrent : EngineMethodClass
 
     public void Register(DynValue coroutine, bool preUpdate, params DynValue[] defaultArgs)
     {
-        // TODO
-        if (preUpdate)
-        {
-            _engine.RegisterPreUpdate(coroutine);
-        }
-        else
-        {
-            _engine.RegisterPostUpdate(coroutine);
-        }
+        _engine.RegisterConcurrent(coroutine, preUpdate, defaultArgs);
     }
 }

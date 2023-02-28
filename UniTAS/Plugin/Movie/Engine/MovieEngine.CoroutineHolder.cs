@@ -12,11 +12,13 @@ public partial class MovieEngine
         private readonly IMovieEngine _engine;
         private readonly DynValue _method;
         private DynValue _coroutine;
+        private readonly DynValue[] _defaultArgs;
 
-        public CoroutineHolder(IMovieEngine engine, DynValue method)
+        public CoroutineHolder(IMovieEngine engine, DynValue method, DynValue[] defaultArgs)
         {
             _engine = engine;
             _method = method;
+            _defaultArgs = defaultArgs;
             InitCoroutine();
         }
 
@@ -27,7 +29,7 @@ public partial class MovieEngine
                 InitCoroutine();
             }
 
-            _coroutine.Coroutine.Resume();
+            _coroutine.Coroutine.Resume(_defaultArgs);
         }
 
         private void InitCoroutine()

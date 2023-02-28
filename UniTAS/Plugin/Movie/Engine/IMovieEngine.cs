@@ -7,6 +7,5 @@ public interface IMovieEngine
     void Update();
     bool Finished { get; }
     Script Script { get; }
-    void RegisterPreUpdate(DynValue coroutine);
-    void RegisterPostUpdate(DynValue coroutine);
+    void RegisterConcurrent(DynValue coroutine, bool preUpdate, params DynValue[] defaultArgs);
 }
