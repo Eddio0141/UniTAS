@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using MoonSharp.Interpreter;
 using UniTAS.Plugin.Movie.MovieModels.Properties;
 using UniTAS.Plugin.Utils;
@@ -27,7 +28,7 @@ public partial class MovieParser
         if (startTimeRaw.Type == DataType.String)
         {
             // culture invariant
-            if (!DateTime.TryParse(startTimeRaw.String, null, System.Globalization.DateTimeStyles.AssumeUniversal,
+            if (!DateTime.TryParse(startTimeRaw.String, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal,
                     out startTime))
             {
                 startTime = default;
