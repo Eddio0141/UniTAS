@@ -27,6 +27,12 @@ adv()
 ```
 - This movie is 2f long
 
+## TAS execution with coroutine
+- Idea is you can register coroutine either **before** the main coroutine yield or **after** the main coroutine yield
+  - Either coroutine cycle you choose will execute before game's `MonoBehaviour.Update()`
+- When you register a coroutine for **before** the main yield, it will execute as you register it
+- When registering a coroutine for **after** the main yield, it will execute when the main yield finishes as usual
+
 # Config variables
 - GLOBAL_SCOPE
   - Set to true and the main script's scope will be global. This means the user must manually return the coroutine that will be used to run the movie
