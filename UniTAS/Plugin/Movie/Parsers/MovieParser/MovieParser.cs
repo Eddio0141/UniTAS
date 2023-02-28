@@ -25,20 +25,9 @@ public partial class MovieParser : IMovieParser
 
     public Tuple<IMovieEngine, PropertiesModel> Parse(string input)
     {
-        var script = new Script
-        {
-            Options =
-            {
-                DebugPrint = s => _logger.LogInfo(s),
-                // do NOT use unity loader
-                ScriptLoader = new FileSystemScriptLoader()
-            }
-        };
-
-        var movieEngine = new MovieEngine(script);
-
-        AddAliases(script);
-        AddEngineMethods(movieEngine);
+        var scriptAndMovieEngine = SetupScript();
+        var script = scriptAndMovieEngine.Item1;
+        var movieEngine = scriptAndMovieEngine.Item2;
 
         var wrappedInput = WrapInput(input);
         var engineCoroutine = script.DoString(wrappedInput);
@@ -47,10 +36,11 @@ public partial class MovieParser : IMovieParser
         engineCoroutine = script.CreateCoroutine(engineCoroutine);
         engineCoroutine.Coroutine.Resume();
 
-        var globalScope = GlobalScope(script);
+        var useGlobalScope = GlobalScopeFlag(script);
         var properties = ProcessProperties(script);
-        if (globalScope)
+        if (useGlobalScope)
         {
+            script = SetupScript(movieEngine).Item1;
             engineCoroutine = script.DoString(input);
 
             // because we are using global scope, we expect a function to be returned
@@ -61,6 +51,7 @@ public partial class MovieParser : IMovieParser
         }
         else
         {
+            script = SetupScript(movieEngine).Item1;
             engineCoroutine = script.DoString(wrappedInput);
         }
 
@@ -68,6 +59,34 @@ public partial class MovieParser : IMovieParser
         movieEngine.InitCoroutine(engineCoroutine);
 
         return new(movieEngine, properties);
+    }
+
+    private Tuple<Script, MovieEngine> SetupScript(MovieEngine movieEngine = null)
+    {
+        var script = new Script
+        {
+            Options =
+            {
+                DebugPrint = s => _logger.LogInfo(s),
+                // do NOT use unity loader
+                ScriptLoader = new FileSystemScriptLoader()
+            }
+        };
+
+        AddAliases(script);
+
+        if (movieEngine == null)
+        {
+            movieEngine = new(script);
+        }
+        else
+        {
+            movieEngine.Script = script;
+        }
+
+        AddEngineMethods(movieEngine);
+
+        return Tuple.New(script, movieEngine);
     }
 
     private static void AddAliases(Script script)
@@ -93,9 +112,9 @@ public partial class MovieParser : IMovieParser
         return $"return function() {input} end";
     }
 
-    private static bool GlobalScope(Script script)
+    private static bool GlobalScopeFlag(Script script)
     {
-        const string variable = "USE_GLOBAL_SCOPE";
+        const string variable = "GLOBAL_SCOPE";
 
         var globalScope = script.Globals.Get(variable);
 

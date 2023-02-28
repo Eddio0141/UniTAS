@@ -1,8 +1,10 @@
+using System.Diagnostics.CodeAnalysis;
 using MoonSharp.Interpreter;
 using UniTAS.Plugin.Movie.Engine;
 
-namespace UniTAS.Plugin.Movie.EngineMethods;
+namespace UniTAS.Plugin.Movie.EngineMethods.Implementations;
 
+[SuppressMessage("ReSharper", "UnusedType.Global")]
 public class Concurrent : EngineMethodClass
 {
     private readonly IMovieEngine _engine;
@@ -17,6 +19,13 @@ public class Concurrent : EngineMethodClass
     public void Register(DynValue coroutine, bool preUpdate, params DynValue[] defaultArgs)
     {
         // TODO
-        _engine.RegisterPreUpdate(coroutine);
+        if (preUpdate)
+        {
+            _engine.RegisterPreUpdate(coroutine);
+        }
+        else
+        {
+            _engine.RegisterPostUpdate(coroutine);
+        }
     }
 }

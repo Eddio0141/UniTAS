@@ -9,7 +9,7 @@ public partial class MovieEngine : IMovieEngine
     private readonly List<CoroutineHolder> _postUpdateCoroutines = new();
     private DynValue _coroutine;
 
-    public Script Script { get; }
+    public Script Script { get; set; }
 
     /// <summary>
     /// Creates a new MovieEngine from a coroutine
@@ -51,7 +51,9 @@ public partial class MovieEngine : IMovieEngine
     public void RegisterPreUpdate(DynValue coroutine)
     {
         if (coroutine.Type != DataType.Function) return;
-        _preUpdateCoroutines.Add(new(this, coroutine));
+        var coroutineWrap = new CoroutineHolder(this, coroutine);
+        coroutineWrap.Resume();
+        _preUpdateCoroutines.Add(coroutineWrap);
     }
 
     public void RegisterPostUpdate(DynValue coroutine)
