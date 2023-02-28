@@ -156,14 +156,14 @@ i = i + 1
     public void PropertiesFull()
     {
         const string input = @"
-START_TIME = ""28/03/2021 12:00:00""
+START_TIME = ""03/28/2021 12:00:00""
 frametime = 1/60
 ";
 
         var properties = Setup(input).Item2;
 
-        // 2021-03-28T13:00:00.0000000+01:00
-        Assert.Equal(new(2021, 3, 28, 13, 0, 0, DateTimeKind.Utc), properties.StartupProperties.StartTime);
+        // 2021-03-28T12:00:00.0000000
+        Assert.Equal(new(2021, 3, 28, 12, 0, 0, DateTimeKind.Utc), properties.StartupProperties.StartTime);
         Assert.Equal(1 / 60f, properties.StartupProperties.FrameTime);
     }
 
@@ -171,7 +171,7 @@ frametime = 1/60
     public void FpsFrametimeConflict()
     {
         const string input = @"
-START_TIME = ""28/03/2021 12:00:00""
+START_TIME = ""03/28/2021 12:00:00""
 fps = 60
 frametime = 1/50
 ";
