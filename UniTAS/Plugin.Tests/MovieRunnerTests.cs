@@ -236,7 +236,7 @@ j = j + 4
         // --update--
         // i = i + 1 = 7 (concurrent)
         // j = j + 4 = 10
-        
+
 
         var movieRunner = Setup(input).Item1;
         var script = movieRunner.Script;
@@ -244,39 +244,61 @@ j = j + 4
         Assert.Equal(DataType.Nil, script.Globals.Get("i").Type);
         Assert.Equal(DataType.Nil, script.Globals.Get("j").Type);
         Assert.False(movieRunner.Finished);
-        
+
         movieRunner.Update();
-        
+
         Assert.Equal(1, script.Globals.Get("i").Number);
         Assert.Equal(0, script.Globals.Get("j").Number);
         Assert.False(movieRunner.Finished);
-        
+
         movieRunner.Update(); // --update--
-        
+
         Assert.Equal(3, script.Globals.Get("i").Number);
         Assert.Equal(1, script.Globals.Get("j").Number);
         Assert.False(movieRunner.Finished);
-        
+
         movieRunner.Update(); // --update--
-        
+
         Assert.Equal(4, script.Globals.Get("i").Number);
         Assert.Equal(3, script.Globals.Get("j").Number);
         Assert.False(movieRunner.Finished);
-        
+
         movieRunner.Update(); // --update--
-        
+
         Assert.Equal(6, script.Globals.Get("i").Number);
         Assert.Equal(6, script.Globals.Get("j").Number);
         Assert.False(movieRunner.Finished);
-        
+
         movieRunner.Update(); // --update--
-        
+
         Assert.Equal(7, script.Globals.Get("i").Number);
         Assert.Equal(10, script.Globals.Get("j").Number);
         Assert.True(movieRunner.Finished);
     }
 
-    // TODO test concurrent class to contain the exact same functions as the lua script
+    [Fact]
+    public void ConcurrentWithArgs()
+    {
+        const string input = @"
+function preUpdate(arg1, arg2)
+    i = arg1 + arg2
+end
+
+i = 0
+concurrent.register(preUpdate, true, 1, 2)
+";
+
+        var movieRunner = Setup(input).Item1;
+        var script = movieRunner.Script;
+
+        Assert.Equal(DataType.Nil, script.Globals.Get("i").Type);
+        Assert.False(movieRunner.Finished);
+
+        movieRunner.Update();
+
+        Assert.Equal(3, script.Globals.Get("i").Number);
+        Assert.True(movieRunner.Finished);
+    }
 
     [Fact]
     public void DebugPrint()
@@ -326,5 +348,40 @@ end
     {
         var method = script.DoString(input);
         return script.CreateCoroutine(method).Coroutine;
+    }
+
+    [Fact]
+    public void ConcurrentUpdateBoth()
+    {
+        // this is to test if preUpdate works
+        const string input = @"
+function preUpdate()
+    i = i + 1
+    print(""preUpdate: "" .. i)
+end
+
+function postUpdate()
+    i = i + 2
+    print(""postUpdate: "" .. i)
+end
+
+i = 0
+
+concurrent.register(preUpdate, true)
+concurrent.register(postUpdate, false)
+";
+
+        var (movieRunner, _, kernel) = Setup(input);
+        var script = movieRunner.Script;
+        var logger = kernel.GetInstance<DummyLogger>();
+
+        Assert.Equal(DataType.Nil, script.Globals.Get("i").Type);
+        Assert.False(movieRunner.Finished);
+        movieRunner.Update();
+
+        Assert.Equal(3, script.Globals.Get("i").Number);
+        Assert.Equal("preUpdate: 1", logger.Infos[0]);
+        Assert.Equal("postUpdate: 3", logger.Infos[1]);
+        Assert.True(movieRunner.Finished);
     }
 }
