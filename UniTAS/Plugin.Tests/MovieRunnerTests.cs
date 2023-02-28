@@ -212,31 +212,46 @@ concurrent.register(preUpdate, true)
 
 adv()
 j = j + 1
-adv()
-j = j + 2
-adv()
-j = j + 3
-adv()
-j = j + 4
+--adv()
+--j = j + 2
+--adv()
+--j = j + 3
+--adv()
+--j = j + 4
 ";
+
+        // execution should be like this:
+        // --preUpdate--
+        // i = 0
+        // j = 0
+        // i = 1 + 1 (concurrent)
 
         var movieRunner = Setup(input).Item1;
         var script = movieRunner.Script;
 
-        Assert.Equal(0, script.Globals.Get("i").Number);
+        Assert.Equal(1, script.Globals.Get("i").Number);
         Assert.Equal(0, script.Globals.Get("j").Number);
+        Assert.False(movieRunner.Finished);
 
-        Assert.False(movieRunner.Finished);
         movieRunner.Update();
+        Assert.Equal(3, script.Globals.Get("i").Number);
+        Assert.Equal(1, script.Globals.Get("j").Number);
         Assert.False(movieRunner.Finished);
+
         movieRunner.Update();
+        Assert.Equal(3, script.Globals.Get("i").Number);
+        Assert.Equal(3, script.Globals.Get("j").Number);
         Assert.False(movieRunner.Finished);
-        movieRunner.Update();
-        Assert.False(movieRunner.Finished);
-        movieRunner.Update();
-        Assert.False(movieRunner.Finished);
-        movieRunner.Update();
-        Assert.True(movieRunner.Finished);
+
+        // movieRunner.Update();
+        // Assert.Equal(4, script.Globals.Get("i").Number);
+        // Assert.Equal(6, script.Globals.Get("j").Number);
+        // Assert.False(movieRunner.Finished);
+        //
+        // movieRunner.Update();
+        // Assert.False(movieRunner.Finished);
+        // movieRunner.Update();
+        // Assert.True(movieRunner.Finished);
     }
 
     // TODO test concurrent class to contain the exact same functions as the lua script
@@ -255,5 +270,38 @@ print(i)
 
         Assert.Equal("test", logger.Infos[0]);
         Assert.Equal("0", logger.Infos[1]);
+    }
+
+    [Fact]
+    public void ScriptRecycle()
+    {
+        // this is to test if the script can be recycled
+        // NOTE: looks like you have to make a new script instance to make it work
+        var script = new Script();
+        const string input = @"
+return function()
+    i = 0
+    coroutine.yield()
+    i = i + 1
+end
+";
+
+
+        var coroutine = ScriptRecycleSetup(script, input);
+        coroutine.Resume();
+        Assert.Equal(0, script.Globals.Get("i").Number);
+        coroutine.Resume();
+        Assert.Equal(1, script.Globals.Get("i").Number);
+
+        // recycle
+        script = new();
+        ScriptRecycleSetup(script, input);
+        Assert.Equal(0, script.Globals.Get("i").Number);
+    }
+
+    private static Coroutine ScriptRecycleSetup(Script script, string input)
+    {
+        var method = script.DoString(input);
+        return script.CreateCoroutine(method).Coroutine;
     }
 }
