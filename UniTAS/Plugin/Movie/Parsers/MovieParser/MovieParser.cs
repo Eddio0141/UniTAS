@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using MoonSharp.Interpreter;
+using MoonSharp.Interpreter.Interop;
 using MoonSharp.Interpreter.Loaders;
 using UniTAS.Plugin.Logger;
 using UniTAS.Plugin.Movie.Engine;
@@ -111,12 +112,14 @@ public partial class MovieParser : IMovieParser
 
         foreach (var methodClass in engineMethodClasses)
         {
-            UserData.RegisterType(methodClass.GetType());
+            var descriptor = (StandardUserDataDescriptor)UserData.RegisterType(methodClass.GetType());
+            descriptor.RemoveMember(nameof(EngineMethodClass.ClassName));
+
             engine.Script.Globals[methodClass.ClassName] = methodClass;
         }
     }
 
-    private void AddCustomTypes()
+    private static void AddCustomTypes()
     {
         UserData.RegisterAssembly(typeof(MovieParser).Assembly);
     }
