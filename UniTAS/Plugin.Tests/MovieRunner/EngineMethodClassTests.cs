@@ -33,4 +33,26 @@ class_name = concurrent.ClassName
 
         Assert.Equal(DataType.Nil, script.Script.Globals.Get(nameof(Env)).Type);
     }
+
+    [Fact]
+    public void Property()
+    {
+        var script = Utils.Setup("fps = env.fps").Item1;
+        script.Update();
+
+        var fps = script.Script.Globals.Get("fps");
+        Assert.NotNull(fps);
+        Assert.NotEqual(DataType.Nil, fps.Type);
+    }
+
+    [Fact]
+    public void PropertyLowerCase()
+    {
+        var script = Utils.Setup("ft = env.frametime").Item1;
+        script.Update();
+
+        var fps = script.Script.Globals.Get("ft");
+        Assert.NotNull(fps);
+        Assert.NotEqual(DataType.Nil, fps.Type);
+    }
 }
