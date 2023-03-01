@@ -220,4 +220,191 @@ end
             movieRunner.Update();
         }
     }
+
+    [Fact]
+    public void Unregister()
+    {
+        const string input = @"
+function preUpdate()
+    i = i + 1
+end
+
+i = 0
+
+reference = concurrent.register(preUpdate, true)
+adv()
+concurrent.unregister(reference)
+adv()
+";
+
+        var movieRunner = Utils.Setup(input).Item1;
+        var script = movieRunner.Script;
+
+        Assert.Equal(DataType.Nil, script.Globals.Get("i").Type);
+        Assert.False(movieRunner.Finished);
+
+        movieRunner.Update();
+
+        Assert.Equal(1, script.Globals.Get("i").Number);
+        Assert.False(movieRunner.Finished);
+
+        movieRunner.Update();
+
+        Assert.Equal(2, script.Globals.Get("i").Number);
+        Assert.False(movieRunner.Finished);
+
+        movieRunner.Update();
+
+        Assert.Equal(2, script.Globals.Get("i").Number);
+        Assert.True(movieRunner.Finished);
+    }
+
+    [Fact]
+    public void Unregister2()
+    {
+        const string input = @"
+function preUpdate()
+    i = i + 1
+end
+
+i = 0
+
+reference = concurrent.register(preUpdate, true)
+reference2 = concurrent.register(preUpdate, true)
+adv()
+concurrent.unregister(reference)
+adv()
+concurrent.unregister(reference2)
+adv()
+";
+
+        var movieRunner = Utils.Setup(input).Item1;
+        var script = movieRunner.Script;
+
+        Assert.Equal(DataType.Nil, script.Globals.Get("i").Type);
+        Assert.False(movieRunner.Finished);
+
+        movieRunner.Update();
+
+        Assert.Equal(2, script.Globals.Get("i").Number);
+        Assert.False(movieRunner.Finished);
+
+        movieRunner.Update();
+
+        Assert.Equal(4, script.Globals.Get("i").Number);
+        Assert.False(movieRunner.Finished);
+
+        movieRunner.Update();
+
+        Assert.Equal(5, script.Globals.Get("i").Number);
+        Assert.False(movieRunner.Finished);
+
+        movieRunner.Update();
+
+        Assert.Equal(5, script.Globals.Get("i").Number);
+        Assert.True(movieRunner.Finished);
+    }
+
+    [Fact]
+    public void Unregister3()
+    {
+        const string input = @"
+function preUpdate()
+    i = i + 1
+end
+
+function preUpdate2()
+    i = i + 2
+end
+
+i = 0
+
+reference = concurrent.register(preUpdate, true)
+reference2 = concurrent.register(preUpdate2, true)
+adv()
+concurrent.unregister(reference)
+adv()
+concurrent.unregister(reference2)
+adv()
+";
+
+        var movieRunner = Utils.Setup(input).Item1;
+        var script = movieRunner.Script;
+
+        Assert.Equal(DataType.Nil, script.Globals.Get("i").Type);
+        Assert.False(movieRunner.Finished);
+
+        movieRunner.Update();
+
+        Assert.Equal(3, script.Globals.Get("i").Number);
+        Assert.False(movieRunner.Finished);
+
+        movieRunner.Update();
+
+        Assert.Equal(6, script.Globals.Get("i").Number);
+        Assert.False(movieRunner.Finished);
+
+        movieRunner.Update();
+
+        Assert.Equal(8, script.Globals.Get("i").Number);
+        Assert.False(movieRunner.Finished);
+
+        movieRunner.Update();
+
+        Assert.Equal(8, script.Globals.Get("i").Number);
+        Assert.True(movieRunner.Finished);
+    }
+
+    [Fact]
+    public void Unregister4()
+    {
+        const string input = @"
+function preUpdate()
+    i = i + 1
+end
+
+function preUpdate2()
+    i = i + 2
+end
+
+i = 0
+
+reference = concurrent.register(preUpdate, true)
+reference2 = concurrent.register(preUpdate2, false)
+adv()
+concurrent.unregister(reference)
+adv()
+concurrent.unregister(reference2)
+adv()
+";
+
+        var movieRunner = Utils.Setup(input).Item1;
+        var script = movieRunner.Script;
+
+        Assert.Equal(DataType.Nil, script.Globals.Get("i").Type);
+        Assert.False(movieRunner.Finished);
+
+        movieRunner.Update();
+
+        // first section runs
+        Assert.Equal(3, script.Globals.Get("i").Number);
+        Assert.False(movieRunner.Finished);
+
+        movieRunner.Update();
+
+        // right after first adv(), unregister reference (but preUpdate so it still runs)
+        Assert.Equal(6, script.Globals.Get("i").Number);
+        Assert.False(movieRunner.Finished);
+
+        movieRunner.Update();
+
+        // right after second adv(), unregister reference2 (not preUpdate so it doesn't run)
+        Assert.Equal(6, script.Globals.Get("i").Number);
+        Assert.False(movieRunner.Finished);
+
+        movieRunner.Update();
+
+        Assert.Equal(6, script.Globals.Get("i").Number);
+        Assert.True(movieRunner.Finished);
+    }
 }
