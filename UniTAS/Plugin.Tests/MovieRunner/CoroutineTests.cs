@@ -54,4 +54,24 @@ i = i + 1
         movieRunner.Update();
         Assert.True(movieRunner.Finished);
     }
+
+    [Fact]
+    public void AdvOverload()
+    {
+        const string input = @"
+adv(1)
+adv(2)
+";
+        var movieRunner = Utils.Setup(input).Item1;
+
+        Assert.False(movieRunner.Finished);
+        movieRunner.Update();
+        Assert.False(movieRunner.Finished);
+        movieRunner.Update();
+        Assert.False(movieRunner.Finished);
+        movieRunner.Update();
+        Assert.False(movieRunner.Finished);
+        movieRunner.Update();
+        Assert.True(movieRunner.Finished);
+    }
 }
