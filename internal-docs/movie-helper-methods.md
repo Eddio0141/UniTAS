@@ -1,15 +1,3 @@
-# Concurrent runner
-In "concurrent" type
-
----
-`register(methodName: string, preUpdate: bool, defaultArg1, defaultArg2, ...) -> int`
-- Registers a method into the concurrent runner, looping forever
-- Able to register any number of methods, even ones with the same name
-- Returns a hashcode, used later for removing registered concurrent runner
----
-`unregister(hashcode: int, preUpdate: bool)`
-- Removes registered method using registered index
-
 # Input control
 ## Keyboard
 `hold_key(key: string)`
