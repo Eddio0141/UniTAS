@@ -46,6 +46,7 @@ public partial class MovieEngine : IMovieEngine
 
     public void Update()
     {
+        if (Finished) return;
         foreach (var coroutine in _preUpdateCoroutines)
         {
             coroutine.Resume();
