@@ -198,11 +198,16 @@ concurrent.register(postUpdate, false)
         var input = $@"
 function lotsOfAdv()
     for i = 1, 1000 do
+        sum = sum + 1
         adv()
     end
+
+    sum = sum + 1
 end
 
 function noAdv() end
+
+sum = 0
 
 concurrent.register(lotsOfAdv, true)
 concurrent.register(noAdv, true)
@@ -219,6 +224,43 @@ end
         {
             movieRunner.Update();
         }
+
+        Assert.Equal(iterations + 1, movieRunner.Script.Globals.Get("sum").Number);
+    }
+
+    [Fact]
+    public void ConcurrentRecycle()
+    {
+        const string input = @"
+function preUpdate()
+    i = i + 1
+end
+
+i = 0
+
+concurrent.register(preUpdate, true)
+
+for i = 1, 10 do
+    adv()
+end
+";
+
+        var movieRunner = Utils.Setup(input).Item1;
+        var script = movieRunner.Script;
+
+        Assert.Equal(DataType.Nil, script.Globals.Get("i").Type);
+        Assert.False(movieRunner.Finished);
+
+        for (var i = 0; i < 10; i++)
+        {
+            movieRunner.Update();
+            Assert.Equal(i + 1, script.Globals.Get("i").Number);
+            Assert.False(movieRunner.Finished);
+        }
+
+        movieRunner.Update();
+        Assert.Equal(11, script.Globals.Get("i").Number);
+        Assert.True(movieRunner.Finished);
     }
 
     [Fact]
