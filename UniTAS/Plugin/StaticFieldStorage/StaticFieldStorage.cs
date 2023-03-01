@@ -39,6 +39,7 @@ public class StaticFieldStorage : IStaticFieldManipulator
         var assemblies = AppDomain.CurrentDomain.GetAssemblies();
         var genericType = new List<Type>();
 
+        // TODO sort out situation where nuget package needs to be added automatically
         // ReSharper disable StringLiteralTypo
         var assemblyExclusionsRaw = new[]
         {
