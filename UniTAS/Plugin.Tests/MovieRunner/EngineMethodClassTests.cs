@@ -1,4 +1,5 @@
 using MoonSharp.Interpreter;
+using UniTAS.Plugin.Movie.EngineMethods.Implementations;
 
 namespace UniTAS.Plugin.Tests.MovieRunner;
 
@@ -23,5 +24,13 @@ class_name = concurrent.ClassName
         var moveRel = script.Script.Globals.Get("move_rel");
         Assert.NotNull(moveRel);
         Assert.NotEqual(DataType.Nil, moveRel.Type);
+    }
+
+    [Fact]
+    public void NoOriginalClass()
+    {
+        var script = Utils.Setup("").Item1;
+
+        Assert.Equal(DataType.Nil, script.Script.Globals.Get(nameof(Env)).Type);
     }
 }
