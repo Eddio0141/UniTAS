@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -39,7 +40,7 @@ public class StaticFieldStorage : IStaticFieldManipulator
         var genericType = new List<Type>();
 
         // ReSharper disable StringLiteralTypo
-        var assemblyExclusions = new[]
+        var assemblyExclusionsRaw = new[]
         {
             "UnityEngine.*",
             "UnityEngine",
@@ -50,21 +51,33 @@ public class StaticFieldStorage : IStaticFieldManipulator
             "mscorlib",
             "Mono.*",
             "Mono",
+            "MonoMod.*",
             "BepInEx.*",
             "BepInEx",
             "MonoMod.*",
             "0Harmony",
             "HarmonyXInterop",
-            MyPluginInfo.PLUGIN_NAME,
             "StructureMap",
-            "Antlr4.Runtime.Standard",
-            Patcher.Utils.ProjectAssembly
+            "Antlr4.Runtime.Standard"
         };
         // ReSharper restore StringLiteralTypo
 
+        var assemblyExclusions = new[]
+        {
+            typeof(StaticFieldInfo).Assembly,
+            typeof(UniTAS.Patcher.Patcher).Assembly,
+            typeof(MoonSharp.Interpreter.Script).Assembly,
+            typeof(ImmutableList<>).Assembly
+        };
+
         foreach (var assembly in assemblies)
         {
-            if (assemblyExclusions.Any(x => assembly.GetName().Name.Like(x)))
+            if (assemblyExclusionsRaw.Any(x => assembly.GetName().Name.Like(x)))
+            {
+                continue;
+            }
+
+            if (assemblyExclusions.Any(x => Equals(x, assembly)))
             {
                 continue;
             }
