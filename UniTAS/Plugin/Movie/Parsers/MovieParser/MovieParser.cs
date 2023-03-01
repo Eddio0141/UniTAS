@@ -82,8 +82,6 @@ public partial class MovieParser : IMovieParser
             script.Options.DebugPrint = s => _logger.LogInfo(s);
         }
 
-        AddAliases(script);
-
         if (movieEngine == null)
         {
             movieEngine = new(script);
@@ -99,15 +97,10 @@ public partial class MovieParser : IMovieParser
         return Tuple.New(script, movieEngine);
     }
 
-    private static void AddAliases(Script script)
-    {
-        // alias method to coroutine.yield as adv
-        var yield = script.Globals.Get("coroutine").Table.Get("yield");
-        script.Globals.Set("adv", yield);
-    }
-
     private void AddEngineMethods(IMovieEngine engine)
     {
+        AddEngineMethodGlobal(engine);
+
         var engineMethodClasses = _engineMethodClassesFactory.GetAll(engine);
 
         foreach (var methodClass in engineMethodClasses)
