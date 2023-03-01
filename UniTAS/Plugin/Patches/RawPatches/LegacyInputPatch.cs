@@ -33,12 +33,12 @@ public class LegacyInputPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix(object key, ref bool __result)
+        private static bool Prefix(KeyCode key, ref bool __result)
         {
             if (ReverseInvoker.InnerCall())
                 return true;
             if (!VirtualEnvironment.RunVirtualEnvironment) return true;
-            __result = VirtualEnvironment.InputState.KeyboardState.Keys.Contains((int)(KeyCode)key);
+            __result = VirtualEnvironment.InputState.KeyboardState.Keys.Contains(key);
             return false;
         }
 
@@ -103,12 +103,12 @@ public class LegacyInputPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix(object key, ref bool __result)
+        private static bool Prefix(KeyCode key, ref bool __result)
         {
             if (ReverseInvoker.InnerCall())
                 return true;
             if (!VirtualEnvironment.RunVirtualEnvironment) return true;
-            __result = VirtualEnvironment.InputState.KeyboardState.KeysUp.Contains((int)(KeyCode)key);
+            __result = VirtualEnvironment.InputState.KeyboardState.KeysUp.Contains(key);
             return false;
         }
 
@@ -150,12 +150,12 @@ public class LegacyInputPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix(object key, ref bool __result)
+        private static bool Prefix(KeyCode key, ref bool __result)
         {
             if (ReverseInvoker.InnerCall())
                 return true;
             if (!VirtualEnvironment.RunVirtualEnvironment) return true;
-            __result = VirtualEnvironment.InputState.KeyboardState.KeysDown.Contains((int)(KeyCode)key);
+            __result = VirtualEnvironment.InputState.KeyboardState.KeysDown.Contains(key);
             return false;
         }
 

@@ -42,6 +42,7 @@
         <PackageReference Include="BepInEx.Core" Version="5.*" />
         <PackageReference Include="BepInEx.PluginInfoProps" Version="2.*" />
         <PackageReference Include="MonoMod.Utils" Version="22.5.1.1" />
+        <PackageReference Include="Rackspace.Collections.Immutable" Version="1.1.36"/>
         <PackageReference Include="StructureMap" Version="2.6.3" />
         <PackageReference Include="UnityEngine.Modules" Version="3.4.0" IncludeAssets="compile" />
     </ItemGroup>
