@@ -69,7 +69,8 @@ public partial class MovieParser : IMovieParser
             Options =
             {
                 // do NOT use unity loader
-                ScriptLoader = new FileSystemScriptLoader()
+                ScriptLoader = new FileSystemScriptLoader(),
+                DebugInput = _ => null
             }
         };
 
@@ -118,6 +119,6 @@ public partial class MovieParser : IMovieParser
 
     private static string WrapInput(string input)
     {
-        return $"return function() {input} end";
+        return $"return function()\n{input}\nend";
     }
 }
