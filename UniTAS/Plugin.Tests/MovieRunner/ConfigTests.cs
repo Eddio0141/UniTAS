@@ -1,13 +1,16 @@
 namespace UniTAS.Plugin.Tests.MovieRunner;
 
-public class PropertyTests
+public class ConfigTests
 {
     [Fact]
-    public void PropertiesFull()
+    public void ConfigFull()
     {
         const string input = @"
-START_TIME = ""03/28/2021 12:00:00""
-frametime = 1/60
+MOVIE_CONFIG = {
+    is_global_scope = false,
+    frametime = 1/60,
+    start_time = ""03/28/2021 12:00:00""
+}
 ";
 
         var properties = Utils.Setup(input).Item2;
@@ -21,9 +24,11 @@ frametime = 1/60
     public void FpsFrametimeConflict()
     {
         const string input = @"
-START_TIME = ""03/28/2021 12:00:00""
-fps = 60
-frametime = 1/50
+MOVIE_CONFIG = {
+    frametime = 1/50,
+    start_time = ""03/28/2021 12:00:00"",
+    fps = 60
+}
 ";
 
         var (_, properties, kernel) = Utils.Setup(input);
@@ -37,12 +42,14 @@ frametime = 1/50
     public void MissingStartTime()
     {
         const string input = @"
-fps = 60
+MOVIE_CONFIG = {
+    fps = 60
+}
 ";
 
         var (_, _, kernel) = Utils.Setup(input);
 
-        Assert.Equal("START_TIME is not defined, using default value of 01/01/0001 00:00:00",
+        Assert.Equal("start_time is not defined, using default value of 01/01/0001 00:00:00",
             kernel.GetInstance<Utils.DummyLogger>().Warns[0]);
     }
 }

@@ -9,7 +9,9 @@ public class GlobalScopeFlagTests
     public void GlobalScopeInvalidYield()
     {
         const string input = @"
-GLOBAL_SCOPE = true
+MOVIE_CONFIG = {
+    is_global_scope = true
+}
 -- try use yield which should not be available
 adv()
 ";
@@ -21,7 +23,9 @@ adv()
     public void GlobalScope()
     {
         const string input = @"
-GLOBAL_SCOPE = true
+MOVIE_CONFIG = {
+    is_global_scope = true
+}
 return function()
     i = 0
     adv()
@@ -43,7 +47,9 @@ end
     {
         // don't return a function
         const string input = @"
-GLOBAL_SCOPE = true
+MOVIE_CONFIG = {
+    is_global_scope = true
+}
 i = 0
 i = i + 1
 ";
