@@ -3,8 +3,7 @@ I use lua for the movie, where defining movie properties also is done within the
 
 # Movie execution
 ## Config
-- Because the config must be written somewhere, I've decided that if the script isn't `GLOBAL_SCOPE` then config values must be set before the first `yield`
-- If `GLOBAL_SCOPE` then it just has to be set in the global scope with the appropriate name
+- Config values must be set before the first `yield`
 
 ## TAS execution
 - The inputs and whatever you set before the first `yield` is the **first frame** and settings to be used
