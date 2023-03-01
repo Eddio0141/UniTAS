@@ -14,8 +14,6 @@ public class Controller : EngineMethodClass
         _virtualEnvironment = virtualEnvironment;
     }
 
-    public override string ClassName => "controller";
-
     public void Axis(string axis, float value)
     {
         _virtualEnvironment.InputState.AxisState.Values[axis] = value;

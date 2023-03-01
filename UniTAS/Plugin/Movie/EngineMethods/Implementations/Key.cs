@@ -16,8 +16,6 @@ public class Key : EngineMethodClass
         _virtualEnvironment = virtualEnvironment;
     }
 
-    public override string ClassName => "key";
-
     public void Hold(string key)
     {
         _virtualEnvironment.InputState.KeyboardState.Hold(ParseKeyCode(key));

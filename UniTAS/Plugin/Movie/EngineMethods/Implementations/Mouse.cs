@@ -14,8 +14,6 @@ public class Mouse : EngineMethodClass
         _virtualEnvironment = virtualEnvironment;
     }
 
-    public override string ClassName => "mouse";
-
     public void Move(float x, float y)
     {
         _virtualEnvironment.InputState.MouseState.XPos = x;

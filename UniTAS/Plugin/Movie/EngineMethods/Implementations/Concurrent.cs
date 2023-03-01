@@ -15,8 +15,6 @@ public class Concurrent : EngineMethodClass
         _engine = engine;
     }
 
-    public override string ClassName => "concurrent";
-
     public object Register(DynValue coroutine, bool postUpdate = false, params DynValue[] defaultArgs)
     {
         return _engine.RegisterConcurrent(coroutine, postUpdate, defaultArgs);
