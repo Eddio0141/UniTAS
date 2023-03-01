@@ -5,7 +5,7 @@ using UniTAS.Plugin.GameEnvironment;
 using UniTAS.Plugin.GameRestart;
 using UniTAS.Plugin.Interfaces.Update;
 using UniTAS.Plugin.Movie.Engine;
-using UniTAS.Plugin.Movie.Exceptions.ScriptEngineExceptions;
+using UniTAS.Plugin.Movie.Exceptions;
 using UniTAS.Plugin.Movie.Parsers.MovieParser;
 
 namespace UniTAS.Plugin.Movie;

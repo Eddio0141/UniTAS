@@ -1,10 +1,12 @@
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using StructureMap;
 using StructureMap.Pipeline;
 using UniTAS.Plugin.Movie.Engine;
 
 namespace UniTAS.Plugin.Movie.EngineMethods;
 
+[SuppressMessage("ReSharper", "UnusedType.Global")]
 public class EngineMethodClassesFactory : IEngineMethodClassesFactory
 {
     private readonly IContainer _container;

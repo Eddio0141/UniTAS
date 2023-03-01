@@ -57,8 +57,12 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\moonsharp\src\MoonSharp.Interpreter\MoonSharp.Interpreter.net35-client.csproj" />
-      <ProjectReference Include="..\Patcher\Patcher.csproj" />
+        <ProjectReference Include="..\..\moonsharp\src\MoonSharp.Interpreter\MoonSharp.Interpreter.net35-client.csproj"/>
+        <ProjectReference Include="..\Patcher\Patcher.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Folder Include="Movie\Exceptions\ScriptEngineExceptions"/>
     </ItemGroup>
 
 </Project>

@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using BepInEx.Logging;
 using UniTAS.Plugin.Logger;
@@ -7,6 +8,7 @@ using UnityEngine;
 
 namespace UniTAS.Plugin.GUI.MainMenu.Tabs;
 
+[SuppressMessage("ReSharper", "UnusedType.Global")]
 public class MoviePlayTab : IMainMenuTab
 {
     private string _tasPath = string.Empty;
