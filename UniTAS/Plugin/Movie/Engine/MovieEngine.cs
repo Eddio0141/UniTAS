@@ -9,6 +9,7 @@ public partial class MovieEngine : IMovieEngine
     private readonly List<CoroutineHolder> _postUpdateCoroutines = new();
     private DynValue _coroutine;
     private Script _script;
+    private readonly List<ConcurrentIdentifier> _concurrentIdentifiers = new();
 
     public Script Script
     {
@@ -18,6 +19,7 @@ public partial class MovieEngine : IMovieEngine
             // because script instance is changing, clear the coroutines
             _preUpdateCoroutines.Clear();
             _postUpdateCoroutines.Clear();
+            _concurrentIdentifiers.Clear();
             _script = value;
         }
     }
@@ -59,18 +61,56 @@ public partial class MovieEngine : IMovieEngine
 
     public bool Finished => _coroutine.Coroutine.State == CoroutineState.Dead;
 
-    public void RegisterConcurrent(DynValue coroutine, bool preUpdate, params DynValue[] defaultArgs)
+    public ConcurrentIdentifier RegisterConcurrent(DynValue coroutine, bool preUpdate, params DynValue[] defaultArgs)
     {
-        if (coroutine.Type != DataType.Function) return;
+        if (coroutine.Type != DataType.Function) return null;
         var coroutineWrap = new CoroutineHolder(this, coroutine, defaultArgs);
+        int index;
         if (preUpdate)
         {
             coroutineWrap.Resume();
             _preUpdateCoroutines.Add(coroutineWrap);
+
+            index = _preUpdateCoroutines.Count - 1;
         }
         else
         {
             _postUpdateCoroutines.Add(coroutineWrap);
+
+            index = _postUpdateCoroutines.Count - 1;
+        }
+
+        var identifier = new ConcurrentIdentifier(index, preUpdate);
+        _concurrentIdentifiers.Add(identifier);
+
+        return identifier;
+    }
+
+    public void UnregisterConcurrent(ConcurrentIdentifier identifier)
+    {
+        if (!_concurrentIdentifiers.Contains(identifier)) return;
+
+        // remove
+        if (identifier.PreUpdate)
+        {
+            _preUpdateCoroutines.RemoveAt(identifier.Index);
+        }
+        else
+        {
+            _postUpdateCoroutines.RemoveAt(identifier.Index);
+        }
+
+        _concurrentIdentifiers.Remove(identifier);
+
+        // fix indexes
+        foreach (var concurrentIdentifier in _concurrentIdentifiers)
+        {
+            if (concurrentIdentifier.PreUpdate != identifier.PreUpdate) continue;
+
+            if (concurrentIdentifier.Index > identifier.Index)
+            {
+                concurrentIdentifier.Index--;
+            }
         }
     }
 }

@@ -17,8 +17,13 @@ public class Concurrent : EngineMethodClass
 
     public override string ClassName => "concurrent";
 
-    public void Register(DynValue coroutine, bool preUpdate, params DynValue[] defaultArgs)
+    public object Register(DynValue coroutine, bool preUpdate, params DynValue[] defaultArgs)
     {
-        _engine.RegisterConcurrent(coroutine, preUpdate, defaultArgs);
+        return _engine.RegisterConcurrent(coroutine, preUpdate, defaultArgs);
+    }
+
+    public void Unregister(ConcurrentIdentifier identifier)
+    {
+        _engine.UnregisterConcurrent(identifier);
     }
 }

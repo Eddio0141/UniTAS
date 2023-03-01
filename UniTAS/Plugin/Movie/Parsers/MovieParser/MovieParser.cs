@@ -93,6 +93,7 @@ public partial class MovieParser : IMovieParser
         }
 
         AddEngineMethods(movieEngine);
+        AddCustomTypes();
 
         return Tuple.New(script, movieEngine);
     }
@@ -113,6 +114,11 @@ public partial class MovieParser : IMovieParser
             UserData.RegisterType(methodClass.GetType());
             engine.Script.Globals[methodClass.ClassName] = methodClass;
         }
+    }
+
+    private void AddCustomTypes()
+    {
+        UserData.RegisterAssembly(typeof(MovieParser).Assembly);
     }
 
     private static string WrapInput(string input)
