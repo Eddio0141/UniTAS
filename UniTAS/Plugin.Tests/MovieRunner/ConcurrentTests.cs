@@ -124,7 +124,7 @@ end
 
 i = 0
 -- intentionally not passing args
-concurrent.register(preUpdate, true)
+concurrent.register(preUpdate)
 ";
 
         Assert.Throws<CoroutineResumeException>(() => Utils.Setup(input));
@@ -172,8 +172,8 @@ end
 
 i = 0
 
-concurrent.register(preUpdate, true)
-concurrent.register(postUpdate, false)
+concurrent.register(preUpdate)
+concurrent.register(postUpdate, true)
 ";
 
         var (movieRunner, _, kernel) = Utils.Setup(input);
@@ -273,7 +273,7 @@ end
 
 i = 0
 
-reference = concurrent.register(preUpdate, true)
+reference = concurrent.register(preUpdate)
 adv()
 concurrent.unregister(reference)
 adv()
@@ -311,8 +311,8 @@ end
 
 i = 0
 
-reference = concurrent.register(preUpdate, true)
-reference2 = concurrent.register(preUpdate, true)
+reference = concurrent.register(preUpdate)
+reference2 = concurrent.register(preUpdate)
 adv()
 concurrent.unregister(reference)
 adv()
@@ -361,8 +361,8 @@ end
 
 i = 0
 
-reference = concurrent.register(preUpdate, true)
-reference2 = concurrent.register(preUpdate2, true)
+reference = concurrent.register(preUpdate)
+reference2 = concurrent.register(preUpdate2)
 adv()
 concurrent.unregister(reference)
 adv()
@@ -411,8 +411,8 @@ end
 
 i = 0
 
-reference = concurrent.register(preUpdate, true)
-reference2 = concurrent.register(preUpdate2, false)
+reference = concurrent.register(preUpdate)
+reference2 = concurrent.register(preUpdate2, true)
 adv()
 concurrent.unregister(reference)
 adv()

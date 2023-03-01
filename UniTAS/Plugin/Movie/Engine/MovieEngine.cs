@@ -62,26 +62,26 @@ public partial class MovieEngine : IMovieEngine
 
     public bool Finished => _coroutine.Coroutine.State == CoroutineState.Dead;
 
-    public ConcurrentIdentifier RegisterConcurrent(DynValue coroutine, bool preUpdate, params DynValue[] defaultArgs)
+    public ConcurrentIdentifier RegisterConcurrent(DynValue coroutine, bool postUpdate, params DynValue[] defaultArgs)
     {
         if (coroutine.Type != DataType.Function) return null;
         var coroutineWrap = new CoroutineHolder(this, coroutine, defaultArgs);
         int index;
-        if (preUpdate)
+        if (postUpdate)
+        {
+            _postUpdateCoroutines.Add(coroutineWrap);
+
+            index = _postUpdateCoroutines.Count - 1;
+        }
+        else
         {
             coroutineWrap.Resume();
             _preUpdateCoroutines.Add(coroutineWrap);
 
             index = _preUpdateCoroutines.Count - 1;
         }
-        else
-        {
-            _postUpdateCoroutines.Add(coroutineWrap);
 
-            index = _postUpdateCoroutines.Count - 1;
-        }
-
-        var identifier = new ConcurrentIdentifier(index, preUpdate);
+        var identifier = new ConcurrentIdentifier(index, postUpdate);
         _concurrentIdentifiers.Add(identifier);
 
         return identifier;
@@ -92,13 +92,13 @@ public partial class MovieEngine : IMovieEngine
         if (!_concurrentIdentifiers.Contains(identifier)) return;
 
         // remove
-        if (identifier.PreUpdate)
+        if (identifier.PostUpdate)
         {
-            _preUpdateCoroutines.RemoveAt(identifier.Index);
+            _postUpdateCoroutines.RemoveAt(identifier.Index);
         }
         else
         {
-            _postUpdateCoroutines.RemoveAt(identifier.Index);
+            _preUpdateCoroutines.RemoveAt(identifier.Index);
         }
 
         _concurrentIdentifiers.Remove(identifier);
@@ -106,7 +106,7 @@ public partial class MovieEngine : IMovieEngine
         // fix indexes
         foreach (var concurrentIdentifier in _concurrentIdentifiers)
         {
-            if (concurrentIdentifier.PreUpdate != identifier.PreUpdate) continue;
+            if (concurrentIdentifier.PostUpdate != identifier.PostUpdate) continue;
 
             if (concurrentIdentifier.Index > identifier.Index)
             {

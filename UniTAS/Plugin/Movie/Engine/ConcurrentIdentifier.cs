@@ -6,11 +6,11 @@ namespace UniTAS.Plugin.Movie.Engine;
 public class ConcurrentIdentifier
 {
     public int Index { get; set; }
-    public bool PreUpdate { get; }
+    public bool PostUpdate { get; }
 
-    public ConcurrentIdentifier(int index, bool preUpdate)
+    public ConcurrentIdentifier(int index, bool postUpdate)
     {
         Index = index;
-        PreUpdate = preUpdate;
+        PostUpdate = postUpdate;
     }
 }
