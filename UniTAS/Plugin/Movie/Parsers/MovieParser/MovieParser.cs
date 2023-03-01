@@ -36,8 +36,9 @@ public partial class MovieParser : IMovieParser
         engineCoroutine = script.CreateCoroutine(engineCoroutine);
         engineCoroutine.Coroutine.Resume();
 
-        var useGlobalScope = GlobalScopeFlag(script);
-        var properties = ProcessProperties(script);
+        var processedConfig = ProcessConfig(script);
+        var useGlobalScope = processedConfig.Item1;
+        var properties = processedConfig.Item2;
         if (useGlobalScope)
         {
             script = SetupScript(movieEngine).Item1;
@@ -118,14 +119,5 @@ public partial class MovieParser : IMovieParser
     private static string WrapInput(string input)
     {
         return $"return function() {input} end";
-    }
-
-    private static bool GlobalScopeFlag(Script script)
-    {
-        const string variable = "GLOBAL_SCOPE";
-
-        var globalScope = script.Globals.Get(variable);
-
-        return globalScope.Type == DataType.Boolean && globalScope.Boolean;
     }
 }
