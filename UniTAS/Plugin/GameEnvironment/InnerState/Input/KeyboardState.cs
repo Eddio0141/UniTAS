@@ -34,6 +34,11 @@ public class KeyboardState : InputDeviceBase
         _keys.Remove(key);
     }
 
+    public void Clear()
+    {
+        _keys.Clear();
+    }
+
     public override void Update()
     {
         _keysDown.Clear();

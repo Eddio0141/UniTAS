@@ -28,6 +28,11 @@ public class Key : EngineMethodClass
         _virtualEnvironment.InputState.KeyboardState.Release(ParseKeyCode(key));
     }
 
+    public void Clear()
+    {
+        _virtualEnvironment.InputState.KeyboardState.Clear();
+    }
+
     private static KeyCode ParseKeyCode(string key)
     {
         return (KeyCode)Enum.Parse(typeof(KeyCode), key, true);
