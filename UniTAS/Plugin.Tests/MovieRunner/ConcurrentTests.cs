@@ -1,4 +1,5 @@
 using MoonSharp.Interpreter;
+using UniTAS.Plugin.Movie.Engine.Exceptions;
 
 namespace UniTAS.Plugin.Tests.MovieRunner;
 
@@ -110,6 +111,51 @@ concurrent.register(preUpdate, true, 1, 2)
     }
 
     [Fact]
+    public void ConcurrentWithArgs2()
+    {
+        const string input = @"
+function preUpdate(arg1, arg2)
+    if arg1.type == ""number"" then
+        i = arg1 + arg2
+    else
+        i = nil
+    end
+end
+
+i = 0
+-- intentionally not passing args
+concurrent.register(preUpdate, true)
+";
+
+        Assert.Throws<CoroutineResumeException>(() => Utils.Setup(input));
+    }
+
+    [Fact]
+    public void ConcurrentWithArgs3()
+    {
+        const string input = @"
+function preUpdate(arg1, arg2)
+    i = arg1 + arg2
+end
+
+i = 0
+-- intentionally passing too many args
+concurrent.register(preUpdate, true, 1, 2, 3)
+";
+
+        var movieRunner = Utils.Setup(input).Item1;
+        var script = movieRunner.Script;
+
+        Assert.Equal(DataType.Nil, script.Globals.Get("i").Type);
+        Assert.False(movieRunner.Finished);
+
+        movieRunner.Update();
+
+        Assert.Equal(3, script.Globals.Get("i").Number);
+        Assert.True(movieRunner.Finished);
+    }
+
+    [Fact]
     public void ConcurrentUpdateBoth()
     {
         // this is to test if preUpdate works
@@ -142,5 +188,36 @@ concurrent.register(postUpdate, false)
         Assert.Equal("preUpdate: 1", logger.Infos[0]);
         Assert.Equal("postUpdate: 3", logger.Infos[1]);
         Assert.True(movieRunner.Finished);
+    }
+
+    [Fact]
+    public void ConcurrentLongRunning()
+    {
+        const int iterations = 10000;
+
+        var input = $@"
+function lotsOfAdv()
+    for i = 1, 1000 do
+        adv()
+    end
+end
+
+function noAdv() end
+
+concurrent.register(lotsOfAdv, true)
+concurrent.register(noAdv, true)
+
+for i = 1, {iterations} do
+    adv()
+end
+";
+
+        // mostly for performance testing
+        var movieRunner = Utils.Setup(input).Item1;
+
+        while (!movieRunner.Finished)
+        {
+            movieRunner.Update();
+        }
     }
 }
