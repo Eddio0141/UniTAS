@@ -29,6 +29,11 @@ public class KeyboardState : InputDeviceBase
         _keys.Add(key);
     }
 
+    public void Release(KeyCode key)
+    {
+        _keys.Remove(key);
+    }
+
     public override void Update()
     {
         _keysDown.Clear();
