@@ -407,4 +407,35 @@ adv()
         Assert.Equal(6, script.Globals.Get("i").Number);
         Assert.True(movieRunner.Finished);
     }
+
+    [Fact]
+    public void InvalidConcurrentMethod()
+    {
+        const string input = @"
+i = 0
+
+reference = concurrent.register(i, true)
+
+adv()
+
+concurrent.unregister(reference)
+";
+
+        // basically it should do nothing as its not a function
+        var movieRunner = Utils.Setup(input).Item1;
+        var script = movieRunner.Script;
+
+        Assert.Equal(DataType.Nil, script.Globals.Get("i").Type);
+        Assert.False(movieRunner.Finished);
+
+        movieRunner.Update();
+
+        Assert.Equal(0, script.Globals.Get("i").Number);
+        Assert.False(movieRunner.Finished);
+
+        movieRunner.Update();
+
+        Assert.Equal(0, script.Globals.Get("i").Number);
+        Assert.True(movieRunner.Finished);
+    }
 }
