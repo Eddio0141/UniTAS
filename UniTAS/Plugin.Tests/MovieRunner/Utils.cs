@@ -1,13 +1,18 @@
+using System.Diagnostics.CodeAnalysis;
 using BepInEx.Logging;
 using StructureMap;
+using UniTAS.Plugin.Interfaces.Update;
 using UniTAS.Plugin.Logger;
+using UniTAS.Plugin.Movie;
 using UniTAS.Plugin.Movie.Engine;
+using UniTAS.Plugin.Movie.EngineMethods;
 using UniTAS.Plugin.Movie.MovieModels.Properties;
 using UniTAS.Plugin.Movie.Parsers.MovieParser;
 
 namespace UniTAS.Plugin.Tests.MovieRunner;
 
-public class Utils
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+public static class Utils
 {
     public class DummyLogger : IMovieLogger
     {
@@ -35,17 +40,30 @@ public class Utils
 
     public static (IMovieEngine, PropertiesModel, IContainer) Setup(string input)
     {
-        var kernel = ContainerRegister.Init();
-
-        kernel.Configure(x =>
-        {
-            x.ForSingletonOf<Utils.DummyLogger>().Use<Utils.DummyLogger>();
-            x.For<IMovieLogger>().Use(y => y.GetInstance<Utils.DummyLogger>());
-        });
-
+        var kernel = Init();
         var parser = kernel.GetInstance<IMovieParser>();
         var parsed = parser.Parse(input);
 
         return (parsed.Item1, parsed.Item2, kernel);
+    }
+
+    private static IContainer Init()
+    {
+        return new Container(c =>
+        {
+            c.Scan(scanner =>
+            {
+                scanner.AssemblyContainingType<Plugin>();
+                scanner.WithDefaultConventions();
+                scanner.AddAllTypesOf<EngineMethodClass>();
+            });
+
+            c.ForSingletonOf<DummyLogger>().Use<DummyLogger>();
+            c.For<IMovieLogger>().Use(y => y.GetInstance<DummyLogger>());
+
+            c.ForSingletonOf<Movie.MovieRunner>().Use<Movie.MovieRunner>();
+            c.For<IMovieRunner>().Use(x => x.GetInstance<Movie.MovieRunner>());
+            c.For<IOnPreUpdates>().Use(x => x.GetInstance<Movie.MovieRunner>());
+        });
     }
 }
