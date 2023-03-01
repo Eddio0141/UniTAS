@@ -23,7 +23,7 @@ public class KeyboardState : InputDeviceBase
         _keysPrev = new();
     }
 
-    public void Press(KeyCode key)
+    public void Hold(KeyCode key)
     {
         if (_keys.Contains(key)) return;
         _keys.Add(key);
