@@ -1,4 +1,6 @@
+using System;
 using MoonSharp.Interpreter;
+using UniTAS.Plugin.Movie.Engine.Exceptions;
 
 namespace UniTAS.Plugin.Movie.Engine;
 
@@ -29,7 +31,15 @@ public partial class MovieEngine
                 InitCoroutine();
             }
 
-            _coroutine.Coroutine.Resume(_defaultArgs);
+            try
+            {
+                _coroutine.Coroutine.Resume(_defaultArgs);
+            }
+            catch (Exception)
+            {
+                throw new CoroutineResumeException(
+                    "Failed to resume coroutine, this could be because the number of arguments passed to the coroutine is incorrect, check your lua code");
+            }
         }
 
         private void InitCoroutine()
