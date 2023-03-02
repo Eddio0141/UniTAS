@@ -19,7 +19,6 @@ public class MainThreadSpeedControl : IMainThreadSpeedControl, IOnUpdate
         set
         {
             _speedMultiplier = value < 0f ? 0f : value;
-
             _lastTime = CurrentTime;
             _remainingTime = 0f;
         }
@@ -40,14 +39,14 @@ public class MainThreadSpeedControl : IMainThreadSpeedControl, IOnUpdate
 
     public void Update()
     {
-        if (SpeedMultiplier == 0 || !_virtualEnvironment.RunVirtualEnvironment ||
+        if (_speedMultiplier == 0 || !_virtualEnvironment.RunVirtualEnvironment ||
             _virtualEnvironment.FrameTime == 0f) return;
 
         var timeSinceLastUpdate = CurrentTime - _lastTime;
         _lastTime = CurrentTime;
 
         // if the actual time passed is less than the time that should have passed, wait
-        var waitTime = _virtualEnvironment.FrameTime * SpeedMultiplier - timeSinceLastUpdate + _remainingTime;
+        var waitTime = _virtualEnvironment.FrameTime / _speedMultiplier - timeSinceLastUpdate + _remainingTime;
         if (waitTime <= 0)
         {
             return;
