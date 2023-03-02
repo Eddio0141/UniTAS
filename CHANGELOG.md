@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # [Unreleased]
 
+# [v0.2.0_v1.1.3] - 2023-03-02
+
 ## Changed
 
 ### TAS movie
@@ -50,6 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Able to set up BepInEx and UniTAS to an unity game directory
 - Game directory access history and usage
 
-[unreleased]: https://github.com/Eddio0141/UniTAS/compare/v0.1.0_v1.1.2...HEAD
+[unreleased]: https://github.com/Eddio0141/UniTAS/compare/v0.2.0_v1.1.3...HEAD
+[v0.2.0_v1.1.3]: https://github.com/Eddio0141/UniTAS/compare/v0.1.0_v1.1.2...v0.2.0_v1.1.3
 [v0.1.0_v1.1.2]: https://github.com/Eddio0141/UniTAS/compare/v0.1.0_v1.1.1...v0.1.0_v1.1.2
 [v0.1.0_v1.1.1]: https://github.com/Eddio0141/UniTAS/releases/tag/v0.1.0_v1.1.1
