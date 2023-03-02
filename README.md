@@ -11,6 +11,7 @@ Please check out the [wiki](https://github.com/Eddio0141/UniTAS/wiki)!
 # What games work
 - Currently, anything that [BepInEx 5] supports, ranging from unity 3 to latest, and games that use Mono and not IL2CPP
 - Check [working-games](docs/working-games.md) for tested games
+- Currently, simple games that comes from game jam or small indie games like on itch.io has a higher chance of working
 
 # Set up tool
 - There's a tool that you can use to automatically download and install BepInEx and UniTAS to an unity directory
