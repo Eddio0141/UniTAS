@@ -18,9 +18,11 @@ public static class Utils
     {
         public List<string> Infos { get; } = new();
         public List<string> Warns { get; } = new();
+        public List<string> Errors { get; } = new();
 
         public void LogError(object data)
         {
+            Errors.Add(data.ToString() ?? string.Empty);
         }
 
         public void LogInfo(object data)

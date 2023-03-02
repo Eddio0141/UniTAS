@@ -10,7 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Changed
 
 ### TAS movie
-- Now uses lua backend
+- Now uses lua 5.2, check the new [wiki](https://github.com/Eddio0141/UniTAS/wiki) for tutorials and documentation
+
+### UniTAS GUI
+- Temporarily removed unused buttons until they are implemented
 
 # [v0.1.0_v1.1.2] - 2023-02-24
 

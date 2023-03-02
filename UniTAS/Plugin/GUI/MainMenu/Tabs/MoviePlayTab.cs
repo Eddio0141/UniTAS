@@ -51,13 +51,14 @@ public class MoviePlayTab : IMainMenuTab
     {
         GUILayout.BeginHorizontal();
 
-        if (GUILayout.Button("Browse"))
-        {
-        }
-
-        if (GUILayout.Button("Recent"))
-        {
-        }
+        // TODO: implement browse and recent buttons
+        // if (GUILayout.Button("Browse"))
+        // {
+        // }
+        //
+        // if (GUILayout.Button("Recent"))
+        // {
+        // }
 
         if (GUILayout.Button("Run"))
         {
