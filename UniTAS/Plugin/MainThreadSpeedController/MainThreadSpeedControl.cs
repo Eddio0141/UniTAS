@@ -3,6 +3,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using UniTAS.Plugin.GameEnvironment;
 using UniTAS.Plugin.Interfaces.Update;
+using UniTAS.Plugin.ReverseInvoker;
+using UnityEngine;
 
 namespace UniTAS.Plugin.MainThreadSpeedController;
 
@@ -10,6 +12,7 @@ namespace UniTAS.Plugin.MainThreadSpeedController;
 public class MainThreadSpeedControl : IMainThreadSpeedControl, IOnUpdate
 {
     private readonly VirtualEnvironment _virtualEnvironment;
+    private readonly IPatchReverseInvoker _patchReverseInvoker;
 
     public float SpeedMultiplier
     {
@@ -18,39 +21,52 @@ public class MainThreadSpeedControl : IMainThreadSpeedControl, IOnUpdate
         {
             _speedMultiplier = value;
 
-            if (value == 0f)
-            {
-                _stopwatch.Stop();
-            }
-            else if (!_stopwatch.IsRunning)
-            {
-                _stopwatch.Start();
-            }
-
-            _stopwatch.Reset();
+            _lastTime = CurrentTime;
+            _remainingTime = 0f;
         }
     }
 
-    private readonly Stopwatch _stopwatch = new();
+    private float _lastTime;
     private float _speedMultiplier;
 
-    public MainThreadSpeedControl(VirtualEnvironment virtualEnvironment)
+    private float _remainingTime;
+
+    public MainThreadSpeedControl(VirtualEnvironment virtualEnvironment, IPatchReverseInvoker patchReverseInvoker)
     {
         _virtualEnvironment = virtualEnvironment;
+        _patchReverseInvoker = patchReverseInvoker;
     }
+
+    private float CurrentTime => _patchReverseInvoker.Invoke(() => Time.realtimeSinceStartup);
 
     public void Update()
     {
-        if (SpeedMultiplier == 0 || !_virtualEnvironment.RunVirtualEnvironment) return;
+        if (SpeedMultiplier == 0 || !_virtualEnvironment.RunVirtualEnvironment ||
+            _virtualEnvironment.FrameTime == 0f) return;
 
-        var frametime = _virtualEnvironment.FrameTime;
+        var timeSinceLastUpdate = CurrentTime - _lastTime;
+        _lastTime = CurrentTime;
 
         // if the actual time passed is less than the time that should have passed, wait
-        var waitTime = frametime * SpeedMultiplier - _stopwatch.Elapsed.TotalSeconds;
-        if (waitTime <= 0) return;
+        var waitTime = _virtualEnvironment.FrameTime * SpeedMultiplier - timeSinceLastUpdate + _remainingTime;
+        Trace.Write($"Time since last update: {timeSinceLastUpdate} s, wait time: {waitTime} s");
+        if (waitTime <= 0)
+        {
+            Trace.Write(
+                $"Returning from MainThreadSpeedControl.Update() because {waitTime} <= 0, new remaining time: {_remainingTime} s");
+            return;
+        }
 
-        Thread.Sleep((int)(waitTime * 1000f));
+        var waitMilliseconds = waitTime * 1000f;
+        var waitMillisecondsInt = (int)waitMilliseconds;
 
-        _stopwatch.Reset();
+        if (waitMillisecondsInt > 0)
+        {
+            Trace.Write($"Sleep for {waitMillisecondsInt} ms ({waitMilliseconds} ms)");
+            Thread.Sleep(waitMillisecondsInt);
+        }
+
+        // lost time is added to the remaining time
+        _remainingTime = (waitMilliseconds - waitMillisecondsInt) / 1000f;
     }
 }
