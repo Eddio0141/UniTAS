@@ -14,19 +14,19 @@ j = 0
 
 function preUpdate()
     i = i + 1
-    adv()
+    frame_advance()
     i = i + 2
 end
 
 concurrent.register(preUpdate, true)
 
-adv()
+frame_advance()
 j = j + 1
-adv()
+frame_advance()
 j = j + 2
-adv()
+frame_advance()
 j = j + 3
-adv()
+frame_advance()
 j = j + 4
 ";
 
@@ -199,7 +199,7 @@ concurrent.register(postUpdate, true)
 function lotsOfAdv()
     for i = 1, 1000 do
         sum = sum + 1
-        adv()
+        frame_advance()
     end
 
     sum = sum + 1
@@ -213,7 +213,7 @@ concurrent.register(lotsOfAdv, true)
 concurrent.register(noAdv, true)
 
 for i = 1, {iterations} do
-    adv()
+    frame_advance()
 end
 ";
 
@@ -241,7 +241,7 @@ i = 0
 concurrent.register(preUpdate, true)
 
 for i = 1, 10 do
-    adv()
+    frame_advance()
 end
 ";
 
@@ -274,9 +274,9 @@ end
 i = 0
 
 reference = concurrent.register(preUpdate)
-adv()
+frame_advance()
 concurrent.unregister(reference)
-adv()
+frame_advance()
 ";
 
         var movieRunner = Utils.Setup(input).Item1;
@@ -313,11 +313,11 @@ i = 0
 
 reference = concurrent.register(preUpdate)
 reference2 = concurrent.register(preUpdate)
-adv()
+frame_advance()
 concurrent.unregister(reference)
-adv()
+frame_advance()
 concurrent.unregister(reference2)
-adv()
+frame_advance()
 ";
 
         var movieRunner = Utils.Setup(input).Item1;
@@ -363,11 +363,11 @@ i = 0
 
 reference = concurrent.register(preUpdate)
 reference2 = concurrent.register(preUpdate2)
-adv()
+frame_advance()
 concurrent.unregister(reference)
-adv()
+frame_advance()
 concurrent.unregister(reference2)
-adv()
+frame_advance()
 ";
 
         var movieRunner = Utils.Setup(input).Item1;
@@ -413,11 +413,11 @@ i = 0
 
 reference = concurrent.register(preUpdate)
 reference2 = concurrent.register(preUpdate2, true)
-adv()
+frame_advance()
 concurrent.unregister(reference)
-adv()
+frame_advance()
 concurrent.unregister(reference2)
-adv()
+frame_advance()
 ";
 
         var movieRunner = Utils.Setup(input).Item1;
@@ -434,13 +434,13 @@ adv()
 
         movieRunner.Update();
 
-        // right after first adv(), unregister reference (but preUpdate so it still runs)
+        // right after first frame_advance(), unregister reference (but preUpdate so it still runs)
         Assert.Equal(6, script.Globals.Get("i").Number);
         Assert.False(movieRunner.Finished);
 
         movieRunner.Update();
 
-        // right after second adv(), unregister reference2 (not preUpdate so it doesn't run)
+        // right after second frame_advance(), unregister reference2 (not preUpdate so it doesn't run)
         Assert.Equal(6, script.Globals.Get("i").Number);
         Assert.False(movieRunner.Finished);
 
@@ -458,7 +458,7 @@ i = 0
 
 reference = concurrent.register(i, true)
 
-adv()
+frame_advance()
 
 concurrent.unregister(reference)
 ";
@@ -492,8 +492,8 @@ function preUpdate()
 end
 
 concurrent.register_once(preUpdate)
-adv()
-adv()
+frame_advance()
+frame_advance()
 ";
 
         var movieRunner = Utils.Setup(input).Item1;
@@ -526,16 +526,16 @@ i = 0
 
 function preUpdate()
     i = i + 1
-    adv()
+    frame_advance()
     i = i + 2
-    adv()
+    frame_advance()
 end
 
 concurrent.register_once(preUpdate)
-adv()
-adv()
-adv()
-adv()
+frame_advance()
+frame_advance()
+frame_advance()
+frame_advance()
 ";
 
         var movieRunner = Utils.Setup(input).Item1;

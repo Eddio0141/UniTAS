@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### TAS movie
 - Errors at runtime and set up now don't dump the exception stack trace
+- Renamed method `adv` to `frame_advance`
 
 ## Fixed
 

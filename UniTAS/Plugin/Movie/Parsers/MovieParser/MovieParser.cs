@@ -100,7 +100,7 @@ public partial class MovieParser : IMovieParser
 
     private void AddEngineMethods(IMovieEngine engine)
     {
-        AddEngineMethodGlobal(engine);
+        AddEngineMethodRaw(engine);
 
         var engineMethodClasses = _engineMethodClassesFactory.GetAll(engine);
 
