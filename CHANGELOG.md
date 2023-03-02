@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### UniTAS GUI
 - Temporarily removed unused buttons until they are implemented
 
+### UniTAS set up tool
+- Updated dependencies
+
 # [v0.1.0_v1.1.2] - 2023-02-24
 
 ## Fixed
