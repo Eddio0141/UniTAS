@@ -18,7 +18,7 @@ public class MainThreadSpeedControl : IMainThreadSpeedControl, IOnUpdate
         get => _speedMultiplier;
         set
         {
-            _speedMultiplier = value;
+            _speedMultiplier = value < 0f ? 0f : value;
 
             _lastTime = CurrentTime;
             _remainingTime = 0f;
