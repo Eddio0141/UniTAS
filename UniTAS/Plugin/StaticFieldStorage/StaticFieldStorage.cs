@@ -43,9 +43,9 @@ public class StaticFieldStorage : IStaticFieldManipulator
         // ReSharper disable StringLiteralTypo
         var assemblyExclusionsRaw = new[]
         {
-            "UnityEngine.*",
-            "UnityEngine",
-            "Unity.*",
+            // "UnityEngine.*",
+            // "UnityEngine",
+            // "Unity.*",
             "System.*",
             "System",
             "netstandard",
@@ -89,6 +89,9 @@ public class StaticFieldStorage : IStaticFieldManipulator
 
             foreach (var type in types)
             {
+                // TODO remove this later
+                if (type.FullName == "UnityEngine.GUI") return;
+
                 // if type has generic parameters
                 if (type.IsGenericType)
                 {

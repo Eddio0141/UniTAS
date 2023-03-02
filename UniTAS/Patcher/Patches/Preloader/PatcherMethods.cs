@@ -54,28 +54,29 @@ public class PatchHarmonyEarly : PreloadPatcher
         // insert call to harmony early patcher
         ilProcessor.InsertBefore(firstInstruction, ilProcessor.Create(OpCodes.Call, invoke));
     }
-}
 
-public static class PatcherMethods
-{
-    private static bool _patched;
-
-    /// <summary>
-    /// A method for patching harmony before the game starts
-    /// </summary>
-    public static void PatchHarmony()
+    [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
+    public static class PatcherMethods
     {
-        if (_patched)
+        private static bool _patched;
+
+        /// <summary>
+        /// A method for patching harmony before the game starts
+        /// </summary>
+        public static void PatchHarmony()
         {
-            Patcher.Logger.LogWarning("Patching harmony early twice, something invoked the static ctor twice");
-            return;
+            if (_patched)
+            {
+                Patcher.Logger.LogWarning("Patching harmony early twice, something invoked the static ctor twice");
+                return;
+            }
+
+            _patched = true;
+
+            Patcher.Logger.LogDebug("Patching harmony early");
+
+            var harmony = new HarmonyLib.Harmony("dev.yuu0141.unitas.patcher");
+            harmony.PatchAll();
         }
-
-        _patched = true;
-
-        Patcher.Logger.LogDebug("Patching harmony early");
-
-        var harmony = new HarmonyLib.Harmony("dev.yuu0141.unitas.patcher");
-        harmony.PatchAll();
     }
 }
