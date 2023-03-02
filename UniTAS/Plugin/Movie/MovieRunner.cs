@@ -111,6 +111,8 @@ public class MovieRunner : IMovieRunner, IOnPreUpdates
 
     private void AtMovieEnd()
     {
+        _movieLogger.LogInfo("movie end");
+
         _virtualEnvironment.FrameTime = 0;
         _cleanUp = true;
         _setup = false;
