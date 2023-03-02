@@ -15,12 +15,15 @@ public partial class MovieEngine
         private readonly DynValue _method;
         private DynValue _coroutine;
         private readonly DynValue[] _defaultArgs;
+        public bool RunOnce { get; }
+        public bool Finished => _coroutine.Coroutine.State == CoroutineState.Dead;
 
-        public CoroutineHolder(IMovieEngine engine, DynValue method, DynValue[] defaultArgs)
+        public CoroutineHolder(IMovieEngine engine, DynValue method, DynValue[] defaultArgs, bool runOnce)
         {
             _engine = engine;
             _method = method;
             _defaultArgs = defaultArgs;
+            RunOnce = runOnce;
             InitCoroutine();
         }
 

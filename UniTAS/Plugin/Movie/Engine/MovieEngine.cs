@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using MoonSharp.Interpreter;
 
 namespace UniTAS.Plugin.Movie.Engine;
@@ -47,25 +48,37 @@ public partial class MovieEngine : IMovieEngine
     public void Update()
     {
         if (Finished) return;
-        foreach (var coroutine in _preUpdateCoroutines)
+
+        for (var i = 0; i < _preUpdateCoroutines.Count; i++)
         {
+            var coroutine = _preUpdateCoroutines[i];
             coroutine.Resume();
+
+            if (!coroutine.RunOnce || !coroutine.Finished) continue;
+            UnregisterConcurrent(new(i, false));
+            i--;
         }
 
         _coroutine.Coroutine.Resume();
 
-        foreach (var coroutine in _postUpdateCoroutines)
+        for (var i = 0; i < _postUpdateCoroutines.Count; i++)
         {
+            var coroutine = _postUpdateCoroutines[i];
             coroutine.Resume();
+
+            if (!coroutine.RunOnce || !coroutine.Finished) continue;
+            UnregisterConcurrent(new(i, true));
+            i--;
         }
     }
 
     public bool Finished => _coroutine.Coroutine.State == CoroutineState.Dead;
 
-    public ConcurrentIdentifier RegisterConcurrent(DynValue coroutine, bool postUpdate, params DynValue[] defaultArgs)
+    public ConcurrentIdentifier RegisterConcurrent(bool postUpdate, DynValue coroutine, bool runOnce,
+        params DynValue[] defaultArgs)
     {
         if (coroutine.Type != DataType.Function) return null;
-        var coroutineWrap = new CoroutineHolder(this, coroutine, defaultArgs);
+        var coroutineWrap = new CoroutineHolder(this, coroutine, defaultArgs, runOnce);
         int index;
         if (postUpdate)
         {
@@ -76,6 +89,8 @@ public partial class MovieEngine : IMovieEngine
         else
         {
             coroutineWrap.Resume();
+            if (coroutineWrap.RunOnce && coroutineWrap.Finished) return null;
+
             _preUpdateCoroutines.Add(coroutineWrap);
 
             index = _preUpdateCoroutines.Count - 1;
@@ -89,26 +104,27 @@ public partial class MovieEngine : IMovieEngine
 
     public void UnregisterConcurrent(ConcurrentIdentifier identifier)
     {
-        if (!_concurrentIdentifiers.Contains(identifier)) return;
+        var foundIdentifier = _concurrentIdentifiers.FirstOrDefault(x => x.Equals(identifier));
+        if (foundIdentifier == null) return;
 
         // remove
-        if (identifier.PostUpdate)
+        if (foundIdentifier.PostUpdate)
         {
-            _postUpdateCoroutines.RemoveAt(identifier.Index);
+            _postUpdateCoroutines.RemoveAt(foundIdentifier.Index);
         }
         else
         {
-            _preUpdateCoroutines.RemoveAt(identifier.Index);
+            _preUpdateCoroutines.RemoveAt(foundIdentifier.Index);
         }
 
-        _concurrentIdentifiers.Remove(identifier);
+        _concurrentIdentifiers.Remove(foundIdentifier);
 
         // fix indexes
         foreach (var concurrentIdentifier in _concurrentIdentifiers)
         {
-            if (concurrentIdentifier.PostUpdate != identifier.PostUpdate) continue;
+            if (concurrentIdentifier.PostUpdate != foundIdentifier.PostUpdate) continue;
 
-            if (concurrentIdentifier.Index > identifier.Index)
+            if (concurrentIdentifier.Index > foundIdentifier.Index)
             {
                 concurrentIdentifier.Index--;
             }

@@ -17,7 +17,12 @@ public class Concurrent : EngineMethodClass
 
     public object Register(DynValue coroutine, bool postUpdate = false, params DynValue[] defaultArgs)
     {
-        return _engine.RegisterConcurrent(coroutine, postUpdate, defaultArgs);
+        return _engine.RegisterConcurrent(postUpdate, coroutine, false, defaultArgs);
+    }
+
+    public object Register_once(DynValue coroutine, bool postUpdate = false, params DynValue[] defaultArgs)
+    {
+        return _engine.RegisterConcurrent(postUpdate, coroutine, true, defaultArgs);
     }
 
     public void Unregister(ConcurrentIdentifier identifier)
