@@ -480,4 +480,93 @@ concurrent.unregister(reference)
         Assert.Equal(0, script.Globals.Get("i").Number);
         Assert.True(movieRunner.Finished);
     }
+
+    [Fact]
+    public void ConcurrentRunOnce()
+    {
+        const string input = @"
+i = 0
+
+function preUpdate()
+    i = i + 1
+end
+
+concurrent.register_once(preUpdate)
+adv()
+adv()
+";
+
+        var movieRunner = Utils.Setup(input).Item1;
+        var script = movieRunner.Script;
+
+        Assert.Equal(DataType.Nil, script.Globals.Get("i").Type);
+        Assert.False(movieRunner.Finished);
+
+        movieRunner.Update();
+
+        Assert.Equal(1, script.Globals.Get("i").Number);
+        Assert.False(movieRunner.Finished);
+
+        movieRunner.Update();
+
+        Assert.Equal(1, script.Globals.Get("i").Number);
+        Assert.False(movieRunner.Finished);
+
+        movieRunner.Update();
+
+        Assert.Equal(1, script.Globals.Get("i").Number);
+        Assert.True(movieRunner.Finished);
+    }
+
+    [Fact]
+    public void ConcurrentRunOnce2()
+    {
+        const string input = @"
+i = 0
+
+function preUpdate()
+    i = i + 1
+    adv()
+    i = i + 2
+    adv()
+end
+
+concurrent.register_once(preUpdate)
+adv()
+adv()
+adv()
+adv()
+";
+
+        var movieRunner = Utils.Setup(input).Item1;
+        var script = movieRunner.Script;
+
+        Assert.Equal(DataType.Nil, script.Globals.Get("i").Type);
+        Assert.False(movieRunner.Finished);
+
+        movieRunner.Update();
+
+        Assert.Equal(1, script.Globals.Get("i").Number);
+        Assert.False(movieRunner.Finished);
+
+        movieRunner.Update();
+
+        Assert.Equal(3, script.Globals.Get("i").Number);
+        Assert.False(movieRunner.Finished);
+
+        movieRunner.Update();
+
+        Assert.Equal(3, script.Globals.Get("i").Number);
+        Assert.False(movieRunner.Finished);
+
+        movieRunner.Update();
+
+        Assert.Equal(3, script.Globals.Get("i").Number);
+        Assert.False(movieRunner.Finished);
+
+        movieRunner.Update();
+
+        Assert.Equal(3, script.Globals.Get("i").Number);
+        Assert.True(movieRunner.Finished);
+    }
 }
