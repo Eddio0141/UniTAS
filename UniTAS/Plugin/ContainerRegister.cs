@@ -14,6 +14,7 @@ using UniTAS.Plugin.Interfaces;
 using UniTAS.Plugin.Interfaces.StartEvent;
 using UniTAS.Plugin.Interfaces.Update;
 using UniTAS.Plugin.Logger;
+using UniTAS.Plugin.MainThreadSpeedController;
 using UniTAS.Plugin.MonoBehaviourController;
 using UniTAS.Plugin.Movie;
 using UniTAS.Plugin.Movie.EngineMethods;
@@ -136,6 +137,10 @@ public static class ContainerRegister
             c.For<ILoadedSceneInfo>().Use(x => x.GetInstance<SceneTracker>());
 
             c.For<IUnityInstanceWrapFactory>().Singleton().Use<UnityInstanceWrapFactory>();
+
+            c.ForSingletonOf<MainThreadSpeedControl>().Use<MainThreadSpeedControl>();
+            c.For<IMainThreadSpeedControl>().Use(x => x.GetInstance<MainThreadSpeedControl>());
+            c.For<IOnUpdate>().Use(x => x.GetInstance<MainThreadSpeedControl>());
         });
 
         return container;
