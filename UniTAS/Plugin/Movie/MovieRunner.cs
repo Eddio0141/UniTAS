@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using UniTAS.Plugin.FixedUpdateSync;
@@ -6,7 +7,9 @@ using UniTAS.Plugin.GameRestart;
 using UniTAS.Plugin.Interfaces.Update;
 using UniTAS.Plugin.Movie.Engine;
 using UniTAS.Plugin.Movie.Exceptions;
+using UniTAS.Plugin.Movie.MovieModels.Properties;
 using UniTAS.Plugin.Movie.Parsers.MovieParser;
+using UniTAS.Plugin.Utils;
 
 namespace UniTAS.Plugin.Movie;
 
@@ -40,7 +43,17 @@ public class MovieRunner : IMovieRunner, IOnPreUpdates
 
         _setup = true;
 
-        var parsed = _parser.Parse(input);
+        Tuple<IMovieEngine, PropertiesModel> parsed;
+        try
+        {
+            parsed = _parser.Parse(input);
+        }
+        catch (Exception)
+        {
+            _setup = false;
+            throw;
+        }
+
         _engine = parsed.Item1;
         var properties = parsed.Item2;
 

@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using BepInEx.Logging;
@@ -94,7 +95,9 @@ public class MoviePlayTab : IMainMenuTab
         }
         catch (Exception e)
         {
-            _movieLogger.LogError($"Failed to run TAS movie\n{e}");
+            _movieLogger.LogError($"Failed to run TAS movie, an exception was thrown!");
+            _movieLogger.LogError(e.Message);
+            Trace.Write(e);
         }
     }
 

@@ -40,8 +40,7 @@ public partial class MovieEngine
             }
             catch (Exception)
             {
-                throw new CoroutineResumeException(
-                    "Failed to resume coroutine, this could be because the number of arguments passed to the coroutine is incorrect, check your lua code");
+                throw new CoroutineResumeException("Failed to resume coroutine, check your lua code, there is an runtime error");
             }
         }
 
