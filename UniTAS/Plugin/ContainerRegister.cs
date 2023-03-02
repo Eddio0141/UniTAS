@@ -40,9 +40,9 @@ public static class ContainerRegister
                 scanner.TheCallingAssembly();
                 scanner.WithDefaultConventions();
 
-                scanner.AddAllTypesOf<EngineExternalMethod>();
                 scanner.AddAllTypesOf<PatchProcessor>();
                 scanner.AddAllTypesOf<IMainMenuTab>();
+                scanner.AddAllTypesOf<EngineMethodClass>();
             });
 
             c.ForSingletonOf<PluginWrapper>().Use<PluginWrapper>();

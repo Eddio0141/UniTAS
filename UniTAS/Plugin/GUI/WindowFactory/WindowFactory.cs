@@ -1,7 +1,9 @@
-﻿using StructureMap;
+﻿using System.Diagnostics.CodeAnalysis;
+using StructureMap;
 
 namespace UniTAS.Plugin.GUI.WindowFactory;
 
+[SuppressMessage("ReSharper", "UnusedType.Global")]
 public class WindowFactory : IWindowFactory
 {
     private readonly IContainer _container;

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using BepInEx.Logging;
 
 namespace UniTAS.Plugin.Logger;
@@ -6,6 +7,7 @@ namespace UniTAS.Plugin.Logger;
 /// <summary>
 /// Logger specifically for TAS movies.
 /// </summary>
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public class MovieLogger : IMovieLogger
 {
     private readonly ManualLogSource _logSource = new("Movie playback");
@@ -28,11 +30,6 @@ public class MovieLogger : IMovieLogger
     public void LogInfo(object data)
     {
         _logSource.LogInfo(data);
-    }
-
-    public void LogDebug(object data)
-    {
-        _logSource.LogDebug(data);
     }
 
     public event EventHandler<LogEventArgs> OnLog

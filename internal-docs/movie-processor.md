@@ -1,18 +1,52 @@
-Movie processor functionality
-
 # Overview
-When the opcodes are ran for the current frame
-- It will process the "main" sections of the opcodes such as the main scope, or subroutines
-- It will process the concurrently running methods, which the script can subscribe with through built in method
+I use lua for the movie, where defining movie properties also is done within the script itself
 
-# Execution overview in updates
-- Set env through save state, startup properties, etc
-- Wait for FixedUpdate sync to savestate / soft restart
-- SYNCED
-- Loop start
-- Update input -> executes a frame of the engine, sets env
-- Update other scripts -> env is applied to everything
-- Loop end
+# Movie execution
+## Config
+- Config values must be set before the first `yield`
+
+## TAS execution
+- The inputs and whatever you set before the first `yield` is the **first frame** and settings to be used
+- If there is no `yield` at the final set of action, that section is the **last frame**
+---
+DEV NOTE: even if a script has no `yield` method, you still need to resume the coroutine at least *ONCE*
+### Examples
+```lua
+-- some config
+-- do whatever input stuff
+i = 0
+```
+- This movie is 1f long
+---
+```lua
+-- config
+-- input stuff
+adv()
+-- more input stuff
+```
+- This movie is 2f long
+
+## TAS execution with coroutine
+- Idea is you can register coroutine either **before** the main coroutine yield or **after** the main coroutine yield
+  - Either coroutine cycle you choose will execute before game's `MonoBehaviour.Update()`
+- When you register a coroutine for **before** the main yield, it will execute as you register it
+- When registering a coroutine for **after** the main yield, it will execute when the main yield finishes as usual
+
+# Config variables
+- GLOBAL_SCOPE
+  - Set to true and the main script's scope will be global. This means the user must manually return the coroutine that will be used to run the movie
+- START_TIME
+  - Either a DateTime or ticks for setting the start time as
+- frametime / ft
+  - Frametime for the initial game frametime, conflicts with fps, and with each other
+- fps
+  - Fps for the inital game fps, conflicts with frametime variables
+
+## Processing config variables
+### Idea
+- Each config variable is a simple variable in the scope
+- Each config variable is parsed in an unique way normally
+- It needs to be gathered together in some type for convinient access
 
 # Executing external methods
 ## Basic idea
@@ -63,13 +97,4 @@ public class PrintToConsoleExternalMethod : EngineExternalMethod {
 		return null;
 	}
 }
-```
-
-### Add it to the engine
-```cs
-// engine class
-private const List<EngineExternalMethod> _methods = new() {
-	// ...,
-	new PrintToConsoleExternalMethod()
-};
 ```

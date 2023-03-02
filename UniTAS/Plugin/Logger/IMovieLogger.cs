@@ -7,5 +7,6 @@ public interface IMovieLogger
 {
     void LogError(object data);
     void LogInfo(object data);
+    void LogWarning(object data);
     event EventHandler<LogEventArgs> OnLog; 
 }

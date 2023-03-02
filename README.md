@@ -5,6 +5,9 @@ A tool that lets you TAS unity games
 - The tool is early in development and only basic games work
 - At its core, this is a [BepInEx 5] plugin
 
+# Useful documentation
+Please check out the [wiki](https://github.com/Eddio0141/UniTAS/wiki)!
+
 # What games work
 - Currently, anything that [BepInEx 5] supports, ranging from unity 3 to latest, and games that use Mono and not IL2CPP
 - Check [working-games](docs/working-games.md) for tested games
