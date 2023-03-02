@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using UniTAS.Plugin.GameEnvironment;
@@ -49,11 +48,8 @@ public class MainThreadSpeedControl : IMainThreadSpeedControl, IOnUpdate
 
         // if the actual time passed is less than the time that should have passed, wait
         var waitTime = _virtualEnvironment.FrameTime * SpeedMultiplier - timeSinceLastUpdate + _remainingTime;
-        Trace.Write($"Time since last update: {timeSinceLastUpdate} s, wait time: {waitTime} s");
         if (waitTime <= 0)
         {
-            Trace.Write(
-                $"Returning from MainThreadSpeedControl.Update() because {waitTime} <= 0, new remaining time: {_remainingTime} s");
             return;
         }
 
@@ -62,7 +58,6 @@ public class MainThreadSpeedControl : IMainThreadSpeedControl, IOnUpdate
 
         if (waitMillisecondsInt > 0)
         {
-            Trace.Write($"Sleep for {waitMillisecondsInt} ms ({waitMilliseconds} ms)");
             Thread.Sleep(waitMillisecondsInt);
         }
 
