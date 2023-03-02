@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # [Unreleased]
 
+## Changed
+
+### TAS movie
+- Errors at runtime and set up now don't dump the exception stack trace
+
+## Fixed
+
+### TAS movie
+- Fixed movie not playing again if a runtime error occurs
+- Fixed movie not playing again if error occurs when parsed
+
 # [v0.2.0_v1.1.3] - 2023-03-02
 
 ## Changed

@@ -92,10 +92,6 @@ public class MoviePlayTab : IMainMenuTab
         {
             _movieLogger.LogError($"Failed to read TAS movie file\n{e}");
         }
-        catch (Exception e)
-        {
-            _movieLogger.LogError($"Failed to run TAS movie\n{e}");
-        }
     }
 
     private void TASRunInfo()

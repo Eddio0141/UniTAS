@@ -1,12 +1,16 @@
+using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using UniTAS.Plugin.FixedUpdateSync;
 using UniTAS.Plugin.GameEnvironment;
 using UniTAS.Plugin.GameRestart;
 using UniTAS.Plugin.Interfaces.Update;
+using UniTAS.Plugin.Logger;
 using UniTAS.Plugin.Movie.Engine;
 using UniTAS.Plugin.Movie.Exceptions;
+using UniTAS.Plugin.Movie.MovieModels.Properties;
 using UniTAS.Plugin.Movie.Parsers.MovieParser;
+using UniTAS.Plugin.Utils;
 
 namespace UniTAS.Plugin.Movie;
 
@@ -24,14 +28,16 @@ public class MovieRunner : IMovieRunner, IOnPreUpdates
 
     private readonly IMovieParser _parser;
     private IMovieEngine _engine;
+    private readonly IMovieLogger _movieLogger;
 
     public MovieRunner(VirtualEnvironment vEnv, IGameRestart gameRestart, ISyncFixedUpdate syncFixedUpdate,
-        IMovieParser parser)
+        IMovieParser parser, IMovieLogger movieLogger)
     {
         _virtualEnvironment = vEnv;
         _gameRestart = gameRestart;
         _syncFixedUpdate = syncFixedUpdate;
         _parser = parser;
+        _movieLogger = movieLogger;
     }
 
     public void RunFromInput(string input)
@@ -40,7 +46,22 @@ public class MovieRunner : IMovieRunner, IOnPreUpdates
 
         _setup = true;
 
-        var parsed = _parser.Parse(input);
+        Tuple<IMovieEngine, PropertiesModel> parsed;
+        try
+        {
+            parsed = _parser.Parse(input);
+        }
+        catch (Exception e)
+        {
+            _setup = false;
+
+            _movieLogger.LogError($"Failed to run TAS movie, an exception was thrown!");
+            _movieLogger.LogError(e.Message);
+            Trace.Write(e);
+
+            return;
+        }
+
         _engine = parsed.Item1;
         var properties = parsed.Item2;
 
@@ -90,6 +111,8 @@ public class MovieRunner : IMovieRunner, IOnPreUpdates
 
     private void AtMovieEnd()
     {
+        _movieLogger.LogInfo("movie end");
+
         _virtualEnvironment.FrameTime = 0;
         _cleanUp = true;
         _setup = false;
