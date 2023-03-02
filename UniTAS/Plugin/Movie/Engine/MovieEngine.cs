@@ -1,6 +1,9 @@
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using MoonSharp.Interpreter;
+using UniTAS.Plugin.Logger;
 
 namespace UniTAS.Plugin.Movie.Engine;
 
@@ -11,6 +14,10 @@ public partial class MovieEngine : IMovieEngine
     private DynValue _coroutine;
     private Script _script;
     private readonly List<ConcurrentIdentifier> _concurrentIdentifiers = new();
+
+    private readonly IMovieLogger _logger;
+
+    public bool Finished { get; private set; }
 
     public Script Script
     {
@@ -28,10 +35,10 @@ public partial class MovieEngine : IMovieEngine
     /// <summary>
     /// Creates a new MovieEngine from a coroutine
     /// </summary>
-    /// <param name="script">Script the coroutine lives in</param>
-    public MovieEngine(Script script)
+    public MovieEngine(Script script, IMovieLogger logger)
     {
         Script = script;
+        _logger = logger;
     }
 
     /// <summary>
@@ -52,27 +59,63 @@ public partial class MovieEngine : IMovieEngine
         for (var i = 0; i < _preUpdateCoroutines.Count; i++)
         {
             var coroutine = _preUpdateCoroutines[i];
-            coroutine.Resume();
+            try
+            {
+                coroutine.Resume();
+            }
+            catch (Exception e)
+            {
+                ExceptionHandler(e);
+                return;
+            }
 
             if (!coroutine.RunOnce || !coroutine.Finished) continue;
             UnregisterConcurrent(new(i, false));
             i--;
         }
 
-        _coroutine.Coroutine.Resume();
+        try
+        {
+            _coroutine.Coroutine.Resume();
+        }
+        catch (Exception e)
+        {
+            ExceptionHandler(e);
+            return;
+        }
 
         for (var i = 0; i < _postUpdateCoroutines.Count; i++)
         {
             var coroutine = _postUpdateCoroutines[i];
-            coroutine.Resume();
+            try
+            {
+                coroutine.Resume();
+            }
+            catch (Exception e)
+            {
+                ExceptionHandler(e);
+                return;
+            }
 
             if (!coroutine.RunOnce || !coroutine.Finished) continue;
             UnregisterConcurrent(new(i, true));
             i--;
         }
+
+        if (_coroutine.Coroutine.State == CoroutineState.Dead)
+        {
+            Finished = true;
+        }
     }
 
-    public bool Finished => _coroutine.Coroutine.State == CoroutineState.Dead;
+    private void ExceptionHandler(Exception exception)
+    {
+        _logger.LogError("Movie threw a runtime exception!");
+        _logger.LogError(exception.Message);
+        Trace.Write(exception);
+
+        Finished = true;
+    }
 
     public ConcurrentIdentifier RegisterConcurrent(bool postUpdate, DynValue coroutine, bool runOnce,
         params DynValue[] defaultArgs)

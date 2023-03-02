@@ -85,7 +85,7 @@ public partial class MovieParser : IMovieParser
 
         if (movieEngine == null)
         {
-            movieEngine = new(script);
+            movieEngine = new(script, _logger);
         }
         else
         {
