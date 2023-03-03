@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using MoonSharp.Interpreter;
 using UniTAS.Plugin.MainThreadSpeedController;
 
 namespace UniTAS.Plugin.Movie.EngineMethods.Implementations;
@@ -9,6 +10,7 @@ public class Movie : EngineMethodClass
 {
     private readonly IMainThreadSpeedControl _mainThreadSpeedControl;
 
+    [MoonSharpHidden]
     public Movie(IMainThreadSpeedControl mainThreadSpeedControl)
     {
         _mainThreadSpeedControl = mainThreadSpeedControl;

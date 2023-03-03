@@ -10,6 +10,7 @@ public class Concurrent : EngineMethodClass
 {
     private readonly IMovieEngine _engine;
 
+    [MoonSharpHidden]
     public Concurrent(IMovieEngine engine)
     {
         _engine = engine;

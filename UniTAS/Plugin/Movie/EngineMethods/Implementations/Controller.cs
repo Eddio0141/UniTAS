@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using MoonSharp.Interpreter;
 using UniTAS.Plugin.GameEnvironment;
 
 namespace UniTAS.Plugin.Movie.EngineMethods.Implementations;
@@ -9,6 +10,7 @@ public class Controller : EngineMethodClass
 {
     private readonly VirtualEnvironment _virtualEnvironment;
 
+    [MoonSharpHidden]
     public Controller(VirtualEnvironment virtualEnvironment)
     {
         _virtualEnvironment = virtualEnvironment;
