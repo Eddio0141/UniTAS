@@ -10,8 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Added
 
 ### TAS movie
-- Added `movie` namespace
-- Added `movie.playback_speed` to set playback speed
+- Added `movie` module
+- Added `movie.playback_speed()` to set playback speed
 
 ## Changed
 
