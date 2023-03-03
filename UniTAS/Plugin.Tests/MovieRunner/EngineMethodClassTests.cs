@@ -55,4 +55,23 @@ class_name = concurrent.ClassName
         Assert.NotNull(fps);
         Assert.NotEqual(DataType.Nil, fps.Type);
     }
+
+    [Fact]
+    public void BothMovieImplementations()
+    {
+        const string input = @"
+playback_speed = movie.playback_speed
+frame_advance = movie.frame_advance
+";
+        var script = Utils.Setup(input).Item1;
+        script.Update();
+
+        var playbackSpeed = script.Script.Globals.Get("playback_speed");
+        Assert.NotNull(playbackSpeed);
+        Assert.Equal(DataType.ClrFunction, playbackSpeed.Type);
+
+        var frameAdvance = script.Script.Globals.Get("frame_advance");
+        Assert.NotNull(frameAdvance);
+        Assert.Equal(DataType.Function, frameAdvance.Type);
+    }
 }

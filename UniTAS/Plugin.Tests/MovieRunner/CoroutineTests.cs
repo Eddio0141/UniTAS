@@ -42,7 +42,7 @@ i = i + 1
     {
         const string input = @"
 i = 0
-frame_advance()
+movie.frame_advance()
 i = i + 1
 ";
 
@@ -59,8 +59,8 @@ i = i + 1
     public void FrameAdvanceOverload()
     {
         const string input = @"
-frame_advance(1)
-frame_advance(2)
+movie.frame_advance(1)
+movie.frame_advance(2)
 ";
         var movieRunner = Utils.Setup(input).Item1;
 

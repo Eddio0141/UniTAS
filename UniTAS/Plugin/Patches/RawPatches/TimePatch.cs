@@ -180,6 +180,12 @@ public class TimePatch
 
         private static void Postfix(ref float __result)
         {
+            if (ReverseInvoker.InnerCall())
+            {
+                ReverseInvoker.Return();
+                return;
+            }
+
             var gameTime = VirtualEnvironment.GameTime;
             __result = (float)(__result - gameTime.SecondsSinceStartUpOffset);
         }

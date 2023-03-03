@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using MoonSharp.Interpreter;
 using UniTAS.Plugin.GameEnvironment;
 using UnityEngine;
 
@@ -11,6 +12,7 @@ public class Key : EngineMethodClass
 {
     private readonly VirtualEnvironment _virtualEnvironment;
 
+    [MoonSharpHidden]
     public Key(VirtualEnvironment virtualEnvironment)
     {
         _virtualEnvironment = virtualEnvironment;

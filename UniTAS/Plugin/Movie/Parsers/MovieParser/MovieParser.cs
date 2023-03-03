@@ -93,14 +93,14 @@ public partial class MovieParser : IMovieParser
         }
 
         AddEngineMethods(movieEngine);
-        AddCustomTypes();
+        AddCustomTypes(script);
 
         return Tuple.New(script, movieEngine);
     }
 
     private void AddEngineMethods(IMovieEngine engine)
     {
-        AddEngineMethodRaw(engine);
+        var script = engine.Script;
 
         var engineMethodClasses = _engineMethodClassesFactory.GetAll(engine);
 
@@ -108,13 +108,28 @@ public partial class MovieParser : IMovieParser
         {
             UserData.RegisterType(methodClass.GetType());
             var className = methodClass.GetType().Name.ToLowerInvariant();
-            engine.Script.Globals[className] = methodClass;
+            script.Globals[className] = methodClass;
         }
+
+        RegisterModuleTypes(engine);
     }
 
-    private static void AddCustomTypes()
+    private static void AddCustomTypes(Script script)
     {
         UserData.RegisterAssembly(typeof(MovieParser).Assembly);
+
+        // manually modify movie.frame_advance
+        const string frameAdvance = @"
+movie.frame_advance = function(frames)
+    if type(frames) ~= 'number' then
+        frames = 1
+    end
+    for i = 1, frames do
+        coroutine.yield()
+    end
+end";
+
+        script.DoString(frameAdvance);
     }
 
     private static string WrapInput(string input)
