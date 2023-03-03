@@ -6,20 +6,18 @@ namespace UniTAS.Plugin.Movie.EngineMethods.Implementations;
 
 [SuppressMessage("ReSharper", "UnusedType.Global")]
 [SuppressMessage("ReSharper", "UnusedMember.Global")]
-public class Movie : EngineMethodClass
+[MoonSharpModule(Namespace = "movie")]
+public class Movie
 {
-    private readonly IMainThreadSpeedControl _mainThreadSpeedControl;
-
-    [MoonSharpHidden]
-    public Movie(IMainThreadSpeedControl mainThreadSpeedControl)
-    {
-        _mainThreadSpeedControl = mainThreadSpeedControl;
-    }
+    private static readonly IMainThreadSpeedControl MainThreadSpeedControl =
+        Plugin.Kernel.GetInstance<IMainThreadSpeedControl>();
 
     [SuppressMessage("ReSharper", "InconsistentNaming")]
-    public float Playback_speed
+    [MoonSharpModuleMethod]
+    public static DynValue playback_speed(ScriptExecutionContext _, CallbackArguments args)
     {
-        get => _mainThreadSpeedControl.SpeedMultiplier;
-        set => _mainThreadSpeedControl.SpeedMultiplier = value;
+        var speed = args.AsType(0, "playback_speed", DataType.Number).Number;
+        MainThreadSpeedControl.SpeedMultiplier = (float)speed;
+        return DynValue.Nil;
     }
 }
