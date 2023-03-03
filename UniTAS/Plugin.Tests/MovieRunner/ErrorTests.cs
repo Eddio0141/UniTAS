@@ -6,7 +6,7 @@ public class ErrorTests
     public void RuntimeError()
     {
         const string input = @"
-frame_advance()
+movie.frame_advance()
 i = j + k
 ";
 

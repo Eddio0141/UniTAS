@@ -28,7 +28,7 @@ MOVIE_CONFIG = {
 }
 return function()
     i = 0
-    frame_advance()
+    movie.frame_advance()
     i = i + 1
 end
 ";
