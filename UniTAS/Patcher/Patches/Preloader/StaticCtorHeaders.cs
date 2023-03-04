@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using BepInEx;
+using HarmonyLib;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using UniTAS.Patcher.Extensions;
@@ -86,6 +87,14 @@ public class StaticCtorHeaders : PreloadPatcher
 
         // insert call
         ilProcessor.InsertBefore(firstInstruction, ilProcessor.Create(OpCodes.Call, patchMethodRef));
+
+        // if (StopStaticCtorExecution) return;
+        var getStopExecution = ilProcessor.Create(OpCodes.Call,
+            assembly.MainModule.ImportReference(AccessTools.PropertyGetter(typeof(Tracker),
+                nameof(Tracker.StopStaticCtorExecution))));
+        ilProcessor.InsertBefore(firstInstruction, getStopExecution);
+
+        ilProcessor.InsertBefore(firstInstruction, ilProcessor.Create(OpCodes.Brtrue_S, firstInstruction));
     }
 }
 
@@ -96,9 +105,12 @@ public static class PatchMethods
     public static void TraceStack()
     {
         var type = new StackFrame(1).GetMethod()?.DeclaringType;
-        Trace.Write($"Static ctor invoked for {type?.FullName}");
+
+        // TODO remove this later
+        if (type?.FullName == "UnityEngine.GUI") return;
 
         if (Tracker.StaticCtorInvokeOrder.Contains(type)) return;
+        Trace.Write($"First static ctor invoke for {type?.FullName}");
 
         Tracker.StaticCtorInvokeOrder.Add(type);
     }

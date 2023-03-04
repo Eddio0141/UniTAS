@@ -50,4 +50,9 @@ public static class Tracker
     /// Contains the order in which static constructors were invoked.
     /// </summary>
     public static List<Type> StaticCtorInvokeOrderList => StaticCtorInvokeOrder;
+
+    /// <summary>
+    /// If true, static constructors will not be invoked.
+    /// </summary>
+    public static bool StopStaticCtorExecution { get; set; }
 }
