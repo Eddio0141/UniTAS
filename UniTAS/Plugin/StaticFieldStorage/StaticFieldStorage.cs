@@ -58,8 +58,7 @@ public class StaticFieldStorage : IStaticFieldManipulator
             "MonoMod.*",
             "0Harmony",
             "HarmonyXInterop",
-            "StructureMap",
-            "Antlr4.Runtime.Standard"
+            "StructureMap"
         };
         // ReSharper restore StringLiteralTypo
 
@@ -228,7 +227,7 @@ public class StaticFieldStorage : IStaticFieldManipulator
             // TODO issue #120
             try
             {
-                InvokeStaticCtors();
+                // InvokeStaticCtors();
             }
             catch (Exception)
             {
@@ -251,7 +250,7 @@ public class StaticFieldStorage : IStaticFieldManipulator
         GC.WaitForPendingFinalizers();
 
         // TODO issue #120
-        InvokeStaticCtors();
+        // InvokeStaticCtors();
     }
 
     private void InvokeStaticCtors()
