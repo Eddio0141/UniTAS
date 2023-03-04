@@ -45,17 +45,6 @@ public class Plugin : BaseUnityPlugin
         _instance = this;
         _logger = Logger;
 
-        var traceCount = Trace.Listeners.Count;
-        for (var i = 0; i < traceCount; i++)
-        {
-            var listener = Trace.Listeners[i];
-            if (listener is TraceLogSource) continue;
-
-            Trace.Listeners.RemoveAt(i);
-            i--;
-            traceCount--;
-        }
-
         Trace.Write(Kernel.WhatDoIHave());
 
         _initialLoadPluginProcessors = Kernel.GetAllInstances<IPluginInitialLoad>().ToList();
