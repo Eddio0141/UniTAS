@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -7,9 +6,9 @@ using System.Linq;
 using BepInEx;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using MonoMod.Utils;
 using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.PreloadPatchUtils;
+using UniTAS.Patcher.Runtime;
 
 namespace UniTAS.Patcher.Patches.Preloader;
 
@@ -85,10 +84,6 @@ public class StaticCtorHeaders : PreloadPatcher
         var firstInstruction = staticCtor.Body.Instructions.First();
         var ilProcessor = staticCtor.Body.GetILProcessor();
 
-        // insert type
-        ilProcessor.InsertBefore(firstInstruction,
-            ilProcessor.Create(OpCodes.Ldtoken, staticCtor.DeclaringType.ResolveReflection()));
-
         // insert call
         ilProcessor.InsertBefore(firstInstruction, ilProcessor.Create(OpCodes.Call, patchMethodRef));
     }
@@ -97,9 +92,14 @@ public class StaticCtorHeaders : PreloadPatcher
 [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
 public static class PatchMethods
 {
-    public static void TraceStack(Type type)
+    // TODO test if this works with generic types
+    public static void TraceStack()
     {
-        Trace.Write($"Static ctor invoked for {type.FullName}");
-        Trace.Write(new StackTrace());
+        var type = new StackFrame(1).GetMethod()?.DeclaringType;
+        Trace.Write($"Static ctor invoked for {type?.FullName}");
+
+        if (Tracker.StaticCtorInvokeOrder.Contains(type)) return;
+
+        Tracker.StaticCtorInvokeOrder.Add(type);
     }
 }
