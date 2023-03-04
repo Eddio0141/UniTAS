@@ -40,6 +40,23 @@ public partial class StaticCtorTests
         }
     }
 
+    private class StaticCtorTestBase2
+    {
+        public static int StaticFieldBase = Assign(nameof(StaticFieldBase), 5);
+        public static int StaticFieldBase2 = Assign(nameof(StaticFieldBase2), 10);
+
+        static StaticCtorTestBase2()
+        {
+            Console.WriteLine("StaticCtorTest Base");
+        }
+
+        private static int Assign(string msg, int value)
+        {
+            Console.WriteLine(msg);
+            return value;
+        }
+    }
+
     private class StaticCtorTestDerived : StaticCtorTestBase
     {
         public static int StaticFieldDerived = Assign(nameof(StaticFieldDerived), 15);
@@ -57,7 +74,7 @@ public partial class StaticCtorTests
         }
     }
 
-    private class StaticCtorTestDerived2 : StaticCtorTestBase
+    private class StaticCtorTestDerived2 : StaticCtorTestBase2
     {
         public static int StaticField2Derived = Assign(nameof(StaticField2Derived), 15);
         public static int StaticField2Derived2 = Assign(nameof(StaticField2Derived2), 20);

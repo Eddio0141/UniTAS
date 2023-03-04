@@ -64,10 +64,12 @@ public partial class StaticCtorTests
             "StaticFieldBase",
             "StaticFieldBase2",
             "StaticCtorTest Base",
-            "Accessing StaticCtorTestBase 5",
+            "Accessing StaticCtorTestBase",
             "StaticCtorTest Derived 2"
         };
 
-        Assert.Equal(expected, final.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries));
+        var finalSplit = final.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
+
+        Assert.Equal(expected, finalSplit);
     }
 }
