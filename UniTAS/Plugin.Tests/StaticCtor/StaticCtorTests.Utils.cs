@@ -134,4 +134,21 @@ public partial class StaticCtorTests
             return value;
         }
     }
+
+    private class StaticCtorGenericTest<T>
+    {
+        [SuppressMessage("ReSharper", "StaticMemberInGenericType")]
+        public static int StaticField = Assign(nameof(StaticField), 5);
+
+        static StaticCtorGenericTest()
+        {
+            Console.WriteLine(nameof(StaticCtorGenericTest<T>));
+        }
+
+        private static int Assign(string msg, int value)
+        {
+            Console.WriteLine(msg);
+            return value;
+        }
+    }
 }

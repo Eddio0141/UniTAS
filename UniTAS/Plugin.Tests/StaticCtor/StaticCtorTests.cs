@@ -105,4 +105,24 @@ public partial class StaticCtorTests
 
         Assert.Equal(Array.Empty<string>(), final.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries));
     }
+
+    [Fact]
+    public void StaticCtorGenericArgTest()
+    {
+        var stdout = Setup();
+
+        var _ = new StaticCtorGenericTest<int>();
+        var __ = new StaticCtorGenericTest<string>();
+
+        var final = stdout.ToString();
+        var expected = new[]
+        {
+            "StaticField",
+            "StaticCtorGenericTest",
+            "StaticField",
+            "StaticCtorGenericTest",
+        };
+
+        Assert.Equal(expected, final.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries));
+    }
 }
