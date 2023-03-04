@@ -88,9 +88,6 @@ public class StaticFieldStorage : IStaticFieldManipulator
 
             foreach (var type in types)
             {
-                // TODO remove this later
-                if (type.FullName == "UnityEngine.GUI") return;
-
                 // if type has generic parameters
                 if (type.IsGenericType)
                 {

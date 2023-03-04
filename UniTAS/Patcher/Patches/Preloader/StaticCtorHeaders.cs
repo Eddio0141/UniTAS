@@ -16,20 +16,22 @@ public class StaticCtorHeaders : PreloadPatcher
 {
     private readonly string[] _assemblyExclusionsRaw =
     {
+        // "UnityEngine.*",
+        // "UnityEngine",
+        // "Unity.*",
         "System.*",
         "System",
         "netstandard",
         "mscorlib",
-        // "Mono.*",
-        // "Mono",
-        // "MonoMod.*",
-        // "BepInEx.*",
-        // "BepInEx",
-        // "MonoMod.*",
-        // "0Harmony",
-        // "HarmonyXInterop",
-        // "StructureMap",
-        // "Antlr4.Runtime.Standard"
+        "Mono.*",
+        "Mono",
+        "MonoMod.*",
+        "BepInEx.*",
+        "BepInEx",
+        "MonoMod.*",
+        "0Harmony",
+        "HarmonyXInterop",
+        "StructureMap"
     };
 
     public override IEnumerable<string> TargetDLLs =>
