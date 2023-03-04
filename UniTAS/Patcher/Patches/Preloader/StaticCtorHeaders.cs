@@ -18,9 +18,9 @@ public class StaticCtorHeaders : PreloadPatcher
 {
     private readonly string[] _assemblyExclusionsRaw =
     {
-        // "UnityEngine.*",
-        // "UnityEngine",
-        // "Unity.*",
+        "UnityEngine.*",
+        "UnityEngine",
+        "Unity.*",
         "System.*",
         "System",
         "netstandard",
@@ -49,11 +49,8 @@ public class StaticCtorHeaders : PreloadPatcher
 
     public override void Patch(ref AssemblyDefinition assembly)
     {
-        // var typeExclusionsRaw = new[]
-        // {
-        //     // TODO remove this later
-        //     // "UnityEngine.GUI"
-        // };
+        var definition = assembly;
+        if (_assemblyExclusionsRaw.Any(x => definition.Name.Name.Like(x))) return;
 
         var types = assembly.Modules.SelectMany(m => m.Types)
             .Where(t => t.HasMethods && t.Methods.Any(m => m.IsConstructor && m.IsStatic));
@@ -94,7 +91,9 @@ public class StaticCtorHeaders : PreloadPatcher
                 nameof(Tracker.StopStaticCtorExecution))));
         ilProcessor.InsertBefore(firstInstruction, getStopExecution);
 
-        ilProcessor.InsertBefore(firstInstruction, ilProcessor.Create(OpCodes.Brtrue_S, firstInstruction));
+        ilProcessor.InsertBefore(firstInstruction, ilProcessor.Create(OpCodes.Brfalse_S, firstInstruction));
+
+        ilProcessor.InsertBefore(firstInstruction, ilProcessor.Create(OpCodes.Ret));
     }
 }
 
@@ -105,9 +104,6 @@ public static class PatchMethods
     public static void TraceStack()
     {
         var type = new StackFrame(1).GetMethod()?.DeclaringType;
-
-        // TODO remove this later
-        if (type?.FullName == "UnityEngine.GUI") return;
 
         if (Tracker.StaticCtorInvokeOrder.Contains(type)) return;
         Trace.Write($"First static ctor invoke for {type?.FullName}");
