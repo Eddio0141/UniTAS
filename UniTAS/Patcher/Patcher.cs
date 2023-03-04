@@ -25,7 +25,7 @@ public static class Patcher
         RemoveConsoleTrace();
 
         Logger.LogInfo($"Found {PreloadPatcherProcessor.PreloadPatchers.Length} preload patchers");
-        Logger.LogDebug($"Target DLLs: {string.Join(", ", PreloadPatcherProcessor.TargetDLLs)}");
+        Logger.LogDebug($"Target DLLs\n{string.Join("\n", PreloadPatcherProcessor.TargetDLLs)}");
     }
 
     // Patches the assemblies
