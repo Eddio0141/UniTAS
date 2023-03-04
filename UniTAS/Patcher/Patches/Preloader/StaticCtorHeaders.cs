@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -6,6 +7,7 @@ using System.Linq;
 using BepInEx;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using MonoMod.Utils;
 using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.PreloadPatchUtils;
 
@@ -40,7 +42,7 @@ public class StaticCtorHeaders : PreloadPatcher
             {
                 var fileWithoutExtension = Path.GetFileNameWithoutExtension(x);
                 return fileWithoutExtension == null ||
-                       !_assemblyExclusionsRaw.Any(a => a.Like(fileWithoutExtension));
+                       !_assemblyExclusionsRaw.Any(a => fileWithoutExtension.Like(a));
             })
             // isolate the filename
             .Select(Path.GetFileName);
@@ -64,28 +66,40 @@ public class StaticCtorHeaders : PreloadPatcher
             if (staticCtor == null)
             {
                 Trace.Write("Already should've filtered out types without static ctors");
-                continue;
+                return;
             }
 
-            var patchMethod = typeof(PatchMethods).GetMethod(nameof(PatchMethods.TraceStack));
-            var patchMethodRef = assembly.MainModule.ImportReference(patchMethod);
-
-            var firstInstruction = staticCtor.Body.Instructions.First();
-            var ilProcessor = staticCtor.Body.GetILProcessor();
-
-            // insert call
-            Trace.Write($"Inserting stacktrace call to static ctor of {type.FullName}");
-            ilProcessor.InsertBefore(firstInstruction, ilProcessor.Create(OpCodes.Call, patchMethodRef));
+            Trace.Write($"Patching static ctor of {type.FullName}");
+            PatchStaticCtorHeader(assembly, staticCtor);
         }
     }
 
-    [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
-    public static class PatchMethods
+    /// <summary>
+    /// Patch the start of the static ctor for our own purposes
+    /// </summary>
+    private static void PatchStaticCtorHeader(AssemblyDefinition assembly, MethodDefinition staticCtor)
     {
-        public static void TraceStack()
-        {
-            Trace.Write("Static ctor invoked");
-            Trace.Write(new StackTrace());
-        }
+        var patchMethod = typeof(PatchMethods).GetMethod(nameof(PatchMethods.TraceStack));
+        var patchMethodRef = assembly.MainModule.ImportReference(patchMethod);
+
+        var firstInstruction = staticCtor.Body.Instructions.First();
+        var ilProcessor = staticCtor.Body.GetILProcessor();
+
+        // insert type
+        ilProcessor.InsertBefore(firstInstruction,
+            ilProcessor.Create(OpCodes.Ldtoken, staticCtor.DeclaringType.ResolveReflection()));
+
+        // insert call
+        ilProcessor.InsertBefore(firstInstruction, ilProcessor.Create(OpCodes.Call, patchMethodRef));
+    }
+}
+
+[SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
+public static class PatchMethods
+{
+    public static void TraceStack(Type type)
+    {
+        Trace.Write($"Static ctor invoked for {type.FullName}");
+        Trace.Write(new StackTrace());
     }
 }
