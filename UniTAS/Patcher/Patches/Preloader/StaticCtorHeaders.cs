@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
+using BepInEx;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using UniTAS.Patcher.Extensions;
@@ -12,46 +14,45 @@ namespace UniTAS.Patcher.Patches.Preloader;
 [SuppressMessage("ReSharper", "UnusedType.Global")]
 public class StaticCtorHeaders : PreloadPatcher
 {
-    public override IEnumerable<string> TargetDLLs => new[]
-        { "UnityEngine.CoreModule.dll", "UnityEngine.dll", "Assembly-CSharp.dll" };
+    private readonly string[] _assemblyExclusionsRaw =
+    {
+        "System.*",
+        "System",
+        "netstandard",
+        "mscorlib",
+        // "Mono.*",
+        // "Mono",
+        // "MonoMod.*",
+        // "BepInEx.*",
+        // "BepInEx",
+        // "MonoMod.*",
+        // "0Harmony",
+        // "HarmonyXInterop",
+        // "StructureMap",
+        // "Antlr4.Runtime.Standard"
+    };
+
+    public override IEnumerable<string> TargetDLLs =>
+        Directory.GetFiles(Paths.ManagedPath, "*.dll", SearchOption.TopDirectoryOnly)
+            .Where(x =>
+            {
+                var fileWithoutExtension = Path.GetFileNameWithoutExtension(x);
+                return fileWithoutExtension == null ||
+                       !_assemblyExclusionsRaw.Any(a => a.Like(fileWithoutExtension));
+            })
+            // isolate the filename
+            .Select(Path.GetFileName);
 
     public override void Patch(ref AssemblyDefinition assembly)
     {
-        var assemblyExclusionsRaw = new[]
-        {
-            "System.*",
-            "System",
-            "netstandard",
-            "mscorlib",
-            "Mono.*",
-            "Mono",
-            "MonoMod.*",
-            "BepInEx.*",
-            "BepInEx",
-            "MonoMod.*",
-            "0Harmony",
-            "HarmonyXInterop",
-            "StructureMap",
-            "Antlr4.Runtime.Standard"
-        };
-
-        var typeExclusionsRaw = new[]
-        {
-            // TODO remove this later
-            "UnityEngine.GUI"
-        };
-
-        foreach (var x in assemblyExclusionsRaw)
-        {
-            if (!assembly.Name.Name.Like(x)) continue;
-
-            Trace.Write($"Skipping {assembly.Name.Name} due to exclusion");
-            return;
-        }
+        // var typeExclusionsRaw = new[]
+        // {
+        //     // TODO remove this later
+        //     // "UnityEngine.GUI"
+        // };
 
         var types = assembly.Modules.SelectMany(m => m.Types)
-            .Where(t => !typeExclusionsRaw.Any(x =>
-                t.FullName.Like(x) && t.HasMethods && t.Methods.Any(m => m.IsConstructor && m.IsStatic)));
+            .Where(t => t.HasMethods && t.Methods.Any(m => m.IsConstructor && m.IsStatic));
 
         Trace.Write("Patching static ctors");
         foreach (var type in types)

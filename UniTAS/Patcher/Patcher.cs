@@ -17,11 +17,18 @@ public static class Patcher
 
     private static readonly PreloadPatcherProcessor PreloadPatcherProcessor = new();
 
+    // Called before the assemblies are patched
+    [SuppressMessage("ReSharper", "UnusedMember.Global")]
+    public static void Initialize()
+    {
+        Logger.LogInfo($"Found {PreloadPatcherProcessor.PreloadPatchers.Length} preload patchers");
+        Logger.LogDebug($"Target DLLs: {string.Join(", ", PreloadPatcherProcessor.TargetDLLs)}");
+    }
+
     // Patches the assemblies
     [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public static void Patch(ref AssemblyDefinition assembly)
     {
-        Logger.LogInfo($"Found {PreloadPatcherProcessor.PreloadPatchers.Length} preload patchers");
         foreach (var patcher in PreloadPatcherProcessor.PreloadPatchers)
         {
             patcher.Patch(ref assembly);
