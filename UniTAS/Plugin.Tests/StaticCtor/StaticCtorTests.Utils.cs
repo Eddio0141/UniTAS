@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace UniTAS.Plugin.Tests.StaticCtor;
 
 [SuppressMessage("ReSharper", "UnusedMember.Local")]
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Local")]
 public partial class StaticCtorTests
 {
     private class StaticCtorTest
@@ -109,6 +110,22 @@ public partial class StaticCtorTests
         {
             Console.WriteLine(nameof(StaticMethod));
             return 0;
+        }
+
+        private static int Assign(string msg, int value)
+        {
+            Console.WriteLine(msg);
+            return value;
+        }
+    }
+
+    private class StaticCtorAccessTest
+    {
+        public static int StaticField = Assign(nameof(StaticField), 5);
+
+        static StaticCtorAccessTest()
+        {
+            Console.WriteLine(nameof(StaticCtorAccessTest));
         }
 
         private static int Assign(string msg, int value)

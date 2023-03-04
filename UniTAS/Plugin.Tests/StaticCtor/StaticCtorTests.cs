@@ -90,4 +90,19 @@ public partial class StaticCtorTests
 
         Assert.Equal(expected, final.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries));
     }
+
+    [Fact]
+    public void TypeAccessTest()
+    {
+        var stdout = Setup();
+
+        var _ = typeof(StaticCtorAccessTest);
+#pragma warning disable CS0219
+        var test = nameof(StaticCtorAccessTest.StaticField);
+#pragma warning restore CS0219
+
+        var final = stdout.ToString();
+
+        Assert.Equal(Array.Empty<string>(), final.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries));
+    }
 }
