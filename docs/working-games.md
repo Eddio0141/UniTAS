@@ -17,10 +17,11 @@
 | [It Steals]     | Latest  | Perfect |                                                                                                                                                                                  |
 | [Do It For Me]  | Latest  | Perfect |                                                                                                                                                                                  |
 | [yurayura tutt] | Latest  | Desync  | TAS desyncs due to invoke to `YuraYuraModel.PlayFootStepForReal` and `YuraYuraModel.PlayFootStep` being inconsistent between runs. Stack trace doesn't show what is calling this |
-| Hunie Pop       | 1.2.0   | Broken  | Exception upon game start                                                                                                                                                        |
+| [HuniePop]      | 1.2.0   | Broken  | Exception upon game start                                                                                                                                                        |
 | KTaNE           | ?       | Broken  | Throws an exception on launch                                                                                                                                                    |
 
 
 [It Steals]: https://store.steampowered.com/app/1349060/It_Steals/
 [yurayura tutt]: https://cornflowerblue.itch.io/yurayura-tidying-up-the-tilting-tower
 [Do It For Me]: https://lixiangames.itch.io/doitforme
+[HuniePop]: https://store.steampowered.com/app/339800/HuniePop/
