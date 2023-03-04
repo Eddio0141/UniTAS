@@ -72,4 +72,22 @@ public partial class StaticCtorTests
 
         Assert.Equal(expected, finalSplit);
     }
+
+    [Fact]
+    public void StaticMethodInvoke()
+    {
+        var stdout = Setup();
+
+        var _ = StaticCtorMethodTest.StaticMethod();
+
+        var final = stdout.ToString();
+        var expected = new[]
+        {
+            "StaticField",
+            "StaticCtorMethodTest",
+            "StaticMethod"
+        };
+
+        Assert.Equal(expected, final.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries));
+    }
 }

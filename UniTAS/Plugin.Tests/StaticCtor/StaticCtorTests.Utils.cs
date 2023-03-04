@@ -95,4 +95,26 @@ public partial class StaticCtorTests
             return value;
         }
     }
+
+    private class StaticCtorMethodTest
+    {
+        public static int StaticField = Assign(nameof(StaticField), 5);
+
+        static StaticCtorMethodTest()
+        {
+            Console.WriteLine(nameof(StaticCtorMethodTest));
+        }
+
+        public static int StaticMethod()
+        {
+            Console.WriteLine(nameof(StaticMethod));
+            return 0;
+        }
+
+        private static int Assign(string msg, int value)
+        {
+            Console.WriteLine(msg);
+            return value;
+        }
+    }
 }
