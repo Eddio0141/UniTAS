@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using MoonSharp.Interpreter;
 using UniTAS.Plugin.GameEnvironment;
 using UniTAS.Plugin.Logger;
+using UniTAS.Plugin.ReverseInvoker;
 using UnityEngine;
 
 namespace UniTAS.Plugin.Movie.EngineMethods.Implementations;
@@ -12,14 +13,16 @@ public class Env : EngineMethodClass
 {
     private readonly VirtualEnvironment _virtualEnvironment;
     private readonly IMovieLogger _logger;
+    private readonly IPatchReverseInvoker _patchReverseInvoker;
 
     private readonly bool _mobile = Application.platform is RuntimePlatform.Android or RuntimePlatform.IPhonePlayer;
 
     [MoonSharpHidden]
-    public Env(VirtualEnvironment virtualEnvironment, IMovieLogger logger)
+    public Env(VirtualEnvironment virtualEnvironment, IMovieLogger logger, IPatchReverseInvoker patchReverseInvoker)
     {
         _virtualEnvironment = virtualEnvironment;
         _logger = logger;
+        _patchReverseInvoker = patchReverseInvoker;
     }
 
     public float Fps
@@ -54,12 +57,14 @@ public class Env : EngineMethodClass
     // TODO set Screen.currentResolution refresh rate to movie's max achieving framerate
     private void SetFrametime(float value)
     {
+        var targetFrameRate = _patchReverseInvoker.Invoke(() => Application.targetFrameRate);
+
         var fps = 1f / value;
-        if (Application.targetFrameRate != -1 && fps > Application.targetFrameRate &&
+        if (targetFrameRate != -1 && fps > targetFrameRate &&
             _mobile || (!_mobile && QualitySettings.vSyncCount == 0))
         {
-            _logger.LogWarning($"Target framerate is limited by the platform to {Application.targetFrameRate} fps");
-            fps = Application.targetFrameRate;
+            _logger.LogWarning($"Target framerate is limited by the platform to {targetFrameRate} fps");
+            fps = targetFrameRate;
         }
 
         _virtualEnvironment.FrameTime = 1f / fps;
