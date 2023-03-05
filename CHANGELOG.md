@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### TAS movie
 - Added `movie` module
 - Added `movie.playback_speed()` to set playback speed
+- Added FPS unlocking for TAS playback
 
 ## Changed
 
@@ -24,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### TAS movie
 - Fixed movie not playing again if a runtime error occurs
 - Fixed movie not playing again if error occurs when parsed
+- Fixed movie respecting the FPS limit if game has a fixed FPS
 
 # [v0.2.0_v1.1.3] - 2023-03-02
 
