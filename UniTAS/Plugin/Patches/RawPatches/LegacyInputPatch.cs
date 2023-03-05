@@ -808,11 +808,11 @@ public class LegacyInputPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix(ref Vector3 __result)
+        private static bool Prefix(ref Quaternion __result)
         {
             if (!VirtualEnvironment.RunVirtualEnvironment) return true;
             // TODO what is this call
-            __result = Vector3.zero;
+            __result = Quaternion.identity;
             return false;
         }
     }
