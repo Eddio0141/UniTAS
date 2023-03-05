@@ -70,11 +70,11 @@ public class MonoBehaviourUpdateInvokePatch
         {
             if (ex != null)
             {
-                Plugin.Log.LogFatal(
-                    $"Error patching MonoBehaviour.Awake in all types, closing tool since continuing can cause desyncs: {ex}");
+                Plugin.Log.LogWarning(
+                    $"Error patching MonoBehaviour.Awake, Method: {original.DeclaringType?.FullName ?? "unknown_type"}.{original.Name}, Exception: {ex}");
             }
 
-            return ex;
+            return null;
         }
     }
 
@@ -93,11 +93,11 @@ public class MonoBehaviourUpdateInvokePatch
         {
             if (ex != null)
             {
-                Plugin.Log.LogFatal(
-                    $"Error patching MonoBehaviour.FixedUpdate in all types, closing tool since continuing can cause desyncs: {ex}");
+                Plugin.Log.LogWarning(
+                    $"Error patching MonoBehaviour.FixedUpdate, Method: {original.DeclaringType?.FullName ?? "unknown_type"}.{original.Name}, Exception: {ex}");
             }
 
-            return ex;
+            return null;
         }
     }
 
@@ -116,11 +116,11 @@ public class MonoBehaviourUpdateInvokePatch
         {
             if (ex != null)
             {
-                Plugin.Log.LogFatal(
-                    $"Error patching MonoBehaviour.Update in all types, closing tool since continuing can cause desyncs: {ex}");
+                Plugin.Log.LogWarning(
+                    $"Error patching MonoBehaviour.Update, Method: {original.DeclaringType?.FullName ?? "unknown_type"}.{original.Name}, Exception: {ex}");
             }
 
-            return ex;
+            return null;
         }
     }
 
@@ -139,11 +139,11 @@ public class MonoBehaviourUpdateInvokePatch
         {
             if (ex != null)
             {
-                Plugin.Log.LogFatal(
-                    $"Error patching MonoBehaviour.OnEnable in all types, closing tool since continuing can cause desyncs: {ex}");
+                Plugin.Log.LogWarning(
+                    $"Error patching MonoBehaviour.OnEnable, Method: {original.DeclaringType?.FullName ?? "unknown_type"}.{original.Name}, Exception: {ex}");
             }
 
-            return ex;
+            return null;
         }
     }
 
@@ -162,11 +162,11 @@ public class MonoBehaviourUpdateInvokePatch
         {
             if (ex != null)
             {
-                Plugin.Log.LogFatal(
-                    $"Error patching MonoBehaviour.Start in all types, closing tool since continuing can cause desyncs: {ex}");
+                Plugin.Log.LogWarning(
+                    $"Error patching MonoBehaviour.Start, Method: {original.DeclaringType?.FullName ?? "unknown_type"}.{original.Name}, Exception: {ex}");
             }
 
-            return ex;
+            return null;
         }
     }
 }
