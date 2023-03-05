@@ -53,18 +53,28 @@ public class StaticCtorHeaders : PreloadPatcher
         var definition = assembly;
         if (_assemblyExclusionsRaw.Any(x => definition.Name.Name.Like(x))) return;
 
+        // get all types in assembly that has static fields or a static ctor
         var types = assembly.Modules.SelectMany(m => m.GetAllTypes())
-            .Where(t => t.HasMethods && t.Methods.Any(m => m.IsConstructor && m.IsStatic));
+            .Where(t => t.HasFields && t.Fields.Any(f => f.IsStatic && !f.IsLiteral) ||
+                        t.HasMethods && t.Methods.Any(m => m.IsStatic && m.IsConstructor));
 
         Trace.Write("Patching static ctors");
         foreach (var type in types)
         {
             // find static ctor
             var staticCtor = type.Methods.FirstOrDefault(m => m.IsConstructor && m.IsStatic);
+            // add static ctor if not found
             if (staticCtor == null)
             {
-                Trace.Write("Already should've filtered out types without static ctors");
-                return;
+                Trace.Write($"Adding static ctor to {type.FullName}");
+                staticCtor = new(".cctor",
+                    MethodAttributes.Static | MethodAttributes.Private | MethodAttributes.HideBySig
+                    | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName,
+                    assembly.MainModule.ImportReference(typeof(void)));
+
+                type.Methods.Add(staticCtor);
+                var il = staticCtor.Body.GetILProcessor();
+                il.Append(il.Create(OpCodes.Ret));
             }
 
             Trace.Write($"Patching static ctor of {type.FullName}");
@@ -77,7 +87,7 @@ public class StaticCtorHeaders : PreloadPatcher
     /// </summary>
     private static void PatchStaticCtorHeader(AssemblyDefinition assembly, MethodDefinition staticCtor)
     {
-        var patchMethod = typeof(PatchMethods).GetMethod(nameof(PatchMethods.TraceStack));
+        var patchMethod = typeof(PatchMethods).GetMethod(nameof(PatchMethods.StaticCtorHeader));
         var patchMethodRef = assembly.MainModule.ImportReference(patchMethod);
 
         var firstInstruction = staticCtor.Body.Instructions.First();
@@ -85,25 +95,21 @@ public class StaticCtorHeaders : PreloadPatcher
 
         // insert call
         ilProcessor.InsertBefore(firstInstruction, ilProcessor.Create(OpCodes.Call, patchMethodRef));
-
-        // if (StopStaticCtorExecution) return;
-        var getStopExecution = ilProcessor.Create(OpCodes.Call,
-            assembly.MainModule.ImportReference(AccessTools.PropertyGetter(typeof(Tracker),
-                nameof(Tracker.StopStaticCtorExecution))));
-        ilProcessor.InsertBefore(firstInstruction, getStopExecution);
-
-        ilProcessor.InsertBefore(firstInstruction, ilProcessor.Create(OpCodes.Brfalse_S, firstInstruction));
-
-        ilProcessor.InsertBefore(firstInstruction, ilProcessor.Create(OpCodes.Ret));
     }
 }
 
 [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
 public static class PatchMethods
 {
-    public static void TraceStack()
+    public static void StaticCtorHeader()
     {
         var type = new StackFrame(1).GetMethod()?.DeclaringType;
+
+        var declaredFields = AccessTools.GetDeclaredFields(type).Where(x => x.IsStatic && !x.IsLiteral);
+        foreach (var field in declaredFields)
+        {
+            field.SetValue(null, null);
+        }
 
         if (Tracker.StaticCtorInvokeOrder.Contains(type)) return;
         Trace.Write($"First static ctor invoke for {type?.FullName}");
