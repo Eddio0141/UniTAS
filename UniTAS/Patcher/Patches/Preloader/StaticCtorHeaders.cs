@@ -101,7 +101,6 @@ public class StaticCtorHeaders : PreloadPatcher
 [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
 public static class PatchMethods
 {
-    // TODO test if this works with generic types
     public static void TraceStack()
     {
         var type = new StackFrame(1).GetMethod()?.DeclaringType;
