@@ -88,8 +88,7 @@ body:
     id: logs
     attributes:
       label: Log output
-      description: This is the log output from UniTAS. You can find it in {GAME_DIR}/BepInEx/LogOutput.log
-      render: shell
+      description: This is the log output from UniTAS. You can find it in {GAME_DIR}/BepInEx/LogOutput.log. You can also attach the log file by dragging and dropping it.
   - type: textarea
     id: additional-context
     attributes:
