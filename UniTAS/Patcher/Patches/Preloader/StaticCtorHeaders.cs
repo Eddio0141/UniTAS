@@ -7,6 +7,7 @@ using BepInEx;
 using HarmonyLib;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Mono.Cecil.Rocks;
 using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.PreloadPatchUtils;
 using UniTAS.Patcher.Runtime;
@@ -52,7 +53,7 @@ public class StaticCtorHeaders : PreloadPatcher
         var definition = assembly;
         if (_assemblyExclusionsRaw.Any(x => definition.Name.Name.Like(x))) return;
 
-        var types = assembly.Modules.SelectMany(m => m.Types)
+        var types = assembly.Modules.SelectMany(m => m.GetAllTypes())
             .Where(t => t.HasMethods && t.Methods.Any(m => m.IsConstructor && m.IsStatic));
 
         Trace.Write("Patching static ctors");
