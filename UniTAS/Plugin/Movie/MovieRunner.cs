@@ -10,6 +10,7 @@ using UniTAS.Plugin.Movie.Engine;
 using UniTAS.Plugin.Movie.Exceptions;
 using UniTAS.Plugin.Movie.MovieModels.Properties;
 using UniTAS.Plugin.Movie.Parsers.MovieParser;
+using UniTAS.Plugin.Movie.RunnerEvents;
 using UniTAS.Plugin.Utils;
 
 namespace UniTAS.Plugin.Movie;
@@ -30,14 +31,19 @@ public class MovieRunner : IMovieRunner, IOnPreUpdates
     private IMovieEngine _engine;
     private readonly IMovieLogger _movieLogger;
 
+    private readonly IOnMovieEnd[] _onMovieEnd;
+    private readonly IOnMovieStart[] _onMovieStart;
+
     public MovieRunner(VirtualEnvironment vEnv, IGameRestart gameRestart, ISyncFixedUpdate syncFixedUpdate,
-        IMovieParser parser, IMovieLogger movieLogger)
+        IMovieParser parser, IMovieLogger movieLogger, IOnMovieEnd[] onMovieEnd, IOnMovieStart[] onMovieStart)
     {
         _virtualEnvironment = vEnv;
         _gameRestart = gameRestart;
         _syncFixedUpdate = syncFixedUpdate;
         _parser = parser;
         _movieLogger = movieLogger;
+        _onMovieEnd = onMovieEnd;
+        _onMovieStart = onMovieStart;
     }
 
     public void RunFromInput(string input)
@@ -82,11 +88,22 @@ public class MovieRunner : IMovieRunner, IOnPreUpdates
         {
             if (_gameRestart.PendingRestart)
             {
-                _syncFixedUpdate.OnSync(() => { MovieEnd = false; }, 1, 1);
+                _syncFixedUpdate.OnSync(() =>
+                {
+                    MovieEnd = false;
+                    foreach (var onMovieStart in _onMovieStart)
+                    {
+                        onMovieStart.OnMovieStart();
+                    }
+                }, 1, 1);
             }
             else
             {
                 MovieEnd = false;
+                foreach (var onMovieStart in _onMovieStart)
+                {
+                    onMovieStart.OnMovieStart();
+                }
             }
         }, 1);
     }
@@ -118,5 +135,10 @@ public class MovieRunner : IMovieRunner, IOnPreUpdates
         _cleanUp = true;
         _setup = false;
         MovieEnd = true;
+
+        foreach (var onMovieEnd in _onMovieEnd)
+        {
+            onMovieEnd.OnMovieEnd();
+        }
     }
 }
