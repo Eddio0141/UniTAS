@@ -54,6 +54,7 @@ public class MovieRunner : IMovieRunner, IOnPreUpdates
         catch (Exception e)
         {
             _setup = false;
+            MovieEnd = true;
 
             _movieLogger.LogError($"Failed to run TAS movie, an exception was thrown!");
             _movieLogger.LogError(e.Message);
