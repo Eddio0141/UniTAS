@@ -101,6 +101,27 @@ public class StaticCtorHeaders : PreloadPatcher
 [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
 public static class PatchMethods
 {
+    // re-enable this if a mysterious memory leak / unexplainable hard crashes occurs
+    /*
+    private static int _resetFieldCount;
+    private const int MaxResetFieldCount = 100;
+
+    private static int ResetFieldCount
+    {
+        get => _resetFieldCount;
+        set
+        {
+            _resetFieldCount = value;
+            if (_resetFieldCount > MaxResetFieldCount)
+            {
+                _resetFieldCount = 0;
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
+        }
+    }
+    */
+
     public static void StaticCtorHeader()
     {
         var type = new StackFrame(1).GetMethod()?.DeclaringType;
@@ -109,6 +130,7 @@ public static class PatchMethods
         foreach (var field in declaredFields)
         {
             field.SetValue(null, null);
+            // ResetFieldCount++;
         }
 
         if (Tracker.StaticCtorInvokeOrder.Contains(type)) return;
