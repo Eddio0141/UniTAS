@@ -41,7 +41,7 @@ public partial class MovieParser : IMovieParser
         var properties = processedConfig.Item2;
         if (useGlobalScope)
         {
-            script = SetupScript(movieEngine).Item1;
+            script = SetupScript(movieEngine, properties).Item1;
             engineCoroutine = script.DoString(input);
 
             // because we are using global scope, we expect a function to be returned
@@ -52,7 +52,7 @@ public partial class MovieParser : IMovieParser
         }
         else
         {
-            script = SetupScript(movieEngine).Item1;
+            script = SetupScript(movieEngine, properties).Item1;
             engineCoroutine = script.DoString(wrappedInput);
         }
 
@@ -62,7 +62,7 @@ public partial class MovieParser : IMovieParser
         return new(movieEngine, properties);
     }
 
-    private Tuple<Script, MovieEngine> SetupScript(MovieEngine movieEngine = null)
+    private Tuple<Script, MovieEngine> SetupScript(MovieEngine movieEngine = null, PropertiesModel properties = null)
     {
         var script = new Script
         {
@@ -90,6 +90,11 @@ public partial class MovieParser : IMovieParser
         else
         {
             movieEngine.Script = script;
+        }
+
+        if (properties != null)
+        {
+            movieEngine.Properties = properties;
         }
 
         AddEngineMethods(movieEngine);

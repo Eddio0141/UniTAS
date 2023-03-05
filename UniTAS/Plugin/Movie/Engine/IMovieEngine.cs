@@ -1,4 +1,5 @@
 using MoonSharp.Interpreter;
+using UniTAS.Plugin.Movie.MovieModels.Properties;
 
 namespace UniTAS.Plugin.Movie.Engine;
 
@@ -7,6 +8,7 @@ public interface IMovieEngine
     void Update();
     bool Finished { get; }
     Script Script { get; }
+    PropertiesModel Properties { get; }
 
     /// <summary>
     /// Registers a coroutine to be executed concurrently with the main coroutine
