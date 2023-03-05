@@ -110,6 +110,7 @@ public class MonoBehaviourControllerPatch
 
         private static readonly string[] ExcludeNamespaces =
         {
+            // TODO remove this exclusion, i dont know why i added it
             "TMPro",
             "UnityEngine",
             "Unity",
@@ -120,26 +121,18 @@ public class MonoBehaviourControllerPatch
         public static IEnumerable<MethodBase> TargetMethods()
         {
             var monoBehaviourTypes = new List<Type>();
-            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-            foreach (var assembly in assemblies)
+            foreach (var assembly in AccessTools.AllAssemblies())
             {
-                try
+                var types = AccessTools.GetTypesFromAssembly(assembly);
+                foreach (var type in types)
                 {
-                    var types = assembly.GetTypes();
-                    foreach (var type in types)
+                    // TODO remove hardcoded MonoBehavior referencing
+                    if (!type.IsAbstract && type.IsSubclassOf(typeof(MonoBehaviour)) && (type.FullName == null ||
+                            !ExcludeNamespaces.Any(x => type.Namespace != null && type.Namespace.StartsWith(x))))
                     {
-                        // TODO remove hardcoded type name
-                        if (!type.IsAbstract && type.IsSubclassOf(typeof(MonoBehaviour)) && (type.FullName == null ||
-                                !ExcludeNamespaces.Any(x => type.Namespace != null && type.Namespace.StartsWith(x))))
-                        {
-                            monoBehaviourTypes.Add(type);
-                            Trace.Write($"Target MonoBehavior pause patch type: {type.FullName}");
-                        }
+                        monoBehaviourTypes.Add(type);
+                        Trace.Write($"Target MonoBehavior pause patch type: {type.FullName}");
                     }
-                }
-                catch (ReflectionTypeLoadException)
-                {
-                    // ignored
                 }
             }
 
@@ -184,11 +177,11 @@ public class MonoBehaviourControllerPatch
         {
             if (ex != null)
             {
-                Plugin.Log.LogFatal(
-                    $"Error patching MonoBehaviour event methods in all types, closing tool since continuing can cause desyncs: {ex}");
+                Plugin.Log.LogWarning(
+                    $"Error patching MonoBehaviour event method, Method: {original.DeclaringType?.FullName ?? "unknown_type"}.{original.Name}, Exception: {ex}");
             }
 
-            return ex;
+            return null;
         }
     }
 }
