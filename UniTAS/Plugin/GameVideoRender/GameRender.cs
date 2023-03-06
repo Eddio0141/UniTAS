@@ -103,10 +103,8 @@ public class GameRender : IGameRender, IOnLastUpdate
         // make up for lost time
         if (_timeLeft < 0)
         {
-            Trace.Write($"_timeLeft < 0 : {_timeLeft}");
             var framesCountRaw = -_timeLeft / RecordFrameTime;
             var framesToSkip = (int)framesCountRaw;
-            Trace.Write($"Skipping frames: {framesCountRaw}, {framesToSkip}");
 
             for (var i = 0; i < framesToSkip; i++)
             {
@@ -122,7 +120,6 @@ public class GameRender : IGameRender, IOnLastUpdate
             }
 
             // add any left frames
-            Trace.Write($"Adding frames: {(framesCountRaw - framesToSkip) * RecordFrameTime}");
             _timeLeft = (framesCountRaw - framesToSkip) * RecordFrameTime;
         }
 
