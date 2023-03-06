@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -154,10 +153,5 @@ public class Plugin : BaseUnityPlugin
 
         Kernel.GetInstance<PluginWrapper>();
         _onLastUpdates = Kernel.GetAllInstances<IOnLastUpdate>().ToArray();
-    }
-
-    private void OnPostRender()
-    {
-        _monoBehEventInvoker.OnPostRender();
     }
 }

@@ -6,7 +6,7 @@ using UnityEngine;
 namespace UniTAS.Plugin.GameVideoRender;
 
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-public class GameRender : IOnPostRender, IGameRender
+public class GameRender : IGameRender, IOnLastUpdate
 {
     private readonly Process _ffmpeg;
     private const string FfmpegPath = "ffmpeg.exe";
@@ -33,8 +33,9 @@ public class GameRender : IOnPostRender, IGameRender
         _ffmpeg.StartInfo.FileName = FfmpegPath;
         // ffmpeg gets fed raw video data from unity
         // game fps could be variable, but output fps is fixed
+        // ffmpeg itself gets fed in png format
         _ffmpeg.StartInfo.Arguments =
-            $"-y -f rawvideo -vcodec rawvideo -s {Width}x{Height} -pix_fmt bgra -r {Fps} -i - -an -vcodec libx264 -pix_fmt yuv420p -preset ultrafast -crf 0 {OutputPath}";
+            $"-y -f rawvideo -vcodec rawvideo -pix_fmt rgb24 -s {Width}x{Height} -r {Fps} -i - -an -vcodec libx264 -pix_fmt yuv420p -preset ultrafast -crf 0 {OutputPath}";
         _ffmpeg.StartInfo.UseShellExecute = false;
         _ffmpeg.StartInfo.RedirectStandardInput = true;
         _ffmpeg.StartInfo.RedirectStandardOutput = true;
@@ -45,7 +46,7 @@ public class GameRender : IOnPostRender, IGameRender
     {
         // TODO let it able to change resolution
         _renderTexture = new(Width, Height, 24);
-        _texture2D = new(Width, Height, TextureFormat.RGBA32, false);
+        _texture2D = new(Width, Height, TextureFormat.RGB24, false);
         // TODO find out if to use current camera or main camera
         var camera = Camera.main;
         if (camera == null)
@@ -76,12 +77,12 @@ public class GameRender : IOnPostRender, IGameRender
         }
     }
 
-    public void OnPostRender()
+    public void OnLastUpdate()
     {
         if (!_isRecording) return;
 
         RenderTexture.active = _renderTexture;
-        _texture2D.ReadPixels(new Rect(0, 0, Width, Height), 0, 0);
+        _texture2D.ReadPixels(new(0, 0, Width, Height), 0, 0);
 
         var bytes = _texture2D.EncodeToPNG();
 

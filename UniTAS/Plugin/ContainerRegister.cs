@@ -155,7 +155,7 @@ public static class ContainerRegister
 
             c.ForSingletonOf<GameRender>().Use<GameRender>();
             c.Forward<IGameRender, GameRender>();
-            c.Forward<IOnPostRender, GameRender>();
+            c.Forward<IOnLastUpdate, GameRender>();
         });
 
         return container;
