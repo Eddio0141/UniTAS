@@ -1,9 +1,11 @@
 ﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using UniTAS.Plugin.Interfaces.Update;
 using UnityEngine;
 
 namespace UniTAS.Plugin.GameVideoRender;
 
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public class GameRender : IOnPostRender, IGameRender
 {
     private readonly Process _ffmpeg;
