@@ -197,7 +197,7 @@ public class KernelTests
         var env2 = kernel.GetInstance<KernelUtils.Env>();
         Assert.NotNull(env2);
 
-        Assert.Equal(env, env2);
+        Assert.Same(env, env2);
 
         var scriptArg = new ExplicitArguments();
         scriptArg.Set(typeof(Script), null);
@@ -206,11 +206,11 @@ public class KernelTests
             .OfType<KernelUtils.Env>().Single();
         Assert.NotNull(env3);
 
-        Assert.Equal(env, env3);
+        Assert.Same(env, env3);
 
         var env4 = kernel.GetAllInstances<IOnLastUpdate>().OfType<KernelUtils.Env>().Single();
         Assert.NotNull(env4);
 
-        Assert.Equal(env, env4);
+        Assert.Same(env, env4);
     }
 }
