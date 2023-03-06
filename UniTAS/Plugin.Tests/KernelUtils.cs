@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using BepInEx.Logging;
+using MoonSharp.Interpreter;
 using StructureMap;
 using UniTAS.Plugin.FixedUpdateSync;
 using UniTAS.Plugin.GameEnvironment;
@@ -11,8 +12,8 @@ using UniTAS.Plugin.Interfaces.Update;
 using UniTAS.Plugin.Logger;
 using UniTAS.Plugin.MonoBehaviourController;
 using UniTAS.Plugin.Movie;
+using UniTAS.Plugin.Movie.Engine;
 using UniTAS.Plugin.Movie.EngineMethods;
-using UniTAS.Plugin.Movie.EngineMethods.Implementations;
 using UniTAS.Plugin.Movie.Parsers.MovieParser;
 using UniTAS.Plugin.ReverseInvoker;
 using UniTAS.Plugin.StaticFieldStorage;
@@ -23,8 +24,20 @@ using UniTAS.Plugin.UnitySafeWrappers.Wrappers;
 namespace UniTAS.Plugin.Tests;
 
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Local")]
 public static class KernelUtils
 {
+    public class Env : EngineMethodClass, IOnLastUpdate
+    {
+        public float Fps { get; set; }
+        public float Frametime { get; set; }
+
+        [MoonSharpHidden]
+        public void OnLastUpdate()
+        {
+        }
+    }
+
     public class DummyLogger : IMovieLogger
     {
         public List<string> Infos { get; } = new();
@@ -51,7 +64,7 @@ public static class KernelUtils
 #pragma warning restore 67
     }
 
-    public class FakeLogger : ILogger
+    private class FakeLogger : ILogger
     {
         public void LogFatal(object data)
         {
@@ -78,12 +91,8 @@ public static class KernelUtils
         }
     }
 
-    public class FakeStaticFieldStorage : IStaticFieldManipulator
+    private class FakeStaticFieldStorage : IStaticFieldManipulator
     {
-        public FakeStaticFieldStorage(ILogger logger)
-        {
-        }
-
         public void ResetStaticFields()
         {
         }
@@ -101,7 +110,7 @@ public static class KernelUtils
                 // scanner.AddAllTypesOf<PatchProcessor>();
                 // scanner.AddAllTypesOf<IMainMenuTab>();
                 scanner.AddAllTypesOf<EngineMethodClass>();
-                scanner.ExcludeType<Env>();
+                scanner.ExcludeType<Movie.EngineMethods.Implementations.Env>();
             });
 
             // c.ForSingletonOf<PluginWrapper>().Use<PluginWrapper>();
@@ -210,6 +219,12 @@ public static class KernelUtils
             c.For<IMovieParser>().Use<MovieParser>();
 
             c.For<IEngineMethodClassesFactory>().Use<EngineMethodClassesFactory>();
+
+            c.ForSingletonOf<Env>().Use<Env>();
+            c.For<EngineMethodClass>().Use(x => x.GetInstance<Env>());
+            c.For<IOnLastUpdate>().Use(x => x.GetInstance<Env>());
+
+            c.For<IMovieEngine>().Use<MovieEngine>();
         });
 
         return kernel;
