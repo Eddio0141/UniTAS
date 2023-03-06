@@ -178,7 +178,7 @@ concurrent.register(postUpdate, true)
 
         var (movieRunner, _, kernel) = Utils.Setup(input);
         var script = movieRunner.Script;
-        var logger = kernel.GetInstance<Utils.DummyLogger>();
+        var logger = kernel.GetInstance<KernelUtils.DummyLogger>();
 
         Assert.Equal(DataType.Nil, script.Globals.Get("i").Type);
         Assert.False(movieRunner.Finished);
