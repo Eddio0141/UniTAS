@@ -65,7 +65,7 @@ public class Env : EngineMethodClass, IOnLastUpdate, IOnMovieStart
 
         var fps = 1f / value;
         if (Application.targetFrameRate != -1 && fps > Application.targetFrameRate &&
-            _mobile || (!_mobile && QualitySettings.vSyncCount == 0))
+            (_mobile || (!_mobile && QualitySettings.vSyncCount == 0)))
         {
             _logger.LogWarning($"Target framerate is limited by the platform to {Application.targetFrameRate} fps");
             fps = Application.targetFrameRate;
