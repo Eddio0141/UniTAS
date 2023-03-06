@@ -10,7 +10,6 @@ using UniTAS.Plugin.Movie.Engine;
 using UniTAS.Plugin.Movie.Exceptions;
 using UniTAS.Plugin.Movie.MovieModels.Properties;
 using UniTAS.Plugin.Movie.Parsers.MovieParser;
-using UniTAS.Plugin.Movie.RunnerEvents;
 using UniTAS.Plugin.Utils;
 
 namespace UniTAS.Plugin.Movie;
@@ -31,19 +30,14 @@ public class MovieRunner : IMovieRunner, IOnPreUpdates
     private IMovieEngine _engine;
     private readonly IMovieLogger _movieLogger;
 
-    private readonly IOnMovieEnd[] _onMovieEnd;
-    private readonly IOnMovieStart[] _onMovieStart;
-
     public MovieRunner(VirtualEnvironment vEnv, IGameRestart gameRestart, ISyncFixedUpdate syncFixedUpdate,
-        IMovieParser parser, IMovieLogger movieLogger, IOnMovieEnd[] onMovieEnd, IOnMovieStart[] onMovieStart)
+        IMovieParser parser, IMovieLogger movieLogger)
     {
         _virtualEnvironment = vEnv;
         _gameRestart = gameRestart;
         _syncFixedUpdate = syncFixedUpdate;
         _parser = parser;
         _movieLogger = movieLogger;
-        _onMovieEnd = onMovieEnd;
-        _onMovieStart = onMovieStart;
     }
 
     public void RunFromInput(string input)
@@ -91,19 +85,13 @@ public class MovieRunner : IMovieRunner, IOnPreUpdates
                 _syncFixedUpdate.OnSync(() =>
                 {
                     MovieEnd = false;
-                    foreach (var onMovieStart in _onMovieStart)
-                    {
-                        onMovieStart.OnMovieStart();
-                    }
+                    OnMovieStart?.Invoke();
                 }, 1, 1);
             }
             else
             {
                 MovieEnd = false;
-                foreach (var onMovieStart in _onMovieStart)
-                {
-                    onMovieStart.OnMovieStart();
-                }
+                OnMovieStart?.Invoke();
             }
         }, 1);
     }
@@ -136,9 +124,9 @@ public class MovieRunner : IMovieRunner, IOnPreUpdates
         _setup = false;
         MovieEnd = true;
 
-        foreach (var onMovieEnd in _onMovieEnd)
-        {
-            onMovieEnd.OnMovieEnd();
-        }
+        OnMovieEnd?.Invoke();
     }
+
+    public event Action OnMovieStart;
+    public event Action OnMovieEnd;
 }

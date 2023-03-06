@@ -21,7 +21,6 @@ using UniTAS.Plugin.MonoBehaviourController;
 using UniTAS.Plugin.Movie;
 using UniTAS.Plugin.Movie.EngineMethods;
 using UniTAS.Plugin.Movie.EngineMethods.Implementations;
-using UniTAS.Plugin.Movie.RunnerEvents;
 using UniTAS.Plugin.Patches.PatchProcessor;
 using UniTAS.Plugin.ReverseInvoker;
 using UniTAS.Plugin.StaticFieldStorage;
@@ -149,17 +148,14 @@ public static class ContainerRegister
 
             c.ForSingletonOf<GameSpeedUnlocker.GameSpeedUnlocker>().Use<GameSpeedUnlocker.GameSpeedUnlocker>();
             c.For<IGameSpeedUnlocker>().Use(x => x.GetInstance<GameSpeedUnlocker.GameSpeedUnlocker>());
-            c.For<IOnMovieStart>().Use(x => x.GetInstance<GameSpeedUnlocker.GameSpeedUnlocker>());
-            c.For<IOnMovieEnd>().Use(x => x.GetInstance<GameSpeedUnlocker.GameSpeedUnlocker>());
 
             c.ForSingletonOf<Env>().Use<Env>();
             c.For<EngineMethodClass>().Use(x => x.GetInstance<Env>());
             c.For<IOnLastUpdate>().Use(x => x.GetInstance<Env>());
-            c.For<IOnMovieStart>().Use(x => x.GetInstance<Env>());
 
             c.ForSingletonOf<GameRender>().Use<GameRender>();
-            c.Forward<GameRender, IGameRender>();
-            c.Forward<GameRender, IOnPostRender>();
+            c.Forward<IGameRender, GameRender>();
+            c.Forward<IOnPostRender, GameRender>();
         });
 
         return container;
