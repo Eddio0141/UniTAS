@@ -31,10 +31,7 @@ public class FpsUnlockPatch
 
         private static bool Prefix(ref int __result)
         {
-            if (PatchReverseInvoker.InnerCall() || !GameSpeedUnlocker.Unlock)
-            {
-                return true;
-            }
+            if (PatchReverseInvoker.InnerCall() || !GameSpeedUnlocker.Unlock) return true;
 
             // modify return to be original if we are not reverse invoking or if we are not unlocking
             __result = GameSpeedUnlocker.OriginalTargetFrameRate;
@@ -57,14 +54,11 @@ public class FpsUnlockPatch
 
         private static bool Prefix(int value)
         {
-            // ignore set if we are not reverse invoking or if we are not unlocking
-            if (GameSpeedUnlocker.Unlock)
-            {
-                GameSpeedUnlocker.OriginalTargetFrameRate = value;
-                return false;
-            }
+            if (PatchReverseInvoker.InnerCall() || !GameSpeedUnlocker.Unlock) return true;
 
-            return !PatchReverseInvoker.InnerCall();
+            // ignore set if we are not reverse invoking or if we are not unlocking
+            GameSpeedUnlocker.OriginalTargetFrameRate = value;
+            return false;
         }
 
         private static void Postfix()
@@ -83,10 +77,7 @@ public class FpsUnlockPatch
 
         private static bool Prefix(ref int __result)
         {
-            if (PatchReverseInvoker.InnerCall() || !GameSpeedUnlocker.Unlock)
-            {
-                return true;
-            }
+            if (PatchReverseInvoker.InnerCall() || !GameSpeedUnlocker.Unlock) return true;
 
             // modify return to be original if we are not reverse invoking or if we are not unlocking
             __result = GameSpeedUnlocker.OriginalVSyncCount;
@@ -109,14 +100,11 @@ public class FpsUnlockPatch
 
         private static bool Prefix(int value)
         {
-            // ignore set if we are not reverse invoking or if we are not unlocking
-            if (GameSpeedUnlocker.Unlock)
-            {
-                GameSpeedUnlocker.OriginalVSyncCount = value;
-                return false;
-            }
+            if (PatchReverseInvoker.InnerCall() || !GameSpeedUnlocker.Unlock) return true;
 
-            return !PatchReverseInvoker.InnerCall();
+            // ignore set if we are not reverse invoking or if we are not unlocking
+            GameSpeedUnlocker.OriginalVSyncCount = value;
+            return false;
         }
 
         private static void Postfix()
