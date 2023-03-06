@@ -15,6 +15,13 @@ public class Movie
 
     private static readonly IGameRender GameRender = Plugin.Kernel.GetInstance<IGameRender>();
 
+    private static readonly IMovieRunner MovieRunner = Plugin.Kernel.GetInstance<IMovieRunner>();
+
+    static Movie()
+    {
+        MovieRunner.OnMovieEnd += () => GameRender.Stop();
+    }
+
     [MoonSharpModuleMethod]
     public static DynValue playback_speed(ScriptExecutionContext _, CallbackArguments args)
     {
