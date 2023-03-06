@@ -154,6 +154,7 @@ public static class ContainerRegister
             c.ForSingletonOf<Env>().Use<Env>();
             c.For<EngineMethodClass>().Use(x => x.GetInstance<Env>());
             c.For<IOnLastUpdate>().Use(x => x.GetInstance<Env>());
+            c.For<IOnMovieStart>().Use(x => x.GetInstance<Env>());
         });
 
         return container;
