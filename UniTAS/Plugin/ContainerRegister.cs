@@ -10,6 +10,7 @@ using UniTAS.Plugin.GameRestart;
 using UniTAS.Plugin.GameRestart.EventInterfaces;
 using UniTAS.Plugin.GameRestart.Events;
 using UniTAS.Plugin.GameSpeedUnlocker;
+using UniTAS.Plugin.GameVideoRender;
 using UniTAS.Plugin.GUI.MainMenu.Tabs;
 using UniTAS.Plugin.Interfaces;
 using UniTAS.Plugin.Interfaces.StartEvent;
@@ -155,6 +156,10 @@ public static class ContainerRegister
             c.For<EngineMethodClass>().Use(x => x.GetInstance<Env>());
             c.For<IOnLastUpdate>().Use(x => x.GetInstance<Env>());
             c.For<IOnMovieStart>().Use(x => x.GetInstance<Env>());
+
+            c.ForSingletonOf<GameRender>().Use<GameRender>();
+            c.Forward<GameRender, IGameRender>();
+            c.Forward<GameRender, IOnPostRender>();
         });
 
         return container;
