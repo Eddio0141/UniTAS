@@ -12,6 +12,7 @@ public class GameRender : IGameRender, IOnLastUpdate
     private readonly Process _ffmpeg;
 
     private const int Fps = 60;
+    private float RecordFrameTime => 1f / Fps;
     private readonly int _width = Screen.width;
     private readonly int _height = Screen.height;
     private const string OutputPath = "output.mp4";
@@ -24,6 +25,8 @@ public class GameRender : IGameRender, IOnLastUpdate
     private bool _isRecording;
 
     private readonly ILogger _logger;
+
+    private float _timeLeft;
 
     public GameRender(ILogger logger)
     {
@@ -42,21 +45,21 @@ public class GameRender : IGameRender, IOnLastUpdate
         _ffmpeg.StartInfo.RedirectStandardOutput = true;
         _ffmpeg.StartInfo.RedirectStandardError = true;
 
-        // _ffmpeg.ErrorDataReceived += (_, args) =>
-        // {
-        //     if (args.Data != null)
-        //     {
-        //         _logger.LogError(args.Data);
-        //     }
-        // };
-        //
-        // _ffmpeg.OutputDataReceived += (_, args) =>
-        // {
-        //     if (args.Data != null)
-        //     {
-        //         _logger.LogDebug(args.Data);
-        //     }
-        // };
+        _ffmpeg.ErrorDataReceived += (_, args) =>
+        {
+            if (args.Data != null)
+            {
+                _logger.LogError(args.Data);
+            }
+        };
+
+        _ffmpeg.OutputDataReceived += (_, args) =>
+        {
+            if (args.Data != null)
+            {
+                _logger.LogDebug(args.Data);
+            }
+        };
     }
 
     public void Start()
@@ -76,6 +79,7 @@ public class GameRender : IGameRender, IOnLastUpdate
     {
         _logger.LogDebug("Stopping recording");
         _isRecording = false;
+        _ffmpeg.StandardInput.Flush();
         _ffmpeg.StandardInput.Close();
         _ffmpeg.WaitForExit();
 
@@ -87,10 +91,41 @@ public class GameRender : IGameRender, IOnLastUpdate
     public void OnLastUpdate()
     {
         if (!_isRecording) return;
+        _timeLeft -= Time.deltaTime;
+        if (_timeLeft > 0)
+        {
+            return;
+        }
 
         _texture2D.ReadPixels(new(0, 0, _width, _height), 0, 0);
-
         _colors = _texture2D.GetPixels32();
+
+        // make up for lost time
+        if (_timeLeft < 0)
+        {
+            Trace.Write($"_timeLeft < 0 : {_timeLeft}");
+            var framesCountRaw = -_timeLeft / RecordFrameTime;
+            var framesToSkip = (int)framesCountRaw;
+            Trace.Write($"Skipping frames: {framesCountRaw}, {framesToSkip}");
+
+            for (var i = 0; i < framesToSkip; i++)
+            {
+                for (var j = 0; j < _colors.Length; j++)
+                {
+                    var color = _colors[j];
+                    _bytes[j * 3] = color.r;
+                    _bytes[j * 3 + 1] = color.g;
+                    _bytes[j * 3 + 2] = color.b;
+                }
+
+                _ffmpeg.StandardInput.BaseStream.Write(_bytes, 0, _totalBytes);
+            }
+
+            // add any left frames
+            Trace.Write($"Adding frames: {(framesCountRaw - framesToSkip) * RecordFrameTime}");
+            _timeLeft = (framesCountRaw - framesToSkip) * RecordFrameTime;
+        }
+
         for (var i = 0; i < _colors.Length; i++)
         {
             var color = _colors[i];
@@ -100,6 +135,7 @@ public class GameRender : IGameRender, IOnLastUpdate
         }
 
         _ffmpeg.StandardInput.BaseStream.Write(_bytes, 0, _totalBytes);
-        _ffmpeg.StandardInput.BaseStream.Flush();
+
+        _timeLeft += RecordFrameTime;
     }
 }
