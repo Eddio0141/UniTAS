@@ -30,7 +30,7 @@ public class KernelTests
         var restart2 = kernel.GetInstance<IGameRestart>();
         Assert.NotNull(restart2);
 
-        Assert.Equal(restart, restart2);
+        Assert.Same(restart, restart2);
     }
 
     [Fact]
@@ -44,7 +44,7 @@ public class KernelTests
         var virtualEnvironment2 = kernel.GetInstance<VirtualEnvironment>();
         Assert.NotNull(virtualEnvironment2);
 
-        Assert.Equal(virtualEnvironment, virtualEnvironment2);
+        Assert.Same(virtualEnvironment, virtualEnvironment2);
     }
 
     [Fact]
@@ -58,7 +58,7 @@ public class KernelTests
         var syncFixedUpdate2 = kernel.GetInstance<ISyncFixedUpdate>();
         Assert.NotNull(syncFixedUpdate2);
 
-        Assert.Equal(syncFixedUpdate, syncFixedUpdate2);
+        Assert.Same(syncFixedUpdate, syncFixedUpdate2);
     }
 
     [Fact]
@@ -72,7 +72,7 @@ public class KernelTests
         var unityWrapper2 = kernel.GetInstance<IUnityWrapper>();
         Assert.NotNull(unityWrapper2);
 
-        Assert.Equal(unityWrapper, unityWrapper2);
+        Assert.Same(unityWrapper, unityWrapper2);
     }
 
     [Fact]
@@ -86,7 +86,7 @@ public class KernelTests
         var monoBehaviourController2 = kernel.GetInstance<IMonoBehaviourController>();
         Assert.NotNull(monoBehaviourController2);
 
-        Assert.Equal(monoBehaviourController, monoBehaviourController2);
+        Assert.Same(monoBehaviourController, monoBehaviourController2);
     }
 
     [Fact]
@@ -100,7 +100,7 @@ public class KernelTests
         var logger2 = kernel.GetInstance<ILogger>();
         Assert.NotNull(logger2);
 
-        Assert.Equal(logger, logger2);
+        Assert.Same(logger, logger2);
     }
 
     [Fact]
@@ -128,7 +128,7 @@ public class KernelTests
         var staticFieldManipulator2 = kernel.GetInstance<IStaticFieldManipulator>();
         Assert.NotNull(staticFieldManipulator2);
 
-        Assert.Equal(staticFieldManipulator, staticFieldManipulator2);
+        Assert.Same(staticFieldManipulator, staticFieldManipulator2);
     }
 
     [Fact]
@@ -165,7 +165,7 @@ public class KernelTests
         var patchReverseInvoker2 = kernel.GetInstance<IPatchReverseInvoker>();
         Assert.NotNull(patchReverseInvoker2);
 
-        Assert.Equal(patchReverseInvoker, patchReverseInvoker2);
+        Assert.Same(patchReverseInvoker, patchReverseInvoker2);
     }
 
     [Fact]
@@ -179,7 +179,7 @@ public class KernelTests
         var gameInitialRestart2 = kernel.GetInstance<IGameInitialRestart>();
         Assert.NotNull(gameInitialRestart2);
 
-        Assert.Equal(gameInitialRestart, gameInitialRestart2);
+        Assert.Same(gameInitialRestart, gameInitialRestart2);
 
         var gameRestart = kernel.GetInstance<IGameRestart>();
 

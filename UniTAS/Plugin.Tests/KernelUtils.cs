@@ -140,11 +140,11 @@ public static class KernelUtils
             // c.For<IGameInfo>().Singleton().Use<GameInfo.GameInfo>();
             //
             c.ForSingletonOf<GameInitialRestart.GameInitialRestart>().Use<GameInitialRestart.GameInitialRestart>();
-            c.For<IGameInitialRestart>().Use(x => x.GetInstance<GameInitialRestart.GameInitialRestart>());
-            c.For<IOnAwake>().Use(x => x.GetInstance<GameInitialRestart.GameInitialRestart>());
-            c.For<IOnEnable>().Use(x => x.GetInstance<GameInitialRestart.GameInitialRestart>());
-            c.For<IOnStart>().Use(x => x.GetInstance<GameInitialRestart.GameInitialRestart>());
-            c.For<IOnFixedUpdate>().Use(x => x.GetInstance<GameInitialRestart.GameInitialRestart>());
+            c.Forward<GameInitialRestart.GameInitialRestart, IGameInitialRestart>();
+            c.Forward<GameInitialRestart.GameInitialRestart, IOnAwake>();
+            c.Forward<GameInitialRestart.GameInitialRestart, IOnEnable>();
+            c.Forward<GameInitialRestart.GameInitialRestart, IOnStart>();
+            c.Forward<GameInitialRestart.GameInitialRestart, IOnFixedUpdate>();
 
             c.For<IMonoBehaviourController>().Singleton().Use<MonoBehaviourController.MonoBehaviourController>();
 
@@ -187,15 +187,15 @@ public static class KernelUtils
             // c.For<IOnGameRestartResume>().Use<UnityRngRestartInit>();
 
             c.ForSingletonOf<Movie.MovieRunner>().Use<Movie.MovieRunner>();
-            c.For<IMovieRunner>().Use(x => x.GetInstance<Movie.MovieRunner>());
-            c.For<IOnPreUpdates>().Use(x => x.GetInstance<Movie.MovieRunner>());
+            c.Forward<Movie.MovieRunner, IMovieRunner>();
+            c.Forward<Movie.MovieRunner, IOnPreUpdates>();
 
             c.ForSingletonOf<GameRestart.GameRestart>().Use<GameRestart.GameRestart>();
-            c.For<IGameRestart>().Use(x => x.GetInstance<GameRestart.GameRestart>());
-            c.For<IOnEnable>().Use(x => x.GetInstance<GameRestart.GameRestart>());
-            c.For<IOnStart>().Use(x => x.GetInstance<GameRestart.GameRestart>());
-            c.For<IOnFixedUpdate>().Use(x => x.GetInstance<GameRestart.GameRestart>());
-            c.For<IOnAwake>().Use(x => x.GetInstance<GameRestart.GameRestart>());
+            c.Forward<GameRestart.GameRestart, IGameRestart>();
+            c.Forward<GameRestart.GameRestart, IOnEnable>();
+            c.Forward<GameRestart.GameRestart, IOnStart>();
+            c.Forward<GameRestart.GameRestart, IOnFixedUpdate>();
+            c.Forward<GameRestart.GameRestart, IOnAwake>();
 
             // c.ForSingletonOf<FileSystemManager>().Use<FileSystemManager>();
             // c.For<IOnGameRestart>().Use(x => x.GetInstance<FileSystemManager>());
@@ -227,9 +227,9 @@ public static class KernelUtils
             c.For<IEngineMethodClassesFactory>().Use<EngineMethodClassesFactory>();
 
             c.ForSingletonOf<Env>().Use<Env>();
-            c.For<EngineMethodClass>().Use(x => x.GetInstance<Env>());
-            c.For<IOnLastUpdate>().Use(x => x.GetInstance<Env>());
-            c.For<IOnMovieStart>().Use(x => x.GetInstance<Env>());
+            c.Forward<Env, EngineMethodClass>();
+            c.Forward<Env, IOnLastUpdate>();
+            c.Forward<Env, IOnMovieStart>();
 
             c.For<IMovieEngine>().Use<MovieEngine>();
         });
