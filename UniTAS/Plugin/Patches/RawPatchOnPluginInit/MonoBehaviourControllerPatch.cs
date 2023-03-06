@@ -178,7 +178,7 @@ public class MonoBehaviourControllerPatch
             if (ex != null)
             {
                 Plugin.Log.LogWarning(
-                    $"Error patching MonoBehaviour event method, Method: {original.DeclaringType?.FullName ?? "unknown_type"}.{original.Name}, Exception: {ex}");
+                    $"Error patching MonoBehaviour event method, Method: {original?.DeclaringType?.FullName ?? "unknown_type"}.{original?.Name ?? "unknown_method"}, Exception: {ex}");
             }
 
             return null;
