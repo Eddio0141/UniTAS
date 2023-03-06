@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using MoonSharp.Interpreter;
 using UniTAS.Plugin.Logger;
+using UniTAS.Plugin.Movie.MovieModels.Properties;
 
 namespace UniTAS.Plugin.Movie.Engine;
 
@@ -31,6 +32,8 @@ public partial class MovieEngine : IMovieEngine
             _script = value;
         }
     }
+
+    public PropertiesModel Properties { get; set; }
 
     /// <summary>
     /// Creates a new MovieEngine from a coroutine

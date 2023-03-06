@@ -1,11 +1,15 @@
-using StructureMap;
+using MoonSharp.Interpreter;
+using StructureMap.Pipeline;
 using UniTAS.Plugin.FixedUpdateSync;
 using UniTAS.Plugin.GameEnvironment;
 using UniTAS.Plugin.GameInitialRestart;
 using UniTAS.Plugin.GameRestart;
 using UniTAS.Plugin.GameRestart.EventInterfaces;
+using UniTAS.Plugin.Interfaces.Update;
 using UniTAS.Plugin.Logger;
 using UniTAS.Plugin.MonoBehaviourController;
+using UniTAS.Plugin.Movie.Engine;
+using UniTAS.Plugin.Movie.EngineMethods;
 using UniTAS.Plugin.ReverseInvoker;
 using UniTAS.Plugin.StaticFieldStorage;
 using UniTAS.Plugin.UnitySafeWrappers.Interfaces;
@@ -14,20 +18,10 @@ namespace UniTAS.Plugin.Tests.Kernel;
 
 public class KernelTests
 {
-    private static Container Init()
-    {
-        var kernel = ContainerRegister.Init();
-
-        kernel.Configure(c => { c.For<ILogger>().Use<FakeLogger>(); });
-        kernel.Configure(c => { c.For<IStaticFieldManipulator>().Use<FakeStaticFieldStorage>(); });
-
-        return kernel;
-    }
-
     [Fact]
     public void Restart()
     {
-        var kernel = Init();
+        var kernel = KernelUtils.Init();
 
         var restart = kernel.GetInstance<IGameRestart>();
         Assert.NotNull(restart);
@@ -41,7 +35,7 @@ public class KernelTests
     [Fact]
     public void VirtualEnvironment()
     {
-        var kernel = Init();
+        var kernel = KernelUtils.Init();
 
         var virtualEnvironment = kernel.GetInstance<VirtualEnvironment>();
         Assert.NotNull(virtualEnvironment);
@@ -55,7 +49,7 @@ public class KernelTests
     [Fact]
     public void SyncFixedUpdate()
     {
-        var kernel = Init();
+        var kernel = KernelUtils.Init();
 
         var syncFixedUpdate = kernel.GetInstance<ISyncFixedUpdate>();
         Assert.NotNull(syncFixedUpdate);
@@ -69,7 +63,7 @@ public class KernelTests
     [Fact]
     public void UnityWrapper()
     {
-        var kernel = Init();
+        var kernel = KernelUtils.Init();
 
         var unityWrapper = kernel.GetInstance<IUnityWrapper>();
         Assert.NotNull(unityWrapper);
@@ -83,7 +77,7 @@ public class KernelTests
     [Fact]
     public void MonoBehaviourController()
     {
-        var kernel = Init();
+        var kernel = KernelUtils.Init();
 
         var monoBehaviourController = kernel.GetInstance<IMonoBehaviourController>();
         Assert.NotNull(monoBehaviourController);
@@ -97,7 +91,7 @@ public class KernelTests
     [Fact]
     public void Logger()
     {
-        var kernel = Init();
+        var kernel = KernelUtils.Init();
 
         var logger = kernel.GetInstance<ILogger>();
         Assert.NotNull(logger);
@@ -111,7 +105,7 @@ public class KernelTests
     [Fact]
     public void OnGameRestart()
     {
-        var kernel = Init();
+        var kernel = KernelUtils.Init();
 
         var onGameRestart = kernel.GetAllInstances<IOnGameRestart>();
         Assert.NotNull(onGameRestart);
@@ -125,7 +119,7 @@ public class KernelTests
     [Fact]
     public void StaticFieldManipulator()
     {
-        var kernel = Init();
+        var kernel = KernelUtils.Init();
 
         var staticFieldManipulator = kernel.GetInstance<IStaticFieldManipulator>();
         Assert.NotNull(staticFieldManipulator);
@@ -139,7 +133,7 @@ public class KernelTests
     [Fact]
     public void OnGameRestartResume()
     {
-        var kernel = Init();
+        var kernel = KernelUtils.Init();
 
         var onGameRestartResume = kernel.GetAllInstances<IOnGameRestartResume>();
         Assert.NotNull(onGameRestartResume);
@@ -148,7 +142,7 @@ public class KernelTests
     [Fact]
     public void OnPreGameRestart()
     {
-        var kernel = Init();
+        var kernel = KernelUtils.Init();
 
         var onGameRestartPause = kernel.GetAllInstances<IOnPreGameRestart>();
         Assert.NotNull(onGameRestartPause);
@@ -162,7 +156,7 @@ public class KernelTests
     [Fact]
     public void PatchReverseInvoker()
     {
-        var kernel = Init();
+        var kernel = KernelUtils.Init();
 
         var patchReverseInvoker = kernel.GetInstance<IPatchReverseInvoker>();
         Assert.NotNull(patchReverseInvoker);
@@ -176,7 +170,7 @@ public class KernelTests
     [Fact]
     public void GameInitialRestart()
     {
-        var kernel = Init();
+        var kernel = KernelUtils.Init();
 
         var gameInitialRestart = kernel.GetInstance<IGameInitialRestart>();
         Assert.NotNull(gameInitialRestart);
@@ -190,5 +184,33 @@ public class KernelTests
 
         // reference should be different
         Assert.True(gameInitialRestart != gameRestart);
+    }
+
+    [Fact]
+    public void EnvEngineMethod()
+    {
+        var kernel = KernelUtils.Init();
+
+        var env = kernel.GetInstance<KernelUtils.Env>();
+        Assert.NotNull(env);
+
+        var env2 = kernel.GetInstance<KernelUtils.Env>();
+        Assert.NotNull(env2);
+
+        Assert.Same(env, env2);
+
+        var scriptArg = new ExplicitArguments();
+        scriptArg.Set(typeof(Script), null);
+        var engine = kernel.GetInstance<IMovieEngine>(scriptArg);
+        var env3 = kernel.GetInstance<IEngineMethodClassesFactory>().GetAll(engine)
+            .OfType<KernelUtils.Env>().Single();
+        Assert.NotNull(env3);
+
+        Assert.Same(env, env3);
+
+        var env4 = kernel.GetAllInstances<IOnLastUpdate>().OfType<KernelUtils.Env>().Single();
+        Assert.NotNull(env4);
+
+        Assert.Same(env, env4);
     }
 }

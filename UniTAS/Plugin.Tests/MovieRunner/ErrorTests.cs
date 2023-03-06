@@ -11,7 +11,7 @@ i = j + k
 ";
 
         var (movieRunner, _, kernel) = Utils.Setup(input);
-        var logger = kernel.GetInstance<Utils.DummyLogger>();
+        var logger = kernel.GetInstance<KernelUtils.DummyLogger>();
 
         movieRunner.Update();
         Assert.False(movieRunner.Finished);

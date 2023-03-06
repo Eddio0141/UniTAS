@@ -12,7 +12,7 @@ print(i)
 ";
 
         var (movieEngine, _, kernel) = Utils.Setup(input);
-        var logger = kernel.GetInstance<Utils.DummyLogger>();
+        var logger = kernel.GetInstance<KernelUtils.DummyLogger>();
 
         movieEngine.Update();
 

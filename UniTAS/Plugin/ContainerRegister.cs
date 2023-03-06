@@ -9,6 +9,7 @@ using UniTAS.Plugin.GameInitialRestart;
 using UniTAS.Plugin.GameRestart;
 using UniTAS.Plugin.GameRestart.EventInterfaces;
 using UniTAS.Plugin.GameRestart.Events;
+using UniTAS.Plugin.GameSpeedUnlocker;
 using UniTAS.Plugin.GUI.MainMenu.Tabs;
 using UniTAS.Plugin.Interfaces;
 using UniTAS.Plugin.Interfaces.StartEvent;
@@ -18,6 +19,8 @@ using UniTAS.Plugin.MainThreadSpeedController;
 using UniTAS.Plugin.MonoBehaviourController;
 using UniTAS.Plugin.Movie;
 using UniTAS.Plugin.Movie.EngineMethods;
+using UniTAS.Plugin.Movie.EngineMethods.Implementations;
+using UniTAS.Plugin.Movie.RunnerEvents;
 using UniTAS.Plugin.Patches.PatchProcessor;
 using UniTAS.Plugin.ReverseInvoker;
 using UniTAS.Plugin.StaticFieldStorage;
@@ -38,12 +41,13 @@ public static class ContainerRegister
         {
             c.Scan(scanner =>
             {
-                scanner.TheCallingAssembly();
+                scanner.AssemblyContainingType<Plugin>();
                 scanner.WithDefaultConventions();
 
                 scanner.AddAllTypesOf<PatchProcessor>();
                 scanner.AddAllTypesOf<IMainMenuTab>();
                 scanner.AddAllTypesOf<EngineMethodClass>();
+                scanner.ExcludeType<Env>();
             });
 
             c.ForSingletonOf<PluginWrapper>().Use<PluginWrapper>();
@@ -141,6 +145,15 @@ public static class ContainerRegister
             c.ForSingletonOf<MainThreadSpeedControl>().Use<MainThreadSpeedControl>();
             c.For<IMainThreadSpeedControl>().Use(x => x.GetInstance<MainThreadSpeedControl>());
             c.For<IOnUpdate>().Use(x => x.GetInstance<MainThreadSpeedControl>());
+
+            c.ForSingletonOf<GameSpeedUnlocker.GameSpeedUnlocker>().Use<GameSpeedUnlocker.GameSpeedUnlocker>();
+            c.For<IGameSpeedUnlocker>().Use(x => x.GetInstance<GameSpeedUnlocker.GameSpeedUnlocker>());
+            c.For<IOnMovieStart>().Use(x => x.GetInstance<GameSpeedUnlocker.GameSpeedUnlocker>());
+            c.For<IOnMovieEnd>().Use(x => x.GetInstance<GameSpeedUnlocker.GameSpeedUnlocker>());
+
+            c.ForSingletonOf<Env>().Use<Env>();
+            c.For<EngineMethodClass>().Use(x => x.GetInstance<Env>());
+            c.For<IOnLastUpdate>().Use(x => x.GetInstance<Env>());
         });
 
         return container;

@@ -35,7 +35,7 @@ MOVIE_CONFIG = {
 
         Assert.Equal(1 / 50f, properties.StartupProperties.FrameTime);
         Assert.Equal("frametime and fps are both defined, using frametime",
-            kernel.GetInstance<Utils.DummyLogger>().Warns[0]);
+            kernel.GetInstance<KernelUtils.DummyLogger>().Warns[0]);
     }
 
     [Fact]
@@ -50,6 +50,6 @@ MOVIE_CONFIG = {
         var (_, _, kernel) = Utils.Setup(input);
 
         Assert.Equal("start_time is not defined, using default value of 01/01/0001 00:00:00",
-            kernel.GetInstance<Utils.DummyLogger>().Warns[0]);
+            kernel.GetInstance<KernelUtils.DummyLogger>().Warns[0]);
     }
 }
