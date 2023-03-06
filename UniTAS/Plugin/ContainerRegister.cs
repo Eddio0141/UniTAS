@@ -154,8 +154,8 @@ public static class ContainerRegister
             c.For<IOnLastUpdate>().Use(x => x.GetInstance<Env>());
 
             c.ForSingletonOf<GameRender>().Use<GameRender>();
-            c.Forward<IGameRender, GameRender>();
-            c.Forward<IOnLastUpdate, GameRender>();
+            c.For<IGameRender>().Use(x => x.GetInstance<GameRender>());
+            c.For<IOnLastUpdate>().Use(x => x.GetInstance<GameRender>());
         });
 
         return container;
