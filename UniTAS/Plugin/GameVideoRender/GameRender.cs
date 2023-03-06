@@ -64,6 +64,8 @@ public class GameRender : IGameRender, IOnLastUpdate
 
     public void Start()
     {
+        if (_isRecording) return;
+
         _logger.LogDebug("Setting up recording");
         // TODO let it able to change resolution
         _texture2D = new(_width, _height, TextureFormat.RGB24, false);
@@ -77,6 +79,8 @@ public class GameRender : IGameRender, IOnLastUpdate
 
     public void Stop()
     {
+        if (!_isRecording) return;
+
         _logger.LogDebug("Stopping recording");
         _isRecording = false;
         _ffmpeg.StandardInput.Flush();
