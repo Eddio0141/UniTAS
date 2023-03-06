@@ -54,7 +54,7 @@ public class FpsUnlockPatch
 
         private static bool Prefix(int value)
         {
-            if (PatchReverseInvoker.InnerCall() || !GameSpeedUnlocker.Unlock) return true;
+            if (PatchReverseInvoker.InnerCall() && !GameSpeedUnlocker.Unlock) return true;
 
             // ignore set if we are not reverse invoking or if we are not unlocking
             GameSpeedUnlocker.OriginalTargetFrameRate = value;
@@ -100,7 +100,7 @@ public class FpsUnlockPatch
 
         private static bool Prefix(int value)
         {
-            if (PatchReverseInvoker.InnerCall() || !GameSpeedUnlocker.Unlock) return true;
+            if (PatchReverseInvoker.InnerCall() && !GameSpeedUnlocker.Unlock) return true;
 
             // ignore set if we are not reverse invoking or if we are not unlocking
             GameSpeedUnlocker.OriginalVSyncCount = value;
