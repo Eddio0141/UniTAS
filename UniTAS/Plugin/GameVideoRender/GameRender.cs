@@ -10,11 +10,10 @@ namespace UniTAS.Plugin.GameVideoRender;
 public class GameRender : IGameRender, IOnLastUpdate
 {
     private readonly Process _ffmpeg;
-    private const string FfmpegPath = "ffmpeg.exe";
 
     private const int Fps = 60;
-    private const int Width = 1920;
-    private const int Height = 1080;
+    private readonly int _width = Screen.width;
+    private readonly int _height = Screen.height;
     private const string OutputPath = "output.mp4";
 
     private Texture2D _texture2D;
@@ -29,20 +28,15 @@ public class GameRender : IGameRender, IOnLastUpdate
     public GameRender(ILogger logger)
     {
         _logger = logger;
-        if (!System.IO.File.Exists(FfmpegPath))
-        {
-            // TODO log error
-            throw new("ffmpeg not found");
-        }
 
         _ffmpeg = new();
-        _ffmpeg.StartInfo.FileName = FfmpegPath;
+        // TODO check if ffmpeg is installed
+        _ffmpeg.StartInfo.FileName = "ffmpeg";
         // ffmpeg gets fed raw video data from unity
         // game fps could be variable, but output fps is fixed
-        // ffmpeg itself gets fed in png format
-        //$"-y -f rawvideo -c:v rawvideo -pix_fmt rgb24 -s:v {Width}x{Height} -r {Fps} -i - {OutputPath}";
+        // output is flipped vertically
         _ffmpeg.StartInfo.Arguments =
-            $"-y -f rawvideo -vcodec rawvideo -pix_fmt rgba -s {Width}x{Height} -r {Fps} -i - -threads 0 -preset ultrafast -pix_fmt yuv420p -crf 0 -vf vflip {OutputPath}";
+            $"-y -f rawvideo -vcodec rawvideo -pix_fmt rgb24 -s {_width}x{_height} -r {Fps} -i - -an -vcodec libx264 -pix_fmt yuv420p -preset ultrafast -crf 0 -vf vflip {OutputPath}";
         _ffmpeg.StartInfo.UseShellExecute = false;
         _ffmpeg.StartInfo.RedirectStandardInput = true;
         _ffmpeg.StartInfo.RedirectStandardOutput = true;
@@ -69,8 +63,8 @@ public class GameRender : IGameRender, IOnLastUpdate
     {
         _logger.LogDebug("Setting up recording");
         // TODO let it able to change resolution
-        _texture2D = new(Width, Height, TextureFormat.RGB24, false);
-        _totalBytes = Width * Height * 4;
+        _texture2D = new(_width, _height, TextureFormat.RGB24, false);
+        _totalBytes = _width * _height * 3;
         _bytes = new byte[_totalBytes];
 
         _ffmpeg.Start();
@@ -94,15 +88,15 @@ public class GameRender : IGameRender, IOnLastUpdate
     {
         if (!_isRecording) return;
 
-        _texture2D.ReadPixels(new(0, 0, Width, Height), 0, 0);
+        _texture2D.ReadPixels(new(0, 0, _width, _height), 0, 0);
 
         _colors = _texture2D.GetPixels32();
         for (var i = 0; i < _colors.Length; i++)
         {
             var color = _colors[i];
-            _bytes[i * 4] = color.r;
-            _bytes[i * 4 + 1] = color.g;
-            _bytes[i * 4 + 2] = color.b;
+            _bytes[i * 3] = color.r;
+            _bytes[i * 3 + 1] = color.g;
+            _bytes[i * 3 + 2] = color.b;
         }
 
         _ffmpeg.StandardInput.BaseStream.Write(_bytes, 0, _totalBytes);
