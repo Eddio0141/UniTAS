@@ -1,28 +1,29 @@
 using System.Diagnostics.CodeAnalysis;
 using MoonSharp.Interpreter;
 using UniTAS.Plugin.GameEnvironment;
+using UniTAS.Plugin.Interfaces.Update;
 using UniTAS.Plugin.Logger;
-using UniTAS.Plugin.ReverseInvoker;
+using UniTAS.Plugin.Movie.RunnerEvents;
 using UnityEngine;
 
 namespace UniTAS.Plugin.Movie.EngineMethods.Implementations;
 
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 [SuppressMessage("ReSharper", "UnusedMember.Global")]
-public class Env : EngineMethodClass
+public class Env : EngineMethodClass, IOnLastUpdate, IOnMovieStart
 {
     private readonly VirtualEnvironment _virtualEnvironment;
     private readonly IMovieLogger _logger;
-    private readonly IPatchReverseInvoker _patchReverseInvoker;
+    private readonly IMovieRunner _movieRunner;
 
     private readonly bool _mobile = Application.platform is RuntimePlatform.Android or RuntimePlatform.IPhonePlayer;
 
     [MoonSharpHidden]
-    public Env(VirtualEnvironment virtualEnvironment, IMovieLogger logger, IPatchReverseInvoker patchReverseInvoker)
+    public Env(VirtualEnvironment virtualEnvironment, IMovieLogger logger, IMovieRunner movieRunner)
     {
         _virtualEnvironment = virtualEnvironment;
         _logger = logger;
-        _patchReverseInvoker = patchReverseInvoker;
+        _movieRunner = movieRunner;
     }
 
     public float Fps
@@ -54,19 +55,47 @@ public class Env : EngineMethodClass
     // - If mobile and targetFrameRate is not set to -1
     // - If pc and targetFrameRate is not set to -1 and vSyncCount is 0
 
+    private int _lastTargetFrameRate;
+    private int _lastVSyncCount;
+
     // TODO set Screen.currentResolution refresh rate to movie's max achieving framerate
     private void SetFrametime(float value)
     {
-        var targetFrameRate = _patchReverseInvoker.Invoke(() => Application.targetFrameRate);
+        UpdateLastTrackers();
 
         var fps = 1f / value;
-        if (targetFrameRate != -1 && fps > targetFrameRate &&
+        if (Application.targetFrameRate != -1 && fps > Application.targetFrameRate &&
             _mobile || (!_mobile && QualitySettings.vSyncCount == 0))
         {
-            _logger.LogWarning($"Target framerate is limited by the platform to {targetFrameRate} fps");
-            fps = targetFrameRate;
+            _logger.LogWarning($"Target framerate is limited by the platform to {Application.targetFrameRate} fps");
+            fps = Application.targetFrameRate;
         }
 
         _virtualEnvironment.FrameTime = 1f / fps;
+    }
+
+    [MoonSharpHidden]
+    public void OnLastUpdate()
+    {
+        if (_movieRunner.MovieEnd) return;
+
+        // check if game has changed either targetFrameRate or vSyncCount
+        // either of these values can change at any time, so we need to check for changes
+        if (_lastTargetFrameRate != Application.targetFrameRate || _lastVSyncCount != QualitySettings.vSyncCount)
+        {
+            SetFrametime(_virtualEnvironment.FrameTime);
+        }
+    }
+
+    [MoonSharpHidden]
+    public void OnMovieStart()
+    {
+        UpdateLastTrackers();
+    }
+
+    private void UpdateLastTrackers()
+    {
+        _lastTargetFrameRate = Application.targetFrameRate;
+        _lastVSyncCount = QualitySettings.vSyncCount;
     }
 }
