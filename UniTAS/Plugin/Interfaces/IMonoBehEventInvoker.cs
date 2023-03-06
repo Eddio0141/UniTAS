@@ -9,4 +9,5 @@ public interface IMonoBehEventInvoker
     void LateUpdate();
     void FixedUpdate();
     void OnGUI();
+    void OnPostRender();
 }
