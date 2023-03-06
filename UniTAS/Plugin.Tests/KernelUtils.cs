@@ -15,6 +15,7 @@ using UniTAS.Plugin.Movie;
 using UniTAS.Plugin.Movie.Engine;
 using UniTAS.Plugin.Movie.EngineMethods;
 using UniTAS.Plugin.Movie.Parsers.MovieParser;
+using UniTAS.Plugin.Movie.RunnerEvents;
 using UniTAS.Plugin.ReverseInvoker;
 using UniTAS.Plugin.StaticFieldStorage;
 using UniTAS.Plugin.UnitySafeWrappers;
@@ -27,13 +28,18 @@ namespace UniTAS.Plugin.Tests;
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Local")]
 public static class KernelUtils
 {
-    public class Env : EngineMethodClass, IOnLastUpdate
+    public class Env : EngineMethodClass, IOnLastUpdate, IOnMovieStart
     {
         public float Fps { get; set; }
         public float Frametime { get; set; }
 
         [MoonSharpHidden]
         public void OnLastUpdate()
+        {
+        }
+
+        [MoonSharpHidden]
+        public void OnMovieStart()
         {
         }
     }
@@ -223,6 +229,7 @@ public static class KernelUtils
             c.ForSingletonOf<Env>().Use<Env>();
             c.For<EngineMethodClass>().Use(x => x.GetInstance<Env>());
             c.For<IOnLastUpdate>().Use(x => x.GetInstance<Env>());
+            c.For<IOnMovieStart>().Use(x => x.GetInstance<Env>());
 
             c.For<IMovieEngine>().Use<MovieEngine>();
         });

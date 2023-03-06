@@ -10,6 +10,7 @@ using UniTAS.Plugin.Logger;
 using UniTAS.Plugin.MonoBehaviourController;
 using UniTAS.Plugin.Movie.Engine;
 using UniTAS.Plugin.Movie.EngineMethods;
+using UniTAS.Plugin.Movie.RunnerEvents;
 using UniTAS.Plugin.ReverseInvoker;
 using UniTAS.Plugin.StaticFieldStorage;
 using UniTAS.Plugin.UnitySafeWrappers.Interfaces;
@@ -212,5 +213,10 @@ public class KernelTests
         Assert.NotNull(env4);
 
         Assert.Same(env, env4);
+
+        var env5 = kernel.GetAllInstances<IOnMovieStart>().OfType<KernelUtils.Env>().Single();
+        Assert.NotNull(env5);
+
+        Assert.Same(env, env5);
     }
 }
