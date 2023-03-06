@@ -19,6 +19,7 @@ using UniTAS.Plugin.MainThreadSpeedController;
 using UniTAS.Plugin.MonoBehaviourController;
 using UniTAS.Plugin.Movie;
 using UniTAS.Plugin.Movie.EngineMethods;
+using UniTAS.Plugin.Movie.EngineMethods.Implementations;
 using UniTAS.Plugin.Movie.RunnerEvents;
 using UniTAS.Plugin.Patches.PatchProcessor;
 using UniTAS.Plugin.ReverseInvoker;
@@ -40,12 +41,13 @@ public static class ContainerRegister
         {
             c.Scan(scanner =>
             {
-                scanner.TheCallingAssembly();
+                scanner.AssemblyContainingType<Plugin>();
                 scanner.WithDefaultConventions();
 
                 scanner.AddAllTypesOf<PatchProcessor>();
                 scanner.AddAllTypesOf<IMainMenuTab>();
                 scanner.AddAllTypesOf<EngineMethodClass>();
+                scanner.ExcludeType<Env>();
             });
 
             c.ForSingletonOf<PluginWrapper>().Use<PluginWrapper>();
@@ -148,6 +150,10 @@ public static class ContainerRegister
             c.For<IGameSpeedUnlocker>().Use(x => x.GetInstance<GameSpeedUnlocker.GameSpeedUnlocker>());
             c.For<IOnMovieStart>().Use(x => x.GetInstance<GameSpeedUnlocker.GameSpeedUnlocker>());
             c.For<IOnMovieEnd>().Use(x => x.GetInstance<GameSpeedUnlocker.GameSpeedUnlocker>());
+
+            c.ForSingletonOf<Env>().Use<Env>();
+            c.For<EngineMethodClass>().Use(x => x.GetInstance<Env>());
+            c.For<IOnLastUpdate>().Use(x => x.GetInstance<Env>());
         });
 
         return container;
