@@ -111,7 +111,7 @@ public partial class GameRender : IGameRender, IOnLastUpdate
         // make up for lost time
         if (_timeLeft < 0)
         {
-            var framesCountRaw = -_timeLeft / RecordFrameTime;
+            var framesCountRaw = -_timeLeft;
             var framesToSkip = (int)framesCountRaw;
 
             for (var i = 0; i < framesToSkip; i++)
@@ -125,6 +125,8 @@ public partial class GameRender : IGameRender, IOnLastUpdate
                 }
 
                 _ffmpeg.StandardInput.BaseStream.Write(_bytes, 0, _totalBytes);
+
+                WriteAudioData();
             }
 
             // add any left frames
@@ -140,6 +142,8 @@ public partial class GameRender : IGameRender, IOnLastUpdate
         }
 
         _ffmpeg.StandardInput.BaseStream.Write(_bytes, 0, _totalBytes);
+        
+        WriteAudioData();
 
         _timeLeft += RecordFrameTime;
     }

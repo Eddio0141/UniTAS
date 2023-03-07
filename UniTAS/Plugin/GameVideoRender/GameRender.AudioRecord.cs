@@ -1,130 +1,91 @@
+using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using UnityEngine;
 
 namespace UniTAS.Plugin.GameVideoRender;
 
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public partial class GameRender
 {
     private const string OutputFile = "audio.wav";
 
-    private const int BufferSize = 1024;
-    private const int NumBuffers = 2;
-    private readonly int _outputRate = AudioSettings.outputSampleRate;
-    private const int HeaderSize = 44;
-    private List<byte> _recData;
+    private FileStream _audioFileStream;
+
+    private readonly int _channels = AudioSettings.speakerMode switch
+    {
+        AudioSpeakerMode.Raw => 1,
+        AudioSpeakerMode.Mono => 1,
+        AudioSpeakerMode.Stereo => 2,
+        AudioSpeakerMode.Quad => 4,
+        AudioSpeakerMode.Surround => 4,
+        AudioSpeakerMode.Mode5point1 => 6,
+        AudioSpeakerMode.Mode7point1 => 8,
+        AudioSpeakerMode.Prologic => 2,
+        _ => throw new ArgumentOutOfRangeException()
+    };
 
     private void StartAudioCapture()
     {
-        _recData = new();
+        _audioFileStream = new(OutputFile, FileMode.Create);
     }
 
-    void OnAudioFilterRead(float[] data, int channels)
+    private void WriteAudioData()
     {
-        if (!_isRecording) return;
+        // invoked every frame (approx 60 times per second)
+        // use GetOutputData
 
-        foreach (var item in data)
+        var numSamples = AudioSettings.outputSampleRate / Fps;
+        var numBytes = numSamples * _channels * 2;
+        var data = new float[numSamples];
+        var buffer = new byte[numBytes];
+
+        for (var i = 0; i < _channels; i++)
         {
-            var dataCopy = item;
-            if (dataCopy < -1.0f)
+            AudioListener.GetOutputData(data, i);
+            for (var j = 0; j < numSamples; j++)
             {
-                dataCopy = -1.0f;
-            }
-            else if (dataCopy > 1.0f)
-            {
-                dataCopy = 1.0f;
+                var floatToShort = (short)(data[j] * 32767);
+                var bytes = BitConverter.GetBytes(floatToShort);
+                buffer[j * 2] = bytes[0];
+                buffer[j * 2 + 1] = bytes[1];
             }
 
-            var shortData = (short)(dataCopy * 32767.0f); // convert float to short
-            var bytesData = System.BitConverter.GetBytes(shortData); // convert short to bytes
-
-            _recData.Add(bytesData[0]); // add bytes to list
-            _recData.Add(bytesData[1]);
+            _audioFileStream.Write(buffer, 0, buffer.Length);
         }
     }
 
     private void SaveWavFile()
     {
-        var bytesFile = new byte[HeaderSize + _recData.Count]; // create a byte array for the whole file
-
-        WriteHeader(bytesFile); // write header data
-
-        for (var i = 0; i < _recData.Count; i++) // write audio data
-        {
-            bytesFile[HeaderSize + i] = _recData[i];
-        }
-
-        var fileStream = new FileStream(OutputFile, FileMode.Create); // create a file stream
-        var binaryWriter = new BinaryWriter(fileStream);
-
-        binaryWriter.Write(bytesFile); // write the byte array to the file
-
-        binaryWriter.Close();
-        fileStream.Close();
-
-        Debug.Log($"File saved: {OutputFile}");
-
-        _recData.Clear(); // clear recorded data list		
+        WriteHeader();
+        _audioFileStream.Close();
     }
 
-    private void WriteHeader(byte[] bytesFile)
+    private void WriteHeader()
     {
-        const int bitsPerSample = 16;
-        const int channels = 2;
+        var header = new List<byte>();
 
-        const int subChunk1Size = 16;
-        var subChunk2Size = _recData.Count;
-        var chunkSize = 4 + 8 + subChunk1Size + 8 + subChunk2Size;
+        // RIFF header
+        header.AddRange(new[] { (byte)'R', (byte)'I', (byte)'F', (byte)'F' });
+        header.AddRange(BitConverter.GetBytes((int)_audioFileStream.Length - 8));
+        header.AddRange(new[] { (byte)'W', (byte)'A', (byte)'V', (byte)'E' });
 
-        var byteRate = _outputRate * channels * bitsPerSample / 8;
-        const int blockAlign = channels * bitsPerSample / 8;
+        // fmt chunk
+        header.AddRange(new[] { (byte)'f', (byte)'m', (byte)'t', (byte)' ' });
+        header.AddRange(BitConverter.GetBytes(16));
+        header.AddRange(BitConverter.GetBytes((short)1));
+        header.AddRange(BitConverter.GetBytes((short)_channels));
+        header.AddRange(BitConverter.GetBytes(AudioSettings.outputSampleRate));
+        header.AddRange(BitConverter.GetBytes(AudioSettings.outputSampleRate * _channels * 2));
+        header.AddRange(BitConverter.GetBytes((short)(_channels * 2)));
+        header.AddRange(BitConverter.GetBytes((short)16));
 
-        bytesFile[0] = (byte)'R'; // RIFF/WAVE header
-        bytesFile[1] = (byte)'I';
-        bytesFile[2] = (byte)'F';
-        bytesFile[3] = (byte)'F';
-        bytesFile[4] = (byte)(chunkSize & 0xff);
-        bytesFile[5] = (byte)((chunkSize >> 8) & 0xff);
-        bytesFile[6] = (byte)((chunkSize >> 16) & 0xff);
-        bytesFile[7] = (byte)((chunkSize >> 24) & 0xff);
-        bytesFile[8] = (byte)'W';
-        bytesFile[9] = (byte)'A';
-        bytesFile[10] = (byte)'V';
-        bytesFile[11] = (byte)'E';
-        bytesFile[12] = (byte)'f'; // 'fmt ' chunk
-        bytesFile[13] = (byte)'m';
-        bytesFile[14] = (byte)'t';
-        bytesFile[15] = (byte)' ';
-        bytesFile[16] = subChunk1Size & 0xff;
-        // bytesFile[17] = subChunk1Size >> 8 & 0xff;
-        bytesFile[17] = 0;
-        // bytesFile[18] = subChunk1Size >> 16 & 0xff;
-        bytesFile[18] = 0;
-        // bytesFile[19] = subChunk1Size >> 24 & 0xff;
-        bytesFile[19] = 0;
-        bytesFile[20] = 1; // format = 1
-        bytesFile[21] = 0;
-        bytesFile[22] = channels;
-        bytesFile[23] = 0;
-        bytesFile[24] = (byte)(_outputRate & 0xff);
-        bytesFile[25] = (byte)((_outputRate >> 8) & 0xff);
-        bytesFile[26] = (byte)((_outputRate >> 16) & 0xff);
-        bytesFile[27] = (byte)((_outputRate >> 24) & 0xff);
-        bytesFile[28] = (byte)(byteRate & 0xff);
-        bytesFile[29] = (byte)((byteRate >> 8) & 0xff);
-        bytesFile[30] = (byte)((byteRate >> 16) & 0xff);
-        bytesFile[31] = (byte)((byteRate >> 24) & 0xff);
-        bytesFile[32] = blockAlign;
-        bytesFile[33] = 0;
-        bytesFile[34] = bitsPerSample;
-        bytesFile[35] = 0;
-        bytesFile[36] = (byte)'d';
-        bytesFile[37] = (byte)'a';
-        bytesFile[38] = (byte)'t';
-        bytesFile[39] = (byte)'a';
-        bytesFile[40] = (byte)(subChunk2Size & 0xff);
-        bytesFile[41] = (byte)((subChunk2Size >> 8) & 0xff);
-        bytesFile[42] = (byte)((subChunk2Size >> 16) & 0xff);
-        bytesFile[43] = (byte)((subChunk2Size >> 24) & 0xff);
+        // data chunk
+        header.AddRange(new[] { (byte)'d', (byte)'a', (byte)'t', (byte)'a' });
+        header.AddRange(BitConverter.GetBytes((int)_audioFileStream.Length - 44));
+
+        _audioFileStream.Position = 0;
+        _audioFileStream.Write(header.ToArray(), 0, header.Count);
     }
 }
