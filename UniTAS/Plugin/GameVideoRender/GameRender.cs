@@ -7,7 +7,7 @@ using UnityEngine;
 namespace UniTAS.Plugin.GameVideoRender;
 
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-public class GameRender : IGameRender, IOnLastUpdate
+public partial class GameRender : IGameRender, IOnLastUpdate
 {
     private readonly Process _ffmpeg;
 
@@ -34,7 +34,7 @@ public class GameRender : IGameRender, IOnLastUpdate
 
         _ffmpeg = new();
         // TODO check if ffmpeg is installed
-        _ffmpeg.StartInfo.FileName = "ffmpeg";
+        _ffmpeg.StartInfo.FileName = "ffmpeg.exe";
         // ffmpeg gets fed raw video data from unity
         // game fps could be variable, but output fps is fixed
         // output is flipped vertically
@@ -75,6 +75,8 @@ public class GameRender : IGameRender, IOnLastUpdate
         _ffmpeg.Start();
         _isRecording = true;
         _logger.LogDebug("Started recording");
+
+        StartAudioCapture();
     }
 
     public void Stop()
@@ -86,6 +88,8 @@ public class GameRender : IGameRender, IOnLastUpdate
         _ffmpeg.StandardInput.Flush();
         _ffmpeg.StandardInput.Close();
         _ffmpeg.WaitForExit();
+
+        SaveWavFile();
 
         // TODO log error if exit code is not 0
 
