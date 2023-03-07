@@ -49,7 +49,7 @@ public partial class GameRender : IGameRender, IOnLastUpdate
         {
             if (args.Data != null)
             {
-                _logger.LogError(args.Data);
+                _logger.LogDebug(args.Data);
             }
         };
 
@@ -73,6 +73,9 @@ public partial class GameRender : IGameRender, IOnLastUpdate
         _bytes = new byte[_totalBytes];
 
         _ffmpeg.Start();
+        _ffmpeg.BeginErrorReadLine();
+        _ffmpeg.BeginOutputReadLine();
+        
         _isRecording = true;
         _logger.LogDebug("Started recording");
 
@@ -85,7 +88,6 @@ public partial class GameRender : IGameRender, IOnLastUpdate
 
         _logger.LogDebug("Stopping recording");
         _isRecording = false;
-        _ffmpeg.StandardInput.Flush();
         _ffmpeg.StandardInput.Close();
         _ffmpeg.WaitForExit();
 
