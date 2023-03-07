@@ -89,6 +89,10 @@ public partial class GameRender : IGameRender, IOnLastUpdate
         _ffmpeg.StandardInput.Close();
         _ffmpeg.WaitForExit();
 
+        // stop stderr and stdout
+        _ffmpeg.CancelErrorRead();
+        _ffmpeg.CancelOutputRead();
+
         SaveWavFile();
 
         // TODO log error if exit code is not 0
