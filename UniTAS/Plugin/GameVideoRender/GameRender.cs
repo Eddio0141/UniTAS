@@ -36,10 +36,8 @@ public partial class GameRender : IGameRender, IOnLastUpdate
         // TODO check if ffmpeg is installed
         _ffmpeg.StartInfo.FileName = "ffmpeg.exe";
         // ffmpeg gets fed raw video data from unity
-        // game fps could be variable, but output fps is fixed
-        // output is flipped vertically
         _ffmpeg.StartInfo.Arguments =
-            $"-y -f rawvideo -vcodec rawvideo -pix_fmt rgb24 -s {_width}x{_height} -r {Fps} -i - -an -vcodec libx264 -pix_fmt yuv420p -preset ultrafast -crf 0 -vf vflip {OutputPath}";
+            $"-y -f rawvideo -vcodec rawvideo -pix_fmt rgb24 -s:v {_width}x{_height} -r {Fps} -i - -an -c:v libx264 -pix_fmt yuv420p -preset ultrafast -crf 16 -vf vflip {OutputPath}";
         _ffmpeg.StartInfo.UseShellExecute = false;
         _ffmpeg.StartInfo.RedirectStandardInput = true;
         _ffmpeg.StartInfo.RedirectStandardOutput = true;
@@ -75,7 +73,7 @@ public partial class GameRender : IGameRender, IOnLastUpdate
         _ffmpeg.Start();
         _ffmpeg.BeginErrorReadLine();
         _ffmpeg.BeginOutputReadLine();
-        
+
         _isRecording = true;
         _logger.LogDebug("Started recording");
 
