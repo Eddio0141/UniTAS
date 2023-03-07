@@ -34,7 +34,7 @@ public partial class GameRender : IGameRender, IOnLastUpdate
 
         _ffmpeg = new();
         // TODO check if ffmpeg is installed
-        _ffmpeg.StartInfo.FileName = "ffmpeg.exe";
+        _ffmpeg.StartInfo.FileName = "ffmpeg";
         // ffmpeg gets fed raw video data from unity
         _ffmpeg.StartInfo.Arguments =
             $"-y -f rawvideo -vcodec rawvideo -pix_fmt rgb24 -s:v {_width}x{_height} -r {Fps} -i - -an -c:v libx264 -pix_fmt yuv420p -preset ultrafast -crf 16 -vf vflip {OutputPath}";
@@ -125,8 +125,6 @@ public partial class GameRender : IGameRender, IOnLastUpdate
                 }
 
                 _ffmpeg.StandardInput.BaseStream.Write(_bytes, 0, _totalBytes);
-
-                WriteAudioData();
             }
 
             // add any left frames
@@ -142,8 +140,6 @@ public partial class GameRender : IGameRender, IOnLastUpdate
         }
 
         _ffmpeg.StandardInput.BaseStream.Write(_bytes, 0, _totalBytes);
-        
-        WriteAudioData();
 
         _timeLeft += RecordFrameTime;
     }

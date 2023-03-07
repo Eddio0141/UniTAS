@@ -2,12 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using UniTAS.Plugin.UnityAudioGrabber;
 using UnityEngine;
 
 namespace UniTAS.Plugin.GameVideoRender;
 
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-public partial class GameRender
+public partial class GameRender : IOnAudioFilterRead
 {
     private const string OutputFile = "audio.wav";
 
@@ -23,7 +24,7 @@ public partial class GameRender
         AudioSpeakerMode.Mode5point1 => 6,
         AudioSpeakerMode.Mode7point1 => 8,
         AudioSpeakerMode.Prologic => 2,
-        _ => throw new ArgumentOutOfRangeException()
+        _ => 1
     };
 
     private void StartAudioCapture()
@@ -31,29 +32,21 @@ public partial class GameRender
         _audioFileStream = new(OutputFile, FileMode.Create);
     }
 
-    private void WriteAudioData()
+    public void OnAudioFilterRead(float[] data, int channels)
     {
-        // invoked every frame (approx 60 times per second)
-        // use GetOutputData
+        if (!_isRecording) return;
 
-        var numSamples = AudioSettings.outputSampleRate / Fps;
-        var numBytes = numSamples * _channels * 2;
-        var data = new float[numSamples];
-        var buffer = new byte[numBytes];
+        var bytes = new byte[data.Length * 2];
+        const int rescaleFactor = 32767; //to convert float to Int16
 
-        for (var i = 0; i < _channels; i++)
+        for (var i = 0; i < data.Length; i++)
         {
-            AudioListener.GetOutputData(data, i);
-            for (var j = 0; j < numSamples; j++)
-            {
-                var floatToShort = (short)(data[j] * 32767);
-                var bytes = BitConverter.GetBytes(floatToShort);
-                buffer[j * 2] = bytes[0];
-                buffer[j * 2 + 1] = bytes[1];
-            }
-
-            _audioFileStream.Write(buffer, 0, buffer.Length);
+            var intData = (short)(data[i] * rescaleFactor);
+            var byteArr = new[] { (byte)intData, (byte)(intData >> 8) };
+            byteArr.CopyTo(bytes, i * 2);
         }
+
+        _audioFileStream.Write(bytes, 0, bytes.Length);
     }
 
     private void SaveWavFile()
