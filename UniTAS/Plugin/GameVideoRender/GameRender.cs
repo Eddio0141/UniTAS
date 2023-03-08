@@ -30,6 +30,7 @@ public partial class GameRender : IGameRender, IOnLastUpdate
 
 #if TRACE
     private long _avgTicks;
+    private long _totalTicks;
     private int _measurements;
 #endif
 
@@ -78,6 +79,8 @@ public partial class GameRender : IGameRender, IOnLastUpdate
                 _logger.LogDebug(args.Data);
             }
         };
+
+        _recordFrameTime = 1f / Fps;
     }
 
     public void Start()
@@ -102,6 +105,7 @@ public partial class GameRender : IGameRender, IOnLastUpdate
 
 #if TRACE
         _avgTicks = 0;
+        _totalTicks = 0;
         _measurements = 0;
 #endif
 
@@ -132,6 +136,7 @@ public partial class GameRender : IGameRender, IOnLastUpdate
 #if TRACE
         var avgTicks = _avgTicks / _measurements;
         Trace.Write($"Average ticks: {_avgTicks}, ms: {avgTicks / (float)Stopwatch.Frequency * 1000f}");
+        Trace.Write($"Total ticks: {_totalTicks}, ms: {_totalTicks / (float)Stopwatch.Frequency * 1000f}");
 #endif
 
         if (_ffmpeg.ExitCode != 0)
@@ -154,7 +159,6 @@ public partial class GameRender : IGameRender, IOnLastUpdate
         _logger.LogDebug("Successfully stopped recording");
     }
 
-    // TODO run a thread in the background while recording to process video data
     public void OnLastUpdate()
     {
         if (!_isRecording) return;
@@ -187,21 +191,15 @@ public partial class GameRender : IGameRender, IOnLastUpdate
             }
 
             // add any left frames
-            _timeLeft = (framesCountRaw - framesCount) * -_recordFrameTime;
+            _timeLeft = (framesCountRaw - framesCount) * _recordFrameTime * -1f;
         }
 
         _videoProcessingQueue.Enqueue(_texture2D);
 
 #if TRACE
         sw.Stop();
-        Trace.Write($"Elapsed ticks: {sw.ElapsedTicks}, ms: {sw.ElapsedMilliseconds}");
-        // detect if we are running too slow
-        if (sw.ElapsedMilliseconds > 40)
-        {
-            Trace.Write($"Slow frame");
-        }
-
         _avgTicks += sw.ElapsedTicks;
+        _totalTicks += sw.ElapsedTicks;
         _measurements++;
 #endif
 
