@@ -111,7 +111,11 @@ public partial class GameRender : IGameRender, IOnLastUpdate
 
         SaveWavFile();
 
-        // TODO log error if exit code is not 0
+        if (_ffmpeg.ExitCode != 0)
+        {
+            _logger.LogError("ffmpeg exited with non-zero exit code");
+            return;
+        }
 
         // merge audio and video
         // TODO clean this up later
