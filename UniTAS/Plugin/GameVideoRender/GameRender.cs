@@ -113,11 +113,18 @@ public partial class GameRender : IGameRender, IOnLastUpdate
             return;
         }
 
+        if (_firstFrame)
+        {
+            _firstFrame = false;
+            _timeLeft = 0f;
+            return;
+        }
+
         _texture2D.ReadPixels(new(0, 0, _width, _height), 0, 0);
         _colors = _texture2D.GetPixels32();
 
         // make up for lost time
-        if (!_firstFrame && _timeLeft < 0)
+        if (_timeLeft < 0)
         {
             var framesCountRaw = -_timeLeft / RecordFrameTime;
             var framesToSkip = (int)framesCountRaw;
@@ -136,7 +143,7 @@ public partial class GameRender : IGameRender, IOnLastUpdate
             }
 
             // add any left frames
-            _timeLeft = (framesCountRaw - framesToSkip) * RecordFrameTime;
+            _timeLeft = (framesCountRaw - framesToSkip) * RecordFrameTime * -1f;
         }
 
         for (var i = 0; i < _colors.Length; i++)
