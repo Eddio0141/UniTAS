@@ -12,7 +12,8 @@ public partial class GameRender : IGameRender, IOnLastUpdate
     private readonly Process _ffmpeg;
 
     private const int Fps = 60;
-    private float RecordFrameTime => 1f / Fps;
+    private const float RecordFrameTime = 1f / Fps;
+
     private readonly int _width = Screen.width;
     private readonly int _height = Screen.height;
     private const string OutputPath = "output.mp4";
