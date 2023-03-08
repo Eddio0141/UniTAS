@@ -18,6 +18,7 @@ public partial class GameRender : IGameRender, IOnLastUpdate
 
     private Texture2D _texture2D;
     private Color32[] _pixels;
+    private WaitCallback _processVideoData;
 
     private bool _isRecording;
     private bool _initialSkipTimeLeft;
@@ -77,6 +78,8 @@ public partial class GameRender : IGameRender, IOnLastUpdate
                 _logger.LogDebug(args.Data);
             }
         };
+
+        _processVideoData = ProcessVideoData;
     }
 
     public void Start()
@@ -183,14 +186,14 @@ public partial class GameRender : IGameRender, IOnLastUpdate
 
             for (var i = 0; i < frameCount; i++)
             {
-                ThreadPool.QueueUserWorkItem(ProcessVideoData, _pixels);
+                ThreadPool.QueueUserWorkItem(_processVideoData, _pixels);
             }
 
             // add any left frames
             _timeLeft = (framesCountRaw - frameCount) * _recordFrameTime * -1f;
         }
 
-        ThreadPool.QueueUserWorkItem(ProcessVideoData, _pixels);
+        ThreadPool.QueueUserWorkItem(_processVideoData, _pixels);
         _waitingThreads++;
 
 #if TRACE
