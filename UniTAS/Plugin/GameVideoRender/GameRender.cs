@@ -116,6 +116,7 @@ public partial class GameRender : IGameRender, IOnLastUpdate
         _logger.LogDebug("Successfully stopped recording");
     }
 
+    // TODO run a thread in the background while recording to process video data
     public void OnLastUpdate()
     {
         if (!_isRecording) return;
