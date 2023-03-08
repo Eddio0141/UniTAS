@@ -102,6 +102,17 @@ public partial class GameRender : IGameRender, IOnLastUpdate
 
         // TODO log error if exit code is not 0
 
+        // merge audio and video
+        // TODO clean this up later
+        var ffmpeg = new Process();
+        ffmpeg.StartInfo.FileName = "ffmpeg";
+        ffmpeg.StartInfo.Arguments =
+            $"-y -i {OutputPath} -i {OutputFile} -c:v copy -c:a aac -strict experimental {OutputPath}-merged.mp4";
+
+        ffmpeg.StartInfo.UseShellExecute = false;
+        ffmpeg.Start();
+        ffmpeg.WaitForExit();
+
         _logger.LogDebug("Successfully stopped recording");
     }
 
