@@ -37,18 +37,18 @@ public partial class GameRender : IOnAudioFilterRead
 
     private void StartAudioCapture()
     {
-        _audioFileStream = new(OutputFile, FileMode.Create);
-        _audioProcessingThread = new(AudioProcessingThread);
-        _audioProcessingThread.Start();
-
-        _audioProcessingQueue = new();
-        _recordingAudio = true;
+        // _audioFileStream = new(OutputFile, FileMode.Create);
+        // _audioProcessingThread = new(AudioProcessingThread);
+        // _audioProcessingThread.Start();
+        //
+        // _audioProcessingQueue = new();
+        // _recordingAudio = true;
     }
 
     public void OnAudioFilterRead(float[] data, int channels)
     {
         if (!_recordingAudio) return;
-        _audioProcessingQueue.Enqueue(data);
+        // _audioProcessingQueue.Enqueue(data);
     }
 
     private void SaveWavFile()

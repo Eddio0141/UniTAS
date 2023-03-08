@@ -57,9 +57,15 @@ public partial class GameRender : IGameRender, IOnLastUpdate
         _ffmpeg = new();
         // TODO check if ffmpeg is installed
         _ffmpeg.StartInfo.FileName = "ffmpeg";
-        // ffmpeg gets fed raw video data from unity
-        _ffmpeg.StartInfo.Arguments =
-            $"-y -f rawvideo -vcodec rawvideo -pix_fmt rgb24 -s:v {_width}x{_height} -r {Fps} -i - -an -c:v libx264 -pix_fmt yuv420p -preset ultrafast -crf 16 -vf vflip {OutputPath}";
+
+        // ReSharper disable StringLiteralTypo
+        var ffmpegArgs =
+            $"-y -f rawvideo -vcodec rawvideo -pix_fmt rgb24 -s:v {_width}x{_height} -r {Fps} -i - " +
+            $"-an -c:v libx264 -pix_fmt yuv420p -preset ultrafast -crf 16 -vf vflip {OutputPath}";
+        // ReSharper restore StringLiteralTypo
+        _logger.LogDebug($"ffmpeg arguments: {ffmpegArgs}");
+        _ffmpeg.StartInfo.Arguments = ffmpegArgs;
+
         _ffmpeg.StartInfo.UseShellExecute = false;
         _ffmpeg.StartInfo.RedirectStandardInput = true;
         _ffmpeg.StartInfo.RedirectStandardOutput = true;
@@ -194,7 +200,7 @@ public partial class GameRender : IGameRender, IOnLastUpdate
             }
 
             // add any left frames
-            _timeLeft = (framesCountRaw - framesCount) * _recordFrameTime * -1f;
+            _timeLeft = (framesCountRaw - framesCount) * -_recordFrameTime;
         }
 
         _videoProcessingQueue.Enqueue(_texture2D);
@@ -212,8 +218,10 @@ public partial class GameRender : IGameRender, IOnLastUpdate
 
     private void VideoProcessingThread()
     {
-        while (_recording)
+        while (true)
         {
+            if (!_recording && _videoProcessingQueue.Count == 0) break;
+
             if (_videoProcessingQueue.Count == 0)
             {
                 Thread.Sleep(1);
