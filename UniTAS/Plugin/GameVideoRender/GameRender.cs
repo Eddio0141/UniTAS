@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using UniTAS.Plugin.Interfaces.Update;
 using UniTAS.Plugin.Logger;
 using UnityEngine;
@@ -28,6 +29,13 @@ public partial class GameRender : IGameRender, IOnLastUpdate
     private float _timeLeft;
 
     private int _fps = 60;
+
+    private Thread _videoProcessingThread;
+
+#if TRACE
+    private long _avgTicks;
+    private int _measurements;
+#endif
 
     public int Fps
     {
@@ -91,6 +99,11 @@ public partial class GameRender : IGameRender, IOnLastUpdate
         _initialSkipTimeLeft = true;
         _timeLeft = 0f;
 
+#if TRACE
+        _avgTicks = 0;
+        _measurements = 0;
+#endif
+
         StartAudioCapture();
 
         _logger.LogDebug("Started recording");
@@ -110,6 +123,11 @@ public partial class GameRender : IGameRender, IOnLastUpdate
         _ffmpeg.CancelOutputRead();
 
         SaveWavFile();
+
+#if TRACE
+        var avgTicks = _avgTicks / _measurements;
+        Trace.Write($"Average ticks: {_avgTicks}, ms: {avgTicks / (float)Stopwatch.Frequency * 1000f}");
+#endif
 
         if (_ffmpeg.ExitCode != 0)
         {
@@ -147,31 +165,11 @@ public partial class GameRender : IGameRender, IOnLastUpdate
             _timeLeft = 0f;
         }
 
+#if TRACE
+        var sw = Stopwatch.StartNew();
+#endif
         _texture2D.ReadPixels(new(0, 0, _width, _height), 0, 0);
         _colors = _texture2D.GetPixels32();
-
-        // make up for lost time
-        if (_timeLeft < 0)
-        {
-            var framesCountRaw = -_timeLeft / _recordFrameTime;
-            var framesToSkip = (int)framesCountRaw;
-
-            for (var i = 0; i < framesToSkip; i++)
-            {
-                for (var j = 0; j < _colors.Length; j++)
-                {
-                    var color = _colors[j];
-                    _bytes[j * 3] = color.r;
-                    _bytes[j * 3 + 1] = color.g;
-                    _bytes[j * 3 + 2] = color.b;
-                }
-
-                _ffmpeg.StandardInput.BaseStream.Write(_bytes, 0, _totalBytes);
-            }
-
-            // add any left frames
-            _timeLeft = (framesCountRaw - framesToSkip) * _recordFrameTime * -1f;
-        }
 
         for (var i = 0; i < _colors.Length; i++)
         {
@@ -181,7 +179,29 @@ public partial class GameRender : IGameRender, IOnLastUpdate
             _bytes[i * 3 + 2] = color.b;
         }
 
+        // make up for lost time
+        if (_timeLeft < 0)
+        {
+            var framesCountRaw = -_timeLeft / _recordFrameTime;
+            var framesToSkip = (int)framesCountRaw;
+
+
+            for (var i = 0; i < framesToSkip; i++)
+            {
+                _ffmpeg.StandardInput.BaseStream.Write(_bytes, 0, _totalBytes);
+            }
+
+            // add any left frames
+            _timeLeft = (framesCountRaw - framesToSkip) * _recordFrameTime * -1f;
+        }
+
         _ffmpeg.StandardInput.BaseStream.Write(_bytes, 0, _totalBytes);
+
+#if TRACE
+        sw.Stop();
+        _avgTicks += sw.ElapsedTicks;
+        _measurements++;
+#endif
 
         _timeLeft += _recordFrameTime;
     }
