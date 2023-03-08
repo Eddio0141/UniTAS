@@ -3,7 +3,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using UniTAS.Plugin.Interfaces.Update;
 using UniTAS.Plugin.Logger;
-using UniTAS.Plugin.Utils;
 using UnityEngine;
 
 namespace UniTAS.Plugin.GameVideoRender;
@@ -18,6 +17,7 @@ public partial class GameRender : IGameRender, IOnLastUpdate
     private const string OutputPath = "output.mp4";
 
     private Texture2D _texture2D;
+    private Color32[] _pixels;
 
     private bool _isRecording;
     private bool _initialSkipTimeLeft;
@@ -173,18 +173,24 @@ public partial class GameRender : IGameRender, IOnLastUpdate
 #if TRACE
         var sw = Stopwatch.StartNew();
 #endif
+        _pixels = _texture2D.GetPixels32();
+
         // make up for lost time
-        var count = 1;
         if (_timeLeft < 0)
         {
             var framesCountRaw = -_timeLeft / _recordFrameTime;
-            count += (int)framesCountRaw;
+            var frameCount = (int)framesCountRaw;
+
+            for (var i = 0; i < frameCount; i++)
+            {
+                ThreadPool.QueueUserWorkItem(ProcessVideoData, _pixels);
+            }
 
             // add any left frames
-            _timeLeft = (framesCountRaw - count - 1) * _recordFrameTime * -1f;
+            _timeLeft = (framesCountRaw - frameCount) * _recordFrameTime * -1f;
         }
 
-        ThreadPool.QueueUserWorkItem(ProcessVideoData, Tuple.New(_texture2D.GetPixels32(), count));
+        ThreadPool.QueueUserWorkItem(ProcessVideoData, _pixels);
         _waitingThreads++;
 
 #if TRACE
@@ -205,9 +211,8 @@ public partial class GameRender : IGameRender, IOnLastUpdate
 
     private void ProcessVideoData(object data)
     {
-        var tuple = (Tuple<Color32[], int>)data;
-        var pixels = tuple.Item1;
-        var count = tuple.Item2;
+        // TODO order threads
+        var pixels = (Color32[])data;
 
         var len = pixels.Length * 3;
         var bytes = new byte[len];
@@ -222,10 +227,7 @@ public partial class GameRender : IGameRender, IOnLastUpdate
 
         lock (_ffmpeg)
         {
-            for (var i = 0; i < count; i++)
-            {
-                _ffmpeg.StandardInput.BaseStream.Write(bytes, 0, len);
-            }
+            _ffmpeg.StandardInput.BaseStream.Write(bytes, 0, len);
         }
 
         _waitingThreads--;
