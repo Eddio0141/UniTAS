@@ -193,13 +193,11 @@ public partial class GameRender : IGameRender, IOnLastUpdate
         // detect if we are running too slow
         if (sw.ElapsedMilliseconds > 40)
         {
-            Trace.Write($"Slow frame, ignoring measurement");
+            Trace.Write($"Slow frame");
         }
-        else
-        {
-            _avgTicks += sw.ElapsedTicks;
-            _measurements++;
-        }
+
+        _avgTicks += sw.ElapsedTicks;
+        _measurements++;
 #endif
 
         _timeLeft += _recordFrameTime;
