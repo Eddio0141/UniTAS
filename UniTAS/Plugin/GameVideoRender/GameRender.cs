@@ -78,7 +78,6 @@ public partial class GameRender : IGameRender, IOnLastUpdate
         _isRecording = true;
         _firstFrame = true;
         _timeLeft = 0f;
-        _ignoreFirstDataCount = 2;
 
         StartAudioCapture();
 
