@@ -23,6 +23,7 @@ public partial class GameRender : IGameRender, IOnLastUpdate
     private int _totalBytes;
 
     private bool _isRecording;
+    private bool _firstFrame;
 
     private readonly ILogger _logger;
 
@@ -75,9 +76,13 @@ public partial class GameRender : IGameRender, IOnLastUpdate
         _ffmpeg.BeginOutputReadLine();
 
         _isRecording = true;
-        _logger.LogDebug("Started recording");
+        _firstFrame = true;
+        _timeLeft = 0f;
+        _ignoreFirstDataCount = 2;
 
         StartAudioCapture();
+
+        _logger.LogDebug("Started recording");
     }
 
     public void Stop()
@@ -113,7 +118,7 @@ public partial class GameRender : IGameRender, IOnLastUpdate
         _colors = _texture2D.GetPixels32();
 
         // make up for lost time
-        if (_timeLeft < 0)
+        if (!_firstFrame && _timeLeft < 0)
         {
             var framesCountRaw = -_timeLeft;
             var framesToSkip = (int)framesCountRaw;
@@ -146,5 +151,10 @@ public partial class GameRender : IGameRender, IOnLastUpdate
         _ffmpeg.StandardInput.BaseStream.Write(_bytes, 0, _totalBytes);
 
         _timeLeft += RecordFrameTime;
+
+        if (_firstFrame)
+        {
+            _firstFrame = false;
+        }
     }
 }
