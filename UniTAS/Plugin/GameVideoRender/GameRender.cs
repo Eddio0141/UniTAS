@@ -119,7 +119,7 @@ public partial class GameRender : IGameRender, IOnLastUpdate
         // make up for lost time
         if (!_firstFrame && _timeLeft < 0)
         {
-            var framesCountRaw = -_timeLeft;
+            var framesCountRaw = -_timeLeft / RecordFrameTime;
             var framesToSkip = (int)framesCountRaw;
 
             for (var i = 0; i < framesToSkip; i++)
