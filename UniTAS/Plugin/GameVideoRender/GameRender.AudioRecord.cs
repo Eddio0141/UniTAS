@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
@@ -32,26 +33,39 @@ public partial class GameRender : IOnAudioFilterRead
         _ => 1
     };
 
-    private static float AudioFrequency => 1f / AudioSettings.outputSampleRate;
+    private static float AudioFrequency => 1000f / AudioSettings.outputSampleRate;
     private float _audioTime;
 
     private void StartAudioCapture()
     {
-        // _audioFileStream = new(OutputFile, FileMode.Create);
-        // _audioProcessingThread = new(AudioProcessingThread);
-        // _audioProcessingThread.Start();
-        //
-        // _audioProcessingQueue = new();
-        // _recordingAudio = true;
+        Trace.Write($"Starting audio capture, audio frequency: {AudioFrequency * 1000f}ms");
+        _recordingAudio = true;
+        _audioFileStream = new(OutputFile, FileMode.Create);
+        _audioProcessingThread = new(AudioProcessingThread);
+        _audioProcessingThread.Start();
+
+        _audioProcessingQueue = new();
+
+        _totalAudioTime = 0f;
+        _audioStopwatch = new();
+        _audioStopwatch.Start();
     }
+
+    private Stopwatch _audioStopwatch;
+    private float _totalAudioTime;
 
     public void OnAudioFilterRead(float[] data, int channels)
     {
         if (!_recordingAudio) return;
-        // _audioProcessingQueue.Enqueue(data);
+        _audioStopwatch.Stop();
+        Trace.Write($"Audio processing took {_audioStopwatch.ElapsedMilliseconds}ms");
+        _totalAudioTime += _audioStopwatch.ElapsedMilliseconds;
+        _audioStopwatch.Reset();
+        _audioStopwatch.Start();
+        _audioProcessingQueue.Enqueue(data);
     }
 
-    private void SaveWavFile()
+    private void FinishSavingWavFile()
     {
         // wait for all audio data to be written
         _audioProcessingThread.Join();
@@ -61,22 +75,27 @@ public partial class GameRender : IOnAudioFilterRead
     {
         while (true)
         {
-            if (_audioProcessingQueue.Count == 0)
-            {
-                Thread.Sleep(1);
-                continue;
-            }
-
             if (!_recording && _audioTime >= _renderedTime)
             {
+                Trace.Write("Finished writing audio file, writing header and closing file");
                 _recordingAudio = false;
 
                 // finish up
                 WriteHeader();
                 _audioFileStream.Close();
 
+                Trace.Write($"Total audio processing time: {_totalAudioTime}ms");
+
                 return;
             }
+
+            if (_audioProcessingQueue.Count == 0)
+            {
+                Thread.Sleep(1);
+                continue;
+            }
+
+            _audioTime += AudioFrequency;
 
             var data = _audioProcessingQueue.Dequeue();
             var bytes = new byte[data.Length * 2];
@@ -90,8 +109,6 @@ public partial class GameRender : IOnAudioFilterRead
             }
 
             _audioFileStream.Write(bytes, 0, bytes.Length);
-
-            _audioTime += AudioFrequency;
         }
     }
 

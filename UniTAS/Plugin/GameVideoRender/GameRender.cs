@@ -30,6 +30,8 @@ public partial class GameRender : IGameRender, IOnLastUpdate
     private int _fps = 60;
     private float _recordFrameTime = 1f / 60f;
 
+    private bool _pendingAudioFinish;
+
 #if TRACE
     private long _avgTicks;
     private long _totalTicks;
@@ -137,37 +139,26 @@ public partial class GameRender : IGameRender, IOnLastUpdate
         _ffmpeg.CancelErrorRead();
         _ffmpeg.CancelOutputRead();
 
-        // SaveWavFile();
-
-#if TRACE
-        var avgTicks = _avgTicks / _measurements;
-        Trace.Write($"Average ticks: {_avgTicks}, ms: {avgTicks / (float)Stopwatch.Frequency * 1000f}");
-        Trace.Write($"Total ticks: {_totalTicks}, ms: {_totalTicks / (float)Stopwatch.Frequency * 1000f}");
-#endif
-
-        if (_ffmpeg.ExitCode != 0)
-        {
-            _logger.LogError("ffmpeg exited with non-zero exit code");
-            return;
-        }
-
-        // merge audio and video
-        // TODO clean this up later
-        var ffmpeg = new Process();
-        ffmpeg.StartInfo.FileName = "ffmpeg";
-        ffmpeg.StartInfo.Arguments =
-            $"-y -i {OutputPath} -i {OutputFile} -c:v copy -c:a aac -strict experimental {OutputPath}-merged.mp4";
-
-        ffmpeg.StartInfo.UseShellExecute = false;
-        ffmpeg.Start();
-        ffmpeg.WaitForExit();
-
-        _logger.LogDebug("Successfully stopped recording");
+        // now wait for audio to finish
+        _pendingAudioFinish = true;
     }
 
     public void OnLastUpdate()
     {
-        if (!_recording) return;
+        if (_recording)
+        {
+            SendVideoData();
+        }
+        else if (_pendingAudioFinish && !_recordingAudio)
+        {
+            _pendingAudioFinish = false;
+            // audio has finished recording, finish up
+            FinishStopPostAudio();
+        }
+    }
+
+    private void SendVideoData()
+    {
         _timeLeft -= Time.deltaTime;
         if (_timeLeft > 0)
         {
@@ -195,6 +186,7 @@ public partial class GameRender : IGameRender, IOnLastUpdate
             for (var i = 0; i < framesCount; i++)
             {
                 _videoProcessingQueue.Enqueue(pixels);
+                _renderedTime += _recordFrameTime;
             }
 
             // add any left frames
@@ -212,6 +204,37 @@ public partial class GameRender : IGameRender, IOnLastUpdate
 
         _timeLeft += _recordFrameTime;
         _renderedTime += _recordFrameTime;
+    }
+
+    private void FinishStopPostAudio()
+    {
+        Trace.Write("Waiting for audio thread to finish");
+        FinishSavingWavFile();
+
+#if TRACE
+        var avgTicks = _avgTicks / _measurements;
+        Trace.Write($"Average ticks: {_avgTicks}, ms: {avgTicks / (float)Stopwatch.Frequency * 1000f}");
+        Trace.Write($"Total ticks: {_totalTicks}, ms: {_totalTicks / (float)Stopwatch.Frequency * 1000f}");
+#endif
+
+        if (_ffmpeg.ExitCode != 0)
+        {
+            _logger.LogError("ffmpeg exited with non-zero exit code");
+            return;
+        }
+
+        // merge audio and video
+        // TODO clean this up later
+        var ffmpeg = new Process();
+        ffmpeg.StartInfo.FileName = "ffmpeg";
+        ffmpeg.StartInfo.Arguments =
+            $"-y -i {OutputPath} -i {OutputFile} -c:v copy -c:a aac -strict experimental {OutputPath}-merged.mp4";
+
+        ffmpeg.StartInfo.UseShellExecute = false;
+        ffmpeg.Start();
+        ffmpeg.WaitForExit();
+
+        _logger.LogDebug("Successfully stopped recording");
     }
 
     private void VideoProcessingThread()
