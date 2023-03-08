@@ -28,6 +28,7 @@ public partial class GameRender : IGameRender, IOnLastUpdate
     private double _renderedTime;
 
     private int _fps = 60;
+    private float _recordFrameTime = 1f / 60f;
 
 #if TRACE
     private long _avgTicks;
@@ -45,10 +46,8 @@ public partial class GameRender : IGameRender, IOnLastUpdate
         }
     }
 
-    private float _recordFrameTime;
-
     private Thread _videoProcessingThread;
-    private Queue<Texture2D> _videoProcessingQueue;
+    private Queue<Color32[]> _videoProcessingQueue;
 
     public GameRender(ILogger logger)
     {
@@ -86,8 +85,6 @@ public partial class GameRender : IGameRender, IOnLastUpdate
                 _logger.LogDebug(args.Data);
             }
         };
-
-        _recordFrameTime = 1f / Fps;
     }
 
     public void Start()
@@ -187,6 +184,7 @@ public partial class GameRender : IGameRender, IOnLastUpdate
         var sw = Stopwatch.StartNew();
 #endif
         _texture2D.ReadPixels(new(0, 0, _width, _height), 0, 0);
+        var pixels = _texture2D.GetPixels32();
 
         // make up for lost time
         if (_timeLeft < 0)
@@ -196,14 +194,14 @@ public partial class GameRender : IGameRender, IOnLastUpdate
 
             for (var i = 0; i < framesCount; i++)
             {
-                _videoProcessingQueue.Enqueue(_texture2D);
+                _videoProcessingQueue.Enqueue(pixels);
             }
 
             // add any left frames
             _timeLeft = (framesCountRaw - framesCount) * -_recordFrameTime;
         }
 
-        _videoProcessingQueue.Enqueue(_texture2D);
+        _videoProcessingQueue.Enqueue(pixels);
 
 #if TRACE
         sw.Stop();
@@ -228,8 +226,7 @@ public partial class GameRender : IGameRender, IOnLastUpdate
                 continue;
             }
 
-            var texture = _videoProcessingQueue.Dequeue();
-            var pixels = texture.GetPixels32();
+            var pixels = _videoProcessingQueue.Dequeue();
 
             var len = pixels.Length * 3;
             var bytes = new byte[len];
