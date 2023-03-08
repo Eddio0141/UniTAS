@@ -19,12 +19,13 @@ public partial class GameRender : IGameRender, IOnLastUpdate
 
     private Texture2D _texture2D;
 
-    private bool _isRecording;
+    private bool _recording;
     private bool _initialSkipTimeLeft;
 
     private readonly ILogger _logger;
 
     private float _timeLeft;
+    private double _renderedTime;
 
     private int _fps = 60;
 
@@ -85,7 +86,7 @@ public partial class GameRender : IGameRender, IOnLastUpdate
 
     public void Start()
     {
-        if (_isRecording) return;
+        if (_recording) return;
 
         _logger.LogDebug("Setting up recording");
         // TODO let it able to change resolution
@@ -95,9 +96,11 @@ public partial class GameRender : IGameRender, IOnLastUpdate
         _ffmpeg.BeginErrorReadLine();
         _ffmpeg.BeginOutputReadLine();
 
-        _isRecording = true;
+        _recording = true;
         _initialSkipTimeLeft = true;
         _timeLeft = 0f;
+        _renderedTime = 0f;
+        _audioTime = 0f;
 
         _videoProcessingQueue = new();
         _videoProcessingThread = new(VideoProcessingThread);
@@ -116,10 +119,10 @@ public partial class GameRender : IGameRender, IOnLastUpdate
 
     public void Stop()
     {
-        if (!_isRecording) return;
+        if (!_recording) return;
 
         _logger.LogDebug("Stopping recording");
-        _isRecording = false;
+        _recording = false;
 
         // wait for thread to finish
         _videoProcessingThread.Join();
@@ -131,7 +134,7 @@ public partial class GameRender : IGameRender, IOnLastUpdate
         _ffmpeg.CancelErrorRead();
         _ffmpeg.CancelOutputRead();
 
-        SaveWavFile();
+        // SaveWavFile();
 
 #if TRACE
         var avgTicks = _avgTicks / _measurements;
@@ -161,7 +164,7 @@ public partial class GameRender : IGameRender, IOnLastUpdate
 
     public void OnLastUpdate()
     {
-        if (!_isRecording) return;
+        if (!_recording) return;
         _timeLeft -= Time.deltaTime;
         if (_timeLeft > 0)
         {
@@ -204,11 +207,12 @@ public partial class GameRender : IGameRender, IOnLastUpdate
 #endif
 
         _timeLeft += _recordFrameTime;
+        _renderedTime += _recordFrameTime;
     }
 
     private void VideoProcessingThread()
     {
-        while (_isRecording)
+        while (_recording)
         {
             if (_videoProcessingQueue.Count == 0)
             {

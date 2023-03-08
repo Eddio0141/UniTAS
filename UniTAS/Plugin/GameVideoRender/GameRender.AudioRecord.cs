@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Threading;
 using UniTAS.Plugin.UnityAudioGrabber;
 using UnityEngine;
 
@@ -13,6 +14,10 @@ public partial class GameRender : IOnAudioFilterRead
     private const string OutputFile = "audio.wav";
 
     private FileStream _audioFileStream;
+
+    private Thread _audioProcessingThread;
+    private Queue<float[]> _audioProcessingQueue;
+    private bool _recordingAudio;
 
     private readonly int _channels = AudioSettings.speakerMode switch
     {
@@ -27,32 +32,67 @@ public partial class GameRender : IOnAudioFilterRead
         _ => 1
     };
 
+    private static float AudioFrequency => 1f / AudioSettings.outputSampleRate;
+    private float _audioTime;
+
     private void StartAudioCapture()
     {
         _audioFileStream = new(OutputFile, FileMode.Create);
+        _audioProcessingThread = new(AudioProcessingThread);
+        _audioProcessingThread.Start();
+
+        _audioProcessingQueue = new();
+        _recordingAudio = true;
     }
 
     public void OnAudioFilterRead(float[] data, int channels)
     {
-        if (!_isRecording) return;
-
-        var bytes = new byte[data.Length * 2];
-        const int rescaleFactor = 32767; //to convert float to Int16
-
-        for (var i = 0; i < data.Length; i++)
-        {
-            var intData = (short)(data[i] * rescaleFactor);
-            var byteArr = new[] { (byte)intData, (byte)(intData >> 8) };
-            byteArr.CopyTo(bytes, i * 2);
-        }
-
-        _audioFileStream.Write(bytes, 0, bytes.Length);
+        if (!_recordingAudio) return;
+        _audioProcessingQueue.Enqueue(data);
     }
 
     private void SaveWavFile()
     {
-        WriteHeader();
-        _audioFileStream.Close();
+        // wait for all audio data to be written
+        _audioProcessingThread.Join();
+    }
+
+    private void AudioProcessingThread()
+    {
+        while (true)
+        {
+            if (_audioProcessingQueue.Count == 0)
+            {
+                Thread.Sleep(1);
+                continue;
+            }
+
+            if (!_recording && _audioTime >= _renderedTime)
+            {
+                _recordingAudio = false;
+
+                // finish up
+                WriteHeader();
+                _audioFileStream.Close();
+
+                return;
+            }
+
+            var data = _audioProcessingQueue.Dequeue();
+            var bytes = new byte[data.Length * 2];
+            const int rescaleFactor = 32767; //to convert float to Int16
+
+            for (var i = 0; i < data.Length; i++)
+            {
+                var intData = (short)(data[i] * rescaleFactor);
+                var byteArr = new[] { (byte)intData, (byte)(intData >> 8) };
+                byteArr.CopyTo(bytes, i * 2);
+            }
+
+            _audioFileStream.Write(bytes, 0, bytes.Length);
+
+            _audioTime += AudioFrequency;
+        }
     }
 
     private void WriteHeader()
