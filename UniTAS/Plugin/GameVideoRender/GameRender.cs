@@ -11,9 +11,6 @@ public partial class GameRender : IGameRender, IOnLastUpdate
 {
     private readonly Process _ffmpeg;
 
-    private const int Fps = 60;
-    private const float RecordFrameTime = 1f / Fps;
-
     private readonly int _width = Screen.width;
     private readonly int _height = Screen.height;
     private const string OutputPath = "output.mp4";
@@ -29,6 +26,20 @@ public partial class GameRender : IGameRender, IOnLastUpdate
     private readonly ILogger _logger;
 
     private float _timeLeft;
+
+    private int _fps = 60;
+
+    public int Fps
+    {
+        get => _fps;
+        set
+        {
+            _recordFrameTime = 1f / value;
+            _fps = value;
+        }
+    }
+
+    private float _recordFrameTime;
 
     public GameRender(ILogger logger)
     {
@@ -138,7 +149,7 @@ public partial class GameRender : IGameRender, IOnLastUpdate
         // make up for lost time
         if (_timeLeft < 0)
         {
-            var framesCountRaw = -_timeLeft / RecordFrameTime;
+            var framesCountRaw = -_timeLeft / _recordFrameTime;
             var framesToSkip = (int)framesCountRaw;
 
             for (var i = 0; i < framesToSkip; i++)
@@ -155,7 +166,7 @@ public partial class GameRender : IGameRender, IOnLastUpdate
             }
 
             // add any left frames
-            _timeLeft = (framesCountRaw - framesToSkip) * RecordFrameTime * -1f;
+            _timeLeft = (framesCountRaw - framesToSkip) * _recordFrameTime * -1f;
         }
 
         for (var i = 0; i < _colors.Length; i++)
@@ -168,6 +179,6 @@ public partial class GameRender : IGameRender, IOnLastUpdate
 
         _ffmpeg.StandardInput.BaseStream.Write(_bytes, 0, _totalBytes);
 
-        _timeLeft += RecordFrameTime;
+        _timeLeft += _recordFrameTime;
     }
 }

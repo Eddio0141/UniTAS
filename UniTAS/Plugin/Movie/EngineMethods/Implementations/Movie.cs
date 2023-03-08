@@ -43,4 +43,12 @@ public class Movie
         GameRender.Stop();
         return DynValue.Nil;
     }
+
+    [MoonSharpModuleMethod]
+    public static DynValue capture_fps(ScriptExecutionContext _, CallbackArguments args)
+    {
+        var fps = args.AsType(0, "capture_fps", DataType.Number).Number;
+        GameRender.Fps = (int)fps;
+        return DynValue.Nil;
+    }
 }
