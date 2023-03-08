@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using UniTAS.Plugin.Interfaces.Update;
 using UniTAS.Plugin.Logger;
+using UniTAS.Plugin.Utils;
 using UnityEngine;
 
 namespace UniTAS.Plugin.GameVideoRender;
@@ -17,9 +18,6 @@ public partial class GameRender : IGameRender, IOnLastUpdate
     private const string OutputPath = "output.mp4";
 
     private Texture2D _texture2D;
-    private byte[] _bytes;
-    private Color32[] _colors;
-    private int _totalBytes;
 
     private bool _isRecording;
     private bool _initialSkipTimeLeft;
@@ -29,8 +27,6 @@ public partial class GameRender : IGameRender, IOnLastUpdate
     private float _timeLeft;
 
     private int _fps = 60;
-
-    private Thread _videoProcessingThread;
 
 #if TRACE
     private long _avgTicks;
@@ -48,6 +44,8 @@ public partial class GameRender : IGameRender, IOnLastUpdate
     }
 
     private float _recordFrameTime;
+
+    private int _waitingThreads;
 
     public GameRender(ILogger logger)
     {
@@ -88,8 +86,6 @@ public partial class GameRender : IGameRender, IOnLastUpdate
         _logger.LogDebug("Setting up recording");
         // TODO let it able to change resolution
         _texture2D = new(_width, _height, TextureFormat.RGB24, false);
-        _totalBytes = _width * _height * 3;
-        _bytes = new byte[_totalBytes];
 
         _ffmpeg.Start();
         _ffmpeg.BeginErrorReadLine();
@@ -98,6 +94,7 @@ public partial class GameRender : IGameRender, IOnLastUpdate
         _isRecording = true;
         _initialSkipTimeLeft = true;
         _timeLeft = 0f;
+        _waitingThreads = 0;
 
 #if TRACE
         _avgTicks = 0;
@@ -115,6 +112,14 @@ public partial class GameRender : IGameRender, IOnLastUpdate
 
         _logger.LogDebug("Stopping recording");
         _isRecording = false;
+
+        // wait for all threads to finish
+        _logger.LogDebug($"Waiting for {_waitingThreads} threads to finish");
+        while (_waitingThreads > 0)
+        {
+            Thread.Sleep(10);
+        }
+
         _ffmpeg.StandardInput.Close();
         _ffmpeg.WaitForExit();
 
@@ -168,41 +173,63 @@ public partial class GameRender : IGameRender, IOnLastUpdate
 #if TRACE
         var sw = Stopwatch.StartNew();
 #endif
-        _texture2D.ReadPixels(new(0, 0, _width, _height), 0, 0);
-        _colors = _texture2D.GetPixels32();
-
-        for (var i = 0; i < _colors.Length; i++)
-        {
-            var color = _colors[i];
-            _bytes[i * 3] = color.r;
-            _bytes[i * 3 + 1] = color.g;
-            _bytes[i * 3 + 2] = color.b;
-        }
-
         // make up for lost time
+        var count = 1;
         if (_timeLeft < 0)
         {
             var framesCountRaw = -_timeLeft / _recordFrameTime;
-            var framesToSkip = (int)framesCountRaw;
-
-
-            for (var i = 0; i < framesToSkip; i++)
-            {
-                _ffmpeg.StandardInput.BaseStream.Write(_bytes, 0, _totalBytes);
-            }
+            count += (int)framesCountRaw;
 
             // add any left frames
-            _timeLeft = (framesCountRaw - framesToSkip) * _recordFrameTime * -1f;
+            _timeLeft = (framesCountRaw - count - 1) * _recordFrameTime * -1f;
         }
 
-        _ffmpeg.StandardInput.BaseStream.Write(_bytes, 0, _totalBytes);
+        ThreadPool.QueueUserWorkItem(ProcessVideoData, Tuple.New(_texture2D.GetPixels32(), count));
+        _waitingThreads++;
 
 #if TRACE
         sw.Stop();
-        _avgTicks += sw.ElapsedTicks;
-        _measurements++;
+        Trace.Write($"Elapsed ticks: {sw.ElapsedTicks}, ms: {sw.ElapsedMilliseconds}");
+        // detect if we are running too slow
+        if (sw.ElapsedMilliseconds > 40)
+        {
+            Trace.Write($"Slow frame, ignoring measurement");
+        }
+        else
+        {
+            _avgTicks += sw.ElapsedTicks;
+            _measurements++;
+        }
 #endif
 
         _timeLeft += _recordFrameTime;
+    }
+
+    private void ProcessVideoData(object data)
+    {
+        var tuple = (Tuple<Color32[], int>)data;
+        var pixels = tuple.Item1;
+        var count = tuple.Item2;
+
+        var len = pixels.Length * 3;
+        var bytes = new byte[len];
+
+        for (var i = 0; i < pixels.Length; i++)
+        {
+            var color = pixels[i];
+            bytes[i * 3] = color.r;
+            bytes[i * 3 + 1] = color.g;
+            bytes[i * 3 + 2] = color.b;
+        }
+
+        lock (_ffmpeg)
+        {
+            for (var i = 0; i < count; i++)
+            {
+                _ffmpeg.StandardInput.BaseStream.Write(bytes, 0, len);
+            }
+        }
+
+        _waitingThreads--;
     }
 }
