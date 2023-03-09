@@ -4,13 +4,13 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
-using UniTAS.Plugin.Extensions;
+using UniTAS.Plugin.UnityAudioGrabber;
 using UnityEngine;
 
 namespace UniTAS.Plugin.GameVideoRender;
 
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-public partial class GameRender
+public partial class GameRender : IOnAudioFilterRead
 {
     private const string OutputFile = "audio.wav";
 
@@ -19,7 +19,6 @@ public partial class GameRender
     private Thread _audioProcessingThread;
     private Queue<float[]> _audioProcessingQueue;
     private Queue<int> _audioDataLengthQueue;
-    private bool _recordingAudio;
 
     private readonly int _channels = AudioSettings.speakerMode switch
     {
@@ -34,16 +33,35 @@ public partial class GameRender
         _ => 1
     };
 
+    private bool _recordingAudio;
     private bool _firstAudioProcess;
 
     private float[] _audioData;
-    private int _actualAudioDataLength;
-    private float _lastDeltaTime;
+
+    // for 1 channel
+    private int _audioDataGrabLength;
+
+    private double _audioTimer;
+    private double _audioBufferDuration;
+
+    public void OnAudioFilterRead(float[] data, int channels)
+    {
+        // to be safe, check every time
+        var dataLen = data.Length / channels;
+        if (_audioDataGrabLength == dataLen) return;
+
+        _audioDataGrabLength = dataLen;
+        _audioBufferDuration = 1.0 / AudioSettings.outputSampleRate * _audioDataGrabLength;
+        _audioData = new float[dataLen];
+
+        Trace.Write($"New audio data length: {dataLen}, buffer duration: {_audioBufferDuration}");
+    }
 
     private void StartAudioCapture()
     {
         Trace.Write($"Starting audio capture, channels: {_channels}, sample rate: {AudioSettings.outputSampleRate}");
 
+        _firstAudioProcess = true;
         _recordingAudio = true;
         _audioFileStream = new(OutputFile, FileMode.Create);
         _audioProcessingThread = new(AudioProcessingThread);
@@ -51,8 +69,8 @@ public partial class GameRender
 
         _audioProcessingQueue = new();
         _audioDataLengthQueue = new();
-        _firstAudioProcess = true;
-        _lastDeltaTime = 0f;
+
+        _audioTimer = 0;
     }
 
     private void StopRecordingWav()
@@ -69,17 +87,18 @@ public partial class GameRender
 
     private void SendAudioData()
     {
-        // ReSharper disable CompareOfFloatsByEqualityOperator
-        if (Time.deltaTime != _lastDeltaTime)
+        if (_audioTimer - _audioBufferDuration <= _videoTimer)
         {
-            _lastDeltaTime = Time.deltaTime;
-            _actualAudioDataLength = (int)Math.Ceiling(_lastDeltaTime * AudioSettings.outputSampleRate);
-            var audioDataLength = _actualAudioDataLength.RoundUpToNearestPowerOfTwo();
-            Trace.Write(
-                $"Frame time changed to {_lastDeltaTime}, new audio data length: {audioDataLength}, actual: {_actualAudioDataLength}");
-            _audioData = new float[audioDataLength];
+            Trace.Write("Resuming audio");
+            AudioListener.pause = false;
         }
-        // ReSharper restore CompareOfFloatsByEqualityOperator
+
+        Trace.WriteIf(_audioTimer > _videoTimer, "Audio timer is ahead of video timer");
+        if (_audioTimer > _videoTimer) return;
+
+        Trace.Write("Pausing audio");
+        AudioListener.pause = true;
+        _audioTimer += _audioBufferDuration;
 
         if (_firstAudioProcess)
         {
@@ -87,7 +106,8 @@ public partial class GameRender
             return;
         }
 
-        _audioDataLengthQueue.Enqueue(_actualAudioDataLength);
+        Trace.Write("Getting audio data");
+        _audioDataLengthQueue.Enqueue(_audioDataGrabLength);
         for (var i = 0; i < _channels; i++)
         {
             AudioListener.GetOutputData(_audioData, i);
@@ -112,6 +132,8 @@ public partial class GameRender
             {
                 allChannels.Add(_audioProcessingQueue.Dequeue());
             }
+            
+            Trace.Write($"First item, {allChannels[0][0] * 32767}");
 
             var bytes = new byte[2];
             for (var i = 0; i < dataLen; i++)

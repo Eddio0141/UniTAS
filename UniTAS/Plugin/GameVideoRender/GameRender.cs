@@ -48,6 +48,8 @@ public partial class GameRender : IGameRender, IOnLastUpdate
     private Thread _videoProcessingThread;
     private Queue<Color32[]> _videoProcessingQueue;
 
+    private double _videoTimer;
+
     public GameRender(ILogger logger)
     {
         _logger = logger;
@@ -105,6 +107,8 @@ public partial class GameRender : IGameRender, IOnLastUpdate
         _videoProcessingQueue = new();
         _videoProcessingThread = new(VideoProcessingThread);
         _videoProcessingThread.Start();
+
+        _videoTimer = 0;
 
 #if TRACE
         _avgTicks = 0;
@@ -200,6 +204,7 @@ public partial class GameRender : IGameRender, IOnLastUpdate
             for (var i = 0; i < framesCount; i++)
             {
                 _videoProcessingQueue.Enqueue(pixels);
+                _videoTimer += _recordFrameTime;
             }
 
             // add any left frames
@@ -216,6 +221,7 @@ public partial class GameRender : IGameRender, IOnLastUpdate
 #endif
 
         _renderTimeLeft += _recordFrameTime;
+        _videoTimer += _recordFrameTime;
     }
 
     private void VideoProcessingThread()
