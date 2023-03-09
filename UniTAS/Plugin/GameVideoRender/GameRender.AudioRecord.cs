@@ -42,6 +42,8 @@ public partial class GameRender
 
     private void StartAudioCapture()
     {
+        Trace.Write($"Starting audio capture, channels: {_channels}, sample rate: {AudioSettings.outputSampleRate}");
+
         _recordingAudio = true;
         _audioFileStream = new(OutputFile, FileMode.Create);
         _audioProcessingThread = new(AudioProcessingThread);
@@ -109,12 +111,6 @@ public partial class GameRender
             for (var i = 0; i < _channels; i++)
             {
                 allChannels.Add(_audioProcessingQueue.Dequeue());
-            }
-
-            // if odd number of data points, remove last one
-            if (dataLen % 2 != 0)
-            {
-                dataLen--;
             }
 
             var bytes = new byte[2];
