@@ -20,17 +20,14 @@ public partial class GameRender : IGameRender, IOnLastUpdate
     private Texture2D _texture2D;
 
     private bool _recording;
-    private bool _initialSkipTimeLeft;
+    private bool _initialSkipVideoTimeLeft;
 
     private readonly ILogger _logger;
 
-    private float _timeLeft;
-    private double _renderedTime;
+    private float _renderTimeLeft;
 
     private int _fps = 60;
     private float _recordFrameTime = 1f / 60f;
-
-    private bool _pendingAudioFinish;
 
 #if TRACE
     private long _avgTicks;
@@ -102,10 +99,8 @@ public partial class GameRender : IGameRender, IOnLastUpdate
         _ffmpeg.BeginOutputReadLine();
 
         _recording = true;
-        _initialSkipTimeLeft = true;
-        _timeLeft = 0f;
-        _renderedTime = 0f;
-        _audioTime = 0f;
+        _initialSkipVideoTimeLeft = true;
+        _renderTimeLeft = 0f;
 
         _videoProcessingQueue = new();
         _videoProcessingThread = new(VideoProcessingThread);
@@ -139,77 +134,8 @@ public partial class GameRender : IGameRender, IOnLastUpdate
         _ffmpeg.CancelErrorRead();
         _ffmpeg.CancelOutputRead();
 
-        // now wait for audio to finish
-        _pendingAudioFinish = true;
-    }
-
-    public void OnLastUpdate()
-    {
-        if (_recording)
-        {
-            SendVideoData();
-        }
-        else if (_pendingAudioFinish && !_recordingAudio)
-        {
-            _pendingAudioFinish = false;
-            // audio has finished recording, finish up
-            FinishStopPostAudio();
-        }
-    }
-
-    private void SendVideoData()
-    {
-        _timeLeft -= Time.deltaTime;
-        if (_timeLeft > 0)
-        {
-            return;
-        }
-
-        if (_initialSkipTimeLeft)
-        {
-            _initialSkipTimeLeft = false;
-            _timeLeft = 0f;
-        }
-
-#if TRACE
-        var sw = Stopwatch.StartNew();
-#endif
-        _texture2D.ReadPixels(new(0, 0, _width, _height), 0, 0);
-        var pixels = _texture2D.GetPixels32();
-
-        // make up for lost time
-        if (_timeLeft < 0)
-        {
-            var framesCountRaw = -_timeLeft / _recordFrameTime;
-            var framesCount = (int)framesCountRaw;
-
-            for (var i = 0; i < framesCount; i++)
-            {
-                _videoProcessingQueue.Enqueue(pixels);
-                _renderedTime += _recordFrameTime;
-            }
-
-            // add any left frames
-            _timeLeft = (framesCountRaw - framesCount) * -_recordFrameTime;
-        }
-
-        _videoProcessingQueue.Enqueue(pixels);
-
-#if TRACE
-        sw.Stop();
-        _avgTicks += sw.ElapsedTicks;
-        _totalTicks += sw.ElapsedTicks;
-        _measurements++;
-#endif
-
-        _timeLeft += _recordFrameTime;
-        _renderedTime += _recordFrameTime;
-    }
-
-    private void FinishStopPostAudio()
-    {
         Trace.Write("Waiting for audio thread to finish");
-        FinishSavingWavFile();
+        StopRecordingWav();
 
 #if TRACE
         var avgTicks = _avgTicks / _measurements;
@@ -235,6 +161,61 @@ public partial class GameRender : IGameRender, IOnLastUpdate
         ffmpeg.WaitForExit();
 
         _logger.LogDebug("Successfully stopped recording");
+    }
+
+    public void OnLastUpdate()
+    {
+        if (!_recording) return;
+
+        SendVideoData();
+        SendAudioData();
+    }
+
+    private void SendVideoData()
+    {
+        _renderTimeLeft -= Time.deltaTime;
+        if (_renderTimeLeft > 0)
+        {
+            return;
+        }
+
+        if (_initialSkipVideoTimeLeft)
+        {
+            _initialSkipVideoTimeLeft = false;
+            _renderTimeLeft = 0f;
+        }
+
+#if TRACE
+        var sw = Stopwatch.StartNew();
+#endif
+        _texture2D.ReadPixels(new(0, 0, _width, _height), 0, 0);
+        var pixels = _texture2D.GetPixels32();
+
+        // make up for lost time
+        if (_renderTimeLeft < 0)
+        {
+            var framesCountRaw = -_renderTimeLeft / _recordFrameTime;
+            var framesCount = (int)framesCountRaw;
+
+            for (var i = 0; i < framesCount; i++)
+            {
+                _videoProcessingQueue.Enqueue(pixels);
+            }
+
+            // add any left frames
+            _renderTimeLeft = (framesCountRaw - framesCount) * -_recordFrameTime;
+        }
+
+        _videoProcessingQueue.Enqueue(pixels);
+
+#if TRACE
+        sw.Stop();
+        _avgTicks += sw.ElapsedTicks;
+        _totalTicks += sw.ElapsedTicks;
+        _measurements++;
+#endif
+
+        _renderTimeLeft += _recordFrameTime;
     }
 
     private void VideoProcessingThread()

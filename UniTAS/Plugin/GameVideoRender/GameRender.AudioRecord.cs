@@ -4,13 +4,13 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
-using UniTAS.Plugin.UnityAudioGrabber;
+using UniTAS.Plugin.Extensions;
 using UnityEngine;
 
 namespace UniTAS.Plugin.GameVideoRender;
 
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-public partial class GameRender : IOnAudioFilterRead
+public partial class GameRender
 {
     private const string OutputFile = "audio.wav";
 
@@ -18,6 +18,7 @@ public partial class GameRender : IOnAudioFilterRead
 
     private Thread _audioProcessingThread;
     private Queue<float[]> _audioProcessingQueue;
+    private Queue<int> _audioDataLengthQueue;
     private bool _recordingAudio;
 
     private readonly int _channels = AudioSettings.speakerMode switch
@@ -33,82 +34,101 @@ public partial class GameRender : IOnAudioFilterRead
         _ => 1
     };
 
-    private static float AudioFrequency => 1000f / AudioSettings.outputSampleRate;
-    private float _audioTime;
+    private bool _firstAudioProcess;
+
+    private float[] _audioData;
+    private int _actualAudioDataLength;
+    private float _lastDeltaTime;
 
     private void StartAudioCapture()
     {
-        Trace.Write($"Starting audio capture, audio frequency: {AudioFrequency * 1000f}ms");
         _recordingAudio = true;
         _audioFileStream = new(OutputFile, FileMode.Create);
         _audioProcessingThread = new(AudioProcessingThread);
         _audioProcessingThread.Start();
 
         _audioProcessingQueue = new();
-
-        _totalAudioTime = 0f;
-        _audioStopwatch = new();
-        _audioStopwatch.Start();
+        _audioDataLengthQueue = new();
+        _firstAudioProcess = true;
+        _lastDeltaTime = 0f;
     }
 
-    private Stopwatch _audioStopwatch;
-    private float _totalAudioTime;
-
-    public void OnAudioFilterRead(float[] data, int channels)
+    private void StopRecordingWav()
     {
-        if (!_recordingAudio) return;
-        _audioStopwatch.Stop();
-        Trace.Write($"Audio processing took {_audioStopwatch.ElapsedMilliseconds}ms");
-        _totalAudioTime += _audioStopwatch.ElapsedMilliseconds;
-        _audioStopwatch.Reset();
-        _audioStopwatch.Start();
-        _audioProcessingQueue.Enqueue(data);
-    }
-
-    private void FinishSavingWavFile()
-    {
+        Trace.Write("Writing header and closing wav file");
+        _recordingAudio = false;
         // wait for all audio data to be written
         _audioProcessingThread.Join();
+
+        // finish up
+        WriteHeader();
+        _audioFileStream.Close();
+    }
+
+    private void SendAudioData()
+    {
+        // ReSharper disable CompareOfFloatsByEqualityOperator
+        if (Time.deltaTime != _lastDeltaTime)
+        {
+            _lastDeltaTime = Time.deltaTime;
+            _actualAudioDataLength = (int)Math.Ceiling(_lastDeltaTime * AudioSettings.outputSampleRate);
+            var audioDataLength = _actualAudioDataLength.RoundUpToNearestPowerOfTwo();
+            Trace.Write(
+                $"Frame time changed to {_lastDeltaTime}, new audio data length: {audioDataLength}, actual: {_actualAudioDataLength}");
+            _audioData = new float[audioDataLength];
+        }
+        // ReSharper restore CompareOfFloatsByEqualityOperator
+
+        if (_firstAudioProcess)
+        {
+            _firstAudioProcess = false;
+            return;
+        }
+
+        _audioDataLengthQueue.Enqueue(_actualAudioDataLength);
+        for (var i = 0; i < _channels; i++)
+        {
+            AudioListener.GetOutputData(_audioData, i);
+            _audioProcessingQueue.Enqueue(_audioData);
+        }
     }
 
     private void AudioProcessingThread()
     {
-        while (true)
+        while (_recordingAudio)
         {
-            if (!_recording && _audioTime >= _renderedTime)
-            {
-                Trace.Write("Finished writing audio file, writing header and closing file");
-                _recordingAudio = false;
-
-                // finish up
-                WriteHeader();
-                _audioFileStream.Close();
-
-                Trace.Write($"Total audio processing time: {_totalAudioTime}ms");
-
-                return;
-            }
-
-            if (_audioProcessingQueue.Count == 0)
+            if (_audioProcessingQueue.Count < _channels)
             {
                 Thread.Sleep(1);
                 continue;
             }
 
-            _audioTime += AudioFrequency;
-
-            var data = _audioProcessingQueue.Dequeue();
-            var bytes = new byte[data.Length * 2];
-            const int rescaleFactor = 32767; //to convert float to Int16
-
-            for (var i = 0; i < data.Length; i++)
+            // audio data is interleaved, e.g. [L, R, L, R, L, R, L, R]
+            var dataLen = _audioDataLengthQueue.Dequeue();
+            var allChannels = new List<float[]>();
+            for (var i = 0; i < _channels; i++)
             {
-                var intData = (short)(data[i] * rescaleFactor);
-                var byteArr = new[] { (byte)intData, (byte)(intData >> 8) };
-                byteArr.CopyTo(bytes, i * 2);
+                allChannels.Add(_audioProcessingQueue.Dequeue());
             }
 
-            _audioFileStream.Write(bytes, 0, bytes.Length);
+            // if odd number of data points, remove last one
+            if (dataLen % 2 != 0)
+            {
+                dataLen--;
+            }
+
+            var bytes = new byte[2];
+            for (var i = 0; i < dataLen; i++)
+            {
+                for (var j = 0; j < _channels; j++)
+                {
+                    var intData = (short)(allChannels[j][i] * 32767);
+                    bytes[0] = (byte)intData;
+                    bytes[1] = (byte)(intData >> 8);
+
+                    _audioFileStream.Write(bytes, 0, bytes.Length);
+                }
+            }
         }
     }
 
