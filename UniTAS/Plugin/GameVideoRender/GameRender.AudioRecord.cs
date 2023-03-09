@@ -55,6 +55,14 @@ public partial class GameRender : IOnAudioFilterRead
         _audioData = new float[dataLen];
 
         Trace.Write($"New audio data length: {dataLen}, buffer duration: {_audioBufferDuration}");
+        
+        _audioTimer += _audioBufferDuration;
+        
+        if (_audioTimer - _audioBufferDuration > _videoTimer)
+        {
+            Trace.Write("Pausing audio");
+            AudioListener.pause = true;
+        }
     }
 
     private void StartAudioCapture()
@@ -85,21 +93,9 @@ public partial class GameRender : IOnAudioFilterRead
         _audioFileStream.Close();
     }
 
+    // TODO capture audio ahead of time
     private void SendAudioData()
     {
-        if (_audioTimer - _audioBufferDuration <= _videoTimer)
-        {
-            Trace.Write("Resuming audio");
-            AudioListener.pause = false;
-        }
-
-        Trace.WriteIf(_audioTimer > _videoTimer, "Audio timer is ahead of video timer");
-        if (_audioTimer > _videoTimer) return;
-
-        Trace.Write("Pausing audio");
-        AudioListener.pause = true;
-        _audioTimer += _audioBufferDuration;
-
         if (_firstAudioProcess)
         {
             _firstAudioProcess = false;
