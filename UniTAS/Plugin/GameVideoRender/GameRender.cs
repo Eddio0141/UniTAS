@@ -171,8 +171,13 @@ public partial class GameRender : IGameRender, IOnLastUpdate
     {
         if (!_recording) return;
 
+        while (_audioTimer < _videoTimer)
+        {
+            var durationMs = (int)((_videoTimer - _audioTimer) * 1000);
+            Thread.Sleep(durationMs > 1 ? durationMs : 1);
+        }
+
         SendVideoData();
-        SendAudioData();
     }
 
     private void SendVideoData()

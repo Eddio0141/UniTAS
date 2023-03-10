@@ -18,7 +18,6 @@ public partial class GameRender : IOnAudioFilterRead
 
     private Thread _audioProcessingThread;
     private Queue<float[]> _audioProcessingQueue;
-    private Queue<int> _audioDataLengthQueue;
 
     private readonly int _channels = AudioSettings.speakerMode switch
     {
@@ -44,26 +43,7 @@ public partial class GameRender : IOnAudioFilterRead
     private double _audioTimer;
     private double _audioBufferDuration;
 
-    public void OnAudioFilterRead(float[] data, int channels)
-    {
-        // to be safe, check every time
-        var dataLen = data.Length / channels;
-        if (_audioDataGrabLength == dataLen) return;
-
-        _audioDataGrabLength = dataLen;
-        _audioBufferDuration = 1.0 / AudioSettings.outputSampleRate * _audioDataGrabLength;
-        _audioData = new float[dataLen];
-
-        Trace.Write($"New audio data length: {dataLen}, buffer duration: {_audioBufferDuration}");
-        
-        _audioTimer += _audioBufferDuration;
-        
-        if (_audioTimer - _audioBufferDuration > _videoTimer)
-        {
-            Trace.Write("Pausing audio");
-            AudioListener.pause = true;
-        }
-    }
+    private List<byte> _audioDataBuffer;
 
     private void StartAudioCapture()
     {
@@ -76,9 +56,38 @@ public partial class GameRender : IOnAudioFilterRead
         _audioProcessingThread.Start();
 
         _audioProcessingQueue = new();
-        _audioDataLengthQueue = new();
+        _audioDataBuffer = new();
 
         _audioTimer = 0;
+    }
+
+    public void OnAudioFilterRead(float[] data, int channels)
+    {
+        if (!_recordingAudio) return;
+
+        // to be safe, check every time
+        var dataLen = data.Length / channels;
+        if (_audioDataGrabLength != dataLen)
+        {
+            _audioDataGrabLength = dataLen;
+            _audioBufferDuration = 1.0 / AudioSettings.outputSampleRate * dataLen;
+            _audioData = new float[dataLen];
+            Trace.Write($"New audio data length: {dataLen}, buffer duration: {_audioBufferDuration}");
+        }
+
+        _audioTimer += _audioBufferDuration;
+
+        if (_firstAudioProcess)
+        {
+            _firstAudioProcess = false;
+            return;
+        }
+
+        for (var i = 0; i < _channels; i++)
+        {
+            AudioListener.GetOutputData(_audioData, i);
+            _audioProcessingQueue.Enqueue(_audioData);
+        }
     }
 
     private void StopRecordingWav()
@@ -93,24 +102,6 @@ public partial class GameRender : IOnAudioFilterRead
         _audioFileStream.Close();
     }
 
-    // TODO capture audio ahead of time
-    private void SendAudioData()
-    {
-        if (_firstAudioProcess)
-        {
-            _firstAudioProcess = false;
-            return;
-        }
-
-        Trace.Write("Getting audio data");
-        _audioDataLengthQueue.Enqueue(_audioDataGrabLength);
-        for (var i = 0; i < _channels; i++)
-        {
-            AudioListener.GetOutputData(_audioData, i);
-            _audioProcessingQueue.Enqueue(_audioData);
-        }
-    }
-
     private void AudioProcessingThread()
     {
         while (_recordingAudio)
@@ -122,28 +113,38 @@ public partial class GameRender : IOnAudioFilterRead
             }
 
             // audio data is interleaved, e.g. [L, R, L, R, L, R, L, R]
-            var dataLen = _audioDataLengthQueue.Dequeue();
             var allChannels = new List<float[]>();
             for (var i = 0; i < _channels; i++)
             {
                 allChannels.Add(_audioProcessingQueue.Dequeue());
             }
-            
-            Trace.Write($"First item, {allChannels[0][0] * 32767}");
 
-            var bytes = new byte[2];
+            var dataLen = allChannels[0].Length;
+
             for (var i = 0; i < dataLen; i++)
             {
                 for (var j = 0; j < _channels; j++)
                 {
                     var intData = (short)(allChannels[j][i] * 32767);
-                    bytes[0] = (byte)intData;
-                    bytes[1] = (byte)(intData >> 8);
-
-                    _audioFileStream.Write(bytes, 0, bytes.Length);
+                    _audioDataBuffer.Add((byte)intData);
+                    _audioDataBuffer.Add((byte)(intData >> 8));
                 }
             }
         }
+
+        // trim if too much data compared to video
+        if (_audioTimer > _videoTimer)
+        {
+            var trim = (int)((_audioTimer - _videoTimer) * AudioSettings.outputSampleRate * _channels * 2);
+            Trace.Write($"Trimming audio data by {_audioTimer - _videoTimer} seconds ({trim} bytes)");
+            _audioDataBuffer.RemoveRange(_audioDataBuffer.Count - trim, trim);
+        }
+
+        Trace.Write($"Writing {_audioDataBuffer.Count} bytes of audio data to file {OutputFile}");
+        _audioFileStream.Write(_audioDataBuffer.ToArray(), 0, _audioDataBuffer.Count);
+        _audioFileStream.Flush();
+
+        Trace.Write("Done writing audio data");
     }
 
     private void WriteHeader()
