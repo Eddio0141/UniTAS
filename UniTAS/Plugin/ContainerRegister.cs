@@ -31,6 +31,7 @@ using UniTAS.Plugin.UnityAudioGrabber;
 using UniTAS.Plugin.UnitySafeWrappers;
 using UniTAS.Plugin.UnitySafeWrappers.Interfaces;
 using UniTAS.Plugin.UnitySafeWrappers.Wrappers;
+using UniTAS.Plugin.UnitySafeWrappers.Wrappers.UnityEngine;
 
 namespace UniTAS.Plugin;
 
@@ -162,6 +163,9 @@ public static class ContainerRegister
             c.ForSingletonOf<AudioGrabberHandler>().Use<AudioGrabberHandler>();
             c.For<IOnAwake>().Use(x => x.GetInstance<AudioGrabberHandler>());
             c.For<IAudioGrabberInvokes>().Use(x => x.GetInstance<AudioGrabberHandler>());
+
+            c.ForSingletonOf<AudioRendererWrapper>().Use<AudioRendererWrapper>();
+            c.For<IAudioRendererWrapper>().Use(x => x.GetInstance<AudioRendererWrapper>());
         });
 
         return container;
