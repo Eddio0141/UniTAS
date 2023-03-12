@@ -49,6 +49,7 @@ public static class ContainerRegister
                 scanner.AddAllTypesOf<PatchProcessor>();
                 scanner.AddAllTypesOf<IMainMenuTab>();
                 scanner.AddAllTypesOf<EngineMethodClass>();
+                scanner.AddAllTypesOf<Renderer>();
                 scanner.ExcludeType<Env>();
             });
 
