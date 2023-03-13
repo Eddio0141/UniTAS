@@ -19,7 +19,6 @@ public class GameVideoRenderer : Renderer
     private float _renderTimeLeft;
     private Thread _videoProcessingThread;
     private Queue<Color32[]> _videoProcessingQueue;
-    private double _videoTimer;
 
     private int _fps = 60;
     private float _recordFrameTime = 1f / 60f;
@@ -49,6 +48,8 @@ public class GameVideoRenderer : Renderer
 
     public override void Start()
     {
+        base.Start();
+
         // TODO check if ffmpeg is installed
         _ffmpeg.StartInfo.FileName = "ffmpeg";
 
@@ -94,8 +95,6 @@ public class GameVideoRenderer : Renderer
         _videoProcessingThread = new(VideoProcessingThread);
         _videoProcessingThread.Start();
 
-        _videoTimer = 0;
-
 #if TRACE
         _avgTicks = 0;
         _totalTicks = 0;
@@ -105,6 +104,8 @@ public class GameVideoRenderer : Renderer
 
     public override void Stop()
     {
+        base.Stop();
+
         // wait for thread to finish
         _videoProcessingThread.Join();
 
@@ -133,7 +134,7 @@ public class GameVideoRenderer : Renderer
         if (_ffmpeg.ExitCode != 0)
         {
             _logger.LogError("ffmpeg exited with non-zero exit code");
-            return;
+            // return;
         }
 
         // merge audio and video
@@ -177,7 +178,6 @@ public class GameVideoRenderer : Renderer
             for (var i = 0; i < framesCount; i++)
             {
                 _videoProcessingQueue.Enqueue(pixels);
-                _videoTimer += _recordFrameTime;
             }
 
             // add any left frames
@@ -194,7 +194,6 @@ public class GameVideoRenderer : Renderer
 #endif
 
         _renderTimeLeft += _recordFrameTime;
-        _videoTimer += _recordFrameTime;
     }
 
     public override bool Available => true;
@@ -224,5 +223,7 @@ public class GameVideoRenderer : Renderer
 
             _ffmpeg.StandardInput.BaseStream.Write(bytes, 0, len);
         }
+
+        Trace.Write("Video processing thread finished");
     }
 }
