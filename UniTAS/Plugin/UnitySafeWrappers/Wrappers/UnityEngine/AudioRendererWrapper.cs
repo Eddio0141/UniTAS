@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using HarmonyLib;
 using UniTAS.Plugin.UnitySafeWrappers.Interfaces;
 using UniTAS.Plugin.UnitySafeWrappers.Wrappers.Unity.Collections;
@@ -12,7 +13,7 @@ public class AudioRendererWrapper : IAudioRendererWrapper
     public bool Available { get; }
 
     private readonly Func<int> _getSampleCountForCaptureFrame;
-    private readonly Func<object, bool> _render;
+    private readonly MethodBase _render;
     private readonly Func<bool> _start;
     private readonly Func<bool> _stop;
 
@@ -24,8 +25,8 @@ public class AudioRendererWrapper : IAudioRendererWrapper
         var getSampleCountForCaptureFrame = AccessTools.Method(audioRendererType, "GetSampleCountForCaptureFrame");
         if (getSampleCountForCaptureFrame == null) return;
 
-        var render = AccessTools.Method(audioRendererType, "Render");
-        if (render == null) return;
+        _render = AccessTools.Method(audioRendererType, "Render");
+        if (_render == null) return;
 
         var start = AccessTools.Method(audioRendererType, "Start");
         if (start == null) return;
@@ -36,7 +37,6 @@ public class AudioRendererWrapper : IAudioRendererWrapper
         Available = true;
 
         _getSampleCountForCaptureFrame = AccessTools.MethodDelegate<Func<int>>(getSampleCountForCaptureFrame);
-        _render = AccessTools.MethodDelegate<Func<object, bool>>(render);
         _start = AccessTools.MethodDelegate<Func<bool>>(start);
         _stop = AccessTools.MethodDelegate<Func<bool>>(stop);
     }
@@ -46,7 +46,7 @@ public class AudioRendererWrapper : IAudioRendererWrapper
     public bool Render<T>(NativeArrayWrapper<T> nativeArray)
     {
         var instance = nativeArray.Instance;
-        return _render(instance);
+        return (bool)_render.Invoke(instance, new object[0]);
     }
 
     public bool Start()
