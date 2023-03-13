@@ -118,9 +118,16 @@ public class GameVideoRenderer : Renderer
         Trace.Write("Waiting for audio thread to finish");
 
 #if TRACE
-        var avgTicks = _avgTicks / _measurements;
-        Trace.Write($"Average ticks: {_avgTicks}, ms: {avgTicks / (float)Stopwatch.Frequency * 1000f}");
-        Trace.Write($"Total ticks: {_totalTicks}, ms: {_totalTicks / (float)Stopwatch.Frequency * 1000f}");
+        if (_measurements == 0)
+        {
+            Trace.Write("No render avg measurements");
+        }
+        else
+        {
+            var avgTicks = _avgTicks / _measurements;
+            Trace.Write($"Average ticks: {_avgTicks}, ms: {avgTicks / (float)Stopwatch.Frequency * 1000f}");
+            Trace.Write($"Total ticks: {_totalTicks}, ms: {_totalTicks / (float)Stopwatch.Frequency * 1000f}");
+        }
 #endif
 
         if (_ffmpeg.ExitCode != 0)
