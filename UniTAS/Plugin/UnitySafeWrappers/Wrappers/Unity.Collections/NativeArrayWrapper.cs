@@ -13,7 +13,7 @@ public class NativeArrayWrapper<T> : UnityInstanceWrap
     public NativeArrayWrapper(object instance) : base(instance)
     {
         var genericArg = typeof(T);
-        var wrappedType = AccessTools.TypeByName("UnityEngine.NativeArray`1").MakeGenericType(genericArg);
+        var wrappedType = AccessTools.TypeByName("Unity.Collections.NativeArray`1").MakeGenericType(genericArg);
         _allocator = AccessTools.TypeByName("Unity.Collections.Allocator");
         _toArray = AccessTools.MethodDelegate<Func<T[]>>(AccessTools.Method(wrappedType, "ToArray"), Instance);
         WrappedType = wrappedType;
