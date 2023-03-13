@@ -116,8 +116,6 @@ public class GameVideoRenderer : Renderer
         _ffmpeg.CancelErrorRead();
         _ffmpeg.CancelOutputRead();
 
-        Trace.Write("Waiting for audio thread to finish");
-
 #if TRACE
         if (_measurements == 0)
         {
