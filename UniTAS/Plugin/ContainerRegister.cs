@@ -27,7 +27,6 @@ using UniTAS.Plugin.StaticFieldStorage;
 using UniTAS.Plugin.Trackers.AsyncSceneLoadTracker;
 using UniTAS.Plugin.Trackers.SceneIndexNameTracker;
 using UniTAS.Plugin.Trackers.SceneTracker;
-using UniTAS.Plugin.UnityAudioGrabber;
 using UniTAS.Plugin.UnitySafeWrappers;
 using UniTAS.Plugin.UnitySafeWrappers.Interfaces;
 using UniTAS.Plugin.UnitySafeWrappers.Wrappers;
@@ -159,10 +158,6 @@ public static class ContainerRegister
             c.ForSingletonOf<GameRender>().Use<GameRender>();
             c.For<IGameRender>().Use(x => x.GetInstance<GameRender>());
             c.For<IOnLastUpdate>().Use(x => x.GetInstance<GameRender>());
-
-            c.ForSingletonOf<AudioGrabberHandler>().Use<AudioGrabberHandler>();
-            c.For<IOnAwake>().Use(x => x.GetInstance<AudioGrabberHandler>());
-            c.For<IAudioGrabberInvokes>().Use(x => x.GetInstance<AudioGrabberHandler>());
 
             c.ForSingletonOf<AudioRendererWrapper>().Use<AudioRendererWrapper>();
             c.For<IAudioRendererWrapper>().Use(x => x.GetInstance<AudioRendererWrapper>());
