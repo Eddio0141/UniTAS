@@ -17,7 +17,9 @@ public abstract class Renderer
         Recording = false;
     }
 
-    public abstract void Update();
+    public virtual void Update()
+    {
+    }
 
     public abstract bool Available { get; }
 }
