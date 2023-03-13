@@ -7,17 +7,17 @@ public abstract class Renderer
 {
     protected bool Recording { get; private set; }
 
-    protected virtual void Start()
+    public virtual void Start()
     {
         Recording = true;
     }
 
-    protected virtual void Stop()
+    public virtual void Stop()
     {
         Recording = false;
     }
 
-    protected abstract void Update();
+    public abstract void Update();
 
     public abstract bool Available { get; }
 }
