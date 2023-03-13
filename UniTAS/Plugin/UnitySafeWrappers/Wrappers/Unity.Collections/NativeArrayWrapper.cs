@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using HarmonyLib;
 
 namespace UniTAS.Plugin.UnitySafeWrappers.Wrappers.Unity.Collections;
@@ -8,14 +9,14 @@ namespace UniTAS.Plugin.UnitySafeWrappers.Wrappers.Unity.Collections;
 public class NativeArrayWrapper<T> : UnityInstanceWrap
 {
     private readonly Type _allocator;
-    private readonly Func<T[]> _toArray;
+    private readonly MethodBase _toArray;
 
     public NativeArrayWrapper(object instance) : base(instance)
     {
         var genericArg = typeof(T);
         var wrappedType = AccessTools.TypeByName("Unity.Collections.NativeArray`1").MakeGenericType(genericArg);
         _allocator = AccessTools.TypeByName("Unity.Collections.Allocator");
-        _toArray = AccessTools.MethodDelegate<Func<T[]>>(AccessTools.Method(wrappedType, "ToArray"), Instance);
+        _toArray = AccessTools.Method(wrappedType, "ToArray");
         WrappedType = wrappedType;
     }
 
@@ -37,6 +38,6 @@ public class NativeArrayWrapper<T> : UnityInstanceWrap
 
     public T[] ToArray()
     {
-        return _toArray();
+        return (T[])_toArray.Invoke(Instance, new object[0]);
     }
 }
