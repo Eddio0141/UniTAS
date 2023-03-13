@@ -9,6 +9,7 @@ namespace UniTAS.Plugin.UnitySafeWrappers.Wrappers.Unity.Collections;
 public class NativeArrayWrapper<T> : UnityInstanceWrap
 {
     private readonly Type _allocator;
+    private readonly Type _nativeArrayOptions;
     private readonly MethodBase _toArray;
 
     public NativeArrayWrapper(object instance) : base(instance)
@@ -16,6 +17,7 @@ public class NativeArrayWrapper<T> : UnityInstanceWrap
         var genericArg = typeof(T);
         var wrappedType = AccessTools.TypeByName("Unity.Collections.NativeArray`1").MakeGenericType(genericArg);
         _allocator = AccessTools.TypeByName("Unity.Collections.Allocator");
+        _nativeArrayOptions = AccessTools.TypeByName("Unity.Collections.NativeArrayOptions");
         _toArray = AccessTools.Method(wrappedType, "ToArray");
         WrappedType = wrappedType;
     }
@@ -31,7 +33,16 @@ public class NativeArrayWrapper<T> : UnityInstanceWrap
             }
         }
 
-        base.NewInstance(args);
+        if (args.Length == 2 && args[0] is int && args[1].GetType() == _allocator)
+        {
+            args = new[] { args[0], args[1], Enum.Parse(_nativeArrayOptions, "ClearMemory") };
+            Instance = AccessTools.Constructor(WrappedType, new[] { typeof(int), _allocator, _nativeArrayOptions })
+                .Invoke(args);
+        }
+        else
+        {
+            base.NewInstance(args);
+        }
     }
 
     protected override Type WrappedType { get; }

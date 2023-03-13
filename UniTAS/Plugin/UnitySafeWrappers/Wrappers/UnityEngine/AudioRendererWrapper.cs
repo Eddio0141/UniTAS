@@ -46,7 +46,7 @@ public class AudioRendererWrapper : IAudioRendererWrapper
     public bool Render<T>(NativeArrayWrapper<T> nativeArray)
     {
         var instance = nativeArray.Instance;
-        return (bool)_render.Invoke(instance, new object[0]);
+        return (bool)_render.Invoke(null, new[] { instance });
     }
 
     public bool Start()

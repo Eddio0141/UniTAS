@@ -4,7 +4,7 @@ namespace UniTAS.Plugin.UnitySafeWrappers;
 
 public abstract class UnityInstanceWrap
 {
-    public object Instance { get; private set; }
+    public object Instance { get; protected set; }
     protected abstract Type WrappedType { get; }
 
     protected UnityInstanceWrap(object instance)
