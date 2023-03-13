@@ -49,7 +49,7 @@ public class GameNativeAudioRenderer : Renderer
         _logger = logger;
     }
 
-    protected override void Start()
+    public override void Start()
     {
         base.Start();
 
@@ -67,7 +67,7 @@ public class GameNativeAudioRenderer : Renderer
         _logger.LogInfo("Audio capture started");
     }
 
-    protected override void Stop()
+    public override void Stop()
     {
         base.Stop();
 
@@ -79,7 +79,7 @@ public class GameNativeAudioRenderer : Renderer
         _logger.LogInfo("Audio capture complete");
     }
 
-    protected override void Update()
+    public override void Update()
     {
         var sampleCount = _audioRendererWrapper.GetSampleCountForCaptureFrame;
         var nativeArray = _unityInstanceWrapFactory.CreateNew<NativeArrayWrapper<float>>(sampleCount, Allocator.Temp);
