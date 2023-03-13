@@ -159,7 +159,6 @@ public static class ContainerRegister
             c.ForSingletonOf<GameRender>().Use<GameRender>();
             c.For<IGameRender>().Use(x => x.GetInstance<GameRender>());
             c.For<IOnLastUpdate>().Use(x => x.GetInstance<GameRender>());
-            c.For<IOnAudioFilterRead>().Use(x => x.GetInstance<GameRender>());
 
             c.ForSingletonOf<AudioGrabberHandler>().Use<AudioGrabberHandler>();
             c.For<IOnAwake>().Use(x => x.GetInstance<AudioGrabberHandler>());

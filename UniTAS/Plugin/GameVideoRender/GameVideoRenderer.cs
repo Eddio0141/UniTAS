@@ -1,11 +1,13 @@
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using UniTAS.Plugin.Logger;
 using UnityEngine;
 
 namespace UniTAS.Plugin.GameVideoRender;
 
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public class GameVideoRenderer : Renderer
 {
     private readonly Process _ffmpeg = new();
