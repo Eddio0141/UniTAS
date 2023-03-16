@@ -46,7 +46,7 @@ public class GameRender : IGameRender, IOnLastUpdate
 
     public void Start()
     {
-        if (_recording) return;
+        if (_recording || _renderers == null) return;
         _recording = true;
 
         _logger.LogInfo("Starting recording");
