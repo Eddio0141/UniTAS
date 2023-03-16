@@ -80,6 +80,7 @@ public class GameNativeAudioRenderer : Renderer
         _audioRendererWrapper.Stop();
         _audioProcessingThread.Join();
         WriteHeader();
+        _audioFileStream.Flush();
         _audioFileStream.Close();
 
         foreach (var cache in _nativeArrayArgCache)

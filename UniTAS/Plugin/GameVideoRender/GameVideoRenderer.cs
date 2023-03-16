@@ -222,6 +222,7 @@ public class GameVideoRenderer : Renderer
             _ffmpeg.StandardInput.BaseStream.Write(bytes, 0, len);
         }
 
+        _ffmpeg.StandardInput.BaseStream.Flush();
         Trace.Write("Video processing thread finished");
     }
 }
