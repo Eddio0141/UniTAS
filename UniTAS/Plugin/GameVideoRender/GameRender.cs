@@ -14,19 +14,34 @@ public class GameRender : IGameRender, IOnLastUpdate
 
     public int Fps
     {
-        get => _gameVideoRenderer.Fps;
-        set => _gameVideoRenderer.Fps = value;
+        get => _videoRenderer.Fps;
+        set => _videoRenderer.Fps = value;
     }
 
+    private readonly VideoRenderer _videoRenderer;
     private readonly Renderer[] _renderers;
-    private readonly GameVideoRenderer _gameVideoRenderer;
 
-    public GameRender(ILogger logger, IEnumerable<Renderer> renderers)
+    public GameRender(ILogger logger, IEnumerable<VideoRenderer> videoRenderers,
+        IEnumerable<AudioRenderer> audioRenderers)
     {
         _logger = logger;
 
-        _renderers = renderers.Where(x => x.Available).ToArray();
-        _gameVideoRenderer = (GameVideoRenderer)_renderers.FirstOrDefault(x => x is GameVideoRenderer);
+        _videoRenderer = videoRenderers.FirstOrDefault(x => x.Available);
+        var audioRenderer = audioRenderers.FirstOrDefault(x => x.Available);
+
+        if (_videoRenderer == null)
+        {
+            _logger.LogError("No video renderer available");
+            return;
+        }
+
+        if (audioRenderer == null)
+        {
+            _logger.LogError("No audio renderer available");
+            return;
+        }
+
+        _renderers = new Renderer[] { _videoRenderer, audioRenderer };
     }
 
     public void Start()

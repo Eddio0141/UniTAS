@@ -8,30 +8,16 @@ using UnityEngine;
 namespace UniTAS.Plugin.GameVideoRender;
 
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-public class GameVideoRenderer : Renderer
+public class GameVideoRenderer : VideoRenderer
 {
     private readonly Process _ffmpeg = new();
     private readonly int _width = Screen.width;
     private readonly int _height = Screen.height;
-    private const string OutputPath = "output.mp4";
     private Texture2D _texture2D;
     private bool _initialSkipVideoTimeLeft;
     private float _renderTimeLeft;
     private Thread _videoProcessingThread;
     private Queue<Color32[]> _videoProcessingQueue;
-
-    private int _fps = 60;
-    private float _recordFrameTime = 1f / 60f;
-
-    public int Fps
-    {
-        get => _fps;
-        set
-        {
-            _recordFrameTime = 1f / value;
-            _fps = value;
-        }
-    }
 
     private readonly ILogger _logger;
 
@@ -170,7 +156,7 @@ public class GameVideoRenderer : Renderer
         // make up for lost time
         if (_renderTimeLeft < 0)
         {
-            var framesCountRaw = -_renderTimeLeft / _recordFrameTime;
+            var framesCountRaw = -_renderTimeLeft / RecordFrameTime;
             var framesCount = (int)framesCountRaw;
 
             for (var i = 0; i < framesCount; i++)
@@ -179,7 +165,7 @@ public class GameVideoRenderer : Renderer
             }
 
             // add any left frames
-            _renderTimeLeft = (framesCountRaw - framesCount) * -_recordFrameTime;
+            _renderTimeLeft = (framesCountRaw - framesCount) * -RecordFrameTime;
         }
 
         _videoProcessingQueue.Enqueue(pixels);
@@ -191,7 +177,7 @@ public class GameVideoRenderer : Renderer
         _measurements++;
 #endif
 
-        _renderTimeLeft += _recordFrameTime;
+        _renderTimeLeft += RecordFrameTime;
     }
 
     public override bool Available => true;

@@ -14,10 +14,8 @@ namespace UniTAS.Plugin.GameVideoRender;
 /// <summary>
 /// A renderer that uses the native audio renderer to record audio
 /// </summary>
-public class GameNativeAudioRenderer : Renderer
+public class GameNativeAudioRenderer : AudioRenderer
 {
-    private const string OutputFile = "audio.wav";
-
     private FileStream _audioFileStream;
 
     private Thread _audioProcessingThread;
@@ -59,7 +57,7 @@ public class GameNativeAudioRenderer : Renderer
     {
         base.Start();
 
-        _audioFileStream = new(OutputFile, FileMode.Create);
+        _audioFileStream = new(OutputPath, FileMode.Create);
         _audioProcessingQueue.Clear();
 
         if (!_audioRendererWrapper.Start())
