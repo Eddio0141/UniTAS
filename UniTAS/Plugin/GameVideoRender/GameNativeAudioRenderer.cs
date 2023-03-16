@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using UniTAS.Plugin.Logger;
@@ -41,12 +42,17 @@ public class GameNativeAudioRenderer : Renderer
 
     public override bool Available => _audioRendererWrapper.Available;
 
+    private readonly object[] _nativeArrayArgCache = new object[2];
+
+    private readonly Dictionary<int, NativeArrayWrapper<float>> _nativeArrayCache = new();
+
     public GameNativeAudioRenderer(IAudioRendererWrapper audioRendererWrapper,
         IUnityInstanceWrapFactory unityInstanceWrapFactory, ILogger logger)
     {
         _audioRendererWrapper = audioRendererWrapper;
         _unityInstanceWrapFactory = unityInstanceWrapFactory;
         _logger = logger;
+        _nativeArrayArgCache[1] = Allocator.Persistent;
     }
 
     public override void Start()
@@ -76,14 +82,32 @@ public class GameNativeAudioRenderer : Renderer
         WriteHeader();
         _audioFileStream.Close();
 
+        foreach (var cache in _nativeArrayArgCache)
+        {
+            if (cache is NativeArrayWrapper<float> nativeArrayWrapper)
+            {
+                nativeArrayWrapper.Dispose();
+            }
+        }
+
+        _nativeArrayCache.Clear();
+
         _logger.LogInfo("Audio capture complete");
     }
 
     public override void Update()
     {
         var sampleCount = _audioRendererWrapper.GetSampleCountForCaptureFrame;
-        var nativeArray =
-            _unityInstanceWrapFactory.CreateNew<NativeArrayWrapper<float>>(sampleCount * _channels, Allocator.Temp);
+        var len = sampleCount * _channels;
+
+        if (!_nativeArrayCache.TryGetValue(len, out var nativeArray))
+        {
+            Trace.Write($"Caching native array, len: {len}");
+            _nativeArrayArgCache[0] = len;
+            nativeArray = _unityInstanceWrapFactory.CreateNew<NativeArrayWrapper<float>>(_nativeArrayArgCache);
+            _nativeArrayCache.Add(len, nativeArray);
+        }
+
         if (!_audioRendererWrapper.Render(nativeArray))
         {
             _logger.LogWarning("Something went wrong trying to grab audio data");

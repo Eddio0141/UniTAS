@@ -17,6 +17,8 @@ public class AudioRendererWrapper : IAudioRendererWrapper
     private readonly Func<bool> _start;
     private readonly Func<bool> _stop;
 
+    private readonly object[] _renderArgCache = new object[1];
+
     public AudioRendererWrapper()
     {
         var audioRendererType = AccessTools.TypeByName("UnityEngine.AudioRenderer");
@@ -45,8 +47,8 @@ public class AudioRendererWrapper : IAudioRendererWrapper
 
     public bool Render<T>(NativeArrayWrapper<T> nativeArray)
     {
-        var instance = nativeArray.Instance;
-        return (bool)_render.Invoke(null, new[] { instance });
+        _renderArgCache[0] = nativeArray.Instance;
+        return (bool)_render.Invoke(null, _renderArgCache);
     }
 
     public bool Start()

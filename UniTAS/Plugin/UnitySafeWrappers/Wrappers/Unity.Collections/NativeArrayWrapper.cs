@@ -11,6 +11,7 @@ public class NativeArrayWrapper<T> : UnityInstanceWrap
     private readonly Type _allocator;
     private readonly Type _nativeArrayOptions;
     private readonly MethodBase _toArray;
+    private readonly MethodBase _dispose;
 
     public NativeArrayWrapper(object instance) : base(instance)
     {
@@ -19,6 +20,7 @@ public class NativeArrayWrapper<T> : UnityInstanceWrap
         _allocator = AccessTools.TypeByName("Unity.Collections.Allocator");
         _nativeArrayOptions = AccessTools.TypeByName("Unity.Collections.NativeArrayOptions");
         _toArray = AccessTools.Method(wrappedType, "ToArray");
+        _dispose = AccessTools.Method(wrappedType, "Dispose");
         WrappedType = wrappedType;
     }
 
@@ -50,5 +52,10 @@ public class NativeArrayWrapper<T> : UnityInstanceWrap
     public T[] ToArray()
     {
         return (T[])_toArray.Invoke(Instance, new object[0]);
+    }
+
+    public void Dispose()
+    {
+        _dispose.Invoke(Instance, new object[0]);
     }
 }
