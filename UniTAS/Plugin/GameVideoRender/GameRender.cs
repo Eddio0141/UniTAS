@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using UniTAS.Plugin.Interfaces.Update;
 using UniTAS.Plugin.Logger;
@@ -21,8 +24,10 @@ public class GameRender : IGameRender, IOnLastUpdate
     private readonly VideoRenderer _videoRenderer;
     private readonly Renderer[] _renderers;
 
+    private readonly Process _ffmpegMergeVideoAudio;
+
     public GameRender(ILogger logger, IEnumerable<VideoRenderer> videoRenderers,
-        IEnumerable<AudioRenderer> audioRenderers)
+        IEnumerable<AudioRenderer> audioRenderers, IFfmpegRunner ffmpegRunner)
     {
         _logger = logger;
 
@@ -41,7 +46,34 @@ public class GameRender : IGameRender, IOnLastUpdate
             return;
         }
 
+        if (!ffmpegRunner.Available)
+        {
+            _logger.LogError("ffmpeg not available");
+            return;
+        }
+
         _renderers = new Renderer[] { _videoRenderer, audioRenderer };
+
+        _ffmpegMergeVideoAudio = ffmpegRunner.FfmpegProcess;
+
+        _ffmpegMergeVideoAudio.StartInfo.Arguments =
+            $"-y -i {VideoRenderer.OutputPath} -i {AudioRenderer.OutputPath} -c:v copy -c:a aac output.mp4";
+
+        _ffmpegMergeVideoAudio.ErrorDataReceived += (_, args) =>
+        {
+            if (args.Data != null)
+            {
+                _logger.LogDebug($"Audio video merge - {args.Data}");
+            }
+        };
+
+        _ffmpegMergeVideoAudio.OutputDataReceived += (_, args) =>
+        {
+            if (args.Data != null)
+            {
+                _logger.LogDebug($"Audio video merge - {args.Data}");
+            }
+        };
     }
 
     public void Start()
@@ -69,6 +101,45 @@ public class GameRender : IGameRender, IOnLastUpdate
         foreach (var renderer in _renderers)
         {
             renderer.Stop();
+        }
+
+        _logger.LogDebug("Merging audio and video");
+
+        // start merge
+        _ffmpegMergeVideoAudio.Start();
+        _ffmpegMergeVideoAudio.BeginErrorReadLine();
+        _ffmpegMergeVideoAudio.BeginOutputReadLine();
+
+        _ffmpegMergeVideoAudio.WaitForExit();
+
+        // stop stderr and stdout
+        _ffmpegMergeVideoAudio.CancelErrorRead();
+        _ffmpegMergeVideoAudio.CancelOutputRead();
+
+        if (_ffmpegMergeVideoAudio.ExitCode != 0)
+        {
+            _logger.LogError("ffmpeg exited with non-zero exit code, merge failed");
+            return;
+        }
+
+        try
+        {
+            // delete video file
+            File.Delete(VideoRenderer.OutputPath);
+        }
+        catch (Exception e)
+        {
+            Trace.Write("Exception trying to delete video file, ignoring: " + e);
+        }
+        
+        try
+        {
+            // delete audio file
+            File.Delete(AudioRenderer.OutputPath);
+        }
+        catch (Exception e)
+        {
+            Trace.Write("Exception trying to delete audio file, ignoring: " + e);
         }
 
         _logger.LogInfo("Successfully stopped recording");

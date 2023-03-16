@@ -10,7 +10,7 @@ namespace UniTAS.Plugin.GameVideoRender;
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public class GameVideoRenderer : VideoRenderer
 {
-    private readonly Process _ffmpeg = new();
+    private readonly Process _ffmpeg;
     private readonly int _width = Screen.width;
     private readonly int _height = Screen.height;
     private Texture2D _texture2D;
@@ -27,18 +27,20 @@ public class GameVideoRenderer : VideoRenderer
     private int _measurements;
 #endif
 
-    public GameVideoRenderer(ILogger logger)
+    public override bool Available { get; } = true;
+
+    public GameVideoRenderer(ILogger logger, IFfmpegRunner ffmpegRunner)
     {
         _logger = logger;
-    }
 
-    public override void Start()
-    {
-        base.Start();
+        if (!ffmpegRunner.Available)
+        {
+            _logger.LogError("ffmpeg not available");
+            Available = false;
+            return;
+        }
 
-        // TODO check if ffmpeg is installed
-        _ffmpeg.StartInfo.FileName = "ffmpeg";
-
+        _ffmpeg = ffmpegRunner.FfmpegProcess;
         // ReSharper disable StringLiteralTypo
         var ffmpegArgs =
             $"-y -f rawvideo -vcodec rawvideo -pix_fmt rgb24 -s:v {_width}x{_height} -r {Fps} -i - " +
@@ -47,16 +49,11 @@ public class GameVideoRenderer : VideoRenderer
         _logger.LogDebug($"ffmpeg arguments: {ffmpegArgs}");
         _ffmpeg.StartInfo.Arguments = ffmpegArgs;
 
-        _ffmpeg.StartInfo.UseShellExecute = false;
-        _ffmpeg.StartInfo.RedirectStandardInput = true;
-        _ffmpeg.StartInfo.RedirectStandardOutput = true;
-        _ffmpeg.StartInfo.RedirectStandardError = true;
-
         _ffmpeg.ErrorDataReceived += (_, args) =>
         {
             if (args.Data != null)
             {
-                _logger.LogDebug(args.Data);
+                _logger.LogDebug($"Video - {args.Data}");
             }
         };
 
@@ -64,9 +61,15 @@ public class GameVideoRenderer : VideoRenderer
         {
             if (args.Data != null)
             {
-                _logger.LogDebug(args.Data);
+                _logger.LogDebug($"Video - {args.Data}");
             }
         };
+    }
+
+    public override void Start()
+    {
+        base.Start();
+
         // TODO let it able to change resolution
         _texture2D = new(_width, _height, TextureFormat.RGB24, false);
 
@@ -86,6 +89,8 @@ public class GameVideoRenderer : VideoRenderer
         _totalTicks = 0;
         _measurements = 0;
 #endif
+
+        _logger.LogInfo("Video capture started");
     }
 
     public override void Stop()
@@ -117,7 +122,7 @@ public class GameVideoRenderer : VideoRenderer
 
         if (_ffmpeg.ExitCode != 0)
         {
-            _logger.LogError("ffmpeg exited with non-zero exit code");
+            _logger.LogError("ffmpeg exited with non-zero exit code for video");
             // return;
         }
 
@@ -179,8 +184,6 @@ public class GameVideoRenderer : VideoRenderer
 
         _renderTimeLeft += RecordFrameTime;
     }
-
-    public override bool Available => true;
 
     private void VideoProcessingThread()
     {
