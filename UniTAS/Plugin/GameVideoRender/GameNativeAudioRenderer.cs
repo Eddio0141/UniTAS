@@ -82,7 +82,8 @@ public class GameNativeAudioRenderer : Renderer
     public override void Update()
     {
         var sampleCount = _audioRendererWrapper.GetSampleCountForCaptureFrame;
-        var nativeArray = _unityInstanceWrapFactory.CreateNew<NativeArrayWrapper<float>>(sampleCount, Allocator.Temp);
+        var nativeArray =
+            _unityInstanceWrapFactory.CreateNew<NativeArrayWrapper<float>>(sampleCount * _channels, Allocator.Temp);
         if (!_audioRendererWrapper.Render(nativeArray))
         {
             _logger.LogWarning("Something went wrong trying to grab audio data");
