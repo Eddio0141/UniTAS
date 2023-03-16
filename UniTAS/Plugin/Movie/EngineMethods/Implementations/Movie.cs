@@ -51,4 +51,14 @@ public class Movie
         GameRender.Fps = (int)fps;
         return DynValue.Nil;
     }
+
+    [MoonSharpModuleMethod]
+    public static DynValue capture_resolution(ScriptExecutionContext _, CallbackArguments args)
+    {
+        var width = args.AsType(0, "capture_resolution", DataType.Number).Number;
+        var height = args.AsType(1, "capture_resolution", DataType.Number).Number;
+        GameRender.Width = (int)width;
+        GameRender.Height = (int)height;
+        return DynValue.Nil;
+    }
 }

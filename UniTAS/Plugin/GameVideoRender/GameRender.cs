@@ -17,8 +17,17 @@ public class GameRender : IGameRender, IOnLastUpdate
 
     public int Fps
     {
-        get => _videoRenderer.Fps;
         set => _videoRenderer.Fps = value;
+    }
+
+    public int Width
+    {
+        set => _videoRenderer.Width = value;
+    }
+
+    public int Height
+    {
+        set => _videoRenderer.Height = value;
     }
 
     private readonly VideoRenderer _videoRenderer;
@@ -131,7 +140,7 @@ public class GameRender : IGameRender, IOnLastUpdate
         {
             Trace.Write("Exception trying to delete video file, ignoring: " + e);
         }
-        
+
         try
         {
             // delete audio file

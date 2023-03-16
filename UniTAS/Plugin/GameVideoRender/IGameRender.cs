@@ -4,5 +4,7 @@ public interface IGameRender
 {
     void Start();
     void Stop();
-    int Fps { get; set; }
+    int Fps { set; }
+    int Width { set; }
+    int Height { set; }
 }

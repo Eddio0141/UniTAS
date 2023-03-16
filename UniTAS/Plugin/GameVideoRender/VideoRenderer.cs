@@ -1,11 +1,14 @@
-﻿namespace UniTAS.Plugin.GameVideoRender;
+﻿using UnityEngine;
+
+namespace UniTAS.Plugin.GameVideoRender;
 
 public abstract class VideoRenderer : Renderer
 {
     public const string OutputPath = "temp.mp4";
 
-    private int _fps = 60;
-    protected float RecordFrameTime { get; private set; } = 1f / 60f;
+    private const int DefaultFps = 60;
+    private int _fps = DefaultFps;
+    protected float RecordFrameTime { get; private set; } = 1f / DefaultFps;
 
     public int Fps
     {
@@ -16,4 +19,7 @@ public abstract class VideoRenderer : Renderer
             _fps = value;
         }
     }
+
+    public int Width { get; set; } = Screen.width;
+    public int Height { get; set; } = Screen.height;
 }
