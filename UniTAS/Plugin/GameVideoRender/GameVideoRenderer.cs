@@ -8,30 +8,17 @@ using UnityEngine;
 namespace UniTAS.Plugin.GameVideoRender;
 
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-public class GameVideoRenderer : Renderer
+public class GameVideoRenderer : VideoRenderer
 {
-    private readonly Process _ffmpeg = new();
-    private readonly int _width = Screen.width;
-    private readonly int _height = Screen.height;
-    private const string OutputPath = "output.mp4";
+    private readonly Process _ffmpeg;
     private Texture2D _texture2D;
     private bool _initialSkipVideoTimeLeft;
     private float _renderTimeLeft;
     private Thread _videoProcessingThread;
+
     private Queue<Color32[]> _videoProcessingQueue;
-
-    private int _fps = 60;
-    private float _recordFrameTime = 1f / 60f;
-
-    public int Fps
-    {
-        get => _fps;
-        set
-        {
-            _recordFrameTime = 1f / value;
-            _fps = value;
-        }
-    }
+    private Queue<int> _videoProcessingQueueWidth;
+    private Queue<int> _videoProcessingQueueHeight;
 
     private readonly ILogger _logger;
 
@@ -41,36 +28,33 @@ public class GameVideoRenderer : Renderer
     private int _measurements;
 #endif
 
-    public GameVideoRenderer(ILogger logger)
+    public override bool Available { get; } = true;
+
+    public GameVideoRenderer(ILogger logger, IFfmpegRunner ffmpegRunner)
     {
         _logger = logger;
-    }
 
-    public override void Start()
-    {
-        base.Start();
+        if (!ffmpegRunner.Available)
+        {
+            _logger.LogError("ffmpeg not available");
+            Available = false;
+            return;
+        }
 
-        // TODO check if ffmpeg is installed
-        _ffmpeg.StartInfo.FileName = "ffmpeg";
-
+        _ffmpeg = ffmpegRunner.FfmpegProcess;
         // ReSharper disable StringLiteralTypo
         var ffmpegArgs =
-            $"-y -f rawvideo -vcodec rawvideo -pix_fmt rgb24 -s:v {_width}x{_height} -r {Fps} -i - " +
+            $"-y -f rawvideo -vcodec rawvideo -pix_fmt rgb24 -s:v {Width}x{Height} -r {Fps} -i - " +
             $"-an -c:v libx264 -pix_fmt yuv420p -preset ultrafast -crf 16 -vf vflip {OutputPath}";
         // ReSharper restore StringLiteralTypo
         _logger.LogDebug($"ffmpeg arguments: {ffmpegArgs}");
         _ffmpeg.StartInfo.Arguments = ffmpegArgs;
 
-        _ffmpeg.StartInfo.UseShellExecute = false;
-        _ffmpeg.StartInfo.RedirectStandardInput = true;
-        _ffmpeg.StartInfo.RedirectStandardOutput = true;
-        _ffmpeg.StartInfo.RedirectStandardError = true;
-
         _ffmpeg.ErrorDataReceived += (_, args) =>
         {
             if (args.Data != null)
             {
-                _logger.LogDebug(args.Data);
+                _logger.LogDebug($"Video - {args.Data}");
             }
         };
 
@@ -78,11 +62,16 @@ public class GameVideoRenderer : Renderer
         {
             if (args.Data != null)
             {
-                _logger.LogDebug(args.Data);
+                _logger.LogDebug($"Video - {args.Data}");
             }
         };
-        // TODO let it able to change resolution
-        _texture2D = new(_width, _height, TextureFormat.RGB24, false);
+    }
+
+    public override void Start()
+    {
+        base.Start();
+
+        _texture2D = new(Width, Height, TextureFormat.RGB24, false);
 
         _ffmpeg.Start();
         _ffmpeg.BeginErrorReadLine();
@@ -92,6 +81,9 @@ public class GameVideoRenderer : Renderer
         _renderTimeLeft = 0f;
 
         _videoProcessingQueue = new();
+        _videoProcessingQueueWidth = new();
+        _videoProcessingQueueHeight = new();
+
         _videoProcessingThread = new(VideoProcessingThread);
         _videoProcessingThread.Start();
 
@@ -100,6 +92,8 @@ public class GameVideoRenderer : Renderer
         _totalTicks = 0;
         _measurements = 0;
 #endif
+
+        _logger.LogInfo("Video capture started");
     }
 
     public override void Stop()
@@ -131,20 +125,8 @@ public class GameVideoRenderer : Renderer
 
         if (_ffmpeg.ExitCode != 0)
         {
-            _logger.LogError("ffmpeg exited with non-zero exit code");
-            // return;
+            _logger.LogError("ffmpeg exited with non-zero exit code for video");
         }
-
-        // merge audio and video
-        // TODO clean this up later
-        // var ffmpeg = new Process();
-        // ffmpeg.StartInfo.FileName = "ffmpeg";
-        // ffmpeg.StartInfo.Arguments =
-        //     $"-y -i {OutputPath} -i {OutputFile} -c:v copy -c:a aac -strict experimental {OutputPath}-merged.mp4";
-        //
-        // ffmpeg.StartInfo.UseShellExecute = false;
-        // ffmpeg.Start();
-        // ffmpeg.WaitForExit();
     }
 
     public override void Update()
@@ -164,25 +146,33 @@ public class GameVideoRenderer : Renderer
 #if TRACE
         var sw = Stopwatch.StartNew();
 #endif
-        _texture2D.ReadPixels(new(0, 0, _width, _height), 0, 0);
+
+        var width = Screen.width;
+        var height = Screen.height;
+        if (_texture2D.width != width || _texture2D.height != height)
+        {
+            _texture2D.Resize(width, height);
+        }
+
+        _texture2D.ReadPixels(new(0, 0, width, height), 0, 0);
         var pixels = _texture2D.GetPixels32();
 
         // make up for lost time
         if (_renderTimeLeft < 0)
         {
-            var framesCountRaw = -_renderTimeLeft / _recordFrameTime;
+            var framesCountRaw = -_renderTimeLeft / RecordFrameTime;
             var framesCount = (int)framesCountRaw;
 
             for (var i = 0; i < framesCount; i++)
             {
-                _videoProcessingQueue.Enqueue(pixels);
+                PushQueue(pixels, width, height);
             }
 
             // add any left frames
-            _renderTimeLeft = (framesCountRaw - framesCount) * -_recordFrameTime;
+            _renderTimeLeft = (framesCountRaw - framesCount) * -RecordFrameTime;
         }
 
-        _videoProcessingQueue.Enqueue(pixels);
+        PushQueue(pixels, width, height);
 
 #if TRACE
         sw.Stop();
@@ -191,10 +181,15 @@ public class GameVideoRenderer : Renderer
         _measurements++;
 #endif
 
-        _renderTimeLeft += _recordFrameTime;
+        _renderTimeLeft += RecordFrameTime;
     }
 
-    public override bool Available => true;
+    private void PushQueue(Color32[] pixels, int width, int height)
+    {
+        _videoProcessingQueue.Enqueue(pixels);
+        _videoProcessingQueueWidth.Enqueue(width);
+        _videoProcessingQueueHeight.Enqueue(height);
+    }
 
     private void VideoProcessingThread()
     {
@@ -207,6 +202,8 @@ public class GameVideoRenderer : Renderer
             }
 
             var pixels = _videoProcessingQueue.Dequeue();
+            var width = _videoProcessingQueueWidth.Dequeue();
+            var height = _videoProcessingQueueHeight.Dequeue();
 
             var len = pixels.Length * 3;
             var bytes = new byte[len];
@@ -219,9 +216,53 @@ public class GameVideoRenderer : Renderer
                 bytes[i * 3 + 2] = color.b;
             }
 
+            // resize
+            if (pixels.Length != Width * Height)
+            {
+                bytes = Resize(bytes, width, height, Width, Height);
+            }
+
             _ffmpeg.StandardInput.BaseStream.Write(bytes, 0, len);
         }
 
+        _ffmpeg.StandardInput.BaseStream.Flush();
         Trace.Write("Video processing thread finished");
+    }
+
+    /// <summary>
+    /// Resizes the image to a different resolution while maintaining aspect ratio
+    /// Fills in the rest of the image with black
+    /// </summary>
+    /// <returns>Resized array</returns>
+    private static byte[] Resize(byte[] original, int originalWidth, int originalHeight, int targetWidth,
+        int targetHeight)
+    {
+        var resized = new byte[targetWidth * targetHeight * 3];
+
+        var xMove = (float)originalWidth / targetWidth;
+        var yMove = (float)originalHeight / targetHeight;
+
+        var startX = targetWidth > originalWidth ? (originalWidth - targetWidth) / 2 : 0;
+        var startY = targetHeight > originalHeight ? (originalHeight - targetHeight) / 2 : 0;
+        var endX = targetWidth > originalWidth ? startX + originalWidth : targetWidth;
+        var endY = targetHeight > originalHeight ? startY + originalHeight : targetHeight;
+
+        for (var y = startY; y < endY; y++)
+        {
+            for (var x = startX; x < endX; x++)
+            {
+                var originalX = (int)(x * xMove);
+                var originalY = (int)(y * yMove);
+
+                var originalIndex = (originalY * originalWidth + originalX) * 3;
+                var targetIndex = (y * targetWidth + x) * 3;
+
+                resized[targetIndex] = original[originalIndex];
+                resized[targetIndex + 1] = original[originalIndex + 1];
+                resized[targetIndex + 2] = original[originalIndex + 2];
+            }
+        }
+
+        return resized;
     }
 }

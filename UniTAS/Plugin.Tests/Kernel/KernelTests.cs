@@ -5,6 +5,7 @@ using UniTAS.Plugin.GameEnvironment;
 using UniTAS.Plugin.GameInitialRestart;
 using UniTAS.Plugin.GameRestart;
 using UniTAS.Plugin.GameRestart.EventInterfaces;
+using UniTAS.Plugin.GameVideoRender;
 using UniTAS.Plugin.Interfaces.Update;
 using UniTAS.Plugin.Logger;
 using UniTAS.Plugin.MonoBehaviourController;
@@ -18,6 +19,20 @@ namespace UniTAS.Plugin.Tests.Kernel;
 
 public class KernelTests
 {
+    [Fact]
+    public void FfmpegRunner()
+    {
+        var kernel = KernelUtils.Init();
+
+        var ffmpegRunner = kernel.GetInstance<IFfmpegRunner>();
+        Assert.NotNull(ffmpegRunner);
+
+        var ffmpegRunner2 = kernel.GetInstance<IFfmpegRunner>();
+        Assert.NotNull(ffmpegRunner2);
+
+        Assert.NotSame(ffmpegRunner, ffmpegRunner2);
+    }
+
     [Fact]
     public void Restart()
     {
