@@ -45,13 +45,6 @@ public class GameVideoRenderer : VideoRenderer
         }
 
         _ffmpeg = ffmpegProcessFactory.CreateFfmpegProcess();
-        // ReSharper disable StringLiteralTypo
-        var ffmpegArgs =
-            $"-y -f rawvideo -vcodec rawvideo -pix_fmt rgb24 -s:v {Width}x{Height} -r {Fps} -i - " +
-            $"-an -c:v libx264 -pix_fmt yuv420p -preset ultrafast -crf 16 -vf vflip {OutputPath}";
-        // ReSharper restore StringLiteralTypo
-        _logger.LogDebug($"ffmpeg arguments: {ffmpegArgs}");
-        _ffmpeg.StartInfo.Arguments = ffmpegArgs;
 
         _ffmpeg.ErrorDataReceived += (_, args) =>
         {
@@ -68,6 +61,16 @@ public class GameVideoRenderer : VideoRenderer
                 _logger.LogDebug($"Video - {args.Data}");
             }
         };
+
+        _ffmpegResize = ffmpegProcessFactory.CreateFfmpegProcess();
+
+        _ffmpegResize.ErrorDataReceived += (_, args) =>
+        {
+            if (args.Data != null)
+            {
+                _logger.LogDebug($"Video resize - {args.Data}");
+            }
+        };
     }
 
     public override void Start()
@@ -75,6 +78,14 @@ public class GameVideoRenderer : VideoRenderer
         base.Start();
 
         _texture2D = new(Width, Height, TextureFormat.RGB24, false);
+
+        // ReSharper disable StringLiteralTypo
+        var ffmpegArgs =
+            $"-y -f rawvideo -vcodec rawvideo -pix_fmt rgb24 -s:v {Width}x{Height} -r {Fps} -i - " +
+            $"-an -c:v libx264 -pix_fmt yuv420p -preset ultrafast -crf 16 -vf vflip {OutputPath}";
+        // ReSharper restore StringLiteralTypo
+        _logger.LogDebug($"ffmpeg arguments: {ffmpegArgs}");
+        _ffmpeg.StartInfo.Arguments = ffmpegArgs;
 
         _ffmpeg.Start();
         _ffmpeg.BeginErrorReadLine();
@@ -221,7 +232,7 @@ public class GameVideoRenderer : VideoRenderer
             // resize
             if (pixels.Length != Width * Height)
             {
-                bytes = ImageOperation.Resize(bytes, width, height, Width, Height);
+                bytes = Resize(bytes, width, height);
             }
 
             _ffmpeg.StandardInput.BaseStream.Write(bytes, 0, bytes.Length);
@@ -229,5 +240,41 @@ public class GameVideoRenderer : VideoRenderer
 
         _ffmpeg.StandardInput.BaseStream.Flush();
         Trace.Write("Video processing thread finished");
+    }
+
+    private byte[] Resize(byte[] bytes, int width, int height)
+    {
+        // resize raw image from screen size to video size
+        var args =
+            // ReSharper disable StringLiteralTypo
+            $"-f rawvideo -pixel_format rgb24 -video_size {width}x{height} -i - -vf scale={Width}:{Height} -f rawvideo -pixel_format rgb24 -";
+        // ReSharper restore StringLiteralTypo
+
+        _ffmpegResize.StartInfo.Arguments = args;
+        _ffmpegResize.Start();
+
+        _ffmpegResize.StandardInput.BaseStream.Write(bytes, 0, bytes.Length);
+        _ffmpegResize.StandardInput.BaseStream.Flush();
+        _ffmpegResize.StandardInput.Close();
+
+        var resizedBytes = new byte[Width * Height * 3];
+        var readCountLeft = resizedBytes.Length;
+        var readCount = 0;
+
+        while (readCountLeft > 0)
+        {
+            var read = _ffmpegResize.StandardOutput.BaseStream.Read(resizedBytes, readCount, readCountLeft);
+            readCountLeft -= read;
+            readCount += read;
+        }
+
+        _ffmpegResize.WaitForExit();
+
+        if (_ffmpegResize.ExitCode != 0)
+        {
+            _logger.LogError("ffmpeg exited with non-zero exit code for video resize");
+        }
+
+        return resizedBytes;
     }
 }
