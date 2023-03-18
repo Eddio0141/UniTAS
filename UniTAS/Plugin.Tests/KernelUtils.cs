@@ -2,12 +2,12 @@ using System.Diagnostics.CodeAnalysis;
 using BepInEx.Logging;
 using MoonSharp.Interpreter;
 using StructureMap;
+using UniTAS.Plugin.FFMpeg;
 using UniTAS.Plugin.FixedUpdateSync;
 using UniTAS.Plugin.GameEnvironment;
 using UniTAS.Plugin.GameInitialRestart;
 using UniTAS.Plugin.GameRestart;
 using UniTAS.Plugin.GameRestart.EventInterfaces;
-using UniTAS.Plugin.GameVideoRender;
 using UniTAS.Plugin.Interfaces.StartEvent;
 using UniTAS.Plugin.Interfaces.Update;
 using UniTAS.Plugin.Logger;
@@ -226,8 +226,8 @@ public static class KernelUtils
             c.Forward<Env, IOnLastUpdate>();
 
             c.For<IMovieEngine>().Use<MovieEngine>();
-            
-            c.For<IFfmpegRunner>().Use<FfmpegRunner>();
+
+            c.For<IFfmpegProcessFactory>().Use<FfmpegProcessFactory>();
         });
 
         return kernel;

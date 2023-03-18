@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using UniTAS.Plugin.FFMpeg;
 using UniTAS.Plugin.Logger;
+using UniTAS.Plugin.Utils;
 using UnityEngine;
 
 namespace UniTAS.Plugin.GameVideoRender;
@@ -31,8 +32,6 @@ public class GameVideoRenderer : VideoRenderer
 
     public override bool Available { get; } = true;
 
-    private readonly Process _ffmpegResize;
-
     public GameVideoRenderer(ILogger logger, IFfmpegProcessFactory ffmpegProcessFactory)
     {
         _logger = logger;
@@ -59,16 +58,6 @@ public class GameVideoRenderer : VideoRenderer
             if (args.Data != null)
             {
                 _logger.LogDebug($"Video - {args.Data}");
-            }
-        };
-
-        _ffmpegResize = ffmpegProcessFactory.CreateFfmpegProcess();
-
-        _ffmpegResize.ErrorDataReceived += (_, args) =>
-        {
-            if (args.Data != null)
-            {
-                _logger.LogDebug($"Video resize - {args.Data}");
             }
         };
     }
@@ -232,7 +221,7 @@ public class GameVideoRenderer : VideoRenderer
             // resize
             if (pixels.Length != Width * Height)
             {
-                bytes = Resize(bytes, width, height);
+                bytes = ImageOperation.Resize(bytes, width, height, Width, Height);
             }
 
             _ffmpeg.StandardInput.BaseStream.Write(bytes, 0, bytes.Length);
@@ -240,41 +229,5 @@ public class GameVideoRenderer : VideoRenderer
 
         _ffmpeg.StandardInput.BaseStream.Flush();
         Trace.Write("Video processing thread finished");
-    }
-
-    private byte[] Resize(byte[] bytes, int width, int height)
-    {
-        // resize raw image from screen size to video size
-        var args =
-            // ReSharper disable StringLiteralTypo
-            $"-f rawvideo -pixel_format rgb24 -video_size {width}x{height} -i - -vf scale={Width}:{Height} -f rawvideo -pixel_format rgb24 -";
-        // ReSharper restore StringLiteralTypo
-
-        _ffmpegResize.StartInfo.Arguments = args;
-        _ffmpegResize.Start();
-
-        _ffmpegResize.StandardInput.BaseStream.Write(bytes, 0, bytes.Length);
-        _ffmpegResize.StandardInput.BaseStream.Flush();
-        _ffmpegResize.StandardInput.Close();
-
-        var resizedBytes = new byte[Width * Height * 3];
-        var readCountLeft = resizedBytes.Length;
-        var readCount = 0;
-
-        while (readCountLeft > 0)
-        {
-            var read = _ffmpegResize.StandardOutput.BaseStream.Read(resizedBytes, readCount, readCountLeft);
-            readCountLeft -= read;
-            readCount += read;
-        }
-
-        _ffmpegResize.WaitForExit();
-
-        if (_ffmpegResize.ExitCode != 0)
-        {
-            _logger.LogError("ffmpeg exited with non-zero exit code for video resize");
-        }
-
-        return resizedBytes;
     }
 }
