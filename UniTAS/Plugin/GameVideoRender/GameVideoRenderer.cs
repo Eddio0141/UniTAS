@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using UniTAS.Plugin.Logger;
+using UniTAS.Plugin.Utils;
 using UnityEngine;
 
 namespace UniTAS.Plugin.GameVideoRender;
@@ -205,8 +206,7 @@ public class GameVideoRenderer : VideoRenderer
             var width = _videoProcessingQueueWidth.Dequeue();
             var height = _videoProcessingQueueHeight.Dequeue();
 
-            var len = pixels.Length * 3;
-            var bytes = new byte[len];
+            var bytes = new byte[pixels.Length * 3];
 
             for (var i = 0; i < pixels.Length; i++)
             {
@@ -219,50 +219,13 @@ public class GameVideoRenderer : VideoRenderer
             // resize
             if (pixels.Length != Width * Height)
             {
-                bytes = Resize(bytes, width, height, Width, Height);
+                bytes = ImageOperation.Resize(bytes, width, height, Width, Height);
             }
 
-            _ffmpeg.StandardInput.BaseStream.Write(bytes, 0, len);
+            _ffmpeg.StandardInput.BaseStream.Write(bytes, 0, bytes.Length);
         }
 
         _ffmpeg.StandardInput.BaseStream.Flush();
         Trace.Write("Video processing thread finished");
-    }
-
-    /// <summary>
-    /// Resizes the image to a different resolution while maintaining aspect ratio
-    /// Fills in the rest of the image with black
-    /// </summary>
-    /// <returns>Resized array</returns>
-    private static byte[] Resize(byte[] original, int originalWidth, int originalHeight, int targetWidth,
-        int targetHeight)
-    {
-        var resized = new byte[targetWidth * targetHeight * 3];
-
-        var xMove = (float)originalWidth / targetWidth;
-        var yMove = (float)originalHeight / targetHeight;
-
-        var startX = targetWidth > originalWidth ? (originalWidth - targetWidth) / 2 : 0;
-        var startY = targetHeight > originalHeight ? (originalHeight - targetHeight) / 2 : 0;
-        var endX = targetWidth > originalWidth ? startX + originalWidth : targetWidth;
-        var endY = targetHeight > originalHeight ? startY + originalHeight : targetHeight;
-
-        for (var y = startY; y < endY; y++)
-        {
-            for (var x = startX; x < endX; x++)
-            {
-                var originalX = (int)(x * xMove);
-                var originalY = (int)(y * yMove);
-
-                var originalIndex = (originalY * originalWidth + originalX) * 3;
-                var targetIndex = (y * targetWidth + x) * 3;
-
-                resized[targetIndex] = original[originalIndex];
-                resized[targetIndex + 1] = original[originalIndex + 1];
-                resized[targetIndex + 2] = original[originalIndex + 2];
-            }
-        }
-
-        return resized;
     }
 }
