@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using UniTAS.Plugin.FFMpeg;
 using UniTAS.Plugin.Interfaces.Update;
 using UniTAS.Plugin.Logger;
 
@@ -36,7 +37,7 @@ public class GameRender : IGameRender, IOnLastUpdate
     private readonly Process _ffmpegMergeVideoAudio;
 
     public GameRender(ILogger logger, IEnumerable<VideoRenderer> videoRenderers,
-        IEnumerable<AudioRenderer> audioRenderers, IFfmpegRunner ffmpegRunner)
+        IEnumerable<AudioRenderer> audioRenderers, IFfmpegProcessFactory ffmpegProcessFactory)
     {
         _logger = logger;
 
@@ -55,7 +56,7 @@ public class GameRender : IGameRender, IOnLastUpdate
             return;
         }
 
-        if (!ffmpegRunner.Available)
+        if (!ffmpegProcessFactory.Available)
         {
             _logger.LogError("ffmpeg not available");
             return;
@@ -63,7 +64,7 @@ public class GameRender : IGameRender, IOnLastUpdate
 
         _renderers = new Renderer[] { _videoRenderer, audioRenderer };
 
-        _ffmpegMergeVideoAudio = ffmpegRunner.FfmpegProcess;
+        _ffmpegMergeVideoAudio = ffmpegProcessFactory.CreateFfmpegProcess();
 
         _ffmpegMergeVideoAudio.StartInfo.Arguments =
             $"-y -i {VideoRenderer.OutputPath} -i {AudioRenderer.OutputPath} -c:v copy -c:a aac output.mp4";

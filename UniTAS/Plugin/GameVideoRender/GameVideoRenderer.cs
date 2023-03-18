@@ -2,8 +2,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
+using UniTAS.Plugin.FFMpeg;
 using UniTAS.Plugin.Logger;
-using UniTAS.Plugin.Utils;
 using UnityEngine;
 
 namespace UniTAS.Plugin.GameVideoRender;
@@ -31,18 +31,20 @@ public class GameVideoRenderer : VideoRenderer
 
     public override bool Available { get; } = true;
 
-    public GameVideoRenderer(ILogger logger, IFfmpegRunner ffmpegRunner)
+    private readonly Process _ffmpegResize;
+
+    public GameVideoRenderer(ILogger logger, IFfmpegProcessFactory ffmpegProcessFactory)
     {
         _logger = logger;
 
-        if (!ffmpegRunner.Available)
+        if (!ffmpegProcessFactory.Available)
         {
             _logger.LogError("ffmpeg not available");
             Available = false;
             return;
         }
 
-        _ffmpeg = ffmpegRunner.FfmpegProcess;
+        _ffmpeg = ffmpegProcessFactory.CreateFfmpegProcess();
         // ReSharper disable StringLiteralTypo
         var ffmpegArgs =
             $"-y -f rawvideo -vcodec rawvideo -pix_fmt rgb24 -s:v {Width}x{Height} -r {Fps} -i - " +

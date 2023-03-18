@@ -2,33 +2,36 @@
 using System.Diagnostics.CodeAnalysis;
 using UniTAS.Plugin.Logger;
 
-namespace UniTAS.Plugin.GameVideoRender;
+namespace UniTAS.Plugin.FFMpeg;
 
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-public class FfmpegRunner : IFfmpegRunner
+public class FfmpegProcessFactory : IFfmpegProcessFactory
 {
     public bool Available { get; private set; }
 
     private readonly string[] _ffmpegChecks = { "ffmpeg.exe", "ffmpeg" };
     private string _ffmpegPath;
 
-    public Process FfmpegProcess => Available
-        ? new Process
-        {
-            StartInfo =
+    public Process CreateFfmpegProcess()
+    {
+        return Available
+            ? new Process
             {
-                FileName = _ffmpegPath,
-                UseShellExecute = false,
-                RedirectStandardInput = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
+                StartInfo =
+                {
+                    FileName = _ffmpegPath,
+                    UseShellExecute = false,
+                    RedirectStandardInput = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                }
             }
-        }
-        : null;
+            : null;
+    }
 
     private readonly ILogger _logger;
 
-    public FfmpegRunner(ILogger logger)
+    public FfmpegProcessFactory(ILogger logger)
     {
         _logger = logger;
         CheckFfmpeg();
