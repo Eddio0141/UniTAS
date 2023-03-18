@@ -31,8 +31,8 @@ public static class ImageOperation
         var newXOffset = newWidth < targetWidth ? (targetWidth - newWidth) / 2 : 0;
         var newYOffset = newHeight < targetHeight ? (targetHeight - newHeight) / 2 : 0;
 
-        var originalXChange = 1 / ratioX;
-        var originalYChange = 1 / ratioY;
+        var originalXChange = (double)originalWidth / newWidth;
+        var originalYChange = (double)originalHeight / newHeight;
 
         for (var y = 0; y < newHeight; y++)
         {
