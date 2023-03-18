@@ -51,4 +51,24 @@ public class ImageOperationTests
         var result = ImageOperation.Resize(original, 2, 2, 3, 3);
         Assert.Equal(resized, result);
     }
+
+    [Fact]
+    public void Resize_900x600To1080p()
+    {
+        var original = Enumerable.Repeat((byte)0, 900 * 600 * 3).ToArray();
+        var resized = Enumerable.Repeat((byte)0, 1920 * 1080 * 3).ToArray();
+
+        var result = ImageOperation.Resize(original, 900, 600, 1920, 1080);
+        Assert.Equal(resized, result);
+    }
+
+    [Fact]
+    public void Resize_900x600To15x10()
+    {
+        var original = Enumerable.Repeat((byte)0, 900 * 600 * 3).ToArray();
+        var resized = Enumerable.Repeat((byte)0, 15 * 10 * 3).ToArray();
+
+        var result = ImageOperation.Resize(original, 900, 600, 15, 10);
+        Assert.Equal(resized, result);
+    }
 }
