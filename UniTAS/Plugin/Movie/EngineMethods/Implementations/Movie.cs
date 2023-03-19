@@ -38,13 +38,11 @@ public class Movie
     {
         // args
         // width, height, fps
-        var arg = args.AsType(0, "start_capture", DataType.Table);
+        var arg = args.RawGet(0, true);
 
-        var argTable = arg.Type switch
-        {
-            DataType.Table => args.AsType(0, "start_capture", DataType.Table).Table,
-            _ => new(context.GetScript())
-        };
+        var argTable = arg is { Type: DataType.Table }
+            ? args.AsType(0, "start_capture", DataType.Table).Table
+            : new(context.GetScript());
 
         var width = Utils.MoonSharp.GetTableArg(argTable, "width", 1920);
         var height = Utils.MoonSharp.GetTableArg(argTable, "height", 1080);
