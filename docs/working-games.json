@@ -1,0 +1,32 @@
+[
+    {
+        "Game": "[It Steals]",
+        "Version": "Latest",
+        "Status": "Perfect",
+        "Notes": ""
+    },
+    {
+        "Game": "[Do It For Me]",
+        "Version": "Latest",
+        "Status": "Perfect",
+        "Notes": ""
+    },
+    {
+        "Game": "[yurayura tutt]",
+        "Version": "Latest",
+        "Status": "Desync",
+        "Notes": "TAS desyncs due to invoke to `YuraYuraModel.PlayFootStepForReal` and `YuraYuraModel.PlayFootStep` being inconsistent between runs. Stack trace doesn't show what is calling this"
+    },
+    {
+        "Game": "[HuniePop]",
+        "Version": "1.2.0",
+        "Status": "Broken",
+        "Notes": "Exception on game start"
+    },
+    {
+        "Game": "[KTaNE]",
+        "Version": "?",
+        "Status": "Broken",
+        "Notes": "Exception on game start"
+    }
+]
