@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Errors at runtime and set up now don't dump the exception stack trace
 - Renamed and moved method `adv` as `movie.frame_advance`
 
-### Project
+### UniTAS set up tool
 - Moved UniTAS set up tool to [unitas-setup-tool](https://github.com/Eddio0141/unitas_setup_tool)
 
 ## Fixed
