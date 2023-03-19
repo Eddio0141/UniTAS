@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using BepInEx.Logging;
 using MoonSharp.Interpreter;
 using StructureMap;
+using UniTAS.Plugin.FFMpeg;
 using UniTAS.Plugin.FixedUpdateSync;
 using UniTAS.Plugin.GameEnvironment;
 using UniTAS.Plugin.GameInitialRestart;
@@ -15,7 +16,6 @@ using UniTAS.Plugin.Movie;
 using UniTAS.Plugin.Movie.Engine;
 using UniTAS.Plugin.Movie.EngineMethods;
 using UniTAS.Plugin.Movie.Parsers.MovieParser;
-using UniTAS.Plugin.Movie.RunnerEvents;
 using UniTAS.Plugin.ReverseInvoker;
 using UniTAS.Plugin.StaticFieldStorage;
 using UniTAS.Plugin.UnitySafeWrappers;
@@ -28,18 +28,13 @@ namespace UniTAS.Plugin.Tests;
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Local")]
 public static class KernelUtils
 {
-    public class Env : EngineMethodClass, IOnLastUpdate, IOnMovieStart
+    public class Env : EngineMethodClass, IOnLastUpdate
     {
         public float Fps { get; set; }
         public float Frametime { get; set; }
 
         [MoonSharpHidden]
         public void OnLastUpdate()
-        {
-        }
-
-        [MoonSharpHidden]
-        public void OnMovieStart()
         {
         }
     }
@@ -229,9 +224,10 @@ public static class KernelUtils
             c.ForSingletonOf<Env>().Use<Env>();
             c.Forward<Env, EngineMethodClass>();
             c.Forward<Env, IOnLastUpdate>();
-            c.Forward<Env, IOnMovieStart>();
 
             c.For<IMovieEngine>().Use<MovieEngine>();
+
+            c.For<IFfmpegProcessFactory>().Use<FfmpegProcessFactory>();
         });
 
         return kernel;

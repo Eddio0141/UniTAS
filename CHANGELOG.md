@@ -13,12 +13,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `movie` module
 - Added `movie.playback_speed()` to set playback speed
 - Added FPS unlocking for TAS playback
+- Added video rendering with `movie.start_capture()` and `movie.stop_capture()`
 
 ## Changed
 
 ### TAS movie
 - Errors at runtime and set up now don't dump the exception stack trace
-- Renamed method `adv` to `frame_advance`
+- Renamed and moved method `adv` as `movie.frame_advance`
 
 ## Fixed
 
@@ -26,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed movie not playing again if a runtime error occurs
 - Fixed movie not playing again if error occurs when parsed
 - Fixed movie respecting the FPS limit if game has a fixed FPS
+- Fixed accidentally invoking engine methods while set up
 
 # [v0.2.0_v1.1.3] - 2023-03-02
 

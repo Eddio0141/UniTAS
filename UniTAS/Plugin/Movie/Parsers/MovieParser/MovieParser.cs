@@ -30,6 +30,7 @@ public partial class MovieParser : IMovieParser
         var movieEngine = scriptAndMovieEngine.Item2;
 
         var wrappedInput = WrapInput(input);
+        ImplementDummyMethods(movieEngine);
         var engineCoroutine = script.DoString(wrappedInput);
 
         // yield once to see if we are using global scope
@@ -123,6 +124,11 @@ public partial class MovieParser : IMovieParser
     {
         UserData.RegisterAssembly(typeof(MovieParser).Assembly);
 
+        AddFrameAdvance(script);
+    }
+
+    private static void AddFrameAdvance(Script script)
+    {
         // manually modify movie.frame_advance
         const string frameAdvance = @"
 movie.frame_advance = function(frames)

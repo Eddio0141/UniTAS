@@ -27,6 +27,8 @@ jobs:
       uses: Swatinem/rust-cache@v2.2.0
       with:
         workspaces: "./unitas_setup_tool"
+    - name: Setup FFmpeg
+      uses: FedericoCarboni/setup-ffmpeg@v2
     - name: Test plugin
       working-directory: ./UniTAS
       run: dotnet test --configuration ${{ matrix.configuration }}

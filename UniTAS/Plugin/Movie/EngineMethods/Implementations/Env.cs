@@ -3,14 +3,13 @@ using MoonSharp.Interpreter;
 using UniTAS.Plugin.GameEnvironment;
 using UniTAS.Plugin.Interfaces.Update;
 using UniTAS.Plugin.Logger;
-using UniTAS.Plugin.Movie.RunnerEvents;
 using UnityEngine;
 
 namespace UniTAS.Plugin.Movie.EngineMethods.Implementations;
 
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 [SuppressMessage("ReSharper", "UnusedMember.Global")]
-public class Env : EngineMethodClass, IOnLastUpdate, IOnMovieStart
+public class Env : EngineMethodClass, IOnLastUpdate
 {
     private readonly VirtualEnvironment _virtualEnvironment;
     private readonly IMovieLogger _logger;
@@ -24,6 +23,7 @@ public class Env : EngineMethodClass, IOnLastUpdate, IOnMovieStart
         _virtualEnvironment = virtualEnvironment;
         _logger = logger;
         _movieRunner = movieRunner;
+        _movieRunner.OnMovieStart += OnMovieStart;
     }
 
     public float Fps

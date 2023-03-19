@@ -71,7 +71,7 @@ public class MonoBehaviourUpdateInvokePatch
             if (ex != null)
             {
                 Plugin.Log.LogWarning(
-                    $"Error patching MonoBehaviour.Awake, Method: {original.DeclaringType?.FullName ?? "unknown_type"}.{original.Name}, Exception: {ex}");
+                    $"Error patching MonoBehaviour.Awake, Method: {original?.DeclaringType?.FullName ?? "unknown_type"}.{original?.Name ?? "unknown_method"}, Exception: {ex}");
             }
 
             return null;
@@ -94,7 +94,7 @@ public class MonoBehaviourUpdateInvokePatch
             if (ex != null)
             {
                 Plugin.Log.LogWarning(
-                    $"Error patching MonoBehaviour.FixedUpdate, Method: {original.DeclaringType?.FullName ?? "unknown_type"}.{original.Name}, Exception: {ex}");
+                    $"Error patching MonoBehaviour.FixedUpdate, Method: {original?.DeclaringType?.FullName ?? "unknown_type"}.{original?.Name ?? "unknown_method"}, Exception: {ex}");
             }
 
             return null;
@@ -117,7 +117,7 @@ public class MonoBehaviourUpdateInvokePatch
             if (ex != null)
             {
                 Plugin.Log.LogWarning(
-                    $"Error patching MonoBehaviour.Update, Method: {original.DeclaringType?.FullName ?? "unknown_type"}.{original.Name}, Exception: {ex}");
+                    $"Error patching MonoBehaviour.Update, Method: {original?.DeclaringType?.FullName ?? "unknown_type"}.{original?.Name ?? "unknown_method"}, Exception: {ex}");
             }
 
             return null;
@@ -140,7 +140,7 @@ public class MonoBehaviourUpdateInvokePatch
             if (ex != null)
             {
                 Plugin.Log.LogWarning(
-                    $"Error patching MonoBehaviour.OnEnable, Method: {original.DeclaringType?.FullName ?? "unknown_type"}.{original.Name}, Exception: {ex}");
+                    $"Error patching MonoBehaviour.OnEnable, Method: {original?.DeclaringType?.FullName ?? "unknown_type"}.{original?.Name ?? "unknown_method"}, Exception: {ex}");
             }
 
             return null;
@@ -163,7 +163,7 @@ public class MonoBehaviourUpdateInvokePatch
             if (ex != null)
             {
                 Plugin.Log.LogWarning(
-                    $"Error patching MonoBehaviour.Start, Method: {original.DeclaringType?.FullName ?? "unknown_type"}.{original.Name}, Exception: {ex}");
+                    $"Error patching MonoBehaviour.Start, Method: {original?.DeclaringType?.FullName ?? "unknown_type"}.{original?.Name ?? "unknown_method"}, Exception: {ex}");
             }
 
             return null;

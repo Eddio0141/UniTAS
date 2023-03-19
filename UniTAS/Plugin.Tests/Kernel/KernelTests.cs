@@ -1,5 +1,6 @@
 using MoonSharp.Interpreter;
 using StructureMap.Pipeline;
+using UniTAS.Plugin.FFMpeg;
 using UniTAS.Plugin.FixedUpdateSync;
 using UniTAS.Plugin.GameEnvironment;
 using UniTAS.Plugin.GameInitialRestart;
@@ -10,7 +11,6 @@ using UniTAS.Plugin.Logger;
 using UniTAS.Plugin.MonoBehaviourController;
 using UniTAS.Plugin.Movie.Engine;
 using UniTAS.Plugin.Movie.EngineMethods;
-using UniTAS.Plugin.Movie.RunnerEvents;
 using UniTAS.Plugin.ReverseInvoker;
 using UniTAS.Plugin.StaticFieldStorage;
 using UniTAS.Plugin.UnitySafeWrappers.Interfaces;
@@ -19,6 +19,37 @@ namespace UniTAS.Plugin.Tests.Kernel;
 
 public class KernelTests
 {
+    [Fact]
+    public void FfmpegRunner()
+    {
+        var kernel = KernelUtils.Init();
+
+        var ffmpegRunner = kernel.GetInstance<IFfmpegProcessFactory>();
+        Assert.NotNull(ffmpegRunner);
+
+        var ffmpegRunner2 = kernel.GetInstance<IFfmpegProcessFactory>();
+        Assert.NotNull(ffmpegRunner2);
+
+        Assert.NotSame(ffmpegRunner, ffmpegRunner2);
+    }
+
+    [Fact]
+    public void FfmpegFactory()
+    {
+        var kernel = KernelUtils.Init();
+
+        var ffmpegFactory = kernel.GetInstance<IFfmpegProcessFactory>();
+        Assert.NotNull(ffmpegFactory);
+
+        var instance = ffmpegFactory.CreateFfmpegProcess();
+        Assert.NotNull(instance);
+
+        var instance2 = ffmpegFactory.CreateFfmpegProcess();
+        Assert.NotNull(instance2);
+
+        Assert.NotSame(instance, instance2);
+    }
+
     [Fact]
     public void Restart()
     {
@@ -213,10 +244,5 @@ public class KernelTests
         Assert.NotNull(env4);
 
         Assert.Same(env, env4);
-
-        var env5 = kernel.GetAllInstances<IOnMovieStart>().OfType<KernelUtils.Env>().Single();
-        Assert.NotNull(env5);
-
-        Assert.Same(env, env5);
     }
 }

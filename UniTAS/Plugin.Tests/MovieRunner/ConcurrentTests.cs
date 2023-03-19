@@ -1,5 +1,4 @@
 using MoonSharp.Interpreter;
-using UniTAS.Plugin.Movie.Engine.Exceptions;
 
 namespace UniTAS.Plugin.Tests.MovieRunner;
 
@@ -115,19 +114,26 @@ concurrent.register(preUpdate, true, 1, 2)
     {
         const string input = @"
 function preUpdate(arg1, arg2)
-    if arg1.type == ""number"" then
-        i = arg1 + arg2
-    else
-        i = nil
-    end
+    i = arg1 + arg2
 end
 
 i = 0
 -- intentionally not passing args
 concurrent.register(preUpdate)
+movie.frame_advance()
 ";
 
-        Assert.Throws<CoroutineResumeException>(() => Utils.Setup(input));
+        var movieRunner = Utils.Setup(input).Item1;
+        var script = movieRunner.Script;
+
+        Assert.Equal(DataType.Nil, script.Globals.Get("i").Type);
+        Assert.False(movieRunner.Finished);
+
+        movieRunner.Update();
+
+        Assert.Equal(DataType.Number, script.Globals.Get("i").Type);
+        Assert.Equal(0, script.Globals.Get("i").Number);
+        Assert.True(movieRunner.Finished);
     }
 
     [Fact]

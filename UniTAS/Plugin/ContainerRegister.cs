@@ -10,6 +10,7 @@ using UniTAS.Plugin.GameRestart;
 using UniTAS.Plugin.GameRestart.EventInterfaces;
 using UniTAS.Plugin.GameRestart.Events;
 using UniTAS.Plugin.GameSpeedUnlocker;
+using UniTAS.Plugin.GameVideoRender;
 using UniTAS.Plugin.GUI.MainMenu.Tabs;
 using UniTAS.Plugin.Interfaces;
 using UniTAS.Plugin.Interfaces.StartEvent;
@@ -20,7 +21,6 @@ using UniTAS.Plugin.MonoBehaviourController;
 using UniTAS.Plugin.Movie;
 using UniTAS.Plugin.Movie.EngineMethods;
 using UniTAS.Plugin.Movie.EngineMethods.Implementations;
-using UniTAS.Plugin.Movie.RunnerEvents;
 using UniTAS.Plugin.Patches.PatchProcessor;
 using UniTAS.Plugin.ReverseInvoker;
 using UniTAS.Plugin.StaticFieldStorage;
@@ -30,6 +30,7 @@ using UniTAS.Plugin.Trackers.SceneTracker;
 using UniTAS.Plugin.UnitySafeWrappers;
 using UniTAS.Plugin.UnitySafeWrappers.Interfaces;
 using UniTAS.Plugin.UnitySafeWrappers.Wrappers;
+using UniTAS.Plugin.UnitySafeWrappers.Wrappers.UnityEngine;
 
 namespace UniTAS.Plugin;
 
@@ -47,6 +48,8 @@ public static class ContainerRegister
                 scanner.AddAllTypesOf<PatchProcessor>();
                 scanner.AddAllTypesOf<IMainMenuTab>();
                 scanner.AddAllTypesOf<EngineMethodClass>();
+                scanner.AddAllTypesOf<VideoRenderer>();
+                scanner.AddAllTypesOf<AudioRenderer>();
                 scanner.ExcludeType<Env>();
             });
 
@@ -148,13 +151,17 @@ public static class ContainerRegister
 
             c.ForSingletonOf<GameSpeedUnlocker.GameSpeedUnlocker>().Use<GameSpeedUnlocker.GameSpeedUnlocker>();
             c.For<IGameSpeedUnlocker>().Use(x => x.GetInstance<GameSpeedUnlocker.GameSpeedUnlocker>());
-            c.For<IOnMovieStart>().Use(x => x.GetInstance<GameSpeedUnlocker.GameSpeedUnlocker>());
-            c.For<IOnMovieEnd>().Use(x => x.GetInstance<GameSpeedUnlocker.GameSpeedUnlocker>());
 
             c.ForSingletonOf<Env>().Use<Env>();
             c.For<EngineMethodClass>().Use(x => x.GetInstance<Env>());
             c.For<IOnLastUpdate>().Use(x => x.GetInstance<Env>());
-            c.For<IOnMovieStart>().Use(x => x.GetInstance<Env>());
+
+            c.ForSingletonOf<GameRender>().Use<GameRender>();
+            c.For<IGameRender>().Use(x => x.GetInstance<GameRender>());
+            c.For<IOnLastUpdate>().Use(x => x.GetInstance<GameRender>());
+
+            c.ForSingletonOf<AudioRendererWrapper>().Use<AudioRendererWrapper>();
+            c.For<IAudioRendererWrapper>().Use(x => x.GetInstance<AudioRendererWrapper>());
         });
 
         return container;
