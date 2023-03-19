@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using UniTAS.Plugin.Logger;
 
 namespace UniTAS.Plugin.FFMpeg;
@@ -39,31 +40,55 @@ public class FfmpegProcessFactory : IFfmpegProcessFactory
 
     private void CheckFfmpeg()
     {
+        string path = null;
         foreach (var ffmpegCheck in _ffmpegChecks)
         {
-            // try running
-            var ffmpeg = new Process();
-            ffmpeg.StartInfo.FileName = ffmpegCheck;
-            ffmpeg.StartInfo.UseShellExecute = false;
-            ffmpeg.StartInfo.RedirectStandardInput = true;
-            ffmpeg.StartInfo.RedirectStandardOutput = true;
-            ffmpeg.StartInfo.RedirectStandardError = true;
-
-            try
+            Trace.Write($"checking ffmpeg at path: {ffmpegCheck}");
+            if (TryRunning(ffmpegCheck))
             {
-                ffmpeg.Start();
-                ffmpeg.WaitForExit();
-
-                // found ffmpeg
-                _logger.LogDebug($"Found ffmpeg at {ffmpegCheck}");
-                Available = true;
-                _ffmpegPath = ffmpegCheck;
+                path = ffmpegCheck;
                 break;
             }
-            catch
+
+            var gamePath = Path.Combine(BepInEx.Paths.GameRootPath, ffmpegCheck);
+            Trace.Write($"checking ffmpeg at path: {gamePath}");
+            if (TryRunning(gamePath))
             {
-                // ignored
+                path = gamePath;
+                break;
             }
+        }
+
+        if (path == null)
+        {
+            return;
+        }
+
+        _ffmpegPath = path;
+        Available = true;
+        _logger.LogInfo($"Ffmpeg found at {_ffmpegPath}");
+    }
+
+    private static bool TryRunning(string path)
+    {
+        // try running
+        var ffmpeg = new Process();
+        ffmpeg.StartInfo.FileName = path;
+        ffmpeg.StartInfo.UseShellExecute = false;
+        ffmpeg.StartInfo.RedirectStandardInput = true;
+        ffmpeg.StartInfo.RedirectStandardOutput = true;
+        ffmpeg.StartInfo.RedirectStandardError = true;
+
+        try
+        {
+            ffmpeg.Start();
+            ffmpeg.WaitForExit();
+
+            return true;
+        }
+        catch
+        {
+            return false;
         }
     }
 }
