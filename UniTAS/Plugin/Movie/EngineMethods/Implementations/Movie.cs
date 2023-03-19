@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using MoonSharp.Interpreter;
 using UniTAS.Plugin.GameVideoRender;
+using UniTAS.Plugin.Logger;
 using UniTAS.Plugin.MainThreadSpeedController;
 
 namespace UniTAS.Plugin.Movie.EngineMethods.Implementations;
@@ -16,6 +17,8 @@ public class Movie
     private static readonly IGameRender GameRender = Plugin.Kernel.GetInstance<IGameRender>();
 
     private static readonly IMovieRunner MovieRunner = Plugin.Kernel.GetInstance<IMovieRunner>();
+
+    private static readonly IMovieLogger MovieLogger = Plugin.Kernel.GetInstance<IMovieLogger>();
 
     static Movie()
     {
@@ -33,6 +36,46 @@ public class Movie
     [MoonSharpModuleMethod]
     public static DynValue start_capture(ScriptExecutionContext _, CallbackArguments args)
     {
+        // args
+        // width, height, fps
+        var argTable = args.AsType(0, "start_capture", DataType.Table).Table;
+
+        var width = Utils.MoonSharp.GetTableArg(argTable, "width", 1920);
+        var height = Utils.MoonSharp.GetTableArg(argTable, "height", 1080);
+        var fps = Utils.MoonSharp.GetTableArg(argTable, "fps", 60);
+
+        if (width <= 1)
+        {
+            MovieLogger.LogWarning("width must be 2 or greater, falling back to 2");
+            width = 2;
+        }
+        else if (width % 2 != 0)
+        {
+            MovieLogger.LogWarning("width must be even, falling back to width + 1");
+            width += 1;
+        }
+
+        if (height <= 1)
+        {
+            MovieLogger.LogWarning("height must be 2 or greater, falling back to 2");
+            height = 2;
+        }
+        else if (height % 2 != 0)
+        {
+            MovieLogger.LogWarning("height must be even, falling back to height + 1");
+            height += 1;
+        }
+
+        if (fps <= 0)
+        {
+            MovieLogger.LogWarning("fps must be 1 or greater, falling back to 1");
+            fps = 1;
+        }
+
+        GameRender.Width = width;
+        GameRender.Height = height;
+        GameRender.Fps = fps;
+
         GameRender.Start();
         return DynValue.Nil;
     }
@@ -41,24 +84,6 @@ public class Movie
     public static DynValue stop_capture(ScriptExecutionContext _, CallbackArguments args)
     {
         GameRender.Stop();
-        return DynValue.Nil;
-    }
-
-    [MoonSharpModuleMethod]
-    public static DynValue capture_fps(ScriptExecutionContext _, CallbackArguments args)
-    {
-        var fps = args.AsType(0, "capture_fps", DataType.Number).Number;
-        GameRender.Fps = (int)fps;
-        return DynValue.Nil;
-    }
-
-    [MoonSharpModuleMethod]
-    public static DynValue capture_resolution(ScriptExecutionContext _, CallbackArguments args)
-    {
-        var width = args.AsType(0, "capture_resolution", DataType.Number).Number;
-        var height = args.AsType(1, "capture_resolution", DataType.Number).Number;
-        GameRender.Width = (int)width;
-        GameRender.Height = (int)height;
         return DynValue.Nil;
     }
 }
