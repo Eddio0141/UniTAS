@@ -18,23 +18,11 @@ jobs:
       uses: actions/setup-dotnet@v3.0.3
       with:
         dotnet-version: '6.0.x'
-    - name: Set up cargo
-      uses: dtolnay/rust-toolchain@v1
-      with:
-        toolchain: stable
-        components: rustfmt, clippy
-    - name: Rust cache
-      uses: Swatinem/rust-cache@v2.2.0
-      with:
-        workspaces: "./unitas_setup_tool"
     - name: Setup FFmpeg
       uses: FedericoCarboni/setup-ffmpeg@v2
     - name: Test plugin
       working-directory: ./UniTAS
       run: dotnet test --configuration ${{ matrix.configuration }}
-    - name: Clippy for set up tool
-      working-directory: ./unitas_setup_tool
-      run: cargo clippy --all-targets --all-features -- -D warnings
     - name: Build windows
       if: runner.os == 'Windows'
       run: ./build.ps1 ${{ matrix.configuration }}
