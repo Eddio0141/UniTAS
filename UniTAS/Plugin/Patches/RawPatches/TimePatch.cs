@@ -13,6 +13,7 @@ namespace UniTAS.Plugin.Patches.RawPatches;
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 [SuppressMessage("ReSharper", "UnusedMember.Local")]
+[SuppressMessage("ReSharper", "RedundantAssignment")]
 public class TimePatch
 {
     private static readonly IPatchReverseInvoker
@@ -67,10 +68,25 @@ public class TimePatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static void Postfix(ref float __result)
+        private static bool Prefix(ref float __result)
         {
-            var gameTime = VirtualEnvironment.GameTime;
-            __result = (float)(__result - gameTime.FixedUnscaledTimeOffset);
+            __result = (float)VirtualEnvironment.GameTime.FixedUnscaledTime;
+            return false;
+        }
+    }
+
+    [HarmonyPatch(typeof(Time), "fixedUnscaledTimeAsDouble", MethodType.Getter)]
+    private class get_fixedUnscaledTimeAsDouble
+    {
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static bool Prefix(ref double __result)
+        {
+            __result = VirtualEnvironment.GameTime.FixedUnscaledTime;
+            return false;
         }
     }
 
@@ -88,13 +104,14 @@ public class TimePatch
         private static readonly Traverse fixedUnscaledTime =
             Traverse.Create(typeof(Time)).Property("fixedUnscaledTime");
 
-        private static void Postfix(ref float __result)
+        private static bool Prefix(ref float __result)
         {
             // When called from inside MonoBehaviour's FixedUpdate, it returns Time.fixedUnscaledTime
             var gameTime = VirtualEnvironment.GameTime;
             __result = inFixedTimeStep.PropertyExists() && inFixedTimeStep.GetValue<bool>()
                 ? fixedUnscaledTime.GetValue<float>()
-                : (float)(__result - gameTime.UnscaledTimeOffset);
+                : (float)gameTime.UnscaledTime;
+            return false;
         }
     }
 
@@ -112,31 +129,13 @@ public class TimePatch
         private static readonly Traverse fixedUnscaledTimeAsDouble =
             Traverse.Create(typeof(Time)).Property("fixedUnscaledTimeAsDouble");
 
-        private static void Postfix(ref double __result)
+        private static bool Prefix(ref double __result)
         {
             // When called from inside MonoBehaviour's FixedUpdate, it returns Time.fixedUnscaledTimeAsDouble
-            if (inFixedTimeStep.PropertyExists() && inFixedTimeStep.GetValue<bool>())
-                __result = fixedUnscaledTimeAsDouble.GetValue<double>();
-            else
-            {
-                var gameTime = VirtualEnvironment.GameTime;
-                __result -= gameTime.UnscaledTimeOffset;
-            }
-        }
-    }
-
-    [HarmonyPatch(typeof(Time), "fixedUnscaledTimeAsDouble", MethodType.Getter)]
-    private class get_fixedUnscaledTimeAsDouble
-    {
-        private static Exception Cleanup(MethodBase original, Exception ex)
-        {
-            return PatchHelper.CleanupIgnoreFail(original, ex);
-        }
-
-        private static void Postfix(ref double __result)
-        {
-            var gameTime = VirtualEnvironment.GameTime;
-            __result -= gameTime.FixedUnscaledTimeOffset;
+            __result = inFixedTimeStep.PropertyExists() && inFixedTimeStep.GetValue<bool>()
+                ? fixedUnscaledTimeAsDouble.GetValue<double>()
+                : VirtualEnvironment.GameTime.UnscaledTime;
+            return false;
         }
     }
 
@@ -178,16 +177,20 @@ public class TimePatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static void Postfix(ref float __result)
+        private static bool Prefix(ref float __result)
         {
             if (ReverseInvoker.InnerCall())
             {
-                ReverseInvoker.Return();
-                return;
+                return false;
             }
 
-            var gameTime = VirtualEnvironment.GameTime;
-            __result = (float)(__result - gameTime.SecondsSinceStartUpOffset);
+            __result = (float)VirtualEnvironment.GameTime.SecondsSinceStartUp;
+            return false;
+        }
+
+        private static void Postfix()
+        {
+            ReverseInvoker.Return();
         }
     }
 
@@ -199,10 +202,10 @@ public class TimePatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static void Postfix(ref double __result)
+        private static bool Prefix(ref double __result)
         {
-            var gameTime = VirtualEnvironment.GameTime;
-            __result -= gameTime.SecondsSinceStartUpOffset;
+            __result = VirtualEnvironment.GameTime.SecondsSinceStartUp;
+            return false;
         }
     }
 
@@ -214,10 +217,10 @@ public class TimePatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static void Postfix(ref float __result)
+        private static bool Prefix(ref float __result)
         {
-            var gameTime = VirtualEnvironment.GameTime;
-            __result = (float)(__result - gameTime.ScaledTimeOffset);
+            __result = (float)VirtualEnvironment.GameTime.ScaledTime;
+            return false;
         }
     }
 
@@ -229,10 +232,10 @@ public class TimePatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static void Postfix(ref double __result)
+        private static bool Prefix(ref double __result)
         {
-            var gameTime = VirtualEnvironment.GameTime;
-            __result -= gameTime.ScaledTimeOffset;
+            __result = VirtualEnvironment.GameTime.ScaledTime;
+            return false;
         }
     }
 
@@ -244,10 +247,11 @@ public class TimePatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static void Postfix(ref float __result)
+        private static bool Prefix(ref float __result)
         {
             var gameTime = VirtualEnvironment.GameTime;
-            __result = (float)(__result - gameTime.ScaledFixedTimeOffset);
+            __result = (float)gameTime.ScaledFixedTime;
+            return false;
         }
     }
 
@@ -259,10 +263,41 @@ public class TimePatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static void Postfix(ref double __result)
+        private static bool Prefix(ref double __result)
         {
             var gameTime = VirtualEnvironment.GameTime;
-            __result -= gameTime.ScaledFixedTimeOffset;
+            __result = gameTime.ScaledFixedTime;
+            return false;
+        }
+    }
+
+    [HarmonyPatch(typeof(Time), "fixedUnscaledDeltaTime", MethodType.Getter)]
+    private class get_fixedUnscaledDeltaTime
+    {
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static bool Prefix(ref float __result)
+        {
+            __result = Time.fixedDeltaTime;
+            return false;
+        }
+    }
+
+    [HarmonyPatch(typeof(Time), "unscaledDeltaTime", MethodType.Getter)]
+    private class get_unscaledDeltaTime
+    {
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static bool Prefix(ref float __result)
+        {
+            __result = Time.deltaTime;
+            return false;
         }
     }
 }

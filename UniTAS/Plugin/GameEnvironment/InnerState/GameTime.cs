@@ -9,18 +9,18 @@ using UnityEngine;
 namespace UniTAS.Plugin.GameEnvironment.InnerState;
 
 // ReSharper disable once ClassNeverInstantiated.Global
-public class GameTime : IOnPreUpdates, IOnGameRestartResume, IOnStart
+public class GameTime : IOnPreUpdates, IOnGameRestartResume, IOnStart, IOnFixedUpdate
 {
     private DateTime StartupTime { get; set; }
 
     public DateTime CurrentTime => StartupTime + TimeSpan.FromSeconds(RealtimeSinceStartup);
     public ulong RenderedFrameCountOffset { get; private set; }
     public ulong FrameCountRestartOffset { get; private set; }
-    public double SecondsSinceStartUpOffset { get; private set; }
-    public double UnscaledTimeOffset { get; private set; }
-    public double FixedUnscaledTimeOffset { get; private set; }
-    public double ScaledTimeOffset { get; private set; }
-    public double ScaledFixedTimeOffset { get; private set; }
+    public double SecondsSinceStartUp { get; private set; }
+    public double UnscaledTime { get; private set; }
+    public double FixedUnscaledTime { get; private set; }
+    public double ScaledTime { get; private set; }
+    public double ScaledFixedTime { get; private set; }
     public float RealtimeSinceStartup { get; private set; }
 
     private bool _pendingFrameCountReset;
@@ -28,7 +28,24 @@ public class GameTime : IOnPreUpdates, IOnGameRestartResume, IOnStart
     public void PreUpdate()
     {
         HandlePendingFrameCountReset();
-        RealtimeSinceStartup += Time.deltaTime;
+
+        var scale = Time.timeScale;
+        var dt = Time.deltaTime;
+        var dtUnscaled = dt / scale;
+
+        RealtimeSinceStartup += dtUnscaled;
+        UnscaledTime += dtUnscaled;
+        ScaledTime += dt;
+        SecondsSinceStartUp += dtUnscaled;
+    }
+
+    public void FixedUpdate()
+    {
+        var dt = Time.fixedDeltaTime;
+
+        // this should be correct?
+        FixedUnscaledTime += dt;
+        ScaledFixedTime += dt;
     }
 
     public override string ToString()
@@ -36,12 +53,12 @@ public class GameTime : IOnPreUpdates, IOnGameRestartResume, IOnStart
         return $"StartupTime: {StartupTime} " +
                $"CurrentTime: {CurrentTime} " +
                $"RenderedFrameCountOffset: {RenderedFrameCountOffset} " +
-               $"SecondsSinceStartUpOffset: {SecondsSinceStartUpOffset} " +
+               $"SecondsSinceStartUp: {SecondsSinceStartUp} " +
                $"FrameCountRestartOffset: {FrameCountRestartOffset} " +
-               $"FixedUnscaledTimeOffset: {FixedUnscaledTimeOffset} " +
-               $"UnscaledTimeOffset: {UnscaledTimeOffset} " +
-               $"ScaledTimeOffset: {ScaledTimeOffset} " +
-               $"ScaledFixedTimeOffset: {ScaledFixedTimeOffset} " +
+               $"FixedUnscaledTime: {FixedUnscaledTime} " +
+               $"UnscaledTime: {UnscaledTime} " +
+               $"ScaledTime: {ScaledTime} " +
+               $"ScaledFixedTime: {ScaledFixedTime} " +
                $"RealtimeSinceStartup: {RealtimeSinceStartup}";
     }
 
@@ -50,22 +67,22 @@ public class GameTime : IOnPreUpdates, IOnGameRestartResume, IOnStart
     public void OnGameRestartResume(DateTime startupTime, bool preMonoBehaviourResume)
     {
         if (!preMonoBehaviourResume) return;
-        
+
         StartupTime = startupTime;
 
         Trace.Write($"Setting startup time to {StartupTime}");
         RenderedFrameCountOffset += (ulong)Time.renderedFrameCount;
-        SecondsSinceStartUpOffset += Time.realtimeSinceStartup;
+        SecondsSinceStartUp = 0;
         FrameCountRestartOffset += (ulong)Time.frameCount;
-        var fixedUnscaledTime = Traverse.Create(typeof(Time)).Property("fixedUnscaledTime");
-        if (fixedUnscaledTime.PropertyExists())
-            FixedUnscaledTimeOffset += fixedUnscaledTime.GetValue<float>();
-        var unscaledTime = Traverse.Create(typeof(Time)).Property("unscaledTime");
-        if (unscaledTime.PropertyExists())
-            UnscaledTimeOffset += unscaledTime.GetValue<float>();
-        ScaledTimeOffset += Time.time;
-        ScaledFixedTimeOffset += Time.fixedTime;
-        RealtimeSinceStartup = 0f;
+        var fixedUnscaledTime = AccessTools.Property(typeof(Time), "fixedUnscaledTime");
+        if (fixedUnscaledTime != null)
+            FixedUnscaledTime = 0;
+        var unscaledTime = AccessTools.Property(typeof(Time), "unscaledTime");
+        if (unscaledTime != null)
+            UnscaledTime = 0;
+        ScaledTime = 0;
+        ScaledFixedTime = 0;
+        RealtimeSinceStartup = 0;
         Trace.Write($"New game time state: {this}");
 
         _pendingFrameCountReset = true;

@@ -49,4 +49,34 @@ public class SystemRandomPatch
             return false;
         }
     }
+
+    [HarmonyPatch(typeof(UnityEngine.Random), nameof(UnityEngine.Random.RandomRangeInt), typeof(int), typeof(int))]
+    private class TestPrint
+    {
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static void Postfix(int minInclusive, int maxExclusive, int __result)
+        {
+            Trace.Write($"UnityEngine.Random.RandomRangeInt({minInclusive}, {maxExclusive}) -> {__result}");
+            Trace.Write($"Invoked from {new StackTrace()}");
+        }
+    }
+
+    [HarmonyPatch(typeof(UnityEngine.Random), nameof(UnityEngine.Random.Range), typeof(float), typeof(float))]
+    private class TestPrint2
+    {
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static void Postfix(float minInclusive, float maxInclusive, float __result)
+        {
+            Trace.Write($"UnityEngine.Random.Range({minInclusive}, {maxInclusive}) -> {__result}");
+            Trace.Write($"Invoked from {new StackTrace()}");
+        }
+    }
 }
