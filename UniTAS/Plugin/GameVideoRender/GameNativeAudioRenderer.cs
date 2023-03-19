@@ -117,7 +117,7 @@ public class GameNativeAudioRenderer : AudioRenderer
 
     private void AudioProcessingThread()
     {
-        while (Recording)
+        while (Recording || _audioProcessingQueue.Count > 0)
         {
             if (_audioProcessingQueue.Count == 0)
             {

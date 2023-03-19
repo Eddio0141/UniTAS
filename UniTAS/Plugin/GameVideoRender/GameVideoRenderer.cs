@@ -18,9 +18,9 @@ public class GameVideoRenderer : VideoRenderer
     private float _renderTimeLeft;
     private Thread _videoProcessingThread;
 
-    private Queue<Color32[]> _videoProcessingQueue;
-    private Queue<int> _videoProcessingQueueWidth;
-    private Queue<int> _videoProcessingQueueHeight;
+    private readonly Queue<Color32[]> _videoProcessingQueue = new();
+    private readonly Queue<int> _videoProcessingQueueWidth = new();
+    private readonly Queue<int> _videoProcessingQueueHeight = new();
 
     private readonly ILogger _logger;
 
@@ -66,7 +66,7 @@ public class GameVideoRenderer : VideoRenderer
     {
         base.Start();
 
-        _texture2D = new(Width, Height, TextureFormat.RGB24, false);
+        _texture2D = new(Screen.width, Screen.height, TextureFormat.RGB24, false);
 
         // ReSharper disable StringLiteralTypo
         var ffmpegArgs =
@@ -83,9 +83,9 @@ public class GameVideoRenderer : VideoRenderer
         _initialSkipVideoTimeLeft = true;
         _renderTimeLeft = 0f;
 
-        _videoProcessingQueue = new();
-        _videoProcessingQueueWidth = new();
-        _videoProcessingQueueHeight = new();
+        _videoProcessingQueue.Clear();
+        _videoProcessingQueueWidth.Clear();
+        _videoProcessingQueueHeight.Clear();
 
         _videoProcessingThread = new(VideoProcessingThread);
         _videoProcessingThread.Start();
@@ -196,7 +196,7 @@ public class GameVideoRenderer : VideoRenderer
 
     private void VideoProcessingThread()
     {
-        while (Recording)
+        while (Recording || _videoProcessingQueue.Count > 0)
         {
             if (_videoProcessingQueue.Count == 0)
             {
