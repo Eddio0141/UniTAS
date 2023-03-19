@@ -31,6 +31,8 @@ public class GameRender : IGameRender, IOnLastUpdate
         set => _videoRenderer.Height = value;
     }
 
+    public string VideoPath { get; set; } = "output.mp4";
+
     private readonly VideoRenderer _videoRenderer;
     private readonly Renderer[] _renderers;
 
@@ -65,9 +67,6 @@ public class GameRender : IGameRender, IOnLastUpdate
         _renderers = new Renderer[] { _videoRenderer, audioRenderer };
 
         _ffmpegMergeVideoAudio = ffmpegProcessFactory.CreateFfmpegProcess();
-
-        _ffmpegMergeVideoAudio.StartInfo.Arguments =
-            $"-y -i {VideoRenderer.OutputPath} -i {AudioRenderer.OutputPath} -c:v copy -c:a aac output.mp4";
 
         _ffmpegMergeVideoAudio.ErrorDataReceived += (_, args) =>
         {
@@ -116,6 +115,9 @@ public class GameRender : IGameRender, IOnLastUpdate
         _logger.LogDebug("Merging audio and video");
 
         // start merge
+        _ffmpegMergeVideoAudio.StartInfo.Arguments =
+            $"-y -i {VideoRenderer.OutputPath} -i {AudioRenderer.OutputPath} -c:v copy -c:a aac {VideoPath}";
+
         _ffmpegMergeVideoAudio.Start();
         _ffmpegMergeVideoAudio.BeginErrorReadLine();
         _ffmpegMergeVideoAudio.BeginOutputReadLine();

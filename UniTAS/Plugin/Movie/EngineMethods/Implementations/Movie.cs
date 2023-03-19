@@ -34,15 +34,22 @@ public class Movie
     }
 
     [MoonSharpModuleMethod]
-    public static DynValue start_capture(ScriptExecutionContext _, CallbackArguments args)
+    public static DynValue start_capture(ScriptExecutionContext context, CallbackArguments args)
     {
         // args
         // width, height, fps
-        var argTable = args.AsType(0, "start_capture", DataType.Table).Table;
+        var arg = args.AsType(0, "start_capture", DataType.Table);
+
+        var argTable = arg.Type switch
+        {
+            DataType.Table => args.AsType(0, "start_capture", DataType.Table).Table,
+            _ => new(context.GetScript())
+        };
 
         var width = Utils.MoonSharp.GetTableArg(argTable, "width", 1920);
         var height = Utils.MoonSharp.GetTableArg(argTable, "height", 1080);
         var fps = Utils.MoonSharp.GetTableArg(argTable, "fps", 60);
+        var path = Utils.MoonSharp.GetTableArg(argTable, "path", "output.mp4");
 
         if (width <= 1)
         {
@@ -75,6 +82,7 @@ public class Movie
         GameRender.Width = width;
         GameRender.Height = height;
         GameRender.Fps = fps;
+        GameRender.VideoPath = path;
 
         GameRender.Start();
         return DynValue.Nil;

@@ -7,4 +7,5 @@ public interface IGameRender
     int Fps { set; }
     int Width { set; }
     int Height { set; }
+    string VideoPath { set; }
 }
