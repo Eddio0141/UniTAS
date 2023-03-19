@@ -207,7 +207,9 @@ async fn install_unitas(game_dir: &Path, unitas_version: DownloadVersion) -> Res
         DownloadVersion::Stable => {
             let unitas_dir = unitas_dir.join(paths::STABLE_DIR_NAME);
 
-            let unitas_dir = fs::read_dir(&unitas_dir)?
+            
+
+            fs::read_dir(&unitas_dir)?
                 .collect::<Result<Vec<_>, _>>()
                 .with_context(|| {
                     format!(
@@ -233,9 +235,7 @@ async fn install_unitas(game_dir: &Path, unitas_version: DownloadVersion) -> Res
                         "Could not find a UniTAS BepInEx dir in {}",
                         unitas_dir.display()
                     )
-                })?;
-
-            unitas_dir
+                })?
         }
         DownloadVersion::Tag(tag) => unitas_dir.join(paths::TAG_DIR_NAME).join(tag),
         DownloadVersion::Branch(branch) => unitas_dir
