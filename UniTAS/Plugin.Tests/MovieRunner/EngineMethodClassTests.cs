@@ -12,7 +12,10 @@ public class EngineMethodClassTests
 class_name = concurrent.ClassName
 ";
 
-        Assert.Throws<ScriptRuntimeException>(() => Utils.Setup(input));
+        var script = Utils.Setup("move_rel = mouse.move_rel").Item1;
+        script.Update();
+
+        Assert.Equal(DataType.Nil, script.Script.Globals.Get("class_name").Type);
     }
 
     [Fact]
