@@ -50,6 +50,8 @@ public class FfmpegProcessFactory : IFfmpegProcessFactory
                 break;
             }
 
+            if (BepInEx.Paths.GameRootPath == null) continue;
+
             var gamePath = Path.Combine(BepInEx.Paths.GameRootPath, ffmpegCheck);
             Trace.Write($"checking ffmpeg at path: {gamePath}");
             if (TryRunning(gamePath))
