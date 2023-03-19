@@ -18,17 +18,29 @@ public class GameRender : IGameRender, IOnLastUpdate
 
     public int Fps
     {
-        set => _videoRenderer.Fps = value;
+        set
+        {
+            if (_videoRenderer == null) return;
+            _videoRenderer.Fps = value;
+        }
     }
 
     public int Width
     {
-        set => _videoRenderer.Width = value;
+        set
+        {
+            if (_videoRenderer == null) return;
+            _videoRenderer.Width = value;
+        }
     }
 
     public int Height
     {
-        set => _videoRenderer.Height = value;
+        set
+        {
+            if (_videoRenderer == null) return;
+            _videoRenderer.Height = value;
+        }
     }
 
     public string VideoPath { get; set; } = "output.mp4";
