@@ -14,24 +14,10 @@ Please check out the [wiki](https://github.com/Eddio0141/UniTAS/wiki)!
 - Currently, simple games that comes from game jam or small indie games like on itch.io has a higher chance of working
 
 # Set up tool
-- There's a tool that you can use to automatically download and install BepInEx and UniTAS to an unity directory
-- Very basic and lacks many features right now
-- Tool doesn't have a GUI so you have to use the command line to install BepInEx 
-
-## Usage
-### Help
-- `unitas_setup_tool --help`
-- This is where you wanna look for usage mostly
-- You can check command usage with `--help` as well like so: `unitas_setup_tool install --help`
-
-### Installing stable
-`unitas_setup_tool install <GAME_DIR_SELECTION>`
-
-### Installing nightly builds of BepInEx / UniTAS
-`unitas_setup_tool install --branch <BRANCH> --bepinex-branch <BRANCH>`
+You can use [unitas_setup_tool](https://github.com/Eddio0141/unitas_setup_tool) to set up UniTAS and BepInEx for you
 
 # How to build
-- Make sure you have [.NET SDK 6.0 or 7.0](https://dotnet.microsoft.com/en-us/download) and [rust](https://www.rust-lang.org/tools/install) installed on your system
+- Make sure you have [.NET SDK 6.0 or 7.0](https://dotnet.microsoft.com/en-us/download) installed on your system
 - Run either `build.sh` for linux or `build.ps1` for windows
   - Takes either `Debug` or `Release` as an argument for choosing building config
   - `ReleaseTrace` builds with a `Release` profile but with trace logging for the plugin
