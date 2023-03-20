@@ -16,8 +16,10 @@ public class NativeArrayWrapper<T> : UnityInstanceWrap
     public NativeArrayWrapper(object instance) : base(instance)
     {
         var genericArg = typeof(T);
-        var wrappedType = AccessTools.TypeByName("Unity.Collections.NativeArray`1").MakeGenericType(genericArg);
-        _allocator = AccessTools.TypeByName("Unity.Collections.Allocator");
+        var wrappedType = AccessTools.TypeByName("Unity.Collections.NativeArray`1")?.MakeGenericType(genericArg) ??
+                          AccessTools.TypeByName("UnityEngine.Collections.NativeArray`1")?.MakeGenericType(genericArg);
+        _allocator = AccessTools.TypeByName("Unity.Collections.Allocator") ??
+                     AccessTools.TypeByName("UnityEngine.Collections.Allocator");
         _nativeArrayOptions = AccessTools.TypeByName("Unity.Collections.NativeArrayOptions");
         _toArray = AccessTools.Method(wrappedType, "ToArray");
         _dispose = AccessTools.Method(wrappedType, "Dispose");
@@ -37,9 +39,17 @@ public class NativeArrayWrapper<T> : UnityInstanceWrap
 
         if (args.Length == 2 && args[0] is int && args[1].GetType() == _allocator)
         {
-            args = new[] { args[0], args[1], Enum.Parse(_nativeArrayOptions, "ClearMemory") };
-            Instance = AccessTools.Constructor(WrappedType, new[] { typeof(int), _allocator, _nativeArrayOptions })
-                .Invoke(args);
+            if (_nativeArrayOptions == null)
+            {
+                args = new[] { args[0], args[1] };
+                Instance = AccessTools.Constructor(WrappedType, new[] { typeof(int), _allocator }).Invoke(args);
+            }
+            else
+            {
+                args = new[] { args[0], args[1], Enum.Parse(_nativeArrayOptions, "ClearMemory") };
+                Instance = AccessTools.Constructor(WrappedType, new[] { typeof(int), _allocator, _nativeArrayOptions })
+                    .Invoke(args);
+            }
         }
         else
         {
