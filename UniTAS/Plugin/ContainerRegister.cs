@@ -21,6 +21,7 @@ using UniTAS.Plugin.MonoBehaviourController;
 using UniTAS.Plugin.Movie;
 using UniTAS.Plugin.Movie.EngineMethods;
 using UniTAS.Plugin.Movie.EngineMethods.Implementations;
+using UniTAS.Plugin.Movie.Events;
 using UniTAS.Plugin.Patches.PatchProcessor;
 using UniTAS.Plugin.ReverseInvoker;
 using UniTAS.Plugin.StaticFieldStorage;
@@ -91,7 +92,10 @@ public static class ContainerRegister
             c.For<ITimeWrapper>().Singleton().Use<TimeWrapper>();
 
             c.For<ILogger>().Singleton().Use<Logger.Logger>();
-            c.For<IMovieLogger>().Singleton().Use<MovieLogger>();
+
+            c.ForSingletonOf<MovieLogger>().Use<MovieLogger>();
+            c.For<IMovieLogger>().Use(x => x.GetInstance<MovieLogger>());
+            c.For<IOnMovieRunningStatusChange>().Use(x => x.GetInstance<MovieLogger>());
 
             // before FileSystemManager
             c.ForSingletonOf<PatchReverseInvoker>().Use<PatchReverseInvoker>();

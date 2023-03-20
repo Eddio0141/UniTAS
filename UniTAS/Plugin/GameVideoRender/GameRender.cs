@@ -14,7 +14,9 @@ namespace UniTAS.Plugin.GameVideoRender;
 public class GameRender : IGameRender, IOnLastUpdate
 {
     private bool _recording;
+
     private readonly ILogger _logger;
+    private readonly IMovieLogger _movieLogger;
 
     public int Fps
     {
@@ -46,14 +48,17 @@ public class GameRender : IGameRender, IOnLastUpdate
     public string VideoPath { get; set; } = "output.mp4";
 
     private readonly VideoRenderer _videoRenderer;
+    private readonly bool _hasVideoRenderer;
+    private readonly bool _hasAudioRenderer;
     private readonly Renderer[] _renderers;
 
     private readonly Process _ffmpegMergeVideoAudio;
 
     public GameRender(ILogger logger, IEnumerable<VideoRenderer> videoRenderers,
-        IEnumerable<AudioRenderer> audioRenderers, IFfmpegProcessFactory ffmpegProcessFactory)
+        IEnumerable<AudioRenderer> audioRenderers, IFfmpegProcessFactory ffmpegProcessFactory, IMovieLogger movieLogger)
     {
         _logger = logger;
+        _movieLogger = movieLogger;
 
         _videoRenderer = videoRenderers.FirstOrDefault(x => x.Available);
         var audioRenderer = audioRenderers.FirstOrDefault(x => x.Available);
@@ -64,11 +69,15 @@ public class GameRender : IGameRender, IOnLastUpdate
             return;
         }
 
+        _hasVideoRenderer = true;
+
         if (audioRenderer == null)
         {
             _logger.LogError("No audio renderer available");
             return;
         }
+
+        _hasAudioRenderer = true;
 
         if (!ffmpegProcessFactory.Available)
         {
@@ -99,7 +108,19 @@ public class GameRender : IGameRender, IOnLastUpdate
 
     public void Start()
     {
-        if (_recording || _renderers == null) return;
+        if (_recording) return;
+        if (!_hasVideoRenderer)
+        {
+            _movieLogger.LogWarning("No video renderer available, cannot start recording", true);
+            return;
+        }
+
+        if (!_hasAudioRenderer)
+        {
+            _movieLogger.LogWarning("No audio recorder available, cannot start recording", true);
+            return;
+        }
+
         _recording = true;
 
         _logger.LogInfo("Starting recording");
@@ -110,6 +131,7 @@ public class GameRender : IGameRender, IOnLastUpdate
         }
 
         _logger.LogInfo("Started recording");
+        _movieLogger.LogInfo("Started recording", true);
     }
 
     public void Stop()
@@ -143,6 +165,7 @@ public class GameRender : IGameRender, IOnLastUpdate
         if (_ffmpegMergeVideoAudio.ExitCode != 0)
         {
             _logger.LogError("ffmpeg exited with non-zero exit code, merge failed");
+            _movieLogger.LogError("something went wrong merging audio and video, check logs", true);
             return;
         }
 
@@ -167,6 +190,7 @@ public class GameRender : IGameRender, IOnLastUpdate
         }
 
         _logger.LogInfo("Successfully stopped recording");
+        _movieLogger.LogInfo("Successfully stopped recording", true);
     }
 
     public void OnLastUpdate()

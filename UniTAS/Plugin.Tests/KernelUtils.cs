@@ -45,17 +45,17 @@ public static class KernelUtils
         public List<string> Warns { get; } = new();
         public List<string> Errors { get; } = new();
 
-        public void LogError(object data)
+        public void LogError(object data, bool whenPlayingMovie = false)
         {
             Errors.Add(data.ToString() ?? string.Empty);
         }
 
-        public void LogInfo(object data)
+        public void LogInfo(object data, bool whenPlayingMovie = false)
         {
             Infos.Add(data.ToString() ?? string.Empty);
         }
 
-        public void LogWarning(object data)
+        public void LogWarning(object data, bool whenPlayingMovie = false)
         {
             Warns.Add(data.ToString() ?? string.Empty);
         }
