@@ -1,6 +1,6 @@
 ﻿using System;
-using UniTAS.Plugin.GameRestart.EventInterfaces;
-using UniTAS.Plugin.Interfaces.Update;
+using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
+using UniTAS.Plugin.Interfaces.Events.SoftRestart;
 
 namespace UniTAS.Plugin.GameEnvironment.InnerState.Input;
 

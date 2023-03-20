@@ -5,7 +5,7 @@ using HarmonyLib;
 using UniTAS.Plugin.GameEnvironment;
 using UniTAS.Plugin.Patches.PatchGroups;
 using UniTAS.Plugin.Patches.PatchTypes;
-using UniTAS.Plugin.ReverseInvoker;
+using UniTAS.Plugin.Services;
 
 // ReSharper disable UnusedMember.Local
 // ReSharper disable InconsistentNaming

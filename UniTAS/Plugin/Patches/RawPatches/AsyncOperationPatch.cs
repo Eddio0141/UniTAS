@@ -4,7 +4,7 @@ using System.IO;
 using System.Reflection;
 using HarmonyLib;
 using UniTAS.Plugin.Patches.PatchTypes;
-using UniTAS.Plugin.Trackers.AsyncSceneLoadTracker;
+using UniTAS.Plugin.Services.UnityAsyncOperationTracker;
 using UnityEngine;
 
 namespace UniTAS.Plugin.Patches.RawPatches;

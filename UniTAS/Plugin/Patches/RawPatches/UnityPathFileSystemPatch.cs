@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using HarmonyLib;
 using UniTAS.Plugin.GameEnvironment;
-using UniTAS.Plugin.ReverseInvoker;
+using UniTAS.Plugin.Implementations;
 using UnityEngine;
 
 namespace UniTAS.Plugin.Patches.RawPatches;

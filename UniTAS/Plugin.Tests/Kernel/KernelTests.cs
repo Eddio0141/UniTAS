@@ -1,19 +1,12 @@
 using MoonSharp.Interpreter;
 using StructureMap.Pipeline;
-using UniTAS.Plugin.FFMpeg;
-using UniTAS.Plugin.FixedUpdateSync;
 using UniTAS.Plugin.GameEnvironment;
-using UniTAS.Plugin.GameInitialRestart;
-using UniTAS.Plugin.GameRestart;
-using UniTAS.Plugin.GameRestart.EventInterfaces;
-using UniTAS.Plugin.Interfaces.Update;
-using UniTAS.Plugin.Logger;
-using UniTAS.Plugin.MonoBehaviourController;
-using UniTAS.Plugin.Movie.Engine;
-using UniTAS.Plugin.Movie.EngineMethods;
-using UniTAS.Plugin.ReverseInvoker;
-using UniTAS.Plugin.StaticFieldStorage;
-using UniTAS.Plugin.UnitySafeWrappers.Interfaces;
+using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
+using UniTAS.Plugin.Interfaces.Events.SoftRestart;
+using UniTAS.Plugin.Services;
+using UniTAS.Plugin.Services.Logging;
+using UniTAS.Plugin.Services.Movie;
+using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
 
 namespace UniTAS.Plugin.Tests.Kernel;
 
@@ -234,7 +227,7 @@ public class KernelTests
         var scriptArg = new ExplicitArguments();
         scriptArg.Set(typeof(Script), null);
         var engine = kernel.GetInstance<IMovieEngine>(scriptArg);
-        var env3 = kernel.GetInstance<IEngineMethodClassesFactory>().GetAll(engine)
+        var env3 = kernel.GetInstance<IEngineModuleClassesFactory>().GetAll(engine)
             .OfType<KernelUtils.Env>().Single();
         Assert.NotNull(env3);
 

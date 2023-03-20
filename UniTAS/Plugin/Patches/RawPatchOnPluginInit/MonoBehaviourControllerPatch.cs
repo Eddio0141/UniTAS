@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using HarmonyLib;
-using UniTAS.Plugin.MonoBehaviourController;
+using UniTAS.Plugin.Services;
 using UnityEngine;
 
 namespace UniTAS.Plugin.Patches.RawPatchOnPluginInit;

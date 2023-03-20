@@ -1,5 +1,5 @@
-using UniTAS.Plugin.Interfaces.Update;
-using UniTAS.Plugin.UnitySafeWrappers.Interfaces;
+using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
+using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
 
 namespace UniTAS.Plugin.GameEnvironment;
 

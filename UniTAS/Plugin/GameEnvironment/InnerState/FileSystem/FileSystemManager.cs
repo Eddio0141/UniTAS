@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using UniTAS.Plugin.GameEnvironment.InnerState.FileSystem.OsFileSystems;
-using UniTAS.Plugin.GameInfo;
-using UniTAS.Plugin.GameRestart.EventInterfaces;
-using UniTAS.Plugin.Logger;
+using UniTAS.Plugin.Interfaces.Events.SoftRestart;
+using UniTAS.Plugin.Services;
+using UniTAS.Plugin.Services.Logging;
 
 namespace UniTAS.Plugin.GameEnvironment.InnerState.FileSystem;
 

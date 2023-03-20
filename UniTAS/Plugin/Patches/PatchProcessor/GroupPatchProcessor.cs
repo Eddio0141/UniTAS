@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using HarmonyLib;
-using UniTAS.Plugin.Logger;
 using UniTAS.Plugin.Patches.PatchGroups;
 using UniTAS.Plugin.Patches.PatchTypes;
+using UniTAS.Plugin.Services.Logging;
 
 namespace UniTAS.Plugin.Patches.PatchProcessor;
 

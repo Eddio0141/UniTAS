@@ -1,4 +1,5 @@
 ﻿using StructureMap;
+using UniTAS.Plugin.Services.UnitySafeWrappers;
 
 namespace UniTAS.Plugin.UnitySafeWrappers;
 

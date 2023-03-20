@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using HarmonyLib;
-using UniTAS.Plugin.Logger;
 using UniTAS.Plugin.Patches.PatchTypes;
+using UniTAS.Plugin.Services.Logging;
 
 namespace UniTAS.Plugin.Patches.PatchProcessor;
 

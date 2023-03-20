@@ -7,10 +7,11 @@ using BepInEx.Logging;
 using HarmonyLib;
 using StructureMap;
 using UniTAS.Plugin.GameEnvironment;
-using UniTAS.Plugin.GameInitialRestart;
-using UniTAS.Plugin.Interfaces;
-using UniTAS.Plugin.Interfaces.Update;
+using UniTAS.Plugin.Interfaces.Events;
+using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
+using UniTAS.Plugin.Interfaces.Events.SoftRestart;
 using UniTAS.Plugin.Patches.PatchProcessor;
+using UniTAS.Plugin.Services;
 using UnityEngine;
 using PatchProcessor = UniTAS.Plugin.Patches.PatchProcessor.PatchProcessor;
 

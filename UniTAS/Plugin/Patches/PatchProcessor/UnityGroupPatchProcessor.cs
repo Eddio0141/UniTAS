@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
-using UniTAS.Plugin.GameInfo;
-using UniTAS.Plugin.Logger;
 using UniTAS.Plugin.Patches.PatchGroups;
 using UniTAS.Plugin.Patches.PatchTypes;
+using UniTAS.Plugin.Services;
+using UniTAS.Plugin.Services.Logging;
 
 namespace UniTAS.Plugin.Patches.PatchProcessor;
 

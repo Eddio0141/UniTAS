@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
 using HarmonyLib;
-using UniTAS.Plugin.GameRestart.EventInterfaces;
-using UniTAS.Plugin.Interfaces.StartEvent;
-using UniTAS.Plugin.Interfaces.Update;
+using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
+using UniTAS.Plugin.Interfaces.Events.SoftRestart;
 using UnityEngine;
 
 namespace UniTAS.Plugin.GameEnvironment.InnerState;

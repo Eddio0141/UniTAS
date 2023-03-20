@@ -4,7 +4,7 @@ using System.Reflection;
 using HarmonyLib;
 using UniTAS.Plugin.GameEnvironment;
 using UniTAS.Plugin.Patches.PatchTypes;
-using UniTAS.Plugin.ReverseInvoker;
+using UniTAS.Plugin.Services;
 using UnityEngine;
 
 namespace UniTAS.Plugin.Patches.RawPatches;

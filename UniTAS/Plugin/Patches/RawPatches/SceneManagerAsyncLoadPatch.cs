@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using HarmonyLib;
 using UniTAS.Plugin.Patches.PatchTypes;
-using UniTAS.Plugin.Trackers.AsyncSceneLoadTracker;
+using UniTAS.Plugin.Services.UnityAsyncOperationTracker;
 using UniTAS.Plugin.UnitySafeWrappers;
 using UniTAS.Plugin.UnitySafeWrappers.Wrappers;
 using UniTAS.Plugin.UnitySafeWrappers.Wrappers.SceneManagement;

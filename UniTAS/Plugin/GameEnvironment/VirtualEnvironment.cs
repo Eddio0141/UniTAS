@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using UniTAS.Plugin.GameEnvironment.InnerState;
 using UniTAS.Plugin.GameEnvironment.InnerState.Input;
-using UniTAS.Plugin.GameRestart.EventInterfaces;
+using UniTAS.Plugin.Interfaces.Events.SoftRestart;
 
 namespace UniTAS.Plugin.GameEnvironment;
 

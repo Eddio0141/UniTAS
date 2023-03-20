@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using HarmonyLib;
-using UniTAS.Plugin.Interfaces;
+using UniTAS.Plugin.Services;
 using UnityEngine;
 
 // ReSharper disable UnusedMember.Local

@@ -1,34 +1,27 @@
 using StructureMap;
-using UniTAS.Plugin.FixedUpdateSync;
 using UniTAS.Plugin.GameEnvironment;
 using UniTAS.Plugin.GameEnvironment.InnerState;
 using UniTAS.Plugin.GameEnvironment.InnerState.FileSystem;
 using UniTAS.Plugin.GameEnvironment.InnerState.Input;
-using UniTAS.Plugin.GameInfo;
-using UniTAS.Plugin.GameInitialRestart;
-using UniTAS.Plugin.GameRestart;
-using UniTAS.Plugin.GameRestart.EventInterfaces;
-using UniTAS.Plugin.GameRestart.Events;
-using UniTAS.Plugin.GameSpeedUnlocker;
-using UniTAS.Plugin.GameVideoRender;
-using UniTAS.Plugin.GUI.MainMenu.Tabs;
-using UniTAS.Plugin.Interfaces;
-using UniTAS.Plugin.Interfaces.StartEvent;
-using UniTAS.Plugin.Interfaces.Update;
-using UniTAS.Plugin.Logger;
-using UniTAS.Plugin.MainThreadSpeedController;
-using UniTAS.Plugin.MonoBehaviourController;
-using UniTAS.Plugin.Movie;
-using UniTAS.Plugin.Movie.EngineMethods;
-using UniTAS.Plugin.Movie.EngineMethods.Implementations;
+using UniTAS.Plugin.Implementations;
+using UniTAS.Plugin.Implementations.GameRestart;
+using UniTAS.Plugin.Implementations.Logging;
+using UniTAS.Plugin.Implementations.Movie;
+using UniTAS.Plugin.Implementations.Movie.Engine.Modules;
+using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
+using UniTAS.Plugin.Interfaces.Events.SoftRestart;
+using UniTAS.Plugin.Interfaces.GUI;
+using UniTAS.Plugin.Interfaces.Movie;
+using UniTAS.Plugin.Interfaces.TASRenderer;
 using UniTAS.Plugin.Patches.PatchProcessor;
-using UniTAS.Plugin.ReverseInvoker;
-using UniTAS.Plugin.StaticFieldStorage;
-using UniTAS.Plugin.Trackers.AsyncSceneLoadTracker;
-using UniTAS.Plugin.Trackers.SceneIndexNameTracker;
-using UniTAS.Plugin.Trackers.SceneTracker;
+using UniTAS.Plugin.Services;
+using UniTAS.Plugin.Services.EventSubscribers;
+using UniTAS.Plugin.Services.Logging;
+using UniTAS.Plugin.Services.Movie;
+using UniTAS.Plugin.Services.UnityAsyncOperationTracker;
+using UniTAS.Plugin.Services.UnitySafeWrappers;
+using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Plugin.UnitySafeWrappers;
-using UniTAS.Plugin.UnitySafeWrappers.Interfaces;
 using UniTAS.Plugin.UnitySafeWrappers.Wrappers;
 using UniTAS.Plugin.UnitySafeWrappers.Wrappers.UnityEngine;
 
@@ -59,28 +52,23 @@ public static class ContainerRegister
             c.For<IMonoBehEventInvoker>().Use(x => x.GetInstance<MonoBehEventInvoker>());
             c.For<IUpdateEvents>().Use(x => x.GetInstance<MonoBehEventInvoker>());
 
-            c.For<IStaticFieldManipulator>().Singleton().Use<StaticFieldStorage.StaticFieldStorage>();
+            c.For<IStaticFieldManipulator>().Singleton().Use<StaticFieldStorage>();
 
             c.ForSingletonOf<SyncFixedUpdate>().Use<SyncFixedUpdate>();
             c.For<ISyncFixedUpdate>().Use(x => x.GetInstance<SyncFixedUpdate>());
             c.For<IOnFixedUpdate>().Use(x => x.GetInstance<SyncFixedUpdate>());
             c.For<IOnUpdate>().Use(x => x.GetInstance<SyncFixedUpdate>());
 
-            c.ForSingletonOf<SceneIndexNameTracker>().Use<SceneIndexNameTracker>();
-            c.For<ISceneIndexName>().Use(x => x.GetInstance<SceneIndexNameTracker>());
-            c.For<IPluginInitialLoad>().Use(x => x.GetInstance<SceneIndexNameTracker>());
-            c.For<IOnUpdate>().Use(x => x.GetInstance<SceneIndexNameTracker>());
+            c.For<IGameInfo>().Singleton().Use<GameInfo>();
 
-            c.For<IGameInfo>().Singleton().Use<GameInfo.GameInfo>();
+            c.ForSingletonOf<GameInitialRestart>().Use<GameInitialRestart>();
+            c.For<IGameInitialRestart>().Use(x => x.GetInstance<GameInitialRestart>());
+            c.For<IOnAwake>().Use(x => x.GetInstance<GameInitialRestart>());
+            c.For<IOnEnable>().Use(x => x.GetInstance<GameInitialRestart>());
+            c.For<IOnStart>().Use(x => x.GetInstance<GameInitialRestart>());
+            c.For<IOnFixedUpdate>().Use(x => x.GetInstance<GameInitialRestart>());
 
-            c.ForSingletonOf<GameInitialRestart.GameInitialRestart>().Use<GameInitialRestart.GameInitialRestart>();
-            c.For<IGameInitialRestart>().Use(x => x.GetInstance<GameInitialRestart.GameInitialRestart>());
-            c.For<IOnAwake>().Use(x => x.GetInstance<GameInitialRestart.GameInitialRestart>());
-            c.For<IOnEnable>().Use(x => x.GetInstance<GameInitialRestart.GameInitialRestart>());
-            c.For<IOnStart>().Use(x => x.GetInstance<GameInitialRestart.GameInitialRestart>());
-            c.For<IOnFixedUpdate>().Use(x => x.GetInstance<GameInitialRestart.GameInitialRestart>());
-
-            c.For<IMonoBehaviourController>().Singleton().Use<MonoBehaviourController.MonoBehaviourController>();
+            c.For<IMonoBehaviourController>().Singleton().Use<MonoBehaviourController>();
 
             c.For<ISceneWrapper>().Singleton().Use<SceneManagerWrapper>();
 
@@ -90,7 +78,7 @@ public static class ContainerRegister
 
             c.For<ITimeWrapper>().Singleton().Use<TimeWrapper>();
 
-            c.For<ILogger>().Singleton().Use<Logger.Logger>();
+            c.For<ILogger>().Singleton().Use<Logger>();
             c.For<IMovieLogger>().Singleton().Use<MovieLogger>();
 
             // before FileSystemManager
@@ -122,12 +110,12 @@ public static class ContainerRegister
             c.For<IMovieRunner>().Use(x => x.GetInstance<MovieRunner>());
             c.For<IOnPreUpdates>().Use(x => x.GetInstance<MovieRunner>());
 
-            c.ForSingletonOf<GameRestart.GameRestart>().Use<GameRestart.GameRestart>();
-            c.For<IGameRestart>().Use(x => x.GetInstance<GameRestart.GameRestart>());
-            c.For<IOnEnable>().Use(x => x.GetInstance<GameRestart.GameRestart>());
-            c.For<IOnStart>().Use(x => x.GetInstance<GameRestart.GameRestart>());
-            c.For<IOnFixedUpdate>().Use(x => x.GetInstance<GameRestart.GameRestart>());
-            c.For<IOnAwake>().Use(x => x.GetInstance<GameRestart.GameRestart>());
+            c.ForSingletonOf<GameRestart>().Use<GameRestart>();
+            c.For<IGameRestart>().Use(x => x.GetInstance<GameRestart>());
+            c.For<IOnEnable>().Use(x => x.GetInstance<GameRestart>());
+            c.For<IOnStart>().Use(x => x.GetInstance<GameRestart>());
+            c.For<IOnFixedUpdate>().Use(x => x.GetInstance<GameRestart>());
+            c.For<IOnAwake>().Use(x => x.GetInstance<GameRestart>());
 
             c.ForSingletonOf<FileSystemManager>().Use<FileSystemManager>();
             c.For<IOnGameRestart>().Use(x => x.GetInstance<FileSystemManager>());
@@ -139,18 +127,14 @@ public static class ContainerRegister
             c.For<IAssetBundleRequestTracker>().Use(x => x.GetInstance<AsyncOperationTracker>());
             c.For<IOnLastUpdate>().Use(x => x.GetInstance<AsyncOperationTracker>());
 
-            c.ForSingletonOf<SceneTracker>().Use<SceneTracker>();
-            c.For<ISceneTracker>().Use(x => x.GetInstance<SceneTracker>());
-            c.For<ILoadedSceneInfo>().Use(x => x.GetInstance<SceneTracker>());
-
             c.For<IUnityInstanceWrapFactory>().Singleton().Use<UnityInstanceWrapFactory>();
 
             c.ForSingletonOf<MainThreadSpeedControl>().Use<MainThreadSpeedControl>();
             c.For<IMainThreadSpeedControl>().Use(x => x.GetInstance<MainThreadSpeedControl>());
             c.For<IOnUpdate>().Use(x => x.GetInstance<MainThreadSpeedControl>());
 
-            c.ForSingletonOf<GameSpeedUnlocker.GameSpeedUnlocker>().Use<GameSpeedUnlocker.GameSpeedUnlocker>();
-            c.For<IGameSpeedUnlocker>().Use(x => x.GetInstance<GameSpeedUnlocker.GameSpeedUnlocker>());
+            c.ForSingletonOf<GameSpeedUnlocker>().Use<GameSpeedUnlocker>();
+            c.For<IGameSpeedUnlocker>().Use(x => x.GetInstance<GameSpeedUnlocker>());
 
             c.ForSingletonOf<Env>().Use<Env>();
             c.For<EngineMethodClass>().Use(x => x.GetInstance<Env>());

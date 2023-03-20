@@ -1,7 +1,8 @@
 using System;
 using System.Reflection;
 using HarmonyLib;
-using UniTAS.Plugin.UnitySafeWrappers.Interfaces;
+using UniTAS.Plugin.Services.UnitySafeWrappers;
+using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Plugin.UnitySafeWrappers.Wrappers.SceneManagement;
 using UnityEngine;
 
