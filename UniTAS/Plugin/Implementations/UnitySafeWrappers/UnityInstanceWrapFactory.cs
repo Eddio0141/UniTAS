@@ -1,7 +1,8 @@
 ﻿using StructureMap;
+using UniTAS.Plugin.Interfaces.UnitySafeWrappers;
 using UniTAS.Plugin.Services.UnitySafeWrappers;
 
-namespace UniTAS.Plugin.UnitySafeWrappers;
+namespace UniTAS.Plugin.Implementations.UnitySafeWrappers;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 public class UnityInstanceWrapFactory : IUnityInstanceWrapFactory

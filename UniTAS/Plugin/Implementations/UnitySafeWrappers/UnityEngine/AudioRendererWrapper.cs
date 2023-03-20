@@ -2,10 +2,10 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using HarmonyLib;
+using UniTAS.Plugin.Implementations.UnitySafeWrappers.Unity.Collections;
 using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
-using UniTAS.Plugin.UnitySafeWrappers.Wrappers.Unity.Collections;
 
-namespace UniTAS.Plugin.UnitySafeWrappers.Wrappers.UnityEngine;
+namespace UniTAS.Plugin.Implementations.UnitySafeWrappers.UnityEngine;
 
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public class AudioRendererWrapper : IAudioRendererWrapper

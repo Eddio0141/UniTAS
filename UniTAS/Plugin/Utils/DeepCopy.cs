@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using HarmonyLib;
-using UniTAS.Plugin.Utils.Exceptions;
+using UniTAS.Plugin.Exceptions;
 
 namespace UniTAS.Plugin.Utils;
 

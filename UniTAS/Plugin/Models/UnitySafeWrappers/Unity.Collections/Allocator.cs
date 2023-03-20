@@ -1,4 +1,4 @@
-namespace UniTAS.Plugin.UnitySafeWrappers.Wrappers.Unity.Collections;
+namespace UniTAS.Plugin.Models.UnitySafeWrappers.Unity.Collections;
 
 public enum Allocator
 {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace UniTAS.Plugin.UnitySafeWrappers;
+namespace UniTAS.Plugin.Interfaces.UnitySafeWrappers;
 
 public abstract class UnityInstanceWrap
 {

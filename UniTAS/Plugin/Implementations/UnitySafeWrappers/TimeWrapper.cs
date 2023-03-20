@@ -5,7 +5,7 @@ using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
 using UnityEngine;
 
-namespace UniTAS.Plugin.UnitySafeWrappers.Wrappers;
+namespace UniTAS.Plugin.Implementations.UnitySafeWrappers;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 public class TimeWrapper : ITimeWrapper

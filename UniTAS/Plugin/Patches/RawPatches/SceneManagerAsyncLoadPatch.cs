@@ -3,11 +3,11 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using HarmonyLib;
+using UniTAS.Plugin.Implementations.UnitySafeWrappers;
+using UniTAS.Plugin.Implementations.UnitySafeWrappers.SceneManagement;
+using UniTAS.Plugin.Models.UnitySafeWrappers.SceneManagement;
 using UniTAS.Plugin.Patches.PatchTypes;
 using UniTAS.Plugin.Services.UnityAsyncOperationTracker;
-using UniTAS.Plugin.UnitySafeWrappers;
-using UniTAS.Plugin.UnitySafeWrappers.Wrappers;
-using UniTAS.Plugin.UnitySafeWrappers.Wrappers.SceneManagement;
 using UnityEngine;
 
 namespace UniTAS.Plugin.Patches.RawPatches;

@@ -1,4 +1,4 @@
-using UniTAS.Plugin.UnitySafeWrappers.Wrappers;
+using UniTAS.Plugin.Models.UnitySafeWrappers.SceneManagement;
 
 namespace UniTAS.Plugin.Services.UnityAsyncOperationTracker;
 

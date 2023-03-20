@@ -1,4 +1,4 @@
-﻿using UniTAS.Plugin.UnitySafeWrappers;
+﻿using UniTAS.Plugin.Interfaces.UnitySafeWrappers;
 
 namespace UniTAS.Plugin.Services.UnitySafeWrappers;
 

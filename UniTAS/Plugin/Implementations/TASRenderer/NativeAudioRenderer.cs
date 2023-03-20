@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
+using UniTAS.Plugin.Implementations.UnitySafeWrappers.Unity.Collections;
 using UniTAS.Plugin.Interfaces.TASRenderer;
+using UniTAS.Plugin.Models.UnitySafeWrappers.Unity.Collections;
 using UniTAS.Plugin.Services.Logging;
 using UniTAS.Plugin.Services.UnitySafeWrappers;
 using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
-using UniTAS.Plugin.UnitySafeWrappers.Wrappers.Unity.Collections;
 using UnityEngine;
 
 namespace UniTAS.Plugin.Implementations.TASRenderer;

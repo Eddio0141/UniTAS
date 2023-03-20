@@ -7,6 +7,7 @@ using UniTAS.Plugin.Implementations;
 using UniTAS.Plugin.Implementations.GameRestart;
 using UniTAS.Plugin.Implementations.Movie.Engine;
 using UniTAS.Plugin.Implementations.Movie.Parser;
+using UniTAS.Plugin.Implementations.UnitySafeWrappers;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
 using UniTAS.Plugin.Interfaces.Events.SoftRestart;
 using UniTAS.Plugin.Interfaces.Movie;
@@ -15,8 +16,6 @@ using UniTAS.Plugin.Services.Logging;
 using UniTAS.Plugin.Services.Movie;
 using UniTAS.Plugin.Services.UnitySafeWrappers;
 using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
-using UniTAS.Plugin.UnitySafeWrappers;
-using UniTAS.Plugin.UnitySafeWrappers.Wrappers;
 
 namespace UniTAS.Plugin.Tests;
 

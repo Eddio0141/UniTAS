@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
+using UniTAS.Plugin.Models.UnitySafeWrappers.SceneManagement;
 using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
-using UniTAS.Plugin.UnitySafeWrappers.Wrappers;
 
 namespace UniTAS.Plugin.Services.UnityAsyncOperationTracker;
 

@@ -1,7 +1,9 @@
 using System;
 using HarmonyLib;
+using UniTAS.Plugin.Interfaces.UnitySafeWrappers;
+using UniTAS.Plugin.Models.UnitySafeWrappers.SceneManagement;
 
-namespace UniTAS.Plugin.UnitySafeWrappers.Wrappers.SceneManagement;
+namespace UniTAS.Plugin.Implementations.UnitySafeWrappers.SceneManagement;
 
 public class LoadSceneParametersWrapper : UnityInstanceWrap
 {

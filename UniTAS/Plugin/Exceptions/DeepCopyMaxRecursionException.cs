@@ -1,6 +1,6 @@
 using System;
 
-namespace UniTAS.Plugin.Utils.Exceptions;
+namespace UniTAS.Plugin.Exceptions;
 
 public class DeepCopyMaxRecursionException : Exception
 {

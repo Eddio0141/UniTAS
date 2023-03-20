@@ -2,8 +2,10 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using HarmonyLib;
+using UniTAS.Plugin.Interfaces.UnitySafeWrappers;
+using UniTAS.Plugin.Models.UnitySafeWrappers.Unity.Collections;
 
-namespace UniTAS.Plugin.UnitySafeWrappers.Wrappers.Unity.Collections;
+namespace UniTAS.Plugin.Implementations.UnitySafeWrappers.Unity.Collections;
 
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public class NativeArrayWrapper<T> : UnityInstanceWrap

@@ -1,6 +1,6 @@
 using System;
 
-namespace UniTAS.Plugin.UnitySafeWrappers.Wrappers;
+namespace UniTAS.Plugin.Models.UnitySafeWrappers.SceneManagement;
 
 [Flags]
 public enum LocalPhysicsMode

@@ -1,4 +1,4 @@
-using UniTAS.Plugin.UnitySafeWrappers.Wrappers.Unity.Collections;
+using UniTAS.Plugin.Implementations.UnitySafeWrappers.Unity.Collections;
 
 namespace UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
 
