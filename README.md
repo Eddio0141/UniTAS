@@ -2,7 +2,8 @@
 A tool that lets you TAS unity games
 
 - The tool doesn't bypass anti cheat or anything, USE AT YOUR OWN RISK!
-- The tool is early in development and only basic games work
+- :warning: The tool is early in development and only basic games work
+  - This also means TASes made in earlier versions might not work in later versions
 - At its core, this is a [BepInEx 5] plugin
 
 # Useful documentation
