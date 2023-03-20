@@ -28,22 +28,10 @@ body:
       options:
         - v0.2.0
         - v0.1.0
-        - Latest master
+        - Latest main
         - Other (specify in additional context)
     validations:
-      required: false
-  - type: dropdown
-    id: unitas_setup_tool
-    attributes:
-      label: UniTAS setup tool
-      description: What setup tool did you use to install UniTAS? (If you did)
-      options:
-        - v1.1.3
-        - v1.1.2
-        - v1.1.1
-        - Other (specify in additional context)
-    validations:
-      required: false
+      required: true
   - type: dropdown
     id: bepinex_version
     attributes:
