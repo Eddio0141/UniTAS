@@ -8,6 +8,16 @@ using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.Logging;
 using UniTAS.Plugin.Services.Movie;
 using UniTAS.Plugin.Services.VirtualEnvironment;
+using UniTAS.Plugin.FixedUpdateSync;
+using UniTAS.Plugin.GameEnvironment;
+using UniTAS.Plugin.GameRestart;
+using UniTAS.Plugin.Interfaces.Update;
+using UniTAS.Plugin.Logger;
+using UniTAS.Plugin.Movie.Engine;
+using UniTAS.Plugin.Movie.Events;
+using UniTAS.Plugin.Movie.Exceptions;
+using UniTAS.Plugin.Movie.MovieModels.Properties;
+using UniTAS.Plugin.Movie.Parsers.MovieParser;
 using UniTAS.Plugin.Utils;
 
 namespace UniTAS.Plugin.Implementations.Movie;
@@ -28,14 +38,17 @@ public class MovieRunner : IMovieRunner, IOnPreUpdates
     private IMovieEngine _engine;
     private readonly IMovieLogger _movieLogger;
 
+    private readonly IOnMovieRunningStatusChange[] _onMovieRunningStatusChange;
+
     public MovieRunner(VirtualEnvironment vEnv, IGameRestart gameRestart, ISyncFixedUpdate syncFixedUpdate,
-        IMovieParser parser, IMovieLogger movieLogger)
+        IMovieParser parser, IMovieLogger movieLogger, IOnMovieRunningStatusChange[] onMovieRunningStatusChange)
     {
         _virtualEnvironment = vEnv;
         _gameRestart = gameRestart;
         _syncFixedUpdate = syncFixedUpdate;
         _parser = parser;
         _movieLogger = movieLogger;
+        _onMovieRunningStatusChange = onMovieRunningStatusChange;
     }
 
     public void RunFromInput(string input)
@@ -51,9 +64,8 @@ public class MovieRunner : IMovieRunner, IOnPreUpdates
         }
         catch (Exception e)
         {
+            MovieRunningStatusChange(false);
             _setup = false;
-            MovieEnd = true;
-
             _movieLogger.LogError($"Failed to run TAS movie, an exception was thrown!");
             _movieLogger.LogError(e.Message);
             Trace.Write(e);
@@ -82,14 +94,14 @@ public class MovieRunner : IMovieRunner, IOnPreUpdates
             {
                 _syncFixedUpdate.OnSync(() =>
                 {
-                    MovieEnd = false;
-                    OnMovieStart?.Invoke();
+                    MovieRunningStatusChange(true);
+                    _setup = false;
                 }, 1, 1);
             }
             else
             {
-                MovieEnd = false;
-                OnMovieStart?.Invoke();
+                MovieRunningStatusChange(true);
+                _setup = false;
             }
         }, 1);
     }
@@ -115,14 +127,30 @@ public class MovieRunner : IMovieRunner, IOnPreUpdates
 
     private void AtMovieEnd()
     {
-        _movieLogger.LogInfo("movie end");
-
         _virtualEnvironment.FrameTime = 0;
         _cleanUp = true;
         _setup = false;
-        MovieEnd = true;
+        MovieRunningStatusChange(false);
 
-        OnMovieEnd?.Invoke();
+        _movieLogger.LogInfo("movie end");
+    }
+
+    private void MovieRunningStatusChange(bool running)
+    {
+        if (running)
+        {
+            OnMovieStart?.Invoke();
+        }
+        else
+        {
+            OnMovieEnd?.Invoke();
+        }
+
+        MovieEnd = !running;
+        foreach (var onMovieRunningStatusChange in _onMovieRunningStatusChange)
+        {
+            onMovieRunningStatusChange.OnMovieRunningStatusChange(running);
+        }
     }
 
     public event Action OnMovieStart;
