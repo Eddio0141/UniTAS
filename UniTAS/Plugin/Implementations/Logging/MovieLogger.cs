@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using BepInEx.Logging;
-using UniTAS.Plugin.Movie.Events;
+using UniTAS.Plugin.Interfaces.Events;
 using UniTAS.Plugin.Services.Logging;
 
 namespace UniTAS.Plugin.Implementations.Logging;

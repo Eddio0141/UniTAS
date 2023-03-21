@@ -1,5 +1,4 @@
 using StructureMap;
-using UniTAS.Plugin.Movie.Events;
 using UniTAS.Plugin.Implementations;
 using UniTAS.Plugin.Implementations.DependencyInjection;
 using UniTAS.Plugin.Implementations.GameRestart;
@@ -8,6 +7,7 @@ using UniTAS.Plugin.Implementations.Movie;
 using UniTAS.Plugin.Implementations.Movie.Engine.Modules;
 using UniTAS.Plugin.Implementations.UnitySafeWrappers;
 using UniTAS.Plugin.Implementations.UnitySafeWrappers.UnityEngine;
+using UniTAS.Plugin.Interfaces.Events;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
 using UniTAS.Plugin.Interfaces.Events.SoftRestart;
 using UniTAS.Plugin.Interfaces.GUI;
