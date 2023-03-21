@@ -9,8 +9,8 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 using UniTAS.Patcher.Extensions;
-using UniTAS.Patcher.PreloadPatchUtils;
-using UniTAS.Patcher.Runtime;
+using UniTAS.Patcher.Interfaces;
+using UniTAS.Patcher.Shared;
 
 namespace UniTAS.Patcher.Patches.Preloader;
 

@@ -1,5 +1,5 @@
 using MoonSharp.Interpreter;
-using UniTAS.Plugin.Movie.Parsers.Exceptions;
+using UniTAS.Plugin.Exceptions.Movie.Parser;
 
 namespace UniTAS.Plugin.Tests.MovieRunner;
 

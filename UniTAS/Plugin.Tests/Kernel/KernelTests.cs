@@ -1,40 +1,33 @@
 using MoonSharp.Interpreter;
 using StructureMap.Pipeline;
-using UniTAS.Plugin.FFMpeg;
-using UniTAS.Plugin.FixedUpdateSync;
-using UniTAS.Plugin.GameEnvironment;
-using UniTAS.Plugin.GameInitialRestart;
-using UniTAS.Plugin.GameRestart;
-using UniTAS.Plugin.GameRestart.EventInterfaces;
-using UniTAS.Plugin.Interfaces.Update;
-using UniTAS.Plugin.Logger;
-using UniTAS.Plugin.MonoBehaviourController;
-using UniTAS.Plugin.Movie.Engine;
-using UniTAS.Plugin.Movie.EngineMethods;
-using UniTAS.Plugin.ReverseInvoker;
-using UniTAS.Plugin.StaticFieldStorage;
-using UniTAS.Plugin.UnitySafeWrappers.Interfaces;
+using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
+using UniTAS.Plugin.Interfaces.Events.SoftRestart;
+using UniTAS.Plugin.Services;
+using UniTAS.Plugin.Services.Logging;
+using UniTAS.Plugin.Services.Movie;
+using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
+using UniTAS.Plugin.Services.VirtualEnvironment;
 
 namespace UniTAS.Plugin.Tests.Kernel;
 
 public class KernelTests
 {
     [Fact]
-    public void FfmpegRunner()
+    public void FfmpegFactory()
     {
         var kernel = KernelUtils.Init();
 
-        var ffmpegRunner = kernel.GetInstance<IFfmpegProcessFactory>();
-        Assert.NotNull(ffmpegRunner);
+        var ffmpegProcessFactory = kernel.GetInstance<IFfmpegProcessFactory>();
+        Assert.NotNull(ffmpegProcessFactory);
 
-        var ffmpegRunner2 = kernel.GetInstance<IFfmpegProcessFactory>();
-        Assert.NotNull(ffmpegRunner2);
+        var ffmpegProcessFactory2 = kernel.GetInstance<IFfmpegProcessFactory>();
+        Assert.NotNull(ffmpegProcessFactory2);
 
-        Assert.NotSame(ffmpegRunner, ffmpegRunner2);
+        Assert.Same(ffmpegProcessFactory, ffmpegProcessFactory2);
     }
 
     [Fact]
-    public void FfmpegFactory()
+    public void FfmpegFactory2()
     {
         var kernel = KernelUtils.Init();
 
@@ -234,7 +227,7 @@ public class KernelTests
         var scriptArg = new ExplicitArguments();
         scriptArg.Set(typeof(Script), null);
         var engine = kernel.GetInstance<IMovieEngine>(scriptArg);
-        var env3 = kernel.GetInstance<IEngineMethodClassesFactory>().GetAll(engine)
+        var env3 = kernel.GetInstance<IEngineModuleClassesFactory>().GetAll(engine)
             .OfType<KernelUtils.Env>().Single();
         Assert.NotNull(env3);
 

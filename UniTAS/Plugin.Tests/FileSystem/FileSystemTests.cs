@@ -1,6 +1,6 @@
 using System.Text;
 using FluentAssertions;
-using UniTAS.Plugin.GameEnvironment.InnerState.FileSystem.OsFileSystems;
+using UniTAS.Plugin.Services.VirtualEnvironment.InnerState.FileSystem.OsFileSystems;
 
 namespace UniTAS.Plugin.Tests.FileSystem;
 
@@ -9,7 +9,7 @@ public class FileSystemTests
     [Fact]
     public void CreateDir()
     {
-        var fileSystem = (GameEnvironment.InnerState.FileSystem.OsFileSystems.FileSystem)new WindowsFileSystem();
+        var fileSystem = (Services.VirtualEnvironment.InnerState.FileSystem.OsFileSystems.FileSystem)new WindowsFileSystem();
 
         fileSystem.DirectoryExists("C:/Path/To/Dir").Should().BeFalse();
         fileSystem.DirectoryExists("D:/Path/To/Dir").Should().BeFalse();
@@ -24,7 +24,7 @@ public class FileSystemTests
     [Fact]
     public void Open()
     {
-        var fileSystem = (GameEnvironment.InnerState.FileSystem.OsFileSystems.FileSystem)new WindowsFileSystem();
+        var fileSystem = (Services.VirtualEnvironment.InnerState.FileSystem.OsFileSystems.FileSystem)new WindowsFileSystem();
         const string fileContent = "Hello World!";
         var fileContentBytes = Encoding.UTF8.GetBytes(fileContent);
 
@@ -59,7 +59,7 @@ public class FileSystemTests
         const string path2 = "C:\\TextFile.txt";
         // ReSharper restore StringLiteralTypo
 
-        var fileSystem = (GameEnvironment.InnerState.FileSystem.OsFileSystems.FileSystem)new WindowsFileSystem();
+        var fileSystem = (Services.VirtualEnvironment.InnerState.FileSystem.OsFileSystems.FileSystem)new WindowsFileSystem();
 
         fileSystem.GetFile(path).Should().BeNull();
         fileSystem.GetFile(path2).Should().BeNull();
@@ -74,7 +74,7 @@ public class FileSystemTests
         const string path3 = "C:\\TextFile.txt";
         // ReSharper restore StringLiteralTypo
 
-        var fileSystem = (GameEnvironment.InnerState.FileSystem.OsFileSystems.FileSystem)new WindowsFileSystem();
+        var fileSystem = (Services.VirtualEnvironment.InnerState.FileSystem.OsFileSystems.FileSystem)new WindowsFileSystem();
 
         fileSystem.GetDir(path).Should().BeNull();
         fileSystem.GetDir(path2).Should().BeNull();

@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using HarmonyLib;
-using UniTAS.Plugin.GameEnvironment;
-using UniTAS.Plugin.GameInfo;
-using UniTAS.Plugin.GUI.MainMenu;
-using UniTAS.Plugin.GUI.WindowFactory;
-using UniTAS.Plugin.Logger;
-using UniTAS.Plugin.Patches.PatchProcessor;
-using UniTAS.Plugin.UnitySafeWrappers.Interfaces;
+using UniTAS.Plugin.Implementations.GUI;
+using UniTAS.Plugin.Interfaces.Patches.PatchProcessor;
+using UniTAS.Plugin.Services;
+using UniTAS.Plugin.Services.GUI;
+using UniTAS.Plugin.Services.Logging;
+using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
+using UniTAS.Plugin.Services.VirtualEnvironment;
 using UnityEngine;
-using PatchProcessor = UniTAS.Plugin.Patches.PatchProcessor.PatchProcessor;
+using PatchProcessor = UniTAS.Plugin.Interfaces.Patches.PatchProcessor.PatchProcessor;
 
 namespace UniTAS.Plugin;
 

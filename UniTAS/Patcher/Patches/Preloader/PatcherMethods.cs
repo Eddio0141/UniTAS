@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using UniTAS.Patcher.PreloadPatchUtils;
+using UniTAS.Patcher.Interfaces;
 
 namespace UniTAS.Patcher.Patches.Preloader;
 

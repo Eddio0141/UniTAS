@@ -6,15 +6,15 @@
         <Product>UniTAS.Plugin</Product>
         <Description>UniTAS Plugin</Description>
         <RootNamespace>UniTAS.Plugin</RootNamespace>
-        <Version>0.1.0</Version>
+        <Version>0.2.0</Version>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <LangVersion>latest</LangVersion>
         <RestoreAdditionalProjectSources>
             https://api.nuget.org/v3/index.json;
             https://nuget.bepinex.dev/v3/index.json
         </RestoreAdditionalProjectSources>
-        <AssemblyVersion>0.1.0</AssemblyVersion>
-        <FileVersion>0.1.0</FileVersion>
+        <AssemblyVersion>0.2.0</AssemblyVersion>
+        <FileVersion>0.2.0</FileVersion>
         <Configurations>Debug;Release;ReleaseTrace</Configurations>
         <Platforms>AnyCPU</Platforms>
     </PropertyGroup>
@@ -56,10 +56,6 @@
     <ItemGroup>
         <ProjectReference Include="..\..\moonsharp\src\MoonSharp.Interpreter\MoonSharp.Interpreter.net35-client.csproj" />
         <ProjectReference Include="..\Patcher\Patcher.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <Folder Include="Movie\Exceptions\ScriptEngineExceptions" />
     </ItemGroup>
 
 </Project>

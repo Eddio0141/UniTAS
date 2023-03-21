@@ -1,8 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using StructureMap;
-using UniTAS.Plugin.Movie.Engine;
-using UniTAS.Plugin.Movie.MovieModels.Properties;
-using UniTAS.Plugin.Movie.Parsers.MovieParser;
+using UniTAS.Plugin.Models.Movie;
+using UniTAS.Plugin.Services.Movie;
 
 namespace UniTAS.Plugin.Tests.MovieRunner;
 

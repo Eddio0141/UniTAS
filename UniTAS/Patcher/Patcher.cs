@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using BepInEx.Logging;
 using Mono.Cecil;
-using UniTAS.Patcher.PreloadPatchUtils;
+using UniTAS.Patcher.Implementations;
 
 namespace UniTAS.Patcher;
 

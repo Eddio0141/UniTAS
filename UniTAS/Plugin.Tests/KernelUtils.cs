@@ -2,25 +2,23 @@ using System.Diagnostics.CodeAnalysis;
 using BepInEx.Logging;
 using MoonSharp.Interpreter;
 using StructureMap;
-using UniTAS.Plugin.FFMpeg;
-using UniTAS.Plugin.FixedUpdateSync;
-using UniTAS.Plugin.GameEnvironment;
-using UniTAS.Plugin.GameInitialRestart;
-using UniTAS.Plugin.GameRestart;
-using UniTAS.Plugin.GameRestart.EventInterfaces;
-using UniTAS.Plugin.Interfaces.StartEvent;
-using UniTAS.Plugin.Interfaces.Update;
-using UniTAS.Plugin.Logger;
-using UniTAS.Plugin.MonoBehaviourController;
-using UniTAS.Plugin.Movie;
-using UniTAS.Plugin.Movie.Engine;
-using UniTAS.Plugin.Movie.EngineMethods;
-using UniTAS.Plugin.Movie.Parsers.MovieParser;
-using UniTAS.Plugin.ReverseInvoker;
-using UniTAS.Plugin.StaticFieldStorage;
-using UniTAS.Plugin.UnitySafeWrappers;
-using UniTAS.Plugin.UnitySafeWrappers.Interfaces;
-using UniTAS.Plugin.UnitySafeWrappers.Wrappers;
+using UniTAS.Plugin.Implementations;
+using UniTAS.Plugin.Implementations.DependencyInjection;
+using UniTAS.Plugin.Implementations.GameRestart;
+using UniTAS.Plugin.Implementations.Movie.Engine;
+using UniTAS.Plugin.Implementations.Movie.Parser;
+using UniTAS.Plugin.Implementations.UnitySafeWrappers;
+using UniTAS.Plugin.Interfaces.DependencyInjection;
+using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
+using UniTAS.Plugin.Interfaces.Events.SoftRestart;
+using UniTAS.Plugin.Interfaces.Movie;
+using UniTAS.Plugin.Services;
+using UniTAS.Plugin.Services.Logging;
+using UniTAS.Plugin.Services.Movie;
+using UniTAS.Plugin.Services.UnitySafeWrappers;
+using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
+using UniTAS.Plugin.Services.VirtualEnvironment;
+using UniTAS.Plugin.Tests.Kernel;
 
 namespace UniTAS.Plugin.Tests;
 
@@ -28,6 +26,7 @@ namespace UniTAS.Plugin.Tests;
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Local")]
 public static class KernelUtils
 {
+    [Singleton(IncludeDifferentAssembly = true)]
     public class Env : EngineMethodClass, IOnLastUpdate
     {
         public float Fps { get; set; }
@@ -106,12 +105,12 @@ public static class KernelUtils
             c.Scan(scanner =>
             {
                 scanner.AssemblyContainingType<Plugin>();
+                scanner.AssemblyContainingType<KernelTests>();
+                scanner.Convention<DependencyInjectionConvention>();
                 // scanner.WithDefaultConventions();
 
                 // scanner.AddAllTypesOf<PatchProcessor>();
                 // scanner.AddAllTypesOf<IMainMenuTab>();
-                scanner.AddAllTypesOf<EngineMethodClass>();
-                scanner.ExcludeType<Movie.EngineMethods.Implementations.Env>();
             });
 
             // c.ForSingletonOf<PluginWrapper>().Use<PluginWrapper>();
@@ -134,14 +133,14 @@ public static class KernelUtils
             //
             // c.For<IGameInfo>().Singleton().Use<GameInfo.GameInfo>();
             //
-            c.ForSingletonOf<GameInitialRestart.GameInitialRestart>().Use<GameInitialRestart.GameInitialRestart>();
-            c.Forward<GameInitialRestart.GameInitialRestart, IGameInitialRestart>();
-            c.Forward<GameInitialRestart.GameInitialRestart, IOnAwake>();
-            c.Forward<GameInitialRestart.GameInitialRestart, IOnEnable>();
-            c.Forward<GameInitialRestart.GameInitialRestart, IOnStart>();
-            c.Forward<GameInitialRestart.GameInitialRestart, IOnFixedUpdate>();
+            c.ForSingletonOf<GameInitialRestart>().Use<GameInitialRestart>();
+            c.Forward<GameInitialRestart, IGameInitialRestart>();
+            c.Forward<GameInitialRestart, IOnAwake>();
+            c.Forward<GameInitialRestart, IOnEnable>();
+            c.Forward<GameInitialRestart, IOnStart>();
+            c.Forward<GameInitialRestart, IOnFixedUpdate>();
 
-            c.For<IMonoBehaviourController>().Singleton().Use<MonoBehaviourController.MonoBehaviourController>();
+            c.For<IMonoBehaviourController>().Singleton().Use<MonoBehaviourController>();
 
             c.For<ISceneWrapper>().Singleton().Use<SceneManagerWrapper>();
 
@@ -181,16 +180,16 @@ public static class KernelUtils
             // after VirtualEnvironment
             // c.For<IOnGameRestartResume>().Use<UnityRngRestartInit>();
 
-            c.ForSingletonOf<Movie.MovieRunner>().Use<Movie.MovieRunner>();
-            c.Forward<Movie.MovieRunner, IMovieRunner>();
-            c.Forward<Movie.MovieRunner, IOnPreUpdates>();
+            c.ForSingletonOf<Implementations.Movie.MovieRunner>().Use<Implementations.Movie.MovieRunner>();
+            c.Forward<Implementations.Movie.MovieRunner, IMovieRunner>();
+            c.Forward<Implementations.Movie.MovieRunner, IOnPreUpdates>();
 
-            c.ForSingletonOf<GameRestart.GameRestart>().Use<GameRestart.GameRestart>();
-            c.Forward<GameRestart.GameRestart, IGameRestart>();
-            c.Forward<GameRestart.GameRestart, IOnEnable>();
-            c.Forward<GameRestart.GameRestart, IOnStart>();
-            c.Forward<GameRestart.GameRestart, IOnFixedUpdate>();
-            c.Forward<GameRestart.GameRestart, IOnAwake>();
+            c.ForSingletonOf<GameRestart>().Use<GameRestart>();
+            c.Forward<GameRestart, IGameRestart>();
+            c.Forward<GameRestart, IOnEnable>();
+            c.Forward<GameRestart, IOnStart>();
+            c.Forward<GameRestart, IOnFixedUpdate>();
+            c.Forward<GameRestart, IOnAwake>();
 
             // c.ForSingletonOf<FileSystemManager>().Use<FileSystemManager>();
             // c.For<IOnGameRestart>().Use(x => x.GetInstance<FileSystemManager>());
@@ -219,15 +218,9 @@ public static class KernelUtils
 
             c.For<IMovieParser>().Use<MovieParser>();
 
-            c.For<IEngineMethodClassesFactory>().Use<EngineMethodClassesFactory>();
-
-            c.ForSingletonOf<Env>().Use<Env>();
-            c.Forward<Env, EngineMethodClass>();
-            c.Forward<Env, IOnLastUpdate>();
+            c.For<IEngineModuleClassesFactory>().Use<EngineModuleClassesFactory>();
 
             c.For<IMovieEngine>().Use<MovieEngine>();
-
-            c.For<IFfmpegProcessFactory>().Use<FfmpegProcessFactory>();
         });
 
         return kernel;
