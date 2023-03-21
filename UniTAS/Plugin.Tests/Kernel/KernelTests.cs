@@ -13,21 +13,21 @@ namespace UniTAS.Plugin.Tests.Kernel;
 public class KernelTests
 {
     [Fact]
-    public void FfmpegRunner()
+    public void FfmpegFactory()
     {
         var kernel = KernelUtils.Init();
 
-        var ffmpegRunner = kernel.GetInstance<IFfmpegProcessFactory>();
-        Assert.NotNull(ffmpegRunner);
+        var ffmpegProcessFactory = kernel.GetInstance<IFfmpegProcessFactory>();
+        Assert.NotNull(ffmpegProcessFactory);
 
-        var ffmpegRunner2 = kernel.GetInstance<IFfmpegProcessFactory>();
-        Assert.NotNull(ffmpegRunner2);
+        var ffmpegProcessFactory2 = kernel.GetInstance<IFfmpegProcessFactory>();
+        Assert.NotNull(ffmpegProcessFactory2);
 
-        Assert.NotSame(ffmpegRunner, ffmpegRunner2);
+        Assert.Same(ffmpegProcessFactory, ffmpegProcessFactory2);
     }
 
     [Fact]
-    public void FfmpegFactory()
+    public void FfmpegFactory2()
     {
         var kernel = KernelUtils.Init();
 
