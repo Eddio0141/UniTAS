@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
-using UniTAS.Patcher.Runtime;
+using UniTAS.Patcher.Shared;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
 using UniTAS.Plugin.Interfaces.Events.SoftRestart;
 using UniTAS.Plugin.Services;

@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Linq;
+using UniTAS.Patcher.Interfaces;
 
-namespace UniTAS.Patcher.PreloadPatchUtils;
+namespace UniTAS.Patcher.Implementations;
 
 public class PreloadPatcherProcessor
 {

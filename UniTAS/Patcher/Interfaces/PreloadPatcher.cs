@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Mono.Cecil;
 
-namespace UniTAS.Patcher.PreloadPatchUtils;
+namespace UniTAS.Patcher.Interfaces;
 
 /// <summary>
 /// Base class for all preload patchers

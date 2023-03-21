@@ -1,5 +1,5 @@
 using System.Diagnostics;
-using UniTAS.Patcher.Runtime;
+using UniTAS.Patcher.Shared;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.Logging;
 

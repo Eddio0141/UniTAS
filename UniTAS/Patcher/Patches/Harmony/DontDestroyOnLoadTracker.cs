@@ -2,15 +2,15 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using HarmonyLib;
-using UniTAS.Patcher.Runtime;
+using UniTAS.Patcher.Shared;
 using UnityEngine;
 
-namespace UniTAS.Patcher.Patches.Harmony.Unity;
+namespace UniTAS.Patcher.Patches.Harmony;
 
 [HarmonyPatch]
 [SuppressMessage("ReSharper", "UnusedMember.Local")]
 [SuppressMessage("ReSharper", "InconsistentNaming")]
-public class ObjectPatch
+public class DontDestroyOnLoadTracker
 {
     [HarmonyPatch(typeof(Object), nameof(Object.DontDestroyOnLoad))]
     private class DontDestroyOnLoadPatch
