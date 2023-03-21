@@ -8,16 +8,7 @@ using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.Logging;
 using UniTAS.Plugin.Services.Movie;
 using UniTAS.Plugin.Services.VirtualEnvironment;
-using UniTAS.Plugin.FixedUpdateSync;
-using UniTAS.Plugin.GameEnvironment;
-using UniTAS.Plugin.GameRestart;
-using UniTAS.Plugin.Interfaces.Update;
-using UniTAS.Plugin.Logger;
-using UniTAS.Plugin.Movie.Engine;
 using UniTAS.Plugin.Movie.Events;
-using UniTAS.Plugin.Movie.Exceptions;
-using UniTAS.Plugin.Movie.MovieModels.Properties;
-using UniTAS.Plugin.Movie.Parsers.MovieParser;
 using UniTAS.Plugin.Utils;
 
 namespace UniTAS.Plugin.Implementations.Movie;

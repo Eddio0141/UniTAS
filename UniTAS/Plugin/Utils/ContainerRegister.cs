@@ -1,37 +1,5 @@
 using StructureMap;
-using UniTAS.Plugin.FixedUpdateSync;
-using UniTAS.Plugin.GameEnvironment;
-using UniTAS.Plugin.GameEnvironment.InnerState;
-using UniTAS.Plugin.GameEnvironment.InnerState.FileSystem;
-using UniTAS.Plugin.GameEnvironment.InnerState.Input;
-using UniTAS.Plugin.GameInfo;
-using UniTAS.Plugin.GameInitialRestart;
-using UniTAS.Plugin.GameRestart;
-using UniTAS.Plugin.GameRestart.EventInterfaces;
-using UniTAS.Plugin.GameRestart.Events;
-using UniTAS.Plugin.GameSpeedUnlocker;
-using UniTAS.Plugin.GameVideoRender;
-using UniTAS.Plugin.GUI.MainMenu.Tabs;
-using UniTAS.Plugin.Interfaces;
-using UniTAS.Plugin.Interfaces.StartEvent;
-using UniTAS.Plugin.Interfaces.Update;
-using UniTAS.Plugin.Logger;
-using UniTAS.Plugin.MainThreadSpeedController;
-using UniTAS.Plugin.MonoBehaviourController;
-using UniTAS.Plugin.Movie;
-using UniTAS.Plugin.Movie.EngineMethods;
-using UniTAS.Plugin.Movie.EngineMethods.Implementations;
 using UniTAS.Plugin.Movie.Events;
-using UniTAS.Plugin.Patches.PatchProcessor;
-using UniTAS.Plugin.ReverseInvoker;
-using UniTAS.Plugin.StaticFieldStorage;
-using UniTAS.Plugin.Trackers.AsyncSceneLoadTracker;
-using UniTAS.Plugin.Trackers.SceneIndexNameTracker;
-using UniTAS.Plugin.Trackers.SceneTracker;
-using UniTAS.Plugin.UnitySafeWrappers;
-using UniTAS.Plugin.UnitySafeWrappers.Interfaces;
-using UniTAS.Plugin.UnitySafeWrappers.Wrappers;
-using UniTAS.Plugin.UnitySafeWrappers.Wrappers.UnityEngine;
 using UniTAS.Plugin.Implementations;
 using UniTAS.Plugin.Implementations.DependencyInjection;
 using UniTAS.Plugin.Implementations.GameRestart;
@@ -111,7 +79,7 @@ public static class ContainerRegister
 
             c.For<ITimeWrapper>().Singleton().Use<TimeWrapper>();
 
-            c.For<ILogger>().Singleton().Use<Logger.Logger>();
+            c.For<ILogger>().Singleton().Use<Logger>();
 
             c.ForSingletonOf<MovieLogger>().Use<MovieLogger>();
             c.For<IMovieLogger>().Use(x => x.GetInstance<MovieLogger>());
