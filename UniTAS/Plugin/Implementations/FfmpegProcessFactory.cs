@@ -1,6 +1,8 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.Logging;
@@ -8,7 +10,7 @@ using UniTAS.Plugin.Services.Logging;
 namespace UniTAS.Plugin.Implementations;
 
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-[Register]
+[Singleton]
 public class FfmpegProcessFactory : IFfmpegProcessFactory
 {
     public bool Available { get; private set; }
@@ -53,14 +55,40 @@ public class FfmpegProcessFactory : IFfmpegProcessFactory
                 break;
             }
 
-            if (BepInEx.Paths.GameRootPath == null) continue;
+            // find in env path and env path for user
+            var envVar = Environment.GetEnvironmentVariable("PATH");
+            var envVarUser = Environment.GetEnvironmentVariable("PATH", EnvironmentVariableTarget.User);
 
-            var gamePath = Path.Combine(BepInEx.Paths.GameRootPath, ffmpegCheck);
-            Trace.Write($"checking ffmpeg at path: {gamePath}");
-            if (TryRunning(gamePath))
+            if (envVar != null || envVarUser != null)
             {
-                path = gamePath;
-                break;
+                var envPaths = $"{envVar}{Path.PathSeparator}{envVarUser}".Split(Path.PathSeparator);
+
+                foreach (var envPath in envPaths)
+                {
+                    if (string.IsNullOrEmpty(envPath)) continue;
+
+                    var envPathCheck = Path.Combine(envPath.Trim(), ffmpegCheck);
+                    Trace.Write($"checking ffmpeg at path: {envPathCheck}");
+
+                    if (TryRunning(envPathCheck))
+                    {
+                        path = envPathCheck;
+                        break;
+                    }
+                }
+
+                if (path != null) break;
+            }
+
+            if (BepInEx.Paths.GameRootPath != null)
+            {
+                var gamePath = Path.Combine(BepInEx.Paths.GameRootPath, ffmpegCheck);
+                Trace.Write($"checking ffmpeg at path: {gamePath}");
+                if (TryRunning(gamePath))
+                {
+                    path = gamePath;
+                    break;
+                }
             }
         }
 
