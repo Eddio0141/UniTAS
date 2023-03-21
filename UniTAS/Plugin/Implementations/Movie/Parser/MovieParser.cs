@@ -3,6 +3,7 @@ using MoonSharp.Interpreter;
 using MoonSharp.Interpreter.Loaders;
 using UniTAS.Plugin.Exceptions.Movie.Parser;
 using UniTAS.Plugin.Implementations.Movie.Engine;
+using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Models.Movie;
 using UniTAS.Plugin.Services.Logging;
 using UniTAS.Plugin.Services.Movie;
@@ -11,6 +12,7 @@ using UniTAS.Plugin.Utils;
 namespace UniTAS.Plugin.Implementations.Movie.Parser;
 
 [SuppressMessage("ReSharper", "UnusedType.Global")]
+[Register]
 public partial class MovieParser : IMovieParser
 {
     private readonly IMovieLogger _logger;

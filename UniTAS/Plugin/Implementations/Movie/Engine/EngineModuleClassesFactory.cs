@@ -2,12 +2,14 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using StructureMap;
 using StructureMap.Pipeline;
+using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.Movie;
 using UniTAS.Plugin.Services.Movie;
 
 namespace UniTAS.Plugin.Implementations.Movie.Engine;
 
 [SuppressMessage("ReSharper", "UnusedType.Global")]
+[Register]
 public class EngineModuleClassesFactory : IEngineModuleClassesFactory
 {
     private readonly IContainer _container;
