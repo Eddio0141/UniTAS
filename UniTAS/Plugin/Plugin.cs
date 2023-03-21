@@ -12,6 +12,7 @@ using UniTAS.Plugin.Interfaces.Events.SoftRestart;
 using UniTAS.Plugin.Interfaces.Patches.PatchProcessor;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.VirtualEnvironment;
+using UniTAS.Plugin.Utils;
 using UnityEngine;
 using PatchProcessor = UniTAS.Plugin.Interfaces.Patches.PatchProcessor.PatchProcessor;
 

@@ -25,7 +25,7 @@ using UniTAS.Plugin.Services.VirtualEnvironment.InnerState;
 using UniTAS.Plugin.Services.VirtualEnvironment.InnerState.FileSystem;
 using UniTAS.Plugin.Services.VirtualEnvironment.InnerState.Input;
 
-namespace UniTAS.Plugin;
+namespace UniTAS.Plugin.Utils;
 
 public static class ContainerRegister
 {
