@@ -2,9 +2,9 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using HarmonyLib;
-using UniTAS.Plugin.GameEnvironment;
 using UniTAS.Plugin.Patches.PatchTypes;
 using UniTAS.Plugin.Services;
+using UniTAS.Plugin.Services.VirtualEnvironment;
 using UnityEngine;
 
 namespace UniTAS.Plugin.Patches.RawPatches;

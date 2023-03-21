@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
-using UniTAS.Plugin.GameEnvironment.InnerState;
-using UniTAS.Plugin.GameEnvironment.InnerState.Input;
 using UniTAS.Plugin.Interfaces.Events.SoftRestart;
+using UniTAS.Plugin.Services.VirtualEnvironment.InnerState;
+using UniTAS.Plugin.Services.VirtualEnvironment.InnerState.Input;
 
-namespace UniTAS.Plugin.GameEnvironment;
+namespace UniTAS.Plugin.Services.VirtualEnvironment;
 
 /// <summary>
 /// A class holding current virtual environment of the system the game is running on

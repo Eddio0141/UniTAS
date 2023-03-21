@@ -1,7 +1,7 @@
 using System;
-using UniTAS.Plugin.GameEnvironment.InnerState;
+using UniTAS.Plugin.Services.VirtualEnvironment.InnerState;
 
-namespace UniTAS.Plugin.GameEnvironment;
+namespace UniTAS.Plugin.Services.VirtualEnvironment;
 
 public class UnityPaths
 {

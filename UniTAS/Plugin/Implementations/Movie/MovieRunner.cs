@@ -2,12 +2,12 @@ using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using UniTAS.Plugin.Exceptions.Movie.Runner;
-using UniTAS.Plugin.GameEnvironment;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
 using UniTAS.Plugin.Models.Movie;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.Logging;
 using UniTAS.Plugin.Services.Movie;
+using UniTAS.Plugin.Services.VirtualEnvironment;
 using UniTAS.Plugin.Utils;
 
 namespace UniTAS.Plugin.Implementations.Movie;

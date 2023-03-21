@@ -1,10 +1,10 @@
 using System.Diagnostics.CodeAnalysis;
 using MoonSharp.Interpreter;
-using UniTAS.Plugin.GameEnvironment;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
 using UniTAS.Plugin.Interfaces.Movie;
 using UniTAS.Plugin.Services.Logging;
 using UniTAS.Plugin.Services.Movie;
+using UniTAS.Plugin.Services.VirtualEnvironment;
 using UnityEngine;
 
 namespace UniTAS.Plugin.Implementations.Movie.Engine.Modules;

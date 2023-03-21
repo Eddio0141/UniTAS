@@ -2,7 +2,7 @@
 using System.Collections.Immutable;
 using UnityEngine;
 
-namespace UniTAS.Plugin.GameEnvironment.InnerState.Input;
+namespace UniTAS.Plugin.Services.VirtualEnvironment.InnerState.Input;
 
 public class KeyboardState : InputDeviceBase
 {

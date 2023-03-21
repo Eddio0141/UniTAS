@@ -5,7 +5,7 @@ using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
 using UniTAS.Plugin.Interfaces.Events.SoftRestart;
 using UnityEngine;
 
-namespace UniTAS.Plugin.GameEnvironment.InnerState;
+namespace UniTAS.Plugin.Services.VirtualEnvironment.InnerState;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 public class GameTime : IOnPreUpdates, IOnGameRestartResume, IOnStart

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace UniTAS.Plugin.GameEnvironment.InnerState.FileSystem.OsFileSystems;
+namespace UniTAS.Plugin.Services.VirtualEnvironment.InnerState.FileSystem.OsFileSystems;
 
 public abstract class FileSystem
 {

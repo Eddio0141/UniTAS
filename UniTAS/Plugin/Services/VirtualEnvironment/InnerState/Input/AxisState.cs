@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace UniTAS.Plugin.GameEnvironment.InnerState.Input;
+namespace UniTAS.Plugin.Services.VirtualEnvironment.InnerState.Input;
 
 public class AxisState : InputDeviceBase
 {

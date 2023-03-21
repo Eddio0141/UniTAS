@@ -1,7 +1,8 @@
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
 using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
+using UniTAS.Plugin.Services.VirtualEnvironment;
 
-namespace UniTAS.Plugin.GameEnvironment;
+namespace UniTAS.Plugin.Implementations;
 
 /// <summary>
 /// Helper for apply game environment settings that doesn't apply on it's own.

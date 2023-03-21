@@ -1,4 +1,4 @@
-﻿namespace UniTAS.Plugin.GameEnvironment.InnerState.Input;
+﻿namespace UniTAS.Plugin.Services.VirtualEnvironment.InnerState.Input;
 
 public class MouseState : InputDeviceBase
 {

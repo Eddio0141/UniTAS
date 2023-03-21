@@ -1,4 +1,4 @@
-namespace UniTAS.Plugin.GameEnvironment.InnerState.FileSystem;
+namespace UniTAS.Plugin.Services.VirtualEnvironment.InnerState.FileSystem;
 
 public enum FileType
 {

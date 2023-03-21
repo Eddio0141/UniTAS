@@ -3,8 +3,8 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using HarmonyLib;
-using UniTAS.Plugin.GameEnvironment;
 using UniTAS.Plugin.Patches.PatchTypes;
+using UniTAS.Plugin.Services.VirtualEnvironment;
 
 namespace UniTAS.Plugin.Patches.RawPatches;
 

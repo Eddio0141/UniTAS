@@ -2,7 +2,6 @@ using System.Diagnostics.CodeAnalysis;
 using BepInEx.Logging;
 using MoonSharp.Interpreter;
 using StructureMap;
-using UniTAS.Plugin.GameEnvironment;
 using UniTAS.Plugin.Implementations;
 using UniTAS.Plugin.Implementations.GameRestart;
 using UniTAS.Plugin.Implementations.Movie.Engine;
@@ -16,6 +15,7 @@ using UniTAS.Plugin.Services.Logging;
 using UniTAS.Plugin.Services.Movie;
 using UniTAS.Plugin.Services.UnitySafeWrappers;
 using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
+using UniTAS.Plugin.Services.VirtualEnvironment;
 
 namespace UniTAS.Plugin.Tests;
 

@@ -1,8 +1,4 @@
 using StructureMap;
-using UniTAS.Plugin.GameEnvironment;
-using UniTAS.Plugin.GameEnvironment.InnerState;
-using UniTAS.Plugin.GameEnvironment.InnerState.FileSystem;
-using UniTAS.Plugin.GameEnvironment.InnerState.Input;
 using UniTAS.Plugin.Implementations;
 using UniTAS.Plugin.Implementations.GameRestart;
 using UniTAS.Plugin.Implementations.Logging;
@@ -23,6 +19,10 @@ using UniTAS.Plugin.Services.Movie;
 using UniTAS.Plugin.Services.UnityAsyncOperationTracker;
 using UniTAS.Plugin.Services.UnitySafeWrappers;
 using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
+using UniTAS.Plugin.Services.VirtualEnvironment;
+using UniTAS.Plugin.Services.VirtualEnvironment.InnerState;
+using UniTAS.Plugin.Services.VirtualEnvironment.InnerState.FileSystem;
+using UniTAS.Plugin.Services.VirtualEnvironment.InnerState.Input;
 
 namespace UniTAS.Plugin;
 

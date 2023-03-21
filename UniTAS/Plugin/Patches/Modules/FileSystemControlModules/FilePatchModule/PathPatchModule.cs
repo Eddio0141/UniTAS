@@ -1,5 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
-using UniTAS.Plugin.GameEnvironment.InnerState.FileSystem;
+using UniTAS.Plugin.Services.VirtualEnvironment.InnerState.FileSystem;
 
 namespace UniTAS.Plugin.Patches.Modules.FileSystemControlModules.FilePatchModule;
 

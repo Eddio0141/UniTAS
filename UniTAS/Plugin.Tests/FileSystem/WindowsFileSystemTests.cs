@@ -1,5 +1,5 @@
 using FluentAssertions;
-using UniTAS.Plugin.GameEnvironment.InnerState.FileSystem.OsFileSystems;
+using UniTAS.Plugin.Services.VirtualEnvironment.InnerState.FileSystem.OsFileSystems;
 
 namespace UniTAS.Plugin.Tests.FileSystem;
 

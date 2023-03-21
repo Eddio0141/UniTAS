@@ -3,8 +3,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using HarmonyLib;
 using Microsoft.Win32.SafeHandles;
-using UniTAS.Plugin.GameEnvironment;
 using UniTAS.Plugin.Patches.PatchGroups;
+using UniTAS.Plugin.Services.VirtualEnvironment;
 
 #if TRACE
 // using System.Diagnostics;

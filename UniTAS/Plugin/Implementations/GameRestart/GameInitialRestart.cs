@@ -1,7 +1,7 @@
 using System;
-using UniTAS.Plugin.GameEnvironment;
 using UniTAS.Plugin.Interfaces.Events.SoftRestart;
 using UniTAS.Plugin.Services;
+using UniTAS.Plugin.Services.VirtualEnvironment;
 
 namespace UniTAS.Plugin.Implementations.GameRestart;
 

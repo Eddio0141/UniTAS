@@ -1,12 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using UniTAS.Plugin.GameEnvironment.InnerState.FileSystem.OsFileSystems;
 using UniTAS.Plugin.Interfaces.Events.SoftRestart;
-using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.Logging;
+using UniTAS.Plugin.Services.VirtualEnvironment.InnerState.FileSystem.OsFileSystems;
 
-namespace UniTAS.Plugin.GameEnvironment.InnerState.FileSystem;
+namespace UniTAS.Plugin.Services.VirtualEnvironment.InnerState.FileSystem;
 
 /// <summary>
 /// Manages virtual file systems of the game

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 
-namespace UniTAS.Plugin.GameEnvironment.InnerState.Input;
+namespace UniTAS.Plugin.Services.VirtualEnvironment.InnerState.Input;
 
 public class ButtonState : InputDeviceBase
 {

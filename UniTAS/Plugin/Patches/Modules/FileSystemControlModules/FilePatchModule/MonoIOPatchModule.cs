@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using HarmonyLib;
-using UniTAS.Plugin.GameEnvironment.InnerState.FileSystem;
+using UniTAS.Plugin.Services.VirtualEnvironment.InnerState.FileSystem;
 
 namespace UniTAS.Plugin.Patches.Modules.FileSystemControlModules.FilePatchModule;
 

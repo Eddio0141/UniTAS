@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 
-namespace UniTAS.Plugin.GameEnvironment.InnerState.FileSystem;
+namespace UniTAS.Plugin.Services.VirtualEnvironment.InnerState.FileSystem;
 
 public interface IFileSystemManager
 {

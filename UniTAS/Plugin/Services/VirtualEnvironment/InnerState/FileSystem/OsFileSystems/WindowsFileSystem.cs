@@ -1,4 +1,4 @@
-namespace UniTAS.Plugin.GameEnvironment.InnerState.FileSystem.OsFileSystems;
+namespace UniTAS.Plugin.Services.VirtualEnvironment.InnerState.FileSystem.OsFileSystems;
 
 public class WindowsFileSystem : FileSystem
 {

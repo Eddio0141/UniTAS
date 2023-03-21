@@ -2,7 +2,7 @@
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
 using UniTAS.Plugin.Interfaces.Events.SoftRestart;
 
-namespace UniTAS.Plugin.GameEnvironment.InnerState.Input;
+namespace UniTAS.Plugin.Services.VirtualEnvironment.InnerState.Input;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 public class InputState : IOnGameRestart, IOnPreUpdates

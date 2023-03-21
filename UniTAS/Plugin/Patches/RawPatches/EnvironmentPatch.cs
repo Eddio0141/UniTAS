@@ -2,8 +2,8 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using HarmonyLib;
-using UniTAS.Plugin.GameEnvironment;
-using UniTAS.Plugin.GameEnvironment.InnerState;
+using UniTAS.Plugin.Services.VirtualEnvironment;
+using UniTAS.Plugin.Services.VirtualEnvironment.InnerState;
 
 namespace UniTAS.Plugin.Patches.RawPatches;
 

@@ -1,4 +1,4 @@
-﻿namespace UniTAS.Plugin.GameEnvironment.InnerState;
+﻿namespace UniTAS.Plugin.Services.VirtualEnvironment.InnerState;
 
 public class WindowState
 {

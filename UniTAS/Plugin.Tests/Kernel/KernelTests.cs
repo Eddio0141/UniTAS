@@ -1,12 +1,12 @@
 using MoonSharp.Interpreter;
 using StructureMap.Pipeline;
-using UniTAS.Plugin.GameEnvironment;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
 using UniTAS.Plugin.Interfaces.Events.SoftRestart;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.Logging;
 using UniTAS.Plugin.Services.Movie;
 using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
+using UniTAS.Plugin.Services.VirtualEnvironment;
 
 namespace UniTAS.Plugin.Tests.Kernel;
 
