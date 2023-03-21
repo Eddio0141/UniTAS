@@ -79,7 +79,7 @@ public static class ContainerRegister
 
             c.For<ITimeWrapper>().Singleton().Use<TimeWrapper>();
 
-            c.For<ILogger>().Singleton().Use<Logger>();
+            c.For<ILogger>().Singleton().Use<Implementations.Logging.Logger>();
 
             c.ForSingletonOf<MovieLogger>().Use<MovieLogger>();
             c.For<IMovieLogger>().Use(x => x.GetInstance<MovieLogger>());
