@@ -1,4 +1,5 @@
 using StructureMap;
+using UniTAS.Plugin.Movie.Events;
 using UniTAS.Plugin.Implementations;
 using UniTAS.Plugin.Implementations.DependencyInjection;
 using UniTAS.Plugin.Implementations.GameRestart;
@@ -78,8 +79,11 @@ public static class ContainerRegister
 
             c.For<ITimeWrapper>().Singleton().Use<TimeWrapper>();
 
-            c.For<ILogger>().Singleton().Use<Logger>();
-            c.For<IMovieLogger>().Singleton().Use<MovieLogger>();
+            c.For<ILogger>().Singleton().Use<Implementations.Logging.Logger>();
+
+            c.ForSingletonOf<MovieLogger>().Use<MovieLogger>();
+            c.For<IMovieLogger>().Use(x => x.GetInstance<MovieLogger>());
+            c.For<IOnMovieRunningStatusChange>().Use(x => x.GetInstance<MovieLogger>());
 
             // before FileSystemManager
             c.ForSingletonOf<PatchReverseInvoker>().Use<PatchReverseInvoker>();
