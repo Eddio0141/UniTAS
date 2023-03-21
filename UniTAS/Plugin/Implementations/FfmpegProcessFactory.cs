@@ -1,12 +1,14 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.Logging;
 
 namespace UniTAS.Plugin.Implementations;
 
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[Register]
 public class FfmpegProcessFactory : IFfmpegProcessFactory
 {
     public bool Available { get; private set; }

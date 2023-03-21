@@ -3,10 +3,12 @@ using BepInEx.Logging;
 using MoonSharp.Interpreter;
 using StructureMap;
 using UniTAS.Plugin.Implementations;
+using UniTAS.Plugin.Implementations.DependencyInjection;
 using UniTAS.Plugin.Implementations.GameRestart;
 using UniTAS.Plugin.Implementations.Movie.Engine;
 using UniTAS.Plugin.Implementations.Movie.Parser;
 using UniTAS.Plugin.Implementations.UnitySafeWrappers;
+using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
 using UniTAS.Plugin.Interfaces.Events.SoftRestart;
 using UniTAS.Plugin.Interfaces.Movie;
@@ -16,6 +18,7 @@ using UniTAS.Plugin.Services.Movie;
 using UniTAS.Plugin.Services.UnitySafeWrappers;
 using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Plugin.Services.VirtualEnvironment;
+using UniTAS.Plugin.Tests.Kernel;
 
 namespace UniTAS.Plugin.Tests;
 
@@ -23,6 +26,7 @@ namespace UniTAS.Plugin.Tests;
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Local")]
 public static class KernelUtils
 {
+    [Singleton(IncludeDifferentAssembly = true)]
     public class Env : EngineMethodClass, IOnLastUpdate
     {
         public float Fps { get; set; }
@@ -101,12 +105,12 @@ public static class KernelUtils
             c.Scan(scanner =>
             {
                 scanner.AssemblyContainingType<Plugin>();
+                scanner.AssemblyContainingType<KernelTests>();
+                scanner.Convention<DependencyInjectionConvention>();
                 // scanner.WithDefaultConventions();
 
                 // scanner.AddAllTypesOf<PatchProcessor>();
                 // scanner.AddAllTypesOf<IMainMenuTab>();
-                scanner.AddAllTypesOf<EngineMethodClass>();
-                scanner.ExcludeType<Implementations.Movie.Engine.Modules.Env>();
             });
 
             // c.ForSingletonOf<PluginWrapper>().Use<PluginWrapper>();
@@ -216,13 +220,7 @@ public static class KernelUtils
 
             c.For<IEngineModuleClassesFactory>().Use<EngineModuleClassesFactory>();
 
-            c.ForSingletonOf<Env>().Use<Env>();
-            c.Forward<Env, EngineMethodClass>();
-            c.Forward<Env, IOnLastUpdate>();
-
             c.For<IMovieEngine>().Use<MovieEngine>();
-
-            c.For<IFfmpegProcessFactory>().Use<FfmpegProcessFactory>();
         });
 
         return kernel;

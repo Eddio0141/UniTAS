@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using MoonSharp.Interpreter;
+using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
 using UniTAS.Plugin.Interfaces.Movie;
 using UniTAS.Plugin.Services.Logging;
@@ -11,6 +12,7 @@ namespace UniTAS.Plugin.Implementations.Movie.Engine.Modules;
 
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 [SuppressMessage("ReSharper", "UnusedMember.Global")]
+[ExcludeRegisterIfTesting]
 public class Env : EngineMethodClass, IOnLastUpdate
 {
     private readonly VirtualEnvironment _virtualEnvironment;

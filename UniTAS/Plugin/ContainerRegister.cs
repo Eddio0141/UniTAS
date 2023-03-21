@@ -1,5 +1,6 @@
 using StructureMap;
 using UniTAS.Plugin.Implementations;
+using UniTAS.Plugin.Implementations.DependencyInjection;
 using UniTAS.Plugin.Implementations.GameRestart;
 using UniTAS.Plugin.Implementations.Logging;
 using UniTAS.Plugin.Implementations.Movie;
@@ -35,7 +36,7 @@ public static class ContainerRegister
             c.Scan(scanner =>
             {
                 scanner.AssemblyContainingType<Plugin>();
-                scanner.WithDefaultConventions();
+                scanner.Convention<DependencyInjectionConvention>();
 
                 scanner.AddAllTypesOf<PatchProcessor>();
                 scanner.AddAllTypesOf<IMainMenuTab>();
