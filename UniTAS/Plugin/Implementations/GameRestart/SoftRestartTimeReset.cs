@@ -1,4 +1,4 @@
-using System;
+using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.Events.SoftRestart;
 using UnityEngine;
 
@@ -7,12 +7,11 @@ namespace UniTAS.Plugin.Implementations.GameRestart;
 /// <summary>
 /// Properly resets unity's Time class to start up state
 /// </summary>
-public class SoftRestartTimeReset : IOnGameRestart
+[Singleton]
+public class SoftRestartTimeReset : IOnPreGameRestart
 {
-    public void OnGameRestart(DateTime startupTime, bool preSceneLoad)
+    public void OnPreGameRestart()
     {
-        if (!preSceneLoad) return;
-
         Time.timeScale = 1;
     }
 }
