@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace UniTAS.Plugin.Services.VirtualEnvironment.InnerState.Input;
+namespace UniTAS.Plugin.Services.VirtualEnvironment.Input;
 
 public interface IAxisStateEnv
 {

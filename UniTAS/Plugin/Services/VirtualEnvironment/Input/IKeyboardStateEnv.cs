@@ -1,7 +1,7 @@
 using System.Collections.Immutable;
 using UnityEngine;
 
-namespace UniTAS.Plugin.Services.VirtualEnvironment.InnerState.Input;
+namespace UniTAS.Plugin.Services.VirtualEnvironment.Input;
 
 public interface IKeyboardStateEnv
 {

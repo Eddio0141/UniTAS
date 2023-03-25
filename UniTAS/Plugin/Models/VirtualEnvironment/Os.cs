@@ -1,4 +1,4 @@
-﻿namespace UniTAS.Plugin.Services.VirtualEnvironment.InnerState;
+﻿namespace UniTAS.Plugin.Models.VirtualEnvironment;
 
 public enum Os
 {

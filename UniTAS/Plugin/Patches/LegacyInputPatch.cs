@@ -4,7 +4,7 @@ using HarmonyLib;
 using UniTAS.Plugin.Implementations.VirtualEnvironment;
 using UniTAS.Plugin.Interfaces.Patches.PatchTypes;
 using UniTAS.Plugin.Services;
-using UniTAS.Plugin.Services.VirtualEnvironment.InnerState.Input;
+using UniTAS.Plugin.Services.VirtualEnvironment.Input;
 using UniTAS.Plugin.Utils;
 using UnityEngine;
 

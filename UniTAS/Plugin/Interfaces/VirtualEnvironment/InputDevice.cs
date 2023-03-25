@@ -3,7 +3,7 @@ using UniTAS.Plugin.Interfaces.Events;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
 using UniTAS.Plugin.Interfaces.Events.SoftRestart;
 
-namespace UniTAS.Plugin.Services.VirtualEnvironment.InnerState.Input;
+namespace UniTAS.Plugin.Interfaces.VirtualEnvironment;
 
 public abstract class InputDevice : IOnVirtualEnvStatusChange, IOnPreUpdates, IOnGameRestart
 {

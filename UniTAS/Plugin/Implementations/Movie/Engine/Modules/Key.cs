@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using MoonSharp.Interpreter;
 using UniTAS.Plugin.Interfaces.Movie;
-using UniTAS.Plugin.Services.VirtualEnvironment.InnerState.Input;
+using UniTAS.Plugin.Services.VirtualEnvironment.Input;
 using UnityEngine;
 
 namespace UniTAS.Plugin.Implementations.Movie.Engine.Modules;

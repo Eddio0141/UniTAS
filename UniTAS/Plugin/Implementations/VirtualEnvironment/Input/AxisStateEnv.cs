@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
+using UniTAS.Plugin.Interfaces.VirtualEnvironment;
+using UniTAS.Plugin.Services.VirtualEnvironment.Input;
 
-namespace UniTAS.Plugin.Services.VirtualEnvironment.InnerState.Input;
+namespace UniTAS.Plugin.Implementations.VirtualEnvironment.Input;
 
 [Singleton]
 public class AxisStateEnv : InputDevice, IAxisStateEnv
