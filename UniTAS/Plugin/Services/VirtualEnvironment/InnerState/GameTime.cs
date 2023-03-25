@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using HarmonyLib;
+using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
 using UniTAS.Plugin.Interfaces.Events.SoftRestart;
 using UnityEngine;
@@ -8,6 +9,7 @@ using UnityEngine;
 namespace UniTAS.Plugin.Services.VirtualEnvironment.InnerState;
 
 // ReSharper disable once ClassNeverInstantiated.Global
+[Singleton]
 public class GameTime : IOnPreUpdates, IOnGameRestartResume, IOnStart, IOnFixedUpdate
 {
     private DateTime StartupTime { get; set; }
@@ -42,7 +44,6 @@ public class GameTime : IOnPreUpdates, IOnGameRestartResume, IOnStart, IOnFixedU
     {
         var dt = Time.fixedDeltaTime;
 
-        // this should be correct?
         FixedUnscaledTime += dt;
         ScaledFixedTime += dt;
     }
