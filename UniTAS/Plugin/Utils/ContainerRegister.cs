@@ -72,8 +72,6 @@ public static class ContainerRegister
 
             c.For<ISceneWrapper>().Singleton().Use<SceneManagerWrapper>();
 
-            c.For<IUnityWrapper>().Singleton().Use<UnityWrapper>();
-
             c.For<IRandomWrapper>().Singleton().Use<RandomWrapper>();
 
             c.For<ITimeWrapper>().Singleton().Use<TimeWrapper>();

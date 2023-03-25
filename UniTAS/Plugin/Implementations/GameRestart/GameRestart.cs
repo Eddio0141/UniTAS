@@ -16,7 +16,7 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
     private DateTime _softRestartTime;
 
     private readonly ISyncFixedUpdate _syncFixedUpdate;
-    private readonly IUnityWrapper _unityWrapper;
+    private readonly ISceneWrapper _sceneWrapper;
     private readonly IMonoBehaviourController _monoBehaviourController;
     private readonly ILogger _logger;
 
@@ -33,7 +33,7 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
     public GameRestart(RestartParameters restartParameters)
     {
         _syncFixedUpdate = restartParameters.SyncFixedUpdate;
-        _unityWrapper = restartParameters.UnityWrapper;
+        _sceneWrapper = restartParameters.SceneWrapper;
         _monoBehaviourController = restartParameters.MonoBehaviourController;
         _logger = restartParameters.Logger;
         _onGameRestart = restartParameters.OnGameRestart;
@@ -112,7 +112,7 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
         _logger.LogInfo("Soft restarting");
 
         OnGameRestart(true);
-        _unityWrapper.Scene.LoadScene(0);
+        _sceneWrapper.LoadScene(0);
         OnGameRestart(false);
 
         PendingRestart = false;
