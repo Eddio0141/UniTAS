@@ -32,6 +32,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed movie respecting the FPS limit if game has a fixed FPS
 - Fixed accidentally invoking engine methods while set up
 
+### TAS playback
+- Fixed time not getting the same value every TAS playback
+
 # [v0.2.0_v1.1.3] - 2023-03-02
 
 ## Changed
