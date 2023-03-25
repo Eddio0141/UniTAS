@@ -189,7 +189,7 @@ public class TimePatch
         {
             if (ReverseInvoker.InnerCall())
             {
-                return false;
+                return true;
             }
 
             __result = (float)VirtualEnvironment.GameTime.SecondsSinceStartUp;
