@@ -38,6 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### TAS playback
 
 - Fixed time not getting the same value every TAS playback
+- Fixed Time.timeScale not resetting on soft restart
 
 ## Removed
 
