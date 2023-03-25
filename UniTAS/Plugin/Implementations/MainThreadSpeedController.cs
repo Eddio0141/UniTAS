@@ -26,7 +26,7 @@ public class MainThreadSpeedControl : IMainThreadSpeedControl, IOnUpdate, IOnMov
     }
 
     private float _lastTime;
-    private float _speedMultiplier;
+    private float _speedMultiplier = 1f;
 
     private float _remainingTime;
 
