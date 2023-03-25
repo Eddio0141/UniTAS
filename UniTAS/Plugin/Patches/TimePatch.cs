@@ -307,7 +307,7 @@ public class TimePatch
 
         private static bool Prefix(ref float __result)
         {
-            __result = Time.deltaTime;
+            __result = VirtualEnvironment.FrameTime;
             return false;
         }
     }
