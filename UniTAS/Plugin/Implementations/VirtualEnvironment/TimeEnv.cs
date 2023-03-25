@@ -11,7 +11,7 @@ using UnityEngine;
 namespace UniTAS.Plugin.Implementations.VirtualEnvironment;
 
 [Singleton]
-public class TimeEnv : ITimeEnv, IOnPreUpdates, IOnGameRestartResume, IOnStart
+public class TimeEnv : ITimeEnv, IOnPreUpdates, IOnGameRestartResume, IOnStart, IOnUpdate, IOnFixedUpdate
 {
     private readonly IConfig _config;
 
@@ -52,14 +52,19 @@ public class TimeEnv : ITimeEnv, IOnPreUpdates, IOnGameRestartResume, IOnStart
     public void PreUpdate()
     {
         HandlePendingFrameCountReset();
+    }
 
-        var dt = Time.deltaTime;
-        var fixedDt = Time.fixedDeltaTime;
-
+    public void Update()
+    {
         RealtimeSinceStartup += FrameTime;
         UnscaledTime += FrameTime;
-        ScaledTime += dt;
+        ScaledTime += Time.deltaTime;
         SecondsSinceStartUp += FrameTime;
+    }
+
+    public void FixedUpdate()
+    {
+        var fixedDt = Time.fixedDeltaTime;
 
         var newFixedUnscaledTime = FixedUnscaledTime + fixedDt;
         if (newFixedUnscaledTime <= UnscaledTime)
