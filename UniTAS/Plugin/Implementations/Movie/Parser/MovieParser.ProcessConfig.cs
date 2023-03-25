@@ -26,7 +26,8 @@ public partial class MovieParser
 
         var properties = new PropertiesModel(new(
             GetStartTime(configTable),
-            GetFrameTime(configTable)
+            GetFrameTime(configTable),
+            GetSeed(configTable)
         ));
 
         return Tuple.New(IsGlobalScope(configTable), properties);
@@ -76,7 +77,7 @@ public partial class MovieParser
 
     private float GetFrameTime(Table table)
     {
-        var selected = SelectAndWarnConflictingVariables(table, new() { "frametime", "ft", "fps" });
+        var selected = SelectAndWarnConflictingVariables(table, new() { "frametime", "fps" });
         var selectedValue = selected.Item1;
         var selectedVariable = selected.Item2;
 
@@ -95,6 +96,20 @@ public partial class MovieParser
         }
 
         return (float)frameTime;
+    }
+
+    private long GetSeed(Table table)
+    {
+        var selectedValue = table.Get("seed");
+
+        var valueParsed = selectedValue.CastToNumber();
+        if (valueParsed is null)
+        {
+            _logger.LogWarning($"Could not parse seed as a number, using default value of 0");
+            return 0;
+        }
+
+        return (long)valueParsed.Value;
     }
 
     private Tuple<DynValue, string> SelectAndWarnConflictingVariables(Table table, List<string> variables)
