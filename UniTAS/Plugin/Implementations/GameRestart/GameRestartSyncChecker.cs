@@ -5,7 +5,7 @@ using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
 using UniTAS.Plugin.Interfaces.Events.SoftRestart;
 using UniTAS.Plugin.Services.Logging;
 
-namespace UniTAS.Plugin.Implementations;
+namespace UniTAS.Plugin.Implementations.GameRestart;
 
 [Singleton]
 [SuppressMessage("ReSharper", "UnusedType.Global")]

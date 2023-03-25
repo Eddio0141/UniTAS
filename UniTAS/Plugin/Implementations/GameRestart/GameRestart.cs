@@ -83,7 +83,7 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
         _logger.LogDebug("Soft restarting, pending FixedUpdate call");
     }
 
-    protected virtual void OnGameRestart(bool preSceneLoad)
+    private void OnGameRestart(bool preSceneLoad)
     {
         foreach (var gameRestart in _onGameRestart)
         {
@@ -99,7 +99,7 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
         }
     }
 
-    protected virtual void OnPreGameRestart()
+    private void OnPreGameRestart()
     {
         foreach (var gameRestart in _onPreGameRestart)
         {
