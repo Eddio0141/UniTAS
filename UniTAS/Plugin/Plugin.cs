@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using BepInEx;
+using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 using StructureMap;
@@ -28,6 +29,7 @@ public class Plugin : BaseUnityPlugin
     private ManualLogSource _logger;
     public static ManualLogSource Log => _instance._logger;
     public static readonly Harmony Harmony = new("dev.yuu0141.unitas.plugin");
+    public static ConfigFile PluginConfig => _instance.Config;
 
     private bool _endOfFrameLoopRunning;
 

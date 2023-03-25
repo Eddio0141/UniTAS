@@ -26,13 +26,19 @@ public class GameTime : IOnPreUpdates, IOnGameRestartResume, IOnStart
 
     private bool _pendingFrameCountReset;
 
+    private readonly VirtualEnvironment _virtualEnvironment;
+
+    public GameTime(VirtualEnvironment virtualEnvironment)
+    {
+        _virtualEnvironment = virtualEnvironment;
+    }
+
     public void PreUpdate()
     {
         HandlePendingFrameCountReset();
 
-        var scale = Time.timeScale;
         var dt = Time.deltaTime;
-        var dtUnscaled = dt / scale;
+        var dtUnscaled = _virtualEnvironment.FrameTime;
         var fixedDt = Time.fixedDeltaTime;
 
         RealtimeSinceStartup += dtUnscaled;

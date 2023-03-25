@@ -1,3 +1,4 @@
+using BepInEx.Configuration;
 using StructureMap;
 using UniTAS.Plugin.Implementations;
 using UniTAS.Plugin.Implementations.DependencyInjection;
@@ -46,6 +47,8 @@ public static class ContainerRegister
                 scanner.ExcludeType<Env>();
             });
 
+            c.ForSingletonOf<ConfigFile>().Use(_ => Plugin.PluginConfig);
+
             c.ForSingletonOf<PluginWrapper>().Use<PluginWrapper>();
 
             c.ForSingletonOf<MonoBehEventInvoker>().Use<MonoBehEventInvoker>();
@@ -78,7 +81,7 @@ public static class ContainerRegister
 
             c.For<ITimeWrapper>().Singleton().Use<TimeWrapper>();
 
-            c.For<ILogger>().Singleton().Use<Implementations.Logging.Logger>();
+            c.For<ILogger>().Singleton().Use<Logger>();
 
             c.ForSingletonOf<MovieLogger>().Use<MovieLogger>();
             c.For<IMovieLogger>().Use(x => x.GetInstance<MovieLogger>());
