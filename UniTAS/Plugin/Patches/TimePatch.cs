@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using HarmonyLib;
@@ -22,6 +23,21 @@ public class TimePatch
 
     private static readonly VirtualEnvironment VirtualEnvironment =
         Plugin.Kernel.GetInstance<VirtualEnvironment>();
+
+    private static bool CalledFromFixedUpdate()
+    {
+        var frames = new StackTrace().GetFrames();
+        if (frames == null) return false;
+
+        foreach (var frame in frames)
+        {
+            var method = frame.GetMethod();
+            if (method?.Name is "FixedUpdate" && method.DeclaringType?.IsSubclassOf(typeof(MonoBehaviour)) is true)
+                return true;
+        }
+
+        return false;
+    }
 
     [HarmonyPatch(typeof(Time), nameof(Time.captureFramerate), MethodType.Setter)]
     private class set_captureFramerate
@@ -99,19 +115,15 @@ public class TimePatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static readonly Traverse
-            inFixedTimeStep = Traverse.Create(typeof(Time)).Property("inFixedTimeStep");
-
         private static readonly Traverse fixedUnscaledTime =
             Traverse.Create(typeof(Time)).Property("fixedUnscaledTime");
 
         private static bool Prefix(ref float __result)
         {
             // When called from inside MonoBehaviour's FixedUpdate, it returns Time.fixedUnscaledTime
-            var gameTime = VirtualEnvironment.GameTime;
-            __result = inFixedTimeStep.PropertyExists() && inFixedTimeStep.GetValue<bool>()
+            __result = CalledFromFixedUpdate()
                 ? fixedUnscaledTime.GetValue<float>()
-                : (float)gameTime.UnscaledTime;
+                : (float)VirtualEnvironment.GameTime.UnscaledTime;
             return false;
         }
     }
@@ -124,16 +136,13 @@ public class TimePatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static readonly Traverse
-            inFixedTimeStep = Traverse.Create(typeof(Time)).Property("inFixedTimeStep");
-
         private static readonly Traverse fixedUnscaledTimeAsDouble =
             Traverse.Create(typeof(Time)).Property("fixedUnscaledTimeAsDouble");
 
         private static bool Prefix(ref double __result)
         {
             // When called from inside MonoBehaviour's FixedUpdate, it returns Time.fixedUnscaledTimeAsDouble
-            __result = inFixedTimeStep.PropertyExists() && inFixedTimeStep.GetValue<bool>()
+            __result = CalledFromFixedUpdate()
                 ? fixedUnscaledTimeAsDouble.GetValue<double>()
                 : VirtualEnvironment.GameTime.UnscaledTime;
             return false;
@@ -220,7 +229,7 @@ public class TimePatch
 
         private static bool Prefix(ref float __result)
         {
-            __result = (float)VirtualEnvironment.GameTime.ScaledTime;
+            __result = CalledFromFixedUpdate() ? Time.fixedTime : (float)VirtualEnvironment.GameTime.ScaledTime;
             return false;
         }
     }
@@ -228,6 +237,9 @@ public class TimePatch
     [HarmonyPatch(typeof(Time), "timeAsDouble", MethodType.Getter)]
     private class get_timeAsDouble
     {
+        private static readonly Traverse fixedTimeAsDouble =
+            Traverse.Create(typeof(Time)).Property("fixedTimeAsDouble");
+
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
             return PatchHelper.CleanupIgnoreFail(original, ex);
@@ -235,7 +247,9 @@ public class TimePatch
 
         private static bool Prefix(ref double __result)
         {
-            __result = VirtualEnvironment.GameTime.ScaledTime;
+            __result = CalledFromFixedUpdate()
+                ? fixedTimeAsDouble.GetValue<double>()
+                : VirtualEnvironment.GameTime.ScaledTime;
             return false;
         }
     }
@@ -250,8 +264,7 @@ public class TimePatch
 
         private static bool Prefix(ref float __result)
         {
-            var gameTime = VirtualEnvironment.GameTime;
-            __result = (float)gameTime.ScaledFixedTime;
+            __result = (float)VirtualEnvironment.GameTime.ScaledFixedTime;
             return false;
         }
     }
