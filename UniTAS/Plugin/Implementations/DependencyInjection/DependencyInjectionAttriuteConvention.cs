@@ -20,6 +20,8 @@ public class DependencyInjectionConvention : IRegistrationConvention
         if (dependencyInjectionAttributes.Length == 0)
             return;
 
+        if (dependencyInjectionAttributes.Any(x => x is ExcludeRegisterIfTestingAttribute)) return;
+
         foreach (var dependencyInjectionAttribute in dependencyInjectionAttributes)
         {
             switch (dependencyInjectionAttribute)
