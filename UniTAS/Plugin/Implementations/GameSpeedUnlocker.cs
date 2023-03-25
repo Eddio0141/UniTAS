@@ -23,7 +23,7 @@ public class GameSpeedUnlocker : IGameSpeedUnlocker
         movieRunner.OnMovieEnd += OnMovieEnd;
     }
 
-    public void OnMovieStart()
+    private void OnMovieStart()
     {
         OriginalTargetFrameRate = Application.targetFrameRate;
         OriginalVSyncCount = QualitySettings.vSyncCount;
@@ -44,7 +44,7 @@ public class GameSpeedUnlocker : IGameSpeedUnlocker
         Unlock = true;
     }
 
-    public void OnMovieEnd()
+    private void OnMovieEnd()
     {
         Unlock = false;
         Application.targetFrameRate = OriginalTargetFrameRate;
