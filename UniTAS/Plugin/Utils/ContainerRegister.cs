@@ -22,7 +22,6 @@ using UniTAS.Plugin.Services.UnityAsyncOperationTracker;
 using UniTAS.Plugin.Services.UnitySafeWrappers;
 using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Plugin.Services.VirtualEnvironment;
-using UniTAS.Plugin.Services.VirtualEnvironment.InnerState;
 using UniTAS.Plugin.Services.VirtualEnvironment.InnerState.FileSystem;
 using UniTAS.Plugin.Services.VirtualEnvironment.InnerState.Input;
 
@@ -88,12 +87,6 @@ public static class ContainerRegister
             // before FileSystemManager
             c.ForSingletonOf<PatchReverseInvoker>().Use<PatchReverseInvoker>();
             c.For<IPatchReverseInvoker>().Use(x => x.GetInstance<PatchReverseInvoker>());
-
-            // before VirtualEnvironment
-            c.ForSingletonOf<GameTime>().Use<GameTime>();
-            c.For<IOnPreUpdates>().Use(x => x.GetInstance<GameTime>());
-            c.For<IOnGameRestartResume>().Use(x => x.GetInstance<GameTime>());
-            c.For<IOnStart>().Use(x => x.GetInstance<GameTime>());
 
             // before VirtualEnvironment
             c.ForSingletonOf<VirtualEnvironmentApplier>().Use<VirtualEnvironmentApplier>();
