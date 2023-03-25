@@ -10,7 +10,7 @@ namespace UniTAS.Plugin.Services.VirtualEnvironment.InnerState;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 [Singleton]
-public class GameTime : IOnPreUpdates, IOnGameRestartResume, IOnStart, IOnFixedUpdate
+public class GameTime : IOnPreUpdates, IOnGameRestartResume, IOnStart
 {
     private DateTime StartupTime { get; set; }
 
@@ -33,19 +33,24 @@ public class GameTime : IOnPreUpdates, IOnGameRestartResume, IOnStart, IOnFixedU
         var scale = Time.timeScale;
         var dt = Time.deltaTime;
         var dtUnscaled = dt / scale;
+        var fixedDt = Time.fixedDeltaTime;
 
         RealtimeSinceStartup += dtUnscaled;
         UnscaledTime += dtUnscaled;
         ScaledTime += dt;
         SecondsSinceStartUp += dtUnscaled;
-    }
 
-    public void FixedUpdate()
-    {
-        var dt = Time.fixedDeltaTime;
+        var newFixedUnscaledTime = FixedUnscaledTime + fixedDt;
+        if (newFixedUnscaledTime <= UnscaledTime)
+        {
+            FixedUnscaledTime += fixedDt;
+        }
 
-        FixedUnscaledTime += dt;
-        ScaledFixedTime += dt;
+        var newScaledFixedTime = ScaledFixedTime + fixedDt;
+        if (newScaledFixedTime <= ScaledTime)
+        {
+            ScaledFixedTime += fixedDt;
+        }
     }
 
     public override string ToString()
