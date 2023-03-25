@@ -47,11 +47,11 @@ public class TimeEnv : ITimeEnv, IOnPreUpdates, IOnGameRestartResume, IOnStart, 
     public double ScaledFixedTime { get; private set; }
     public float RealtimeSinceStartup { get; private set; }
 
-    private bool _pendingFrameCountReset;
+    private bool _timeInitialized;
 
     public void PreUpdate()
     {
-        HandlePendingFrameCountReset();
+        TimeInit();
     }
 
     public void Update()
@@ -115,20 +115,25 @@ public class TimeEnv : ITimeEnv, IOnPreUpdates, IOnGameRestartResume, IOnStart, 
         RealtimeSinceStartup = 0;
         Trace.Write($"New game time state: {this}");
 
-        _pendingFrameCountReset = true;
+        _timeInitialized = false;
     }
 
     public void Start()
     {
-        HandlePendingFrameCountReset();
+        TimeInit();
     }
 
-    private void HandlePendingFrameCountReset()
+    private void TimeInit()
     {
-        if (!_pendingFrameCountReset) return;
-        _pendingFrameCountReset = false;
+        if (_timeInitialized) return;
+        _timeInitialized = true;
 
         FrameCountRestartOffset--;
         RenderedFrameCountOffset--;
+
+        RealtimeSinceStartup += FrameTime;
+        UnscaledTime += FrameTime;
+        ScaledTime += FrameTime;
+        SecondsSinceStartUp += FrameTime;
     }
 }
