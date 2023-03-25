@@ -159,8 +159,7 @@ public class TimePatch
 
         private static void Postfix(ref int __result)
         {
-            var gameTime = VirtualEnvironment.GameTime;
-            __result = (int)((ulong)__result - gameTime.FrameCountRestartOffset);
+            __result = (int)((ulong)__result - VirtualEnvironment.GameTime.FrameCountRestartOffset);
         }
     }
 
@@ -174,8 +173,7 @@ public class TimePatch
 
         private static void Postfix(ref int __result)
         {
-            var gameTime = VirtualEnvironment.GameTime;
-            __result = (int)((ulong)__result - gameTime.RenderedFrameCountOffset);
+            __result = (int)((ulong)__result - VirtualEnvironment.GameTime.RenderedFrameCountOffset);
         }
     }
 
@@ -279,8 +277,7 @@ public class TimePatch
 
         private static bool Prefix(ref double __result)
         {
-            var gameTime = VirtualEnvironment.GameTime;
-            __result = gameTime.ScaledFixedTime;
+            __result = VirtualEnvironment.GameTime.ScaledFixedTime;
             return false;
         }
     }
