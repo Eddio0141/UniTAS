@@ -16,7 +16,6 @@ public class VirtualEnvironment : IOnGameRestartResume
     private readonly IConfig _config;
     private float _frameTime;
     private bool _runVirtualEnvironment;
-    private readonly RandomEnv _randomEnv;
 
     public VirtualEnvironment(InputState inputState, GameTime gameTime, IConfig config)
     {
@@ -25,7 +24,6 @@ public class VirtualEnvironment : IOnGameRestartResume
         _config = config;
 
         FrameTime = 0f;
-        _randomEnv = new RandomEnv(this);
     }
 
     public bool RunVirtualEnvironment
@@ -56,13 +54,16 @@ public class VirtualEnvironment : IOnGameRestartResume
 
     public GameTime GameTime { get; }
 
+    public long Seed => GameTime.CurrentTime.Ticks;
+    public Random SystemRandom { get; private set; }
+
     public UnityPaths UnityPaths { get; private set; }
     public string Username { get; set; } = "User";
 
     public void OnGameRestartResume(DateTime startupTime, bool preMonoBehaviourResume)
     {
-        RandomEnv.SystemRandom = new((int)RandomEnv.Seed);
-        Trace.Write($"Setting System.Random seed to {RandomEnv.Seed}");
+        SystemRandom = new((int)Seed);
+        Trace.Write($"Setting System.Random seed to {Seed}");
         UnityPaths = new(Os, Username);
     }
 }
