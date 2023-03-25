@@ -1,12 +1,14 @@
 ﻿using System.Collections.Generic;
+using UniTAS.Plugin.Interfaces.DependencyInjection;
 
 namespace UniTAS.Plugin.Services.VirtualEnvironment.InnerState.Input;
 
-public class AxisState : InputDeviceBase
+[Singleton]
+public class AxisStateEnv : InputDevice, IAxisStateEnv
 {
     public Dictionary<string, float> Values { get; }
 
-    public AxisState()
+    public AxisStateEnv()
     {
         Values = new();
     }

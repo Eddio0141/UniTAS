@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using MoonSharp.Interpreter;
 using UniTAS.Plugin.Interfaces.Movie;
-using UniTAS.Plugin.Services.VirtualEnvironment;
+using UniTAS.Plugin.Services.VirtualEnvironment.InnerState.Input;
 
 namespace UniTAS.Plugin.Implementations.Movie.Engine.Modules;
 
@@ -9,31 +9,33 @@ namespace UniTAS.Plugin.Implementations.Movie.Engine.Modules;
 [SuppressMessage("ReSharper", "UnusedMember.Global")]
 public class Controller : EngineMethodClass
 {
-    private readonly VirtualEnvironment _virtualEnvironment;
+    private readonly IAxisStateEnv _axisStateEnv;
+    private readonly IButtonStateEnv _buttonStateEnv;
 
     [MoonSharpHidden]
-    public Controller(VirtualEnvironment virtualEnvironment)
+    public Controller(IAxisStateEnv axisStateEnv, IButtonStateEnv buttonStateEnv)
     {
-        _virtualEnvironment = virtualEnvironment;
+        _axisStateEnv = axisStateEnv;
+        _buttonStateEnv = buttonStateEnv;
     }
 
     public void Axis(string axis, float value)
     {
-        _virtualEnvironment.InputState.AxisState.Values[axis] = value;
+        _axisStateEnv.Values[axis] = value;
     }
 
     public void Hold(string button)
     {
-        _virtualEnvironment.InputState.ButtonState.Hold(button);
+        _buttonStateEnv.Hold(button);
     }
 
     public void Release(string button)
     {
-        _virtualEnvironment.InputState.ButtonState.Release(button);
+        _buttonStateEnv.Release(button);
     }
 
     public void Clear_buttons()
     {
-        _virtualEnvironment.InputState.ButtonState.Clear();
+        _buttonStateEnv.Clear();
     }
 }

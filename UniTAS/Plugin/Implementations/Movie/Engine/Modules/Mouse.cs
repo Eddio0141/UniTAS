@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using MoonSharp.Interpreter;
 using UniTAS.Plugin.Interfaces.Movie;
-using UniTAS.Plugin.Services.VirtualEnvironment;
+using UniTAS.Plugin.Services.VirtualEnvironment.InnerState.Input;
 
 namespace UniTAS.Plugin.Implementations.Movie.Engine.Modules;
 
@@ -9,38 +9,38 @@ namespace UniTAS.Plugin.Implementations.Movie.Engine.Modules;
 [SuppressMessage("ReSharper", "UnusedMember.Global")]
 public class Mouse : EngineMethodClass
 {
-    private readonly VirtualEnvironment _virtualEnvironment;
+    private readonly IMouseStateEnv _mouseStateEnv;
 
     [MoonSharpHidden]
-    public Mouse(VirtualEnvironment virtualEnvironment)
+    public Mouse(IMouseStateEnv mouseStateEnv)
     {
-        _virtualEnvironment = virtualEnvironment;
+        _mouseStateEnv = mouseStateEnv;
     }
 
     public void Move(float x, float y)
     {
-        _virtualEnvironment.InputState.MouseState.XPos = x;
-        _virtualEnvironment.InputState.MouseState.YPos = y;
+        _mouseStateEnv.XPos = x;
+        _mouseStateEnv.YPos = y;
     }
 
     public void Move_rel(float x, float y)
     {
-        _virtualEnvironment.InputState.MouseState.XPos += x;
-        _virtualEnvironment.InputState.MouseState.YPos += y;
+        _mouseStateEnv.XPos += x;
+        _mouseStateEnv.YPos += y;
     }
 
     public void Left(bool hold = true)
     {
-        _virtualEnvironment.InputState.MouseState.LeftClick = hold;
+        _mouseStateEnv.LeftClick = hold;
     }
 
     public void Right(bool hold = true)
     {
-        _virtualEnvironment.InputState.MouseState.RightClick = hold;
+        _mouseStateEnv.RightClick = hold;
     }
 
     public void Middle(bool hold = true)
     {
-        _virtualEnvironment.InputState.MouseState.MiddleClick = hold;
+        _mouseStateEnv.MiddleClick = hold;
     }
 }

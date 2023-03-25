@@ -16,8 +16,8 @@ namespace UniTAS.Plugin.Patches;
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public class SystemRandomPatch
 {
-    private static readonly VirtualEnvironment VirtualEnvironment =
-        Plugin.Kernel.GetInstance<VirtualEnvironment>();
+    private static readonly IRandomEnv RandomEnv =
+        Plugin.Kernel.GetInstance<IRandomEnv>();
 
     [HarmonyPatch(typeof(Random), "GenerateSeed")]
     private class GenerateSeed
@@ -29,7 +29,7 @@ public class SystemRandomPatch
 
         private static bool Prefix(ref int __result)
         {
-            __result = (int)VirtualEnvironment.Seed;
+            __result = (int)RandomEnv.StartUpSeed;
             Trace.Write($"System.Random.Generate seed returning {__result}");
             return false;
         }
@@ -45,7 +45,7 @@ public class SystemRandomPatch
 
         private static bool Prefix(ref int __result)
         {
-            __result = (int)VirtualEnvironment.Seed;
+            __result = (int)RandomEnv.StartUpSeed;
             Trace.Write($"System.Random.GenerateGlobalSeed seed returning {__result}");
             return false;
         }

@@ -7,12 +7,12 @@ using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 using StructureMap;
+using UniTAS.Plugin.Implementations.VirtualEnvironment;
 using UniTAS.Plugin.Interfaces.Events;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
 using UniTAS.Plugin.Interfaces.Events.SoftRestart;
 using UniTAS.Plugin.Interfaces.Patches.PatchProcessor;
 using UniTAS.Plugin.Services;
-using UniTAS.Plugin.Services.VirtualEnvironment;
 using UniTAS.Plugin.Utils;
 using UnityEngine;
 using PatchProcessor = UniTAS.Plugin.Interfaces.Patches.PatchProcessor.PatchProcessor;
@@ -93,7 +93,7 @@ public class Plugin : BaseUnityPlugin
     {
         yield return null;
         // TODO fix this hack, from initial game restart code
-        Kernel.GetInstance<VirtualEnvironment>().RunVirtualEnvironment = false;
+        Kernel.GetInstance<VirtualEnvController>().RunVirtualEnvironment = false;
     }
 
     private void FixedUpdate()

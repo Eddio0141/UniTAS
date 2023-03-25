@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using MoonSharp.Interpreter;
 using UniTAS.Plugin.Interfaces.Movie;
-using UniTAS.Plugin.Services.VirtualEnvironment;
+using UniTAS.Plugin.Services.VirtualEnvironment.InnerState.Input;
 using UnityEngine;
 
 namespace UniTAS.Plugin.Implementations.Movie.Engine.Modules;
@@ -11,27 +11,27 @@ namespace UniTAS.Plugin.Implementations.Movie.Engine.Modules;
 [SuppressMessage("ReSharper", "UnusedMember.Global")]
 public class Key : EngineMethodClass
 {
-    private readonly VirtualEnvironment _virtualEnvironment;
+    private readonly IKeyboardStateEnv _keyboardStateEnv;
 
     [MoonSharpHidden]
-    public Key(VirtualEnvironment virtualEnvironment)
+    public Key(IKeyboardStateEnv keyboardStateEnv)
     {
-        _virtualEnvironment = virtualEnvironment;
+        _keyboardStateEnv = keyboardStateEnv;
     }
 
     public void Hold(string key)
     {
-        _virtualEnvironment.InputState.KeyboardState.Hold(ParseKeyCode(key));
+        _keyboardStateEnv.Hold(ParseKeyCode(key));
     }
 
     public void Release(string key)
     {
-        _virtualEnvironment.InputState.KeyboardState.Release(ParseKeyCode(key));
+        _keyboardStateEnv.Release(ParseKeyCode(key));
     }
 
     public void Clear()
     {
-        _virtualEnvironment.InputState.KeyboardState.Clear();
+        _keyboardStateEnv.Clear();
     }
 
     private static KeyCode ParseKeyCode(string key)

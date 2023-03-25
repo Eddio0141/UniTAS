@@ -1,6 +1,9 @@
-﻿namespace UniTAS.Plugin.Services.VirtualEnvironment.InnerState.Input;
+﻿using UniTAS.Plugin.Interfaces.DependencyInjection;
 
-public class MouseState : InputDeviceBase
+namespace UniTAS.Plugin.Services.VirtualEnvironment.InnerState.Input;
+
+[Singleton]
+public class MouseStateEnv : InputDevice, IMouseStateEnv
 {
     public bool MousePresent { get; }
     public float XPos { get; set; }
@@ -18,7 +21,7 @@ public class MouseState : InputDeviceBase
     public bool MiddleClickUp { get; private set; }
     private bool _middleClickPrev;
 
-    public MouseState()
+    public MouseStateEnv()
     {
         MousePresent = true;
         ResetState();

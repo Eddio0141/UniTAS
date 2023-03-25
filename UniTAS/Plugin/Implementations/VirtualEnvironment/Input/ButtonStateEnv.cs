@@ -1,9 +1,11 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using UniTAS.Plugin.Interfaces.DependencyInjection;
 
 namespace UniTAS.Plugin.Services.VirtualEnvironment.InnerState.Input;
 
-public class ButtonState : InputDeviceBase
+[Singleton]
+public class ButtonStateEnv : InputDevice, IButtonStateEnv
 {
     public ImmutableList<string> Buttons => _buttons.ToImmutableList();
     public ImmutableList<string> ButtonsDown => _buttonsDown.ToImmutableList();

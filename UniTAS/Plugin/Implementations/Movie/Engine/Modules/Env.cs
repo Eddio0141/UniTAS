@@ -15,16 +15,16 @@ namespace UniTAS.Plugin.Implementations.Movie.Engine.Modules;
 [ExcludeRegisterIfTesting]
 public class Env : EngineMethodClass, IOnLastUpdate
 {
-    private readonly VirtualEnvironment _virtualEnvironment;
+    private readonly ITimeEnv _timeEnv;
     private readonly IMovieLogger _logger;
     private readonly IMovieRunner _movieRunner;
 
     private readonly bool _mobile = Application.platform is RuntimePlatform.Android or RuntimePlatform.IPhonePlayer;
 
     [MoonSharpHidden]
-    public Env(VirtualEnvironment virtualEnvironment, IMovieLogger logger, IMovieRunner movieRunner)
+    public Env(ITimeEnv timeEnv, IMovieLogger logger, IMovieRunner movieRunner)
     {
-        _virtualEnvironment = virtualEnvironment;
+        _timeEnv = timeEnv;
         _logger = logger;
         _movieRunner = movieRunner;
         _movieRunner.OnMovieStart += OnMovieStart;
@@ -32,13 +32,13 @@ public class Env : EngineMethodClass, IOnLastUpdate
 
     public float Fps
     {
-        get => 1f / _virtualEnvironment.FrameTime;
+        get => 1f / _timeEnv.FrameTime;
         set => SetFrametime(1f / value);
     }
 
     public float Frametime
     {
-        get => _virtualEnvironment.FrameTime;
+        get => _timeEnv.FrameTime;
         set => SetFrametime(value);
     }
 
@@ -75,7 +75,7 @@ public class Env : EngineMethodClass, IOnLastUpdate
             fps = Application.targetFrameRate;
         }
 
-        _virtualEnvironment.FrameTime = 1f / fps;
+        _timeEnv.FrameTime = 1f / fps;
     }
 
     [MoonSharpHidden]
@@ -87,12 +87,11 @@ public class Env : EngineMethodClass, IOnLastUpdate
         // either of these values can change at any time, so we need to check for changes
         if (_lastTargetFrameRate != Application.targetFrameRate || _lastVSyncCount != QualitySettings.vSyncCount)
         {
-            SetFrametime(_virtualEnvironment.FrameTime);
+            SetFrametime(_timeEnv.FrameTime);
         }
     }
 
-    [MoonSharpHidden]
-    public void OnMovieStart()
+    private void OnMovieStart()
     {
         UpdateLastTrackers();
     }

@@ -1,17 +1,40 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using HarmonyLib;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
 using UniTAS.Plugin.Interfaces.Events.SoftRestart;
+using UniTAS.Plugin.Services;
+using UniTAS.Plugin.Services.VirtualEnvironment;
 using UnityEngine;
 
-namespace UniTAS.Plugin.Services.VirtualEnvironment.InnerState;
+namespace UniTAS.Plugin.Implementations.VirtualEnvironment;
 
-// ReSharper disable once ClassNeverInstantiated.Global
 [Singleton]
-public class GameTime : IOnPreUpdates, IOnGameRestartResume, IOnStart
+public class TimeEnv : ITimeEnv, IOnPreUpdates, IOnGameRestartResume, IOnStart
 {
+    private readonly IConfig _config;
+
+    private float _frameTime;
+
+    public TimeEnv(IConfig config)
+    {
+        _config = config;
+
+        FrameTime = 0f;
+    }
+
+    public float FrameTime
+    {
+        get => _frameTime;
+        set
+        {
+            if (value <= 0) value = 1f / _config.DefaultFps;
+
+            _frameTime = value;
+        }
+    }
+
     private DateTime StartupTime { get; set; }
 
     public DateTime CurrentTime => StartupTime + TimeSpan.FromSeconds(RealtimeSinceStartup);
@@ -26,25 +49,17 @@ public class GameTime : IOnPreUpdates, IOnGameRestartResume, IOnStart
 
     private bool _pendingFrameCountReset;
 
-    private readonly VirtualEnvironment _virtualEnvironment;
-
-    public GameTime(VirtualEnvironment virtualEnvironment)
-    {
-        _virtualEnvironment = virtualEnvironment;
-    }
-
     public void PreUpdate()
     {
         HandlePendingFrameCountReset();
 
         var dt = Time.deltaTime;
-        var dtUnscaled = _virtualEnvironment.FrameTime;
         var fixedDt = Time.fixedDeltaTime;
 
-        RealtimeSinceStartup += dtUnscaled;
-        UnscaledTime += dtUnscaled;
+        RealtimeSinceStartup += FrameTime;
+        UnscaledTime += FrameTime;
         ScaledTime += dt;
-        SecondsSinceStartUp += dtUnscaled;
+        SecondsSinceStartUp += FrameTime;
 
         var newFixedUnscaledTime = FixedUnscaledTime + fixedDt;
         if (newFixedUnscaledTime <= UnscaledTime)
@@ -72,7 +87,6 @@ public class GameTime : IOnPreUpdates, IOnGameRestartResume, IOnStart
                $"ScaledFixedTime: {ScaledFixedTime} " +
                $"RealtimeSinceStartup: {RealtimeSinceStartup}";
     }
-
 
     // setting the start up time causes the game to update other time related variables, which requires this to be ran in the main thread
     public void OnGameRestartResume(DateTime startupTime, bool preMonoBehaviourResume)

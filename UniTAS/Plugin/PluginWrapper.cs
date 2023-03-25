@@ -8,8 +8,6 @@ using UniTAS.Plugin.Interfaces.Patches.PatchProcessor;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.GUI;
 using UniTAS.Plugin.Services.Logging;
-using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
-using UniTAS.Plugin.Services.VirtualEnvironment;
 using UnityEngine;
 using PatchProcessor = UniTAS.Plugin.Interfaces.Patches.PatchProcessor.PatchProcessor;
 
@@ -19,7 +17,7 @@ namespace UniTAS.Plugin;
 public class PluginWrapper
 {
     public PluginWrapper(IEnumerable<PatchProcessor> patchProcessors, IGameInfo gameInfo, ILogger logger,
-        VirtualEnvironment virtualEnvironment, IRandomWrapper random, IWindowFactory windowFactory)
+        IWindowFactory windowFactory)
     {
         logger.LogInfo($"Internally found unity version: {gameInfo.UnityVersion}");
         logger.LogInfo($"Game product name: {gameInfo.ProductName}");
@@ -32,10 +30,6 @@ public class PluginWrapper
                 $"Game company name: {companyNameProperty.GetValue<string>()}"); //product name: {Application.productName}, version: {Application.version}");
 
         // TODO all axis names for help
-
-        // init random seed
-        // TODO make this happen after 
-        random.Seed = (int)virtualEnvironment.Seed;
 
         var sortedPatches = patchProcessors
             .Where(x => x is not OnPluginInitProcessor)

@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
+using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UnityEngine;
 
 namespace UniTAS.Plugin.Services.VirtualEnvironment.InnerState.Input;
 
-public class KeyboardState : InputDeviceBase
+[Singleton]
+public class KeyboardStateEnv : InputDevice, IKeyboardStateEnv
 {
     public ImmutableList<KeyCode> Keys => _keys.ToImmutableList();
     public ImmutableList<KeyCode> KeysDown => _keysDown.ToImmutableList();
@@ -15,7 +17,7 @@ public class KeyboardState : InputDeviceBase
     private readonly List<KeyCode> _keysDown;
     private readonly List<KeyCode> _keysUp;
 
-    public KeyboardState()
+    public KeyboardStateEnv()
     {
         _keys = new();
         _keysDown = new();

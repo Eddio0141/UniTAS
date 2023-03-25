@@ -8,33 +8,35 @@ namespace UniTAS.Plugin.Implementations;
 /// Helper for apply game environment settings that doesn't apply on it's own.
 /// </summary>
 // ReSharper disable once ClassNeverInstantiated.Global
-public class VirtualEnvironmentApplier : IOnPreUpdates
+public class VirtualEnvApplier : IOnPreUpdates
 {
-    private readonly VirtualEnvironment _virtualEnvironment;
+    private readonly ITimeEnv _timeEnv;
+    private readonly IVirtualEnvController _virtualEnvController;
     private readonly ITimeWrapper _timeWrap;
 
     private float _lastFrameTime;
 
-    public VirtualEnvironmentApplier(VirtualEnvironment virtualEnvironment, ITimeWrapper timeWrap)
+    public VirtualEnvApplier(ITimeEnv timeEnv, ITimeWrapper timeWrap, IVirtualEnvController virtualEnvController)
     {
-        _virtualEnvironment = virtualEnvironment;
+        _timeEnv = timeEnv;
         _timeWrap = timeWrap;
+        _virtualEnvController = virtualEnvController;
     }
 
     public void PreUpdate()
     {
-        if (!_virtualEnvironment.RunVirtualEnvironment)
+        if (!_virtualEnvController.RunVirtualEnvironment)
         {
             _lastFrameTime = -1f;
             return;
         }
 
         // ReSharper disable once CompareOfFloatsByEqualityOperator
-        if (_lastFrameTime != _virtualEnvironment.FrameTime)
+        if (_lastFrameTime != _timeEnv.FrameTime)
         {
-            _lastFrameTime = _virtualEnvironment.FrameTime;
+            _lastFrameTime = _timeEnv.FrameTime;
             // frameTime
-            _timeWrap.CaptureFrameTime = _virtualEnvironment.FrameTime;
+            _timeWrap.CaptureFrameTime = _timeEnv.FrameTime;
         }
     }
 }

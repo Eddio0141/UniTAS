@@ -22,9 +22,6 @@ using UniTAS.Plugin.Services.Movie;
 using UniTAS.Plugin.Services.UnityAsyncOperationTracker;
 using UniTAS.Plugin.Services.UnitySafeWrappers;
 using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
-using UniTAS.Plugin.Services.VirtualEnvironment;
-using UniTAS.Plugin.Services.VirtualEnvironment.InnerState.FileSystem;
-using UniTAS.Plugin.Services.VirtualEnvironment.InnerState.Input;
 
 namespace UniTAS.Plugin.Utils;
 
@@ -92,16 +89,8 @@ public static class ContainerRegister
             c.For<IPatchReverseInvoker>().Use(x => x.GetInstance<PatchReverseInvoker>());
 
             // before VirtualEnvironment
-            c.ForSingletonOf<VirtualEnvironmentApplier>().Use<VirtualEnvironmentApplier>();
-            c.For<IOnPreUpdates>().Use(x => x.GetInstance<VirtualEnvironmentApplier>());
-
-            // after VirtualEnvironmentApplier
-            c.ForSingletonOf<InputState>().Use<InputState>();
-            c.For<IOnGameRestart>().Use(x => x.GetInstance<InputState>());
-            c.For<IOnPreUpdates>().Use(x => x.GetInstance<InputState>());
-
-            c.ForSingletonOf<VirtualEnvironment>().Use<VirtualEnvironment>();
-            c.For<IOnGameRestartResume>().Use(x => x.GetInstance<VirtualEnvironment>());
+            c.ForSingletonOf<VirtualEnvApplier>().Use<VirtualEnvApplier>();
+            c.For<IOnPreUpdates>().Use(x => x.GetInstance<VirtualEnvApplier>());
 
             // after VirtualEnvironment
             c.For<IOnGameRestartResume>().Use<UnityRngRestartInit>();
@@ -116,10 +105,6 @@ public static class ContainerRegister
             c.For<IOnStart>().Use(x => x.GetInstance<GameRestart>());
             c.For<IOnFixedUpdate>().Use(x => x.GetInstance<GameRestart>());
             c.For<IOnAwake>().Use(x => x.GetInstance<GameRestart>());
-
-            c.ForSingletonOf<FileSystemManager>().Use<FileSystemManager>();
-            c.For<IOnGameRestart>().Use(x => x.GetInstance<FileSystemManager>());
-            c.For<IFileSystemManager>().Use(x => x.GetInstance<FileSystemManager>());
 
             c.ForSingletonOf<AsyncOperationTracker>().Use<AsyncOperationTracker>();
             c.For<ISceneLoadTracker>().Use(x => x.GetInstance<AsyncOperationTracker>());

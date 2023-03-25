@@ -9,11 +9,11 @@ namespace UniTAS.Plugin.Implementations;
 public class UnityRngRestartInit : IOnGameRestartResume
 {
     private readonly IRandomWrapper _random;
-    private readonly VirtualEnvironment _virtualEnvironment;
+    private readonly IRandomEnv _randomEnv;
 
-    public UnityRngRestartInit(VirtualEnvironment virtualEnvironment, IRandomWrapper random)
+    public UnityRngRestartInit(IRandomEnv randomEnv, IRandomWrapper random)
     {
-        _virtualEnvironment = virtualEnvironment;
+        _randomEnv = randomEnv;
         _random = random;
     }
 
@@ -21,6 +21,6 @@ public class UnityRngRestartInit : IOnGameRestartResume
     {
         if (!preMonoBehaviourResume) return;
 
-        _random.Seed = (int)_virtualEnvironment.Seed;
+        _random.Seed = (int)_randomEnv.StartUpSeed;
     }
 }

@@ -16,7 +16,6 @@ namespace UniTAS.Plugin.Implementations.Movie;
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public class MovieRunner : IMovieRunner, IOnPreUpdates
 {
-    private readonly VirtualEnvironment _virtualEnvironment;
     private readonly IGameRestart _gameRestart;
 
     private readonly ISyncFixedUpdate _syncFixedUpdate;
@@ -31,15 +30,20 @@ public class MovieRunner : IMovieRunner, IOnPreUpdates
 
     private readonly IOnMovieRunningStatusChange[] _onMovieRunningStatusChange;
 
-    public MovieRunner(VirtualEnvironment vEnv, IGameRestart gameRestart, ISyncFixedUpdate syncFixedUpdate,
-        IMovieParser parser, IMovieLogger movieLogger, IOnMovieRunningStatusChange[] onMovieRunningStatusChange)
+    private readonly IVirtualEnvController _virtualEnvController;
+    private readonly ITimeEnv _timeEnv;
+
+    public MovieRunner(IGameRestart gameRestart, ISyncFixedUpdate syncFixedUpdate,
+        IMovieParser parser, IMovieLogger movieLogger, IOnMovieRunningStatusChange[] onMovieRunningStatusChange,
+        IVirtualEnvController virtualEnvController, ITimeEnv timeEnv)
     {
-        _virtualEnvironment = vEnv;
         _gameRestart = gameRestart;
         _syncFixedUpdate = syncFixedUpdate;
         _parser = parser;
         _movieLogger = movieLogger;
         _onMovieRunningStatusChange = onMovieRunningStatusChange;
+        _virtualEnvController = virtualEnvController;
+        _timeEnv = timeEnv;
     }
 
     public void RunFromInput(string input)
@@ -68,12 +72,12 @@ public class MovieRunner : IMovieRunner, IOnPreUpdates
         var properties = parsed.Item2;
 
         // set env from properties
-        _virtualEnvironment.RunVirtualEnvironment = true;
+        _virtualEnvController.RunVirtualEnvironment = true;
 
         if (properties.StartupProperties != null)
         {
             Trace.Write($"Using startup property: {properties.StartupProperties}");
-            _virtualEnvironment.FrameTime = properties.StartupProperties.FrameTime;
+            _timeEnv.FrameTime = properties.StartupProperties.FrameTime;
             _gameRestart.SoftRestart(properties.StartupProperties.StartTime);
         }
 
@@ -101,7 +105,7 @@ public class MovieRunner : IMovieRunner, IOnPreUpdates
     {
         if (_cleanUp)
         {
-            _virtualEnvironment.RunVirtualEnvironment = false;
+            _virtualEnvController.RunVirtualEnvironment = false;
             _cleanUp = false;
             return;
         }
@@ -118,7 +122,7 @@ public class MovieRunner : IMovieRunner, IOnPreUpdates
 
     private void AtMovieEnd()
     {
-        _virtualEnvironment.FrameTime = 0;
+        _timeEnv.FrameTime = 0;
         _cleanUp = true;
         _setup = false;
         MovieRunningStatusChange(false);

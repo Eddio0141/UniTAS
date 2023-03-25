@@ -1,11 +1,4 @@
-using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
-using HarmonyLib;
-using UniTAS.Plugin.Implementations;
-using UniTAS.Plugin.Services.VirtualEnvironment;
-using UniTAS.Plugin.Utils;
-using UnityEngine;
 
 namespace UniTAS.Plugin.Patches;
 
@@ -16,32 +9,32 @@ namespace UniTAS.Plugin.Patches;
 public class UnityPathFileSystemPatch
 {
     // TODO add all path patches
-    private static readonly PatchReverseInvoker
-        ReverseInvoker = Plugin.Kernel.GetInstance<PatchReverseInvoker>();
-
-    private static readonly VirtualEnvironment VirtualEnvironment =
-        Plugin.Kernel.GetInstance<VirtualEnvironment>();
-
-    [HarmonyPatch(typeof(Application), nameof(Application.persistentDataPath), MethodType.Getter)]
-    private class ApplicationPersistentDataPath
-    {
-        private static Exception Cleanup(MethodBase original, Exception ex)
-        {
-            return PatchHelper.CleanupIgnoreFail(original, ex);
-        }
-
-        private static bool Prefix(ref string __result)
-        {
-            if (ReverseInvoker.InnerCall()) return true;
-
-            __result = VirtualEnvironment.UnityPaths.PersistentDataPath;
-
-            return false;
-        }
-
-        private static void Postfix()
-        {
-            ReverseInvoker.Return();
-        }
-    }
+    // private static readonly PatchReverseInvoker
+    //     ReverseInvoker = Plugin.Kernel.GetInstance<PatchReverseInvoker>();
+    //
+    // private static readonly VirtualEnvController VirtualEnvController =
+    //     Plugin.Kernel.GetInstance<VirtualEnvController>();
+    //
+    // [HarmonyPatch(typeof(Application), nameof(Application.persistentDataPath), MethodType.Getter)]
+    // private class ApplicationPersistentDataPath
+    // {
+    //     private static Exception Cleanup(MethodBase original, Exception ex)
+    //     {
+    //         return PatchHelper.CleanupIgnoreFail(original, ex);
+    //     }
+    //
+    //     private static bool Prefix(ref string __result)
+    //     {
+    //         if (ReverseInvoker.InnerCall()) return true;
+    //
+    //         __result = VirtualEnvController.UnityPathsEnv.PersistentDataPath;
+    //
+    //         return false;
+    //     }
+    //
+    //     private static void Postfix()
+    //     {
+    //         ReverseInvoker.Return();
+    //     }
+    // }
 }
