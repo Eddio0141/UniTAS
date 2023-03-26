@@ -162,7 +162,6 @@ public class MonoBehaviourPatch : PreloadPatcher
                     {
                         for (var i = 0; i < eventMethodPair.Value.Length; i++)
                         {
-                            if (eventMethodPair.Value[i] == null) break;
                             var parameterTypes = eventMethodPair.Value.Take(i + 1).ToArray();
                             foundMethod = type.Methods.FirstOrDefault(m =>
                                 m.Name == eventMethodPair.Key && m.HasParameters &&
