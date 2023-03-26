@@ -34,10 +34,11 @@ public class MovieRunner : IMovieRunner, IOnPreUpdates
 
     private readonly IVirtualEnvController _virtualEnvController;
     private readonly ITimeEnv _timeEnv;
+    private readonly IRandomEnv _randomEnv;
 
     public MovieRunner(IGameRestart gameRestart, ISyncFixedUpdate syncFixedUpdate,
         IMovieParser parser, IMovieLogger movieLogger, IOnMovieRunningStatusChange[] onMovieRunningStatusChange,
-        IVirtualEnvController virtualEnvController, ITimeEnv timeEnv)
+        IVirtualEnvController virtualEnvController, ITimeEnv timeEnv, IRandomEnv randomEnv)
     {
         _gameRestart = gameRestart;
         _syncFixedUpdate = syncFixedUpdate;
@@ -46,6 +47,7 @@ public class MovieRunner : IMovieRunner, IOnPreUpdates
         _onMovieRunningStatusChange = onMovieRunningStatusChange;
         _virtualEnvController = virtualEnvController;
         _timeEnv = timeEnv;
+        _randomEnv = randomEnv;
     }
 
     public void RunFromInput(string input)
@@ -80,6 +82,7 @@ public class MovieRunner : IMovieRunner, IOnPreUpdates
         {
             Trace.Write($"Using startup property: {properties.StartupProperties}");
             _timeEnv.FrameTime = properties.StartupProperties.FrameTime;
+            _randomEnv.StartUpSeed = properties.StartupProperties.Seed;
             _gameRestart.SoftRestart(properties.StartupProperties.StartTime);
         }
 

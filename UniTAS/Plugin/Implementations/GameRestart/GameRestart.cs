@@ -12,7 +12,7 @@ using Object = UnityEngine.Object;
 namespace UniTAS.Plugin.Implementations.GameRestart;
 
 // ReSharper disable once ClassNeverInstantiated.Global
-[Singleton()]
+[Singleton]
 public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixedUpdate
 {
     private DateTime _softRestartTime;
