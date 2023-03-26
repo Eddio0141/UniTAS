@@ -90,20 +90,9 @@ public class MovieRunner : IMovieRunner, IOnPreUpdates
 
         _syncFixedUpdate.OnSync(() =>
         {
-            if (_gameRestart.PendingRestart)
-            {
-                _syncFixedUpdate.OnSync(() =>
-                {
-                    MovieRunningStatusChange(true);
-                    _setup = false;
-                }, 1, 1);
-            }
-            else
-            {
-                MovieRunningStatusChange(true);
-                _setup = false;
-            }
-        }, 1);
+            MovieRunningStatusChange(true);
+            _setup = false;
+        });
     }
 
     public void PreUpdate()

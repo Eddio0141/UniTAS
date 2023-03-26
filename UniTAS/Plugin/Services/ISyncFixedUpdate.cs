@@ -5,10 +5,9 @@ namespace UniTAS.Plugin.Services;
 public interface ISyncFixedUpdate
 {
     /// <summary>
-    /// Calls back a method on fixed update sync
+    /// Calls the callback on the next fixed update sync
     /// </summary>
-    /// <param name="callback">Method to call back</param>
-    /// <param name="syncOffset">The frame offset from sync frame to call the method backwards, so setting it 1 will call 1 frame before sync happens</param>
-    /// <param name="cycleOffset">Number of cycles delayed until execution</param>
-    void OnSync(Action callback, uint syncOffset = 0, ulong cycleOffset = 0);
+    /// <param name="callback">The method to execute on sync</param>
+    /// <param name="invokeOffset">Offset of invoking in seconds. Adds number of seconds of offset with the next sync</param>
+    void OnSync(Action callback, double invokeOffset = 0);
 }

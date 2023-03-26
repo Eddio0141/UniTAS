@@ -81,7 +81,7 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
 
         _staticFieldManipulator.ResetStaticFields();
 
-        _syncFixedUpdate.OnSync(SoftRestartOperation, 1);
+        _syncFixedUpdate.OnSync(SoftRestartOperation);
         _logger.LogDebug("Soft restarting, pending FixedUpdate call");
     }
 
