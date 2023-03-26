@@ -7,7 +7,7 @@ using UniTAS.Plugin.Services.VirtualEnvironment;
 namespace UniTAS.Plugin.Implementations.VirtualEnvironment;
 
 [Singleton]
-public class RandomEnv : IRandomEnv, IOnGameRestartResume
+public class RandomEnv : IRandomEnv, IOnGameRestart
 {
     public long StartUpSeed { get; set; }
     public Random SystemRandom { get; private set; }
@@ -19,8 +19,10 @@ public class RandomEnv : IRandomEnv, IOnGameRestartResume
         _randomWrapper = randomWrapper;
     }
 
-    public void OnGameRestartResume(DateTime startupTime, bool preMonoBehaviourResume)
+    public void OnGameRestart(DateTime startupTime, bool preSceneLoad)
     {
+        if (!preSceneLoad) return;
+
         SystemRandom = new((int)StartUpSeed);
         _randomWrapper.Seed = (int)StartUpSeed;
     }
