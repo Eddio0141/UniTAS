@@ -6,10 +6,6 @@ public class PropertiesModel
     // public string LoadSaveStatePath { get; }
     // public string EndSavePath { get; }
 
-    public PropertiesModel()
-    {
-    }
-
     public PropertiesModel(StartupPropertiesModel startupPropertiesModel)
     {
         StartupProperties = startupPropertiesModel;

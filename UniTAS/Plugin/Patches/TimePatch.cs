@@ -21,8 +21,7 @@ public class TimePatch
     private static readonly IPatchReverseInvoker
         ReverseInvoker = Plugin.Kernel.GetInstance<IPatchReverseInvoker>();
 
-    private static readonly VirtualEnvironment VirtualEnvironment =
-        Plugin.Kernel.GetInstance<VirtualEnvironment>();
+    private static readonly ITimeEnv TimeEnv = Plugin.Kernel.GetInstance<ITimeEnv>();
 
     private static bool CalledFromFixedUpdate()
     {
@@ -87,7 +86,7 @@ public class TimePatch
 
         private static bool Prefix(ref float __result)
         {
-            __result = (float)VirtualEnvironment.GameTime.FixedUnscaledTime;
+            __result = (float)TimeEnv.FixedUnscaledTime;
             return false;
         }
     }
@@ -102,7 +101,7 @@ public class TimePatch
 
         private static bool Prefix(ref double __result)
         {
-            __result = VirtualEnvironment.GameTime.FixedUnscaledTime;
+            __result = TimeEnv.FixedUnscaledTime;
             return false;
         }
     }
@@ -123,7 +122,7 @@ public class TimePatch
             // When called from inside MonoBehaviour's FixedUpdate, it returns Time.fixedUnscaledTime
             __result = CalledFromFixedUpdate()
                 ? fixedUnscaledTime.GetValue<float>()
-                : (float)VirtualEnvironment.GameTime.UnscaledTime;
+                : (float)TimeEnv.UnscaledTime;
             return false;
         }
     }
@@ -144,7 +143,7 @@ public class TimePatch
             // When called from inside MonoBehaviour's FixedUpdate, it returns Time.fixedUnscaledTimeAsDouble
             __result = CalledFromFixedUpdate()
                 ? fixedUnscaledTimeAsDouble.GetValue<double>()
-                : VirtualEnvironment.GameTime.UnscaledTime;
+                : TimeEnv.UnscaledTime;
             return false;
         }
     }
@@ -159,7 +158,7 @@ public class TimePatch
 
         private static void Postfix(ref int __result)
         {
-            __result = (int)((ulong)__result - VirtualEnvironment.GameTime.FrameCountRestartOffset);
+            __result = (int)((ulong)__result - TimeEnv.FrameCountRestartOffset);
         }
     }
 
@@ -173,7 +172,7 @@ public class TimePatch
 
         private static void Postfix(ref int __result)
         {
-            __result = (int)((ulong)__result - VirtualEnvironment.GameTime.RenderedFrameCountOffset);
+            __result = (int)((ulong)__result - TimeEnv.RenderedFrameCountOffset);
         }
     }
 
@@ -189,10 +188,10 @@ public class TimePatch
         {
             if (ReverseInvoker.InnerCall())
             {
-                return false;
+                return true;
             }
 
-            __result = (float)VirtualEnvironment.GameTime.SecondsSinceStartUp;
+            __result = (float)TimeEnv.SecondsSinceStartUp;
             return false;
         }
 
@@ -212,7 +211,7 @@ public class TimePatch
 
         private static bool Prefix(ref double __result)
         {
-            __result = VirtualEnvironment.GameTime.SecondsSinceStartUp;
+            __result = TimeEnv.SecondsSinceStartUp;
             return false;
         }
     }
@@ -227,7 +226,7 @@ public class TimePatch
 
         private static bool Prefix(ref float __result)
         {
-            __result = CalledFromFixedUpdate() ? Time.fixedTime : (float)VirtualEnvironment.GameTime.ScaledTime;
+            __result = CalledFromFixedUpdate() ? Time.fixedTime : (float)TimeEnv.ScaledTime;
             return false;
         }
     }
@@ -247,7 +246,7 @@ public class TimePatch
         {
             __result = CalledFromFixedUpdate()
                 ? fixedTimeAsDouble.GetValue<double>()
-                : VirtualEnvironment.GameTime.ScaledTime;
+                : TimeEnv.ScaledTime;
             return false;
         }
     }
@@ -262,7 +261,7 @@ public class TimePatch
 
         private static bool Prefix(ref float __result)
         {
-            __result = (float)VirtualEnvironment.GameTime.ScaledFixedTime;
+            __result = (float)TimeEnv.ScaledFixedTime;
             return false;
         }
     }
@@ -277,7 +276,7 @@ public class TimePatch
 
         private static bool Prefix(ref double __result)
         {
-            __result = VirtualEnvironment.GameTime.ScaledFixedTime;
+            __result = TimeEnv.ScaledFixedTime;
             return false;
         }
     }
@@ -307,7 +306,7 @@ public class TimePatch
 
         private static bool Prefix(ref float __result)
         {
-            __result = Time.deltaTime;
+            __result = TimeEnv.FrameTime;
             return false;
         }
     }

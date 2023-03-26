@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Reflection;
+using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
 using UnityEngine;
@@ -8,6 +9,7 @@ using UnityEngine;
 namespace UniTAS.Plugin.Implementations.UnitySafeWrappers;
 
 // ReSharper disable once ClassNeverInstantiated.Global
+[Singleton]
 public class TimeWrapper : ITimeWrapper
 {
     private readonly PropertyInfo _captureDeltaTime = typeof(Time).GetProperty("captureDeltaTime");

@@ -10,7 +10,7 @@ namespace UniTAS.Plugin.Implementations.GameRestart;
 public class RestartParameters
 {
     public ISyncFixedUpdate SyncFixedUpdate { get; }
-    public IUnityWrapper UnityWrapper { get; }
+    public ISceneWrapper SceneWrapper { get; }
     public IMonoBehaviourController MonoBehaviourController { get; }
     public ILogger Logger { get; }
     public IOnGameRestart[] OnGameRestart { get; }
@@ -19,14 +19,14 @@ public class RestartParameters
     public IOnPreGameRestart[] OnPreGameRestart { get; }
 
     public RestartParameters(ISyncFixedUpdate syncFixedUpdate,
-        IUnityWrapper unityWrapper, IMonoBehaviourController monoBehaviourController, ILogger logger,
+        ISceneWrapper sceneWrapper, IMonoBehaviourController monoBehaviourController, ILogger logger,
         IOnGameRestart[] onGameRestart, IStaticFieldManipulator staticFieldManipulator,
         IOnGameRestartResume[] onGameRestartResume,
         IOnPreGameRestart[] onPreGameRestart)
 
     {
         SyncFixedUpdate = syncFixedUpdate;
-        UnityWrapper = unityWrapper;
+        SceneWrapper = sceneWrapper;
         MonoBehaviourController = monoBehaviourController;
         Logger = logger;
         OnGameRestart = onGameRestart;

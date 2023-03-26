@@ -1,4 +1,5 @@
 using System;
+using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.EventSubscribers;
@@ -6,6 +7,7 @@ using UniTAS.Plugin.Services.EventSubscribers;
 namespace UniTAS.Plugin.Implementations;
 
 // ReSharper disable once ClassNeverInstantiated.Global
+[Singleton]
 public class MonoBehEventInvoker : IMonoBehEventInvoker, IUpdateEvents
 {
     private bool _updated;

@@ -1,11 +1,14 @@
 using System.Diagnostics;
 using UniTAS.Patcher.Shared;
+using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.Logging;
 
 namespace UniTAS.Plugin.Implementations;
 
 // ReSharper disable once ClassNeverInstantiated.Global
+[Singleton]
+[ExcludeRegisterIfTesting]
 public class StaticFieldStorage : IStaticFieldManipulator
 {
     private readonly ILogger _logger;

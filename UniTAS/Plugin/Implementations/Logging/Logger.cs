@@ -1,7 +1,10 @@
+using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Services.Logging;
 
 namespace UniTAS.Plugin.Implementations.Logging;
 
+[Singleton]
+[ExcludeRegisterIfTesting]
 public class Logger : ILogger
 {
     public void LogFatal(object data)

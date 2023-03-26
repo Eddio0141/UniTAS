@@ -1,45 +1,23 @@
 using System;
+using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.Events.SoftRestart;
 using UniTAS.Plugin.Services;
-using UniTAS.Plugin.Services.VirtualEnvironment;
 
 namespace UniTAS.Plugin.Implementations.GameRestart;
 
 // ReSharper disable once ClassNeverInstantiated.Global
+[Singleton(typeof(GameRestart))]
 public class GameInitialRestart : GameRestart, IGameInitialRestart
 {
-    private readonly VirtualEnvironment _virtualEnvironment;
-
     private bool _restartOperationStarted;
     public bool FinishedRestart { get; private set; }
 
     private readonly IPatchReverseInvoker _reverseInvoker;
 
-    public GameInitialRestart(RestartParameters restartParameters, IPatchReverseInvoker reverseInvoker,
-        VirtualEnvironment virtualEnvironment) :
+    public GameInitialRestart(RestartParameters restartParameters, IPatchReverseInvoker reverseInvoker) :
         base(restartParameters)
     {
         _reverseInvoker = reverseInvoker;
-        _virtualEnvironment = virtualEnvironment;
-    }
-
-    protected override void OnPreGameRestart()
-    {
-        base.OnPreGameRestart();
-
-        // TODO fix this hack
-        _virtualEnvironment.RunVirtualEnvironment = true;
-        _virtualEnvironment.FrameTime = 0.001f;
-    }
-
-    protected override void OnGameRestart(bool preSceneLoad)
-    {
-        base.OnGameRestart(preSceneLoad);
-
-        if (preSceneLoad || !_restartOperationStarted) return;
-
-        // TODO fix this hack
-        _virtualEnvironment.FrameTime = 0f;
     }
 
     public void InitialRestart()

@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using UniTAS.Plugin.Exceptions.Movie.Runner;
+using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.Events;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
 using UniTAS.Plugin.Models.Movie;
@@ -14,9 +15,9 @@ using UniTAS.Plugin.Utils;
 namespace UniTAS.Plugin.Implementations.Movie;
 
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[Singleton]
 public class MovieRunner : IMovieRunner, IOnPreUpdates
 {
-    private readonly VirtualEnvironment _virtualEnvironment;
     private readonly IGameRestart _gameRestart;
 
     private readonly ISyncFixedUpdate _syncFixedUpdate;
@@ -31,15 +32,22 @@ public class MovieRunner : IMovieRunner, IOnPreUpdates
 
     private readonly IOnMovieRunningStatusChange[] _onMovieRunningStatusChange;
 
-    public MovieRunner(VirtualEnvironment vEnv, IGameRestart gameRestart, ISyncFixedUpdate syncFixedUpdate,
-        IMovieParser parser, IMovieLogger movieLogger, IOnMovieRunningStatusChange[] onMovieRunningStatusChange)
+    private readonly IVirtualEnvController _virtualEnvController;
+    private readonly ITimeEnv _timeEnv;
+    private readonly IRandomEnv _randomEnv;
+
+    public MovieRunner(IGameRestart gameRestart, ISyncFixedUpdate syncFixedUpdate,
+        IMovieParser parser, IMovieLogger movieLogger, IOnMovieRunningStatusChange[] onMovieRunningStatusChange,
+        IVirtualEnvController virtualEnvController, ITimeEnv timeEnv, IRandomEnv randomEnv)
     {
-        _virtualEnvironment = vEnv;
         _gameRestart = gameRestart;
         _syncFixedUpdate = syncFixedUpdate;
         _parser = parser;
         _movieLogger = movieLogger;
         _onMovieRunningStatusChange = onMovieRunningStatusChange;
+        _virtualEnvController = virtualEnvController;
+        _timeEnv = timeEnv;
+        _randomEnv = randomEnv;
     }
 
     public void RunFromInput(string input)
@@ -68,12 +76,13 @@ public class MovieRunner : IMovieRunner, IOnPreUpdates
         var properties = parsed.Item2;
 
         // set env from properties
-        _virtualEnvironment.RunVirtualEnvironment = true;
+        _virtualEnvController.RunVirtualEnvironment = true;
 
         if (properties.StartupProperties != null)
         {
             Trace.Write($"Using startup property: {properties.StartupProperties}");
-            _virtualEnvironment.FrameTime = properties.StartupProperties.FrameTime;
+            _timeEnv.FrameTime = properties.StartupProperties.FrameTime;
+            _randomEnv.StartUpSeed = properties.StartupProperties.Seed;
             _gameRestart.SoftRestart(properties.StartupProperties.StartTime);
         }
 
@@ -101,7 +110,7 @@ public class MovieRunner : IMovieRunner, IOnPreUpdates
     {
         if (_cleanUp)
         {
-            _virtualEnvironment.RunVirtualEnvironment = false;
+            _virtualEnvController.RunVirtualEnvironment = false;
             _cleanUp = false;
             return;
         }
@@ -118,7 +127,7 @@ public class MovieRunner : IMovieRunner, IOnPreUpdates
 
     private void AtMovieEnd()
     {
-        _virtualEnvironment.FrameTime = 0;
+        _timeEnv.FrameTime = 0;
         _cleanUp = true;
         _setup = false;
         MovieRunningStatusChange(false);

@@ -16,8 +16,8 @@ namespace UniTAS.Plugin.Patches;
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public class SystemRandomPatch
 {
-    private static readonly VirtualEnvironment VirtualEnvironment =
-        Plugin.Kernel.GetInstance<VirtualEnvironment>();
+    private static readonly IRandomEnv RandomEnv =
+        Plugin.Kernel.GetInstance<IRandomEnv>();
 
     [HarmonyPatch(typeof(Random), "GenerateSeed")]
     private class GenerateSeed
@@ -29,7 +29,7 @@ public class SystemRandomPatch
 
         private static bool Prefix(ref int __result)
         {
-            __result = (int)VirtualEnvironment.Seed;
+            __result = (int)RandomEnv.StartUpSeed;
             Trace.Write($"System.Random.Generate seed returning {__result}");
             return false;
         }
@@ -45,39 +45,9 @@ public class SystemRandomPatch
 
         private static bool Prefix(ref int __result)
         {
-            __result = (int)VirtualEnvironment.Seed;
+            __result = (int)RandomEnv.StartUpSeed;
             Trace.Write($"System.Random.GenerateGlobalSeed seed returning {__result}");
             return false;
-        }
-    }
-
-    [HarmonyPatch(typeof(UnityEngine.Random), nameof(UnityEngine.Random.RandomRangeInt), typeof(int), typeof(int))]
-    private class TestPrint
-    {
-        private static Exception Cleanup(MethodBase original, Exception ex)
-        {
-            return PatchHelper.CleanupIgnoreFail(original, ex);
-        }
-
-        private static void Postfix(int minInclusive, int maxExclusive, int __result)
-        {
-            Trace.Write($"UnityEngine.Random.RandomRangeInt({minInclusive}, {maxExclusive}) -> {__result}");
-            Trace.Write($"Invoked from {new StackTrace()}");
-        }
-    }
-
-    [HarmonyPatch(typeof(UnityEngine.Random), nameof(UnityEngine.Random.Range), typeof(float), typeof(float))]
-    private class TestPrint2
-    {
-        private static Exception Cleanup(MethodBase original, Exception ex)
-        {
-            return PatchHelper.CleanupIgnoreFail(original, ex);
-        }
-
-        private static void Postfix(float minInclusive, float maxInclusive, float __result)
-        {
-            Trace.Write($"UnityEngine.Random.Range({minInclusive}, {maxInclusive}) -> {__result}");
-            Trace.Write($"Invoked from {new StackTrace()}");
         }
     }
 }

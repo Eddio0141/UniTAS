@@ -1,12 +1,11 @@
 using MoonSharp.Interpreter;
 using StructureMap.Pipeline;
+using UniTAS.Plugin.Implementations.VirtualEnvironment;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
 using UniTAS.Plugin.Interfaces.Events.SoftRestart;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.Logging;
 using UniTAS.Plugin.Services.Movie;
-using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
-using UniTAS.Plugin.Services.VirtualEnvironment;
 
 namespace UniTAS.Plugin.Tests.Kernel;
 
@@ -62,10 +61,10 @@ public class KernelTests
     {
         var kernel = KernelUtils.Init();
 
-        var virtualEnvironment = kernel.GetInstance<VirtualEnvironment>();
+        var virtualEnvironment = kernel.GetInstance<VirtualEnvController>();
         Assert.NotNull(virtualEnvironment);
 
-        var virtualEnvironment2 = kernel.GetInstance<VirtualEnvironment>();
+        var virtualEnvironment2 = kernel.GetInstance<VirtualEnvController>();
         Assert.NotNull(virtualEnvironment2);
 
         Assert.Same(virtualEnvironment, virtualEnvironment2);
@@ -83,20 +82,6 @@ public class KernelTests
         Assert.NotNull(syncFixedUpdate2);
 
         Assert.Same(syncFixedUpdate, syncFixedUpdate2);
-    }
-
-    [Fact]
-    public void UnityWrapper()
-    {
-        var kernel = KernelUtils.Init();
-
-        var unityWrapper = kernel.GetInstance<IUnityWrapper>();
-        Assert.NotNull(unityWrapper);
-
-        var unityWrapper2 = kernel.GetInstance<IUnityWrapper>();
-        Assert.NotNull(unityWrapper2);
-
-        Assert.Same(unityWrapper, unityWrapper2);
     }
 
     [Fact]
@@ -208,7 +193,7 @@ public class KernelTests
         var gameRestart = kernel.GetInstance<IGameRestart>();
 
         // reference should be different
-        Assert.True(gameInitialRestart != gameRestart);
+        Assert.NotSame(gameInitialRestart, gameRestart);
     }
 
     [Fact]

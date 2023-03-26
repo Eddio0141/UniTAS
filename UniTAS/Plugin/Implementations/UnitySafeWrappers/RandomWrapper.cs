@@ -1,12 +1,14 @@
 using System.Diagnostics;
 using System.Reflection;
 using HarmonyLib;
+using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
 using UnityEngine;
 
 namespace UniTAS.Plugin.Implementations.UnitySafeWrappers;
 
 // ReSharper disable once ClassNeverInstantiated.Global
+[Singleton]
 public class RandomWrapper : IRandomWrapper
 {
     private readonly MethodBase _initState =

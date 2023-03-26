@@ -2,6 +2,7 @@ using System;
 using System.Reflection;
 using HarmonyLib;
 using UniTAS.Plugin.Implementations.UnitySafeWrappers.SceneManagement;
+using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Models.UnitySafeWrappers.SceneManagement;
 using UniTAS.Plugin.Services.UnitySafeWrappers;
 using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
@@ -10,21 +11,22 @@ using UnityEngine;
 namespace UniTAS.Plugin.Implementations.UnitySafeWrappers;
 
 // ReSharper disable once ClassNeverInstantiated.Global
+[Singleton]
 public class SceneManagerWrapper : ISceneWrapper
 {
     private readonly IUnityInstanceWrapFactory _unityInstanceWrapFactory;
 
-    private const string SceneManagementNamespace = "UnityEngine.SceneManagement";
+    private const string SCENE_MANAGEMENT_NAMESPACE = "UnityEngine.SceneManagement";
 
-    private readonly Type _sceneManager = AccessTools.TypeByName($"{SceneManagementNamespace}.SceneManager");
+    private readonly Type _sceneManager = AccessTools.TypeByName($"{SCENE_MANAGEMENT_NAMESPACE}.SceneManager");
 
     private readonly PropertyInfo _totalSceneCount;
 
     private readonly Type _loadSceneParametersType =
-        AccessTools.TypeByName($"{SceneManagementNamespace}.LoadSceneParameters");
+        AccessTools.TypeByName($"{SCENE_MANAGEMENT_NAMESPACE}.LoadSceneParameters");
 
     private readonly Type _sceneManagerAPIInternal =
-        AccessTools.TypeByName($"{SceneManagementNamespace}.SceneManagerAPIInternal");
+        AccessTools.TypeByName($"{SCENE_MANAGEMENT_NAMESPACE}.SceneManagerAPIInternal");
 
     // load level async
     private readonly MethodInfo _loadSceneAsyncNameIndexInternalInjected;

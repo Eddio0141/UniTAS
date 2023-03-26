@@ -1,10 +1,5 @@
-using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
-using HarmonyLib;
-using UniTAS.Plugin.Services.VirtualEnvironment;
-using UniTAS.Plugin.Services.VirtualEnvironment.InnerState;
-using UniTAS.Plugin.Utils;
+using UniTAS.Plugin.Implementations.VirtualEnvironment;
 
 namespace UniTAS.Plugin.Patches;
 
@@ -15,21 +10,21 @@ namespace UniTAS.Plugin.Patches;
 [SuppressMessage("ReSharper", "RedundantAssignment")]
 public class EnvironmentPatch
 {
-    private static readonly VirtualEnvironment VirtualEnvironment =
-        Plugin.Kernel.GetInstance<VirtualEnvironment>();
+    private static readonly VirtualEnvController VirtualEnvController =
+        Plugin.Kernel.GetInstance<VirtualEnvController>();
 
-    [HarmonyPatch(typeof(Environment), "IsRunningOnWindows", MethodType.Getter)]
-    private class IsRunningOnWindows
-    {
-        private static Exception Cleanup(MethodBase original, Exception ex)
-        {
-            return PatchHelper.CleanupIgnoreFail(original, ex);
-        }
-
-        private static bool Prefix(ref bool __result)
-        {
-            __result = VirtualEnvironment.Os == Os.Windows;
-            return false;
-        }
-    }
+    // [HarmonyPatch(typeof(Environment), "IsRunningOnWindows", MethodType.Getter)]
+    // private class IsRunningOnWindows
+    // {
+    //     private static Exception Cleanup(MethodBase original, Exception ex)
+    //     {
+    //         return PatchHelper.CleanupIgnoreFail(original, ex);
+    //     }
+    //
+    //     private static bool Prefix(ref bool __result)
+    //     {
+    //         // __result = VirtualEnvController.Os == Os.Windows;
+    //         return false;
+    //     }
+    // }
 }

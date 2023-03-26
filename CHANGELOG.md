@@ -20,6 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### TAS movie
 - Errors at runtime and set up now don't dump the exception stack trace
 - Renamed and moved method `adv` as `movie.frame_advance`
+- Allow the user to set the RNG seed at start up with `MOVIE_CONFIG.seed`
+- Set TAS playback speed to be 0 unless user changes it
 
 ### UniTAS set up tool
 - Moved UniTAS set up tool to [unitas-setup-tool](https://github.com/Eddio0141/unitas_setup_tool)
@@ -27,19 +29,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Fixed
 
 ### TAS movie
+
 - Fixed movie not playing again if a runtime error occurs
 - Fixed movie not playing again if error occurs when parsed
 - Fixed movie respecting the FPS limit if game has a fixed FPS
 - Fixed accidentally invoking engine methods while set up
+
+### TAS playback
+
+- Fixed time not getting the same value every TAS playback
+- Fixed Time.timeScale not resetting on soft restart
+
+## Removed
+
+### TAS movie
+
+- Removed `MOVIE_CONFIG.ft` since `MOVIE_CONFIG.frametime` already exists
 
 # [v0.2.0_v1.1.3] - 2023-03-02
 
 ## Changed
 
 ### TAS movie
+
 - Now uses lua 5.2, check the new [wiki](https://github.com/Eddio0141/UniTAS/wiki) for tutorials and documentation
 
 ### UniTAS GUI
+
 - Temporarily removed unused buttons until they are implemented
 
 ### UniTAS set up tool

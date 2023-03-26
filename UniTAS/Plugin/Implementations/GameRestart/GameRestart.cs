@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using UniTAS.Patcher.Shared;
+using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
 using UniTAS.Plugin.Interfaces.Events.SoftRestart;
 using UniTAS.Plugin.Services;
@@ -11,12 +12,13 @@ using Object = UnityEngine.Object;
 namespace UniTAS.Plugin.Implementations.GameRestart;
 
 // ReSharper disable once ClassNeverInstantiated.Global
+[Singleton]
 public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixedUpdate
 {
     private DateTime _softRestartTime;
 
     private readonly ISyncFixedUpdate _syncFixedUpdate;
-    private readonly IUnityWrapper _unityWrapper;
+    private readonly ISceneWrapper _sceneWrapper;
     private readonly IMonoBehaviourController _monoBehaviourController;
     private readonly ILogger _logger;
 
@@ -33,7 +35,7 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
     public GameRestart(RestartParameters restartParameters)
     {
         _syncFixedUpdate = restartParameters.SyncFixedUpdate;
-        _unityWrapper = restartParameters.UnityWrapper;
+        _sceneWrapper = restartParameters.SceneWrapper;
         _monoBehaviourController = restartParameters.MonoBehaviourController;
         _logger = restartParameters.Logger;
         _onGameRestart = restartParameters.OnGameRestart;
@@ -83,7 +85,7 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
         _logger.LogDebug("Soft restarting, pending FixedUpdate call");
     }
 
-    protected virtual void OnGameRestart(bool preSceneLoad)
+    private void OnGameRestart(bool preSceneLoad)
     {
         foreach (var gameRestart in _onGameRestart)
         {
@@ -99,7 +101,7 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
         }
     }
 
-    protected virtual void OnPreGameRestart()
+    private void OnPreGameRestart()
     {
         foreach (var gameRestart in _onPreGameRestart)
         {
@@ -112,7 +114,7 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
         _logger.LogInfo("Soft restarting");
 
         OnGameRestart(true);
-        _unityWrapper.Scene.LoadScene(0);
+        _sceneWrapper.LoadScene(0);
         OnGameRestart(false);
 
         PendingRestart = false;

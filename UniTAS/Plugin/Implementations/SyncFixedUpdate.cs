@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
@@ -9,6 +10,7 @@ using UnityEngine;
 namespace UniTAS.Plugin.Implementations;
 
 // ReSharper disable once ClassNeverInstantiated.Global
+[Singleton]
 public class SyncFixedUpdate : IOnFixedUpdate, ISyncFixedUpdate, IOnUpdate
 {
     private readonly List<SyncData> _onSyncCallbacks = new();

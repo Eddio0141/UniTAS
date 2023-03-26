@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.Logging;
@@ -11,6 +12,7 @@ using UniTAS.Plugin.Services.Logging;
 namespace UniTAS.Plugin.Interfaces.TASRenderer;
 
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[Singleton]
 public class GameRender : IGameRender, IOnLastUpdate
 {
     private bool _recording;
