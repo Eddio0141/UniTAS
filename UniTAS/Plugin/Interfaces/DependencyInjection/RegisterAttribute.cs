@@ -9,5 +9,11 @@ namespace UniTAS.Plugin.Interfaces.DependencyInjection;
 [AttributeUsage(AttributeTargets.Class)]
 public class RegisterAttribute : DependencyInjectionAttribute
 {
-    public bool IncludeDifferentAssembly { get; set; } = false;
+    public bool IncludeDifferentAssembly { get; set; }
+    public Type[] IgnoreInterfaces { get; }
+
+    public RegisterAttribute(params Type[] ignoreInterfaces)
+    {
+        IgnoreInterfaces = ignoreInterfaces;
+    }
 }

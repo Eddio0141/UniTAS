@@ -193,7 +193,7 @@ public class KernelTests
         var gameRestart = kernel.GetInstance<IGameRestart>();
 
         // reference should be different
-        Assert.True(gameInitialRestart != gameRestart);
+        Assert.NotSame(gameInitialRestart, gameRestart);
     }
 
     [Fact]

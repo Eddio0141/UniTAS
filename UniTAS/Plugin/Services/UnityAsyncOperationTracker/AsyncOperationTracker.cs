@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
+using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
 using UniTAS.Plugin.Models.UnitySafeWrappers.SceneManagement;
 using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
@@ -7,6 +8,7 @@ using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
 namespace UniTAS.Plugin.Services.UnityAsyncOperationTracker;
 
 // ReSharper disable once ClassNeverInstantiated.Global
+[Singleton]
 public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateRequestTracker, IAssetBundleRequestTracker,
     IOnLastUpdate
 {

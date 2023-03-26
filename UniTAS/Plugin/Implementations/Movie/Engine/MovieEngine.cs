@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using MoonSharp.Interpreter;
+using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Models.Movie;
 using UniTAS.Plugin.Services.Logging;
 using UniTAS.Plugin.Services.Movie;
 
 namespace UniTAS.Plugin.Implementations.Movie.Engine;
 
+[Register]
 public partial class MovieEngine : IMovieEngine
 {
     private readonly List<CoroutineHolder> _preUpdateCoroutines = new();

@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
+using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.Events;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
 using UniTAS.Plugin.Services;
@@ -9,6 +10,7 @@ using UnityEngine;
 namespace UniTAS.Plugin.Implementations;
 
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[Singleton]
 public class MainThreadSpeedControl : IMainThreadSpeedControl, IOnUpdate, IOnMovieRunningStatusChange
 {
     private readonly ITimeEnv _timeEnv;

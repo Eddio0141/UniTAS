@@ -9,4 +9,7 @@ namespace UniTAS.Plugin.Interfaces.DependencyInjection;
 [AttributeUsage(AttributeTargets.Class)]
 public class SingletonAttribute : RegisterAttribute
 {
+    public SingletonAttribute(params Type[] ignoreInterfaces) : base(ignoreInterfaces)
+    {
+    }
 }

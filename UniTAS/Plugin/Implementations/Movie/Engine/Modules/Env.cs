@@ -13,6 +13,7 @@ namespace UniTAS.Plugin.Implementations.Movie.Engine.Modules;
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 [SuppressMessage("ReSharper", "UnusedMember.Global")]
 [ExcludeRegisterIfTesting]
+[Singleton]
 public class Env : EngineMethodClass, IOnLastUpdate
 {
     private readonly ITimeEnv _timeEnv;

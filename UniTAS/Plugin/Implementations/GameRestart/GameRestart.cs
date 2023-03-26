@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using UniTAS.Patcher.Shared;
+using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
 using UniTAS.Plugin.Interfaces.Events.SoftRestart;
 using UniTAS.Plugin.Services;
@@ -11,6 +12,7 @@ using Object = UnityEngine.Object;
 namespace UniTAS.Plugin.Implementations.GameRestart;
 
 // ReSharper disable once ClassNeverInstantiated.Global
+[Singleton()]
 public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixedUpdate
 {
     private DateTime _softRestartTime;

@@ -1,3 +1,4 @@
+using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
 using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Plugin.Services.VirtualEnvironment;
@@ -8,6 +9,7 @@ namespace UniTAS.Plugin.Implementations;
 /// Helper for apply game environment settings that doesn't apply on it's own.
 /// </summary>
 // ReSharper disable once ClassNeverInstantiated.Global
+[Singleton]
 public class VirtualEnvApplier : IOnPreUpdates
 {
     private readonly ITimeEnv _timeEnv;

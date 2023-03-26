@@ -3,11 +3,13 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using HarmonyLib;
 using UniTAS.Plugin.Implementations.UnitySafeWrappers.Unity.Collections;
+using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
 
 namespace UniTAS.Plugin.Implementations.UnitySafeWrappers.UnityEngine;
 
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[Singleton]
 public class AudioRendererWrapper : IAudioRendererWrapper
 {
     public bool Available { get; }

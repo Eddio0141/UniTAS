@@ -1,10 +1,12 @@
 using System;
+using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.Events.SoftRestart;
 using UniTAS.Plugin.Services;
 
 namespace UniTAS.Plugin.Implementations.GameRestart;
 
 // ReSharper disable once ClassNeverInstantiated.Global
+[Singleton(typeof(GameRestart))]
 public class GameInitialRestart : GameRestart, IGameInitialRestart
 {
     private bool _restartOperationStarted;

@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.Logging;
 using UniTAS.Plugin.Services.Movie;
@@ -11,6 +12,7 @@ namespace UniTAS.Plugin.Implementations;
 /// Removes vsync limit while playing a movie
 /// </summary>
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[Singleton]
 public class GameSpeedUnlocker : IGameSpeedUnlocker
 {
     public bool Unlock { get; private set; }

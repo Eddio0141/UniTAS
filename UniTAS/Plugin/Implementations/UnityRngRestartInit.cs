@@ -1,4 +1,5 @@
 using System;
+using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.Events.SoftRestart;
 using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Plugin.Services.VirtualEnvironment;
@@ -6,6 +7,7 @@ using UniTAS.Plugin.Services.VirtualEnvironment;
 namespace UniTAS.Plugin.Implementations;
 
 // ReSharper disable once ClassNeverInstantiated.Global
+[Register]
 public class UnityRngRestartInit : IOnGameRestartResume
 {
     private readonly IRandomWrapper _random;

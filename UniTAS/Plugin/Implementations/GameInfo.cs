@@ -3,12 +3,14 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using HarmonyLib;
+using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Services;
 using UnityEngine;
 
 namespace UniTAS.Plugin.Implementations;
 
 // ReSharper disable once ClassNeverInstantiated.Global
+[Singleton]
 public class GameInfo : IGameInfo
 {
     private readonly IPatchReverseInvoker _reverseInvoker;

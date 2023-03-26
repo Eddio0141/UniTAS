@@ -1,10 +1,12 @@
 ﻿using StructureMap;
+using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.UnitySafeWrappers;
 using UniTAS.Plugin.Services.UnitySafeWrappers;
 
 namespace UniTAS.Plugin.Implementations.UnitySafeWrappers;
 
 // ReSharper disable once ClassNeverInstantiated.Global
+[Singleton]
 public class UnityInstanceWrapFactory : IUnityInstanceWrapFactory
 {
     private readonly IContainer _container;
