@@ -1,9 +1,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Linq;
-using BepInEx;
 using HarmonyLib;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -37,16 +35,7 @@ public class StaticCtorHeaders : PreloadPatcher
         "StructureMap"
     };
 
-    public override IEnumerable<string> TargetDLLs =>
-        Directory.GetFiles(Paths.ManagedPath, "*.dll", SearchOption.TopDirectoryOnly)
-            .Where(x =>
-            {
-                var fileWithoutExtension = Path.GetFileNameWithoutExtension(x);
-                return fileWithoutExtension == null ||
-                       !_assemblyExclusionsRaw.Any(a => fileWithoutExtension.Like(a));
-            })
-            // isolate the filename
-            .Select(Path.GetFileName);
+    public override IEnumerable<string> TargetDLLs => Utils.AllTargetDllsWithGenericExclusions;
 
     public override void Patch(ref AssemblyDefinition assembly)
     {
