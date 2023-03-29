@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using BepInEx;
@@ -7,8 +6,6 @@ using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 using StructureMap;
-using UniTAS.Plugin.Implementations.VirtualEnvironment;
-using UniTAS.Plugin.Interfaces.Events;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
 using UniTAS.Plugin.Interfaces.Events.SoftRestart;
 using UniTAS.Plugin.Interfaces.Patches.PatchProcessor;
@@ -33,14 +30,8 @@ public class Plugin : BaseUnityPlugin
 
     private bool _endOfFrameLoopRunning;
 
-    private bool _initialStartProcessed;
-    private List<IPluginInitialLoad> _initialLoadPluginProcessors;
-
     private IMonoBehEventInvoker _monoBehEventInvoker;
-    private bool _fullyLoaded;
-
     private IGameInitialRestart _gameInitialRestart;
-
     private IOnLastUpdate[] _onLastUpdates;
 
     private void Awake()
@@ -50,12 +41,6 @@ public class Plugin : BaseUnityPlugin
         _logger = Logger;
 
         Trace.Write(Kernel.WhatDoIHave());
-
-        _initialLoadPluginProcessors = Kernel.GetAllInstances<IPluginInitialLoad>().ToList();
-        foreach (var processor in _initialLoadPluginProcessors)
-        {
-            processor.OnInitialLoad();
-        }
 
         var patchProcessors = Kernel.GetAllInstances<PatchProcessor>();
         var sortedPatches = patchProcessors
@@ -72,28 +57,15 @@ public class Plugin : BaseUnityPlugin
 
         _monoBehEventInvoker = Kernel.GetInstance<IMonoBehEventInvoker>();
         _gameInitialRestart = Kernel.GetInstance<IGameInitialRestart>();
+
+        // initial start has finished, load the rest of the plugin
+        LoadPluginFull();
+        _gameInitialRestart.InitialRestart();
     }
 
     private void Update()
     {
-        // Trace.Write("Update invoke");
-        ProcessInitialStart();
-        if (!_fullyLoaded && _gameInitialRestart.FinishedRestart)
-        {
-            // initial start has finished, load the rest of the plugin
-            LoadPluginFull();
-            _fullyLoaded = true;
-            StartCoroutine(SetInitialFrameTime());
-        }
-
         _monoBehEventInvoker.Update();
-    }
-
-    private static IEnumerator SetInitialFrameTime()
-    {
-        yield return null;
-        // TODO fix this hack, from initial game restart code
-        Kernel.GetInstance<VirtualEnvController>().RunVirtualEnvironment = false;
     }
 
     private void FixedUpdate()
@@ -136,17 +108,6 @@ public class Plugin : BaseUnityPlugin
             }
         }
         // ReSharper disable once IteratorNeverReturns
-    }
-
-    private void ProcessInitialStart()
-    {
-        if (_initialStartProcessed) return;
-        _initialLoadPluginProcessors.RemoveAll(x => x.FinishedOperation);
-        if (_initialLoadPluginProcessors.Count == 0)
-        {
-            _initialStartProcessed = true;
-            _gameInitialRestart.InitialRestart();
-        }
     }
 
     private void LoadPluginFull()
