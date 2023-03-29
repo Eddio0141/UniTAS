@@ -8,11 +8,9 @@ using HarmonyLib;
 using StructureMap;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
 using UniTAS.Plugin.Interfaces.Events.SoftRestart;
-using UniTAS.Plugin.Interfaces.Patches.PatchProcessor;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Utils;
 using UnityEngine;
-using PatchProcessor = UniTAS.Plugin.Interfaces.Patches.PatchProcessor.PatchProcessor;
 
 namespace UniTAS.Plugin;
 
@@ -41,19 +39,6 @@ public class Plugin : BaseUnityPlugin
         _logger = Logger;
 
         Trace.Write(Kernel.WhatDoIHave());
-
-        var patchProcessors = Kernel.GetAllInstances<PatchProcessor>();
-        var sortedPatches = patchProcessors
-            .Where(x => x is OnPluginInitProcessor)
-            .SelectMany(x => x.ProcessModules())
-            .OrderByDescending(x => x.Key)
-            .Select(x => x.Value).ToList();
-        Trace.Write($"Patching {sortedPatches.Count} patches on init");
-        foreach (var patch in sortedPatches)
-        {
-            Trace.Write($"Patching {patch.FullName} on init");
-            Harmony.PatchAll(patch);
-        }
 
         _monoBehEventInvoker = Kernel.GetInstance<IMonoBehEventInvoker>();
         _gameInitialRestart = Kernel.GetInstance<IGameInitialRestart>();
