@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -13,90 +12,90 @@ namespace UniTAS.Patcher.Patches.Preloader;
 
 public class MonoBehaviourControllerPatch : PreloadPatcher
 {
-    private static readonly Type Collision = AccessTools.TypeByName("UnityEngine.Collision");
-    private static readonly Type Collision2D = AccessTools.TypeByName("UnityEngine.Collision2D");
-    private static readonly Type ControllerColliderHit = AccessTools.TypeByName("UnityEngine.ControllerColliderHit");
-    private static readonly Type NetworkDisconnection = AccessTools.TypeByName("UnityEngine.NetworkDisconnection");
-    private static readonly Type NetworkConnectionError = AccessTools.TypeByName("UnityEngine.NetworkConnectionError");
-    private static readonly Type NetworkMessageInfo = AccessTools.TypeByName("UnityEngine.NetworkMessageInfo");
-    private static readonly Type NetworkPlayer = AccessTools.TypeByName("UnityEngine.NetworkPlayer");
-    private static readonly Type MasterServerEvent = AccessTools.TypeByName("UnityEngine.MasterServerEvent");
-    private static readonly Type Collider = AccessTools.TypeByName("UnityEngine.Collider");
-    private static readonly Type Collider2D = AccessTools.TypeByName("UnityEngine.Collider2D");
-    private static readonly Type GameObject = AccessTools.TypeByName("UnityEngine.GameObject");
-    private static readonly Type RenderTexture = AccessTools.TypeByName("UnityEngine.RenderTexture");
-    private static readonly Type BitStream = AccessTools.TypeByName("UnityEngine.BitStream");
+    private const string COLLISION = "UnityEngine.Collision";
+    private const string COLLISION_2D = "UnityEngine.Collision2D";
+    private const string CONTROLLER_COLLIDER_HIT = "UnityEngine.ControllerColliderHit";
+    private const string NETWORK_DISCONNECTION = "UnityEngine.NetworkDisconnection";
+    private const string NETWORK_CONNECTION_ERROR = "UnityEngine.NetworkConnectionError";
+    private const string NETWORK_MESSAGE_INFO = "UnityEngine.NetworkMessageInfo";
+    private const string NETWORK_PLAYER = "UnityEngine.NetworkPlayer";
+    private const string MASTER_SERVER_EVENT = "UnityEngine.MasterServerEvent";
+    private const string COLLIDER = "UnityEngine.Collider";
+    private const string COLLIDER_2D = "UnityEngine.Collider2D";
+    private const string GAME_OBJECT = "UnityEngine.GameObject";
+    private const string RENDER_TEXTURE = "UnityEngine.RenderTexture";
+    private const string BIT_STREAM = "UnityEngine.BitStream";
 
     // event methods, with list of arg types
     // arg types in mono beh are always positional, so we can use this to determine which method to call
     // args are optionally available in the event method
-    private static readonly KeyValuePair<string, Type[]>[] EventMethods =
+    private static readonly KeyValuePair<string, string[]>[] EventMethods =
     {
-        new("Awake", Type.EmptyTypes),
-        new("FixedUpdate", Type.EmptyTypes),
-        new("LateUpdate", Type.EmptyTypes),
-        new("OnAnimatorIK", new[] { typeof(int) }),
-        new("OnAnimatorMove", Type.EmptyTypes),
-        new("OnApplicationFocus", new[] { typeof(bool) }),
-        new("OnApplicationPause", new[] { typeof(bool) }),
-        new("OnApplicationQuit", Type.EmptyTypes),
-        new("OnAudioFilterRead", new[] { typeof(float[]), typeof(int) }),
-        new("OnBecameInvisible", Type.EmptyTypes),
-        new("OnBecameVisible", Type.EmptyTypes),
-        new("OnCollisionEnter", new[] { Collision }),
-        new("OnCollisionEnter2D", new[] { Collision2D }),
-        new("OnCollisionExit", new[] { Collision }),
-        new("OnCollisionExit2D", new[] { Collision2D }),
-        new("OnCollisionStay", new[] { Collision }),
-        new("OnCollisionStay2D", new[] { Collision2D }),
-        new("OnConnectedToServer", Type.EmptyTypes),
-        new("OnControllerColliderHit", new[] { ControllerColliderHit }),
-        new("OnDestroy", Type.EmptyTypes),
-        new("OnDisable", Type.EmptyTypes),
-        new("OnDisconnectedFromServer", new[] { NetworkDisconnection }),
-        new("OnDrawGizmos", Type.EmptyTypes),
-        new("OnDrawGizmosSelected", Type.EmptyTypes),
-        new("OnEnable", Type.EmptyTypes),
-        new("OnFailedToConnect", new[] { NetworkConnectionError }),
-        new("OnFailedToConnectToMasterServer", new[] { NetworkConnectionError }),
-        new("OnJointBreak", new[] { typeof(float) }),
-        new("OnJointBreak2D", new[] { typeof(float) }),
-        new("OnMasterServerEvent", new[] { MasterServerEvent }),
-        new("OnMouseDown", Type.EmptyTypes),
-        new("OnMouseDrag", Type.EmptyTypes),
-        new("OnMouseEnter", Type.EmptyTypes),
-        new("OnMouseExit", Type.EmptyTypes),
-        new("OnMouseOver", Type.EmptyTypes),
-        new("OnMouseUp", Type.EmptyTypes),
-        new("OnMouseUpAsButton", Type.EmptyTypes),
-        new("OnNetworkInstantiate", new[] { NetworkMessageInfo }),
-        new("OnParticleCollision", new[] { GameObject }),
-        new("OnParticleSystemStopped", Type.EmptyTypes),
-        new("OnParticleTrigger", Type.EmptyTypes),
-        new("OnParticleUpdateJobScheduled", Type.EmptyTypes),
-        new("OnPlayerConnected", new[] { NetworkPlayer }),
-        new("OnPlayerDisconnected", new[] { NetworkPlayer }),
-        new("OnPostRender", Type.EmptyTypes),
-        new("OnPreCull", Type.EmptyTypes),
-        new("OnPreRender", Type.EmptyTypes),
-        new("OnRenderImage", new[] { RenderTexture, RenderTexture }),
-        new("OnRenderObject", Type.EmptyTypes),
-        new("OnSerializeNetworkView", new[] { BitStream, NetworkMessageInfo }),
-        new("OnServerInitialized", Type.EmptyTypes),
-        new("OnTransformChildrenChanged", Type.EmptyTypes),
-        new("OnTransformParentChanged", Type.EmptyTypes),
-        new("OnTriggerEnter", new[] { Collider }),
-        new("OnTriggerEnter2D", new[] { Collider2D }),
-        new("OnTriggerExit", new[] { Collider }),
-        new("OnTriggerExit2D", new[] { Collider2D }),
-        new("OnTriggerStay", new[] { Collider }),
-        new("OnTriggerStay2D", new[] { Collider2D }),
-        new("OnValidate", Type.EmptyTypes),
-        new("OnWillRenderObject", Type.EmptyTypes),
-        new("Reset", Type.EmptyTypes),
-        new("Start", Type.EmptyTypes),
-        new("Update", Type.EmptyTypes),
-        new("OnGUI", Type.EmptyTypes)
+        new("Awake", new string[0]),
+        new("FixedUpdate", new string[0]),
+        new("LateUpdate", new string[0]),
+        new("OnAnimatorIK", new[] { typeof(int).FullName }),
+        new("OnAnimatorMove", new string[0]),
+        new("OnApplicationFocus", new[] { typeof(bool).FullName }),
+        new("OnApplicationPause", new[] { typeof(bool).FullName }),
+        new("OnApplicationQuit", new string[0]),
+        new("OnAudioFilterRead", new[] { typeof(float[]).FullName, typeof(int).FullName }),
+        new("OnBecameInvisible", new string[0]),
+        new("OnBecameVisible", new string[0]),
+        new("OnCollisionEnter", new[] { COLLISION }),
+        new("OnCollisionEnter2D", new[] { COLLISION_2D }),
+        new("OnCollisionExit", new[] { COLLISION }),
+        new("OnCollisionExit2D", new[] { COLLISION_2D }),
+        new("OnCollisionStay", new[] { COLLISION }),
+        new("OnCollisionStay2D", new[] { COLLISION_2D }),
+        new("OnConnectedToServer", new string[0]),
+        new("OnControllerColliderHit", new[] { CONTROLLER_COLLIDER_HIT }),
+        new("OnDestroy", new string[0]),
+        new("OnDisable", new string[0]),
+        new("OnDisconnectedFromServer", new[] { NETWORK_DISCONNECTION }),
+        new("OnDrawGizmos", new string[0]),
+        new("OnDrawGizmosSelected", new string[0]),
+        new("OnEnable", new string[0]),
+        new("OnFailedToConnect", new[] { NETWORK_CONNECTION_ERROR }),
+        new("OnFailedToConnectToMasterServer", new[] { NETWORK_CONNECTION_ERROR }),
+        new("OnJointBreak", new[] { typeof(float).FullName }),
+        new("OnJointBreak2D", new[] { typeof(float).FullName }),
+        new("OnMasterServerEvent", new[] { MASTER_SERVER_EVENT }),
+        new("OnMouseDown", new string[0]),
+        new("OnMouseDrag", new string[0]),
+        new("OnMouseEnter", new string[0]),
+        new("OnMouseExit", new string[0]),
+        new("OnMouseOver", new string[0]),
+        new("OnMouseUp", new string[0]),
+        new("OnMouseUpAsButton", new string[0]),
+        new("OnNetworkInstantiate", new[] { NETWORK_MESSAGE_INFO }),
+        new("OnParticleCollision", new[] { GAME_OBJECT }),
+        new("OnParticleSystemStopped", new string[0]),
+        new("OnParticleTrigger", new string[0]),
+        new("OnParticleUpdateJobScheduled", new string[0]),
+        new("OnPlayerConnected", new[] { NETWORK_PLAYER }),
+        new("OnPlayerDisconnected", new[] { NETWORK_PLAYER }),
+        new("OnPostRender", new string[0]),
+        new("OnPreCull", new string[0]),
+        new("OnPreRender", new string[0]),
+        new("OnRenderImage", new[] { RENDER_TEXTURE, RENDER_TEXTURE }),
+        new("OnRenderObject", new string[0]),
+        new("OnSerializeNetworkView", new[] { BIT_STREAM, NETWORK_MESSAGE_INFO }),
+        new("OnServerInitialized", new string[0]),
+        new("OnTransformChildrenChanged", new string[0]),
+        new("OnTransformParentChanged", new string[0]),
+        new("OnTriggerEnter", new[] { COLLIDER }),
+        new("OnTriggerEnter2D", new[] { COLLIDER_2D }),
+        new("OnTriggerExit", new[] { COLLIDER }),
+        new("OnTriggerExit2D", new[] { COLLIDER_2D }),
+        new("OnTriggerStay", new[] { COLLIDER }),
+        new("OnTriggerStay2D", new[] { COLLIDER_2D }),
+        new("OnValidate", new string[0]),
+        new("OnWillRenderObject", new string[0]),
+        new("Reset", new string[0]),
+        new("Start", new string[0]),
+        new("Update", new string[0]),
+        new("OnGUI", new string[0])
     };
 
     private static readonly string[] ExcludeNamespaces =
@@ -149,8 +148,7 @@ public class MonoBehaviourControllerPatch : PreloadPatcher
                         var parameterTypes = eventMethodPair.Value.Take(i + 1).ToArray();
                         foundMethod = type.Methods.FirstOrDefault(m =>
                             m.Name == eventMethodPair.Key && m.HasParameters &&
-                            m.Parameters.Select(x => x.ParameterType.ResolveReflection())
-                                .SequenceEqual(parameterTypes));
+                            m.Parameters.Select(x => x.ParameterType.FullName).SequenceEqual(parameterTypes));
 
                         if (foundMethod != null) break;
                     }
