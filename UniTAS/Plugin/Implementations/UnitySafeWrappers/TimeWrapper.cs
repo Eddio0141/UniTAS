@@ -1,4 +1,3 @@
-using System;
 using System.Diagnostics;
 using System.Reflection;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
@@ -10,6 +9,7 @@ namespace UniTAS.Plugin.Implementations.UnitySafeWrappers;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 [Singleton]
+[ExcludeRegisterIfTesting]
 public class TimeWrapper : ITimeWrapper
 {
     private readonly PropertyInfo _captureDeltaTime = typeof(Time).GetProperty("captureDeltaTime");
@@ -45,7 +45,8 @@ public class TimeWrapper : ITimeWrapper
             }
             else
             {
-                var fps = value > 0f ? (int)Math.Round(1.0f / value) : 0;
+                // rounds down
+                var fps = value > 0f ? (int)(1.0f / value) : 0;
                 Trace.Write($"Setting captureFramerate to {fps}");
                 _reverseInvoker.Invoke((setFps) => Time.captureFramerate = setFps, fps);
             }

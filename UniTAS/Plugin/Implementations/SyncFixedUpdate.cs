@@ -5,103 +5,89 @@ using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
+using UniTAS.Plugin.Services.VirtualEnvironment;
 using UnityEngine;
 
 namespace UniTAS.Plugin.Implementations;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 [Singleton]
-public class SyncFixedUpdate : IOnFixedUpdate, ISyncFixedUpdate, IOnUpdate
+public class SyncFixedUpdate : ISyncFixedUpdate, IOnUpdate, IOnPreUpdates
 {
-    private readonly List<SyncData> _onSyncCallbacks = new();
-    private int _fixedUpdateIndex;
-    private bool _invalidIndexCounter = true;
+    private readonly Queue<SyncData> _pendingCallbacks = new();
+    private SyncData _processingCallback;
+    private float _restoreFrametime;
+    private bool _pendingRestoreFrametime;
 
-    private float _lastDeltaTime;
-    private float _lastFixedDeltaTime;
+    private readonly ITimeEnv _timeEnv;
+    private readonly ITimeWrapper _timeWrapper;
 
-    private readonly ITimeWrapper _timeWrap;
-
-    public SyncFixedUpdate(ITimeWrapper timeWrap)
+    public SyncFixedUpdate(ITimeEnv timeEnv, ITimeWrapper timeWrapper)
     {
-        _timeWrap = timeWrap;
+        _timeEnv = timeEnv;
+        _timeWrapper = timeWrapper;
     }
 
-    public void FixedUpdate()
+    public void PreUpdate()
     {
-        Trace.WriteIf(_onSyncCallbacks.Count > 0, $"on sync callback count: {_onSyncCallbacks.Count}");
-        if (_timeWrap.CaptureFrameTime == 0)
-        {
-            Trace.WriteIf(_onSyncCallbacks.Count > 0, "Reached invalid counter, frame-time not set 1");
-            return;
-        }
-
-        _fixedUpdateIndex = 0;
-
-        _lastFixedDeltaTime = Time.fixedDeltaTime;
-        _invalidIndexCounter = false;
+        if (!_pendingRestoreFrametime) return;
+        _processingCallback.Callback();
     }
 
     public void Update()
     {
-        // Trace.Write($"Callback count, {_onSyncCallbacks.Count}");
-        if (_invalidIndexCounter) return;
+        if (_restoreFrametime == 0 && !_pendingRestoreFrametime)
+            return;
 
-        // because this tracker works with fixed frame rate, we can't use the tracker unless the fixed frame rate is set
-        if (_timeWrap.CaptureFrameTime == 0)
+        if (_pendingRestoreFrametime)
         {
-            Trace.WriteIf(_onSyncCallbacks.Count > 0, "Reached invalid counter, frame-time not set 2");
-            _invalidIndexCounter = true;
+            _timeEnv.FrameTime = _restoreFrametime;
+            _pendingRestoreFrametime = false;
+            _restoreFrametime = 0;
+            ProcessQueue();
             return;
         }
 
-        // ReSharper disable CompareOfFloatsByEqualityOperator
-        if (_lastDeltaTime != Time.deltaTime || _lastFixedDeltaTime != Time.fixedDeltaTime)
-            // ReSharper restore CompareOfFloatsByEqualityOperator
-        {
-            Trace.WriteIf(_onSyncCallbacks.Count > 0,
-                $"Reached invalid counter, skipping sync fixed update invoke, last delta time: {_lastDeltaTime}, delta time: {Time.deltaTime}, fixed delta time: {Time.fixedDeltaTime}");
-            _invalidIndexCounter = true;
-            _lastDeltaTime = Time.deltaTime;
-            return;
-        }
-
-        var maxUpdateCount = (int)Math.Round(Time.fixedDeltaTime / Time.deltaTime);
-
-        Trace.WriteIf(_onSyncCallbacks.Count > 0,
-            $"Max update count: {maxUpdateCount}, fixed delta time: {Time.fixedDeltaTime}, delta time: {Time.deltaTime}, callbacks left: {_onSyncCallbacks.Count}");
-
-        for (var i = 0; i < _onSyncCallbacks.Count; i++)
-        {
-            var onSyncCallback = _onSyncCallbacks[i];
-
-            // remove on match
-            if ((onSyncCallback.InvokeOffset == 0 && _fixedUpdateIndex == 0) ||
-                (onSyncCallback.InvokeOffset != 0 && maxUpdateCount - onSyncCallback.InvokeOffset == _fixedUpdateIndex))
-            {
-                if (onSyncCallback.CycleOffset > 0)
-                {
-                    onSyncCallback.CycleOffset--;
-                    Trace.Write($"OnSyncCallback cycle offset > 0, count left: {onSyncCallback.CycleOffset}");
-                    continue;
-                }
-
-                Trace.Write(
-                    $"OnSyncCallback cycle offset == 0, invoking at frame count {Time.frameCount}, sync offset: {onSyncCallback.InvokeOffset}, cycle offset: {onSyncCallback.CycleOffset}");
-                onSyncCallback.Callback.Invoke();
-                _onSyncCallbacks.RemoveAt(i);
-                i--;
-            }
-        }
-
-        _fixedUpdateIndex++;
+        // keeps setting until matches the target
+        SetFrameTime();
     }
 
     public void OnSync(Action callback, double invokeOffset)
     {
         Trace.Write($"Added on sync callback with invoke offset: {invokeOffset}");
-        _onSyncCallbacks.Add(new(callback, invokeOffset));
-        Trace.Write($"Total on sync callback count: {_onSyncCallbacks.Count}");
+        _pendingCallbacks.Enqueue(new(callback, invokeOffset));
+        ProcessQueue();
+    }
+
+    private void ProcessQueue()
+    {
+        if (_pendingCallbacks.Count == 0)
+            return;
+
+        _restoreFrametime = _timeEnv.FrameTime;
+        _processingCallback = _pendingCallbacks.Dequeue();
+
+        SetFrameTime();
+    }
+
+    private void SetFrameTime()
+    {
+        var targetSeconds = Time.fixedDeltaTime + _processingCallback.InvokeOffset -
+                            Patcher.Shared.UpdateInvokeOffset.Offset;
+
+        _timeEnv.FrameTime = (float)targetSeconds;
+
+        // check rounding
+        var actualSeconds = _timeWrapper.CaptureFrameTime;
+        if (targetSeconds - actualSeconds > 0.0001)
+        {
+            Trace.Write(
+                $"Actual seconds: {actualSeconds} Target seconds: {targetSeconds}, difference: {targetSeconds - actualSeconds}");
+        }
+        else
+        {
+            _pendingRestoreFrametime = true;
+        }
     }
 
     private class SyncData

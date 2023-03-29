@@ -5,6 +5,7 @@ using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
 using UniTAS.Plugin.Interfaces.Events.SoftRestart;
 using UniTAS.Plugin.Services;
+using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Plugin.Services.VirtualEnvironment;
 using UnityEngine;
 
@@ -15,23 +16,22 @@ public class TimeEnv : ITimeEnv, IOnPreUpdates, IOnGameRestartResume, IOnStart, 
 {
     private readonly IConfig _config;
 
-    private float _frameTime;
+    private readonly ITimeWrapper _timeWrap;
 
-    public TimeEnv(IConfig config)
+    public TimeEnv(IConfig config, ITimeWrapper timeWrap)
     {
         _config = config;
-
+        _timeWrap = timeWrap;
         FrameTime = 0f;
     }
 
     public float FrameTime
     {
-        get => _frameTime;
+        get => _timeWrap.CaptureFrameTime;
         set
         {
             if (value <= 0) value = 1f / _config.DefaultFps;
-
-            _frameTime = value;
+            _timeWrap.CaptureFrameTime = value;
         }
     }
 

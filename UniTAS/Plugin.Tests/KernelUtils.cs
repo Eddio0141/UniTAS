@@ -9,6 +9,7 @@ using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
 using UniTAS.Plugin.Interfaces.Movie;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.Logging;
+using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Plugin.Tests.Kernel;
 
 namespace UniTAS.Plugin.Tests;
@@ -17,6 +18,12 @@ namespace UniTAS.Plugin.Tests;
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Local")]
 public static class KernelUtils
 {
+    [Singleton(IncludeDifferentAssembly = true)]
+    public class TimeWrapper : ITimeWrapper
+    {
+        public float CaptureFrameTime { get; set; }
+    }
+
     [Singleton(IncludeDifferentAssembly = true)]
     public class Env : EngineMethodClass, IOnLastUpdate
     {
