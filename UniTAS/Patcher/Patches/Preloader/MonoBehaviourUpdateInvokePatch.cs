@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using HarmonyLib;
@@ -51,14 +52,15 @@ public class MonoBehaviourUpdateInvokePatch : PreloadPatcher
 
             foreach (var eventMethodPair in EventMethods)
             {
-                GetUnityEventMethod(type, eventMethodPair.Key, assembly, eventMethodPair.Value);
+                InvokeUnityEventMethod(type, eventMethodPair.Key, assembly, eventMethodPair.Value);
             }
         }
     }
 
-    private static void GetUnityEventMethod(TypeDefinition type, string methodName, AssemblyDefinition assembly,
+    private static void InvokeUnityEventMethod(TypeDefinition type, string methodName, AssemblyDefinition assembly,
         MethodBase eventInvoker)
     {
+        Trace.Write($"Attempting to patch {methodName} for type {type.FullName}");
         var method = type.Methods.FirstOrDefault(m => !m.IsStatic && m.Name == methodName && !m.HasParameters);
         if (method == null) return;
 
@@ -66,5 +68,7 @@ public class MonoBehaviourUpdateInvokePatch : PreloadPatcher
         var reference = assembly.MainModule.ImportReference(eventInvoker);
 
         ilProcessor.InsertBefore(method.Body.Instructions[0], ilProcessor.Create(OpCodes.Call, reference));
+
+        Trace.Write($"Successfully patched");
     }
 }

@@ -17,19 +17,19 @@ public static class MonoBehaviourEvents
     private static bool _calledPreUpdate;
 
     // calls awake before any other script
-    internal static void InvokeAwake()
+    public static void InvokeAwake()
     {
         OnAwake?.Invoke();
     }
 
     // calls onEnable before any other script
-    internal static void InvokeOnEnable()
+    public static void InvokeOnEnable()
     {
         OnEnable?.Invoke();
     }
 
     // calls start before any other script
-    internal static void InvokeStart()
+    public static void InvokeStart()
     {
         OnStart?.Invoke();
     }
