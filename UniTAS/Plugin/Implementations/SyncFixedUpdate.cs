@@ -64,16 +64,30 @@ public class SyncFixedUpdate : ISyncFixedUpdate, IOnUpdate, IOnPreUpdates
         if (_pendingCallbacks.Count == 0)
             return;
 
-        _restoreFrametime = _timeEnv.FrameTime;
         _processingCallback = _pendingCallbacks.Dequeue();
+
+        // check immediate return
+        if (Math.Abs(GetTargetSeconds() - _processingCallback.InvokeOffset) < 0.0001)
+        {
+            Trace.Write("Immediate return");
+            _processingCallback.Callback();
+            ProcessQueue();
+            return;
+        }
+
+        _restoreFrametime = _timeEnv.FrameTime;
 
         SetFrameTime();
     }
 
+    private double GetTargetSeconds()
+    {
+        return Time.fixedDeltaTime + _processingCallback.InvokeOffset - Patcher.Shared.UpdateInvokeOffset.Offset;
+    }
+
     private void SetFrameTime()
     {
-        var targetSeconds = Time.fixedDeltaTime + _processingCallback.InvokeOffset -
-                            Patcher.Shared.UpdateInvokeOffset.Offset;
+        var targetSeconds = GetTargetSeconds();
 
         _timeEnv.FrameTime = (float)targetSeconds;
 
@@ -83,6 +97,8 @@ public class SyncFixedUpdate : ISyncFixedUpdate, IOnUpdate, IOnPreUpdates
         {
             Trace.Write(
                 $"Actual seconds: {actualSeconds} Target seconds: {targetSeconds}, difference: {targetSeconds - actualSeconds}");
+
+            _pendingRestoreFrametime = false;
         }
         else
         {
