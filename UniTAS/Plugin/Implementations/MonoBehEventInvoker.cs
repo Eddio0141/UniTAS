@@ -65,5 +65,15 @@ public class MonoBehEventInvoker : IMonoBehEventInvoker, IUpdateEvents
         MonoBehaviourEvents.InvokeFixedUpdate();
     }
 
+    public void OnGUI()
+    {
+        MonoBehaviourEvents.InvokeOnGUI();
+    }
+
+    public void LateUpdate()
+    {
+        MonoBehaviourEvents.InvokeLateUpdate();
+    }
+
     public event Action OnGUIEvent;
 }

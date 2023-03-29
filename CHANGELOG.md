@@ -40,6 +40,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed time not getting the same value every TAS playback
 - Fixed Time.timeScale not resetting on soft restart
 
+### Compatibility
+
+- Fixed not being able to patch class deriving MonoBehaviour that has generic parameters for pausing and accurately
+  updating TAS input
+
 ## Removed
 
 ### TAS movie

@@ -7,5 +7,9 @@ namespace UniTAS.Plugin.Implementations;
 [Singleton]
 public class MonoBehaviourController : IMonoBehaviourController
 {
-    public bool PausedExecution { get; set; }
+    public bool PausedExecution
+    {
+        get => Patcher.Shared.MonoBehaviourController.PausedExecution;
+        set => Patcher.Shared.MonoBehaviourController.PausedExecution = value;
+    }
 }

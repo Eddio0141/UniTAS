@@ -76,8 +76,8 @@ public class SyncFixedUpdate : IOnFixedUpdate, ISyncFixedUpdate, IOnUpdate
             var onSyncCallback = _onSyncCallbacks[i];
 
             // remove on match
-            if ((onSyncCallback.SyncOffset == 0 && _fixedUpdateIndex == 0) ||
-                (onSyncCallback.SyncOffset != 0 && maxUpdateCount - onSyncCallback.SyncOffset == _fixedUpdateIndex))
+            if ((onSyncCallback.InvokeOffset == 0 && _fixedUpdateIndex == 0) ||
+                (onSyncCallback.InvokeOffset != 0 && maxUpdateCount - onSyncCallback.InvokeOffset == _fixedUpdateIndex))
             {
                 if (onSyncCallback.CycleOffset > 0)
                 {
@@ -87,7 +87,7 @@ public class SyncFixedUpdate : IOnFixedUpdate, ISyncFixedUpdate, IOnUpdate
                 }
 
                 Trace.Write(
-                    $"OnSyncCallback cycle offset == 0, invoking at frame count {Time.frameCount}, sync offset: {onSyncCallback.SyncOffset}, cycle offset: {onSyncCallback.CycleOffset}");
+                    $"OnSyncCallback cycle offset == 0, invoking at frame count {Time.frameCount}, sync offset: {onSyncCallback.InvokeOffset}, cycle offset: {onSyncCallback.CycleOffset}");
                 onSyncCallback.Callback.Invoke();
                 _onSyncCallbacks.RemoveAt(i);
                 i--;
@@ -97,24 +97,22 @@ public class SyncFixedUpdate : IOnFixedUpdate, ISyncFixedUpdate, IOnUpdate
         _fixedUpdateIndex++;
     }
 
-    public void OnSync(Action callback, uint syncOffset = 0, ulong cycleOffset = 0)
+    public void OnSync(Action callback, double invokeOffset)
     {
-        Trace.Write($"Added on sync callback with sync offset: {syncOffset}, cycle offset: {cycleOffset}");
-        _onSyncCallbacks.Add(new(callback, syncOffset, cycleOffset));
+        Trace.Write($"Added on sync callback with invoke offset: {invokeOffset}");
+        _onSyncCallbacks.Add(new(callback, invokeOffset));
         Trace.Write($"Total on sync callback count: {_onSyncCallbacks.Count}");
     }
 
     private class SyncData
     {
         public Action Callback { get; }
-        public uint SyncOffset { get; }
-        public ulong CycleOffset { get; set; }
+        public double InvokeOffset { get; }
 
-        public SyncData(Action callback, uint syncOffset, ulong cycleOffset)
+        public SyncData(Action callback, double invokeOffset)
         {
             Callback = callback;
-            SyncOffset = syncOffset;
-            CycleOffset = cycleOffset;
+            InvokeOffset = invokeOffset;
         }
     }
 }

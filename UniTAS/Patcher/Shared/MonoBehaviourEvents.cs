@@ -47,7 +47,7 @@ public static class MonoBehaviourEvents
     }
 
     // right now I don't call this update before other scripts so I don't need to check if it was already called
-    internal static void InvokeLateUpdate()
+    public static void InvokeLateUpdate()
     {
         _updated = false;
         _calledPreUpdate = false;
@@ -63,7 +63,7 @@ public static class MonoBehaviourEvents
         OnFixedUpdate?.Invoke();
     }
 
-    internal static void InvokeOnGUI()
+    public static void InvokeOnGUI()
     {
         // currently, this doesn't get called before other scripts
         OnGUI?.Invoke();
