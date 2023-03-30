@@ -4,7 +4,6 @@ using System.Linq;
 using HarmonyLib;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using MonoMod.Utils;
 using UniTAS.Patcher.Interfaces;
 using UniTAS.Patcher.Shared;
 
@@ -114,6 +113,9 @@ public class MonoBehaviourControllerPatch : PreloadPatcher
     public override void Patch(ref AssemblyDefinition assembly)
     {
         var types = assembly.MainModule.Types;
+        var pauseExecutionProperty = AccessTools.Property(typeof(MonoBehaviourController),
+            nameof(MonoBehaviourController.PausedExecution)).GetGetMethod();
+        var pauseExecutionReference = assembly.MainModule.ImportReference(pauseExecutionProperty);
 
         foreach (var type in types)
         {
@@ -160,12 +162,10 @@ public class MonoBehaviourControllerPatch : PreloadPatcher
 
                 var il = foundMethod.Body.GetILProcessor();
                 var firstInstruction = il.Body.Instructions.First();
-                var pauseExecutionProperty = AccessTools.Property(typeof(MonoBehaviourController),
-                    nameof(MonoBehaviourController.PausedExecution)).GetGetMethod();
 
                 // return early check
-                il.InsertBefore(firstInstruction, il.Create(OpCodes.Call, pauseExecutionProperty));
-                il.InsertBefore(firstInstruction, il.Create(OpCodes.Brfalse, firstInstruction));
+                il.InsertBefore(firstInstruction, il.Create(OpCodes.Call, pauseExecutionReference));
+                il.InsertBefore(firstInstruction, il.Create(OpCodes.Brfalse_S, firstInstruction));
                 il.InsertBefore(firstInstruction, il.Create(OpCodes.Ret));
             }
         }
