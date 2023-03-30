@@ -1,16 +1,20 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using HarmonyLib;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Mono.Cecil.Rocks;
 using UniTAS.Patcher.Interfaces;
 using UniTAS.Patcher.Shared;
 
 namespace UniTAS.Patcher.Patches.Preloader;
 
-public class MonoBehaviourControllerPatch : PreloadPatcher
+public class MonoBehaviourPatch : PreloadPatcher
 {
+    public override IEnumerable<string> TargetDLLs => Utils.AllTargetDllsWithGenericExclusions;
+
     private const string COLLISION = "UnityEngine.Collision";
     private const string COLLISION_2D = "UnityEngine.Collision2D";
     private const string CONTROLLER_COLLIDER_HIT = "UnityEngine.ControllerColliderHit";
@@ -25,10 +29,23 @@ public class MonoBehaviourControllerPatch : PreloadPatcher
     private const string RENDER_TEXTURE = "UnityEngine.RenderTexture";
     private const string BIT_STREAM = "UnityEngine.BitStream";
 
+    private static readonly KeyValuePair<string, MethodBase>[] EventMethods =
+    {
+        new("Awake", AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeAwake))),
+        new("OnEnable", AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeOnEnable))),
+        new("Start", AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeStart))),
+        new("Update", AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeUpdate))),
+        new("LateUpdate",
+            AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeLateUpdate))),
+        new("FixedUpdate",
+            AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeFixedUpdate)))
+        // new("OnGUI", AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeOnGUI)))
+    };
+
     // event methods, with list of arg types
     // arg types in mono beh are always positional, so we can use this to determine which method to call
     // args are optionally available in the event method
-    private static readonly KeyValuePair<string, string[]>[] EventMethods =
+    private static readonly KeyValuePair<string, string[]>[] PauseEventMethods =
     {
         new("Awake", new string[0]),
         new("FixedUpdate", new string[0]),
@@ -108,20 +125,15 @@ public class MonoBehaviourControllerPatch : PreloadPatcher
         "BepInEx"
     };
 
-    public override IEnumerable<string> TargetDLLs => Utils.AllTargetDllsWithGenericExclusions;
-
     public override void Patch(ref AssemblyDefinition assembly)
     {
-        var types = assembly.MainModule.Types;
+        var types = assembly.Modules.SelectMany(m => m.GetAllTypes());
         var pauseExecutionProperty = AccessTools.Property(typeof(MonoBehaviourController),
             nameof(MonoBehaviourController.PausedExecution)).GetGetMethod();
         var pauseExecutionReference = assembly.MainModule.ImportReference(pauseExecutionProperty);
 
         foreach (var type in types)
         {
-            if (ExcludeNamespaces.Any(type.Namespace.StartsWith))
-                continue;
-
             // check if type base is MonoBehaviour
             var isMonoBehaviour = false;
             var baseType = type.BaseType?.Resolve();
@@ -138,36 +150,62 @@ public class MonoBehaviourControllerPatch : PreloadPatcher
 
             if (!isMonoBehaviour) continue;
 
+            // method invoke pause
+            if (!ExcludeNamespaces.Any(type.Namespace.StartsWith))
+            {
+                foreach (var eventMethodPair in PauseEventMethods)
+                {
+                    var foundMethod =
+                        type.Methods.FirstOrDefault(m => m.Name == eventMethodPair.Key && !m.HasParameters);
+
+                    if (foundMethod == null)
+                    {
+                        for (var i = 0; i < eventMethodPair.Value.Length; i++)
+                        {
+                            if (eventMethodPair.Value[i] == null) break;
+                            var parameterTypes = eventMethodPair.Value.Take(i + 1).ToArray();
+                            foundMethod = type.Methods.FirstOrDefault(m =>
+                                m.Name == eventMethodPair.Key && m.HasParameters &&
+                                m.Parameters.Select(x => x.ParameterType.FullName).SequenceEqual(parameterTypes));
+
+                            if (foundMethod != null) break;
+                        }
+                    }
+
+                    if (foundMethod == null) continue;
+
+                    Trace.Write($"Patching method for pausing execution {foundMethod.FullName}");
+
+                    var il = foundMethod.Body.GetILProcessor();
+                    var firstInstruction = il.Body.Instructions.First();
+                    Trace.Write($"{firstInstruction}");
+
+                    // return early check
+                    il.InsertBefore(firstInstruction, il.Create(OpCodes.Call, pauseExecutionReference));
+                    il.InsertBefore(firstInstruction, il.Create(OpCodes.Brfalse_S, firstInstruction));
+                    il.InsertBefore(firstInstruction, il.Create(OpCodes.Ret));
+                }
+            }
+
+            // event methods invoke
             foreach (var eventMethodPair in EventMethods)
             {
-                var foundMethod = type.Methods.FirstOrDefault(m => m.Name == eventMethodPair.Key && !m.HasParameters);
-
-                if (foundMethod == null)
-                {
-                    for (var i = 0; i < eventMethodPair.Value.Length; i++)
-                    {
-                        if (eventMethodPair.Value[i] == null) break;
-                        var parameterTypes = eventMethodPair.Value.Take(i + 1).ToArray();
-                        foundMethod = type.Methods.FirstOrDefault(m =>
-                            m.Name == eventMethodPair.Key && m.HasParameters &&
-                            m.Parameters.Select(x => x.ParameterType.FullName).SequenceEqual(parameterTypes));
-
-                        if (foundMethod != null) break;
-                    }
-                }
-
-                if (foundMethod == null) continue;
-
-                Trace.Write($"Patching method for pausing execution {foundMethod.FullName}");
-
-                var il = foundMethod.Body.GetILProcessor();
-                var firstInstruction = il.Body.Instructions.First();
-
-                // return early check
-                il.InsertBefore(firstInstruction, il.Create(OpCodes.Call, pauseExecutionReference));
-                il.InsertBefore(firstInstruction, il.Create(OpCodes.Brfalse_S, firstInstruction));
-                il.InsertBefore(firstInstruction, il.Create(OpCodes.Ret));
+                InvokeUnityEventMethod(type, eventMethodPair.Key, assembly, eventMethodPair.Value);
             }
         }
+    }
+
+    private static void InvokeUnityEventMethod(TypeDefinition type, string methodName, AssemblyDefinition assembly,
+        MethodBase eventInvoker)
+    {
+        var method = type.Methods.FirstOrDefault(m => !m.IsStatic && m.Name == methodName && !m.HasParameters);
+        if (method == null) return;
+
+        var ilProcessor = method.Body.GetILProcessor();
+        var reference = assembly.MainModule.ImportReference(eventInvoker);
+
+        ilProcessor.InsertBefore(method.Body.Instructions[0], ilProcessor.Create(OpCodes.Call, reference));
+
+        Trace.Write($"Successfully patched {methodName} for type {type.FullName} for updates");
     }
 }
