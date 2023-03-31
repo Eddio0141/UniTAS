@@ -178,7 +178,6 @@ public class MonoBehaviourPatch : PreloadPatcher
 
                     var il = foundMethod.Body.GetILProcessor();
                     var firstInstruction = il.Body.Instructions.First();
-                    Trace.Write($"{firstInstruction}");
 
                     // return early check
                     il.InsertBefore(firstInstruction, il.Create(OpCodes.Call, pauseExecutionReference));
@@ -204,7 +203,7 @@ public class MonoBehaviourPatch : PreloadPatcher
         var ilProcessor = method.Body.GetILProcessor();
         var reference = assembly.MainModule.ImportReference(eventInvoker);
 
-        ilProcessor.InsertBefore(method.Body.Instructions[0], ilProcessor.Create(OpCodes.Call, reference));
+        ilProcessor.InsertBefore(method.Body.Instructions.First(), ilProcessor.Create(OpCodes.Call, reference));
 
         Trace.Write($"Successfully patched {methodName} for type {type.FullName} for updates");
     }
