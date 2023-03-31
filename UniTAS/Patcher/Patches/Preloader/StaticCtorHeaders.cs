@@ -76,7 +76,7 @@ public class StaticCtorHeaders : PreloadPatcher
     /// </summary>
     private static void PatchStaticCtorHeader(AssemblyDefinition assembly, MethodDefinition staticCtor)
     {
-        var patchMethod = typeof(PatchMethods).GetMethod(nameof(PatchMethods.StaticCtorHeader));
+        var patchMethod = AccessTools.Method(typeof(PatchMethods), nameof(PatchMethods.StaticCtorHeader));
         var patchMethodRef = assembly.MainModule.ImportReference(patchMethod);
 
         var firstInstruction = staticCtor.Body.Instructions.First();
