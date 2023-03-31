@@ -31,16 +31,17 @@ public class SyncFixedUpdate : ISyncFixedUpdate, IOnUpdate, IOnPreUpdates
     public void PreUpdate()
     {
         if (!_pendingRestoreFrametime) return;
+        Trace.Write("Pending restore frame time, invoking callback");
         _processingCallback.Callback();
     }
 
     public void Update()
     {
-        if (_restoreFrametime == 0 && !_pendingRestoreFrametime)
-            return;
+        if (_restoreFrametime == 0 && !_pendingRestoreFrametime) return;
 
         if (_pendingRestoreFrametime)
         {
+            Trace.Write("Pending restore frame time, restoring");
             _timeEnv.FrameTime = _restoreFrametime;
             _pendingRestoreFrametime = false;
             _restoreFrametime = 0;
@@ -49,6 +50,7 @@ public class SyncFixedUpdate : ISyncFixedUpdate, IOnUpdate, IOnPreUpdates
         }
 
         // keeps setting until matches the target
+        Trace.Write("re-setting frame time, didn't match target");
         SetFrameTime();
     }
 
@@ -64,12 +66,13 @@ public class SyncFixedUpdate : ISyncFixedUpdate, IOnUpdate, IOnPreUpdates
         if (_pendingCallbacks.Count == 0)
             return;
 
+        Trace.Write("Processing new callback");
         _processingCallback = _pendingCallbacks.Dequeue();
 
         // check immediate return
         if (Math.Abs(GetTargetSeconds() - _processingCallback.InvokeOffset) < 0.0001)
         {
-            Trace.Write("Immediate return");
+            Trace.Write("Immediate return callback");
             _processingCallback.Callback();
             ProcessQueue();
             return;
@@ -102,6 +105,7 @@ public class SyncFixedUpdate : ISyncFixedUpdate, IOnUpdate, IOnPreUpdates
         }
         else
         {
+            Trace.Write($"Pending restore frame time, target seconds is {targetSeconds}");
             _pendingRestoreFrametime = true;
         }
     }
