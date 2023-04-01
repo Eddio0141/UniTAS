@@ -14,10 +14,10 @@ namespace UniTAS.Plugin.Implementations;
 [Singleton]
 public class SyncFixedUpdate : ISyncFixedUpdate, IOnUpdate, IOnPreUpdates
 {
-    private readonly Queue<SyncData> _pendingCallbacks = new();
+    private readonly Queue<SyncData> _pendingSync = new();
+    private SyncData _pendingCallback;
     private SyncData _processingCallback;
     private float _restoreFrametime;
-    private bool _pendingRestoreFrametime;
 
     private readonly ITimeEnv _timeEnv;
     private readonly ITimeWrapper _timeWrapper;
@@ -30,24 +30,25 @@ public class SyncFixedUpdate : ISyncFixedUpdate, IOnUpdate, IOnPreUpdates
 
     public void PreUpdate()
     {
-        if (!_pendingRestoreFrametime) return;
-        Trace.Write("Pending restore frame time, invoking callback");
-        _processingCallback.Callback();
+        if (_pendingCallback != null)
+        {
+            _pendingCallback.Callback();
+            Trace.Write("Invoking pending callback");
+            _pendingCallback = null;
+            ProcessQueue();
+        }
+
+        if (_restoreFrametime == 0 || _processingCallback != null) return;
+
+        Trace.Write($"Restoring frame time to {_restoreFrametime}");
+        _timeEnv.FrameTime = _restoreFrametime;
+
+        _restoreFrametime = 0;
     }
 
     public void Update()
     {
-        if (_restoreFrametime == 0 && !_pendingRestoreFrametime) return;
-
-        if (_pendingRestoreFrametime)
-        {
-            Trace.Write("Pending restore frame time, restoring");
-            _timeEnv.FrameTime = _restoreFrametime;
-            _pendingRestoreFrametime = false;
-            _restoreFrametime = 0;
-            ProcessQueue();
-            return;
-        }
+        if (_processingCallback == null) return;
 
         // keeps setting until matches the target
         Trace.Write("re-setting frame time, didn't match target");
@@ -57,28 +58,35 @@ public class SyncFixedUpdate : ISyncFixedUpdate, IOnUpdate, IOnPreUpdates
     public void OnSync(Action callback, double invokeOffset)
     {
         Trace.Write($"Added on sync callback with invoke offset: {invokeOffset}");
-        _pendingCallbacks.Enqueue(new(callback, invokeOffset));
+        _pendingSync.Enqueue(new(callback, invokeOffset));
         ProcessQueue();
     }
 
     private void ProcessQueue()
     {
-        if (_pendingCallbacks.Count == 0)
+        if (_pendingSync.Count == 0)
             return;
 
         Trace.Write("Processing new callback");
-        _processingCallback = _pendingCallbacks.Dequeue();
+        _processingCallback = _pendingSync.Dequeue();
+
+        Trace.Write(
+            $"Fixed delta time: {Time.fixedDeltaTime}, invoke offset: {_processingCallback.InvokeOffset}, update invoke offset: {Patcher.Shared.UpdateInvokeOffset.Offset}");
 
         // check immediate return
         if (Math.Abs(GetTargetSeconds() - _processingCallback.InvokeOffset) < 0.0001)
         {
             Trace.Write("Immediate return callback");
             _processingCallback.Callback();
+            _processingCallback = null;
             ProcessQueue();
             return;
         }
 
-        _restoreFrametime = _timeEnv.FrameTime;
+        if (_restoreFrametime == 0f)
+        {
+            _restoreFrametime = _timeEnv.FrameTime;
+        }
 
         SetFrameTime();
     }
@@ -100,13 +108,12 @@ public class SyncFixedUpdate : ISyncFixedUpdate, IOnUpdate, IOnPreUpdates
         {
             Trace.Write(
                 $"Actual seconds: {actualSeconds} Target seconds: {targetSeconds}, difference: {targetSeconds - actualSeconds}");
-
-            _pendingRestoreFrametime = false;
         }
         else
         {
             Trace.Write($"Pending restore frame time, target seconds is {targetSeconds}");
-            _pendingRestoreFrametime = true;
+            _pendingCallback = _processingCallback;
+            _processingCallback = null;
         }
     }
 
