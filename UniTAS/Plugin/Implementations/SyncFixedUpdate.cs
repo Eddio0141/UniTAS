@@ -74,6 +74,7 @@ public class SyncFixedUpdate : ISyncFixedUpdate, IOnUpdate, IOnPreUpdates
             $"Fixed delta time: {Time.fixedDeltaTime}, invoke offset: {_processingCallback.InvokeOffset}, update invoke offset: {Patcher.Shared.UpdateInvokeOffset.Offset}");
 
         // check immediate return
+        // TODO idk what the tolerance should be but probably lower it later
         if (Math.Abs(GetTargetSeconds() - _processingCallback.InvokeOffset) < 0.0001)
         {
             Trace.Write("Immediate return callback");
@@ -86,6 +87,7 @@ public class SyncFixedUpdate : ISyncFixedUpdate, IOnUpdate, IOnPreUpdates
         if (_restoreFrametime == 0f)
         {
             _restoreFrametime = _timeEnv.FrameTime;
+            Trace.Write($"Storing original frame time: {_restoreFrametime}");
         }
 
         SetFrameTime();
@@ -100,7 +102,8 @@ public class SyncFixedUpdate : ISyncFixedUpdate, IOnUpdate, IOnPreUpdates
     {
         var targetSeconds = GetTargetSeconds();
         // unlike normal frame time, i round down
-        var actualSeconds = _timeWrapper.IntFPSOnly ? 1.0 / (int)1.0 / targetSeconds : targetSeconds;
+        var actualSeconds = _timeWrapper.IntFPSOnly ? 1.0 / (int)(1.0 / targetSeconds) : targetSeconds;
+        Trace.Write($"Actual seconds: {actualSeconds}");
 
         _timeEnv.FrameTime = (float)actualSeconds;
 
