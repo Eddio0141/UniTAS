@@ -48,14 +48,22 @@ public class TimeEnv : ITimeEnv, IOnPreUpdates, IOnGameRestartResume, IOnStart, 
     public float RealtimeSinceStartup { get; private set; }
 
     private bool _timeInitialized;
+    private bool _initialUpdateSkip;
 
     public void PreUpdate()
     {
         TimeInit();
     }
 
+    // TODO use pause update
     public void Update()
     {
+        if (_initialUpdateSkip)
+        {
+            _initialUpdateSkip = false;
+            return;
+        }
+
         RealtimeSinceStartup += FrameTime;
         UnscaledTime += FrameTime;
         ScaledTime += Time.deltaTime;
@@ -116,6 +124,7 @@ public class TimeEnv : ITimeEnv, IOnPreUpdates, IOnGameRestartResume, IOnStart, 
         Trace.Write($"New game time state: {this}");
 
         _timeInitialized = false;
+        _initialUpdateSkip = true;
     }
 
     public void Start()
@@ -130,10 +139,5 @@ public class TimeEnv : ITimeEnv, IOnPreUpdates, IOnGameRestartResume, IOnStart, 
 
         FrameCountRestartOffset--;
         RenderedFrameCountOffset--;
-
-        RealtimeSinceStartup += FrameTime;
-        UnscaledTime += FrameTime;
-        ScaledTime += FrameTime;
-        SecondsSinceStartUp += FrameTime;
     }
 }
