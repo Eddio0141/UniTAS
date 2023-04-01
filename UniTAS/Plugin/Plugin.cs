@@ -7,7 +7,6 @@ using BepInEx.Logging;
 using HarmonyLib;
 using StructureMap;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
-using UniTAS.Plugin.Interfaces.Events.SoftRestart;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Utils;
 using UnityEngine;
@@ -29,7 +28,6 @@ public class Plugin : BaseUnityPlugin
     private bool _endOfFrameLoopRunning;
 
     private IMonoBehEventInvoker _monoBehEventInvoker;
-    private IGameInitialRestart _gameInitialRestart;
     private IOnLastUpdate[] _onLastUpdates;
 
     private void Awake()
@@ -41,11 +39,8 @@ public class Plugin : BaseUnityPlugin
         Trace.Write(Kernel.WhatDoIHave());
 
         _monoBehEventInvoker = Kernel.GetInstance<IMonoBehEventInvoker>();
-        _gameInitialRestart = Kernel.GetInstance<IGameInitialRestart>();
-
-        // initial start has finished, load the rest of the plugin
-        LoadPluginFull();
-        _gameInitialRestart.InitialRestart();
+        _onLastUpdates = Kernel.GetAllInstances<IOnLastUpdate>().ToArray();
+        Kernel.GetInstance<PluginWrapper>();
     }
 
     private void Update()
@@ -93,15 +88,5 @@ public class Plugin : BaseUnityPlugin
             }
         }
         // ReSharper disable once IteratorNeverReturns
-    }
-
-    private void LoadPluginFull()
-    {
-        // ContainerRegister.ConfigAfterInit(Kernel);
-        //
-        // Trace.Write(Kernel.WhatDoIHave());
-
-        Kernel.GetInstance<PluginWrapper>();
-        _onLastUpdates = Kernel.GetAllInstances<IOnLastUpdate>().ToArray();
     }
 }

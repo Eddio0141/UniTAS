@@ -178,25 +178,6 @@ public class KernelTests
     }
 
     [Fact]
-    public void GameInitialRestart()
-    {
-        var kernel = KernelUtils.Init();
-
-        var gameInitialRestart = kernel.GetInstance<IGameInitialRestart>();
-        Assert.NotNull(gameInitialRestart);
-
-        var gameInitialRestart2 = kernel.GetInstance<IGameInitialRestart>();
-        Assert.NotNull(gameInitialRestart2);
-
-        Assert.Same(gameInitialRestart, gameInitialRestart2);
-
-        var gameRestart = kernel.GetInstance<IGameRestart>();
-
-        // reference should be different
-        Assert.NotSame(gameInitialRestart, gameRestart);
-    }
-
-    [Fact]
     public void EnvEngineMethod()
     {
         var kernel = KernelUtils.Init();
