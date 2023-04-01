@@ -31,13 +31,13 @@ public class Env : EngineMethodClass, IOnLastUpdate
         _movieRunner.OnMovieStart += OnMovieStart;
     }
 
-    public float Fps
+    public double Fps
     {
-        get => 1f / _timeEnv.FrameTime;
-        set => SetFrametime(1f / value);
+        get => 1.0 / _timeEnv.FrameTime;
+        set => SetFrametime(1.0 / value);
     }
 
-    public float Frametime
+    public double Frametime
     {
         get => _timeEnv.FrameTime;
         set => SetFrametime(value);
@@ -64,11 +64,11 @@ public class Env : EngineMethodClass, IOnLastUpdate
     private int _lastVSyncCount;
 
     // TODO set Screen.currentResolution refresh rate to movie's max achieving framerate
-    private void SetFrametime(float value)
+    private void SetFrametime(double value)
     {
         UpdateLastTrackers();
 
-        var fps = 1f / value;
+        var fps = 1.0 / value;
         if (Application.targetFrameRate != -1 && fps > Application.targetFrameRate &&
             (_mobile || (!_mobile && QualitySettings.vSyncCount == 0)))
         {

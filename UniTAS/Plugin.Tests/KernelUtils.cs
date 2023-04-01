@@ -21,7 +21,7 @@ public static class KernelUtils
     [Singleton(IncludeDifferentAssembly = true)]
     public class TimeWrapper : ITimeWrapper
     {
-        public float CaptureFrameTime { get; set; }
+        public double CaptureFrameTime { get; set; }
         public bool IntFPSOnly => true;
     }
 

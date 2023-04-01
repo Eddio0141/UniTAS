@@ -17,7 +17,7 @@ public class SyncFixedUpdate : ISyncFixedUpdate, IOnUpdate, IOnPreUpdates
     private readonly Queue<SyncData> _pendingSync = new();
     private SyncData _pendingCallback;
     private SyncData _processingCallback;
-    private float _restoreFrametime;
+    private double _restoreFrametime;
 
     private readonly ITimeEnv _timeEnv;
     private readonly ITimeWrapper _timeWrapper;

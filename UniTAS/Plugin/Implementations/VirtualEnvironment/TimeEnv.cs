@@ -25,7 +25,7 @@ public class TimeEnv : ITimeEnv, IOnPreUpdates, IOnGameRestartResume, IOnStart, 
         FrameTime = 0f;
     }
 
-    public float FrameTime
+    public double FrameTime
     {
         get => _timeWrap.CaptureFrameTime;
         set
@@ -45,7 +45,7 @@ public class TimeEnv : ITimeEnv, IOnPreUpdates, IOnGameRestartResume, IOnStart, 
     public double FixedUnscaledTime { get; private set; }
     public double ScaledTime { get; private set; }
     public double ScaledFixedTime { get; private set; }
-    public float RealtimeSinceStartup { get; private set; }
+    public double RealtimeSinceStartup { get; private set; }
 
     private bool _timeInitialized;
     private bool _initialUpdate = true;
