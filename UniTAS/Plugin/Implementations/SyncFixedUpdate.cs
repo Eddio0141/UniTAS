@@ -99,11 +99,12 @@ public class SyncFixedUpdate : ISyncFixedUpdate, IOnUpdate, IOnPreUpdates
     private void SetFrameTime()
     {
         var targetSeconds = GetTargetSeconds();
+        // unlike normal frame time, i round down
+        var actualSeconds = _timeWrapper.IntFPSOnly ? 1.0 / (int)1.0 / targetSeconds : targetSeconds;
 
-        _timeEnv.FrameTime = (float)targetSeconds;
+        _timeEnv.FrameTime = (float)actualSeconds;
 
         // check rounding
-        var actualSeconds = _timeWrapper.CaptureFrameTime;
         if (targetSeconds - actualSeconds > 0.0001)
         {
             Trace.Write(

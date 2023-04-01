@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 using System.Reflection;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
@@ -20,6 +21,8 @@ public class TimeWrapper : ITimeWrapper
     {
         _reverseInvoker = reverseInvoker;
     }
+
+    public bool IntFPSOnly => _captureDeltaTime == null;
 
     public float CaptureFrameTime
     {
@@ -45,8 +48,8 @@ public class TimeWrapper : ITimeWrapper
             }
             else
             {
-                // rounds down
-                var fps = value > 0f ? (int)(1.0f / value) : 0;
+                // round to nearest int
+                var fps = value > 0f ? (int)Math.Round(1.0f / value) : 0;
                 Trace.Write($"Setting captureFramerate to {fps}");
                 _reverseInvoker.Invoke((setFps) => Time.captureFramerate = setFps, fps);
             }
