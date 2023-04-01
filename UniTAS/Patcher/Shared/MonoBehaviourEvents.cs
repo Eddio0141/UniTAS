@@ -16,6 +16,12 @@ public static class MonoBehaviourEvents
     private static bool _calledFixedUpdate;
     private static bool _calledPreUpdate;
 
+    static MonoBehaviourEvents()
+    {
+        // TODO ew
+        UpdateInvokeOffset.Init();
+    }
+
     // calls awake before any other script
     public static void InvokeAwake()
     {

@@ -6,7 +6,7 @@ public static class UpdateInvokeOffset
 {
     public static double Offset { get; private set; }
 
-    static UpdateInvokeOffset()
+    public static void Init()
     {
         MonoBehaviourEvents.OnUpdate += UpdateOffset;
     }
