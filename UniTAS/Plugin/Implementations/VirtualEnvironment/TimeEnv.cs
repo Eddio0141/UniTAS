@@ -12,7 +12,7 @@ using UnityEngine;
 namespace UniTAS.Plugin.Implementations.VirtualEnvironment;
 
 [Singleton]
-public class TimeEnv : ITimeEnv, IOnPreUpdates, IOnGameRestartResume, IOnStart, IOnUpdate, IOnFixedUpdate
+public class TimeEnv : ITimeEnv, IOnPreUpdates, IOnGameRestartResume, IOnStart, IOnLastUpdate, IOnFixedUpdate, IOnUpdate
 {
     private readonly IConfig _config;
 
@@ -48,22 +48,27 @@ public class TimeEnv : ITimeEnv, IOnPreUpdates, IOnGameRestartResume, IOnStart, 
     public float RealtimeSinceStartup { get; private set; }
 
     private bool _timeInitialized;
-    private bool _initialUpdateSkip;
+    private bool _initialUpdate = true;
 
     public void PreUpdate()
     {
         TimeInit();
     }
 
-    // TODO use pause update
     public void Update()
     {
-        if (_initialUpdateSkip)
-        {
-            _initialUpdateSkip = false;
-            return;
-        }
+        if (!_initialUpdate) return;
+        _initialUpdate = false;
 
+        RealtimeSinceStartup += FrameTime;
+        UnscaledTime += FrameTime;
+        ScaledTime += Time.deltaTime;
+        SecondsSinceStartUp += FrameTime;
+    }
+
+    // TODO use pause update
+    public void OnLastUpdate()
+    {
         RealtimeSinceStartup += FrameTime;
         UnscaledTime += FrameTime;
         ScaledTime += Time.deltaTime;
@@ -124,7 +129,7 @@ public class TimeEnv : ITimeEnv, IOnPreUpdates, IOnGameRestartResume, IOnStart, 
         Trace.Write($"New game time state: {this}");
 
         _timeInitialized = false;
-        _initialUpdateSkip = true;
+        _initialUpdate = true;
     }
 
     public void Start()
