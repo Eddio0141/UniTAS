@@ -23,6 +23,9 @@ public class MonoBehEventInvoker : IMonoBehEventInvoker, IUpdateEvents
         IEnumerable<IOnFixedUpdateUnconditional> onFixedUpdatesUnconditional,
         IEnumerable<IOnGUIUnconditional> onGUIsUnconditional,
         IEnumerable<IOnPreUpdatesActual> onPreUpdatesActual,
+        IEnumerable<IOnFixedUpdateActual> onFixedUpdatesActual,
+        IEnumerable<IOnStartActual> onStartsActual,
+        IEnumerable<IOnUpdateActual> onUpdatesActual,
         IMonoBehaviourController monoBehaviourController)
     {
         _monoBehaviourController = monoBehaviourController;
@@ -64,6 +67,21 @@ public class MonoBehEventInvoker : IMonoBehEventInvoker, IUpdateEvents
         foreach (var onPreUpdateActual in onPreUpdatesActual)
         {
             MonoBehaviourEvents.OnPreUpdateActual += onPreUpdateActual.PreUpdateActual;
+        }
+
+        foreach (var onFixedUpdateActual in onFixedUpdatesActual)
+        {
+            MonoBehaviourEvents.OnFixedUpdateActual += onFixedUpdateActual.FixedUpdateActual;
+        }
+
+        foreach (var onStartActual in onStartsActual)
+        {
+            MonoBehaviourEvents.OnStartActual += onStartActual.StartActual;
+        }
+
+        foreach (var onUpdateActual in onUpdatesActual)
+        {
+            MonoBehaviourEvents.OnUpdateActual += onUpdateActual.UpdateActual;
         }
 
         MonoBehaviourEvents.OnGUIUnconditional += () => OnGUIEventUnconditional?.Invoke();

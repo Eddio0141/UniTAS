@@ -6,6 +6,7 @@ using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 using StructureMap;
+using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Utils;
@@ -28,7 +29,9 @@ public class Plugin : BaseUnityPlugin
     private bool _endOfFrameLoopRunning;
 
     private IMonoBehEventInvoker _monoBehEventInvoker;
-    private IOnLastUpdateUnconditional[] _onLastUpdates;
+    private IOnLastUpdateUnconditional[] _onLastUpdatesUnconditional;
+    private IOnLastUpdateActual[] _onLastUpdatesActual;
+    private IMonoBehaviourController _monoBehaviourController;
 
     private void Awake()
     {
@@ -39,7 +42,9 @@ public class Plugin : BaseUnityPlugin
         Trace.Write(Kernel.WhatDoIHave());
 
         _monoBehEventInvoker = Kernel.GetInstance<IMonoBehEventInvoker>();
-        _onLastUpdates = Kernel.GetAllInstances<IOnLastUpdateUnconditional>().ToArray();
+        _onLastUpdatesUnconditional = Kernel.GetAllInstances<IOnLastUpdateUnconditional>().ToArray();
+        _onLastUpdatesActual = Kernel.GetAllInstances<IOnLastUpdateActual>().ToArray();
+        _monoBehaviourController = Kernel.GetInstance<IMonoBehaviourController>();
         Kernel.GetInstance<PluginWrapper>();
     }
 
@@ -82,9 +87,16 @@ public class Plugin : BaseUnityPlugin
         while (true)
         {
             yield return new WaitForEndOfFrame();
-            foreach (var update in _onLastUpdates)
+            foreach (var update in _onLastUpdatesUnconditional)
             {
                 update.OnLastUpdateUnconditional();
+            }
+
+            if (_monoBehaviourController.PausedExecution) continue;
+
+            foreach (var update in _onLastUpdatesActual)
+            {
+                update.OnLastUpdateActual();
             }
         }
         // ReSharper disable once IteratorNeverReturns
