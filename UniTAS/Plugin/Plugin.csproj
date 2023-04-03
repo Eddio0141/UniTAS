@@ -58,8 +58,4 @@
         <ProjectReference Include="..\Patcher\Patcher.csproj"/>
     </ItemGroup>
 
-    <ItemGroup>
-        <Folder Include="Interfaces\Events\MonoBehaviourEvents\DontRunIfPaused"/>
-    </ItemGroup>
-
 </Project>

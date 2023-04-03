@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UniTAS.Patcher.Shared;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
+using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.EventSubscribers;
@@ -21,6 +22,7 @@ public class MonoBehEventInvoker : IMonoBehEventInvoker, IUpdateEvents
         IEnumerable<IOnUpdateUnconditional> onUpdatesUnconditional,
         IEnumerable<IOnFixedUpdateUnconditional> onFixedUpdatesUnconditional,
         IEnumerable<IOnGUIUnconditional> onGUIsUnconditional,
+        IEnumerable<IOnPreUpdatesActual> onPreUpdatesActual,
         IMonoBehaviourController monoBehaviourController)
     {
         _monoBehaviourController = monoBehaviourController;
@@ -57,6 +59,11 @@ public class MonoBehEventInvoker : IMonoBehEventInvoker, IUpdateEvents
         foreach (var onGui in onGUIsUnconditional)
         {
             MonoBehaviourEvents.OnGUIUnconditional += onGui.OnGUIUnconditional;
+        }
+
+        foreach (var onPreUpdateActual in onPreUpdatesActual)
+        {
+            MonoBehaviourEvents.OnPreUpdateActual += onPreUpdateActual.PreUpdateActual;
         }
 
         MonoBehaviourEvents.OnGUIUnconditional += () => OnGUIEventUnconditional?.Invoke();
