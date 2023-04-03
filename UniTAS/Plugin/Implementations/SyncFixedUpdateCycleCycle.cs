@@ -12,7 +12,7 @@ namespace UniTAS.Plugin.Implementations;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 [Singleton]
-public class SyncFixedUpdateCycle : ISyncFixedUpdate, IOnUpdateUnconditional,
+public class SyncFixedUpdateCycleCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditional,
     IOnPreUpdatesUnconditional
 {
     private readonly Queue<SyncData> _pendingSync = new();
@@ -23,7 +23,7 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdate, IOnUpdateUnconditional,
     private readonly ITimeEnv _timeEnv;
     private readonly ITimeWrapper _timeWrapper;
 
-    public SyncFixedUpdateCycle(ITimeEnv timeEnv, ITimeWrapper timeWrapper)
+    public SyncFixedUpdateCycleCycle(ITimeEnv timeEnv, ITimeWrapper timeWrapper)
     {
         _timeEnv = timeEnv;
         _timeWrapper = timeWrapper;

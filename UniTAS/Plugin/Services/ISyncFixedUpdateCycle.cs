@@ -2,7 +2,7 @@ using System;
 
 namespace UniTAS.Plugin.Services;
 
-public interface ISyncFixedUpdate
+public interface ISyncFixedUpdateCycle
 {
     /// <summary>
     /// Calls the callback on the next fixed update sync

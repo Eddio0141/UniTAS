@@ -75,10 +75,10 @@ public class KernelTests
     {
         var kernel = KernelUtils.Init();
 
-        var syncFixedUpdate = kernel.GetInstance<ISyncFixedUpdate>();
+        var syncFixedUpdate = kernel.GetInstance<ISyncFixedUpdateCycle>();
         Assert.NotNull(syncFixedUpdate);
 
-        var syncFixedUpdate2 = kernel.GetInstance<ISyncFixedUpdate>();
+        var syncFixedUpdate2 = kernel.GetInstance<ISyncFixedUpdateCycle>();
         Assert.NotNull(syncFixedUpdate2);
 
         Assert.Same(syncFixedUpdate, syncFixedUpdate2);
