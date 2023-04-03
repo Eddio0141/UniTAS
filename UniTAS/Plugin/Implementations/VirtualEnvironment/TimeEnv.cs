@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics;
 using HarmonyLib;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
-using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
+using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
 using UniTAS.Plugin.Interfaces.Events.SoftRestart;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
@@ -12,8 +12,8 @@ using UnityEngine;
 namespace UniTAS.Plugin.Implementations.VirtualEnvironment;
 
 [Singleton]
-public class TimeEnv : ITimeEnv, IOnPreUpdatesUnconditional, IOnGameRestartResume, IOnStartUnconditional,
-    IOnLastUpdateUnconditional, IOnFixedUpdateUnconditional, IOnUpdateUnconditional
+public class TimeEnv : ITimeEnv, IOnPreUpdatesActual, IOnGameRestartResume, IOnStartActual,
+    IOnLastUpdateActual, IOnFixedUpdateActual, IOnUpdateActual
 {
     private readonly IConfig _config;
 
@@ -51,12 +51,12 @@ public class TimeEnv : ITimeEnv, IOnPreUpdatesUnconditional, IOnGameRestartResum
     private bool _timeInitialized;
     private bool _initialUpdate = true;
 
-    public void PreUpdateUnconditional()
+    public void PreUpdateActual()
     {
         TimeInit();
     }
 
-    public void UpdateUnconditional()
+    public void UpdateActual()
     {
         if (!_initialUpdate) return;
         _initialUpdate = false;
@@ -68,7 +68,7 @@ public class TimeEnv : ITimeEnv, IOnPreUpdatesUnconditional, IOnGameRestartResum
     }
 
     // TODO use pause update
-    public void OnLastUpdateUnconditional()
+    public void OnLastUpdateActual()
     {
         RealtimeSinceStartup += FrameTime;
         UnscaledTime += FrameTime;
@@ -76,7 +76,7 @@ public class TimeEnv : ITimeEnv, IOnPreUpdatesUnconditional, IOnGameRestartResum
         SecondsSinceStartUp += FrameTime;
     }
 
-    public void FixedUpdateUnconditional()
+    public void FixedUpdateActual()
     {
         var fixedDt = Time.fixedDeltaTime;
 
@@ -133,7 +133,7 @@ public class TimeEnv : ITimeEnv, IOnPreUpdatesUnconditional, IOnGameRestartResum
         _initialUpdate = true;
     }
 
-    public void StartUnconditional()
+    public void StartActual()
     {
         TimeInit();
     }

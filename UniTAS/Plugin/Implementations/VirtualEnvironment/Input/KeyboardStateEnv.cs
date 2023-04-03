@@ -43,7 +43,7 @@ public class KeyboardStateEnv : InputDevice, IKeyboardStateEnv
         _keys.Clear();
     }
 
-    public override void Update()
+    protected override void Update()
     {
         _keysDown.Clear();
         _keysUp.Clear();
@@ -65,7 +65,7 @@ public class KeyboardStateEnv : InputDevice, IKeyboardStateEnv
         }
     }
 
-    public override void ResetState()
+    protected override void ResetState()
     {
         _keys.Clear();
         _keysDown.Clear();

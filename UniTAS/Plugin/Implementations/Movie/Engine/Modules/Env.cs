@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using MoonSharp.Interpreter;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
-using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
+using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
 using UniTAS.Plugin.Interfaces.Movie;
 using UniTAS.Plugin.Services.Logging;
 using UniTAS.Plugin.Services.Movie;
@@ -14,7 +14,7 @@ namespace UniTAS.Plugin.Implementations.Movie.Engine.Modules;
 [SuppressMessage("ReSharper", "UnusedMember.Global")]
 [ExcludeRegisterIfTesting]
 [Singleton]
-public class Env : EngineMethodClass, IOnLastUpdateUnconditional
+public class Env : EngineMethodClass, IOnLastUpdateActual
 {
     private readonly ITimeEnv _timeEnv;
     private readonly IMovieLogger _logger;
@@ -80,7 +80,7 @@ public class Env : EngineMethodClass, IOnLastUpdateUnconditional
     }
 
     [MoonSharpHidden]
-    public void OnLastUpdateUnconditional()
+    public void OnLastUpdateActual()
     {
         if (_movieRunner.MovieEnd) return;
 

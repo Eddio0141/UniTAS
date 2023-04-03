@@ -1,14 +1,14 @@
 ﻿using System;
 using UniTAS.Plugin.Interfaces.Events;
-using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
+using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
 using UniTAS.Plugin.Interfaces.Events.SoftRestart;
 
 namespace UniTAS.Plugin.Interfaces.VirtualEnvironment;
 
-public abstract class InputDevice : IOnVirtualEnvStatusChange, IOnPreUpdatesUnconditional, IOnGameRestart
+public abstract class InputDevice : IOnVirtualEnvStatusChange, IOnPreUpdatesActual, IOnGameRestart
 {
-    public abstract void Update();
-    public abstract void ResetState();
+    protected abstract void Update();
+    protected abstract void ResetState();
 
     public void OnVirtualEnvStatusChange(bool runVirtualEnv)
     {
@@ -17,7 +17,7 @@ public abstract class InputDevice : IOnVirtualEnvStatusChange, IOnPreUpdatesUnco
         ResetState();
     }
 
-    public void PreUpdateUnconditional()
+    public void PreUpdateActual()
     {
         Update();
     }

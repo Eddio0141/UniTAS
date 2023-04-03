@@ -29,7 +29,7 @@ public class MouseStateEnv : InputDevice, IMouseStateEnv
         ResetState();
     }
 
-    public override void Update()
+    protected override void Update()
     {
         LeftClickUp = _leftClickPrev && !LeftClick;
         LeftClickDown = !_leftClickPrev && LeftClick;
@@ -45,7 +45,7 @@ public class MouseStateEnv : InputDevice, IMouseStateEnv
         _middleClickPrev = MiddleClick;
     }
 
-    public sealed override void ResetState()
+    protected sealed override void ResetState()
     {
         XPos = 0f;
         YPos = 0f;

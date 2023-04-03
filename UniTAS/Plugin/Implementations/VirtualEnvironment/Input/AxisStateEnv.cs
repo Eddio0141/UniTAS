@@ -15,11 +15,11 @@ public class AxisStateEnv : InputDevice, IAxisStateEnv
         Values = new();
     }
 
-    public override void Update()
+    protected override void Update()
     {
     }
 
-    public override void ResetState()
+    protected override void ResetState()
     {
         Values.Clear();
     }
