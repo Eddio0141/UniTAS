@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UniTAS.Patcher.Shared;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
-using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
+using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.EventSubscribers;
 
@@ -12,68 +12,83 @@ namespace UniTAS.Plugin.Implementations;
 [Singleton]
 public class MonoBehEventInvoker : IMonoBehEventInvoker, IUpdateEvents
 {
-    public MonoBehEventInvoker(IEnumerable<IOnAwake> onAwakes, IEnumerable<IOnStart> onStarts,
-        IEnumerable<IOnEnable> onEnables,
-        IEnumerable<IOnPreUpdates> onPreUpdates, IEnumerable<IOnUpdate> onUpdates,
-        IEnumerable<IOnFixedUpdate> onFixedUpdates, IEnumerable<IOnGUI> onGUIs)
+    private readonly IMonoBehaviourController _monoBehaviourController;
+
+    public MonoBehEventInvoker(IEnumerable<IOnAwakeUnconditional> onAwakesUnconditional,
+        IEnumerable<IOnStartUnconditional> onStartsUnconditional,
+        IEnumerable<IOnEnableUnconditional> onEnablesUnconditional,
+        IEnumerable<IOnPreUpdatesUnconditional> onPreUpdatesUnconditional,
+        IEnumerable<IOnUpdateUnconditional> onUpdatesUnconditional,
+        IEnumerable<IOnFixedUpdateUnconditional> onFixedUpdatesUnconditional,
+        IEnumerable<IOnGUIUnconditional> onGUIsUnconditional,
+        IMonoBehaviourController monoBehaviourController)
     {
-        foreach (var onAwake in onAwakes)
+        _monoBehaviourController = monoBehaviourController;
+        foreach (var onAwake in onAwakesUnconditional)
         {
-            MonoBehaviourEvents.OnAwake += onAwake.Awake;
+            MonoBehaviourEvents.OnAwakeUnconditional += onAwake.AwakeUnconditional;
         }
 
-        foreach (var onStart in onStarts)
+        foreach (var onStart in onStartsUnconditional)
         {
-            MonoBehaviourEvents.OnStart += onStart.Start;
+            MonoBehaviourEvents.OnStartUnconditional += onStart.StartUnconditional;
         }
 
-        foreach (var onEnable in onEnables)
+        foreach (var onEnable in onEnablesUnconditional)
         {
-            MonoBehaviourEvents.OnEnable += onEnable.OnEnable;
+            MonoBehaviourEvents.OnEnableUnconditional += onEnable.OnEnableUnconditional;
         }
 
-        foreach (var onPreUpdate in onPreUpdates)
+        foreach (var onPreUpdate in onPreUpdatesUnconditional)
         {
-            MonoBehaviourEvents.OnPreUpdate += onPreUpdate.PreUpdate;
+            MonoBehaviourEvents.OnPreUpdateUnconditional += onPreUpdate.PreUpdateUnconditional;
         }
 
-        foreach (var onUpdate in onUpdates)
+        foreach (var onUpdate in onUpdatesUnconditional)
         {
-            MonoBehaviourEvents.OnUpdate += onUpdate.Update;
+            MonoBehaviourEvents.OnUpdateUnconditional += onUpdate.UpdateUnconditional;
         }
 
-        foreach (var onFixedUpdate in onFixedUpdates)
+        foreach (var onFixedUpdate in onFixedUpdatesUnconditional)
         {
-            MonoBehaviourEvents.OnFixedUpdate += onFixedUpdate.FixedUpdate;
+            MonoBehaviourEvents.OnFixedUpdateUnconditional += onFixedUpdate.FixedUpdateUnconditional;
         }
 
-        foreach (var onGui in onGUIs)
+        foreach (var onGui in onGUIsUnconditional)
         {
-            MonoBehaviourEvents.OnGUI += onGui.OnGUI;
+            MonoBehaviourEvents.OnGUIUnconditional += onGui.OnGUIUnconditional;
         }
 
-        MonoBehaviourEvents.OnGUI += () => OnGUIEvent?.Invoke();
+        MonoBehaviourEvents.OnGUIUnconditional += () => OnGUIEventUnconditional?.Invoke();
     }
 
     public void Update()
     {
-        MonoBehaviourEvents.InvokeUpdate();
+        MonoBehaviourEvents.InvokeUpdateUnconditional();
+        if (_monoBehaviourController.PausedExecution) return;
+        MonoBehaviourEvents.InvokeUpdateActual();
     }
 
     public void FixedUpdate()
     {
-        MonoBehaviourEvents.InvokeFixedUpdate();
+        MonoBehaviourEvents.InvokeFixedUpdateUnconditional();
+        if (_monoBehaviourController.PausedExecution) return;
+        MonoBehaviourEvents.InvokeFixedUpdateActual();
     }
 
     public void OnGUI()
     {
-        MonoBehaviourEvents.InvokeOnGUI();
+        MonoBehaviourEvents.InvokeOnGUIUnconditional();
+        if (_monoBehaviourController.PausedExecution) return;
+        MonoBehaviourEvents.InvokeOnGUIActual();
     }
 
     public void LateUpdate()
     {
-        MonoBehaviourEvents.InvokeLateUpdate();
+        MonoBehaviourEvents.InvokeLateUpdateUnconditional();
+        if (_monoBehaviourController.PausedExecution) return;
+        MonoBehaviourEvents.InvokeLateUpdateActual();
     }
 
-    public event Action OnGUIEvent;
+    public event Action OnGUIEventUnconditional;
 }

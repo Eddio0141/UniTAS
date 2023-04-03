@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
-using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
+using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Plugin.Models.UnitySafeWrappers.SceneManagement;
 using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
 
@@ -10,7 +10,7 @@ namespace UniTAS.Plugin.Services.UnityAsyncOperationTracker;
 // ReSharper disable once ClassNeverInstantiated.Global
 [Singleton]
 public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateRequestTracker, IAssetBundleRequestTracker,
-    IOnLastUpdate
+    IOnLastUpdateUnconditional
 {
     private readonly List<AsyncSceneLoadData> _asyncLoads = new();
     private readonly List<AsyncSceneLoadData> _asyncLoadStalls = new();
@@ -36,7 +36,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         _sceneWrapper = sceneWrapper;
     }
 
-    public void OnLastUpdate()
+    public void OnLastUpdateUnconditional()
     {
         foreach (var scene in _asyncLoads)
         {

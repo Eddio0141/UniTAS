@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics;
 using HarmonyLib;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
-using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
+using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Plugin.Interfaces.Events.SoftRestart;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
@@ -12,7 +12,8 @@ using UnityEngine;
 namespace UniTAS.Plugin.Implementations.VirtualEnvironment;
 
 [Singleton]
-public class TimeEnv : ITimeEnv, IOnPreUpdates, IOnGameRestartResume, IOnStart, IOnLastUpdate, IOnFixedUpdate, IOnUpdate
+public class TimeEnv : ITimeEnv, IOnPreUpdatesUnconditional, IOnGameRestartResume, IOnStartUnconditional,
+    IOnLastUpdateUnconditional, IOnFixedUpdateUnconditional, IOnUpdateUnconditional
 {
     private readonly IConfig _config;
 
@@ -50,12 +51,12 @@ public class TimeEnv : ITimeEnv, IOnPreUpdates, IOnGameRestartResume, IOnStart, 
     private bool _timeInitialized;
     private bool _initialUpdate = true;
 
-    public void PreUpdate()
+    public void PreUpdateUnconditional()
     {
         TimeInit();
     }
 
-    public void Update()
+    public void UpdateUnconditional()
     {
         if (!_initialUpdate) return;
         _initialUpdate = false;
@@ -67,7 +68,7 @@ public class TimeEnv : ITimeEnv, IOnPreUpdates, IOnGameRestartResume, IOnStart, 
     }
 
     // TODO use pause update
-    public void OnLastUpdate()
+    public void OnLastUpdateUnconditional()
     {
         RealtimeSinceStartup += FrameTime;
         UnscaledTime += FrameTime;
@@ -75,7 +76,7 @@ public class TimeEnv : ITimeEnv, IOnPreUpdates, IOnGameRestartResume, IOnStart, 
         SecondsSinceStartUp += FrameTime;
     }
 
-    public void FixedUpdate()
+    public void FixedUpdateUnconditional()
     {
         var fixedDt = Time.fixedDeltaTime;
 
@@ -132,7 +133,7 @@ public class TimeEnv : ITimeEnv, IOnPreUpdates, IOnGameRestartResume, IOnStart, 
         _initialUpdate = true;
     }
 
-    public void Start()
+    public void StartUnconditional()
     {
         TimeInit();
     }

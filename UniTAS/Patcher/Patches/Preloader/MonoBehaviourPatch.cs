@@ -29,16 +29,34 @@ public class MonoBehaviourPatch : PreloadPatcher
     private const string RENDER_TEXTURE = "UnityEngine.RenderTexture";
     private const string BIT_STREAM = "UnityEngine.BitStream";
 
-    private static readonly KeyValuePair<string, MethodBase>[] EventMethods =
+    private static readonly KeyValuePair<string, MethodBase>[] EventMethodsUnconditional =
     {
-        new("Awake", AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeAwake))),
-        new("OnEnable", AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeOnEnable))),
-        new("Start", AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeStart))),
-        new("Update", AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeUpdate))),
+        new("Awake",
+            AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeAwakeUnconditional))),
+        new("OnEnable",
+            AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeOnEnableUnconditional))),
+        new("Start",
+            AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeStartUnconditional))),
+        new("Update",
+            AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeUpdateUnconditional))),
         new("LateUpdate",
-            AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeLateUpdate))),
+            AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeLateUpdateUnconditional))),
         new("FixedUpdate",
-            AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeFixedUpdate)))
+            AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeFixedUpdateUnconditional)))
+        // new("OnGUI", AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeOnGUI)))
+    };
+
+    private static readonly KeyValuePair<string, MethodBase>[] EventMethodsActual =
+    {
+        new("Awake", AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeAwakeActual))),
+        new("OnEnable",
+            AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeOnEnableActual))),
+        new("Start", AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeStartActual))),
+        new("Update", AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeUpdateActual))),
+        new("LateUpdate",
+            AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeLateUpdateActual))),
+        new("FixedUpdate",
+            AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeFixedUpdateActual)))
         // new("OnGUI", AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeOnGUI)))
     };
 
@@ -150,6 +168,12 @@ public class MonoBehaviourPatch : PreloadPatcher
 
             if (!isMonoBehaviour) continue;
 
+            // event methods invoke actual
+            foreach (var eventMethodPair in EventMethodsActual)
+            {
+                InvokeUnityEventMethod(type, eventMethodPair.Key, assembly, eventMethodPair.Value);
+            }
+
             // method invoke pause
             if (!ExcludeNamespaces.Any(type.Namespace.StartsWith))
             {
@@ -186,7 +210,7 @@ public class MonoBehaviourPatch : PreloadPatcher
             }
 
             // event methods invoke
-            foreach (var eventMethodPair in EventMethods)
+            foreach (var eventMethodPair in EventMethodsUnconditional)
             {
                 InvokeUnityEventMethod(type, eventMethodPair.Key, assembly, eventMethodPair.Value);
             }
@@ -204,6 +228,7 @@ public class MonoBehaviourPatch : PreloadPatcher
 
         ilProcessor.InsertBefore(method.Body.Instructions.First(), ilProcessor.Create(OpCodes.Call, reference));
 
-        Trace.Write($"Successfully patched {methodName} for type {type.FullName} for updates");
+        Trace.Write(
+            $"Successfully patched {methodName} for type {type.FullName} for updates, invokes {eventInvoker.Name}");
     }
 }

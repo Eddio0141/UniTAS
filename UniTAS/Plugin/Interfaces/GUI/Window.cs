@@ -1,5 +1,5 @@
 ﻿using System.Diagnostics;
-using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
+using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Plugin.Services.EventSubscribers;
 using UnityEngine;
 
@@ -9,7 +9,7 @@ namespace UniTAS.Plugin.Interfaces.GUI;
 /// Base class for all windows.
 /// Uses automatic layout.
 /// </summary>
-public abstract class Window : IOnGUI
+public abstract class Window : IOnGUIUnconditional
 {
     private Rect _windowRect;
 
@@ -39,15 +39,15 @@ public abstract class Window : IOnGUI
     {
         Init();
         Trace.Write($"Show window, ID: {_id}, Title: {_windowName}, rect: {_windowRect}");
-        _updateEvents.OnGUIEvent += OnGUI;
+        _updateEvents.OnGUIEventUnconditional += OnGUIUnconditional;
     }
 
     public void Close()
     {
-        _updateEvents.OnGUIEvent -= OnGUI;
+        _updateEvents.OnGUIEventUnconditional -= OnGUIUnconditional;
     }
 
-    public void OnGUI()
+    public void OnGUIUnconditional()
     {
         _windowRect = GUILayout.Window(_id, _windowRect, RenderWindow, _windowName);
     }

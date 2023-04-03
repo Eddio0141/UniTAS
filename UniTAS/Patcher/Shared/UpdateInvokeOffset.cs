@@ -8,10 +8,10 @@ public static class UpdateInvokeOffset
 
     public static void Init()
     {
-        MonoBehaviourEvents.OnUpdate += UpdateOffset;
+        MonoBehaviourEvents.OnUpdateUnconditional += UpdateUnconditionalOffset;
     }
 
-    private static void UpdateOffset()
+    private static void UpdateUnconditionalOffset()
     {
         Offset += Time.deltaTime;
         var fixedDeltaTime = Time.fixedDeltaTime;

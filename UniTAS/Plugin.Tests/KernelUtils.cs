@@ -5,7 +5,7 @@ using MoonSharp.Interpreter;
 using StructureMap;
 using UniTAS.Plugin.Implementations.DependencyInjection;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
-using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
+using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Plugin.Interfaces.Movie;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.Logging;
@@ -26,13 +26,13 @@ public static class KernelUtils
     }
 
     [Singleton(IncludeDifferentAssembly = true)]
-    public class Env : EngineMethodClass, IOnLastUpdate
+    public class Env : EngineMethodClass, IOnLastUpdateUnconditional
     {
         public float Fps { get; set; }
         public float Frametime { get; set; }
 
         [MoonSharpHidden]
-        public void OnLastUpdate()
+        public void OnLastUpdateUnconditional()
         {
         }
     }

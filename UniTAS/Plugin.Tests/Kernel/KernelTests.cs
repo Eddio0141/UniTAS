@@ -1,7 +1,7 @@
 using MoonSharp.Interpreter;
 using StructureMap.Pipeline;
 using UniTAS.Plugin.Implementations.VirtualEnvironment;
-using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
+using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Plugin.Interfaces.Events.SoftRestart;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.Logging;
@@ -199,7 +199,7 @@ public class KernelTests
 
         Assert.Same(env, env3);
 
-        var env4 = kernel.GetAllInstances<IOnLastUpdate>().OfType<KernelUtils.Env>().Single();
+        var env4 = kernel.GetAllInstances<IOnLastUpdateUnconditional>().OfType<KernelUtils.Env>().Single();
         Assert.NotNull(env4);
 
         Assert.Same(env, env4);

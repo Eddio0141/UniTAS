@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
-using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
+using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Plugin.Services.VirtualEnvironment;
@@ -12,7 +12,8 @@ namespace UniTAS.Plugin.Implementations;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 [Singleton]
-public class SyncFixedUpdate : ISyncFixedUpdate, IOnUpdate, IOnPreUpdates
+public class SyncFixedUpdateUnconditionalUnconditional : ISyncFixedUpdate, IOnUpdateUnconditional,
+    IOnPreUpdatesUnconditional
 {
     private readonly Queue<SyncData> _pendingSync = new();
     private SyncData _pendingCallback;
@@ -22,13 +23,13 @@ public class SyncFixedUpdate : ISyncFixedUpdate, IOnUpdate, IOnPreUpdates
     private readonly ITimeEnv _timeEnv;
     private readonly ITimeWrapper _timeWrapper;
 
-    public SyncFixedUpdate(ITimeEnv timeEnv, ITimeWrapper timeWrapper)
+    public SyncFixedUpdateUnconditionalUnconditional(ITimeEnv timeEnv, ITimeWrapper timeWrapper)
     {
         _timeEnv = timeEnv;
         _timeWrapper = timeWrapper;
     }
 
-    public void PreUpdate()
+    public void PreUpdateUnconditional()
     {
         if (_pendingCallback != null)
         {
@@ -46,7 +47,7 @@ public class SyncFixedUpdate : ISyncFixedUpdate, IOnUpdate, IOnPreUpdates
         _restoreFrametime = 0;
     }
 
-    public void Update()
+    public void UpdateUnconditional()
     {
         if (_processingCallback == null) return;
 

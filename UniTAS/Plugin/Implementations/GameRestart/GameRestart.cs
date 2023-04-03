@@ -2,7 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using UniTAS.Patcher.Shared;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
-using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
+using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Plugin.Interfaces.Events.SoftRestart;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.Logging;
@@ -13,7 +13,8 @@ namespace UniTAS.Plugin.Implementations.GameRestart;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 [Singleton]
-public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixedUpdate
+public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUnconditional, IOnStartUnconditional,
+    IOnFixedUpdateUnconditional
 {
     private DateTime _softRestartTime;
 
@@ -121,22 +122,22 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
         _pendingResumePausedExecution = true;
     }
 
-    public void Awake()
+    public void AwakeUnconditional()
     {
         PendingResumePausedExecution();
     }
 
-    public void OnEnable()
+    public void OnEnableUnconditional()
     {
         PendingResumePausedExecution();
     }
 
-    public void Start()
+    public void StartUnconditional()
     {
         PendingResumePausedExecution();
     }
 
-    public void FixedUpdate()
+    public void FixedUpdateUnconditional()
     {
         PendingResumePausedExecution();
     }
