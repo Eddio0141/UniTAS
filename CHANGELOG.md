@@ -44,6 +44,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed not being able to patch class deriving MonoBehaviour that has generic parameters for pausing and accurately
   updating TAS input
+- Fixed unity time being wrong
+- Prevent an extra update from being called on the first frame of soft restart
 
 ## Removed
 
