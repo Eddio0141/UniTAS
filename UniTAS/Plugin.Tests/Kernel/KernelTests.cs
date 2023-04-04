@@ -1,6 +1,7 @@
 using MoonSharp.Interpreter;
 using StructureMap.Pipeline;
 using UniTAS.Plugin.Implementations.VirtualEnvironment;
+using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Plugin.Interfaces.Events.SoftRestart;
 using UniTAS.Plugin.Services;
@@ -203,5 +204,21 @@ public class KernelTests
         Assert.NotNull(env4);
 
         Assert.Same(env, env4);
+    }
+
+    [Fact]
+    public void TestPriority()
+    {
+        var kernel = KernelUtils.Init();
+
+        var updates = kernel.GetAllInstances<IOnPreUpdatesActual>().ToList();
+        Assert.NotNull(updates);
+
+        var indexOfTestPriority = updates.FindIndex(x => x is KernelUtils.TestPriority);
+        var indexOfTestPriority2 = updates.FindIndex(x => x is KernelUtils.TestPriority2);
+        var indexOfMovieRunner = updates.FindIndex(x => x is Implementations.Movie.MovieRunner);
+
+        Assert.True(indexOfTestPriority < indexOfTestPriority2);
+        Assert.True(indexOfTestPriority < indexOfMovieRunner);
     }
 }

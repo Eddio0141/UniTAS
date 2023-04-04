@@ -5,8 +5,10 @@ using MoonSharp.Interpreter;
 using StructureMap;
 using UniTAS.Plugin.Implementations.DependencyInjection;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
+using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Plugin.Interfaces.Movie;
+using UniTAS.Plugin.Models.DependencyInjection;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.Logging;
 using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
@@ -15,6 +17,7 @@ namespace UniTAS.Plugin.Tests;
 
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Local")]
+[SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
 public static class KernelUtils
 {
     [Singleton(IncludeDifferentAssembly = true)]
@@ -101,6 +104,22 @@ public static class KernelUtils
         }
     }
 
+    [Singleton(RegisterPriority.FirstUpdateSkipOnRestart, IncludeDifferentAssembly = true)]
+    public class TestPriority : IOnPreUpdatesActual
+    {
+        public void PreUpdateActual()
+        {
+        }
+    }
+
+    [Singleton(IncludeDifferentAssembly = true)]
+    public class TestPriority2 : IOnPreUpdatesActual
+    {
+        public void PreUpdateActual()
+        {
+        }
+    }
+
     public static Container Init()
     {
         var kernel = new Container(c =>
@@ -113,8 +132,8 @@ public static class KernelUtils
 
         kernel.Configure(c =>
         {
-            kernel.GetInstance<IDiscoverAndRegister>().Register<PluginWrapper>(c);
             kernel.GetInstance<IDiscoverAndRegister>().Register<FakeStaticFieldStorage>(c);
+            kernel.GetInstance<IDiscoverAndRegister>().Register<PluginWrapper>(c);
         });
 
         return kernel;
