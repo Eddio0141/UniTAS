@@ -27,7 +27,7 @@ public partial class DiscoverAndRegister : IDiscoverAndRegister
         }
 
         // order by priority
-        registers = registers.OrderByDescending(x => x.Priority).ToList();
+        registers = registers.OrderBy(x => x.Priority).ToList();
 
         foreach (var register in registers)
         {
