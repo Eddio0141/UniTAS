@@ -18,7 +18,7 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
 {
     private DateTime _softRestartTime;
 
-    private readonly ISyncFixedUpdate _syncFixedUpdate;
+    private readonly ISyncFixedUpdateCycle _syncFixedUpdate;
     private readonly ISceneWrapper _sceneWrapper;
     private readonly IMonoBehaviourController _monoBehaviourController;
     private readonly ILogger _logger;
@@ -33,16 +33,19 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
     private bool _pendingResumePausedExecution;
 
     [SuppressMessage("ReSharper", "MemberCanBeProtected.Global")]
-    public GameRestart(RestartParameters restartParameters)
+    public GameRestart(ISyncFixedUpdateCycle syncFixedUpdate, ISceneWrapper sceneWrapper,
+        IMonoBehaviourController monoBehaviourController, ILogger logger, IOnGameRestart[] onGameRestart,
+        IOnGameRestartResume[] onGameRestartResume, IOnPreGameRestart[] onPreGameRestart,
+        IStaticFieldManipulator staticFieldManipulator)
     {
-        _syncFixedUpdate = restartParameters.SyncFixedUpdate;
-        _sceneWrapper = restartParameters.SceneWrapper;
-        _monoBehaviourController = restartParameters.MonoBehaviourController;
-        _logger = restartParameters.Logger;
-        _onGameRestart = restartParameters.OnGameRestart;
-        _onGameRestartResume = restartParameters.OnGameRestartResume;
-        _staticFieldManipulator = restartParameters.StaticFieldManipulator;
-        _onPreGameRestart = restartParameters.OnPreGameRestart;
+        _syncFixedUpdate = syncFixedUpdate;
+        _sceneWrapper = sceneWrapper;
+        _monoBehaviourController = monoBehaviourController;
+        _logger = logger;
+        _onGameRestart = onGameRestart;
+        _onGameRestartResume = onGameRestartResume;
+        _onPreGameRestart = onPreGameRestart;
+        _staticFieldManipulator = staticFieldManipulator;
     }
 
     /// <summary>
