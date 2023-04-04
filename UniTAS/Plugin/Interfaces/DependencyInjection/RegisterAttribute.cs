@@ -1,4 +1,5 @@
 ﻿using System;
+using UniTAS.Plugin.Models.DependencyInjection;
 
 namespace UniTAS.Plugin.Interfaces.DependencyInjection;
 
@@ -10,10 +11,11 @@ namespace UniTAS.Plugin.Interfaces.DependencyInjection;
 public class RegisterAttribute : DependencyInjectionAttribute
 {
     public bool IncludeDifferentAssembly { get; set; }
-    public Type[] IgnoreInterfaces { get; }
+    public Type[] IgnoreInterfaces { get; set; }
+    public RegisterPriority Priority { get; }
 
-    public RegisterAttribute(params Type[] ignoreInterfaces)
+    public RegisterAttribute(RegisterPriority priority = RegisterPriority.Default)
     {
-        IgnoreInterfaces = ignoreInterfaces;
+        Priority = priority;
     }
 }

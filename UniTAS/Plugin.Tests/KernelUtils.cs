@@ -10,7 +10,6 @@ using UniTAS.Plugin.Interfaces.Movie;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.Logging;
 using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
-using UniTAS.Plugin.Tests.Kernel;
 
 namespace UniTAS.Plugin.Tests;
 
@@ -106,14 +105,16 @@ public static class KernelUtils
     {
         var kernel = new Container(c =>
         {
-            c.Scan(scanner =>
-            {
-                scanner.AssemblyContainingType<Plugin>();
-                scanner.AssemblyContainingType<KernelTests>();
-                scanner.Convention<DependencyInjectionConvention>();
-            });
+            c.ForSingletonOf<DiscoverAndRegister>().Use<DiscoverAndRegister>();
+            c.For<IDiscoverAndRegister>().Use(x => x.GetInstance<DiscoverAndRegister>());
 
             c.ForSingletonOf<ConfigFile>().Use(new ConfigFile("test", false));
+        });
+
+        kernel.Configure(c =>
+        {
+            kernel.GetInstance<IDiscoverAndRegister>().Register<PluginWrapper>(c);
+            kernel.GetInstance<IDiscoverAndRegister>().Register<FakeStaticFieldStorage>(c);
         });
 
         return kernel;
