@@ -12,8 +12,7 @@ namespace UniTAS.Plugin.Implementations;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 [Singleton]
-public class SyncFixedUpdateCycleCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditional,
-    IOnPreUpdatesUnconditional
+public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditional
 {
     private readonly Queue<SyncData> _pendingSync = new();
     private SyncData _pendingCallback;
@@ -23,37 +22,34 @@ public class SyncFixedUpdateCycleCycle : ISyncFixedUpdateCycle, IOnUpdateUncondi
     private readonly ITimeEnv _timeEnv;
     private readonly ITimeWrapper _timeWrapper;
 
-    public SyncFixedUpdateCycleCycle(ITimeEnv timeEnv, ITimeWrapper timeWrapper)
+    public SyncFixedUpdateCycle(ITimeEnv timeEnv, ITimeWrapper timeWrapper)
     {
         _timeEnv = timeEnv;
         _timeWrapper = timeWrapper;
     }
 
-    public void PreUpdateUnconditional()
+    public void UpdateUnconditional()
     {
-        if (_pendingCallback != null)
+        if (_processingCallback != null)
+        {
+            // keeps setting until matches the target
+            Trace.Write("re-setting frame time, didn't match target");
+            SetFrameTime();
+        }
+        else if (_pendingCallback != null)
         {
             _pendingCallback.Callback();
             Trace.Write("Invoking pending callback");
             _pendingCallback = null;
             ProcessQueue();
         }
+        else if (_restoreFrametime != 0)
+        {
+            Trace.Write($"Restoring frame time to {_restoreFrametime}");
+            _timeEnv.FrameTime = _restoreFrametime;
 
-        if (_restoreFrametime == 0 || _processingCallback != null) return;
-
-        Trace.Write($"Restoring frame time to {_restoreFrametime}");
-        _timeEnv.FrameTime = _restoreFrametime;
-
-        _restoreFrametime = 0;
-    }
-
-    public void UpdateUnconditional()
-    {
-        if (_processingCallback == null) return;
-
-        // keeps setting until matches the target
-        Trace.Write("re-setting frame time, didn't match target");
-        SetFrameTime();
+            _restoreFrametime = 0;
+        }
     }
 
     public void OnSync(Action callback, double invokeOffset)
@@ -96,7 +92,10 @@ public class SyncFixedUpdateCycleCycle : ISyncFixedUpdateCycle, IOnUpdateUncondi
 
     private double GetTargetSeconds()
     {
-        return Time.fixedDeltaTime + _processingCallback.InvokeOffset - Patcher.Shared.UpdateInvokeOffset.Offset;
+        var futureFt = Patcher.Shared.UpdateInvokeOffset.Offset + _timeEnv.FrameTime;
+        if (futureFt > Time.fixedDeltaTime)
+            futureFt -= Time.fixedDeltaTime;
+        return Time.fixedDeltaTime - (_processingCallback.InvokeOffset + futureFt);
     }
 
     private void SetFrameTime()
@@ -104,7 +103,7 @@ public class SyncFixedUpdateCycleCycle : ISyncFixedUpdateCycle, IOnUpdateUncondi
         var targetSeconds = GetTargetSeconds();
         // unlike normal frame time, i round down
         var actualSeconds = _timeWrapper.IntFPSOnly ? 1.0 / (int)(1.0 / targetSeconds) : targetSeconds;
-        Trace.Write($"Actual seconds: {actualSeconds}");
+        Trace.Write($"Actual seconds: {actualSeconds}, target seconds: {targetSeconds}");
 
         _timeEnv.FrameTime = (float)actualSeconds;
 
