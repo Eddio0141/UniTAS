@@ -27,7 +27,7 @@ public partial class DiscoverAndRegister
         public bool IsSingleton { get; }
 
         public RegisterInfo(Type type, bool includeDifferentAssembly, RegisterAttribute registerAttribute,
-            bool isSingleton) : base(registerAttribute.Priority)
+            bool isSingleton) : base(registerAttribute?.Priority ?? RegisterPriority.Default)
         {
             Type = type;
             IncludeDifferentAssembly = includeDifferentAssembly;

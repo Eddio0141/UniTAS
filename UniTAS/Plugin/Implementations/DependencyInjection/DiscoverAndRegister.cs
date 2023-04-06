@@ -95,8 +95,9 @@ public partial class DiscoverAndRegister : IDiscoverAndRegister
                     var allTypes = AccessTools.GetTypesFromAssembly(type.Assembly);
                     var types = type.IsInterface
                         ? allTypes.Where(x => x.GetInterfaces().Contains(type))
-                        : allTypes.Where(x => x.IsSubclassOf(type));
+                        : allTypes.Where(x => x.IsSubclassOf(type) && !x.IsAbstract);
 
+                    // if type is abstract, recursively register inner types
                     foreach (var innerType in types)
                     {
                         var innerTypeAttributes =
