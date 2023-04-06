@@ -5,6 +5,7 @@ using UniTAS.Plugin.Exceptions.Movie.Runner;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.Events;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
+using UniTAS.Plugin.Models.DependencyInjection;
 using UniTAS.Plugin.Models.Movie;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.Logging;
@@ -15,7 +16,7 @@ using UniTAS.Plugin.Utils;
 namespace UniTAS.Plugin.Implementations.Movie;
 
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-[Singleton]
+[Singleton(RegisterPriority.MovieRunner)]
 public class MovieRunner : IMovieRunner, IOnPreUpdatesActual
 {
     private readonly IGameRestart _gameRestart;
