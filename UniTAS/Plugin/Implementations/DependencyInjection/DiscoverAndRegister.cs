@@ -17,13 +17,14 @@ public partial class DiscoverAndRegister : IDiscoverAndRegister
 
     public void Register<TAssemblyContainingType>(ConfigurationExpression config)
     {
-        var types = AccessTools.GetTypesFromAssembly(typeof(TAssemblyContainingType).Assembly);
+        var allTypes = AccessTools.GetTypesFromAssembly(typeof(TAssemblyContainingType).Assembly);
+        var types = allTypes.Where(x => x.GetCustomAttributes(typeof(DependencyInjectionAttribute), true).Length > 0);
 
         var registers = new List<RegisterInfoBase>();
 
         foreach (var type in types)
         {
-            registers.AddRange(GetRegisterInfos(type));
+            registers.AddRange(GetRegisterInfos(type, allTypes));
         }
 
         // order by priority
@@ -34,13 +35,12 @@ public partial class DiscoverAndRegister : IDiscoverAndRegister
             switch (register)
             {
                 case RegisterInfo registerInfo:
-                    if (registerInfo.IsSingleton)
+                    if (registerInfo.RegisterAttribute is SingletonAttribute)
                     {
                         config.For(registerInfo.Type).Singleton();
                     }
 
-                    RegisterInterfaces(registerInfo.Type, config, registerInfo.IncludeDifferentAssembly,
-                        registerInfo.RegisterAttribute);
+                    RegisterInterfaces(registerInfo.Type, config, registerInfo.RegisterAttribute);
                     break;
                 case RegisterAllInfo registerAllInfo:
                     config.For(registerAllInfo.Type).Use(registerAllInfo.InnerType);
@@ -49,50 +49,46 @@ public partial class DiscoverAndRegister : IDiscoverAndRegister
         }
     }
 
-    private static void RegisterInterfaces(Type type, IRegistry config, bool includeDifferentAssembly,
-        RegisterAttribute registerAttribute)
+    private static void RegisterInterfaces(Type type, IRegistry config, RegisterAttribute registerAttribute)
     {
         var interfaces = type.GetInterfaces();
         var baseType = type.BaseType;
         var typeAssembly = type.Assembly;
 
+        // register with base type
         if (baseType != null && baseType != typeof(object) &&
             registerAttribute?.IgnoreInterfaces?.All(x => x != baseType) is true or null &&
-            (includeDifferentAssembly || Equals(baseType.Assembly, typeAssembly)))
+            ((registerAttribute?.IncludeDifferentAssembly ?? false) || Equals(baseType.Assembly, typeAssembly)))
         {
             config.For(baseType).Use(x => x.GetInstance(type));
         }
 
+        // register with all interfaces
         foreach (var @interface in interfaces)
         {
-            if (!(includeDifferentAssembly || Equals(@interface.Assembly, typeAssembly)))
+            if (!((registerAttribute?.IncludeDifferentAssembly ?? false) || Equals(@interface.Assembly, typeAssembly)))
                 continue;
 
             config.For(@interface).Use(x => x.GetInstance(type));
         }
     }
 
-    private IEnumerable<RegisterInfoBase> GetRegisterInfos(Type type)
+    private IEnumerable<RegisterInfoBase> GetRegisterInfos(Type type, Type[] allTypes)
     {
         var dependencyInjectionAttributes = type.GetCustomAttributes(typeof(DependencyInjectionAttribute), true);
-        if (dependencyInjectionAttributes.Length == 0)
-            yield break;
 
-        if (dependencyInjectionAttributes.Any(x => x is ExcludeRegisterIfTestingAttribute) && _isTesting)
-            yield break;
+        // early return if ExcludeRegisterIfTestingAttribute is present
+        if (dependencyInjectionAttributes.Any(x => x is ExcludeRegisterIfTestingAttribute)) yield break;
 
         foreach (var dependencyInjectionAttribute in dependencyInjectionAttributes)
         {
             switch (dependencyInjectionAttribute)
             {
                 case SingletonAttribute singletonAttribute:
-                    yield return new RegisterInfo(type, singletonAttribute.IncludeDifferentAssembly,
-                        singletonAttribute,
-                        true);
+                    yield return new RegisterInfo(type, singletonAttribute);
                     break;
                 case RegisterAllAttribute registerAllAttribute:
                 {
-                    var allTypes = AccessTools.GetTypesFromAssembly(type.Assembly);
                     var types = type.IsInterface
                         ? allTypes.Where(x => x.GetInterfaces().Contains(type))
                         : allTypes.Where(x => x.IsSubclassOf(type) && !x.IsAbstract);
@@ -106,26 +102,19 @@ public partial class DiscoverAndRegister : IDiscoverAndRegister
                                              _isTesting;
                         if (excludeTesting) continue;
 
-                        var registerAttribute = innerTypeAttributes.FirstOrDefault(x => x is RegisterAttribute);
-
                         yield return new RegisterAllInfo(type, innerType, registerAllAttribute);
-                        var innerRegisterInfos = GetRegisterInfos(innerType);
+
+                        var innerRegisterInfos = GetRegisterInfos(innerType, allTypes);
                         foreach (var innerRegisterInfo in innerRegisterInfos)
                         {
                             yield return innerRegisterInfo;
                         }
-
-                        yield return new RegisterInfo(innerType, false,
-                            registerAttribute as RegisterAttribute ?? registerAllAttribute,
-                            false);
                     }
 
                     break;
                 }
                 case RegisterAttribute registerAttribute:
-                    yield return new RegisterInfo(type, registerAttribute.IncludeDifferentAssembly,
-                        registerAttribute,
-                        false);
+                    yield return new RegisterInfo(type, registerAttribute);
                     break;
                 case ExcludeRegisterIfTestingAttribute:
                     break;

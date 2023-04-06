@@ -22,17 +22,12 @@ public partial class DiscoverAndRegister
     private class RegisterInfo : RegisterInfoBase
     {
         public Type Type { get; }
-        public bool IncludeDifferentAssembly { get; }
         public RegisterAttribute RegisterAttribute { get; }
-        public bool IsSingleton { get; }
 
-        public RegisterInfo(Type type, bool includeDifferentAssembly, RegisterAttribute registerAttribute,
-            bool isSingleton) : base(registerAttribute?.Priority ?? RegisterPriority.Default)
+        public RegisterInfo(Type type, RegisterAttribute registerAttribute) : base(registerAttribute.Priority)
         {
             Type = type;
-            IncludeDifferentAssembly = includeDifferentAssembly;
             RegisterAttribute = registerAttribute;
-            IsSingleton = isSingleton;
         }
     }
 
