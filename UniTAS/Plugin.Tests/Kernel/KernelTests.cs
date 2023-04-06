@@ -4,6 +4,7 @@ using UniTAS.Plugin.Implementations.VirtualEnvironment;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Plugin.Interfaces.Events.SoftRestart;
+using UniTAS.Plugin.Interfaces.GUI;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.Logging;
 using UniTAS.Plugin.Services.Movie;
@@ -220,5 +221,16 @@ public class KernelTests
 
         Assert.True(indexOfTestPriority < indexOfTestPriority2);
         Assert.True(indexOfTestPriority < indexOfMovieRunner);
+    }
+
+    [Fact]
+    public void GetIMainMenuTabs()
+    {
+        var kernel = KernelUtils.Init();
+
+        var tabs = kernel.GetAllInstances<IMainMenuTab>().ToList();
+        Assert.NotNull(tabs);
+
+        Assert.True(tabs.Count > 0);
     }
 }
