@@ -92,7 +92,11 @@ public partial class DiscoverAndRegister : IDiscoverAndRegister
                     break;
                 case RegisterAllAttribute registerAllAttribute:
                 {
-                    var types = AccessTools.GetTypesFromAssembly(type.Assembly).Where(x => x.IsSubclassOf(type));
+                    var allTypes = AccessTools.GetTypesFromAssembly(type.Assembly);
+                    var types = type.IsInterface
+                        ? allTypes.Where(x => x.GetInterfaces().Contains(type))
+                        : allTypes.Where(x => x.IsSubclassOf(type));
+
                     foreach (var innerType in types)
                     {
                         var innerTypeAttributes =
@@ -110,7 +114,8 @@ public partial class DiscoverAndRegister : IDiscoverAndRegister
                             yield return innerRegisterInfo;
                         }
 
-                        yield return new RegisterInfo(innerType, false, registerAttribute as RegisterAttribute,
+                        yield return new RegisterInfo(innerType, false,
+                            registerAttribute as RegisterAttribute ?? registerAllAttribute,
                             false);
                     }
 
