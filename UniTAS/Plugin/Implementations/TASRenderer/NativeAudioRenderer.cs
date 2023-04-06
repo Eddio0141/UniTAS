@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using UniTAS.Plugin.Implementations.UnitySafeWrappers.Unity.Collections;
+using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.TASRenderer;
 using UniTAS.Plugin.Models.UnitySafeWrappers.Unity.Collections;
 using UniTAS.Plugin.Services.Logging;
@@ -16,6 +17,7 @@ namespace UniTAS.Plugin.Implementations.TASRenderer;
 /// <summary>
 /// A renderer that uses unity's AudioRenderer to record audio
 /// </summary>
+[ExcludeRegisterIfTesting]
 public class NativeAudioRenderer : AudioRenderer
 {
     private FileStream _audioFileStream;
