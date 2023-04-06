@@ -2,11 +2,12 @@ using System;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Plugin.Interfaces.Events.SoftRestart;
+using UniTAS.Plugin.Models.DependencyInjection;
 using UniTAS.Plugin.Services;
 
 namespace UniTAS.Plugin.Implementations;
 
-[Singleton]
+[Singleton(RegisterPriority.FirstUpdateSkipOnRestart)]
 public class FirstUpdateSkipOnRestart : IOnGameRestartResume, IOnUpdateUnconditional, IOnLastUpdateUnconditional
 {
     private bool _pendingSkipUpdate;
