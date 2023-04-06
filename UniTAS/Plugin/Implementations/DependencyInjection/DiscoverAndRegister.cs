@@ -78,7 +78,7 @@ public partial class DiscoverAndRegister : IDiscoverAndRegister
         var dependencyInjectionAttributes = type.GetCustomAttributes(typeof(DependencyInjectionAttribute), true);
 
         // early return if ExcludeRegisterIfTestingAttribute is present
-        if (dependencyInjectionAttributes.Any(x => x is ExcludeRegisterIfTestingAttribute)) yield break;
+        if (_isTesting && dependencyInjectionAttributes.Any(x => x is ExcludeRegisterIfTestingAttribute)) yield break;
 
         foreach (var dependencyInjectionAttribute in dependencyInjectionAttributes)
         {
@@ -98,8 +98,8 @@ public partial class DiscoverAndRegister : IDiscoverAndRegister
                     {
                         var innerTypeAttributes =
                             innerType.GetCustomAttributes(typeof(DependencyInjectionAttribute), true);
-                        var excludeTesting = innerTypeAttributes.Any(x => x is ExcludeRegisterIfTestingAttribute) &&
-                                             _isTesting;
+                        var excludeTesting = _isTesting &&
+                                             innerTypeAttributes.Any(x => x is ExcludeRegisterIfTestingAttribute);
                         if (excludeTesting) continue;
 
                         yield return new RegisterAllInfo(type, innerType, registerAllAttribute);
