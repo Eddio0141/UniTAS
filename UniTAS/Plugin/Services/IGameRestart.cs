@@ -5,5 +5,4 @@ namespace UniTAS.Plugin.Services;
 public interface IGameRestart
 {
     void SoftRestart(DateTime time);
-    bool PendingRestart { get; }
 }
