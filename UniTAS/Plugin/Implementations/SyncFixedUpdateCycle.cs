@@ -34,7 +34,7 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
 
     public void UpdateUnconditional()
     {
-        Trace.Write($"Update, offset: {Patcher.Shared.UpdateInvokeOffset.Offset}");
+        // Trace.Write($"Update, offset: {Patcher.Shared.UpdateInvokeOffset.Offset}");
         if (_processingCallback != null)
         {
             // keeps setting until matches the target
@@ -64,7 +64,10 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
 
     public void OnSync(Action callback, double invokeOffset)
     {
-        invokeOffset = Math.Abs(invokeOffset);
+        // make the offset within range of 0..fixedDeltaTime
+        invokeOffset %= Time.fixedDeltaTime;
+        if (invokeOffset < 0)
+            invokeOffset += Time.fixedDeltaTime;
         Trace.Write($"Added on sync callback with invoke offset: {invokeOffset}");
         _pendingSync.Enqueue(new(callback, invokeOffset));
     }
