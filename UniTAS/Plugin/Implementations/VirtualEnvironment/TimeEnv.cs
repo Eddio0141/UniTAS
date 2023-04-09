@@ -30,7 +30,7 @@ public class TimeEnv : ITimeEnv, IOnPreUpdatesActual, IOnGameRestartResume, IOnS
         var initialFt = 1.0 / _config.DefaultFps;
         RealtimeSinceStartup += initialFt;
         UnscaledTime += initialFt;
-        ScaledTime += Time.timeScale * initialFt;
+        ScaledTime += initialFt;
         SecondsSinceStartUp += initialFt;
     }
 
