@@ -21,8 +21,6 @@ public class MovieRunner : IMovieRunner, IOnPreUpdatesActual
 {
     private readonly IGameRestart _gameRestart;
 
-    private readonly ISyncFixedUpdateCycle _syncFixedUpdateCycle;
-
     public bool MovieEnd { get; private set; } = true;
     private bool _cleanUp;
     private bool _setup;
@@ -37,18 +35,19 @@ public class MovieRunner : IMovieRunner, IOnPreUpdatesActual
     private readonly ITimeEnv _timeEnv;
     private readonly IRandomEnv _randomEnv;
 
-    public MovieRunner(IGameRestart gameRestart, ISyncFixedUpdateCycle syncFixedUpdateCycle,
-        IMovieParser parser, IMovieLogger movieLogger, IOnMovieRunningStatusChange[] onMovieRunningStatusChange,
+    public MovieRunner(IGameRestart gameRestart, IMovieParser parser, IMovieLogger movieLogger,
+        IOnMovieRunningStatusChange[] onMovieRunningStatusChange,
         IVirtualEnvController virtualEnvController, ITimeEnv timeEnv, IRandomEnv randomEnv)
     {
         _gameRestart = gameRestart;
-        _syncFixedUpdateCycle = syncFixedUpdateCycle;
         _parser = parser;
         _movieLogger = movieLogger;
         _onMovieRunningStatusChange = onMovieRunningStatusChange;
         _virtualEnvController = virtualEnvController;
         _timeEnv = timeEnv;
         _randomEnv = randomEnv;
+
+        _gameRestart.OnGameRestartResume += OnGameRestartResume;
     }
 
     public void RunFromInput(string input)
@@ -88,12 +87,13 @@ public class MovieRunner : IMovieRunner, IOnPreUpdatesActual
         }
 
         // TODO other stuff like save state load, hide cursor, etc
+    }
 
-        _syncFixedUpdateCycle.OnSync(() =>
-        {
-            MovieRunningStatusChange(true);
-            _setup = false;
-        });
+    public void OnGameRestartResume(DateTime startupTime, bool preMonoBehaviourResume)
+    {
+        if (preMonoBehaviourResume) return;
+        MovieRunningStatusChange(true);
+        _setup = false;
     }
 
     public void PreUpdateActual()

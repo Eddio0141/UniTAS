@@ -24,7 +24,6 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
     private readonly ILogger _logger;
 
     private readonly IOnGameRestart[] _onGameRestart;
-    private readonly IOnGameRestartResume[] _onGameRestartResume;
     private readonly IOnPreGameRestart[] _onPreGameRestart;
 
     private readonly IStaticFieldManipulator _staticFieldManipulator;
@@ -44,9 +43,13 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
         _monoBehaviourController = monoBehaviourController;
         _logger = logger;
         _onGameRestart = onGameRestart;
-        _onGameRestartResume = onGameRestartResume;
         _onPreGameRestart = onPreGameRestart;
         _staticFieldManipulator = staticFieldManipulator;
+
+        foreach (var gameRestartResume in onGameRestartResume)
+        {
+            OnGameRestartResume += gameRestartResume.OnGameRestartResume;
+        }
     }
 
     /// <summary>
@@ -99,12 +102,11 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
         }
     }
 
-    protected virtual void OnGameRestartResume(bool preMonoBehaviourResume)
+    public event GameRestartResume OnGameRestartResume;
+
+    protected virtual void InvokeOnGameRestartResume(bool preMonoBehaviourResume)
     {
-        foreach (var gameRestart in _onGameRestartResume)
-        {
-            gameRestart.OnGameRestartResume(_softRestartTime, preMonoBehaviourResume);
-        }
+        OnGameRestartResume?.Invoke(_softRestartTime, preMonoBehaviourResume);
     }
 
     private void OnPreGameRestart()
@@ -164,7 +166,7 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
     private void PendingResumePausedExecution()
     {
         if (!_pendingResumePausedExecution) return;
-        OnGameRestartResume(true);
+        InvokeOnGameRestartResume(true);
 
         _logger.LogInfo("Finish soft restarting");
         var actualTime = DateTime.Now;
@@ -172,7 +174,7 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
 
         _monoBehaviourController.PausedExecution = false;
         _logger.LogDebug("Resuming MonoBehaviour execution");
-        OnGameRestartResume(false);
+        InvokeOnGameRestartResume(false);
 
         _pendingResumePausedExecution = false;
     }
