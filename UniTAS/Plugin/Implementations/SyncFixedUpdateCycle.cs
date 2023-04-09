@@ -22,14 +22,19 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
     private readonly ITimeEnv _timeEnv;
     private readonly ITimeWrapper _timeWrapper;
 
+    private readonly double _tolerance;
+
     public SyncFixedUpdateCycle(ITimeEnv timeEnv, ITimeWrapper timeWrapper)
     {
         _timeEnv = timeEnv;
         _timeWrapper = timeWrapper;
+
+        _tolerance = _timeWrapper.IntFPSOnly ? 1.0 / int.MaxValue : float.Epsilon;
     }
 
     public void UpdateUnconditional()
     {
+        Trace.Write($"Update, offset: {Patcher.Shared.UpdateInvokeOffset.Offset}");
         if (_processingCallback != null)
         {
             // keeps setting until matches the target
@@ -51,6 +56,10 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
 
             _restoreFrametime = 0;
         }
+        else
+        {
+            ProcessQueue();
+        }
     }
 
     public void OnSync(Action callback, double invokeOffset)
@@ -58,7 +67,6 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
         invokeOffset = Math.Abs(invokeOffset);
         Trace.Write($"Added on sync callback with invoke offset: {invokeOffset}");
         _pendingSync.Enqueue(new(callback, invokeOffset));
-        ProcessQueue();
     }
 
     private void ProcessQueue()
@@ -73,8 +81,7 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
             $"Fixed delta time: {Time.fixedDeltaTime}, invoke offset: {_processingCallback.InvokeOffset}, update invoke offset: {Patcher.Shared.UpdateInvokeOffset.Offset}");
 
         // check immediate return
-        // TODO idk what the tolerance should be but probably lower it later
-        if (Math.Abs(Patcher.Shared.UpdateInvokeOffset.Offset - _processingCallback.InvokeOffset) < 0.0000001)
+        if (Math.Abs(Patcher.Shared.UpdateInvokeOffset.Offset - _processingCallback.InvokeOffset) < _tolerance)
         {
             Trace.Write("Immediate return callback");
             _processingCallback.Callback();
@@ -116,7 +123,7 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
         _timeEnv.FrameTime = (float)actualSeconds;
 
         // check rounding
-        if (targetSeconds - actualSeconds > 0.0000000001)
+        if (targetSeconds - actualSeconds > _tolerance)
         {
             Trace.Write(
                 $"Actual seconds: {actualSeconds} Target seconds: {targetSeconds}, difference: {targetSeconds - actualSeconds}");
