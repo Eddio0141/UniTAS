@@ -33,7 +33,8 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
         if (_processingCallback != null)
         {
             // keeps setting until matches the target
-            Trace.Write("re-setting frame time, didn't match target");
+            Trace.Write(
+                $"re-setting frame time, didn't match target, offset: {Patcher.Shared.UpdateInvokeOffset.Offset}");
             SetFrameTime();
         }
         else if (_pendingCallback != null)
@@ -54,6 +55,7 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
 
     public void OnSync(Action callback, double invokeOffset)
     {
+        invokeOffset = Math.Abs(invokeOffset);
         Trace.Write($"Added on sync callback with invoke offset: {invokeOffset}");
         _pendingSync.Enqueue(new(callback, invokeOffset));
         ProcessQueue();
@@ -72,7 +74,7 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
 
         // check immediate return
         // TODO idk what the tolerance should be but probably lower it later
-        if (Math.Abs(GetTargetSeconds() - _processingCallback.InvokeOffset) < 0.0001)
+        if (Math.Abs(Patcher.Shared.UpdateInvokeOffset.Offset - _processingCallback.InvokeOffset) < 0.0000001)
         {
             Trace.Write("Immediate return callback");
             _processingCallback.Callback();
@@ -92,30 +94,36 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
 
     private double GetTargetSeconds()
     {
-        var futureFt = Patcher.Shared.UpdateInvokeOffset.Offset + _timeEnv.FrameTime;
-        if (futureFt > Time.fixedDeltaTime)
-            futureFt -= Time.fixedDeltaTime;
-        return Time.fixedDeltaTime - (_processingCallback.InvokeOffset + futureFt);
+        // we are currently UpdateInvokeOffset.Offset ms in the update and we want to invoke at InvokeOffset ms
+        // this means we need to first reach to the next Time.fixedDeltaTime ms (and i guess the future ft) and then add the invoke to happen at InvokeOffset ms
+        var futureOffset = Patcher.Shared.UpdateInvokeOffset.Offset + _timeEnv.FrameTime;
+        futureOffset %= Time.fixedDeltaTime;
+        var target = Time.fixedDeltaTime - futureOffset + _processingCallback.InvokeOffset;
+        // var target = Time.fixedDeltaTime - Patcher.Shared.UpdateInvokeOffset.Offset + _processingCallback.InvokeOffset;
+        return target % Time.fixedDeltaTime;
     }
 
     private void SetFrameTime()
     {
-        var targetSeconds = GetTargetSeconds();
-        // unlike normal frame time, i round down
-        var actualSeconds = _timeWrapper.IntFPSOnly ? 1.0 / (int)(1.0 / targetSeconds) : targetSeconds;
+        var targetSeconds = _processingCallback.TimeLeftSet ? _processingCallback.TimeLeft : GetTargetSeconds();
+        _processingCallback.TimeLeft = targetSeconds;
+        // unlike normal frame time, i round up
+        var actualSeconds = _timeWrapper.IntFPSOnly ? 1.0 / (int)Math.Ceiling(1.0 / targetSeconds) : targetSeconds;
         Trace.Write($"Actual seconds: {actualSeconds}, target seconds: {targetSeconds}");
+
+        _processingCallback.ProgressOffset(actualSeconds);
 
         _timeEnv.FrameTime = (float)actualSeconds;
 
         // check rounding
-        if (targetSeconds - actualSeconds > 0.0001)
+        if (targetSeconds - actualSeconds > 0.0000000001)
         {
             Trace.Write(
                 $"Actual seconds: {actualSeconds} Target seconds: {targetSeconds}, difference: {targetSeconds - actualSeconds}");
         }
         else
         {
-            Trace.Write($"Pending restore frame time, target seconds is {targetSeconds}");
+            Trace.Write($"Pending restore frame time");
             _pendingCallback = _processingCallback;
             _processingCallback = null;
         }
@@ -123,13 +131,29 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
 
     private class SyncData
     {
+        private double _timeLeft;
         public Action Callback { get; }
         public double InvokeOffset { get; }
+
+        public double TimeLeft
+        {
+            get => _timeLeft;
+            set
+            {
+                if (TimeLeftSet) return;
+                TimeLeftSet = true;
+                _timeLeft = value;
+            }
+        }
+
+        public bool TimeLeftSet { get; private set; }
 
         public SyncData(Action callback, double invokeOffset)
         {
             Callback = callback;
             InvokeOffset = invokeOffset;
         }
+
+        public void ProgressOffset(double offset) => _timeLeft -= offset;
     }
 }
