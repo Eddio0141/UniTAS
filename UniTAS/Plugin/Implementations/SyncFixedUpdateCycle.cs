@@ -34,7 +34,6 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
 
     public void UpdateUnconditional()
     {
-        // Trace.Write($"Update, offset: {Patcher.Shared.UpdateInvokeOffset.Offset}");
         if (_processingCallback != null)
         {
             // keeps setting until matches the target

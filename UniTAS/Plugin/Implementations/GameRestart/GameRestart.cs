@@ -8,7 +8,6 @@ using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.Logging;
 using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Plugin.Services.VirtualEnvironment;
-using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace UniTAS.Plugin.Implementations.GameRestart;
@@ -16,7 +15,7 @@ namespace UniTAS.Plugin.Implementations.GameRestart;
 // ReSharper disable once ClassNeverInstantiated.Global
 [Singleton]
 public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUnconditional, IOnStartUnconditional,
-    IOnFixedUpdateUnconditional
+    IOnUpdateUnconditional
 {
     private DateTime _softRestartTime;
 
@@ -91,16 +90,8 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
         _staticFieldManipulator.ResetStaticFields();
 
         // this invokes 2 frames before the sync since the counter is at 1
-        _syncFixedUpdate.OnSync(() => _pendingSoftRestartCounter = 1, CalcInvokeOffset(2));
+        _syncFixedUpdate.OnSync(() => _pendingSoftRestartCounter = 1);
         _logger.LogDebug("Soft restarting, pending FixedUpdate sync");
-    }
-
-    private double CalcInvokeOffset(int framesBeforeInvoke)
-    {
-        // calculates how many times update happens until it has to happen an extra time
-        var offset = -_timeEnv.FrameTime * framesBeforeInvoke % Time.fixedDeltaTime;
-        if (offset < 0) offset += Time.fixedDeltaTime;
-        return offset;
     }
 
     private void OnGameRestart(bool preSceneLoad)
@@ -154,7 +145,7 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
         PendingResumePausedExecution();
     }
 
-    public void FixedUpdateUnconditional()
+    public void UpdateUnconditional()
     {
         if (_pendingSoftRestartCounter > 0)
         {
