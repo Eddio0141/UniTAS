@@ -54,7 +54,7 @@ public class TimeWrapper : ITimeWrapper
                 }
 
                 Trace.Write($"Setting captureDeltaTime to {value}");
-                _reverseInvoker.Invoke(() => _captureDeltaTime.SetValue(null, value, null));
+                _reverseInvoker.Invoke(() => _captureDeltaTime.SetValue(null, (float)value, null));
             }
             else
             {
