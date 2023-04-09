@@ -7,6 +7,8 @@ using UniTAS.Plugin.Interfaces.Events.SoftRestart;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.Logging;
 using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
+using UniTAS.Plugin.Services.VirtualEnvironment;
+using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace UniTAS.Plugin.Implementations.GameRestart;
@@ -28,15 +30,17 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
     private readonly IOnPreGameRestart[] _onPreGameRestart;
 
     private readonly IStaticFieldManipulator _staticFieldManipulator;
+    private readonly ITimeEnv _timeEnv;
 
     public bool PendingRestart { get; private set; }
     private bool _pendingResumePausedExecution;
+    private int _pendingSoftRestartCounter = -1;
 
     [SuppressMessage("ReSharper", "MemberCanBeProtected.Global")]
     public GameRestart(ISyncFixedUpdateCycle syncFixedUpdate, ISceneWrapper sceneWrapper,
         IMonoBehaviourController monoBehaviourController, ILogger logger, IOnGameRestart[] onGameRestart,
         IOnGameRestartResume[] onGameRestartResume, IOnPreGameRestart[] onPreGameRestart,
-        IStaticFieldManipulator staticFieldManipulator)
+        IStaticFieldManipulator staticFieldManipulator, ITimeEnv timeEnv)
     {
         _syncFixedUpdate = syncFixedUpdate;
         _sceneWrapper = sceneWrapper;
@@ -46,6 +50,7 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
         _onGameRestartResume = onGameRestartResume;
         _onPreGameRestart = onPreGameRestart;
         _staticFieldManipulator = staticFieldManipulator;
+        _timeEnv = timeEnv;
     }
 
     /// <summary>
@@ -85,8 +90,17 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
 
         _staticFieldManipulator.ResetStaticFields();
 
-        _syncFixedUpdate.OnSync(SoftRestartOperation);
-        _logger.LogDebug("Soft restarting, pending FixedUpdate call");
+        // this invokes 2 frames before the sync since the counter is at 1
+        _syncFixedUpdate.OnSync(() => _pendingSoftRestartCounter = 1, CalcInvokeOffset(2));
+        _logger.LogDebug("Soft restarting, pending FixedUpdate sync");
+    }
+
+    private double CalcInvokeOffset(int framesBeforeInvoke)
+    {
+        // calculates how many times update happens until it has to happen an extra time
+        var offset = -_timeEnv.FrameTime * framesBeforeInvoke % Time.fixedDeltaTime;
+        if (offset < 0) offset += Time.fixedDeltaTime;
+        return offset;
     }
 
     private void OnGameRestart(bool preSceneLoad)
@@ -142,7 +156,21 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
 
     public void FixedUpdateUnconditional()
     {
-        PendingResumePausedExecution();
+        if (_pendingSoftRestartCounter > 0)
+        {
+            _pendingSoftRestartCounter--;
+            return;
+        }
+
+        if (_pendingSoftRestartCounter == 0)
+        {
+            _pendingSoftRestartCounter--;
+            SoftRestartOperation();
+        }
+        else
+        {
+            PendingResumePausedExecution();
+        }
     }
 
     private void PendingResumePausedExecution()
