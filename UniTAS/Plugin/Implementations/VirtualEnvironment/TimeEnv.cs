@@ -4,6 +4,7 @@ using HarmonyLib;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
 using UniTAS.Plugin.Interfaces.Events.SoftRestart;
+using UniTAS.Plugin.Models.DependencyInjection;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Plugin.Services.VirtualEnvironment;
@@ -11,9 +12,9 @@ using UnityEngine;
 
 namespace UniTAS.Plugin.Implementations.VirtualEnvironment;
 
-[Singleton]
-public class TimeEnv : ITimeEnv, IOnPreUpdatesActual, IOnGameRestartResume, IOnStartActual,
-    IOnLastUpdateActual, IOnFixedUpdateActual, IOnUpdateActual
+[Singleton(RegisterPriority.TimeEnv)]
+public class TimeEnv : ITimeEnv, IOnPreUpdatesActual, IOnGameRestartResume, IOnStartActual, IOnLastUpdateActual,
+    IOnFixedUpdateActual
 {
     private readonly IConfig _config;
 
@@ -24,6 +25,13 @@ public class TimeEnv : ITimeEnv, IOnPreUpdatesActual, IOnGameRestartResume, IOnS
         _config = config;
         _timeWrap = timeWrap;
         FrameTime = 0f;
+
+        // stupid but slightly fixes accuracy on game first start
+        var initialFt = 1.0 / _config.DefaultFps;
+        RealtimeSinceStartup += initialFt;
+        UnscaledTime += initialFt;
+        ScaledTime += initialFt;
+        SecondsSinceStartUp += initialFt;
     }
 
     public double FrameTime
@@ -49,25 +57,12 @@ public class TimeEnv : ITimeEnv, IOnPreUpdatesActual, IOnGameRestartResume, IOnS
     public double RealtimeSinceStartup { get; private set; }
 
     private bool _timeInitialized;
-    private bool _initialUpdate = true;
 
     public void PreUpdateActual()
     {
         TimeInit();
     }
 
-    public void UpdateActual()
-    {
-        if (!_initialUpdate) return;
-        _initialUpdate = false;
-
-        RealtimeSinceStartup += FrameTime;
-        UnscaledTime += FrameTime;
-        ScaledTime += Time.deltaTime;
-        SecondsSinceStartUp += FrameTime;
-    }
-
-    // TODO use pause update
     public void OnLastUpdateActual()
     {
         RealtimeSinceStartup += FrameTime;
@@ -130,7 +125,6 @@ public class TimeEnv : ITimeEnv, IOnPreUpdatesActual, IOnGameRestartResume, IOnS
         Trace.Write($"New game time state: {this}");
 
         _timeInitialized = false;
-        _initialUpdate = true;
     }
 
     public void StartActual()
