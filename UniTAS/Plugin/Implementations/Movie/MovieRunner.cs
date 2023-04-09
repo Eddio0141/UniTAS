@@ -89,11 +89,12 @@ public class MovieRunner : IMovieRunner, IOnPreUpdatesActual
         // TODO other stuff like save state load, hide cursor, etc
     }
 
-    public void OnGameRestartResume(DateTime startupTime, bool preMonoBehaviourResume)
+    private void OnGameRestartResume(DateTime startupTime, bool preMonoBehaviourResume)
     {
         if (preMonoBehaviourResume) return;
-        MovieRunningStatusChange(true);
+        if (!_setup) return;
         _setup = false;
+        MovieRunningStatusChange(true);
     }
 
     public void PreUpdateActual()
