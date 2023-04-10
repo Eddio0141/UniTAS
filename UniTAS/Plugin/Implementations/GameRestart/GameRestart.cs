@@ -7,6 +7,7 @@ using UniTAS.Plugin.Interfaces.Events.SoftRestart;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.Logging;
 using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
+using UniTAS.Plugin.Services.VirtualEnvironment;
 using Object = UnityEngine.Object;
 
 namespace UniTAS.Plugin.Implementations.GameRestart;
@@ -27,6 +28,7 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
     private readonly IOnPreGameRestart[] _onPreGameRestart;
 
     private readonly IStaticFieldManipulator _staticFieldManipulator;
+    private readonly ITimeEnv _timeEnv;
 
     private bool _pendingRestart;
     private bool _pendingResumePausedExecution;
@@ -36,7 +38,7 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
     public GameRestart(ISyncFixedUpdateCycle syncFixedUpdate, ISceneWrapper sceneWrapper,
         IMonoBehaviourController monoBehaviourController, ILogger logger, IOnGameRestart[] onGameRestart,
         IOnGameRestartResume[] onGameRestartResume, IOnPreGameRestart[] onPreGameRestart,
-        IStaticFieldManipulator staticFieldManipulator)
+        IStaticFieldManipulator staticFieldManipulator, ITimeEnv timeEnv)
     {
         _syncFixedUpdate = syncFixedUpdate;
         _sceneWrapper = sceneWrapper;
@@ -45,6 +47,7 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
         _onGameRestart = onGameRestart;
         _onPreGameRestart = onPreGameRestart;
         _staticFieldManipulator = staticFieldManipulator;
+        _timeEnv = timeEnv;
 
         foreach (var gameRestartResume in onGameRestartResume)
         {
@@ -90,7 +93,7 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
         _staticFieldManipulator.ResetStaticFields();
 
         // this invokes 2 frames before the sync since the counter is at 1
-        _syncFixedUpdate.OnSync(() => _pendingSoftRestartCounter = 1);
+        _syncFixedUpdate.OnSync(() => _pendingSoftRestartCounter = 1, -_timeEnv.FrameTime * 1.0);
         _logger.LogDebug("Soft restarting, pending FixedUpdate sync");
     }
 

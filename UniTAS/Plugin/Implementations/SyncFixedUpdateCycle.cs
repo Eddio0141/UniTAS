@@ -4,8 +4,10 @@ using System.Diagnostics;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Plugin.Services;
+using UniTAS.Plugin.Services.Logging;
 using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Plugin.Services.VirtualEnvironment;
+using UniTAS.Plugin.Utils;
 using UnityEngine;
 
 namespace UniTAS.Plugin.Implementations;
@@ -21,13 +23,15 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
 
     private readonly ITimeEnv _timeEnv;
     private readonly ITimeWrapper _timeWrapper;
+    private readonly ILogger _logger;
 
     private readonly double _tolerance;
 
-    public SyncFixedUpdateCycle(ITimeEnv timeEnv, ITimeWrapper timeWrapper)
+    public SyncFixedUpdateCycle(ITimeEnv timeEnv, ITimeWrapper timeWrapper, ILogger logger)
     {
         _timeEnv = timeEnv;
         _timeWrapper = timeWrapper;
+        _logger = logger;
 
         _tolerance = _timeWrapper.IntFPSOnly ? 1.0 / int.MaxValue : float.Epsilon;
     }
@@ -37,23 +41,27 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
         if (_processingCallback != null)
         {
             // keeps setting until matches the target
-            Trace.Write(
+            _logger.LogDebug(
                 $"re-setting frame time, didn't match target, offset: {Patcher.Shared.UpdateInvokeOffset.Offset}");
             SetFrameTime();
         }
         else if (_pendingCallback != null)
         {
             _pendingCallback.Callback();
-            Trace.Write("Invoking pending callback");
+            _logger.LogDebug("Invoking pending callback");
             _pendingCallback = null;
-            ProcessQueue();
-        }
-        else if (_restoreFrametime != 0)
-        {
-            Trace.Write($"Restoring frame time to {_restoreFrametime}");
-            _timeEnv.FrameTime = _restoreFrametime;
 
-            _restoreFrametime = 0;
+            if (_pendingSync.Count == 0 && _restoreFrametime != 0)
+            {
+                _logger.LogDebug($"Restoring frame time to {_restoreFrametime}");
+                _timeEnv.FrameTime = _restoreFrametime;
+
+                _restoreFrametime = 0;
+            }
+            else
+            {
+                ProcessQueue();
+            }
         }
         else
         {
@@ -67,7 +75,7 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
         invokeOffset %= Time.fixedDeltaTime;
         if (invokeOffset < 0)
             invokeOffset += Time.fixedDeltaTime;
-        Trace.Write($"Added on sync callback with invoke offset: {invokeOffset}");
+        _logger.LogDebug($"Added on sync callback with invoke offset: {invokeOffset}");
         _pendingSync.Enqueue(new(callback, invokeOffset));
     }
 
@@ -76,16 +84,17 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
         if (_pendingSync.Count == 0)
             return;
 
-        Trace.Write("Processing new callback");
+        _logger.LogDebug("Processing new sync fixed update callback");
         _processingCallback = _pendingSync.Dequeue();
 
         Trace.Write(
             $"Fixed delta time: {Time.fixedDeltaTime}, invoke offset: {_processingCallback.InvokeOffset}, update invoke offset: {Patcher.Shared.UpdateInvokeOffset.Offset}");
 
         // check immediate return
-        if (Math.Abs(Patcher.Shared.UpdateInvokeOffset.Offset - _processingCallback.InvokeOffset) < _tolerance)
+        var actualSeconds = TargetSecondsAndActualSeconds().Item2;
+        if (actualSeconds < _tolerance)
         {
-            Trace.Write("Immediate return callback");
+            _logger.LogDebug("Immediate sync fixed update callback");
             _processingCallback.Callback();
             _processingCallback = null;
             ProcessQueue();
@@ -95,7 +104,7 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
         if (_restoreFrametime == 0f)
         {
             _restoreFrametime = _timeEnv.FrameTime;
-            Trace.Write($"Storing original frame time: {_restoreFrametime}");
+            _logger.LogDebug($"Storing original frame time for later restore: {_restoreFrametime}");
         }
 
         SetFrameTime();
@@ -112,12 +121,20 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
         return target % Time.fixedDeltaTime;
     }
 
-    private void SetFrameTime()
+    private Tuple<double, double> TargetSecondsAndActualSeconds()
     {
         var targetSeconds = _processingCallback.TimeLeftSet ? _processingCallback.TimeLeft : GetTargetSeconds();
-        _processingCallback.TimeLeft = targetSeconds;
         // unlike normal frame time, i round up
         var actualSeconds = _timeWrapper.IntFPSOnly ? 1.0 / (int)Math.Ceiling(1.0 / targetSeconds) : targetSeconds;
+        return new(targetSeconds, actualSeconds);
+    }
+
+    private void SetFrameTime()
+    {
+        var seconds = TargetSecondsAndActualSeconds();
+        var targetSeconds = seconds.Item1;
+        _processingCallback.TimeLeft = targetSeconds;
+        var actualSeconds = seconds.Item2;
         Trace.Write($"Actual seconds: {actualSeconds}, target seconds: {targetSeconds}");
 
         _processingCallback.ProgressOffset(actualSeconds);
@@ -127,12 +144,12 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
         // check rounding
         if (targetSeconds - actualSeconds > _tolerance)
         {
-            Trace.Write(
-                $"Actual seconds: {actualSeconds} Target seconds: {targetSeconds}, difference: {targetSeconds - actualSeconds}");
+            _logger.LogDebug(
+                $"Didn't match target sync offset, difference: {targetSeconds - actualSeconds}, waiting for next frame");
         }
         else
         {
-            Trace.Write($"Pending restore frame time");
+            _logger.LogDebug("Sync happening in next frame, pending restore frame time");
             _pendingCallback = _processingCallback;
             _processingCallback = null;
         }
