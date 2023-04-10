@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
+using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.TASRenderer;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.Logging;
@@ -11,6 +12,7 @@ using UnityEngine;
 namespace UniTAS.Plugin.Implementations.TASRenderer;
 
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[ExcludeRegisterIfTesting]
 public class GameVideoRenderer : VideoRenderer
 {
     private readonly Process _ffmpeg;

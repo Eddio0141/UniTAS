@@ -1,4 +1,5 @@
 ﻿using System;
+using UniTAS.Plugin.Models.DependencyInjection;
 
 namespace UniTAS.Plugin.Interfaces.DependencyInjection;
 
@@ -9,7 +10,7 @@ namespace UniTAS.Plugin.Interfaces.DependencyInjection;
 [AttributeUsage(AttributeTargets.Class)]
 public class SingletonAttribute : RegisterAttribute
 {
-    public SingletonAttribute(params Type[] ignoreInterfaces) : base(ignoreInterfaces)
+    public SingletonAttribute(RegisterPriority priority = RegisterPriority.Default) : base(priority)
     {
     }
 }

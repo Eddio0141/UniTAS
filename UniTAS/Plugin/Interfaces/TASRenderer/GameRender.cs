@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
-using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
+using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.Logging;
 
@@ -13,7 +13,7 @@ namespace UniTAS.Plugin.Interfaces.TASRenderer;
 
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 [Singleton]
-public class GameRender : IGameRender, IOnLastUpdate
+public class GameRender : IGameRender, IOnLastUpdateActual
 {
     private bool _recording;
 
@@ -195,7 +195,7 @@ public class GameRender : IGameRender, IOnLastUpdate
         _movieLogger.LogInfo("Successfully stopped recording", true);
     }
 
-    public void OnLastUpdate()
+    public void OnLastUpdateActual()
     {
         if (!_recording) return;
 

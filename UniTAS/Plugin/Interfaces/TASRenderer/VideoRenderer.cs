@@ -1,14 +1,16 @@
-﻿using UnityEngine;
+﻿using UniTAS.Plugin.Interfaces.DependencyInjection;
+using UnityEngine;
 
 namespace UniTAS.Plugin.Interfaces.TASRenderer;
 
+[RegisterAll]
 public abstract class VideoRenderer : Renderer
 {
     public const string OutputPath = "temp.mp4";
 
-    private const int DefaultFps = 60;
-    private int _fps = DefaultFps;
-    protected float RecordFrameTime { get; private set; } = 1f / DefaultFps;
+    private const int DEFAULT_FPS = 60;
+    private int _fps = DEFAULT_FPS;
+    protected float RecordFrameTime { get; private set; } = 1f / DEFAULT_FPS;
 
     public int Fps
     {

@@ -18,7 +18,7 @@ public class ButtonStateEnv : InputDevice, IButtonStateEnv
     private readonly List<string> _buttonsDown = new();
     private readonly List<string> _buttonsUp = new();
 
-    public override void Update()
+    protected override void Update()
     {
         _buttonsDown.Clear();
         _buttonsUp.Clear();
@@ -56,7 +56,7 @@ public class ButtonStateEnv : InputDevice, IButtonStateEnv
         _buttons.Clear();
     }
 
-    public override void ResetState()
+    protected override void ResetState()
     {
         _buttons.Clear();
         _buttonsDown.Clear();

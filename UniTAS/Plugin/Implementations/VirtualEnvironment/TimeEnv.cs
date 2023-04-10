@@ -2,36 +2,45 @@ using System;
 using System.Diagnostics;
 using HarmonyLib;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
-using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
+using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
 using UniTAS.Plugin.Interfaces.Events.SoftRestart;
+using UniTAS.Plugin.Models.DependencyInjection;
 using UniTAS.Plugin.Services;
+using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Plugin.Services.VirtualEnvironment;
 using UnityEngine;
 
 namespace UniTAS.Plugin.Implementations.VirtualEnvironment;
 
-[Singleton]
-public class TimeEnv : ITimeEnv, IOnPreUpdates, IOnGameRestartResume, IOnStart, IOnUpdate, IOnFixedUpdate
+[Singleton(RegisterPriority.TimeEnv)]
+public class TimeEnv : ITimeEnv, IOnPreUpdatesActual, IOnGameRestartResume, IOnStartActual, IOnLastUpdateActual,
+    IOnFixedUpdateActual
 {
     private readonly IConfig _config;
 
-    private float _frameTime;
+    private readonly ITimeWrapper _timeWrap;
 
-    public TimeEnv(IConfig config)
+    public TimeEnv(IConfig config, ITimeWrapper timeWrap)
     {
         _config = config;
-
+        _timeWrap = timeWrap;
         FrameTime = 0f;
+
+        // stupid but slightly fixes accuracy on game first start
+        var initialFt = 1.0 / _config.DefaultFps;
+        RealtimeSinceStartup += initialFt;
+        UnscaledTime += initialFt;
+        ScaledTime += initialFt;
+        SecondsSinceStartUp += initialFt;
     }
 
-    public float FrameTime
+    public double FrameTime
     {
-        get => _frameTime;
+        get => _timeWrap.CaptureFrameTime;
         set
         {
             if (value <= 0) value = 1f / _config.DefaultFps;
-
-            _frameTime = value;
+            _timeWrap.CaptureFrameTime = value;
         }
     }
 
@@ -45,16 +54,16 @@ public class TimeEnv : ITimeEnv, IOnPreUpdates, IOnGameRestartResume, IOnStart, 
     public double FixedUnscaledTime { get; private set; }
     public double ScaledTime { get; private set; }
     public double ScaledFixedTime { get; private set; }
-    public float RealtimeSinceStartup { get; private set; }
+    public double RealtimeSinceStartup { get; private set; }
 
     private bool _timeInitialized;
 
-    public void PreUpdate()
+    public void PreUpdateActual()
     {
         TimeInit();
     }
 
-    public void Update()
+    public void OnLastUpdateActual()
     {
         RealtimeSinceStartup += FrameTime;
         UnscaledTime += FrameTime;
@@ -62,7 +71,7 @@ public class TimeEnv : ITimeEnv, IOnPreUpdates, IOnGameRestartResume, IOnStart, 
         SecondsSinceStartUp += FrameTime;
     }
 
-    public void FixedUpdate()
+    public void FixedUpdateActual()
     {
         var fixedDt = Time.fixedDeltaTime;
 
@@ -118,7 +127,7 @@ public class TimeEnv : ITimeEnv, IOnPreUpdates, IOnGameRestartResume, IOnStart, 
         _timeInitialized = false;
     }
 
-    public void Start()
+    public void StartActual()
     {
         TimeInit();
     }
@@ -130,10 +139,5 @@ public class TimeEnv : ITimeEnv, IOnPreUpdates, IOnGameRestartResume, IOnStart, 
 
         FrameCountRestartOffset--;
         RenderedFrameCountOffset--;
-
-        RealtimeSinceStartup += FrameTime;
-        UnscaledTime += FrameTime;
-        ScaledTime += FrameTime;
-        SecondsSinceStartUp += FrameTime;
     }
 }

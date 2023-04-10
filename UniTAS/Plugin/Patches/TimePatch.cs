@@ -306,7 +306,7 @@ public class TimePatch
 
         private static bool Prefix(ref float __result)
         {
-            __result = TimeEnv.FrameTime;
+            __result = (float)TimeEnv.FrameTime;
             return false;
         }
     }

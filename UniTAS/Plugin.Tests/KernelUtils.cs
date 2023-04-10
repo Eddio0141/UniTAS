@@ -5,26 +5,36 @@ using MoonSharp.Interpreter;
 using StructureMap;
 using UniTAS.Plugin.Implementations.DependencyInjection;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
-using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
+using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
+using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Plugin.Interfaces.Movie;
+using UniTAS.Plugin.Models.DependencyInjection;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.Logging;
-using UniTAS.Plugin.Tests.Kernel;
+using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
 
 namespace UniTAS.Plugin.Tests;
 
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Local")]
+[SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
 public static class KernelUtils
 {
     [Singleton(IncludeDifferentAssembly = true)]
-    public class Env : EngineMethodClass, IOnLastUpdate
+    public class TimeWrapper : ITimeWrapper
+    {
+        public double CaptureFrameTime { get; set; }
+        public bool IntFPSOnly => true;
+    }
+
+    [Singleton(IncludeDifferentAssembly = true)]
+    public class Env : EngineMethodClass, IOnLastUpdateUnconditional
     {
         public float Fps { get; set; }
         public float Frametime { get; set; }
 
         [MoonSharpHidden]
-        public void OnLastUpdate()
+        public void OnLastUpdateUnconditional()
         {
         }
     }
@@ -94,18 +104,36 @@ public static class KernelUtils
         }
     }
 
+    [Singleton(RegisterPriority.FirstUpdateSkipOnRestart, IncludeDifferentAssembly = true)]
+    public class TestPriority : IOnPreUpdatesActual
+    {
+        public void PreUpdateActual()
+        {
+        }
+    }
+
+    [Singleton(IncludeDifferentAssembly = true)]
+    public class TestPriority2 : IOnPreUpdatesActual
+    {
+        public void PreUpdateActual()
+        {
+        }
+    }
+
     public static Container Init()
     {
         var kernel = new Container(c =>
         {
-            c.Scan(scanner =>
-            {
-                scanner.AssemblyContainingType<Plugin>();
-                scanner.AssemblyContainingType<KernelTests>();
-                scanner.Convention<DependencyInjectionConvention>();
-            });
+            c.ForSingletonOf<DiscoverAndRegister>().Use<DiscoverAndRegister>();
+            c.For<IDiscoverAndRegister>().Use(x => x.GetInstance<DiscoverAndRegister>());
 
             c.ForSingletonOf<ConfigFile>().Use(new ConfigFile("test", false));
+        });
+
+        kernel.Configure(c =>
+        {
+            kernel.GetInstance<IDiscoverAndRegister>().Register<FakeStaticFieldStorage>(c);
+            kernel.GetInstance<IDiscoverAndRegister>().Register<PluginWrapper>(c);
         });
 
         return kernel;

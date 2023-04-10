@@ -5,5 +5,7 @@ namespace UniTAS.Plugin.Services;
 public interface IGameRestart
 {
     void SoftRestart(DateTime time);
-    bool PendingRestart { get; }
+    event GameRestartResume OnGameRestartResume;
 }
+
+public delegate void GameRestartResume(DateTime startupTime, bool preMonoBehaviourResume);

@@ -1,8 +1,10 @@
 using MoonSharp.Interpreter;
 using StructureMap.Pipeline;
 using UniTAS.Plugin.Implementations.VirtualEnvironment;
-using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
+using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
+using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Plugin.Interfaces.Events.SoftRestart;
+using UniTAS.Plugin.Interfaces.GUI;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.Logging;
 using UniTAS.Plugin.Services.Movie;
@@ -75,10 +77,10 @@ public class KernelTests
     {
         var kernel = KernelUtils.Init();
 
-        var syncFixedUpdate = kernel.GetInstance<ISyncFixedUpdate>();
+        var syncFixedUpdate = kernel.GetInstance<ISyncFixedUpdateCycle>();
         Assert.NotNull(syncFixedUpdate);
 
-        var syncFixedUpdate2 = kernel.GetInstance<ISyncFixedUpdate>();
+        var syncFixedUpdate2 = kernel.GetInstance<ISyncFixedUpdateCycle>();
         Assert.NotNull(syncFixedUpdate2);
 
         Assert.Same(syncFixedUpdate, syncFixedUpdate2);
@@ -178,25 +180,6 @@ public class KernelTests
     }
 
     [Fact]
-    public void GameInitialRestart()
-    {
-        var kernel = KernelUtils.Init();
-
-        var gameInitialRestart = kernel.GetInstance<IGameInitialRestart>();
-        Assert.NotNull(gameInitialRestart);
-
-        var gameInitialRestart2 = kernel.GetInstance<IGameInitialRestart>();
-        Assert.NotNull(gameInitialRestart2);
-
-        Assert.Same(gameInitialRestart, gameInitialRestart2);
-
-        var gameRestart = kernel.GetInstance<IGameRestart>();
-
-        // reference should be different
-        Assert.NotSame(gameInitialRestart, gameRestart);
-    }
-
-    [Fact]
     public void EnvEngineMethod()
     {
         var kernel = KernelUtils.Init();
@@ -218,9 +201,36 @@ public class KernelTests
 
         Assert.Same(env, env3);
 
-        var env4 = kernel.GetAllInstances<IOnLastUpdate>().OfType<KernelUtils.Env>().Single();
+        var env4 = kernel.GetAllInstances<IOnLastUpdateUnconditional>().OfType<KernelUtils.Env>().Single();
         Assert.NotNull(env4);
 
         Assert.Same(env, env4);
+    }
+
+    [Fact]
+    public void TestPriority()
+    {
+        var kernel = KernelUtils.Init();
+
+        var updates = kernel.GetAllInstances<IOnPreUpdatesActual>().ToList();
+        Assert.NotNull(updates);
+
+        var indexOfTestPriority = updates.FindIndex(x => x is KernelUtils.TestPriority);
+        var indexOfTestPriority2 = updates.FindIndex(x => x is KernelUtils.TestPriority2);
+        var indexOfMovieRunner = updates.FindIndex(x => x is Implementations.Movie.MovieRunner);
+
+        Assert.True(indexOfTestPriority < indexOfTestPriority2);
+        Assert.True(indexOfTestPriority < indexOfMovieRunner);
+    }
+
+    [Fact]
+    public void GetIMainMenuTabs()
+    {
+        var kernel = KernelUtils.Init();
+
+        var tabs = kernel.GetAllInstances<IMainMenuTab>().ToList();
+        Assert.NotNull(tabs);
+
+        Assert.True(tabs.Count > 0);
     }
 }

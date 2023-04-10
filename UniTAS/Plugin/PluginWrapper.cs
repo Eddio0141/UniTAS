@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using HarmonyLib;
 using UniTAS.Plugin.Implementations.GUI;
-using UniTAS.Plugin.Interfaces.Patches.PatchProcessor;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.GUI;
 using UniTAS.Plugin.Services.Logging;
@@ -32,7 +31,6 @@ public class PluginWrapper
         // TODO all axis names for help
 
         var sortedPatches = patchProcessors
-            .Where(x => x is not OnPluginInitProcessor)
             .SelectMany(x => x.ProcessModules())
             .OrderByDescending(x => x.Key)
             .Select(x => x.Value);

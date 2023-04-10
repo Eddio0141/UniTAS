@@ -4,7 +4,8 @@ using System.Diagnostics.CodeAnalysis;
 using UniTAS.Plugin.Exceptions.Movie.Runner;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.Events;
-using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
+using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
+using UniTAS.Plugin.Models.DependencyInjection;
 using UniTAS.Plugin.Models.Movie;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.Logging;
@@ -15,12 +16,10 @@ using UniTAS.Plugin.Utils;
 namespace UniTAS.Plugin.Implementations.Movie;
 
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-[Singleton]
-public class MovieRunner : IMovieRunner, IOnPreUpdates
+[Singleton(RegisterPriority.MovieRunner)]
+public class MovieRunner : IMovieRunner, IOnPreUpdatesActual
 {
     private readonly IGameRestart _gameRestart;
-
-    private readonly ISyncFixedUpdate _syncFixedUpdate;
 
     public bool MovieEnd { get; private set; } = true;
     private bool _cleanUp;
@@ -36,18 +35,19 @@ public class MovieRunner : IMovieRunner, IOnPreUpdates
     private readonly ITimeEnv _timeEnv;
     private readonly IRandomEnv _randomEnv;
 
-    public MovieRunner(IGameRestart gameRestart, ISyncFixedUpdate syncFixedUpdate,
-        IMovieParser parser, IMovieLogger movieLogger, IOnMovieRunningStatusChange[] onMovieRunningStatusChange,
+    public MovieRunner(IGameRestart gameRestart, IMovieParser parser, IMovieLogger movieLogger,
+        IOnMovieRunningStatusChange[] onMovieRunningStatusChange,
         IVirtualEnvController virtualEnvController, ITimeEnv timeEnv, IRandomEnv randomEnv)
     {
         _gameRestart = gameRestart;
-        _syncFixedUpdate = syncFixedUpdate;
         _parser = parser;
         _movieLogger = movieLogger;
         _onMovieRunningStatusChange = onMovieRunningStatusChange;
         _virtualEnvController = virtualEnvController;
         _timeEnv = timeEnv;
         _randomEnv = randomEnv;
+
+        _gameRestart.OnGameRestartResume += OnGameRestartResume;
     }
 
     public void RunFromInput(string input)
@@ -87,26 +87,17 @@ public class MovieRunner : IMovieRunner, IOnPreUpdates
         }
 
         // TODO other stuff like save state load, hide cursor, etc
-
-        _syncFixedUpdate.OnSync(() =>
-        {
-            if (_gameRestart.PendingRestart)
-            {
-                _syncFixedUpdate.OnSync(() =>
-                {
-                    MovieRunningStatusChange(true);
-                    _setup = false;
-                }, 1, 1);
-            }
-            else
-            {
-                MovieRunningStatusChange(true);
-                _setup = false;
-            }
-        }, 1);
     }
 
-    public void PreUpdate()
+    private void OnGameRestartResume(DateTime startupTime, bool preMonoBehaviourResume)
+    {
+        if (preMonoBehaviourResume) return;
+        if (!_setup) return;
+        _setup = false;
+        MovieRunningStatusChange(true);
+    }
+
+    public void PreUpdateActual()
     {
         if (_cleanUp)
         {

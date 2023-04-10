@@ -4,7 +4,7 @@ namespace UniTAS.Plugin.Services.VirtualEnvironment;
 
 public interface ITimeEnv
 {
-    float FrameTime { get; set; }
+    double FrameTime { get; set; }
     DateTime CurrentTime { get; }
     ulong RenderedFrameCountOffset { get; }
     ulong FrameCountRestartOffset { get; }
@@ -13,5 +13,5 @@ public interface ITimeEnv
     double FixedUnscaledTime { get; }
     double ScaledTime { get; }
     double ScaledFixedTime { get; }
-    float RealtimeSinceStartup { get; }
+    double RealtimeSinceStartup { get; }
 }

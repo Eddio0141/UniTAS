@@ -2,46 +2,57 @@
 using System.Diagnostics.CodeAnalysis;
 using UniTAS.Patcher.Shared;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
-using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
+using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Plugin.Interfaces.Events.SoftRestart;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.Logging;
 using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
+using UniTAS.Plugin.Services.VirtualEnvironment;
 using Object = UnityEngine.Object;
 
 namespace UniTAS.Plugin.Implementations.GameRestart;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 [Singleton]
-public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixedUpdate
+public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUnconditional, IOnStartUnconditional,
+    IOnUpdateUnconditional
 {
     private DateTime _softRestartTime;
 
-    private readonly ISyncFixedUpdate _syncFixedUpdate;
+    private readonly ISyncFixedUpdateCycle _syncFixedUpdate;
     private readonly ISceneWrapper _sceneWrapper;
     private readonly IMonoBehaviourController _monoBehaviourController;
     private readonly ILogger _logger;
 
     private readonly IOnGameRestart[] _onGameRestart;
-    private readonly IOnGameRestartResume[] _onGameRestartResume;
     private readonly IOnPreGameRestart[] _onPreGameRestart;
 
     private readonly IStaticFieldManipulator _staticFieldManipulator;
+    private readonly ITimeEnv _timeEnv;
 
-    public bool PendingRestart { get; private set; }
+    private bool _pendingRestart;
     private bool _pendingResumePausedExecution;
+    private int _pendingSoftRestartCounter = -1;
 
     [SuppressMessage("ReSharper", "MemberCanBeProtected.Global")]
-    public GameRestart(RestartParameters restartParameters)
+    public GameRestart(ISyncFixedUpdateCycle syncFixedUpdate, ISceneWrapper sceneWrapper,
+        IMonoBehaviourController monoBehaviourController, ILogger logger, IOnGameRestart[] onGameRestart,
+        IOnGameRestartResume[] onGameRestartResume, IOnPreGameRestart[] onPreGameRestart,
+        IStaticFieldManipulator staticFieldManipulator, ITimeEnv timeEnv)
     {
-        _syncFixedUpdate = restartParameters.SyncFixedUpdate;
-        _sceneWrapper = restartParameters.SceneWrapper;
-        _monoBehaviourController = restartParameters.MonoBehaviourController;
-        _logger = restartParameters.Logger;
-        _onGameRestart = restartParameters.OnGameRestart;
-        _onGameRestartResume = restartParameters.OnGameRestartResume;
-        _staticFieldManipulator = restartParameters.StaticFieldManipulator;
-        _onPreGameRestart = restartParameters.OnPreGameRestart;
+        _syncFixedUpdate = syncFixedUpdate;
+        _sceneWrapper = sceneWrapper;
+        _monoBehaviourController = monoBehaviourController;
+        _logger = logger;
+        _onGameRestart = onGameRestart;
+        _onPreGameRestart = onPreGameRestart;
+        _staticFieldManipulator = staticFieldManipulator;
+        _timeEnv = timeEnv;
+
+        foreach (var gameRestartResume in onGameRestartResume)
+        {
+            OnGameRestartResume += gameRestartResume.OnGameRestartResume;
+        }
     }
 
     /// <summary>
@@ -67,11 +78,11 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
     /// <param name="time">Time to start the game at</param>
     public void SoftRestart(DateTime time)
     {
-        if (PendingRestart && !_pendingResumePausedExecution) return;
+        if (_pendingRestart && !_pendingResumePausedExecution) return;
 
         OnPreGameRestart();
 
-        PendingRestart = true;
+        _pendingRestart = true;
         _softRestartTime = time;
 
         _logger.LogDebug("Stopping MonoBehaviour execution");
@@ -81,8 +92,9 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
 
         _staticFieldManipulator.ResetStaticFields();
 
-        _syncFixedUpdate.OnSync(SoftRestartOperation, 1);
-        _logger.LogDebug("Soft restarting, pending FixedUpdate call");
+        // this invokes 2 frames before the sync since the counter is at 1
+        _syncFixedUpdate.OnSync(() => _pendingSoftRestartCounter = 1, -_timeEnv.FrameTime * 1.0);
+        _logger.LogDebug("Soft restarting, pending FixedUpdate sync");
     }
 
     private void OnGameRestart(bool preSceneLoad)
@@ -93,12 +105,11 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
         }
     }
 
-    protected virtual void OnGameRestartResume(bool preMonoBehaviourResume)
+    public event GameRestartResume OnGameRestartResume;
+
+    protected virtual void InvokeOnGameRestartResume(bool preMonoBehaviourResume)
     {
-        foreach (var gameRestart in _onGameRestartResume)
-        {
-            gameRestart.OnGameRestartResume(_softRestartTime, preMonoBehaviourResume);
-        }
+        OnGameRestartResume?.Invoke(_softRestartTime, preMonoBehaviourResume);
     }
 
     private void OnPreGameRestart()
@@ -117,34 +128,48 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
         _sceneWrapper.LoadScene(0);
         OnGameRestart(false);
 
-        PendingRestart = false;
+        _pendingRestart = false;
         _pendingResumePausedExecution = true;
     }
 
-    public void Awake()
+    public void AwakeUnconditional()
     {
         PendingResumePausedExecution();
     }
 
-    public void OnEnable()
+    public void OnEnableUnconditional()
     {
         PendingResumePausedExecution();
     }
 
-    public void Start()
+    public void StartUnconditional()
     {
         PendingResumePausedExecution();
     }
 
-    public void FixedUpdate()
+    public void UpdateUnconditional()
     {
-        PendingResumePausedExecution();
+        if (_pendingSoftRestartCounter > 0)
+        {
+            _pendingSoftRestartCounter--;
+            return;
+        }
+
+        if (_pendingSoftRestartCounter == 0)
+        {
+            _pendingSoftRestartCounter--;
+            SoftRestartOperation();
+        }
+        else
+        {
+            PendingResumePausedExecution();
+        }
     }
 
     private void PendingResumePausedExecution()
     {
         if (!_pendingResumePausedExecution) return;
-        OnGameRestartResume(true);
+        InvokeOnGameRestartResume(true);
 
         _logger.LogInfo("Finish soft restarting");
         var actualTime = DateTime.Now;
@@ -152,7 +177,7 @@ public class GameRestart : IGameRestart, IOnAwake, IOnEnable, IOnStart, IOnFixed
 
         _monoBehaviourController.PausedExecution = false;
         _logger.LogDebug("Resuming MonoBehaviour execution");
-        OnGameRestartResume(false);
+        InvokeOnGameRestartResume(false);
 
         _pendingResumePausedExecution = false;
     }

@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using BepInEx;
@@ -7,15 +6,11 @@ using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 using StructureMap;
-using UniTAS.Plugin.Implementations.VirtualEnvironment;
-using UniTAS.Plugin.Interfaces.Events;
-using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
-using UniTAS.Plugin.Interfaces.Events.SoftRestart;
-using UniTAS.Plugin.Interfaces.Patches.PatchProcessor;
+using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
+using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Utils;
 using UnityEngine;
-using PatchProcessor = UniTAS.Plugin.Interfaces.Patches.PatchProcessor.PatchProcessor;
 
 namespace UniTAS.Plugin;
 
@@ -33,15 +28,10 @@ public class Plugin : BaseUnityPlugin
 
     private bool _endOfFrameLoopRunning;
 
-    private bool _initialStartProcessed;
-    private List<IPluginInitialLoad> _initialLoadPluginProcessors;
-
     private IMonoBehEventInvoker _monoBehEventInvoker;
-    private bool _fullyLoaded;
-
-    private IGameInitialRestart _gameInitialRestart;
-
-    private IOnLastUpdate[] _onLastUpdates;
+    private IOnLastUpdateUnconditional[] _onLastUpdatesUnconditional;
+    private IOnLastUpdateActual[] _onLastUpdatesActual;
+    private IMonoBehaviourController _monoBehaviourController;
 
     private void Awake()
     {
@@ -51,49 +41,16 @@ public class Plugin : BaseUnityPlugin
 
         Trace.Write(Kernel.WhatDoIHave());
 
-        _initialLoadPluginProcessors = Kernel.GetAllInstances<IPluginInitialLoad>().ToList();
-        foreach (var processor in _initialLoadPluginProcessors)
-        {
-            processor.OnInitialLoad();
-        }
-
-        var patchProcessors = Kernel.GetAllInstances<PatchProcessor>();
-        var sortedPatches = patchProcessors
-            .Where(x => x is OnPluginInitProcessor)
-            .SelectMany(x => x.ProcessModules())
-            .OrderByDescending(x => x.Key)
-            .Select(x => x.Value).ToList();
-        Trace.Write($"Patching {sortedPatches.Count} patches on init");
-        foreach (var patch in sortedPatches)
-        {
-            Trace.Write($"Patching {patch.FullName} on init");
-            Harmony.PatchAll(patch);
-        }
-
         _monoBehEventInvoker = Kernel.GetInstance<IMonoBehEventInvoker>();
-        _gameInitialRestart = Kernel.GetInstance<IGameInitialRestart>();
+        _onLastUpdatesUnconditional = Kernel.GetAllInstances<IOnLastUpdateUnconditional>().ToArray();
+        _onLastUpdatesActual = Kernel.GetAllInstances<IOnLastUpdateActual>().ToArray();
+        _monoBehaviourController = Kernel.GetInstance<IMonoBehaviourController>();
+        Kernel.GetInstance<PluginWrapper>();
     }
 
     private void Update()
     {
-        // Trace.Write("Update invoke");
-        ProcessInitialStart();
-        if (!_fullyLoaded && _gameInitialRestart.FinishedRestart)
-        {
-            // initial start has finished, load the rest of the plugin
-            LoadPluginFull();
-            _fullyLoaded = true;
-            StartCoroutine(SetInitialFrameTime());
-        }
-
         _monoBehEventInvoker.Update();
-    }
-
-    private static IEnumerator SetInitialFrameTime()
-    {
-        yield return null;
-        // TODO fix this hack, from initial game restart code
-        Kernel.GetInstance<VirtualEnvController>().RunVirtualEnvironment = false;
     }
 
     private void FixedUpdate()
@@ -130,32 +87,18 @@ public class Plugin : BaseUnityPlugin
         while (true)
         {
             yield return new WaitForEndOfFrame();
-            foreach (var update in _onLastUpdates)
+            foreach (var update in _onLastUpdatesUnconditional)
             {
-                update.OnLastUpdate();
+                update.OnLastUpdateUnconditional();
+            }
+
+            if (_monoBehaviourController.PausedExecution) continue;
+
+            foreach (var update in _onLastUpdatesActual)
+            {
+                update.OnLastUpdateActual();
             }
         }
         // ReSharper disable once IteratorNeverReturns
-    }
-
-    private void ProcessInitialStart()
-    {
-        if (_initialStartProcessed) return;
-        _initialLoadPluginProcessors.RemoveAll(x => x.FinishedOperation);
-        if (_initialLoadPluginProcessors.Count == 0)
-        {
-            _initialStartProcessed = true;
-            _gameInitialRestart.InitialRestart();
-        }
-    }
-
-    private void LoadPluginFull()
-    {
-        // ContainerRegister.ConfigAfterInit(Kernel);
-        //
-        // Trace.Write(Kernel.WhatDoIHave());
-
-        Kernel.GetInstance<PluginWrapper>();
-        _onLastUpdates = Kernel.GetAllInstances<IOnLastUpdate>().ToArray();
     }
 }

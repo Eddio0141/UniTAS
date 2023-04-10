@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using MoonSharp.Interpreter;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
-using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
+using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
 using UniTAS.Plugin.Interfaces.Movie;
 using UniTAS.Plugin.Services.Logging;
 using UniTAS.Plugin.Services.Movie;
@@ -14,7 +14,7 @@ namespace UniTAS.Plugin.Implementations.Movie.Engine.Modules;
 [SuppressMessage("ReSharper", "UnusedMember.Global")]
 [ExcludeRegisterIfTesting]
 [Singleton]
-public class Env : EngineMethodClass, IOnLastUpdate
+public class Env : EngineMethodClass, IOnLastUpdateActual
 {
     private readonly ITimeEnv _timeEnv;
     private readonly IMovieLogger _logger;
@@ -31,13 +31,13 @@ public class Env : EngineMethodClass, IOnLastUpdate
         _movieRunner.OnMovieStart += OnMovieStart;
     }
 
-    public float Fps
+    public double Fps
     {
-        get => 1f / _timeEnv.FrameTime;
-        set => SetFrametime(1f / value);
+        get => 1.0 / _timeEnv.FrameTime;
+        set => SetFrametime(1.0 / value);
     }
 
-    public float Frametime
+    public double Frametime
     {
         get => _timeEnv.FrameTime;
         set => SetFrametime(value);
@@ -64,11 +64,11 @@ public class Env : EngineMethodClass, IOnLastUpdate
     private int _lastVSyncCount;
 
     // TODO set Screen.currentResolution refresh rate to movie's max achieving framerate
-    private void SetFrametime(float value)
+    private void SetFrametime(double value)
     {
         UpdateLastTrackers();
 
-        var fps = 1f / value;
+        var fps = 1.0 / value;
         if (Application.targetFrameRate != -1 && fps > Application.targetFrameRate &&
             (_mobile || (!_mobile && QualitySettings.vSyncCount == 0)))
         {
@@ -80,7 +80,7 @@ public class Env : EngineMethodClass, IOnLastUpdate
     }
 
     [MoonSharpHidden]
-    public void OnLastUpdate()
+    public void OnLastUpdateActual()
     {
         if (_movieRunner.MovieEnd) return;
 

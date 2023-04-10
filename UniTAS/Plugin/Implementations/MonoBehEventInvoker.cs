@@ -1,6 +1,9 @@
 using System;
+using System.Collections.Generic;
+using UniTAS.Patcher.Shared;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
-using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
+using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
+using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.EventSubscribers;
 
@@ -10,113 +13,95 @@ namespace UniTAS.Plugin.Implementations;
 [Singleton]
 public class MonoBehEventInvoker : IMonoBehEventInvoker, IUpdateEvents
 {
-    private bool _updated;
-    private bool _calledFixedUpdate;
-    private bool _calledPreUpdate;
-
-    private readonly IOnAwake[] _onAwakes;
-    private readonly IOnStart[] _onStarts;
-    private readonly IOnEnable[] _onEnables;
-    private readonly IOnPreUpdates[] _onPreUpdates;
-    private readonly IOnUpdate[] _onUpdates;
-    private readonly IOnFixedUpdate[] _onFixedUpdates;
-    private readonly IOnGUI[] _onGUIs;
-
-    public MonoBehEventInvoker(IOnAwake[] onAwakes, IOnStart[] onStarts, IOnEnable[] onEnables,
-        IOnPreUpdates[] onPreUpdates, IOnUpdate[] onUpdates, IOnFixedUpdate[] onFixedUpdates, IOnGUI[] onGUIs)
+    public MonoBehEventInvoker(IEnumerable<IOnAwakeUnconditional> onAwakesUnconditional,
+        IEnumerable<IOnStartUnconditional> onStartsUnconditional,
+        IEnumerable<IOnEnableUnconditional> onEnablesUnconditional,
+        IEnumerable<IOnPreUpdatesUnconditional> onPreUpdatesUnconditional,
+        IEnumerable<IOnUpdateUnconditional> onUpdatesUnconditional,
+        IEnumerable<IOnFixedUpdateUnconditional> onFixedUpdatesUnconditional,
+        IEnumerable<IOnGUIUnconditional> onGUIsUnconditional,
+        IEnumerable<IOnPreUpdatesActual> onPreUpdatesActual,
+        IEnumerable<IOnFixedUpdateActual> onFixedUpdatesActual,
+        IEnumerable<IOnStartActual> onStartsActual,
+        IEnumerable<IOnUpdateActual> onUpdatesActual)
     {
-        _onAwakes = onAwakes;
-        _onStarts = onStarts;
-        _onEnables = onEnables;
-        _onPreUpdates = onPreUpdates;
-        _onUpdates = onUpdates;
-        _onFixedUpdates = onFixedUpdates;
-        _onGUIs = onGUIs;
-    }
-
-    // calls awake before any other script
-    public void Awake()
-    {
-        foreach (var onAwake in _onAwakes)
+        foreach (var onAwake in onAwakesUnconditional)
         {
-            onAwake.Awake();
+            MonoBehaviourEvents.OnAwakeUnconditional += onAwake.AwakeUnconditional;
         }
-    }
 
-    // calls onEnable before any other script
-    public void OnEnable()
-    {
-        foreach (var onEnable in _onEnables)
+        foreach (var onStart in onStartsUnconditional)
         {
-            onEnable.OnEnable();
+            MonoBehaviourEvents.OnStartUnconditional += onStart.StartUnconditional;
         }
-    }
 
-    // calls start before any other script
-    public void Start()
-    {
-        foreach (var onStart in _onStarts)
+        foreach (var onEnable in onEnablesUnconditional)
         {
-            onStart.Start();
+            MonoBehaviourEvents.OnEnableUnconditional += onEnable.OnEnableUnconditional;
         }
+
+        foreach (var onPreUpdate in onPreUpdatesUnconditional)
+        {
+            MonoBehaviourEvents.OnPreUpdateUnconditional += onPreUpdate.PreUpdateUnconditional;
+        }
+
+        foreach (var onUpdate in onUpdatesUnconditional)
+        {
+            MonoBehaviourEvents.OnUpdateUnconditional += onUpdate.UpdateUnconditional;
+        }
+
+        foreach (var onFixedUpdate in onFixedUpdatesUnconditional)
+        {
+            MonoBehaviourEvents.OnFixedUpdateUnconditional += onFixedUpdate.FixedUpdateUnconditional;
+        }
+
+        foreach (var onGui in onGUIsUnconditional)
+        {
+            MonoBehaviourEvents.OnGUIUnconditional += onGui.OnGUIUnconditional;
+        }
+
+        foreach (var onPreUpdateActual in onPreUpdatesActual)
+        {
+            MonoBehaviourEvents.OnPreUpdateActual += onPreUpdateActual.PreUpdateActual;
+        }
+
+        foreach (var onFixedUpdateActual in onFixedUpdatesActual)
+        {
+            MonoBehaviourEvents.OnFixedUpdateActual += onFixedUpdateActual.FixedUpdateActual;
+        }
+
+        foreach (var onStartActual in onStartsActual)
+        {
+            MonoBehaviourEvents.OnStartActual += onStartActual.StartActual;
+        }
+
+        foreach (var onUpdateActual in onUpdatesActual)
+        {
+            MonoBehaviourEvents.OnUpdateActual += onUpdateActual.UpdateActual;
+        }
+
+        MonoBehaviourEvents.OnGUIUnconditional += () => OnGUIEventUnconditional?.Invoke();
     }
 
     public void Update()
     {
-        if (_updated) return;
-        _updated = true;
-
-        _calledFixedUpdate = false;
-
-        CallOnPreUpdate();
-
-        foreach (var update in _onUpdates)
-        {
-            update.Update();
-        }
-    }
-
-    // right now I don't call this update before other scripts so I don't need to check if it was already called
-    public void LateUpdate()
-    {
-        _updated = false;
-        _calledPreUpdate = false;
+        MonoBehaviourEvents.InvokeUpdate();
     }
 
     public void FixedUpdate()
     {
-        if (_calledFixedUpdate) return;
-        _calledFixedUpdate = true;
-
-        CallOnPreUpdate();
-
-        foreach (var update in _onFixedUpdates)
-        {
-            update.FixedUpdate();
-        }
+        MonoBehaviourEvents.InvokeFixedUpdate();
     }
 
     public void OnGUI()
     {
-        // currently, this doesn't get called before other scripts
-        foreach (var onGui in _onGUIs)
-        {
-            onGui.OnGUI();
-        }
-
-        OnGUIEvent?.Invoke();
+        MonoBehaviourEvents.InvokeOnGUI();
     }
 
-    private void CallOnPreUpdate()
+    public void LateUpdate()
     {
-        if (_calledPreUpdate) return;
-        _calledPreUpdate = true;
-
-        foreach (var onPreUpdate in _onPreUpdates)
-        {
-            onPreUpdate.PreUpdate();
-        }
+        MonoBehaviourEvents.InvokeLateUpdate();
     }
 
-    public event Action OnGUIEvent;
+    public event Action OnGUIEventUnconditional;
 }

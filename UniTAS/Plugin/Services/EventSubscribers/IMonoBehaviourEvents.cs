@@ -7,5 +7,5 @@ namespace UniTAS.Plugin.Services.EventSubscribers;
 /// </summary>
 public interface IUpdateEvents
 {
-    event Action OnGUIEvent;
+    event Action OnGUIEventUnconditional;
 }

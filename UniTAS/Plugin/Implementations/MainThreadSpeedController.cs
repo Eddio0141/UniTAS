@@ -2,7 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.Events;
-using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents;
+using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.VirtualEnvironment;
 using UnityEngine;
@@ -11,7 +11,7 @@ namespace UniTAS.Plugin.Implementations;
 
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 [Singleton]
-public class MainThreadSpeedControl : IMainThreadSpeedControl, IOnUpdate, IOnMovieRunningStatusChange
+public class MainThreadSpeedControl : IMainThreadSpeedControl, IOnUpdateUnconditional, IOnMovieRunningStatusChange
 {
     private readonly ITimeEnv _timeEnv;
     private readonly IPatchReverseInvoker _patchReverseInvoker;
@@ -30,7 +30,7 @@ public class MainThreadSpeedControl : IMainThreadSpeedControl, IOnUpdate, IOnMov
     private float _lastTime;
     private float _speedMultiplier = 1f;
 
-    private float _remainingTime;
+    private double _remainingTime;
 
     public MainThreadSpeedControl(IPatchReverseInvoker patchReverseInvoker, ITimeEnv timeEnv)
     {
@@ -40,7 +40,7 @@ public class MainThreadSpeedControl : IMainThreadSpeedControl, IOnUpdate, IOnMov
 
     private float CurrentTime => _patchReverseInvoker.Invoke(() => Time.realtimeSinceStartup);
 
-    public void Update()
+    public void UpdateUnconditional()
     {
         if (_speedMultiplier == 0) return;
 
@@ -54,7 +54,7 @@ public class MainThreadSpeedControl : IMainThreadSpeedControl, IOnUpdate, IOnMov
             return;
         }
 
-        var waitMilliseconds = waitTime * 1000f;
+        var waitMilliseconds = waitTime * 1000.0;
         var waitMillisecondsInt = (int)waitMilliseconds;
 
         if (waitMillisecondsInt > 0)
@@ -63,7 +63,7 @@ public class MainThreadSpeedControl : IMainThreadSpeedControl, IOnUpdate, IOnMov
         }
 
         // lost time is added to the remaining time
-        _remainingTime = (waitMilliseconds - waitMillisecondsInt) / 1000f;
+        _remainingTime = (waitMilliseconds - waitMillisecondsInt) / 1000.0;
     }
 
     public void OnMovieRunningStatusChange(bool running)

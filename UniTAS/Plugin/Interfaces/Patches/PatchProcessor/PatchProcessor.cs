@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using UniTAS.Plugin.Interfaces.DependencyInjection;
 
 namespace UniTAS.Plugin.Interfaces.Patches.PatchProcessor;
 
+[RegisterAll]
 public abstract class PatchProcessor
 {
     /// <summary>
