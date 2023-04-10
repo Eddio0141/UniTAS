@@ -25,13 +25,9 @@ public static class MonoBehaviourEvents
     public static event Action OnGUIUnconditional;
     public static event Action OnGUIActual;
 
-    private static bool _updatedUnconditional;
-    private static bool _calledFixedUpdateUnconditional;
-    private static bool _calledPreUpdateUnconditional;
-
-    private static bool _updatedActual;
-    private static bool _calledFixedUpdateActual;
-    private static bool _calledPreUpdateActual;
+    private static bool _updated;
+    private static bool _calledFixedUpdate;
+    private static bool _calledPreUpdate;
 
     static MonoBehaviourEvents()
     {
@@ -40,120 +36,79 @@ public static class MonoBehaviourEvents
     }
 
     // calls awake before any other script
-    public static void InvokeAwakeUnconditional()
+    public static void InvokeAwake()
     {
         OnAwakeUnconditional?.Invoke();
-    }
-
-    public static void InvokeAwakeActual()
-    {
-        OnAwakeActual?.Invoke();
+        if (!MonoBehaviourController.PausedExecution)
+            OnAwakeActual?.Invoke();
     }
 
     // calls onEnable before any other script
-    public static void InvokeOnEnableUnconditional()
+    public static void InvokeOnEnable()
     {
         OnEnableUnconditional?.Invoke();
-    }
-
-    public static void InvokeOnEnableActual()
-    {
-        OnEnableActual?.Invoke();
+        if (!MonoBehaviourController.PausedExecution)
+            OnEnableActual?.Invoke();
     }
 
     // calls start before any other script
-    public static void InvokeStartUnconditional()
+    public static void InvokeStart()
     {
         OnStartUnconditional?.Invoke();
+        if (!MonoBehaviourController.PausedExecution)
+            OnStartActual?.Invoke();
     }
 
-    public static void InvokeStartActual()
+    public static void InvokeUpdate()
     {
-        OnStartActual?.Invoke();
-    }
+        if (_updated) return;
+        _updated = true;
 
-    public static void InvokeUpdateUnconditional()
-    {
-        if (_updatedUnconditional) return;
-        _updatedUnconditional = true;
+        _calledFixedUpdate = false;
 
-        _calledFixedUpdateUnconditional = false;
-
-        InvokeCallOnPreUpdateUnconditional();
+        InvokeCallOnPreUpdate();
 
         OnUpdateUnconditional?.Invoke();
-    }
 
-    public static void InvokeUpdateActual()
-    {
-        if (_updatedActual) return;
-        _updatedActual = true;
-
-        _calledFixedUpdateActual = false;
-
-        InvokeCallOnPreUpdateActual();
-
-        OnUpdateActual?.Invoke();
+        if (!MonoBehaviourController.PausedExecution)
+            OnUpdateActual?.Invoke();
     }
 
     // right now I don't call this update before other scripts so I don't need to check if it was already called
-    public static void InvokeLateUpdateUnconditional()
+    public static void InvokeLateUpdate()
     {
-        _updatedUnconditional = false;
-        _calledPreUpdateUnconditional = false;
+        _updated = false;
+        _calledPreUpdate = false;
     }
 
-    public static void InvokeLateUpdateActual()
+    public static void InvokeFixedUpdate()
     {
-        _updatedActual = false;
-        _calledPreUpdateActual = false;
-    }
+        if (_calledFixedUpdate) return;
+        _calledFixedUpdate = true;
 
-    public static void InvokeFixedUpdateUnconditional()
-    {
-        if (_calledFixedUpdateUnconditional) return;
-        _calledFixedUpdateUnconditional = true;
-
-        InvokeCallOnPreUpdateUnconditional();
+        InvokeCallOnPreUpdate();
 
         OnFixedUpdateUnconditional?.Invoke();
+
+        if (!MonoBehaviourController.PausedExecution)
+            OnFixedUpdateActual?.Invoke();
     }
 
-    public static void InvokeFixedUpdateActual()
-    {
-        if (_calledFixedUpdateActual) return;
-        _calledFixedUpdateActual = true;
-
-        InvokeCallOnPreUpdateActual();
-
-        OnFixedUpdateActual?.Invoke();
-    }
-
-    public static void InvokeOnGUIUnconditional()
+    public static void InvokeOnGUI()
     {
         // currently, this doesn't get called before other scripts
         OnGUIUnconditional?.Invoke();
+        if (!MonoBehaviourController.PausedExecution)
+            OnGUIActual?.Invoke();
     }
 
-    public static void InvokeOnGUIActual()
+    private static void InvokeCallOnPreUpdate()
     {
-        // currently, this doesn't get called before other scripts
-        OnGUIActual?.Invoke();
-    }
-
-    private static void InvokeCallOnPreUpdateUnconditional()
-    {
-        if (_calledPreUpdateUnconditional) return;
-        _calledPreUpdateUnconditional = true;
+        if (_calledPreUpdate) return;
+        _calledPreUpdate = true;
 
         OnPreUpdateUnconditional?.Invoke();
-    }
-
-    private static void InvokeCallOnPreUpdateActual()
-    {
-        if (_calledPreUpdateActual) return;
-        _calledPreUpdateActual = true;
-
-        OnPreUpdateActual?.Invoke();
+        if (!MonoBehaviourController.PausedExecution)
+            OnPreUpdateActual?.Invoke();
     }
 }

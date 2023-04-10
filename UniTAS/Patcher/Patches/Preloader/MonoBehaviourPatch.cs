@@ -29,34 +29,20 @@ public class MonoBehaviourPatch : PreloadPatcher
     private const string RENDER_TEXTURE = "UnityEngine.RenderTexture";
     private const string BIT_STREAM = "UnityEngine.BitStream";
 
-    private static readonly KeyValuePair<string, MethodBase>[] EventMethodsUnconditional =
+    private static readonly KeyValuePair<string, MethodBase>[] EventMethods =
     {
         new("Awake",
-            AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeAwakeUnconditional))),
+            AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeAwake))),
         new("OnEnable",
-            AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeOnEnableUnconditional))),
+            AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeOnEnable))),
         new("Start",
-            AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeStartUnconditional))),
+            AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeStart))),
         new("Update",
-            AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeUpdateUnconditional))),
+            AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeUpdate))),
         new("LateUpdate",
-            AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeLateUpdateUnconditional))),
+            AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeLateUpdate))),
         new("FixedUpdate",
-            AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeFixedUpdateUnconditional)))
-        // new("OnGUI", AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeOnGUI)))
-    };
-
-    private static readonly KeyValuePair<string, MethodBase>[] EventMethodsActual =
-    {
-        new("Awake", AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeAwakeActual))),
-        new("OnEnable",
-            AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeOnEnableActual))),
-        new("Start", AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeStartActual))),
-        new("Update", AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeUpdateActual))),
-        new("LateUpdate",
-            AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeLateUpdateActual))),
-        new("FixedUpdate",
-            AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeFixedUpdateActual)))
+            AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeFixedUpdate)))
         // new("OnGUI", AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeOnGUI)))
     };
 
@@ -168,12 +154,6 @@ public class MonoBehaviourPatch : PreloadPatcher
 
             if (!isMonoBehaviour) continue;
 
-            // event methods invoke actual
-            foreach (var eventMethodPair in EventMethodsActual)
-            {
-                InvokeUnityEventMethod(type, eventMethodPair.Key, assembly, eventMethodPair.Value);
-            }
-
             // method invoke pause
             if (!ExcludeNamespaces.Any(type.Namespace.StartsWith))
             {
@@ -210,7 +190,7 @@ public class MonoBehaviourPatch : PreloadPatcher
             }
 
             // event methods invoke
-            foreach (var eventMethodPair in EventMethodsUnconditional)
+            foreach (var eventMethodPair in EventMethods)
             {
                 InvokeUnityEventMethod(type, eventMethodPair.Key, assembly, eventMethodPair.Value);
             }

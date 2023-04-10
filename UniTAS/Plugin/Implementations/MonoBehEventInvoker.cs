@@ -13,8 +13,6 @@ namespace UniTAS.Plugin.Implementations;
 [Singleton]
 public class MonoBehEventInvoker : IMonoBehEventInvoker, IUpdateEvents
 {
-    private readonly IMonoBehaviourController _monoBehaviourController;
-
     public MonoBehEventInvoker(IEnumerable<IOnAwakeUnconditional> onAwakesUnconditional,
         IEnumerable<IOnStartUnconditional> onStartsUnconditional,
         IEnumerable<IOnEnableUnconditional> onEnablesUnconditional,
@@ -25,10 +23,8 @@ public class MonoBehEventInvoker : IMonoBehEventInvoker, IUpdateEvents
         IEnumerable<IOnPreUpdatesActual> onPreUpdatesActual,
         IEnumerable<IOnFixedUpdateActual> onFixedUpdatesActual,
         IEnumerable<IOnStartActual> onStartsActual,
-        IEnumerable<IOnUpdateActual> onUpdatesActual,
-        IMonoBehaviourController monoBehaviourController)
+        IEnumerable<IOnUpdateActual> onUpdatesActual)
     {
-        _monoBehaviourController = monoBehaviourController;
         foreach (var onAwake in onAwakesUnconditional)
         {
             MonoBehaviourEvents.OnAwakeUnconditional += onAwake.AwakeUnconditional;
@@ -89,30 +85,22 @@ public class MonoBehEventInvoker : IMonoBehEventInvoker, IUpdateEvents
 
     public void Update()
     {
-        MonoBehaviourEvents.InvokeUpdateUnconditional();
-        if (_monoBehaviourController.PausedExecution) return;
-        MonoBehaviourEvents.InvokeUpdateActual();
+        MonoBehaviourEvents.InvokeUpdate();
     }
 
     public void FixedUpdate()
     {
-        MonoBehaviourEvents.InvokeFixedUpdateUnconditional();
-        if (_monoBehaviourController.PausedExecution) return;
-        MonoBehaviourEvents.InvokeFixedUpdateActual();
+        MonoBehaviourEvents.InvokeFixedUpdate();
     }
 
     public void OnGUI()
     {
-        MonoBehaviourEvents.InvokeOnGUIUnconditional();
-        if (_monoBehaviourController.PausedExecution) return;
-        MonoBehaviourEvents.InvokeOnGUIActual();
+        MonoBehaviourEvents.InvokeOnGUI();
     }
 
     public void LateUpdate()
     {
-        MonoBehaviourEvents.InvokeLateUpdateUnconditional();
-        if (_monoBehaviourController.PausedExecution) return;
-        MonoBehaviourEvents.InvokeLateUpdateActual();
+        MonoBehaviourEvents.InvokeLateUpdate();
     }
 
     public event Action OnGUIEventUnconditional;
