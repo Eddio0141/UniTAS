@@ -26,6 +26,9 @@ public class RuntimeTestProcessor : IRuntimeTestProcessor
         var types = AccessTools.GetTypesFromAssembly(typeAssembly);
         var testMethods = types.SelectMany(AccessTools.GetDeclaredMethods)
             .Where(m => m.GetCustomAttributes(false).Any(x => x is RuntimeTestAttribute)).ToList();
+
+        OnDiscoveredTests?.Invoke(testMethods.Count);
+
         var instances =
             testMethods.Where(m => !m.IsStatic && m.DeclaringType is { IsAbstract: false, IsInterface: false })
                 .Select(m => m.DeclaringType)
@@ -39,6 +42,8 @@ public class RuntimeTestProcessor : IRuntimeTestProcessor
         {
             var typeName = test.DeclaringType?.Name ?? string.Empty;
             var testName = $"{typeName}.{test.Name}";
+
+            OnTestRun?.Invoke(testName);
 
             try
             {
@@ -54,4 +59,7 @@ public class RuntimeTestProcessor : IRuntimeTestProcessor
 
         return testResults;
     }
+
+    public event DiscoveredTests OnDiscoveredTests;
+    public event TestRun OnTestRun;
 }

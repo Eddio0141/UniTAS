@@ -22,7 +22,10 @@ public class RuntimeTest
     public void DiscoverTests()
     {
         var kernel = KernelUtils.Init();
-        var results = kernel.GetInstance<IRuntimeTestProcessor>().Test<RuntimeTest>();
+        var processor = kernel.GetInstance<IRuntimeTestProcessor>();
+        var results = processor.Test<RuntimeTest>();
+
+        processor.OnDiscoveredTests += count => Assert.Equal(2, count);
 
         Assert.Equal(2, results.Count);
         Assert.Equal(1, results.Count(x => x.Passed));
@@ -47,5 +50,20 @@ public class RuntimeTest
 
         var failedResult = results.First(x => x.Passed);
         Assert.Null(failedResult.Exception);
+    }
+
+    [Fact]
+    public void TestRunEvent()
+    {
+        var kernel = KernelUtils.Init();
+        var processor = kernel.GetInstance<IRuntimeTestProcessor>();
+
+        var testRunCount = 0;
+        processor.OnTestRun += _ => testRunCount++;
+
+        var results = processor.Test<RuntimeTest>();
+
+        Assert.Equal(2, testRunCount);
+        Assert.Equal(2, results.Count);
     }
 }
