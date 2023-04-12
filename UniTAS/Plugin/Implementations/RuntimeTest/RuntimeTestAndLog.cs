@@ -23,19 +23,37 @@ public class RuntimeTestAndLog : IRuntimeTestAndLog
         var results = _testProcessor.Test<RuntimeTestAndLog>();
         var builder = new StringBuilder();
 
-        builder.AppendLine(
-            $"Runtime tests | {results.Count} total | {results.Count(x => x.Passed)} passed | {results.Count(x => !x.Passed)} failed");
+        builder.Append($"Runtime tests | {results.Count} total | ");
+
+        var passedCount = results.Count(x => x.Passed);
+        var failedCount = results.Count(x => !x.Passed);
+        if (passedCount > 0)
+        {
+            builder.Append($"{results.Count(x => x.Passed)} passed");
+        }
+
+        if (passedCount > 0 && failedCount > 0)
+        {
+            builder.Append(" | ");
+        }
+
+        if (failedCount > 0)
+        {
+            builder.Append($"{results.Count(x => !x.Passed)} failed");
+        }
+
+        builder.AppendLine();
 
         results.OrderBy(x => x.Passed).ThenBy(x => x.TestName).ToList().ForEach(x =>
         {
             builder.AppendLine(
                 "------------------------------------------------------------------------------------------------------------------------");
 
-            builder.AppendLine($"Test: {x.TestName} " + (x.Passed ? "Passed" : "Failed"));
+            builder.AppendLine($"{x.TestName} " + (x.Passed ? "Passed" : "Failed"));
 
             if (x.Exception != null)
             {
-                builder.AppendLine("Exception:");
+                builder.AppendLine("\nException:");
                 builder.AppendLine(x.Exception.ToString());
             }
         });
