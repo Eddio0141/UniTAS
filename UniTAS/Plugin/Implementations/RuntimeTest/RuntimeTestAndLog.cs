@@ -16,6 +16,19 @@ public class RuntimeTestAndLog : IRuntimeTestAndLog
     {
         _testProcessor = testProcessor;
         _logger = logger;
+
+        _testProcessor.OnDiscoveredTests += DiscoveredTests;
+        _testProcessor.OnTestRun += Testing;
+    }
+
+    private void DiscoveredTests(int count)
+    {
+        _logger.LogInfo($"Discovered {count} runtime tests");
+    }
+
+    private void Testing(string name)
+    {
+        _logger.LogInfo($"Running runtime test: {name}");
     }
 
     public void Test()
