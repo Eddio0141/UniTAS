@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using UniTAS.Plugin.Interfaces.GUI;
 using UniTAS.Plugin.Interfaces.TASRenderer;
 using UniTAS.Plugin.Services;
+using UniTAS.Plugin.Services.RuntimeTest;
 using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
 using UnityEngine;
 
@@ -15,14 +16,16 @@ public class TestTab : IMainMenuTab
     private readonly IGameRestart _gameRestart;
     private readonly ISceneWrapper _sceneWrapper;
     private readonly IMonoBehaviourController _monoBehaviourController;
+    private readonly IRuntimeTestAndLog _runtimeTestAndLog;
 
     public TestTab(IGameRender gameRender, IGameRestart gameRestart, ISceneWrapper sceneWrapper,
-        IMonoBehaviourController monoBehaviourController)
+        IMonoBehaviourController monoBehaviourController, IRuntimeTestAndLog runtimeTestAndLog)
     {
         _gameRender = gameRender;
         _gameRestart = gameRestart;
         _sceneWrapper = sceneWrapper;
         _monoBehaviourController = monoBehaviourController;
+        _runtimeTestAndLog = runtimeTestAndLog;
     }
 
     public void Render(int windowID)
@@ -58,6 +61,13 @@ public class TestTab : IMainMenuTab
         }
 
         GUILayout.EndHorizontal();
+
+        GUILayout.BeginHorizontal();
+        if (GUILayout.Button("Run tests"))
+        {
+            _runtimeTestAndLog.Test();
+        }
+
         GUILayout.EndVertical();
     }
 
