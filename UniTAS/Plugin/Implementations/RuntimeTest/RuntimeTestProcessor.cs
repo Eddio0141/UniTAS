@@ -80,7 +80,7 @@ public class RuntimeTestProcessor : IRuntimeTestProcessor
         var fields = AccessTools.GetDeclaredFields(returnType);
         foreach (var field in fields)
         {
-            if (!field.Name.StartsWith("Item")) continue;
+            if (!field.Name.StartsWith("<Item")) continue;
 
             var value = field.GetValue(returnValue);
             if (value.GetType() == typeof(T)) return value;

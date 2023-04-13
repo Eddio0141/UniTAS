@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using UniTAS.Plugin.Interfaces.Coroutine;
 using UniTAS.Plugin.Interfaces.RuntimeTest;
 using UniTAS.Plugin.Services.RuntimeTest;
 
@@ -24,6 +25,18 @@ public class RuntimeTest
         return false;
     }
 
+    [RuntimeTest]
+    public UniTAS.Plugin.Utils.Tuple<bool, IEnumerator<CoroutineWait>> SkipAndCoroutineTest()
+    {
+        return new(false, null!);
+    }
+
+    [RuntimeTest]
+    public List<int> WrongReturnType()
+    {
+        return new();
+    }
+
     [Fact]
     public void DiscoverTests()
     {
@@ -33,10 +46,10 @@ public class RuntimeTest
 
         processor.OnDiscoveredTests += count => Assert.Equal(2, count);
 
-        Assert.Equal(3, results.Count);
-        Assert.Equal(1, results.Count(x => x.Passed));
-        Assert.Equal(2, results.Count(x => !x.Passed));
-        Assert.Equal(1, results.Count(x => x.Skipped));
+        Assert.Equal(5, results.Count);
+        Assert.Equal(2, results.Count(x => x.Passed));
+        Assert.Equal(1, results.Count(x => !x.Passed && !x.Skipped));
+        Assert.Equal(2, results.Count(x => x.Skipped));
     }
 
     [Fact]
@@ -70,7 +83,7 @@ public class RuntimeTest
 
         var results = processor.Test<RuntimeTest>();
 
-        Assert.Equal(3, testRunCount);
-        Assert.Equal(3, results.Count);
+        Assert.Equal(5, testRunCount);
+        Assert.Equal(testRunCount, results.Count);
     }
 }
