@@ -1,4 +1,3 @@
-using HarmonyLib;
 using UniTAS.Plugin.Implementations.Coroutine;
 using UniTAS.Plugin.Interfaces.Coroutine;
 using UniTAS.Plugin.Models.Coroutine;
@@ -29,7 +28,6 @@ public class CoroutineTests
     public void EmptyCoroutineTest()
     {
         var handler = new CoroutineHandler();
-        var updateUnconditionalField = new Traverse(handler).Field("_updateUnconditional")!;
 
         var status = handler.Start(EmptyCoroutine());
         Assert.False(status.IsRunning);
