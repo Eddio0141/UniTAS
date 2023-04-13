@@ -39,7 +39,9 @@ public class RuntimeTestAndLog : IRuntimeTestAndLog
         builder.Append($"Runtime tests | {results.Count} total | ");
 
         var passedCount = results.Count(x => x.Passed);
-        var failedCount = results.Count(x => !x.Passed);
+        var failedCount = results.Count(x => !x.Passed && !x.Skipped);
+        var skippedCount = results.Count(x => x.Skipped);
+
         if (passedCount > 0)
         {
             builder.Append($"{results.Count(x => x.Passed)} passed");
@@ -55,6 +57,16 @@ public class RuntimeTestAndLog : IRuntimeTestAndLog
             builder.Append($"{results.Count(x => !x.Passed)} failed");
         }
 
+        if ((passedCount > 0 || failedCount > 0) && skippedCount > 0)
+        {
+            builder.Append(" | ");
+        }
+
+        if (skippedCount > 0)
+        {
+            builder.Append($"{results.Count(x => x.Skipped)} skipped");
+        }
+
         builder.AppendLine();
 
         results.OrderBy(x => x.Passed).ThenBy(x => x.TestName).ToList().ForEach(x =>
@@ -62,7 +74,7 @@ public class RuntimeTestAndLog : IRuntimeTestAndLog
             builder.AppendLine(
                 "------------------------------------------------------------------------------------------------------------------------");
 
-            builder.AppendLine($"{x.TestName} " + (x.Passed ? "Passed" : "Failed"));
+            builder.AppendLine($"{x.TestName} " + (x.Skipped ? "Skipped" : x.Passed ? "Passed" : "Failed"));
 
             if (x.Exception != null)
             {
