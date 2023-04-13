@@ -8,7 +8,7 @@ using UniTAS.Plugin.Services;
 namespace UniTAS.Plugin.Implementations.Coroutine;
 
 [Singleton]
-public class CoroutineHandler : ICoroutine, IOnUpdateUnconditional
+public class CoroutineHandler : ICoroutine, IOnUpdateUnconditional, IOnPreUpdatesUnconditional
 {
     private class Status
     {
@@ -23,6 +23,7 @@ public class CoroutineHandler : ICoroutine, IOnUpdateUnconditional
     }
 
     private readonly Queue<Status> _updateUnconditional = new();
+    private readonly Queue<Status> _waitForCoroutine = new();
 
     public CoroutineStatus Start(IEnumerator<CoroutineWait> coroutine)
     {
@@ -53,6 +54,16 @@ public class CoroutineHandler : ICoroutine, IOnUpdateUnconditional
         while (count > 0)
         {
             RunNext(_updateUnconditional.Dequeue());
+            count--;
+        }
+    }
+
+    public void PreUpdateUnconditional()
+    {
+        var count = _waitForCoroutine.Count;
+        while (count > 0)
+        {
+            RunNext(_waitForCoroutine.Dequeue());
             count--;
         }
     }
