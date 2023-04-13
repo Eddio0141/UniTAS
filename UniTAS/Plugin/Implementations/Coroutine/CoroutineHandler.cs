@@ -10,21 +10,40 @@ namespace UniTAS.Plugin.Implementations.Coroutine;
 [Singleton]
 public class CoroutineHandler : ICoroutine, IOnUpdateUnconditional
 {
-    private readonly Queue<IEnumerator<CoroutineWait>> _updateUnconditional = new();
-
-    public void Start(IEnumerator<CoroutineWait> coroutine)
+    private class Status
     {
-        RunNext(coroutine);
+        public CoroutineStatus CoroutineStatus { get; }
+        public IEnumerator<CoroutineWait> Coroutine { get; }
+
+        public Status(CoroutineStatus coroutineStatus, IEnumerator<CoroutineWait> coroutine)
+        {
+            CoroutineStatus = coroutineStatus;
+            Coroutine = coroutine;
+        }
     }
 
-    private void RunNext(IEnumerator<CoroutineWait> coroutine)
+    private readonly Queue<Status> _updateUnconditional = new();
+
+    public CoroutineStatus Start(IEnumerator<CoroutineWait> coroutine)
     {
-        if (!coroutine.MoveNext()) return;
+        var status = new Status(new(), coroutine);
+        RunNext(status);
+        return status.CoroutineStatus;
+    }
+
+    private void RunNext(Status status)
+    {
+        var coroutine = status.Coroutine;
+        if (!coroutine.MoveNext())
+        {
+            status.CoroutineStatus.IsRunning = false;
+            return;
+        }
 
         var current = coroutine.Current;
         if (current is WaitForUpdateUnconditional)
         {
-            _updateUnconditional.Enqueue(coroutine);
+            _updateUnconditional.Enqueue(status);
         }
     }
 

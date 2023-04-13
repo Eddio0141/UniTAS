@@ -11,16 +11,18 @@ public class CoroutineTests
     public void UpdateUnconditional()
     {
         var handler = new CoroutineHandler();
-        var updateUnconditionalField = new Traverse(handler).Field("_updateUnconditional")!;
+        var status = handler.Start(UpdateUnconditionalCoroutine());
 
-        handler.Start(UpdateUnconditionalCoroutine());
-        Assert.Single(updateUnconditionalField.GetValue<Queue<IEnumerator<CoroutineWait>>>());
+        Assert.True(status.IsRunning);
+
         handler.UpdateUnconditional();
-        Assert.Single(updateUnconditionalField.GetValue<Queue<IEnumerator<CoroutineWait>>>());
+        Assert.True(status.IsRunning);
+
         handler.UpdateUnconditional();
-        Assert.Single(updateUnconditionalField.GetValue<Queue<IEnumerator<CoroutineWait>>>());
+        Assert.True(status.IsRunning);
+
         handler.UpdateUnconditional();
-        Assert.Empty(updateUnconditionalField.GetValue<Queue<IEnumerator<CoroutineWait>>>());
+        Assert.False(status.IsRunning);
     }
 
     [Fact]
@@ -29,8 +31,8 @@ public class CoroutineTests
         var handler = new CoroutineHandler();
         var updateUnconditionalField = new Traverse(handler).Field("_updateUnconditional")!;
 
-        handler.Start(EmptyCoroutine());
-        Assert.Empty(updateUnconditionalField.GetValue<Queue<IEnumerator<CoroutineWait>>>());
+        var status = handler.Start(EmptyCoroutine());
+        Assert.False(status.IsRunning);
     }
 
     private static IEnumerator<CoroutineWait> UpdateUnconditionalCoroutine()
