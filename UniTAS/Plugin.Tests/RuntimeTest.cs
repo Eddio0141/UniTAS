@@ -18,6 +18,12 @@ public class RuntimeTest
         throw new("Runtime test failed");
     }
 
+    [RuntimeTest]
+    private bool SkipTest()
+    {
+        return false;
+    }
+
     [Fact]
     public void DiscoverTests()
     {
@@ -27,9 +33,10 @@ public class RuntimeTest
 
         processor.OnDiscoveredTests += count => Assert.Equal(2, count);
 
-        Assert.Equal(2, results.Count);
+        Assert.Equal(3, results.Count);
         Assert.Equal(1, results.Count(x => x.Passed));
-        Assert.Equal(1, results.Count(x => !x.Passed));
+        Assert.Equal(2, results.Count(x => !x.Passed));
+        Assert.Equal(1, results.Count(x => x.Skipped));
     }
 
     [Fact]
@@ -63,7 +70,7 @@ public class RuntimeTest
 
         var results = processor.Test<RuntimeTest>();
 
-        Assert.Equal(2, testRunCount);
-        Assert.Equal(2, results.Count);
+        Assert.Equal(3, testRunCount);
+        Assert.Equal(3, results.Count);
     }
 }

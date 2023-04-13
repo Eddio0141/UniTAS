@@ -7,6 +7,7 @@ using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.RuntimeTest;
 using UniTAS.Plugin.Models.RuntimeTest;
 using UniTAS.Plugin.Services.RuntimeTest;
+using UniTAS.Plugin.Utils;
 
 namespace UniTAS.Plugin.Implementations.RuntimeTest;
 
@@ -48,7 +49,15 @@ public class RuntimeTestProcessor : IRuntimeTestProcessor
             try
             {
                 var instance = test.IsStatic ? null : instances.FirstOrDefault(x => x.GetType() == test.DeclaringType);
-                test.Invoke(instance, emptyParams);
+                var ret = test.Invoke(instance, emptyParams);
+
+                // check if skipped test
+                if (ExtractReturnType<bool>(ret) is false)
+                {
+                    testResults.Add(new(testName));
+                    continue;
+                }
+
                 testResults.Add(new(testName, true));
             }
             catch (Exception e)
@@ -58,6 +67,26 @@ public class RuntimeTestProcessor : IRuntimeTestProcessor
         }
 
         return testResults;
+    }
+
+    private static object ExtractReturnType<T>(object returnValue)
+    {
+        if (returnValue is T) return returnValue;
+
+        var returnType = returnValue?.GetType();
+        if (returnType?.FullName == null ||
+            !returnType.FullName.StartsWith($"{typeof(Tuple<,>).Namespace}.Tuple`")) return null;
+
+        var fields = AccessTools.GetDeclaredFields(returnType);
+        foreach (var field in fields)
+        {
+            if (!field.Name.StartsWith("Item")) continue;
+
+            var value = field.GetValue(returnValue);
+            if (value.GetType() == typeof(T)) return value;
+        }
+
+        return null;
     }
 
     public event DiscoveredTests OnDiscoveredTests;
