@@ -36,18 +36,21 @@ public class CoroutineHandler : ICoroutine, IOnUpdateUnconditional, IOnPreUpdate
     private void RunNext(Status status)
     {
         var coroutine = status.Coroutine;
+        bool moveNext;
         try
         {
-            if (!coroutine.MoveNext())
-            {
-                status.CoroutineStatus.IsRunning = false;
-                return;
-            }
+            moveNext = coroutine.MoveNext();
         }
         catch (Exception e)
         {
-            status.CoroutineStatus.IsRunning = false;
             status.CoroutineStatus.Exception = e;
+            status.CoroutineStatus.IsRunning = false;
+            return;
+        }
+
+        if (!moveNext)
+        {
+            status.CoroutineStatus.IsRunning = false;
             return;
         }
 
@@ -77,21 +80,23 @@ public class CoroutineHandler : ICoroutine, IOnUpdateUnconditional, IOnPreUpdate
         var count = _waitForCoroutine.Count;
         while (count > 0)
         {
+            count--;
+
             var status = _waitForCoroutine.Dequeue();
             var current = (WaitForCoroutine)status.Coroutine.Current;
             if (current == null)
             {
                 RunNext(status);
-                count--;
                 continue;
             }
 
             if (!current.CoroutineStatus.IsRunning)
             {
                 RunNext(status);
+                continue;
             }
 
-            count--;
+            _waitForCoroutine.Enqueue(status);
         }
     }
 }
