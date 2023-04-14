@@ -20,7 +20,7 @@
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-        <DefineConstants />
+        <DefineConstants/>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'ReleaseTrace' ">
@@ -28,12 +28,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Remove="dependency\**" />
-        <EmbeddedResource Remove="dependency\**" />
-        <None Remove="dependency\**" />
-        <Compile Remove="Extern-Assemblies\**" />
-        <EmbeddedResource Remove="Extern-Assemblies\**" />
-        <None Remove="Extern-Assemblies\**" />
+        <Compile Remove="dependency\**"/>
+        <EmbeddedResource Remove="dependency\**"/>
+        <None Remove="dependency\**"/>
+        <Compile Remove="Extern-Assemblies\**"/>
+        <EmbeddedResource Remove="Extern-Assemblies\**"/>
+        <None Remove="Extern-Assemblies\**"/>
     </ItemGroup>
 
     <ItemGroup>
