@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UniTAS.Plugin.Interfaces.Coroutine;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
@@ -35,16 +36,29 @@ public class CoroutineHandler : ICoroutine, IOnUpdateUnconditional, IOnPreUpdate
     private void RunNext(Status status)
     {
         var coroutine = status.Coroutine;
-        if (!coroutine.MoveNext())
+        try
+        {
+            if (!coroutine.MoveNext())
+            {
+                status.CoroutineStatus.IsRunning = false;
+                return;
+            }
+        }
+        catch (Exception e)
         {
             status.CoroutineStatus.IsRunning = false;
+            status.CoroutineStatus.Exception = e;
             return;
         }
 
-        var current = coroutine.Current;
-        if (current is WaitForUpdateUnconditional)
+        switch (coroutine.Current)
         {
-            _updateUnconditional.Enqueue(status);
+            case WaitForUpdateUnconditional:
+                _updateUnconditional.Enqueue(status);
+                break;
+            case WaitForCoroutine:
+                _waitForCoroutine.Enqueue(status);
+                break;
         }
     }
 
@@ -63,7 +77,20 @@ public class CoroutineHandler : ICoroutine, IOnUpdateUnconditional, IOnPreUpdate
         var count = _waitForCoroutine.Count;
         while (count > 0)
         {
-            RunNext(_waitForCoroutine.Dequeue());
+            var status = _waitForCoroutine.Dequeue();
+            var current = (WaitForCoroutine)status.Coroutine.Current;
+            if (current == null)
+            {
+                RunNext(status);
+                count--;
+                continue;
+            }
+
+            if (!current.CoroutineStatus.IsRunning)
+            {
+                RunNext(status);
+            }
+
             count--;
         }
     }
