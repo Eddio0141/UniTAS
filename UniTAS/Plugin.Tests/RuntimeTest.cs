@@ -59,6 +59,14 @@ public class RuntimeTest
         yield return new WaitForUpdateUnconditional();
     }
 
+    [RuntimeTest]
+    public IEnumerator<CoroutineWait> CoroutineTestFail()
+    {
+        yield return new WaitForUpdateUnconditional();
+        yield return new WaitForUpdateUnconditional();
+        throw new("Coroutine test failed");
+    }
+
     [Fact]
     [SuppressMessage("ReSharper", "ParameterOnlyUsedForPreconditionCheck.Local")]
     public void DiscoverTests()
@@ -67,13 +75,13 @@ public class RuntimeTest
         var processor = kernel.GetInstance<IRuntimeTestProcessor>();
         var coroutineRunner = (CoroutineHandler)kernel.GetInstance<ICoroutine>();
 
-        processor.OnDiscoveredTests += count => Assert.Equal(7, count);
+        processor.OnDiscoveredTests += count => Assert.Equal(8, count);
 
         processor.OnTestEnd += results =>
         {
-            Assert.Equal(7, results.Count);
+            Assert.Equal(8, results.Count);
             Assert.Equal(4, results.Count(x => x.Passed));
-            Assert.Equal(1, results.Count(x => !x.Passed && !x.Skipped));
+            Assert.Equal(2, results.Count(x => !x.Passed && !x.Skipped));
             Assert.Equal(2, results.Count(x => x.Skipped));
         };
         processor.Test<RuntimeTest>();
@@ -141,7 +149,7 @@ public class RuntimeTest
         processor.OnTestRun += _ => testRunCount++;
         processor.OnTestEnd += results =>
         {
-            Assert.Equal(7, testRunCount);
+            Assert.Equal(8, testRunCount);
             Assert.Equal(testRunCount, results.Count);
         };
 
