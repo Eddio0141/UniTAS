@@ -35,8 +35,8 @@ public class RuntimeTestAndLog : IRuntimeTestAndLog
 
     public void Test()
     {
-        _testProcessor.Test<RuntimeTestAndLog>();
         _testProcessor.OnTestEnd += TestLog;
+        _testProcessor.Test<RuntimeTestAndLog>();
     }
 
     private void TestLog(List<TestResult> results)
