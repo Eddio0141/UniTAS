@@ -85,6 +85,10 @@ public class RuntimeTestProcessor : IRuntimeTestProcessor
 
             _testResults.Add(new(testName, true));
         }
+
+        if (_coroutineStatuses.Count > 0) return;
+
+        OnTestEnd?.Invoke(_testResults);
     }
 
     private void CoroutineTestEnd(CoroutineStatus status)
