@@ -42,34 +42,46 @@ public class RuntimeTest
     {
         var kernel = KernelUtils.Init();
         var processor = kernel.GetInstance<IRuntimeTestProcessor>();
-        var results = processor.Test<RuntimeTest>();
+        processor.OnTestEnd += results =>
+        {
+            processor.OnDiscoveredTests += count => Assert.Equal(2, count);
 
-        processor.OnDiscoveredTests += count => Assert.Equal(2, count);
-
-        Assert.Equal(5, results.Count);
-        Assert.Equal(2, results.Count(x => x.Passed));
-        Assert.Equal(1, results.Count(x => !x.Passed && !x.Skipped));
-        Assert.Equal(2, results.Count(x => x.Skipped));
+            Assert.Equal(5, results.Count);
+            Assert.Equal(2, results.Count(x => x.Passed));
+            Assert.Equal(1, results.Count(x => !x.Passed && !x.Skipped));
+            Assert.Equal(2, results.Count(x => x.Skipped));
+        };
+        processor.Test<RuntimeTest>();
     }
 
     [Fact]
     public void TestFailException()
     {
         var kernel = KernelUtils.Init();
-        var results = kernel.GetInstance<IRuntimeTestProcessor>().Test<RuntimeTest>();
+        var processor = kernel.GetInstance<IRuntimeTestProcessor>();
 
-        var failedResult = results.First(x => !x.Passed);
-        Assert.NotNull(failedResult.Exception);
+        processor.OnTestEnd += results =>
+        {
+            var failedResult = results.First(x => !x.Passed);
+            Assert.NotNull(failedResult.Exception);
+        };
+
+        processor.Test<RuntimeTest>();
     }
 
     [Fact]
     public void TestPassException()
     {
         var kernel = KernelUtils.Init();
-        var results = kernel.GetInstance<IRuntimeTestProcessor>().Test<RuntimeTest>();
+        var processor = kernel.GetInstance<IRuntimeTestProcessor>();
 
-        var failedResult = results.First(x => x.Passed);
-        Assert.Null(failedResult.Exception);
+        processor.OnTestEnd += results =>
+        {
+            var failedResult = results.First(x => x.Passed);
+            Assert.Null(failedResult.Exception);
+        };
+
+        processor.Test<RuntimeTest>();
     }
 
     [Fact]
@@ -80,10 +92,12 @@ public class RuntimeTest
 
         var testRunCount = 0;
         processor.OnTestRun += _ => testRunCount++;
+        processor.OnTestEnd += results =>
+        {
+            Assert.Equal(5, testRunCount);
+            Assert.Equal(testRunCount, results.Count);
+        };
 
-        var results = processor.Test<RuntimeTest>();
-
-        Assert.Equal(5, testRunCount);
-        Assert.Equal(testRunCount, results.Count);
+        processor.Test<RuntimeTest>();
     }
 }

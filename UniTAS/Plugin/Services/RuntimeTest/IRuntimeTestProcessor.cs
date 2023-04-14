@@ -11,12 +11,15 @@ public interface IRuntimeTestProcessor
     /// </summary>
     /// <typeparam name="T">Checks assembly of this type.</typeparam>
     /// <returns>Test results</returns>
-    List<TestResult> Test<T>();
+    void Test<T>();
 
     event DiscoveredTests OnDiscoveredTests;
     event TestRun OnTestRun;
+    event TestEnd OnTestEnd;
 }
 
 public delegate void DiscoveredTests(int count);
 
 public delegate void TestRun(string name);
+
+public delegate void TestEnd(List<TestResult> results);
