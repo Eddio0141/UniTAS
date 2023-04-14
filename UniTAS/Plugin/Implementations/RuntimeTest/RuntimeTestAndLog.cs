@@ -1,6 +1,8 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
+using UniTAS.Plugin.Models.RuntimeTest;
 using UniTAS.Plugin.Services.Logging;
 using UniTAS.Plugin.Services.RuntimeTest;
 
@@ -33,7 +35,12 @@ public class RuntimeTestAndLog : IRuntimeTestAndLog
 
     public void Test()
     {
-        var results = _testProcessor.Test<RuntimeTestAndLog>();
+        _testProcessor.Test<RuntimeTestAndLog>();
+        _testProcessor.OnTestEnd += TestLog;
+    }
+
+    private void TestLog(List<TestResult> results)
+    {
         var builder = new StringBuilder();
 
         builder.Append($"Runtime tests | {results.Count} total | ");
@@ -87,5 +94,7 @@ public class RuntimeTestAndLog : IRuntimeTestAndLog
             "------------------------------------------------------------------------------------------------------------------------");
 
         _logger.LogInfo($"\n{builder}");
+
+        _testProcessor.OnTestEnd -= TestLog;
     }
 }
