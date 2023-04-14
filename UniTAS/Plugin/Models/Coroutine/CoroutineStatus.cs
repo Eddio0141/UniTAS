@@ -11,10 +11,10 @@ public class CoroutineStatus
         get => _isRunning;
         set
         {
-            if (value) return;
+            if (!_isRunning) return;
+            _isRunning = value;
 
             OnComplete?.Invoke(this);
-            _isRunning = false;
         }
     }
 
