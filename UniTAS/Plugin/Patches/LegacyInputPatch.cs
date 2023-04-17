@@ -71,12 +71,19 @@ public class LegacyInputPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix( /*string name, ref bool __result*/)
+        private static bool Prefix(string name, ref bool __result)
         {
             if (ReverseInvoker.InnerCall())
                 return true;
-            return !VirtualEnvController.RunVirtualEnvironment;
-            // TODO
+            if (!VirtualEnvController.RunVirtualEnvironment) return true;
+            if (!LegacyInputSystemUtils.KeyStringToKeyCode(name, out var foundKeyCode))
+            {
+                __result = false;
+                return false;
+            }
+
+            __result = KeyboardStateEnv.Keys.Contains(foundKeyCode);
+            return false;
         }
 
         private static void Postfix()
@@ -94,12 +101,19 @@ public class LegacyInputPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix( /*string name, ref bool __result*/)
+        private static bool Prefix(string name, ref bool __result)
         {
             if (ReverseInvoker.InnerCall())
                 return true;
-            return !VirtualEnvController.RunVirtualEnvironment;
-            // TODO
+            if (!VirtualEnvController.RunVirtualEnvironment) return true;
+            if (!LegacyInputSystemUtils.KeyStringToKeyCode(name, out var foundKeyCode))
+            {
+                __result = false;
+                return false;
+            }
+
+            __result = KeyboardStateEnv.KeysUp.Contains(foundKeyCode);
+            return false;
         }
 
         private static void Postfix()
@@ -141,12 +155,19 @@ public class LegacyInputPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix( /*string name*/)
+        private static bool Prefix(string name, ref bool __result)
         {
             if (ReverseInvoker.InnerCall())
                 return true;
-            return !VirtualEnvController.RunVirtualEnvironment;
-            // TODO
+            if (!VirtualEnvController.RunVirtualEnvironment) return true;
+            if (!LegacyInputSystemUtils.KeyStringToKeyCode(name, out var foundKeyCode))
+            {
+                __result = false;
+                return false;
+            }
+
+            __result = KeyboardStateEnv.KeysDown.Contains(foundKeyCode);
+            return false;
         }
 
         private static void Postfix()
