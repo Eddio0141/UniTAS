@@ -94,7 +94,7 @@ public static class LegacyInputSystemUtils
     {
         // TODO check lower case or not
         keyCode = default;
-        if (key.Length == 0) return false;
+        if (string.IsNullOrEmpty(key)) return false;
 
         // alphabet and number
         if (key.Length == 1)
