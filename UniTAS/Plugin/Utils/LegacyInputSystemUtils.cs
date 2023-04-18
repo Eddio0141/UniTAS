@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using UnityEngine;
 
 namespace UniTAS.Plugin.Utils;
@@ -120,13 +121,14 @@ public static class LegacyInputSystemUtils
         if (key.StartsWith("[") && key.EndsWith("]"))
         {
             var keyInner = key.Substring(1, key.Length - 2);
-            if (int.TryParse(keyInner, out var numpadNum))
+            if (int.TryParse(keyInner, NumberStyles.None, new NumberFormatInfo(), out var numpadNum))
             {
-                keyCode = (KeyCode)(numpadNum + (int)KeyCode.Keypad1);
+                if (numpadNum is < 0 or > 9) return false;
+                keyCode = (KeyCode)(numpadNum + (int)KeyCode.Keypad0);
                 return true;
             }
 
-            switch (key)
+            switch (keyInner)
             {
                 case "+":
                     keyCode = KeyCode.KeypadPlus;
@@ -151,10 +153,11 @@ public static class LegacyInputSystemUtils
         }
 
         // function key
-        if (key.StartsWith("f") && int.TryParse(key.Substring(1), out var numFuncKey))
+        if (key.StartsWith("f") && int.TryParse(key.Substring(1), NumberStyles.None, new NumberFormatInfo(),
+                out var numFuncKey))
         {
             if (numFuncKey is < 1 or > 15) return false;
-            keyCode = (KeyCode)(numFuncKey + (int)KeyCode.F1);
+            keyCode = (KeyCode)(numFuncKey - 1 + (int)KeyCode.F1);
             return true;
         }
 
