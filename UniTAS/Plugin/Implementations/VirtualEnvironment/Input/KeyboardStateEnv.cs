@@ -2,22 +2,23 @@
 using System.Collections.Immutable;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.VirtualEnvironment;
+using UniTAS.Plugin.Models.VirtualEnvironment;
 using UniTAS.Plugin.Services.VirtualEnvironment.Input;
-using UnityEngine;
 
 namespace UniTAS.Plugin.Implementations.VirtualEnvironment.Input;
 
 [Singleton]
 public class KeyboardStateEnv : InputDevice, IKeyboardStateEnv
 {
-    public ImmutableList<KeyCode> Keys => _keys.ToImmutableList();
-    public ImmutableList<KeyCode> KeysDown => _keysDown.ToImmutableList();
-    public ImmutableList<KeyCode> KeysUp => _keysUp.ToImmutableList();
+    // TODO make this string based and keycode based for unsupported keys
+    public ImmutableList<Key> Keys => _keys.ToImmutableList();
+    public ImmutableList<Key> KeysDown => _keysDown.ToImmutableList();
+    public ImmutableList<Key> KeysUp => _keysUp.ToImmutableList();
 
-    private readonly List<KeyCode> _keysPrev;
-    private readonly List<KeyCode> _keys;
-    private readonly List<KeyCode> _keysDown;
-    private readonly List<KeyCode> _keysUp;
+    private readonly List<Key> _keysPrev;
+    private readonly List<Key> _keys;
+    private readonly List<Key> _keysDown;
+    private readonly List<Key> _keysUp;
 
     public KeyboardStateEnv()
     {
@@ -27,13 +28,13 @@ public class KeyboardStateEnv : InputDevice, IKeyboardStateEnv
         _keysPrev = new();
     }
 
-    public void Hold(KeyCode key)
+    public void Hold(Key key)
     {
         if (_keys.Contains(key)) return;
         _keys.Add(key);
     }
 
-    public void Release(KeyCode key)
+    public void Release(Key key)
     {
         _keys.Remove(key);
     }

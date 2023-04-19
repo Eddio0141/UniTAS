@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using UniTAS.Plugin.Implementations.VirtualEnvironment;
@@ -52,7 +53,7 @@ public class LegacyInputPatch
             if (ReverseInvoker.InnerCall())
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
-            __result = KeyboardStateEnv.Keys.Contains(key);
+            __result = KeyboardStateEnv.Keys.Any(x => x.KeyCode.HasValue && x.KeyCode == key);
             return false;
         }
 
@@ -82,7 +83,7 @@ public class LegacyInputPatch
                 return false;
             }
 
-            __result = KeyboardStateEnv.Keys.Contains(foundKeyCode);
+            __result = KeyboardStateEnv.Keys.Any(x => x.KeyCode.HasValue && x.KeyCode == foundKeyCode);
             return false;
         }
 
@@ -112,7 +113,7 @@ public class LegacyInputPatch
                 return false;
             }
 
-            __result = KeyboardStateEnv.KeysUp.Contains(foundKeyCode);
+            __result = KeyboardStateEnv.KeysUp.Any(x => x.KeyCode.HasValue && x.KeyCode == foundKeyCode);
             return false;
         }
 
@@ -136,7 +137,7 @@ public class LegacyInputPatch
             if (ReverseInvoker.InnerCall())
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
-            __result = KeyboardStateEnv.KeysUp.Contains(key);
+            __result = KeyboardStateEnv.KeysUp.Any(x => x.KeyCode.HasValue && x.KeyCode == key);
             return false;
         }
 
@@ -166,7 +167,7 @@ public class LegacyInputPatch
                 return false;
             }
 
-            __result = KeyboardStateEnv.KeysDown.Contains(foundKeyCode);
+            __result = KeyboardStateEnv.KeysDown.Any(x => x.KeyCode.HasValue && x.KeyCode == foundKeyCode);
             return false;
         }
 
@@ -190,7 +191,7 @@ public class LegacyInputPatch
             if (ReverseInvoker.InnerCall())
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
-            __result = KeyboardStateEnv.KeysDown.Contains(key);
+            __result = KeyboardStateEnv.KeysDown.Any(x => x.KeyCode.HasValue && x.KeyCode == key);
             return false;
         }
 

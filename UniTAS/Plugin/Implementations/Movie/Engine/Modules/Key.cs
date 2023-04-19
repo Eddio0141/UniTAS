@@ -21,12 +21,32 @@ public class Key : EngineMethodClass
 
     public void Hold(string key)
     {
-        _keyboardStateEnv.Hold(ParseKeyCode(key));
+        var parsedKey = ParseKeyCode(key);
+        if (parsedKey.HasValue)
+        {
+            _keyboardStateEnv.Hold(new(parsedKey.Value));
+            return;
+        }
+
+        foreach (var keyCh in key)
+        {
+            _keyboardStateEnv.Hold(new(keyCh));
+        }
     }
 
     public void Release(string key)
     {
-        _keyboardStateEnv.Release(ParseKeyCode(key));
+        var parsedKey = ParseKeyCode(key);
+        if (parsedKey.HasValue)
+        {
+            _keyboardStateEnv.Release(new(parsedKey.Value));
+            return;
+        }
+
+        foreach (var keyCh in key)
+        {
+            _keyboardStateEnv.Release(new(keyCh));
+        }
     }
 
     public void Clear()
@@ -34,8 +54,13 @@ public class Key : EngineMethodClass
         _keyboardStateEnv.Clear();
     }
 
-    private static KeyCode ParseKeyCode(string key)
+    private static KeyCode? ParseKeyCode(string key)
     {
-        return (KeyCode)Enum.Parse(typeof(KeyCode), key, true);
+        if (Enum.IsDefined(typeof(KeyCode), key))
+        {
+            return (KeyCode)Enum.Parse(typeof(KeyCode), key, true);
+        }
+
+        return null;
     }
 }
