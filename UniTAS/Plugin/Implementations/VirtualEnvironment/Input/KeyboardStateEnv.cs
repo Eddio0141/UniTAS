@@ -10,7 +10,6 @@ namespace UniTAS.Plugin.Implementations.VirtualEnvironment.Input;
 [Singleton]
 public class KeyboardStateEnv : InputDevice, IKeyboardStateEnv
 {
-    // TODO make this string based and keycode based for unsupported keys
     public ImmutableList<Key> Keys => _keys.ToImmutableList();
     public ImmutableList<Key> KeysDown => _keysDown.ToImmutableList();
     public ImmutableList<Key> KeysUp => _keysUp.ToImmutableList();
