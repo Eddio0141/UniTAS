@@ -79,7 +79,7 @@ public class LegacyInputPatch
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
             if (!LegacyInputSystemUtils.KeyStringToKeyCode(name, out var foundKeyCode))
             {
-                __result = KeyboardStateEnv.Keys.Any(x => !x.KeyCode.HasValue && x.keys == name);
+                __result = KeyboardStateEnv.Keys.Any(x => !x.KeyCode.HasValue && x.Keys == name);
                 return false;
             }
 
@@ -109,7 +109,7 @@ public class LegacyInputPatch
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
             if (!LegacyInputSystemUtils.KeyStringToKeyCode(name, out var foundKeyCode))
             {
-                __result = KeyboardStateEnv.KeysUp.Any(x => !x.KeyCode.HasValue && x.keys == name);
+                __result = KeyboardStateEnv.KeysUp.Any(x => !x.KeyCode.HasValue && x.Keys == name);
                 return false;
             }
 
@@ -163,7 +163,7 @@ public class LegacyInputPatch
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
             if (!LegacyInputSystemUtils.KeyStringToKeyCode(name, out var foundKeyCode))
             {
-                __result = KeyboardStateEnv.KeysDown.Any(x => !x.KeyCode.HasValue && x.keys == name);
+                __result = KeyboardStateEnv.KeysDown.Any(x => !x.KeyCode.HasValue && x.Keys == name);
                 return false;
             }
 
