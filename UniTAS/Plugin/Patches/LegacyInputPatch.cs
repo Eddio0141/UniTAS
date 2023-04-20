@@ -660,7 +660,7 @@ public class LegacyInputPatch
             // Returns the keyboard input entered this frame
             // Only ASCII characters are contained in the inputString.
             // Character "\n" represents return or enter.
-            // TODO
+            // TODO this also does the "repeat when held" thing
         }
     }
 
