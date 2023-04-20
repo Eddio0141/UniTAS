@@ -25,6 +25,7 @@ public class CoroutineHandler : ICoroutine, IOnUpdateUnconditional, IOnPreUpdate
 
     private readonly Queue<Status> _updateUnconditional = new();
     private readonly Queue<Status> _waitForCoroutine = new();
+    private readonly Queue<Status> _preUpdatesUnconditional = new();
 
     public CoroutineStatus Start(IEnumerator<CoroutineWait> coroutine)
     {
@@ -62,6 +63,9 @@ public class CoroutineHandler : ICoroutine, IOnUpdateUnconditional, IOnPreUpdate
             case WaitForCoroutine:
                 _waitForCoroutine.Enqueue(status);
                 break;
+            case WaitForPreUpdatesUnconditional:
+                _preUpdatesUnconditional.Enqueue(status);
+                break;
         }
     }
 
@@ -70,12 +74,28 @@ public class CoroutineHandler : ICoroutine, IOnUpdateUnconditional, IOnPreUpdate
         var count = _updateUnconditional.Count;
         while (count > 0)
         {
-            RunNext(_updateUnconditional.Dequeue());
             count--;
+            RunNext(_updateUnconditional.Dequeue());
         }
     }
 
     public void PreUpdateUnconditional()
+    {
+        ProcessWaitForCoroutine();
+        ProcessPreUpdatesUnconditional();
+    }
+
+    private void ProcessPreUpdatesUnconditional()
+    {
+        var count = _preUpdatesUnconditional.Count;
+        while (count > 0)
+        {
+            count--;
+            RunNext(_preUpdatesUnconditional.Dequeue());
+        }
+    }
+
+    private void ProcessWaitForCoroutine()
     {
         var count = _waitForCoroutine.Count;
         while (count > 0)
