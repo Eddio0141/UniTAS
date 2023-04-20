@@ -53,7 +53,17 @@ public class LegacyInputPatch
             if (ReverseInvoker.InnerCall())
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
-            __result = KeyboardStateEnv.Keys.Any(x => x.KeyCode.HasValue && x.KeyCode == key);
+
+            __result = false;
+            foreach (var x in KeyboardStateEnv.Keys)
+            {
+                if (x.KeyCode.HasValue && x.KeyCode == key)
+                {
+                    __result = true;
+                    return false;
+                }
+            }
+
             return false;
         }
 
@@ -77,9 +87,19 @@ public class LegacyInputPatch
             if (ReverseInvoker.InnerCall())
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
+
+            __result = false;
             if (!LegacyInputSystemUtils.KeyStringToKeyCode(name, out var foundKeyCode))
             {
-                __result = KeyboardStateEnv.Keys.Any(x => !x.KeyCode.HasValue && x.Keys == name);
+                foreach (var x in KeyboardStateEnv.Keys)
+                {
+                    if (!x.KeyCode.HasValue && x.Keys == name)
+                    {
+                        __result = true;
+                        return false;
+                    }
+                }
+
                 return false;
             }
 
@@ -107,13 +127,31 @@ public class LegacyInputPatch
             if (ReverseInvoker.InnerCall())
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
+
+            __result = false;
             if (!LegacyInputSystemUtils.KeyStringToKeyCode(name, out var foundKeyCode))
             {
-                __result = KeyboardStateEnv.KeysUp.Any(x => !x.KeyCode.HasValue && x.Keys == name);
+                foreach (var x in KeyboardStateEnv.KeysUp)
+                {
+                    if (!x.KeyCode.HasValue && x.Keys == name)
+                    {
+                        __result = true;
+                        return false;
+                    }
+                }
+
                 return false;
             }
 
-            __result = KeyboardStateEnv.KeysUp.Any(x => x.KeyCode.HasValue && x.KeyCode == foundKeyCode);
+            foreach (var x in KeyboardStateEnv.KeysUp)
+            {
+                if (x.KeyCode.HasValue && x.KeyCode == foundKeyCode)
+                {
+                    __result = true;
+                    return false;
+                }
+            }
+
             return false;
         }
 
@@ -137,7 +175,17 @@ public class LegacyInputPatch
             if (ReverseInvoker.InnerCall())
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
-            __result = KeyboardStateEnv.KeysUp.Any(x => x.KeyCode.HasValue && x.KeyCode == key);
+
+            __result = false;
+            foreach (var x in KeyboardStateEnv.KeysUp)
+            {
+                if (x.KeyCode.HasValue && x.KeyCode == key)
+                {
+                    __result = true;
+                    return false;
+                }
+            }
+
             return false;
         }
 
@@ -161,13 +209,31 @@ public class LegacyInputPatch
             if (ReverseInvoker.InnerCall())
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
+
+            __result = false;
             if (!LegacyInputSystemUtils.KeyStringToKeyCode(name, out var foundKeyCode))
             {
-                __result = KeyboardStateEnv.KeysDown.Any(x => !x.KeyCode.HasValue && x.Keys == name);
+                foreach (var x in KeyboardStateEnv.KeysDown)
+                {
+                    if (!x.KeyCode.HasValue && x.Keys == name)
+                    {
+                        __result = true;
+                        return false;
+                    }
+                }
+
                 return false;
             }
 
-            __result = KeyboardStateEnv.KeysDown.Any(x => x.KeyCode.HasValue && x.KeyCode == foundKeyCode);
+            foreach (var x in KeyboardStateEnv.KeysDown)
+            {
+                if (x.KeyCode.HasValue && x.KeyCode == foundKeyCode)
+                {
+                    __result = true;
+                    return false;
+                }
+            }
+
             return false;
         }
 
@@ -191,7 +257,17 @@ public class LegacyInputPatch
             if (ReverseInvoker.InnerCall())
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
-            __result = KeyboardStateEnv.KeysDown.Any(x => x.KeyCode.HasValue && x.KeyCode == key);
+
+            __result = false;
+            foreach (var x in KeyboardStateEnv.KeysDown)
+            {
+                if (x.KeyCode.HasValue && x.KeyCode == key)
+                {
+                    __result = true;
+                    return false;
+                }
+            }
+
             return false;
         }
 
