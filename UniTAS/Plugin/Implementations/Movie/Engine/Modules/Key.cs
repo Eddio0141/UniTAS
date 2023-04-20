@@ -28,10 +28,7 @@ public class Key : EngineMethodClass
             return;
         }
 
-        foreach (var keyCh in key)
-        {
-            _keyboardStateEnv.Hold(new(keyCh));
-        }
+        _keyboardStateEnv.Hold(new(key));
     }
 
     public void Release(string key)
@@ -43,10 +40,7 @@ public class Key : EngineMethodClass
             return;
         }
 
-        foreach (var keyCh in key)
-        {
-            _keyboardStateEnv.Release(new(keyCh));
-        }
+        _keyboardStateEnv.Release(new(key));
     }
 
     public void Clear()

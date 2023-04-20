@@ -4,12 +4,12 @@ namespace UniTAS.Plugin.Models.VirtualEnvironment;
 
 public class Key
 {
-    public char? Character { get; }
+    public string keys { get; }
     public KeyCode? KeyCode { get; }
 
-    public Key(char character)
+    public Key(string keys)
     {
-        Character = character;
+        this.keys = keys;
     }
 
     public Key(KeyCode keyCode)
