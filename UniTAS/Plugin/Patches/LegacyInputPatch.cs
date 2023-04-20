@@ -79,7 +79,7 @@ public class LegacyInputPatch
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
             if (!LegacyInputSystemUtils.KeyStringToKeyCode(name, out var foundKeyCode))
             {
-                __result = false;
+                __result = KeyboardStateEnv.Keys.Any(x => !x.KeyCode.HasValue && x.keys == name);
                 return false;
             }
 
@@ -109,7 +109,7 @@ public class LegacyInputPatch
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
             if (!LegacyInputSystemUtils.KeyStringToKeyCode(name, out var foundKeyCode))
             {
-                __result = false;
+                __result = KeyboardStateEnv.KeysUp.Any(x => !x.KeyCode.HasValue && x.keys == name);
                 return false;
             }
 
@@ -163,7 +163,7 @@ public class LegacyInputPatch
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
             if (!LegacyInputSystemUtils.KeyStringToKeyCode(name, out var foundKeyCode))
             {
-                __result = false;
+                __result = KeyboardStateEnv.KeysDown.Any(x => !x.KeyCode.HasValue && x.keys == name);
                 return false;
             }
 
@@ -622,7 +622,8 @@ public class LegacyInputPatch
         private static bool Prefix(ref bool __result)
         {
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
-            __result = KeyboardStateEnv.Keys.Count > 0 || MouseStateEnv.LeftClick ||
+            __result = KeyboardStateEnv.KeysDown.Count > 0 || KeyboardStateEnv.Keys.Count > 0 ||
+                       MouseStateEnv.LeftClick ||
                        MouseStateEnv.RightClick || MouseStateEnv.MiddleClick;
             return false;
         }

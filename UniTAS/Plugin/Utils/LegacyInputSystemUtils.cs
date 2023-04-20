@@ -18,7 +18,7 @@ public static class LegacyInputSystemUtils
         { "escape", KeyCode.Escape },
         { "space", KeyCode.Space },
         { "equals", KeyCode.Equals },
-        { "enter", KeyCode.KeypadEnter },
+        { "enter", KeyCode.Return },
         { "up", KeyCode.UpArrow },
         { "down", KeyCode.DownArrow },
         { "right", KeyCode.RightArrow },
@@ -93,7 +93,7 @@ public static class LegacyInputSystemUtils
 
     public static bool KeyStringToKeyCode(string key, out KeyCode keyCode)
     {
-        // TODO check lower case or not
+        // all lower case, not allowed
         keyCode = default;
         if (string.IsNullOrEmpty(key)) return false;
 
