@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Collections.Immutable;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.VirtualEnvironment;
 using UniTAS.Plugin.Models.VirtualEnvironment;
@@ -10,66 +9,55 @@ namespace UniTAS.Plugin.Implementations.VirtualEnvironment.Input;
 [Singleton]
 public class KeyboardStateEnv : InputDevice, IKeyboardStateEnv
 {
-    public ImmutableList<Key> Keys => _keys.ToImmutableList();
-    public ImmutableList<Key> KeysDown => _keysDown.ToImmutableList();
-    public ImmutableList<Key> KeysUp => _keysUp.ToImmutableList();
+    public List<Key> Keys { get; } = new();
+    public List<Key> KeysDown { get; } = new();
+    public List<Key> KeysUp { get; } = new();
 
-    private readonly List<Key> _keysPrev;
-    private readonly List<Key> _keys;
-    private readonly List<Key> _keysDown;
-    private readonly List<Key> _keysUp;
-
-    public KeyboardStateEnv()
-    {
-        _keys = new();
-        _keysDown = new();
-        _keysUp = new();
-        _keysPrev = new();
-    }
+    private readonly List<Key> _keysPrev = new();
 
     public void Hold(Key key)
     {
-        if (_keys.Contains(key)) return;
-        _keys.Add(key);
+        if (Keys.Contains(key)) return;
+        Keys.Add(key);
     }
 
     public void Release(Key key)
     {
-        _keys.Remove(key);
+        Keys.Remove(key);
     }
 
     public void Clear()
     {
-        _keys.Clear();
+        Keys.Clear();
     }
 
     protected override void Update()
     {
-        _keysDown.Clear();
-        _keysUp.Clear();
+        KeysDown.Clear();
+        KeysUp.Clear();
 
         for (var i = 0; i < _keysPrev.Count; i++)
         {
             var key = _keysPrev[i];
-            if (_keys.Contains(key)) continue;
-            _keysUp.Add(key);
+            if (Keys.Contains(key)) continue;
+            KeysUp.Add(key);
             _keysPrev.RemoveAt(i);
             i--;
         }
 
-        foreach (var key in _keys)
+        foreach (var key in Keys)
         {
             if (_keysPrev.Contains(key)) continue;
-            _keysDown.Add(key);
+            KeysDown.Add(key);
             _keysPrev.Add(key);
         }
     }
 
     protected override void ResetState()
     {
-        _keys.Clear();
-        _keysDown.Clear();
-        _keysUp.Clear();
+        Keys.Clear();
+        KeysDown.Clear();
+        KeysUp.Clear();
         _keysPrev.Clear();
     }
 }

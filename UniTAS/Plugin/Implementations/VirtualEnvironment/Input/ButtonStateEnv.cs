@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.VirtualEnvironment;
 using UniTAS.Plugin.Services.VirtualEnvironment.Input;
@@ -9,58 +8,55 @@ namespace UniTAS.Plugin.Implementations.VirtualEnvironment.Input;
 [Singleton]
 public class ButtonStateEnv : InputDevice, IButtonStateEnv
 {
-    public ImmutableList<string> Buttons => _buttons.ToImmutableList();
-    public ImmutableList<string> ButtonsDown => _buttonsDown.ToImmutableList();
-    public ImmutableList<string> ButtonsUp => _buttonsUp.ToImmutableList();
+    public List<string> Buttons { get; } = new();
+    public List<string> ButtonsDown { get; } = new();
+    public List<string> ButtonsUp { get; } = new();
 
     private readonly List<string> _buttonsPrev = new();
-    private readonly List<string> _buttons = new();
-    private readonly List<string> _buttonsDown = new();
-    private readonly List<string> _buttonsUp = new();
 
     protected override void Update()
     {
-        _buttonsDown.Clear();
-        _buttonsUp.Clear();
+        ButtonsDown.Clear();
+        ButtonsUp.Clear();
 
         for (var i = 0; i < _buttonsPrev.Count; i++)
         {
             var button = _buttonsPrev[i];
-            if (_buttons.Contains(button)) continue;
-            _buttonsUp.Add(button);
+            if (Buttons.Contains(button)) continue;
+            ButtonsUp.Add(button);
             _buttonsPrev.RemoveAt(i);
             i--;
         }
 
-        foreach (var button in _buttons)
+        foreach (var button in Buttons)
         {
             if (_buttonsPrev.Contains(button)) continue;
-            _buttonsDown.Add(button);
+            ButtonsDown.Add(button);
             _buttonsPrev.Add(button);
         }
     }
 
     public void Hold(string button)
     {
-        if (_buttons.Contains(button)) return;
-        _buttons.Add(button);
+        if (Buttons.Contains(button)) return;
+        Buttons.Add(button);
     }
 
     public void Release(string button)
     {
-        _buttons.Remove(button);
+        Buttons.Remove(button);
     }
 
     public void Clear()
     {
-        _buttons.Clear();
+        Buttons.Clear();
     }
 
     protected override void ResetState()
     {
-        _buttons.Clear();
-        _buttonsDown.Clear();
-        _buttonsUp.Clear();
+        Buttons.Clear();
+        ButtonsDown.Clear();
+        ButtonsUp.Clear();
         _buttonsPrev.Clear();
     }
 }
