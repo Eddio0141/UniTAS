@@ -55,6 +55,9 @@ public partial class DiscoverAndRegister : IDiscoverAndRegister
         var baseType = type.BaseType;
         var typeAssembly = type.Assembly;
 
+        // register type itself
+        config.For(type).Use(type);
+
         // register with base type
         if (baseType != null && baseType != typeof(object) &&
             registerAttribute?.IgnoreInterfaces?.All(x => x != baseType) is true or null &&
