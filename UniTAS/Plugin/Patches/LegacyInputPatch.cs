@@ -5,6 +5,7 @@ using HarmonyLib;
 using UniTAS.Plugin.Implementations.VirtualEnvironment;
 using UniTAS.Plugin.Interfaces.Patches.PatchTypes;
 using UniTAS.Plugin.Services;
+using UniTAS.Plugin.Services.VirtualEnvironment;
 using UniTAS.Plugin.Services.VirtualEnvironment.Input;
 using UniTAS.Plugin.Utils;
 using UnityEngine;
@@ -38,6 +39,9 @@ public class LegacyInputPatch
 
     private static readonly IAxisStateEnv AxisStateEnv =
         Plugin.Kernel.GetInstance<IAxisStateEnv>();
+
+    private static readonly IResetInputAxesState ResetInputAxesState =
+        Plugin.Kernel.GetInstance<IResetInputAxesState>();
 
     // gets called from GetKey
     [HarmonyPatch(typeof(Input), nameof(Input.GetKeyInt))]
@@ -306,6 +310,13 @@ public class LegacyInputPatch
             if (ReverseInvoker.InnerCall())
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
+
+            if (ResetInputAxesState.IsResetInputAxesState)
+            {
+                __result = 0;
+                return false;
+            }
+
             if (AxisStateEnv.Values.TryGetValue(axisName, out var value))
             {
                 __result = value;
@@ -333,6 +344,13 @@ public class LegacyInputPatch
             if (ReverseInvoker.InnerCall())
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
+
+            if (ResetInputAxesState.IsResetInputAxesState)
+            {
+                __result = 0;
+                return false;
+            }
+
             if (AxisStateEnv.Values.TryGetValue(axisName, out var value))
             {
                 __result = value;
@@ -410,6 +428,13 @@ public class LegacyInputPatch
             if (ReverseInvoker.InnerCall())
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
+
+            if (ResetInputAxesState.IsResetInputAxesState)
+            {
+                __result = false;
+                return false;
+            }
+
             __result = button switch
             {
                 0 => MouseStateEnv.LeftClick,
@@ -439,6 +464,13 @@ public class LegacyInputPatch
             if (ReverseInvoker.InnerCall())
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
+
+            if (ResetInputAxesState.IsResetInputAxesState)
+            {
+                __result = false;
+                return false;
+            }
+
             __result = button switch
             {
                 0 => MouseStateEnv.LeftClickDown,
@@ -468,6 +500,13 @@ public class LegacyInputPatch
             if (ReverseInvoker.InnerCall())
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
+
+            if (ResetInputAxesState.IsResetInputAxesState)
+            {
+                __result = false;
+                return false;
+            }
+
             __result = button switch
             {
                 0 => MouseStateEnv.LeftClickUp,
@@ -492,15 +531,13 @@ public class LegacyInputPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
+        // Resets all input. After ResetInputAxes all axes return to 0 and all buttons return to 0 for one frame.
         private static bool Prefix()
         {
             if (ReverseInvoker.InnerCall())
                 return true;
-            // TODO make this work
-            // Resets all input. After ResetInputAxes all axes return to 0 and all buttons return to 0 for one frame.
-            // TODO also make sure movie overwrites input on the same frame after reset
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
-            AxisStateEnv.Values.Clear();
+            ResetInputAxesState.IsResetInputAxesState = true;
             return false;
         }
 
@@ -523,6 +560,12 @@ public class LegacyInputPatch
             if (ReverseInvoker.InnerCall())
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
+
+            if (ResetInputAxesState.IsResetInputAxesState)
+            {
+                __result = false;
+                return false;
+            }
 
             __result = ButtonStateEnv.Buttons.Contains(buttonName);
             return false;
@@ -548,6 +591,12 @@ public class LegacyInputPatch
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
 
+            if (ResetInputAxesState.IsResetInputAxesState)
+            {
+                __result = false;
+                return false;
+            }
+
             __result = ButtonStateEnv.ButtonsDown.Contains(buttonName);
             return false;
         }
@@ -571,6 +620,12 @@ public class LegacyInputPatch
             if (ReverseInvoker.InnerCall())
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
+
+            if (ResetInputAxesState.IsResetInputAxesState)
+            {
+                __result = false;
+                return false;
+            }
 
             __result = ButtonStateEnv.ButtonsUp.Contains(buttonName);
             return false;
