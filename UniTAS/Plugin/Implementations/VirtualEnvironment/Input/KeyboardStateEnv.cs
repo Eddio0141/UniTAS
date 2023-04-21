@@ -23,7 +23,7 @@ public class KeyboardStateEnv : InputDevice, IKeyboardStateEnv
 
     public void Release(Key key)
     {
-        Keys.Remove(key);
+        Keys.RemoveAll(k => Equals(k, key));
     }
 
     public void Clear()
