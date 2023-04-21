@@ -33,25 +33,27 @@ public class InputTests
 
         RuntimeAssert.True(Input.GetKeyDown(KeyCode.A), "keycode down check");
         RuntimeAssert.True(Input.GetKeyDown("a"), "string down check");
-
-        yield return new WaitForUpdateUnconditional();
-
-        RuntimeAssert.False(Input.GetKeyDown(KeyCode.A), "keycode down check");
-        RuntimeAssert.False(Input.GetKeyDown("a"), "string down check");
         RuntimeAssert.True(Input.GetKey(KeyCode.A), "keycode check");
         RuntimeAssert.True(Input.GetKey("a"), "string check");
 
         yield return new WaitForUpdateUnconditional();
 
+        RuntimeAssert.False(Input.GetKeyDown(KeyCode.A), "keycode down check");
+        RuntimeAssert.False(Input.GetKeyDown("a"), "string down check");
         RuntimeAssert.True(Input.GetKey(KeyCode.A), "keycode 2 check");
         RuntimeAssert.True(Input.GetKey("a"), "string 2 check");
+
+        yield return new WaitForUpdateUnconditional();
+
+        RuntimeAssert.True(Input.GetKey(KeyCode.A), "keycode 3 check");
+        RuntimeAssert.True(Input.GetKey("a"), "string 3 check");
 
         _keyboardStateEnv.Release(new(KeyCode.A));
 
         yield return new WaitForUpdateUnconditional();
 
-        RuntimeAssert.False(Input.GetKey(KeyCode.A), "keycode 3 check");
-        RuntimeAssert.False(Input.GetKey("a"), "string 3 check");
+        RuntimeAssert.False(Input.GetKey(KeyCode.A), "keycode 4 check");
+        RuntimeAssert.False(Input.GetKey("a"), "string 4 check");
         RuntimeAssert.True(Input.GetKeyUp(KeyCode.A), "keycode up check");
         RuntimeAssert.True(Input.GetKeyUp("a"), "string up check");
 
