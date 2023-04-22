@@ -9,6 +9,7 @@ using UnityEngine.InputSystem;
 namespace UniTAS.Plugin.Implementations.InputSystemOverride;
 
 [Singleton]
+[ForceInstantiate]
 public class InputSystemOverride
 {
     private readonly bool _hasInputSystem;
