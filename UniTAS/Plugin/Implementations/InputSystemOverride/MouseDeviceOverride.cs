@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.InputSystemOverride;
 using UniTAS.Plugin.Services.VirtualEnvironment;
 using UniTAS.Plugin.Services.VirtualEnvironment.Input;
@@ -8,6 +9,7 @@ using UnityEngine.InputSystem.LowLevel;
 
 namespace UniTAS.Plugin.Implementations.InputSystemOverride;
 
+[Singleton]
 public class MouseDeviceOverride : InputOverrideDevice
 {
     private Mouse _mouse;
