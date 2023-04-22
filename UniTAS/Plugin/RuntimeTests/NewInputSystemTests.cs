@@ -37,8 +37,10 @@ public class NewInputSystemTests
 
         yield return new WaitForUpdateUnconditional();
 
-        RuntimeAssert.AreEqual(500, Mouse.current.position.x.ReadValue(), "mouse x position check");
-        RuntimeAssert.AreEqual(600, Mouse.current.position.y.ReadValue(), "mouse y position check");
+        var mouse = Mouse.current;
+        var pos = mouse.position.ReadValue();
+        RuntimeAssert.AreEqual(500f, pos.x, "mouse x position check");
+        RuntimeAssert.AreEqual(600f, pos.y, "mouse y position check");
 
         _virtualEnvController.RunVirtualEnvironment = false;
         _mouseStateEnv.Position = Vector2.zero;
