@@ -1,6 +1,6 @@
 using StructureMap;
 
-namespace UniTAS.Plugin.Services;
+namespace UniTAS.Plugin.Services.DependencyInjection;
 
 public interface IDiscoverAndRegister
 {

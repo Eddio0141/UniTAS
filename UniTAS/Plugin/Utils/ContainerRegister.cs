@@ -1,7 +1,7 @@
 using BepInEx.Configuration;
 using StructureMap;
 using UniTAS.Plugin.Implementations.DependencyInjection;
-using UniTAS.Plugin.Services;
+using UniTAS.Plugin.Services.DependencyInjection;
 
 namespace UniTAS.Plugin.Utils;
 
@@ -20,6 +20,9 @@ public static class ContainerRegister
         });
 
         container.Configure(c => container.GetInstance<IDiscoverAndRegister>().Register<PluginWrapper>(c));
+
+        var forceInstantiateTypes = container.GetInstance<IForceInstantiateTypes>();
+        forceInstantiateTypes.InstantiateTypes();
 
         return container;
     }

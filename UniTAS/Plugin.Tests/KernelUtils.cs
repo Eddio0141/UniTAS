@@ -10,6 +10,7 @@ using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Plugin.Interfaces.Movie;
 using UniTAS.Plugin.Models.DependencyInjection;
 using UniTAS.Plugin.Services;
+using UniTAS.Plugin.Services.DependencyInjection;
 using UniTAS.Plugin.Services.Logging;
 using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Plugin.Services.VirtualEnvironment.Input;

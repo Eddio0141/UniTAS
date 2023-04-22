@@ -6,7 +6,7 @@ using HarmonyLib;
 using StructureMap;
 using StructureMap.Configuration.DSL;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
-using UniTAS.Plugin.Services;
+using UniTAS.Plugin.Services.DependencyInjection;
 
 namespace UniTAS.Plugin.Implementations.DependencyInjection;
 
