@@ -24,7 +24,8 @@ public static class RuntimeAssert
     {
         if (!expected.Equals(actual))
         {
-            throw new RuntimeAssertException("RuntimeAssert.AreEqual failed" + (message == null ? "" : $" {message}"));
+            throw new RuntimeAssertException($"RuntimeAssert.AreEqual failed, expected {expected}, got {actual}." +
+                                             (message == null ? "" : $" {message}"));
         }
     }
 }
