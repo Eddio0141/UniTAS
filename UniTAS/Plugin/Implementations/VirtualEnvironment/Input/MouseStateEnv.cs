@@ -1,6 +1,7 @@
 ﻿using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.VirtualEnvironment;
 using UniTAS.Plugin.Services.VirtualEnvironment.Input;
+using UnityEngine;
 
 namespace UniTAS.Plugin.Implementations.VirtualEnvironment.Input;
 
@@ -22,6 +23,7 @@ public class MouseStateEnv : InputDevice, IMouseStateEnv
     public bool MiddleClickDown { get; private set; }
     public bool MiddleClickUp { get; private set; }
     private bool _middleClickPrev;
+    public Vector2 Scroll { get; set; }
 
     public MouseStateEnv()
     {
@@ -64,5 +66,7 @@ public class MouseStateEnv : InputDevice, IMouseStateEnv
         MiddleClickDown = false;
         MiddleClickUp = false;
         _middleClickPrev = false;
+
+        Scroll = Vector2.zero;
     }
 }

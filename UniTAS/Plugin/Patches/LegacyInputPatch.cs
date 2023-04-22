@@ -982,4 +982,43 @@ public class LegacyInputPatch
             return false;
         }
     }
+
+    [HarmonyPatch(typeof(Input), "mouseScrollDelta", MethodType.Getter)]
+    private class MouseScrollDeltaGetter
+    {
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static bool Prefix(ref Vector2 __result)
+        {
+            if (!VirtualEnvController.RunVirtualEnvironment) return true;
+            __result = MouseStateEnv.Scroll;
+            return false;
+        }
+    }
+
+    // left to do properties
+    // TODO backButtonLeavesApp { get; set; }
+    // TODO compass { get; }
+    // TODO compensateSensors {get; set; }
+    // TODO compositionCursorPos { get; set; }
+    // TODO compositionString { get; }
+    // TODO imeCompositionMode { get; set; }
+    // TODO imeIsSelected { get; }
+    // TODO location { get; }
+    // TODO mousePositionDelta { get; }
+    // TODO simulateMouseWithTouches { get; set; }
+    // TODO stylusTouchSupported { get; }
+    // TODO touchPressureSupported { get; }
+    // TODO touchSupported { get; }
+
+    // left to do methods
+    // TODO ClearLastPenContactEvent
+    // TODO GetJoystickNames
+    // TODO GetLastPenContactEvent
+    // TODO GetTouch
+    // TODO IsJoystickPreconfigured
+    // TODO ResetPenEvents
 }
