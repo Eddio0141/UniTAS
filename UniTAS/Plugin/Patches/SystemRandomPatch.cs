@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using HarmonyLib;
@@ -30,7 +29,6 @@ public class SystemRandomPatch
         private static bool Prefix(ref int __result)
         {
             __result = (int)RandomEnv.StartUpSeed;
-            Trace.Write($"System.Random.Generate seed returning {__result}");
             return false;
         }
     }
@@ -46,7 +44,6 @@ public class SystemRandomPatch
         private static bool Prefix(ref int __result)
         {
             __result = (int)RandomEnv.StartUpSeed;
-            Trace.Write($"System.Random.GenerateGlobalSeed seed returning {__result}");
             return false;
         }
     }

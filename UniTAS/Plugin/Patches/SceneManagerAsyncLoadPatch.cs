@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using HarmonyLib;
@@ -7,6 +6,7 @@ using UniTAS.Plugin.Implementations.UnitySafeWrappers;
 using UniTAS.Plugin.Implementations.UnitySafeWrappers.SceneManagement;
 using UniTAS.Plugin.Interfaces.Patches.PatchTypes;
 using UniTAS.Plugin.Models.UnitySafeWrappers.SceneManagement;
+using UniTAS.Plugin.Services.Logging;
 using UniTAS.Plugin.Services.UnityAsyncOperationTracker;
 using UniTAS.Plugin.Utils;
 using UnityEngine;
@@ -41,11 +41,13 @@ public class SceneManagerAsyncLoadPatch
     private static readonly UnityInstanceWrapFactory UnityInstanceWrapFactory =
         Plugin.Kernel.GetInstance<UnityInstanceWrapFactory>();
 
+    private static readonly ILogger Logger = Plugin.Kernel.GetInstance<ILogger>();
+
     private static bool AsyncSceneLoad(bool mustCompleteNextFrame, string sceneName, int sceneBuildIndex,
         object parameters, bool? isAdditive, ref AsyncOperation __result)
     {
         if (mustCompleteNextFrame) return true;
-        Trace.Write($"async scene load, instance id: {__result.GetHashCode()}");
+        Logger.LogDebug($"async scene load, instance id: {__result.GetHashCode()}");
 
         if (parameters != null)
         {

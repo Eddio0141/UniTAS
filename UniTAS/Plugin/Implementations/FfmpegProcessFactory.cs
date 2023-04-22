@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Linq;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.Logging;
@@ -17,6 +16,8 @@ public class FfmpegProcessFactory : IFfmpegProcessFactory
 
     private readonly string[] _ffmpegChecks = { "ffmpeg.exe", "ffmpeg" };
     private string _ffmpegPath;
+
+    private readonly ILogger _logger;
 
     public Process CreateFfmpegProcess()
     {
@@ -35,8 +36,6 @@ public class FfmpegProcessFactory : IFfmpegProcessFactory
             : null;
     }
 
-    private readonly ILogger _logger;
-
     public FfmpegProcessFactory(ILogger logger)
     {
         _logger = logger;
@@ -48,7 +47,7 @@ public class FfmpegProcessFactory : IFfmpegProcessFactory
         string path = null;
         foreach (var ffmpegCheck in _ffmpegChecks)
         {
-            Trace.Write($"checking ffmpeg at path: {ffmpegCheck}");
+            _logger.LogDebug($"checking ffmpeg at path: {ffmpegCheck}");
             if (TryRunning(ffmpegCheck))
             {
                 path = ffmpegCheck;
@@ -68,7 +67,7 @@ public class FfmpegProcessFactory : IFfmpegProcessFactory
                     if (string.IsNullOrEmpty(envPath)) continue;
 
                     var envPathCheck = Path.Combine(envPath.Trim(), ffmpegCheck);
-                    Trace.Write($"checking ffmpeg at path: {envPathCheck}");
+                    _logger.LogDebug($"checking ffmpeg at path: {envPathCheck}");
 
                     if (TryRunning(envPathCheck))
                     {
@@ -83,7 +82,7 @@ public class FfmpegProcessFactory : IFfmpegProcessFactory
             if (BepInEx.Paths.GameRootPath != null)
             {
                 var gamePath = Path.Combine(BepInEx.Paths.GameRootPath, ffmpegCheck);
-                Trace.Write($"checking ffmpeg at path: {gamePath}");
+                _logger.LogDebug($"checking ffmpeg at path: {gamePath}");
                 if (TryRunning(gamePath))
                 {
                     path = gamePath;

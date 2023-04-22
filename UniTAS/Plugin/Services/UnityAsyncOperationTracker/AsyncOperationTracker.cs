@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using System.Diagnostics;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Plugin.Models.UnitySafeWrappers.SceneManagement;
+using UniTAS.Plugin.Services.Logging;
 using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
 
 namespace UniTAS.Plugin.Services.UnityAsyncOperationTracker;
@@ -16,6 +16,8 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
     private readonly List<AsyncSceneLoadData> _asyncLoadStalls = new();
     private readonly Dictionary<int, object> _assetBundleCreateRequests = new();
     private readonly Dictionary<int, AssetBundleRequestData> _assetBundleRequests = new();
+
+    private readonly ILogger _logger;
 
     private class AssetBundleRequestData
     {
@@ -31,16 +33,17 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
 
     private readonly ISceneWrapper _sceneWrapper;
 
-    public AsyncOperationTracker(ISceneWrapper sceneWrapper)
+    public AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger)
     {
         _sceneWrapper = sceneWrapper;
+        _logger = logger;
     }
 
     public void OnLastUpdateUnconditional()
     {
         foreach (var scene in _asyncLoads)
         {
-            Trace.Write(
+            _logger.LogDebug(
                 $"force loading scene, name: {scene.SceneName}, index: {scene.SceneBuildIndex}, manually loading in loop");
             _sceneWrapper.LoadSceneAsync(scene.SceneName, scene.SceneBuildIndex, scene.LoadSceneMode,
                 scene.LocalPhysicsMode, true);
@@ -68,7 +71,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
     public void AllowSceneActivation(bool allow, object asyncOperation)
     {
         var hash = asyncOperation.GetHashCode();
-        Trace.Write($"allow scene activation {allow} for ID {hash}");
+        _logger.LogDebug($"allow scene activation {allow} for ID {hash}");
 
         if (allow)
         {
@@ -77,7 +80,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
             _asyncLoadStalls.Remove(sceneToLoad);
             _sceneWrapper.LoadSceneAsync(sceneToLoad.SceneName, sceneToLoad.SceneBuildIndex, sceneToLoad.LoadSceneMode,
                 sceneToLoad.LocalPhysicsMode, true);
-            Trace.Write(
+            _logger.LogDebug(
                 $"force loading scene, name: {sceneToLoad.SceneName}, build index: {sceneToLoad.SceneBuildIndex}");
         }
         else
@@ -86,7 +89,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
             if (asyncSceneLoad == null) return;
             _asyncLoads.Remove(asyncSceneLoad);
             _asyncLoadStalls.Add(asyncSceneLoad);
-            Trace.Write("Added scene to stall list");
+            _logger.LogDebug("Added scene to stall list");
         }
     }
 

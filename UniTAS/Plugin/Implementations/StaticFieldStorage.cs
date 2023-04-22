@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using UniTAS.Patcher.Shared;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Services;
@@ -27,7 +26,7 @@ public class StaticFieldStorage : IStaticFieldManipulator
             var staticCtorType = Tracker.StaticCtorInvokeOrderList[i];
             var cctor = staticCtorType.TypeInitializer;
             if (cctor == null) continue;
-            Trace.Write($"Calling static constructor for type: {cctor.DeclaringType?.FullName ?? "unknown_type"}");
+            _logger.LogDebug($"Calling static constructor for type: {cctor.DeclaringType?.FullName ?? "unknown_type"}");
             cctor.Invoke(null, default);
         }
     }

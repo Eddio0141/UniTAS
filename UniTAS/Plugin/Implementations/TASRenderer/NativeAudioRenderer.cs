@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using UniTAS.Plugin.Implementations.UnitySafeWrappers.Unity.Collections;
@@ -105,7 +104,7 @@ public class NativeAudioRenderer : AudioRenderer
 
         if (!_nativeArrayCache.TryGetValue(len, out var nativeArray))
         {
-            Trace.Write($"Caching native array, len: {len}");
+            _logger.LogDebug($"Caching native array, len: {len}");
             _nativeArrayArgCache[0] = len;
             nativeArray = _unityInstanceWrapFactory.CreateNew<NativeArrayWrapper<float>>(_nativeArrayArgCache);
             _nativeArrayCache.Add(len, nativeArray);

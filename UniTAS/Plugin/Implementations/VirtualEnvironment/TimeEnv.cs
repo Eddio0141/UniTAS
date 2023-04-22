@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using HarmonyLib;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
@@ -109,7 +108,6 @@ public class TimeEnv : ITimeEnv, IOnPreUpdatesActual, IOnGameRestartResume, IOnS
 
         StartupTime = startupTime;
 
-        Trace.Write($"Setting startup time to {StartupTime}");
         RenderedFrameCountOffset += (ulong)Time.renderedFrameCount;
         SecondsSinceStartUp = 0;
         FrameCountRestartOffset += (ulong)Time.frameCount;
@@ -122,7 +120,6 @@ public class TimeEnv : ITimeEnv, IOnPreUpdatesActual, IOnGameRestartResume, IOnS
         ScaledTime = 0;
         ScaledFixedTime = 0;
         RealtimeSinceStartup = 0;
-        Trace.Write($"New game time state: {this}");
 
         _timeInitialized = false;
     }

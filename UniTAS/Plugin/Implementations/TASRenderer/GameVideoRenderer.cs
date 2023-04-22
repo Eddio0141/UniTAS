@@ -119,13 +119,13 @@ public class GameVideoRenderer : VideoRenderer
 #if TRACE
         if (_measurements == 0)
         {
-            Trace.Write("No render avg measurements");
+            _logger.LogDebug("No render avg measurements");
         }
         else
         {
             var avgTicks = _avgTicks / _measurements;
-            Trace.Write($"Average ticks: {_avgTicks}, ms: {avgTicks / (float)Stopwatch.Frequency * 1000f}");
-            Trace.Write($"Total ticks: {_totalTicks}, ms: {_totalTicks / (float)Stopwatch.Frequency * 1000f}");
+            _logger.LogDebug($"Average ticks: {_avgTicks}, ms: {avgTicks / (float)Stopwatch.Frequency * 1000f}");
+            _logger.LogDebug($"Total ticks: {_totalTicks}, ms: {_totalTicks / (float)Stopwatch.Frequency * 1000f}");
         }
 #endif
 
@@ -231,6 +231,6 @@ public class GameVideoRenderer : VideoRenderer
         }
 
         _ffmpeg.StandardInput.BaseStream.Flush();
-        Trace.Write("Video processing thread finished");
+        _logger.LogDebug("Video processing thread finished");
     }
 }

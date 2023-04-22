@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using HarmonyLib;
 using UniTAS.Plugin.Implementations.GUI;
@@ -36,7 +35,7 @@ public class PluginWrapper
             .Select(x => x.Value);
         foreach (var patch in sortedPatches)
         {
-            Trace.Write($"Patching {patch} post game restart");
+            logger.LogDebug($"Patching {patch} post game restart");
             Plugin.Harmony.PatchAll(patch);
         }
 
@@ -59,7 +58,7 @@ public class PluginWrapper
 //         for (var i = 0; i < logCount; i++)
 //         {
 //             var log = MonoIOPatchModule.Log[i];
-//             Trace.Write(log);
+//             _logger.LogDebug(log);
 //         }
 //
 //         MonoIOPatchModule.Log.RemoveRange(0, logCount);

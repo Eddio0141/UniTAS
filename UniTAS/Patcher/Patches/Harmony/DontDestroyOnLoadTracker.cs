@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using HarmonyLib;
 using UniTAS.Patcher.Shared;
@@ -25,12 +24,12 @@ public class DontDestroyOnLoadTracker
         {
             if (_initialExcludeNames.Contains(target.name))
             {
-                Trace.Write($"Ignoring initial DontDestroyOnLoad tracking for {target.name}");
+                Patcher.Logger.LogDebug($"Ignoring initial DontDestroyOnLoad tracking for {target.name}");
                 _initialExcludeNames.Remove(target.name);
                 return;
             }
 
-            Trace.Write(
+            Patcher.Logger.LogDebug(
                 $"DontDestroyOnLoad invoked, target name: {target.name}, target type: {target.GetType()}");
 
             var obj = target switch
@@ -42,18 +41,18 @@ public class DontDestroyOnLoadTracker
 
             if (obj == null)
             {
-                Trace.Write($"DontDestroyOnLoad target is neither GameObject nor Component, ignoring");
+                Patcher.Logger.LogDebug($"DontDestroyOnLoad target is neither GameObject nor Component, ignoring");
                 return;
             }
 
             // check if root
             if (obj.transform.parent != null)
             {
-                Trace.Write($"DontDestroyOnLoad target is not root, ignoring");
+                Patcher.Logger.LogDebug($"DontDestroyOnLoad target is not root, ignoring");
                 return;
             }
 
-            Trace.Write($"DontDestroyOnLoad target is root, adding to tracker");
+            Patcher.Logger.LogDebug($"DontDestroyOnLoad target is root, adding to tracker");
             Tracker.DontDestroyGameObjects.Add(obj);
         }
     }

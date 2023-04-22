@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using MoonSharp.Interpreter;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
@@ -19,7 +18,8 @@ public partial class MovieEngine : IMovieEngine
     private Script _script;
     private readonly List<ConcurrentIdentifier> _concurrentIdentifiers = new();
 
-    private readonly IMovieLogger _logger;
+    private readonly IMovieLogger _movieLogger;
+    private readonly ILogger _logger;
 
     public bool Finished { get; private set; }
 
@@ -41,9 +41,10 @@ public partial class MovieEngine : IMovieEngine
     /// <summary>
     /// Creates a new MovieEngine from a coroutine
     /// </summary>
-    public MovieEngine(Script script, IMovieLogger logger)
+    public MovieEngine(Script script, IMovieLogger movieLogger, ILogger logger)
     {
         Script = script;
+        _movieLogger = movieLogger;
         _logger = logger;
     }
 
@@ -116,9 +117,9 @@ public partial class MovieEngine : IMovieEngine
 
     private void ExceptionHandler(Exception exception)
     {
-        _logger.LogError("Movie threw a runtime exception!");
-        _logger.LogError(exception.Message);
-        Trace.Write(exception);
+        _movieLogger.LogError("Movie threw a runtime exception!");
+        _movieLogger.LogError(exception.Message);
+        _logger.LogDebug(exception);
 
         Finished = true;
     }

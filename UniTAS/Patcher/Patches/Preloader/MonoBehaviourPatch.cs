@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using HarmonyLib;
@@ -177,7 +176,7 @@ public class MonoBehaviourPatch : PreloadPatcher
 
                     if (foundMethod == null) continue;
 
-                    Trace.Write($"Patching method for pausing execution {foundMethod.FullName}");
+                    Patcher.Logger.LogDebug($"Patching method for pausing execution {foundMethod.FullName}");
 
                     var il = foundMethod.Body.GetILProcessor();
                     var firstInstruction = il.Body.Instructions.First();
@@ -208,7 +207,7 @@ public class MonoBehaviourPatch : PreloadPatcher
 
         ilProcessor.InsertBefore(method.Body.Instructions.First(), ilProcessor.Create(OpCodes.Call, reference));
 
-        Trace.Write(
+        Patcher.Logger.LogDebug(
             $"Successfully patched {methodName} for type {type.FullName} for updates, invokes {eventInvoker.Name}");
     }
 }

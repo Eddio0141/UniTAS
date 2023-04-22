@@ -47,7 +47,7 @@ public class StaticCtorHeaders : PreloadPatcher
             .Where(t => t.HasFields && t.Fields.Any(f => f.IsStatic && !f.IsLiteral) ||
                         t.HasMethods && t.Methods.Any(m => m.IsStatic && m.IsConstructor));
 
-        Trace.Write("Patching static ctors");
+        Patcher.Logger.LogDebug("Patching static ctors");
         foreach (var type in types)
         {
             // find static ctor
@@ -55,7 +55,7 @@ public class StaticCtorHeaders : PreloadPatcher
             // add static ctor if not found
             if (staticCtor == null)
             {
-                Trace.Write($"Adding static ctor to {type.FullName}");
+                Patcher.Logger.LogDebug($"Adding static ctor to {type.FullName}");
                 staticCtor = new(".cctor",
                     MethodAttributes.Static | MethodAttributes.Private | MethodAttributes.HideBySig
                     | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName,
@@ -66,7 +66,7 @@ public class StaticCtorHeaders : PreloadPatcher
                 il.Append(il.Create(OpCodes.Ret));
             }
 
-            Trace.Write($"Patching static ctor of {type.FullName}");
+            Patcher.Logger.LogDebug($"Patching static ctor of {type.FullName}");
             PatchStaticCtorHeader(assembly, staticCtor);
         }
     }
@@ -123,7 +123,7 @@ public static class PatchMethods
         }
 
         if (Tracker.StaticCtorInvokeOrder.Contains(type)) return;
-        Trace.Write($"First static ctor invoke for {type?.FullName}");
+        Patcher.Logger.LogDebug($"First static ctor invoke for {type?.FullName}");
 
         Tracker.StaticCtorInvokeOrder.Add(type);
     }

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Plugin.Services;
@@ -87,7 +86,7 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
         _logger.LogDebug("Processing new sync fixed update callback");
         _processingCallback = _pendingSync.Dequeue();
 
-        Trace.Write(
+        _logger.LogDebug(
             $"Fixed delta time: {Time.fixedDeltaTime}, invoke offset: {_processingCallback.InvokeOffset}, update invoke offset: {Patcher.Shared.UpdateInvokeOffset.Offset}");
 
         // check immediate return
@@ -135,7 +134,7 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
         var targetSeconds = seconds.Item1;
         _processingCallback.TimeLeft = targetSeconds;
         var actualSeconds = seconds.Item2;
-        Trace.Write($"Actual seconds: {actualSeconds}, target seconds: {targetSeconds}");
+        _logger.LogDebug($"Actual seconds: {actualSeconds}, target seconds: {targetSeconds}");
 
         _processingCallback.ProgressOffset(actualSeconds);
 

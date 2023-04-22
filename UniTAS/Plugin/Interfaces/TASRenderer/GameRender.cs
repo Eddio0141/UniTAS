@@ -178,7 +178,7 @@ public class GameRender : IGameRender, IOnLastUpdateActual
         }
         catch (Exception e)
         {
-            Trace.Write("Exception trying to delete video file, ignoring: " + e);
+            _logger.LogDebug("Exception trying to delete video file, ignoring: " + e);
         }
 
         try
@@ -188,7 +188,7 @@ public class GameRender : IGameRender, IOnLastUpdateActual
         }
         catch (Exception e)
         {
-            Trace.Write("Exception trying to delete audio file, ignoring: " + e);
+            _logger.LogDebug("Exception trying to delete audio file, ignoring: " + e);
         }
 
         _logger.LogInfo("Successfully stopped recording");

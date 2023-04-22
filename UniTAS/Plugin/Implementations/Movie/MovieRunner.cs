@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using UniTAS.Plugin.Exceptions.Movie.Runner;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
@@ -28,6 +27,7 @@ public class MovieRunner : IMovieRunner, IOnPreUpdatesActual
     private readonly IMovieParser _parser;
     private IMovieEngine _engine;
     private readonly IMovieLogger _movieLogger;
+    private readonly ILogger _logger;
 
     private readonly IOnMovieRunningStatusChange[] _onMovieRunningStatusChange;
 
@@ -37,7 +37,7 @@ public class MovieRunner : IMovieRunner, IOnPreUpdatesActual
 
     public MovieRunner(IGameRestart gameRestart, IMovieParser parser, IMovieLogger movieLogger,
         IOnMovieRunningStatusChange[] onMovieRunningStatusChange,
-        IVirtualEnvController virtualEnvController, ITimeEnv timeEnv, IRandomEnv randomEnv)
+        IVirtualEnvController virtualEnvController, ITimeEnv timeEnv, IRandomEnv randomEnv, ILogger logger)
     {
         _gameRestart = gameRestart;
         _parser = parser;
@@ -46,6 +46,7 @@ public class MovieRunner : IMovieRunner, IOnPreUpdatesActual
         _virtualEnvController = virtualEnvController;
         _timeEnv = timeEnv;
         _randomEnv = randomEnv;
+        _logger = logger;
 
         _gameRestart.OnGameRestartResume += OnGameRestartResume;
     }
@@ -67,7 +68,7 @@ public class MovieRunner : IMovieRunner, IOnPreUpdatesActual
             _setup = false;
             _movieLogger.LogError($"Failed to run TAS movie, an exception was thrown!");
             _movieLogger.LogError(e.Message);
-            Trace.Write(e);
+            _logger.LogDebug(e);
 
             return;
         }
@@ -80,7 +81,7 @@ public class MovieRunner : IMovieRunner, IOnPreUpdatesActual
 
         if (properties.StartupProperties != null)
         {
-            Trace.Write($"Using startup property: {properties.StartupProperties}");
+            _logger.LogDebug($"Using startup property: {properties.StartupProperties}");
             _timeEnv.FrameTime = properties.StartupProperties.FrameTime;
             _randomEnv.StartUpSeed = properties.StartupProperties.Seed;
             _gameRestart.SoftRestart(properties.StartupProperties.StartTime);
