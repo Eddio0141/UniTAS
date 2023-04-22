@@ -13,6 +13,7 @@ public class RuntimeTestAndLog : IRuntimeTestAndLog
 {
     private readonly IRuntimeTestProcessor _testProcessor;
     private readonly ILogger _logger;
+    private bool _isTesting;
 
     public RuntimeTestAndLog(IRuntimeTestProcessor testProcessor, ILogger logger)
     {
@@ -35,8 +36,15 @@ public class RuntimeTestAndLog : IRuntimeTestAndLog
 
     public void Test()
     {
+        if (_isTesting)
+        {
+            _logger.LogError("Cannot run test while another test is running");
+            return;
+        }
+
         _testProcessor.OnTestEnd += TestLog;
         _testProcessor.Test<RuntimeTestAndLog>();
+        _isTesting = true;
     }
 
     private void TestLog(List<TestResult> results)
@@ -96,5 +104,6 @@ public class RuntimeTestAndLog : IRuntimeTestAndLog
         _logger.LogInfo($"\n{builder}");
 
         _testProcessor.OnTestEnd -= TestLog;
+        _isTesting = false;
     }
 }
