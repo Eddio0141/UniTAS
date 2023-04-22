@@ -1,9 +1,11 @@
 using System;
+using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using UniTAS.Plugin.Implementations.VirtualEnvironment;
 using UniTAS.Plugin.Interfaces.Patches.PatchTypes;
 using UniTAS.Plugin.Services;
+using UniTAS.Plugin.Services.VirtualEnvironment;
 using UniTAS.Plugin.Services.VirtualEnvironment.Input;
 using UniTAS.Plugin.Utils;
 using UnityEngine;
@@ -38,6 +40,9 @@ public class LegacyInputPatch
     private static readonly IAxisStateEnv AxisStateEnv =
         Plugin.Kernel.GetInstance<IAxisStateEnv>();
 
+    private static readonly IResetInputAxesState ResetInputAxesState =
+        Plugin.Kernel.GetInstance<IResetInputAxesState>();
+
     // gets called from GetKey
     [HarmonyPatch(typeof(Input), nameof(Input.GetKeyInt))]
     private class GetKeyInt
@@ -52,7 +57,17 @@ public class LegacyInputPatch
             if (ReverseInvoker.InnerCall())
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
-            __result = KeyboardStateEnv.Keys.Contains(key);
+
+            __result = false;
+            foreach (var x in KeyboardStateEnv.Keys)
+            {
+                if (x.KeyCode.HasValue && x.KeyCode == key)
+                {
+                    __result = true;
+                    return false;
+                }
+            }
+
             return false;
         }
 
@@ -71,12 +86,29 @@ public class LegacyInputPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix( /*string name, ref bool __result*/)
+        private static bool Prefix(string name, ref bool __result)
         {
             if (ReverseInvoker.InnerCall())
                 return true;
-            return !VirtualEnvController.RunVirtualEnvironment;
-            // TODO
+            if (!VirtualEnvController.RunVirtualEnvironment) return true;
+
+            __result = false;
+            if (!LegacyInputSystemUtils.KeyStringToKeyCode(name, out var foundKeyCode))
+            {
+                foreach (var x in KeyboardStateEnv.Keys)
+                {
+                    if (!x.KeyCode.HasValue && x.Keys == name)
+                    {
+                        __result = true;
+                        return false;
+                    }
+                }
+
+                return false;
+            }
+
+            __result = KeyboardStateEnv.Keys.Any(x => x.KeyCode.HasValue && x.KeyCode == foundKeyCode);
+            return false;
         }
 
         private static void Postfix()
@@ -94,12 +126,37 @@ public class LegacyInputPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix( /*string name, ref bool __result*/)
+        private static bool Prefix(string name, ref bool __result)
         {
             if (ReverseInvoker.InnerCall())
                 return true;
-            return !VirtualEnvController.RunVirtualEnvironment;
-            // TODO
+            if (!VirtualEnvController.RunVirtualEnvironment) return true;
+
+            __result = false;
+            if (!LegacyInputSystemUtils.KeyStringToKeyCode(name, out var foundKeyCode))
+            {
+                foreach (var x in KeyboardStateEnv.KeysUp)
+                {
+                    if (!x.KeyCode.HasValue && x.Keys == name)
+                    {
+                        __result = true;
+                        return false;
+                    }
+                }
+
+                return false;
+            }
+
+            foreach (var x in KeyboardStateEnv.KeysUp)
+            {
+                if (x.KeyCode.HasValue && x.KeyCode == foundKeyCode)
+                {
+                    __result = true;
+                    return false;
+                }
+            }
+
+            return false;
         }
 
         private static void Postfix()
@@ -122,7 +179,17 @@ public class LegacyInputPatch
             if (ReverseInvoker.InnerCall())
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
-            __result = KeyboardStateEnv.KeysUp.Contains(key);
+
+            __result = false;
+            foreach (var x in KeyboardStateEnv.KeysUp)
+            {
+                if (x.KeyCode.HasValue && x.KeyCode == key)
+                {
+                    __result = true;
+                    return false;
+                }
+            }
+
             return false;
         }
 
@@ -141,12 +208,37 @@ public class LegacyInputPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix( /*string name*/)
+        private static bool Prefix(string name, ref bool __result)
         {
             if (ReverseInvoker.InnerCall())
                 return true;
-            return !VirtualEnvController.RunVirtualEnvironment;
-            // TODO
+            if (!VirtualEnvController.RunVirtualEnvironment) return true;
+
+            __result = false;
+            if (!LegacyInputSystemUtils.KeyStringToKeyCode(name, out var foundKeyCode))
+            {
+                foreach (var x in KeyboardStateEnv.KeysDown)
+                {
+                    if (!x.KeyCode.HasValue && x.Keys == name)
+                    {
+                        __result = true;
+                        return false;
+                    }
+                }
+
+                return false;
+            }
+
+            foreach (var x in KeyboardStateEnv.KeysDown)
+            {
+                if (x.KeyCode.HasValue && x.KeyCode == foundKeyCode)
+                {
+                    __result = true;
+                    return false;
+                }
+            }
+
+            return false;
         }
 
         private static void Postfix()
@@ -169,7 +261,17 @@ public class LegacyInputPatch
             if (ReverseInvoker.InnerCall())
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
-            __result = KeyboardStateEnv.KeysDown.Contains(key);
+
+            __result = false;
+            foreach (var x in KeyboardStateEnv.KeysDown)
+            {
+                if (x.KeyCode.HasValue && x.KeyCode == key)
+                {
+                    __result = true;
+                    return false;
+                }
+            }
+
             return false;
         }
 
@@ -208,6 +310,13 @@ public class LegacyInputPatch
             if (ReverseInvoker.InnerCall())
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
+
+            if (ResetInputAxesState.IsResetInputAxesState)
+            {
+                __result = 0;
+                return false;
+            }
+
             if (AxisStateEnv.Values.TryGetValue(axisName, out var value))
             {
                 __result = value;
@@ -235,6 +344,13 @@ public class LegacyInputPatch
             if (ReverseInvoker.InnerCall())
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
+
+            if (ResetInputAxesState.IsResetInputAxesState)
+            {
+                __result = 0;
+                return false;
+            }
+
             if (AxisStateEnv.Values.TryGetValue(axisName, out var value))
             {
                 __result = value;
@@ -312,6 +428,13 @@ public class LegacyInputPatch
             if (ReverseInvoker.InnerCall())
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
+
+            if (ResetInputAxesState.IsResetInputAxesState)
+            {
+                __result = false;
+                return false;
+            }
+
             __result = button switch
             {
                 0 => MouseStateEnv.LeftClick,
@@ -341,6 +464,13 @@ public class LegacyInputPatch
             if (ReverseInvoker.InnerCall())
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
+
+            if (ResetInputAxesState.IsResetInputAxesState)
+            {
+                __result = false;
+                return false;
+            }
+
             __result = button switch
             {
                 0 => MouseStateEnv.LeftClickDown,
@@ -370,6 +500,13 @@ public class LegacyInputPatch
             if (ReverseInvoker.InnerCall())
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
+
+            if (ResetInputAxesState.IsResetInputAxesState)
+            {
+                __result = false;
+                return false;
+            }
+
             __result = button switch
             {
                 0 => MouseStateEnv.LeftClickUp,
@@ -394,15 +531,13 @@ public class LegacyInputPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
+        // Resets all input. After ResetInputAxes all axes return to 0 and all buttons return to 0 for one frame.
         private static bool Prefix()
         {
             if (ReverseInvoker.InnerCall())
                 return true;
-            // TODO make this work
-            // Resets all input. After ResetInputAxes all axes return to 0 and all buttons return to 0 for one frame.
-            // TODO also make sure movie overwrites input on the same frame after reset
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
-            AxisStateEnv.Values.Clear();
+            ResetInputAxesState.IsResetInputAxesState = true;
             return false;
         }
 
@@ -425,6 +560,12 @@ public class LegacyInputPatch
             if (ReverseInvoker.InnerCall())
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
+
+            if (ResetInputAxesState.IsResetInputAxesState)
+            {
+                __result = false;
+                return false;
+            }
 
             __result = ButtonStateEnv.Buttons.Contains(buttonName);
             return false;
@@ -450,6 +591,12 @@ public class LegacyInputPatch
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
 
+            if (ResetInputAxesState.IsResetInputAxesState)
+            {
+                __result = false;
+                return false;
+            }
+
             __result = ButtonStateEnv.ButtonsDown.Contains(buttonName);
             return false;
         }
@@ -473,6 +620,12 @@ public class LegacyInputPatch
             if (ReverseInvoker.InnerCall())
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
+
+            if (ResetInputAxesState.IsResetInputAxesState)
+            {
+                __result = false;
+                return false;
+            }
 
             __result = ButtonStateEnv.ButtonsUp.Contains(buttonName);
             return false;
@@ -600,7 +753,8 @@ public class LegacyInputPatch
         private static bool Prefix(ref bool __result)
         {
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
-            __result = KeyboardStateEnv.Keys.Count > 0 || MouseStateEnv.LeftClick ||
+            __result = KeyboardStateEnv.KeysDown.Count > 0 || KeyboardStateEnv.Keys.Count > 0 ||
+                       MouseStateEnv.LeftClick ||
                        MouseStateEnv.RightClick || MouseStateEnv.MiddleClick;
             return false;
         }
@@ -637,7 +791,7 @@ public class LegacyInputPatch
             // Returns the keyboard input entered this frame
             // Only ASCII characters are contained in the inputString.
             // Character "\n" represents return or enter.
-            // TODO
+            // TODO this also does the "repeat when held" thing
         }
     }
 
@@ -828,4 +982,43 @@ public class LegacyInputPatch
             return false;
         }
     }
+
+    [HarmonyPatch(typeof(Input), "mouseScrollDelta", MethodType.Getter)]
+    private class MouseScrollDeltaGetter
+    {
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static bool Prefix(ref Vector2 __result)
+        {
+            if (!VirtualEnvController.RunVirtualEnvironment) return true;
+            __result = MouseStateEnv.Scroll;
+            return false;
+        }
+    }
+
+    // left to do properties
+    // TODO backButtonLeavesApp { get; set; }
+    // TODO compass { get; }
+    // TODO compensateSensors {get; set; }
+    // TODO compositionCursorPos { get; set; }
+    // TODO compositionString { get; }
+    // TODO imeCompositionMode { get; set; }
+    // TODO imeIsSelected { get; }
+    // TODO location { get; }
+    // TODO mousePositionDelta { get; }
+    // TODO simulateMouseWithTouches { get; set; }
+    // TODO stylusTouchSupported { get; }
+    // TODO touchPressureSupported { get; }
+    // TODO touchSupported { get; }
+
+    // left to do methods
+    // TODO ClearLastPenContactEvent
+    // TODO GetJoystickNames
+    // TODO GetLastPenContactEvent
+    // TODO GetTouch
+    // TODO IsJoystickPreconfigured
+    // TODO ResetPenEvents
 }

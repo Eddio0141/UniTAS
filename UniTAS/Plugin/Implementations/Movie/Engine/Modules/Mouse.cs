@@ -43,4 +43,9 @@ public class Mouse : EngineMethodClass
     {
         _mouseStateEnv.MiddleClick = hold;
     }
+
+    public void Set_scroll(float x, float y)
+    {
+        _mouseStateEnv.Scroll = new(x, y);
+    }
 }

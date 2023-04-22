@@ -1,3 +1,5 @@
+using UnityEngine;
+
 namespace UniTAS.Plugin.Services.VirtualEnvironment.Input;
 
 public interface IMouseStateEnv
@@ -14,4 +16,5 @@ public interface IMouseStateEnv
     bool MiddleClick { get; set; }
     bool MiddleClickDown { get; }
     bool MiddleClickUp { get; }
+    Vector2 Scroll { get; set; }
 }

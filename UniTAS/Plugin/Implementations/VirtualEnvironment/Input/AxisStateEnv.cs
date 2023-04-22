@@ -8,12 +8,7 @@ namespace UniTAS.Plugin.Implementations.VirtualEnvironment.Input;
 [Singleton]
 public class AxisStateEnv : InputDevice, IAxisStateEnv
 {
-    public Dictionary<string, float> Values { get; }
-
-    public AxisStateEnv()
-    {
-        Values = new();
-    }
+    public Dictionary<string, float> Values { get; } = new();
 
     protected override void Update()
     {
