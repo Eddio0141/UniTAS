@@ -54,13 +54,13 @@ public class InputSystemOverride
         {
             _logger.LogDebug("Adding TAS devices to InputSystem");
 
+            _restoreDevices = InputSystem.devices.ToArray();
+            RemoveAndFlushAllDevices();
+
             foreach (var device in _devices)
             {
                 device.DeviceAdded();
             }
-
-            _restoreDevices = InputSystem.devices.ToArray();
-            RemoveAndFlushAllDevices();
 
             _logger.LogDebug("Added TAS devices to InputSystem");
         }
