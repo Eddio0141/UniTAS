@@ -158,6 +158,7 @@ public static class KernelUtils
         });
 
         var forceInstantiateTypes = kernel.GetInstance<IForceInstantiateTypes>();
+        forceInstantiateTypes.InstantiateTypes<PluginWrapper>();
         forceInstantiateTypes.InstantiateTypes<DummyMouseEnv>();
 
         return kernel;
