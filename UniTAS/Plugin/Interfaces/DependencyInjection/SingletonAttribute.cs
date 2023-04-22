@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UniTAS.Plugin.Models.DependencyInjection;
 
 namespace UniTAS.Plugin.Interfaces.DependencyInjection;
@@ -12,5 +13,10 @@ public class SingletonAttribute : RegisterAttribute
 {
     public SingletonAttribute(RegisterPriority priority = RegisterPriority.Default) : base(priority)
     {
+    }
+
+    public override IEnumerable<RegisterInfoBase> GetRegisterInfos(Type type, Type[] allTypes, bool isTesting)
+    {
+        yield return new RegisterInfo(type, this);
     }
 }

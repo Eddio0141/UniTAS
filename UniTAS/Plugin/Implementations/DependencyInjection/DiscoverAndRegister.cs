@@ -4,14 +4,13 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using HarmonyLib;
 using StructureMap;
-using StructureMap.Configuration.DSL;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Services.DependencyInjection;
 
 namespace UniTAS.Plugin.Implementations.DependencyInjection;
 
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-public partial class DiscoverAndRegister : IDiscoverAndRegister
+public class DiscoverAndRegister : IDiscoverAndRegister
 {
     private readonly bool _isTesting = AccessTools.TypeByName("Xunit.FactAttribute") != null;
 
@@ -32,47 +31,7 @@ public partial class DiscoverAndRegister : IDiscoverAndRegister
 
         foreach (var register in registers)
         {
-            switch (register)
-            {
-                case RegisterInfo registerInfo:
-                    if (registerInfo.RegisterAttribute is SingletonAttribute)
-                    {
-                        config.For(registerInfo.Type).Singleton();
-                    }
-
-                    RegisterInterfaces(registerInfo.Type, config, registerInfo.RegisterAttribute);
-                    break;
-                case RegisterAllInfo registerAllInfo:
-                    config.For(registerAllInfo.Type).Use(registerAllInfo.InnerType);
-                    break;
-            }
-        }
-    }
-
-    private static void RegisterInterfaces(Type type, IRegistry config, RegisterAttribute registerAttribute)
-    {
-        var interfaces = type.GetInterfaces();
-        var baseType = type.BaseType;
-        var typeAssembly = type.Assembly;
-
-        // register type itself
-        config.For(type).Use(type);
-
-        // register with base type
-        if (baseType != null && baseType != typeof(object) &&
-            registerAttribute?.IgnoreInterfaces?.All(x => x != baseType) is true or null &&
-            ((registerAttribute?.IncludeDifferentAssembly ?? false) || Equals(baseType.Assembly, typeAssembly)))
-        {
-            config.For(baseType).Use(x => x.GetInstance(type));
-        }
-
-        // register with all interfaces
-        foreach (var @interface in interfaces)
-        {
-            if (!((registerAttribute?.IncludeDifferentAssembly ?? false) || Equals(@interface.Assembly, typeAssembly)))
-                continue;
-
-            config.For(@interface).Use(x => x.GetInstance(type));
+            register.Register(config);
         }
     }
 
@@ -85,46 +44,11 @@ public partial class DiscoverAndRegister : IDiscoverAndRegister
 
         foreach (var dependencyInjectionAttribute in dependencyInjectionAttributes)
         {
-            switch (dependencyInjectionAttribute)
+            var registerAttribute = (DependencyInjectionAttribute)dependencyInjectionAttribute;
+            var infos = registerAttribute.GetRegisterInfos(type, allTypes, _isTesting);
+            foreach (var info in infos)
             {
-                case SingletonAttribute singletonAttribute:
-                    yield return new RegisterInfo(type, singletonAttribute);
-                    break;
-                case RegisterAllAttribute registerAllAttribute:
-                {
-                    var types = type.IsInterface
-                        ? allTypes.Where(x => x.GetInterfaces().Contains(type))
-                        : allTypes.Where(x => x.IsSubclassOf(type) && !x.IsAbstract);
-
-                    // if type is abstract, recursively register inner types
-                    foreach (var innerType in types)
-                    {
-                        var innerTypeAttributes =
-                            innerType.GetCustomAttributes(typeof(DependencyInjectionAttribute), true);
-                        var excludeTesting = _isTesting &&
-                                             innerTypeAttributes.Any(x => x is ExcludeRegisterIfTestingAttribute);
-                        if (excludeTesting) continue;
-
-                        yield return new RegisterAllInfo(type, innerType, registerAllAttribute);
-
-                        var innerRegisterInfos = GetRegisterInfos(innerType, allTypes);
-                        foreach (var innerRegisterInfo in innerRegisterInfos)
-                        {
-                            yield return innerRegisterInfo;
-                        }
-                    }
-
-                    break;
-                }
-                case RegisterAttribute registerAttribute:
-                    yield return new RegisterInfo(type, registerAttribute);
-                    break;
-                case ExcludeRegisterIfTestingAttribute:
-                    break;
-                case ForceInstantiateAttribute:
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                yield return info;
             }
         }
     }
