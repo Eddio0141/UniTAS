@@ -6,6 +6,7 @@ using UnityEngine;
 namespace UniTAS.Plugin.Implementations.VirtualEnvironment.Input;
 
 [Singleton]
+[ExcludeRegisterIfTesting]
 public class MouseStateEnv : InputDevice, IMouseStateEnv
 {
     public bool MousePresent { get; }

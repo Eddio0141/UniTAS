@@ -12,6 +12,8 @@ using UniTAS.Plugin.Models.DependencyInjection;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.Logging;
 using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
+using UniTAS.Plugin.Services.VirtualEnvironment.Input;
+using UnityEngine;
 
 namespace UniTAS.Plugin.Tests;
 
@@ -118,6 +120,25 @@ public static class KernelUtils
         public void PreUpdateActual()
         {
         }
+    }
+
+    [Singleton(IncludeDifferentAssembly = true)]
+    [SuppressMessage("ReSharper", "UnassignedGetOnlyAutoProperty")]
+    public class DummyMouseEnv : IMouseStateEnv
+    {
+        public bool MousePresent { get; }
+        public float XPos { get; set; }
+        public float YPos { get; set; }
+        public bool LeftClick { get; set; }
+        public bool LeftClickDown { get; }
+        public bool LeftClickUp { get; }
+        public bool RightClick { get; set; }
+        public bool RightClickDown { get; }
+        public bool RightClickUp { get; }
+        public bool MiddleClick { get; set; }
+        public bool MiddleClickDown { get; }
+        public bool MiddleClickUp { get; }
+        public Vector2 Scroll { get; set; }
     }
 
     public static Container Init()
