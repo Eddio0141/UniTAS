@@ -32,7 +32,8 @@ public class MouseDeviceOverride : InputOverrideDevice
         {
             // bit 0 = left mouse button
             buttons = (ushort)(_mouseStateEnv.LeftClick ? 1 : 0),
-            position = _mouseStateEnv.Position
+            position = _mouseStateEnv.Position,
+            scroll = _mouseStateEnv.Scroll
         };
 
         InputSystem.QueueStateEvent(_mouse, state);
