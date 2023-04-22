@@ -26,13 +26,13 @@ public class ForceInstantiateTypes : IForceInstantiateTypes
 
         foreach (var type in allTypes)
         {
-            var attributes = type.GetCustomAttributes(typeof(ForceInstantiateAttribute), true);
+            var attributes = type.GetCustomAttributes(typeof(ForceInstantiateAttribute), false);
             if (attributes.Length == 0) continue;
 
-            attributes = type.GetCustomAttributes(typeof(ExcludeRegisterIfTestingAttribute), true);
+            attributes = type.GetCustomAttributes(typeof(ExcludeRegisterIfTestingAttribute), false);
             if (attributes.Length > 0 && _isTesting) continue;
 
-            _logger.LogDebug($"Force instantiating {type}");
+            _logger.LogDebug($"Force instantiating {type.Name}");
             _container.GetInstance(type);
         }
     }
