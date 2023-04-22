@@ -19,4 +19,12 @@ public static class RuntimeAssert
             throw new RuntimeAssertException("RuntimeAssert.False failed" + (message == null ? "" : $" {message}"));
         }
     }
+
+    public static void AreEqual<T>(T expected, T actual, string message = null)
+    {
+        if (!expected.Equals(actual))
+        {
+            throw new RuntimeAssertException("RuntimeAssert.AreEqual failed" + (message == null ? "" : $" {message}"));
+        }
+    }
 }
