@@ -1,40 +1,31 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
-using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
+using UniTAS.Plugin.Interfaces.InputSystemOverride;
 using UniTAS.Plugin.Services.Logging;
 using UniTAS.Plugin.Services.VirtualEnvironment;
-using UniTAS.Plugin.Services.VirtualEnvironment.Input;
 using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.Layouts;
-using UnityEngine.InputSystem.LowLevel;
 
 namespace UniTAS.Plugin.Implementations.InputSystemOverride;
 
 [Singleton]
-public class InputSystemOverride : IOnPreUpdatesActual
+public class InputSystemOverride
 {
     private readonly bool _hasInputSystem;
 
-    private TASMouse _mouse;
-    private TASKeyboard _keyboard;
-
+    private readonly InputOverrideDevice[] _devices;
     private InputDevice[] _restoreDevices;
 
-    private readonly IMouseStateEnv _mouseStateEnv;
-    private readonly IKeyboardStateEnv _keyboardStateEnv;
+    private readonly ILogger _logger;
     private readonly IVirtualEnvController _virtualEnvController;
 
-    private readonly ILogger _logger;
-
     [SuppressMessage("ReSharper", "ConditionIsAlwaysTrueOrFalse")]
-    public InputSystemOverride(IMouseStateEnv mouseStateEnv, IKeyboardStateEnv keyboardStateEnv,
-        IVirtualEnvController virtualEnvController, ILogger logger)
+    public InputSystemOverride(ILogger logger, InputOverrideDevice[] devices,
+        IVirtualEnvController virtualEnvController)
     {
-        _mouseStateEnv = mouseStateEnv;
-        _keyboardStateEnv = keyboardStateEnv;
-        _virtualEnvController = virtualEnvController;
         _logger = logger;
+        _devices = devices;
+        _virtualEnvController = virtualEnvController;
 
         try
         {
@@ -52,40 +43,30 @@ public class InputSystemOverride : IOnPreUpdatesActual
 
         _logger.LogInfo($"InputSystemOverride hasInputSystem: {_hasInputSystem}");
 
+        if (!_hasInputSystem) return;
         _virtualEnvController.OnVirtualEnvStatusChange += OnVirtualEnvStatusChange;
-    }
-
-    [InputControlLayout(stateType = typeof(MouseState), isGenericTypeOfDevice = true)]
-    private class TASMouse : Mouse
-    {
-    }
-
-    [InputControlLayout(stateType = typeof(KeyboardState), isGenericTypeOfDevice = true)]
-    private class TASKeyboard : Keyboard
-    {
     }
 
     public void OnVirtualEnvStatusChange(bool runVirtualEnv)
     {
-        if (!_hasInputSystem) return;
-
         if (runVirtualEnv)
         {
             _logger.LogDebug("Adding TAS devices to InputSystem");
 
-            // remove all connected devices
+            foreach (var device in _devices)
+            {
+                device.DeviceAdded();
+            }
+
             _restoreDevices = InputSystem.devices.ToArray();
             RemoveAndFlushAllDevices();
 
-            _mouse = InputSystem.AddDevice<TASMouse>();
-            _keyboard = InputSystem.AddDevice<TASKeyboard>();
             _logger.LogDebug("Added TAS devices to InputSystem");
         }
         else
         {
             _logger.LogDebug("Removing TAS devices from InputSystem");
 
-            // remove all connected devices
             RemoveAndFlushAllDevices();
 
             // restore devices
@@ -101,7 +82,7 @@ public class InputSystemOverride : IOnPreUpdatesActual
         }
     }
 
-    private void RemoveAndFlushAllDevices()
+    private static void RemoveAndFlushAllDevices()
     {
         while (InputSystem.devices.Count > 0)
         {
@@ -109,28 +90,5 @@ public class InputSystemOverride : IOnPreUpdatesActual
         }
 
         InputSystem.FlushDisconnectedDevices();
-    }
-
-    public void PreUpdateActual()
-    {
-        if (!_hasInputSystem || !_virtualEnvController.RunVirtualEnvironment) return;
-
-        var state = new MouseState
-        {
-            // bit 0 = left mouse button
-            buttons = (ushort)(_mouseStateEnv.LeftClick ? 1 : 0),
-            position = _mouseStateEnv.Position
-        };
-
-        // var keys = new byte[14];
-        // if (_keyboardStateEnv.Keys.Contains(KeyCode.Space)) keys[0] = 1;
-
-        var stateKeyboard = new KeyboardState();
-        unsafe
-        {
-            stateKeyboard.keys[0] = 1;
-        }
-
-        InputSystem.QueueStateEvent(_mouse, state);
     }
 }
