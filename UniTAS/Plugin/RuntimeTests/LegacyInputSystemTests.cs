@@ -11,12 +11,12 @@ using UnityEngine;
 namespace UniTAS.Plugin.RuntimeTests;
 
 [Register]
-public class InputTests
+public class LegacyInputSystemTests
 {
     private readonly IKeyboardStateEnv _keyboardStateEnv;
     private readonly IVirtualEnvController _virtualEnvController;
 
-    public InputTests(IKeyboardStateEnv keyboardStateEnv, IVirtualEnvController virtualEnvController)
+    public LegacyInputSystemTests(IKeyboardStateEnv keyboardStateEnv, IVirtualEnvController virtualEnvController)
     {
         _keyboardStateEnv = keyboardStateEnv;
         _virtualEnvController = virtualEnvController;
