@@ -75,9 +75,9 @@ public class InputSystemOverride : IOnPreUpdatesActual
 
             // remove all connected devices
             _restoreDevices = InputSystem.devices.ToArray();
-            foreach (var device in _restoreDevices)
+            while (InputSystem.devices.Count > 0)
             {
-                InputSystem.RemoveDevice(device);
+                InputSystem.RemoveDevice(InputSystem.devices[0]);
             }
 
             _mouse = InputSystem.AddDevice<TASMouse>();
@@ -89,9 +89,9 @@ public class InputSystemOverride : IOnPreUpdatesActual
             _logger.LogDebug("Removing TAS devices from InputSystem");
 
             // remove all connected devices
-            foreach (var device in InputSystem.devices)
+            while (InputSystem.devices.Count > 0)
             {
-                InputSystem.RemoveDevice(device);
+                InputSystem.RemoveDevice(InputSystem.devices[0]);
             }
 
             // restore devices
