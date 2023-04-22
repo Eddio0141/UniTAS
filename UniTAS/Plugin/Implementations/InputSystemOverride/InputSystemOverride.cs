@@ -1,7 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
-using UniTAS.Plugin.Interfaces.Events;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
 using UniTAS.Plugin.Services.Logging;
 using UniTAS.Plugin.Services.VirtualEnvironment;
@@ -13,12 +12,14 @@ using UnityEngine.InputSystem.LowLevel;
 namespace UniTAS.Plugin.Implementations.InputSystemOverride;
 
 [Singleton]
-public class InputSystemOverride : IOnPreUpdatesActual, IOnVirtualEnvStatusChange
+public class InputSystemOverride : IOnPreUpdatesActual
 {
     private readonly bool _hasInputSystem;
 
     private TASMouse _mouse;
     private TASKeyboard _keyboard;
+
+    private InputDevice[] _restoreDevices;
 
     private readonly IMouseStateEnv _mouseStateEnv;
     private readonly IKeyboardStateEnv _keyboardStateEnv;
@@ -50,6 +51,8 @@ public class InputSystemOverride : IOnPreUpdatesActual, IOnVirtualEnvStatusChang
         }
 
         _logger.LogInfo($"InputSystemOverride hasInputSystem: {_hasInputSystem}");
+
+        _virtualEnvController.OnVirtualEnvStatusChange += OnVirtualEnvStatusChange;
     }
 
     [InputControlLayout(stateType = typeof(MouseState), isGenericTypeOfDevice = true)]
@@ -68,16 +71,39 @@ public class InputSystemOverride : IOnPreUpdatesActual, IOnVirtualEnvStatusChang
 
         if (runVirtualEnv)
         {
+            _logger.LogDebug("Adding TAS devices to InputSystem");
+
             // remove all connected devices
-            var devices = InputSystem.devices;
-            foreach (var device in devices)
+            _restoreDevices = InputSystem.devices.ToArray();
+            foreach (var device in _restoreDevices)
             {
                 InputSystem.RemoveDevice(device);
             }
 
             _mouse = InputSystem.AddDevice<TASMouse>();
             _keyboard = InputSystem.AddDevice<TASKeyboard>();
-            _logger.LogDebug("Added devices to InputSystem");
+            _logger.LogDebug("Added TAS devices to InputSystem");
+        }
+        else
+        {
+            _logger.LogDebug("Removing TAS devices from InputSystem");
+
+            // remove all connected devices
+            foreach (var device in InputSystem.devices)
+            {
+                InputSystem.RemoveDevice(device);
+            }
+
+            // restore devices
+            if (_restoreDevices != null)
+            {
+                foreach (var device in _restoreDevices)
+                {
+                    InputSystem.AddDevice(device);
+                }
+            }
+
+            _logger.LogDebug("Removed TAS devices from InputSystem");
         }
     }
 
