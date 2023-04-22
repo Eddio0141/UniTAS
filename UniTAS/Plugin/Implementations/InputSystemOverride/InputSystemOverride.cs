@@ -75,10 +75,7 @@ public class InputSystemOverride : IOnPreUpdatesActual
 
             // remove all connected devices
             _restoreDevices = InputSystem.devices.ToArray();
-            while (InputSystem.devices.Count > 0)
-            {
-                InputSystem.RemoveDevice(InputSystem.devices[0]);
-            }
+            RemoveAndFlushAllDevices();
 
             _mouse = InputSystem.AddDevice<TASMouse>();
             _keyboard = InputSystem.AddDevice<TASKeyboard>();
@@ -89,10 +86,7 @@ public class InputSystemOverride : IOnPreUpdatesActual
             _logger.LogDebug("Removing TAS devices from InputSystem");
 
             // remove all connected devices
-            while (InputSystem.devices.Count > 0)
-            {
-                InputSystem.RemoveDevice(InputSystem.devices[0]);
-            }
+            RemoveAndFlushAllDevices();
 
             // restore devices
             if (_restoreDevices != null)
@@ -107,6 +101,16 @@ public class InputSystemOverride : IOnPreUpdatesActual
         }
     }
 
+    private void RemoveAndFlushAllDevices()
+    {
+        while (InputSystem.devices.Count > 0)
+        {
+            InputSystem.RemoveDevice(InputSystem.devices[0]);
+        }
+
+        InputSystem.FlushDisconnectedDevices();
+    }
+
     public void PreUpdateActual()
     {
         if (!_hasInputSystem || !_virtualEnvController.RunVirtualEnvironment) return;
@@ -115,6 +119,7 @@ public class InputSystemOverride : IOnPreUpdatesActual
         {
             // bit 0 = left mouse button
             buttons = (ushort)(_mouseStateEnv.LeftClick ? 1 : 0),
+            position = new(_mouseStateEnv.XPos, _mouseStateEnv.YPos)
         };
 
         // var keys = new byte[14];
