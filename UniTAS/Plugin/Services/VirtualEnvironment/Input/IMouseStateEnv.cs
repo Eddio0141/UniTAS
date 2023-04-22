@@ -5,8 +5,7 @@ namespace UniTAS.Plugin.Services.VirtualEnvironment.Input;
 public interface IMouseStateEnv
 {
     bool MousePresent { get; }
-    float XPos { get; set; }
-    float YPos { get; set; }
+    Vector2 Position { get; set; }
     bool LeftClick { get; set; }
     bool LeftClickDown { get; }
     bool LeftClickUp { get; }

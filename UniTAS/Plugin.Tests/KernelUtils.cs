@@ -127,8 +127,7 @@ public static class KernelUtils
     public class DummyMouseEnv : IMouseStateEnv
     {
         public bool MousePresent { get; }
-        public float XPos { get; set; }
-        public float YPos { get; set; }
+        public Vector2 Position { get; set; }
         public bool LeftClick { get; set; }
         public bool LeftClickDown { get; }
         public bool LeftClickUp { get; }

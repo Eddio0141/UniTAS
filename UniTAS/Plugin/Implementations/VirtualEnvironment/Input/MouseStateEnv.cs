@@ -10,8 +10,7 @@ namespace UniTAS.Plugin.Implementations.VirtualEnvironment.Input;
 public class MouseStateEnv : InputDevice, IMouseStateEnv
 {
     public bool MousePresent { get; }
-    public float XPos { get; set; }
-    public float YPos { get; set; }
+    public Vector2 Position { get; set; }
     public bool LeftClick { get; set; }
     public bool LeftClickDown { get; private set; }
     public bool LeftClickUp { get; private set; }
@@ -50,8 +49,7 @@ public class MouseStateEnv : InputDevice, IMouseStateEnv
 
     protected sealed override void ResetState()
     {
-        XPos = 0f;
-        YPos = 0f;
+        Position = Vector2.zero;
 
         LeftClick = false;
         LeftClickDown = false;

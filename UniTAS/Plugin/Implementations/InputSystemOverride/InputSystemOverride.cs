@@ -119,7 +119,7 @@ public class InputSystemOverride : IOnPreUpdatesActual
         {
             // bit 0 = left mouse button
             buttons = (ushort)(_mouseStateEnv.LeftClick ? 1 : 0),
-            position = new(_mouseStateEnv.XPos, _mouseStateEnv.YPos)
+            position = _mouseStateEnv.Position
         };
 
         // var keys = new byte[14];

@@ -6,6 +6,7 @@ using UniTAS.Plugin.Models.Coroutine;
 using UniTAS.Plugin.Services.VirtualEnvironment;
 using UniTAS.Plugin.Services.VirtualEnvironment.Input;
 using UniTAS.Plugin.Utils;
+using UnityEngine;
 using UnityEngine.InputSystem;
 
 namespace UniTAS.Plugin.RuntimeTests;
@@ -32,8 +33,7 @@ public class NewInputSystemTests
 
         yield return new WaitForUpdateUnconditional();
 
-        _mouseStateEnv.XPos = 500;
-        _mouseStateEnv.YPos = 600;
+        _mouseStateEnv.Position = new(500, 600);
 
         yield return new WaitForUpdateUnconditional();
 
@@ -41,8 +41,7 @@ public class NewInputSystemTests
         RuntimeAssert.AreEqual(600, Mouse.current.position.y.ReadValue(), "mouse y position check");
 
         _virtualEnvController.RunVirtualEnvironment = false;
-        _mouseStateEnv.XPos = 0;
-        _mouseStateEnv.YPos = 0;
+        _mouseStateEnv.Position = Vector2.zero;
     }
 
     [RuntimeTest]

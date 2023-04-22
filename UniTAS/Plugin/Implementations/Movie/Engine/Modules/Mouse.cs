@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using MoonSharp.Interpreter;
 using UniTAS.Plugin.Interfaces.Movie;
 using UniTAS.Plugin.Services.VirtualEnvironment.Input;
+using UnityEngine;
 
 namespace UniTAS.Plugin.Implementations.Movie.Engine.Modules;
 
@@ -19,14 +20,12 @@ public class Mouse : EngineMethodClass
 
     public void Move(float x, float y)
     {
-        _mouseStateEnv.XPos = x;
-        _mouseStateEnv.YPos = y;
+        _mouseStateEnv.Position = new(x, y);
     }
 
     public void Move_rel(float x, float y)
     {
-        _mouseStateEnv.XPos += x;
-        _mouseStateEnv.YPos += y;
+        _mouseStateEnv.Position += new Vector2(x, y);
     }
 
     public void Left(bool hold = true)

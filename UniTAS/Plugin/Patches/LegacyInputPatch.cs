@@ -378,8 +378,7 @@ public class LegacyInputPatch
             if (ReverseInvoker.InnerCall())
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
-            var mouseState = MouseStateEnv;
-            __result = new(mouseState.XPos, mouseState.YPos);
+            __result = MouseStateEnv.Position;
             return false;
         }
 
@@ -404,8 +403,7 @@ public class LegacyInputPatch
             if (ReverseInvoker.InnerCall())
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
-            var mouseState = MouseStateEnv;
-            ret = new(mouseState.XPos, mouseState.YPos);
+            ret = MouseStateEnv.Position;
             return false;
         }
 
