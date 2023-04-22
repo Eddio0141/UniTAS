@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using BepInEx.Logging;
 using Mono.Cecil;
@@ -22,8 +21,6 @@ public static class Patcher
     [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public static void Initialize()
     {
-        RemoveConsoleTrace();
-
         Logger.LogInfo($"Found {PreloadPatcherProcessor.PreloadPatchers.Length} preload patchers");
         Logger.LogDebug($"Target DLLs\n{string.Join("\n", PreloadPatcherProcessor.TargetDLLs)}");
     }
@@ -35,23 +32,6 @@ public static class Patcher
         foreach (var patcher in PreloadPatcherProcessor.PreloadPatchers)
         {
             patcher.Patch(ref assembly);
-        }
-    }
-
-    /// <summary>
-    /// Removes the console trace listener to prevent duplicate messages
-    /// </summary>
-    private static void RemoveConsoleTrace()
-    {
-        var traceCount = Trace.Listeners.Count;
-        for (var i = 0; i < traceCount; i++)
-        {
-            var listener = Trace.Listeners[i];
-            if (listener is TraceLogSource) continue;
-
-            Trace.Listeners.RemoveAt(i);
-            i--;
-            traceCount--;
         }
     }
 }

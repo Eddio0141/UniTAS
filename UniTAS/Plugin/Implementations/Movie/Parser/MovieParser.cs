@@ -1,6 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
 using MoonSharp.Interpreter;
 using MoonSharp.Interpreter.Loaders;
+using StructureMap;
+using StructureMap.Pipeline;
 using UniTAS.Plugin.Exceptions.Movie.Parser;
 using UniTAS.Plugin.Implementations.Movie.Engine;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
@@ -19,10 +21,14 @@ public partial class MovieParser : IMovieParser
 
     private readonly IEngineModuleClassesFactory _engineModuleClassesFactory;
 
-    public MovieParser(IMovieLogger logger, IEngineModuleClassesFactory engineModuleClassesFactory)
+    private readonly IContainer _container;
+
+    public MovieParser(IMovieLogger logger, IEngineModuleClassesFactory engineModuleClassesFactory,
+        IContainer container)
     {
         _logger = logger;
         _engineModuleClassesFactory = engineModuleClassesFactory;
+        _container = container;
     }
 
     public Tuple<IMovieEngine, PropertiesModel> Parse(string input)
@@ -88,7 +94,9 @@ public partial class MovieParser : IMovieParser
 
         if (movieEngine == null)
         {
-            movieEngine = new(script, _logger);
+            var args = new ExplicitArguments();
+            args.Set(script);
+            movieEngine = _container.GetInstance<MovieEngine>(args);
         }
         else
         {

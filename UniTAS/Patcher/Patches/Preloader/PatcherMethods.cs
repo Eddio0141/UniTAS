@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Mono.Cecil;
@@ -32,7 +31,7 @@ public class PatchHarmonyEarly : PreloadPatcher
         // add static ctor if not found
         if (staticCtor == null)
         {
-            Trace.Write("Adding static ctor to MonoBehaviour");
+            Patcher.Logger.LogDebug("Adding static ctor to MonoBehaviour");
             staticCtor = new(".cctor",
                 MethodAttributes.Static | MethodAttributes.Private | MethodAttributes.HideBySig
                 | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName,

@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
+﻿using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Plugin.Services.EventSubscribers;
 using UnityEngine;
 
@@ -38,7 +37,6 @@ public abstract class Window : IOnGUIUnconditional
     public void Show()
     {
         Init();
-        Trace.Write($"Show window, ID: {_id}, Title: {_windowName}, rect: {_windowRect}");
         _updateEvents.OnGUIEventUnconditional += OnGUIUnconditional;
     }
 

@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using System.Diagnostics;
 using System.Linq;
 using BepInEx;
 using BepInEx.Configuration;
@@ -39,7 +38,7 @@ public class Plugin : BaseUnityPlugin
         _instance = this;
         _logger = Logger;
 
-        Trace.Write(Kernel.WhatDoIHave());
+        _logger.LogDebug($"Register info\n{Kernel.WhatDoIHave()}");
 
         _monoBehEventInvoker = Kernel.GetInstance<IMonoBehEventInvoker>();
         _onLastUpdatesUnconditional = Kernel.GetAllInstances<IOnLastUpdateUnconditional>().ToArray();
@@ -55,19 +54,16 @@ public class Plugin : BaseUnityPlugin
 
     private void FixedUpdate()
     {
-        // Trace.Write($"FixedUpdate, {Time.frameCount}");
         _monoBehEventInvoker.FixedUpdate();
     }
 
     private void LateUpdate()
     {
-        // Trace.Write($"LateUpdate, {Time.frameCount}");
         _monoBehEventInvoker.LateUpdate();
     }
 
     private void OnGUI()
     {
-        // Trace.Write("OnGUI invoke");
         _monoBehEventInvoker.OnGUI();
     }
 

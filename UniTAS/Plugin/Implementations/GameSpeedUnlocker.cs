@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Services;
@@ -33,14 +32,14 @@ public class GameSpeedUnlocker : IGameSpeedUnlocker
         {
             _logger.LogDebug("Unlocking fps");
             Application.targetFrameRate = -1;
-            Trace.Write($"Application.targetFrameRate = {Application.targetFrameRate}");
+            _logger.LogDebug($"Application.targetFrameRate = {Application.targetFrameRate}");
         }
 
         if (QualitySettings.vSyncCount != 0)
         {
             _logger.LogDebug("Setting vSyncCount to 0");
             QualitySettings.vSyncCount = 0;
-            Trace.Write($"QualitySettings.vSyncCount = {QualitySettings.vSyncCount}");
+            _logger.LogDebug($"QualitySettings.vSyncCount = {QualitySettings.vSyncCount}");
         }
 
         Unlock = true;

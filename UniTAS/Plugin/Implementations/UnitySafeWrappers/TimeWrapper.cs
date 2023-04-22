@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using System.Reflection;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Services;
@@ -53,7 +52,7 @@ public class TimeWrapper : ITimeWrapper
                     value = 0.001;
                 }
 
-                Trace.Write($"Setting captureDeltaTime to {value}");
+                _logger.LogDebug($"Setting captureDeltaTime to {value}");
                 _reverseInvoker.Invoke(() => _captureDeltaTime.SetValue(null, (float)value, null));
             }
             else
@@ -67,7 +66,7 @@ public class TimeWrapper : ITimeWrapper
                     fps = 1;
                 }
 
-                Trace.Write($"Setting captureFramerate to {fps}");
+                _logger.LogDebug($"Setting captureFramerate to {fps}");
                 _reverseInvoker.Invoke(setFps => Time.captureFramerate = setFps, fps);
             }
         }
