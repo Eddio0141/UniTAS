@@ -1,9 +1,10 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
+using UniTAS.Plugin.Interfaces.Events;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
-using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
-using UniTAS.Plugin.Services.Movie;
+using UniTAS.Plugin.Services.Logging;
+using UniTAS.Plugin.Services.VirtualEnvironment;
 using UniTAS.Plugin.Services.VirtualEnvironment.Input;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Layouts;
@@ -12,36 +13,43 @@ using UnityEngine.InputSystem.LowLevel;
 namespace UniTAS.Plugin.Implementations.InputSystemOverride;
 
 [Singleton]
-public class InputSystemOverride : IOnAwakeUnconditional, IOnPreUpdatesActual
+public class InputSystemOverride : IOnPreUpdatesActual, IOnVirtualEnvStatusChange
 {
     private readonly bool _hasInputSystem;
 
     private TASMouse _mouse;
     private TASKeyboard _keyboard;
 
-    private readonly IMovieRunner _movieRunner;
     private readonly IMouseStateEnv _mouseStateEnv;
     private readonly IKeyboardStateEnv _keyboardStateEnv;
+    private readonly IVirtualEnvController _virtualEnvController;
+
+    private readonly ILogger _logger;
 
     [SuppressMessage("ReSharper", "ConditionIsAlwaysTrueOrFalse")]
-    public InputSystemOverride(IMovieRunner movieRunner, IMouseStateEnv mouseStateEnv,
-        IKeyboardStateEnv keyboardStateEnv)
+    public InputSystemOverride(IMouseStateEnv mouseStateEnv, IKeyboardStateEnv keyboardStateEnv,
+        IVirtualEnvController virtualEnvController, ILogger logger)
     {
-        _movieRunner = movieRunner;
         _mouseStateEnv = mouseStateEnv;
         _keyboardStateEnv = keyboardStateEnv;
+        _virtualEnvController = virtualEnvController;
+        _logger = logger;
 
         try
         {
             if (Mouse.current != null)
             {
-                _hasInputSystem = true;
+                // check dummy
             }
+
+            _hasInputSystem = true;
         }
         catch (Exception)
         {
             // ignored
         }
+
+        _logger.LogInfo($"InputSystemOverride hasInputSystem: {_hasInputSystem}");
     }
 
     [InputControlLayout(stateType = typeof(MouseState), isGenericTypeOfDevice = true)]
@@ -54,18 +62,28 @@ public class InputSystemOverride : IOnAwakeUnconditional, IOnPreUpdatesActual
     {
     }
 
-    public void AwakeUnconditional()
+    public void OnVirtualEnvStatusChange(bool runVirtualEnv)
     {
         if (!_hasInputSystem) return;
-        if (_mouse != null) return;
 
-        _mouse = InputSystem.AddDevice<TASMouse>();
-        _keyboard = InputSystem.AddDevice<TASKeyboard>();
+        if (runVirtualEnv)
+        {
+            // remove all connected devices
+            var devices = InputSystem.devices;
+            foreach (var device in devices)
+            {
+                InputSystem.RemoveDevice(device);
+            }
+
+            _mouse = InputSystem.AddDevice<TASMouse>();
+            _keyboard = InputSystem.AddDevice<TASKeyboard>();
+            _logger.LogDebug("Added devices to InputSystem");
+        }
     }
 
     public void PreUpdateActual()
     {
-        if (!_hasInputSystem || _mouse == null || _movieRunner.MovieEnd) return;
+        if (!_hasInputSystem || !_virtualEnvController.RunVirtualEnvironment) return;
 
         var state = new MouseState
         {
