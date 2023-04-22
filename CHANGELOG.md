@@ -8,13 +8,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 # [unreleased]
 
 ## Added
-- Added runtime unit tests to test game compatibility
+
+### Testing
+
+- Added runtime unit tests to test if UniTAS features works
+
+### Old input system support
+
+- Added support for `ResetInputAxes`
+- Added support for `mouseScrollDelta`
 
 # [v0.3.0] - 2023-04-10
 
 ## Added
 
 ### TAS movie
+
 - Added `movie` module
 - Added `movie.playback_speed()` to set playback speed
 - Added FPS unlocking for TAS playback
