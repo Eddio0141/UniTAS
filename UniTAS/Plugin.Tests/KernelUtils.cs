@@ -157,6 +157,9 @@ public static class KernelUtils
             kernel.GetInstance<IDiscoverAndRegister>().Register<PluginWrapper>(c);
         });
 
+        var forceInstantiateTypes = kernel.GetInstance<IForceInstantiateTypes>();
+        forceInstantiateTypes.InstantiateTypes();
+
         return kernel;
     }
 }

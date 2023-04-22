@@ -121,6 +121,8 @@ public partial class DiscoverAndRegister : IDiscoverAndRegister
                     break;
                 case ExcludeRegisterIfTestingAttribute:
                     break;
+                case ForceInstantiateAttribute:
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
