@@ -18,6 +18,8 @@ public class VirtualEnvController : IVirtualEnvController
         _onVirtualEnvStatusChange = onVirtualEnvStatusChange;
     }
 
+    public event VirtualEnvStatusChange OnVirtualEnvStatusChange;
+
     public bool RunVirtualEnvironment
     {
         get => _runVirtualEnvironment;
@@ -25,6 +27,8 @@ public class VirtualEnvController : IVirtualEnvController
         {
             if (_runVirtualEnvironment == value) return;
             _runVirtualEnvironment = value;
+
+            OnVirtualEnvStatusChange?.Invoke(value);
 
             foreach (var onVirtualEnvStatusChange in _onVirtualEnvStatusChange)
             {
