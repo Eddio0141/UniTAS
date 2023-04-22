@@ -20,7 +20,8 @@ public class RuntimeTestProcessor : IRuntimeTestProcessor
     private readonly IContainer _container;
     private readonly ICoroutine _coroutine;
 
-    private readonly List<Tuple<string, CoroutineStatus>> _coroutineStatuses = new();
+    private string _processingCoroutineName;
+    private readonly Queue<Tuple<string, IEnumerator<CoroutineWait>>> _pendingCoroutines = new();
     private readonly List<TestResult> _testResults = new();
 
     public RuntimeTestProcessor(IContainer container, ICoroutine coroutine)
@@ -31,8 +32,13 @@ public class RuntimeTestProcessor : IRuntimeTestProcessor
 
     public void Test<T>()
     {
+        if (_pendingCoroutines.Count > 0)
+        {
+            throw new InvalidOperationException("Cannot run test while another test is running");
+        }
+
         _testResults.Clear();
-        _coroutineStatuses.Clear();
+        _pendingCoroutines.Clear();
 
         var typeAssembly = typeof(T).Assembly;
         var types = AccessTools.GetTypesFromAssembly(typeAssembly);
@@ -77,42 +83,51 @@ public class RuntimeTestProcessor : IRuntimeTestProcessor
 
             if (ExtractReturnType<IEnumerator<CoroutineWait>>(ret, out var coroutine))
             {
-                var coroutineStatus = _coroutine.Start(coroutine);
-                coroutineStatus.OnComplete += CoroutineTestEnd;
-                _coroutineStatuses.Add(new(testName, coroutineStatus));
+                _pendingCoroutines.Enqueue(new(testName, coroutine));
                 continue;
             }
 
             _testResults.Add(new(testName, true));
         }
 
-        if (_coroutineStatuses.Count > 0) return;
+        if (_pendingCoroutines.Count > 0)
+        {
+            RunNextCoroutine();
+            return;
+        }
 
         OnTestEnd?.Invoke(_testResults);
+    }
+
+    private void RunNextCoroutine()
+    {
+        if (_pendingCoroutines.Count == 0) return;
+        var next = _pendingCoroutines.Dequeue();
+
+        _processingCoroutineName = next.Item1;
+
+        var coroutineStatus = _coroutine.Start(next.Item2);
+        coroutineStatus.OnComplete += CoroutineTestEnd;
     }
 
     private void CoroutineTestEnd(CoroutineStatus status)
     {
         status.OnComplete -= CoroutineTestEnd;
-        var storedStatus = _coroutineStatuses.FirstOrDefault(x => x.Item2 == status);
-        _coroutineStatuses.Remove(storedStatus);
 
-        if (storedStatus == null)
-        {
-            throw new NullReferenceException("CoroutineStatus not found in list");
-        }
-
-        var testName = storedStatus.Item1;
         if (status.Exception != null)
         {
-            _testResults.Add(new(testName, false, status.Exception));
+            _testResults.Add(new(_processingCoroutineName, false, status.Exception));
         }
         else
         {
-            _testResults.Add(new(testName, true));
+            _testResults.Add(new(_processingCoroutineName, true));
         }
 
-        if (_coroutineStatuses.Count > 0) return;
+        if (_pendingCoroutines.Count > 0)
+        {
+            RunNextCoroutine();
+            return;
+        }
 
         OnTestEnd?.Invoke(_testResults);
     }
