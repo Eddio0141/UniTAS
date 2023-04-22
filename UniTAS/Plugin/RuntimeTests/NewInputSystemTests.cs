@@ -23,8 +23,34 @@ public class NewInputSystemTests
     }
 
     [RuntimeTest]
+    public IEnumerator<CoroutineWait> MousePosition()
+    {
+        yield return new WaitForUpdateUnconditional();
+
+        // TODO skip if no input system
+        _virtualEnvController.RunVirtualEnvironment = true;
+
+        yield return new WaitForUpdateUnconditional();
+
+        _mouseStateEnv.XPos = 500;
+        _mouseStateEnv.YPos = 600;
+
+        yield return new WaitForUpdateUnconditional();
+
+        RuntimeAssert.AreEqual(500, Mouse.current.position.x.ReadValue(), "mouse x position check");
+        RuntimeAssert.AreEqual(600, Mouse.current.position.y.ReadValue(), "mouse y position check");
+
+        _virtualEnvController.RunVirtualEnvironment = false;
+        _mouseStateEnv.XPos = 0;
+        _mouseStateEnv.YPos = 0;
+    }
+
+    [RuntimeTest]
     public IEnumerator<CoroutineWait> MouseButtons()
     {
+        yield return new WaitForUpdateUnconditional();
+
+        // TODO skip if no input system
         _virtualEnvController.RunVirtualEnvironment = true;
 
         yield return new WaitForUpdateUnconditional();

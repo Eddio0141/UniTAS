@@ -25,6 +25,8 @@ public class LegacyInputSystemTests
     [RuntimeTest]
     public IEnumerator<CoroutineWait> GetKeyTest()
     {
+        yield return new WaitForUpdateUnconditional();
+
         _virtualEnvController.RunVirtualEnvironment = true;
 
         yield return new WaitForUpdateUnconditional();
