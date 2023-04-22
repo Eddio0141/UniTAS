@@ -22,7 +22,7 @@ public static class ContainerRegister
         container.Configure(c => container.GetInstance<IDiscoverAndRegister>().Register<PluginWrapper>(c));
 
         var forceInstantiateTypes = container.GetInstance<IForceInstantiateTypes>();
-        forceInstantiateTypes.InstantiateTypes();
+        forceInstantiateTypes.InstantiateTypes<Plugin>();
 
         return container;
     }
