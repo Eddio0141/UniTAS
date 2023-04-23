@@ -30,10 +30,25 @@ public class MouseDeviceOverride : InputOverrideDevice
 
     protected override void Update()
     {
+        ushort buttons = 0;
+        if (_mouseStateEnv.LeftClick)
+        {
+            buttons |= 0b1;
+        }
+
+        if (_mouseStateEnv.RightClick)
+        {
+            buttons |= 0b10;
+        }
+
+        if (_mouseStateEnv.MiddleClick)
+        {
+            buttons |= 0b100;
+        }
+
         var state = new MouseState
         {
-            // bit 0 = left mouse button
-            buttons = (ushort)(_mouseStateEnv.LeftClick ? 1 : 0),
+            buttons = buttons,
             position = _mouseStateEnv.Position,
             scroll = _mouseStateEnv.Scroll
         };
