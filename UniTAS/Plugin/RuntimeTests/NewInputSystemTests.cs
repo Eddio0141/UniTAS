@@ -26,16 +26,17 @@ public class NewInputSystemTests
     [RuntimeTest]
     public IEnumerator<CoroutineWait> MousePosition()
     {
-        yield return new WaitForUpdateUnconditional();
-
         // TODO skip if no input system
+        var inputSettings = InputSystem.settings;
+        var updateMode = inputSettings.updateMode;
+        inputSettings.updateMode = InputSettings.UpdateMode.ProcessEventsInDynamicUpdate;
         _virtualEnvController.RunVirtualEnvironment = true;
-
-        yield return new WaitForUpdateUnconditional();
-
         _mouseStateEnv.Position = new(500, 600);
 
         yield return new WaitForUpdateUnconditional();
+
+        // we wait for late update since input system update happens AFTER the update
+        yield return new WaitForLastUpdateUnconditional();
 
         var mouse = Mouse.current;
         var pos = mouse.position.ReadValue();
@@ -44,55 +45,57 @@ public class NewInputSystemTests
 
         _virtualEnvController.RunVirtualEnvironment = false;
         _mouseStateEnv.Position = Vector2.zero;
+        inputSettings.updateMode = updateMode;
     }
 
     [RuntimeTest]
     public IEnumerator<CoroutineWait> MouseButtons()
     {
-        yield return new WaitForUpdateUnconditional();
-
         // TODO skip if no input system
+        var inputSettings = InputSystem.settings;
+        var updateMode = inputSettings.updateMode;
+        inputSettings.updateMode = InputSettings.UpdateMode.ProcessEventsInDynamicUpdate;
         _virtualEnvController.RunVirtualEnvironment = true;
-
-        yield return new WaitForUpdateUnconditional();
-
         _mouseStateEnv.LeftClick = true;
-        var mouse = Mouse.current;
 
         yield return new WaitForUpdateUnconditional();
+        yield return new WaitForLastUpdateUnconditional();
+
+        var mouse = Mouse.current;
 
         RuntimeAssert.True(mouse.leftButton.isPressed, "left button check");
 
         _mouseStateEnv.LeftClick = false;
 
-        yield return new WaitForUpdateUnconditional();
+        yield return new WaitForLastUpdateUnconditional();
 
         RuntimeAssert.False(mouse.leftButton.isPressed, "left button check");
 
         _mouseStateEnv.RightClick = true;
 
-        yield return new WaitForUpdateUnconditional();
+        yield return new WaitForLastUpdateUnconditional();
 
         RuntimeAssert.True(mouse.rightButton.isPressed, "right button check");
 
         _mouseStateEnv.RightClick = false;
 
-        yield return new WaitForUpdateUnconditional();
+        yield return new WaitForLastUpdateUnconditional();
 
         RuntimeAssert.False(mouse.rightButton.isPressed, "right button check");
 
         _mouseStateEnv.MiddleClick = true;
 
-        yield return new WaitForUpdateUnconditional();
+        yield return new WaitForLastUpdateUnconditional();
 
         RuntimeAssert.True(mouse.middleButton.isPressed, "middle button check");
 
         _mouseStateEnv.MiddleClick = false;
 
-        yield return new WaitForUpdateUnconditional();
+        yield return new WaitForLastUpdateUnconditional();
 
         RuntimeAssert.False(mouse.middleButton.isPressed, "middle button check");
 
         _virtualEnvController.RunVirtualEnvironment = false;
+        inputSettings.updateMode = updateMode;
     }
 }
