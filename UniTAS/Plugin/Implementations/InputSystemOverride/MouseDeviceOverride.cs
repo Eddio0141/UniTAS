@@ -1,6 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.InputSystemOverride;
+using UniTAS.Plugin.Services.EventSubscribers;
+using UniTAS.Plugin.Services.InputSystemOverride;
 using UniTAS.Plugin.Services.VirtualEnvironment;
 using UniTAS.Plugin.Services.VirtualEnvironment.Input;
 using UnityEngine.InputSystem;
@@ -16,16 +18,17 @@ public class MouseDeviceOverride : InputOverrideDevice
 
     private readonly IMouseStateEnv _mouseStateEnv;
 
+    public MouseDeviceOverride(IVirtualEnvController virtualEnvController, IUpdateEvents updateEvents,
+        IInputSystemExists inputSystemExists, IMouseStateEnv mouseStateEnv) : base(virtualEnvController, updateEvents,
+        inputSystemExists)
+    {
+        _mouseStateEnv = mouseStateEnv;
+    }
+
     [InputControlLayout(stateType = typeof(MouseState), isGenericTypeOfDevice = true)]
     [SuppressMessage("ReSharper", "ClassNeverInstantiated.Local")]
     private class TASMouse : Mouse
     {
-    }
-
-    public MouseDeviceOverride(IVirtualEnvController virtualEnvController, IMouseStateEnv mouseStateEnv) : base(
-        virtualEnvController)
-    {
-        _mouseStateEnv = mouseStateEnv;
     }
 
     protected override void Update()

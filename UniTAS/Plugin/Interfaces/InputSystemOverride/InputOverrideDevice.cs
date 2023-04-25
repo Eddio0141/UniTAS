@@ -1,17 +1,22 @@
 using UniTAS.Plugin.Interfaces.DependencyInjection;
-using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
+using UniTAS.Plugin.Services.EventSubscribers;
+using UniTAS.Plugin.Services.InputSystemOverride;
 using UniTAS.Plugin.Services.VirtualEnvironment;
 
 namespace UniTAS.Plugin.Interfaces.InputSystemOverride;
 
 [RegisterAll]
-public abstract class InputOverrideDevice : IOnInputUpdateActual
+public abstract class InputOverrideDevice
 {
     private readonly IVirtualEnvController _virtualEnvController;
 
-    protected InputOverrideDevice(IVirtualEnvController virtualEnvController)
+    protected InputOverrideDevice(IVirtualEnvController virtualEnvController, IUpdateEvents updateEvents,
+        IInputSystemExists inputSystemExists)
     {
         _virtualEnvController = virtualEnvController;
+
+        if (!inputSystemExists.HasInputSystem) return;
+        updateEvents.OnInputUpdateActual += InputUpdateActual;
     }
 
     /// <summary>

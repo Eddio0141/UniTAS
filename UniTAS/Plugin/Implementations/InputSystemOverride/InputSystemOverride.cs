@@ -1,7 +1,7 @@
-using System;
 using System.Diagnostics.CodeAnalysis;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.InputSystemOverride;
+using UniTAS.Plugin.Services.InputSystemOverride;
 using UniTAS.Plugin.Services.Logging;
 using UniTAS.Plugin.Services.VirtualEnvironment;
 using UnityEngine.InputSystem;
@@ -12,8 +12,6 @@ namespace UniTAS.Plugin.Implementations.InputSystemOverride;
 [ForceInstantiate]
 public class InputSystemOverride
 {
-    private readonly bool _hasInputSystem;
-
     private readonly InputOverrideDevice[] _devices;
     private InputDevice[] _restoreDevices;
 
@@ -22,29 +20,16 @@ public class InputSystemOverride
 
     [SuppressMessage("ReSharper", "ConditionIsAlwaysTrueOrFalse")]
     public InputSystemOverride(ILogger logger, InputOverrideDevice[] devices,
-        IVirtualEnvController virtualEnvController)
+        IVirtualEnvController virtualEnvController, IInputSystemExists inputSystemExists)
     {
         _logger = logger;
         _devices = devices;
         _virtualEnvController = virtualEnvController;
 
-        try
-        {
-            if (Mouse.current != null)
-            {
-                // check dummy
-            }
+        var hasInputSystem = inputSystemExists.HasInputSystem;
+        _logger.LogInfo($"InputSystemOverride hasInputSystem: {hasInputSystem}");
 
-            _hasInputSystem = true;
-        }
-        catch (Exception)
-        {
-            // ignored
-        }
-
-        _logger.LogInfo($"InputSystemOverride hasInputSystem: {_hasInputSystem}");
-
-        if (!_hasInputSystem) return;
+        if (!hasInputSystem) return;
         _virtualEnvController.OnVirtualEnvStatusChange += OnVirtualEnvStatusChange;
         InputSystem.onBeforeUpdate += Patcher.Shared.MonoBehaviourEvents.InputUpdate;
     }

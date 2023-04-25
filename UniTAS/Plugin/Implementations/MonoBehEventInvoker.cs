@@ -87,6 +87,7 @@ public class MonoBehEventInvoker : IMonoBehEventInvoker, IUpdateEvents
         }
 
         MonoBehaviourEvents.OnGUIUnconditional += () => OnGUIEventUnconditional?.Invoke();
+        MonoBehaviourEvents.OnInputUpdateActual += () => OnInputUpdateActual?.Invoke();
     }
 
     public void Update()
@@ -110,4 +111,5 @@ public class MonoBehEventInvoker : IMonoBehEventInvoker, IUpdateEvents
     }
 
     public event Action OnGUIEventUnconditional;
+    public event Action OnInputUpdateActual;
 }
