@@ -185,8 +185,7 @@ public class RuntimeTestProcessor : IRuntimeTestProcessor
         {
             if (!field.Name.StartsWith("<Item")) continue;
 
-            var value = field.GetValue(null);
-            if (value is T)
+            if (field.FieldType == typeof(T))
             {
                 return true;
             }
