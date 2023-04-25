@@ -24,15 +24,20 @@ public static class MonoBehaviourEvents
     public static event Action OnFixedUpdateActual;
     public static event Action OnGUIUnconditional;
     public static event Action OnGUIActual;
+    public static event Action OnInputUpdateActual;
 
     private static bool _updated;
     private static bool _calledFixedUpdate;
     private static bool _calledPreUpdate;
+    private static bool _updatedInputUpdate;
 
     static MonoBehaviourEvents()
     {
         // TODO ew
         UpdateInvokeOffset.Init();
+
+        OnUpdateUnconditional += InputUpdate;
+        OnFixedUpdateUnconditional += InputUpdate;
     }
 
     // calls awake before any other script
@@ -79,6 +84,7 @@ public static class MonoBehaviourEvents
     {
         _updated = false;
         _calledPreUpdate = false;
+        _updatedInputUpdate = false;
     }
 
     public static void InvokeFixedUpdate()
@@ -100,6 +106,15 @@ public static class MonoBehaviourEvents
         OnGUIUnconditional?.Invoke();
         if (!MonoBehaviourController.PausedExecution)
             OnGUIActual?.Invoke();
+    }
+
+    public static void InputUpdate()
+    {
+        if (_updatedInputUpdate) return;
+        _updatedInputUpdate = true;
+
+        if (!MonoBehaviourController.PausedExecution)
+            OnInputUpdateActual?.Invoke();
     }
 
     private static void InvokeCallOnPreUpdate()
