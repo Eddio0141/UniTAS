@@ -5,7 +5,7 @@ using UniTAS.Plugin.Services.VirtualEnvironment;
 namespace UniTAS.Plugin.Interfaces.InputSystemOverride;
 
 [RegisterAll]
-public abstract class InputOverrideDevice : IOnPreUpdatesActual
+public abstract class InputOverrideDevice : IOnInputUpdate
 {
     private readonly IVirtualEnvController _virtualEnvController;
 
@@ -24,7 +24,7 @@ public abstract class InputOverrideDevice : IOnPreUpdatesActual
     /// </summary>
     public abstract void DeviceAdded();
 
-    public void PreUpdateActual()
+    public void InputUpdate()
     {
         if (!_virtualEnvController.RunVirtualEnvironment) return;
 

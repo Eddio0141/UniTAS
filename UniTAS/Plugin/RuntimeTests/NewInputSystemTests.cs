@@ -33,10 +33,8 @@ public class NewInputSystemTests
         _virtualEnvController.RunVirtualEnvironment = true;
         _mouseStateEnv.Position = new(500, 600);
 
-        yield return new WaitForUpdateUnconditional();
-
-        // we wait for late update since input system update happens AFTER the update
         yield return new WaitForLastUpdateUnconditional();
+        yield return new WaitForUpdateUnconditional();
 
         var mouse = Mouse.current;
         var pos = mouse.position.ReadValue();
@@ -58,8 +56,8 @@ public class NewInputSystemTests
         _virtualEnvController.RunVirtualEnvironment = true;
         _mouseStateEnv.LeftClick = true;
 
-        yield return new WaitForUpdateUnconditional();
         yield return new WaitForLastUpdateUnconditional();
+        yield return new WaitForUpdateUnconditional();
 
         var mouse = Mouse.current;
 
@@ -67,31 +65,31 @@ public class NewInputSystemTests
 
         _mouseStateEnv.LeftClick = false;
 
-        yield return new WaitForLastUpdateUnconditional();
+        yield return new WaitForUpdateUnconditional();
 
         RuntimeAssert.False(mouse.leftButton.isPressed, "left button check");
 
         _mouseStateEnv.RightClick = true;
 
-        yield return new WaitForLastUpdateUnconditional();
+        yield return new WaitForUpdateUnconditional();
 
         RuntimeAssert.True(mouse.rightButton.isPressed, "right button check");
 
         _mouseStateEnv.RightClick = false;
 
-        yield return new WaitForLastUpdateUnconditional();
+        yield return new WaitForUpdateUnconditional();
 
         RuntimeAssert.False(mouse.rightButton.isPressed, "right button check");
 
         _mouseStateEnv.MiddleClick = true;
 
-        yield return new WaitForLastUpdateUnconditional();
+        yield return new WaitForUpdateUnconditional();
 
         RuntimeAssert.True(mouse.middleButton.isPressed, "middle button check");
 
         _mouseStateEnv.MiddleClick = false;
 
-        yield return new WaitForLastUpdateUnconditional();
+        yield return new WaitForUpdateUnconditional();
 
         RuntimeAssert.False(mouse.middleButton.isPressed, "middle button check");
 

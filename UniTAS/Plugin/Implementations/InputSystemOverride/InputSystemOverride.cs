@@ -46,9 +46,10 @@ public class InputSystemOverride
 
         if (!_hasInputSystem) return;
         _virtualEnvController.OnVirtualEnvStatusChange += OnVirtualEnvStatusChange;
+        InputSystem.onBeforeUpdate += Patcher.Shared.MonoBehaviourEvents.InputUpdate;
     }
 
-    public void OnVirtualEnvStatusChange(bool runVirtualEnv)
+    private void OnVirtualEnvStatusChange(bool runVirtualEnv)
     {
         if (runVirtualEnv)
         {
