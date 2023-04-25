@@ -1,6 +1,6 @@
 namespace UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
 
-public interface IOnInputUpdate
+public interface IOnInputUpdateActual
 {
-    void InputUpdate();
+    void InputUpdateActual();
 }

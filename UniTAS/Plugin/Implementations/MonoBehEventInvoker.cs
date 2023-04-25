@@ -24,7 +24,7 @@ public class MonoBehEventInvoker : IMonoBehEventInvoker, IUpdateEvents
         IEnumerable<IOnFixedUpdateActual> onFixedUpdatesActual,
         IEnumerable<IOnStartActual> onStartsActual,
         IEnumerable<IOnUpdateActual> onUpdatesActual,
-        IEnumerable<IOnInputUpdate> onInputUpdates)
+        IEnumerable<IOnInputUpdateActual> onInputUpdatesActual)
     {
         foreach (var onAwake in onAwakesUnconditional)
         {
@@ -81,9 +81,9 @@ public class MonoBehEventInvoker : IMonoBehEventInvoker, IUpdateEvents
             MonoBehaviourEvents.OnUpdateActual += onUpdateActual.UpdateActual;
         }
 
-        foreach (var onInputUpdate in onInputUpdates)
+        foreach (var onInputUpdateActual in onInputUpdatesActual)
         {
-            MonoBehaviourEvents.OnInputUpdateActual += onInputUpdate.InputUpdate;
+            MonoBehaviourEvents.OnInputUpdateActual += onInputUpdateActual.InputUpdateActual;
         }
 
         MonoBehaviourEvents.OnGUIUnconditional += () => OnGUIEventUnconditional?.Invoke();
