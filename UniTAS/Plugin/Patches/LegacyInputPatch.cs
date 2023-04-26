@@ -1,9 +1,9 @@
 using System;
-using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using UniTAS.Plugin.Implementations.VirtualEnvironment;
 using UniTAS.Plugin.Interfaces.Patches.PatchTypes;
+using UniTAS.Plugin.Models.VirtualEnvironment;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.VirtualEnvironment;
 using UniTAS.Plugin.Services.VirtualEnvironment.Input;
@@ -58,16 +58,7 @@ public class LegacyInputPatch
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
 
-            __result = false;
-            foreach (var x in KeyboardStateEnv.Keys)
-            {
-                if (x.KeyCode.HasValue && x.KeyCode == key)
-                {
-                    __result = true;
-                    return false;
-                }
-            }
-
+            __result = KeyboardStateEnv.IsKeyHeld(new(key));
             return false;
         }
 
@@ -95,19 +86,11 @@ public class LegacyInputPatch
             __result = false;
             if (!LegacyInputSystemUtils.KeyStringToKeyCode(name, out var foundKeyCode))
             {
-                foreach (var x in KeyboardStateEnv.Keys)
-                {
-                    if (!x.KeyCode.HasValue && x.Keys == name)
-                    {
-                        __result = true;
-                        return false;
-                    }
-                }
-
+                __result = KeyboardStateEnv.IsKeyHeld(new(name));
                 return false;
             }
 
-            __result = KeyboardStateEnv.Keys.Any(x => x.KeyCode.HasValue && x.KeyCode == foundKeyCode);
+            __result = KeyboardStateEnv.IsKeyHeld(new(foundKeyCode));
             return false;
         }
 
@@ -132,30 +115,13 @@ public class LegacyInputPatch
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
 
-            __result = false;
             if (!LegacyInputSystemUtils.KeyStringToKeyCode(name, out var foundKeyCode))
             {
-                foreach (var x in KeyboardStateEnv.KeysUp)
-                {
-                    if (!x.KeyCode.HasValue && x.Keys == name)
-                    {
-                        __result = true;
-                        return false;
-                    }
-                }
-
+                __result = KeyboardStateEnv.IsKeyUp(new(name));
                 return false;
             }
 
-            foreach (var x in KeyboardStateEnv.KeysUp)
-            {
-                if (x.KeyCode.HasValue && x.KeyCode == foundKeyCode)
-                {
-                    __result = true;
-                    return false;
-                }
-            }
-
+            __result = KeyboardStateEnv.IsKeyUp(new(foundKeyCode));
             return false;
         }
 
@@ -180,16 +146,7 @@ public class LegacyInputPatch
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
 
-            __result = false;
-            foreach (var x in KeyboardStateEnv.KeysUp)
-            {
-                if (x.KeyCode.HasValue && x.KeyCode == key)
-                {
-                    __result = true;
-                    return false;
-                }
-            }
-
+            __result = KeyboardStateEnv.IsKeyUp(new(key));
             return false;
         }
 
@@ -217,27 +174,11 @@ public class LegacyInputPatch
             __result = false;
             if (!LegacyInputSystemUtils.KeyStringToKeyCode(name, out var foundKeyCode))
             {
-                foreach (var x in KeyboardStateEnv.KeysDown)
-                {
-                    if (!x.KeyCode.HasValue && x.Keys == name)
-                    {
-                        __result = true;
-                        return false;
-                    }
-                }
-
+                __result = KeyboardStateEnv.IsKeyDown(new(name));
                 return false;
             }
 
-            foreach (var x in KeyboardStateEnv.KeysDown)
-            {
-                if (x.KeyCode.HasValue && x.KeyCode == foundKeyCode)
-                {
-                    __result = true;
-                    return false;
-                }
-            }
-
+            __result = KeyboardStateEnv.IsKeyDown(new(foundKeyCode));
             return false;
         }
 
@@ -262,16 +203,7 @@ public class LegacyInputPatch
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
 
-            __result = false;
-            foreach (var x in KeyboardStateEnv.KeysDown)
-            {
-                if (x.KeyCode.HasValue && x.KeyCode == key)
-                {
-                    __result = true;
-                    return false;
-                }
-            }
-
+            __result = KeyboardStateEnv.IsKeyDown(new(key));
             return false;
         }
 
@@ -317,11 +249,7 @@ public class LegacyInputPatch
                 return false;
             }
 
-            if (AxisStateEnv.Values.TryGetValue(axisName, out var value))
-            {
-                __result = value;
-            }
-
+            __result = AxisStateEnv.GetAxis(axisName);
             return false;
         }
 
@@ -351,11 +279,7 @@ public class LegacyInputPatch
                 return false;
             }
 
-            if (AxisStateEnv.Values.TryGetValue(axisName, out var value))
-            {
-                __result = value;
-            }
-
+            __result = AxisStateEnv.GetAxis(axisName);
             return false;
         }
 
@@ -433,13 +357,15 @@ public class LegacyInputPatch
                 return false;
             }
 
-            __result = button switch
+            var mouseButton = button switch
             {
-                0 => MouseStateEnv.LeftClick,
-                1 => MouseStateEnv.RightClick,
-                2 => MouseStateEnv.MiddleClick,
-                _ => false
+                0 => MouseButton.Left,
+                1 => MouseButton.Right,
+                2 => MouseButton.Middle,
+                _ => throw new ArgumentOutOfRangeException(nameof(button), button, "Unknown mouse button")
             };
+
+            __result = MouseStateEnv.IsButtonHeld(mouseButton);
             return false;
         }
 
@@ -469,13 +395,15 @@ public class LegacyInputPatch
                 return false;
             }
 
-            __result = button switch
+            var mouseButton = button switch
             {
-                0 => MouseStateEnv.LeftClickDown,
-                1 => MouseStateEnv.RightClickDown,
-                2 => MouseStateEnv.MiddleClickDown,
-                _ => false
+                0 => MouseButton.Left,
+                1 => MouseButton.Right,
+                2 => MouseButton.Middle,
+                _ => throw new ArgumentOutOfRangeException(nameof(button), button, "Unknown mouse button")
             };
+
+            __result = MouseStateEnv.IsButtonDown(mouseButton);
             return false;
         }
 
@@ -505,13 +433,15 @@ public class LegacyInputPatch
                 return false;
             }
 
-            __result = button switch
+            var mouseButton = button switch
             {
-                0 => MouseStateEnv.LeftClickUp,
-                1 => MouseStateEnv.RightClickUp,
-                2 => MouseStateEnv.MiddleClickUp,
-                _ => false
+                0 => MouseButton.Left,
+                1 => MouseButton.Right,
+                2 => MouseButton.Middle,
+                _ => throw new ArgumentOutOfRangeException(nameof(button), button, "Unknown mouse button")
             };
+
+            __result = MouseStateEnv.IsButtonUp(mouseButton);
             return false;
         }
 
@@ -565,7 +495,7 @@ public class LegacyInputPatch
                 return false;
             }
 
-            __result = ButtonStateEnv.Buttons.Contains(buttonName);
+            __result = ButtonStateEnv.IsButtonHeld(buttonName);
             return false;
         }
 
@@ -595,7 +525,7 @@ public class LegacyInputPatch
                 return false;
             }
 
-            __result = ButtonStateEnv.ButtonsDown.Contains(buttonName);
+            __result = ButtonStateEnv.IsButtonDown(buttonName);
             return false;
         }
 
@@ -625,7 +555,7 @@ public class LegacyInputPatch
                 return false;
             }
 
-            __result = ButtonStateEnv.ButtonsUp.Contains(buttonName);
+            __result = ButtonStateEnv.IsButtonUp(buttonName);
             return false;
         }
 
@@ -751,9 +681,7 @@ public class LegacyInputPatch
         private static bool Prefix(ref bool __result)
         {
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
-            __result = KeyboardStateEnv.KeysDown.Count > 0 || KeyboardStateEnv.Keys.Count > 0 ||
-                       MouseStateEnv.LeftClick ||
-                       MouseStateEnv.RightClick || MouseStateEnv.MiddleClick;
+            __result = KeyboardStateEnv.AnyKeyHeld || MouseStateEnv.AnyButtonHeld;
             return false;
         }
     }
@@ -769,8 +697,7 @@ public class LegacyInputPatch
         private static bool Prefix(ref bool __result)
         {
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
-            __result = KeyboardStateEnv.KeysDown.Count > 0 || MouseStateEnv.LeftClickDown ||
-                       MouseStateEnv.RightClickDown || MouseStateEnv.MiddleClickDown;
+            __result = KeyboardStateEnv.AnyKeyDown || MouseStateEnv.AnyButtonDown;
             return false;
         }
     }

@@ -3,6 +3,7 @@ using UniTAS.Plugin.Interfaces.Coroutine;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.RuntimeTest;
 using UniTAS.Plugin.Models.Coroutine;
+using UniTAS.Plugin.Models.VirtualEnvironment;
 using UniTAS.Plugin.Services.VirtualEnvironment;
 using UniTAS.Plugin.Services.VirtualEnvironment.Input;
 using UniTAS.Plugin.Utils;
@@ -54,7 +55,7 @@ public class NewInputSystemTests
         var updateMode = inputSettings.updateMode;
         inputSettings.updateMode = InputSettings.UpdateMode.ProcessEventsInDynamicUpdate;
         _virtualEnvController.RunVirtualEnvironment = true;
-        _mouseStateEnv.LeftClick = true;
+        _mouseStateEnv.HoldButton(MouseButton.Left);
 
         yield return new WaitForLastUpdateUnconditional();
         yield return new WaitForUpdateUnconditional();
@@ -63,31 +64,31 @@ public class NewInputSystemTests
 
         RuntimeAssert.True(mouse.leftButton.isPressed, "left button check");
 
-        _mouseStateEnv.LeftClick = false;
+        _mouseStateEnv.ReleaseButton(MouseButton.Left);
 
         yield return new WaitForUpdateUnconditional();
 
         RuntimeAssert.False(mouse.leftButton.isPressed, "left button check");
 
-        _mouseStateEnv.RightClick = true;
+        _mouseStateEnv.HoldButton(MouseButton.Right);
 
         yield return new WaitForUpdateUnconditional();
 
         RuntimeAssert.True(mouse.rightButton.isPressed, "right button check");
 
-        _mouseStateEnv.RightClick = false;
+        _mouseStateEnv.ReleaseButton(MouseButton.Right);
 
         yield return new WaitForUpdateUnconditional();
 
         RuntimeAssert.False(mouse.rightButton.isPressed, "right button check");
 
-        _mouseStateEnv.MiddleClick = true;
+        _mouseStateEnv.HoldButton(MouseButton.Middle);
 
         yield return new WaitForUpdateUnconditional();
 
         RuntimeAssert.True(mouse.middleButton.isPressed, "middle button check");
 
-        _mouseStateEnv.MiddleClick = false;
+        _mouseStateEnv.ReleaseButton(MouseButton.Middle);
 
         yield return new WaitForUpdateUnconditional();
 

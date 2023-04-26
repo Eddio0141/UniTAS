@@ -1,11 +1,12 @@
+using System;
 using UnityEngine;
 
 namespace UniTAS.Plugin.Models.VirtualEnvironment;
 
-public class Key
+public readonly struct Key : IEquatable<Key>
 {
-    public string Keys { get; }
-    public KeyCode? KeyCode { get; }
+    private string Keys { get; }
+    private KeyCode? KeyCode { get; }
 
     public Key(string keys)
     {
@@ -17,15 +18,17 @@ public class Key
         KeyCode = keyCode;
     }
 
-    private bool Equals(Key other)
+    public bool Equals(Key other)
     {
+        // if (ReferenceEquals(null, other)) return false;
+        // if (ReferenceEquals(this, other)) return true;
         return Keys == other.Keys && KeyCode == other.KeyCode;
     }
 
     public override bool Equals(object obj)
     {
         if (ReferenceEquals(null, obj)) return false;
-        if (ReferenceEquals(this, obj)) return true;
+        // if (ReferenceEquals(this, obj)) return true;
         if (obj.GetType() != GetType()) return false;
         return Equals((Key)obj);
     }

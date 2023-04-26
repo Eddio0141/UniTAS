@@ -20,27 +20,27 @@
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-        <DefineConstants/>
+        <DefineConstants />
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Remove="dependency\**"/>
-        <EmbeddedResource Remove="dependency\**"/>
-        <None Remove="dependency\**"/>
-        <Compile Remove="Extern-Assemblies\**"/>
-        <EmbeddedResource Remove="Extern-Assemblies\**"/>
-        <None Remove="Extern-Assemblies\**"/>
+        <Compile Remove="dependency\**" />
+        <EmbeddedResource Remove="dependency\**" />
+        <None Remove="dependency\**" />
+        <Compile Remove="Extern-Assemblies\**" />
+        <EmbeddedResource Remove="Extern-Assemblies\**" />
+        <None Remove="Extern-Assemblies\**" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="BepInEx.Analyzers" Version="1.0.8" PrivateAssets="all"/>
-        <PackageReference Include="BepInEx.Core" Version="5.*"/>
-        <PackageReference Include="BepInEx.PluginInfoProps" Version="2.1.0"/>
-        <PackageReference Include="MonoMod.Utils" Version="22.7.31.1"/>
-        <PackageReference Include="StructureMap" Version="2.6.3"/>
-        <PackageReference Include="Unity.InputSystem" Version="1.5.0"/>
-        <PackageReference Include="UnityEngine.Modules" Version="3.4.0" IncludeAssets="compile"/>
-        <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all"/>
+        <PackageReference Include="BepInEx.Analyzers" Version="1.0.8" PrivateAssets="all" />
+        <PackageReference Include="BepInEx.Core" Version="5.*" />
+        <PackageReference Include="BepInEx.PluginInfoProps" Version="2.1.0" />
+        <PackageReference Include="MonoMod.Utils" Version="22.7.31.1" />
+        <PackageReference Include="StructureMap" Version="2.6.3" />
+        <PackageReference Include="Unity.InputSystem" Version="1.5.0" />
+        <PackageReference Include="UnityEngine.Modules" Version="3.4.0" IncludeAssets="compile" />
+        <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
     </ItemGroup>
 
     <ItemGroup>
@@ -50,8 +50,12 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\moonsharp\src\MoonSharp.Interpreter\MoonSharp.Interpreter.net35-client.csproj"/>
-        <ProjectReference Include="..\Patcher\Patcher.csproj"/>
+        <ProjectReference Include="..\..\moonsharp\src\MoonSharp.Interpreter\MoonSharp.Interpreter.net35-client.csproj" />
+        <ProjectReference Include="..\Patcher\Patcher.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Implementations\VirtualEnvironment\LegacyInputSystem\" />
     </ItemGroup>
 
 </Project>

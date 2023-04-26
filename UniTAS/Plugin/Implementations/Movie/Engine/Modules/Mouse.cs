@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using MoonSharp.Interpreter;
 using UniTAS.Plugin.Interfaces.Movie;
+using UniTAS.Plugin.Models.VirtualEnvironment;
 using UniTAS.Plugin.Services.VirtualEnvironment.Input;
 using UnityEngine;
 
@@ -30,17 +31,17 @@ public class Mouse : EngineMethodClass
 
     public void Left(bool hold = true)
     {
-        _mouseStateEnv.LeftClick = hold;
+        _mouseStateEnv.HoldButton(MouseButton.Left);
     }
 
     public void Right(bool hold = true)
     {
-        _mouseStateEnv.RightClick = hold;
+        _mouseStateEnv.HoldButton(MouseButton.Right);
     }
 
     public void Middle(bool hold = true)
     {
-        _mouseStateEnv.MiddleClick = hold;
+        _mouseStateEnv.HoldButton(MouseButton.Middle);
     }
 
     public void Set_scroll(float x, float y)

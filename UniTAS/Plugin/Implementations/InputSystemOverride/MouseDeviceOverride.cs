@@ -8,6 +8,7 @@ using UniTAS.Plugin.Services.VirtualEnvironment.Input;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Layouts;
 using UnityEngine.InputSystem.LowLevel;
+using MouseButton = UniTAS.Plugin.Models.VirtualEnvironment.MouseButton;
 
 namespace UniTAS.Plugin.Implementations.InputSystemOverride;
 
@@ -34,17 +35,17 @@ public class MouseDeviceOverride : InputOverrideDevice
     protected override void Update()
     {
         ushort buttons = 0;
-        if (_mouseStateEnv.LeftClick)
+        if (_mouseStateEnv.IsButtonHeld(MouseButton.Left))
         {
             buttons |= 0b1;
         }
 
-        if (_mouseStateEnv.RightClick)
+        if (_mouseStateEnv.IsButtonHeld(MouseButton.Right))
         {
             buttons |= 0b10;
         }
 
-        if (_mouseStateEnv.MiddleClick)
+        if (_mouseStateEnv.IsButtonHeld(MouseButton.Middle))
         {
             buttons |= 0b100;
         }

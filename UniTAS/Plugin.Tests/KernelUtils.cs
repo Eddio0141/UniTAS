@@ -9,6 +9,7 @@ using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Plugin.Interfaces.Movie;
 using UniTAS.Plugin.Models.DependencyInjection;
+using UniTAS.Plugin.Models.VirtualEnvironment;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.DependencyInjection;
 using UniTAS.Plugin.Services.Logging;
@@ -127,18 +128,34 @@ public static class KernelUtils
     [SuppressMessage("ReSharper", "UnassignedGetOnlyAutoProperty")]
     public class DummyMouseEnv : IMouseStateEnv
     {
+        public bool AnyButtonDown { get; }
+        public bool AnyButtonHeld { get; }
         public bool MousePresent { get; }
         public Vector2 Position { get; set; }
-        public bool LeftClick { get; set; }
-        public bool LeftClickDown { get; }
-        public bool LeftClickUp { get; }
-        public bool RightClick { get; set; }
-        public bool RightClickDown { get; }
-        public bool RightClickUp { get; }
-        public bool MiddleClick { get; set; }
-        public bool MiddleClickDown { get; }
-        public bool MiddleClickUp { get; }
         public Vector2 Scroll { get; set; }
+
+        public bool IsButtonHeld(MouseButton button)
+        {
+            return false;
+        }
+
+        public bool IsButtonDown(MouseButton button)
+        {
+            return false;
+        }
+
+        public bool IsButtonUp(MouseButton button)
+        {
+            return false;
+        }
+
+        public void HoldButton(MouseButton button)
+        {
+        }
+
+        public void ReleaseButton(MouseButton button)
+        {
+        }
     }
 
     public static Container Init()

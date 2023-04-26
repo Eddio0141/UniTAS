@@ -21,7 +21,7 @@ public class Controller : EngineMethodClass
 
     public void Axis(string axis, float value)
     {
-        _axisStateEnv.Values[axis] = value;
+        _axisStateEnv.SetAxis(axis, value);
     }
 
     public void Hold(string button)
