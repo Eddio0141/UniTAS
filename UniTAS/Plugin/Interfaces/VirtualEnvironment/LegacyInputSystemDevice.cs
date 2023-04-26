@@ -22,6 +22,7 @@ public abstract class LegacyInputSystemDevice : InputState, IOnLastUpdateActual,
 
     public void PreUpdateActual()
     {
+        // this just needs to be flushed before legacy input system input is read so its fine to be pre-updates
         FlushBufferedInputs();
     }
 }
