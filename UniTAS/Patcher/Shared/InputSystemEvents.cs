@@ -14,8 +14,8 @@ public static class InputSystemEvents
     [SuppressMessage("ReSharper", "ConditionIsAlwaysTrueOrFalse")]
     public static void Init()
     {
-        MonoBehaviourEvents.OnUpdateUnconditional += InputUpdate;
-        MonoBehaviourEvents.OnFixedUpdateUnconditional += InputUpdate;
+        MonoBehaviourEvents.OnUpdateActual += InputUpdate;
+        MonoBehaviourEvents.OnFixedUpdateActual += InputUpdate;
 
         var hasInputSystem = false;
         try
@@ -49,6 +49,12 @@ public static class InputSystemEvents
                     InputSystem.onBeforeUpdate += InputUpdate;
                 }
 
+                if (!_usingMonoBehFixedUpdate)
+                {
+                    MonoBehaviourEvents.OnFixedUpdateActual += InputUpdate;
+                    _usingMonoBehFixedUpdate = true;
+                }
+
                 if (_usingMonoBehUpdate)
                 {
                     MonoBehaviourEvents.OnUpdateActual -= InputUpdate;
@@ -60,6 +66,12 @@ public static class InputSystemEvents
                 if (!AlreadyRegisteredOnEvent)
                 {
                     InputSystem.onBeforeUpdate += InputUpdate;
+                }
+
+                if (!_usingMonoBehUpdate)
+                {
+                    MonoBehaviourEvents.OnUpdateActual += InputUpdate;
+                    _usingMonoBehUpdate = true;
                 }
 
                 if (_usingMonoBehFixedUpdate)
