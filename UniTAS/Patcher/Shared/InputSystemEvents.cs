@@ -33,6 +33,9 @@ public static class InputSystemEvents
         }
 
         if (!hasInputSystem) return;
+
+        _usingMonoBehUpdate = true;
+        _usingMonoBehFixedUpdate = true;
         InputSystemChangeUpdate(InputSystem.settings.updateMode);
     }
 
