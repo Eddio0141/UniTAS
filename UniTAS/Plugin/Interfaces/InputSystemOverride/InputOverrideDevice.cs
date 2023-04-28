@@ -29,7 +29,7 @@ public abstract class InputOverrideDevice
     /// </summary>
     public abstract void DeviceAdded();
 
-    public void InputUpdateActual()
+    private void InputUpdateActual()
     {
         if (!_virtualEnvController.RunVirtualEnvironment) return;
 
