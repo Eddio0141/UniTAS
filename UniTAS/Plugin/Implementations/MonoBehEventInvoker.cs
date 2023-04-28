@@ -83,11 +83,11 @@ public class MonoBehEventInvoker : IMonoBehEventInvoker, IUpdateEvents
 
         foreach (var onInputUpdateActual in onInputUpdatesActual)
         {
-            MonoBehaviourEvents.OnInputUpdateActual += onInputUpdateActual.InputUpdateActual;
+            InputSystemEvents.OnInputUpdateActual += onInputUpdateActual.InputUpdateActual;
         }
 
         MonoBehaviourEvents.OnGUIUnconditional += () => OnGUIEventUnconditional?.Invoke();
-        MonoBehaviourEvents.OnInputUpdateActual += () => OnInputUpdateActual?.Invoke();
+        InputSystemEvents.OnInputUpdateActual += () => OnInputUpdateActual?.Invoke();
     }
 
     public void Update()
