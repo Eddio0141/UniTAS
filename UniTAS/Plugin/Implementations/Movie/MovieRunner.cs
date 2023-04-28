@@ -16,7 +16,7 @@ namespace UniTAS.Plugin.Implementations.Movie;
 
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 [Singleton(RegisterPriority.MovieRunner)]
-public class MovieRunner : IMovieRunner, IOnPreUpdatesActual
+public class MovieRunner : IMovieRunner, IOnInputUpdateActual
 {
     private readonly IGameRestart _gameRestart;
 
@@ -98,7 +98,7 @@ public class MovieRunner : IMovieRunner, IOnPreUpdatesActual
         MovieRunningStatusChange(true);
     }
 
-    public void PreUpdateActual()
+    public void InputUpdateActual()
     {
         if (_cleanUp)
         {
