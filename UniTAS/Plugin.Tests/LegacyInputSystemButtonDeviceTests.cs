@@ -44,6 +44,13 @@ public class LegacyInputSystemButtonDeviceTests
         Assert.False(device.IsButtonDown("B"));
 
         device.OnLastUpdateActual();
+        device.PreUpdateActual();
+
+        Assert.False(device.IsButtonDown("A"));
+        Assert.False(device.IsButtonDown("B"));
+
+        device.OnLastUpdateActual();
+        device.PreUpdateActual();
 
         Assert.False(device.IsButtonDown("A"));
         Assert.False(device.IsButtonDown("B"));
@@ -61,12 +68,13 @@ public class LegacyInputSystemButtonDeviceTests
         Assert.False(device.IsButtonHeld("B"));
 
         device.OnLastUpdateActual();
+        device.PreUpdateActual();
 
         Assert.True(device.IsButtonHeld("A"));
         Assert.False(device.IsButtonHeld("B"));
 
+        device.OnLastUpdateActual();
         device.Release("A");
-
         device.PreUpdateActual();
 
         Assert.False(device.IsButtonHeld("A"));
@@ -85,19 +93,20 @@ public class LegacyInputSystemButtonDeviceTests
         Assert.False(device.IsButtonUp("B"));
 
         device.OnLastUpdateActual();
+        device.PreUpdateActual();
 
         Assert.False(device.IsButtonUp("A"));
         Assert.False(device.IsButtonUp("B"));
 
-        device.Release("A");
-
-        device.PreUpdateActual();
         device.OnLastUpdateActual();
+        device.Release("A");
+        device.PreUpdateActual();
 
         Assert.True(device.IsButtonUp("A"));
         Assert.False(device.IsButtonUp("B"));
 
         device.OnLastUpdateActual();
+        device.PreUpdateActual();
 
         Assert.False(device.IsButtonUp("A"));
         Assert.False(device.IsButtonUp("B"));
