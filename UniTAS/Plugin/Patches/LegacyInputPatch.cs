@@ -357,15 +357,7 @@ public class LegacyInputPatch
                 return false;
             }
 
-            var mouseButton = button switch
-            {
-                0 => MouseButton.Left,
-                1 => MouseButton.Right,
-                2 => MouseButton.Middle,
-                _ => throw new ArgumentOutOfRangeException(nameof(button), button, "Unknown mouse button")
-            };
-
-            __result = MouseStateEnvLegacySystem.IsButtonHeld(mouseButton);
+            __result = MouseStateEnvLegacySystem.IsButtonHeld(GetMouseButtonVariant(button));
             return false;
         }
 
@@ -395,15 +387,7 @@ public class LegacyInputPatch
                 return false;
             }
 
-            var mouseButton = button switch
-            {
-                0 => MouseButton.Left,
-                1 => MouseButton.Right,
-                2 => MouseButton.Middle,
-                _ => throw new ArgumentOutOfRangeException(nameof(button), button, "Unknown mouse button")
-            };
-
-            __result = MouseStateEnvLegacySystem.IsButtonDown(mouseButton);
+            __result = MouseStateEnvLegacySystem.IsButtonDown(GetMouseButtonVariant(button));
             return false;
         }
 
@@ -433,15 +417,7 @@ public class LegacyInputPatch
                 return false;
             }
 
-            var mouseButton = button switch
-            {
-                0 => MouseButton.Left,
-                1 => MouseButton.Right,
-                2 => MouseButton.Middle,
-                _ => throw new ArgumentOutOfRangeException(nameof(button), button, "Unknown mouse button")
-            };
-
-            __result = MouseStateEnvLegacySystem.IsButtonUp(mouseButton);
+            __result = MouseStateEnvLegacySystem.IsButtonUp(GetMouseButtonVariant(button));
             return false;
         }
 
@@ -449,6 +425,17 @@ public class LegacyInputPatch
         {
             ReverseInvoker.Return();
         }
+    }
+
+    private static MouseButton GetMouseButtonVariant(int button)
+    {
+        return button switch
+        {
+            0 => MouseButton.Left,
+            1 => MouseButton.Right,
+            2 => MouseButton.Middle,
+            _ => throw new ArgumentOutOfRangeException(nameof(button), button, "Unknown mouse button")
+        };
     }
 
     [HarmonyPatch(typeof(Input), nameof(Input.ResetInputAxes))]
