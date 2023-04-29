@@ -68,7 +68,7 @@ public class CoroutineHandler : ICoroutine, IOnUpdateUnconditional, IOnPreUpdate
                 _lastUpdateUnconditional.Enqueue(status);
                 break;
             default:
-                throw new NotImplementedException();
+                throw new ArgumentOutOfRangeException(nameof(coroutine), "Unknown coroutine wait type");
         }
     }
 
