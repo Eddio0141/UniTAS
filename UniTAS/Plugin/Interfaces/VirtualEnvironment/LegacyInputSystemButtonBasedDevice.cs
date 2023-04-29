@@ -14,7 +14,6 @@ public abstract class LegacyInputSystemButtonBasedDevice<TButton> : LegacyInputS
     private readonly List<TButton> _buttons = new();
     private readonly List<TButton> _buttonsDown = new();
     private readonly List<TButton> _buttonsUp = new();
-    private readonly List<TButton> _buttonsPrev = new();
 
     private readonly List<TButton> _bufferedPressButtons = new();
     private readonly List<TButton> _bufferedReleaseButtons = new();
@@ -24,7 +23,6 @@ public abstract class LegacyInputSystemButtonBasedDevice<TButton> : LegacyInputS
         _buttons.Clear();
         _buttonsDown.Clear();
         _buttonsUp.Clear();
-        _buttonsPrev.Clear();
         _bufferedPressButtons.Clear();
         _bufferedReleaseButtons.Clear();
     }
@@ -39,13 +37,19 @@ public abstract class LegacyInputSystemButtonBasedDevice<TButton> : LegacyInputS
         {
             if (_buttons.Contains(button)) continue;
             _buttonsDown.Add(button);
-            _buttonsPrev.Add(button);
             _buttons.Add(button);
         }
 
         foreach (var bufferedRelease in _bufferedReleaseButtons)
         {
-            _buttons.RemoveAllEquals(bufferedRelease);
+            for (var i = 0; i < _buttons.Count; i++)
+            {
+                var button = _buttons[i];
+                if (!button.Equals(bufferedRelease)) continue;
+                _buttonsUp.Add(button);
+                _buttons.RemoveAt(i);
+                i--;
+            }
         }
 
         _bufferedPressButtons.Clear();
@@ -60,16 +64,6 @@ public abstract class LegacyInputSystemButtonBasedDevice<TButton> : LegacyInputS
     {
         _buttonsDown.Clear();
         _buttonsUp.Clear();
-
-        // check if button was released
-        for (var i = 0; i < _buttonsPrev.Count; i++)
-        {
-            var button = _buttonsPrev[i];
-            if (_buttons.Contains(button)) continue;
-            _buttonsUp.Add(button);
-            _buttonsPrev.RemoveAt(i);
-            i--;
-        }
     }
 
     /// <summary>
