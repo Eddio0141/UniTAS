@@ -86,8 +86,6 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual
             _randomEnv.StartUpSeed = properties.StartupProperties.Seed;
             _gameRestart.SoftRestart(properties.StartupProperties.StartTime);
         }
-
-        // TODO other stuff like save state load, hide cursor, etc
     }
 
     private void OnGameRestartResume(DateTime startupTime, bool preMonoBehaviourResume)
