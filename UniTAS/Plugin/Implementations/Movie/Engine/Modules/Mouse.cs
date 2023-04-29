@@ -30,17 +30,38 @@ public class Mouse : EngineMethodClass
 
     public void Left(bool hold = true)
     {
-        _mouseController.HoldButton(MouseButton.Left);
+        if (hold)
+        {
+            _mouseController.HoldButton(MouseButton.Left);
+        }
+        else
+        {
+            _mouseController.ReleaseButton(MouseButton.Left);
+        }
     }
 
     public void Right(bool hold = true)
     {
-        _mouseController.HoldButton(MouseButton.Right);
+        if (hold)
+        {
+            _mouseController.HoldButton(MouseButton.Right);
+        }
+        else
+        {
+            _mouseController.ReleaseButton(MouseButton.Right);
+        }
     }
 
     public void Middle(bool hold = true)
     {
-        _mouseController.HoldButton(MouseButton.Middle);
+        if (hold)
+        {
+            _mouseController.HoldButton(MouseButton.Middle);
+        }
+        else
+        {
+            _mouseController.ReleaseButton(MouseButton.Middle);
+        }
     }
 
     public void Set_scroll(float x, float y)
