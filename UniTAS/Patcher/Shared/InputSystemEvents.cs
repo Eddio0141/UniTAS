@@ -6,7 +6,7 @@ namespace UniTAS.Patcher.Shared;
 
 public static class InputSystemEvents
 {
-    public static event Action OnInputUpdateActual;
+    public static event Action<bool> OnInputUpdateActual;
 
     private static bool _usingMonoBehUpdate;
     private static bool _usingMonoBehFixedUpdate;
@@ -14,8 +14,8 @@ public static class InputSystemEvents
     [SuppressMessage("ReSharper", "ConditionIsAlwaysTrueOrFalse")]
     public static void Init()
     {
-        MonoBehaviourEvents.OnUpdateActual += InputUpdate;
-        MonoBehaviourEvents.OnFixedUpdateActual += InputUpdate;
+        MonoBehaviourEvents.OnUpdateActual += InputUpdateNonFixedUpdate;
+        MonoBehaviourEvents.OnFixedUpdateActual += InputUpdateFixedUpdate;
 
         var hasInputSystem = false;
         try
@@ -46,18 +46,18 @@ public static class InputSystemEvents
             case InputSettings.UpdateMode.ProcessEventsInDynamicUpdate:
                 if (!AlreadyRegisteredOnEvent)
                 {
-                    InputSystem.onBeforeUpdate += InputUpdate;
+                    InputSystem.onBeforeUpdate += InputUpdateNonFixedUpdate;
                 }
 
                 if (!_usingMonoBehFixedUpdate)
                 {
-                    MonoBehaviourEvents.OnFixedUpdateActual += InputUpdate;
+                    MonoBehaviourEvents.OnFixedUpdateActual += InputUpdateFixedUpdate;
                     _usingMonoBehFixedUpdate = true;
                 }
 
                 if (_usingMonoBehUpdate)
                 {
-                    MonoBehaviourEvents.OnUpdateActual -= InputUpdate;
+                    MonoBehaviourEvents.OnUpdateActual -= InputUpdateNonFixedUpdate;
                     _usingMonoBehUpdate = false;
                 }
 
@@ -65,18 +65,18 @@ public static class InputSystemEvents
             case InputSettings.UpdateMode.ProcessEventsInFixedUpdate:
                 if (!AlreadyRegisteredOnEvent)
                 {
-                    InputSystem.onBeforeUpdate += InputUpdate;
+                    InputSystem.onBeforeUpdate += InputUpdateFixedUpdate;
                 }
 
                 if (!_usingMonoBehUpdate)
                 {
-                    MonoBehaviourEvents.OnUpdateActual += InputUpdate;
+                    MonoBehaviourEvents.OnUpdateActual += InputUpdateNonFixedUpdate;
                     _usingMonoBehUpdate = true;
                 }
 
                 if (_usingMonoBehFixedUpdate)
                 {
-                    MonoBehaviourEvents.OnFixedUpdateActual -= InputUpdate;
+                    MonoBehaviourEvents.OnFixedUpdateActual -= InputUpdateFixedUpdate;
                     _usingMonoBehFixedUpdate = false;
                 }
 
@@ -84,17 +84,18 @@ public static class InputSystemEvents
             case InputSettings.UpdateMode.ProcessEventsManually:
                 if (AlreadyRegisteredOnEvent)
                 {
-                    InputSystem.onBeforeUpdate -= InputUpdate;
+                    InputSystem.onBeforeUpdate -=
+                        _usingMonoBehUpdate ? InputUpdateFixedUpdate : InputUpdateNonFixedUpdate;
                 }
 
                 if (!_usingMonoBehUpdate)
                 {
-                    MonoBehaviourEvents.OnUpdateActual += InputUpdate;
+                    MonoBehaviourEvents.OnUpdateActual += InputUpdateNonFixedUpdate;
                     _usingMonoBehUpdate = true;
                 }
                 else if (!_usingMonoBehFixedUpdate)
                 {
-                    MonoBehaviourEvents.OnFixedUpdateActual += InputUpdate;
+                    MonoBehaviourEvents.OnFixedUpdateActual += InputUpdateFixedUpdate;
                     _usingMonoBehFixedUpdate = true;
                 }
 
@@ -106,8 +107,13 @@ public static class InputSystemEvents
 
     private static bool AlreadyRegisteredOnEvent => !_usingMonoBehUpdate || !_usingMonoBehFixedUpdate;
 
-    public static void InputUpdate()
+    private static void InputUpdateNonFixedUpdate()
     {
-        if (!MonoBehaviourController.PausedExecution) OnInputUpdateActual?.Invoke();
+        if (!MonoBehaviourController.PausedExecution) OnInputUpdateActual?.Invoke(false);
+    }
+
+    private static void InputUpdateFixedUpdate()
+    {
+        if (!MonoBehaviourController.PausedExecution) OnInputUpdateActual?.Invoke(true);
     }
 }

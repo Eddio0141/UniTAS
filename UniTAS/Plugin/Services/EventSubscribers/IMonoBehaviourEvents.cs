@@ -8,5 +8,5 @@ namespace UniTAS.Plugin.Services.EventSubscribers;
 public interface IUpdateEvents
 {
     event Action OnGUIEventUnconditional;
-    event Action OnInputUpdateActual;
+    event Action<bool> OnInputUpdateActual;
 }
