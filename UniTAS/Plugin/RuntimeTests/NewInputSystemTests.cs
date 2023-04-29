@@ -5,7 +5,7 @@ using UniTAS.Plugin.Interfaces.RuntimeTest;
 using UniTAS.Plugin.Models.Coroutine;
 using UniTAS.Plugin.Models.VirtualEnvironment;
 using UniTAS.Plugin.Services.VirtualEnvironment;
-using UniTAS.Plugin.Services.VirtualEnvironment.Input.LegacyInputSystem;
+using UniTAS.Plugin.Services.VirtualEnvironment.Input;
 using UniTAS.Plugin.Utils;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -15,13 +15,12 @@ namespace UniTAS.Plugin.RuntimeTests;
 [Register]
 public class NewInputSystemTests
 {
-    private readonly IMouseStateEnvLegacySystem _mouseStateEnvLegacySystem;
+    private readonly IMouseStateEnvController _mouseController;
     private readonly IVirtualEnvController _virtualEnvController;
 
-    public NewInputSystemTests(IMouseStateEnvLegacySystem mouseStateEnvLegacySystem,
-        IVirtualEnvController virtualEnvController)
+    public NewInputSystemTests(IMouseStateEnvController mouseController, IVirtualEnvController virtualEnvController)
     {
-        _mouseStateEnvLegacySystem = mouseStateEnvLegacySystem;
+        _mouseController = mouseController;
         _virtualEnvController = virtualEnvController;
     }
 
@@ -36,7 +35,7 @@ public class NewInputSystemTests
 
         yield return new WaitForLastUpdateUnconditional();
 
-        _mouseStateEnvLegacySystem.Position = new(500, 600);
+        _mouseController.SetPosition(new(500, 600));
 
         yield return new WaitForUpdateUnconditional();
 
@@ -46,7 +45,7 @@ public class NewInputSystemTests
         RuntimeAssert.AreEqual(600f, pos.y, "mouse y position check");
 
         _virtualEnvController.RunVirtualEnvironment = false;
-        _mouseStateEnvLegacySystem.Position = Vector2.zero;
+        _mouseController.SetPosition(Vector2.zero);
         inputSettings.updateMode = updateMode;
     }
 
@@ -61,7 +60,7 @@ public class NewInputSystemTests
 
         yield return new WaitForLastUpdateUnconditional();
 
-        _mouseStateEnvLegacySystem.HoldButton(MouseButton.Left);
+        _mouseController.HoldButton(MouseButton.Left);
 
         yield return new WaitForUpdateUnconditional();
 
@@ -69,31 +68,31 @@ public class NewInputSystemTests
 
         RuntimeAssert.True(mouse.leftButton.isPressed, "left button check");
 
-        _mouseStateEnvLegacySystem.ReleaseButton(MouseButton.Left);
+        _mouseController.ReleaseButton(MouseButton.Left);
 
         yield return new WaitForUpdateUnconditional();
 
         RuntimeAssert.False(mouse.leftButton.isPressed, "left button check");
 
-        _mouseStateEnvLegacySystem.HoldButton(MouseButton.Right);
+        _mouseController.HoldButton(MouseButton.Right);
 
         yield return new WaitForUpdateUnconditional();
 
         RuntimeAssert.True(mouse.rightButton.isPressed, "right button check");
 
-        _mouseStateEnvLegacySystem.ReleaseButton(MouseButton.Right);
+        _mouseController.ReleaseButton(MouseButton.Right);
 
         yield return new WaitForUpdateUnconditional();
 
         RuntimeAssert.False(mouse.rightButton.isPressed, "right button check");
 
-        _mouseStateEnvLegacySystem.HoldButton(MouseButton.Middle);
+        _mouseController.HoldButton(MouseButton.Middle);
 
         yield return new WaitForUpdateUnconditional();
 
         RuntimeAssert.True(mouse.middleButton.isPressed, "middle button check");
 
-        _mouseStateEnvLegacySystem.ReleaseButton(MouseButton.Middle);
+        _mouseController.ReleaseButton(MouseButton.Middle);
 
         yield return new WaitForUpdateUnconditional();
 

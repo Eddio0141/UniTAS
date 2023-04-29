@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using MoonSharp.Interpreter;
 using UniTAS.Plugin.Interfaces.Movie;
-using UniTAS.Plugin.Services.VirtualEnvironment.Input.LegacyInputSystem;
+using UniTAS.Plugin.Services.VirtualEnvironment.Input;
 using UnityEngine;
 
 namespace UniTAS.Plugin.Implementations.Movie.Engine.Modules;
@@ -11,12 +11,12 @@ namespace UniTAS.Plugin.Implementations.Movie.Engine.Modules;
 [SuppressMessage("ReSharper", "UnusedMember.Global")]
 public class Key : EngineMethodClass
 {
-    private readonly IKeyboardStateEnvLegacySystem _keyboardStateEnvLegacySystem;
+    private readonly IKeyboardStateEnvController _kbController;
 
     [MoonSharpHidden]
-    public Key(IKeyboardStateEnvLegacySystem keyboardStateEnvLegacySystem)
+    public Key(IKeyboardStateEnvController kbController)
     {
-        _keyboardStateEnvLegacySystem = keyboardStateEnvLegacySystem;
+        _kbController = kbController;
     }
 
     public void Hold(string key)
@@ -24,11 +24,11 @@ public class Key : EngineMethodClass
         var parsedKey = ParseKeyCode(key);
         if (parsedKey.HasValue)
         {
-            _keyboardStateEnvLegacySystem.Hold(new(parsedKey.Value));
+            _kbController.Hold(new(parsedKey.Value));
             return;
         }
 
-        _keyboardStateEnvLegacySystem.Hold(new(key));
+        _kbController.Hold(new(key));
     }
 
     public void Release(string key)
@@ -36,16 +36,16 @@ public class Key : EngineMethodClass
         var parsedKey = ParseKeyCode(key);
         if (parsedKey.HasValue)
         {
-            _keyboardStateEnvLegacySystem.Release(new(parsedKey.Value));
+            _kbController.Release(new(parsedKey.Value));
             return;
         }
 
-        _keyboardStateEnvLegacySystem.Release(new(key));
+        _kbController.Release(new(key));
     }
 
     public void Clear()
     {
-        _keyboardStateEnvLegacySystem.Clear();
+        _kbController.Clear();
     }
 
     private static KeyCode? ParseKeyCode(string key)

@@ -2,8 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using MoonSharp.Interpreter;
 using UniTAS.Plugin.Interfaces.Movie;
 using UniTAS.Plugin.Models.VirtualEnvironment;
-using UniTAS.Plugin.Services.VirtualEnvironment.Input.LegacyInputSystem;
-using UnityEngine;
+using UniTAS.Plugin.Services.VirtualEnvironment.Input;
 
 namespace UniTAS.Plugin.Implementations.Movie.Engine.Modules;
 
@@ -11,41 +10,41 @@ namespace UniTAS.Plugin.Implementations.Movie.Engine.Modules;
 [SuppressMessage("ReSharper", "UnusedMember.Global")]
 public class Mouse : EngineMethodClass
 {
-    private readonly IMouseStateEnvLegacySystem _mouseStateEnvLegacySystem;
+    private readonly IMouseStateEnvController _mouseController;
 
     [MoonSharpHidden]
-    public Mouse(IMouseStateEnvLegacySystem mouseStateEnvLegacySystem)
+    public Mouse(IMouseStateEnvController mouseController)
     {
-        _mouseStateEnvLegacySystem = mouseStateEnvLegacySystem;
+        _mouseController = mouseController;
     }
 
     public void Move(float x, float y)
     {
-        _mouseStateEnvLegacySystem.Position = new(x, y);
+        _mouseController.SetPosition(new(x, y));
     }
 
     public void Move_rel(float x, float y)
     {
-        _mouseStateEnvLegacySystem.Position += new Vector2(x, y);
+        _mouseController.SetPositionRelative(new(x, y));
     }
 
     public void Left(bool hold = true)
     {
-        _mouseStateEnvLegacySystem.HoldButton(MouseButton.Left);
+        _mouseController.HoldButton(MouseButton.Left);
     }
 
     public void Right(bool hold = true)
     {
-        _mouseStateEnvLegacySystem.HoldButton(MouseButton.Right);
+        _mouseController.HoldButton(MouseButton.Right);
     }
 
     public void Middle(bool hold = true)
     {
-        _mouseStateEnvLegacySystem.HoldButton(MouseButton.Middle);
+        _mouseController.HoldButton(MouseButton.Middle);
     }
 
     public void Set_scroll(float x, float y)
     {
-        _mouseStateEnvLegacySystem.Scroll = new(x, y);
+        _mouseController.SetScroll(new(x, y));
     }
 }
