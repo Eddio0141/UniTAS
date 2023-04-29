@@ -37,20 +37,16 @@ public class MouseDeviceOverride : InputOverrideDevice
         ushort buttons = 0;
         if (_mouseStateEnvNewSystem.IsButtonHeld(MouseButton.Left))
         {
-            // TODO remove those debugs
-            Plugin.Log.LogDebug("Left button held");
             buttons |= 0b1;
         }
 
         if (_mouseStateEnvNewSystem.IsButtonHeld(MouseButton.Right))
         {
-            Plugin.Log.LogDebug("Right button held");
             buttons |= 0b10;
         }
 
         if (_mouseStateEnvNewSystem.IsButtonHeld(MouseButton.Middle))
         {
-            Plugin.Log.LogDebug("Middle button held");
             buttons |= 0b100;
         }
 
