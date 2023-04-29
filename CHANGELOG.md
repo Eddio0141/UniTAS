@@ -9,14 +9,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Added
 
-### Testing
+### TAS movie
 
-- Added runtime unit tests to test if UniTAS features works
+- Added config `MOVIE_CONFIG.update_type` and API `env.update_type` to choose what update frame advancing should use
 
 ### Old input system support
 
 - Added support for `ResetInputAxes`
 - Added support for `mouseScrollDelta`
+
+### Testing
+
+- Added runtime unit tests to test if UniTAS features works
+
+## Fixed
+
+### TAS movie
+
+- Fixed accidentally skipping a frame when an unity `FixedUpdate` happens
 
 # [v0.3.0] - 2023-04-10
 
