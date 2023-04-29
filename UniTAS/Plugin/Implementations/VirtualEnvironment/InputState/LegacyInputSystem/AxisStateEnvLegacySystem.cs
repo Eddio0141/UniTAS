@@ -2,7 +2,7 @@
 using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Services.VirtualEnvironment.Input.LegacyInputSystem;
 
-namespace UniTAS.Plugin.Implementations.VirtualEnvironment.InputState;
+namespace UniTAS.Plugin.Implementations.VirtualEnvironment.InputState.LegacyInputSystem;
 
 [Singleton]
 public class AxisStateEnvLegacySystem : Interfaces.VirtualEnvironment.InputState, IAxisStateEnvLegacySystem

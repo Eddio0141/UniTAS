@@ -3,7 +3,7 @@ using UniTAS.Plugin.Interfaces.VirtualEnvironment;
 using UniTAS.Plugin.Models.VirtualEnvironment;
 using UniTAS.Plugin.Services.VirtualEnvironment.Input.LegacyInputSystem;
 
-namespace UniTAS.Plugin.Implementations.VirtualEnvironment.InputState;
+namespace UniTAS.Plugin.Implementations.VirtualEnvironment.InputState.LegacyInputSystem;
 
 [Singleton]
 public class KeyboardStateEnvLegacySystem : LegacyInputSystemButtonBasedDevice<Key>, IKeyboardStateEnvLegacySystem

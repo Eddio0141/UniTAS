@@ -4,7 +4,7 @@ using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.RuntimeTest;
 using UniTAS.Plugin.Models.Coroutine;
 using UniTAS.Plugin.Services.VirtualEnvironment;
-using UniTAS.Plugin.Services.VirtualEnvironment.Input;
+using UniTAS.Plugin.Services.VirtualEnvironment.Input.LegacyInputSystem;
 using UniTAS.Plugin.Utils;
 using UnityEngine;
 
@@ -13,24 +13,25 @@ namespace UniTAS.Plugin.RuntimeTests;
 [Register]
 public class LegacyInputSystemTests
 {
-    private readonly IKeyboardStateEnv _keyboardStateEnv;
+    private readonly IKeyboardStateEnvLegacySystem _keyboardStateEnvLegacySystem;
     private readonly IVirtualEnvController _virtualEnvController;
 
-    public LegacyInputSystemTests(IKeyboardStateEnv keyboardStateEnv, IVirtualEnvController virtualEnvController)
+    public LegacyInputSystemTests(IKeyboardStateEnvLegacySystem keyboardStateEnvLegacySystem,
+        IVirtualEnvController virtualEnvController)
     {
-        _keyboardStateEnv = keyboardStateEnv;
+        _keyboardStateEnvLegacySystem = keyboardStateEnvLegacySystem;
         _virtualEnvController = virtualEnvController;
     }
 
     [RuntimeTest]
     public IEnumerator<CoroutineWait> GetKeyTest()
     {
-        yield return new WaitForUpdateUnconditional();
-
         _virtualEnvController.RunVirtualEnvironment = true;
 
         yield return new WaitForUpdateUnconditional();
-        _keyboardStateEnv.Hold(new(KeyCode.A));
+
+        _keyboardStateEnvLegacySystem.Hold(new(KeyCode.A));
+
         yield return new WaitForUpdateUnconditional();
 
         RuntimeAssert.True(Input.GetKeyDown(KeyCode.A), "keycode down check");
@@ -50,7 +51,7 @@ public class LegacyInputSystemTests
         RuntimeAssert.True(Input.GetKey(KeyCode.A), "keycode 3 check");
         RuntimeAssert.True(Input.GetKey("a"), "string 3 check");
 
-        _keyboardStateEnv.Release(new(KeyCode.A));
+        _keyboardStateEnvLegacySystem.Release(new(KeyCode.A));
 
         yield return new WaitForUpdateUnconditional();
 

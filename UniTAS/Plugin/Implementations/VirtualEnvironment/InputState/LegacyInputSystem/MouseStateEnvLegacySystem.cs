@@ -4,7 +4,7 @@ using UniTAS.Plugin.Models.VirtualEnvironment;
 using UniTAS.Plugin.Services.VirtualEnvironment.Input.LegacyInputSystem;
 using UnityEngine;
 
-namespace UniTAS.Plugin.Implementations.VirtualEnvironment.InputState;
+namespace UniTAS.Plugin.Implementations.VirtualEnvironment.InputState.LegacyInputSystem;
 
 [Singleton]
 [ExcludeRegisterIfTesting]
