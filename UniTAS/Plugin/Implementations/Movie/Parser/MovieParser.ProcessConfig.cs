@@ -125,17 +125,12 @@ public partial class MovieParser
             return UpdateType.Both;
         }
 
-        object enumParsed;
+        UpdateType updateType;
         try
         {
-            enumParsed = Enum.Parse(typeof(UpdateType), valueParsed, true);
+            updateType = (UpdateType)Enum.Parse(typeof(UpdateType), valueParsed, true);
         }
         catch (Exception)
-        {
-            return UpdateType.Both;
-        }
-
-        if (enumParsed is not UpdateType updateType)
         {
             _logger.LogWarning(
                 "Could not parse update_type as a valid variant, using default value of updating on all update types");

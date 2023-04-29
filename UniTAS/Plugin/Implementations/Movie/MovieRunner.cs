@@ -23,7 +23,6 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual
     public bool MovieEnd { get; private set; } = true;
     private bool _cleanUp;
     private bool _setup;
-    private UpdateType _updateType;
 
     private readonly IMovieParser _parser;
     private IMovieEngine _engine;
@@ -35,6 +34,8 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual
     private readonly IVirtualEnvController _virtualEnvController;
     private readonly ITimeEnv _timeEnv;
     private readonly IRandomEnv _randomEnv;
+
+    public UpdateType UpdateType { get; set; }
 
     public MovieRunner(IGameRestart gameRestart, IMovieParser parser, IMovieLogger movieLogger,
         IOnMovieRunningStatusChange[] onMovieRunningStatusChange,
@@ -88,7 +89,7 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual
             _gameRestart.SoftRestart(properties.StartupProperties.StartTime);
         }
 
-        _updateType = properties.UpdateType;
+        UpdateType = properties.UpdateType;
     }
 
     private void OnGameRestartResume(DateTime startupTime, bool preMonoBehaviourResume)
@@ -110,9 +111,10 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual
 
         if (MovieEnd ||
             // skip if update type doesn't match current update type
-            _updateType != UpdateType.Both &&
-            fixedUpdate && _updateType != UpdateType.FixedUpdate ||
-            (!fixedUpdate && _updateType != UpdateType.Update)) return;
+            (UpdateType != UpdateType.Both &&
+             ((fixedUpdate && UpdateType != UpdateType.FixedUpdate) ||
+              (!fixedUpdate && UpdateType != UpdateType.Update)))
+           ) return;
 
         _engine.Update();
 
