@@ -3,6 +3,7 @@ using UniTAS.Plugin.Interfaces.Coroutine;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.RuntimeTest;
 using UniTAS.Plugin.Models.Coroutine;
+using UniTAS.Plugin.Models.VirtualEnvironment;
 using UniTAS.Plugin.Services.VirtualEnvironment;
 using UniTAS.Plugin.Services.VirtualEnvironment.Input;
 using UniTAS.Plugin.Utils;
@@ -14,13 +15,15 @@ namespace UniTAS.Plugin.RuntimeTests;
 public class LegacyInputSystemTests
 {
     private readonly IKeyboardStateEnvController _keyboardController;
+    private readonly IMouseStateEnvController _mouseController;
     private readonly IVirtualEnvController _virtualEnvController;
 
     public LegacyInputSystemTests(IKeyboardStateEnvController keyboardController,
-        IVirtualEnvController virtualEnvController)
+        IVirtualEnvController virtualEnvController, IMouseStateEnvController mouseController)
     {
         _keyboardController = keyboardController;
         _virtualEnvController = virtualEnvController;
+        _mouseController = mouseController;
     }
 
     [RuntimeTest]
@@ -64,6 +67,59 @@ public class LegacyInputSystemTests
 
         RuntimeAssert.False(Input.GetKeyUp(KeyCode.A), "keycode up check");
         RuntimeAssert.False(Input.GetKeyUp("a"), "string up check");
+
+        _virtualEnvController.RunVirtualEnvironment = false;
+    }
+
+    [RuntimeTest]
+    public IEnumerator<CoroutineWait> GetMousePress()
+    {
+        _virtualEnvController.RunVirtualEnvironment = true;
+
+        yield return new WaitForUpdateUnconditional();
+
+        RuntimeAssert.False(Input.GetMouseButton(0));
+
+        _mouseController.HoldButton(MouseButton.Left);
+
+        yield return new WaitForUpdateUnconditional();
+
+        RuntimeAssert.True(Input.GetMouseButtonDown(0));
+        RuntimeAssert.True(Input.GetMouseButton(0));
+
+        yield return new WaitForUpdateUnconditional();
+
+        RuntimeAssert.False(Input.GetMouseButtonDown(0));
+        RuntimeAssert.True(Input.GetMouseButton(0));
+
+        yield return new WaitForUpdateUnconditional();
+
+        _mouseController.HoldButton(MouseButton.Middle);
+
+        yield return new WaitForUpdateUnconditional();
+
+        RuntimeAssert.True(Input.GetMouseButtonDown(2));
+        RuntimeAssert.True(Input.GetMouseButton(2));
+
+        yield return new WaitForUpdateUnconditional();
+
+        _mouseController.ReleaseButton(MouseButton.Left);
+        _mouseController.ReleaseButton(MouseButton.Middle);
+
+        yield return new WaitForUpdateUnconditional();
+
+        RuntimeAssert.False(Input.GetMouseButtonDown(0));
+        RuntimeAssert.False(Input.GetMouseButton(0));
+        RuntimeAssert.True(Input.GetMouseButtonUp(0));
+
+        RuntimeAssert.False(Input.GetMouseButtonDown(2));
+        RuntimeAssert.False(Input.GetMouseButton(2));
+        RuntimeAssert.True(Input.GetMouseButtonUp(2));
+
+        yield return new WaitForUpdateUnconditional();
+
+        RuntimeAssert.False(Input.GetMouseButtonUp(0));
+        RuntimeAssert.False(Input.GetMouseButtonUp(2));
 
         _virtualEnvController.RunVirtualEnvironment = false;
     }
