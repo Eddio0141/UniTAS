@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace UniTAS.Plugin.Services.VirtualEnvironment.Input.NewInputSystem;
 
-public interface IMouseStateEnvLegacySystem
+public interface IMouseStateEnvNewSystem
 {
     Vector2 Position { get; set; }
     Vector2 Scroll { get; set; }
