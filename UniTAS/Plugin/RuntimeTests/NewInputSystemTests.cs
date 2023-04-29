@@ -4,6 +4,7 @@ using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.RuntimeTest;
 using UniTAS.Plugin.Models.Coroutine;
 using UniTAS.Plugin.Models.VirtualEnvironment;
+using UniTAS.Plugin.Services.InputSystemOverride;
 using UniTAS.Plugin.Services.VirtualEnvironment;
 using UniTAS.Plugin.Services.VirtualEnvironment.Input;
 using UniTAS.Plugin.Utils;
@@ -17,17 +18,24 @@ public class NewInputSystemTests
 {
     private readonly IMouseStateEnvController _mouseController;
     private readonly IVirtualEnvController _virtualEnvController;
+    private readonly IInputSystemExists _inputSystemExists;
 
-    public NewInputSystemTests(IMouseStateEnvController mouseController, IVirtualEnvController virtualEnvController)
+    public NewInputSystemTests(IMouseStateEnvController mouseController, IVirtualEnvController virtualEnvController,
+        IInputSystemExists inputSystemExists)
     {
         _mouseController = mouseController;
         _virtualEnvController = virtualEnvController;
+        _inputSystemExists = inputSystemExists;
     }
 
     [RuntimeTest]
-    public IEnumerator<CoroutineWait> MousePosition()
+    public Tuple<bool, IEnumerator<CoroutineWait>> MousePosition()
     {
-        // TODO skip if no input system
+        return new(_inputSystemExists.HasInputSystem, MousePositionInternal());
+    }
+
+    private IEnumerator<CoroutineWait> MousePositionInternal()
+    {
         var inputSettings = InputSystem.settings;
         var updateMode = inputSettings.updateMode;
         inputSettings.updateMode = InputSettings.UpdateMode.ProcessEventsInDynamicUpdate;
@@ -50,9 +58,13 @@ public class NewInputSystemTests
     }
 
     [RuntimeTest]
-    public IEnumerator<CoroutineWait> MouseButtons()
+    public Tuple<bool, IEnumerator<CoroutineWait>> MouseButtons()
     {
-        // TODO skip if no input system
+        return new(_inputSystemExists.HasInputSystem, MouseButtonsInternal());
+    }
+
+    private IEnumerator<CoroutineWait> MouseButtonsInternal()
+    {
         var inputSettings = InputSystem.settings;
         var updateMode = inputSettings.updateMode;
         inputSettings.updateMode = InputSettings.UpdateMode.ProcessEventsInDynamicUpdate;
