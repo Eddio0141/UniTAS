@@ -1,12 +1,12 @@
 ﻿using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.VirtualEnvironment;
 using UniTAS.Plugin.Models.VirtualEnvironment;
-using UniTAS.Plugin.Services.VirtualEnvironment.Input;
+using UniTAS.Plugin.Services.VirtualEnvironment.Input.LegacyInputSystem;
 
 namespace UniTAS.Plugin.Implementations.VirtualEnvironment.InputState;
 
 [Singleton]
-public class KeyboardStateEnv : LegacyInputSystemButtonBasedDevice<Key>, IKeyboardStateEnv
+public class KeyboardStateEnvLegacySystem : LegacyInputSystemButtonBasedDevice<Key>, IKeyboardStateEnvLegacySystem
 {
     public new void Hold(Key key)
     {

@@ -1,14 +1,14 @@
 ﻿using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.VirtualEnvironment;
 using UniTAS.Plugin.Models.VirtualEnvironment;
-using UniTAS.Plugin.Services.VirtualEnvironment.Input;
+using UniTAS.Plugin.Services.VirtualEnvironment.Input.LegacyInputSystem;
 using UnityEngine;
 
 namespace UniTAS.Plugin.Implementations.VirtualEnvironment.InputState;
 
 [Singleton]
 [ExcludeRegisterIfTesting]
-public class MouseStateEnv : LegacyInputSystemButtonBasedDevice<MouseButtonWrap>, IMouseStateEnv
+public class MouseStateEnvLegacySystem : LegacyInputSystemButtonBasedDevice<MouseButtonWrap>, IMouseStateEnvLegacySystem
 {
     public bool MousePresent => true;
     public Vector2 Position { get; set; }

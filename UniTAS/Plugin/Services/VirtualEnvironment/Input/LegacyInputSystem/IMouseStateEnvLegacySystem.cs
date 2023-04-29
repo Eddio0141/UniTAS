@@ -1,9 +1,9 @@
 using UniTAS.Plugin.Models.VirtualEnvironment;
 using UnityEngine;
 
-namespace UniTAS.Plugin.Services.VirtualEnvironment.Input;
+namespace UniTAS.Plugin.Services.VirtualEnvironment.Input.LegacyInputSystem;
 
-public interface IMouseStateEnv
+public interface IMouseStateEnvLegacySystem
 {
     bool MousePresent { get; }
     Vector2 Position { get; set; }

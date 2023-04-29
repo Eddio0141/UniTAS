@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
-using UniTAS.Plugin.Services.VirtualEnvironment.Input;
+using UniTAS.Plugin.Services.VirtualEnvironment.Input.LegacyInputSystem;
 
 namespace UniTAS.Plugin.Implementations.VirtualEnvironment.InputState;
 
 [Singleton]
-public class AxisStateEnv : Interfaces.VirtualEnvironment.InputState, IAxisStateEnv
+public class AxisStateEnvLegacySystem : Interfaces.VirtualEnvironment.InputState, IAxisStateEnvLegacySystem
 {
     private readonly Dictionary<string, float> _values = new();
 

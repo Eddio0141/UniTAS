@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using MoonSharp.Interpreter;
 using UniTAS.Plugin.Interfaces.Movie;
-using UniTAS.Plugin.Services.VirtualEnvironment.Input;
+using UniTAS.Plugin.Services.VirtualEnvironment.Input.LegacyInputSystem;
 using UnityEngine;
 
 namespace UniTAS.Plugin.Implementations.Movie.Engine.Modules;
@@ -11,12 +11,12 @@ namespace UniTAS.Plugin.Implementations.Movie.Engine.Modules;
 [SuppressMessage("ReSharper", "UnusedMember.Global")]
 public class Key : EngineMethodClass
 {
-    private readonly IKeyboardStateEnv _keyboardStateEnv;
+    private readonly IKeyboardStateEnvLegacySystem _keyboardStateEnvLegacySystem;
 
     [MoonSharpHidden]
-    public Key(IKeyboardStateEnv keyboardStateEnv)
+    public Key(IKeyboardStateEnvLegacySystem keyboardStateEnvLegacySystem)
     {
-        _keyboardStateEnv = keyboardStateEnv;
+        _keyboardStateEnvLegacySystem = keyboardStateEnvLegacySystem;
     }
 
     public void Hold(string key)
@@ -24,11 +24,11 @@ public class Key : EngineMethodClass
         var parsedKey = ParseKeyCode(key);
         if (parsedKey.HasValue)
         {
-            _keyboardStateEnv.Hold(new(parsedKey.Value));
+            _keyboardStateEnvLegacySystem.Hold(new(parsedKey.Value));
             return;
         }
 
-        _keyboardStateEnv.Hold(new(key));
+        _keyboardStateEnvLegacySystem.Hold(new(key));
     }
 
     public void Release(string key)
@@ -36,16 +36,16 @@ public class Key : EngineMethodClass
         var parsedKey = ParseKeyCode(key);
         if (parsedKey.HasValue)
         {
-            _keyboardStateEnv.Release(new(parsedKey.Value));
+            _keyboardStateEnvLegacySystem.Release(new(parsedKey.Value));
             return;
         }
 
-        _keyboardStateEnv.Release(new(key));
+        _keyboardStateEnvLegacySystem.Release(new(key));
     }
 
     public void Clear()
     {
-        _keyboardStateEnv.Clear();
+        _keyboardStateEnvLegacySystem.Clear();
     }
 
     private static KeyCode? ParseKeyCode(string key)

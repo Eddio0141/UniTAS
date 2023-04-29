@@ -1,11 +1,11 @@
 using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.VirtualEnvironment;
-using UniTAS.Plugin.Services.VirtualEnvironment.Input;
+using UniTAS.Plugin.Services.VirtualEnvironment.Input.LegacyInputSystem;
 
 namespace UniTAS.Plugin.Implementations.VirtualEnvironment.InputState;
 
 [Singleton]
-public class ButtonStateEnv : LegacyInputSystemButtonBasedDevice<string>, IButtonStateEnv
+public class ButtonStateEnvLegacySystem : LegacyInputSystemButtonBasedDevice<string>, IButtonStateEnvLegacySystem
 {
     public new void Hold(string button)
     {

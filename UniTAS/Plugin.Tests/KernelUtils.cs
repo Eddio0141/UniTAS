@@ -13,7 +13,7 @@ using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.DependencyInjection;
 using UniTAS.Plugin.Services.Logging;
 using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
-using UniTAS.Plugin.Services.VirtualEnvironment.Input;
+using UniTAS.Plugin.Services.VirtualEnvironment.Input.LegacyInputSystem;
 using UnityEngine;
 
 namespace UniTAS.Plugin.Tests;
@@ -125,7 +125,7 @@ public static class KernelUtils
 
     [Singleton(IncludeDifferentAssembly = true)]
     [SuppressMessage("ReSharper", "UnassignedGetOnlyAutoProperty")]
-    public class DummyMouseEnv : IMouseStateEnv
+    public class DummyMouseEnvLegacySystem : IMouseStateEnvLegacySystem
     {
         public bool AnyButtonDown { get; }
         public bool AnyButtonHeld { get; }
@@ -179,7 +179,7 @@ public static class KernelUtils
 
         var forceInstantiateTypes = kernel.GetInstance<IForceInstantiateTypes>();
         forceInstantiateTypes.InstantiateTypes<PluginWrapper>();
-        forceInstantiateTypes.InstantiateTypes<DummyMouseEnv>();
+        forceInstantiateTypes.InstantiateTypes<DummyMouseEnvLegacySystem>();
 
         return kernel;
     }

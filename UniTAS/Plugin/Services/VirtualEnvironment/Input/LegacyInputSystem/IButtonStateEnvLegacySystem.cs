@@ -1,7 +1,6 @@
+namespace UniTAS.Plugin.Services.VirtualEnvironment.Input.LegacyInputSystem;
 
-namespace UniTAS.Plugin.Services.VirtualEnvironment.Input;
-
-public interface IButtonStateEnv
+public interface IButtonStateEnvLegacySystem
 {
     bool IsButtonHeld(string button);
     bool IsButtonDown(string button);

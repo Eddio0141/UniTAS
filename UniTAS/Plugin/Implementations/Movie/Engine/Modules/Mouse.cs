@@ -2,7 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using MoonSharp.Interpreter;
 using UniTAS.Plugin.Interfaces.Movie;
 using UniTAS.Plugin.Models.VirtualEnvironment;
-using UniTAS.Plugin.Services.VirtualEnvironment.Input;
+using UniTAS.Plugin.Services.VirtualEnvironment.Input.LegacyInputSystem;
 using UnityEngine;
 
 namespace UniTAS.Plugin.Implementations.Movie.Engine.Modules;
@@ -11,41 +11,41 @@ namespace UniTAS.Plugin.Implementations.Movie.Engine.Modules;
 [SuppressMessage("ReSharper", "UnusedMember.Global")]
 public class Mouse : EngineMethodClass
 {
-    private readonly IMouseStateEnv _mouseStateEnv;
+    private readonly IMouseStateEnvLegacySystem _mouseStateEnvLegacySystem;
 
     [MoonSharpHidden]
-    public Mouse(IMouseStateEnv mouseStateEnv)
+    public Mouse(IMouseStateEnvLegacySystem mouseStateEnvLegacySystem)
     {
-        _mouseStateEnv = mouseStateEnv;
+        _mouseStateEnvLegacySystem = mouseStateEnvLegacySystem;
     }
 
     public void Move(float x, float y)
     {
-        _mouseStateEnv.Position = new(x, y);
+        _mouseStateEnvLegacySystem.Position = new(x, y);
     }
 
     public void Move_rel(float x, float y)
     {
-        _mouseStateEnv.Position += new Vector2(x, y);
+        _mouseStateEnvLegacySystem.Position += new Vector2(x, y);
     }
 
     public void Left(bool hold = true)
     {
-        _mouseStateEnv.HoldButton(MouseButton.Left);
+        _mouseStateEnvLegacySystem.HoldButton(MouseButton.Left);
     }
 
     public void Right(bool hold = true)
     {
-        _mouseStateEnv.HoldButton(MouseButton.Right);
+        _mouseStateEnvLegacySystem.HoldButton(MouseButton.Right);
     }
 
     public void Middle(bool hold = true)
     {
-        _mouseStateEnv.HoldButton(MouseButton.Middle);
+        _mouseStateEnvLegacySystem.HoldButton(MouseButton.Middle);
     }
 
     public void Set_scroll(float x, float y)
     {
-        _mouseStateEnv.Scroll = new(x, y);
+        _mouseStateEnvLegacySystem.Scroll = new(x, y);
     }
 }

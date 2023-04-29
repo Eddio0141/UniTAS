@@ -1,8 +1,8 @@
 using UniTAS.Plugin.Models.VirtualEnvironment;
 
-namespace UniTAS.Plugin.Services.VirtualEnvironment.Input;
+namespace UniTAS.Plugin.Services.VirtualEnvironment.Input.LegacyInputSystem;
 
-public interface IKeyboardStateEnv
+public interface IKeyboardStateEnvLegacySystem
 {
     void Hold(Key key);
     void Release(Key key);

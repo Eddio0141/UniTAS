@@ -4,7 +4,7 @@ using UniTAS.Plugin.Interfaces.InputSystemOverride;
 using UniTAS.Plugin.Services.EventSubscribers;
 using UniTAS.Plugin.Services.InputSystemOverride;
 using UniTAS.Plugin.Services.VirtualEnvironment;
-using UniTAS.Plugin.Services.VirtualEnvironment.Input;
+using UniTAS.Plugin.Services.VirtualEnvironment.Input.LegacyInputSystem;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Layouts;
 using UnityEngine.InputSystem.LowLevel;
@@ -17,13 +17,14 @@ public class MouseDeviceOverride : InputOverrideDevice
 {
     private Mouse _mouse;
 
-    private readonly IMouseStateEnv _mouseStateEnv;
+    private readonly IMouseStateEnvLegacySystem _mouseStateEnvLegacySystem;
 
     public MouseDeviceOverride(IVirtualEnvController virtualEnvController, IUpdateEvents updateEvents,
-        IInputSystemExists inputSystemExists, IMouseStateEnv mouseStateEnv) : base(virtualEnvController, updateEvents,
+        IInputSystemExists inputSystemExists, IMouseStateEnvLegacySystem mouseStateEnvLegacySystem) : base(
+        virtualEnvController, updateEvents,
         inputSystemExists)
     {
-        _mouseStateEnv = mouseStateEnv;
+        _mouseStateEnvLegacySystem = mouseStateEnvLegacySystem;
     }
 
     [InputControlLayout(stateType = typeof(MouseState), isGenericTypeOfDevice = true)]
@@ -35,26 +36,29 @@ public class MouseDeviceOverride : InputOverrideDevice
     protected override void Update()
     {
         ushort buttons = 0;
-        if (_mouseStateEnv.IsButtonHeld(MouseButton.Left))
+        if (_mouseStateEnvLegacySystem.IsButtonHeld(MouseButton.Left))
         {
+            Plugin.Log.LogDebug("Left button held");
             buttons |= 0b1;
         }
 
-        if (_mouseStateEnv.IsButtonHeld(MouseButton.Right))
+        if (_mouseStateEnvLegacySystem.IsButtonHeld(MouseButton.Right))
         {
+            Plugin.Log.LogDebug("Right button held");
             buttons |= 0b10;
         }
 
-        if (_mouseStateEnv.IsButtonHeld(MouseButton.Middle))
+        if (_mouseStateEnvLegacySystem.IsButtonHeld(MouseButton.Middle))
         {
+            Plugin.Log.LogDebug("Middle button held");
             buttons |= 0b100;
         }
 
         var state = new MouseState
         {
             buttons = buttons,
-            position = _mouseStateEnv.Position,
-            scroll = _mouseStateEnv.Scroll
+            position = _mouseStateEnvLegacySystem.Position,
+            scroll = _mouseStateEnvLegacySystem.Scroll
         };
 
         InputSystem.QueueStateEvent(_mouse, state);
