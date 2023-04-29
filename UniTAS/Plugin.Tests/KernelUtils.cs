@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using BepInEx.Configuration;
 using BepInEx.Logging;
 using MoonSharp.Interpreter;
 using StructureMap;
@@ -158,14 +157,18 @@ public static class KernelUtils
         }
     }
 
+    [Register(IncludeDifferentAssembly = true)]
+    public class ConfigDummy : IConfig
+    {
+        public float DefaultFps { get; set; }
+    }
+
     public static Container Init()
     {
         var kernel = new Container(c =>
         {
             c.ForSingletonOf<DiscoverAndRegister>().Use<DiscoverAndRegister>();
             c.For<IDiscoverAndRegister>().Use(x => x.GetInstance<DiscoverAndRegister>());
-
-            c.ForSingletonOf<ConfigFile>().Use(new ConfigFile("test", false));
         });
 
         kernel.Configure(c =>
