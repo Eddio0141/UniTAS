@@ -1,10 +1,12 @@
 using System.Collections.Generic;
+using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Models.VirtualEnvironment;
 using UniTAS.Plugin.Services.VirtualEnvironment.Input.NewInputSystem;
 using UnityEngine;
 
 namespace UniTAS.Plugin.Implementations.VirtualEnvironment.InputState.NewInputSystem;
 
+[Singleton]
 public class MouseStateEnvNewSystem : Interfaces.VirtualEnvironment.InputState, IMouseStateEnvNewSystem
 {
     public Vector2 Position { get; set; }
