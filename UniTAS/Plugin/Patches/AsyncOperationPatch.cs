@@ -116,12 +116,14 @@ public class AsyncOperationPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
+        private static readonly MethodInfo _loadFromFile_Internal = AccessTools.Method(typeof(AssetBundle),
+            "LoadFromFile_Internal",
+            new[] { typeof(string), typeof(uint), typeof(ulong) });
+
         private static bool Prefix(string path, uint crc, ulong offset, ref object __result)
         {
             // LoadFromFile fails with null return if operation fails, __result.assetBundle will also reflect that if async load fails too
-            var loadFromFile_Internal = Traverse.Create(typeof(AssetBundle)).Method("LoadFromFile_Internal",
-                new[] { typeof(string), typeof(uint), typeof(ulong) });
-            var loadResult = loadFromFile_Internal.GetValue(path, crc, offset);
+            var loadResult = _loadFromFile_Internal.Invoke(null, new object[] { path, crc, offset });
             // create a new instance
             __result = new();
             AssetBundleCreateRequestTracker.NewAssetBundleCreateRequest(__result, loadResult);
