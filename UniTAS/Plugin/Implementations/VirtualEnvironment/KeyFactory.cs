@@ -33,9 +33,10 @@ public class KeyFactory : IKeyFactory
 
     private static KeyCode? ParseKeyCode(string key)
     {
-        if (Enum.IsDefined(typeof(KeyCode), key))
+        var keyClean = key.Trim().ToLower();
+        if (Enum.IsDefined(typeof(KeyCode), keyClean))
         {
-            return (KeyCode)Enum.Parse(typeof(KeyCode), key, true);
+            return (KeyCode)Enum.Parse(typeof(KeyCode), keyClean, true);
         }
 
         return null;
