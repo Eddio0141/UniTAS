@@ -7,37 +7,38 @@ public readonly struct Key : IEquatable<Key>
 {
     private string Keys { get; }
     private KeyCode? KeyCode { get; }
+    public UnityEngine.InputSystem.Key? NewInputSystemKey { get; }
 
-    public Key(string keys)
+    public Key(string keys, UnityEngine.InputSystem.Key? newInputSystemKey)
     {
         Keys = keys;
+        NewInputSystemKey = newInputSystemKey;
     }
 
-    public Key(KeyCode keyCode)
+    public Key(KeyCode keyCode, UnityEngine.InputSystem.Key? newInputSystemKey)
     {
         KeyCode = keyCode;
+        NewInputSystemKey = newInputSystemKey;
     }
 
     public bool Equals(Key other)
     {
-        // if (ReferenceEquals(null, other)) return false;
-        // if (ReferenceEquals(this, other)) return true;
-        return Keys == other.Keys && KeyCode == other.KeyCode;
+        return Keys == other.Keys && KeyCode == other.KeyCode && NewInputSystemKey == other.NewInputSystemKey;
     }
 
     public override bool Equals(object obj)
     {
-        if (ReferenceEquals(null, obj)) return false;
-        // if (ReferenceEquals(this, obj)) return true;
-        if (obj.GetType() != GetType()) return false;
-        return Equals((Key)obj);
+        return obj is Key other && Equals(other);
     }
 
     public override int GetHashCode()
     {
         unchecked
         {
-            return ((Keys != null ? Keys.GetHashCode() : 0) * 397) ^ KeyCode.GetHashCode();
+            var hashCode = (Keys != null ? Keys.GetHashCode() : 0);
+            hashCode = (hashCode * 397) ^ KeyCode.GetHashCode();
+            hashCode = (hashCode * 397) ^ NewInputSystemKey.GetHashCode();
+            return hashCode;
         }
     }
 }

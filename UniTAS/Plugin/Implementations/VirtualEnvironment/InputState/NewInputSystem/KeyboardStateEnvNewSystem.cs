@@ -8,31 +8,26 @@ namespace UniTAS.Plugin.Implementations.VirtualEnvironment.InputState.NewInputSy
 [Singleton]
 public class KeyboardStateEnvNewSystem : Interfaces.VirtualEnvironment.InputState, IKeyboardStateEnvNewSystem
 {
-    private readonly List<Key> _heldKeys = new();
+    public List<Key> HeldKeys { get; } = new();
 
     public void Hold(Key key)
     {
-        if (_heldKeys.Contains(key)) return;
-        _heldKeys.Add(key);
+        if (HeldKeys.Contains(key)) return;
+        HeldKeys.Add(key);
     }
 
     public void Release(Key key)
     {
-        _heldKeys.Remove(key);
-    }
-
-    public bool IsKeyHeld(Key key)
-    {
-        return _heldKeys.Contains(key);
+        HeldKeys.Remove(key);
     }
 
     public void Clear()
     {
-        _heldKeys.Clear();
+        HeldKeys.Clear();
     }
 
     protected override void ResetState()
     {
-        _heldKeys.Clear();
+        HeldKeys.Clear();
     }
 }

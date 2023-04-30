@@ -17,13 +17,15 @@ public class LegacyInputSystemTests
     private readonly IKeyboardStateEnvController _keyboardController;
     private readonly IMouseStateEnvController _mouseController;
     private readonly IVirtualEnvController _virtualEnvController;
+    private readonly IKeyFactory _keyFactory;
 
     public LegacyInputSystemTests(IKeyboardStateEnvController keyboardController,
-        IVirtualEnvController virtualEnvController, IMouseStateEnvController mouseController)
+        IVirtualEnvController virtualEnvController, IMouseStateEnvController mouseController, IKeyFactory keyFactory)
     {
         _keyboardController = keyboardController;
         _virtualEnvController = virtualEnvController;
         _mouseController = mouseController;
+        _keyFactory = keyFactory;
     }
 
     [RuntimeTest]
@@ -33,7 +35,7 @@ public class LegacyInputSystemTests
 
         yield return new WaitForUpdateUnconditional();
 
-        _keyboardController.Hold(new(KeyCode.A));
+        _keyboardController.Hold(_keyFactory.CreateKey(KeyCode.A));
 
         yield return new WaitForUpdateUnconditional();
 
@@ -54,7 +56,7 @@ public class LegacyInputSystemTests
         RuntimeAssert.True(Input.GetKey(KeyCode.A), "keycode 3 check");
         RuntimeAssert.True(Input.GetKey("a"), "string 3 check");
 
-        _keyboardController.Release(new(KeyCode.A));
+        _keyboardController.Release(_keyFactory.CreateKey(KeyCode.A));
 
         yield return new WaitForUpdateUnconditional();
 
