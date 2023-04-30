@@ -33,6 +33,15 @@ public class KeyboardDeviceOverride : InputOverrideDevice
 
     protected override void Update()
     {
+        var state = new KeyboardState();
+        foreach (var heldKey in _keyboardStateEnvNewSystem.HeldKeys)
+        {
+            var heldKeyNewSystem = heldKey.NewInputSystemKey;
+            if (heldKeyNewSystem == null) continue;
+            state.Set(heldKeyNewSystem.Value, true);
+        }
+
+        InputSystem.QueueStateEvent(_keyboard, state);
     }
 
     public override void DeviceAdded()
