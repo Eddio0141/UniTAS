@@ -120,7 +120,7 @@ public class AsyncOperationPatch
             "LoadFromFile_Internal",
             new[] { typeof(string), typeof(uint), typeof(ulong) });
 
-        private static bool Prefix(string path, uint crc, ulong offset, ref object __result)
+        private static bool Prefix(string path, uint crc, ulong offset, ref AssetBundleCreateRequest __result)
         {
             // LoadFromFile fails with null return if operation fails, __result.assetBundle will also reflect that if async load fails too
             var loadResult = _loadFromFile_Internal.Invoke(null, new object[] { path, crc, offset });
@@ -140,7 +140,7 @@ public class AsyncOperationPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix(byte[] binary, uint crc, ref object __result)
+        private static bool Prefix(byte[] binary, uint crc, ref AssetBundleCreateRequest __result)
         {
             var loadFromMemory_Internal = Traverse.Create(typeof(AssetBundle))
                 .Method("LoadFromMemory_Internal", new[] { typeof(byte[]), typeof(uint) });
@@ -160,7 +160,8 @@ public class AsyncOperationPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix(Stream stream, uint crc, uint managedReadBufferSize, ref object __result)
+        private static bool Prefix(Stream stream, uint crc, uint managedReadBufferSize,
+            ref AssetBundleCreateRequest __result)
         {
             var loadFromStreamInternal = Traverse.Create(typeof(AssetBundle)).Method("LoadFromStreamInternal",
                 new[] { typeof(Stream), typeof(uint), typeof(uint) });
@@ -180,7 +181,7 @@ public class AsyncOperationPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix(string name, Type type, ref object __result)
+        private static bool Prefix(string name, Type type, ref AssetBundleRequest __result)
         {
             var loadAsset_Internal = Traverse.Create(typeof(AssetBundle))
                 .Method("LoadAsset_Internal", new[] { typeof(string), typeof(Type) });
@@ -200,7 +201,7 @@ public class AsyncOperationPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix(string name, Type type, ref object __result)
+        private static bool Prefix(string name, Type type, ref AssetBundleRequest __result)
         {
             var loadAssetWithSubAssets_Internal = Traverse.Create(typeof(AssetBundle))
                 .Method("LoadAssetWithSubAssets_Internal", new[] { typeof(string), typeof(Type) });
@@ -270,7 +271,7 @@ public class AsyncOperationPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix(AssetBundleCreateRequest __instance, ref object __result)
+        private static bool Prefix(AssetBundleCreateRequest __instance, ref AssetBundle __result)
         {
             __result = AssetBundleCreateRequestTracker.GetAssetBundleCreateRequest(__instance);
             return __result == null;

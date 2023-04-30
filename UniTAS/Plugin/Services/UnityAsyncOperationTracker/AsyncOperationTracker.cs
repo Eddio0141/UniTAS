@@ -4,6 +4,7 @@ using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Plugin.Models.UnitySafeWrappers.SceneManagement;
 using UniTAS.Plugin.Services.Logging;
 using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
+using UnityEngine;
 
 namespace UniTAS.Plugin.Services.UnityAsyncOperationTracker;
 
@@ -110,10 +111,10 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         _assetBundleCreateRequests.Add(asyncOperation.GetHashCode(), assetBundle);
     }
 
-    public object GetAssetBundleCreateRequest(object asyncOperation)
+    public AssetBundle GetAssetBundleCreateRequest(object asyncOperation)
     {
         return _assetBundleCreateRequests.TryGetValue(asyncOperation.GetHashCode(), out var assetBundle)
-            ? assetBundle
+            ? (AssetBundle)assetBundle
             : null;
     }
 
