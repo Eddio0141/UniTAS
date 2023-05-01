@@ -4,6 +4,7 @@ using System.IO;
 using System.Reflection;
 using HarmonyLib;
 using UniTAS.Plugin.Interfaces.Patches.PatchTypes;
+using UniTAS.Plugin.Services.Logging;
 using UniTAS.Plugin.Services.UnityAsyncOperationTracker;
 using UniTAS.Plugin.Utils;
 using UnityEngine;
@@ -29,6 +30,8 @@ public class AsyncOperationPatch
 
     private static readonly IAssetBundleRequestTracker AssetBundleRequestTracker =
         Plugin.Kernel.GetInstance<IAssetBundleRequestTracker>();
+
+    private static readonly ILogger Logger = Plugin.Kernel.GetInstance<ILogger>();
 
     [HarmonyPatch(typeof(AsyncOperation), "allowSceneActivation", MethodType.Setter)]
     private class SetAllowSceneActivation
@@ -60,7 +63,20 @@ public class AsyncOperationPatch
         }
     }
 
-    // TODO probably good idea to override priority
+    [HarmonyPatch(typeof(AsyncOperation), nameof(AsyncOperation.priority), MethodType.Setter)]
+    private class prioritySetter
+    {
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static bool Prefix(int value, ref AsyncOperation __instance)
+        {
+            Logger.LogDebug($"Priority set to {value} for instance hash {__instance.GetHashCode()}, skipping");
+            return false;
+        }
+    }
 
     [HarmonyPatch(typeof(AsyncOperation), nameof(AsyncOperation.progress), MethodType.Getter)]
     private class progress
