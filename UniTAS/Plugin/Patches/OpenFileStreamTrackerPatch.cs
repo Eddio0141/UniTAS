@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using UniTAS.Plugin.Interfaces.Patches.PatchTypes;
@@ -19,6 +21,27 @@ public class OpenFileStreamTrackerPatch
 {
     private static readonly IFileStreamTracker Tracker = Plugin.Kernel.GetInstance<IFileStreamTracker>();
     private static readonly ILogger Logger = Plugin.Kernel.GetInstance<ILogger>();
+
+    private static bool CalledFromPlugin()
+    {
+        var stackTrace = new StackTrace();
+        var frames = stackTrace.GetFrames()?.ToList();
+        // remove last 2 frames
+        if (frames is { Count: >= 2 })
+            frames.RemoveRange(frames.Count - 2, 2);
+        if (frames == null) return false;
+
+        foreach (var frame in frames)
+        {
+            var method = frame.GetMethod();
+            var declaringType = method?.DeclaringType;
+            if (declaringType == null) continue;
+            if (Equals(declaringType.Assembly, typeof(Plugin).Assembly) ||
+                Equals(declaringType.Assembly, typeof(Patcher.Patcher).Assembly)) return true;
+        }
+
+        return false;
+    }
 
     [HarmonyPatch]
     private class FileStreamCtors
@@ -39,6 +62,7 @@ public class OpenFileStreamTrackerPatch
 
         private static void Postfix(FileStream __instance)
         {
+            if (CalledFromPlugin()) return;
             Tracker.NewFileStream(__instance);
             Logger.LogDebug($"New FileStream: {__instance.Name}");
         }
@@ -54,6 +78,7 @@ public class OpenFileStreamTrackerPatch
 
         private static void Postfix(FileStream __instance)
         {
+            if (CalledFromPlugin()) return;
             Tracker.CloseFileStream(__instance);
             Logger.LogDebug($"Close FileStream: {__instance.Name}");
         }
