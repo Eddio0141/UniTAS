@@ -5,8 +5,8 @@ namespace UniTAS.Plugin.Models.VirtualEnvironment;
 
 public readonly struct Key : IEquatable<Key>
 {
-    private string Keys { get; }
-    private KeyCode? KeyCode { get; }
+    private string Keys { get; } = null;
+    private KeyCode? KeyCode { get; } = null;
     public UnityEngine.InputSystem.Key? NewInputSystemKey { get; }
 
     public Key(string keys, UnityEngine.InputSystem.Key? newInputSystemKey)
