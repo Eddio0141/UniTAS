@@ -35,12 +35,23 @@ public class StaticCtorHeaders : PreloadPatcher
         "StructureMap"
     };
 
+    private readonly string[] _assemblyEnforceRaw =
+    {
+        "Unity.InputSystem"
+    };
+
     public override IEnumerable<string> TargetDLLs => Utils.AllTargetDllsWithGenericExclusions;
 
     public override void Patch(ref AssemblyDefinition assembly)
     {
         var definition = assembly;
-        if (_assemblyExclusionsRaw.Any(x => definition.Name.Name.Like(x))) return;
+        var assemblyName = definition.Name.Name;
+        if (_assemblyExclusionsRaw.Any(x => assemblyName.Like(x)) &&
+            !_assemblyEnforceRaw.Any(x => assemblyName.Like(x)))
+        {
+            Patcher.Logger.LogDebug($"Skipping static ctor patching for {definition.Name.Name}");
+            return;
+        }
 
         // get all types in assembly that has static fields or a static ctor
         var types = assembly.Modules.SelectMany(m => m.GetAllTypes())
@@ -67,23 +78,48 @@ public class StaticCtorHeaders : PreloadPatcher
             }
 
             Patcher.Logger.LogDebug($"Patching static ctor of {type.FullName}");
-            PatchStaticCtorHeader(assembly, staticCtor);
+            PatchStaticCtor(assembly, staticCtor);
         }
     }
 
     /// <summary>
-    /// Patch the start of the static ctor for our own purposes
+    /// Patch the end or all returns of the static ctor for our own purposes
     /// </summary>
-    private static void PatchStaticCtorHeader(AssemblyDefinition assembly, MethodDefinition staticCtor)
+    private static void PatchStaticCtor(AssemblyDefinition assembly, MethodDefinition staticCtor)
     {
-        var patchMethod = AccessTools.Method(typeof(PatchMethods), nameof(PatchMethods.StaticCtorHeader));
-        var patchMethodRef = assembly.MainModule.ImportReference(patchMethod);
+        var patchMethodStart = AccessTools.Method(typeof(PatchMethods), nameof(PatchMethods.StaticCtorStart));
+        var patchMethodEnd = AccessTools.Method(typeof(PatchMethods), nameof(PatchMethods.StaticCtorEnd));
+        var patchMethodStartRef = assembly.MainModule.ImportReference(patchMethodStart);
+        var patchMethodEndRef = assembly.MainModule.ImportReference(patchMethodEnd);
 
-        var firstInstruction = staticCtor.Body.Instructions.First();
+        // we insert call before any returns
         var ilProcessor = staticCtor.Body.GetILProcessor();
+        var instructions = staticCtor.Body.Instructions;
+        var first = instructions.First();
 
-        // insert call
-        ilProcessor.InsertBefore(firstInstruction, ilProcessor.Create(OpCodes.Call, patchMethodRef));
+        // insert call to our method at the start of the static ctor
+        ilProcessor.InsertBefore(first, ilProcessor.Create(OpCodes.Call, patchMethodStartRef));
+        Patcher.Logger.LogDebug($"Patched start of static ctor of {staticCtor.DeclaringType?.FullName}");
+
+        var insertCount = 0;
+
+        for (var i = 0; i < instructions.Count; i++)
+        {
+            var instruction = instructions[i];
+            if (instruction.OpCode != OpCodes.Ret) continue;
+            ilProcessor.InsertBefore(instruction, ilProcessor.Create(OpCodes.Call, patchMethodEndRef));
+            Patcher.Logger.LogDebug($"Found return in static ctor of {staticCtor.DeclaringType?.FullName}, patched");
+            i++;
+            insertCount++;
+        }
+
+        if (insertCount == 0)
+        {
+            var last = instructions.Last();
+            ilProcessor.InsertAfter(last, ilProcessor.Create(OpCodes.Call, patchMethodEndRef));
+            Patcher.Logger.LogDebug(
+                $"Found no returns in static ctor of {staticCtor.DeclaringType?.FullName}, force patching at last instruction");
+        }
     }
 }
 
@@ -111,16 +147,24 @@ public static class PatchMethods
     }
     */
 
-    public static void StaticCtorHeader()
+    public static void StaticCtorStart()
     {
         var type = new StackFrame(1).GetMethod()?.DeclaringType;
+
+        if (!Tracker.StaticCtorInvokeOrder.Contains(type)) return;
 
         var declaredFields = AccessTools.GetDeclaredFields(type).Where(x => x.IsStatic && !x.IsLiteral);
         foreach (var field in declaredFields)
         {
             field.SetValue(null, null);
+            Patcher.Logger.LogDebug($"resetting field {type?.FullName}.{field.Name}");
             // ResetFieldCount++;
         }
+    }
+
+    public static void StaticCtorEnd()
+    {
+        var type = new StackFrame(1).GetMethod()?.DeclaringType;
 
         if (Tracker.StaticCtorInvokeOrder.Contains(type)) return;
         Patcher.Logger.LogDebug($"First static ctor invoke for {type?.FullName}");
