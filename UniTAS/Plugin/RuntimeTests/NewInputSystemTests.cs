@@ -18,20 +18,20 @@ public class NewInputSystemTests
 {
     private readonly IMouseStateEnvController _mouseController;
     private readonly IVirtualEnvController _virtualEnvController;
-    private readonly IInputSystemExists _inputSystemExists;
+    private readonly INewInputSystemExists _newInputSystemExists;
 
     public NewInputSystemTests(IMouseStateEnvController mouseController, IVirtualEnvController virtualEnvController,
-        IInputSystemExists inputSystemExists)
+        INewInputSystemExists newInputSystemExists)
     {
         _mouseController = mouseController;
         _virtualEnvController = virtualEnvController;
-        _inputSystemExists = inputSystemExists;
+        _newInputSystemExists = newInputSystemExists;
     }
 
     [RuntimeTest]
     public Tuple<bool, IEnumerator<CoroutineWait>> MousePosition()
     {
-        return new(_inputSystemExists.HasInputSystem, MousePositionInternal());
+        return new(_newInputSystemExists.HasInputSystem, MousePositionInternal());
     }
 
     private IEnumerator<CoroutineWait> MousePositionInternal()
@@ -60,7 +60,7 @@ public class NewInputSystemTests
     [RuntimeTest]
     public Tuple<bool, IEnumerator<CoroutineWait>> MouseButtons()
     {
-        return new(_inputSystemExists.HasInputSystem, MouseButtonsInternal());
+        return new(_newInputSystemExists.HasInputSystem, MouseButtonsInternal());
     }
 
     private IEnumerator<CoroutineWait> MouseButtonsInternal()

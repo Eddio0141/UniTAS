@@ -11,11 +11,11 @@ public abstract class InputOverrideDevice
     private readonly IVirtualEnvController _virtualEnvController;
 
     protected InputOverrideDevice(IVirtualEnvController virtualEnvController, IUpdateEvents updateEvents,
-        IInputSystemExists inputSystemExists)
+        INewInputSystemExists newInputSystemExists)
     {
         _virtualEnvController = virtualEnvController;
 
-        if (!inputSystemExists.HasInputSystem) return;
+        if (!newInputSystemExists.HasInputSystem) return;
         updateEvents.OnInputUpdateActual += InputUpdateActual;
     }
 
