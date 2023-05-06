@@ -11,12 +11,12 @@ namespace UniTAS.Plugin.Implementations.VirtualEnvironment;
 [Singleton]
 public class KeyFactory : IKeyFactory
 {
-    private readonly IInputSystemExists _inputSystemExists;
+    private readonly INewInputSystemExists _newInputSystemExists;
     private readonly ILogger _logger;
 
-    public KeyFactory(IInputSystemExists inputSystemExists, ILogger logger)
+    public KeyFactory(INewInputSystemExists newInputSystemExists, ILogger logger)
     {
-        _inputSystemExists = inputSystemExists;
+        _newInputSystemExists = newInputSystemExists;
         _logger = logger;
     }
 
@@ -28,7 +28,7 @@ public class KeyFactory : IKeyFactory
 
     public Key CreateKey(KeyCode key)
     {
-        return new(key, _inputSystemExists.HasInputSystem ? NewKeyFromKeyCode(key) : null);
+        return new(key, _newInputSystemExists.HasInputSystem ? NewKeyFromKeyCode(key) : null);
     }
 
     private static KeyCode? ParseKeyCode(string key)

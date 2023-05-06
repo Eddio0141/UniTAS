@@ -1,6 +1,6 @@
 namespace UniTAS.Plugin.Services.InputSystemOverride;
 
-public interface IInputSystemExists
+public interface INewInputSystemExists
 {
     bool HasInputSystem { get; }
 }

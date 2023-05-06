@@ -4,15 +4,15 @@ using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Services.InputSystemOverride;
 using UnityEngine.InputSystem;
 
-namespace UniTAS.Plugin.Implementations.InputSystemOverride;
+namespace UniTAS.Plugin.Implementations.NewInputSystem;
 
 [Singleton]
-public class InputSystemExists : IInputSystemExists
+public class NewInputSystemExists : INewInputSystemExists
 {
     public bool HasInputSystem { get; }
 
     [SuppressMessage("ReSharper", "ConditionIsAlwaysTrueOrFalse")]
-    public InputSystemExists()
+    public NewInputSystemExists()
     {
         try
         {

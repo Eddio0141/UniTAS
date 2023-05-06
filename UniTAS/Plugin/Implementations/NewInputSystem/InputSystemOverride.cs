@@ -6,7 +6,7 @@ using UniTAS.Plugin.Services.Logging;
 using UniTAS.Plugin.Services.VirtualEnvironment;
 using UnityEngine.InputSystem;
 
-namespace UniTAS.Plugin.Implementations.InputSystemOverride;
+namespace UniTAS.Plugin.Implementations.NewInputSystem;
 
 [Singleton]
 [ForceInstantiate]
@@ -20,13 +20,13 @@ public class InputSystemOverride
 
     [SuppressMessage("ReSharper", "ConditionIsAlwaysTrueOrFalse")]
     public InputSystemOverride(ILogger logger, InputOverrideDevice[] devices,
-        IVirtualEnvController virtualEnvController, IInputSystemExists inputSystemExists)
+        IVirtualEnvController virtualEnvController, INewInputSystemExists newInputSystemExists)
     {
         _logger = logger;
         _devices = devices;
         _virtualEnvController = virtualEnvController;
 
-        var hasInputSystem = inputSystemExists.HasInputSystem;
+        var hasInputSystem = newInputSystemExists.HasInputSystem;
         _logger.LogInfo($"InputSystemOverride hasInputSystem: {hasInputSystem}");
 
         if (!hasInputSystem) return;

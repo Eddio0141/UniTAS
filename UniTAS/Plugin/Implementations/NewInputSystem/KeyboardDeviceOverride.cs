@@ -9,7 +9,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Layouts;
 using UnityEngine.InputSystem.LowLevel;
 
-namespace UniTAS.Plugin.Implementations.InputSystemOverride;
+namespace UniTAS.Plugin.Implementations.NewInputSystem;
 
 [Singleton]
 public class KeyboardDeviceOverride : InputOverrideDevice
@@ -19,8 +19,8 @@ public class KeyboardDeviceOverride : InputOverrideDevice
     private readonly IKeyboardStateEnvNewSystem _keyboardStateEnvNewSystem;
 
     public KeyboardDeviceOverride(IVirtualEnvController virtualEnvController, IUpdateEvents updateEvents,
-        IInputSystemExists inputSystemExists, IKeyboardStateEnvNewSystem keyboardStateEnvNewSystem) : base(
-        virtualEnvController, updateEvents, inputSystemExists)
+        INewInputSystemExists newInputSystemExists, IKeyboardStateEnvNewSystem keyboardStateEnvNewSystem) : base(
+        virtualEnvController, updateEvents, newInputSystemExists)
     {
         _keyboardStateEnvNewSystem = keyboardStateEnvNewSystem;
     }

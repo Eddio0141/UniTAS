@@ -10,7 +10,7 @@ using UnityEngine.InputSystem.Layouts;
 using UnityEngine.InputSystem.LowLevel;
 using MouseButton = UniTAS.Plugin.Models.VirtualEnvironment.MouseButton;
 
-namespace UniTAS.Plugin.Implementations.InputSystemOverride;
+namespace UniTAS.Plugin.Implementations.NewInputSystem;
 
 [Singleton]
 public class MouseDeviceOverride : InputOverrideDevice
@@ -20,8 +20,8 @@ public class MouseDeviceOverride : InputOverrideDevice
     private readonly IMouseStateEnvNewSystem _mouseStateEnvNewSystem;
 
     public MouseDeviceOverride(IVirtualEnvController virtualEnvController, IUpdateEvents updateEvents,
-        IInputSystemExists inputSystemExists, IMouseStateEnvNewSystem mouseStateEnvNewSystem) : base(
-        virtualEnvController, updateEvents, inputSystemExists)
+        INewInputSystemExists newInputSystemExists, IMouseStateEnvNewSystem mouseStateEnvNewSystem) : base(
+        virtualEnvController, updateEvents, newInputSystemExists)
     {
         _mouseStateEnvNewSystem = mouseStateEnvNewSystem;
     }
