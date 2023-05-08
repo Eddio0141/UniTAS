@@ -140,6 +140,7 @@ public class StaticCtorHeaders : PreloadPatcher
         // i gotta find a nice place to insert call to CheckAndInvokeDependency
         // for this i can just analyze the static ctor and find the first external class
 
+        var insertedDependencyInvoke = false;
         foreach (var instruction in instructions)
         {
             // ignore our own inserted instructions
@@ -151,6 +152,8 @@ public class StaticCtorHeaders : PreloadPatcher
             // don't bother with mscorlib
             if (Equals(operand.GetType().Assembly, typeof(string).Assembly)) continue;
 
+            if (operand is VariableDefinition) continue;
+
             if (operand is MemberReference m)
             {
                 if (m.DeclaringType == null || m.DeclaringType.Equals(type)) continue;
@@ -158,6 +161,7 @@ public class StaticCtorHeaders : PreloadPatcher
                 // ok we found it, insert call to CheckAndInvokeDependency
                 Patcher.Logger.LogDebug("Before insert");
                 ilProcessor.InsertBefore(instruction, ilProcessor.Create(OpCodes.Call, patchMethodDependencyRef));
+                insertedDependencyInvoke = true;
 
                 Patcher.Logger.LogDebug(
                     $"Found external class reference in static ctor of {type.FullName}, instruction: {instruction}, patched");
@@ -169,6 +173,14 @@ public class StaticCtorHeaders : PreloadPatcher
             Patcher.Logger.LogWarning(
                 $"Found operand that could be referencing external class, instruction: {instruction}, operand type: {operand.GetType().FullName}");
         }
+
+        if (!insertedDependencyInvoke)
+        {
+            Patcher.Logger.LogDebug(
+                $"Found no external class reference in static ctor of {type.FullName}, patching to invoke after start of static ctor");
+
+            ilProcessor.InsertAfter(startRefInstruction, ilProcessor.Create(OpCodes.Call, patchMethodDependencyRef));
+        }
     }
 }
 
@@ -178,7 +190,7 @@ public static class PatchMethods
     private static readonly List<Type> CctorInvokeStack = new();
 
     // this is how we chain call static ctors, parent and child
-    private static readonly Dictionary<Type, KeyValuePair<Type, MethodBase>> CctorDependency = new();
+    private static readonly Dictionary<Type, List<KeyValuePair<Type, MethodBase>>> CctorDependency = new();
 
     private static readonly List<Type> PendingIgnoreAddingInvokeList = new();
 
@@ -208,7 +220,14 @@ public static class PatchMethods
         {
             var parent = CctorInvokeStack[CctorInvokeStack.Count - 2];
             var cctor = AccessTools.DeclaredConstructor(type, searchForStatic: true);
-            CctorDependency.Add(parent, new(type, cctor));
+
+            if (!CctorDependency.ContainsKey(parent))
+            {
+                CctorDependency.Add(parent, new());
+            }
+
+            var list = CctorDependency[parent];
+            list.Add(new(type, cctor));
 
             PendingIgnoreAddingInvokeList.Add(type);
 
@@ -247,10 +266,15 @@ public static class PatchMethods
         if (!IsNotFirstInvoke(type)) return;
 
         if (!CctorDependency.TryGetValue(type, out var dependencyKeyValuePair)) return;
-        var dependency = dependencyKeyValuePair.Value;
+
         Patcher.Logger.LogDebug(
-            $"Found dependency for static ctor type: {type.FullName}, invoking cctor of {dependencyKeyValuePair.Key.FullName ?? "unknown type"}");
-        dependency.Invoke(null, null);
+            $"Found dependencies for static ctor type: {type.FullName}, dependency count: {dependencyKeyValuePair.Count}");
+        foreach (var dependencyPair in dependencyKeyValuePair)
+        {
+            var dependency = dependencyPair.Value;
+            Patcher.Logger.LogDebug($"Invoking cctor of {dependencyPair.Key.FullName ?? "unknown type"}");
+            dependency.Invoke(null, null);
+        }
     }
 
     private static bool IsNotFirstInvoke(Type type)
@@ -260,8 +284,11 @@ public static class PatchMethods
 
         foreach (var pair in CctorDependency)
         {
-            if (pair.Value.Key == type)
-                return true;
+            foreach (var childPair in pair.Value)
+            {
+                if (childPair.Key == type)
+                    return true;
+            }
         }
 
         return false;
