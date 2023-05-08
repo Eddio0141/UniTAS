@@ -13,6 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added config `MOVIE_CONFIG.update_type` and API `env.update_type` to choose what update frame advancing should use
 
+### New input system support
+
+- Added new input system support
+- Added support for keyboard and mouse devices
+
 ### Old input system support
 
 - Added support for `ResetInputAxes`
@@ -27,6 +32,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### TAS movie
 
 - Fixed accidentally skipping a frame when an unity `FixedUpdate` happens
+
+### Compatibility
+
+- Fixed AssetBundle async operations failing with null reference exception
+- Fixed setting AsyncOperation priority throwing an exception
+- Fixed unity's Camera events not being cleared on soft restart throwing a null reference exception
+- Fixed unity's SceneManager events not being cleared on soft restart throwing a null reference exception
+- Fixed unity's NavMesh events not being cleared on soft restart throwing a null reference exception
+- Fixed opened files not being closed on soft restart, causing IO exceptions
+- Fixed static constructor dependency called in the wrong order
+- Fixed static fields not being reset all at once
 
 # [v0.3.0] - 2023-04-10
 
