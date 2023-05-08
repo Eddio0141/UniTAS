@@ -244,6 +244,8 @@ public static class PatchMethods
             throw new NullReferenceException("Could not find type of static ctor, something went horribly wrong");
         }
 
+        if (!IsNotFirstInvoke(type)) return;
+
         if (!CctorDependency.TryGetValue(type, out var dependencyKeyValuePair)) return;
         var dependency = dependencyKeyValuePair.Value;
         Patcher.Logger.LogDebug(
