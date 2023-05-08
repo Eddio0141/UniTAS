@@ -151,15 +151,11 @@ public static class PatchMethods
     {
         var type = new StackFrame(1).GetMethod()?.DeclaringType;
 
-        if (!Tracker.StaticCtorInvokeOrder.Contains(type)) return;
+        if (Tracker.StaticCtorInvokeOrder.Contains(type)) return;
 
+        // find and store static fields for later
         var declaredFields = AccessTools.GetDeclaredFields(type).Where(x => x.IsStatic && !x.IsLiteral);
-        foreach (var field in declaredFields)
-        {
-            field.SetValue(null, null);
-            Patcher.Logger.LogDebug($"resetting field {type?.FullName}.{field.Name}");
-            // ResetFieldCount++;
-        }
+        Tracker.StaticFields.AddRange(declaredFields);
     }
 
     public static void StaticCtorEnd()
