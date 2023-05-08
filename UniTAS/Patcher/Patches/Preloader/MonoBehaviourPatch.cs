@@ -128,6 +128,11 @@ public class MonoBehaviourPatch : PreloadPatcher
         "BepInEx"
     };
 
+    private static readonly string[] IncludeNamespaces =
+    {
+        "UnityEngine.AI"
+    };
+
     public override void Patch(ref AssemblyDefinition assembly)
     {
         var types = assembly.Modules.SelectMany(m => m.GetAllTypes());
@@ -154,7 +159,7 @@ public class MonoBehaviourPatch : PreloadPatcher
             if (!isMonoBehaviour) continue;
 
             // method invoke pause
-            if (!ExcludeNamespaces.Any(type.Namespace.StartsWith))
+            if (!ExcludeNamespaces.Any(type.Namespace.StartsWith) || IncludeNamespaces.Any(type.Namespace.StartsWith))
             {
                 foreach (var eventMethodPair in PauseEventMethods)
                 {
