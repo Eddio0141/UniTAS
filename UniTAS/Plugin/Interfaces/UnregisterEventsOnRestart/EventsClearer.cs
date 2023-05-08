@@ -12,7 +12,7 @@ public abstract class EventsClearer : IOnPreGameRestart
 
     public void OnPreGameRestart()
     {
-        _fieldsToClear ??= FieldsToClear().ToArray();
+        _fieldsToClear ??= FieldsToClear().Where(x => x != null).ToArray();
 
         foreach (var field in _fieldsToClear)
         {
