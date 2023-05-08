@@ -80,6 +80,8 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
     {
         if (_pendingRestart && !_pendingResumePausedExecution) return;
 
+        _logger.LogInfo("Starting soft restart");
+
         OnPreGameRestart();
 
         _pendingRestart = true;
