@@ -144,7 +144,7 @@ public class MonoBehaviourPatch : PreloadPatcher
         {
             // check if type base is MonoBehaviour
             var isMonoBehaviour = false;
-            var baseType = type.BaseType?.Resolve();
+            var baseType = type.BaseType;
             while (baseType != null)
             {
                 if (baseType.FullName == "UnityEngine.MonoBehaviour")
@@ -153,7 +153,7 @@ public class MonoBehaviourPatch : PreloadPatcher
                     break;
                 }
 
-                baseType = baseType.BaseType?.Resolve();
+                baseType = baseType.DeclaringType;
             }
 
             if (!isMonoBehaviour) continue;
