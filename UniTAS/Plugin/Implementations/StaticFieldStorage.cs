@@ -1,3 +1,4 @@
+using System;
 using UniTAS.Patcher.Shared;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Services;
@@ -27,6 +28,13 @@ public class StaticFieldStorage : IStaticFieldManipulator
             _logger.LogDebug($"resetting static field: {typeName}.{field.Name}");
             field.SetValue(null, null);
         }
+
+        // just in case
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+
+        // also for unity
+        UnityEngine.Resources.UnloadUnusedAssets();
 
         _logger.LogDebug("calling static constructors");
         var staticCtorInvokeOrderListCount = Tracker.StaticCtorInvokeOrder.Count;
