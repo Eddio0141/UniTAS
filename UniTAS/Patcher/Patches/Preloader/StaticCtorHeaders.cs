@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Reflection;
 using HarmonyLib;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -9,6 +11,7 @@ using Mono.Cecil.Rocks;
 using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Interfaces;
 using UniTAS.Patcher.Shared;
+using MethodAttributes = Mono.Cecil.MethodAttributes;
 
 namespace UniTAS.Patcher.Patches.Preloader;
 
@@ -91,6 +94,12 @@ public class StaticCtorHeaders : PreloadPatcher
         var patchMethodEnd = AccessTools.Method(typeof(PatchMethods), nameof(PatchMethods.StaticCtorEnd));
         var patchMethodStartRef = assembly.MainModule.ImportReference(patchMethodStart);
         var patchMethodEndRef = assembly.MainModule.ImportReference(patchMethodEnd);
+        var patchMethodDependency =
+            AccessTools.Method(typeof(PatchMethods), nameof(PatchMethods.CheckAndInvokeDependency));
+        var patchMethodDependencyRef = assembly.MainModule.ImportReference(patchMethodDependency);
+
+        // we track our inserted instructions
+        var insertedInstructions = new List<Instruction>();
 
         // we insert call before any returns
         var ilProcessor = staticCtor.Body.GetILProcessor();
@@ -98,7 +107,9 @@ public class StaticCtorHeaders : PreloadPatcher
         var first = instructions.First();
 
         // insert call to our method at the start of the static ctor
-        ilProcessor.InsertBefore(first, ilProcessor.Create(OpCodes.Call, patchMethodStartRef));
+        var startRefInstruction = ilProcessor.Create(OpCodes.Call, patchMethodStartRef);
+        ilProcessor.InsertBefore(first, startRefInstruction);
+        insertedInstructions.Add(startRefInstruction);
         Patcher.Logger.LogDebug($"Patched start of static ctor of {staticCtor.DeclaringType?.FullName}");
 
         var insertCount = 0;
@@ -107,8 +118,11 @@ public class StaticCtorHeaders : PreloadPatcher
         {
             var instruction = instructions[i];
             if (instruction.OpCode != OpCodes.Ret) continue;
-            ilProcessor.InsertBefore(instruction, ilProcessor.Create(OpCodes.Call, patchMethodEndRef));
-            Patcher.Logger.LogDebug($"Found return in static ctor of {staticCtor.DeclaringType?.FullName}, patched");
+            var endRefInstruction = ilProcessor.Create(OpCodes.Call, patchMethodEndRef);
+            ilProcessor.InsertBefore(instruction, endRefInstruction);
+            insertedInstructions.Add(endRefInstruction);
+            Patcher.Logger.LogDebug(
+                $"Found return in static ctor of {staticCtor.DeclaringType?.FullName}, instruction: {instruction}, patched");
             i++;
             insertCount++;
         }
@@ -116,9 +130,45 @@ public class StaticCtorHeaders : PreloadPatcher
         if (insertCount == 0)
         {
             var last = instructions.Last();
-            ilProcessor.InsertAfter(last, ilProcessor.Create(OpCodes.Call, patchMethodEndRef));
+            var endRefInstruction = ilProcessor.Create(OpCodes.Call, patchMethodEndRef);
+            ilProcessor.InsertAfter(last, endRefInstruction);
+            insertedInstructions.Add(endRefInstruction);
             Patcher.Logger.LogDebug(
                 $"Found no returns in static ctor of {staticCtor.DeclaringType?.FullName}, force patching at last instruction");
+        }
+
+        // i gotta find a nice place to insert call to CheckAndInvokeDependency
+        // for this i can just analyze the static ctor and find the first external class
+        var currentType = staticCtor.DeclaringType;
+
+        foreach (var instruction in instructions)
+        {
+            // ignore our own inserted instructions
+            if (insertedInstructions.Contains(instruction)) continue;
+
+            var operand = instruction.Operand;
+
+            // don't bother with mscorlib
+            if (Equals(operand?.GetType().Assembly, typeof(string).Assembly)) continue;
+
+            if (operand is MemberReference m)
+            {
+                if (m.DeclaringType.Equals(currentType)) continue;
+
+                // ok we found it, insert call to CheckAndInvokeDependency
+                ilProcessor.InsertBefore(instruction, ilProcessor.Create(OpCodes.Call, patchMethodDependencyRef));
+
+                Patcher.Logger.LogDebug(
+                    $"Found external class reference in static ctor of {staticCtor.DeclaringType?.FullName}, instruction: {instruction}, patched");
+
+                break;
+            }
+
+            if (operand != null)
+            {
+                Patcher.Logger.LogWarning(
+                    $"Found operand that could be referencing external class, instruction: {instruction}, operand type: {operand.GetType().FullName}");
+            }
         }
     }
 }
@@ -126,45 +176,93 @@ public class StaticCtorHeaders : PreloadPatcher
 [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
 public static class PatchMethods
 {
-    // re-enable this if a mysterious memory leak / unexplainable hard crashes occurs
-    /*
-    private static int _resetFieldCount;
-    private const int MaxResetFieldCount = 100;
+    private static readonly List<Type> CctorInvokeStack = new();
 
-    private static int ResetFieldCount
-    {
-        get => _resetFieldCount;
-        set
-        {
-            _resetFieldCount = value;
-            if (_resetFieldCount > MaxResetFieldCount)
-            {
-                _resetFieldCount = 0;
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-            }
-        }
-    }
-    */
+    // this is how we chain call static ctors, parent and child
+    private static readonly Dictionary<Type, KeyValuePair<Type, MethodBase>> CctorDependency = new();
+
+    private static readonly List<Type> PendingIgnoreAddingInvokeList = new();
 
     public static void StaticCtorStart()
     {
         var type = new StackFrame(1).GetMethod()?.DeclaringType;
 
-        if (Tracker.StaticCtorInvokeOrder.Contains(type)) return;
+        if (type == null)
+        {
+            throw new NullReferenceException("Could not find type of static ctor, something went horribly wrong");
+        }
+
+        CctorInvokeStack.Add(type);
+
+        if (IsNotFirstInvoke(type)) return;
+        Patcher.Logger.LogDebug($"First static ctor invoke for {type.FullName}");
+
+        // first invoke zone
 
         // find and store static fields for later
         var declaredFields = AccessTools.GetDeclaredFields(type).Where(x => x.IsStatic && !x.IsLiteral);
         Tracker.StaticFields.AddRange(declaredFields);
+
+        // if this is chain called, store dependency
+        // in this case, we are the child since this is chain called
+        if (CctorInvokeStack.Count > 1)
+        {
+            var parent = CctorInvokeStack[CctorInvokeStack.Count - 2];
+            var cctor = AccessTools.DeclaredConstructor(type, searchForStatic: true);
+            CctorDependency.Add(parent, new(type, cctor));
+
+            PendingIgnoreAddingInvokeList.Add(type);
+
+            Patcher.Logger.LogDebug($"Found static ctor dependency, parent: {parent.FullName}, child: {type.FullName}");
+        }
     }
 
     public static void StaticCtorEnd()
     {
         var type = new StackFrame(1).GetMethod()?.DeclaringType;
 
-        if (Tracker.StaticCtorInvokeOrder.Contains(type)) return;
-        Patcher.Logger.LogDebug($"First static ctor invoke for {type?.FullName}");
+        if (type == null)
+        {
+            throw new NullReferenceException("Could not find type of static ctor, something went horribly wrong");
+        }
+
+        CctorInvokeStack.RemoveAt(CctorInvokeStack.Count - 1);
+
+        if (IsNotFirstInvoke(type)) return;
+
+        // add only if not in ignore list
+        if (PendingIgnoreAddingInvokeList.Remove(type)) return;
 
         Tracker.StaticCtorInvokeOrder.Add(type);
+    }
+
+    public static void CheckAndInvokeDependency()
+    {
+        var type = new StackFrame(1).GetMethod()?.DeclaringType;
+
+        if (type == null)
+        {
+            throw new NullReferenceException("Could not find type of static ctor, something went horribly wrong");
+        }
+
+        if (!CctorDependency.TryGetValue(type, out var dependencyKeyValuePair)) return;
+        var dependency = dependencyKeyValuePair.Value;
+        Patcher.Logger.LogDebug(
+            $"Found dependency for static ctor type: {type.FullName}, invoking cctor of {dependencyKeyValuePair.Key.FullName ?? "unknown type"}");
+        dependency.Invoke(null, null);
+    }
+
+    private static bool IsNotFirstInvoke(Type type)
+    {
+        if (Tracker.StaticCtorInvokeOrder.Contains(type))
+            return true;
+
+        foreach (var pair in CctorDependency)
+        {
+            if (pair.Value.Key == type)
+                return true;
+        }
+
+        return false;
     }
 }
