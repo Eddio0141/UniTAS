@@ -81,14 +81,14 @@ public class StaticCtorHeaders : PreloadPatcher
             }
 
             Patcher.Logger.LogDebug($"Patching static ctor of {type.FullName}");
-            PatchStaticCtor(assembly, staticCtor);
+            PatchStaticCtor(assembly, staticCtor, type);
         }
     }
 
     /// <summary>
     /// Patch the end or all returns of the static ctor for our own purposes
     /// </summary>
-    private static void PatchStaticCtor(AssemblyDefinition assembly, MethodDefinition staticCtor)
+    private static void PatchStaticCtor(AssemblyDefinition assembly, MethodDefinition staticCtor, TypeDefinition type)
     {
         var patchMethodStart = AccessTools.Method(typeof(PatchMethods), nameof(PatchMethods.StaticCtorStart));
         var patchMethodEnd = AccessTools.Method(typeof(PatchMethods), nameof(PatchMethods.StaticCtorEnd));
@@ -110,7 +110,7 @@ public class StaticCtorHeaders : PreloadPatcher
         var startRefInstruction = ilProcessor.Create(OpCodes.Call, patchMethodStartRef);
         ilProcessor.InsertBefore(first, startRefInstruction);
         insertedInstructions.Add(startRefInstruction);
-        Patcher.Logger.LogDebug($"Patched start of static ctor of {staticCtor.DeclaringType?.FullName}");
+        Patcher.Logger.LogDebug($"Patched start of static ctor of {type.FullName}");
 
         var insertCount = 0;
 
@@ -122,7 +122,7 @@ public class StaticCtorHeaders : PreloadPatcher
             ilProcessor.InsertBefore(instruction, endRefInstruction);
             insertedInstructions.Add(endRefInstruction);
             Patcher.Logger.LogDebug(
-                $"Found return in static ctor of {staticCtor.DeclaringType?.FullName}, instruction: {instruction}, patched");
+                $"Found return in static ctor of {type.FullName}, instruction: {instruction}, patched");
             i++;
             insertCount++;
         }
@@ -134,12 +134,11 @@ public class StaticCtorHeaders : PreloadPatcher
             ilProcessor.InsertAfter(last, endRefInstruction);
             insertedInstructions.Add(endRefInstruction);
             Patcher.Logger.LogDebug(
-                $"Found no returns in static ctor of {staticCtor.DeclaringType?.FullName}, force patching at last instruction");
+                $"Found no returns in static ctor of {type.FullName}, force patching at last instruction");
         }
 
         // i gotta find a nice place to insert call to CheckAndInvokeDependency
         // for this i can just analyze the static ctor and find the first external class
-        var currentType = staticCtor.DeclaringType;
 
         foreach (var instruction in instructions)
         {
@@ -147,28 +146,28 @@ public class StaticCtorHeaders : PreloadPatcher
             if (insertedInstructions.Contains(instruction)) continue;
 
             var operand = instruction.Operand;
+            if (operand == null) continue;
 
             // don't bother with mscorlib
-            if (Equals(operand?.GetType().Assembly, typeof(string).Assembly)) continue;
+            if (Equals(operand.GetType().Assembly, typeof(string).Assembly)) continue;
 
             if (operand is MemberReference m)
             {
-                if (m.DeclaringType.Equals(currentType)) continue;
+                if (m.DeclaringType == null || m.DeclaringType.Equals(type)) continue;
 
                 // ok we found it, insert call to CheckAndInvokeDependency
+                Patcher.Logger.LogDebug("Before insert");
                 ilProcessor.InsertBefore(instruction, ilProcessor.Create(OpCodes.Call, patchMethodDependencyRef));
 
                 Patcher.Logger.LogDebug(
-                    $"Found external class reference in static ctor of {staticCtor.DeclaringType?.FullName}, instruction: {instruction}, patched");
+                    $"Found external class reference in static ctor of {type.FullName}, instruction: {instruction}, patched");
 
                 break;
             }
 
-            if (operand != null)
-            {
-                Patcher.Logger.LogWarning(
-                    $"Found operand that could be referencing external class, instruction: {instruction}, operand type: {operand.GetType().FullName}");
-            }
+            // default case
+            Patcher.Logger.LogWarning(
+                $"Found operand that could be referencing external class, instruction: {instruction}, operand type: {operand.GetType().FullName}");
         }
     }
 }
