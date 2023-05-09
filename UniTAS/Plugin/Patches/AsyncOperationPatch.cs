@@ -197,11 +197,13 @@ public class AsyncOperationPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix(string name, Type type, ref AssetBundleRequest __result)
+        private static readonly MethodBase _loadAssetInternal = AccessTools.Method(typeof(AssetBundle),
+            "LoadAsset_Internal",
+            new[] { typeof(string), typeof(Type) });
+
+        private static bool Prefix(AssetBundle __instance, string name, Type type, ref AssetBundleRequest __result)
         {
-            var loadAsset_Internal = Traverse.Create(typeof(AssetBundle))
-                .Method("LoadAsset_Internal", new[] { typeof(string), typeof(Type) });
-            var loadResult = loadAsset_Internal.GetValue(name, type);
+            var loadResult = _loadAssetInternal.Invoke(__instance, new object[] { name, type });
             __result = new();
             AssetBundleRequestTracker.NewAssetBundleRequest(__result, loadResult);
             return false;
@@ -217,11 +219,13 @@ public class AsyncOperationPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix(string name, Type type, ref AssetBundleRequest __result)
+        private static readonly MethodBase _loadAssetWithSubAssetsInternal = AccessTools.Method(typeof(AssetBundle),
+            "LoadAssetWithSubAssets_Internal",
+            new[] { typeof(string), typeof(Type) });
+
+        private static bool Prefix(AssetBundle __instance, string name, Type type, ref AssetBundleRequest __result)
         {
-            var loadAssetWithSubAssets_Internal = Traverse.Create(typeof(AssetBundle))
-                .Method("LoadAssetWithSubAssets_Internal", new[] { typeof(string), typeof(Type) });
-            var loadResult = loadAssetWithSubAssets_Internal.GetValue(name, type);
+            var loadResult = _loadAssetWithSubAssetsInternal.Invoke(__instance, new object[] { name, type });
             __result = new();
             AssetBundleRequestTracker.NewAssetBundleRequestMultiple(__result, loadResult);
             return false;
