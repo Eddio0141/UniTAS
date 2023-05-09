@@ -21,20 +21,31 @@ public class StaticFieldStorage : IStaticFieldManipulator
     public void ResetStaticFields()
     {
         _logger.LogDebug("resetting static fields");
+
+        UnityEngine.Resources.UnloadUnusedAssets();
+
         var staticFieldStorage = Tracker.StaticFields;
+        const int fieldResetCount = 100;
+        var fieldReset = fieldResetCount;
+
         foreach (var field in staticFieldStorage)
         {
             var typeName = field.DeclaringType?.FullName ?? "unknown_type";
             _logger.LogDebug($"resetting static field: {typeName}.{field.Name}");
             field.SetValue(null, null);
+            fieldReset--;
+
+            if (fieldReset != 0) continue;
+            fieldReset = fieldResetCount;
+
+            // just in case
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
         }
 
-        // just in case
+        // lol
         GC.Collect();
         GC.WaitForPendingFinalizers();
-
-        // also for unity
-        UnityEngine.Resources.UnloadUnusedAssets();
 
         _logger.LogDebug("calling static constructors");
         var staticCtorInvokeOrderListCount = Tracker.StaticCtorInvokeOrder.Count;
