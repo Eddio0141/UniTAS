@@ -11,9 +11,32 @@ public static class InputSystemEvents
     private static bool _usingMonoBehUpdate;
     private static bool _usingMonoBehFixedUpdate;
 
+    private static bool _alreadyRegisteredOnEvent;
+
     [SuppressMessage("ReSharper", "ConditionIsAlwaysTrueOrFalse")]
     public static void Init()
     {
+        if (_usingMonoBehUpdate)
+        {
+            MonoBehaviourEvents.OnUpdateActual -= InputUpdateNonFixedUpdate;
+        }
+        else if (_alreadyRegisteredOnEvent)
+        {
+            InputSystem.onBeforeUpdate -= InputUpdateNonFixedUpdate;
+        }
+
+        if (_usingMonoBehFixedUpdate)
+        {
+            MonoBehaviourEvents.OnFixedUpdateActual -= InputUpdateFixedUpdate;
+        }
+        else if (_alreadyRegisteredOnEvent)
+        {
+            InputSystem.onBeforeUpdate -= InputUpdateFixedUpdate;
+        }
+
+        _usingMonoBehUpdate = true;
+        _usingMonoBehFixedUpdate = true;
+
         MonoBehaviourEvents.OnUpdateActual += InputUpdateNonFixedUpdate;
         MonoBehaviourEvents.OnFixedUpdateActual += InputUpdateFixedUpdate;
 
@@ -34,8 +57,6 @@ public static class InputSystemEvents
 
         if (!hasInputSystem) return;
 
-        _usingMonoBehUpdate = true;
-        _usingMonoBehFixedUpdate = true;
         InputSystemChangeUpdate(InputSystem.settings.updateMode);
     }
 
@@ -93,7 +114,8 @@ public static class InputSystemEvents
                     MonoBehaviourEvents.OnUpdateActual += InputUpdateNonFixedUpdate;
                     _usingMonoBehUpdate = true;
                 }
-                else if (!_usingMonoBehFixedUpdate)
+
+                if (!_usingMonoBehFixedUpdate)
                 {
                     MonoBehaviourEvents.OnFixedUpdateActual += InputUpdateFixedUpdate;
                     _usingMonoBehFixedUpdate = true;
@@ -103,6 +125,8 @@ public static class InputSystemEvents
             default:
                 throw new ArgumentOutOfRangeException(nameof(updateMode), updateMode, null);
         }
+
+        _alreadyRegisteredOnEvent = true;
     }
 
     private static bool AlreadyRegisteredOnEvent => !_usingMonoBehUpdate || !_usingMonoBehFixedUpdate;
