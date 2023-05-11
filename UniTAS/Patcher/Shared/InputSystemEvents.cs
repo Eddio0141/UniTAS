@@ -6,9 +6,9 @@ namespace UniTAS.Patcher.Shared;
 
 public static class InputSystemEvents
 {
-    public delegate void InputUpdateActual(bool fixedUpdate, bool newInputSystemUpdate);
+    public delegate void InputUpdateCall(bool fixedUpdate, bool newInputSystemUpdate);
 
-    public static event InputUpdateActual OnInputUpdateActual;
+    public static event InputUpdateCall OnInputUpdateActual;
 
     private static bool _usingMonoBehUpdate;
     private static bool _usingMonoBehFixedUpdate;
