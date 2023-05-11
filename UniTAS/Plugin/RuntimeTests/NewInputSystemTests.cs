@@ -5,6 +5,7 @@ using UniTAS.Plugin.Interfaces.RuntimeTest;
 using UniTAS.Plugin.Models.Coroutine;
 using UniTAS.Plugin.Models.VirtualEnvironment;
 using UniTAS.Plugin.Services.InputSystemOverride;
+using UniTAS.Plugin.Services.NewInputSystem;
 using UniTAS.Plugin.Services.VirtualEnvironment;
 using UniTAS.Plugin.Services.VirtualEnvironment.Input;
 using UniTAS.Plugin.Utils;
@@ -19,13 +20,15 @@ public class NewInputSystemTests
     private readonly IMouseStateEnvController _mouseController;
     private readonly IVirtualEnvController _virtualEnvController;
     private readonly INewInputSystemExists _newInputSystemExists;
+    private readonly IInputSystemOverride _inputSystemOverride;
 
     public NewInputSystemTests(IMouseStateEnvController mouseController, IVirtualEnvController virtualEnvController,
-        INewInputSystemExists newInputSystemExists)
+        INewInputSystemExists newInputSystemExists, IInputSystemOverride inputSystemOverride)
     {
         _mouseController = mouseController;
         _virtualEnvController = virtualEnvController;
         _newInputSystemExists = newInputSystemExists;
+        _inputSystemOverride = inputSystemOverride;
     }
 
     [RuntimeTest]
@@ -40,6 +43,7 @@ public class NewInputSystemTests
         var updateMode = inputSettings.updateMode;
         inputSettings.updateMode = InputSettings.UpdateMode.ProcessEventsInDynamicUpdate;
         _virtualEnvController.RunVirtualEnvironment = true;
+        _inputSystemOverride.Override = true;
 
         yield return new WaitForLastUpdateUnconditional();
 
@@ -53,6 +57,7 @@ public class NewInputSystemTests
         RuntimeAssert.AreEqual(600f, pos.y, "mouse y position check");
 
         _virtualEnvController.RunVirtualEnvironment = false;
+        _inputSystemOverride.Override = false;
         _mouseController.SetPosition(Vector2.zero);
         inputSettings.updateMode = updateMode;
     }
@@ -69,6 +74,7 @@ public class NewInputSystemTests
         var updateMode = inputSettings.updateMode;
         inputSettings.updateMode = InputSettings.UpdateMode.ProcessEventsInDynamicUpdate;
         _virtualEnvController.RunVirtualEnvironment = true;
+        _inputSystemOverride.Override = true;
 
         yield return new WaitForLastUpdateUnconditional();
 
@@ -111,6 +117,7 @@ public class NewInputSystemTests
         RuntimeAssert.False(mouse.middleButton.isPressed, "middle button check");
 
         _virtualEnvController.RunVirtualEnvironment = false;
+        _inputSystemOverride.Override = false;
         inputSettings.updateMode = updateMode;
     }
 }
