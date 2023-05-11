@@ -10,7 +10,7 @@ namespace UniTAS.Plugin.Implementations.Coroutine;
 
 [Singleton]
 public class CoroutineHandler : ICoroutine, IOnUpdateUnconditional, IOnPreUpdatesUnconditional,
-    IOnLastUpdateUnconditional
+    IOnLastUpdateUnconditional, IOnFixedUpdateUnconditional
 {
     private class Status
     {
@@ -25,6 +25,7 @@ public class CoroutineHandler : ICoroutine, IOnUpdateUnconditional, IOnPreUpdate
     }
 
     private readonly Queue<Status> _updateUnconditional = new();
+    private readonly Queue<Status> _fixedUpdateUnconditional = new();
     private readonly Queue<Status> _waitForCoroutine = new();
     private readonly Queue<Status> _lastUpdateUnconditional = new();
 
@@ -66,6 +67,9 @@ public class CoroutineHandler : ICoroutine, IOnUpdateUnconditional, IOnPreUpdate
                 break;
             case WaitForLastUpdateUnconditional:
                 _lastUpdateUnconditional.Enqueue(status);
+                break;
+            case WaitForFixedUpdateUnconditional:
+                _fixedUpdateUnconditional.Enqueue(status);
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(coroutine), "Unknown coroutine wait type");
@@ -113,6 +117,16 @@ public class CoroutineHandler : ICoroutine, IOnUpdateUnconditional, IOnPreUpdate
         while (count > 0)
         {
             RunNext(_lastUpdateUnconditional.Dequeue());
+            count--;
+        }
+    }
+
+    public void FixedUpdateUnconditional()
+    {
+        var count = _fixedUpdateUnconditional.Count;
+        while (count > 0)
+        {
+            RunNext(_fixedUpdateUnconditional.Dequeue());
             count--;
         }
     }
