@@ -18,14 +18,17 @@ public class LegacyInputSystemTests
     private readonly IMouseStateEnvController _mouseController;
     private readonly IVirtualEnvController _virtualEnvController;
     private readonly IKeyFactory _keyFactory;
+    private readonly ITimeEnv _timeEnv;
 
     public LegacyInputSystemTests(IKeyboardStateEnvController keyboardController,
-        IVirtualEnvController virtualEnvController, IMouseStateEnvController mouseController, IKeyFactory keyFactory)
+        IVirtualEnvController virtualEnvController, IMouseStateEnvController mouseController, IKeyFactory keyFactory,
+        ITimeEnv timeEnv)
     {
         _keyboardController = keyboardController;
         _virtualEnvController = virtualEnvController;
         _mouseController = mouseController;
         _keyFactory = keyFactory;
+        _timeEnv = timeEnv;
     }
 
     [RuntimeTest]
@@ -70,6 +73,80 @@ public class LegacyInputSystemTests
         RuntimeAssert.False(Input.GetKeyUp(KeyCode.A), "keycode up check");
         RuntimeAssert.False(Input.GetKeyUp("a"), "string up check");
 
+        _virtualEnvController.RunVirtualEnvironment = false;
+    }
+
+    [RuntimeTest]
+    public IEnumerator<CoroutineWait> KeyDownTest()
+    {
+        _virtualEnvController.RunVirtualEnvironment = true;
+
+        var captureFt = _timeEnv.FrameTime;
+        var fixedDt = Time.fixedDeltaTime;
+
+        _timeEnv.FrameTime = 0.01;
+        Time.fixedDeltaTime = 0.02f;
+
+        yield return new WaitForFixedUpdateUnconditional();
+        yield return new WaitForUpdateUnconditional();
+        yield return new WaitForUpdateUnconditional();
+
+        Plugin.Log.LogDebug("press A");
+        _keyboardController.Hold(_keyFactory.CreateKey(KeyCode.A));
+
+        yield return new WaitForFixedUpdateUnconditional();
+
+        Plugin.Log.LogDebug("check A press");
+        RuntimeAssert.True(Input.GetKeyDown(KeyCode.A), "keycode down check 1");
+
+        yield return new WaitForUpdateUnconditional();
+
+        Plugin.Log.LogDebug("check A press 2");
+        RuntimeAssert.True(Input.GetKeyDown(KeyCode.A), "keycode down check 2");
+
+        yield return new WaitForUpdateUnconditional();
+
+        RuntimeAssert.False(Input.GetKeyDown(KeyCode.A), "keycode down check 3");
+
+        yield return new WaitForFixedUpdateUnconditional();
+
+        RuntimeAssert.False(Input.GetKeyDown(KeyCode.A), "keycode down check 4");
+
+        _keyboardController.Release(_keyFactory.CreateKey(KeyCode.A));
+        _timeEnv.FrameTime = captureFt;
+        Time.fixedDeltaTime = fixedDt;
+        _virtualEnvController.RunVirtualEnvironment = false;
+    }
+
+    [RuntimeTest]
+    public IEnumerator<CoroutineWait> KeyDownTest2()
+    {
+        _virtualEnvController.RunVirtualEnvironment = true;
+
+        var captureFt = _timeEnv.FrameTime;
+        var fixedDt = Time.fixedDeltaTime;
+
+        _timeEnv.FrameTime = 0.01;
+        Time.fixedDeltaTime = 0.02f;
+
+        yield return new WaitForFixedUpdateUnconditional();
+        yield return new WaitForUpdateUnconditional();
+
+        Plugin.Log.LogDebug("press A");
+        _keyboardController.Hold(_keyFactory.CreateKey(KeyCode.A));
+
+        yield return new WaitForUpdateUnconditional();
+
+        Plugin.Log.LogDebug("check A press");
+        RuntimeAssert.True(Input.GetKeyDown(KeyCode.A), "keycode down check 1");
+
+        yield return new WaitForFixedUpdateUnconditional();
+
+        RuntimeAssert.False(Input.GetKeyDown(KeyCode.A), "keycode down check 2");
+
+        _keyboardController.Release(_keyFactory.CreateKey(KeyCode.A));
+        _timeEnv.FrameTime = captureFt;
+        Time.fixedDeltaTime = fixedDt;
         _virtualEnvController.RunVirtualEnvironment = false;
     }
 
