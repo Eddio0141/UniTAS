@@ -1,70 +1,89 @@
 using System.Diagnostics.CodeAnalysis;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.InputSystemOverride;
+using UniTAS.Plugin.Services.EventSubscribers;
 using UniTAS.Plugin.Services.InputSystemOverride;
 using UniTAS.Plugin.Services.Logging;
-using UniTAS.Plugin.Services.VirtualEnvironment;
+using UniTAS.Plugin.Services.NewInputSystem;
 using UnityEngine.InputSystem;
 
 namespace UniTAS.Plugin.Implementations.NewInputSystem;
 
 [Singleton]
 [ForceInstantiate]
-public class InputSystemOverride
+public class InputSystemOverride : IInputSystemOverride
 {
-    private readonly InputOverrideDevice[] _devices;
+    private readonly IInputOverrideDevice[] _devices;
     private InputDevice[] _restoreDevices;
 
     private readonly ILogger _logger;
-    private readonly IVirtualEnvController _virtualEnvController;
+    private readonly bool _hasInputSystem;
+
+    private bool _override;
 
     [SuppressMessage("ReSharper", "ConditionIsAlwaysTrueOrFalse")]
-    public InputSystemOverride(ILogger logger, InputOverrideDevice[] devices,
-        IVirtualEnvController virtualEnvController, INewInputSystemExists newInputSystemExists)
+    public InputSystemOverride(ILogger logger, IInputOverrideDevice[] devices,
+        INewInputSystemExists newInputSystemExists, IUpdateEvents updateEvents)
     {
         _logger = logger;
         _devices = devices;
-        _virtualEnvController = virtualEnvController;
 
-        var hasInputSystem = newInputSystemExists.HasInputSystem;
-        _logger.LogInfo($"InputSystemOverride hasInputSystem: {hasInputSystem}");
+        _hasInputSystem = newInputSystemExists.HasInputSystem;
+        _logger.LogMessage($"Has unity new input system: {_hasInputSystem}");
 
-        if (!hasInputSystem) return;
-        _virtualEnvController.OnVirtualEnvStatusChange += OnVirtualEnvStatusChange;
+        if (!_hasInputSystem) return;
+
+        updateEvents.OnInputUpdateActual += UpdateDevices;
     }
 
-    private void OnVirtualEnvStatusChange(bool runVirtualEnv)
+    public bool Override
     {
-        if (runVirtualEnv)
+        set
         {
-            _logger.LogDebug("Adding TAS devices to InputSystem");
+            if (!_hasInputSystem) return;
 
-            _restoreDevices = InputSystem.devices.ToArray();
-            RemoveAndFlushAllDevices();
-
-            foreach (var device in _devices)
+            _override = value;
+            if (_override)
             {
-                device.DeviceAdded();
-            }
+                _logger.LogDebug("Adding TAS devices to InputSystem");
 
-            _logger.LogDebug("Added TAS devices to InputSystem");
-        }
-        else
-        {
-            _logger.LogDebug("Removing TAS devices from InputSystem");
+                _restoreDevices = InputSystem.devices.ToArray();
+                RemoveAndFlushAllDevices();
 
-            RemoveAndFlushAllDevices();
-
-            // restore devices
-            if (_restoreDevices != null)
-            {
-                foreach (var device in _restoreDevices)
+                foreach (var device in _devices)
                 {
-                    InputSystem.AddDevice(device);
+                    device.DeviceAdded();
                 }
-            }
 
-            _logger.LogDebug("Removed TAS devices from InputSystem");
+                _logger.LogDebug("Added TAS devices to InputSystem");
+            }
+            else
+            {
+                _logger.LogDebug("Removing TAS devices from InputSystem");
+
+                RemoveAndFlushAllDevices();
+
+                // restore devices
+                if (_restoreDevices != null)
+                {
+                    foreach (var device in _restoreDevices)
+                    {
+                        InputSystem.AddDevice(device);
+                    }
+                }
+
+                _logger.LogDebug("Removed TAS devices from InputSystem");
+            }
+        }
+    }
+
+    private void UpdateDevices(bool fixedUpdate, bool newInputSystemUpdate)
+    {
+        if (!_override || !newInputSystemUpdate) return;
+
+        foreach (var device in _devices)
+        {
+            device.Update();
         }
     }
 

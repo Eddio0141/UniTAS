@@ -1,9 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.InputSystemOverride;
-using UniTAS.Plugin.Services.EventSubscribers;
-using UniTAS.Plugin.Services.InputSystemOverride;
-using UniTAS.Plugin.Services.VirtualEnvironment;
 using UniTAS.Plugin.Services.VirtualEnvironment.Input.NewInputSystem;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Layouts;
@@ -13,15 +10,13 @@ using MouseButton = UniTAS.Plugin.Models.VirtualEnvironment.MouseButton;
 namespace UniTAS.Plugin.Implementations.NewInputSystem;
 
 [Singleton]
-public class MouseDeviceOverride : InputOverrideDevice
+public class MouseDeviceOverride : IInputOverrideDevice
 {
     private Mouse _mouse;
 
     private readonly IMouseStateEnvNewSystem _mouseStateEnvNewSystem;
 
-    public MouseDeviceOverride(IVirtualEnvController virtualEnvController, IUpdateEvents updateEvents,
-        INewInputSystemExists newInputSystemExists, IMouseStateEnvNewSystem mouseStateEnvNewSystem) : base(
-        virtualEnvController, updateEvents, newInputSystemExists)
+    public MouseDeviceOverride(IMouseStateEnvNewSystem mouseStateEnvNewSystem)
     {
         _mouseStateEnvNewSystem = mouseStateEnvNewSystem;
     }
@@ -32,7 +27,7 @@ public class MouseDeviceOverride : InputOverrideDevice
     {
     }
 
-    protected override void Update()
+    public void Update()
     {
         ushort buttons = 0;
         if (_mouseStateEnvNewSystem.IsButtonHeld(MouseButton.Left))
@@ -60,7 +55,7 @@ public class MouseDeviceOverride : InputOverrideDevice
         InputSystem.QueueStateEvent(_mouse, state);
     }
 
-    public override void DeviceAdded()
+    public void DeviceAdded()
     {
         _mouse = InputSystem.AddDevice<TASMouse>();
     }

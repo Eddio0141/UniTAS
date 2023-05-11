@@ -1,9 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.InputSystemOverride;
-using UniTAS.Plugin.Services.EventSubscribers;
-using UniTAS.Plugin.Services.InputSystemOverride;
-using UniTAS.Plugin.Services.VirtualEnvironment;
 using UniTAS.Plugin.Services.VirtualEnvironment.Input.NewInputSystem;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Layouts;
@@ -12,15 +9,13 @@ using UnityEngine.InputSystem.LowLevel;
 namespace UniTAS.Plugin.Implementations.NewInputSystem;
 
 [Singleton]
-public class KeyboardDeviceOverride : InputOverrideDevice
+public class KeyboardDeviceOverride : IInputOverrideDevice
 {
     private Keyboard _keyboard;
 
     private readonly IKeyboardStateEnvNewSystem _keyboardStateEnvNewSystem;
 
-    public KeyboardDeviceOverride(IVirtualEnvController virtualEnvController, IUpdateEvents updateEvents,
-        INewInputSystemExists newInputSystemExists, IKeyboardStateEnvNewSystem keyboardStateEnvNewSystem) : base(
-        virtualEnvController, updateEvents, newInputSystemExists)
+    public KeyboardDeviceOverride(IKeyboardStateEnvNewSystem keyboardStateEnvNewSystem)
     {
         _keyboardStateEnvNewSystem = keyboardStateEnvNewSystem;
     }
@@ -31,7 +26,7 @@ public class KeyboardDeviceOverride : InputOverrideDevice
     {
     }
 
-    protected override void Update()
+    public void Update()
     {
         var state = new KeyboardState();
         foreach (var heldKey in _keyboardStateEnvNewSystem.HeldKeys)
@@ -44,7 +39,7 @@ public class KeyboardDeviceOverride : InputOverrideDevice
         InputSystem.QueueStateEvent(_keyboard, state);
     }
 
-    public override void DeviceAdded()
+    public void DeviceAdded()
     {
         _keyboard = InputSystem.AddDevice<TASKeyboard>();
     }

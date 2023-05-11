@@ -24,7 +24,6 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
     private readonly IMonoBehaviourController _monoBehaviourController;
     private readonly ILogger _logger;
 
-    private readonly IOnGameRestart[] _onGameRestart;
     private readonly IOnPreGameRestart[] _onPreGameRestart;
 
     private readonly IStaticFieldManipulator _staticFieldManipulator;
@@ -44,7 +43,6 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
         _sceneWrapper = sceneWrapper;
         _monoBehaviourController = monoBehaviourController;
         _logger = logger;
-        _onGameRestart = onGameRestart;
         _onPreGameRestart = onPreGameRestart;
         _staticFieldManipulator = staticFieldManipulator;
         _timeEnv = timeEnv;
@@ -52,6 +50,11 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
         foreach (var gameRestartResume in onGameRestartResume)
         {
             OnGameRestartResume += gameRestartResume.OnGameRestartResume;
+        }
+
+        foreach (var gameRestart in onGameRestart)
+        {
+            OnGameRestart += gameRestart.OnGameRestart;
         }
     }
 
@@ -99,15 +102,8 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
         _logger.LogDebug("Soft restarting, pending FixedUpdate sync");
     }
 
-    private void OnGameRestart(bool preSceneLoad)
-    {
-        foreach (var gameRestart in _onGameRestart)
-        {
-            gameRestart.OnGameRestart(_softRestartTime, preSceneLoad);
-        }
-    }
-
     public event GameRestartResume OnGameRestartResume;
+    public event Services.GameRestart OnGameRestart;
 
     protected virtual void InvokeOnGameRestartResume(bool preMonoBehaviourResume)
     {
@@ -126,9 +122,9 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
     {
         _logger.LogInfo("Soft restarting");
 
-        OnGameRestart(true);
+        OnGameRestart?.Invoke(_softRestartTime, true);
         _sceneWrapper.LoadScene(0);
-        OnGameRestart(false);
+        OnGameRestart?.Invoke(_softRestartTime, false);
 
         _pendingRestart = false;
         _pendingResumePausedExecution = true;
