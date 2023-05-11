@@ -83,11 +83,13 @@ public class MonoBehEventInvoker : IMonoBehEventInvoker, IUpdateEvents
 
         foreach (var onInputUpdateActual in onInputUpdatesActual)
         {
-            InputSystemEvents.OnInputUpdateActual += fixedUpdate => onInputUpdateActual.InputUpdateActual(fixedUpdate);
+            InputSystemEvents.OnInputUpdateActual += (fixedUpdate, newInputSystemUpdateFixedUpdate) =>
+                onInputUpdateActual.InputUpdateActual(fixedUpdate, newInputSystemUpdateFixedUpdate);
         }
 
         MonoBehaviourEvents.OnGUIUnconditional += () => OnGUIEventUnconditional?.Invoke();
-        InputSystemEvents.OnInputUpdateActual += fixedUpdate => OnInputUpdateActual?.Invoke(fixedUpdate);
+        InputSystemEvents.OnInputUpdateActual += (fixedUpdate, newInputSystemUpdateFixedUpdate) =>
+            OnInputUpdateActual?.Invoke(fixedUpdate, newInputSystemUpdateFixedUpdate);
     }
 
     public void Update()
@@ -111,5 +113,5 @@ public class MonoBehEventInvoker : IMonoBehEventInvoker, IUpdateEvents
     }
 
     public event Action OnGUIEventUnconditional;
-    public event Action<bool> OnInputUpdateActual;
+    public event InputUpdateActual OnInputUpdateActual;
 }

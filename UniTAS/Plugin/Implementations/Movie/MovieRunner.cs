@@ -100,7 +100,7 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual
         MovieRunningStatusChange(true);
     }
 
-    public void InputUpdateActual(bool fixedUpdate)
+    public void InputUpdateActual(bool fixedUpdate, bool newInputSystemUpdate)
     {
         if (_cleanUp)
         {
