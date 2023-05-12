@@ -93,6 +93,7 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvent
         }
 
         UpdateType = properties.UpdateType;
+        _logger.LogDebug($"set update type to {UpdateType}");
     }
 
     private void OnGameRestartResume(DateTime startupTime, bool preMonoBehaviourResume)
