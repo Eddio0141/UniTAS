@@ -120,13 +120,10 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvent
              (!fixedUpdate && UpdateType != UpdateType.Update))
            )
         {
-            Plugin.Log.LogDebug("skipping update type");
             RunUpdateEvents(fixedUpdate);
             return;
         }
 
-        Plugin.Log.LogDebug(
-            $"movie update, fixed update: {fixedUpdate}, new input system update: {newInputSystemUpdate}");
         _engine.Update();
         RunUpdateEvents(fixedUpdate);
 

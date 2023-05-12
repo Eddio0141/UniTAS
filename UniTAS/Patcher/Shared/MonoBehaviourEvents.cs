@@ -43,12 +43,6 @@ public static class MonoBehaviourEvents
         // TODO ew
         UpdateInvokeOffset.Init();
         InputSystemEvents.Init();
-
-        OnUpdateActual += () => Patcher.Logger.LogDebug("Update");
-        OnFixedUpdateActual += () => Patcher.Logger.LogDebug("FixedUpdate");
-        InputSystemEvents.OnInputUpdateActual += (fixedUpdate, newInputSystemUpdate) =>
-            Patcher.Logger.LogDebug(
-                $"InputUpdate, fixed update: {fixedUpdate}, new input system: {newInputSystemUpdate}");
     }
 
     // calls awake before any other script
