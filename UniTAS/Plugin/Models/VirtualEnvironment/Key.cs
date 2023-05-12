@@ -41,4 +41,9 @@ public readonly struct Key : IEquatable<Key>
             return hashCode;
         }
     }
+
+    public override string ToString()
+    {
+        return Keys ?? KeyCode.ToString();
+    }
 }

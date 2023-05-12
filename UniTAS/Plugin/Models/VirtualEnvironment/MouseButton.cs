@@ -32,4 +32,9 @@ public readonly struct MouseButtonWrap : IEquatable<MouseButtonWrap>
     {
         return (int)MouseButton;
     }
+
+    public override string ToString()
+    {
+        return MouseButton.ToString();
+    }
 }

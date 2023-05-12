@@ -69,7 +69,6 @@ public static class KernelUtils
 #pragma warning restore 67
     }
 
-    [Singleton(IncludeDifferentAssembly = true)]
     [SuppressMessage("ReSharper", "UnusedType.Local")]
     public class FakeLogger : ILogger
     {
@@ -169,6 +168,9 @@ public static class KernelUtils
         {
             c.ForSingletonOf<DiscoverAndRegister>().Use<DiscoverAndRegister>();
             c.For<IDiscoverAndRegister>().Use(x => x.GetInstance<DiscoverAndRegister>());
+
+            c.ForSingletonOf<FakeLogger>().Use<FakeLogger>();
+            c.For<ILogger>().Use(x => x.GetInstance<FakeLogger>());
         });
 
         kernel.Configure(c =>
