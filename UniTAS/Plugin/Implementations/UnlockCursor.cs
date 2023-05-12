@@ -2,6 +2,7 @@ using System;
 using HarmonyLib;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
+using UniTAS.Plugin.Services;
 using UnityEngine;
 
 namespace UniTAS.Plugin.Implementations;
@@ -9,9 +10,16 @@ namespace UniTAS.Plugin.Implementations;
 [Singleton]
 public class UnlockCursor : IOnUpdateUnconditional
 {
+    private readonly IPatchReverseInvoker _patchReverseInvoker;
+
+    public UnlockCursor(IPatchReverseInvoker patchReverseInvoker)
+    {
+        _patchReverseInvoker = patchReverseInvoker;
+    }
+
     public void UpdateUnconditional()
     {
-        if (!BepInEx.UnityInput.Current.GetKeyDown(KeyCode.F1)) return;
+        if (!_patchReverseInvoker.Invoke(() => BepInEx.UnityInput.Current.GetKeyDown(KeyCode.F1))) return;
 
         var cursor = AccessTools.TypeByName("UnityEngine.Cursor");
         if (cursor == null)
