@@ -2,8 +2,8 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using UniTAS.Plugin.Exceptions.Movie.Runner;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
-using UniTAS.Plugin.Interfaces.Events;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
+using UniTAS.Plugin.Interfaces.Events.Movie;
 using UniTAS.Plugin.Models.DependencyInjection;
 using UniTAS.Plugin.Models.Movie;
 using UniTAS.Plugin.Services;
@@ -16,7 +16,7 @@ namespace UniTAS.Plugin.Implementations.Movie;
 
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 [Singleton(RegisterPriority.MovieRunner)]
-public class MovieRunner : IMovieRunner, IOnInputUpdateActual
+public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvents
 {
     private readonly IGameRestart _gameRestart;
 
@@ -30,6 +30,7 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual
     private readonly ILogger _logger;
 
     private readonly IOnMovieRunningStatusChange[] _onMovieRunningStatusChange;
+    private readonly IOnMovieUpdate[] _onMovieUpdates;
 
     private readonly IVirtualEnvController _virtualEnvController;
     private readonly ITimeEnv _timeEnv;
@@ -39,7 +40,8 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual
 
     public MovieRunner(IGameRestart gameRestart, IMovieParser parser, IMovieLogger movieLogger,
         IOnMovieRunningStatusChange[] onMovieRunningStatusChange,
-        IVirtualEnvController virtualEnvController, ITimeEnv timeEnv, IRandomEnv randomEnv, ILogger logger)
+        IVirtualEnvController virtualEnvController, ITimeEnv timeEnv, IRandomEnv randomEnv, ILogger logger,
+        IOnMovieUpdate[] onMovieUpdates)
     {
         _gameRestart = gameRestart;
         _parser = parser;
@@ -49,6 +51,7 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual
         _timeEnv = timeEnv;
         _randomEnv = randomEnv;
         _logger = logger;
+        _onMovieUpdates = onMovieUpdates;
 
         _gameRestart.OnGameRestartResume += OnGameRestartResume;
     }
@@ -109,18 +112,35 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual
             return;
         }
 
-        if (MovieEnd ||
-            // skip if update type doesn't match current update type
-            (UpdateType != UpdateType.Both &&
-             ((fixedUpdate && UpdateType != UpdateType.FixedUpdate) ||
-              (!fixedUpdate && UpdateType != UpdateType.Update)))
-           ) return;
+        if (MovieEnd) return;
 
+        // skip if update type doesn't match current update type
+        if (UpdateType != UpdateType.Both &&
+            ((fixedUpdate && UpdateType != UpdateType.FixedUpdate) ||
+             (!fixedUpdate && UpdateType != UpdateType.Update))
+           )
+        {
+            Plugin.Log.LogDebug("skipping update type");
+            RunUpdateEvents(fixedUpdate);
+            return;
+        }
+
+        Plugin.Log.LogDebug(
+            $"movie update, fixed update: {fixedUpdate}, new input system update: {newInputSystemUpdate}");
         _engine.Update();
+        RunUpdateEvents(fixedUpdate);
 
         if (_engine.Finished)
         {
             AtMovieEnd();
+        }
+    }
+
+    private void RunUpdateEvents(bool fixedUpdate)
+    {
+        foreach (var onMovieUpdate in _onMovieUpdates)
+        {
+            onMovieUpdate.MovieUpdate(fixedUpdate);
         }
     }
 
