@@ -17,13 +17,13 @@ public class Movie
 
     private static readonly IGameRender GameRender = Plugin.Kernel.GetInstance<IGameRender>();
 
-    private static readonly IMovieRunner MovieRunner = Plugin.Kernel.GetInstance<IMovieRunner>();
+    private static readonly IMovieRunnerEvents MovieRunnerEvents = Plugin.Kernel.GetInstance<IMovieRunnerEvents>();
 
     private static readonly IMovieLogger MovieLogger = Plugin.Kernel.GetInstance<IMovieLogger>();
 
     static Movie()
     {
-        MovieRunner.OnMovieEnd += () => GameRender.Stop();
+        MovieRunnerEvents.OnMovieEnd += () => GameRender.Stop();
     }
 
     [MoonSharpModuleMethod]

@@ -25,12 +25,12 @@ public class Env : EngineMethodClass, IOnLastUpdateActual
     private readonly bool _mobile = Application.platform is RuntimePlatform.Android or RuntimePlatform.IPhonePlayer;
 
     [MoonSharpHidden]
-    public Env(ITimeEnv timeEnv, IMovieLogger logger, IMovieRunner movieRunner)
+    public Env(ITimeEnv timeEnv, IMovieLogger logger, IMovieRunner movieRunner, IMovieRunnerEvents movieEvents)
     {
         _timeEnv = timeEnv;
         _logger = logger;
         _movieRunner = movieRunner;
-        _movieRunner.OnMovieStart += OnMovieStart;
+        movieEvents.OnMovieStart += OnMovieStart;
     }
 
     public double Fps
