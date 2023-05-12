@@ -6,6 +6,7 @@ using HarmonyLib;
 using StructureMap;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Services.DependencyInjection;
+using UniTAS.Plugin.Services.Logging;
 
 namespace UniTAS.Plugin.Implementations.DependencyInjection;
 
@@ -13,6 +14,13 @@ namespace UniTAS.Plugin.Implementations.DependencyInjection;
 public class DiscoverAndRegister : IDiscoverAndRegister
 {
     private readonly bool _isTesting = AccessTools.TypeByName("Xunit.FactAttribute") != null;
+
+    private readonly ILogger _logger;
+
+    public DiscoverAndRegister(ILogger logger)
+    {
+        _logger = logger;
+    }
 
     public void Register<TAssemblyContainingType>(ConfigurationExpression config)
     {
@@ -29,8 +37,10 @@ public class DiscoverAndRegister : IDiscoverAndRegister
         // order by priority
         registers = registers.OrderBy(x => x.Priority).ToList();
 
+        _logger.LogDebug($"registering {registers.Count} types");
         foreach (var register in registers)
         {
+            _logger.LogDebug($"registering {register.Type.FullName} with priority {register.Priority}");
             register.Register(config);
         }
     }

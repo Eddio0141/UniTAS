@@ -8,7 +8,6 @@ namespace UniTAS.Plugin.Models.DependencyInjection;
 
 public class RegisterInfo : RegisterInfoBase
 {
-    private Type Type { get; }
     private RegisterAttribute RegisterAttribute { get; }
 
     public RegisterInfo(Type type, RegisterAttribute registerAttribute) : base(registerAttribute.Priority)
