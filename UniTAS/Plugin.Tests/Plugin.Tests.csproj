@@ -49,7 +49,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Plugin\Plugin.csproj" />
+        <ProjectReference Include="..\Plugin\Plugin.csproj"/>
     </ItemGroup>
 
 </Project>
