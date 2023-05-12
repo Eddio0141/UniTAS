@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using UnityEngine.InputSystem;
 
@@ -8,7 +9,15 @@ public static class InputSystemEvents
 {
     public delegate void InputUpdateCall(bool fixedUpdate, bool newInputSystemUpdate);
 
-    public static event InputUpdateCall OnInputUpdateActual;
+    public static event InputUpdateCall OnInputUpdateActual
+    {
+        add => InputUpdateActualCalls.Add(value);
+        remove => InputUpdateActualCalls.Remove(value);
+    }
+
+    public static event InputUpdateCall OnInputUpdateUnconditional;
+
+    private static readonly List<InputUpdateCall> InputUpdateActualCalls = new();
 
     private static bool _usingMonoBehUpdate;
     private static bool _usingMonoBehFixedUpdate;
@@ -153,6 +162,12 @@ public static class InputSystemEvents
 
     private static void InputUpdate(bool fixedUpdate, bool newInputSystemUpdate)
     {
-        if (!MonoBehaviourController.PausedExecution) OnInputUpdateActual?.Invoke(fixedUpdate, newInputSystemUpdate);
+        OnInputUpdateUnconditional?.Invoke(fixedUpdate, newInputSystemUpdate);
+
+        foreach (var update in InputUpdateActualCalls)
+        {
+            if (MonoBehaviourController.PausedExecution) continue;
+            update(fixedUpdate, newInputSystemUpdate);
+        }
     }
 }

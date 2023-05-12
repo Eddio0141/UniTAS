@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace UniTAS.Patcher.Shared;
 
@@ -19,11 +20,19 @@ public static class MonoBehaviourEvents
     public static event Action OnPreUpdateUnconditional;
     public static event Action OnPreUpdateActual;
     public static event Action OnUpdateUnconditional;
-    public static event Action OnUpdateActual;
+
+    public static event Action OnUpdateActual
+    {
+        add => UpdatesActual.Add(value);
+        remove => UpdatesActual.Remove(value);
+    }
+
     public static event Action OnFixedUpdateUnconditional;
     public static event Action OnFixedUpdateActual;
     public static event Action OnGUIUnconditional;
     public static event Action OnGUIActual;
+
+    private static readonly List<Action> UpdatesActual = new();
 
     private static bool _updated;
     private static bool _calledFixedUpdate;
@@ -34,6 +43,12 @@ public static class MonoBehaviourEvents
         // TODO ew
         UpdateInvokeOffset.Init();
         InputSystemEvents.Init();
+
+        OnUpdateActual += () => Patcher.Logger.LogDebug("Update");
+        OnFixedUpdateActual += () => Patcher.Logger.LogDebug("FixedUpdate");
+        InputSystemEvents.OnInputUpdateActual += (fixedUpdate, newInputSystemUpdate) =>
+            Patcher.Logger.LogDebug(
+                $"InputUpdate, fixed update: {fixedUpdate}, new input system: {newInputSystemUpdate}");
     }
 
     // calls awake before any other script
@@ -75,8 +90,11 @@ public static class MonoBehaviourEvents
 
         OnUpdateUnconditional?.Invoke();
 
-        if (!MonoBehaviourController.PausedExecution)
-            OnUpdateActual?.Invoke();
+        foreach (var update in UpdatesActual)
+        {
+            if (MonoBehaviourController.PausedExecution) continue;
+            update();
+        }
     }
 
     // right now I don't call this update before other scripts so I don't need to check if it was already called

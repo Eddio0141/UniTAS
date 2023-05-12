@@ -1,4 +1,5 @@
 ﻿using System;
+using UniTAS.Patcher.Shared;
 
 namespace UniTAS.Plugin.Services.EventSubscribers;
 
@@ -8,7 +9,5 @@ namespace UniTAS.Plugin.Services.EventSubscribers;
 public interface IUpdateEvents
 {
     event Action OnGUIEventUnconditional;
-    event InputUpdateActual OnInputUpdateActual;
+    event InputSystemEvents.InputUpdateCall OnInputUpdateActual;
 }
-
-public delegate void InputUpdateActual(bool fixedUpdate, bool newInputSystemUpdate);

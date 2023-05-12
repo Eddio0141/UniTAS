@@ -24,7 +24,8 @@ public class MonoBehEventInvoker : IMonoBehEventInvoker, IUpdateEvents
         IEnumerable<IOnFixedUpdateActual> onFixedUpdatesActual,
         IEnumerable<IOnStartActual> onStartsActual,
         IEnumerable<IOnUpdateActual> onUpdatesActual,
-        IEnumerable<IOnInputUpdateActual> onInputUpdatesActual)
+        IEnumerable<IOnInputUpdateActual> onInputUpdatesActual,
+        IEnumerable<IOnInputUpdateUnconditional> onInputUpdatesUnconditional)
     {
         foreach (var onAwake in onAwakesUnconditional)
         {
@@ -87,9 +88,11 @@ public class MonoBehEventInvoker : IMonoBehEventInvoker, IUpdateEvents
                 onInputUpdateActual.InputUpdateActual(fixedUpdate, newInputSystemUpdateFixedUpdate);
         }
 
-        MonoBehaviourEvents.OnGUIUnconditional += () => OnGUIEventUnconditional?.Invoke();
-        InputSystemEvents.OnInputUpdateActual += (fixedUpdate, newInputSystemUpdateFixedUpdate) =>
-            OnInputUpdateActual?.Invoke(fixedUpdate, newInputSystemUpdateFixedUpdate);
+        foreach (var onInputUpdateUnconditional in onInputUpdatesUnconditional)
+        {
+            InputSystemEvents.OnInputUpdateUnconditional += (fixedUpdate, newInputSystemUpdateFixedUpdate) =>
+                onInputUpdateUnconditional.InputUpdateUnconditional(fixedUpdate, newInputSystemUpdateFixedUpdate);
+        }
     }
 
     public void Update()
@@ -112,6 +115,15 @@ public class MonoBehEventInvoker : IMonoBehEventInvoker, IUpdateEvents
         MonoBehaviourEvents.InvokeLateUpdate();
     }
 
-    public event Action OnGUIEventUnconditional;
-    public event InputUpdateActual OnInputUpdateActual;
+    public event Action OnGUIEventUnconditional
+    {
+        add => MonoBehaviourEvents.OnGUIUnconditional += value;
+        remove => MonoBehaviourEvents.OnGUIUnconditional -= value;
+    }
+
+    public event InputSystemEvents.InputUpdateCall OnInputUpdateActual
+    {
+        add => InputSystemEvents.OnInputUpdateActual += value;
+        remove => InputSystemEvents.OnInputUpdateActual -= value;
+    }
 }
