@@ -34,12 +34,14 @@ public class KeyFactory : IKeyFactory
     private static KeyCode? ParseKeyCode(string key)
     {
         var keyClean = key.Trim().ToLower();
-        if (Enum.IsDefined(typeof(KeyCode), keyClean))
+        try
         {
             return (KeyCode)Enum.Parse(typeof(KeyCode), keyClean, true);
         }
-
-        return null;
+        catch (Exception)
+        {
+            return null;
+        }
     }
 
     private UnityEngine.InputSystem.Key? NewKeyFromKeyCode(KeyCode keyCode)
