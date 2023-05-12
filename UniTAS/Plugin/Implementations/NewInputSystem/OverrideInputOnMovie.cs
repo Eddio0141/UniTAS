@@ -12,14 +12,14 @@ public class OverrideInputOnMovie
     private readonly IInputSystemOverride _inputSystemOverride;
 
     public OverrideInputOnMovie(IGameRestart gameRestart, IInputSystemOverride inputSystemOverride,
-        IMovieRunner movieRunner)
+        IMovieRunnerEvents movieEvents)
     {
         _inputSystemOverride = inputSystemOverride;
         gameRestart.OnGameRestart += OnGameRestart;
-        movieRunner.OnMovieEnd += OnMovieEnd;
+        movieEvents.OnMovieEnd += OnMovieEnd;
     }
 
-    public void OnGameRestart(DateTime startupTime, bool preSceneLoad)
+    private void OnGameRestart(DateTime startupTime, bool preSceneLoad)
     {
         if (!preSceneLoad) return;
 

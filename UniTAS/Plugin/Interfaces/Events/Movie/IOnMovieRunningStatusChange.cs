@@ -1,4 +1,4 @@
-namespace UniTAS.Plugin.Interfaces.Events;
+namespace UniTAS.Plugin.Interfaces.Events.Movie;
 
 public interface IOnMovieRunningStatusChange
 {
