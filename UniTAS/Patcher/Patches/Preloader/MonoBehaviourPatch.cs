@@ -139,6 +139,9 @@ public class MonoBehaviourPatch : PreloadPatcher
         var pauseExecutionProperty = AccessTools.Property(typeof(MonoBehaviourController),
             nameof(MonoBehaviourController.PausedExecution)).GetGetMethod();
         var pauseExecutionReference = assembly.MainModule.ImportReference(pauseExecutionProperty);
+        var pausedUpdateProperty = AccessTools.Property(typeof(MonoBehaviourController),
+            nameof(MonoBehaviourController.PausedUpdate)).GetGetMethod();
+        var pausedUpdateReference = assembly.MainModule.ImportReference(pausedUpdateProperty);
 
         foreach (var type in types)
         {
@@ -157,6 +160,8 @@ public class MonoBehaviourPatch : PreloadPatcher
             }
 
             if (!isMonoBehaviour) continue;
+
+            Patcher.Logger.LogDebug($"Patching MonoBehaviour type: {type.FullName}");
 
             // method invoke pause
             if (!ExcludeNamespaces.Any(type.Namespace.StartsWith) || IncludeNamespaces.Any(type.Namespace.StartsWith))
@@ -198,6 +203,19 @@ public class MonoBehaviourPatch : PreloadPatcher
             {
                 InvokeUnityEventMethod(type, eventMethodPair.Key, assembly, eventMethodPair.Value);
             }
+
+            // update skip check
+            var updateMethod = type.Methods.FirstOrDefault(m => m.Name == "Update" && !m.HasParameters);
+            if (updateMethod == null) continue;
+
+            var updateIl = updateMethod.Body.GetILProcessor();
+            var updateFirstInstruction = updateIl.Body.Instructions.First();
+
+            // return early check
+            updateIl.InsertBefore(updateFirstInstruction, updateIl.Create(OpCodes.Call, pausedUpdateReference));
+            updateIl.InsertBefore(updateFirstInstruction, updateIl.Create(OpCodes.Brfalse_S, updateFirstInstruction));
+            updateIl.InsertBefore(updateFirstInstruction, updateIl.Create(OpCodes.Ret));
+            Patcher.Logger.LogDebug("Patched Update method for skipping execution");
         }
     }
 

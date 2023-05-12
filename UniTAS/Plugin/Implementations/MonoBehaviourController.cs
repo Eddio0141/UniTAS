@@ -12,4 +12,10 @@ public class MonoBehaviourController : IMonoBehaviourController
         get => Patcher.Shared.MonoBehaviourController.PausedExecution;
         set => Patcher.Shared.MonoBehaviourController.PausedExecution = value;
     }
+
+    public bool PausedUpdate
+    {
+        get => Patcher.Shared.MonoBehaviourController.PausedUpdate;
+        set => Patcher.Shared.MonoBehaviourController.PausedUpdate = value;
+    }
 }
