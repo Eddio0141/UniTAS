@@ -61,7 +61,7 @@ public class FirstUpdateSkipOnRestart : IOnGameRestartResume, IOnUpdateUnconditi
         {
             _pendingState = PendingState.PendingResumeLastUpdate;
             _logger.LogDebug("Pausing mono behaviour to skip an update");
-            _monoBehaviourController.PausedExecution = true;
+            _monoBehaviourController.PausedUpdate = true;
         }
     }
 
@@ -81,7 +81,7 @@ public class FirstUpdateSkipOnRestart : IOnGameRestartResume, IOnUpdateUnconditi
 
         _pendingState = PendingState.PendingRestart;
         _logger.LogDebug("Resuming mono behaviour");
-        _monoBehaviourController.PausedExecution = false;
+        _monoBehaviourController.PausedUpdate = false;
     }
 
     public void OnLastUpdateUnconditional()
