@@ -43,6 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed opened files not being closed on soft restart, causing IO exceptions
 - Fixed static constructor dependency called in the wrong order
 - Fixed static fields not being reset all at once
+- Fixed not being able to call some async methods in AssetBundle
 
 # [v0.3.0] - 2023-04-10
 
