@@ -27,9 +27,11 @@
 | [yurayura tutt] | Latest | Desync | TAS desyncs due to invoke to `YuraYuraModel.PlayFootStepForReal` and `YuraYuraModel.PlayFootStep` being inconsistent between runs. Stack trace doesn't show what is calling this |
 | [HuniePop] | 1.2.0 | Broken | Exception on game start |
 | [KTaNE] | ? | Broken | Exception on game start |
+| [ULTRAKILL] | Latest | Broken | Exception on game start |
 
 [It Steals]: https://store.steampowered.com/app/1349060/It_Steals/
 [yurayura tutt]: https://cornflowerblue.itch.io/yurayura-tidying-up-the-tilting-tower
 [Do It For Me]: https://lixiangames.itch.io/doitforme
 [HuniePop]: https://store.steampowered.com/app/339800/HuniePop/
 [KTaNE]: https://store.steampowered.com/app/341800/Keep_Talking_and_Nobody_Explodes/
+[ULTRAKILL]: https://store.steampowered.com/app/1229490/ULTRAKILL/

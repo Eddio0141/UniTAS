@@ -29,4 +29,10 @@
         "Status": "Broken",
         "Notes": "Exception on game start"
     }
+    {
+        "Game": "[ULTRAKILL]",
+        "Version": "Latest",
+        "Status": "Broken",
+        "Notes": "Exception on game start"
+    }
 ]
