@@ -116,13 +116,14 @@ public partial class MovieParser
     private UpdateType GetUpdateType(Table table)
     {
         var selectedValue = table.Get("update_type");
+        const UpdateType fallback = UpdateType.Update;
 
         var valueParsed = selectedValue.CastToString();
         if (valueParsed is null)
         {
             _logger.LogWarning(
-                "Could not parse update_type as a string, using default value of updating on all update types");
-            return UpdateType.Both;
+                $"Could not parse update_type as a string, using default value of {fallback}");
+            return fallback;
         }
 
         UpdateType updateType;
@@ -133,8 +134,8 @@ public partial class MovieParser
         catch (Exception)
         {
             _logger.LogWarning(
-                "Could not parse update_type as a valid variant, using default value of updating on all update types");
-            return UpdateType.Both;
+                $"Could not parse update_type as a valid variant, using default value of {fallback}");
+            return fallback;
         }
 
         return updateType;
