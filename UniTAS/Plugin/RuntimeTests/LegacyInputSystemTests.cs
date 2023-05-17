@@ -79,11 +79,11 @@ public class LegacyInputSystemTests
         _virtualEnvController.RunVirtualEnvironment = true;
 
         _keyboardController.Hold(_keyFactory.CreateKey(KeyCode.A));
-        _keyboardControllerBase.MovieUpdate(true);
+        _keyboardControllerBase.MovieUpdate(false);
 
         RuntimeAssert.True(Input.GetKeyDown(KeyCode.A), "keycode down check 1");
 
-        _keyboardControllerBase.MovieUpdate(false);
+        _keyboardControllerBase.MovieUpdate(true);
 
         RuntimeAssert.True(Input.GetKeyDown(KeyCode.A), "keycode down check 2");
 
@@ -109,7 +109,7 @@ public class LegacyInputSystemTests
 
         RuntimeAssert.True(Input.GetKeyDown(KeyCode.A), "keycode down check 1");
 
-        _keyboardControllerBase.MovieUpdate(true);
+        _keyboardControllerBase.MovieUpdate(false);
 
         RuntimeAssert.False(Input.GetKeyDown(KeyCode.A), "keycode down check 2");
 
