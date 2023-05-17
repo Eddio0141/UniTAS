@@ -45,7 +45,6 @@ public class LegacyInputSystemTests
         RuntimeAssert.True(Input.GetKey(KeyCode.A), "keycode check");
         RuntimeAssert.True(Input.GetKey("a"), "string check");
 
-        _keyboardControllerBase.OnLastUpdateActual();
         _keyboardControllerBase.MovieUpdate(false);
 
         RuntimeAssert.False(Input.GetKeyDown(KeyCode.A), "keycode down check");
@@ -53,13 +52,11 @@ public class LegacyInputSystemTests
         RuntimeAssert.True(Input.GetKey(KeyCode.A), "keycode 2 check");
         RuntimeAssert.True(Input.GetKey("a"), "string 2 check");
 
-        _keyboardControllerBase.OnLastUpdateActual();
         _keyboardControllerBase.MovieUpdate(false);
 
         RuntimeAssert.True(Input.GetKey(KeyCode.A), "keycode 3 check");
         RuntimeAssert.True(Input.GetKey("a"), "string 3 check");
 
-        _keyboardControllerBase.OnLastUpdateActual();
         _keyboardController.Release(_keyFactory.CreateKey(KeyCode.A));
         _keyboardControllerBase.MovieUpdate(false);
 
@@ -68,7 +65,6 @@ public class LegacyInputSystemTests
         RuntimeAssert.True(Input.GetKeyUp(KeyCode.A), "keycode up check");
         RuntimeAssert.True(Input.GetKeyUp("a"), "string up check");
 
-        _keyboardControllerBase.OnLastUpdateActual();
         _keyboardControllerBase.MovieUpdate(false);
 
         RuntimeAssert.False(Input.GetKeyUp(KeyCode.A), "keycode up check");
@@ -91,12 +87,10 @@ public class LegacyInputSystemTests
 
         RuntimeAssert.True(Input.GetKeyDown(KeyCode.A), "keycode down check 2");
 
-        _keyboardControllerBase.OnLastUpdateActual();
         _keyboardControllerBase.MovieUpdate(false);
 
         RuntimeAssert.False(Input.GetKeyDown(KeyCode.A), "keycode down check 3");
 
-        _keyboardControllerBase.OnLastUpdateActual();
         _keyboardControllerBase.MovieUpdate(true);
 
         RuntimeAssert.False(Input.GetKeyDown(KeyCode.A), "keycode down check 4");
@@ -115,7 +109,6 @@ public class LegacyInputSystemTests
 
         RuntimeAssert.True(Input.GetKeyDown(KeyCode.A), "keycode down check 1");
 
-        _keyboardControllerBase.OnLastUpdateActual();
         _keyboardControllerBase.MovieUpdate(true);
 
         RuntimeAssert.False(Input.GetKeyDown(KeyCode.A), "keycode down check 2");
@@ -131,27 +124,23 @@ public class LegacyInputSystemTests
 
         RuntimeAssert.False(Input.GetMouseButton(0), "check 1");
 
-        _mouseControllerBase.OnLastUpdateActual();
         _mouseController.HoldButton(MouseButton.Left);
         _mouseControllerBase.MovieUpdate(false);
 
         RuntimeAssert.True(Input.GetMouseButtonDown(0), "check 2");
         RuntimeAssert.True(Input.GetMouseButton(0), "check 3");
 
-        _mouseControllerBase.OnLastUpdateActual();
         _mouseControllerBase.MovieUpdate(false);
 
         RuntimeAssert.False(Input.GetMouseButtonDown(0), "check 4");
         RuntimeAssert.True(Input.GetMouseButton(0), "check 5");
 
-        _mouseControllerBase.OnLastUpdateActual();
         _mouseController.HoldButton(MouseButton.Middle);
         _mouseControllerBase.MovieUpdate(false);
 
         RuntimeAssert.True(Input.GetMouseButtonDown(2), "check 6");
         RuntimeAssert.True(Input.GetMouseButton(2), "check 7");
 
-        _mouseControllerBase.OnLastUpdateActual();
         _mouseController.ReleaseButton(MouseButton.Left);
         _mouseController.ReleaseButton(MouseButton.Middle);
         _mouseControllerBase.MovieUpdate(false);
@@ -161,7 +150,6 @@ public class LegacyInputSystemTests
         RuntimeAssert.True(Input.GetMouseButtonUp(0), "check 10");
         RuntimeAssert.True(Input.GetMouseButtonUp(2), "check 13");
 
-        _mouseControllerBase.OnLastUpdateActual();
         _mouseControllerBase.MovieUpdate(false);
 
         RuntimeAssert.False(Input.GetMouseButtonUp(0), "check 14");

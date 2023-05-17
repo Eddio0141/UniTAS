@@ -43,13 +43,11 @@ public class LegacyInputSystemButtonDeviceTests
         Assert.True(device.IsButtonDown("A"));
         Assert.False(device.IsButtonDown("B"));
 
-        device.OnLastUpdateActual();
         device.MovieUpdate(false);
 
         Assert.False(device.IsButtonDown("A"));
         Assert.False(device.IsButtonDown("B"));
 
-        device.OnLastUpdateActual();
         device.MovieUpdate(false);
 
         Assert.False(device.IsButtonDown("A"));
@@ -92,20 +90,17 @@ public class LegacyInputSystemButtonDeviceTests
         Assert.False(device.IsButtonUp("A"));
         Assert.False(device.IsButtonUp("B"));
 
-        device.OnLastUpdateActual();
         device.MovieUpdate(false);
 
         Assert.False(device.IsButtonUp("A"));
         Assert.False(device.IsButtonUp("B"));
 
-        device.OnLastUpdateActual();
         device.Release("A");
         device.MovieUpdate(false);
 
         Assert.True(device.IsButtonUp("A"));
         Assert.False(device.IsButtonUp("B"));
 
-        device.OnLastUpdateActual();
         device.MovieUpdate(false);
 
         Assert.False(device.IsButtonUp("A"));
