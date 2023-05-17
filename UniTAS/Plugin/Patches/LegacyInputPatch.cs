@@ -1,7 +1,6 @@
 using System;
 using System.Reflection;
 using HarmonyLib;
-using UniTAS.Plugin.Implementations.VirtualEnvironment;
 using UniTAS.Plugin.Interfaces.Patches.PatchTypes;
 using UniTAS.Plugin.Models.VirtualEnvironment;
 using UniTAS.Plugin.Services;
@@ -25,8 +24,8 @@ public class LegacyInputPatch
     private static readonly IPatchReverseInvoker ReverseInvoker =
         Plugin.Kernel.GetInstance<IPatchReverseInvoker>();
 
-    private static readonly VirtualEnvController VirtualEnvController =
-        Plugin.Kernel.GetInstance<VirtualEnvController>();
+    private static readonly IVirtualEnvController VirtualEnvController =
+        Plugin.Kernel.GetInstance<IVirtualEnvController>();
 
     private static readonly IKeyboardStateEnvLegacySystem KeyboardStateEnvLegacySystem =
         Plugin.Kernel.GetInstance<IKeyboardStateEnvLegacySystem>();
