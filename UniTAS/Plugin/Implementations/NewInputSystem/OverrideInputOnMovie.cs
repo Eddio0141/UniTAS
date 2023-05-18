@@ -7,6 +7,7 @@ using UniTAS.Plugin.Services.NewInputSystem;
 namespace UniTAS.Plugin.Implementations.NewInputSystem;
 
 [Singleton]
+[ForceInstantiate]
 public class OverrideInputOnMovie
 {
     private readonly IInputSystemOverride _inputSystemOverride;
@@ -15,14 +16,13 @@ public class OverrideInputOnMovie
         IMovieRunnerEvents movieEvents)
     {
         _inputSystemOverride = inputSystemOverride;
-        gameRestart.OnGameRestart += OnGameRestart;
+        gameRestart.OnGameRestartResume += OnGameRestartResume;
         movieEvents.OnMovieEnd += OnMovieEnd;
     }
 
-    private void OnGameRestart(DateTime startupTime, bool preSceneLoad)
+    private void OnGameRestartResume(DateTime startupTime, bool preMonoBehaviourResume)
     {
-        if (!preSceneLoad) return;
-
+        if (!preMonoBehaviourResume) return;
         _inputSystemOverride.Override = true;
     }
 
