@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### New input system support
 
-- Added new input system support
+- Added *very basic* new input system support
 - Added support for keyboard and mouse devices
 
 ### Old input system support
