@@ -128,18 +128,26 @@ public class MonoBehaviourPatch : PreloadPatcher
         "BepInEx"
     };
 
+    private static readonly string[] IncludeNamespaces =
+    {
+        "UnityEngine.AI"
+    };
+
     public override void Patch(ref AssemblyDefinition assembly)
     {
         var types = assembly.Modules.SelectMany(m => m.GetAllTypes());
         var pauseExecutionProperty = AccessTools.Property(typeof(MonoBehaviourController),
             nameof(MonoBehaviourController.PausedExecution)).GetGetMethod();
         var pauseExecutionReference = assembly.MainModule.ImportReference(pauseExecutionProperty);
+        var pausedUpdateProperty = AccessTools.Property(typeof(MonoBehaviourController),
+            nameof(MonoBehaviourController.PausedUpdate)).GetGetMethod();
+        var pausedUpdateReference = assembly.MainModule.ImportReference(pausedUpdateProperty);
 
         foreach (var type in types)
         {
             // check if type base is MonoBehaviour
             var isMonoBehaviour = false;
-            var baseType = type.BaseType?.Resolve();
+            var baseType = type.BaseType;
             while (baseType != null)
             {
                 if (baseType.FullName == "UnityEngine.MonoBehaviour")
@@ -148,13 +156,15 @@ public class MonoBehaviourPatch : PreloadPatcher
                     break;
                 }
 
-                baseType = baseType.BaseType?.Resolve();
+                baseType = baseType.DeclaringType;
             }
 
             if (!isMonoBehaviour) continue;
 
+            Patcher.Logger.LogDebug($"Patching MonoBehaviour type: {type.FullName}");
+
             // method invoke pause
-            if (!ExcludeNamespaces.Any(type.Namespace.StartsWith))
+            if (!ExcludeNamespaces.Any(type.Namespace.StartsWith) || IncludeNamespaces.Any(type.Namespace.StartsWith))
             {
                 foreach (var eventMethodPair in PauseEventMethods)
                 {
@@ -193,6 +203,19 @@ public class MonoBehaviourPatch : PreloadPatcher
             {
                 InvokeUnityEventMethod(type, eventMethodPair.Key, assembly, eventMethodPair.Value);
             }
+
+            // update skip check
+            var updateMethod = type.Methods.FirstOrDefault(m => m.Name == "Update" && !m.HasParameters);
+            if (updateMethod == null) continue;
+
+            var updateIl = updateMethod.Body.GetILProcessor();
+            var updateFirstInstruction = updateIl.Body.Instructions.First();
+
+            // return early check
+            updateIl.InsertBefore(updateFirstInstruction, updateIl.Create(OpCodes.Call, pausedUpdateReference));
+            updateIl.InsertBefore(updateFirstInstruction, updateIl.Create(OpCodes.Brfalse_S, updateFirstInstruction));
+            updateIl.InsertBefore(updateFirstInstruction, updateIl.Create(OpCodes.Ret));
+            Patcher.Logger.LogDebug("Patched Update method for skipping execution");
         }
     }
 

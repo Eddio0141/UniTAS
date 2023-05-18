@@ -1,8 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
-using UniTAS.Plugin.Interfaces.Events;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
+using UniTAS.Plugin.Interfaces.Events.Movie;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Services.VirtualEnvironment;
 using UnityEngine;

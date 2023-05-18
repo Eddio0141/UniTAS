@@ -1,15 +1,20 @@
+using System.Diagnostics.CodeAnalysis;
+using UniTAS.Plugin.Models.Movie;
+
 namespace UniTAS.Plugin.Tests.MovieRunner;
 
 public class ConfigTests
 {
     [Fact]
+    [SuppressMessage("ReSharper", "StringLiteralTypo")]
     public void ConfigFull()
     {
         const string input = @"
 MOVIE_CONFIG = {
     is_global_scope = false,
     frametime = 1/60,
-    start_time = ""03/28/2021 12:00:00""
+    start_time = ""03/28/2021 12:00:00"",
+    update_type = ""fixedupdate""
 }
 ";
 
@@ -18,6 +23,7 @@ MOVIE_CONFIG = {
         // 2021-03-28T12:00:00.0000000
         Assert.Equal(new(2021, 3, 28, 12, 0, 0, DateTimeKind.Utc), properties.StartupProperties.StartTime);
         Assert.Equal(1 / 60f, properties.StartupProperties.FrameTime);
+        Assert.Equal(UpdateType.FixedUpdate, properties.UpdateType);
     }
 
     [Fact]

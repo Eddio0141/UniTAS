@@ -17,11 +17,11 @@ public class GameSpeedUnlocker : IGameSpeedUnlocker
     public bool Unlock { get; private set; }
     private readonly ILogger _logger;
 
-    public GameSpeedUnlocker(ILogger logger, IMovieRunner movieRunner)
+    public GameSpeedUnlocker(ILogger logger, IMovieRunnerEvents movieEvents)
     {
         _logger = logger;
-        movieRunner.OnMovieStart += OnMovieStart;
-        movieRunner.OnMovieEnd += OnMovieEnd;
+        movieEvents.OnMovieStart += OnMovieStart;
+        movieEvents.OnMovieEnd += OnMovieEnd;
     }
 
     private void OnMovieStart()

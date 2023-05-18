@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using UniTAS.Plugin.Models.DependencyInjection;
 
 namespace UniTAS.Plugin.Interfaces.DependencyInjection;
@@ -12,5 +14,30 @@ public class RegisterAllAttribute : RegisterAttribute
 {
     public RegisterAllAttribute(RegisterPriority priority = RegisterPriority.Default) : base(priority)
     {
+    }
+
+    public override IEnumerable<RegisterInfoBase> GetRegisterInfos(Type type, Type[] allTypes, bool isTesting)
+    {
+        var types = type.IsInterface
+            ? allTypes.Where(x => x.GetInterfaces().Contains(type))
+            : allTypes.Where(x => x.IsSubclassOf(type) && !x.IsAbstract);
+
+        // if type is abstract, recursively register inner types
+        foreach (var innerType in types)
+        {
+            var innerTypeAttributes =
+                innerType.GetCustomAttributes(typeof(DependencyInjectionAttribute), true);
+            var excludeTesting = isTesting &&
+                                 innerTypeAttributes.Any(x => x is ExcludeRegisterIfTestingAttribute);
+            if (excludeTesting) continue;
+
+            yield return new RegisterAllInfo(type, innerType, this);
+
+            var innerRegisterInfos = GetRegisterInfos(innerType, allTypes, isTesting);
+            foreach (var innerRegisterInfo in innerRegisterInfos)
+            {
+                yield return innerRegisterInfo;
+            }
+        }
     }
 }

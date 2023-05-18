@@ -2,8 +2,8 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using UniTAS.Plugin.Exceptions.Movie.Runner;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
-using UniTAS.Plugin.Interfaces.Events;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
+using UniTAS.Plugin.Interfaces.Events.Movie;
 using UniTAS.Plugin.Models.DependencyInjection;
 using UniTAS.Plugin.Models.Movie;
 using UniTAS.Plugin.Services;
@@ -16,7 +16,7 @@ namespace UniTAS.Plugin.Implementations.Movie;
 
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 [Singleton(RegisterPriority.MovieRunner)]
-public class MovieRunner : IMovieRunner, IOnPreUpdatesActual
+public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvents
 {
     private readonly IGameRestart _gameRestart;
 
@@ -30,14 +30,18 @@ public class MovieRunner : IMovieRunner, IOnPreUpdatesActual
     private readonly ILogger _logger;
 
     private readonly IOnMovieRunningStatusChange[] _onMovieRunningStatusChange;
+    private readonly IOnMovieUpdate[] _onMovieUpdates;
 
     private readonly IVirtualEnvController _virtualEnvController;
     private readonly ITimeEnv _timeEnv;
     private readonly IRandomEnv _randomEnv;
 
+    public UpdateType UpdateType { get; set; }
+
     public MovieRunner(IGameRestart gameRestart, IMovieParser parser, IMovieLogger movieLogger,
         IOnMovieRunningStatusChange[] onMovieRunningStatusChange,
-        IVirtualEnvController virtualEnvController, ITimeEnv timeEnv, IRandomEnv randomEnv, ILogger logger)
+        IVirtualEnvController virtualEnvController, ITimeEnv timeEnv, IRandomEnv randomEnv, ILogger logger,
+        IOnMovieUpdate[] onMovieUpdates)
     {
         _gameRestart = gameRestart;
         _parser = parser;
@@ -47,6 +51,7 @@ public class MovieRunner : IMovieRunner, IOnPreUpdatesActual
         _timeEnv = timeEnv;
         _randomEnv = randomEnv;
         _logger = logger;
+        _onMovieUpdates = onMovieUpdates;
 
         _gameRestart.OnGameRestartResume += OnGameRestartResume;
     }
@@ -87,7 +92,8 @@ public class MovieRunner : IMovieRunner, IOnPreUpdatesActual
             _gameRestart.SoftRestart(properties.StartupProperties.StartTime);
         }
 
-        // TODO other stuff like save state load, hide cursor, etc
+        UpdateType = properties.UpdateType;
+        _logger.LogDebug($"set update type to {UpdateType}");
     }
 
     private void OnGameRestartResume(DateTime startupTime, bool preMonoBehaviourResume)
@@ -98,7 +104,7 @@ public class MovieRunner : IMovieRunner, IOnPreUpdatesActual
         MovieRunningStatusChange(true);
     }
 
-    public void PreUpdateActual()
+    public void InputUpdateActual(bool fixedUpdate, bool newInputSystemUpdate)
     {
         if (_cleanUp)
         {
@@ -109,11 +115,30 @@ public class MovieRunner : IMovieRunner, IOnPreUpdatesActual
 
         if (MovieEnd) return;
 
+        // skip if update type doesn't match current update type
+        if (UpdateType != UpdateType.Both &&
+            ((fixedUpdate && UpdateType != UpdateType.FixedUpdate) ||
+             (!fixedUpdate && UpdateType != UpdateType.Update))
+           )
+        {
+            RunUpdateEvents(fixedUpdate);
+            return;
+        }
+
         _engine.Update();
+        RunUpdateEvents(fixedUpdate);
 
         if (_engine.Finished)
         {
             AtMovieEnd();
+        }
+    }
+
+    private void RunUpdateEvents(bool fixedUpdate)
+    {
+        foreach (var onMovieUpdate in _onMovieUpdates)
+        {
+            onMovieUpdate.MovieUpdate(fixedUpdate);
         }
     }
 

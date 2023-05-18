@@ -1,8 +1,10 @@
+using System;
 using System.Diagnostics.CodeAnalysis;
 using MoonSharp.Interpreter;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
 using UniTAS.Plugin.Interfaces.Movie;
+using UniTAS.Plugin.Models.Movie;
 using UniTAS.Plugin.Services.Logging;
 using UniTAS.Plugin.Services.Movie;
 using UniTAS.Plugin.Services.VirtualEnvironment;
@@ -23,12 +25,12 @@ public class Env : EngineMethodClass, IOnLastUpdateActual
     private readonly bool _mobile = Application.platform is RuntimePlatform.Android or RuntimePlatform.IPhonePlayer;
 
     [MoonSharpHidden]
-    public Env(ITimeEnv timeEnv, IMovieLogger logger, IMovieRunner movieRunner)
+    public Env(ITimeEnv timeEnv, IMovieLogger logger, IMovieRunner movieRunner, IMovieRunnerEvents movieEvents)
     {
         _timeEnv = timeEnv;
         _logger = logger;
         _movieRunner = movieRunner;
-        _movieRunner.OnMovieStart += OnMovieStart;
+        movieEvents.OnMovieStart += OnMovieStart;
     }
 
     public double Fps
@@ -101,5 +103,21 @@ public class Env : EngineMethodClass, IOnLastUpdateActual
     {
         _lastTargetFrameRate = Application.targetFrameRate;
         _lastVSyncCount = QualitySettings.vSyncCount;
+    }
+
+    public void Update_type(string updateTypeRaw)
+    {
+        UpdateType updateType;
+        try
+        {
+            updateType = (UpdateType)Enum.Parse(typeof(UpdateType), updateTypeRaw, true);
+        }
+        catch (Exception)
+        {
+            _logger.LogWarning("Invalid update type, not changing");
+            return;
+        }
+
+        _movieRunner.UpdateType = updateType;
     }
 }

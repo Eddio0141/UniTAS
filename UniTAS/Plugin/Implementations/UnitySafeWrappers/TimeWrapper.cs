@@ -30,7 +30,6 @@ public class TimeWrapper : ITimeWrapper
     {
         get
         {
-            // TODO in the future this will be invoked with reverseInvoker
             if (_captureDeltaTime != null)
             {
                 // var value = _reverseInvoker.Invoke(() => _captureDeltaTime.GetValue(null, null));

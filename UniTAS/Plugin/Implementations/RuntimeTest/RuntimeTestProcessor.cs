@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using HarmonyLib;
 using StructureMap;
 using UniTAS.Plugin.Interfaces.Coroutine;
@@ -60,7 +61,11 @@ public class RuntimeTestProcessor : IRuntimeTestProcessor
             var typeName = test.DeclaringType?.Name ?? string.Empty;
             var testName = $"{typeName}.{test.Name}";
 
-            OnTestRun?.Invoke(testName);
+            // test run event unless return type is coroutine
+            if (!MethodHasTypeReturn<IEnumerator<CoroutineWait>>(test))
+            {
+                OnTestRun?.Invoke(testName);
+            }
 
             object ret;
             try
@@ -108,6 +113,8 @@ public class RuntimeTestProcessor : IRuntimeTestProcessor
 
         var coroutineStatus = _coroutine.Start(next.Item2);
         coroutineStatus.OnComplete += CoroutineTestEnd;
+
+        OnTestRun?.Invoke(_processingCoroutineName);
     }
 
     private void CoroutineTestEnd(CoroutineStatus status)
@@ -158,6 +165,28 @@ public class RuntimeTestProcessor : IRuntimeTestProcessor
             if (value is T valueT)
             {
                 retValue = valueT;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool MethodHasTypeReturn<T>(MethodInfo method)
+    {
+        var returnType = method.ReturnType;
+
+        if (returnType == typeof(T)) return true;
+        if (returnType.FullName == null ||
+            !returnType.FullName.StartsWith($"{typeof(Tuple<,>).Namespace}.Tuple`")) return false;
+
+        var fields = AccessTools.GetDeclaredFields(returnType);
+        foreach (var field in fields)
+        {
+            if (!field.Name.StartsWith("<Item")) continue;
+
+            if (field.FieldType == typeof(T))
+            {
                 return true;
             }
         }

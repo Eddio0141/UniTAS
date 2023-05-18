@@ -16,7 +16,7 @@ namespace UniTAS.Plugin;
 [BepInPlugin("dev.yuu0141.unitas.plugin", MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
 public class Plugin : BaseUnityPlugin
 {
-    public static readonly IContainer Kernel = ContainerRegister.Init();
+    public static IContainer Kernel;
 
     private static Plugin _instance;
 
@@ -35,8 +35,9 @@ public class Plugin : BaseUnityPlugin
     private void Awake()
     {
         if (_instance != null) return;
-        _instance = this;
         _logger = Logger;
+        _instance = this;
+        Kernel = ContainerRegister.Init();
 
         _logger.LogDebug($"Register info\n{Kernel.WhatDoIHave()}");
 

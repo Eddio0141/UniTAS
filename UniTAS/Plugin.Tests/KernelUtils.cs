@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using BepInEx.Configuration;
 using BepInEx.Logging;
 using MoonSharp.Interpreter;
 using StructureMap;
@@ -9,10 +8,12 @@ using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
 using UniTAS.Plugin.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Plugin.Interfaces.Movie;
 using UniTAS.Plugin.Models.DependencyInjection;
+using UniTAS.Plugin.Models.VirtualEnvironment;
 using UniTAS.Plugin.Services;
+using UniTAS.Plugin.Services.DependencyInjection;
 using UniTAS.Plugin.Services.Logging;
 using UniTAS.Plugin.Services.UnitySafeWrappers.Wrappers;
-using UniTAS.Plugin.Services.VirtualEnvironment.Input;
+using UniTAS.Plugin.Services.VirtualEnvironment.Input.LegacyInputSystem;
 using UnityEngine;
 
 namespace UniTAS.Plugin.Tests;
@@ -68,7 +69,6 @@ public static class KernelUtils
 #pragma warning restore 67
     }
 
-    [Singleton(IncludeDifferentAssembly = true)]
     [SuppressMessage("ReSharper", "UnusedType.Local")]
     public class FakeLogger : ILogger
     {
@@ -124,21 +124,42 @@ public static class KernelUtils
 
     [Singleton(IncludeDifferentAssembly = true)]
     [SuppressMessage("ReSharper", "UnassignedGetOnlyAutoProperty")]
-    public class DummyMouseEnv : IMouseStateEnv
+    public class DummyMouseEnvLegacySystem : IMouseStateEnvLegacySystem
     {
+        public bool AnyButtonDown { get; }
+        public bool AnyButtonHeld { get; }
         public bool MousePresent { get; }
-        public float XPos { get; set; }
-        public float YPos { get; set; }
-        public bool LeftClick { get; set; }
-        public bool LeftClickDown { get; }
-        public bool LeftClickUp { get; }
-        public bool RightClick { get; set; }
-        public bool RightClickDown { get; }
-        public bool RightClickUp { get; }
-        public bool MiddleClick { get; set; }
-        public bool MiddleClickDown { get; }
-        public bool MiddleClickUp { get; }
+        public Vector2 Position { get; set; }
         public Vector2 Scroll { get; set; }
+
+        public bool IsButtonHeld(MouseButton button)
+        {
+            return false;
+        }
+
+        public bool IsButtonDown(MouseButton button)
+        {
+            return false;
+        }
+
+        public bool IsButtonUp(MouseButton button)
+        {
+            return false;
+        }
+
+        public void HoldButton(MouseButton button)
+        {
+        }
+
+        public void ReleaseButton(MouseButton button)
+        {
+        }
+    }
+
+    [Register(IncludeDifferentAssembly = true)]
+    public class ConfigDummy : IConfig
+    {
+        public float DefaultFps { get; set; }
     }
 
     public static Container Init()
@@ -148,7 +169,8 @@ public static class KernelUtils
             c.ForSingletonOf<DiscoverAndRegister>().Use<DiscoverAndRegister>();
             c.For<IDiscoverAndRegister>().Use(x => x.GetInstance<DiscoverAndRegister>());
 
-            c.ForSingletonOf<ConfigFile>().Use(new ConfigFile("test", false));
+            c.ForSingletonOf<FakeLogger>().Use<FakeLogger>();
+            c.For<ILogger>().Use(x => x.GetInstance<FakeLogger>());
         });
 
         kernel.Configure(c =>
@@ -156,6 +178,10 @@ public static class KernelUtils
             kernel.GetInstance<IDiscoverAndRegister>().Register<FakeStaticFieldStorage>(c);
             kernel.GetInstance<IDiscoverAndRegister>().Register<PluginWrapper>(c);
         });
+
+        var forceInstantiateTypes = kernel.GetInstance<IForceInstantiateTypes>();
+        forceInstantiateTypes.InstantiateTypes<PluginWrapper>();
+        forceInstantiateTypes.InstantiateTypes<DummyMouseEnvLegacySystem>();
 
         return kernel;
     }

@@ -25,10 +25,11 @@ public partial class MovieParser
         var configTable = configValue.Table;
 
         var properties = new PropertiesModel(new(
-            GetStartTime(configTable),
-            GetFrameTime(configTable),
-            GetSeed(configTable)
-        ));
+                GetStartTime(configTable),
+                GetFrameTime(configTable),
+                GetSeed(configTable)
+            ),
+            GetUpdateType(configTable));
 
         return Tuple.New(IsGlobalScope(configTable), properties);
     }
@@ -105,11 +106,39 @@ public partial class MovieParser
         var valueParsed = selectedValue.CastToNumber();
         if (valueParsed is null)
         {
-            _logger.LogWarning($"Could not parse seed as a number, using default value of 0");
+            _logger.LogWarning("Could not parse seed as a number, using default value of 0");
             return 0;
         }
 
         return (long)valueParsed.Value;
+    }
+
+    private UpdateType GetUpdateType(Table table)
+    {
+        var selectedValue = table.Get("update_type");
+        const UpdateType fallback = UpdateType.Update;
+
+        var valueParsed = selectedValue.CastToString();
+        if (valueParsed is null)
+        {
+            _logger.LogWarning(
+                $"Could not parse update_type as a string, using default value of {fallback}");
+            return fallback;
+        }
+
+        UpdateType updateType;
+        try
+        {
+            updateType = (UpdateType)Enum.Parse(typeof(UpdateType), valueParsed, true);
+        }
+        catch (Exception)
+        {
+            _logger.LogWarning(
+                $"Could not parse update_type as a valid variant, using default value of {fallback}");
+            return fallback;
+        }
+
+        return updateType;
     }
 
     private Tuple<DynValue, string> SelectAndWarnConflictingVariables(Table table, List<string> variables)

@@ -4,6 +4,7 @@ using System.IO;
 using System.Reflection;
 using HarmonyLib;
 using UniTAS.Plugin.Interfaces.Patches.PatchTypes;
+using UniTAS.Plugin.Services.Logging;
 using UniTAS.Plugin.Services.UnityAsyncOperationTracker;
 using UniTAS.Plugin.Utils;
 using UnityEngine;
@@ -29,6 +30,8 @@ public class AsyncOperationPatch
 
     private static readonly IAssetBundleRequestTracker AssetBundleRequestTracker =
         Plugin.Kernel.GetInstance<IAssetBundleRequestTracker>();
+
+    private static readonly ILogger Logger = Plugin.Kernel.GetInstance<ILogger>();
 
     [HarmonyPatch(typeof(AsyncOperation), "allowSceneActivation", MethodType.Setter)]
     private class SetAllowSceneActivation
@@ -60,7 +63,20 @@ public class AsyncOperationPatch
         }
     }
 
-    // TODO probably good idea to override priority
+    [HarmonyPatch(typeof(AsyncOperation), nameof(AsyncOperation.priority), MethodType.Setter)]
+    private class prioritySetter
+    {
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static bool Prefix(int value, ref AsyncOperation __instance)
+        {
+            Logger.LogDebug($"Priority set to {value} for instance hash {__instance.GetHashCode()}, skipping");
+            return false;
+        }
+    }
 
     [HarmonyPatch(typeof(AsyncOperation), nameof(AsyncOperation.progress), MethodType.Getter)]
     private class progress
@@ -116,12 +132,14 @@ public class AsyncOperationPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix(string path, uint crc, ulong offset, ref object __result)
+        private static readonly MethodInfo _loadFromFile_Internal = AccessTools.Method(typeof(AssetBundle),
+            "LoadFromFile_Internal",
+            new[] { typeof(string), typeof(uint), typeof(ulong) });
+
+        private static bool Prefix(string path, uint crc, ulong offset, ref AssetBundleCreateRequest __result)
         {
             // LoadFromFile fails with null return if operation fails, __result.assetBundle will also reflect that if async load fails too
-            var loadFromFile_Internal = Traverse.Create(typeof(AssetBundle)).Method("LoadFromFile_Internal",
-                new[] { typeof(string), typeof(uint), typeof(ulong) });
-            var loadResult = loadFromFile_Internal.GetValue(path, crc, offset);
+            var loadResult = _loadFromFile_Internal.Invoke(null, new object[] { path, crc, offset });
             // create a new instance
             __result = new();
             AssetBundleCreateRequestTracker.NewAssetBundleCreateRequest(__result, loadResult);
@@ -138,7 +156,7 @@ public class AsyncOperationPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix(byte[] binary, uint crc, ref object __result)
+        private static bool Prefix(byte[] binary, uint crc, ref AssetBundleCreateRequest __result)
         {
             var loadFromMemory_Internal = Traverse.Create(typeof(AssetBundle))
                 .Method("LoadFromMemory_Internal", new[] { typeof(byte[]), typeof(uint) });
@@ -158,7 +176,8 @@ public class AsyncOperationPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix(Stream stream, uint crc, uint managedReadBufferSize, ref object __result)
+        private static bool Prefix(Stream stream, uint crc, uint managedReadBufferSize,
+            ref AssetBundleCreateRequest __result)
         {
             var loadFromStreamInternal = Traverse.Create(typeof(AssetBundle)).Method("LoadFromStreamInternal",
                 new[] { typeof(Stream), typeof(uint), typeof(uint) });
@@ -178,11 +197,13 @@ public class AsyncOperationPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix(string name, Type type, ref object __result)
+        private static readonly MethodBase _loadAssetInternal = AccessTools.Method(typeof(AssetBundle),
+            "LoadAsset_Internal",
+            new[] { typeof(string), typeof(Type) });
+
+        private static bool Prefix(AssetBundle __instance, string name, Type type, ref AssetBundleRequest __result)
         {
-            var loadAsset_Internal = Traverse.Create(typeof(AssetBundle))
-                .Method("LoadAsset_Internal", new[] { typeof(string), typeof(Type) });
-            var loadResult = loadAsset_Internal.GetValue(name, type);
+            var loadResult = _loadAssetInternal.Invoke(__instance, new object[] { name, type });
             __result = new();
             AssetBundleRequestTracker.NewAssetBundleRequest(__result, loadResult);
             return false;
@@ -198,11 +219,13 @@ public class AsyncOperationPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix(string name, Type type, ref object __result)
+        private static readonly MethodBase _loadAssetWithSubAssetsInternal = AccessTools.Method(typeof(AssetBundle),
+            "LoadAssetWithSubAssets_Internal",
+            new[] { typeof(string), typeof(Type) });
+
+        private static bool Prefix(AssetBundle __instance, string name, Type type, ref AssetBundleRequest __result)
         {
-            var loadAssetWithSubAssets_Internal = Traverse.Create(typeof(AssetBundle))
-                .Method("LoadAssetWithSubAssets_Internal", new[] { typeof(string), typeof(Type) });
-            var loadResult = loadAssetWithSubAssets_Internal.GetValue(name, type);
+            var loadResult = _loadAssetWithSubAssetsInternal.Invoke(__instance, new object[] { name, type });
             __result = new();
             AssetBundleRequestTracker.NewAssetBundleRequestMultiple(__result, loadResult);
             return false;
@@ -268,7 +291,7 @@ public class AsyncOperationPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix(AssetBundleCreateRequest __instance, ref object __result)
+        private static bool Prefix(AssetBundleCreateRequest __instance, ref AssetBundle __result)
         {
             __result = AssetBundleCreateRequestTracker.GetAssetBundleCreateRequest(__instance);
             return __result == null;

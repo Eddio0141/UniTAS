@@ -23,7 +23,9 @@ public class MonoBehEventInvoker : IMonoBehEventInvoker, IUpdateEvents
         IEnumerable<IOnPreUpdatesActual> onPreUpdatesActual,
         IEnumerable<IOnFixedUpdateActual> onFixedUpdatesActual,
         IEnumerable<IOnStartActual> onStartsActual,
-        IEnumerable<IOnUpdateActual> onUpdatesActual)
+        IEnumerable<IOnUpdateActual> onUpdatesActual,
+        IEnumerable<IOnInputUpdateActual> onInputUpdatesActual,
+        IEnumerable<IOnInputUpdateUnconditional> onInputUpdatesUnconditional)
     {
         foreach (var onAwake in onAwakesUnconditional)
         {
@@ -80,7 +82,17 @@ public class MonoBehEventInvoker : IMonoBehEventInvoker, IUpdateEvents
             MonoBehaviourEvents.OnUpdateActual += onUpdateActual.UpdateActual;
         }
 
-        MonoBehaviourEvents.OnGUIUnconditional += () => OnGUIEventUnconditional?.Invoke();
+        foreach (var onInputUpdateActual in onInputUpdatesActual)
+        {
+            InputSystemEvents.OnInputUpdateActual += (fixedUpdate, newInputSystemUpdateFixedUpdate) =>
+                onInputUpdateActual.InputUpdateActual(fixedUpdate, newInputSystemUpdateFixedUpdate);
+        }
+
+        foreach (var onInputUpdateUnconditional in onInputUpdatesUnconditional)
+        {
+            InputSystemEvents.OnInputUpdateUnconditional += (fixedUpdate, newInputSystemUpdateFixedUpdate) =>
+                onInputUpdateUnconditional.InputUpdateUnconditional(fixedUpdate, newInputSystemUpdateFixedUpdate);
+        }
     }
 
     public void Update()
@@ -103,5 +115,15 @@ public class MonoBehEventInvoker : IMonoBehEventInvoker, IUpdateEvents
         MonoBehaviourEvents.InvokeLateUpdate();
     }
 
-    public event Action OnGUIEventUnconditional;
+    public event Action OnGUIEventUnconditional
+    {
+        add => MonoBehaviourEvents.OnGUIUnconditional += value;
+        remove => MonoBehaviourEvents.OnGUIUnconditional -= value;
+    }
+
+    public event InputSystemEvents.InputUpdateCall OnInputUpdateActual
+    {
+        add => InputSystemEvents.OnInputUpdateActual += value;
+        remove => InputSystemEvents.OnInputUpdateActual -= value;
+    }
 }

@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using MoonSharp.Interpreter;
 using UniTAS.Plugin.Interfaces.Movie;
+using UniTAS.Plugin.Models.VirtualEnvironment;
 using UniTAS.Plugin.Services.VirtualEnvironment.Input;
 
 namespace UniTAS.Plugin.Implementations.Movie.Engine.Modules;
@@ -9,43 +10,62 @@ namespace UniTAS.Plugin.Implementations.Movie.Engine.Modules;
 [SuppressMessage("ReSharper", "UnusedMember.Global")]
 public class Mouse : EngineMethodClass
 {
-    private readonly IMouseStateEnv _mouseStateEnv;
+    private readonly IMouseStateEnvController _mouseController;
 
     [MoonSharpHidden]
-    public Mouse(IMouseStateEnv mouseStateEnv)
+    public Mouse(IMouseStateEnvController mouseController)
     {
-        _mouseStateEnv = mouseStateEnv;
+        _mouseController = mouseController;
     }
 
     public void Move(float x, float y)
     {
-        _mouseStateEnv.XPos = x;
-        _mouseStateEnv.YPos = y;
+        _mouseController.SetPosition(new(x, y));
     }
 
     public void Move_rel(float x, float y)
     {
-        _mouseStateEnv.XPos += x;
-        _mouseStateEnv.YPos += y;
+        _mouseController.SetPositionRelative(new(x, y));
     }
 
     public void Left(bool hold = true)
     {
-        _mouseStateEnv.LeftClick = hold;
+        if (hold)
+        {
+            _mouseController.HoldButton(MouseButton.Left);
+        }
+        else
+        {
+            _mouseController.ReleaseButton(MouseButton.Left);
+        }
     }
 
     public void Right(bool hold = true)
     {
-        _mouseStateEnv.RightClick = hold;
+        if (hold)
+        {
+            _mouseController.HoldButton(MouseButton.Right);
+        }
+        else
+        {
+            _mouseController.ReleaseButton(MouseButton.Right);
+        }
     }
 
     public void Middle(bool hold = true)
     {
-        _mouseStateEnv.MiddleClick = hold;
+        if (hold)
+        {
+            _mouseController.HoldButton(MouseButton.Middle);
+        }
+        else
+        {
+            _mouseController.ReleaseButton(MouseButton.Middle);
+        }
     }
 
     public void Set_scroll(float x, float y)
     {
-        _mouseStateEnv.Scroll = new(x, y);
+        _mouseController.SetScroll(new(x, y));
     }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+﻿using UniTAS.Plugin.Models.Movie;
 
 namespace UniTAS.Plugin.Services.Movie;
 
@@ -8,6 +8,5 @@ public interface IMovieRunner
 
     void RunFromInput(string input);
 
-    event Action OnMovieStart;
-    event Action OnMovieEnd;
+    UpdateType UpdateType { set; }
 }

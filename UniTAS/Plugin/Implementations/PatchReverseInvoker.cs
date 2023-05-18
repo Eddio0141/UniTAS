@@ -32,13 +32,15 @@ public class PatchReverseInvoker : IPatchReverseInvoker
 
     public void Return()
     {
-        if (_depth == 1)
+        switch (_depth)
         {
-            _logger.LogError($"Something went wrong returning from reverse invoking, {new StackTrace()}");
-            return;
+            case 1:
+                _logger.LogError($"Something went wrong returning from reverse invoking, {new StackTrace()}");
+                return;
+            case > 0:
+                _depth--;
+                break;
         }
-
-        _depth--;
     }
 
     public void Invoke(Action method)

@@ -44,10 +44,13 @@ public static class Tracker
     }
     */
 
-    internal static readonly List<Type> StaticCtorInvokeOrder = new();
-
     /// <summary>
     /// Contains the order in which static constructors were invoked.
     /// </summary>
-    public static List<Type> StaticCtorInvokeOrderList => StaticCtorInvokeOrder;
+    public static readonly List<Type> StaticCtorInvokeOrder = new();
+
+    /// <summary>
+    /// Contains all static fields so far found.
+    /// </summary>
+    public static readonly List<FieldInfo> StaticFields = new();
 }

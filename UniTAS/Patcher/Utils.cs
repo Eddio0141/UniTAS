@@ -27,7 +27,14 @@ public static class Utils
         "MonoMod.*",
         "0Harmony",
         "HarmonyXInterop",
-        "StructureMap"
+        "StructureMap",
+        "Newtonsoft.Json"
+    };
+
+    private static readonly string[] AssemblyIncludeRaw =
+    {
+        "Unity.InputSystem",
+        "UnityEngine.InputModule"
     };
 
     public static IEnumerable<string> AllTargetDllsWithGenericExclusions =>
@@ -36,6 +43,7 @@ public static class Utils
             {
                 var fileWithoutExtension = Path.GetFileNameWithoutExtension(x);
                 return fileWithoutExtension == null ||
+                       AssemblyIncludeRaw.Any(a => fileWithoutExtension.Like(a)) ||
                        !AssemblyExclusionsRaw.Any(a => fileWithoutExtension.Like(a));
             })
             // isolate the filename

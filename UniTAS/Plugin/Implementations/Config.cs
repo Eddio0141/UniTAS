@@ -5,6 +5,7 @@ using UniTAS.Plugin.Services;
 namespace UniTAS.Plugin.Implementations;
 
 [Singleton]
+[ExcludeRegisterIfTesting]
 public class Config : IConfig
 {
     private readonly ConfigEntry<float> _defaultFps;
