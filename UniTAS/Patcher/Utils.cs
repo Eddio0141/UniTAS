@@ -33,7 +33,8 @@ public static class Utils
 
     private static readonly string[] AssemblyIncludeRaw =
     {
-        "Unity.InputSystem"
+        "Unity.InputSystem",
+        "UnityEngine.InputModule"
     };
 
     public static IEnumerable<string> AllTargetDllsWithGenericExclusions =>

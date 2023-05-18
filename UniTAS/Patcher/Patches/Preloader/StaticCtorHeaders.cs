@@ -40,7 +40,8 @@ public class StaticCtorHeaders : PreloadPatcher
 
     private readonly string[] _assemblyEnforceRaw =
     {
-        "Unity.InputSystem"
+        "Unity.InputSystem",
+        "UnityEngine.InputModule"
     };
 
     public override IEnumerable<string> TargetDLLs => Utils.AllTargetDllsWithGenericExclusions;
