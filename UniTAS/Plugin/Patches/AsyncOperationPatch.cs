@@ -118,9 +118,10 @@ public class AsyncOperationPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static void Prefix(AsyncOperation __instance)
+        private static bool Prefix(AsyncOperation __instance)
         {
-            SceneLoadTracker.AsyncOperationDestruction(__instance);
+            var instanceTraverse = new Traverse(__instance).Field("m_Ptr");
+            return instanceTraverse.GetValue<IntPtr>() != IntPtr.Zero;
         }
     }
 
@@ -211,7 +212,7 @@ public class AsyncOperationPatch
 
         private static bool Prefix(AssetBundle __instance, string name, Type type, ref AssetBundleRequest __result)
         {
-            var loadResult = _loadAssetInternal.Invoke(__instance, new object[] { name, type }) as AssetBundleRequest;
+            var loadResult = _loadAssetInternal.Invoke(__instance, new object[] { name, type }) as Object;
             __result = new();
             AssetBundleRequestTracker.NewAssetBundleRequest(__result, loadResult);
             return false;
