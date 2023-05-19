@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
@@ -8,6 +9,7 @@ using UniTAS.Plugin.Services.Logging;
 using UniTAS.Plugin.Services.UnityAsyncOperationTracker;
 using UniTAS.Plugin.Utils;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace UniTAS.Plugin.Patches;
 
@@ -139,7 +141,7 @@ public class AsyncOperationPatch
         private static bool Prefix(string path, uint crc, ulong offset, ref AssetBundleCreateRequest __result)
         {
             // LoadFromFile fails with null return if operation fails, __result.assetBundle will also reflect that if async load fails too
-            var loadResult = _loadFromFile_Internal.Invoke(null, new object[] { path, crc, offset });
+            var loadResult = _loadFromFile_Internal.Invoke(null, new object[] { path, crc, offset }) as AssetBundle;
             // create a new instance
             __result = new();
             AssetBundleCreateRequestTracker.NewAssetBundleCreateRequest(__result, loadResult);
@@ -156,11 +158,13 @@ public class AsyncOperationPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
+        private static readonly MethodBase _loadFromMemoryInternal = AccessTools.Method(typeof(AssetBundle),
+            "LoadFromMemory_Internal",
+            new[] { typeof(byte[]), typeof(uint) });
+
         private static bool Prefix(byte[] binary, uint crc, ref AssetBundleCreateRequest __result)
         {
-            var loadFromMemory_Internal = Traverse.Create(typeof(AssetBundle))
-                .Method("LoadFromMemory_Internal", new[] { typeof(byte[]), typeof(uint) });
-            var loadResult = loadFromMemory_Internal.GetValue(binary, crc);
+            var loadResult = _loadFromMemoryInternal.Invoke(null, new object[] { binary, crc }) as AssetBundle;
             __result = new();
             AssetBundleCreateRequestTracker.NewAssetBundleCreateRequest(__result, loadResult);
             return false;
@@ -176,12 +180,16 @@ public class AsyncOperationPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
+        private static readonly MethodBase _loadFromStreamInternal = AccessTools.Method(typeof(AssetBundle),
+            "LoadFromStreamInternal",
+            new[] { typeof(Stream), typeof(uint), typeof(uint) });
+
         private static bool Prefix(Stream stream, uint crc, uint managedReadBufferSize,
             ref AssetBundleCreateRequest __result)
         {
-            var loadFromStreamInternal = Traverse.Create(typeof(AssetBundle)).Method("LoadFromStreamInternal",
-                new[] { typeof(Stream), typeof(uint), typeof(uint) });
-            var loadResult = loadFromStreamInternal.GetValue(stream, crc, managedReadBufferSize);
+            var loadResult =
+                _loadFromStreamInternal.Invoke(null, new object[] { stream, crc, managedReadBufferSize }) as
+                    AssetBundle;
             __result = new();
             AssetBundleCreateRequestTracker.NewAssetBundleCreateRequest(__result, loadResult);
             return false;
@@ -203,7 +211,7 @@ public class AsyncOperationPatch
 
         private static bool Prefix(AssetBundle __instance, string name, Type type, ref AssetBundleRequest __result)
         {
-            var loadResult = _loadAssetInternal.Invoke(__instance, new object[] { name, type });
+            var loadResult = _loadAssetInternal.Invoke(__instance, new object[] { name, type }) as AssetBundleRequest;
             __result = new();
             AssetBundleRequestTracker.NewAssetBundleRequest(__result, loadResult);
             return false;
@@ -225,7 +233,8 @@ public class AsyncOperationPatch
 
         private static bool Prefix(AssetBundle __instance, string name, Type type, ref AssetBundleRequest __result)
         {
-            var loadResult = _loadAssetWithSubAssetsInternal.Invoke(__instance, new object[] { name, type });
+            var loadResult =
+                _loadAssetWithSubAssetsInternal.Invoke(__instance, new object[] { name, type }) as Object[];
             __result = new();
             AssetBundleRequestTracker.NewAssetBundleRequestMultiple(__result, loadResult);
             return false;
@@ -240,11 +249,13 @@ public class AsyncOperationPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
+        private static readonly MethodBase _unload =
+            AccessTools.Method(typeof(AssetBundle), "Unload", new[] { typeof(bool) });
+
         private static bool Prefix(bool unloadAllLoadedObjects, ref object __result)
         {
-            var unload = Traverse.Create(typeof(AssetBundle)).Method("Unload", new[] { typeof(bool) });
-            _ = unload.GetValue(unloadAllLoadedObjects);
-            __result = AccessTools.CreateInstance(_assetBundleUnloadOperation);
+            _unload.Invoke(null, new object[] { unloadAllLoadedObjects });
+            __result = AccessTools.CreateInstance(typeof(AssetBundle));
             return false;
         }
     }
@@ -315,6 +326,20 @@ public class AsyncOperationPatch
             _ = resultTraverse.Field("m_Path").SetValue(path);
             _ = resultTraverse.Field("m_Type").SetValue(type);
             return false;
+        }
+    }
+
+    [HarmonyPatch(typeof(AsyncOperation), "InvokeCompletionEvent")]
+    private class Test
+    {
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static void Prefix()
+        {
+            Plugin.Log.LogDebug($"AsyncOperation.InvokeCompletionEvent, {new StackTrace()}");
         }
     }
 }

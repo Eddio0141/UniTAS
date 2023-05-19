@@ -4,6 +4,6 @@ namespace UniTAS.Plugin.Services.UnityAsyncOperationTracker;
 
 public interface IAssetBundleCreateRequestTracker
 {
-    void NewAssetBundleCreateRequest(object asyncOperation, object assetBundle);
-    AssetBundle GetAssetBundleCreateRequest(object asyncOperation);
+    void NewAssetBundleCreateRequest(AsyncOperation asyncOperation, AssetBundle assetBundle);
+    AssetBundle GetAssetBundleCreateRequest(AsyncOperation asyncOperation);
 }

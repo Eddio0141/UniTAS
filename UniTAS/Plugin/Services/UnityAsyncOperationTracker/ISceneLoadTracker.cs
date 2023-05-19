@@ -1,13 +1,14 @@
 using UniTAS.Plugin.Models.UnitySafeWrappers.SceneManagement;
+using UnityEngine;
 
 namespace UniTAS.Plugin.Services.UnityAsyncOperationTracker;
 
 public interface ISceneLoadTracker
 {
     void AsyncSceneLoad(string sceneName, int sceneBuildIndex, LoadSceneMode loadSceneMode,
-        LocalPhysicsMode localPhysicsMode, object asyncOperation);
+        LocalPhysicsMode localPhysicsMode, AsyncOperation asyncOperation);
 
-    void AllowSceneActivation(bool allow, object asyncOperation);
-    void AsyncOperationDestruction(object asyncOperation);
-    bool IsStalling(object asyncOperation);
+    void AllowSceneActivation(bool allow, AsyncOperation asyncOperation);
+    void AsyncOperationDestruction(AsyncOperation asyncOperation);
+    bool IsStalling(AsyncOperation asyncOperation);
 }
