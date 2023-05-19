@@ -74,7 +74,7 @@ public class SceneManagerWrapper : ISceneWrapper
     public void LoadSceneAsync(string sceneName, int sceneBuildIndex, LoadSceneMode loadSceneMode,
         LocalPhysicsMode localPhysicsMode, bool mustCompleteNextFrame)
     {
-        if (_loadSceneAsyncNameIndexInternalInjected != null)
+        if (_loadSceneAsyncNameIndexInternalInjected != null && _loadSceneParametersType != null)
         {
             var instance = _unityInstanceWrapFactory.CreateNew<LoadSceneParametersWrapper>();
             instance.LoadSceneMode = loadSceneMode;
@@ -86,11 +86,9 @@ public class SceneManagerWrapper : ISceneWrapper
 
         if (_loadSceneAsyncNameIndexInternal != null)
         {
-            var instance = _unityInstanceWrapFactory.CreateNew<LoadSceneParametersWrapper>();
-            instance.LoadSceneMode = loadSceneMode;
-            instance.LocalPhysicsMode = localPhysicsMode;
             _loadSceneAsyncNameIndexInternal?.Invoke(null,
-                new[] { sceneName, sceneBuildIndex, instance.Instance, mustCompleteNextFrame });
+                new object[]
+                    { sceneName, sceneBuildIndex, loadSceneMode == LoadSceneMode.Additive, mustCompleteNextFrame });
             return;
         }
 
