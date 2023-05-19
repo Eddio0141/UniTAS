@@ -137,7 +137,7 @@ public class SceneManagerWrapper : ISceneWrapper
             {
                 var sceneWrapInstance =
                     _unityInstanceWrapFactory.Create<SceneWrapper>(_getActiveScene.Invoke(null, null));
-                return sceneWrapInstance.BuildIndex;
+                return sceneWrapInstance.BuildIndex ?? Application.loadedLevel;
             }
 
             return Application.loadedLevel;
