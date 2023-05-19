@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using UniTAS.Plugin.Interfaces.DependencyInjection;
@@ -104,8 +103,6 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         }
         else
         {
-            _logger.LogDebug(
-                $"test, {asyncOperation.GetHashCode()}, all async: {string.Join(", ", _asyncLoads.Select(x => x.AsyncOperationInstance.GetHashCode().ToString()).ToArray())}");
             var asyncSceneLoad = _asyncLoads.Find(x => ReferenceEquals(x.AsyncOperationInstance, asyncOperation));
             if (asyncSceneLoad == null) return;
             _asyncLoads.Remove(asyncSceneLoad);
@@ -116,8 +113,6 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
 
     public bool IsStalling(AsyncOperation asyncOperation)
     {
-        _logger.LogDebug(
-            $"IsStalling, {asyncOperation.GetHashCode()}, all async stalls: {string.Join(", ", _asyncLoadStalls.Select(x => x.AsyncOperationInstance.GetHashCode().ToString()).ToArray())}");
         return _asyncLoadStalls.Exists(x => ReferenceEquals(x.AsyncOperationInstance, asyncOperation));
     }
 
