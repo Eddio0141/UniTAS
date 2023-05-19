@@ -45,6 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed static fields not being reset all at once
 - Fixed not being able to call some async methods in AssetBundle
 - Fixed UniTAS not patching AsyncOperation classes if SceneManagerAPIInternal isn't found
+- Fixed AsyncOperation's OnComplete being not called at the right timing
 
 # [v0.3.0] - 2023-04-10
 
