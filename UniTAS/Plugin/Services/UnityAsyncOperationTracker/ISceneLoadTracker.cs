@@ -9,6 +9,5 @@ public interface ISceneLoadTracker
         LocalPhysicsMode localPhysicsMode, AsyncOperation asyncOperation);
 
     void AllowSceneActivation(bool allow, AsyncOperation asyncOperation);
-    void AsyncOperationDestruction(AsyncOperation asyncOperation);
     bool IsStalling(AsyncOperation asyncOperation);
 }
