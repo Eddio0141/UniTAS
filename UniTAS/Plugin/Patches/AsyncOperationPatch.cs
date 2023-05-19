@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
@@ -344,20 +343,6 @@ public class AsyncOperationPatch
             _ = resultTraverse.Field("m_Path").SetValue(path);
             _ = resultTraverse.Field("m_Type").SetValue(type);
             return false;
-        }
-    }
-
-    [HarmonyPatch(typeof(AsyncOperation), "InvokeCompletionEvent")]
-    private class Test
-    {
-        private static Exception Cleanup(MethodBase original, Exception ex)
-        {
-            return PatchHelper.CleanupIgnoreFail(original, ex);
-        }
-
-        private static void Prefix()
-        {
-            Plugin.Log.LogDebug($"AsyncOperation.InvokeCompletionEvent, {new StackTrace()}");
         }
     }
 }
