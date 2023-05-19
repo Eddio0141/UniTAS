@@ -49,6 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### UniTAS internal
 - Fixed UniTAS not patching AsyncOperation classes if SceneManagerAPIInternal isn't found
 - Fixed UniTAS's wrapped classes not handling the case of the original wrapped type being null
+- Fixed not resolving monobehaviour types more than 1 parent
 
 # [v0.3.0] - 2023-04-10
 
