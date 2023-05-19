@@ -33,7 +33,24 @@ public class AsyncOperationPatch
     private static readonly IAssetBundleRequestTracker AssetBundleRequestTracker =
         Plugin.Kernel.GetInstance<IAssetBundleRequestTracker>();
 
+    private static readonly IAsyncOperationIsInvokingOnComplete AsyncOperationIsInvokingOnComplete =
+        Plugin.Kernel.GetInstance<IAsyncOperationIsInvokingOnComplete>();
+
     private static readonly ILogger Logger = Plugin.Kernel.GetInstance<ILogger>();
+
+    [HarmonyPatch(typeof(AsyncOperation), "InvokeCompletionEvent")]
+    private class InvokeCompletionEvent
+    {
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static bool Prefix()
+        {
+            return AsyncOperationIsInvokingOnComplete.IsInvokingOnComplete;
+        }
+    }
 
     [HarmonyPatch(typeof(AsyncOperation), "allowSceneActivation", MethodType.Setter)]
     private class SetAllowSceneActivation
