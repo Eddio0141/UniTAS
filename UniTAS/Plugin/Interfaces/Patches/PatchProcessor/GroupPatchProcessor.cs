@@ -25,12 +25,12 @@ public abstract class GroupPatchProcessor : PatchProcessor
     public override IEnumerable<KeyValuePair<int, Type>> ProcessModules()
     {
         // TODO replace this later
-        var pluginAssembly = typeof(Plugin).Assembly;
+        var pluginTypes = AccessTools.GetTypesFromAssembly(typeof(Plugin).Assembly);
 
         // list of patch groups, patch group attributes, and PatchTypes for each modules
         var patchGroupsAttributesAndPatchType =
             new List<KeyValuePair<KeyValuePair<Type[], PatchGroup[]>, ModulePatchType>>();
-        foreach (var type in pluginAssembly.GetTypes())
+        foreach (var type in pluginTypes)
         {
             var attributes = type.GetCustomAttributes(TargetPatchType, false);
             if (attributes.Length == 0) continue;
