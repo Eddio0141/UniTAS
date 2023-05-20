@@ -56,22 +56,7 @@ public static class InputSystemEvents
         _inputUpdateFixedUpdate = () => InputUpdate(true, false);
         MonoBehaviourEvents.OnFixedUpdateActual += _inputUpdateFixedUpdate;
 
-        var hasInputSystem = false;
-        try
-        {
-            if (Mouse.current != null)
-            {
-                // check dummy
-            }
-
-            hasInputSystem = true;
-        }
-        catch (Exception)
-        {
-            // ignored
-        }
-
-        if (!hasInputSystem) return;
+        if (!NewInputSystemState.NewInputSystemExists) return;
 
         InputSystemChangeUpdate(InputSystem.settings.updateMode);
     }
