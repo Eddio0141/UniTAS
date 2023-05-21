@@ -62,9 +62,14 @@ public class SceneManagerWrapper : ISceneWrapper
         _applicationLoadLevelAsync = AccessTools.TypeByName("UnityEngine.Application")?.GetMethod("LoadLevelAsync",
             AccessTools.all, null, new[] { typeof(string), typeof(int), typeof(bool), typeof(bool) }, null);
 
-        _loadSceneAsyncNameIndexInternalInjected = _sceneManagerAPIInternal?.GetMethod(
-            "LoadSceneAsyncNameIndexInternal_Injected", AccessTools.all,
-            null, new[] { typeof(string), typeof(int), _loadSceneParametersType?.MakeByRefType(), typeof(bool) }, null);
+        if (_loadSceneParametersType != null)
+        {
+            var usingType = _sceneManagerAPIInternal ?? _sceneManager;
+            _loadSceneAsyncNameIndexInternalInjected = usingType?.GetMethod(
+                "LoadSceneAsyncNameIndexInternal_Injected", AccessTools.all,
+                null, new[] { typeof(string), typeof(int), _loadSceneParametersType.MakeByRefType(), typeof(bool) },
+                null);
+        }
 
         _totalSceneCount = _sceneManager?.GetProperty("sceneCountInBuildSettings", AccessTools.all);
 
