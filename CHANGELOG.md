@@ -36,7 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Compatibility
 
 - Fixed AssetBundle async operations failing with null reference exception
-- Fixed setting AsyncOperation priority throwing an exception
+- Fixed game setting AsyncOperation priority throwing an exception
 - Fixed unity's Camera events not being cleared on soft restart throwing a null reference exception
 - Fixed unity's SceneManager events not being cleared on soft restart throwing a null reference exception
 - Fixed unity's NavMesh events not being cleared on soft restart throwing a null reference exception
@@ -44,12 +44,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed static constructor dependency called in the wrong order
 - Fixed static fields not being reset all at once
 - Fixed not being able to call some async methods in AssetBundle
-- Fixed AsyncOperation's OnComplete being not called at the right timing
 
 ### UniTAS internal
 - Fixed UniTAS not patching AsyncOperation classes if SceneManagerAPIInternal isn't found
 - Fixed UniTAS's wrapped classes not handling the case of the original wrapped type being null
 - Fixed not resolving monobehaviour types more than 1 parent
+- Fixed use of unload scene being called wrong causing null reference exception
+- Fixed not searching async load method in scene manager
+- Fixed AsyncOperation's OnComplete being not called at the right timing
 
 # [v0.3.0] - 2023-04-10
 
