@@ -32,7 +32,7 @@ public class SceneManagerAsyncLoadPatch
         ? null
         : AccessTools.Method(SceneManager,
             "UnloadSceneNameIndexInternal",
-            new[] { typeof(string), typeof(int), typeof(bool), UnloadSceneOptions, typeof(bool) });
+            new[] { typeof(string), typeof(int), typeof(bool), UnloadSceneOptions, typeof(bool).MakeByRefType() });
 
     private static readonly MethodInfo LoadSceneAsyncNameIndexInternalInjected =
         SceneManagerAPIInternal == null || LoadSceneParametersType == null
