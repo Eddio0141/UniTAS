@@ -25,25 +25,16 @@ public class StaticFieldStorage : IStaticFieldManipulator
         UnityEngine.Resources.UnloadUnusedAssets();
 
         var staticFieldStorage = Tracker.StaticFields;
-        const int fieldResetCount = 100;
-        var fieldReset = fieldResetCount;
 
         foreach (var field in staticFieldStorage)
         {
             var typeName = field.DeclaringType?.FullName ?? "unknown_type";
             _logger.LogDebug($"resetting static field: {typeName}.{field.Name}");
+            (field.GetValue(null) as IDisposable)?.Dispose();
             field.SetValue(null, null);
-            fieldReset--;
-
-            if (fieldReset != 0) continue;
-            fieldReset = fieldResetCount;
-
-            // just in case
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
         }
 
-        // lol
+        // idk if this even works
         GC.Collect();
         GC.WaitForPendingFinalizers();
 
@@ -55,7 +46,14 @@ public class StaticFieldStorage : IStaticFieldManipulator
             var cctor = staticCtorType.TypeInitializer;
             if (cctor == null) continue;
             _logger.LogDebug($"Calling static constructor for type: {cctor.DeclaringType?.FullName ?? "unknown_type"}");
-            cctor.Invoke(null, default);
+            try
+            {
+                cctor.Invoke(null, default);
+            }
+            catch (Exception e)
+            {
+                _logger.LogDebug($"Exception thrown while calling static constructor: {e}");
+            }
         }
     }
 }

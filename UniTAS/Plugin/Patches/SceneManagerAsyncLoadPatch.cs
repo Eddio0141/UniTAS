@@ -28,13 +28,18 @@ public class SceneManagerAsyncLoadPatch
     private static readonly Type SceneManagerAPIInternal =
         AccessTools.TypeByName($"{Namespace}.SceneManagerAPIInternal");
 
-    private static readonly MethodInfo UnloadSceneNameIndexInternal = AccessTools.Method(SceneManager,
-        "UnloadSceneNameIndexInternal",
-        new[] { typeof(string), typeof(int), typeof(bool), UnloadSceneOptions, typeof(bool) });
+    private static readonly MethodInfo UnloadSceneNameIndexInternal = UnloadSceneOptions == null
+        ? null
+        : AccessTools.Method(SceneManager,
+            "UnloadSceneNameIndexInternal",
+            new[] { typeof(string), typeof(int), typeof(bool), UnloadSceneOptions, typeof(bool).MakeByRefType() });
 
     private static readonly MethodInfo LoadSceneAsyncNameIndexInternalInjected =
-        AccessTools.Method(SceneManagerAPIInternal, "LoadSceneAsyncNameIndexInternal_Injected",
-            new[] { typeof(string), typeof(int), LoadSceneParametersType.MakeByRefType(), typeof(bool) });
+        SceneManagerAPIInternal == null || LoadSceneParametersType == null
+            ? null
+            : AccessTools.Method(
+                SceneManagerAPIInternal, "LoadSceneAsyncNameIndexInternal_Injected",
+                new[] { typeof(string), typeof(int), LoadSceneParametersType.MakeByRefType(), typeof(bool) });
 
     private static readonly ISceneLoadTracker SceneLoadTracker = Plugin.Kernel.GetInstance<ISceneLoadTracker>();
 

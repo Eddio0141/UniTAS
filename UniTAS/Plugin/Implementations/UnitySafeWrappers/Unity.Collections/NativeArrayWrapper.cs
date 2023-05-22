@@ -30,6 +30,8 @@ public class NativeArrayWrapper<T> : UnityInstanceWrap
 
     public override void NewInstance(params object[] args)
     {
+        if (WrappedType == null) return;
+
         for (var i = 0; i < args.Length; i++)
         {
             var arg = args[i];
@@ -63,11 +65,13 @@ public class NativeArrayWrapper<T> : UnityInstanceWrap
 
     public T[] ToArray()
     {
+        if (Instance == null) return null;
         return (T[])_toArray.Invoke(Instance, new object[0]);
     }
 
     public void Dispose()
     {
+        if (Instance == null) return;
         _dispose.Invoke(Instance, new object[0]);
     }
 }

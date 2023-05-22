@@ -5,6 +5,7 @@ using HarmonyLib;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
+using MonoMod.Utils;
 using UniTAS.Patcher.Interfaces;
 using UniTAS.Patcher.Shared;
 
@@ -147,7 +148,7 @@ public class MonoBehaviourPatch : PreloadPatcher
         {
             // check if type base is MonoBehaviour
             var isMonoBehaviour = false;
-            var baseType = type.BaseType;
+            var baseType = type.BaseType?.SafeResolve();
             while (baseType != null)
             {
                 if (baseType.FullName == "UnityEngine.MonoBehaviour")
@@ -156,7 +157,7 @@ public class MonoBehaviourPatch : PreloadPatcher
                     break;
                 }
 
-                baseType = baseType.DeclaringType;
+                baseType = baseType.BaseType?.SafeResolve();
             }
 
             if (!isMonoBehaviour) continue;

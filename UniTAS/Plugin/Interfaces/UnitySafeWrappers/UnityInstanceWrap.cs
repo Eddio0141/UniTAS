@@ -18,6 +18,7 @@ public abstract class UnityInstanceWrap
     /// <param name="args">Arguments passed to the constructor, which tries to match the best constructor for this</param>
     public virtual void NewInstance(params object[] args)
     {
+        if (WrappedType == null) return;
         Instance = Activator.CreateInstance(WrappedType, args);
     }
 }

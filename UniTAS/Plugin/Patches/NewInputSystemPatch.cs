@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using HarmonyLib;
+using UniTAS.Patcher.Shared;
 using UniTAS.Plugin.Interfaces.Patches.PatchTypes;
 using UniTAS.Plugin.Services;
 using UniTAS.Plugin.Utils;
@@ -32,6 +33,12 @@ public class NewInputSystemPatch
         private static bool Prefix()
         {
             return !MonoBehaviourController.PausedExecution;
+        }
+
+        [SuppressMessage("ReSharper", "ConditionIsAlwaysTrueOrFalse")]
+        private static bool Prepare()
+        {
+            return NewInputSystemState.NewInputSystemExists;
         }
     }
 }

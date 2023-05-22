@@ -62,9 +62,14 @@ public class SceneManagerWrapper : ISceneWrapper
         _applicationLoadLevelAsync = AccessTools.TypeByName("UnityEngine.Application")?.GetMethod("LoadLevelAsync",
             AccessTools.all, null, new[] { typeof(string), typeof(int), typeof(bool), typeof(bool) }, null);
 
-        _loadSceneAsyncNameIndexInternalInjected = _sceneManagerAPIInternal?.GetMethod(
-            "LoadSceneAsyncNameIndexInternal_Injected", AccessTools.all,
-            null, new[] { typeof(string), typeof(int), _loadSceneParametersType?.MakeByRefType(), typeof(bool) }, null);
+        if (_loadSceneParametersType != null)
+        {
+            var usingType = _sceneManagerAPIInternal ?? _sceneManager;
+            _loadSceneAsyncNameIndexInternalInjected = usingType?.GetMethod(
+                "LoadSceneAsyncNameIndexInternal_Injected", AccessTools.all,
+                null, new[] { typeof(string), typeof(int), _loadSceneParametersType.MakeByRefType(), typeof(bool) },
+                null);
+        }
 
         _totalSceneCount = _sceneManager?.GetProperty("sceneCountInBuildSettings", AccessTools.all);
 
@@ -74,7 +79,7 @@ public class SceneManagerWrapper : ISceneWrapper
     public void LoadSceneAsync(string sceneName, int sceneBuildIndex, LoadSceneMode loadSceneMode,
         LocalPhysicsMode localPhysicsMode, bool mustCompleteNextFrame)
     {
-        if (_loadSceneAsyncNameIndexInternalInjected != null)
+        if (_loadSceneAsyncNameIndexInternalInjected != null && _loadSceneParametersType != null)
         {
             var instance = _unityInstanceWrapFactory.CreateNew<LoadSceneParametersWrapper>();
             instance.LoadSceneMode = loadSceneMode;
@@ -86,11 +91,9 @@ public class SceneManagerWrapper : ISceneWrapper
 
         if (_loadSceneAsyncNameIndexInternal != null)
         {
-            var instance = _unityInstanceWrapFactory.CreateNew<LoadSceneParametersWrapper>();
-            instance.LoadSceneMode = loadSceneMode;
-            instance.LocalPhysicsMode = localPhysicsMode;
             _loadSceneAsyncNameIndexInternal?.Invoke(null,
-                new[] { sceneName, sceneBuildIndex, instance.Instance, mustCompleteNextFrame });
+                new object[]
+                    { sceneName, sceneBuildIndex, loadSceneMode == LoadSceneMode.Additive, mustCompleteNextFrame });
             return;
         }
 
@@ -137,7 +140,7 @@ public class SceneManagerWrapper : ISceneWrapper
             {
                 var sceneWrapInstance =
                     _unityInstanceWrapFactory.Create<SceneWrapper>(_getActiveScene.Invoke(null, null));
-                return sceneWrapInstance.BuildIndex;
+                return sceneWrapInstance.BuildIndex ?? Application.loadedLevel;
             }
 
             return Application.loadedLevel;
