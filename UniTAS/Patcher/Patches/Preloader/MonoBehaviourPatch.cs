@@ -195,6 +195,13 @@ public class MonoBehaviourPatch : PreloadPatcher
                     // return early check
                     il.InsertBefore(firstInstruction, il.Create(OpCodes.Call, pauseExecutionReference));
                     il.InsertBefore(firstInstruction, il.Create(OpCodes.Brfalse_S, firstInstruction));
+
+                    // if the return type isn't void, we need to return a default value
+                    if (foundMethod.ReturnType != assembly.MainModule.TypeSystem.Void)
+                    {
+                        il.InsertBefore(firstInstruction, il.Create(OpCodes.Ldnull));
+                    }
+
                     il.InsertBefore(firstInstruction, il.Create(OpCodes.Ret));
                 }
             }
@@ -215,6 +222,13 @@ public class MonoBehaviourPatch : PreloadPatcher
             // return early check
             updateIl.InsertBefore(updateFirstInstruction, updateIl.Create(OpCodes.Call, pausedUpdateReference));
             updateIl.InsertBefore(updateFirstInstruction, updateIl.Create(OpCodes.Brfalse_S, updateFirstInstruction));
+
+            // if the return type isn't void, we need to return a default value
+            if (updateMethod.ReturnType != assembly.MainModule.TypeSystem.Void)
+            {
+                updateIl.InsertBefore(updateFirstInstruction, updateIl.Create(OpCodes.Ldnull));
+            }
+
             updateIl.InsertBefore(updateFirstInstruction, updateIl.Create(OpCodes.Ret));
             Patcher.Logger.LogDebug("Patched Update method for skipping execution");
         }
