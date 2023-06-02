@@ -3,36 +3,42 @@
         "Game": "[It Steals]",
         "Version": "Latest",
         "Status": "Perfect",
-        "Notes": ""
+        "Notes": "",
+        "Tested version": "Latest"
     },
     {
         "Game": "[Do It For Me]",
         "Version": "Latest",
-        "Status": "Perfect",
-        "Notes": ""
+        "Status": "Broken",
+        "Notes": "Menu button not clickable",
+        "Tested version": "Latest"
     },
     {
         "Game": "[yurayura tutt]",
         "Version": "Latest",
         "Status": "Desync",
-        "Notes": "TAS desyncs due to invoke to `YuraYuraModel.PlayFootStepForReal` and `YuraYuraModel.PlayFootStep` being inconsistent between runs. Stack trace doesn't show what is calling this"
+        "Notes": "TAS desyncs due to invoke to `YuraYuraModel.PlayFootStepForReal` and `YuraYuraModel.PlayFootStep` being inconsistent between runs. Stack trace doesn't show what is calling this",
+        "Tested version": "-"
     },
     {
         "Game": "[HuniePop]",
         "Version": "1.2.0",
         "Status": "Broken",
-        "Notes": "Exception on game start"
+        "Notes": "Exception on game start",
+        "Tested version": "Latest"
     },
     {
         "Game": "[KTaNE]",
         "Version": "?",
         "Status": "Broken",
-        "Notes": "Exception on game start"
-    }
+        "Notes": "IndexOutOfRangeException exception on soft restart",
+        "Tested version": "Latest"
+    },
     {
         "Game": "[ULTRAKILL]",
         "Version": "Latest",
         "Status": "Broken",
-        "Notes": "Exception on game start"
+        "Notes": "Game works but has some exceptions in the log and menu might not be working, but intro skipping works",
+        "Tested version": "Latest"
     }
 ]

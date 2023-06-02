@@ -20,14 +20,14 @@
   - This is if the game hard crashes
 
 # Working games
-| **Game** | **Version** | **Status** | **Notes** |
-|---|---|---|---|
-| [It Steals] | Latest | Perfect |  |
-| [Do It For Me] | Latest | Perfect |  |
-| [yurayura tutt] | Latest | Desync | TAS desyncs due to invoke to `YuraYuraModel.PlayFootStepForReal` and `YuraYuraModel.PlayFootStep` being inconsistent between runs. Stack trace doesn't show what is calling this |
-| [HuniePop] | 1.2.0 | Broken | Exception on game start |
-| [KTaNE] | ? | Broken | Exception on game start |
-| [ULTRAKILL] | Latest | Broken | Exception on game start |
+| **Game** | **Version** | **Status** | **Notes** | **Tested version** |
+|---|---|---|---|---|
+| [It Steals] | Latest | Perfect |  | Latest |
+| [Do It For Me] | Latest | Broken | Menu button not clickable | Latest |
+| [yurayura tutt] | Latest | Desync | TAS desyncs due to invoke to `YuraYuraModel.PlayFootStepForReal` and `YuraYuraModel.PlayFootStep` being inconsistent between runs. Stack trace doesn't show what is calling this | - |
+| [HuniePop] | 1.2.0 | Broken | Exception on game start | Latest |
+| [KTaNE] | ? | Broken | IndexOutOfRangeException exception on soft restart | Latest |
+| [ULTRAKILL] | Latest | Broken | Game works but has some exceptions in the log and menu might not be working, but intro skipping works | Latest |
 
 [It Steals]: https://store.steampowered.com/app/1349060/It_Steals/
 [yurayura tutt]: https://cornflowerblue.itch.io/yurayura-tidying-up-the-tilting-tower
