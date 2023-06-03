@@ -4,6 +4,7 @@ using UniTAS.Patcher.Interfaces.TASRenderer;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.Movie;
+using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Implementations.Movie.Engine.Modules;
 
@@ -13,13 +14,14 @@ namespace UniTAS.Patcher.Implementations.Movie.Engine.Modules;
 public class Movie
 {
     private static readonly IMainThreadSpeedControl MainThreadSpeedControl =
-        Plugin.Kernel.GetInstance<IMainThreadSpeedControl>();
+        ContainerStarter.Kernel.GetInstance<IMainThreadSpeedControl>();
 
-    private static readonly IGameRender GameRender = Plugin.Kernel.GetInstance<IGameRender>();
+    private static readonly IGameRender GameRender = ContainerStarter.Kernel.GetInstance<IGameRender>();
 
-    private static readonly IMovieRunnerEvents MovieRunnerEvents = Plugin.Kernel.GetInstance<IMovieRunnerEvents>();
+    private static readonly IMovieRunnerEvents MovieRunnerEvents =
+        ContainerStarter.Kernel.GetInstance<IMovieRunnerEvents>();
 
-    private static readonly IMovieLogger MovieLogger = Plugin.Kernel.GetInstance<IMovieLogger>();
+    private static readonly IMovieLogger MovieLogger = ContainerStarter.Kernel.GetInstance<IMovieLogger>();
 
     static Movie()
     {

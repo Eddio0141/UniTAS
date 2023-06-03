@@ -21,10 +21,10 @@ namespace UniTAS.Patcher.Patches.Harmony;
 public class SystemTimeOverrideModule
 {
     private static readonly IPatchReverseInvoker ReverseInvoker =
-        Plugin.Kernel.GetInstance<IPatchReverseInvoker>();
+        ContainerStarter.Kernel.GetInstance<IPatchReverseInvoker>();
 
     private static readonly ITimeEnv TimeEnv =
-        Plugin.Kernel.GetInstance<ITimeEnv>();
+        ContainerStarter.Kernel.GetInstance<ITimeEnv>();
 
     [MscorlibPatchGroup]
     private class AllVersions

@@ -9,7 +9,7 @@ public static class PatchHelper
     {
         if (ex != null)
         {
-            Plugin.Log.LogDebug(original == null
+            StaticLogger.Log.LogDebug(original == null
                 ? $"Failed to patch, exception: {ex}"
                 : $"Failed to patch {original}, exception: {ex}");
         }

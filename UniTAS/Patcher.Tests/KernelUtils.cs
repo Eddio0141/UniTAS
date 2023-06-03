@@ -179,11 +179,11 @@ public static class KernelUtils
         kernel.Configure(c =>
         {
             kernel.GetInstance<IDiscoverAndRegister>().Register<FakeStaticFieldStorage>(c);
-            kernel.GetInstance<IDiscoverAndRegister>().Register<PluginWrapper>(c);
+            kernel.GetInstance<IDiscoverAndRegister>().Register<InfoPrintAndWelcome>(c);
         });
 
         var forceInstantiateTypes = kernel.GetInstance<IForceInstantiateTypes>();
-        forceInstantiateTypes.InstantiateTypes<PluginWrapper>();
+        forceInstantiateTypes.InstantiateTypes<InfoPrintAndWelcome>();
         forceInstantiateTypes.InstantiateTypes<DummyMouseEnvLegacySystem>();
 
         return kernel;

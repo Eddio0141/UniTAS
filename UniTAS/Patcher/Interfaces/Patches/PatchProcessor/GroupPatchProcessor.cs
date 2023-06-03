@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using HarmonyLib;
 using UniTAS.Patcher.Interfaces.Patches.PatchGroups;
 using UniTAS.Patcher.Interfaces.Patches.PatchTypes;
+using UniTAS.Patcher.MonoBehaviourScripts;
 using UniTAS.Patcher.Services.Logging;
 
 namespace UniTAS.Patcher.Interfaces.Patches.PatchProcessor;
@@ -25,7 +26,7 @@ public abstract class GroupPatchProcessor : PatchProcessor
     public override IEnumerable<KeyValuePair<int, Type>> ProcessModules()
     {
         // TODO replace this later
-        var pluginTypes = AccessTools.GetTypesFromAssembly(typeof(Plugin).Assembly);
+        var pluginTypes = AccessTools.GetTypesFromAssembly(typeof(MonoBehaviourUpdateInvoker).Assembly);
 
         // list of patch groups, patch group attributes, and PatchTypes for each modules
         var patchGroupsAttributesAndPatchType =

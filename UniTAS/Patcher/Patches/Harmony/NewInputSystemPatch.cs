@@ -15,7 +15,7 @@ namespace UniTAS.Patcher.Patches.Harmony;
 public class NewInputSystemPatch
 {
     private static readonly IMonoBehaviourController MonoBehaviourController =
-        Plugin.Kernel.GetInstance<IMonoBehaviourController>();
+        ContainerStarter.Kernel.GetInstance<IMonoBehaviourController>();
 
     [HarmonyPatch]
     private class SuppressNotifyUpdate

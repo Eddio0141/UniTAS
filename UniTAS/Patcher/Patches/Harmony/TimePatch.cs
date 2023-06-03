@@ -19,9 +19,9 @@ namespace UniTAS.Patcher.Patches.Harmony;
 public class TimePatch
 {
     private static readonly IPatchReverseInvoker
-        ReverseInvoker = Plugin.Kernel.GetInstance<IPatchReverseInvoker>();
+        ReverseInvoker = ContainerStarter.Kernel.GetInstance<IPatchReverseInvoker>();
 
-    private static readonly ITimeEnv TimeEnv = Plugin.Kernel.GetInstance<ITimeEnv>();
+    private static readonly ITimeEnv TimeEnv = ContainerStarter.Kernel.GetInstance<ITimeEnv>();
 
     private static bool CalledFromFixedUpdate()
     {

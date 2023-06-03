@@ -22,28 +22,28 @@ namespace UniTAS.Patcher.Patches.Harmony;
 public class LegacyInputPatch
 {
     private static readonly IPatchReverseInvoker ReverseInvoker =
-        Plugin.Kernel.GetInstance<IPatchReverseInvoker>();
+        ContainerStarter.Kernel.GetInstance<IPatchReverseInvoker>();
 
     private static readonly IVirtualEnvController VirtualEnvController =
-        Plugin.Kernel.GetInstance<IVirtualEnvController>();
+        ContainerStarter.Kernel.GetInstance<IVirtualEnvController>();
 
     private static readonly IKeyboardStateEnvLegacySystem KeyboardStateEnvLegacySystem =
-        Plugin.Kernel.GetInstance<IKeyboardStateEnvLegacySystem>();
+        ContainerStarter.Kernel.GetInstance<IKeyboardStateEnvLegacySystem>();
 
     private static readonly IButtonStateEnvLegacySystem ButtonStateEnvLegacySystem =
-        Plugin.Kernel.GetInstance<IButtonStateEnvLegacySystem>();
+        ContainerStarter.Kernel.GetInstance<IButtonStateEnvLegacySystem>();
 
     private static readonly IMouseStateEnvLegacySystem MouseStateEnvLegacySystem =
-        Plugin.Kernel.GetInstance<IMouseStateEnvLegacySystem>();
+        ContainerStarter.Kernel.GetInstance<IMouseStateEnvLegacySystem>();
 
     private static readonly IAxisStateEnvLegacySystem AxisStateEnvLegacySystem =
-        Plugin.Kernel.GetInstance<IAxisStateEnvLegacySystem>();
+        ContainerStarter.Kernel.GetInstance<IAxisStateEnvLegacySystem>();
 
     private static readonly IResetInputAxesState ResetInputAxesState =
-        Plugin.Kernel.GetInstance<IResetInputAxesState>();
+        ContainerStarter.Kernel.GetInstance<IResetInputAxesState>();
 
     private static readonly IKeyFactory KeyFactory =
-        Plugin.Kernel.GetInstance<IKeyFactory>();
+        ContainerStarter.Kernel.GetInstance<IKeyFactory>();
 
     // gets called from GetKey
     [HarmonyPatch(typeof(Input), nameof(Input.GetKeyInt))]

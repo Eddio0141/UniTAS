@@ -16,10 +16,10 @@ namespace UniTAS.Patcher.Patches.Harmony;
 public class FpsUnlockPatch
 {
     private static readonly IPatchReverseInvoker
-        PatchReverseInvoker = Plugin.Kernel.GetInstance<IPatchReverseInvoker>();
+        PatchReverseInvoker = ContainerStarter.Kernel.GetInstance<IPatchReverseInvoker>();
 
     private static readonly IGameSpeedUnlocker GameSpeedUnlocker =
-        Plugin.Kernel.GetInstance<IGameSpeedUnlocker>();
+        ContainerStarter.Kernel.GetInstance<IGameSpeedUnlocker>();
 
     [HarmonyPatch(typeof(Application), nameof(Application.targetFrameRate), MethodType.Getter)]
     private class ApplicationTargetFrameRateGetter

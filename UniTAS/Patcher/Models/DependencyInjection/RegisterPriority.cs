@@ -5,5 +5,6 @@ public enum RegisterPriority
     FirstUpdateSkipOnRestart,
     TimeEnv,
     MovieRunner,
-    Default
+    Default,
+    InfoPrintAndWelcome
 }

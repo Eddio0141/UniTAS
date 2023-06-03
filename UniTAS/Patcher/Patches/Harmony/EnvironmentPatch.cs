@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using UniTAS.Patcher.Implementations.VirtualEnvironment;
+using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Patches.Harmony;
 
@@ -11,7 +12,7 @@ namespace UniTAS.Patcher.Patches.Harmony;
 public class EnvironmentPatch
 {
     private static readonly VirtualEnvController VirtualEnvController =
-        Plugin.Kernel.GetInstance<VirtualEnvController>();
+        ContainerStarter.Kernel.GetInstance<VirtualEnvController>();
 
     // [HarmonyPatch(typeof(Environment), "IsRunningOnWindows", MethodType.Getter)]
     // private class IsRunningOnWindows

@@ -24,18 +24,19 @@ public class AsyncOperationPatch
 
     private static readonly Type _resourceRequest = AccessTools.TypeByName("UnityEngine.ResourceRequest");
 
-    private static readonly ISceneLoadTracker SceneLoadTracker = Plugin.Kernel.GetInstance<ISceneLoadTracker>();
+    private static readonly ISceneLoadTracker SceneLoadTracker =
+        ContainerStarter.Kernel.GetInstance<ISceneLoadTracker>();
 
     private static readonly IAssetBundleCreateRequestTracker AssetBundleCreateRequestTracker =
-        Plugin.Kernel.GetInstance<IAssetBundleCreateRequestTracker>();
+        ContainerStarter.Kernel.GetInstance<IAssetBundleCreateRequestTracker>();
 
     private static readonly IAssetBundleRequestTracker AssetBundleRequestTracker =
-        Plugin.Kernel.GetInstance<IAssetBundleRequestTracker>();
+        ContainerStarter.Kernel.GetInstance<IAssetBundleRequestTracker>();
 
     private static readonly IAsyncOperationIsInvokingOnComplete AsyncOperationIsInvokingOnComplete =
-        Plugin.Kernel.GetInstance<IAsyncOperationIsInvokingOnComplete>();
+        ContainerStarter.Kernel.GetInstance<IAsyncOperationIsInvokingOnComplete>();
 
-    private static readonly ILogger Logger = Plugin.Kernel.GetInstance<ILogger>();
+    private static readonly ILogger Logger = ContainerStarter.Kernel.GetInstance<ILogger>();
 
     [HarmonyPatch(typeof(AsyncOperation), "InvokeCompletionEvent")]
     private class InvokeCompletionEvent

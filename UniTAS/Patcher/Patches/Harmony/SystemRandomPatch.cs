@@ -16,7 +16,7 @@ namespace UniTAS.Patcher.Patches.Harmony;
 public class SystemRandomPatch
 {
     private static readonly IRandomEnv RandomEnv =
-        Plugin.Kernel.GetInstance<IRandomEnv>();
+        ContainerStarter.Kernel.GetInstance<IRandomEnv>();
 
     [HarmonyPatch(typeof(Random), "GenerateSeed")]
     private class GenerateSeed

@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using HarmonyLib;
 using UniTAS.Patcher.Interfaces.Patches.PatchTypes;
 using UniTAS.Patcher.StaticServices;
+using UniTAS.Patcher.Utils;
 using UnityEngine;
 
 namespace UniTAS.Patcher.Patches.Harmony;
@@ -19,7 +20,8 @@ public class DontDestroyOnLoadTracker
         private static readonly List<string> _initialExcludeNames = new()
         {
             "BepInEx_Manager",
-            "BepInEx_ThreadingHelper"
+            "BepInEx_ThreadingHelper",
+            ManagerGameObject.GameObjectName
         };
 
         private static void Prefix(Object target)

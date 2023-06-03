@@ -17,8 +17,7 @@ public class MainMenu : Window
 
     protected override Rect DefaultWindowRect { get; } = new(0, 0, 600, 200);
 
-    public MainMenu(IUpdateEvents updateEvents, IMainMenuTab[] tabs) : base(updateEvents,
-        $"{MyPluginInfo.PLUGIN_NAME} Menu")
+    public MainMenu(IUpdateEvents updateEvents, IMainMenuTab[] tabs) : base(updateEvents, "UniTAS Menu")
     {
         _tabs = tabs;
         _tabNames = tabs.Select(tab => tab.Name).ToArray();

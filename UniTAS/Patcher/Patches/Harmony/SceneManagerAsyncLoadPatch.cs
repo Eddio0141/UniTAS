@@ -41,12 +41,13 @@ public class SceneManagerAsyncLoadPatch
                 SceneManagerAPIInternal, "LoadSceneAsyncNameIndexInternal_Injected",
                 new[] { typeof(string), typeof(int), LoadSceneParametersType.MakeByRefType(), typeof(bool) });
 
-    private static readonly ISceneLoadTracker SceneLoadTracker = Plugin.Kernel.GetInstance<ISceneLoadTracker>();
+    private static readonly ISceneLoadTracker SceneLoadTracker =
+        ContainerStarter.Kernel.GetInstance<ISceneLoadTracker>();
 
     private static readonly UnityInstanceWrapFactory UnityInstanceWrapFactory =
-        Plugin.Kernel.GetInstance<UnityInstanceWrapFactory>();
+        ContainerStarter.Kernel.GetInstance<UnityInstanceWrapFactory>();
 
-    private static readonly ILogger Logger = Plugin.Kernel.GetInstance<ILogger>();
+    private static readonly ILogger Logger = ContainerStarter.Kernel.GetInstance<ILogger>();
 
     private static bool AsyncSceneLoad(bool mustCompleteNextFrame, string sceneName, int sceneBuildIndex,
         object parameters, bool? isAdditive, ref AsyncOperation __result)

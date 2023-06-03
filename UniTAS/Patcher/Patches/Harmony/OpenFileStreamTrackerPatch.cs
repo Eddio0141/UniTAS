@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using UniTAS.Patcher.Interfaces.Patches.PatchTypes;
+using UniTAS.Patcher.MonoBehaviourScripts;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Utils;
@@ -19,8 +20,8 @@ namespace UniTAS.Patcher.Patches.Harmony;
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public class OpenFileStreamTrackerPatch
 {
-    private static readonly IFileStreamTracker Tracker = Plugin.Kernel.GetInstance<IFileStreamTracker>();
-    private static readonly ILogger Logger = Plugin.Kernel.GetInstance<ILogger>();
+    private static readonly IFileStreamTracker Tracker = ContainerStarter.Kernel.GetInstance<IFileStreamTracker>();
+    private static readonly ILogger Logger = ContainerStarter.Kernel.GetInstance<ILogger>();
 
     private static bool CalledFromPlugin()
     {
@@ -35,7 +36,7 @@ public class OpenFileStreamTrackerPatch
             var method = frame.GetMethod();
             var declaringType = method?.DeclaringType;
             if (declaringType == null) continue;
-            if (Equals(declaringType.Assembly, typeof(Plugin).Assembly) ||
+            if (Equals(declaringType.Assembly, typeof(MonoBehaviourUpdateInvoker).Assembly) ||
                 Equals(declaringType.Assembly, typeof(Patcher.Entry).Assembly)) return true;
         }
 

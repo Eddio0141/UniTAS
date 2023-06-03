@@ -4,6 +4,8 @@ using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using UniTAS.Patcher.Interfaces.Patches.PatchTypes;
+using UniTAS.Patcher.MonoBehaviourScripts;
+using UniTAS.Patcher.Utils;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -38,7 +40,7 @@ public class ObjectPatch
         private static bool Prefix(Object obj)
         {
             // Don't destroy Plugin
-            return obj is not Plugin;
+            return obj is not MonoBehaviourUpdateInvoker;
         }
 
         // ReSharper disable once UnusedParameter.Local
@@ -46,7 +48,7 @@ public class ObjectPatch
         {
             if (ex != null)
             {
-                Plugin.Log.LogWarning("Failed to patch Object destruction methods, Plugin may be destroyed");
+                StaticLogger.Log.LogWarning("Failed to patch Object destruction methods, Plugin may be destroyed");
             }
 
             return null;
@@ -79,7 +81,7 @@ public class ObjectPatch
         private static bool Prefix(Object data)
         {
             // Don't instantiate Plugin
-            return data is not Plugin;
+            return data is not MonoBehaviourUpdateInvoker;
         }
 
         // ReSharper disable once UnusedParameter.Local
@@ -87,7 +89,7 @@ public class ObjectPatch
         {
             if (ex != null)
             {
-                Plugin.Log.LogWarning("Failed to patch Object instantiation methods, Plugin may be instantiated");
+                StaticLogger.Log.LogWarning("Failed to patch Object instantiation methods, Plugin may be instantiated");
             }
 
             return null;
