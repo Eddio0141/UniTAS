@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using System.Linq;
-using HarmonyLib;
 using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
 using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Patcher.Services;
@@ -11,8 +10,6 @@ namespace UniTAS.Patcher.MonoBehaviourScripts;
 
 public class MonoBehaviourUpdateInvoker : MonoBehaviour
 {
-    public static readonly Harmony Harmony = new("dev.yuu0141.unitas.plugin");
-
     private IMonoBehEventInvoker _monoBehEventInvoker;
     private IOnLastUpdateUnconditional[] _onLastUpdatesUnconditional;
     private IOnLastUpdateActual[] _onLastUpdatesActual;
