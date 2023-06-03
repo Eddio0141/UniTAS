@@ -1,13 +1,15 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using HarmonyLib;
-using UniTAS.Patcher.Shared;
+using UniTAS.Patcher.Interfaces.Patches.PatchTypes;
+using UniTAS.Patcher.StaticServices;
 using UnityEngine.InputSystem;
 
 namespace UniTAS.Patcher.Patches.Harmony;
 
-[HarmonyPatch]
+[RawPatch]
 [SuppressMessage("ReSharper", "UnusedMember.Local")]
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public class InputSystemUpdateMethodPatch
 {
     [HarmonyPatch]
