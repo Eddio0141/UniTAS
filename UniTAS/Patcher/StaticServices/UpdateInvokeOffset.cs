@@ -1,3 +1,4 @@
+using UniTAS.Patcher.Interfaces.Invoker;
 using UnityEngine;
 
 namespace UniTAS.Patcher.StaticServices;
@@ -6,7 +7,7 @@ public static class UpdateInvokeOffset
 {
     public static double Offset { get; private set; }
 
-    // TODO make it attribute or something to forced rather than manually invoking
+    [InvokeOnPatcherFinish]
     public static void Init()
     {
         MonoBehaviourEvents.OnUpdateUnconditional += UpdateUnconditionalOffset;
