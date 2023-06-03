@@ -163,7 +163,7 @@ public class MonoBehaviourPatch : PreloadPatcher
 
             if (!isMonoBehaviour) continue;
 
-            Entry.Logger.LogDebug($"Patching MonoBehaviour type: {type.FullName}");
+            StaticLogger.Log.LogDebug($"Patching MonoBehaviour type: {type.FullName}");
 
             // method invoke pause
             if (!ExcludeNamespaces.Any(type.Namespace.StartsWith) || IncludeNamespaces.Any(type.Namespace.StartsWith))
@@ -188,7 +188,7 @@ public class MonoBehaviourPatch : PreloadPatcher
 
                     if (foundMethod == null) continue;
 
-                    Entry.Logger.LogDebug($"Patching method for pausing execution {foundMethod.FullName}");
+                    StaticLogger.Log.LogDebug($"Patching method for pausing execution {foundMethod.FullName}");
 
                     var il = foundMethod.Body.GetILProcessor();
                     var firstInstruction = il.Body.Instructions.First();
@@ -231,7 +231,7 @@ public class MonoBehaviourPatch : PreloadPatcher
             }
 
             updateIl.InsertBefore(updateFirstInstruction, updateIl.Create(OpCodes.Ret));
-            Entry.Logger.LogDebug("Patched Update method for skipping execution");
+            StaticLogger.Log.LogDebug("Patched Update method for skipping execution");
         }
     }
 
@@ -246,7 +246,7 @@ public class MonoBehaviourPatch : PreloadPatcher
 
         ilProcessor.InsertBefore(method.Body.Instructions.First(), ilProcessor.Create(OpCodes.Call, reference));
 
-        Entry.Logger.LogDebug(
+        StaticLogger.Log.LogDebug(
             $"Successfully patched {methodName} for type {type.FullName} for updates, invokes {eventInvoker.Name}");
     }
 }
