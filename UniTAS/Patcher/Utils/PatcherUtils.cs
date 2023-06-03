@@ -4,7 +4,7 @@ using System.Linq;
 using BepInEx;
 using UniTAS.Patcher.Extensions;
 
-namespace UniTAS.Patcher;
+namespace UniTAS.Patcher.Utils;
 
 public static class PatcherUtils
 {
