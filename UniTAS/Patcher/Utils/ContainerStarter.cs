@@ -12,7 +12,7 @@ public static class ContainerStarter
 {
     public static IContainer Kernel { get; private set; }
 
-    [InvokeOnPatcherFinish]
+    [InvokeOnUnityInit]
     [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public static void Init()
     {

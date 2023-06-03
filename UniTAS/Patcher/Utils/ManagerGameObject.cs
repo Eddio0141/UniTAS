@@ -10,7 +10,7 @@ public static class ManagerGameObject
     private static GameObject _gameObject;
     public const string GameObjectName = "UniTAS Manager";
 
-    [InvokeOnPatcherFinish]
+    [InvokeOnUnityInit]
     [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public static void Init()
     {
