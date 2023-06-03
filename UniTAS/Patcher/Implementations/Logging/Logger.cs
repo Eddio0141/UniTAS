@@ -1,36 +1,39 @@
+using System.Diagnostics.CodeAnalysis;
 using UniTAS.Patcher.Services.Logging;
+using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Implementations.Logging;
 
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public class Logger : ILogger
 {
     public void LogFatal(object data)
     {
-        Plugin.Log.LogFatal(data);
+        StaticLogger.Log.LogFatal(data);
     }
 
     public void LogError(object data)
     {
-        Plugin.Log.LogError(data);
+        StaticLogger.Log.LogError(data);
     }
 
     public void LogWarning(object data)
     {
-        Plugin.Log.LogWarning(data);
+        StaticLogger.Log.LogWarning(data);
     }
 
     public void LogMessage(object data)
     {
-        Plugin.Log.LogMessage(data);
+        StaticLogger.Log.LogMessage(data);
     }
 
     public void LogInfo(object data)
     {
-        Plugin.Log.LogInfo(data);
+        StaticLogger.Log.LogInfo(data);
     }
 
     public void LogDebug(object data)
     {
-        Plugin.Log.LogDebug(data);
+        StaticLogger.Log.LogDebug(data);
     }
 }
