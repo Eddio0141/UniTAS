@@ -9,7 +9,6 @@ else
 fi
 
 OUTPUT_DIR="build/$BUILD_TYPE"
-OUTPUT_PLUGIN_DIR="$OUTPUT_DIR/plugins/UniTAS"
 OUTPUT_PATCH_DIR="$OUTPUT_DIR/patchers/UniTAS"
 
 # Clean output directory
@@ -17,21 +16,17 @@ rm -rf "$OUTPUT_DIR"
 
 DOTNET_SOURCE="UniTAS"
 
-SOURCE_PLUGIN_DIR="$DOTNET_SOURCE/Plugin"
-SOURCE_PLUGIN_EXTERNS_DIR="$SOURCE_PLUGIN_DIR/Extern-Assemblies"
 SOURCE_PATCH_DIR="$DOTNET_SOURCE/Patcher"
+SOURCE_PATCH_EXTERN_DLL_DIR="$SOURCE_PATCH_DIR/Extern-Assemblies"
 
-# Dotnet builds
-dotnet build "$SOURCE_PLUGIN_DIR" -c $BUILD_TYPE
-dotnet build "$SOURCE_PATCH_DIR" -c $BUILD_TYPE
+# Dotnet build
+dotnet build "$SOURCE_PATCH_DIR" -c "$BUILD_TYPE"
 
 echo "Copying dlls to output folders"
 
-# Create output directories
-mkdir -p "$OUTPUT_PLUGIN_DIR"
+# Create output dirs
 mkdir -p "$OUTPUT_PATCH_DIR"
 
 # Only copy dlls
-cp "$SOURCE_PLUGIN_DIR/bin/$BUILD_TYPE/net35"/*.dll "$OUTPUT_PLUGIN_DIR"
-cp "$SOURCE_PLUGIN_EXTERNS_DIR"/*.dll "$OUTPUT_PLUGIN_DIR"
+cp "$SOURCE_PATCH_EXTERN_DLL_DIR"/*.dll "$OUTPUT_PATCH_DIR"
 cp "$SOURCE_PATCH_DIR/bin/$BUILD_TYPE/net35"/*.dll "$OUTPUT_PATCH_DIR"
