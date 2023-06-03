@@ -1,36 +1,36 @@
 name: build-on-push
 
-on: [push]
+on: [ push ]
 
 jobs:
   build:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-latest, ubuntu-latest]
-        configuration: [Debug, Release]
+        os: [ windows-latest, ubuntu-latest ]
+        configuration: [ Debug, Release ]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
         with:
           submodules: true
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v3.0.3
-      with:
-        dotnet-version: '6.0.x'
-    - name: Setup FFmpeg
-      uses: FedericoCarboni/setup-ffmpeg@v2
-    - name: Tests
-      working-directory: ./UniTAS
-      run: dotnet test --configuration ${{ matrix.configuration }}
-    - name: Build windows
-      if: runner.os == 'Windows'
-      run: ./build.ps1 ${{ matrix.configuration }}
-    - name: Build linux
-      if: runner.os == 'Linux'
-      run: ./build.sh ${{ matrix.configuration }}
-    - name: Get built artifacts
-      uses: actions/upload-artifact@v3.1.1
-      with:
-        name: ${{ matrix.os }}-${{ matrix.configuration }}
-        path: ./build/${{ matrix.configuration }}/
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3.0.3
+        with:
+          dotnet-version: '6.0.x'
+      - name: Setup FFmpeg
+        uses: FedericoCarboni/setup-ffmpeg@v2
+      - name: Tests
+        working-directory: ./UniTAS
+        run: dotnet test --configuration ${{ matrix.configuration }}
+      - name: Build windows
+        if: runner.os == 'Windows'
+        run: ./build.ps1 ${{ matrix.configuration }}
+      - name: Build linux
+        if: runner.os == 'Linux'
+        run: ./build.sh ${{ matrix.configuration }}
+      - name: Get built artifacts
+        uses: actions/upload-artifact@v3.1.1
+        with:
+          name: ${{ matrix.os }}-${{ matrix.configuration }}
+          path: ./build/${{ matrix.configuration }}/
