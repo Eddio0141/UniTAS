@@ -3,6 +3,8 @@ using System.Diagnostics.CodeAnalysis;
 using BepInEx.Logging;
 using Mono.Cecil;
 using UniTAS.Patcher.Implementations;
+using UniTAS.Patcher.Interfaces.Invoker;
+using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher;
 
@@ -34,5 +36,11 @@ public static class Entry
         {
             patcher.Patch(ref assembly);
         }
+    }
+
+    [SuppressMessage("ReSharper", "UnusedMember.Global")]
+    public static void Finish()
+    {
+        InvokeEventAttributes.Invoke<InvokeOnPatcherFinishAttribute>();
     }
 }
