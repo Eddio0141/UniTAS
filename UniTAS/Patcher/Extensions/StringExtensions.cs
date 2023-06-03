@@ -10,7 +10,6 @@ public static class StringExtensions
     /// <param name="str">The string.</param>
     /// <param name="pattern">The pattern to match, where "*" means any sequence of characters, and "?" means any single character.</param>
     /// <returns><c>true</c> if the string matches the given pattern; otherwise <c>false</c>.</returns>
-    // TODO maybe make a separate project to share this code
     public static bool Like(this string str, string pattern)
     {
         return new Regex(
