@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using StructureMap;
 using UniTAS.Patcher.Implementations.DependencyInjection;
 using UniTAS.Patcher.Implementations.Logging;
@@ -12,6 +13,7 @@ public static class ContainerStarter
     public static IContainer Kernel { get; private set; }
 
     [InvokeOnPatcherFinish]
+    [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public static void Init()
     {
         Kernel = new Container(c =>
