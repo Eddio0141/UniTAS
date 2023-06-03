@@ -4,5 +4,5 @@ namespace UniTAS.Patcher.Utils;
 
 public static class StaticLogger
 {
-    public static ManualLogSource Log { get; } = new("UniTAS");
+    public static ManualLogSource Log { get; } = Logger.CreateLogSource("UniTAS");
 }
