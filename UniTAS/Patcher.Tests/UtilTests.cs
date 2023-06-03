@@ -7,6 +7,6 @@ public class UtilTests
     [Fact]
     public void ProjectName()
     {
-        Assert.Equal("UniTAS.Patcher", PatcherUtils.ProjectAssembly);
+        Assert.Equal("UniTAS.Patcher", Utils.ProjectAssembly);
     }
 }

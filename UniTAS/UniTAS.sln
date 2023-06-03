@@ -1,5 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plugin", "Plugin\Plugin.csproj", "{EDBAE011-402A-4FA7-8F6B-5A4BF77A7A38}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Plugin.Tests", "Plugin.Tests\Plugin.Tests.csproj", "{A6328A10-5B87-48F1-9732-6B117A16AE37}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Patcher", "Patcher\Patcher.csproj", "{47A3D730-E962-4CEA-9FAE-F020EF68649D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Patcher.Tests", "Patcher.Tests\Patcher.Tests.csproj", "{0C767EFA-674E-47F9-AE27-BE49C56AC85C}"
@@ -12,6 +16,14 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EDBAE011-402A-4FA7-8F6B-5A4BF77A7A38}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EDBAE011-402A-4FA7-8F6B-5A4BF77A7A38}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EDBAE011-402A-4FA7-8F6B-5A4BF77A7A38}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EDBAE011-402A-4FA7-8F6B-5A4BF77A7A38}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A6328A10-5B87-48F1-9732-6B117A16AE37}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A6328A10-5B87-48F1-9732-6B117A16AE37}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A6328A10-5B87-48F1-9732-6B117A16AE37}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A6328A10-5B87-48F1-9732-6B117A16AE37}.Release|Any CPU.Build.0 = Release|Any CPU
 		{47A3D730-E962-4CEA-9FAE-F020EF68649D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{47A3D730-E962-4CEA-9FAE-F020EF68649D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{47A3D730-E962-4CEA-9FAE-F020EF68649D}.Release|Any CPU.ActiveCfg = Release|Any CPU

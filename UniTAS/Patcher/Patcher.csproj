@@ -2,13 +2,11 @@
     <PropertyGroup>
         <TargetFramework>net35</TargetFramework>
         <AssemblyName>UniTAS.Patcher</AssemblyName>
-        <Product>UniTAS.Patcher</Product>
-        <Description>UniTAS.Patcher</Description>
         <RootNamespace>UniTAS.Patcher</RootNamespace>
+        <Description>UniTAS.Patcher</Description>
         <Version>0.4.0</Version>
         <AssemblyVersion>0.4.0</AssemblyVersion>
         <FileVersion>0.4.0</FileVersion>
-        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <LangVersion>latest</LangVersion>
         <RestoreAdditionalProjectSources>
             https://api.nuget.org/v3/index.json;
@@ -19,36 +17,16 @@
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-        <DefineConstants/>
+        <DefineConstants>;</DefineConstants>
     </PropertyGroup>
 
-    <ItemGroup>
-        <Compile Remove="dependency\**"/>
-        <EmbeddedResource Remove="dependency\**"/>
-        <None Remove="dependency\**"/>
-        <Compile Remove="Extern-Assemblies\**"/>
-        <EmbeddedResource Remove="Extern-Assemblies\**"/>
-        <None Remove="Extern-Assemblies\**"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="BepInEx.Analyzers" Version="1.0.8" PrivateAssets="all"/>
-        <PackageReference Include="BepInEx.Core" Version="5.4.21"/>
-        <PackageReference Include="BepInEx.PluginInfoProps" Version="2.1.0"/>
-        <PackageReference Include="MonoMod.Utils" Version="22.7.31.1"/>
-        <PackageReference Include="StructureMap" Version="2.6.3"/>
-        <PackageReference Include="Unity.InputSystem" Version="1.5.0"/>
-        <PackageReference Include="UnityEngine.Modules" Version="3.4.0" IncludeAssets="compile"/>
+    <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
         <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all"/>
     </ItemGroup>
 
     <ItemGroup>
-        <Reference Include="PresentationFramework">
-            <HintPath>.\Extern-Assemblies\PresentationFramework.dll</HintPath>
-        </Reference>
-    </ItemGroup>
-
-    <ItemGroup>
-        <ProjectReference Include="..\..\moonsharp\src\MoonSharp.Interpreter\MoonSharp.Interpreter.net35-client.csproj"/>
+        <PackageReference Include="BepInEx.Core" Version="5.4.21"/>
+        <PackageReference Include="Unity.InputSystem" Version="1.5.0"/>
+        <PackageReference Include="UnityEngine.Modules" Version="3.4.0"/>
     </ItemGroup>
 </Project>

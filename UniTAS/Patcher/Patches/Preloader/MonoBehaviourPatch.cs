@@ -7,13 +7,13 @@ using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 using MonoMod.Utils;
 using UniTAS.Patcher.Interfaces;
-using UniTAS.Patcher.StaticServices;
+using UniTAS.Patcher.Shared;
 
 namespace UniTAS.Patcher.Patches.Preloader;
 
 public class MonoBehaviourPatch : PreloadPatcher
 {
-    public override IEnumerable<string> TargetDLLs => PatcherUtils.AllTargetDllsWithGenericExclusions;
+    public override IEnumerable<string> TargetDLLs => Utils.AllTargetDllsWithGenericExclusions;
 
     private const string COLLISION = "UnityEngine.Collision";
     private const string COLLISION_2D = "UnityEngine.Collision2D";
@@ -162,7 +162,7 @@ public class MonoBehaviourPatch : PreloadPatcher
 
             if (!isMonoBehaviour) continue;
 
-            Entry.Logger.LogDebug($"Patching MonoBehaviour type: {type.FullName}");
+            Patcher.Logger.LogDebug($"Patching MonoBehaviour type: {type.FullName}");
 
             // method invoke pause
             if (!ExcludeNamespaces.Any(type.Namespace.StartsWith) || IncludeNamespaces.Any(type.Namespace.StartsWith))
@@ -187,7 +187,7 @@ public class MonoBehaviourPatch : PreloadPatcher
 
                     if (foundMethod == null) continue;
 
-                    Entry.Logger.LogDebug($"Patching method for pausing execution {foundMethod.FullName}");
+                    Patcher.Logger.LogDebug($"Patching method for pausing execution {foundMethod.FullName}");
 
                     var il = foundMethod.Body.GetILProcessor();
                     var firstInstruction = il.Body.Instructions.First();
@@ -230,7 +230,7 @@ public class MonoBehaviourPatch : PreloadPatcher
             }
 
             updateIl.InsertBefore(updateFirstInstruction, updateIl.Create(OpCodes.Ret));
-            Entry.Logger.LogDebug("Patched Update method for skipping execution");
+            Patcher.Logger.LogDebug("Patched Update method for skipping execution");
         }
     }
 
@@ -245,7 +245,7 @@ public class MonoBehaviourPatch : PreloadPatcher
 
         ilProcessor.InsertBefore(method.Body.Instructions.First(), ilProcessor.Create(OpCodes.Call, reference));
 
-        Entry.Logger.LogDebug(
+        Patcher.Logger.LogDebug(
             $"Successfully patched {methodName} for type {type.FullName} for updates, invokes {eventInvoker.Name}");
     }
 }

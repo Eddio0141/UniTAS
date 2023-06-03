@@ -1,16 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using HarmonyLib;
-using UniTAS.Patcher.Interfaces.Patches.PatchTypes;
-using UniTAS.Patcher.StaticServices;
+using UniTAS.Patcher.Shared;
 using UnityEngine;
 
 namespace UniTAS.Patcher.Patches.Harmony;
 
-[RawPatch]
+[HarmonyPatch]
 [SuppressMessage("ReSharper", "UnusedMember.Local")]
 [SuppressMessage("ReSharper", "InconsistentNaming")]
-[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public class DontDestroyOnLoadTracker
 {
     [HarmonyPatch(typeof(Object), nameof(Object.DontDestroyOnLoad))]
@@ -26,12 +24,12 @@ public class DontDestroyOnLoadTracker
         {
             if (_initialExcludeNames.Contains(target.name))
             {
-                Entry.Logger.LogDebug($"Ignoring initial DontDestroyOnLoad tracking for {target.name}");
+                Patcher.Logger.LogDebug($"Ignoring initial DontDestroyOnLoad tracking for {target.name}");
                 _initialExcludeNames.Remove(target.name);
                 return;
             }
 
-            Entry.Logger.LogDebug(
+            Patcher.Logger.LogDebug(
                 $"DontDestroyOnLoad invoked, target name: {target.name}, target type: {target.GetType()}");
 
             var obj = target switch
@@ -43,18 +41,18 @@ public class DontDestroyOnLoadTracker
 
             if (obj == null)
             {
-                Entry.Logger.LogDebug($"DontDestroyOnLoad target is neither GameObject nor Component, ignoring");
+                Patcher.Logger.LogDebug($"DontDestroyOnLoad target is neither GameObject nor Component, ignoring");
                 return;
             }
 
             // check if root
             if (obj.transform.parent != null)
             {
-                Entry.Logger.LogDebug($"DontDestroyOnLoad target is not root, ignoring");
+                Patcher.Logger.LogDebug($"DontDestroyOnLoad target is not root, ignoring");
                 return;
             }
 
-            Entry.Logger.LogDebug($"DontDestroyOnLoad target is root, adding to tracker");
+            Patcher.Logger.LogDebug($"DontDestroyOnLoad target is root, adding to tracker");
             Tracker.DontDestroyGameObjects.Add(obj);
         }
     }

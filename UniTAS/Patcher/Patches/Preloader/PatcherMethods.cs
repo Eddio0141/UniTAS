@@ -31,7 +31,7 @@ public class PatchHarmonyEarly : PreloadPatcher
         // add static ctor if not found
         if (staticCtor == null)
         {
-            Entry.Logger.LogDebug("Adding static ctor to MonoBehaviour");
+            Patcher.Logger.LogDebug("Adding static ctor to MonoBehaviour");
             staticCtor = new(".cctor",
                 MethodAttributes.Static | MethodAttributes.Private | MethodAttributes.HideBySig
                 | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName,
@@ -66,13 +66,13 @@ public class PatchHarmonyEarly : PreloadPatcher
         {
             if (_patched)
             {
-                Entry.Logger.LogWarning("Patching harmony early twice, something invoked the static ctor twice");
+                Patcher.Logger.LogWarning("Patching harmony early twice, something invoked the static ctor twice");
                 return;
             }
 
             _patched = true;
 
-            Entry.Logger.LogDebug("Patching harmony early");
+            Patcher.Logger.LogDebug("Patching harmony early");
 
             var harmony = new HarmonyLib.Harmony("dev.yuu0141.unitas.patcher");
             harmony.PatchAll();
