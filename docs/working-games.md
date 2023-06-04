@@ -27,9 +27,9 @@
 | [Cat Quest]                                | 1.2.10           | Broken     | Game freezes on soft restart when running a TAS due to resetting a static field in Rewired            | 0.4.0              |
 | [Cat Quest II]                             | 1.7.6            | Broken     | NullReferenceException on game start, permanent loading screen                                        | 0.4.0              |
 | [Cuphead]                                  | 1.3.2            | Broken     | NullReferenceException on soft restart when running a TAS, permanent black screen                     | 0.4.0              |
-| [Deepest Sword]                            | 0.1.5c           | Broken     | ArgumentException when running a TAS, can be fully TAS'd but will crash randomly                      |                    |
+| [Deepest Sword]                            | 0.1.5c           | Broken     | ArgumentException when running a TAS, can be fully TAS'd but will crash randomly                      | 0.4.0              |
 | [Do It For Me]                             | Latest           | Broken     | Menu button not clickable                                                                             | 0.3.0              |
-| [Hololive Isekai]                          | 0.3              | Good       | NullReferenceException shows rarely when running a TAS at an unknown moment in the game               |                    |
+| [Hololive Isekai]                          | 0.3              | Good       | NullReferenceException shows rarely when running a TAS at an unknown moment in the game               | 0.4.0              |
 | [HuniePop]                                 | 1.2.0            | Broken     | Game crashes with a memory access violation on soft restart when running a TAS                        | 0.4.0              |
 | [It Steals]                                | Latest           | Perfect    |                                                                                                       | 0.4.0              |
 | [Keep Talking and Nobody Explodes]         | 1.9.24           | Broken     | IndexOutOfRangeException and NullReferenceException on soft restart when running a TAS                | 0.4.0              |
