@@ -16,6 +16,7 @@ public static class ContainerStarter
     [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public static void Init()
     {
+        StaticLogger.Log.LogDebug("Initializing container");
         Kernel = new Container(c =>
         {
             c.ForSingletonOf<DiscoverAndRegister>().Use<DiscoverAndRegister>();
