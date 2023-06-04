@@ -11,7 +11,7 @@ A tool that lets you TAS unity games
 # What games work
 
 - Currently, anything that [BepInEx 5] supports, ranging from unity 3 to latest, and games that use Mono and not IL2CPP
-- Check [working-games](docs/working-games.md) for tested games
+- Check [compatibility-list](docs/compatibility-list.md) for tested games
 - Currently, simple games that comes from game jam or small indie games like on itch.io has a higher chance of working
 
 # How to use
