@@ -8,6 +8,7 @@ namespace UniTAS.Patcher.Implementations;
 
 [Register]
 [ForceInstantiate]
+[ExcludeRegisterIfTesting]
 public class PatchHarmony
 {
     public PatchHarmony(IEnumerable<Interfaces.Patches.PatchProcessor.PatchProcessor> patchProcessors, ILogger logger)

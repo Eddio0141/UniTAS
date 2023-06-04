@@ -6,6 +6,7 @@ namespace UniTAS.Patcher.Implementations;
 
 [Register]
 [ForceInstantiate]
+[ExcludeRegisterIfTesting]
 public class InitGUI
 {
     public InitGUI(IWindowFactory windowFactory)
