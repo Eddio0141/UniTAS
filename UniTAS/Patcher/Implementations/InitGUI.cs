@@ -5,6 +5,7 @@ using UniTAS.Patcher.Services.GUI;
 namespace UniTAS.Patcher.Implementations;
 
 [Register]
+[ForceInstantiate]
 public class InitGUI
 {
     public InitGUI(IWindowFactory windowFactory)

@@ -7,6 +7,7 @@ using UniTAS.Patcher.Services.Logging;
 namespace UniTAS.Patcher.Implementations;
 
 [Register]
+[ForceInstantiate]
 public class PatchHarmony
 {
     public PatchHarmony(IEnumerable<Interfaces.Patches.PatchProcessor.PatchProcessor> patchProcessors, ILogger logger)
