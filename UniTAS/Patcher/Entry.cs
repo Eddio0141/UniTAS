@@ -37,6 +37,7 @@ public static class Entry
     [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public static void Finish()
     {
+        StaticLogger.Log.LogInfo("Finished preload patcher!");
         InvokeEventAttributes.Invoke<InvokeOnPatcherFinishAttribute>();
     }
 }
