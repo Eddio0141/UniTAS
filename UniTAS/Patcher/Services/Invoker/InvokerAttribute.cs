@@ -7,5 +7,4 @@ namespace UniTAS.Patcher.Services.Invoker;
 /// </summary>
 public abstract class InvokerAttribute : Attribute
 {
-    public abstract void HandleType(Type type);
 }
