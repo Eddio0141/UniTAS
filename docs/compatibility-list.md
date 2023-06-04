@@ -1,11 +1,11 @@
 # How to manually add a game to the list
-- Modify `UniTAS/docs/working-games.json` and add a new entry following the format of the other entries
+- Modify `UniTAS/docs/compatibility-list.json` and add a new entry following the format of the other entries
 - If providing the link to the game, make sure the game name is `[Game Name]`, and add the link to the bottom of this file following the format of the other entries
 - Use [json-to-markdown](https://tableconvert.com/json-to-markdown) to convert the json to markdown
   - For the `table generator`, select `First row as header` and `Bold first row` and set text align to `Left`
-- Replace the table in [Working games](#working-games) with the generated markdown table
+- Replace the table in [Compatibility list](#compatibility-list) with the generated markdown table
 
-# Working tiers
+# Status tiers
 - Perfect
   - Works as UniTAS intends to
 - Good
@@ -19,7 +19,7 @@
   - Game crashes on launch due to UniTAS
   - This is if the game hard crashes
 
-# Working games
+# Compatibility list
 | **Game**                                   | **Game Version** | **Status** | **Notes**                                                                                             | **UniTAS Version** |
 |--------------------------------------------|------------------|------------|-------------------------------------------------------------------------------------------------------|--------------------|
 | [Baldi's Basics in Education and Learning] | 1.4.3            | Broken     | Game freezes on soft restart when running a TAS due to resetting a static field in Rewired            | 0.4.0              |
