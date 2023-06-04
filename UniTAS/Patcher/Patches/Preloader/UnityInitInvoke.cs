@@ -60,20 +60,20 @@ public class UnityInitInvoke : PreloadPatcher
             ilProcessor.InsertBefore(firstInstruction, ilProcessor.Create(OpCodes.Call, invoke));
         }
     }
+}
 
-    [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
-    public static class InvokeTracker
+[SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
+public static class InvokeTracker
+{
+    private static bool _invoked;
+
+    public static void OnUnityInit()
     {
-        private static bool _invoked;
+        if (_invoked) return;
+        _invoked = true;
 
-        public static void OnUnityInit()
-        {
-            if (_invoked) return;
-            _invoked = true;
+        StaticLogger.Log.LogDebug("Unity has been initialized");
 
-            StaticLogger.Log.LogDebug("Unity has been initialized");
-
-            InvokeEventAttributes.Invoke<InvokeOnUnityInitAttribute>();
-        }
+        InvokeEventAttributes.Invoke<InvokeOnUnityInitAttribute>();
     }
 }
