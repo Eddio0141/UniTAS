@@ -1,0 +1,128 @@
+[
+    {
+        "Game": "[Baldi's Basics in Education and Learning]",
+        "Game Version": "1.4.3",
+        "Status": "Broken",
+        "Notes": "Game freezes on soft restart when running a TAS due to resetting a static field in Rewired",
+        "UniTAS Version": "0.4.0"
+    },
+    {
+        "Game": "[Bubble Jcat]",
+        "Game Version": "Latest",
+        "Status": "Perfect",
+        "Notes": null,
+        "UniTAS Version": "0.4.0"
+    },
+    {
+        "Game": "[Cat Quest]",
+        "Game Version": "1.2.10",
+        "Status": "Broken",
+        "Notes": "Game freezes on soft restart when running a TAS due to resetting a static field in Rewired",
+        "UniTAS Version": "0.4.0"
+    },
+    {
+        "Game": "[Cat Quest II]",
+        "Game Version": "1.7.6",
+        "Status": "Broken",
+        "Notes": "NullReferenceException on game start, permanent loading screen",
+        "UniTAS Version": "0.4.0"
+    },
+    {
+        "Game": "[Cuphead]",
+        "Game Version": "1.3.2",
+        "Status": "Broken",
+        "Notes": "NullReferenceException on soft restart when running a TAS, permanent black screen",
+        "UniTAS Version": "0.4.0"
+    },
+    {
+        "Game": "[Deepest Sword]",
+        "Game Version": "0.1.5c",
+        "Status": "Broken",
+        "Notes": "ArgumentException when running a TAS, can be fully TAS'd but will crash randomly",
+        "UniTAS Version": "0.4.0"
+    },
+    {
+        "Game": "[Do It For Me]",
+        "Game Version": "Latest",
+        "Status": "Broken",
+        "Notes": "Menu button not clickable",
+        "UniTAS Version": "0.3.0"
+    },
+    {
+        "Game": "[Hololive Isekai]",
+        "Game Version": "0.3",
+        "Status": "Good",
+        "Notes": "NullReferenceException shows rarely when running a TAS at an unknown moment in the game",
+        "UniTAS Version": "0.4.0"
+    },
+    {
+        "Game": "[HuniePop]",
+        "Game Version": "1.2.0",
+        "Status": "Broken",
+        "Notes": "Game crashes with a memory access violation on soft restart when running a TAS",
+        "UniTAS Version": "0.4.0"
+    },
+    {
+        "Game": "[It Steals]",
+        "Game Version": "Latest",
+        "Status": "Perfect",
+        "Notes": null,
+        "UniTAS Version": "0.4.0"
+    },
+    {
+        "Game": "[Keep Talking and Nobody Explodes]",
+        "Game Version": "1.9.24",
+        "Status": "Broken",
+        "Notes": "IndexOutOfRangeException and NullReferenceException on soft restart when running a TAS",
+        "UniTAS Version": "0.4.0"
+    },
+    {
+        "Game": "[NEEDY STREAMER OVERLOAD]",
+        "Game Version": "Latest",
+        "Status": "Broken",
+        "Notes": "Game freezes on soft restart when running a TAS due to resetting a static field in Rewired",
+        "UniTAS Version": "0.4.0"
+    },
+    {
+        "Game": "[PlateUp!]",
+        "Game Version": "1.0.5",
+        "Status": "Broken",
+        "Notes": "Game crashes with IndexOutOfRangeException on soft restart when running a TAS ",
+        "UniTAS Version": "0.4.0"
+    },
+    {
+        "Game": "[Resonance of the Ocean]",
+        "Game Version": "1.2.6",
+        "Status": "Broken",
+        "Notes": "Permanent blue screen on soft restart when running a TAS",
+        "UniTAS Version": "0.4.0"
+    },
+    {
+        "Game": "[Subnautica]",
+        "Game Version": "70086",
+        "Status": "Broken",
+        "Notes": "Permanent black screen on game start",
+        "UniTAS Version": "0.4.0"
+    },
+    {
+        "Game": "[ULTRAKILL]",
+        "Game Version": "Latest",
+        "Status": "Broken",
+        "Notes": "Game works but has some exceptions in the log and menu might not be working, but intro skipping works",
+        "UniTAS Version": "0.4.0"
+    },
+    {
+        "Game": "[Untitled Goose Game]",
+        "Game Version": "1.1.4",
+        "Status": "Broken",
+        "Notes": "Game freezes on soft restart when running a TAS due to resetting a static field in Rewired",
+        "UniTAS Version": "0.4.0"
+    },
+    {
+        "Game": "[YuraYura! Tidying up the tilting tower!]",
+        "Game Version": "1.0",
+        "Status": "Perfect",
+        "Notes": null,
+        "UniTAS Version": "0.4.0"
+    }
+]
