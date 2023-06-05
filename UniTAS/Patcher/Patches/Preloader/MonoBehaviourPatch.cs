@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using HarmonyLib;
@@ -6,6 +7,7 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 using MonoMod.Utils;
+using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Interfaces;
 using UniTAS.Patcher.Utils;
 
@@ -13,7 +15,40 @@ namespace UniTAS.Patcher.Patches.Preloader;
 
 public class MonoBehaviourPatch : PreloadPatcher
 {
-    public override IEnumerable<string> TargetDLLs => PatcherUtils.AllTargetDllsWithGenericExclusions;
+    private readonly string[] _assemblyExclusionsRaw =
+    {
+        "UnityEngine.*",
+        "UnityEngine",
+        "Unity.*",
+        "System.*",
+        "System",
+        "netstandard",
+        "mscorlib",
+        "Mono.*",
+        "Mono",
+        "MonoMod.*",
+        "BepInEx.*",
+        "BepInEx",
+        "MonoMod.*",
+        "0Harmony",
+        "HarmonyXInterop",
+        "StructureMap",
+        "Newtonsoft.Json"
+    };
+
+    private readonly string[] _assemblyIncludeRaw =
+    {
+        "Unity.InputSystem",
+        "UnityEngine.InputModule"
+    };
+
+    public override IEnumerable<string> TargetDLLs => Entry.TargetDLLs.Where(x =>
+    {
+        var fileWithoutExtension = Path.GetFileNameWithoutExtension(x);
+        return fileWithoutExtension == null ||
+               _assemblyIncludeRaw.Any(a => fileWithoutExtension.Like(a)) ||
+               !_assemblyExclusionsRaw.Any(a => fileWithoutExtension.Like(a));
+    });
 
     private const string COLLISION = "UnityEngine.Collision";
     private const string COLLISION_2D = "UnityEngine.Collision2D";
