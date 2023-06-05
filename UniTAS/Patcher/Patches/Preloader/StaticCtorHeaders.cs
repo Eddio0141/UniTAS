@@ -10,9 +10,7 @@ using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Interfaces;
-using UniTAS.Patcher.StaticServices;
 using UniTAS.Patcher.Utils;
-using MethodAttributes = Mono.Cecil.MethodAttributes;
 
 namespace UniTAS.Patcher.Patches.Preloader;
 
@@ -68,19 +66,7 @@ public class StaticCtorHeaders : PreloadPatcher
         {
             // find static ctor
             var staticCtor = type.Methods.FirstOrDefault(m => m.IsConstructor && m.IsStatic);
-            // add static ctor if not found
-            if (staticCtor == null)
-            {
-                StaticLogger.Log.LogDebug($"Adding static ctor to {type.FullName}");
-                staticCtor = new(".cctor",
-                    MethodAttributes.Static | MethodAttributes.Private | MethodAttributes.HideBySig
-                    | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName,
-                    assembly.MainModule.ImportReference(typeof(void)));
-
-                type.Methods.Add(staticCtor);
-                var il = staticCtor.Body.GetILProcessor();
-                il.Append(il.Create(OpCodes.Ret));
-            }
+            ILCodeUtils.AddCctorIfMissing(assembly, type);
 
             StaticLogger.Log.LogDebug($"Patching static ctor of {type.FullName}");
             PatchStaticCtor(assembly, staticCtor, type);
