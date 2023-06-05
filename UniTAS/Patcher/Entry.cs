@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Linq;
-using BepInEx;
 using Mono.Cecil;
 using UniTAS.Patcher.Implementations;
 using UniTAS.Patcher.Utils;
@@ -14,8 +12,8 @@ public static class Entry
 {
     // List of assemblies to patch
     [SuppressMessage("ReSharper", "UnusedMember.Global")]
-    public static IEnumerable<string> TargetDLLs =>
-        Directory.GetFiles(Paths.ManagedPath, "*.dll", SearchOption.TopDirectoryOnly).Select(Path.GetFileName);
+    [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
+    public static IEnumerable<string> TargetDLLs => PreloadPatcherProcessor.TargetDLLs;
 
     private static readonly PreloadPatcherProcessor PreloadPatcherProcessor = new();
 

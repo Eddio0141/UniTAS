@@ -44,7 +44,7 @@ public class StaticCtorHeaders : PreloadPatcher
         "UnityEngine.InputModule"
     };
 
-    public override IEnumerable<string> TargetDLLs => Entry.TargetDLLs.Where(x =>
+    public override IEnumerable<string> TargetDLLs => TargetPatcherDlls.AllDLLs.Where(x =>
     {
         var fileWithoutExtension = Path.GetFileNameWithoutExtension(x);
         return fileWithoutExtension == null ||

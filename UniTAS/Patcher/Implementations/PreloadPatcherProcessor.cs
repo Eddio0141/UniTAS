@@ -1,4 +1,6 @@
-﻿using UniTAS.Patcher.Interfaces;
+﻿using System.Collections.Generic;
+using System.Linq;
+using UniTAS.Patcher.Interfaces;
 using UniTAS.Patcher.Patches.Preloader;
 
 namespace UniTAS.Patcher.Implementations;
@@ -12,4 +14,6 @@ public class PreloadPatcherProcessor
         new UnityInitInvoke(),
         new NewInputSystemInitInvoke()
     };
+
+    public IEnumerable<string> TargetDLLs => PreloadPatchers.SelectMany(p => p.TargetDLLs).Distinct().ToArray();
 }
