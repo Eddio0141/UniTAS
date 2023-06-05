@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Mono.Cecil;
 using UniTAS.Patcher.Implementations;
 using UniTAS.Patcher.Utils;
@@ -26,9 +27,11 @@ public static class Entry
     [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public static void Patch(ref AssemblyDefinition assembly)
     {
+        var assemblyNameWithDll = $"{assembly.Name.Name}.dll";
         foreach (var patcher in PreloadPatcherProcessor.PreloadPatchers)
         {
-            StaticLogger.Log.LogDebug(assembly.Name.Name);
+            // only patch the assembly if it's in the list of target assemblies
+            if (!patcher.TargetDLLs.Contains(assemblyNameWithDll)) continue;
             patcher.Patch(ref assembly);
         }
     }
