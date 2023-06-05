@@ -2,7 +2,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Mono.Cecil;
 using UniTAS.Patcher.Implementations;
-using UniTAS.Patcher.Interfaces.Invoker;
 using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher;
@@ -38,6 +37,5 @@ public static class Entry
     public static void Finish()
     {
         StaticLogger.Log.LogInfo("Finished preload patcher!");
-        InvokeEventAttributes.Invoke<InvokeOnPatcherFinishAttribute>();
     }
 }
