@@ -67,7 +67,7 @@ public class StaticCtorHeaders : PreloadPatcher
         foreach (var type in types)
         {
             // remove readonly from all static fields
-            StaticLogger.Log.LogDebug($"Removing readonly from static fields");
+            StaticLogger.Log.LogDebug($"Removing readonly from static fields in {type.FullName}");
             RemoveReadOnly(type);
             // find static ctor
             var staticCtor = type.Methods.FirstOrDefault(m => m.IsConstructor && m.IsStatic);
