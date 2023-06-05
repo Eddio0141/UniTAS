@@ -1,13 +1,13 @@
 using UniTAS.Patcher.Interfaces.Invoker;
 using UnityEngine;
 
-namespace UniTAS.Patcher.StaticServices;
+namespace UniTAS.Patcher.Utils;
 
 public static class UpdateInvokeOffset
 {
     public static double Offset { get; private set; }
 
-    [InvokeOnPatcherFinish]
+    [InvokeOnUnityInit]
     public static void Init()
     {
         MonoBehaviourEvents.OnUpdateUnconditional += UpdateUnconditionalOffset;

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UniTAS.Patcher.Interfaces.Invoker;
 
-namespace UniTAS.Patcher.StaticServices;
+namespace UniTAS.Patcher.Utils;
 
 /// <summary>
 /// Event calls for MonoBehaviour event methods
@@ -10,7 +10,7 @@ namespace UniTAS.Patcher.StaticServices;
 /// Unconditional events are called even if MonoBehaviour is paused
 /// Actual events are called only if MonoBehaviour is not paused
 /// </summary>
-[InvokeOnPatcherFinish]
+[InvokeOnUnityInit]
 public static class MonoBehaviourEvents
 {
     public static event Action OnAwakeUnconditional;

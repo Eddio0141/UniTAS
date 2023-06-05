@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using HarmonyLib;
 
-namespace UniTAS.Patcher.StaticServices;
+namespace UniTAS.Patcher.Utils;
 
 public static class NewInputSystemState
 {
