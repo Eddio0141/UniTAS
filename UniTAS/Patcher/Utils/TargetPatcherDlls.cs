@@ -6,10 +6,8 @@ using UniTAS.Patcher.Extensions;
 
 namespace UniTAS.Patcher.Utils;
 
-public static class PatcherUtils
+public static class TargetPatcherDlls
 {
-    public static string ProjectAssembly { get; } = typeof(Entry).Namespace;
-
     private static readonly string[] AssemblyExclusionsRaw =
     {
         "UnityEngine.*",
@@ -45,7 +43,5 @@ public static class PatcherUtils
                 return fileWithoutExtension == null ||
                        AssemblyIncludeRaw.Any(a => fileWithoutExtension.Like(a)) ||
                        !AssemblyExclusionsRaw.Any(a => fileWithoutExtension.Like(a));
-            })
-            // isolate the filename
-            .Select(Path.GetFileName);
+            });
 }
