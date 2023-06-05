@@ -1,7 +1,7 @@
 using System;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.SoftRestart;
-using UniTAS.Patcher.StaticServices;
+using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Implementations.NewInputSystem;
 

@@ -5,7 +5,7 @@ using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
 using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.EventSubscribers;
-using UniTAS.Patcher.StaticServices;
+using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Implementations;
 

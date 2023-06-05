@@ -7,7 +7,6 @@ using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 using MonoMod.Utils;
 using UniTAS.Patcher.Interfaces;
-using UniTAS.Patcher.StaticServices;
 using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Patches.Preloader;

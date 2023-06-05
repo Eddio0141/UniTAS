@@ -7,7 +7,7 @@ using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Patcher.Services.VirtualEnvironment;
-using UniTAS.Patcher.StaticServices;
+using UniTAS.Patcher.Utils;
 using Object = UnityEngine.Object;
 
 namespace UniTAS.Patcher.Implementations.GameRestart;

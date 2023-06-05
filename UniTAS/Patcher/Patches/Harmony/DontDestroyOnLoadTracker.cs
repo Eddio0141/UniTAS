@@ -3,7 +3,6 @@ using System.Diagnostics.CodeAnalysis;
 using HarmonyLib;
 using UniTAS.Patcher.Interfaces.Patches.PatchTypes;
 using UniTAS.Patcher.Services.Logging;
-using UniTAS.Patcher.StaticServices;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 

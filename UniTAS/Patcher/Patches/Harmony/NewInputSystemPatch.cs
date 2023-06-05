@@ -4,7 +4,6 @@ using System.Reflection;
 using HarmonyLib;
 using UniTAS.Patcher.Interfaces.Patches.PatchTypes;
 using UniTAS.Patcher.Services;
-using UniTAS.Patcher.StaticServices;
 using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Patches.Harmony;
