@@ -11,7 +11,7 @@ public static class Entry
 {
     // List of assemblies to patch
     [SuppressMessage("ReSharper", "UnusedMember.Global")]
-    public static IEnumerable<string> TargetDLLs => PreloadPatcherProcessor.TargetDLLs;
+    public static IEnumerable<string> TargetDLLs => TargetPatcherDlls.AllTargetDllsWithGenericExclusions;
 
     private static readonly PreloadPatcherProcessor PreloadPatcherProcessor = new();
 
@@ -20,7 +20,6 @@ public static class Entry
     public static void Initialize()
     {
         StaticLogger.Log.LogInfo($"Found {PreloadPatcherProcessor.PreloadPatchers.Length} preload patchers");
-        StaticLogger.Log.LogDebug($"Target DLLs\n{string.Join("\n", PreloadPatcherProcessor.TargetDLLs)}");
     }
 
     // Patches the assemblies
@@ -29,6 +28,7 @@ public static class Entry
     {
         foreach (var patcher in PreloadPatcherProcessor.PreloadPatchers)
         {
+            StaticLogger.Log.LogDebug(assembly.Name.Name);
             patcher.Patch(ref assembly);
         }
     }
