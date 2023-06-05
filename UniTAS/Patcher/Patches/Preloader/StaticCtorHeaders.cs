@@ -66,6 +66,9 @@ public class StaticCtorHeaders : PreloadPatcher
         StaticLogger.Log.LogDebug("Patching static ctors");
         foreach (var type in types)
         {
+            // remove readonly from all static fields
+            StaticLogger.Log.LogDebug($"Removing readonly from static fields in {type.FullName}");
+            RemoveReadOnly(type);
             // find static ctor
             var staticCtor = type.Methods.FirstOrDefault(m => m.IsConstructor && m.IsStatic);
             // add static ctor if not found
@@ -84,6 +87,17 @@ public class StaticCtorHeaders : PreloadPatcher
 
             StaticLogger.Log.LogDebug($"Patching static ctor of {type.FullName}");
             PatchStaticCtor(assembly, staticCtor, type);
+        }
+    }
+
+    /// <summary>
+    /// Removes "readonly" from all fields
+    /// </summary>
+    private static void RemoveReadOnly(TypeDefinition type)
+    {
+        foreach (var field in type.Fields)
+        {
+            field.Attributes &= ~Mono.Cecil.FieldAttributes.InitOnly;
         }
     }
 
