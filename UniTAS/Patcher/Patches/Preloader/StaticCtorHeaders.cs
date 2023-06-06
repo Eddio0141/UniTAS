@@ -35,7 +35,8 @@ public class StaticCtorHeaders : PreloadPatcher
         "MonoMod.*",
         "0Harmony",
         "HarmonyXInterop",
-        "StructureMap"
+        "StructureMap",
+        "Newtonsoft.Json"
     };
 
     private readonly string[] _assemblyIncludeRaw =
