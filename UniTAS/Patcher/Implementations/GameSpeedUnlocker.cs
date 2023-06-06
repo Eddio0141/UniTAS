@@ -12,6 +12,7 @@ namespace UniTAS.Patcher.Implementations;
 /// </summary>
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 [Singleton]
+[ForceInstantiate]
 public class GameSpeedUnlocker : IGameSpeedUnlocker
 {
     public bool Unlock { get; private set; }
@@ -28,6 +29,7 @@ public class GameSpeedUnlocker : IGameSpeedUnlocker
     {
         OriginalTargetFrameRate = Application.targetFrameRate;
         OriginalVSyncCount = QualitySettings.vSyncCount;
+
         if (Application.targetFrameRate != -1)
         {
             _logger.LogDebug("Unlocking fps");
