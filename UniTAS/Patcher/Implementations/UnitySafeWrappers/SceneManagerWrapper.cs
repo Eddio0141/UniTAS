@@ -12,6 +12,7 @@ namespace UniTAS.Patcher.Implementations.UnitySafeWrappers;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 [Singleton]
+[ExcludeRegisterIfTesting]
 public class SceneManagerWrapper : ISceneWrapper
 {
     private readonly IUnityInstanceWrapFactory _unityInstanceWrapFactory;
@@ -59,7 +60,7 @@ public class SceneManagerWrapper : ISceneWrapper
 
         _loadScene = _sceneManager?.GetMethod("LoadScene", AccessTools.all, null, new[] { typeof(int) }, null);
 
-        var loadLevelAsync = AccessTools.Method("UnityEngine.Application.LoadLevelAsync",
+        var loadLevelAsync = AccessTools.Method(typeof(Application), "LoadLevelAsync",
             new[] { typeof(string), typeof(int), typeof(bool), typeof(bool) });
         if (loadLevelAsync != null)
         {
