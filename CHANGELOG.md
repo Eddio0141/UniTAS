@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# Unreleased
+
+## Fixed
+
+### Games
+- Fixed deepest sword crashing randomly when running a TAS
+
+### Compatibility
+- Fixed readonly fields pointing to old references after soft restart
+
+## Changes
+
+### Performance
+- Improved performance of changing fps
+
 # [v0.4.0] - 2023-06-02
 
 ## Added
