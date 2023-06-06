@@ -15,15 +15,23 @@ public static class ILCodeUtils
         AddCctorIfMissing(assembly, type);
         var staticCtor = type.Methods.First(m => m.IsConstructor && m.IsStatic);
 
+        MethodInvokeHook(assembly, staticCtor, method);
+    }
+
+    public static void MethodInvokeHook(AssemblyDefinition assembly, MethodDefinition methodDefinition,
+        MethodBase method)
+    {
+        if (method == null) return;
+
         var invoke = assembly.MainModule.ImportReference(method);
 
-        var firstInstruction = staticCtor.Body.Instructions.First();
-        var ilProcessor = staticCtor.Body.GetILProcessor();
+        var firstInstruction = methodDefinition.Body.Instructions.First();
+        var ilProcessor = methodDefinition.Body.GetILProcessor();
 
         // insert call before first instruction
         ilProcessor.InsertBefore(firstInstruction, ilProcessor.Create(OpCodes.Call, invoke));
         StaticLogger.Log.LogDebug(
-            $"Added invoke hook to cctor of {type.FullName} invoking {method.DeclaringType?.FullName ?? "unknown"}.{method.Name}");
+            $"Added invoke hook to method {method.Name} of {methodDefinition.DeclaringType.FullName} invoking {method.DeclaringType?.FullName ?? "unknown"}.{method.Name}");
     }
 
     public static void AddCctorIfMissing(AssemblyDefinition assembly, TypeDefinition type)
