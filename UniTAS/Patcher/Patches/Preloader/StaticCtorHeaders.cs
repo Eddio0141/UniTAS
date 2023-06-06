@@ -197,8 +197,6 @@ public static class PatchMethods
 
     public static void StaticCtorStart()
     {
-        InvokeTracker.OnUnityInit();
-
         var type = new StackFrame(1).GetMethod()?.DeclaringType;
 
         if (type == null)
