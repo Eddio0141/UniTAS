@@ -16,6 +16,9 @@ public class InitManagerGameObject
     public InitManagerGameObject()
     {
         var gameObject = new GameObject(GameObjectName);
+        Object.DontDestroyOnLoad(gameObject);
+
+        // attach scripts
         gameObject.AddComponent<MonoBehaviourUpdateInvoker>();
     }
 }
