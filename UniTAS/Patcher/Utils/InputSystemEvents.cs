@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using UniTAS.Patcher.Services.Invoker;
+using UniTAS.Patcher.Interfaces.Invoker;
 using UnityEngine.InputSystem;
 
 namespace UniTAS.Patcher.Utils;
@@ -29,7 +29,7 @@ public static class InputSystemEvents
     private static Action _inputUpdateFixedUpdate;
 
     [SuppressMessage("ReSharper", "ConditionIsAlwaysTrueOrFalse")]
-    [InvokeOnNewInputSystemInit]
+    [InvokeOnUnityInit]
     public static void Init()
     {
         if (_usingMonoBehUpdate)
