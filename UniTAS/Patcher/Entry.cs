@@ -21,6 +21,8 @@ public static class Entry
     [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public static void Initialize()
     {
+        LoggingUtils.InitDiskLogger();
+
         StaticLogger.Log.LogInfo($"Found {PreloadPatcherProcessor.PreloadPatchers.Length} preload patchers");
         StaticLogger.Log.LogInfo(
             $"Target dlls: {string.Join(", ", TargetDLLs.ToArray())}");
