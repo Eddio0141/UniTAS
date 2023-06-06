@@ -17,6 +17,8 @@ public class MonoBehaviourUpdateInvoker : MonoBehaviour
 
     private void Awake()
     {
+        DontDestroyOnLoad(this);
+
         var kernel = ContainerStarter.Kernel;
         _monoBehEventInvoker = kernel.GetInstance<IMonoBehEventInvoker>();
         _onLastUpdatesUnconditional = kernel.GetAllInstances<IOnLastUpdateUnconditional>().ToArray();
