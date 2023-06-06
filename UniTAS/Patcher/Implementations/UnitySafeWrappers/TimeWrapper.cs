@@ -1,5 +1,5 @@
 using System;
-using System.Reflection;
+using HarmonyLib;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Logging;
@@ -13,36 +13,42 @@ namespace UniTAS.Patcher.Implementations.UnitySafeWrappers;
 [ExcludeRegisterIfTesting]
 public class TimeWrapper : ITimeWrapper
 {
-    private readonly PropertyInfo _captureDeltaTime = typeof(Time).GetProperty("captureDeltaTime");
+    private readonly Action<float> _captureDeltaTimeSet;
+    private readonly Func<float> _captureDeltaTimeGet;
 
     private readonly IPatchReverseInvoker _reverseInvoker;
     private readonly ILogger _logger;
 
     public TimeWrapper(IPatchReverseInvoker reverseInvoker, ILogger logger)
     {
+        var captureDt = AccessTools.Property(typeof(Time), "captureDeltaTime");
+        if (captureDt != null)
+        {
+            _captureDeltaTimeSet = AccessTools.MethodDelegate<Action<float>>(captureDt.GetSetMethod());
+            _captureDeltaTimeGet = AccessTools.MethodDelegate<Func<float>>(captureDt.GetGetMethod());
+        }
+
         _reverseInvoker = reverseInvoker;
         _logger = logger;
     }
 
-    public bool IntFPSOnly => _captureDeltaTime == null;
+    public bool IntFPSOnly => _captureDeltaTimeSet == null;
 
     public double CaptureFrameTime
     {
         get
         {
-            if (_captureDeltaTime != null)
+            if (_captureDeltaTimeGet != null)
             {
-                // var value = _reverseInvoker.Invoke(() => _captureDeltaTime.GetValue(null, null));
-                return (float)_captureDeltaTime.GetValue(null, null);
+                return _captureDeltaTimeGet.Invoke();
             }
 
-            // var value = _reverseInvoker.Invoke(() => Time.captureFramerate);
             var fps = Time.captureFramerate;
             return fps > 0 ? 1.0 / fps : 0.0;
         }
         set
         {
-            if (_captureDeltaTime != null)
+            if (_captureDeltaTimeSet != null)
             {
                 if (value <= 0.0)
                 {
@@ -52,7 +58,7 @@ public class TimeWrapper : ITimeWrapper
                 }
 
                 _logger.LogDebug($"Setting captureDeltaTime to {value}");
-                _reverseInvoker.Invoke(() => _captureDeltaTime.SetValue(null, (float)value, null));
+                _reverseInvoker.Invoke(() => _captureDeltaTimeSet.Invoke((float)value));
             }
             else
             {
