@@ -9,10 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Fixed
 
+### UniTAS
+
+- Fixed movie playback fps unlock not working
+
 ### Games
+
 - Fixed deepest sword crashing randomly when running a TAS
 
 ### Compatibility
+
 - Fixed readonly fields pointing to old references after soft restart
 
 ## Changes
