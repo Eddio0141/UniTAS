@@ -1,4 +1,4 @@
-namespace UniTAS.Patcher.StaticServices;
+namespace UniTAS.Patcher.Utils;
 
 public static class MonoBehaviourController
 {

@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using HarmonyLib;
+using UniTAS.Patcher.Implementations;
 using UniTAS.Patcher.Interfaces.Patches.PatchTypes;
 using UniTAS.Patcher.Services.Logging;
-using UniTAS.Patcher.StaticServices;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 
@@ -24,7 +24,7 @@ public class DontDestroyOnLoadTracker
         {
             "BepInEx_Manager",
             "BepInEx_ThreadingHelper",
-            ManagerGameObject.GameObjectName
+            InitManagerGameObject.GameObjectName
         };
 
         private static void Prefix(Object target)

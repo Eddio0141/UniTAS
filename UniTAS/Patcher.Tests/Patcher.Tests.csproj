@@ -34,7 +34,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Patcher\Patcher.csproj" />
+        <ProjectReference Include="..\Patcher\Patcher.csproj"/>
     </ItemGroup>
 
 </Project>

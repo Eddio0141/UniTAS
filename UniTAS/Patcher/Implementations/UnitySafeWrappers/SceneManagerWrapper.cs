@@ -12,6 +12,7 @@ namespace UniTAS.Patcher.Implementations.UnitySafeWrappers;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 [Singleton]
+[ExcludeRegisterIfTesting]
 public class SceneManagerWrapper : ISceneWrapper
 {
     private readonly IUnityInstanceWrapFactory _unityInstanceWrapFactory;
@@ -20,7 +21,7 @@ public class SceneManagerWrapper : ISceneWrapper
 
     private readonly Type _sceneManager = AccessTools.TypeByName($"{SCENE_MANAGEMENT_NAMESPACE}.SceneManager");
 
-    private readonly PropertyInfo _totalSceneCount;
+    private readonly Func<int> _totalSceneCount;
 
     private readonly Type _loadSceneParametersType =
         AccessTools.TypeByName($"{SCENE_MANAGEMENT_NAMESPACE}.LoadSceneParameters");
@@ -35,7 +36,7 @@ public class SceneManagerWrapper : ISceneWrapper
     private readonly MethodInfo _loadSceneAsyncNameIndexInternal;
 
     // fallback load level async 2
-    private readonly MethodInfo _applicationLoadLevelAsync;
+    private readonly Func<string, int, bool, bool, AsyncOperation> _applicationLoadLevelAsync;
 
     // non-async load level
     private readonly MethodInfo _loadScene;
@@ -59,8 +60,13 @@ public class SceneManagerWrapper : ISceneWrapper
 
         _loadScene = _sceneManager?.GetMethod("LoadScene", AccessTools.all, null, new[] { typeof(int) }, null);
 
-        _applicationLoadLevelAsync = AccessTools.TypeByName("UnityEngine.Application")?.GetMethod("LoadLevelAsync",
-            AccessTools.all, null, new[] { typeof(string), typeof(int), typeof(bool), typeof(bool) }, null);
+        var loadLevelAsync = AccessTools.Method(typeof(Application), "LoadLevelAsync",
+            new[] { typeof(string), typeof(int), typeof(bool), typeof(bool) });
+        if (loadLevelAsync != null)
+        {
+            _applicationLoadLevelAsync =
+                AccessTools.MethodDelegate<Func<string, int, bool, bool, AsyncOperation>>(loadLevelAsync);
+        }
 
         if (_loadSceneParametersType != null)
         {
@@ -71,7 +77,12 @@ public class SceneManagerWrapper : ISceneWrapper
                 null);
         }
 
-        _totalSceneCount = _sceneManager?.GetProperty("sceneCountInBuildSettings", AccessTools.all);
+        if (_sceneManager != null)
+        {
+            _totalSceneCount =
+                AccessTools.MethodDelegate<Func<int>>(AccessTools.PropertyGetter(_sceneManager,
+                    "sceneCountInBuildSettings"));
+        }
 
         _getActiveScene = _sceneManager?.GetMethod("GetActiveScene", AccessTools.all);
     }
@@ -99,9 +110,8 @@ public class SceneManagerWrapper : ISceneWrapper
 
         if (_applicationLoadLevelAsync != null)
         {
-            _applicationLoadLevelAsync.Invoke(null,
-                new object[]
-                    { sceneName, sceneBuildIndex, loadSceneMode == LoadSceneMode.Additive, mustCompleteNextFrame });
+            _applicationLoadLevelAsync.Invoke(sceneName, sceneBuildIndex, loadSceneMode == LoadSceneMode.Additive,
+                mustCompleteNextFrame);
             return;
         }
 
@@ -119,18 +129,7 @@ public class SceneManagerWrapper : ISceneWrapper
         Application.LoadLevel(0);
     }
 
-    public int TotalSceneCount
-    {
-        get
-        {
-            if (_totalSceneCount != null)
-            {
-                return (int)_totalSceneCount.GetValue(null, null);
-            }
-
-            return Application.levelCount;
-        }
-    }
+    public int TotalSceneCount => _totalSceneCount?.Invoke() ?? Application.levelCount;
 
     public int ActiveSceneIndex
     {

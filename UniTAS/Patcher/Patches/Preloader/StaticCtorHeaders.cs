@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using HarmonyLib;
@@ -10,9 +11,7 @@ using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Interfaces;
-using UniTAS.Patcher.StaticServices;
 using UniTAS.Patcher.Utils;
-using MethodAttributes = Mono.Cecil.MethodAttributes;
 
 namespace UniTAS.Patcher.Patches.Preloader;
 
@@ -36,28 +35,26 @@ public class StaticCtorHeaders : PreloadPatcher
         "MonoMod.*",
         "0Harmony",
         "HarmonyXInterop",
-        "StructureMap"
+        "StructureMap",
+        "Newtonsoft.Json"
     };
 
-    private readonly string[] _assemblyEnforceRaw =
+    private readonly string[] _assemblyIncludeRaw =
     {
         "Unity.InputSystem",
         "UnityEngine.InputModule"
     };
 
-    public override IEnumerable<string> TargetDLLs => PatcherUtils.AllTargetDllsWithGenericExclusions;
+    public override IEnumerable<string> TargetDLLs => TargetPatcherDlls.AllDLLs.Where(x =>
+    {
+        var fileWithoutExtension = Path.GetFileNameWithoutExtension(x);
+        return fileWithoutExtension == null ||
+               _assemblyIncludeRaw.Any(a => fileWithoutExtension.Like(a)) ||
+               !_assemblyExclusionsRaw.Any(a => fileWithoutExtension.Like(a));
+    });
 
     public override void Patch(ref AssemblyDefinition assembly)
     {
-        var definition = assembly;
-        var assemblyName = definition.Name.Name;
-        if (_assemblyExclusionsRaw.Any(x => assemblyName.Like(x)) &&
-            !_assemblyEnforceRaw.Any(x => assemblyName.Like(x)))
-        {
-            StaticLogger.Log.LogDebug($"Skipping static ctor patching for {definition.Name.Name}");
-            return;
-        }
-
         // get all types in assembly that has static fields or a static ctor
         var types = assembly.Modules.SelectMany(m => m.GetAllTypes())
             .Where(t => t.HasFields && t.Fields.Any(f => f.IsStatic && !f.IsLiteral) ||
@@ -70,20 +67,8 @@ public class StaticCtorHeaders : PreloadPatcher
             StaticLogger.Log.LogDebug($"Removing readonly from static fields in {type.FullName}");
             RemoveReadOnly(type);
             // find static ctor
-            var staticCtor = type.Methods.FirstOrDefault(m => m.IsConstructor && m.IsStatic);
-            // add static ctor if not found
-            if (staticCtor == null)
-            {
-                StaticLogger.Log.LogDebug($"Adding static ctor to {type.FullName}");
-                staticCtor = new(".cctor",
-                    MethodAttributes.Static | MethodAttributes.Private | MethodAttributes.HideBySig
-                    | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName,
-                    assembly.MainModule.ImportReference(typeof(void)));
-
-                type.Methods.Add(staticCtor);
-                var il = staticCtor.Body.GetILProcessor();
-                il.Append(il.Create(OpCodes.Ret));
-            }
+            ILCodeUtils.AddCctorIfMissing(assembly, type);
+            var staticCtor = type.Methods.First(m => m.IsConstructor && m.IsStatic);
 
             StaticLogger.Log.LogDebug($"Patching static ctor of {type.FullName}");
             PatchStaticCtor(assembly, staticCtor, type);

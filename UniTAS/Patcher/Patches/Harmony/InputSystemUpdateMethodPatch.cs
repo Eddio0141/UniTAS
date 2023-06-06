@@ -2,7 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using HarmonyLib;
 using UniTAS.Patcher.Interfaces.Patches.PatchTypes;
-using UniTAS.Patcher.StaticServices;
+using UniTAS.Patcher.Utils;
 using UnityEngine.InputSystem;
 
 namespace UniTAS.Patcher.Patches.Harmony;

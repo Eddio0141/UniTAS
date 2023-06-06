@@ -11,6 +11,7 @@ using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
 using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Patcher.Interfaces.Movie;
 using UniTAS.Patcher.Models.DependencyInjection;
+using UniTAS.Patcher.Models.UnitySafeWrappers.SceneManagement;
 using UniTAS.Patcher.Models.VirtualEnvironment;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.DependencyInjection;
@@ -163,6 +164,23 @@ public static class KernelUtils
     public class ConfigDummy : IConfig
     {
         public float DefaultFps { get; set; }
+    }
+
+    [Register(IncludeDifferentAssembly = true)]
+    public class SceneManagerWrapperDummy : ISceneWrapper
+    {
+        public void LoadSceneAsync(string sceneName, int sceneBuildIndex, LoadSceneMode loadSceneMode,
+            LocalPhysicsMode localPhysicsMode, bool mustCompleteNextFrame)
+        {
+        }
+
+        public void LoadScene(int buildIndex)
+        {
+        }
+
+        public int TotalSceneCount => 0;
+        public int ActiveSceneIndex => 0;
+        public string ActiveSceneName => "";
     }
 
     public static Container Init()

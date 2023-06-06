@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
 
-namespace UniTAS.Patcher.StaticServices;
+namespace UniTAS.Patcher.Utils;
 
 public static class Tracker
 {

@@ -1,5 +1,5 @@
 ﻿using System;
-using UniTAS.Patcher.StaticServices;
+using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Services.EventSubscribers;
 

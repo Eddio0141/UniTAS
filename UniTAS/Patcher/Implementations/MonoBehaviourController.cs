@@ -9,13 +9,13 @@ public class MonoBehaviourController : IMonoBehaviourController
 {
     public bool PausedExecution
     {
-        get => StaticServices.MonoBehaviourController.PausedExecution;
-        set => StaticServices.MonoBehaviourController.PausedExecution = value;
+        get => Utils.MonoBehaviourController.PausedExecution;
+        set => Utils.MonoBehaviourController.PausedExecution = value;
     }
 
     public bool PausedUpdate
     {
-        get => StaticServices.MonoBehaviourController.PausedUpdate;
-        set => StaticServices.MonoBehaviourController.PausedUpdate = value;
+        get => Utils.MonoBehaviourController.PausedUpdate;
+        set => Utils.MonoBehaviourController.PausedUpdate = value;
     }
 }

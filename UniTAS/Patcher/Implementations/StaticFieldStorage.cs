@@ -2,7 +2,7 @@ using System;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Logging;
-using UniTAS.Patcher.StaticServices;
+using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Implementations;
 
