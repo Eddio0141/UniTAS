@@ -7,7 +7,6 @@ using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using UniTAS.Patcher.Interfaces.Patches.PatchTypes;
-using UniTAS.Patcher.MonoBehaviourScripts;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Utils;
@@ -36,8 +35,9 @@ public class OpenFileStreamTrackerPatch
             var method = frame.GetMethod();
             var declaringType = method?.DeclaringType;
             if (declaringType == null) continue;
-            if (Equals(declaringType.Assembly, typeof(MonoBehaviourUpdateInvoker).Assembly) ||
-                Equals(declaringType.Assembly, typeof(Patcher.Entry).Assembly)) return true;
+            var declaringAssembly = declaringType.Assembly;
+            if (Equals(declaringAssembly, typeof(Entry).Assembly) ||
+                Equals(declaringAssembly, typeof(BepInEx.Paths).Assembly)) return true;
         }
 
         return false;
