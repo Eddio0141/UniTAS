@@ -1,19 +1,22 @@
+using System.Collections.Generic;
 using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
+using UniTAS.Patcher.Interfaces.GUI;
 using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations;
 
 [Singleton]
-public class Drawing : IOnUpdateUnconditional, IOnAwakeUnconditional, IOnGUIUnconditional
+public class Drawing : IOnAwakeUnconditional, IOnGUIUnconditional, IDrawing
 {
-    private RenderTexture _renderTexture;
     private Texture2D _texture;
     private Color32[] _pixels;
+    private readonly List<PendingText> _texts = new();
+
     private bool _initialized;
 
-    private bool _dirty;
+    private bool _textureDirty;
 
     public void FillBox(int x, int y, int width, int height, Color32 color)
     {
@@ -27,10 +30,17 @@ public class Drawing : IOnUpdateUnconditional, IOnAwakeUnconditional, IOnGUIUnco
             for (var posY = y; posY < destY; posY++)
             {
                 var index = posY * screenWidth + posX;
-                if (!_dirty && !_pixels[index].EqualsColor(color)) _dirty = true;
+                if (!_textureDirty && !_pixels[index].EqualsColor(color)) _textureDirty = true;
                 _pixels[index] = color;
             }
         }
+    }
+
+    public void PrintText(int x, int y, string text)
+    {
+        var width = text.Length * 10;
+        const int height = 20;
+        _texts.Add(new(text, new(x, y, width, height)));
     }
 
     public void AwakeUnconditional()
@@ -38,29 +48,41 @@ public class Drawing : IOnUpdateUnconditional, IOnAwakeUnconditional, IOnGUIUnco
         if (_initialized) return;
         _initialized = true;
 
-        _renderTexture = new(Screen.width, Screen.height, 0, RenderTextureFormat.ARGB32);
-        _renderTexture.Create();
         _texture = new(Screen.width, Screen.height, TextureFormat.ARGB32, false);
         _pixels = new Color32[Screen.width * Screen.height];
-        _dirty = true;
-    }
-
-    public void UpdateUnconditional()
-    {
-        FillBox(0, 0, 200, 200, Color.red);
+        _textureDirty = true;
     }
 
     public void OnGUIUnconditional()
     {
         if (Event.current.type != EventType.Repaint) return;
 
-        if (_dirty)
+        if (_textureDirty)
         {
-            _dirty = false;
+            _textureDirty = false;
             _texture.SetPixels32(_pixels);
             _texture.Apply();
         }
 
         Graphics.DrawTexture(new(0, 0, Screen.width, Screen.height), _texture);
+
+        foreach (var text in _texts)
+        {
+            UnityEngine.GUI.Label(text.Rect, text.Text);
+        }
+
+        _texts.Clear();
+    }
+
+    private struct PendingText
+    {
+        public string Text { get; }
+        public Rect Rect { get; }
+
+        public PendingText(string text, Rect rect)
+        {
+            Text = text;
+            Rect = rect;
+        }
     }
 }
