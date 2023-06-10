@@ -1,7 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Linq;
+using BepInEx;
 using HarmonyLib;
 using Mono.Cecil;
+using Mono.Cecil.Rocks;
 using UniTAS.Patcher.Interfaces;
 using UniTAS.Patcher.Utils;
 
@@ -10,28 +15,73 @@ namespace UniTAS.Patcher.Patches.Preloader;
 [SuppressMessage("ReSharper", "UnusedType.Global")]
 public class UnityInitInvoke : PreloadPatcher
 {
-    public override IEnumerable<string> TargetDLLs { get; } =
-        new[] { "UnityEngine.CoreModule.dll", "UnityEngine.dll" };
+    public override IEnumerable<string> TargetDLLs { get; }
 
-    private readonly string[] _targetClasses =
+    public UnityInitInvoke()
     {
-        "UnityEngine.MonoBehaviour",
-        "UnityEngine.Application",
-        "UnityEngine.Camera"
-    };
+        var bepInExConfig = File.ReadAllText(Paths.BepInExConfigPath);
+
+        const string entryPoint = "Preloader.Entrypoint";
+        var foundEntryAssembly = GetEntryKey(bepInExConfig, entryPoint, "Assembly");
+        var targetDLLs = foundEntryAssembly != null
+            ? new[] { foundEntryAssembly }
+            : new[] { "UnityEngine.CoreModule.dll", "UnityEngine.dll" };
+        TargetDLLs = targetDLLs;
+        _targetClass = GetEntryKey(bepInExConfig, entryPoint, "Type") ??
+                       // better late than never
+                       "UnityEngine.Camera";
+        _targetMethod = GetEntryKey(bepInExConfig, entryPoint, "Method") ?? ".cctor";
+        StaticLogger.Log.LogInfo(
+            $"UniTAS will be hooked on {_targetClass}.{_targetMethod} in {string.Join(", ", targetDLLs)}");
+    }
+
+    // why can't I even load config with BepInEx's own ConfigFile????
+    private static string GetEntryKey(string configRaw, string entry, string key)
+    {
+        var entryStart = configRaw.IndexOf($"[{entry}]", StringComparison.InvariantCulture);
+        if (entryStart == -1) return null;
+
+        var keyStart = configRaw.IndexOf(key, entryStart, StringComparison.InvariantCulture);
+        if (keyStart == -1) return null;
+
+        var valueStart = configRaw.IndexOf("=", keyStart, StringComparison.InvariantCulture);
+        if (valueStart == -1) return null;
+
+        var valueEnd = configRaw.IndexOf("\n", valueStart, StringComparison.InvariantCulture);
+
+        return configRaw.Substring(valueStart + 1, valueEnd - valueStart - 1).Trim();
+    }
+
+    private readonly string _targetClass;
+    private readonly string _targetMethod;
 
     public override void Patch(ref AssemblyDefinition assembly)
     {
-        foreach (var targetClass in _targetClasses)
+        // make sure it exists
+        var targetType = assembly.MainModule.GetAllTypes().FirstOrDefault(t => t.Name == _targetClass);
+        if (targetType == null) return;
+
+        if (_targetMethod == ".cctor")
         {
-            // find type
-            var targetType = assembly.MainModule.GetType(targetClass);
-
-            if (targetType == null) return;
-            StaticLogger.Log.LogDebug($"Found target class {targetClass} for checking unity init invoke");
-
             ILCodeUtils.MethodInvokeHookOnCctor(assembly, targetType,
                 AccessTools.Method(typeof(InvokeTracker), nameof(InvokeTracker.OnUnityInit)));
+            LogHook(assembly, _targetClass, ".cctor");
+            return;
         }
+
+        // find method and hook
+        var method = targetType.GetMethods().FirstOrDefault(m => m.Name == _targetMethod);
+        if (method == null) return;
+
+        LogHook(assembly, _targetClass, _targetMethod);
+
+        ILCodeUtils.MethodInvokeHook(assembly, method,
+            AccessTools.Method(typeof(InvokeTracker), nameof(InvokeTracker.OnUnityInit)));
+    }
+
+    private static void LogHook(AssemblyDefinition assembly, string type, string method)
+    {
+        StaticLogger.Log.LogDebug(
+            $"Adding UniTAS init hook for assembly {assembly.Name.Name} to method {type}.{method}");
     }
 }
