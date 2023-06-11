@@ -10,4 +10,13 @@ public static class SerializationUtils
 #pragma warning restore CS0414
         public int Int3 = 3;
     }
+
+    public class TestClassWithStrings
+    {
+        public static string String1 = "1";
+        public static string String2 = "2";
+#pragma warning disable CS8618
+        public static string String3;
+#pragma warning restore CS8618
+    }
 }
