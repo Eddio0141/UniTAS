@@ -31,12 +31,9 @@ public class SerializationTests
         var kernel = KernelUtils.Init();
         var serializer = kernel.GetInstance<ISerializer>();
 
-        var serializedDataTuple = serializer.SerializeStaticFields(typeof(SerializationUtils.TestClassWithInts));
-        var serializedData = serializedDataTuple.Item1.ToList();
-        var serializedReferenceTypes = serializedDataTuple.Item2;
+        var serializedData = serializer.SerializeStaticFields(typeof(SerializationUtils.TestClassWithInts)).ToList();
 
         TestClassWithIntsInner(serializedData);
-        Assert.Empty(serializedReferenceTypes);
 
         var stream = new MemoryStream();
         var xmlSerializer = new XmlSerializer(typeof(List<SerializedData>));
@@ -57,57 +54,5 @@ public class SerializationTests
         Assert.Equal(1, serializedData[0].Data);
         Assert.Equal("_int2", serializedData[1].SourceField);
         Assert.Equal(2, serializedData[1].Data);
-    }
-
-    [Fact]
-    public void TestClassWithStrings()
-    {
-        var kernel = KernelUtils.Init();
-        var serializer = kernel.GetInstance<ISerializer>();
-
-        var serializedDataTuple = serializer.SerializeStaticFields(typeof(SerializationUtils.TestClassWithStrings));
-        var serializedData = serializedDataTuple.Item1.ToList();
-        var serializedReferenceTypes = serializedDataTuple.Item2.ToList();
-
-        TestClassWithStringsInner(serializedData, serializedReferenceTypes);
-
-        var streamSerializedData = new MemoryStream();
-        var xmlSerializerData = new XmlSerializer(typeof(List<SerializedData>));
-        xmlSerializerData.Serialize(streamSerializedData, serializedData);
-
-        var streamSerializedReferenceTypes = new MemoryStream();
-        xmlSerializerData.Serialize(streamSerializedReferenceTypes, serializedReferenceTypes);
-
-        streamSerializedData.Position = 0;
-        streamSerializedReferenceTypes.Position = 0;
-
-        var deserializedData = (List<SerializedData>)xmlSerializerData.Deserialize(streamSerializedData)!;
-        var deserializedReferenceTypes =
-            (List<SerializedData>)xmlSerializerData.Deserialize(streamSerializedReferenceTypes)!;
-
-        TestClassWithStringsInner(deserializedData, deserializedReferenceTypes);
-    }
-
-    private static void TestClassWithStringsInner(IReadOnlyList<SerializedData> serializedData,
-        IReadOnlyList<SerializedData> referenceData)
-    {
-        Assert.Equal(3, serializedData.Count);
-        Assert.Equal(typeof(SerializationUtils.TestClassWithStrings).FullName, serializedData[0].SourceClass);
-        Assert.Equal(nameof(SerializationUtils.TestClassWithStrings.String1), serializedData[0].SourceField);
-        Assert.Equal((uint)0, serializedData[0].ReferenceId!.Value);
-        Assert.Equal(nameof(SerializationUtils.TestClassWithStrings.String2), serializedData[1].SourceField);
-        Assert.Equal((uint)1, serializedData[1].ReferenceId!.Value);
-        Assert.Equal(nameof(SerializationUtils.TestClassWithStrings.String3), serializedData[2].SourceField);
-        Assert.True(serializedData[2].IsNullReferenceData);
-
-        Assert.Equal(2, referenceData.Count);
-        Assert.Equal((uint)0, referenceData[0].SourceReferenceId);
-        Assert.Null(referenceData[0].SourceClass);
-        Assert.Null(referenceData[0].SourceField);
-        Assert.Equal("1", referenceData[0].Data);
-        Assert.Equal((uint)1, referenceData[1].SourceReferenceId);
-        Assert.Null(referenceData[1].SourceClass);
-        Assert.Null(referenceData[1].SourceField);
-        Assert.Equal("2", referenceData[1].Data);
     }
 }
