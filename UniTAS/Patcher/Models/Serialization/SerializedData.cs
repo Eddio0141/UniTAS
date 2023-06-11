@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 
 namespace UniTAS.Patcher.Models.Serialization;
@@ -6,36 +5,36 @@ namespace UniTAS.Patcher.Models.Serialization;
 /// <summary>
 /// Data that describes data for serialization
 /// </summary>
-[Serializable]
 public class SerializedData
 {
-    public string SourceClass { get; }
-    public string SourceField { get; }
+    public string SourceClass { get; set; }
+    public string SourceField { get; set; }
 
     /// <summary>
     /// The reference id of the data that this data references
     /// </summary>
-    public uint SourceReferenceId { get; }
+    public uint? SourceReferenceId { get; set; }
 
     /// <summary>
-    /// Serialized data. If this is null, then this data is a reference to another data with <see cref="ReferenceId"/>
+    /// Serialized data. If this is null, then this data is a reference to another data with <see cref="ReferenceId"/> unless <see cref="IsNullReferenceData"/> is true
     /// </summary>
-    public object Data { get; }
+    public object Data { get; set; }
 
     /// <summary>
     /// If this data is a reference to another data but that data is null, then this will be true
     /// </summary>
-    public bool IsNullReferenceData { get; }
+    public bool IsNullReferenceData { get; set; }
 
     /// <summary>
     /// If this data can't be serialized or isn't reference type, then this will be populated with the data that can be serialized
     /// </summary>
-    public List<SerializedData> Fields { get; }
+    public List<SerializedData> Fields { get; set; }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    public uint? ReferenceId { get; }
+    public uint? ReferenceId { get; set; }
+
+    public SerializedData()
+    {
+    }
 
     /// <summary>
     /// For data that isn't primitive or handled by the serializer
