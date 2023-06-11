@@ -13,7 +13,7 @@ namespace UniTAS.Patcher.Implementations.Serialization;
 [Singleton]
 public class Serializer : ISerializer
 {
-    public TupleValue<IEnumerable<SerializedData>, IEnumerable<SerializedReferenceType>> SerializeStaticFields(
+    public TupleValue<IEnumerable<SerializedData>, IEnumerable<SerializedData>> SerializeStaticFields(
         Type targetClass)
     {
         if (targetClass == null)
@@ -21,13 +21,13 @@ public class Serializer : ISerializer
             throw new ArgumentNullException(nameof(targetClass));
         }
 
-        var referenceData = new List<SerializedReferenceType>();
+        var referenceData = new List<SerializedData>();
         return TupleValue.New(AccessTools.GetDeclaredFields(targetClass).Where(x => x.IsStatic && !x.IsLiteral)
             .Select(x => SerializeField(targetClass.FullName, x, null, referenceData)), referenceData.AsEnumerable());
     }
 
     private static SerializedData SerializeField(string className, FieldInfo field, object instance,
-        List<SerializedReferenceType> referenceData)
+        List<SerializedData> referenceData)
     {
         var value = field.GetValue(instance);
 
@@ -40,7 +40,7 @@ public class Serializer : ISerializer
             }
 
             // find if reference data already exists
-            var foundReferenceIdIndex = referenceData.FindIndex(x => ReferenceEquals(x.Data.Data, value));
+            var foundReferenceIdIndex = referenceData.FindIndex(x => ReferenceEquals(x.Data, value));
             if (foundReferenceIdIndex > -1)
             {
                 return new(className, field.Name, referenceData[foundReferenceIdIndex].ReferenceId);
@@ -51,14 +51,14 @@ public class Serializer : ISerializer
             // can we serialize it?
             if (IsTypePrimitive(field.FieldType))
             {
-                referenceData.Add(new(newReferenceId, new(newReferenceId, value)));
+                referenceData.Add(new(newReferenceId, value));
             }
             else
             {
                 // we can't serialize it, so we need to handle
                 var fields = AccessTools.GetDeclaredFields(value.GetType()).Where(x => !x.IsStatic && !x.IsLiteral)
                     .Select(x => SerializeField(null, x, value, referenceData));
-                referenceData.Add(new(newReferenceId, new(newReferenceId, fields.ToList())));
+                referenceData.Add(new(newReferenceId, fields.ToList()));
             }
 
             return new(className, field.Name, newReferenceId);
