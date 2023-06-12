@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace UniTAS.Patcher.Models.Serialization;
 
@@ -9,8 +10,10 @@ public class SerializedData
 {
     public string SourceClass { get; set; }
     public string SourceField { get; set; }
+    public int? SourceReference { get; set; }
 
     public object Data { get; set; }
+    public uint? ReferenceData { get; set; }
 
     /// <summary>
     /// If this data can't be serialized or isn't reference type, then this will be populated with the data that can be serialized
@@ -24,11 +27,36 @@ public class SerializedData
     /// <summary>
     /// For data that isn't primitive or handled by the serializer
     /// </summary>
-    public SerializedData(string sourceClass, string sourceField)
+    public SerializedData(string sourceClass, string sourceField, IEnumerable<SerializedData> fields)
     {
         SourceClass = sourceClass;
         SourceField = sourceField;
-        Fields = new();
+        Fields = fields.ToList();
+    }
+
+    /// <summary>
+    /// For data that is referencing some other data
+    /// </summary>
+    public SerializedData(string sourceClass, string sourceField, uint? referenceData)
+    {
+        SourceClass = sourceClass;
+        SourceField = sourceField;
+        ReferenceData = referenceData;
+    }
+
+    /// <summary>
+    /// For data that can be referenced
+    /// </summary>
+    public SerializedData(int? sourceReference, object data)
+    {
+        SourceReference = sourceReference;
+        Data = data;
+    }
+
+    public SerializedData(int? sourceReference, IEnumerable<SerializedData> fields)
+    {
+        SourceReference = sourceReference;
+        Fields = fields.ToList();
     }
 
     /// <summary>
