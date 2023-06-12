@@ -12,7 +12,7 @@ public class SerializationTests
     [Fact]
     public void SerializeData()
     {
-        var data = new SerializedData("TestClass", "TestField");
+        var data = new SerializedData("TestClass", "TestField", 0);
         var xmlSerializer = new XmlSerializer(typeof(SerializedData));
         var writer = new StringWriter();
         xmlSerializer.Serialize(writer, data);
@@ -31,7 +31,8 @@ public class SerializationTests
         var kernel = KernelUtils.Init();
         var serializer = kernel.GetInstance<ISerializer>();
 
-        var serializedData = serializer.SerializeStaticFields(typeof(SerializationUtils.TestClassWithInts)).ToList();
+        var serializedData = serializer.SerializeStaticFields(typeof(SerializationUtils.TestClassWithInts)).Item1
+            .ToList();
 
         TestClassWithIntsInner(serializedData);
 
@@ -62,7 +63,7 @@ public class SerializationTests
         var kernel = KernelUtils.Init();
         var serializer = kernel.GetInstance<ISerializer>();
 
-        var serializedData = serializer.SerializeStaticFields(typeof(SerializationUtils.InstanceLoop)).ToList();
+        var serializedData = serializer.SerializeStaticFields(typeof(SerializationUtils.InstanceLoop)).Item1.ToList();
         var stream = new MemoryStream();
         var xmlSerializer = new XmlSerializer(typeof(List<SerializedData>));
         xmlSerializer.Serialize(stream, serializedData);
