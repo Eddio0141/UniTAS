@@ -55,4 +55,21 @@ public class SerializationTests
         Assert.Equal("_int2", serializedData[1].SourceField);
         Assert.Equal(2, serializedData[1].Data);
     }
+
+    [Fact]
+    public void InstanceLoop()
+    {
+        var kernel = KernelUtils.Init();
+        var serializer = kernel.GetInstance<ISerializer>();
+
+        var serializedData = serializer.SerializeStaticFields(typeof(SerializationUtils.InstanceLoop)).ToList();
+        var stream = new MemoryStream();
+        var xmlSerializer = new XmlSerializer(typeof(List<SerializedData>));
+        xmlSerializer.Serialize(stream, serializedData);
+
+        stream.Position = 0;
+
+        var deserializedData = (List<SerializedData>)xmlSerializer.Deserialize(stream)!;
+        Assert.NotNull(deserializedData);
+    }
 }
