@@ -13,7 +13,7 @@ public class SerializedData
     public int? SourceReference { get; set; }
 
     public object Data { get; set; }
-    public uint? ReferenceData { get; set; }
+    public int? ReferenceData { get; set; }
 
     /// <summary>
     /// If this data can't be serialized or isn't reference type, then this will be populated with the data that can be serialized
@@ -37,7 +37,7 @@ public class SerializedData
     /// <summary>
     /// For data that is referencing some other data
     /// </summary>
-    public SerializedData(string sourceClass, string sourceField, uint? referenceData)
+    public SerializedData(string sourceClass, string sourceField, int? referenceData)
     {
         SourceClass = sourceClass;
         SourceField = sourceField;
