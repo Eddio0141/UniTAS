@@ -23,11 +23,15 @@ public static class SerializationUtils
 
     public class ReferencingType
     {
+#pragma warning disable CS8618
         public static ReferenceType ReferenceType;
+#pragma warning restore CS8618
     }
 
     public class ReferencingType2
     {
+#pragma warning disable CS8618
         public static ReferenceType ReferenceType;
+#pragma warning restore CS8618
     }
 }
