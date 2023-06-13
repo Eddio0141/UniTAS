@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using MoonSharp.Interpreter;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
@@ -10,6 +11,7 @@ using UniTAS.Patcher.Services.Movie;
 namespace UniTAS.Patcher.Implementations.Movie.Engine;
 
 [Register]
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public partial class MovieEngine : IMovieEngine
 {
     private readonly List<CoroutineHolder> _preUpdateCoroutines = new();

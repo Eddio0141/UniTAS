@@ -6,6 +6,7 @@ using StructureMap.Pipeline;
 using UniTAS.Patcher.Exceptions.Movie.Parser;
 using UniTAS.Patcher.Implementations.Movie.Engine;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
+using UniTAS.Patcher.Interfaces.Movie;
 using UniTAS.Patcher.Models.Movie;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.Movie;
@@ -18,17 +19,17 @@ namespace UniTAS.Patcher.Implementations.Movie.Parser;
 public partial class MovieParser : IMovieParser
 {
     private readonly IMovieLogger _logger;
-
     private readonly IEngineModuleClassesFactory _engineModuleClassesFactory;
-
     private readonly IContainer _container;
+    private readonly MovieProxyType[] _movieProxyTypes;
 
     public MovieParser(IMovieLogger logger, IEngineModuleClassesFactory engineModuleClassesFactory,
-        IContainer container)
+        IContainer container, MovieProxyType[] movieProxyTypes)
     {
         _logger = logger;
         _engineModuleClassesFactory = engineModuleClassesFactory;
         _container = container;
+        _movieProxyTypes = movieProxyTypes;
     }
 
     public Tuple<IMovieEngine, PropertiesModel> Parse(string input)
@@ -110,6 +111,7 @@ public partial class MovieParser : IMovieParser
 
         AddEngineMethods(movieEngine);
         AddCustomTypes(script);
+        AddProxyTypes();
 
         return Tuple.New(script, movieEngine);
     }
@@ -135,6 +137,14 @@ public partial class MovieParser : IMovieParser
         UserData.RegisterAssembly(typeof(MovieParser).Assembly);
 
         AddFrameAdvance(script);
+    }
+
+    private void AddProxyTypes()
+    {
+        foreach (var movieProxyType in _movieProxyTypes)
+        {
+            UserData.RegisterProxyType(movieProxyType);
+        }
     }
 
     private static void AddFrameAdvance(Script script)
