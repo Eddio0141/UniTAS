@@ -18,11 +18,20 @@ public static class SerializationUtils
 
     public class ReferenceType
     {
-        public string String1;
+        public int Value;
+    }
 
-        public ReferenceType(string string1)
-        {
-            String1 = string1;
-        }
+    public class ReferencingType
+    {
+#pragma warning disable CS8618
+        public static ReferenceType ReferenceType;
+#pragma warning restore CS8618
+    }
+
+    public class ReferencingType2
+    {
+#pragma warning disable CS8618
+        public static ReferenceType ReferenceType;
+#pragma warning restore CS8618
     }
 }
