@@ -74,7 +74,11 @@ public partial class MovieParser : IMovieParser
 
     private Tuple<Script, MovieEngine> SetupScript(MovieEngine movieEngine = null, PropertiesModel properties = null)
     {
-        var script = new Script
+        // TODO add OS_Time, OS_System, IO later for manipulating state of the vm
+        var script = new Script(CoreModules.Basic | CoreModules.GlobalConsts | CoreModules.TableIterators |
+                                CoreModules.Metatables | CoreModules.String | CoreModules.LoadMethods |
+                                CoreModules.Table | CoreModules.ErrorHandling | CoreModules.Math |
+                                CoreModules.Coroutine | CoreModules.Bit32 | CoreModules.Debug | CoreModules.Dynamic)
         {
             Options =
             {
