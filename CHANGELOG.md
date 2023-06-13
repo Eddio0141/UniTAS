@@ -32,7 +32,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Changes
 
 ### Performance
+
 - Improved performance of changing fps
+
+## Security
+
+### TAS Movie
+
+- Sandboxed lua environment for TAS movie playback
 
 # [v0.4.0] - 2023-06-02
 
