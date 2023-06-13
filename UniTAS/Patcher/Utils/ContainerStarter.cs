@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics.CodeAnalysis;
 using StructureMap;
 using UniTAS.Patcher.Implementations.DependencyInjection;
@@ -17,18 +18,27 @@ public static class ContainerStarter
     public static void Init()
     {
         StaticLogger.Log.LogDebug("Initializing container");
-        Kernel = new Container(c =>
+
+        try
         {
-            c.ForSingletonOf<DiscoverAndRegister>().Use<DiscoverAndRegister>();
-            c.For<IDiscoverAndRegister>().Use(x => x.GetInstance<DiscoverAndRegister>());
+            Kernel = new Container(c =>
+            {
+                c.ForSingletonOf<DiscoverAndRegister>().Use<DiscoverAndRegister>();
+                c.For<IDiscoverAndRegister>().Use(x => x.GetInstance<DiscoverAndRegister>());
 
-            c.ForSingletonOf<Logger>().Use<Logger>();
-            c.For<ILogger>().Use(x => x.GetInstance<Logger>());
-        });
+                c.ForSingletonOf<Logger>().Use<Logger>();
+                c.For<ILogger>().Use(x => x.GetInstance<Logger>());
+            });
 
-        Kernel.Configure(c => Kernel.GetInstance<IDiscoverAndRegister>().Register<Logger>(c));
+            Kernel.Configure(c => Kernel.GetInstance<IDiscoverAndRegister>().Register<Logger>(c));
 
-        var forceInstantiateTypes = Kernel.GetInstance<IForceInstantiateTypes>();
-        forceInstantiateTypes.InstantiateTypes<Logger>();
+            var forceInstantiateTypes = Kernel.GetInstance<IForceInstantiateTypes>();
+            forceInstantiateTypes.InstantiateTypes<Logger>();
+        }
+        catch (Exception e)
+        {
+            StaticLogger.Log.LogFatal($"An exception occurred while initializing the container\n{e}");
+            throw;
+        }
     }
 }
