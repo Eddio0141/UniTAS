@@ -18,11 +18,16 @@ public static class SerializationUtils
 
     public class ReferenceType
     {
-        public string String1;
+        public int Value;
+    }
 
-        public ReferenceType(string string1)
-        {
-            String1 = string1;
-        }
+    public class ReferencingType
+    {
+        public static ReferenceType ReferenceType;
+    }
+
+    public class ReferencingType2
+    {
+        public static ReferenceType ReferenceType;
     }
 }
