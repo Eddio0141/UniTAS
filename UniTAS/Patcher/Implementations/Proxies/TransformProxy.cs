@@ -6,8 +6,7 @@ using UnityEngine;
 namespace UniTAS.Patcher.Implementations.Proxies;
 
 [SuppressMessage("ReSharper", "InconsistentNaming")]
-[MovieProxyType]
-public class TransformProxy
+public class TransformProxy : MovieProxyType<TransformProxy, Transform>
 {
     private readonly Transform _transform;
 
@@ -55,5 +54,10 @@ public class TransformProxy
     public int GetChildCount()
     {
         return _transform.GetChildCount();
+    }
+
+    protected override TransformProxy CreateProxyObject(Transform target)
+    {
+        return new(target);
     }
 }
