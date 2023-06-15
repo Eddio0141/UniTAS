@@ -1,5 +1,10 @@
+using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Reflection;
+using HarmonyLib;
 using MoonSharp.Interpreter;
+using MoonSharp.Interpreter.Interop;
 using MoonSharp.Interpreter.Loaders;
 using StructureMap;
 using StructureMap.Pipeline;
@@ -11,6 +16,7 @@ using UniTAS.Patcher.Models.Movie;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.Movie;
 using UniTAS.Patcher.Utils;
+using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations.Movie.Parser;
 
@@ -72,6 +78,8 @@ public partial class MovieParser : IMovieParser
         return new(movieEngine, properties);
     }
 
+    private static bool _registeredGlobals;
+
     private Tuple<Script, MovieEngine> SetupScript(MovieEngine movieEngine = null, PropertiesModel properties = null)
     {
         // TODO add OS_Time, OS_System, IO later for manipulating state of the vm
@@ -113,9 +121,16 @@ public partial class MovieParser : IMovieParser
             movieEngine.Properties = properties;
         }
 
+        if (!_registeredGlobals)
+        {
+            _registeredGlobals = true;
+            UserData.RegisterAssembly(typeof(MovieParser).Assembly);
+            AddProxyTypes();
+            AddUnityTypes();
+        }
+
         AddEngineMethods(movieEngine);
         AddCustomTypes(script);
-        AddProxyTypes();
 
         return Tuple.New(script, movieEngine);
     }
@@ -138,8 +153,6 @@ public partial class MovieParser : IMovieParser
 
     private static void AddCustomTypes(Script script)
     {
-        UserData.RegisterAssembly(typeof(MovieParser).Assembly);
-
         AddFrameAdvance(script);
     }
 
@@ -148,6 +161,36 @@ public partial class MovieParser : IMovieParser
         foreach (var movieProxyType in _movieProxyTypes)
         {
             UserData.RegisterProxyType(movieProxyType);
+        }
+    }
+
+    private static readonly Assembly[] UnityTypesIgnore =
+        { typeof(MovieParser).Assembly, typeof(BepInEx.Paths).Assembly };
+
+    private static void AddUnityTypes()
+    {
+        // only add types that isn't going to affect unity
+        UserData.RegisterType<Vector3>();
+        UserData.RegisterType<Matrix4x4>();
+
+        // add unity scripts
+        var monoBehaviours =
+            AppDomain.CurrentDomain.GetAssemblies().Where(x => !UnityTypesIgnore.Any(a => Equals(x, a)))
+                .SelectMany(AccessTools.GetTypesFromAssembly)
+                .Where(x => x.IsSubclassOf(typeof(MonoBehaviour)) && !x.IsAbstract);
+
+        foreach (var monoBehaviour in monoBehaviours)
+        {
+            // idk why there is duplicate types but distinct doesn't seem to work
+            if (UserData.IsTypeRegistered(monoBehaviour)) continue;
+
+            var desc = (StandardUserDataDescriptor)UserData.RegisterType(monoBehaviour, InteropAccessMode.HideMembers);
+
+            var fields = AccessTools.GetDeclaredFields(monoBehaviour);
+            foreach (var field in fields)
+            {
+                desc.AddMember(field.Name, new ReadOnlyFieldDescriptor(field, InteropAccessMode.Default));
+            }
         }
     }
 
