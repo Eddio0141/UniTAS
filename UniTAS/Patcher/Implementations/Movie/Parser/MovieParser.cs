@@ -169,6 +169,8 @@ public partial class MovieParser : IMovieParser
 
     private static void AddUnityTypes()
     {
+        if (UnitTestUtils.IsTesting) return;
+
         // only add types that isn't going to affect unity
         UserData.RegisterType<Vector3>();
         UserData.RegisterType<Matrix4x4>();
