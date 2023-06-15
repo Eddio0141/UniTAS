@@ -1,14 +1,23 @@
 using System.Diagnostics.CodeAnalysis;
 using MoonSharp.Interpreter;
+using StructureMap;
+using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Movie;
 using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations.Proxies;
 
 [SuppressMessage("ReSharper", "InconsistentNaming")]
+[ExcludeRegisterIfTesting]
 public class TransformProxy : MovieProxyType<TransformProxy, Transform>
 {
     private readonly Transform _transform;
+
+    [DefaultConstructor]
+    [MoonSharpHidden]
+    public TransformProxy()
+    {
+    }
 
     [MoonSharpHidden]
     public TransformProxy(Transform transform)
