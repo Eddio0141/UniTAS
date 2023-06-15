@@ -21,7 +21,7 @@ public class FrameCountOverlay : BuiltInOverlay, IOnMovieRunningStatusChange, IO
     {
     }
 
-    protected override AnchoredOffset DefaultOffset => new(1, 1, -250, -100);
+    protected override AnchoredOffset DefaultOffset => new(0, 0, 0, 0);
     protected override string ConfigValue => "FrameCount";
 
     public void OnMovieRunningStatusChange(bool running)
