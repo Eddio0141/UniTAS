@@ -78,7 +78,6 @@ public class ReadOnlyFieldDescriptor : IMemberDescriptor, IOptimizableDescriptor
     {
         this.CheckAccess(MemberDescriptorAccess.CanRead, obj);
 
-        // optimization+workaround of Unity bug.. 
         if (_isConst)
             return ClrToScriptConversions.ObjectToDynValue(script, _constValue);
 
