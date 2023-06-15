@@ -1,4 +1,5 @@
 using System;
+using BepInEx.Configuration;
 using HarmonyLib;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
@@ -15,18 +16,25 @@ namespace UniTAS.Patcher.Implementations.VirtualEnvironment;
 public class TimeEnv : ITimeEnv, IOnPreUpdatesActual, IOnGameRestartResume, IOnStartActual, IOnLastUpdateActual,
     IOnFixedUpdateActual
 {
-    private readonly IConfig _config;
+    private readonly ConfigEntry<float> _defaultFps;
 
     private readonly ITimeWrapper _timeWrap;
 
     public TimeEnv(IConfig config, ITimeWrapper timeWrap)
     {
-        _config = config;
+        _defaultFps = config.ConfigFile.Bind("General", "DefaultFps", 100f,
+            "Default FPS when the TAS isn't running. Make sure the FPS is more than 0");
+
+        if (_defaultFps.Value <= 0)
+        {
+            _defaultFps.Value = 100f;
+        }
+
         _timeWrap = timeWrap;
         FrameTime = 0f;
 
         // stupid but slightly fixes accuracy on game first start
-        var initialFt = 1.0 / _config.DefaultFps;
+        var initialFt = 1.0 / _defaultFps.Value;
         RealtimeSinceStartup += initialFt;
         UnscaledTime += initialFt;
         ScaledTime += initialFt;
@@ -38,7 +46,7 @@ public class TimeEnv : ITimeEnv, IOnPreUpdatesActual, IOnGameRestartResume, IOnS
         get => _timeWrap.CaptureFrameTime;
         set
         {
-            if (value <= 0) value = 1f / _config.DefaultFps;
+            if (value <= 0) value = 1f / _defaultFps.Value;
             _timeWrap.CaptureFrameTime = value;
         }
     }
