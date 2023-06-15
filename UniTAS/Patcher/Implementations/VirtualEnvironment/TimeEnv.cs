@@ -13,6 +13,7 @@ using UnityEngine;
 namespace UniTAS.Patcher.Implementations.VirtualEnvironment;
 
 [Singleton(RegisterPriority.TimeEnv)]
+[ExcludeRegisterIfTesting]
 public class TimeEnv : ITimeEnv, IOnPreUpdatesActual, IOnGameRestartResume, IOnStartActual, IOnLastUpdateActual,
     IOnFixedUpdateActual
 {

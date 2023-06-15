@@ -8,6 +8,7 @@ using UnityEngine;
 namespace UniTAS.Patcher.Implementations;
 
 [Singleton]
+[ExcludeRegisterIfTesting]
 public class Drawing : IOnGUIUnconditional, IDrawing
 {
     private readonly Texture2D _texture = new(Screen.width, Screen.height, TextureFormat.ARGB32, false);

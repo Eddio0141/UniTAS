@@ -18,6 +18,7 @@ using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.DependencyInjection;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
+using UniTAS.Patcher.Services.VirtualEnvironment;
 using UniTAS.Patcher.Services.VirtualEnvironment.Input.LegacyInputSystem;
 using UnityEngine;
 
@@ -182,6 +183,22 @@ public static class KernelUtils
         public int TotalSceneCount => 0;
         public int ActiveSceneIndex => 0;
         public string ActiveSceneName => "";
+    }
+
+    [Register(IncludeDifferentAssembly = true)]
+    [SuppressMessage("ReSharper", "UnassignedGetOnlyAutoProperty")]
+    public class TimeEnvDummy : ITimeEnv
+    {
+        public double FrameTime { get; set; }
+        public DateTime CurrentTime { get; }
+        public ulong RenderedFrameCountOffset { get; }
+        public ulong FrameCountRestartOffset { get; }
+        public double SecondsSinceStartUp { get; }
+        public double UnscaledTime { get; }
+        public double FixedUnscaledTime { get; }
+        public double ScaledTime { get; }
+        public double ScaledFixedTime { get; }
+        public double RealtimeSinceStartup { get; }
     }
 
     public static Container Init()
