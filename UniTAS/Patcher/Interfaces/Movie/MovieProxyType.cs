@@ -1,8 +1,10 @@
 using System;
 using MoonSharp.Interpreter.Interop;
+using UniTAS.Patcher.Interfaces.DependencyInjection;
 
 namespace UniTAS.Patcher.Interfaces.Movie;
 
+[RegisterAll]
 public abstract class MovieProxyType : IProxyFactory
 {
     public abstract object CreateProxyObject(object o);
