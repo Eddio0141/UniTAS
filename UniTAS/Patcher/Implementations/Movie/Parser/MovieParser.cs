@@ -1,15 +1,22 @@
+using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Reflection;
+using HarmonyLib;
 using MoonSharp.Interpreter;
+using MoonSharp.Interpreter.Interop;
 using MoonSharp.Interpreter.Loaders;
 using StructureMap;
 using StructureMap.Pipeline;
 using UniTAS.Patcher.Exceptions.Movie.Parser;
 using UniTAS.Patcher.Implementations.Movie.Engine;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
+using UniTAS.Patcher.Interfaces.Movie;
 using UniTAS.Patcher.Models.Movie;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.Movie;
 using UniTAS.Patcher.Utils;
+using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations.Movie.Parser;
 
@@ -18,17 +25,17 @@ namespace UniTAS.Patcher.Implementations.Movie.Parser;
 public partial class MovieParser : IMovieParser
 {
     private readonly IMovieLogger _logger;
-
     private readonly IEngineModuleClassesFactory _engineModuleClassesFactory;
-
     private readonly IContainer _container;
+    private readonly MovieProxyType[] _movieProxyTypes;
 
     public MovieParser(IMovieLogger logger, IEngineModuleClassesFactory engineModuleClassesFactory,
-        IContainer container)
+        IContainer container, MovieProxyType[] movieProxyTypes)
     {
         _logger = logger;
         _engineModuleClassesFactory = engineModuleClassesFactory;
         _container = container;
+        _movieProxyTypes = movieProxyTypes;
     }
 
     public Tuple<IMovieEngine, PropertiesModel> Parse(string input)
@@ -71,9 +78,15 @@ public partial class MovieParser : IMovieParser
         return new(movieEngine, properties);
     }
 
+    private static bool _registeredGlobals;
+
     private Tuple<Script, MovieEngine> SetupScript(MovieEngine movieEngine = null, PropertiesModel properties = null)
     {
-        var script = new Script
+        // TODO add OS_Time, OS_System, IO later for manipulating state of the vm
+        var script = new Script(CoreModules.Basic | CoreModules.GlobalConsts | CoreModules.TableIterators |
+                                CoreModules.Metatables | CoreModules.String | CoreModules.LoadMethods |
+                                CoreModules.Table | CoreModules.ErrorHandling | CoreModules.Math |
+                                CoreModules.Coroutine | CoreModules.Bit32 | CoreModules.Debug | CoreModules.Dynamic)
         {
             Options =
             {
@@ -108,6 +121,14 @@ public partial class MovieParser : IMovieParser
             movieEngine.Properties = properties;
         }
 
+        if (!_registeredGlobals)
+        {
+            _registeredGlobals = true;
+            UserData.RegisterAssembly(typeof(MovieParser).Assembly);
+            AddProxyTypes();
+            AddUnityTypes();
+        }
+
         AddEngineMethods(movieEngine);
         AddCustomTypes(script);
 
@@ -132,9 +153,47 @@ public partial class MovieParser : IMovieParser
 
     private static void AddCustomTypes(Script script)
     {
-        UserData.RegisterAssembly(typeof(MovieParser).Assembly);
-
         AddFrameAdvance(script);
+    }
+
+    private void AddProxyTypes()
+    {
+        foreach (var movieProxyType in _movieProxyTypes)
+        {
+            UserData.RegisterProxyType(movieProxyType);
+        }
+    }
+
+    private static readonly Assembly[] UnityTypesIgnore =
+        { typeof(MovieParser).Assembly, typeof(BepInEx.Paths).Assembly };
+
+    private static void AddUnityTypes()
+    {
+        if (UnitTestUtils.IsTesting) return;
+
+        // only add types that isn't going to affect unity
+        UserData.RegisterType<Vector3>();
+        UserData.RegisterType<Matrix4x4>();
+
+        // add unity scripts
+        var monoBehaviours =
+            AppDomain.CurrentDomain.GetAssemblies().Where(x => !UnityTypesIgnore.Any(a => Equals(x, a)))
+                .SelectMany(AccessTools.GetTypesFromAssembly)
+                .Where(x => x.IsSubclassOf(typeof(MonoBehaviour)) && !x.IsAbstract);
+
+        foreach (var monoBehaviour in monoBehaviours)
+        {
+            // idk why there is duplicate types but distinct doesn't seem to work
+            if (UserData.IsTypeRegistered(monoBehaviour)) continue;
+
+            var desc = (StandardUserDataDescriptor)UserData.RegisterType(monoBehaviour, InteropAccessMode.HideMembers);
+
+            var fields = AccessTools.GetDeclaredFields(monoBehaviour);
+            foreach (var field in fields)
+            {
+                desc.AddMember(field.Name, new ReadOnlyFieldDescriptor(field, InteropAccessMode.Default));
+            }
+        }
     }
 
     private static void AddFrameAdvance(Script script)

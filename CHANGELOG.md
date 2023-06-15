@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # Unreleased
 
+## Added
+
+### TAS movie
+
+- Added `unity` module for interacting with unity engine
+- Added `unity.find_objects_by_type()` to find all objects of a type
+- Added wrapped type for `UnityEngine.Transform` to read transform data for objects
+
 ## Fixed
 
 ### UniTAS
@@ -24,7 +32,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Changes
 
 ### Performance
+
 - Improved performance of changing fps
+
+## Security
+
+### TAS Movie
+
+- Sandboxed lua environment for TAS movie playback
 
 # [v0.4.0] - 2023-06-02
 
