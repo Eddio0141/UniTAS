@@ -8,15 +8,13 @@ using UnityEngine;
 namespace UniTAS.Patcher.Implementations;
 
 [Singleton]
-public class Drawing : IOnAwakeUnconditional, IOnGUIUnconditional, IDrawing
+public class Drawing : IOnGUIUnconditional, IDrawing
 {
-    private Texture2D _texture;
-    private Color32[] _pixels;
+    private readonly Texture2D _texture = new(Screen.width, Screen.height, TextureFormat.ARGB32, false);
+    private readonly Color32[] _pixels = new Color32[Screen.width * Screen.height];
     private readonly List<PendingText> _texts = new();
 
-    private bool _initialized;
-
-    private bool _textureDirty;
+    private bool _textureDirty = true;
 
     public void FillBox(int x, int y, int width, int height, Color32 color)
     {
@@ -41,16 +39,6 @@ public class Drawing : IOnAwakeUnconditional, IOnGUIUnconditional, IDrawing
         var width = text.Length * 10;
         const int height = 20;
         _texts.Add(new(text, new(x, y, width, height)));
-    }
-
-    public void AwakeUnconditional()
-    {
-        if (_initialized) return;
-        _initialized = true;
-
-        _texture = new(Screen.width, Screen.height, TextureFormat.ARGB32, false);
-        _pixels = new Color32[Screen.width * Screen.height];
-        _textureDirty = true;
     }
 
     public void OnGUIUnconditional()
