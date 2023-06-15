@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Added
 
+### Config
+
+- Added live config reloading
+
+### Overlays
+
+- Added built in overlays
+- Added frame counter overlay
+
 ### TAS movie
 
 - Added `unity` module for interacting with unity engine
