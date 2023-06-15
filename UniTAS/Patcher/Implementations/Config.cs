@@ -10,13 +10,13 @@ namespace UniTAS.Patcher.Implementations;
 [ExcludeRegisterIfTesting]
 public class Config : IConfig
 {
-    private readonly ConfigFile _configFile = new(Path.Combine(Paths.ConfigPath, "UniTAS.cfg"), true);
+    public ConfigFile ConfigFile { get; } = new(Path.Combine(Paths.ConfigPath, "UniTAS.cfg"), true);
 
     private readonly ConfigEntry<float> _defaultFps;
 
     public Config()
     {
-        _defaultFps = _configFile.Bind("General", "DefaultFps", 100f,
+        _defaultFps = ConfigFile.Bind("General", "DefaultFps", 100f,
             "Default FPS when the TAS isn't running. Make sure the FPS is more than 0");
 
         if (_defaultFps.Value <= 0)
