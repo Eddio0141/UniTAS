@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using BepInEx.Configuration;
 using BepInEx.Logging;
 using MoonSharp.Interpreter;
 using StructureMap;
@@ -164,6 +165,7 @@ public static class KernelUtils
     public class ConfigDummy : IConfig
     {
         public float DefaultFps { get; set; }
+        public ConfigFile ConfigFile => null!;
     }
 
     [Register(IncludeDifferentAssembly = true)]
