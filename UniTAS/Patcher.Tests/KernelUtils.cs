@@ -164,7 +164,6 @@ public static class KernelUtils
     [Register(IncludeDifferentAssembly = true)]
     public class ConfigDummy : IConfig
     {
-        public float DefaultFps { get; set; }
         public ConfigFile ConfigFile => null!;
     }
 
