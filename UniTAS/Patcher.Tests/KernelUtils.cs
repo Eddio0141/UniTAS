@@ -10,6 +10,7 @@ using UniTAS.Patcher.Implementations.DependencyInjection;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
 using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
+using UniTAS.Patcher.Interfaces.GUI;
 using UniTAS.Patcher.Interfaces.Movie;
 using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Models.UnitySafeWrappers.SceneManagement;
@@ -199,6 +200,19 @@ public static class KernelUtils
         public double ScaledTime { get; }
         public double ScaledFixedTime { get; }
         public double RealtimeSinceStartup { get; }
+    }
+
+    [Register(IncludeDifferentAssembly = true)]
+    [SuppressMessage("ReSharper", "UnusedType.Local")]
+    private class DrawingDummy : IDrawing
+    {
+        public void FillBox(int x, int y, int width, int height, Color32 color)
+        {
+        }
+
+        public void PrintText(int x, int y, string text)
+        {
+        }
     }
 
     public static Container Init()

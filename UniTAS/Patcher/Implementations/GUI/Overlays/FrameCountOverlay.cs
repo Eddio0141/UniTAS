@@ -9,6 +9,7 @@ namespace UniTAS.Patcher.Implementations.GUI.Overlays;
 
 [ForceInstantiate]
 [Singleton]
+[ExcludeRegisterIfTesting]
 public class FrameCountOverlay : BuiltInOverlay, IOnMovieRunningStatusChange, IOnFixedUpdateActual
 {
     private uint _frameCount;

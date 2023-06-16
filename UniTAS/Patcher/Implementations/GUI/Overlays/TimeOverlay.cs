@@ -10,6 +10,7 @@ namespace UniTAS.Patcher.Implementations.GUI.Overlays;
 
 [ForceInstantiate]
 [Singleton]
+[ExcludeRegisterIfTesting]
 public class TimeOverlay : BuiltInOverlay, IOnMovieRunningStatusChange
 {
     private bool _update;
