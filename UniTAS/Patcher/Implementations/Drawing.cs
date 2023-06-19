@@ -3,6 +3,7 @@ using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Patcher.Interfaces.GUI;
+using UniTAS.Patcher.Utils;
 using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations;
@@ -16,6 +17,8 @@ public class Drawing : IOnGUIUnconditional, IDrawing
     private readonly List<PendingText> _texts = new();
 
     private bool _textureDirty = true;
+
+    private readonly GUIStyle _labelWithFontSize = new();
 
     public void FillBox(int x, int y, int width, int height, Color32 color)
     {
@@ -35,12 +38,20 @@ public class Drawing : IOnGUIUnconditional, IDrawing
         }
     }
 
-    public void PrintText(int x, int y, string text)
+    public void PrintText(int x, int y, string text, int fontSize)
     {
-        var width = text.Length * 10;
-        const int height = 20;
-        _texts.Add(new(text, new(x, y, width, height)));
+        var width = text.Length * fontSize;
+        var height = 20 * fontSize;
+        _texts.Add(new(text, new(x, y, width, height), fontSize));
     }
+
+    private const int TEXT_SHADOW_OFFSET = 1;
+
+    private static readonly TupleValue<int, int>[] TextShadowOffsets =
+    {
+        new(TEXT_SHADOW_OFFSET, TEXT_SHADOW_OFFSET), new(-TEXT_SHADOW_OFFSET * 2, 0),
+        new(0, -TEXT_SHADOW_OFFSET * 2), new(TEXT_SHADOW_OFFSET * 2, 0)
+    };
 
     public void OnGUIUnconditional()
     {
@@ -57,7 +68,19 @@ public class Drawing : IOnGUIUnconditional, IDrawing
 
         foreach (var text in _texts)
         {
-            UnityEngine.GUI.Label(text.Rect, text.Text);
+            _labelWithFontSize.fontSize = text.FontSize;
+            _labelWithFontSize.normal.textColor = Color.black;
+            var pos = text.Rect;
+
+            foreach (var offset in TextShadowOffsets)
+            {
+                pos.x += offset.Item1;
+                pos.y += offset.Item2;
+                UnityEngine.GUI.Label(pos, text.Text, _labelWithFontSize);
+            }
+
+            _labelWithFontSize.normal.textColor = Color.white;
+            UnityEngine.GUI.Label(text.Rect, text.Text, _labelWithFontSize);
         }
 
         _texts.Clear();
@@ -67,11 +90,13 @@ public class Drawing : IOnGUIUnconditional, IDrawing
     {
         public string Text { get; }
         public Rect Rect { get; }
+        public int FontSize { get; }
 
-        public PendingText(string text, Rect rect)
+        public PendingText(string text, Rect rect, int fontSize)
         {
             Text = text;
             Rect = rect;
+            FontSize = fontSize;
         }
     }
 }

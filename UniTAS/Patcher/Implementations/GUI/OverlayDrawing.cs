@@ -14,8 +14,8 @@ public class OverlayDrawing : IOverlayDrawing
         _drawing = drawing;
     }
 
-    public void DrawText(AnchoredOffset offset, string text)
+    public void DrawText(AnchoredOffset offset, string text, int fontSize)
     {
-        _drawing.PrintText(offset.X, offset.Y, text);
+        _drawing.PrintText(offset.X, offset.Y, text, fontSize);
     }
 }

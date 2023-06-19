@@ -14,6 +14,7 @@ public abstract class BuiltInOverlay : IOnUpdateUnconditional
     private ConfigEntry<int> _offsetX;
     private ConfigEntry<int> _offsetY;
     private ConfigEntry<bool> _enabled;
+    private ConfigEntry<int> _fontSize;
 
     protected abstract string ConfigValue { get; }
 
@@ -37,13 +38,15 @@ public abstract class BuiltInOverlay : IOnUpdateUnconditional
         _offsetX = config.ConfigFile.Bind(entry, "OffsetX", DefaultOffset.OffsetX, "Offset X position.");
         _offsetY = config.ConfigFile.Bind(entry, "OffsetY", DefaultOffset.OffsetY, "Offset Y position.");
         _enabled = config.ConfigFile.Bind(entry, "Enabled", true);
+        _fontSize = config.ConfigFile.Bind(entry, "FontSize", 30);
     }
 
     public void UpdateUnconditional()
     {
         if (!_enabled.Value) return;
         Update();
-        _overlayDrawing.DrawText(new(_anchorX.Value, _anchorY.Value, _offsetX.Value, _offsetY.Value), Text);
+        _overlayDrawing.DrawText(new(_anchorX.Value, _anchorY.Value, _offsetX.Value, _offsetY.Value), Text,
+            _fontSize.Value);
     }
 
     /// <summary>

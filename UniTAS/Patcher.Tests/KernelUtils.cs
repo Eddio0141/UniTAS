@@ -210,7 +210,7 @@ public static class KernelUtils
         {
         }
 
-        public void PrintText(int x, int y, string text)
+        public void PrintText(int x, int y, string text, int fontSize)
         {
         }
     }
