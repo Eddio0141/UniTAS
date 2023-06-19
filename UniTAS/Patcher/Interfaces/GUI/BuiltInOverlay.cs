@@ -38,7 +38,7 @@ public abstract class BuiltInOverlay : IOnUpdateUnconditional
         _offsetX = config.ConfigFile.Bind(entry, "OffsetX", DefaultOffset.OffsetX, "Offset X position.");
         _offsetY = config.ConfigFile.Bind(entry, "OffsetY", DefaultOffset.OffsetY, "Offset Y position.");
         _enabled = config.ConfigFile.Bind(entry, "Enabled", true);
-        _fontSize = config.ConfigFile.Bind(entry, "FontSize", 30);
+        _fontSize = config.ConfigFile.Bind(entry, "FontSize", 25);
     }
 
     public void UpdateUnconditional()
