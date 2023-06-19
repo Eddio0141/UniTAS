@@ -13,6 +13,7 @@ using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Patcher.Interfaces.GUI;
 using UniTAS.Patcher.Interfaces.Movie;
 using UniTAS.Patcher.Models.DependencyInjection;
+using UniTAS.Patcher.Models.GUI;
 using UniTAS.Patcher.Models.UnitySafeWrappers.SceneManagement;
 using UniTAS.Patcher.Models.VirtualEnvironment;
 using UniTAS.Patcher.Services;
@@ -206,11 +207,11 @@ public static class KernelUtils
     [SuppressMessage("ReSharper", "UnusedType.Local")]
     private class DrawingDummy : IDrawing
     {
-        public void FillBox(int x, int y, int width, int height, Color32 color)
+        public void FillBox(AnchoredOffset offset, int width, int height, Color32 color)
         {
         }
 
-        public void PrintText(int x, int y, string text, int fontSize)
+        public void PrintText(AnchoredOffset offset, string text, int fontSize)
         {
         }
     }

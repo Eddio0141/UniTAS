@@ -19,8 +19,9 @@ public class MovieEndStatus : BuiltInOverlay, IOnMovieRunningStatusChange
     {
     }
 
-    protected override AnchoredOffset DefaultOffset => new(1, 1, -80, -20);
+    protected override AnchoredOffset DefaultOffset => new(1, 1, 0, 0);
     protected override string ConfigValue => "MovieEndStatus";
+    protected override int DefaultFontSize => 20;
 
     protected override void Update()
     {

@@ -8,6 +8,7 @@ namespace UniTAS.Patcher.Interfaces.GUI;
 public abstract class BuiltInOverlay : IOnUpdateUnconditional
 {
     protected abstract AnchoredOffset DefaultOffset { get; }
+    protected virtual int DefaultFontSize => 25;
 
     private ConfigEntry<int> _anchorX;
     private ConfigEntry<int> _anchorY;
@@ -38,7 +39,7 @@ public abstract class BuiltInOverlay : IOnUpdateUnconditional
         _offsetX = config.ConfigFile.Bind(entry, "OffsetX", DefaultOffset.OffsetX, "Offset X position.");
         _offsetY = config.ConfigFile.Bind(entry, "OffsetY", DefaultOffset.OffsetY, "Offset Y position.");
         _enabled = config.ConfigFile.Bind(entry, "Enabled", true);
-        _fontSize = config.ConfigFile.Bind(entry, "FontSize", 25);
+        _fontSize = config.ConfigFile.Bind(entry, "FontSize", DefaultFontSize);
     }
 
     public void UpdateUnconditional()

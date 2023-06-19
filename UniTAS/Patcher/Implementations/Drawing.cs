@@ -3,6 +3,7 @@ using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Patcher.Interfaces.GUI;
+using UniTAS.Patcher.Models.GUI;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 
@@ -19,11 +20,14 @@ public class Drawing : IOnGUIUnconditional, IDrawing
     private bool _textureDirty = true;
 
     private readonly GUIStyle _labelWithFontSize = new();
+    private readonly GUIContent _labelContent = new();
 
-    public void FillBox(int x, int y, int width, int height, Color32 color)
+    public void FillBox(AnchoredOffset offset, int width, int height, Color32 color)
     {
         var screenWidth = Screen.width;
 
+        var x = offset.X;
+        var y = offset.Y;
         var destX = x + width;
         var destY = y + height;
 
@@ -38,11 +42,9 @@ public class Drawing : IOnGUIUnconditional, IDrawing
         }
     }
 
-    public void PrintText(int x, int y, string text, int fontSize)
+    public void PrintText(AnchoredOffset offset, string text, int fontSize)
     {
-        var width = text.Length * fontSize;
-        var height = 20 * fontSize;
-        _texts.Add(new(text, new(x, y, width, height), fontSize));
+        _texts.Add(new(text, offset, fontSize));
     }
 
     private const int TEXT_SHADOW_OFFSET = 1;
@@ -70,17 +72,26 @@ public class Drawing : IOnGUIUnconditional, IDrawing
         {
             _labelWithFontSize.fontSize = text.FontSize;
             _labelWithFontSize.normal.textColor = Color.black;
-            var pos = text.Rect;
+            _labelContent.text = text.Text;
 
-            foreach (var offset in TextShadowOffsets)
+            var size = _labelWithFontSize.CalcSize(_labelContent);
+            var offset = text.Offset;
+
+            var posX = offset.X - offset.AnchorX * size.x;
+            var posY = offset.Y - offset.AnchorY * size.y;
+
+            var labelRect = new Rect(posX, posY, size.x, size.y);
+            var labelRectOriginal = new Rect(labelRect);
+
+            foreach (var shadowOffset in TextShadowOffsets)
             {
-                pos.x += offset.Item1;
-                pos.y += offset.Item2;
-                UnityEngine.GUI.Label(pos, text.Text, _labelWithFontSize);
+                labelRect.x += shadowOffset.Item1;
+                labelRect.y += shadowOffset.Item2;
+                UnityEngine.GUI.Label(labelRect, text.Text, _labelWithFontSize);
             }
 
             _labelWithFontSize.normal.textColor = Color.white;
-            UnityEngine.GUI.Label(text.Rect, text.Text, _labelWithFontSize);
+            UnityEngine.GUI.Label(labelRectOriginal, text.Text, _labelWithFontSize);
         }
 
         _texts.Clear();
@@ -89,13 +100,13 @@ public class Drawing : IOnGUIUnconditional, IDrawing
     private struct PendingText
     {
         public string Text { get; }
-        public Rect Rect { get; }
+        public AnchoredOffset Offset { get; }
         public int FontSize { get; }
 
-        public PendingText(string text, Rect rect, int fontSize)
+        public PendingText(string text, AnchoredOffset offset, int fontSize)
         {
             Text = text;
-            Rect = rect;
+            Offset = offset;
             FontSize = fontSize;
         }
     }
