@@ -1,9 +1,10 @@
+using UniTAS.Patcher.Models.GUI;
 using UnityEngine;
 
 namespace UniTAS.Patcher.Interfaces.GUI;
 
 public interface IDrawing
 {
-    void FillBox(int x, int y, int width, int height, Color32 color);
-    void PrintText(int x, int y, string text, int fontSize);
+    void FillBox(AnchoredOffset offset, int width, int height, Color32 color);
+    void PrintText(AnchoredOffset offset, string text, int fontSize);
 }
