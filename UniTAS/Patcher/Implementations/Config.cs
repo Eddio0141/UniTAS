@@ -3,6 +3,7 @@ using BepInEx;
 using BepInEx.Configuration;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Services;
+using UniTAS.Patcher.Services.Logging;
 
 namespace UniTAS.Patcher.Implementations;
 
@@ -10,24 +11,21 @@ namespace UniTAS.Patcher.Implementations;
 [ExcludeRegisterIfTesting]
 public class Config : IConfig
 {
-    private readonly ConfigFile _configFile = new(Path.Combine(Paths.ConfigPath, "UniTAS.cfg"), true);
+    public ConfigFile ConfigFile { get; } = new(Path.Combine(Paths.ConfigPath, FILE_NAME), true);
+    private const string FILE_NAME = "UniTAS.cfg";
+    private readonly FileSystemWatcher _fileSystemWatcher;
 
-    private readonly ConfigEntry<float> _defaultFps;
-
-    public Config()
+    public Config(ILogger logger)
     {
-        _defaultFps = _configFile.Bind("General", "DefaultFps", 100f,
-            "Default FPS when the TAS isn't running. Make sure the FPS is more than 0");
-
-        if (_defaultFps.Value <= 0)
+        _fileSystemWatcher = new(Paths.ConfigPath, FILE_NAME)
         {
-            _defaultFps.Value = 100f;
-        }
-    }
-
-    public float DefaultFps
-    {
-        get => _defaultFps.Value;
-        set => _defaultFps.Value = value;
+            NotifyFilter = NotifyFilters.LastWrite
+        };
+        _fileSystemWatcher.Changed += (_, _) =>
+        {
+            ConfigFile.Reload();
+            logger.LogDebug("Config file reloaded");
+        };
+        _fileSystemWatcher.EnableRaisingEvents = true;
     }
 }

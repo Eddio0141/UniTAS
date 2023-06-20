@@ -23,7 +23,7 @@ public static class InputSystemEvents
     private static bool _usingMonoBehUpdate;
     private static bool _usingMonoBehFixedUpdate;
 
-    private static bool _alreadyRegisteredOnEvent;
+    // private static bool _alreadyRegisteredOnEvent;
 
     private static Action _inputUpdateActual;
     private static Action _inputUpdateFixedUpdate;
@@ -36,19 +36,19 @@ public static class InputSystemEvents
         {
             MonoBehaviourEvents.OnUpdateActual -= _inputUpdateActual;
         }
-        else if (_alreadyRegisteredOnEvent)
-        {
-            InputSystem.onBeforeUpdate -= _inputUpdateActual;
-        }
+        // else if (_alreadyRegisteredOnEvent)
+        // {
+        //     InputSystem.onBeforeUpdate -= _inputUpdateActual;
+        // }
 
         if (_usingMonoBehFixedUpdate)
         {
             MonoBehaviourEvents.OnFixedUpdateActual -= _inputUpdateFixedUpdate;
         }
-        else if (_alreadyRegisteredOnEvent)
-        {
-            InputSystem.onBeforeUpdate -= _inputUpdateFixedUpdate;
-        }
+        // else if (_alreadyRegisteredOnEvent)
+        // {
+        //     InputSystem.onBeforeUpdate -= _inputUpdateFixedUpdate;
+        // }
 
         _usingMonoBehUpdate = true;
         _usingMonoBehFixedUpdate = true;
@@ -142,7 +142,7 @@ public static class InputSystemEvents
                 throw new ArgumentOutOfRangeException(nameof(updateMode), updateMode, null);
         }
 
-        _alreadyRegisteredOnEvent = true;
+        // _alreadyRegisteredOnEvent = true;
     }
 
     private static bool AlreadyRegisteredOnEvent => !_usingMonoBehUpdate || !_usingMonoBehFixedUpdate;
