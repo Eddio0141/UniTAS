@@ -19,7 +19,7 @@ public class CursorOverlay : IOnUpdateUnconditional, IMouseOverlayStatus, IOnGam
     private readonly Texture2D _cursorTexture = new(1, 1);
     private readonly bool _disabled;
 
-    public bool Visible { get; set; }
+    public bool Visible { private get; set; }
 
     public CursorOverlay(IDrawing drawing, ILogger logger)
     {
