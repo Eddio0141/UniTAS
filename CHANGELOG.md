@@ -14,6 +14,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `unity` module for interacting with unity engine
 - Added `unity.find_objects_by_type()` to find all objects of a type
 - Added wrapped type for `UnityEngine.Transform` to read transform data for objects
+- Added `gui` module for interacting with UniTAS GUI
+- Added `gui.show_overlays` to show or hide overlays
+
+### UniTAS
+
+- Added built in overlay GUIs for TAS information
 
 ## Fixed
 
