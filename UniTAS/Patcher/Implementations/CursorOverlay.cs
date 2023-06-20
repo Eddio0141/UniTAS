@@ -13,6 +13,7 @@ using UnityEngine;
 namespace UniTAS.Patcher.Implementations;
 
 [Singleton]
+[ExcludeRegisterIfTesting]
 public class CursorOverlay : IOnUpdateUnconditional, IMouseOverlayStatus, IOnGameRestart
 {
     private readonly IDrawing _drawing;
