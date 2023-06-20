@@ -1,18 +1,17 @@
 using System;
 using System.Collections.Generic;
-using UniTAS.Patcher.Models.GUI;
 using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations.Drawing;
 
 public partial class Drawing
 {
-    private readonly Queue<Texture2D> _textures = new();
+    private readonly Queue<PendingTexture> _textures = new();
     private readonly Action _nextTexture;
 
-    public void DrawTexture(AnchoredOffset offset, Texture2D texture)
+    public void DrawTexture(Vector2 offset, Texture2D texture)
     {
-        _textures.Enqueue(texture);
+        _textures.Enqueue(new(texture, offset));
         _pendingDraws.Add(_nextTexture);
     }
 
@@ -20,6 +19,19 @@ public partial class Drawing
     {
         var texture = _textures.Dequeue();
 
-        Graphics.DrawTexture(new(0, 0, _cachedScreenWidth, _cachedScreenHeight), texture);
+        Graphics.DrawTexture(new(texture.Offset.x, texture.Offset.y, _cachedScreenWidth, _cachedScreenHeight),
+            texture.Texture);
+    }
+
+    private struct PendingTexture
+    {
+        public Texture2D Texture { get; }
+        public Vector2 Offset { get; }
+
+        public PendingTexture(Texture2D texture, Vector2 offset)
+        {
+            Texture = texture;
+            Offset = offset;
+        }
     }
 }

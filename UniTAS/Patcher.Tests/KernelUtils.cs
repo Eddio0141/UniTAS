@@ -211,7 +211,7 @@ public static class KernelUtils
         {
         }
 
-        public void DrawTexture(AnchoredOffset offset, Texture2D texture)
+        public void DrawTexture(Vector2 pos, Texture2D texture)
         {
         }
     }

@@ -6,5 +6,5 @@ namespace UniTAS.Patcher.Interfaces.GUI;
 public interface IDrawing
 {
     void PrintText(AnchoredOffset offset, string text, int fontSize);
-    void DrawTexture(AnchoredOffset offset, Texture2D texture);
+    void DrawTexture(Vector2 pos, Texture2D texture);
 }

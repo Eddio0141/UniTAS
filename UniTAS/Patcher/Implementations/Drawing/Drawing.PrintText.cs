@@ -38,10 +38,9 @@ public partial class Drawing
         var size = _labelWithFontSize.CalcSize(_labelContent);
         var offset = text.Offset;
 
-        var posX = offset.X - offset.AnchorX * size.x;
-        var posY = offset.Y - offset.AnchorY * size.y;
+        var pos = GetScreenPosition(offset, size);
 
-        var labelRect = new Rect(posX, posY, size.x, size.y);
+        var labelRect = new Rect(pos.x, pos.y, size.x, size.y);
         var labelRectOriginal = new Rect(labelRect);
 
         foreach (var shadowOffset in TextShadowOffsets)

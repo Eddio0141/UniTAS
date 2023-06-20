@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Patcher.Interfaces.GUI;
+using UniTAS.Patcher.Models.GUI;
 using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations.Drawing;
@@ -35,5 +36,13 @@ public partial class Drawing : IOnGUIUnconditional, IDrawing
         }
 
         _pendingDraws.Clear();
+    }
+
+    private static Vector2 GetScreenPosition(AnchoredOffset offset, Vector2 size)
+    {
+        var posX = offset.X - offset.AnchorX * size.x;
+        var posY = offset.Y - offset.AnchorY * size.y;
+
+        return new(posX, posY);
     }
 }
