@@ -4,5 +4,6 @@ namespace UniTAS.Patcher.Interfaces.GUI;
 
 public interface IOverlayDrawing
 {
-    void DrawText(AnchoredOffset offset, string text);
+    void DrawText(AnchoredOffset offset, string text, int fontSize);
+    bool Enabled { get; set; }
 }

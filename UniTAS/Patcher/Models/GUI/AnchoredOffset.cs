@@ -2,12 +2,12 @@ using UnityEngine;
 
 namespace UniTAS.Patcher.Models.GUI;
 
-public struct AnchoredOffset
+public readonly struct AnchoredOffset
 {
-    private int AnchorX { get; }
-    private int AnchorY { get; }
-    private int OffsetX { get; }
-    private int OffsetY { get; }
+    public int AnchorX { get; }
+    public int AnchorY { get; }
+    public int OffsetX { get; }
+    public int OffsetY { get; }
 
     /// <summary>
     /// Creates a new AnchoredOffset.

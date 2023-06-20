@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using BepInEx.Configuration;
 using BepInEx.Logging;
 using MoonSharp.Interpreter;
 using StructureMap;
@@ -9,14 +10,17 @@ using UniTAS.Patcher.Implementations.DependencyInjection;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
 using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
+using UniTAS.Patcher.Interfaces.GUI;
 using UniTAS.Patcher.Interfaces.Movie;
 using UniTAS.Patcher.Models.DependencyInjection;
+using UniTAS.Patcher.Models.GUI;
 using UniTAS.Patcher.Models.UnitySafeWrappers.SceneManagement;
 using UniTAS.Patcher.Models.VirtualEnvironment;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.DependencyInjection;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
+using UniTAS.Patcher.Services.VirtualEnvironment;
 using UniTAS.Patcher.Services.VirtualEnvironment.Input.LegacyInputSystem;
 using UnityEngine;
 
@@ -163,7 +167,7 @@ public static class KernelUtils
     [Register(IncludeDifferentAssembly = true)]
     public class ConfigDummy : IConfig
     {
-        public float DefaultFps { get; set; }
+        public ConfigFile ConfigFile => null!;
     }
 
     [Register(IncludeDifferentAssembly = true)]
@@ -181,6 +185,35 @@ public static class KernelUtils
         public int TotalSceneCount => 0;
         public int ActiveSceneIndex => 0;
         public string ActiveSceneName => "";
+    }
+
+    [Register(IncludeDifferentAssembly = true)]
+    [SuppressMessage("ReSharper", "UnassignedGetOnlyAutoProperty")]
+    public class TimeEnvDummy : ITimeEnv
+    {
+        public double FrameTime { get; set; }
+        public DateTime CurrentTime { get; }
+        public ulong RenderedFrameCountOffset { get; }
+        public ulong FrameCountRestartOffset { get; }
+        public double SecondsSinceStartUp { get; }
+        public double UnscaledTime { get; }
+        public double FixedUnscaledTime { get; }
+        public double ScaledTime { get; }
+        public double ScaledFixedTime { get; }
+        public double RealtimeSinceStartup { get; }
+    }
+
+    [Register(IncludeDifferentAssembly = true)]
+    [SuppressMessage("ReSharper", "UnusedType.Local")]
+    private class DrawingDummy : IDrawing
+    {
+        public void FillBox(AnchoredOffset offset, int width, int height, Color32 color)
+        {
+        }
+
+        public void PrintText(AnchoredOffset offset, string text, int fontSize)
+        {
+        }
     }
 
     public static Container Init()

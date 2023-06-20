@@ -167,7 +167,7 @@ public partial class MovieParser : IMovieParser
     private static readonly Assembly[] UnityTypesIgnore =
         { typeof(MovieParser).Assembly, typeof(BepInEx.Paths).Assembly };
 
-    private static void AddUnityTypes()
+    private void AddUnityTypes()
     {
         if (UnitTestUtils.IsTesting) return;
 
@@ -186,7 +186,13 @@ public partial class MovieParser : IMovieParser
             // idk why there is duplicate types but distinct doesn't seem to work
             if (UserData.IsTypeRegistered(monoBehaviour)) continue;
 
-            var desc = (StandardUserDataDescriptor)UserData.RegisterType(monoBehaviour, InteropAccessMode.HideMembers);
+            var userDataDesc = UserData.RegisterType(monoBehaviour, InteropAccessMode.HideMembers);
+            if (userDataDesc is not StandardUserDataDescriptor desc)
+            {
+                _logger.LogWarning(
+                    $"Failed to register type: {monoBehaviour.FullName}, you won't be able to access it in the script");
+                continue;
+            }
 
             var fields = AccessTools.GetDeclaredFields(monoBehaviour);
             foreach (var field in fields)
