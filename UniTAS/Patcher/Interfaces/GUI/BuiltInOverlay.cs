@@ -2,7 +2,7 @@ using BepInEx.Configuration;
 using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Patcher.Models.GUI;
 using UniTAS.Patcher.Services;
-using UniTAS.Patcher.Services.GUI;
+using UniTAS.Patcher.Services.Overlay;
 
 namespace UniTAS.Patcher.Interfaces.GUI;
 
