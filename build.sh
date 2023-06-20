@@ -18,6 +18,7 @@ DOTNET_SOURCE="UniTAS"
 
 SOURCE_PATCH_DIR="$DOTNET_SOURCE/Patcher"
 SOURCE_PATCH_EXTERN_DLL_DIR="$SOURCE_PATCH_DIR/Extern-Assemblies"
+SOURCE_RESOURCES_DIR="SOURCE_PATCH_DIR/Resources"
 
 # Dotnet build
 dotnet build "$SOURCE_PATCH_DIR" -c "$BUILD_TYPE"
@@ -27,6 +28,6 @@ echo "Copying dlls to output folders"
 # Create output dirs
 mkdir -p "$OUTPUT_PATCH_DIR"
 
-# Only copy dlls
-cp "$SOURCE_PATCH_EXTERN_DLL_DIR"/*.dll "$OUTPUT_PATCH_DIR"
+cp "$SOURCE_PATCH_EXTERN_DLL_DIR"/* "$OUTPUT_PATCH_DIR"
+cp -r "$SOURCE_RESOURCES_DIR" "$OUTPUT_PATCH_DIR"
 cp "$SOURCE_PATCH_DIR/bin/$BUILD_TYPE/net35"/*.dll "$OUTPUT_PATCH_DIR"
