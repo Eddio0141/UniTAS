@@ -207,11 +207,11 @@ public static class KernelUtils
     [SuppressMessage("ReSharper", "UnusedType.Local")]
     private class DrawingDummy : IDrawing
     {
-        public void FillBox(AnchoredOffset offset, int width, int height, Color32 color)
+        public void PrintText(AnchoredOffset offset, string text, int fontSize)
         {
         }
 
-        public void PrintText(AnchoredOffset offset, string text, int fontSize)
+        public void DrawTexture(AnchoredOffset offset, Texture2D texture)
         {
         }
     }
