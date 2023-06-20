@@ -1,22 +1,22 @@
 using MoonSharp.Interpreter;
-using UniTAS.Patcher.Interfaces.GUI;
 using UniTAS.Patcher.Interfaces.Movie;
+using UniTAS.Patcher.Services.GUI;
 
 namespace UniTAS.Patcher.Implementations.Movie.Engine.Modules;
 
 public class GUI : EngineMethodClass
 {
-    private readonly IOverlayDrawing _overlayDrawing;
+    private readonly IOverlayVisibleToggle _overlayVisibleToggle;
 
     [MoonSharpHidden]
-    public GUI(IOverlayDrawing overlayDrawing)
+    public GUI(IOverlayVisibleToggle overlayVisibleToggle)
     {
-        _overlayDrawing = overlayDrawing;
+        _overlayVisibleToggle = overlayVisibleToggle;
     }
 
     public bool ShowOverlays
     {
-        get => _overlayDrawing.Enabled;
-        set => _overlayDrawing.Enabled = value;
+        get => _overlayVisibleToggle.Enabled;
+        set => _overlayVisibleToggle.Enabled = value;
     }
 }

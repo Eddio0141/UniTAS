@@ -2,10 +2,11 @@ using BepInEx.Configuration;
 using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Patcher.Models.GUI;
 using UniTAS.Patcher.Services;
+using UniTAS.Patcher.Services.GUI;
 
 namespace UniTAS.Patcher.Interfaces.GUI;
 
-public abstract class BuiltInOverlay : IOnUpdateUnconditional
+public abstract class BuiltInOverlay : IOnUpdateUnconditional, IOverlayVisibleToggle
 {
     protected abstract AnchoredOffset DefaultOffset { get; }
     protected virtual int DefaultFontSize => 25;
@@ -22,6 +23,8 @@ public abstract class BuiltInOverlay : IOnUpdateUnconditional
     private readonly IOverlayDrawing _overlayDrawing;
 
     protected string Text { get; set; }
+
+    public bool Enabled { get; set; } = true;
 
     protected BuiltInOverlay(IConfig config, IOverlayDrawing overlayDrawing)
     {
@@ -44,7 +47,7 @@ public abstract class BuiltInOverlay : IOnUpdateUnconditional
 
     public void UpdateUnconditional()
     {
-        if (!_enabled.Value) return;
+        if (!Enabled || !_enabled.Value) return;
         Update();
         _overlayDrawing.DrawText(new(_anchorX.Value, _anchorY.Value, _offsetX.Value, _offsetY.Value), Text,
             _fontSize.Value);

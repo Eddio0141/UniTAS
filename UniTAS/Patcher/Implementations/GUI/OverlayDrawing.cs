@@ -16,9 +16,6 @@ public class OverlayDrawing : IOverlayDrawing
 
     public void DrawText(AnchoredOffset offset, string text, int fontSize)
     {
-        if (!Enabled) return;
         _drawing.PrintText(offset, text, fontSize);
     }
-
-    public bool Enabled { get; set; } = true;
 }
