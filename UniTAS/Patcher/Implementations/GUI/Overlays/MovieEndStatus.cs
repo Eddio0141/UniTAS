@@ -15,7 +15,7 @@ public class MovieEndStatus : BuiltInOverlay, IOnMovieRunningStatusChange
     private float _messageDisplayLeft;
     private const float MESSAGE_DISPLAY_TIME = 1f;
 
-    public MovieEndStatus(IConfig config, IOverlayDrawing overlayDrawing) : base(config, overlayDrawing)
+    public MovieEndStatus(IConfig config, IDrawing drawing) : base(config, drawing)
     {
     }
 

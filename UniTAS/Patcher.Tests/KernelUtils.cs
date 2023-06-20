@@ -19,6 +19,7 @@ using UniTAS.Patcher.Models.VirtualEnvironment;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.DependencyInjection;
 using UniTAS.Patcher.Services.Logging;
+using UniTAS.Patcher.Services.Overlay;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Patcher.Services.VirtualEnvironment;
 using UniTAS.Patcher.Services.VirtualEnvironment.Input.LegacyInputSystem;
@@ -207,13 +208,20 @@ public static class KernelUtils
     [SuppressMessage("ReSharper", "UnusedType.Local")]
     private class DrawingDummy : IDrawing
     {
-        public void FillBox(AnchoredOffset offset, int width, int height, Color32 color)
-        {
-        }
-
         public void PrintText(AnchoredOffset offset, string text, int fontSize)
         {
         }
+
+        public void DrawTexture(Vector2 pos, Texture2D texture)
+        {
+        }
+    }
+
+    [Register(IncludeDifferentAssembly = true)]
+    [SuppressMessage("ReSharper", "UnusedType.Local")]
+    private class OverlayVisibleToggleDummy : IOverlayVisibleToggle
+    {
+        public bool Enabled { get; set; }
     }
 
     public static Container Init()

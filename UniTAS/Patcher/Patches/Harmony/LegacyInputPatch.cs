@@ -92,7 +92,7 @@ public class LegacyInputPatch
                 return false;
             }
 
-            __result = KeyboardStateEnvLegacySystem.IsKeyHeld(KeyFactory.CreateKey((KeyCode)foundKeyCode));
+            __result = KeyboardStateEnvLegacySystem.IsKeyHeld(KeyFactory.CreateKey(foundKeyCode));
             return false;
         }
 
@@ -123,7 +123,7 @@ public class LegacyInputPatch
                 return false;
             }
 
-            __result = KeyboardStateEnvLegacySystem.IsKeyUp(KeyFactory.CreateKey((KeyCode)foundKeyCode));
+            __result = KeyboardStateEnvLegacySystem.IsKeyUp(KeyFactory.CreateKey(foundKeyCode));
             return false;
         }
 
@@ -180,7 +180,7 @@ public class LegacyInputPatch
                 return false;
             }
 
-            __result = KeyboardStateEnvLegacySystem.IsKeyDown(KeyFactory.CreateKey((KeyCode)foundKeyCode));
+            __result = KeyboardStateEnvLegacySystem.IsKeyDown(KeyFactory.CreateKey(foundKeyCode));
             return false;
         }
 

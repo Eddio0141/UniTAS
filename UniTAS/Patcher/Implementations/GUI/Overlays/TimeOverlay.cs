@@ -16,7 +16,7 @@ public class TimeOverlay : BuiltInOverlay, IOnMovieRunningStatusChange
     private bool _update;
     private readonly ITimeEnv _timeEnv;
 
-    public TimeOverlay(IConfig config, IOverlayDrawing overlayDrawing, ITimeEnv timeEnv) : base(config, overlayDrawing)
+    public TimeOverlay(IConfig config, IDrawing drawing, ITimeEnv timeEnv) : base(config, drawing)
     {
         _timeEnv = timeEnv;
         Text = "0.000";

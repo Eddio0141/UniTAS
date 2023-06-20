@@ -36,3 +36,6 @@ Copy-Item "$patcherSource/bin/$buildType/net35/*.dll" "$buildOutputPatcher" -For
 
 # Copy external dlls
 Copy-Item "$patcherSource/Extern-Assemblies/*.dll" "$buildOutputPatcher" -Force
+
+# Copy resources folder
+Copy-Item "$patcherSource/Resources" "$buildOutputPatcher" -Recurse -Force
