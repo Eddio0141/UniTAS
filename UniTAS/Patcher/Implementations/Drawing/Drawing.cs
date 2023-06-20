@@ -14,9 +14,6 @@ public partial class Drawing : IOnGUIUnconditional, IDrawing
 {
     private readonly List<Action> _pendingDraws = new();
 
-    private int _cachedScreenWidth;
-    private int _cachedScreenHeight;
-
     public Drawing()
     {
         _nextText = NextText;
@@ -26,9 +23,6 @@ public partial class Drawing : IOnGUIUnconditional, IDrawing
     public void OnGUIUnconditional()
     {
         if (Event.current.type != EventType.Repaint) return;
-
-        _cachedScreenWidth = Screen.width;
-        _cachedScreenHeight = Screen.height;
 
         foreach (var pendingDraw in _pendingDraws)
         {

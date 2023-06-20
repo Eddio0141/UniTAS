@@ -17,10 +17,11 @@ public partial class Drawing
 
     private void NextTexture()
     {
-        var texture = _textures.Dequeue();
+        var pendingTexture = _textures.Dequeue();
+        var texture = pendingTexture.Texture;
+        var offset = pendingTexture.Offset;
 
-        Graphics.DrawTexture(new(texture.Offset.x, texture.Offset.y, _cachedScreenWidth, _cachedScreenHeight),
-            texture.Texture);
+        Graphics.DrawTexture(new(offset.x, offset.y, texture.width, texture.height), pendingTexture.Texture);
     }
 
     private struct PendingTexture
