@@ -17,7 +17,7 @@ public class FrameCountOverlay : BuiltInOverlay, IOnMovieRunningStatusChange, IO
 
     private bool _update;
 
-    public FrameCountOverlay(IConfig config, IOverlayDrawing overlayDrawing) : base(config, overlayDrawing)
+    public FrameCountOverlay(IConfig config, IDrawing drawing) : base(config, drawing)
     {
     }
 

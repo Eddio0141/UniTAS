@@ -20,15 +20,15 @@ public abstract class BuiltInOverlay : IOnUpdateUnconditional, IOverlayVisibleTo
 
     protected abstract string ConfigValue { get; }
 
-    private readonly IOverlayDrawing _overlayDrawing;
+    private readonly IDrawing _drawing;
 
     protected string Text { get; set; }
 
     public bool Enabled { get; set; } = true;
 
-    protected BuiltInOverlay(IConfig config, IOverlayDrawing overlayDrawing)
+    protected BuiltInOverlay(IConfig config, IDrawing drawing)
     {
-        _overlayDrawing = overlayDrawing;
+        _drawing = drawing;
         Init(config);
     }
 
@@ -49,7 +49,7 @@ public abstract class BuiltInOverlay : IOnUpdateUnconditional, IOverlayVisibleTo
     {
         if (!Enabled || !_enabled.Value) return;
         Update();
-        _overlayDrawing.DrawText(new(_anchorX.Value, _anchorY.Value, _offsetX.Value, _offsetY.Value), Text,
+        _drawing.PrintText(new(_anchorX.Value, _anchorY.Value, _offsetX.Value, _offsetY.Value), Text,
             _fontSize.Value);
     }
 
