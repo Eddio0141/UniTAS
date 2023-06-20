@@ -29,6 +29,9 @@
         <Compile Remove="Extern-Assemblies\**"/>
         <EmbeddedResource Remove="Extern-Assemblies\**"/>
         <None Remove="Extern-Assemblies\**"/>
+        <Compile Remove="Resources\**"/>
+        <EmbeddedResource Remove="Resources\**"/>
+        <None Remove="Resources\**"/>
     </ItemGroup>
 
     <ItemGroup>
