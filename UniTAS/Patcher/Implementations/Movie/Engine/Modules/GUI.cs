@@ -1,6 +1,6 @@
 using MoonSharp.Interpreter;
 using UniTAS.Patcher.Interfaces.Movie;
-using UniTAS.Patcher.Services.GUI;
+using UniTAS.Patcher.Services.Overlay;
 
 namespace UniTAS.Patcher.Implementations.Movie.Engine.Modules;
 

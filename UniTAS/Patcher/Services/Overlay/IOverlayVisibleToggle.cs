@@ -1,4 +1,4 @@
-namespace UniTAS.Patcher.Services.GUI;
+namespace UniTAS.Patcher.Services.Overlay;
 
 public interface IOverlayVisibleToggle
 {
