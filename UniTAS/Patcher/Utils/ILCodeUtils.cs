@@ -2,6 +2,7 @@ using System.Linq;
 using System.Reflection;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Mono.Collections.Generic;
 using MethodAttributes = Mono.Cecil.MethodAttributes;
 
 namespace UniTAS.Patcher.Utils;
@@ -48,5 +49,17 @@ public static class ILCodeUtils
         type.Methods.Add(staticCtor);
         var il = staticCtor.Body.GetILProcessor();
         il.Append(il.Create(OpCodes.Ret));
+    }
+
+    public static void RedirectJumpsToNewDest(Collection<Instruction> instructions, Instruction oldDest,
+        Instruction newDest)
+    {
+        foreach (var instruction in instructions)
+        {
+            if (instruction.Operand == oldDest)
+            {
+                instruction.Operand = newDest;
+            }
+        }
     }
 }

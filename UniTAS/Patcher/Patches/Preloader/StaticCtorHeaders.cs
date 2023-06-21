@@ -97,6 +97,7 @@ public class StaticCtorHeaders : PreloadPatcher
             insertedInstructions.Add(endRefInstruction);
             StaticLogger.Log.LogDebug(
                 $"Found return in static ctor of {type.FullName}, instruction: {instruction}, patched");
+            ILCodeUtils.RedirectJumpsToNewDest(ilProcessor.Body.Instructions, instruction, endRefInstruction);
             i++;
             insertCount++;
         }
@@ -109,6 +110,8 @@ public class StaticCtorHeaders : PreloadPatcher
             insertedInstructions.Add(endRefInstruction);
             StaticLogger.Log.LogDebug(
                 $"Found no returns in static ctor of {type.FullName}, force patching at last instruction");
+
+            ILCodeUtils.RedirectJumpsToNewDest(ilProcessor.Body.Instructions, last, endRefInstruction);
         }
 
         // i gotta find a nice place to insert call to CheckAndInvokeDependency
@@ -134,11 +137,15 @@ public class StaticCtorHeaders : PreloadPatcher
 
                 // ok we found it, insert call to CheckAndInvokeDependency
                 StaticLogger.Log.LogDebug("Before insert");
-                ilProcessor.InsertBefore(instruction, ilProcessor.Create(OpCodes.Call, patchMethodDependencyRef));
+                var dependencyRefInstruction = ilProcessor.Create(OpCodes.Call, patchMethodDependencyRef);
+                ilProcessor.InsertBefore(instruction, dependencyRefInstruction);
                 insertedDependencyInvoke = true;
 
                 StaticLogger.Log.LogDebug(
                     $"Found external class reference in static ctor of {type.FullName}, instruction: {instruction}, patched");
+
+                ILCodeUtils.RedirectJumpsToNewDest(ilProcessor.Body.Instructions, instruction,
+                    dependencyRefInstruction);
 
                 break;
             }
@@ -180,7 +187,8 @@ public static class PatchMethods
         CctorInvokeStack.Add(type);
 
         if (IsNotFirstInvoke(type)) return;
-        StaticLogger.Log.LogDebug($"First static ctor invoke for {type.FullName}");
+        StaticLogger.Log.LogDebug(
+            $"First static ctor invoke for {type.FullName}, stack count: {CctorInvokeStack.Count}");
 
         // first invoke zone
 
@@ -220,12 +228,14 @@ public static class PatchMethods
         }
 
         CctorInvokeStack.RemoveAt(CctorInvokeStack.Count - 1);
+        StaticLogger.Log.LogDebug($"End of static ctor {type}, stack count: {CctorInvokeStack.Count}");
 
         if (IsNotFirstInvoke(type)) return;
 
         // add only if not in ignore list
         if (PendingIgnoreAddingInvokeList.Remove(type)) return;
 
+        StaticLogger.Log.LogDebug($"Adding type {type} to static ctor invoke list");
         Tracker.StaticCtorInvokeOrder.Add(type);
     }
 
