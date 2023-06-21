@@ -30,7 +30,15 @@ public class StaticFieldStorage : IStaticFieldManipulator
         {
             var typeName = field.DeclaringType?.FullName ?? "unknown_type";
             _logger.LogDebug($"resetting static field: {typeName}.{field.Name}");
-            (field.GetValue(null) as IDisposable)?.Dispose();
+
+            // only dispose if disposable in is in system namespace
+            if (field.GetValue(null) is IDisposable disposable &&
+                field.FieldType.Namespace?.StartsWith("System") is true)
+            {
+                _logger.LogDebug("disposing object via IDisposable");
+                disposable.Dispose();
+            }
+
             field.SetValue(null, null);
         }
 

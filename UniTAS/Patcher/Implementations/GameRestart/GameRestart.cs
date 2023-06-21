@@ -23,6 +23,7 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
     private readonly ISceneWrapper _sceneWrapper;
     private readonly IMonoBehaviourController _monoBehaviourController;
     private readonly ILogger _logger;
+    private readonly IFinalizeSuppressor _finalizeSuppressor;
 
     private readonly IOnPreGameRestart[] _onPreGameRestart;
 
@@ -37,7 +38,7 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
     public GameRestart(ISyncFixedUpdateCycle syncFixedUpdate, ISceneWrapper sceneWrapper,
         IMonoBehaviourController monoBehaviourController, ILogger logger, IOnGameRestart[] onGameRestart,
         IOnGameRestartResume[] onGameRestartResume, IOnPreGameRestart[] onPreGameRestart,
-        IStaticFieldManipulator staticFieldManipulator, ITimeEnv timeEnv)
+        IStaticFieldManipulator staticFieldManipulator, ITimeEnv timeEnv, IFinalizeSuppressor finalizeSuppressor)
     {
         _syncFixedUpdate = syncFixedUpdate;
         _sceneWrapper = sceneWrapper;
@@ -46,6 +47,7 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
         _onPreGameRestart = onPreGameRestart;
         _staticFieldManipulator = staticFieldManipulator;
         _timeEnv = timeEnv;
+        _finalizeSuppressor = finalizeSuppressor;
 
         foreach (var gameRestartResume in onGameRestartResume)
         {
@@ -95,7 +97,13 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
 
         DestroyGameObjects();
 
+        _logger.LogDebug("Disabling finalize invoke");
+        _finalizeSuppressor.DisableFinalizeInvoke = true;
+
         _staticFieldManipulator.ResetStaticFields();
+
+        _logger.LogDebug("Enabling finalize invoke");
+        _finalizeSuppressor.DisableFinalizeInvoke = false;
 
         // this invokes 2 frames before the sync since the counter is at 1
         _syncFixedUpdate.OnSync(() => _pendingSoftRestartCounter = 1, -_timeEnv.FrameTime * 1.0);

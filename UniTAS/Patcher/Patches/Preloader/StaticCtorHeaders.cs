@@ -18,39 +18,12 @@ namespace UniTAS.Patcher.Patches.Preloader;
 [SuppressMessage("ReSharper", "UnusedType.Global")]
 public class StaticCtorHeaders : PreloadPatcher
 {
-    private readonly string[] _assemblyExclusionsRaw =
-    {
-        "UnityEngine.*",
-        "UnityEngine",
-        "Unity.*",
-        "System.*",
-        "System",
-        "netstandard",
-        "mscorlib",
-        "Mono.*",
-        "Mono",
-        "MonoMod.*",
-        "BepInEx.*",
-        "BepInEx",
-        "MonoMod.*",
-        "0Harmony",
-        "HarmonyXInterop",
-        "StructureMap",
-        "Newtonsoft.Json"
-    };
-
-    private readonly string[] _assemblyIncludeRaw =
-    {
-        "Unity.InputSystem",
-        "UnityEngine.InputModule"
-    };
-
     public override IEnumerable<string> TargetDLLs => TargetPatcherDlls.AllDLLs.Where(x =>
     {
         var fileWithoutExtension = Path.GetFileNameWithoutExtension(x);
         return fileWithoutExtension == null ||
-               _assemblyIncludeRaw.Any(a => fileWithoutExtension.Like(a)) ||
-               !_assemblyExclusionsRaw.Any(a => fileWithoutExtension.Like(a));
+               StaticCtorPatchTargetInfo.AssemblyIncludeRaw.Any(a => fileWithoutExtension.Like(a)) ||
+               !StaticCtorPatchTargetInfo.AssemblyExclusionsRaw.Any(a => fileWithoutExtension.Like(a));
     });
 
     public override void Patch(ref AssemblyDefinition assembly)
