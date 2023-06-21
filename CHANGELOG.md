@@ -44,6 +44,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Compatibility
 
 - Fixed readonly fields pointing to old references after soft restart
+- Stop threads created by game from running after soft restart
+- Prevent finalizers from running during soft restart
 
 ## Changes
 
