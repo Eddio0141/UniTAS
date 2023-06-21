@@ -12,12 +12,10 @@ namespace UniTAS.Patcher.Implementations;
 public class StaticFieldStorage : IStaticFieldManipulator
 {
     private readonly ILogger _logger;
-    private readonly IFinalizeSuppressor _finalizeSuppressor;
 
-    public StaticFieldStorage(ILogger logger, IFinalizeSuppressor finalizeSuppressor)
+    public StaticFieldStorage(ILogger logger)
     {
         _logger = logger;
-        _finalizeSuppressor = finalizeSuppressor;
     }
 
     public void ResetStaticFields()
@@ -27,9 +25,6 @@ public class StaticFieldStorage : IStaticFieldManipulator
         UnityEngine.Resources.UnloadUnusedAssets();
 
         var staticFieldStorage = Tracker.StaticFields;
-
-        // this is stupid. i just set this to false when i need to invoke directly in this class which is really really dumb
-        _finalizeSuppressor.DisableFinalizeInvoke = true;
 
         foreach (var field in staticFieldStorage)
         {
@@ -41,15 +36,11 @@ public class StaticFieldStorage : IStaticFieldManipulator
                 field.FieldType.Namespace?.StartsWith("System") is true)
             {
                 _logger.LogDebug("disposing object via IDisposable");
-                _finalizeSuppressor.DisableFinalizeInvoke = false;
                 disposable.Dispose();
-                _finalizeSuppressor.DisableFinalizeInvoke = true;
             }
 
             field.SetValue(null, null);
         }
-
-        _finalizeSuppressor.DisableFinalizeInvoke = false;
 
         // idk if this even works
         GC.Collect();
