@@ -26,8 +26,8 @@ public class OpenFileStreamTrackerPatch
     {
         var stackTrace = new StackTrace();
         var frames = stackTrace.GetFrames()?.ToList();
-        if (frames is { Count: >= 2 })
-            frames.RemoveRange(0, 2);
+        if (frames is { Count: >= 3 })
+            frames.RemoveRange(0, 3);
         if (frames == null) return false;
 
         foreach (var frame in frames)
