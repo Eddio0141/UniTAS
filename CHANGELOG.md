@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added built in overlays
 - Added frame counter overlay
+- Added mouse overlay
 
 ### TAS movie
 
@@ -43,6 +44,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Compatibility
 
 - Fixed readonly fields pointing to old references after soft restart
+- Stop threads created by game from running after soft restart
+- Prevent finalizers from running during soft restart
+- Fixed some static constructors not being tracked properly
 
 ## Changes
 
