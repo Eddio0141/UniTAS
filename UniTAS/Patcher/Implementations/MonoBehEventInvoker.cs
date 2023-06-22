@@ -115,6 +115,24 @@ public class MonoBehEventInvoker : IMonoBehEventInvoker, IUpdateEvents
         MonoBehaviourEvents.InvokeLateUpdate();
     }
 
+    public event Action OnAwakeActual
+    {
+        add => MonoBehaviourEvents.OnAwakeActual += value;
+        remove => MonoBehaviourEvents.OnAwakeActual -= value;
+    }
+
+    public event Action OnStartActual
+    {
+        add => MonoBehaviourEvents.OnStartActual += value;
+        remove => MonoBehaviourEvents.OnStartActual -= value;
+    }
+
+    public event Action OnFixedUpdateActual
+    {
+        add => MonoBehaviourEvents.OnFixedUpdateActual += value;
+        remove => MonoBehaviourEvents.OnFixedUpdateActual -= value;
+    }
+
     public event Action OnGUIEventUnconditional
     {
         add => MonoBehaviourEvents.OnGUIUnconditional += value;
