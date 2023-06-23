@@ -6,7 +6,7 @@ A tool that lets you TAS unity games
 - The tool doesn't bypass anti cheat or anything, USE AT YOUR OWN RISK!
 - :warning: The tool is early in development and only basic games work
     - This also means TASes made in earlier versions might not work in later versions
-- This is a [BepInEx 5] plugin and patcher
+- This is a [BepInEx 5] patcher
 
 # What games work
 
@@ -14,19 +14,19 @@ A tool that lets you TAS unity games
 - Check [compatibility-list](docs/compatibility-list.md) for tested games
 - Currently, simple games that comes from game jam or small indie games like on itch.io has a higher chance of working
 
-# How to use
+# How to install
 
 ## Manual
 
 - Install [BepInEx 5] to your game
 - Download the latest release from [here](https://github.com/Eddio0141/UniTAS/releases/latest)
-- Move the `plugins` and `patchers` folder into your game's `BepInEx` folder
+- Move the `patchers` folder into your game's `BepInEx` folder
 
 ## Set up tool
 
 You can use [unitas_setup_tool](https://github.com/Eddio0141/unitas_setup_tool) to set up UniTAS and BepInEx for you
 
-# Useful documentation
+# Trouble shooting and useful information
 
 Please check out the [wiki](https://github.com/Eddio0141/UniTAS/wiki)!
 
