@@ -51,6 +51,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Changes
 
+### UniTAS
+
+- Now you can run a different TAS while one is already running
+
 ### Performance
 
 - Improved performance of changing fps

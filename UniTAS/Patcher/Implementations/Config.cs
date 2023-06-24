@@ -30,7 +30,7 @@ public class Config : IConfig, IDisposable
             {
                 NotifyFilter = NotifyFilters.LastWrite
             };
-            _fileSystemWatcher.Changed += (_, _) => { ConfigReload(); };
+            _fileSystemWatcher.Changed += (_, _) => { ConfigReload(true); };
             _fileSystemWatcher.EnableRaisingEvents = true;
         }
         catch (Exception)
@@ -38,14 +38,17 @@ public class Config : IConfig, IDisposable
             _logger.LogDebug("Failed to create FileSystemWatcher, using timer instead");
 
             // unity being stupid and hasn't implemented any classes in FileSystemWatcher
-            _timer = new(_ => { ConfigReload(); }, null, 0, 1000);
+            _timer = new(_ => { ConfigReload(false); }, null, 0, 1000);
         }
     }
 
-    private void ConfigReload()
+    private void ConfigReload(bool logReload)
     {
         ConfigFile.Reload();
-        _logger.LogDebug("Config file reloaded");
+        if (logReload)
+        {
+            _logger.LogDebug("Config file reloaded");
+        }
     }
 
     public void Dispose()
