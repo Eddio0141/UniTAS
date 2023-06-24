@@ -1,9 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using UniTAS.Patcher.Exceptions.Movie.Runner;
+using UniTAS.Patcher.Interfaces.Coroutine;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
 using UniTAS.Patcher.Interfaces.Events.Movie;
+using UniTAS.Patcher.Models.Coroutine;
 using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Models.Movie;
 using UniTAS.Patcher.Services;
@@ -21,7 +24,6 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvent
     private readonly IGameRestart _gameRestart;
 
     public bool MovieEnd { get; private set; } = true;
-    private bool _cleanUp;
     private bool _setup;
 
     private readonly IMovieParser _parser;
@@ -35,13 +37,14 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvent
     private readonly IVirtualEnvController _virtualEnvController;
     private readonly ITimeEnv _timeEnv;
     private readonly IRandomEnv _randomEnv;
+    private readonly ICoroutine _coroutine;
 
     public UpdateType UpdateType { get; set; }
 
     public MovieRunner(IGameRestart gameRestart, IMovieParser parser, IMovieLogger movieLogger,
         IOnMovieRunningStatusChange[] onMovieRunningStatusChange,
         IVirtualEnvController virtualEnvController, ITimeEnv timeEnv, IRandomEnv randomEnv, ILogger logger,
-        IOnMovieUpdate[] onMovieUpdates)
+        IOnMovieUpdate[] onMovieUpdates, ICoroutine coroutine)
     {
         _gameRestart = gameRestart;
         _parser = parser;
@@ -52,15 +55,20 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvent
         _randomEnv = randomEnv;
         _logger = logger;
         _onMovieUpdates = onMovieUpdates;
+        _coroutine = coroutine;
 
         _gameRestart.OnGameRestartResume += OnGameRestartResume;
     }
 
     public void RunFromInput(string input)
     {
-        if (!MovieEnd || _setup) throw new MovieAlreadyRunningException();
-
+        if (_setup) throw new MovieAlreadySettingUpException();
         _setup = true;
+
+        if (!MovieEnd)
+        {
+            MovieRunningStatusChange(false);
+        }
 
         Tuple<IMovieEngine, PropertiesModel> parsed;
         try
@@ -71,7 +79,7 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvent
         {
             MovieRunningStatusChange(false);
             _setup = false;
-            _movieLogger.LogError($"Failed to run TAS movie, an exception was thrown!");
+            _movieLogger.LogError("Failed to run TAS movie, an exception was thrown!");
             _movieLogger.LogError(e.Message);
             _logger.LogDebug(e);
 
@@ -106,13 +114,6 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvent
 
     public void InputUpdateActual(bool fixedUpdate, bool newInputSystemUpdate)
     {
-        if (_cleanUp)
-        {
-            _virtualEnvController.RunVirtualEnvironment = false;
-            _cleanUp = false;
-            return;
-        }
-
         if (MovieEnd) return;
 
         // skip if update type doesn't match current update type
@@ -130,7 +131,10 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvent
 
         if (_engine.Finished)
         {
-            AtMovieEnd();
+            _timeEnv.FrameTime = 0;
+            MovieRunningStatusChange(false);
+            _coroutine.Start(FinishMovieCleanup());
+            _movieLogger.LogInfo("movie end");
         }
     }
 
@@ -140,16 +144,6 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvent
         {
             onMovieUpdate.MovieUpdate(fixedUpdate);
         }
-    }
-
-    private void AtMovieEnd()
-    {
-        _timeEnv.FrameTime = 0;
-        _cleanUp = true;
-        _setup = false;
-        MovieRunningStatusChange(false);
-
-        _movieLogger.LogInfo("movie end");
     }
 
     private void MovieRunningStatusChange(bool running)
@@ -168,6 +162,12 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvent
         {
             onMovieRunningStatusChange.OnMovieRunningStatusChange(running);
         }
+    }
+
+    private IEnumerator<CoroutineWait> FinishMovieCleanup()
+    {
+        yield return new WaitForUpdateUnconditional();
+        _virtualEnvController.RunVirtualEnvironment = false;
     }
 
     public event Action OnMovieStart;
