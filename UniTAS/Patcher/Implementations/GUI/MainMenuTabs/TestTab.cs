@@ -17,15 +17,18 @@ public class TestTab : IMainMenuTab
     private readonly ISceneWrapper _sceneWrapper;
     private readonly IMonoBehaviourController _monoBehaviourController;
     private readonly IRuntimeTestAndLog _runtimeTestAndLog;
+    private readonly ILiveScripting _liveScripting;
 
     public TestTab(IGameRender gameRender, IGameRestart gameRestart, ISceneWrapper sceneWrapper,
-        IMonoBehaviourController monoBehaviourController, IRuntimeTestAndLog runtimeTestAndLog)
+        IMonoBehaviourController monoBehaviourController, IRuntimeTestAndLog runtimeTestAndLog,
+        ILiveScripting liveScripting)
     {
         _gameRender = gameRender;
         _gameRestart = gameRestart;
         _sceneWrapper = sceneWrapper;
         _monoBehaviourController = monoBehaviourController;
         _runtimeTestAndLog = runtimeTestAndLog;
+        _liveScripting = liveScripting;
     }
 
     public void Render(int windowID)
@@ -66,6 +69,11 @@ public class TestTab : IMainMenuTab
         if (GUILayout.Button("Run tests"))
         {
             _runtimeTestAndLog.Test();
+        }
+
+        if (GUILayout.Button("test scripting"))
+        {
+            _liveScripting.Evaluate("print('hello world')");
         }
 
         GUILayout.EndVertical();
