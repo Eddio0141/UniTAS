@@ -5,6 +5,6 @@ namespace UniTAS.Patcher.Interfaces.GUI;
 [RegisterAll]
 public interface IMainMenuTab
 {
-    void Render(int windowID);
+    void Render();
     string Name { get; }
 }
