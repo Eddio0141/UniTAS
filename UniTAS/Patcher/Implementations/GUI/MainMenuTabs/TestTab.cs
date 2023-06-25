@@ -5,6 +5,7 @@ using UniTAS.Patcher.Interfaces.TASRenderer;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.RuntimeTest;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
+using UniTAS.Patcher.Utils;
 using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations.GUI.MainMenuTabs;
@@ -31,47 +32,46 @@ public class TestTab : IMainMenuTab
         _liveScripting = liveScripting;
     }
 
-    public void Render(int windowID)
+    public void Render()
     {
-        GUILayout.BeginVertical();
-        GUILayout.BeginHorizontal();
-        if (GUILayout.Button("Start record"))
+        GUILayout.BeginHorizontal(GUIUtils.EmptyOptions);
+        if (GUILayout.Button("Start record", GUIUtils.EmptyOptions))
         {
             _gameRender.Start();
         }
 
-        if (GUILayout.Button("Stop record"))
+        if (GUILayout.Button("Stop record", GUIUtils.EmptyOptions))
         {
             _gameRender.Stop();
         }
 
         GUILayout.EndHorizontal();
 
-        GUILayout.BeginHorizontal();
-        if (GUILayout.Button("Restart game"))
+        GUILayout.BeginHorizontal(GUIUtils.EmptyOptions);
+        if (GUILayout.Button("Restart game", GUIUtils.EmptyOptions))
         {
             _gameRestart.SoftRestart(DateTime.Now);
         }
 
-        if (GUILayout.Button("Scene 0"))
+        if (GUILayout.Button("Scene 0", GUIUtils.EmptyOptions))
         {
             _sceneWrapper.LoadScene(0);
         }
 
-        if (GUILayout.Button("Toggle MonoBehaviour pause"))
+        if (GUILayout.Button("Toggle MonoBehaviour pause", GUIUtils.EmptyOptions))
         {
             _monoBehaviourController.PausedExecution = !_monoBehaviourController.PausedExecution;
         }
 
         GUILayout.EndHorizontal();
 
-        GUILayout.BeginHorizontal();
-        if (GUILayout.Button("Run tests"))
+        GUILayout.BeginHorizontal(GUIUtils.EmptyOptions);
+        if (GUILayout.Button("Run tests", GUIUtils.EmptyOptions))
         {
             _runtimeTestAndLog.Test();
         }
 
-        if (GUILayout.Button("test scripting"))
+        if (GUILayout.Button("test scripting", GUIUtils.EmptyOptions))
         {
             _liveScripting.Evaluate("print('hello world')");
         }

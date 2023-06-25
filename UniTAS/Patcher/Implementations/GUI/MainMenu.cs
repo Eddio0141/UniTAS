@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using UniTAS.Patcher.Interfaces.GUI;
 using UniTAS.Patcher.Services.EventSubscribers;
+using UniTAS.Patcher.Utils;
 using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations.GUI;
@@ -15,7 +16,7 @@ public class MainMenu : Window
     private int _currentTab;
     private Vector2 _scrollPosition;
 
-    protected override Rect DefaultWindowRect { get; } = new(0, 0, 600, 200);
+    protected override Rect DefaultWindowRect { get; } = new(20, 20, 600, 200);
 
     public MainMenu(IUpdateEvents updateEvents, IMainMenuTab[] tabs) : base(updateEvents, "UniTAS Menu")
     {
@@ -23,7 +24,7 @@ public class MainMenu : Window
         _tabNames = tabs.Select(tab => tab.Name).ToArray();
     }
 
-    protected override void OnGUI(int id)
+    protected override void OnGUI()
     {
         if (_maxTabNameLength == 0)
         {
@@ -31,17 +32,20 @@ public class MainMenu : Window
             _maxTabNameLength = _tabNames.Max(name => (int)UnityEngine.GUI.skin.label.CalcSize(new(name)).x) + 20;
         }
 
-        RenderTab(id);
+        RenderTab();
     }
 
-    private void RenderTab(int id)
+    private GUILayoutOption[] _scrollPositionOptions;
+
+    private void RenderTab()
     {
-        GUILayout.BeginHorizontal();
-        _scrollPosition = GUILayout.BeginScrollView(_scrollPosition, GUILayout.Width(_maxTabNameLength));
-        _currentTab = GUILayout.SelectionGrid(_currentTab, _tabNames, 1);
+        GUILayout.BeginHorizontal(GUIUtils.EmptyOptions);
+        _scrollPositionOptions ??= new[] { GUILayout.Width(_maxTabNameLength) };
+        _scrollPosition = GUILayout.BeginScrollView(_scrollPosition, _scrollPositionOptions);
+        _currentTab = GUILayout.SelectionGrid(_currentTab, _tabNames, 1, GUIUtils.EmptyOptions);
         GUILayout.EndScrollView();
 
-        _tabs[_currentTab].Render(id);
+        _tabs[_currentTab].Render();
         GUILayout.EndHorizontal();
     }
 }

@@ -5,6 +5,7 @@ using BepInEx.Logging;
 using UniTAS.Patcher.Interfaces.GUI;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.Movie;
+using UniTAS.Patcher.Utils;
 using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations.GUI.MainMenuTabs;
@@ -29,28 +30,30 @@ public class MoviePlayTab : IMainMenuTab
         movieLogger.OnLog += OnMovieLog;
     }
 
-    public void Render(int windowID)
+    public void Render()
     {
-        GUILayout.BeginVertical();
+        GUILayout.BeginVertical(GUIUtils.EmptyOptions);
         TASPath();
         OperationButtons();
         TASRunInfo();
         GUILayout.EndVertical();
     }
 
+    private readonly GUILayoutOption[] _moviePathOptions = { GUILayout.ExpandWidth(false) };
+
     private void TASPath()
     {
-        GUILayout.BeginHorizontal();
+        GUILayout.BeginHorizontal(GUIUtils.EmptyOptions);
 
-        GUILayout.Label("Movie Path", GUILayout.ExpandWidth(false));
-        _tasPath = GUILayout.TextField(_tasPath);
+        GUILayout.Label("Movie Path", _moviePathOptions);
+        _tasPath = GUILayout.TextField(_tasPath, GUIUtils.EmptyOptions);
 
         GUILayout.EndHorizontal();
     }
 
     private void OperationButtons()
     {
-        GUILayout.BeginHorizontal();
+        GUILayout.BeginHorizontal(GUIUtils.EmptyOptions);
 
         // TODO: implement browse and recent buttons
         // if (GUILayout.Button("Browse"))
@@ -61,7 +64,7 @@ public class MoviePlayTab : IMainMenuTab
         // {
         // }
 
-        if (GUILayout.Button("Run"))
+        if (GUILayout.Button("Run", GUIUtils.EmptyOptions))
         {
             RunMovieWithLogs();
         }
@@ -95,11 +98,14 @@ public class MoviePlayTab : IMainMenuTab
         }
     }
 
+    private readonly GUILayoutOption[] _tasRunInfoOptions =
+        { GUILayout.ExpandHeight(true), GUILayout.ExpandWidth(true) };
+
     private void TASRunInfo()
     {
-        _tasRunInfoScroll = GUILayout.BeginScrollView(_tasRunInfoScroll);
+        _tasRunInfoScroll = GUILayout.BeginScrollView(_tasRunInfoScroll, GUIUtils.EmptyOptions);
 
-        GUILayout.TextArea(_tasRunInfo, GUILayout.ExpandHeight(true), GUILayout.ExpandWidth(true));
+        GUILayout.TextArea(_tasRunInfo, _tasRunInfoOptions);
 
         GUILayout.EndScrollView();
     }
