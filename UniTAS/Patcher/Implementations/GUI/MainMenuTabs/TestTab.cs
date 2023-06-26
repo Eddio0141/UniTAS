@@ -1,8 +1,11 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.GUI;
 using UniTAS.Patcher.Interfaces.TASRenderer;
 using UniTAS.Patcher.Services;
+using UniTAS.Patcher.Services.EventSubscribers;
+using UniTAS.Patcher.Services.GUI;
 using UniTAS.Patcher.Services.RuntimeTest;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Patcher.Utils;
@@ -34,6 +37,7 @@ public class TestTab : IMainMenuTab
 
     public void Render()
     {
+        GUILayout.BeginVertical(GUIUtils.EmptyOptions);
         GUILayout.BeginHorizontal(GUIUtils.EmptyOptions);
         if (GUILayout.Button("Start record", GUIUtils.EmptyOptions))
         {
@@ -76,7 +80,27 @@ public class TestTab : IMainMenuTab
             _liveScripting.Evaluate("print('hello world')");
         }
 
+        if (GUILayout.Button("spawn window", GUIUtils.EmptyOptions))
+        {
+            ContainerStarter.Kernel.GetInstance<IWindowFactory>().Create<TestWindow>("test window").Show();
+        }
+
+        GUILayout.EndHorizontal();
         GUILayout.EndVertical();
+    }
+
+    [Singleton]
+    public class TestWindow : Window
+    {
+        public TestWindow(IUpdateEvents updateEvents, string windowName = null) : base(updateEvents, windowName)
+        {
+        }
+
+        protected override Rect DefaultWindowRect => new(50, 50, 200, 200);
+
+        protected override void OnGUI()
+        {
+        }
     }
 
     public string Name => "Test";

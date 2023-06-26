@@ -13,8 +13,10 @@ public abstract class Window
 {
     private Rect _windowRect;
     private Rect _dragAreaRect;
-    private Vector2 _dragOffset;
+    private int _windowId;
+    private readonly UnityEngine.GUI.WindowFunction _windowUpdate;
     private bool _dragging;
+    private Vector2 _dragOffset;
 
     protected abstract Rect DefaultWindowRect { get; }
     private readonly string _windowName;
@@ -25,8 +27,6 @@ public abstract class Window
 
     private readonly Texture2D _dragAreaTexture;
     private readonly Texture2D _windowBackground;
-
-    private static bool _alreadyDragging;
 
     protected Window(IUpdateEvents updateEvents, string windowName = null)
     {
@@ -47,6 +47,8 @@ public abstract class Window
         _windowBackground.SetPixel(0, 0, new(0.2f, 0.2f, 0.2f));
         _windowBackground.Apply();
 
+        _windowUpdate = WindowUpdate;
+
         Init();
     }
 
@@ -54,6 +56,8 @@ public abstract class Window
     {
         _windowRect = DefaultWindowRect;
         _dragAreaRect = new(0, 0, _windowRect.width, DRAG_AREA_HEIGHT);
+
+        _windowId = GetHashCode();
     }
 
     public void Show()
@@ -78,33 +82,18 @@ public abstract class Window
     private readonly GUILayoutOption[] _closeButtonOptions =
         { GUILayout.Width(20), GUILayout.Height(DRAG_AREA_HEIGHT) };
 
-    public void OnGUIUnconditional()
+    private void OnGUIUnconditional()
+    {
+        _windowRect = GUILayout.Window(_windowId, _windowRect, _windowUpdate, _windowName, GUIUtils.EmptyOptions);
+    }
+
+    private void WindowUpdate(int id)
     {
         HandleDrag();
 
-        // window bg
-        UnityEngine.GUI.DrawTexture(_windowRect, _windowBackground);
-
-        GUILayout.BeginArea(_windowRect);
         GUILayout.BeginVertical(GUIUtils.EmptyOptions);
 
-        // drag area
-        UnityEngine.GUI.DrawTexture(_dragAreaRect, _dragAreaTexture, ScaleMode.StretchToFill);
-
-        // this needs to be here
-        if (!_alreadyDragging && Event.current.type == EventType.MouseDown &&
-            _dragAreaRect.Contains(Event.current.mousePosition))
-        {
-            _dragOffset = (Vector2)UnityInput.Current.mousePosition -
-                          new Vector2(_windowRect.x, Screen.height - _windowRect.y);
-            _dragging = true;
-            _alreadyDragging = true;
-        }
-
         GUILayout.BeginHorizontal(GUIUtils.EmptyOptions);
-
-        // window name
-        GUILayout.Label(_windowName, _windowNameStyle, _windowNameOptions);
 
         // close button
         if (GUILayout.Button("x", _closeButtonOptions))
@@ -117,24 +106,46 @@ public abstract class Window
 
         OnGUI();
 
-        GUILayout.EndArea();
+        CheckDrag();
     }
 
     private void HandleDrag()
     {
+        if (!_dragging) return;
+
         // stupid hack to make window dragging smooth
-        if (_dragging && Event.current.type == EventType.Repaint)
+        if (Event.current.type == EventType.Repaint)
         {
             var mousePos = (Vector2)UnityInput.Current.mousePosition;
             _windowRect.x = mousePos.x - _dragOffset.x;
-            _windowRect.y = Screen.height - mousePos.y + _dragOffset.y;
+            _windowRect.y = Screen.height - mousePos.y - _dragOffset.y;
+            return;
         }
 
-        // drag area events
-        if (_dragging && Event.current.type == EventType.MouseUp)
+        if (Event.current.type == EventType.MouseUp)
         {
+            // stop dragging
             _dragging = false;
-            _alreadyDragging = false;
+        }
+
+        if (Event.current.type != EventType.layout)
+        {
+            Event.current.Use();
+        }
+    }
+
+    private void CheckDrag()
+    {
+        if (_dragging || Event.current.type != EventType.MouseDown) return;
+
+        var mousePos = (Vector2)UnityInput.Current.mousePosition;
+        mousePos.y = Screen.height - mousePos.y;
+
+        // are we dragging now?
+        if (_windowRect.Contains(mousePos))
+        {
+            _dragging = true;
+            _dragOffset = mousePos - new Vector2(_windowRect.x, _windowRect.y);
         }
     }
 
