@@ -1,5 +1,6 @@
 ﻿using BepInEx;
 using UniTAS.Patcher.Models.GUI;
+using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.EventSubscribers;
 using UniTAS.Patcher.Services.GUI;
 using UniTAS.Patcher.Utils;
@@ -26,17 +27,24 @@ public abstract class Window
 
     private readonly IUpdateEvents _updateEvents;
     private readonly IWindowManager _windowManager;
+    private readonly IPatchReverseInvoker _patchReverseInvoker;
 
     public string WindowName => _config.WindowName;
 
     protected Window(WindowDependencies windowDependencies, WindowConfig config)
     {
+        _patchReverseInvoker = windowDependencies.PatchReverseInvoker;
         _updateEvents = windowDependencies.UpdateEvents;
         _windowManager = windowDependencies.WindowManager;
         _config = config ?? new();
         _windowUpdate = WindowUpdate;
         Init();
     }
+
+    private Vector2 MousePosition => _patchReverseInvoker.Invoke(() => UnityInput.Current.mousePosition);
+    private int ScreenWidth => _patchReverseInvoker.Invoke(() => Screen.width);
+    private int ScreenHeight => _patchReverseInvoker.Invoke(() => Screen.height);
+    private bool LeftMouseButtonDown => _patchReverseInvoker.Invoke(() => UnityInput.Current.GetMouseButtonDown(0));
 
     private void Init()
     {
@@ -108,12 +116,12 @@ public abstract class Window
         // stupid hack to make window dragging smooth
         if (Event.current.type == EventType.Repaint)
         {
-            var mousePos = (Vector2)UnityInput.Current.mousePosition;
+            var mousePos = MousePosition;
             WindowRect.x = mousePos.x - _dragOffset.x;
-            WindowRect.y = Screen.height - mousePos.y - _dragOffset.y;
+            WindowRect.y = ScreenHeight - mousePos.y - _dragOffset.y;
 
             // just in case
-            if (!UnityInput.Current.GetMouseButton(0))
+            if (!LeftMouseButtonDown)
             {
                 _dragging = false;
             }
@@ -141,14 +149,16 @@ public abstract class Window
             WindowRect.y = 0;
         }
 
-        if (WindowRect.xMax > Screen.width)
+        var screenWidth = ScreenWidth;
+        if (WindowRect.xMax > screenWidth)
         {
-            WindowRect.x = Screen.width - WindowRect.width;
+            WindowRect.x = screenWidth - WindowRect.width;
         }
 
-        if (WindowRect.yMax > Screen.height)
+        var screenHeight = ScreenHeight;
+        if (WindowRect.yMax > screenHeight)
         {
-            WindowRect.y = Screen.height - WindowRect.height;
+            WindowRect.y = screenHeight - WindowRect.height;
         }
     }
 
@@ -156,8 +166,8 @@ public abstract class Window
     {
         if (_dragging || Event.current.type != EventType.MouseDown) return;
 
-        var mousePos = (Vector2)UnityInput.Current.mousePosition;
-        mousePos.y = Screen.height - mousePos.y;
+        var mousePos = MousePosition;
+        mousePos.y = ScreenHeight - mousePos.y;
 
         // are we dragging now?
         if (WindowRect.Contains(mousePos))
