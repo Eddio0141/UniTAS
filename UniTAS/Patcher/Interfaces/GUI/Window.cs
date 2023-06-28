@@ -44,7 +44,7 @@ public abstract class Window
     private Vector2 MousePosition => _patchReverseInvoker.Invoke(() => UnityInput.Current.mousePosition);
     private int ScreenWidth => _patchReverseInvoker.Invoke(() => Screen.width);
     private int ScreenHeight => _patchReverseInvoker.Invoke(() => Screen.height);
-    private bool LeftMouseButtonDown => _patchReverseInvoker.Invoke(() => UnityInput.Current.GetMouseButtonDown(0));
+    private bool LeftMouseButton => _patchReverseInvoker.Invoke(() => UnityInput.Current.GetMouseButton(0));
 
     private void Init()
     {
@@ -121,7 +121,7 @@ public abstract class Window
             WindowRect.y = ScreenHeight - mousePos.y - _dragOffset.y;
 
             // just in case
-            if (!LeftMouseButtonDown)
+            if (!LeftMouseButton)
             {
                 _dragging = false;
             }
