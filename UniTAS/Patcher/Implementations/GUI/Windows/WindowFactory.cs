@@ -4,7 +4,7 @@ using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.GUI;
 using UniTAS.Patcher.Services.GUI;
 
-namespace UniTAS.Patcher.Implementations.GUI;
+namespace UniTAS.Patcher.Implementations.GUI.Windows;
 
 [SuppressMessage("ReSharper", "UnusedType.Global")]
 [Register]

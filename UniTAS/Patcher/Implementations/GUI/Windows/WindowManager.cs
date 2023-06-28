@@ -7,7 +7,7 @@ using UniTAS.Patcher.Services.GUI;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 
-namespace UniTAS.Patcher.Implementations.GUI;
+namespace UniTAS.Patcher.Implementations.GUI.Windows;
 
 [Singleton]
 [ForceInstantiate]

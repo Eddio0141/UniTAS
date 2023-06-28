@@ -6,7 +6,7 @@ using UniTAS.Patcher.Models.GUI;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 
-namespace UniTAS.Patcher.Implementations.GUI;
+namespace UniTAS.Patcher.Implementations.GUI.Windows;
 
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 [Singleton]
