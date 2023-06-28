@@ -13,12 +13,12 @@ namespace UniTAS.Patcher.Interfaces.GUI;
 /// </summary>
 public abstract class Window
 {
-    private Rect _windowRect;
+    protected Rect WindowRect;
     private int _windowId;
     private readonly UnityEngine.GUI.WindowFunction _windowUpdate;
     private bool _dragging;
     private Vector2 _dragOffset;
-    private bool _closed;
+    private bool _showWindow;
 
     private readonly WindowConfig _config;
 
@@ -29,10 +29,10 @@ public abstract class Window
 
     public string WindowName => _config.WindowName;
 
-    protected Window(IUpdateEvents updateEvents, WindowConfig config, IWindowManager windowManager)
+    protected Window(WindowDependencies windowDependencies, WindowConfig config)
     {
-        _updateEvents = updateEvents;
-        _windowManager = windowManager;
+        _updateEvents = windowDependencies.UpdateEvents;
+        _windowManager = windowDependencies.WindowManager;
         _config = config ?? new();
         _windowUpdate = WindowUpdate;
         Init();
@@ -40,31 +40,33 @@ public abstract class Window
 
     private void Init()
     {
-        _windowRect = _config.DefaultWindowRect;
+        WindowRect = _config.DefaultWindowRect;
         _windowId = GetHashCode();
     }
 
     public void Show()
     {
-        if (_closed) return;
+        if (_showWindow) return;
         _updateEvents.OnGUIEventUnconditional += OnGUIUnconditional;
+        _showWindow = true;
     }
 
     private void Close()
     {
         _updateEvents.OnGUIEventUnconditional -= OnGUIUnconditional;
-        _closed = true;
+        _showWindow = false;
     }
 
     private void Minimize()
     {
         _updateEvents.OnGUIEventUnconditional -= OnGUIUnconditional;
         _windowManager?.Minimize(this);
+        _showWindow = false;
     }
 
     private void OnGUIUnconditional()
     {
-        _windowRect = GUILayout.Window(_windowId, _windowRect, _windowUpdate, _config.WindowName,
+        WindowRect = GUILayout.Window(_windowId, WindowRect, _windowUpdate, _config.WindowName,
             _config.LayoutOptions);
     }
 
@@ -78,7 +80,7 @@ public abstract class Window
 
         // close button
         if (_config.ShowCloseButton &&
-            UnityEngine.GUI.Button(new(_windowRect.width - CLOSE_BUTTON_SIZE, 0f, CLOSE_BUTTON_SIZE, CLOSE_BUTTON_SIZE),
+            UnityEngine.GUI.Button(new(WindowRect.width - CLOSE_BUTTON_SIZE, 0f, CLOSE_BUTTON_SIZE, CLOSE_BUTTON_SIZE),
                 "x"))
         {
             Close();
@@ -86,7 +88,7 @@ public abstract class Window
 
         if (_config.ShowMinimizeButton &&
             UnityEngine.GUI.Button(
-                new(_windowRect.width - CLOSE_BUTTON_SIZE * 2, 0f, CLOSE_BUTTON_SIZE, CLOSE_BUTTON_SIZE), "_"))
+                new(WindowRect.width - CLOSE_BUTTON_SIZE * 2, 0f, CLOSE_BUTTON_SIZE, CLOSE_BUTTON_SIZE), "_"))
         {
             Minimize();
         }
@@ -107,8 +109,8 @@ public abstract class Window
         if (Event.current.type == EventType.Repaint)
         {
             var mousePos = (Vector2)UnityInput.Current.mousePosition;
-            _windowRect.x = mousePos.x - _dragOffset.x;
-            _windowRect.y = Screen.height - mousePos.y - _dragOffset.y;
+            WindowRect.x = mousePos.x - _dragOffset.x;
+            WindowRect.y = Screen.height - mousePos.y - _dragOffset.y;
             return;
         }
 
@@ -132,10 +134,10 @@ public abstract class Window
         mousePos.y = Screen.height - mousePos.y;
 
         // are we dragging now?
-        if (_windowRect.Contains(mousePos))
+        if (WindowRect.Contains(mousePos))
         {
             _dragging = true;
-            _dragOffset = mousePos - new Vector2(_windowRect.x, _windowRect.y);
+            _dragOffset = mousePos - new Vector2(WindowRect.x, WindowRect.y);
         }
     }
 
