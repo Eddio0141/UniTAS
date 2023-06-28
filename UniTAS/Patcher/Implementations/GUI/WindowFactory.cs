@@ -17,13 +17,8 @@ public class WindowFactory : IWindowFactory
         _container = container;
     }
 
-    public T Create<T>(string windowName = null) where T : Window
+    public T Create<T>() where T : Window
     {
-        if (windowName == null)
-        {
-            return _container.GetInstance<T>();
-        }
-
-        return _container.With("windowName").EqualTo(windowName).GetInstance<T>();
+        return _container.GetInstance<T>();
     }
 }

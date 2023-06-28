@@ -1,13 +1,16 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.GUI;
-using UniTAS.Patcher.Services.EventSubscribers;
+using UniTAS.Patcher.Models.GUI;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations.GUI;
 
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[Singleton]
+[ForceInstantiate]
 public class MainMenu : Window
 {
     private readonly IMainMenuTab[] _tabs;
@@ -16,12 +19,12 @@ public class MainMenu : Window
     private int _currentTab;
     private Vector2 _scrollPosition;
 
-    protected override Rect DefaultWindowRect { get; } = new(20, 20, 600, 200);
-
-    public MainMenu(IUpdateEvents updateEvents, IMainMenuTab[] tabs) : base(updateEvents, "UniTAS Menu")
+    public MainMenu(WindowDependencies windowDependencies, IMainMenuTab[] tabs) :
+        base(windowDependencies, new(windowName: "UniTAS Menu", defaultWindowRect: new(20, 20, 600, 200)))
     {
         _tabs = tabs;
         _tabNames = tabs.Select(tab => tab.Name).ToArray();
+        Show();
     }
 
     protected override void OnGUI()

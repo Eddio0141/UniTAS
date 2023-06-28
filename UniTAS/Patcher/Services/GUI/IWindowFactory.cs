@@ -4,5 +4,5 @@ namespace UniTAS.Patcher.Services.GUI;
 
 public interface IWindowFactory
 {
-    T Create<T>(string windowName = null) where T : Window;
+    T Create<T>() where T : Window;
 }
