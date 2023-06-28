@@ -1,5 +1,7 @@
 ﻿using BepInEx;
+using UniTAS.Patcher.Models.GUI;
 using UniTAS.Patcher.Services.EventSubscribers;
+using UniTAS.Patcher.Services.GUI;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 
@@ -12,79 +14,58 @@ namespace UniTAS.Patcher.Interfaces.GUI;
 public abstract class Window
 {
     private Rect _windowRect;
-    private Rect _dragAreaRect;
     private int _windowId;
     private readonly UnityEngine.GUI.WindowFunction _windowUpdate;
     private bool _dragging;
     private Vector2 _dragOffset;
+    private bool _closed;
 
-    protected abstract Rect DefaultWindowRect { get; }
-    private readonly string _windowName;
+    private readonly WindowConfig _config;
+
+    private const int CLOSE_BUTTON_SIZE = 20;
 
     private readonly IUpdateEvents _updateEvents;
+    private readonly IWindowManager _windowManager;
 
-    private const int DRAG_AREA_HEIGHT = 20;
+    public string WindowName => _config.WindowName;
 
-    private readonly Texture2D _dragAreaTexture;
-    private readonly Texture2D _windowBackground;
-
-    protected Window(IUpdateEvents updateEvents, string windowName = null)
+    protected Window(IUpdateEvents updateEvents, WindowConfig config, IWindowManager windowManager)
     {
         _updateEvents = updateEvents;
-        _windowName = windowName ?? string.Empty;
-
-        _dragAreaTexture = new(1, 1)
-        {
-            wrapMode = TextureWrapMode.Repeat
-        };
-        _dragAreaTexture.SetPixel(0, 0, new(0.3f, 0.3f, 0.3f));
-        _dragAreaTexture.Apply();
-
-        _windowBackground = new(1, 1)
-        {
-            wrapMode = TextureWrapMode.Repeat
-        };
-        _windowBackground.SetPixel(0, 0, new(0.2f, 0.2f, 0.2f));
-        _windowBackground.Apply();
-
+        _windowManager = windowManager;
+        _config = config ?? new();
         _windowUpdate = WindowUpdate;
-
         Init();
     }
 
     private void Init()
     {
-        _windowRect = DefaultWindowRect;
-        _dragAreaRect = new(0, 0, _windowRect.width, DRAG_AREA_HEIGHT);
-
+        _windowRect = _config.DefaultWindowRect;
         _windowId = GetHashCode();
     }
 
     public void Show()
     {
+        if (_closed) return;
         _updateEvents.OnGUIEventUnconditional += OnGUIUnconditional;
     }
 
     private void Close()
     {
         _updateEvents.OnGUIEventUnconditional -= OnGUIUnconditional;
+        _closed = true;
     }
 
-    private readonly GUILayoutOption[] _windowNameOptions = { GUILayout.Height(DRAG_AREA_HEIGHT) };
-
-    private readonly GUIStyle _windowNameStyle = new()
+    private void Minimize()
     {
-        alignment = TextAnchor.MiddleCenter,
-        fontSize = 12,
-        fontStyle = FontStyle.Bold
-    };
-
-    private readonly GUILayoutOption[] _closeButtonOptions =
-        { GUILayout.Width(20), GUILayout.Height(DRAG_AREA_HEIGHT) };
+        _updateEvents.OnGUIEventUnconditional -= OnGUIUnconditional;
+        _windowManager?.Minimize(this);
+    }
 
     private void OnGUIUnconditional()
     {
-        _windowRect = GUILayout.Window(_windowId, _windowRect, _windowUpdate, _windowName, GUIUtils.EmptyOptions);
+        _windowRect = GUILayout.Window(_windowId, _windowRect, _windowUpdate, _config.WindowName,
+            _config.LayoutOptions);
     }
 
     private void WindowUpdate(int id)
@@ -96,9 +77,18 @@ public abstract class Window
         GUILayout.BeginHorizontal(GUIUtils.EmptyOptions);
 
         // close button
-        if (GUILayout.Button("x", _closeButtonOptions))
+        if (_config.ShowCloseButton &&
+            UnityEngine.GUI.Button(new(_windowRect.width - CLOSE_BUTTON_SIZE, 0f, CLOSE_BUTTON_SIZE, CLOSE_BUTTON_SIZE),
+                "x"))
         {
             Close();
+        }
+
+        if (_config.ShowMinimizeButton &&
+            UnityEngine.GUI.Button(
+                new(_windowRect.width - CLOSE_BUTTON_SIZE * 2, 0f, CLOSE_BUTTON_SIZE, CLOSE_BUTTON_SIZE), "_"))
+        {
+            Minimize();
         }
 
         GUILayout.EndHorizontal();
