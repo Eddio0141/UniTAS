@@ -111,18 +111,44 @@ public abstract class Window
             var mousePos = (Vector2)UnityInput.Current.mousePosition;
             WindowRect.x = mousePos.x - _dragOffset.x;
             WindowRect.y = Screen.height - mousePos.y - _dragOffset.y;
-            return;
-        }
 
-        if (Event.current.type == EventType.MouseUp)
-        {
-            // stop dragging
-            _dragging = false;
+            // just in case
+            if (!UnityInput.Current.GetMouseButton(0))
+            {
+                _dragging = false;
+            }
+
+            ClampWindow();
+
+            return;
         }
 
         if (Event.current.type != EventType.layout)
         {
             Event.current.Use();
+        }
+    }
+
+    private void ClampWindow()
+    {
+        if (WindowRect.x < 0)
+        {
+            WindowRect.x = 0;
+        }
+
+        if (WindowRect.y < 0)
+        {
+            WindowRect.y = 0;
+        }
+
+        if (WindowRect.xMax > Screen.width)
+        {
+            WindowRect.x = Screen.width - WindowRect.width;
+        }
+
+        if (WindowRect.yMax > Screen.height)
+        {
+            WindowRect.y = Screen.height - WindowRect.height;
         }
     }
 
