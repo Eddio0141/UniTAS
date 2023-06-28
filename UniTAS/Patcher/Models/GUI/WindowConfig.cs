@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 namespace UniTAS.Patcher.Models.GUI;
@@ -15,8 +14,7 @@ public class WindowConfig
         string windowName = null, bool showCloseButton = true,
         bool showMinimizeButton = true)
     {
-        DefaultWindowRect = new(Math.Max(defaultWindowRect.x, 0), Math.Max(defaultWindowRect.y, 0),
-            Math.Max(defaultWindowRect.width, 100), Math.Max(defaultWindowRect.height, 100));
+        DefaultWindowRect = defaultWindowRect == default ? new(0, 0, 100, 100) : defaultWindowRect;
         WindowName = windowName ?? string.Empty;
         LayoutOptions = layoutOptions ?? new GUILayoutOption[0];
         ShowCloseButton = showCloseButton;
