@@ -1,6 +1,8 @@
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
+using UniTAS.Patcher.Models.Customization;
 using UniTAS.Patcher.Models.DependencyInjection;
+using UniTAS.Patcher.Services.Customization;
 using UniTAS.Patcher.Services.GUI;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
@@ -18,7 +20,9 @@ public class ToolBar : IOnGUIUnconditional
     private readonly Texture2D _buttonNormal = new(1, 1);
     private const int TOOLBAR_HEIGHT = 25;
 
-    public ToolBar(IWindowFactory windowFactory)
+    private readonly Bind _newTerminalWindowBind;
+
+    public ToolBar(IWindowFactory windowFactory, IBinds binds)
     {
         _windowFactory = windowFactory;
 
@@ -37,6 +41,8 @@ public class ToolBar : IOnGUIUnconditional
             hover = { background = _buttonNormal, textColor = Color.white },
             active = { background = buttonHold, textColor = Color.white }
         };
+
+        _newTerminalWindowBind = binds.Create(new("NewTerminal", KeyCode.BackQuote));
     }
 
     public void OnGUIUnconditional()
@@ -50,8 +56,21 @@ public class ToolBar : IOnGUIUnconditional
             _windowFactory.Create<MoviePlayWindow>().Show();
         }
 
+        if (GUILayout.Button("Terminal", _buttonStyle, GUIUtils.EmptyOptions))
+        {
+            _windowFactory.Create<TerminalWindow>().Show();
+        }
+
         if (GUILayout.Button("Settings", _buttonStyle, GUIUtils.EmptyOptions))
         {
+        }
+
+        if (Event.current.type == EventType.Repaint)
+        {
+            if (_newTerminalWindowBind.IsPressed())
+            {
+                _windowFactory.Create<TerminalWindow>().Show();
+            }
         }
 
         GUILayout.EndHorizontal();
