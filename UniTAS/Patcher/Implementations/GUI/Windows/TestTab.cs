@@ -19,12 +19,11 @@ public class TestTab : Window
     private readonly ISceneWrapper _sceneWrapper;
     private readonly IMonoBehaviourController _monoBehaviourController;
     private readonly IRuntimeTestAndLog _runtimeTestAndLog;
-    private readonly ILiveScripting _liveScripting;
 
     public TestTab(WindowDependencies windowDependencies, IGameRender gameRender,
         IGameRestart gameRestart, ISceneWrapper sceneWrapper,
-        IMonoBehaviourController monoBehaviourController, IRuntimeTestAndLog runtimeTestAndLog,
-        ILiveScripting liveScripting) : base(windowDependencies,
+        IMonoBehaviourController monoBehaviourController, IRuntimeTestAndLog runtimeTestAndLog) : base(
+        windowDependencies,
         new(windowName: "test", layoutOptions: new[] { GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true) }
         ))
     {
@@ -33,7 +32,6 @@ public class TestTab : Window
         _sceneWrapper = sceneWrapper;
         _monoBehaviourController = monoBehaviourController;
         _runtimeTestAndLog = runtimeTestAndLog;
-        _liveScripting = liveScripting;
     }
 
     protected override void OnGUI()
@@ -74,11 +72,6 @@ public class TestTab : Window
         if (GUILayout.Button("Run tests", GUIUtils.EmptyOptions))
         {
             _runtimeTestAndLog.Test();
-        }
-
-        if (GUILayout.Button("test scripting", GUIUtils.EmptyOptions))
-        {
-            _liveScripting.Evaluate("print('hello world')");
         }
 
         GUILayout.EndHorizontal();
