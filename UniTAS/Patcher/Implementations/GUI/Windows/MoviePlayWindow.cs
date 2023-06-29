@@ -2,7 +2,9 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using BepInEx.Logging;
+using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.GUI;
+using UniTAS.Patcher.Models.GUI;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.Movie;
 using UniTAS.Patcher.Utils;
@@ -11,11 +13,11 @@ using UnityEngine;
 namespace UniTAS.Patcher.Implementations.GUI.Windows;
 
 [SuppressMessage("ReSharper", "UnusedType.Global")]
-public class MoviePlayTab : IMainMenuTab
+[Singleton]
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+public class MoviePlayWindow : Window
 {
     private string _tasPath = string.Empty;
-
-    public string Name => "Movie Play";
 
     private string _tasRunInfo = string.Empty;
     private Vector2 _tasRunInfoScroll;
@@ -23,14 +25,16 @@ public class MoviePlayTab : IMainMenuTab
     private readonly IMovieLogger _movieLogger;
     private readonly IMovieRunner _movieRunner;
 
-    public MoviePlayTab(IMovieLogger movieLogger, IMovieRunner movieRunner)
+    public MoviePlayWindow(WindowDependencies windowDependencies, IMovieLogger movieLogger, IMovieRunner movieRunner) :
+        base(windowDependencies,
+            new(defaultWindowRect: GUIUtils.WindowRect(600, 200), windowName: "Movie Play"))
     {
         _movieLogger = movieLogger;
         _movieRunner = movieRunner;
         movieLogger.OnLog += OnMovieLog;
     }
 
-    public void Render()
+    protected override void OnGUI()
     {
         GUILayout.BeginVertical(GUIUtils.EmptyOptions);
         TASPath();

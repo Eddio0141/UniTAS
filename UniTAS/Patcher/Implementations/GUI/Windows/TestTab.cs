@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using UniTAS.Patcher.Interfaces.GUI;
 using UniTAS.Patcher.Interfaces.TASRenderer;
+using UniTAS.Patcher.Models.GUI;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.RuntimeTest;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
@@ -11,7 +12,7 @@ using UnityEngine;
 namespace UniTAS.Patcher.Implementations.GUI.Windows;
 
 [SuppressMessage("ReSharper", "UnusedType.Global")]
-public class TestTab : IMainMenuTab
+public class TestTab : Window
 {
     private readonly IGameRender _gameRender;
     private readonly IGameRestart _gameRestart;
@@ -20,9 +21,12 @@ public class TestTab : IMainMenuTab
     private readonly IRuntimeTestAndLog _runtimeTestAndLog;
     private readonly ILiveScripting _liveScripting;
 
-    public TestTab(IGameRender gameRender, IGameRestart gameRestart, ISceneWrapper sceneWrapper,
+    public TestTab(WindowDependencies windowDependencies, IGameRender gameRender,
+        IGameRestart gameRestart, ISceneWrapper sceneWrapper,
         IMonoBehaviourController monoBehaviourController, IRuntimeTestAndLog runtimeTestAndLog,
-        ILiveScripting liveScripting)
+        ILiveScripting liveScripting) : base(windowDependencies,
+        new(windowName: "test", layoutOptions: new[] { GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true) }
+        ))
     {
         _gameRender = gameRender;
         _gameRestart = gameRestart;
@@ -32,7 +36,7 @@ public class TestTab : IMainMenuTab
         _liveScripting = liveScripting;
     }
 
-    public void Render()
+    protected override void OnGUI()
     {
         GUILayout.BeginVertical(GUIUtils.EmptyOptions);
         GUILayout.BeginHorizontal(GUIUtils.EmptyOptions);
@@ -80,6 +84,4 @@ public class TestTab : IMainMenuTab
         GUILayout.EndHorizontal();
         GUILayout.EndVertical();
     }
-
-    public string Name => "Test";
 }
