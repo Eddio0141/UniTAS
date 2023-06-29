@@ -4,7 +4,9 @@ using System.IO;
 using BepInEx.Logging;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.GUI;
+using UniTAS.Patcher.Models.Customization;
 using UniTAS.Patcher.Models.GUI;
+using UniTAS.Patcher.Services.Customization;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.Movie;
 using UniTAS.Patcher.Utils;
@@ -25,13 +27,19 @@ public class MoviePlayWindow : Window
     private readonly IMovieLogger _movieLogger;
     private readonly IMovieRunner _movieRunner;
 
-    public MoviePlayWindow(WindowDependencies windowDependencies, IMovieLogger movieLogger, IMovieRunner movieRunner) :
+    private readonly Bind _playMovieBind;
+
+    public MoviePlayWindow(WindowDependencies windowDependencies, IMovieLogger movieLogger, IMovieRunner movieRunner,
+        IBinds binds) :
         base(windowDependencies,
             new(defaultWindowRect: GUIUtils.WindowRect(600, 200), windowName: "Movie Play"))
     {
         _movieLogger = movieLogger;
         _movieRunner = movieRunner;
         movieLogger.OnLog += OnMovieLog;
+
+        _playMovieBind = binds.Create(new("PlayMovie", KeyCode.Slash));
+        windowDependencies.UpdateEvents.OnUpdateUnconditional += UpdateUnconditional;
     }
 
     protected override void OnGUI()
@@ -41,6 +49,14 @@ public class MoviePlayWindow : Window
         OperationButtons();
         TASRunInfo();
         GUILayout.EndVertical();
+    }
+
+    public void UpdateUnconditional()
+    {
+        if (_playMovieBind.IsPressed())
+        {
+            RunMovieWithLogs();
+        }
     }
 
     private readonly GUILayoutOption[] _moviePathOptions = { GUILayout.ExpandWidth(false) };
