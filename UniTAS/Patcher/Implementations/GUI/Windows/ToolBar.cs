@@ -9,6 +9,7 @@ namespace UniTAS.Patcher.Implementations.GUI.Windows;
 
 [Singleton(RegisterPriority.ToolBar)]
 [ForceInstantiate]
+[ExcludeRegisterIfTesting]
 public class ToolBar : IOnGUIUnconditional
 {
     private readonly IWindowFactory _windowFactory;
