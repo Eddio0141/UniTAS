@@ -19,7 +19,9 @@ public class ToolBar : IOnGUIUnconditional
     private readonly GUIStyle _buttonStyle;
     private readonly Texture2D _buttonNormal = new(1, 1);
     private const int TOOLBAR_HEIGHT = 25;
+    private bool _visible;
 
+    private readonly Bind _toolbarVisibleBind;
     private readonly Bind _newTerminalWindowBind;
 
     public ToolBar(IWindowFactory windowFactory, IBinds binds)
@@ -43,10 +45,19 @@ public class ToolBar : IOnGUIUnconditional
         };
 
         _newTerminalWindowBind = binds.Create(new("NewTerminal", KeyCode.BackQuote));
+        _toolbarVisibleBind = binds.Create(new("ToolbarVisible", KeyCode.F1));
     }
 
     public void OnGUIUnconditional()
     {
+        if (Event.current.type == EventType.KeyDown && _toolbarVisibleBind.IsPressed())
+        {
+            _visible = !_visible;
+            Event.current.Use();
+        }
+
+        if (!_visible) return;
+
         UnityEngine.GUI.DrawTexture(new(0, 0, Screen.width, TOOLBAR_HEIGHT), _buttonNormal);
 
         GUILayout.BeginHorizontal(GUIUtils.EmptyOptions);
@@ -59,10 +70,6 @@ public class ToolBar : IOnGUIUnconditional
         if (GUILayout.Button("Terminal", _buttonStyle, GUIUtils.EmptyOptions))
         {
             _windowFactory.Create<TerminalWindow>().Show();
-        }
-
-        if (GUILayout.Button("Settings", _buttonStyle, GUIUtils.EmptyOptions))
-        {
         }
 
         if (Event.current.type == EventType.Repaint)
