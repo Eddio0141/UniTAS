@@ -1,5 +1,8 @@
-﻿using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
+﻿using BepInEx;
+using UniTAS.Patcher.Models.GUI;
+using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.EventSubscribers;
+using UniTAS.Patcher.Utils;
 using UnityEngine;
 
 namespace UniTAS.Patcher.Interfaces.GUI;
@@ -8,57 +11,153 @@ namespace UniTAS.Patcher.Interfaces.GUI;
 /// Base class for all windows.
 /// Uses automatic layout.
 /// </summary>
-public abstract class Window : IOnGUIUnconditional
+public abstract class Window
 {
     private Rect _windowRect;
+    private int _windowId;
+    private readonly UnityEngine.GUI.WindowFunction _windowUpdate;
+    private bool _dragging;
+    private Vector2 _dragOffset;
+    private bool _showWindow;
 
-    protected abstract Rect DefaultWindowRect { get; }
-    private readonly string _windowName;
+    private readonly WindowConfig _config;
+
+    private const int CLOSE_BUTTON_SIZE = 20;
 
     private readonly IUpdateEvents _updateEvents;
+    private readonly IPatchReverseInvoker _patchReverseInvoker;
 
-    // TODO this is a hack, but it works for now
-    private static int _globalId = 23134259;
-    private readonly int _id;
+    public string WindowName => _config.WindowName;
 
-    protected Window(IUpdateEvents updateEvents, string windowName = null)
+    protected Window(WindowDependencies windowDependencies, WindowConfig config)
     {
-        _updateEvents = updateEvents;
-        _windowName = windowName;
-        _id = _globalId;
-        _globalId++;
+        _patchReverseInvoker = windowDependencies.PatchReverseInvoker;
+        _updateEvents = windowDependencies.UpdateEvents;
+        _config = config ?? new();
+        _windowUpdate = WindowUpdate;
+        Init();
     }
+
+    private Vector2 MousePosition => _patchReverseInvoker.Invoke(() => UnityInput.Current.mousePosition);
+    private int ScreenWidth => _patchReverseInvoker.Invoke(() => Screen.width);
+    private int ScreenHeight => _patchReverseInvoker.Invoke(() => Screen.height);
+    private bool LeftMouseButton => _patchReverseInvoker.Invoke(() => UnityInput.Current.GetMouseButton(0));
 
     private void Init()
     {
-        _windowRect = DefaultWindowRect;
+        _windowRect = _config.DefaultWindowRect;
+        _windowId = GetHashCode();
     }
 
     public void Show()
     {
-        Init();
+        if (_showWindow) return;
         _updateEvents.OnGUIEventUnconditional += OnGUIUnconditional;
+        _showWindow = true;
     }
 
-    public void Close()
+    private void Close()
     {
         _updateEvents.OnGUIEventUnconditional -= OnGUIUnconditional;
+        _showWindow = false;
     }
 
-    public void OnGUIUnconditional()
+    private void OnGUIUnconditional()
     {
-        _windowRect = GUILayout.Window(_id, _windowRect, RenderWindow, _windowName);
+        _windowRect = GUILayout.Window(_windowId, _windowRect, _windowUpdate, _config.WindowName,
+            _config.LayoutOptions);
     }
 
-    private void RenderWindow(int id)
+    private void WindowUpdate(int id)
     {
-        OnGUI(id);
+        HandleDrag();
 
-        // make window draggable
-        UnityEngine.GUI.DragWindow();
+        GUILayout.BeginVertical(GUIUtils.EmptyOptions);
+
+        GUILayout.BeginHorizontal(GUIUtils.EmptyOptions);
+
+        // close button
+        if (UnityEngine.GUI.Button(new(_windowRect.width - CLOSE_BUTTON_SIZE, 0f, CLOSE_BUTTON_SIZE, CLOSE_BUTTON_SIZE),
+                "x"))
+        {
+            Close();
+        }
+
+        GUILayout.EndHorizontal();
+        GUILayout.EndVertical();
+
+        OnGUI();
+
+        CheckDrag();
     }
 
-    protected virtual void OnGUI(int id)
+    private void HandleDrag()
     {
+        if (!_dragging) return;
+
+        // stupid hack to make window dragging smooth
+        if (Event.current.type == EventType.Repaint)
+        {
+            var mousePos = MousePosition;
+            _windowRect.x = mousePos.x - _dragOffset.x;
+            _windowRect.y = ScreenHeight - mousePos.y - _dragOffset.y;
+
+            // just in case
+            if (!LeftMouseButton)
+            {
+                _dragging = false;
+            }
+
+            ClampWindow();
+
+            return;
+        }
+
+        if (Event.current.type != EventType.layout)
+        {
+            Event.current.Use();
+        }
     }
+
+    private void ClampWindow()
+    {
+        if (_windowRect.x < 0)
+        {
+            _windowRect.x = 0;
+        }
+
+        if (_windowRect.y < 0)
+        {
+            _windowRect.y = 0;
+        }
+
+        var screenWidth = ScreenWidth;
+        if (_windowRect.xMax > screenWidth)
+        {
+            _windowRect.x = screenWidth - _windowRect.width;
+        }
+
+        var screenHeight = ScreenHeight;
+        if (_windowRect.yMax > screenHeight)
+        {
+            _windowRect.y = screenHeight - _windowRect.height;
+        }
+    }
+
+    private void CheckDrag()
+    {
+        if (_dragging || Event.current.type != EventType.MouseDown) return;
+
+        var mousePos = MousePosition;
+        mousePos.y = ScreenHeight - mousePos.y;
+
+        // are we dragging now?
+        if (_windowRect.Contains(mousePos))
+        {
+            _dragging = true;
+            _dragOffset = mousePos - new Vector2(_windowRect.x, _windowRect.y);
+        }
+    }
+
+    protected abstract void OnGUI();
 }

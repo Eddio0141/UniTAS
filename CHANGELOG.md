@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Config
 
 - Added live config reloading
+- Added config for binding keys to actions
 
 ### Overlays
 
@@ -58,6 +59,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Performance
 
 - Improved performance of changing fps
+
+### GUI
+
+- Updated GUI to new style
 
 ## Security
 

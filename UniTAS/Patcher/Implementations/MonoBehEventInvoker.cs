@@ -133,6 +133,12 @@ public class MonoBehEventInvoker : IMonoBehEventInvoker, IUpdateEvents
         remove => MonoBehaviourEvents.OnFixedUpdateActual -= value;
     }
 
+    public event Action OnUpdateUnconditional
+    {
+        add => MonoBehaviourEvents.OnUpdateUnconditional += value;
+        remove => MonoBehaviourEvents.OnUpdateUnconditional -= value;
+    }
+
     public event Action OnGUIEventUnconditional
     {
         add => MonoBehaviourEvents.OnGUIUnconditional += value;

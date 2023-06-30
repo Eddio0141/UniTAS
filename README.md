@@ -26,6 +26,11 @@ A tool that lets you TAS unity games
 
 You can use [unitas_setup_tool](https://github.com/Eddio0141/unitas_setup_tool) to set up UniTAS and BepInEx for you
 
+# How to use
+
+- Press `F1` to open the GUI, from there you can load a movie and play it
+- Check out `BepInEx/Config/UniTAS.cfg` to change most settings
+
 # Trouble shooting and useful information
 
 Please check out the [wiki](https://github.com/Eddio0141/UniTAS/wiki)!
@@ -34,7 +39,7 @@ Please check out the [wiki](https://github.com/Eddio0141/UniTAS/wiki)!
 
 - Make sure you have [.NET SDK 6.0 or 7.0](https://dotnet.microsoft.com/en-us/download) installed on your system
 - Run either `build.sh` for linux or `build.ps1` for windows
-    - Takes either `Debug` or `Release` as an argument for choosing building config
+  - Takes either `Debug` or `Release` as an argument for choosing building config
     - `ReleaseTrace` builds with a `Release` profile but with trace logging for the plugin
     - Passing in nothing will build `Debug` automatically
 - Check `build` directory for built files

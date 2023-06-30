@@ -32,6 +32,7 @@ public class CursorOverlay : IOnUpdateUnconditional, IMouseOverlayStatus, IOnGam
         try
         {
             textureWrapper.LoadImage(_cursorTexture, imagePath);
+            _cursorTexture.Apply();
         }
         catch (Exception e)
         {

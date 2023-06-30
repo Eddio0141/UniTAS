@@ -9,24 +9,24 @@ namespace UniTAS.Patcher.Implementations;
 [Singleton]
 public class LiveScripting : ILiveScripting
 {
-    private readonly Script _script;
+    private readonly ILogger _logger;
 
     public LiveScripting(ILogger logger)
     {
-        _script = new(CoreModules.Preset_Complete)
+        _logger = logger;
+    }
+
+    public Script NewScript()
+    {
+        return new(CoreModules.Preset_Complete)
         {
             Options =
             {
                 // do NOT use unity loader
                 ScriptLoader = new FileSystemScriptLoader(),
                 DebugInput = _ => null,
-                DebugPrint = logger.LogInfo
+                DebugPrint = _logger.LogInfo
             }
         };
-    }
-
-    public void Evaluate(string code)
-    {
-        _script.DoString(code);
     }
 }

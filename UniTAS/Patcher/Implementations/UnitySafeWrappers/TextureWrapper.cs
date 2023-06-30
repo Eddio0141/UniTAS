@@ -53,7 +53,5 @@ public class TextureWrapper : ITextureWrapper
         {
             throw new TextureLoadFailException($"Texture2D.LoadImage failed to load image from {path}");
         }
-
-        texture.Apply();
     }
 }

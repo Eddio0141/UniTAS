@@ -4,7 +4,7 @@ using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.GUI;
 using UniTAS.Patcher.Services.GUI;
 
-namespace UniTAS.Patcher.Implementations.GUI;
+namespace UniTAS.Patcher.Implementations.GUI.Windows;
 
 [SuppressMessage("ReSharper", "UnusedType.Global")]
 [Register]
@@ -17,13 +17,8 @@ public class WindowFactory : IWindowFactory
         _container = container;
     }
 
-    public T Create<T>(string windowName = null) where T : Window
+    public T Create<T>() where T : Window
     {
-        if (windowName == null)
-        {
-            return _container.GetInstance<T>();
-        }
-
-        return _container.With("windowName").EqualTo(windowName).GetInstance<T>();
+        return _container.GetInstance<T>();
     }
 }

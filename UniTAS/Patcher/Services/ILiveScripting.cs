@@ -1,10 +1,11 @@
+using MoonSharp.Interpreter;
+
 namespace UniTAS.Patcher.Services;
 
 public interface ILiveScripting
 {
     /// <summary>
-    /// Evaluates the given code.
+    /// An instance of the <see cref="Script"/> class that is set up for scripting.
     /// </summary>
-    /// <param name="code"></param>
-    void Evaluate(string code);
+    Script NewScript();
 }
