@@ -37,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### UniTAS
 
 - Fixed movie playback fps unlock not working
+- Fixed movie running while game is paused while tabbed out
 
 ### Games
 
