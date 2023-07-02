@@ -27,7 +27,7 @@ public abstract class Window
     private readonly IUpdateEvents _updateEvents;
     private readonly IPatchReverseInvoker _patchReverseInvoker;
 
-    public string WindowName => _config.WindowName;
+    private string WindowName { get; }
 
     protected Window(WindowDependencies windowDependencies, WindowConfig config)
     {
@@ -35,6 +35,7 @@ public abstract class Window
         _updateEvents = windowDependencies.UpdateEvents;
         _config = config ?? new();
         _windowUpdate = WindowUpdate;
+        WindowName = _config.WindowName;
         Init();
     }
 
@@ -56,7 +57,7 @@ public abstract class Window
         _showWindow = true;
     }
 
-    private void Close()
+    protected virtual void Close()
     {
         _updateEvents.OnGUIEventUnconditional -= OnGUIUnconditional;
         _showWindow = false;
@@ -64,8 +65,7 @@ public abstract class Window
 
     private void OnGUIUnconditional()
     {
-        _windowRect = GUILayout.Window(_windowId, _windowRect, _windowUpdate, _config.WindowName,
-            _config.LayoutOptions);
+        _windowRect = GUILayout.Window(_windowId, _windowRect, _windowUpdate, WindowName, _config.LayoutOptions);
     }
 
     private void WindowUpdate(int id)
