@@ -18,6 +18,9 @@ public class BrowseFileWindow : Window, IBrowseFileWindow
     private string[] _files;
     private string[] _paths;
 
+    private string _selectedFile;
+    private string _selectedPath;
+
     private const int WIDTH = 600;
     private const int HEIGHT = 200;
 
@@ -76,7 +79,17 @@ public class BrowseFileWindow : Window, IBrowseFileWindow
             }
         }
 
+        UnityEngine.GUI.SetNextControlName("PathInput");
+
         _path = GUILayout.TextField(_path, _expandWidth);
+
+        if (UnityEngine.GUI.GetNameOfFocusedControl() == "PathInput" && Event.current.isKey &&
+            Event.current.keyCode == KeyCode.Return && Directory.Exists(_path))
+        {
+            _pathPrev.Push(_path);
+            _pathNext.Clear();
+            SetPath(_path);
+        }
 
         GUILayout.EndHorizontal();
 
@@ -89,9 +102,21 @@ public class BrowseFileWindow : Window, IBrowseFileWindow
             var file = _files[i];
             if (!GUILayout.Button(file, GUIUtils.EmptyOptions)) continue;
 
-            // is it file?
+            // selection of file
             var path = _paths[i];
-            if (File.Exists(path))
+            var isFile = File.Exists(path);
+
+            if (isFile)
+            {
+                _selectedFile = file;
+                _selectedPath = path;
+            }
+
+            // double click check
+            if (Event.current.clickCount != 2) continue;
+
+            // is it file?
+            if (isFile)
             {
                 OnFileSelected?.Invoke(path);
                 Close();
@@ -106,7 +131,32 @@ public class BrowseFileWindow : Window, IBrowseFileWindow
         }
 
         GUILayout.EndScrollView();
+        GUILayout.BeginHorizontal(GUIUtils.EmptyOptions);
 
+        UnityEngine.GUI.SetNextControlName("FileInput");
+
+        _selectedFile = GUILayout.TextField(_selectedFile, _expandWidth);
+
+        // check enter key
+        if (UnityEngine.GUI.GetNameOfFocusedControl() == "FileInput" && Event.current.isKey &&
+            Event.current.keyCode == KeyCode.Return && File.Exists(_selectedPath))
+        {
+            OnFileSelected?.Invoke(_selectedPath);
+            Close();
+        }
+
+        if (GUILayout.Button("Open", _noExpandWidth) && File.Exists(_selectedPath))
+        {
+            OnFileSelected?.Invoke(_selectedPath);
+            Close();
+        }
+
+        if (GUILayout.Button("Cancel", _noExpandWidth))
+        {
+            Close();
+        }
+
+        GUILayout.EndHorizontal();
         GUILayout.EndVertical();
     }
 
