@@ -110,6 +110,9 @@ public class TerminalWindow : Window, ITerminalWindow
     public void TerminalPrintLine(string output)
     {
         _terminalOutput += $"{output}\n";
+
+        // scroll to bottom
+        _terminalOutputScroll.y = Mathf.Infinity;
     }
 
     public void ReleaseTerminal()
