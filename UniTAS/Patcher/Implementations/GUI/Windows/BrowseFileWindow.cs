@@ -39,6 +39,8 @@ public class BrowseFileWindow : Window, IBrowseFileWindow
         Show();
     }
 
+    private readonly GUILayoutOption[] _noExpandWidth = { GUILayout.ExpandWidth(false) };
+    private readonly GUILayoutOption[] _expandWidth = { GUILayout.ExpandWidth(true) };
 
     protected override void OnGUI()
     {
@@ -51,19 +53,19 @@ public class BrowseFileWindow : Window, IBrowseFileWindow
         GUILayout.BeginHorizontal(GUIUtils.EmptyOptions);
 
         // back, forward, up
-        if (GUILayout.Button("<", GUILayout.ExpandWidth(false)) && _pathPrev.Any())
+        if (GUILayout.Button("<", _noExpandWidth) && _pathPrev.Any())
         {
             _pathNext.Push(_path);
             SetPath(_pathPrev.Pop());
         }
 
-        if (GUILayout.Button(">", GUILayout.ExpandWidth(false)) && _pathNext.Any())
+        if (GUILayout.Button(">", _noExpandWidth) && _pathNext.Any())
         {
             _pathPrev.Push(_path);
             SetPath(_pathNext.Pop());
         }
 
-        if (GUILayout.Button("^", GUILayout.ExpandWidth(false)))
+        if (GUILayout.Button("^", _noExpandWidth))
         {
             var parent = Directory.GetParent(_path)?.FullName;
             if (parent != null)
@@ -74,13 +76,13 @@ public class BrowseFileWindow : Window, IBrowseFileWindow
             }
         }
 
-        _path = GUILayout.TextField(_path, GUILayout.ExpandWidth(true));
+        _path = GUILayout.TextField(_path, _expandWidth);
 
         GUILayout.EndHorizontal();
 
         GUILayout.BeginVertical(GUIUtils.EmptyOptions);
 
-        _scroll = GUILayout.BeginScrollView(_scroll, false, true);
+        _scroll = GUILayout.BeginScrollView(_scroll, false, true, GUIUtils.EmptyOptions);
 
         for (var i = 0; i < _files.Length; i++)
         {

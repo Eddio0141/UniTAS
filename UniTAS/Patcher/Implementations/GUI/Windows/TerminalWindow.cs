@@ -35,12 +35,16 @@ public class TerminalWindow : Window, ITerminalWindow
         TerminalEntries = terminalEntries;
     }
 
+    private readonly GUILayoutOption[] _textAreaOptions = { GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true) };
+    private readonly GUILayoutOption[] _terminalInputOptions = { GUILayout.ExpandWidth(true) };
+    private readonly GUILayoutOption[] _submitOptions = { GUILayout.ExpandWidth(false) };
+
     protected override void OnGUI()
     {
         GUILayout.BeginVertical(GUIUtils.EmptyOptions);
         _terminalOutputScroll = GUILayout.BeginScrollView(_terminalOutputScroll, GUIUtils.EmptyOptions);
 
-        GUILayout.TextArea(_terminalOutput, GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true));
+        GUILayout.TextArea(_terminalOutput, _textAreaOptions);
 
         GUILayout.EndScrollView();
 
@@ -51,7 +55,7 @@ public class TerminalWindow : Window, ITerminalWindow
             UnityEngine.GUI.SetNextControlName("TerminalInput");
         }
 
-        _terminalInput = GUILayout.TextField(_terminalInput, GUILayout.ExpandWidth(true));
+        _terminalInput = GUILayout.TextField(_terminalInput, _terminalInputOptions);
 
         // check enter
         if (Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.Return &&
@@ -68,7 +72,7 @@ public class TerminalWindow : Window, ITerminalWindow
             UnityEngine.GUI.FocusControl("TerminalInput");
         }
 
-        if (GUILayout.Button("Submit", GUILayout.ExpandWidth(false)))
+        if (GUILayout.Button("Submit", _submitOptions))
         {
             Submit(false);
         }
