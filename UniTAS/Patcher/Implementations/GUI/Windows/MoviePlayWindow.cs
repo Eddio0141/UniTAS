@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using BepInEx;
 using BepInEx.Logging;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.GUI;
@@ -81,7 +82,7 @@ public class MoviePlayWindow : Window
 
         if (GUILayout.Button("Browse", GUIUtils.EmptyOptions) && _currentBrowseFileWindow == null)
         {
-            _currentBrowseFileWindow = _browseFileWindowFileWindowFactory.Open(new("Browse Movie", "/home/yuu0141"));
+            _currentBrowseFileWindow = _browseFileWindowFileWindowFactory.Open(new("Browse Movie", Paths.GameRootPath));
             _currentBrowseFileWindow.OnFileSelected += path => _tasPath = path;
             _currentBrowseFileWindow.OnClosed += () => _currentBrowseFileWindow = null;
         }
