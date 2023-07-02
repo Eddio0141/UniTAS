@@ -21,16 +21,13 @@ public class BrowseFileWindow : Window, IBrowseFileWindow
     private string _selectedFile;
     private string _selectedPath;
 
-    private const int WIDTH = 600;
-    private const int HEIGHT = 200;
-
     private Vector2 _scroll;
 
     private readonly Stack<string> _pathPrev = new();
     private readonly Stack<string> _pathNext = new();
 
     public BrowseFileWindow(WindowDependencies windowDependencies, BrowseFileWindowArgs args) : base(windowDependencies,
-        new(defaultWindowRect: GUIUtils.WindowRect(WIDTH, HEIGHT), windowName: args.Title))
+        new(defaultWindowRect: GUIUtils.WindowRect(Screen.width - 100, Screen.height - 50), windowName: args.Title))
     {
         _path = args.Path;
 
