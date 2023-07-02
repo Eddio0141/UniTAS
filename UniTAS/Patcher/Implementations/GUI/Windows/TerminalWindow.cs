@@ -18,6 +18,7 @@ public class TerminalWindow : Window, ITerminalWindow
 
     private string _terminalOutput = string.Empty;
     private string _terminalInput = string.Empty;
+    private string _terminalInputFull = string.Empty;
     private Vector2 _terminalOutputScroll;
 
     private TerminalEntry _hijackingEntry;
@@ -56,7 +57,8 @@ public class TerminalWindow : Window, ITerminalWindow
         if (Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.Return &&
             UnityEngine.GUI.GetNameOfFocusedControl() == "TerminalInput")
         {
-            Submit();
+            // hold shift to split input
+            Submit(Event.current.shift);
             Event.current.Use();
         }
 
@@ -68,28 +70,39 @@ public class TerminalWindow : Window, ITerminalWindow
 
         if (GUILayout.Button("Submit", GUILayout.ExpandWidth(false)))
         {
-            Submit();
+            Submit(false);
         }
 
         GUILayout.EndHorizontal();
         GUILayout.EndVertical();
     }
 
-    private void Submit()
+    private void Submit(bool split)
     {
+        _terminalInputFull += $"{_terminalInput}\n";
+
         if (_hijackingEntry != null)
         {
-            _hijackingEntry.OnInput(_terminalInput);
+            _hijackingEntry.OnInput(_terminalInput, true);
+            if (!split)
+            {
+                _hijackingEntry.OnInput(_terminalInputFull, false);
+            }
+
             _terminalInput = string.Empty;
             return;
         }
 
         TerminalPrintLine($"] {_terminalInput}");
 
-        var command = _terminalInput.Split(' ').FirstOrDefault();
-        var args = _terminalInput.Split(' ').Skip(1).ToArray();
-
         _terminalInput = string.Empty;
+
+        if (split) return;
+
+        var command = _terminalInputFull.Split(' ').FirstOrDefault()?.Trim();
+        var args = _terminalInputFull.Split(' ').Skip(1).ToArray();
+
+        _terminalInputFull = string.Empty;
 
         if (string.IsNullOrEmpty(command)) return;
 
