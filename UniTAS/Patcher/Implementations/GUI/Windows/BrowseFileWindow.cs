@@ -26,23 +26,19 @@ public class BrowseFileWindow : Window, IBrowseFileWindow
     private readonly Stack<string> _pathPrev = new();
     private readonly Stack<string> _pathNext = new();
 
-    public BrowseFileWindow(WindowDependencies windowDependencies) : base(windowDependencies,
-        new(defaultWindowRect: GUIUtils.WindowRect(WIDTH, HEIGHT)))
+    public BrowseFileWindow(WindowDependencies windowDependencies, BrowseFileWindowArgs args) : base(windowDependencies,
+        new(defaultWindowRect: GUIUtils.WindowRect(WIDTH, HEIGHT), windowName: args.Title))
     {
-    }
+        _path = args.Path;
 
-    public void Open(string title, string path)
-    {
-        WindowName = title;
-
-        if (!Directory.Exists(path))
+        if (!Directory.Exists(_path))
         {
-            throw new ArgumentException($"Path does not exist: {path}");
+            _path = Directory.GetCurrentDirectory();
         }
 
-        _path = path;
         Show();
     }
+
 
     protected override void OnGUI()
     {
@@ -120,5 +116,13 @@ public class BrowseFileWindow : Window, IBrowseFileWindow
         _paths = null;
     }
 
+    protected override void Close()
+    {
+        base.Close();
+        OnClosed?.Invoke();
+    }
+
     public event Action<string> OnFileSelected;
+
+    public event Action OnClosed;
 }
