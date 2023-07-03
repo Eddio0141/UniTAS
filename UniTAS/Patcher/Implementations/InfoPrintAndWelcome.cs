@@ -12,6 +12,7 @@ namespace UniTAS.Patcher.Implementations;
 [Singleton(RegisterPriority.InfoPrintAndWelcome)]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 [ForceInstantiate]
+[ExcludeRegisterIfTesting]
 public class InfoPrintAndWelcome
 {
     public InfoPrintAndWelcome(IGameInfo gameInfo, ILogger logger)
