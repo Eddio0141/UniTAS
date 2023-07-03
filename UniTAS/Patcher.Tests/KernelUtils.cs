@@ -5,7 +5,7 @@ using BepInEx.Configuration;
 using BepInEx.Logging;
 using MoonSharp.Interpreter;
 using StructureMap;
-using UniTAS.Patcher;
+using UniTAS.Patcher.Implementations;
 using UniTAS.Patcher.Implementations.DependencyInjection;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;

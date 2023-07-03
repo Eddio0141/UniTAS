@@ -30,7 +30,9 @@ public abstract class TerminalEntry
     /// <summary>
     /// Invoked when the terminal receives input while the terminal is hijacked.
     /// </summary>
-    public virtual void OnInput(string input)
+    /// <param name="input">Input string. If not split, this is the full complete input (with newlines if split). If split, it contains the split input</param>
+    /// <param name="split">If the input is split or not</param>
+    public virtual void OnInput(string input, bool split)
     {
     }
 }

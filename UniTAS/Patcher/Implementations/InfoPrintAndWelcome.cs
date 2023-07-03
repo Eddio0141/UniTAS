@@ -7,10 +7,12 @@ using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Logging;
 using UnityEngine;
 
-namespace UniTAS.Patcher;
+namespace UniTAS.Patcher.Implementations;
 
 [Singleton(RegisterPriority.InfoPrintAndWelcome)]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
+[ForceInstantiate]
+[ExcludeRegisterIfTesting]
 public class InfoPrintAndWelcome
 {
     public InfoPrintAndWelcome(IGameInfo gameInfo, ILogger logger)

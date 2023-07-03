@@ -1,5 +1,5 @@
 using System.IO;
-using System.Text;
+using System.Threading;
 using BepInEx;
 using BepInEx.Logging;
 
@@ -9,24 +9,44 @@ public static class LoggingUtils
 {
     public static void InitDiskLogger()
     {
-        Logger.Listeners.Add(new DiskLogger());
+        var diskLogger = new DiskLogger();
+        if (!diskLogger.Enabled) return;
+
+        Logger.Listeners.Add(diskLogger);
     }
 
-    private class DiskLogger : ILogListener
+    // separate disk logging
+    public class DiskLogger : ILogListener
     {
-        private readonly FileStream _fileStream =
-            new(Path.Combine(Paths.BepInExRootPath, "UniTAS.log"), FileMode.Create);
+        private readonly TextWriter _logWriter;
+        private readonly Timer _flushTimer;
+
+        public bool Enabled { get; } = true;
+
+        public DiskLogger()
+        {
+            if (!Utility.TryOpenFileStream(Path.Combine(Paths.BepInExRootPath, "UniTAS.log"), FileMode.Create,
+                    out var fileStream, FileAccess.Write))
+            {
+                StaticLogger.Log.LogError("Couldn't open a log file for writing. Skipping UniTAS log file creation");
+                Enabled = false;
+                return;
+            }
+
+            _logWriter = TextWriter.Synchronized(new StreamWriter(fileStream, Utility.UTF8NoBom));
+            _flushTimer = new(_ => _logWriter?.Flush(), null, 2000, 2000);
+        }
 
         public void Dispose()
         {
-            _fileStream.Dispose();
+            _flushTimer?.Dispose();
+            _logWriter?.Flush();
+            _logWriter?.Dispose();
         }
 
         public void LogEvent(object sender, LogEventArgs eventArgs)
         {
-            var logData = eventArgs.ToStringLine();
-            var logBytes = Encoding.UTF8.GetBytes(logData);
-            _fileStream.Write(logBytes, 0, logBytes.Length);
+            _logWriter.WriteLine(eventArgs.ToString());
         }
     }
 }

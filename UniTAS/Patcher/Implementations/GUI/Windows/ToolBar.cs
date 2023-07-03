@@ -12,7 +12,7 @@ namespace UniTAS.Patcher.Implementations.GUI.Windows;
 [Singleton(RegisterPriority.ToolBar)]
 [ForceInstantiate]
 [ExcludeRegisterIfTesting]
-public class ToolBar : IOnGUIUnconditional
+public class ToolBar : IOnGUIUnconditional, IOnUpdateUnconditional
 {
     private readonly IWindowFactory _windowFactory;
 
@@ -44,7 +44,7 @@ public class ToolBar : IOnGUIUnconditional
             active = { background = buttonHold, textColor = Color.white }
         };
 
-        _newTerminalWindowBind = binds.Create(new("NewTerminal", KeyCode.BackQuote));
+        _newTerminalWindowBind = binds.Create(new(TerminalWindow.TERMINAL_INPUT_BIND_NAME, KeyCode.BackQuote));
         _toolbarVisibleBind = binds.Create(new("ToolbarVisible", KeyCode.F1));
     }
 
@@ -72,14 +72,14 @@ public class ToolBar : IOnGUIUnconditional
             _windowFactory.Create<TerminalWindow>().Show();
         }
 
-        if (Event.current.type == EventType.Repaint)
-        {
-            if (_newTerminalWindowBind.IsPressed())
-            {
-                _windowFactory.Create<TerminalWindow>().Show();
-            }
-        }
-
         GUILayout.EndHorizontal();
+    }
+
+    public void UpdateUnconditional()
+    {
+        if (_newTerminalWindowBind.IsPressed())
+        {
+            _windowFactory.Create<TerminalWindow>().Show();
+        }
     }
 }

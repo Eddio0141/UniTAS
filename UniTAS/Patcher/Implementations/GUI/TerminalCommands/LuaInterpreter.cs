@@ -30,9 +30,13 @@ public class LuaInterpreter : TerminalEntry
         return true;
     }
 
-    public override void OnInput(string input)
+    public override void OnInput(string input, bool split)
     {
-        _terminalWindow.TerminalPrintLine($">> {input}");
+        if (split)
+        {
+            _terminalWindow.TerminalPrintLine($">> {input}");
+            return;
+        }
 
         try
         {

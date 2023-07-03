@@ -1,12 +1,14 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using BepInEx;
 using BepInEx.Logging;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.GUI;
 using UniTAS.Patcher.Models.Customization;
 using UniTAS.Patcher.Models.GUI;
 using UniTAS.Patcher.Services.Customization;
+using UniTAS.Patcher.Services.GUI;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.Movie;
 using UniTAS.Patcher.Utils;
@@ -26,16 +28,19 @@ public class MoviePlayWindow : Window
 
     private readonly IMovieLogger _movieLogger;
     private readonly IMovieRunner _movieRunner;
+    private readonly IBrowseFileWindowFactory _browseFileWindowFileWindowFactory;
+    private IBrowseFileWindow _currentBrowseFileWindow;
 
     private readonly Bind _playMovieBind;
 
     public MoviePlayWindow(WindowDependencies windowDependencies, IMovieLogger movieLogger, IMovieRunner movieRunner,
-        IBinds binds) :
+        IBinds binds, IBrowseFileWindowFactory browseFileWindowFileWindowFactory) :
         base(windowDependencies,
             new(defaultWindowRect: GUIUtils.WindowRect(600, 200), windowName: "Movie Play"))
     {
         _movieLogger = movieLogger;
         _movieRunner = movieRunner;
+        _browseFileWindowFileWindowFactory = browseFileWindowFileWindowFactory;
         movieLogger.OnLog += OnMovieLog;
 
         _playMovieBind = binds.Create(new("PlayMovie", KeyCode.Slash));
@@ -51,7 +56,7 @@ public class MoviePlayWindow : Window
         GUILayout.EndVertical();
     }
 
-    public void UpdateUnconditional()
+    private void UpdateUnconditional()
     {
         if (_playMovieBind.IsPressed())
         {
@@ -75,11 +80,14 @@ public class MoviePlayWindow : Window
     {
         GUILayout.BeginHorizontal(GUIUtils.EmptyOptions);
 
-        // TODO: implement browse and recent buttons
-        // if (GUILayout.Button("Browse"))
-        // {
-        // }
-        //
+        if (GUILayout.Button("Browse", GUIUtils.EmptyOptions) && _currentBrowseFileWindow == null)
+        {
+            _currentBrowseFileWindow = _browseFileWindowFileWindowFactory.Open(new("Browse Movie", Paths.GameRootPath));
+            _currentBrowseFileWindow.OnFileSelected += path => _tasPath = path;
+            _currentBrowseFileWindow.OnClosed += () => _currentBrowseFileWindow = null;
+        }
+
+        // TODO: implement recent button
         // if (GUILayout.Button("Recent"))
         // {
         // }
