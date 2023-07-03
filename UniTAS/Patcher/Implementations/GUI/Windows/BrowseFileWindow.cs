@@ -2,9 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using BepInEx;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.GUI;
 using UniTAS.Patcher.Models.GUI;
+using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.GUI;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
@@ -18,7 +20,7 @@ public class BrowseFileWindow : Window, IBrowseFileWindow
     private string[] _files;
     private string[] _paths;
 
-    private string _selectedFile;
+    private string _selectedName;
     private string _selectedPath;
 
     private Vector2 _scroll;
@@ -26,30 +28,48 @@ public class BrowseFileWindow : Window, IBrowseFileWindow
     private readonly Stack<string> _pathPrev = new();
     private readonly Stack<string> _pathNext = new();
 
-    public BrowseFileWindow(WindowDependencies windowDependencies, BrowseFileWindowArgs args) : base(windowDependencies,
-        new(defaultWindowRect: GUIUtils.WindowRect(Screen.width - 100, Screen.height - 50), windowName: args.Title))
-    {
-        _path = args.Path;
+    private readonly IPatchReverseInvoker _patchReverseInvoker;
 
-        if (!Directory.Exists(_path))
+    private readonly string[] _quickAccessPaths =
+    {
+        Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
+        Environment.GetFolderPath(Environment.SpecialFolder.Personal),
+        Paths.GameRootPath
+    };
+
+    private readonly string[] _quickAccessNames;
+
+    public BrowseFileWindow(WindowDependencies windowDependencies, BrowseFileWindowArgs args) : base(windowDependencies,
+        new(defaultWindowRect: GUIUtils.WindowRect(Screen.width - 200, Screen.height - 200), windowName: args.Title))
+    {
+        var path = args.Path;
+
+        if (!Directory.Exists(path))
         {
-            _path = Directory.GetCurrentDirectory();
+            path = Paths.GameRootPath;
         }
+
+        SetPath(path);
+
+        _quickAccessNames = _quickAccessPaths.Select(Path.GetFileName).ToArray();
+
+        _patchReverseInvoker = windowDependencies.PatchReverseInvoker;
 
         Show();
     }
 
     private readonly GUILayoutOption[] _noExpandWidth = { GUILayout.ExpandWidth(false) };
     private readonly GUILayoutOption[] _expandWidth = { GUILayout.ExpandWidth(true) };
+    private readonly GUILayoutOption[] _quickAccessButtonWidth = { GUILayout.Width(100) };
+
+    private float _lastFileSelectTime;
+    private int _lastFileSelectIndex = -1;
+    private const float DOUBLE_CLICK_TIME = 0.3f;
+
+    private float CurrentTime => _patchReverseInvoker.Invoke(() => Time.realtimeSinceStartup);
 
     protected override void OnGUI()
     {
-        if (_files == null)
-        {
-            _paths = Directory.GetFileSystemEntries(_path);
-            _files = _paths.Select(Path.GetFileName).ToArray();
-        }
-
         GUILayout.BeginHorizontal(GUIUtils.EmptyOptions);
 
         // back, forward, up
@@ -92,28 +112,50 @@ public class BrowseFileWindow : Window, IBrowseFileWindow
 
         GUILayout.BeginVertical(GUIUtils.EmptyOptions);
 
+        GUILayout.BeginHorizontal(GUIUtils.EmptyOptions);
+        GUILayout.BeginVertical(_quickAccessButtonWidth);
+
+        // quick access
+        for (var i = 0; i < _quickAccessPaths.Length; i++)
+        {
+            var path = _quickAccessPaths[i];
+            var name = _quickAccessNames[i];
+
+            if (!GUILayout.Button(name, _quickAccessButtonWidth)) continue;
+
+            _pathPrev.Push(_path);
+            _pathNext.Clear();
+            SetPath(path);
+            break;
+        }
+
+        GUILayout.EndVertical();
+
+        // folder view
         _scroll = GUILayout.BeginScrollView(_scroll, false, true, GUIUtils.EmptyOptions);
 
         for (var i = 0; i < _files.Length; i++)
         {
             var file = _files[i];
-            if (!GUILayout.Button(file, GUIUtils.EmptyOptions)) continue;
+            if (!GUILayout.Button(file, _expandWidth)) continue;
 
-            // selection of file
+            // selection of path
             var path = _paths[i];
-            var isFile = File.Exists(path);
 
-            if (isFile)
-            {
-                _selectedFile = file;
-                _selectedPath = path;
-            }
+            _selectedName = file;
+            _selectedPath = path;
 
             // double click check
-            if (Event.current.clickCount != 2) continue;
+            var currentTime = CurrentTime;
+            if (_lastFileSelectIndex != i || currentTime > _lastFileSelectTime + DOUBLE_CLICK_TIME)
+            {
+                _lastFileSelectIndex = i;
+                _lastFileSelectTime = currentTime;
+                continue;
+            }
 
             // is it file?
-            if (isFile)
+            if (File.Exists(path))
             {
                 OnFileSelected?.Invoke(path);
                 Close();
@@ -128,41 +170,72 @@ public class BrowseFileWindow : Window, IBrowseFileWindow
         }
 
         GUILayout.EndScrollView();
+        GUILayout.EndHorizontal();
         GUILayout.BeginHorizontal(GUIUtils.EmptyOptions);
 
         UnityEngine.GUI.SetNextControlName("FileInput");
 
-        _selectedFile = GUILayout.TextField(_selectedFile, _expandWidth);
+        _selectedName = GUILayout.TextField(_selectedName, _expandWidth);
 
         // check enter key
         if (UnityEngine.GUI.GetNameOfFocusedControl() == "FileInput" && Event.current.isKey &&
-            Event.current.keyCode == KeyCode.Return && File.Exists(_selectedPath))
+            Event.current.keyCode == KeyCode.Return)
         {
-            OnFileSelected?.Invoke(_selectedPath);
-            Close();
+            TryOpenSelectedFile();
+
+            if (File.Exists(_selectedPath))
+            {
+                OnFileSelected?.Invoke(_selectedPath);
+                Close();
+            }
+            else
+            {
+                _selectedPath = string.Empty;
+            }
         }
 
-        if (GUILayout.Button("Open", _noExpandWidth) && File.Exists(_selectedPath))
+        if (GUILayout.Button("Open", _noExpandWidth))
         {
-            OnFileSelected?.Invoke(_selectedPath);
-            Close();
+            TryOpenSelectedFile();
         }
 
         if (GUILayout.Button("Cancel", _noExpandWidth))
         {
-            Close();
+            TryOpenSelectedFile();
         }
 
         GUILayout.EndHorizontal();
         GUILayout.EndVertical();
     }
 
+    private void TryOpenSelectedFile()
+    {
+        _selectedPath = Path.Combine(_path, _selectedName);
+
+        if (File.Exists(_selectedPath))
+        {
+            OnFileSelected?.Invoke(_selectedPath);
+            Close();
+            return;
+        }
+
+        if (Directory.Exists(_selectedPath))
+        {
+            _pathPrev.Push(_path);
+            _pathNext.Clear();
+            SetPath(_selectedPath);
+        }
+
+        _selectedName = string.Empty;
+        _selectedPath = string.Empty;
+    }
+
     private void SetPath(string path)
     {
         if (!Directory.Exists(path)) return;
         _path = path;
-        _files = null;
-        _paths = null;
+        _paths = Directory.GetFileSystemEntries(_path);
+        _files = _paths.Select(Path.GetFileName).ToArray();
     }
 
     protected override void Close()
