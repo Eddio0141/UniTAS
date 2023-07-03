@@ -20,7 +20,7 @@ public class BrowseFileWindow : Window, IBrowseFileWindow
     private string[] _files;
     private string[] _paths;
 
-    private string _selectedName;
+    private string _selectedName = string.Empty;
     private string _selectedPath;
 
     private Vector2 _scroll;
