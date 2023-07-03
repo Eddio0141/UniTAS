@@ -21,7 +21,7 @@ public class UnlockCursor : IOnUpdateUnconditional
     {
         if (!_patchReverseInvoker.Invoke(() => BepInEx.UnityInput.Current.GetKeyDown(KeyCode.F1))) return;
 
-        var cursor = AccessTools.TypeByName("UnityEngine.Cursor");
+        var cursor = AccessTools.TypeByName("UnityEngine.Screen");
         if (cursor == null)
         {
             var showCursor = AccessTools.Property(typeof(Screen), "showCursor");
