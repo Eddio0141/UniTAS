@@ -9,6 +9,7 @@ using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.SoftRestart;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Logging;
+using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Implementations;
 
@@ -22,7 +23,8 @@ public class ThreadSoftRestartHandler : IThreadTracker, IOnPreGameRestart
     {
         typeof(DiskLogListener),
         typeof(GameVideoRenderer),
-        typeof(NativeAudioRenderer)
+        typeof(NativeAudioRenderer),
+        typeof(LoggingUtils.DiskLogger)
     };
 
     public ThreadSoftRestartHandler(ILogger logger)
