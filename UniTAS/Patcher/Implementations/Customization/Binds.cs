@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using StructureMap;
 using UniTAS.Patcher.Exceptions.Customization;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
@@ -26,5 +27,10 @@ public class Binds : IBinds
         _binds.Add(bind);
         bind.InitConfig();
         return bind;
+    }
+
+    public Bind Get(string name)
+    {
+        return _binds.FirstOrDefault(bind => bind.Name == name);
     }
 }
