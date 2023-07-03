@@ -18,11 +18,8 @@ jobs:
         uses: actions/setup-dotnet@v3.0.3
         with:
           dotnet-version: '6.0.x'
-      - name: Setup FFmpeg
+      - name: Setup FFMpeg
         uses: FedericoCarboni/setup-ffmpeg@v2
-      - name: Tests
-        working-directory: ./UniTAS
-        run: dotnet test --configuration ${{ matrix.configuration }}
       - name: Build windows
         if: runner.os == 'Windows'
         run: ./build.ps1 ${{ matrix.configuration }}
@@ -34,3 +31,6 @@ jobs:
         with:
           name: ${{ matrix.os }}-${{ matrix.configuration }}
           path: ./build/${{ matrix.configuration }}/
+      - name: Tests
+        working-directory: ./UniTAS
+        run: dotnet test --configuration ${{ matrix.configuration }}
