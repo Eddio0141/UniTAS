@@ -64,6 +64,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### GUI
 
 - Updated GUI to new style
+- Added terminal
+- Added ability to move and resize windows
+- Added movie file browser
 
 ## Security
 
