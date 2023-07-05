@@ -1,12 +1,20 @@
 # UniTAS
+
 [![Discord](https://img.shields.io/discord/1093033615161573490)](https://discord.gg/ddMqdqgPeB)
 
 A tool that lets you TAS unity games
 
 - The tool doesn't bypass anti cheat or anything, USE AT YOUR OWN RISK!
 - :warning: The tool is early in development and only basic games work
-    - This also means TASes made in earlier versions might not work in later versions
+  - This also means TASes made in earlier versions might not work in later versions
 - This is a [BepInEx 5] patcher
+
+# TASing in UniTAS
+
+Currently, you write a script in lua to control the game rather than recording inputs in game
+
+To get the hang of it, check the tutorial [here](https://github.com/Eddio0141/UniTAS/wiki/TAS-Movie-Script-Tutorial) and
+if stuck on anything, the [wiki](https://github.com/Eddio0141/UniTAS/wiki) should help you out
 
 # What games work
 
@@ -30,10 +38,6 @@ You can use [unitas_setup_tool](https://github.com/Eddio0141/unitas_setup_tool) 
 
 - Press `F1` to open the GUI, from there you can load a movie and play it
 - Check out `BepInEx/Config/UniTAS.cfg` to change most settings
-
-# Trouble shooting and useful information
-
-Please check out the [wiki](https://github.com/Eddio0141/UniTAS/wiki)!
 
 # How to build
 
