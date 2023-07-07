@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Games
 
 - Fixed Cat Quest not being TASable due to a bug in UniTAS
+- Fixed DDLC launch on crash because out of range system time
 
 ### Compatibility
 
@@ -22,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### UniTAS
 
 - Stopped setting unity running in background to false (this was causing issues with some games when you tab out)
+- UniTAS system time by default is now the current time (until you run a movie)
 
 # [v0.5.0] - 2023-07-04
 

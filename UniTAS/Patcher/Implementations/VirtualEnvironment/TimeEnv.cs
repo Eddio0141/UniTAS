@@ -21,8 +21,11 @@ public class TimeEnv : ITimeEnv, IOnPreUpdatesActual, IOnGameRestartResume, IOnS
 
     private readonly ITimeWrapper _timeWrap;
 
-    public TimeEnv(IConfig config, ITimeWrapper timeWrap)
+    public TimeEnv(IConfig config, ITimeWrapper timeWrap, IPatchReverseInvoker patchReverseInvoker)
     {
+        // start time to current time
+        StartupTime = patchReverseInvoker.Invoke(() => DateTime.Now);
+
         _defaultFps = config.ConfigFile.Bind("General", "DefaultFps", 100f,
             "Default FPS when the TAS isn't running. Make sure the FPS is more than 0");
 
