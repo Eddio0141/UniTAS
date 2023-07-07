@@ -20,27 +20,27 @@
   - This is if the game hard crashes
 
 # Compatibility list
-| **Game**                                   | **Game Version** | **Status**  | **Notes**                                                                                                            | **UniTAS Version** |
-|--------------------------------------------|------------------|-------------|----------------------------------------------------------------------------------------------------------------------|--------------------|
-| [Baldi's Basics in Education and Learning] | 1.4.3            | Broken      | Inputs do not work after soft restarting, see #186                                                                   | 0.5.1              |
-| [Bubble Jcat]                              | Latest           | Perfect     |                                                                                                                      | 0.5.1              |
-| [Cat Quest]                                | 1.2.10           | Perfect     |                                                                                                                      | 0.5.1              |
-| [Cat Quest II]                             | 1.7.6            | Broken      | NullReferenceException on game start, permanent loading screen                                                       | 0.5.1              |
-| [Cuphead]                                  | 1.3.2            | Broken      | AssetBundle issue on soft restart resulting in permanent black screen, see #11 and #232                              | 0.5.1              |
-| [Deepest Sword]                            | 0.1.5c           | Perfect     |                                                                                                                      | 0.5.1              |
-| [Do It For Me]                             | Latest           | Broken      | Menu button not clickable                                                                                            | 0.3.0              |
-| [Doki Doki Literature Club Plus]           | Latest           | Broken      | AssetBundle issue on soft restart, see #232                                                                          | 0.5.1              |
-| [Hololive Isekai]                          | 0.3              | Good        | NullReferenceException shows rarely when running a TAS at an unknown moment in the game                              | 0.5.1              |
-| [HuniePop]                                 | 1.2.0            | Perfect     |                                                                                                                      | 0.5.1              |
-| [It Steals]                                | Latest           | Perfect     |                                                                                                                      | 0.5.1              |
-| [Keep Talking and Nobody Explodes]         | 1.9.24           | Good        | NullReferenceException on soft restart, see #221                                                                     | 0.5.1              |
-| [NEEDY STREAMER OVERLOAD]                  | Latest           | Good/Broken | Keyboard input does not work, see #186                                                                               | 0.5.1              |
-| [PlateUp!]                                 | 1.1.5            | Broken      | ArgumentNullException on soft restart, input does not work, see #14                                                  | 0.5.1              |
-| [Resonance of the Ocean]                   | 1.2.6            | Broken      | Permanent blue screen on soft restart when running a TAS, see #206                                                   | 0.5.1              |
-| [Subnautica]                               | 70086            | Broken      | NullReferenceException on start and soft restart in-game freezes, see #9 and #186                                    | 0.5.1              |
-| [ULTRAKILL]                                | Latest           | Broken      | Game works but has some exceptions in the log and menu might not be working, but intro skipping works                | 0.4.0              |
-| [Untitled Goose Game]                      | 1.1.4            | Broken      | Soft restart breaks GUI, NullReferenceException when clicking the game's own reset button, see #13                   | 0.5.1              |
-| [YuraYura! Tidying up the tilting tower!]  | 1.0              | Desync      | Sometimes the TAS will sync (boulders fall in correct place, correct positioning of the maid), sometimes it will not | 0.5.1              |
+| **Game**                                   | **Game Version** | **Status**  | **Notes**                                                                                                                     | **UniTAS Version** |
+|--------------------------------------------|------------------|-------------|-------------------------------------------------------------------------------------------------------------------------------|--------------------|
+| [Baldi's Basics in Education and Learning] | 1.4.3            | Broken      | Inputs do not work in-game after soft restarting, see #186                                                                    | 0.5.1              |
+| [Bubble Jcat]                              | Latest           | Perfect     |                                                                                                                               | 0.5.1              |
+| [Cat Quest]                                | 1.2.10           | Good/Broken | NullReferenceException after soft restart related to initializing GOG Galaxy, keyboard input does not work, see #186 and #233 | 0.5.1              |
+| [Cat Quest II]                             | 1.7.6            | Broken      | NullReferenceException on game start, permanent loading screen                                                                | 0.5.1              |
+| [Cuphead]                                  | 1.3.2            | Broken      | Game freezes on invoking completion event after soft restart, see #11                                                         | 0.5.1              |
+| [Deepest Sword]                            | 0.1.5c           | Perfect     |                                                                                                                               | 0.5.1              |
+| [Do It For Me]                             | Latest           | Broken      | Menu button not clickable                                                                                                     | 0.3.0              |
+| [Doki Doki Literature Club Plus]           | Latest           | Broken      | Coroutine issue on soft restart, keyboard input does not work, see #234                                                       | 0.5.1              |
+| [Hololive Isekai]                          | 0.3              | Good        | NullReferenceException shows rarely when running a TAS at an unknown moment in the game                                       | 0.5.1              |
+| [HuniePop]                                 | 1.2.0            | Perfect     |                                                                                                                               | 0.5.1              |
+| [It Steals]                                | Latest           | Perfect     |                                                                                                                               | 0.5.1              |
+| [Keep Talking and Nobody Explodes]         | 1.9.24           | Good        | NullReferenceException on soft restart, see #221                                                                              | 0.5.1              |
+| [NEEDY STREAMER OVERLOAD]                  | Latest           | Good/Broken | Keyboard input does not work, see #186                                                                                        | 0.5.1              |
+| [PlateUp!]                                 | 1.0.5            | Broken      | ArgumentNullException on soft restart, input does not work, see #14                                                           | 0.5.1              |
+| [Resonance of the Ocean]                   | 1.2.6            | Broken      | Permanent blue screen on soft restart when running a TAS, see #206                                                            | 0.5.1              |
+| [Subnautica]                               | 70086            | Broken      | NullReferenceException on start and soft restart in-game freezes, see #9 and #186                                             | 0.5.1              |
+| [ULTRAKILL]                                | Latest           | Broken      | Game works but has some exceptions in the log and menu might not be working, but intro skipping works                         | 0.4.0              |
+| [Untitled Goose Game]                      | 1.1.4            | Broken      | Soft restart breaks GUI, NullReferenceException when clicking the game's own reset button, see #13                            | 0.5.1              |
+| [YuraYura! Tidying up the tilting tower!]  | 1.0              | Desync      | Sometimes the TAS will sync (boulders fall in correct place, correct positioning of the maid), sometimes it will not          | 0.5.1              |
 
 [Baldi's Basics in Education and Learning]: https://basically-games.itch.io/baldis-basics
 [Bubble Jcat]: https://joysugamu.itch.io/bubble-jcat

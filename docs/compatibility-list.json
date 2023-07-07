@@ -3,7 +3,7 @@
         "Game": "[Baldi's Basics in Education and Learning]",
         "Game Version": "1.4.3",
         "Status": "Broken",
-        "Notes": "Inputs do not work after soft restarting, see #186",
+        "Notes": "Inputs do not work in-game after soft restarting, see #186",
         "UniTAS Version": "0.5.1"
     },
     {
@@ -16,8 +16,8 @@
     {
         "Game": "[Cat Quest]",
         "Game Version": "1.2.10",
-        "Status": "Perfect",
-        "Notes": "",
+        "Status": "Good/Broken",
+        "Notes": "NullReferenceException after soft restart related to initializing GOG Galaxy, keyboard input does not work, see #186 and #233",
         "UniTAS Version": "0.5.1"
     },
     {
@@ -31,7 +31,7 @@
         "Game": "[Cuphead]",
         "Game Version": "1.3.2",
         "Status": "Broken",
-        "Notes": "AssetBundle issue on soft restart resulting in permanent black screen, see #11 and #232",
+        "Notes": "Game freezes on invoking completion event after soft restart, see #11",
         "UniTAS Version": "0.5.1"
     },
     {
@@ -52,7 +52,7 @@
         "Game": "[Doki Doki Literature Club Plus]",
         "Game Version": "Latest",
         "Status": "Broken",
-        "Notes": "AssetBundle issue on soft restart, see #232",
+        "Notes": "Coroutine issue on soft restart, keyboard input does not work, see #234",
         "UniTAS Version": "0.5.1"
     },
     {
