@@ -7,9 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # [Unreleased]
 
+## Fixed
+
+### Games
+
+- Fixed Cat Quest not being TASable due to a bug in UniTAS
+
+### Compatibility
+
+- Fixed some games using switch statement skips over UniTAS tracking the end of static constructors
+
 ## Changed
 
-- Stopped setting unity running in background to false
+### UniTAS
+
+- Stopped setting unity running in background to false (this was causing issues with some games when you tab out)
 
 # [v0.5.0] - 2023-07-04
 
