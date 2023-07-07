@@ -234,7 +234,19 @@ public class MonoBehaviourPatch : PreloadPatcher
                     // if the return type isn't void, we need to return a default value
                     if (foundMethod.ReturnType != assembly.MainModule.TypeSystem.Void)
                     {
-                        il.InsertBefore(firstInstruction, il.Create(OpCodes.Ldnull));
+                        // if value type, we need to return a default value
+                        if (foundMethod.ReturnType.IsValueType)
+                        {
+                            var local = new VariableDefinition(foundMethod.ReturnType);
+                            il.Body.Variables.Add(local);
+                            il.InsertBefore(firstInstruction, il.Create(OpCodes.Ldloca_S, local));
+                            il.InsertBefore(firstInstruction, il.Create(OpCodes.Initobj, foundMethod.ReturnType));
+                            il.InsertBefore(firstInstruction, il.Create(OpCodes.Ldloc_S, local));
+                        }
+                        else
+                        {
+                            il.InsertBefore(firstInstruction, il.Create(OpCodes.Ldnull));
+                        }
                     }
 
                     il.InsertBefore(firstInstruction, il.Create(OpCodes.Ret));
