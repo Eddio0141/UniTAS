@@ -59,6 +59,19 @@ public static class ILCodeUtils
             if (instruction.Operand == oldDest)
             {
                 instruction.Operand = newDest;
+                continue;
+            }
+
+            // switch
+            if (instruction.Operand is Instruction[] instructionsArray)
+            {
+                for (var i = 0; i < instructionsArray.Length; i++)
+                {
+                    if (instructionsArray[i] == oldDest)
+                    {
+                        instructionsArray[i] = newDest;
+                    }
+                }
             }
         }
     }
