@@ -3,43 +3,43 @@
         "Game": "[Baldi's Basics in Education and Learning]",
         "Game Version": "1.4.3",
         "Status": "Broken",
-        "Notes": "Game freezes on soft restart when running a TAS due to resetting a static field in Rewired",
-        "UniTAS Version": "0.4.0"
+        "Notes": "Inputs do not work after soft restarting, see #186",
+        "UniTAS Version": "0.5.1"
     },
     {
         "Game": "[Bubble Jcat]",
         "Game Version": "Latest",
         "Status": "Perfect",
-        "Notes": null,
-        "UniTAS Version": "0.4.0"
+        "Notes": "",
+        "UniTAS Version": "0.5.1"
     },
     {
         "Game": "[Cat Quest]",
         "Game Version": "1.2.10",
-        "Status": "Broken",
-        "Notes": "Game freezes on soft restart when running a TAS due to resetting a static field in Rewired",
-        "UniTAS Version": "0.4.0"
+        "Status": "Perfect",
+        "Notes": "",
+        "UniTAS Version": "0.5.1"
     },
     {
         "Game": "[Cat Quest II]",
         "Game Version": "1.7.6",
         "Status": "Broken",
         "Notes": "NullReferenceException on game start, permanent loading screen",
-        "UniTAS Version": "0.4.0"
+        "UniTAS Version": "0.5.1"
     },
     {
         "Game": "[Cuphead]",
         "Game Version": "1.3.2",
         "Status": "Broken",
-        "Notes": "NullReferenceException on soft restart when running a TAS, permanent black screen",
-        "UniTAS Version": "0.4.0"
+        "Notes": "AssetBundle issue on soft restart resulting in permanent black screen, see #11 and #232",
+        "UniTAS Version": "0.5.1"
     },
     {
         "Game": "[Deepest Sword]",
         "Game Version": "0.1.5c",
-        "Status": "Broken",
-        "Notes": "ArgumentException when running a TAS, can be fully TAS'd but will crash randomly",
-        "UniTAS Version": "0.4.0"
+        "Status": "Perfect",
+        "Notes": "",
+        "UniTAS Version": "0.5.1"
     },
     {
         "Game": "[Do It For Me]",
@@ -49,60 +49,67 @@
         "UniTAS Version": "0.3.0"
     },
     {
+        "Game": "[Doki Doki Literature Club Plus]",
+        "Game Version": "Latest",
+        "Status": "Broken",
+        "Notes": "AssetBundle issue on soft restart, see #232",
+        "UniTAS Version": "0.5.1"
+    },
+    {
         "Game": "[Hololive Isekai]",
         "Game Version": "0.3",
         "Status": "Good",
         "Notes": "NullReferenceException shows rarely when running a TAS at an unknown moment in the game",
-        "UniTAS Version": "0.4.0"
+        "UniTAS Version": "0.5.1"
     },
     {
         "Game": "[HuniePop]",
         "Game Version": "1.2.0",
-        "Status": "Broken",
-        "Notes": "Game crashes with a memory access violation on soft restart when running a TAS",
-        "UniTAS Version": "0.4.0"
+        "Status": "Perfect",
+        "Notes": "",
+        "UniTAS Version": "0.5.1"
     },
     {
         "Game": "[It Steals]",
         "Game Version": "Latest",
         "Status": "Perfect",
-        "Notes": null,
-        "UniTAS Version": "0.4.0"
+        "Notes": "",
+        "UniTAS Version": "0.5.1"
     },
     {
         "Game": "[Keep Talking and Nobody Explodes]",
         "Game Version": "1.9.24",
-        "Status": "Broken",
-        "Notes": "IndexOutOfRangeException and NullReferenceException on soft restart when running a TAS",
-        "UniTAS Version": "0.4.0"
+        "Status": "Good",
+        "Notes": "NullReferenceException on soft restart, see #221",
+        "UniTAS Version": "0.5.1"
     },
     {
         "Game": "[NEEDY STREAMER OVERLOAD]",
         "Game Version": "Latest",
-        "Status": "Broken",
-        "Notes": "Game freezes on soft restart when running a TAS due to resetting a static field in Rewired",
-        "UniTAS Version": "0.4.0"
+        "Status": "Good/Broken",
+        "Notes": "Keyboard input does not work, see #186",
+        "UniTAS Version": "0.5.1"
     },
     {
         "Game": "[PlateUp!]",
         "Game Version": "1.0.5",
         "Status": "Broken",
-        "Notes": "Game crashes with IndexOutOfRangeException on soft restart when running a TAS ",
-        "UniTAS Version": "0.4.0"
+        "Notes": "ArgumentNullException on soft restart, input does not work, see #14",
+        "UniTAS Version": "0.5.1"
     },
     {
         "Game": "[Resonance of the Ocean]",
         "Game Version": "1.2.6",
         "Status": "Broken",
-        "Notes": "Permanent blue screen on soft restart when running a TAS",
-        "UniTAS Version": "0.4.0"
+        "Notes": "Permanent blue screen on soft restart when running a TAS, see #206",
+        "UniTAS Version": "0.5.1"
     },
     {
         "Game": "[Subnautica]",
         "Game Version": "70086",
         "Status": "Broken",
-        "Notes": "Permanent black screen on game start",
-        "UniTAS Version": "0.4.0"
+        "Notes": "NullReferenceException on start and soft restart in-game freezes, see #9 and #186",
+        "UniTAS Version": "0.5.1"
     },
     {
         "Game": "[ULTRAKILL]",
@@ -115,14 +122,14 @@
         "Game": "[Untitled Goose Game]",
         "Game Version": "1.1.4",
         "Status": "Broken",
-        "Notes": "Game freezes on soft restart when running a TAS due to resetting a static field in Rewired",
-        "UniTAS Version": "0.4.0"
+        "Notes": "Soft restart breaks GUI, NullReferenceException when clicking the game's own reset button, see #13",
+        "UniTAS Version": "0.5.1"
     },
     {
         "Game": "[YuraYura! Tidying up the tilting tower!]",
         "Game Version": "1.0",
-        "Status": "Perfect",
-        "Notes": null,
-        "UniTAS Version": "0.4.0"
+        "Status": "Desync",
+        "Notes": "Sometimes the TAS will sync (boulders fall in correct place, correct positioning of the maid), sometimes it will not",
+        "UniTAS Version": "0.5.1"
     }
 ]
