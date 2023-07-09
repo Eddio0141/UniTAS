@@ -2,7 +2,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using HarmonyLib;
-using UniTAS.Patcher.Interfaces.Patches.PatchGroups;
 using UniTAS.Patcher.Interfaces.Patches.PatchTypes;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.VirtualEnvironment;
@@ -15,7 +14,7 @@ using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Patches.Harmony;
 
-[MscorlibPatch(true)]
+[RawPatch]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Local")]
 [SuppressMessage("ReSharper", "RedundantAssignment")]
 public class SystemTimeOverrideModule
@@ -26,44 +25,40 @@ public class SystemTimeOverrideModule
     private static readonly ITimeEnv TimeEnv =
         ContainerStarter.Kernel.GetInstance<ITimeEnv>();
 
-    [MscorlibPatchGroup]
-    private class AllVersions
+    [HarmonyPatch(typeof(DateTime), nameof(DateTime.Now), MethodType.Getter)]
+    private class get_Now
     {
-        [HarmonyPatch(typeof(DateTime), nameof(DateTime.Now), MethodType.Getter)]
-        private class get_Now
+        private static Exception Cleanup(MethodBase original, Exception ex)
         {
-            private static Exception Cleanup(MethodBase original, Exception ex)
-            {
-                return PatchHelper.CleanupIgnoreFail(original, ex);
-            }
-
-            private static bool Prefix(ref DateTime __result)
-            {
-                if (ReverseInvoker.InnerCall())
-                    return true;
-                __result = TimeEnv.CurrentTime;
-                return false;
-            }
-
-            private static void Postfix()
-            {
-                ReverseInvoker.Return();
-            }
+            return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        [HarmonyPatch(typeof(Environment), nameof(Environment.TickCount), MethodType.Getter)]
-        private class get_TickCount
+        private static bool Prefix(ref DateTime __result)
         {
-            private static Exception Cleanup(MethodBase original, Exception ex)
-            {
-                return PatchHelper.CleanupIgnoreFail(original, ex);
-            }
+            if (ReverseInvoker.InnerCall())
+                return true;
+            __result = TimeEnv.CurrentTime;
+            return false;
+        }
 
-            private static bool Prefix(ref int __result)
-            {
-                __result = (int)(TimeEnv.RealtimeSinceStartup * 1000f);
-                return false;
-            }
+        private static void Postfix()
+        {
+            ReverseInvoker.Return();
+        }
+    }
+
+    [HarmonyPatch(typeof(Environment), nameof(Environment.TickCount), MethodType.Getter)]
+    private class get_TickCount
+    {
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static bool Prefix(ref int __result)
+        {
+            __result = (int)(TimeEnv.RealtimeSinceStartup * 1000f);
+            return false;
         }
     }
 }

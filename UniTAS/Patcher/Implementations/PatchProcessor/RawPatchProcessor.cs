@@ -19,7 +19,6 @@ public class RawPatchProcessor : Interfaces.Patches.PatchProcessor.PatchProcesso
 
     public override IEnumerable<KeyValuePair<int, Type>> ProcessModules()
     {
-        // TODO replace this later
         var pluginTypes = AccessTools.GetTypesFromAssembly(typeof(MonoBehaviourUpdateInvoker).Assembly);
 
         // list of patch groups, patch group attributes, and PatchTypes for each modules
