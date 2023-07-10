@@ -153,22 +153,6 @@ public class MonoBehaviourPatch : PreloadPatcher
         new("OnGUI", new string[0])
     };
 
-    private static readonly string[] ExcludeNamespaces =
-    {
-        // TODO remove this exclusion, i dont know why i added it
-        "TMPro",
-        "UnityEngine",
-        "Unity",
-        "UniTAS.Plugin",
-        "UniTAS.Patcher",
-        "BepInEx"
-    };
-
-    private static readonly string[] IncludeNamespaces =
-    {
-        "UnityEngine.AI"
-    };
-
     public override void Patch(ref AssemblyDefinition assembly)
     {
         var types = assembly.Modules.SelectMany(m => m.GetAllTypes());
@@ -200,65 +184,62 @@ public class MonoBehaviourPatch : PreloadPatcher
             StaticLogger.Log.LogDebug($"Patching MonoBehaviour type: {type.FullName}");
 
             // method invoke pause
-            if (!ExcludeNamespaces.Any(type.Namespace.StartsWith) || IncludeNamespaces.Any(type.Namespace.StartsWith))
+            foreach (var eventMethodPair in PauseEventMethods)
             {
-                foreach (var eventMethodPair in PauseEventMethods)
+                var eventMethodName = eventMethodPair.Key;
+
+                // try finding method with no parameters
+                var eventMethodsMatch = type.GetMethods().Where(x => x.Name == eventMethodName).ToList();
+                var foundMethod =
+                    eventMethodsMatch.FirstOrDefault(m => !m.HasParameters);
+
+                // ok try finding method with parameters one by one
+                // it doesn't matter if the method only has part of the parameters, it just matters it comes in the right order
+                if (foundMethod == null)
                 {
-                    var eventMethodName = eventMethodPair.Key;
+                    var eventMethodArgs = eventMethodPair.Value;
 
-                    // try finding method with no parameters
-                    var eventMethodsMatch = type.GetMethods().Where(x => x.Name == eventMethodName).ToList();
-                    var foundMethod =
-                        eventMethodsMatch.FirstOrDefault(m => !m.HasParameters);
-
-                    // ok try finding method with parameters one by one
-                    // it doesn't matter if the method only has part of the parameters, it just matters it comes in the right order
-                    if (foundMethod == null)
+                    for (var i = 0; i < eventMethodArgs.Length; i++)
                     {
-                        var eventMethodArgs = eventMethodPair.Value;
+                        var parameterTypes = eventMethodArgs.Take(i + 1).ToArray();
+                        foundMethod = eventMethodsMatch.FirstOrDefault(m =>
+                            m.HasParameters && m.Parameters.Select(x => x.ParameterType.FullName)
+                                .SequenceEqual(parameterTypes));
 
-                        for (var i = 0; i < eventMethodArgs.Length; i++)
-                        {
-                            var parameterTypes = eventMethodArgs.Take(i + 1).ToArray();
-                            foundMethod = eventMethodsMatch.FirstOrDefault(m =>
-                                m.HasParameters && m.Parameters.Select(x => x.ParameterType.FullName)
-                                    .SequenceEqual(parameterTypes));
-
-                            if (foundMethod != null) break;
-                        }
+                        if (foundMethod != null) break;
                     }
-
-                    if (foundMethod == null) continue;
-
-                    StaticLogger.Log.LogDebug($"Patching method for pausing execution {foundMethod.FullName}");
-
-                    var il = foundMethod.Body.GetILProcessor();
-                    var firstInstruction = il.Body.Instructions.First();
-
-                    // return early check
-                    il.InsertBefore(firstInstruction, il.Create(OpCodes.Call, pauseExecutionReference));
-                    il.InsertBefore(firstInstruction, il.Create(OpCodes.Brfalse_S, firstInstruction));
-
-                    // if the return type isn't void, we need to return a default value
-                    if (foundMethod.ReturnType != assembly.MainModule.TypeSystem.Void)
-                    {
-                        // if value type, we need to return a default value
-                        if (foundMethod.ReturnType.IsValueType)
-                        {
-                            var local = new VariableDefinition(foundMethod.ReturnType);
-                            il.Body.Variables.Add(local);
-                            il.InsertBefore(firstInstruction, il.Create(OpCodes.Ldloca_S, local));
-                            il.InsertBefore(firstInstruction, il.Create(OpCodes.Initobj, foundMethod.ReturnType));
-                            il.InsertBefore(firstInstruction, il.Create(OpCodes.Ldloc_S, local));
-                        }
-                        else
-                        {
-                            il.InsertBefore(firstInstruction, il.Create(OpCodes.Ldnull));
-                        }
-                    }
-
-                    il.InsertBefore(firstInstruction, il.Create(OpCodes.Ret));
                 }
+
+                if (foundMethod == null) continue;
+
+                StaticLogger.Log.LogDebug($"Patching method for pausing execution {foundMethod.FullName}");
+
+                var il = foundMethod.Body.GetILProcessor();
+                var firstInstruction = il.Body.Instructions.First();
+
+                // return early check
+                il.InsertBefore(firstInstruction, il.Create(OpCodes.Call, pauseExecutionReference));
+                il.InsertBefore(firstInstruction, il.Create(OpCodes.Brfalse_S, firstInstruction));
+
+                // if the return type isn't void, we need to return a default value
+                if (foundMethod.ReturnType != assembly.MainModule.TypeSystem.Void)
+                {
+                    // if value type, we need to return a default value
+                    if (foundMethod.ReturnType.IsValueType)
+                    {
+                        var local = new VariableDefinition(foundMethod.ReturnType);
+                        il.Body.Variables.Add(local);
+                        il.InsertBefore(firstInstruction, il.Create(OpCodes.Ldloca_S, local));
+                        il.InsertBefore(firstInstruction, il.Create(OpCodes.Initobj, foundMethod.ReturnType));
+                        il.InsertBefore(firstInstruction, il.Create(OpCodes.Ldloc_S, local));
+                    }
+                    else
+                    {
+                        il.InsertBefore(firstInstruction, il.Create(OpCodes.Ldnull));
+                    }
+                }
+
+                il.InsertBefore(firstInstruction, il.Create(OpCodes.Ret));
             }
 
             // event methods invoke
