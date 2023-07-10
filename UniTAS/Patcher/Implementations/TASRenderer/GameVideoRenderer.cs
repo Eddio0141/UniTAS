@@ -41,7 +41,7 @@ public class GameVideoRenderer : VideoRenderer
 
         if (!ffmpegProcessFactory.Available)
         {
-            _logger.LogError("ffmpeg not available");
+            _logger.LogWarning("ffmpeg not available");
             Available = false;
             return;
         }
