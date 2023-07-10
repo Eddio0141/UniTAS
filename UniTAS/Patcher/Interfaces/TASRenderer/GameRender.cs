@@ -67,7 +67,7 @@ public class GameRender : IGameRender, IOnLastUpdateActual
 
         if (_videoRenderer == null)
         {
-            _logger.LogError("No video renderer available");
+            _logger.LogWarning("No video renderer available");
             return;
         }
 
@@ -75,7 +75,7 @@ public class GameRender : IGameRender, IOnLastUpdateActual
 
         if (audioRenderer == null)
         {
-            _logger.LogError("No audio renderer available");
+            _logger.LogWarning("No audio renderer available");
             return;
         }
 
@@ -83,7 +83,7 @@ public class GameRender : IGameRender, IOnLastUpdateActual
 
         if (!ffmpegProcessFactory.Available)
         {
-            _logger.LogError("ffmpeg not available");
+            _logger.LogWarning("ffmpeg not available");
             return;
         }
 
