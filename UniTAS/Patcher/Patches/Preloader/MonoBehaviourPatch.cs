@@ -204,17 +204,25 @@ public class MonoBehaviourPatch : PreloadPatcher
             {
                 foreach (var eventMethodPair in PauseEventMethods)
                 {
-                    var foundMethod =
-                        type.Methods.FirstOrDefault(m => m.Name == eventMethodPair.Key && !m.HasParameters);
+                    var eventMethodName = eventMethodPair.Key;
 
+                    // try finding method with no parameters
+                    var eventMethodsMatch = type.GetMethods().Where(x => x.Name == eventMethodName).ToList();
+                    var foundMethod =
+                        eventMethodsMatch.FirstOrDefault(m => !m.HasParameters);
+
+                    // ok try finding method with parameters one by one
+                    // it doesn't matter if the method only has part of the parameters, it just matters it comes in the right order
                     if (foundMethod == null)
                     {
-                        for (var i = 0; i < eventMethodPair.Value.Length; i++)
+                        var eventMethodArgs = eventMethodPair.Value;
+
+                        for (var i = 0; i < eventMethodArgs.Length; i++)
                         {
-                            var parameterTypes = eventMethodPair.Value.Take(i + 1).ToArray();
-                            foundMethod = type.Methods.FirstOrDefault(m =>
-                                m.Name == eventMethodPair.Key && m.HasParameters &&
-                                m.Parameters.Select(x => x.ParameterType.FullName).SequenceEqual(parameterTypes));
+                            var parameterTypes = eventMethodArgs.Take(i + 1).ToArray();
+                            foundMethod = eventMethodsMatch.FirstOrDefault(m =>
+                                m.HasParameters && m.Parameters.Select(x => x.ParameterType.FullName)
+                                    .SequenceEqual(parameterTypes));
 
                             if (foundMethod != null) break;
                         }
