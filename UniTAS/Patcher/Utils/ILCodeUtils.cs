@@ -2,6 +2,7 @@ using System.Linq;
 using System.Reflection;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using Mono.Cecil.Rocks;
 using Mono.Collections.Generic;
 using MethodAttributes = Mono.Cecil.MethodAttributes;
 
@@ -26,11 +27,14 @@ public static class ILCodeUtils
 
         var invoke = assembly.MainModule.ImportReference(method);
 
+        methodDefinition.Body.SimplifyMacros();
         var firstInstruction = methodDefinition.Body.Instructions.First();
         var ilProcessor = methodDefinition.Body.GetILProcessor();
 
         // insert call before first instruction
         ilProcessor.InsertBefore(firstInstruction, ilProcessor.Create(OpCodes.Call, invoke));
+        methodDefinition.Body.OptimizeMacros();
+
         StaticLogger.Log.LogDebug(
             $"Added invoke hook to method {method.Name} of {methodDefinition.DeclaringType.FullName} invoking {method.DeclaringType?.FullName ?? "unknown"}.{method.Name}");
     }

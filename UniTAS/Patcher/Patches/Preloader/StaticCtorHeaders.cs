@@ -76,6 +76,7 @@ public class StaticCtorHeaders : PreloadPatcher
         var insertedInstructions = new List<Instruction>();
 
         // we insert call before any returns
+        staticCtor.Body.SimplifyMacros();
         var ilProcessor = staticCtor.Body.GetILProcessor();
         var instructions = staticCtor.Body.Instructions;
         var first = instructions.First();
@@ -162,6 +163,8 @@ public class StaticCtorHeaders : PreloadPatcher
 
             ilProcessor.InsertAfter(startRefInstruction, ilProcessor.Create(OpCodes.Call, patchMethodDependencyRef));
         }
+
+        staticCtor.Body.OptimizeMacros();
     }
 }
 

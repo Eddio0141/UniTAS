@@ -28,9 +28,11 @@ public class FinalizeSuppressionPatch : PreloadPatcher
         {
             var method = type.Methods.FirstOrDefault(x =>
                 x.Name == "Finalize" && !x.HasParameters && x.ReturnType.FullName == "System.Void");
-            if (method is not { HasBody: true } || method.Body.Instructions.Count == 0) continue;
+            if (method is not { HasBody: true }) continue;
 
             StaticLogger.Log.LogDebug($"Patching finalizer of {type.FullName}.Finalize");
+
+            method.Body.SimplifyMacros();
 
             var instructions = method.Body.Instructions;
             var ilProcessor = method.Body.GetILProcessor();
@@ -45,6 +47,8 @@ public class FinalizeSuppressionPatch : PreloadPatcher
                 ilProcessor.Create(OpCodes.Call, disableFinalizeInvokeReference));
             ilProcessor.InsertBefore(firstInstruction, ilProcessor.Create(OpCodes.Brfalse, firstInstruction));
             ilProcessor.InsertBefore(firstInstruction, ilProcessor.Create(OpCodes.Ret));
+
+            method.Body.OptimizeMacros();
         }
     }
 }
