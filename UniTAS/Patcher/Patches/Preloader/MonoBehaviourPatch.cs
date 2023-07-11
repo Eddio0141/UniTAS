@@ -210,10 +210,11 @@ public class MonoBehaviourPatch : PreloadPatcher
                     }
                 }
 
-                if (foundMethod == null) continue;
+                if (foundMethod is not { HasBody: true }) continue;
 
                 StaticLogger.Log.LogDebug($"Patching method for pausing execution {foundMethod.FullName}");
 
+                foundMethod.Body.SimplifyMacros();
                 var il = foundMethod.Body.GetILProcessor();
                 var firstInstruction = il.Body.Instructions.First();
 
@@ -240,6 +241,8 @@ public class MonoBehaviourPatch : PreloadPatcher
                 }
 
                 il.InsertBefore(firstInstruction, il.Create(OpCodes.Ret));
+
+                foundMethod.Body.OptimizeMacros();
             }
 
             // event methods invoke
@@ -250,8 +253,9 @@ public class MonoBehaviourPatch : PreloadPatcher
 
             // update skip check
             var updateMethod = type.Methods.FirstOrDefault(m => m.Name == "Update" && !m.HasParameters);
-            if (updateMethod == null) continue;
+            if (updateMethod is not { HasBody: true }) continue;
 
+            updateMethod.Body.SimplifyMacros();
             var updateIl = updateMethod.Body.GetILProcessor();
             var updateFirstInstruction = updateIl.Body.Instructions.First();
 
@@ -266,6 +270,9 @@ public class MonoBehaviourPatch : PreloadPatcher
             }
 
             updateIl.InsertBefore(updateFirstInstruction, updateIl.Create(OpCodes.Ret));
+
+            updateMethod.Body.OptimizeMacros();
+
             StaticLogger.Log.LogDebug("Patched Update method for skipping execution");
         }
     }
@@ -274,12 +281,15 @@ public class MonoBehaviourPatch : PreloadPatcher
         MethodBase eventInvoker)
     {
         var method = type.Methods.FirstOrDefault(m => !m.IsStatic && m.Name == methodName && !m.HasParameters);
-        if (method == null) return;
+        if (method is not { HasBody: true }) return;
 
+        method.Body.SimplifyMacros();
         var ilProcessor = method.Body.GetILProcessor();
         var reference = assembly.MainModule.ImportReference(eventInvoker);
 
         ilProcessor.InsertBefore(method.Body.Instructions.First(), ilProcessor.Create(OpCodes.Call, reference));
+
+        method.Body.OptimizeMacros();
 
         StaticLogger.Log.LogDebug(
             $"Successfully patched {methodName} for type {type.FullName} for updates, invokes {eventInvoker.Name}");
