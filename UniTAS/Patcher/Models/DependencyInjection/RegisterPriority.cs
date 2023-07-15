@@ -6,6 +6,7 @@ public enum RegisterPriority
     TimeEnv,
     MovieRunner,
     Default,
+    FrameAdvancing,
     ToolBar,
     InfoPrintAndWelcome
 }

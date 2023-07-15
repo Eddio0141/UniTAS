@@ -4,6 +4,7 @@ using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Customization;
 using UniTAS.Patcher.Services.FrameAdvancing;
+using UniTAS.Patcher.Services.Logging;
 using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations.FrameAdvancing;
@@ -12,7 +13,6 @@ namespace UniTAS.Patcher.Implementations.FrameAdvancing;
 public class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional
 {
     private bool _active;
-    private bool _wasActive;
 
     private uint _pendingPauseFrames;
 
@@ -40,17 +40,15 @@ public class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional
     {
         if (!_active)
         {
-            if (!_wasActive) return;
-            _wasActive = false;
-            // unpause if haven't done yet
+            // resume game
             _monoBehaviourController.PausedExecution = false;
-
             return;
         }
 
         // wait for frames until pause
         if (_pendingPauseFrames > 0)
         {
+            _monoBehaviourController.PausedExecution = false;
             _pendingPauseFrames--;
             return;
         }
