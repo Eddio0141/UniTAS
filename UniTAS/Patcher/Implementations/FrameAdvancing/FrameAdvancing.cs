@@ -4,7 +4,6 @@ using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Customization;
 using UniTAS.Patcher.Services.FrameAdvancing;
-using UniTAS.Patcher.Services.Logging;
 using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations.FrameAdvancing;
@@ -34,6 +33,11 @@ public class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional
         }
 
         _pendingPauseFrames = frames;
+    }
+
+    public void Resume()
+    {
+        _active = false;
     }
 
     public void UpdateUnconditional()
