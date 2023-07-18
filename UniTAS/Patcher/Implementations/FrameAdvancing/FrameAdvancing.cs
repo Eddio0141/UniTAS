@@ -24,7 +24,7 @@ public class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, IOnFixedU
 
     private readonly Action _unpauseActual;
 
-    private FrameAdvanceMode _frameAdvanceMode;
+    private FrameAdvanceMode _frameAdvanceMode = FrameAdvanceMode.Update;
 
     private readonly IMonoBehaviourController _monoBehaviourController;
     private readonly ISyncFixedUpdateCycle _syncFixedUpdate;
@@ -56,9 +56,9 @@ public class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, IOnFixedU
         _frameAdvanceMode = frameAdvanceMode;
     }
 
-    public void Resume()
+    public void TogglePause()
     {
-        _active = false;
+        _active = !_active;
     }
 
     // unpause depends on syncing update, and this class needs to run AFTER the sync update
