@@ -12,7 +12,7 @@ using UnityEngine;
 namespace UniTAS.Patcher.Implementations.FrameAdvancing;
 
 [Singleton(RegisterPriority.FrameAdvancing)]
-public class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional
+public class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, IOnFixedUpdateUnconditional
 {
     private bool _active;
 
@@ -20,9 +20,11 @@ public class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional
 
     private bool _paused;
     private double _updateRestoreOffset;
-    private double _currentFrameTime;
     private bool _pendingUnpause;
+
     private readonly Action _unpauseActual;
+
+    private FrameAdvanceMode _frameAdvanceMode;
 
     private readonly IMonoBehaviourController _monoBehaviourController;
     private readonly ISyncFixedUpdateCycle _syncFixedUpdate;
@@ -41,7 +43,7 @@ public class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional
         _unpauseActual = UnpauseActual;
     }
 
-    public void FrameAdvance(uint frames)
+    public void FrameAdvance(uint frames, FrameAdvanceMode frameAdvanceMode)
     {
         if (!_active)
         {
@@ -51,6 +53,7 @@ public class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional
         }
 
         _pendingPauseFrames = frames;
+        _frameAdvanceMode = frameAdvanceMode;
     }
 
     public void Resume()
@@ -60,6 +63,13 @@ public class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional
 
     // unpause depends on syncing update, and this class needs to run AFTER the sync update
     public void UpdateUnconditional()
+    {
+        if ((_frameAdvanceMode & FrameAdvanceMode.Update) == 0) return;
+
+        FrameAdvanceUpdate();
+    }
+
+    private void FrameAdvanceUpdate()
     {
         // if unpause -> pause, it needs to wait for unpause operation to finish since that takes time
         if (_pendingUnpause) return;
@@ -88,7 +98,6 @@ public class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional
         Pause();
     }
 
-    // TODO pause timing choose via frame advance method
     private void Pause()
     {
         if (_paused) return;
@@ -99,7 +108,6 @@ public class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional
         // the pause happens before the updates
 
         _updateRestoreOffset = UpdateInvokeOffset.Offset;
-        _currentFrameTime = _timeEnv.FrameTime;
         _monoBehaviourController.PausedExecution = true;
     }
 
@@ -110,7 +118,17 @@ public class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional
         // TODO also remove this log
         StaticLogger.Log.LogDebug("Unpause frame advance");
 
-        _syncFixedUpdate.OnSync(_unpauseActual, _updateRestoreOffset + _currentFrameTime);
+        var nextUpdateOffset = _updateRestoreOffset + _timeEnv.FrameTime;
+
+        // are we going to pause at fixed update next?
+        if (nextUpdateOffset > Time.fixedDeltaTime && (_frameAdvanceMode & FrameAdvanceMode.FixedUpdate) != 0)
+        {
+            // don't bother setting target offset then, since update isn't happening
+            nextUpdateOffset = _updateRestoreOffset;
+        }
+        // otherwise, target restore is before pause + current ft, where current ft can be changed any time by user so this is good
+
+        _syncFixedUpdate.OnSync(_unpauseActual, nextUpdateOffset);
     }
 
     private void UnpauseActual()
@@ -119,4 +137,17 @@ public class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional
         _paused = false;
         _pendingUnpause = false;
     }
+
+    public void FixedUpdateUnconditional()
+    {
+        if ((_frameAdvanceMode & FrameAdvanceMode.FixedUpdate) == 0) return;
+        FrameAdvanceUpdate();
+    }
+}
+
+[Flags]
+public enum FrameAdvanceMode
+{
+    Update = 1,
+    FixedUpdate = 2
 }
