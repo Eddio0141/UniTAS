@@ -5,6 +5,7 @@ using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Customization;
 using UniTAS.Patcher.Services.FrameAdvancing;
+using UniTAS.Patcher.Services.VirtualEnvironment;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 
@@ -19,14 +20,16 @@ public class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional
 
     private bool _paused;
     private double _updateRestoreOffset;
+    private double _currentFrameTime;
     private bool _pendingUnpause;
     private readonly Action _unpauseActual;
 
     private readonly IMonoBehaviourController _monoBehaviourController;
     private readonly ISyncFixedUpdateCycle _syncFixedUpdate;
+    private readonly ITimeEnv _timeEnv;
 
     public FrameAdvancing(IMonoBehaviourController monoBehaviourController, IBinds binds,
-        ISyncFixedUpdateCycle syncFixedUpdate)
+        ISyncFixedUpdateCycle syncFixedUpdate, ITimeEnv timeEnv)
     {
         // TODO clean these binds up
         binds.Create(new("FrameAdvance", KeyCode.Slash));
@@ -34,6 +37,7 @@ public class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional
 
         _monoBehaviourController = monoBehaviourController;
         _syncFixedUpdate = syncFixedUpdate;
+        _timeEnv = timeEnv;
         _unpauseActual = UnpauseActual;
     }
 
@@ -89,10 +93,13 @@ public class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional
     {
         if (_paused) return;
         _paused = true;
+        // TODO remove this log
+        StaticLogger.Log.LogDebug("Pause frame advance");
 
         // the pause happens before the updates
 
         _updateRestoreOffset = UpdateInvokeOffset.Offset;
+        _currentFrameTime = _timeEnv.FrameTime;
         _monoBehaviourController.PausedExecution = true;
     }
 
@@ -100,8 +107,10 @@ public class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional
     {
         if (!_paused || _pendingUnpause) return;
         _pendingUnpause = true;
+        // TODO also remove this log
+        StaticLogger.Log.LogDebug("Unpause frame advance");
 
-        _syncFixedUpdate.OnSync(_unpauseActual, _updateRestoreOffset);
+        _syncFixedUpdate.OnSync(_unpauseActual, _updateRestoreOffset + _currentFrameTime);
     }
 
     private void UnpauseActual()
