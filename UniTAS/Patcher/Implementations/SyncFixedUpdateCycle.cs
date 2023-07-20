@@ -13,7 +13,7 @@ namespace UniTAS.Patcher.Implementations;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 [Singleton]
-public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditional
+public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditional, IOnFixedUpdateUnconditional
 {
     private readonly Queue<SyncData> _pendingSync = new();
     private SyncData _pendingCallback;
@@ -26,6 +26,9 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
 
     private readonly double _tolerance;
 
+    // increase in FixedUpdate, reset to 0 in Update
+    private uint _fixedUpdateIndex;
+
     public SyncFixedUpdateCycle(ITimeEnv timeEnv, ITimeWrapper timeWrapper, ILogger logger)
     {
         _timeEnv = timeEnv;
@@ -35,27 +38,53 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
         _tolerance = _timeWrapper.IntFPSOnly ? 1.0 / int.MaxValue : float.Epsilon;
     }
 
+    /* probably an obvious issue but setting unity ft to something that won't cause it to have more than
+       1 FixedUpdate and target fixed update index to > 1 is going to wait for sync forever
+       
+       probably won't handle cuz whoever uses this needs to do it properly lmao
+     */
+    public void FixedUpdateUnconditional()
+    {
+        _fixedUpdateIndex++;
+
+        // only check if time left and index match
+        if (_pendingCallback == null || _pendingCallback.FixedUpdateIndex != _fixedUpdateIndex) return;
+
+        var seconds = TargetSecondsAndActualSeconds();
+        var targetSeconds = seconds.Item1;
+        var actualSeconds = seconds.Item2;
+
+        if (!IsSyncHappening(targetSeconds, actualSeconds)) return;
+
+        // syncing, invoke pending callback
+        InvokePendingCallback();
+
+        if (_pendingSync.Count == 0)
+        {
+            // no more jobs? restore ft
+            RestoreFt();
+        }
+    }
+
     public void UpdateUnconditional()
     {
+        _fixedUpdateIndex = 0;
+
         if (_processingCallback != null)
         {
             // keeps setting until matches the target
             _logger.LogDebug(
                 $"re-setting frame time, didn't match target, offset: {UpdateInvokeOffset.Offset}");
-            SetFrameTime();
+            SetFrameTimeAndHandlePendingCallback();
         }
-        else if (_pendingCallback != null)
+        else if (_pendingCallback is { FixedUpdateIndex: 0 })
         {
-            _pendingCallback.Callback();
-            _logger.LogDebug("Invoking pending callback");
-            _pendingCallback = null;
+            InvokePendingCallback();
 
-            if (_pendingSync.Count == 0 && _restoreFrametime != 0)
+            if (_pendingSync.Count == 0)
             {
-                _logger.LogDebug($"Restoring frame time to {_restoreFrametime}");
-                _timeEnv.FrameTime = _restoreFrametime;
-
-                _restoreFrametime = 0;
+                // we have finished all of our pending syncs, restore ft
+                RestoreFt();
             }
             else
             {
@@ -68,14 +97,14 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
         }
     }
 
-    public void OnSync(Action callback, double invokeOffset)
+    public void OnSync(Action callback, double invokeOffset, uint fixedUpdateIndex = 0)
     {
         // make the offset within range of 0..fixedDeltaTime
         invokeOffset %= Time.fixedDeltaTime;
         if (invokeOffset < 0)
             invokeOffset += Time.fixedDeltaTime;
         _logger.LogDebug($"Added on sync callback with invoke offset: {invokeOffset}");
-        _pendingSync.Enqueue(new(callback, invokeOffset));
+        _pendingSync.Enqueue(new(callback, invokeOffset, fixedUpdateIndex));
     }
 
     private void ProcessQueue()
@@ -90,13 +119,24 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
             $"Fixed delta time: {Time.fixedDeltaTime}, invoke offset: {_processingCallback.InvokeOffset}, update invoke offset: {UpdateInvokeOffset.Offset}");
 
         // check immediate return
+        // only applies if matching FixedUpdate index
         var actualSeconds = TargetSecondsAndActualSeconds().Item2;
-        if (actualSeconds < _tolerance)
+        if (actualSeconds < _tolerance && _processingCallback.FixedUpdateIndex == _fixedUpdateIndex)
         {
-            _logger.LogDebug("Immediate sync fixed update callback");
-            _processingCallback.Callback();
-            _processingCallback = null;
-            ProcessQueue();
+            _logger.LogDebug(
+                $"Immediate sync fixed update callback, sync fixed update index: {_processingCallback.FixedUpdateIndex}, current: {_fixedUpdateIndex}");
+            if (_processingCallback.FixedUpdateIndex == _fixedUpdateIndex)
+            {
+                _processingCallback.Callback();
+                _processingCallback = null;
+                ProcessQueue();
+            }
+            else
+            {
+                // wait for fixed updates to do its thing
+                SwitchToPendingCallback();
+            }
+
             return;
         }
 
@@ -106,7 +146,7 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
             _logger.LogDebug($"Storing original frame time for later restore: {_restoreFrametime}");
         }
 
-        SetFrameTime();
+        SetFrameTimeAndHandlePendingCallback();
     }
 
     private double GetTargetSeconds()
@@ -116,7 +156,6 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
         var futureOffset = UpdateInvokeOffset.Offset + _timeEnv.FrameTime;
         futureOffset %= Time.fixedDeltaTime;
         var target = Time.fixedDeltaTime - futureOffset + _processingCallback.InvokeOffset;
-        // var target = Time.fixedDeltaTime - Patcher.Shared.UpdateInvokeOffset.Offset + _processingCallback.InvokeOffset;
         return target % Time.fixedDeltaTime;
     }
 
@@ -128,7 +167,8 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
         return new(targetSeconds, actualSeconds);
     }
 
-    private void SetFrameTime()
+    // only use in Update!
+    private void SetFrameTimeAndHandlePendingCallback()
     {
         var seconds = TargetSecondsAndActualSeconds();
         var targetSeconds = seconds.Item1;
@@ -141,7 +181,7 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
         _timeEnv.FrameTime = (float)actualSeconds;
 
         // check rounding
-        if (targetSeconds - actualSeconds > _tolerance)
+        if (IsSyncHappening(targetSeconds, actualSeconds))
         {
             _logger.LogDebug(
                 $"Didn't match target sync offset, difference: {targetSeconds - actualSeconds}, waiting for next frame");
@@ -149,9 +189,33 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
         else
         {
             _logger.LogDebug("Sync happening in next frame, pending restore frame time");
-            _pendingCallback = _processingCallback;
-            _processingCallback = null;
+            SwitchToPendingCallback();
         }
+    }
+
+    private bool IsSyncHappening(double targetSeconds, double actualSeconds)
+    {
+        return targetSeconds - actualSeconds > _tolerance;
+    }
+
+    private void SwitchToPendingCallback()
+    {
+        _pendingCallback = _processingCallback;
+        _processingCallback = null;
+    }
+
+    private void InvokePendingCallback()
+    {
+        _logger.LogDebug("Invoking pending callback");
+        _pendingCallback.Callback();
+        _pendingCallback = null;
+    }
+
+    private void RestoreFt()
+    {
+        _logger.LogDebug($"Restoring frame time to {_restoreFrametime}");
+        _timeEnv.FrameTime = _restoreFrametime;
+        _restoreFrametime = 0;
     }
 
     private class SyncData
@@ -159,6 +223,7 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
         private double _timeLeft;
         public Action Callback { get; }
         public double InvokeOffset { get; }
+        public uint FixedUpdateIndex { get; }
 
         public double TimeLeft
         {
@@ -173,10 +238,11 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
 
         public bool TimeLeftSet { get; private set; }
 
-        public SyncData(Action callback, double invokeOffset)
+        public SyncData(Action callback, double invokeOffset, uint fixedUpdateIndex)
         {
             Callback = callback;
             InvokeOffset = invokeOffset;
+            FixedUpdateIndex = fixedUpdateIndex;
         }
 
         public void ProgressOffset(double offset) => _timeLeft -= offset;
