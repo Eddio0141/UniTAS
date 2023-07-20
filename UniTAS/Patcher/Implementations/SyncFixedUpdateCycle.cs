@@ -77,8 +77,11 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
                 $"re-setting frame time, didn't match target, offset: {UpdateInvokeOffset.Offset}");
             SetFrameTimeAndHandlePendingCallback();
         }
-        else if (_pendingCallback is { FixedUpdateIndex: 0 })
+        else if (_pendingCallback != null)
         {
+            // push this callback to FixedUpdate to handle
+            if (_pendingCallback.FixedUpdateIndex != 0) return;
+
             InvokePendingCallback();
 
             if (_pendingSync.Count == 0)
