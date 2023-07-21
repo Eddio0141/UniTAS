@@ -17,6 +17,7 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
 {
     private readonly Queue<SyncData> _pendingSync = new();
     private SyncData _pendingCallback;
+    private uint _pendingFixedUpdateCount;
     private SyncData _processingCallback;
     private double _restoreFrametime;
 
@@ -41,11 +42,6 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
         _tolerance = _timeWrapper.IntFPSOnly ? 1.0 / int.MaxValue : float.Epsilon;
     }
 
-    /* probably an obvious issue but setting unity ft to something that won't cause it to have more than
-       1 FixedUpdate and target fixed update index to > 1 is going to wait for sync forever
-       
-       probably won't handle cuz whoever uses this needs to do it properly lmao
-     */
     public void FixedUpdateUnconditional()
     {
         if (!_monoBehaviourController.PausedExecution)
@@ -53,14 +49,11 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
             _fixedUpdateIndex++;
         }
 
-        // only check if time left and index match
-        if (_pendingCallback == null || _pendingCallback.FixedUpdateIndex != _fixedUpdateIndex) return;
+        // is it for fixed update to handle this
+        if (_pendingCallback == null || _pendingCallback.FixedUpdateIndex == 0) return;
 
-        var seconds = TargetSecondsAndActualSeconds(_pendingCallback);
-        var targetSeconds = seconds.Item1;
-        var actualSeconds = seconds.Item2;
-
-        if (!IsSyncHappening(targetSeconds, actualSeconds)) return;
+        _pendingFixedUpdateCount--;
+        if (_pendingFixedUpdateCount > 0) return;
 
         // syncing, invoke pending callback
         InvokePendingCallback();
@@ -115,7 +108,8 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
         invokeOffset %= Time.fixedDeltaTime;
         if (invokeOffset < 0)
             invokeOffset += Time.fixedDeltaTime;
-        _logger.LogDebug($"Added on sync callback with invoke offset: {invokeOffset}");
+        _logger.LogDebug(
+            $"Added on sync callback with invoke offset: {invokeOffset}, fixed update index: {fixedUpdateIndex}");
         _pendingSync.Enqueue(new(callback, invokeOffset, fixedUpdateIndex));
     }
 
@@ -133,7 +127,7 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
         // check immediate return
         // only applies if matching FixedUpdate index
         var actualSeconds = TargetSecondsAndActualSeconds(_processingCallback).Item2;
-        if (actualSeconds < _tolerance && _processingCallback.FixedUpdateIndex == _fixedUpdateIndex)
+        if (actualSeconds < _tolerance)
         {
             _logger.LogDebug(
                 $"Immediate sync fixed update callback, sync fixed update index: {_processingCallback.FixedUpdateIndex}, current: {_fixedUpdateIndex}");
@@ -200,7 +194,7 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
         }
         else
         {
-            _logger.LogDebug("Sync happening in next frame, pending restore frame time");
+            _logger.LogDebug("Sync happening in next update, pending restore frame time");
             SwitchToPendingCallback();
         }
     }
@@ -214,6 +208,8 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
     {
         _pendingCallback = _processingCallback;
         _processingCallback = null;
+        // in case of fixed update callbacks, the ft is already set so we just need to wait for fixed updates
+        _pendingFixedUpdateCount = _pendingCallback.FixedUpdateIndex;
     }
 
     private void InvokePendingCallback()
