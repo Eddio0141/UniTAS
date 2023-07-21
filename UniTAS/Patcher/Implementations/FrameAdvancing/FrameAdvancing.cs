@@ -1,6 +1,9 @@
 using System;
+using System.Collections.Generic;
+using UniTAS.Patcher.Interfaces.Coroutine;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
+using UniTAS.Patcher.Models.Coroutine;
 using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Customization;
@@ -19,6 +22,8 @@ public class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, IOnFixedU
     private uint _pendingPauseFrames;
 
     private bool _paused;
+    private bool _pendingPause;
+
     private double _updateRestoreOffset;
     private uint _fixedUpdateRestoreIndex;
     private uint _fixedUpdateIndex;
@@ -31,9 +36,10 @@ public class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, IOnFixedU
     private readonly IMonoBehaviourController _monoBehaviourController;
     private readonly ISyncFixedUpdateCycle _syncFixedUpdate;
     private readonly ITimeEnv _timeEnv;
+    private readonly ICoroutine _coroutine;
 
     public FrameAdvancing(IMonoBehaviourController monoBehaviourController, IBinds binds,
-        ISyncFixedUpdateCycle syncFixedUpdate, ITimeEnv timeEnv)
+        ISyncFixedUpdateCycle syncFixedUpdate, ITimeEnv timeEnv, ICoroutine coroutine)
     {
         // TODO clean these binds up
         binds.Create(new("FrameAdvance", KeyCode.Slash));
@@ -42,6 +48,7 @@ public class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, IOnFixedU
         _monoBehaviourController = monoBehaviourController;
         _syncFixedUpdate = syncFixedUpdate;
         _timeEnv = timeEnv;
+        _coroutine = coroutine;
         _unpauseActual = UnpauseActual;
     }
 
@@ -110,25 +117,34 @@ public class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, IOnFixedU
             return;
         }
 
-        Pause(update);
+        _coroutine.Start(Pause(update));
     }
 
-    private void Pause(bool update)
+    private IEnumerator<CoroutineWait> Pause(bool update)
     {
-        if (_paused) return;
-        _paused = true;
+        if (_paused || _pendingPause) yield break;
+        _pendingPause = true;
         // TODO remove this log
         StaticLogger.Log.LogDebug("Pause frame advance");
 
-        // the pause happens before the updates
-
-        // are we pausing at right timing
-        if ((!update || (_frameAdvanceMode & FrameAdvanceMode.Update) == 0) &&
-            (update || (_frameAdvanceMode & FrameAdvanceMode.FixedUpdate) == 0)) return;
+        // pause at right timing, basically let the game run until reached requirement timing of pause depending on user choice
+        switch (update)
+        {
+            case true when (_frameAdvanceMode & FrameAdvanceMode.Update) == 0:
+                // update but pause mode is fixed update only
+                yield return new WaitForFixedUpdateUnconditional();
+                break;
+            case false when (_frameAdvanceMode & FrameAdvanceMode.FixedUpdate) == 0:
+                yield return new WaitForUpdateUnconditional();
+                break;
+        }
 
         _updateRestoreOffset = UpdateInvokeOffset.Offset;
         _fixedUpdateRestoreIndex = _fixedUpdateIndex;
         _monoBehaviourController.PausedExecution = true;
+
+        _paused = true;
+        _pendingPause = false;
     }
 
     private void Unpause()
