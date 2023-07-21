@@ -50,7 +50,7 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
         // only check if time left and index match
         if (_pendingCallback == null || _pendingCallback.FixedUpdateIndex != _fixedUpdateIndex) return;
 
-        var seconds = TargetSecondsAndActualSeconds();
+        var seconds = TargetSecondsAndActualSeconds(_pendingCallback);
         var targetSeconds = seconds.Item1;
         var actualSeconds = seconds.Item2;
 
@@ -123,7 +123,7 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
 
         // check immediate return
         // only applies if matching FixedUpdate index
-        var actualSeconds = TargetSecondsAndActualSeconds().Item2;
+        var actualSeconds = TargetSecondsAndActualSeconds(_processingCallback).Item2;
         if (actualSeconds < _tolerance && _processingCallback.FixedUpdateIndex == _fixedUpdateIndex)
         {
             _logger.LogDebug(
@@ -162,9 +162,9 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
         return target % Time.fixedDeltaTime;
     }
 
-    private Tuple<double, double> TargetSecondsAndActualSeconds()
+    private Tuple<double, double> TargetSecondsAndActualSeconds(SyncData syncData)
     {
-        var targetSeconds = _processingCallback.TimeLeftSet ? _processingCallback.TimeLeft : GetTargetSeconds();
+        var targetSeconds = syncData.TimeLeftSet ? syncData.TimeLeft : GetTargetSeconds();
         // unlike normal frame time, i round up
         var actualSeconds = _timeWrapper.IntFPSOnly ? 1.0 / (int)Math.Ceiling(1.0 / targetSeconds) : targetSeconds;
         return new(targetSeconds, actualSeconds);
@@ -173,7 +173,7 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
     // only use in Update!
     private void SetFrameTimeAndHandlePendingCallback()
     {
-        var seconds = TargetSecondsAndActualSeconds();
+        var seconds = TargetSecondsAndActualSeconds(_processingCallback);
         var targetSeconds = seconds.Item1;
         _processingCallback.TimeLeft = targetSeconds;
         var actualSeconds = seconds.Item2;
