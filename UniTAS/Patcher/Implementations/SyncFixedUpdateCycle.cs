@@ -23,17 +23,20 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
     private readonly ITimeEnv _timeEnv;
     private readonly ITimeWrapper _timeWrapper;
     private readonly ILogger _logger;
+    private readonly IMonoBehaviourController _monoBehaviourController;
 
     private readonly double _tolerance;
 
     // increase in FixedUpdate, reset to 0 in Update
     private uint _fixedUpdateIndex;
 
-    public SyncFixedUpdateCycle(ITimeEnv timeEnv, ITimeWrapper timeWrapper, ILogger logger)
+    public SyncFixedUpdateCycle(ITimeEnv timeEnv, ITimeWrapper timeWrapper, ILogger logger,
+        IMonoBehaviourController monoBehaviourController)
     {
         _timeEnv = timeEnv;
         _timeWrapper = timeWrapper;
         _logger = logger;
+        _monoBehaviourController = monoBehaviourController;
 
         _tolerance = _timeWrapper.IntFPSOnly ? 1.0 / int.MaxValue : float.Epsilon;
     }
@@ -45,7 +48,10 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
      */
     public void FixedUpdateUnconditional()
     {
-        _fixedUpdateIndex++;
+        if (!_monoBehaviourController.PausedExecution)
+        {
+            _fixedUpdateIndex++;
+        }
 
         // only check if time left and index match
         if (_pendingCallback == null || _pendingCallback.FixedUpdateIndex != _fixedUpdateIndex) return;
@@ -68,7 +74,10 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
 
     public void UpdateUnconditional()
     {
-        _fixedUpdateIndex = 0;
+        if (!_monoBehaviourController.PausedExecution && !_monoBehaviourController.PausedUpdate)
+        {
+            _fixedUpdateIndex = 0;
+        }
 
         if (_processingCallback != null)
         {
