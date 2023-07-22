@@ -79,9 +79,13 @@ public static class MonoBehaviourEvents
 
         foreach (var update in UpdatesActual)
         {
-            if (MonoBehaviourController.PausedExecution) continue;
+            // TODO this is inconsistent and bad, if im doing this then i should apply the same to others
+            if (MonoBehaviourController.PausedExecution || MonoBehaviourController.PausedUpdate) continue;
             update();
         }
+
+        // if (!MonoBehaviourController.PausedExecution || MonoBehaviourController.PausedUpdate)
+        //     StaticLogger.Log.LogDebug($"Update, offset: {UpdateInvokeOffset.Offset}");
     }
 
     // right now I don't call this update before other scripts so I don't need to check if it was already called
@@ -100,8 +104,11 @@ public static class MonoBehaviourEvents
 
         OnFixedUpdateUnconditional?.Invoke();
 
-        if (!MonoBehaviourController.PausedExecution)
-            OnFixedUpdateActual?.Invoke();
+        // if (!MonoBehaviourController.PausedExecution)
+        // {
+        //     OnFixedUpdateActual?.Invoke();
+        //     StaticLogger.Log.LogDebug($"FixedUpdate, offset: {UpdateInvokeOffset.Offset}");
+        // }
     }
 
     public static void InvokeOnGUI()

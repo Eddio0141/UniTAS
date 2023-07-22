@@ -46,17 +46,20 @@ public class MonoBehaviourUpdateInvoker : MonoBehaviour
         _monoBehEventInvoker.OnGUI();
     }
 
+    // stupid optimization since object alloc
+    private readonly WaitForEndOfFrame _waitForEndOfFrame = new();
+
     private IEnumerator EndOfFrame()
     {
         while (true)
         {
-            yield return new WaitForEndOfFrame();
+            yield return _waitForEndOfFrame;
             foreach (var update in _onLastUpdatesUnconditional)
             {
                 update.OnLastUpdateUnconditional();
             }
 
-            if (_monoBehaviourController.PausedExecution) continue;
+            if (_monoBehaviourController.PausedExecution || _monoBehaviourController.PausedUpdate) continue;
 
             foreach (var update in _onLastUpdatesActual)
             {

@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed DDLC launch on crash because out of range system time
 - Fixed Needy Streamer crashing on start up
 
+### TAS playback
+- Fixed timing being offset wrong by whatever value is fixed update is at
+
 ### Compatibility
 
 - Fixed some games using switch statement skips over UniTAS tracking the end of static constructors
