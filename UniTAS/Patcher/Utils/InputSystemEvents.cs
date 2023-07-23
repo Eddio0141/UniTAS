@@ -153,7 +153,8 @@ public static class InputSystemEvents
 
         foreach (var update in InputUpdateActualCalls)
         {
-            if (MonoBehaviourController.PausedExecution) continue;
+            if (MonoBehaviourController.PausedExecution ||
+                (!fixedUpdate && MonoBehaviourController.PausedUpdate)) continue;
             update(fixedUpdate, newInputSystemUpdate);
         }
     }
