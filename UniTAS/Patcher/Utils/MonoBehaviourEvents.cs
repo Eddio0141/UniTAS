@@ -83,9 +83,6 @@ public static class MonoBehaviourEvents
             if (MonoBehaviourController.PausedExecution || MonoBehaviourController.PausedUpdate) continue;
             update();
         }
-
-        // if (!MonoBehaviourController.PausedExecution || MonoBehaviourController.PausedUpdate)
-        //     StaticLogger.Log.LogDebug($"Update, offset: {UpdateInvokeOffset.Offset}");
     }
 
     // right now I don't call this update before other scripts so I don't need to check if it was already called
@@ -104,11 +101,10 @@ public static class MonoBehaviourEvents
 
         OnFixedUpdateUnconditional?.Invoke();
 
-        // if (!MonoBehaviourController.PausedExecution)
-        // {
-        //     OnFixedUpdateActual?.Invoke();
-        //     StaticLogger.Log.LogDebug($"FixedUpdate, offset: {UpdateInvokeOffset.Offset}");
-        // }
+        if (!MonoBehaviourController.PausedExecution)
+        {
+            OnFixedUpdateActual?.Invoke();
+        }
     }
 
     public static void InvokeOnGUI()
