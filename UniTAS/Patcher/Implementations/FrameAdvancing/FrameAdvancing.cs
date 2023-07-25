@@ -167,29 +167,14 @@ public class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, IOnFixedU
         if (!_paused || _pendingUnpause) return;
         _pendingUnpause = true;
 
-        _syncFixedUpdate.OnSync(_unpauseActual, _updateRestoreOffset, _fixedUpdateRestoreIndex);
-        // if (IsNextUpdateFixedUpdate())
-        // {
-        //     // TODO also remove this log
-        //     StaticLogger.Log.LogDebug(
-        //         $"unpause at FixedUpdate, restore time: {_updateRestoreOffset}, restore index: {_fixedUpdateRestoreIndex}");
-        //     // _syncFixedUpdate.OnSync(_unpauseActual, _updateRestoreOffset, _fixedUpdateRestoreIndex + 1);
-        //     _syncFixedUpdate.OnSync(_unpauseActual, _updateRestoreOffset, _fixedUpdateRestoreIndex);
-        // }
-        // else
-        // {
-        //     // TODO also remove this log
-        //     StaticLogger.Log.LogDebug(
-        //         $"unpause at Update, restore time: {_updateRestoreOffset}, restore index: {_fixedUpdateRestoreIndex}");
-        //     // _syncFixedUpdate.OnSync(_unpauseActual, _updateRestoreOffset + _timeEnv.FrameTime);
-        //     _syncFixedUpdate.OnSync(_unpauseActual, _updateRestoreOffset);
-        // }
-    }
-
-    private bool IsNextUpdateFixedUpdate()
-    {
-        var futureOffset = _updateRestoreOffset + _timeEnv.FrameTime;
-        return futureOffset >= (_fixedUpdateRestoreIndex + 1) * Time.fixedDeltaTime;
+        if (_fixedUpdateRestoreIndex != 0)
+        {
+            _syncFixedUpdate.OnSync(_unpauseActual, _updateRestoreOffset, _fixedUpdateRestoreIndex);
+        }
+        else
+        {
+            _syncFixedUpdate.OnSync(_unpauseActual, _updateRestoreOffset + _timeEnv.FrameTime);
+        }
     }
 
     private void UnpauseActual()
