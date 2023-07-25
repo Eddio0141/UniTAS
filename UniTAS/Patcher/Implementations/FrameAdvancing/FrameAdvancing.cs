@@ -21,7 +21,9 @@ public class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, IOnFixedU
 {
     private bool _active;
 
+    private readonly Queue<PendingFrameAdvance> _pendingFrameAdvances = new();
     private uint _pendingPauseFrames;
+    private FrameAdvanceMode _frameAdvanceMode;
 
     private bool _paused;
     private bool _pendingPause;
@@ -32,8 +34,6 @@ public class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, IOnFixedU
     private bool _pendingUnpause;
 
     private readonly Action _unpauseActual;
-
-    private FrameAdvanceMode _frameAdvanceMode = FrameAdvanceMode.Update;
 
     private readonly IMonoBehaviourController _monoBehaviourController;
     private readonly ISyncFixedUpdateCycle _syncFixedUpdate;
@@ -63,8 +63,7 @@ public class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, IOnFixedU
             frames = 0;
         }
 
-        _pendingPauseFrames = frames;
-        _frameAdvanceMode = frameAdvanceMode;
+        _pendingFrameAdvances.Enqueue(new(frames, frameAdvanceMode));
     }
 
     public void TogglePause()
@@ -115,10 +114,24 @@ public class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, IOnFixedU
 
             Unpause();
 
+            CheckAndAddPendingFrameAdvances();
+
             return;
         }
 
+        CheckAndAddPendingFrameAdvances();
+
         _coroutine.Start(Pause(update));
+    }
+
+    private void CheckAndAddPendingFrameAdvances()
+    {
+        // check if we got any more frame advances to be done
+        if (_pendingFrameAdvances.Count <= 0) return;
+
+        var pendingFrameAdvance = _pendingFrameAdvances.Dequeue();
+        _pendingPauseFrames = pendingFrameAdvance.PendingFrames;
+        _frameAdvanceMode = pendingFrameAdvance.FrameAdvanceMode;
     }
 
     private IEnumerator<CoroutineWait> Pause(bool update)
@@ -184,6 +197,18 @@ public class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, IOnFixedU
         _monoBehaviourController.PausedExecution = false;
         _paused = false;
         _pendingUnpause = false;
+    }
+
+    private struct PendingFrameAdvance
+    {
+        public readonly uint PendingFrames;
+        public readonly FrameAdvanceMode FrameAdvanceMode;
+
+        public PendingFrameAdvance(uint pendingFrames, FrameAdvanceMode frameAdvanceMode)
+        {
+            PendingFrames = pendingFrames;
+            FrameAdvanceMode = frameAdvanceMode;
+        }
     }
 }
 
