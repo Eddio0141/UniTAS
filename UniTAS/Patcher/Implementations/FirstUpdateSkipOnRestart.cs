@@ -20,7 +20,7 @@ public class FirstUpdateSkipOnRestart : IOnGameRestartResume, IOnUpdateUnconditi
         PendingResumeFinal
     }
 
-    private PendingState _pendingState;
+    private PendingState _pendingState = PendingState.PendingPause;
 
     private readonly IMonoBehaviourController _monoBehaviourController;
     private readonly ILogger _logger;
