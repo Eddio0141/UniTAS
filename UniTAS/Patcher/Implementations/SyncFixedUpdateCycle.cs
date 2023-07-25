@@ -57,6 +57,10 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
             // no more jobs? restore ft
             RestoreFt();
         }
+        else
+        {
+            ProcessQueue();
+        }
     }
 
     public void UpdateUnconditional()
