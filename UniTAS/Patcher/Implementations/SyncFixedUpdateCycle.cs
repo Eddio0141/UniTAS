@@ -24,30 +24,24 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
     private readonly ITimeEnv _timeEnv;
     private readonly ITimeWrapper _timeWrapper;
     private readonly ILogger _logger;
-    private readonly IMonoBehaviourController _monoBehaviourController;
 
     private readonly double _tolerance;
 
     // increase in FixedUpdate, reset to 0 in Update
     private uint _fixedUpdateIndex;
 
-    public SyncFixedUpdateCycle(ITimeEnv timeEnv, ITimeWrapper timeWrapper, ILogger logger,
-        IMonoBehaviourController monoBehaviourController)
+    public SyncFixedUpdateCycle(ITimeEnv timeEnv, ITimeWrapper timeWrapper, ILogger logger)
     {
         _timeEnv = timeEnv;
         _timeWrapper = timeWrapper;
         _logger = logger;
-        _monoBehaviourController = monoBehaviourController;
 
         _tolerance = _timeWrapper.IntFPSOnly ? 1.0 / int.MaxValue : float.Epsilon;
     }
 
     public void FixedUpdateUnconditional()
     {
-        if (!_monoBehaviourController.PausedExecution)
-        {
-            _fixedUpdateIndex++;
-        }
+        _fixedUpdateIndex++;
 
         // is it for fixed update to handle this
         if (_pendingCallback == null || _pendingCallback.FixedUpdateIndex == 0) return;
@@ -67,10 +61,7 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
 
     public void UpdateUnconditional()
     {
-        if (!_monoBehaviourController.PausedExecution && !_monoBehaviourController.PausedUpdate)
-        {
-            _fixedUpdateIndex = 0;
-        }
+        _fixedUpdateIndex = 0;
 
         if (_processingCallback != null)
         {
@@ -127,18 +118,22 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
         // check immediate return
         // only applies if matching FixedUpdate index
         var actualSeconds = TargetSecondsAndActualSeconds(_processingCallback).Item2;
-        if (actualSeconds < _tolerance)
+        var callbackFixedUpdateIndex = _processingCallback.FixedUpdateIndex;
+
+        if (actualSeconds < _tolerance && callbackFixedUpdateIndex >= _fixedUpdateIndex)
         {
-            _logger.LogDebug(
-                $"Immediate sync fixed update callback, sync fixed update index: {_processingCallback.FixedUpdateIndex}, current: {_fixedUpdateIndex}");
-            if (_processingCallback.FixedUpdateIndex == _fixedUpdateIndex)
+            if (callbackFixedUpdateIndex == _fixedUpdateIndex)
             {
+                _logger.LogDebug(
+                    $"Immediate sync fixed update callback, sync fixed update index: {callbackFixedUpdateIndex}, current: {_fixedUpdateIndex}");
                 _processingCallback.Callback();
                 _processingCallback = null;
                 ProcessQueue();
             }
             else
             {
+                _logger.LogDebug(
+                    $"Callback index is not equals so waiting for fixed update to match {callbackFixedUpdateIndex}, current: {_fixedUpdateIndex}");
                 // wait for fixed updates to do its thing
                 SwitchToPendingCallback();
             }
