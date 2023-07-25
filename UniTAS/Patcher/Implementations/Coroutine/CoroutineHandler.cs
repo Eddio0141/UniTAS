@@ -4,11 +4,12 @@ using UniTAS.Patcher.Interfaces.Coroutine;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Patcher.Models.Coroutine;
+using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Services;
 
 namespace UniTAS.Patcher.Implementations.Coroutine;
 
-[Singleton]
+[Singleton(RegisterPriority.CoroutineHandler)]
 public class CoroutineHandler : ICoroutine, IOnUpdateUnconditional, IOnPreUpdatesUnconditional,
     IOnLastUpdateUnconditional, IOnFixedUpdateUnconditional
 {

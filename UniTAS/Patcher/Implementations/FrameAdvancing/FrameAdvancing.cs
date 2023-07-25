@@ -14,6 +14,8 @@ using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations.FrameAdvancing;
 
+// this class needs to run before coroutine is processed in CoroutineHandler (for tracking fixed update index)
+// also needs to run after SyncFixedUpdateCycle to process sync method invoke, then handling new fa stuff
 [Singleton(RegisterPriority.FrameAdvancing)]
 public class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, IOnFixedUpdateUnconditional
 {
@@ -70,7 +72,6 @@ public class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, IOnFixedU
         _active = !_active;
     }
 
-    // unpause depends on syncing update, and this class needs to run AFTER the sync update
     public void UpdateUnconditional()
     {
         if (!_monoBehaviourController.PausedExecution && !_monoBehaviourController.PausedUpdate)
@@ -124,8 +125,6 @@ public class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, IOnFixedU
     {
         if (_paused || _pendingPause) yield break;
         _pendingPause = true;
-        // TODO remove this log
-        StaticLogger.Log.LogDebug("Pause frame advance");
 
         // pause at right timing, basically let the game run until reached requirement timing of pause depending on user choice
         switch (update)
@@ -142,6 +141,9 @@ public class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, IOnFixedU
         _updateRestoreOffset = UpdateInvokeOffset.Offset;
         _fixedUpdateRestoreIndex = _fixedUpdateIndex;
         _monoBehaviourController.PausedExecution = true;
+        // TODO remove this log
+        StaticLogger.Log.LogDebug(
+            $"Pause frame advance, restore offset: {_updateRestoreOffset}, fixed update index: {_fixedUpdateRestoreIndex}");
 
         _paused = true;
         _pendingPause = false;
@@ -151,17 +153,24 @@ public class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, IOnFixedU
     {
         if (!_paused || _pendingUnpause) return;
         _pendingUnpause = true;
-        // TODO also remove this log
-        StaticLogger.Log.LogDebug("Unpause frame advance");
 
-        if (IsNextUpdateFixedUpdate())
-        {
-            _syncFixedUpdate.OnSync(_unpauseActual, _updateRestoreOffset, _fixedUpdateRestoreIndex + 1);
-        }
-        else
-        {
-            _syncFixedUpdate.OnSync(_unpauseActual, _updateRestoreOffset + _timeEnv.FrameTime);
-        }
+        _syncFixedUpdate.OnSync(_unpauseActual, _updateRestoreOffset, _fixedUpdateRestoreIndex);
+        // if (IsNextUpdateFixedUpdate())
+        // {
+        //     // TODO also remove this log
+        //     StaticLogger.Log.LogDebug(
+        //         $"unpause at FixedUpdate, restore time: {_updateRestoreOffset}, restore index: {_fixedUpdateRestoreIndex}");
+        //     // _syncFixedUpdate.OnSync(_unpauseActual, _updateRestoreOffset, _fixedUpdateRestoreIndex + 1);
+        //     _syncFixedUpdate.OnSync(_unpauseActual, _updateRestoreOffset, _fixedUpdateRestoreIndex);
+        // }
+        // else
+        // {
+        //     // TODO also remove this log
+        //     StaticLogger.Log.LogDebug(
+        //         $"unpause at Update, restore time: {_updateRestoreOffset}, restore index: {_fixedUpdateRestoreIndex}");
+        //     // _syncFixedUpdate.OnSync(_unpauseActual, _updateRestoreOffset + _timeEnv.FrameTime);
+        //     _syncFixedUpdate.OnSync(_unpauseActual, _updateRestoreOffset);
+        // }
     }
 
     private bool IsNextUpdateFixedUpdate()
