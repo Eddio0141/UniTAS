@@ -1,4 +1,5 @@
 using UniTAS.Patcher.Interfaces.Invoker;
+using UniTAS.Patcher.Models.Invoker;
 using UnityEngine;
 
 namespace UniTAS.Patcher.Utils;
@@ -7,7 +8,7 @@ public static class UpdateInvokeOffset
 {
     public static double Offset { get; private set; }
 
-    [InvokeOnUnityInit]
+    [InvokeOnUnityInit(Priority = InvokerPriority.UpdateInvokeOffset)]
     public static void Init()
     {
         MonoBehaviourEvents.OnUpdateUnconditional += UpdateUnconditionalOffset;
