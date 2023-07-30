@@ -50,6 +50,7 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
         if (_pendingFixedUpdateCount > 0) return;
 
         // syncing, invoke pending callback
+        _logger.LogDebug("Invoking pending callback in fixed update");
         InvokePendingCallback();
 
         if (_pendingSync.Count == 0)
@@ -79,6 +80,7 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
             // push this callback to FixedUpdate to handle
             if (_pendingCallback.FixedUpdateIndex != 0) return;
 
+            _logger.LogDebug("Invoking pending callback in update");
             InvokePendingCallback();
 
             if (_pendingSync.Count == 0)
@@ -104,7 +106,7 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
         if (invokeOffset < 0)
             invokeOffset += Time.fixedDeltaTime;
         _logger.LogDebug(
-            $"Added on sync callback with invoke offset: {invokeOffset}, fixed update index: {fixedUpdateIndex}");
+            $"Added on sync callback with invoke offset: {invokeOffset:0.0000000000000000}, fixed update index: {fixedUpdateIndex}");
         _pendingSync.Enqueue(new(callback, invokeOffset, fixedUpdateIndex));
     }
 
@@ -213,7 +215,6 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
 
     private void InvokePendingCallback()
     {
-        _logger.LogDebug("Invoking pending callback");
         _pendingCallback.Callback();
         _pendingCallback = null;
     }
