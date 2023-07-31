@@ -8,7 +8,6 @@ using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Customization;
 using UniTAS.Patcher.Services.FrameAdvancing;
-using UniTAS.Patcher.Services.VirtualEnvironment;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 
@@ -37,11 +36,10 @@ public class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, IOnFixedU
 
     private readonly IMonoBehaviourController _monoBehaviourController;
     private readonly ISyncFixedUpdateCycle _syncFixedUpdate;
-    private readonly ITimeEnv _timeEnv;
     private readonly ICoroutine _coroutine;
 
     public FrameAdvancing(IMonoBehaviourController monoBehaviourController, IBinds binds,
-        ISyncFixedUpdateCycle syncFixedUpdate, ITimeEnv timeEnv, ICoroutine coroutine)
+        ISyncFixedUpdateCycle syncFixedUpdate, ICoroutine coroutine)
     {
         // TODO clean these binds up
         binds.Create(new("FrameAdvance", KeyCode.Slash));
@@ -49,7 +47,6 @@ public class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, IOnFixedU
 
         _monoBehaviourController = monoBehaviourController;
         _syncFixedUpdate = syncFixedUpdate;
-        _timeEnv = timeEnv;
         _coroutine = coroutine;
         _unpauseActual = UnpauseActual;
     }
@@ -167,14 +164,9 @@ public class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, IOnFixedU
         if (!_paused || _pendingUnpause) return;
         _pendingUnpause = true;
 
-        if (_fixedUpdateRestoreIndex != 0)
-        {
-            _syncFixedUpdate.OnSync(_unpauseActual, _updateRestoreOffset, _fixedUpdateRestoreIndex);
-        }
-        else
-        {
-            _syncFixedUpdate.OnSync(_unpauseActual, _updateRestoreOffset + _timeEnv.FrameTime);
-        }
+        StaticLogger.Log.LogDebug(
+            $"unpause, restore time: {_updateRestoreOffset}, restore index: {_fixedUpdateRestoreIndex}");
+        _syncFixedUpdate.OnSync(_unpauseActual, _updateRestoreOffset, _fixedUpdateRestoreIndex);
     }
 
     private void UnpauseActual()
