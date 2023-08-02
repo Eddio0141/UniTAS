@@ -202,6 +202,7 @@ public static class KernelUtils
         public double ScaledTime { get; }
         public double ScaledFixedTime { get; }
         public double RealtimeSinceStartup { get; }
+        public double TimeTolerance { get; }
     }
 
     [Register(IncludeDifferentAssembly = true)]

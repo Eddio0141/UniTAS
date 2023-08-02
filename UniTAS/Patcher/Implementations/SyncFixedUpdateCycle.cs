@@ -25,8 +25,6 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
     private readonly ITimeWrapper _timeWrapper;
     private readonly ILogger _logger;
 
-    private readonly double _tolerance;
-
     // increase in FixedUpdate, reset to 0 in Update
     private uint _fixedUpdateIndex;
 
@@ -35,8 +33,6 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
         _timeEnv = timeEnv;
         _timeWrapper = timeWrapper;
         _logger = logger;
-
-        _tolerance = _timeWrapper.IntFPSOnly ? 1.0 / int.MaxValue : float.Epsilon;
     }
 
     public void FixedUpdateUnconditional()
@@ -125,7 +121,7 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
         _logger.LogDebug(
             $"checking immediate return, current offset and invoke offset diff: {Math.Abs(_processingCallback.InvokeOffset - UpdateInvokeOffset.Offset)}, callback index: {_fixedUpdateIndex}");
 
-        if (Math.Abs(_processingCallback.InvokeOffset - UpdateInvokeOffset.Offset) < _tolerance &&
+        if (Math.Abs(_processingCallback.InvokeOffset - UpdateInvokeOffset.Offset) < _timeEnv.TimeTolerance &&
             callbackFixedUpdateIndex >= _fixedUpdateIndex)
         {
             if (callbackFixedUpdateIndex == _fixedUpdateIndex)
@@ -200,7 +196,7 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
 
     private bool IsSyncHappening(double targetSeconds, double actualSeconds)
     {
-        return targetSeconds - actualSeconds > _tolerance;
+        return targetSeconds - actualSeconds > _timeEnv.TimeTolerance;
     }
 
     private void SwitchToPendingCallback()

@@ -8,6 +8,8 @@ using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Customization;
 using UniTAS.Patcher.Services.FrameAdvancing;
+using UniTAS.Patcher.Services.Logging;
+using UniTAS.Patcher.Services.VirtualEnvironment;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 
@@ -16,13 +18,22 @@ namespace UniTAS.Patcher.Implementations.FrameAdvancing;
 // this class needs to run before coroutine is processed in CoroutineHandler (for tracking fixed update index)
 // also needs to run after SyncFixedUpdateCycle to process sync method invoke, then handling new fa stuff
 [Singleton(RegisterPriority.FrameAdvancing)]
-public class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, IOnFixedUpdateUnconditional
+public partial class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, IOnFixedUpdateUnconditional
 {
     private bool _active;
 
     private readonly Queue<PendingFrameAdvance> _pendingFrameAdvances = new();
     private uint _pendingPauseFrames;
+
     private FrameAdvanceMode _frameAdvanceMode;
+
+    // for after fixed update and next update isn't in sync
+    private PendingUpdateOffsetFixState _pendingUpdateOffsetFixState = PendingUpdateOffsetFixState.Done;
+
+    // offset to compare with Update
+    private double _pendingUpdateOffsetFixStateCheckingOffset;
+
+    private readonly Action _updateOffsetSyncFix;
 
     private bool _paused;
     private bool _pendingPause;
@@ -37,9 +48,11 @@ public class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, IOnFixedU
     private readonly IMonoBehaviourController _monoBehaviourController;
     private readonly ISyncFixedUpdateCycle _syncFixedUpdate;
     private readonly ICoroutine _coroutine;
+    private readonly ITimeEnv _timeEnv;
+    private readonly ILogger _logger;
 
     public FrameAdvancing(IMonoBehaviourController monoBehaviourController, IBinds binds,
-        ISyncFixedUpdateCycle syncFixedUpdate, ICoroutine coroutine)
+        ISyncFixedUpdateCycle syncFixedUpdate, ICoroutine coroutine, ITimeEnv timeEnv, ILogger logger)
     {
         // TODO clean these binds up
         binds.Create(new("FrameAdvance", KeyCode.Slash));
@@ -48,7 +61,10 @@ public class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, IOnFixedU
         _monoBehaviourController = monoBehaviourController;
         _syncFixedUpdate = syncFixedUpdate;
         _coroutine = coroutine;
+        _timeEnv = timeEnv;
+        _logger = logger;
         _unpauseActual = UnpauseActual;
+        _updateOffsetSyncFix = UpdateOffsetSyncFix;
     }
 
     public void FrameAdvance(uint frames, FrameAdvanceMode frameAdvanceMode)
@@ -75,6 +91,24 @@ public class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, IOnFixedU
             _fixedUpdateIndex = 0;
         }
 
+        if (_pendingUpdateOffsetFixState == PendingUpdateOffsetFixState.PendingCheckUpdateOffset)
+        {
+            _pendingUpdateOffsetFixState = PendingUpdateOffsetFixState.PendingSync;
+            var actualOffset = _pendingUpdateOffsetFixStateCheckingOffset + _timeEnv.FrameTime;
+
+            // is it invalid
+            if (Math.Abs(actualOffset - UpdateInvokeOffset.Offset) > _timeEnv.TimeTolerance)
+            {
+                _logger.LogDebug(
+                    $"invalid offset after FixedUpdate, expected {actualOffset}, current: {UpdateInvokeOffset.Offset}, fixing");
+                _syncFixedUpdate.OnSync(_updateOffsetSyncFix, actualOffset);
+                // pause until offset is synced
+                // this also presents this broken Update
+                _monoBehaviourController.PausedExecution = true;
+                return;
+            }
+        }
+
         FrameAdvanceUpdate(true);
     }
 
@@ -90,6 +124,9 @@ public class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, IOnFixedU
 
     private void FrameAdvanceUpdate(bool update)
     {
+        // don't bother frame advance operation until fixing offset is done
+        if (_pendingUpdateOffsetFixState != PendingUpdateOffsetFixState.Done) return;
+
         // if unpause -> pause, it needs to wait for unpause operation to finish since that takes time
         if (_pendingUnpause) return;
 
@@ -151,8 +188,7 @@ public class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, IOnFixedU
         _updateRestoreOffset = UpdateInvokeOffset.Offset;
         _fixedUpdateRestoreIndex = _fixedUpdateIndex;
         _monoBehaviourController.PausedExecution = true;
-        // TODO remove this log
-        StaticLogger.Log.LogDebug(
+        _logger.LogDebug(
             $"Pause frame advance, restore offset: {_updateRestoreOffset}, fixed update index: {_fixedUpdateRestoreIndex}");
 
         _paused = true;
@@ -164,8 +200,7 @@ public class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, IOnFixedU
         if (!_paused || _pendingUnpause) return;
         _pendingUnpause = true;
 
-        StaticLogger.Log.LogDebug(
-            $"unpause, restore time: {_updateRestoreOffset}, restore index: {_fixedUpdateRestoreIndex}");
+        _logger.LogDebug($"unpause, restore time: {_updateRestoreOffset}, restore index: {_fixedUpdateRestoreIndex}");
         _syncFixedUpdate.OnSync(_unpauseActual, _updateRestoreOffset, _fixedUpdateRestoreIndex);
     }
 
@@ -174,24 +209,20 @@ public class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, IOnFixedU
         _monoBehaviourController.PausedExecution = false;
         _paused = false;
         _pendingUnpause = false;
-    }
 
-    private struct PendingFrameAdvance
-    {
-        public readonly uint PendingFrames;
-        public readonly FrameAdvanceMode FrameAdvanceMode;
-
-        public PendingFrameAdvance(uint pendingFrames, FrameAdvanceMode frameAdvanceMode)
+        if (_fixedUpdateRestoreIndex != 0)
         {
-            PendingFrames = pendingFrames;
-            FrameAdvanceMode = frameAdvanceMode;
+            // fixed update, check on next update if offset is broken
+            _pendingUpdateOffsetFixState = PendingUpdateOffsetFixState.PendingCheckUpdateOffset;
+            _pendingUpdateOffsetFixStateCheckingOffset = _updateRestoreOffset;
         }
     }
-}
 
-[Flags]
-public enum FrameAdvanceMode
-{
-    Update = 1,
-    FixedUpdate = 2
+    private void UpdateOffsetSyncFix()
+    {
+        // done fixing offset
+        _monoBehaviourController.PausedExecution = false;
+        _pendingUpdateOffsetFixState = PendingUpdateOffsetFixState.Done;
+        _logger.LogDebug("fixed update offset");
+    }
 }

@@ -8,6 +8,7 @@ using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Patcher.Services.VirtualEnvironment;
+using UniTAS.Patcher.Utils;
 using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations.VirtualEnvironment;
@@ -43,7 +44,11 @@ public class TimeEnv : ITimeEnv, IOnPreUpdatesActual, IOnGameRestartResume, IOnS
         UnscaledTime += initialFt;
         ScaledTime += initialFt;
         SecondsSinceStartUp += initialFt;
+
+        TimeTolerance = _timeWrap.IntFPSOnly ? 1.0 / int.MaxValue : float.Epsilon;
     }
+
+    public double TimeTolerance { get; }
 
     public double FrameTime
     {
@@ -76,9 +81,11 @@ public class TimeEnv : ITimeEnv, IOnPreUpdatesActual, IOnGameRestartResume, IOnS
 
     public void OnLastUpdateActual()
     {
+        StaticLogger.Log.LogDebug($"Adding ft {FrameTime}");
         RealtimeSinceStartup += FrameTime;
         UnscaledTime += FrameTime;
-        ScaledTime += Time.deltaTime;
+        // TODO test if this works accurately vs before
+        ScaledTime += FrameTime * Time.timeScale;
         SecondsSinceStartUp += FrameTime;
     }
 
