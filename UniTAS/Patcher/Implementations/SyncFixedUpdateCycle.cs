@@ -118,11 +118,13 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
         // only applies if matching FixedUpdate index
         var callbackFixedUpdateIndex = _processingCallback.FixedUpdateIndex;
 
-        _logger.LogDebug(
-            $"checking immediate return, current offset and invoke offset diff: {Math.Abs(_processingCallback.InvokeOffset - UpdateInvokeOffset.Offset)}, callback index: {_fixedUpdateIndex}");
+        var immediateReturnOffset =
+            Math.Abs(_processingCallback.InvokeOffset - UpdateInvokeOffset.Offset) % Time.fixedDeltaTime;
 
-        if (Math.Abs(_processingCallback.InvokeOffset - UpdateInvokeOffset.Offset) < _timeEnv.TimeTolerance &&
-            callbackFixedUpdateIndex >= _fixedUpdateIndex)
+        _logger.LogDebug(
+            $"checking immediate return, current offset and invoke offset diff: {immediateReturnOffset}, callback index: {_fixedUpdateIndex}");
+
+        if (immediateReturnOffset < _timeEnv.TimeTolerance && callbackFixedUpdateIndex >= _fixedUpdateIndex)
         {
             if (callbackFixedUpdateIndex == _fixedUpdateIndex)
             {
