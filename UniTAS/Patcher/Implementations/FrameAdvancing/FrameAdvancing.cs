@@ -93,7 +93,6 @@ public partial class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, I
 
         if (_pendingUpdateOffsetFixState == PendingUpdateOffsetFixState.PendingCheckUpdateOffset)
         {
-            _pendingUpdateOffsetFixState = PendingUpdateOffsetFixState.PendingSync;
             var actualOffset = _pendingUpdateOffsetFixStateCheckingOffset + _timeEnv.FrameTime;
 
             // is it invalid
@@ -105,8 +104,12 @@ public partial class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, I
                 // pause until offset is synced
                 // this also presents this broken Update
                 _monoBehaviourController.PausedExecution = true;
+                _pendingUpdateOffsetFixState = PendingUpdateOffsetFixState.PendingSync;
                 return;
             }
+
+            // not invalid, continue
+            _pendingUpdateOffsetFixState = PendingUpdateOffsetFixState.Done;
         }
 
         FrameAdvanceUpdate(true);
