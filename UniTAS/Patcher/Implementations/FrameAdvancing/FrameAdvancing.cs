@@ -91,6 +91,7 @@ public partial class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, I
             _fixedUpdateIndex = 0;
         }
 
+        // check if update offset is valid after the last fixed update
         if (_pendingUpdateOffsetFixState == PendingUpdateOffsetFixState.PendingCheckUpdateOffset)
         {
             var actualOffset = _pendingUpdateOffsetFixStateCheckingOffset + _timeEnv.FrameTime;
@@ -102,9 +103,16 @@ public partial class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, I
                     $"invalid offset after FixedUpdate, expected {actualOffset}, current: {UpdateInvokeOffset.Offset}, fixing");
                 _syncFixedUpdate.OnSync(_updateOffsetSyncFix, actualOffset);
                 // pause until offset is synced
-                // this also presents this broken Update
+                // this also prevents this broken Update
                 _monoBehaviourController.PausedExecution = true;
                 _pendingUpdateOffsetFixState = PendingUpdateOffsetFixState.PendingSync;
+
+                // also _pendingPauseFrames needs to be decrease
+                if (_pendingPauseFrames > 0)
+                {
+                    _pendingPauseFrames--;
+                }
+
                 return;
             }
 
@@ -157,6 +165,9 @@ public partial class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, I
         }
 
         CheckAndAddPendingFrameAdvances();
+
+        // do we have new frame advance to do? don't bother pausing then
+        if (_pendingPauseFrames != 0) return;
 
         _coroutine.Start(Pause(update));
     }
