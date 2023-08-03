@@ -12,11 +12,13 @@ using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
 using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Patcher.Interfaces.GUI;
 using UniTAS.Patcher.Interfaces.Movie;
+using UniTAS.Patcher.Models.Customization;
 using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Models.GUI;
 using UniTAS.Patcher.Models.UnitySafeWrappers.SceneManagement;
 using UniTAS.Patcher.Models.VirtualEnvironment;
 using UniTAS.Patcher.Services;
+using UniTAS.Patcher.Services.Customization;
 using UniTAS.Patcher.Services.DependencyInjection;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.Overlay;
@@ -223,6 +225,20 @@ public static class KernelUtils
     private class OverlayVisibleToggleDummy : IOverlayVisibleToggle
     {
         public bool Enabled { get; set; }
+    }
+
+    [Register(IncludeDifferentAssembly = true)]
+    private class BindsDummy : IBinds
+    {
+        public Bind Create(BindConfig config)
+        {
+            return null!;
+        }
+
+        public Bind Get(string name)
+        {
+            return null!;
+        }
     }
 
     public static Container Init()

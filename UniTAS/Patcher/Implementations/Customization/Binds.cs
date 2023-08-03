@@ -9,6 +9,7 @@ using UniTAS.Patcher.Services.Customization;
 namespace UniTAS.Patcher.Implementations.Customization;
 
 [Singleton]
+[ExcludeRegisterIfTesting]
 public class Binds : IBinds
 {
     private readonly HashSet<Bind> _binds = new();
