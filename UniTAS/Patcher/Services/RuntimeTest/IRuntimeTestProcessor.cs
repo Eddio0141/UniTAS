@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UniTAS.Patcher.Interfaces.RuntimeTest;
 using UniTAS.Patcher.Models.RuntimeTest;
 
