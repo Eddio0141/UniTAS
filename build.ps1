@@ -13,6 +13,7 @@ if (Test-Path "$buildOutput") {
 # Dotnet builds
 $dotnetSource = "UniTAS"
 $patcherSource = "$dotnetSource/Patcher"
+$runtimeResources = "$patcherSource"
 
 # Build output paths
 $buildOutputPatcher = "$buildOutput/patchers/UniTAS"
@@ -35,7 +36,7 @@ $buildOutput = (Resolve-Path $buildOutput).Path
 Copy-Item "$patcherSource/bin/$buildType/net35/*.dll" "$buildOutputPatcher" -Force
 
 # Copy external dlls
-Copy-Item "$patcherSource/Extern-Assemblies/*.dll" "$buildOutputPatcher" -Force
+Copy-Item "$runtimeResources/Extern-Assemblies/*.dll" "$buildOutputPatcher" -Force
 
 # Copy resources folder
-Copy-Item "$patcherSource/Resources" "$buildOutputPatcher" -Recurse -Force
+Copy-Item "$runtimeResources/Resources" "$buildOutputPatcher" -Recurse -Force
