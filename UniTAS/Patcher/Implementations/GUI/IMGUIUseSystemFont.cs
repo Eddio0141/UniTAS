@@ -10,6 +10,7 @@ namespace UniTAS.Patcher.Implementations.GUI;
 
 [Register]
 [ForceInstantiate]
+[ExcludeRegisterIfTesting]
 public class IMGUIUseSystemFont
 {
     private readonly IUpdateEvents _updateEvents;
