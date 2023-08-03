@@ -77,6 +77,7 @@ public partial class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, I
         }
 
         _pendingFrameAdvances.Enqueue(new(frames, frameAdvanceMode));
+        _logger.LogDebug($"added frame advance queue, mode: {frameAdvanceMode}, count: {frames}");
     }
 
     public void TogglePause()
@@ -171,14 +172,26 @@ public partial class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, I
 
     private void CheckAndAddPendingFrameAdvances()
     {
-        // check if we got any more frame advances to be done
         if (_pendingFrameAdvances.Count <= 0) return;
 
-        var pendingFrameAdvance = _pendingFrameAdvances.Dequeue();
-        _pendingPauseFrames = pendingFrameAdvance.PendingFrames;
-        _frameAdvanceMode = pendingFrameAdvance.FrameAdvanceMode;
+        var pendingFrameAdvance = _pendingFrameAdvances.Peek();
+        if (_pendingPauseFrames > 0)
+        {
+            // we don't add if not done frame advancing yet, and frame advance mode is incompatible
+            if (pendingFrameAdvance.FrameAdvanceMode != _frameAdvanceMode) return;
+        }
+        else
+        {
+            // set new mode
+            _frameAdvanceMode = pendingFrameAdvance.FrameAdvanceMode;
+        }
+
+        _pendingFrameAdvances.Dequeue();
+        // add queued frames
+        _pendingPauseFrames += pendingFrameAdvance.PendingFrames;
+
         _logger.LogDebug(
-            $"adding pending frame advances, pending pause frames: {_pendingPauseFrames}, mode: {_frameAdvanceMode}");
+            $"adding pending frame advances, pending pause frames: {_pendingPauseFrames}, current mode: {_frameAdvanceMode}");
     }
 
     private IEnumerator<CoroutineWait> Pause(bool update)
