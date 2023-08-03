@@ -6,6 +6,7 @@ public enum RegisterPriority
     FirstUpdateSkipOnRestart,
     TimeEnv,
     MovieRunner,
+    RuntimeTestProcessor,
     Default,
     FrameAdvancing,
     CoroutineHandler,
