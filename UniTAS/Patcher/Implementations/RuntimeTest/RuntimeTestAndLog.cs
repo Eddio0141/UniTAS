@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Models.RuntimeTest;
 using UniTAS.Patcher.Services.Logging;
@@ -47,61 +44,9 @@ public class RuntimeTestAndLog : IRuntimeTestAndLog
         _isTesting = true;
     }
 
-    private void TestLog(List<TestResult> results)
+    private void TestLog(TestResults results)
     {
-        var builder = new StringBuilder();
-
-        builder.Append($"Runtime tests | {results.Count} total | ");
-
-        var passedCount = results.Count(x => x.Passed);
-        var failedCount = results.Count(x => !x.Passed && !x.Skipped);
-        var skippedCount = results.Count(x => x.Skipped);
-
-        if (passedCount > 0)
-        {
-            builder.Append($"{results.Count(x => x.Passed)} passed");
-        }
-
-        if (passedCount > 0 && failedCount > 0)
-        {
-            builder.Append(" | ");
-        }
-
-        if (failedCount > 0)
-        {
-            builder.Append($"{results.Count(x => !x.Passed)} failed");
-        }
-
-        if ((passedCount > 0 || failedCount > 0) && skippedCount > 0)
-        {
-            builder.Append(" | ");
-        }
-
-        if (skippedCount > 0)
-        {
-            builder.Append($"{results.Count(x => x.Skipped)} skipped");
-        }
-
-        builder.AppendLine();
-
-        results.OrderBy(x => x.Passed).ThenBy(x => x.TestName).ToList().ForEach(x =>
-        {
-            builder.AppendLine(
-                "------------------------------------------------------------------------------------------------------------------------");
-
-            builder.AppendLine($"{x.TestName} " + (x.Skipped ? "Skipped" : x.Passed ? "Passed" : "Failed"));
-
-            if (x.Exception != null)
-            {
-                builder.AppendLine("\nException:");
-                builder.AppendLine(x.Exception.ToString());
-            }
-        });
-
-        builder.AppendLine(
-            "------------------------------------------------------------------------------------------------------------------------");
-
-        _logger.LogInfo($"\n{builder}");
+        _logger.LogInfo($"\n{results}");
 
         _testProcessor.OnTestEnd -= TestLog;
         _isTesting = false;

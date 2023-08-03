@@ -22,4 +22,4 @@ public delegate void DiscoveredTests(int count);
 
 public delegate void TestRun(string name);
 
-public delegate void TestEnd(List<TestResult> results);
+public delegate void TestEnd(TestResults results);

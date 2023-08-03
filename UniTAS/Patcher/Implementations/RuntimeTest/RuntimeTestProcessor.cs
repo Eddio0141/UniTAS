@@ -102,7 +102,7 @@ public class RuntimeTestProcessor : IRuntimeTestProcessor
             return;
         }
 
-        OnTestEnd?.Invoke(_testResults);
+        OnTestEnd?.Invoke(new(_testResults));
     }
 
     private void RunNextCoroutine()
@@ -137,7 +137,7 @@ public class RuntimeTestProcessor : IRuntimeTestProcessor
             return;
         }
 
-        OnTestEnd?.Invoke(_testResults);
+        OnTestEnd?.Invoke(new(_testResults));
     }
 
     private static bool ExtractReturnType<T>(object returnValue, out T retValue)

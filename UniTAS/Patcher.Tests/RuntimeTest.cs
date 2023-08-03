@@ -82,10 +82,10 @@ public class RuntimeTest
 
         processor.OnTestEnd += results =>
         {
-            Assert.Equal(8, results.Count);
-            Assert.Equal(4, results.Count(x => x.Passed));
-            Assert.Equal(2, results.Count(x => !x.Passed && !x.Skipped));
-            Assert.Equal(2, results.Count(x => x.Skipped));
+            Assert.Equal(8, results.Results.Count);
+            Assert.Equal(4, results.PassedCount);
+            Assert.Equal(2, results.FailedCount);
+            Assert.Equal(2, results.SkippedCount);
         };
         processor.Test<RuntimeTest>();
 
@@ -105,7 +105,7 @@ public class RuntimeTest
 
         processor.OnTestEnd += results =>
         {
-            var failedResult = results.First(x => !x.Passed);
+            var failedResult = results.Results.First(x => !x.Passed);
             Assert.NotNull(failedResult.Exception);
         };
 
@@ -127,7 +127,7 @@ public class RuntimeTest
 
         processor.OnTestEnd += results =>
         {
-            var failedResult = results.First(x => x.Passed);
+            var failedResult = results.Results.First(x => x.Passed);
             Assert.Null(failedResult.Exception);
         };
 
@@ -153,7 +153,7 @@ public class RuntimeTest
         processor.OnTestEnd += results =>
         {
             Assert.Equal(8, testRunCount);
-            Assert.Equal(testRunCount, results.Count);
+            Assert.Equal(testRunCount, results.Results.Count);
         };
 
         processor.Test<RuntimeTest>();
