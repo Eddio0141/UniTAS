@@ -13,6 +13,8 @@ namespace UniTAS.Patcher.Implementations;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 [Singleton]
+// manually testing this so no need
+[ExcludeRegisterIfTesting]
 public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditional, IOnFixedUpdateUnconditional
 {
     private readonly Queue<SyncData> _pendingSync = new();

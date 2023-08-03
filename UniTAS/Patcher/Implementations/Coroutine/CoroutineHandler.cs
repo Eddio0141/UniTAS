@@ -30,6 +30,13 @@ public class CoroutineHandler : ICoroutine, IOnUpdateUnconditional, IOnPreUpdate
     private readonly Queue<Status> _waitForCoroutine = new();
     private readonly Queue<Status> _lastUpdateUnconditional = new();
 
+    private readonly ISyncFixedUpdateCycle _syncFixedUpdateCycle;
+
+    public CoroutineHandler(ISyncFixedUpdateCycle syncFixedUpdateCycle)
+    {
+        _syncFixedUpdateCycle = syncFixedUpdateCycle;
+    }
+
     public CoroutineStatus Start(IEnumerator<CoroutineWait> coroutine)
     {
         var status = new Status(new(), coroutine);
@@ -71,6 +78,10 @@ public class CoroutineHandler : ICoroutine, IOnUpdateUnconditional, IOnPreUpdate
                 break;
             case WaitForFixedUpdateUnconditional:
                 _fixedUpdateUnconditional.Enqueue(status);
+                break;
+            case WaitForOnSync waitForOnSync:
+                _syncFixedUpdateCycle.OnSync(() => { RunNext(status); },
+                    waitForOnSync.InvokeOffset, waitForOnSync.FixedUpdateIndex);
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(coroutine), "Unknown coroutine wait type");

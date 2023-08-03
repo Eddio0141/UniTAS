@@ -228,6 +228,7 @@ public static class KernelUtils
     }
 
     [Register(IncludeDifferentAssembly = true)]
+    [SuppressMessage("ReSharper", "UnusedType.Local")]
     private class BindsDummy : IBinds
     {
         public Bind Create(BindConfig config)
@@ -238,6 +239,22 @@ public static class KernelUtils
         public Bind Get(string name)
         {
             return null!;
+        }
+    }
+
+    [Singleton(IncludeDifferentAssembly = true)]
+    public class SyncFixedUpdateCycleDummy : ISyncFixedUpdateCycle
+    {
+        private readonly Queue<Action> _callbacks = new();
+
+        public void OnSync(Action callback, double invokeOffset = 0, uint fixedUpdateIndex = 0)
+        {
+            _callbacks.Enqueue(callback);
+        }
+
+        public void ForceLastCallback()
+        {
+            _callbacks.Dequeue().Invoke();
         }
     }
 
