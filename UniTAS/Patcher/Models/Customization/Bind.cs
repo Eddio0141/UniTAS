@@ -44,9 +44,9 @@ public class Bind : IEquatable<Bind>
 
     private bool _initialized;
 
-    public void InitConfig()
+    public void InitConfig(bool noGenConfig)
     {
-        if (_initialized) return;
+        if (_initialized || noGenConfig) return;
         _initialized = true;
         _keyConfigEntry = _config.ConfigFile.Bind(CONFIG_SECTION, Name, _key.ToString(),
             "Key to press to trigger this bind. See https://docs.unity3d.com/ScriptReference/KeyCode.html for a list of keys.");

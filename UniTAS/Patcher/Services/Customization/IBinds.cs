@@ -8,6 +8,6 @@ namespace UniTAS.Patcher.Services.Customization;
 /// </summary>
 public interface IBinds
 {
-    Bind Create(BindConfig config);
+    Bind Create(BindConfig config, bool noGenConfig = false);
     Bind Get(string name);
 }

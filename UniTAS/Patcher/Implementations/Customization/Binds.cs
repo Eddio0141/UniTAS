@@ -21,12 +21,12 @@ public class Binds : IBinds
         _container = container;
     }
 
-    public Bind Create(BindConfig config)
+    public Bind Create(BindConfig config, bool noGenConfig = false)
     {
         var bind = _container.With(config).GetInstance<Bind>();
         if (_binds.Contains(bind)) throw new BindAlreadyExistsException(bind);
         _binds.Add(bind);
-        bind.InitConfig();
+        bind.InitConfig(noGenConfig);
         return bind;
     }
 
