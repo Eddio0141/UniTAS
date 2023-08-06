@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using UniTAS.Patcher.Interfaces.Coroutine;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
+using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
 using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Patcher.Models.Coroutine;
 using UniTAS.Patcher.Models.DependencyInjection;
@@ -10,8 +12,9 @@ using UniTAS.Patcher.Services;
 namespace UniTAS.Patcher.Implementations.Coroutine;
 
 [Singleton(RegisterPriority.CoroutineHandler)]
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public class CoroutineHandler : ICoroutine, IOnUpdateUnconditional, IOnPreUpdatesUnconditional,
-    IOnLastUpdateUnconditional, IOnFixedUpdateUnconditional
+    IOnLastUpdateUnconditional, IOnFixedUpdateUnconditional, IOnUpdateActual
 {
     private class Status
     {
@@ -26,6 +29,7 @@ public class CoroutineHandler : ICoroutine, IOnUpdateUnconditional, IOnPreUpdate
     }
 
     private readonly Queue<Status> _updateUnconditional = new();
+    private readonly Queue<Status> _updateActual = new();
     private readonly Queue<Status> _fixedUpdateUnconditional = new();
     private readonly Queue<Status> _waitForCoroutine = new();
     private readonly Queue<Status> _lastUpdateUnconditional = new();
@@ -70,6 +74,9 @@ public class CoroutineHandler : ICoroutine, IOnUpdateUnconditional, IOnPreUpdate
             case WaitForUpdateUnconditional:
                 _updateUnconditional.Enqueue(status);
                 break;
+            case WaitForUpdateActual:
+                _updateActual.Enqueue(status);
+                break;
             case WaitForCoroutine:
                 _waitForCoroutine.Enqueue(status);
                 break;
@@ -85,6 +92,16 @@ public class CoroutineHandler : ICoroutine, IOnUpdateUnconditional, IOnPreUpdate
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(coroutine), "Unknown coroutine wait type");
+        }
+    }
+
+    public void UpdateActual()
+    {
+        var count = _updateActual.Count;
+        while (count > 0)
+        {
+            RunNext(_updateActual.Dequeue());
+            count--;
         }
     }
 
