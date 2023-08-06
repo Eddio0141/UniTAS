@@ -61,7 +61,7 @@ public class Bind : IEquatable<Bind>
     {
         if (ReferenceEquals(null, other)) return false;
         if (ReferenceEquals(this, other)) return true;
-        return Key == other.Key && string.Equals(Name, other.Name, StringComparison.InvariantCulture);
+        return Name == other.Name;
     }
 
     public override bool Equals(object obj)
@@ -74,10 +74,7 @@ public class Bind : IEquatable<Bind>
 
     public override int GetHashCode()
     {
-        unchecked
-        {
-            return ((int)Key * 397) ^ StringComparer.InvariantCulture.GetHashCode(Name);
-        }
+        return Name.GetHashCode();
     }
 }
 
