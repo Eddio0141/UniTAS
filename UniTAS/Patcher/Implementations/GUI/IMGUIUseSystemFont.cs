@@ -43,7 +43,6 @@ public class IMGUIUseSystemFont
     private void OnGUIUnconditional()
     {
         _updateEvents.OnGUIEventUnconditional -= OnGUIUnconditional;
-        _logger.LogDebug(UnityEngine.GUI.skin.font.fontNames.Join());
         UnityEngine.GUI.skin.font = _font;
         _logger.LogInfo($"Set unity IMGUI font to {FALLBACK_FONT_NAME}");
     }
