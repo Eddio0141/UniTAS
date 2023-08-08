@@ -16,6 +16,6 @@ public class WaitForUpdateUnconditional : CoroutineWait
     protected override void HandleWait()
     {
         _updateEvents = Container.GetInstance<IUpdateEvents>();
-        _updateEvents.OnUpdateActual += UpdateUnconditional;
+        _updateEvents.OnUpdateUnconditional += UpdateUnconditional;
     }
 }
