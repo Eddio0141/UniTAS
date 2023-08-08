@@ -86,8 +86,10 @@ public static class MonoBehaviourEvents
 
         OnUpdateUnconditional?.Invoke();
 
-        foreach (var update in UpdatesActual)
+        var updatesCount = UpdatesActual.Count;
+        for (var i = 0; i < updatesCount; i++)
         {
+            var update = UpdatesActual[i];
             // TODO this is inconsistent and bad, if im doing this then i should apply the same to others
             if (MonoBehaviourController.PausedExecution || MonoBehaviourController.PausedUpdate) continue;
             update();
@@ -114,8 +116,6 @@ public static class MonoBehaviourEvents
         {
             OnFixedUpdateActual?.Invoke();
         }
-
-        StaticLogger.Log.LogDebug($"FixedUpdate, offset: {UpdateInvokeOffset.Offset}");
     }
 
     public static void InvokeOnGUI()
