@@ -31,12 +31,21 @@ public static class MonoBehaviourEvents
     public static event Action OnFixedUpdateActual;
     public static event Action OnGUIUnconditional;
     public static event Action OnGUIActual;
+    public static event Action OnLastUpdateUnconditional;
+    public static event Action OnLastUpdateActual;
 
     private static readonly List<Action> UpdatesActual = new();
 
     private static bool _updated;
     private static bool _calledFixedUpdate;
     private static bool _calledPreUpdate;
+
+    public static void InvokeLastUpdate()
+    {
+        OnLastUpdateUnconditional?.Invoke();
+        if (!MonoBehaviourController.PausedExecution && !MonoBehaviourController.PausedUpdate)
+            OnLastUpdateActual?.Invoke();
+    }
 
     // calls awake before any other script
     public static void InvokeAwake()
@@ -105,6 +114,8 @@ public static class MonoBehaviourEvents
         {
             OnFixedUpdateActual?.Invoke();
         }
+
+        StaticLogger.Log.LogDebug($"FixedUpdate, offset: {UpdateInvokeOffset.Offset}");
     }
 
     public static void InvokeOnGUI()

@@ -25,7 +25,9 @@ public class MonoBehEventInvoker : IMonoBehEventInvoker, IUpdateEvents
         IEnumerable<IOnStartActual> onStartsActual,
         IEnumerable<IOnUpdateActual> onUpdatesActual,
         IEnumerable<IOnInputUpdateActual> onInputUpdatesActual,
-        IEnumerable<IOnInputUpdateUnconditional> onInputUpdatesUnconditional)
+        IEnumerable<IOnInputUpdateUnconditional> onInputUpdatesUnconditional,
+        IEnumerable<IOnLastUpdateUnconditional> onLastUpdatesUnconditional,
+        IEnumerable<IOnLastUpdateActual> onLastUpdatesActual)
     {
         foreach (var onAwake in onAwakesUnconditional)
         {
@@ -93,6 +95,16 @@ public class MonoBehEventInvoker : IMonoBehEventInvoker, IUpdateEvents
             InputSystemEvents.OnInputUpdateUnconditional += (fixedUpdate, newInputSystemUpdateFixedUpdate) =>
                 onInputUpdateUnconditional.InputUpdateUnconditional(fixedUpdate, newInputSystemUpdateFixedUpdate);
         }
+
+        foreach (var onLastUpdateUnconditional in onLastUpdatesUnconditional)
+        {
+            MonoBehaviourEvents.OnLastUpdateUnconditional += onLastUpdateUnconditional.OnLastUpdateUnconditional;
+        }
+
+        foreach (var onLastUpdateActual in onLastUpdatesActual)
+        {
+            MonoBehaviourEvents.OnLastUpdateActual += onLastUpdateActual.OnLastUpdateActual;
+        }
     }
 
     public void Update()
@@ -133,6 +145,18 @@ public class MonoBehEventInvoker : IMonoBehEventInvoker, IUpdateEvents
         remove => MonoBehaviourEvents.OnFixedUpdateActual -= value;
     }
 
+    public event Action OnFixedUpdateUnconditional
+    {
+        add => MonoBehaviourEvents.OnFixedUpdateUnconditional += value;
+        remove => MonoBehaviourEvents.OnFixedUpdateUnconditional -= value;
+    }
+
+    public event Action OnUpdateActual
+    {
+        add => MonoBehaviourEvents.OnUpdateActual += value;
+        remove => MonoBehaviourEvents.OnUpdateActual -= value;
+    }
+
     public event Action OnUpdateUnconditional
     {
         add => MonoBehaviourEvents.OnUpdateUnconditional += value;
@@ -143,6 +167,18 @@ public class MonoBehEventInvoker : IMonoBehEventInvoker, IUpdateEvents
     {
         add => MonoBehaviourEvents.OnGUIUnconditional += value;
         remove => MonoBehaviourEvents.OnGUIUnconditional -= value;
+    }
+
+    public event Action OnLastUpdateUnconditional
+    {
+        add => MonoBehaviourEvents.OnLastUpdateUnconditional += value;
+        remove => MonoBehaviourEvents.OnLastUpdateUnconditional -= value;
+    }
+
+    public event Action OnLastUpdateActual
+    {
+        add => MonoBehaviourEvents.OnLastUpdateActual += value;
+        remove => MonoBehaviourEvents.OnLastUpdateActual -= value;
     }
 
     public event InputSystemEvents.InputUpdateCall OnInputUpdateActual

@@ -11,7 +11,10 @@ public interface IUpdateEvents
     event Action OnAwakeActual;
     event Action OnStartActual;
     event Action OnFixedUpdateActual;
+    event Action OnFixedUpdateUnconditional;
+    event Action OnUpdateActual;
     event Action OnUpdateUnconditional;
     event Action OnGUIEventUnconditional;
+    event Action OnLastUpdateUnconditional;
     event InputSystemEvents.InputUpdateCall OnInputUpdateActual;
 }
