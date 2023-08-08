@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using StructureMap;
 using UniTAS.Patcher.Interfaces.Coroutine;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
-using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
-using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Patcher.Models.Coroutine;
 using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Services;
@@ -13,44 +12,25 @@ namespace UniTAS.Patcher.Implementations.Coroutine;
 
 [Singleton(RegisterPriority.CoroutineHandler)]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-public class CoroutineHandler : ICoroutine, IOnUpdateUnconditional, IOnPreUpdatesUnconditional,
-    IOnLastUpdateUnconditional, IOnFixedUpdateUnconditional, IOnUpdateActual
+public class CoroutineHandler : ICoroutine, ICoroutineRunNext
 {
-    private class Status
+    private readonly IContainer _container;
+
+    public CoroutineHandler(IContainer container)
     {
-        public CoroutineStatus CoroutineStatus { get; }
-        public IEnumerator<CoroutineWait> Coroutine { get; }
-
-        public Status(CoroutineStatus coroutineStatus, IEnumerator<CoroutineWait> coroutine)
-        {
-            CoroutineStatus = coroutineStatus;
-            Coroutine = coroutine;
-        }
-    }
-
-    private readonly Queue<Status> _updateUnconditional = new();
-    private readonly Queue<Status> _updateActual = new();
-    private readonly Queue<Status> _fixedUpdateUnconditional = new();
-    private readonly Queue<Status> _waitForCoroutine = new();
-    private readonly Queue<Status> _lastUpdateUnconditional = new();
-
-    private readonly ISyncFixedUpdateCycle _syncFixedUpdateCycle;
-
-    public CoroutineHandler(ISyncFixedUpdateCycle syncFixedUpdateCycle)
-    {
-        _syncFixedUpdateCycle = syncFixedUpdateCycle;
+        _container = container;
     }
 
     public CoroutineStatus Start(IEnumerator<CoroutineWait> coroutine)
     {
-        var status = new Status(new(), coroutine);
+        var status = new HandlingCoroutineStatus(new(), coroutine);
         RunNext(status);
         return status.CoroutineStatus;
     }
 
-    private void RunNext(Status status)
+    public void RunNext(HandlingCoroutineStatus handlingCoroutineStatus)
     {
-        var coroutine = status.Coroutine;
+        var coroutine = handlingCoroutineStatus.Coroutine;
         bool moveNext;
         try
         {
@@ -58,105 +38,17 @@ public class CoroutineHandler : ICoroutine, IOnUpdateUnconditional, IOnPreUpdate
         }
         catch (Exception e)
         {
-            status.CoroutineStatus.Exception = e;
-            status.CoroutineStatus.IsRunning = false;
+            handlingCoroutineStatus.CoroutineStatus.Exception = e;
+            handlingCoroutineStatus.CoroutineStatus.IsRunning = false;
             return;
         }
 
-        if (!moveNext)
+        if (!moveNext || coroutine.Current == null)
         {
-            status.CoroutineStatus.IsRunning = false;
+            handlingCoroutineStatus.CoroutineStatus.IsRunning = false;
             return;
         }
 
-        switch (coroutine.Current)
-        {
-            case WaitForUpdateUnconditional:
-                _updateUnconditional.Enqueue(status);
-                break;
-            case WaitForUpdateActual:
-                _updateActual.Enqueue(status);
-                break;
-            case WaitForCoroutine:
-                _waitForCoroutine.Enqueue(status);
-                break;
-            case WaitForLastUpdateUnconditional:
-                _lastUpdateUnconditional.Enqueue(status);
-                break;
-            case WaitForFixedUpdateUnconditional:
-                _fixedUpdateUnconditional.Enqueue(status);
-                break;
-            case WaitForOnSync waitForOnSync:
-                _syncFixedUpdateCycle.OnSync(() => { RunNext(status); },
-                    waitForOnSync.InvokeOffset, waitForOnSync.FixedUpdateIndex);
-                break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(coroutine), "Unknown coroutine wait type");
-        }
-    }
-
-    public void UpdateActual()
-    {
-        var count = _updateActual.Count;
-        while (count > 0)
-        {
-            RunNext(_updateActual.Dequeue());
-            count--;
-        }
-    }
-
-    public void UpdateUnconditional()
-    {
-        var count = _updateUnconditional.Count;
-        while (count > 0)
-        {
-            RunNext(_updateUnconditional.Dequeue());
-            count--;
-        }
-    }
-
-    public void PreUpdateUnconditional()
-    {
-        var count = _waitForCoroutine.Count;
-        while (count > 0)
-        {
-            count--;
-
-            var status = _waitForCoroutine.Dequeue();
-            var current = (WaitForCoroutine)status.Coroutine.Current;
-            if (current == null)
-            {
-                RunNext(status);
-                continue;
-            }
-
-            if (!current.CoroutineStatus.IsRunning)
-            {
-                RunNext(status);
-                continue;
-            }
-
-            _waitForCoroutine.Enqueue(status);
-        }
-    }
-
-    public void OnLastUpdateUnconditional()
-    {
-        var count = _lastUpdateUnconditional.Count;
-        while (count > 0)
-        {
-            RunNext(_lastUpdateUnconditional.Dequeue());
-            count--;
-        }
-    }
-
-    public void FixedUpdateUnconditional()
-    {
-        var count = _fixedUpdateUnconditional.Count;
-        while (count > 0)
-        {
-            RunNext(_fixedUpdateUnconditional.Dequeue());
-            count--;
-        }
+        coroutine.Current.HandleWait(this, handlingCoroutineStatus, _container);
     }
 }

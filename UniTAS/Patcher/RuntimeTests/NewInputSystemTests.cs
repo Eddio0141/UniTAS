@@ -1,8 +1,8 @@
 using System.Collections.Generic;
+using UniTAS.Patcher.Implementations.Coroutine;
 using UniTAS.Patcher.Interfaces.Coroutine;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.RuntimeTest;
-using UniTAS.Patcher.Models.Coroutine;
 using UniTAS.Patcher.Models.VirtualEnvironment;
 using UniTAS.Patcher.Services.InputSystemOverride;
 using UniTAS.Patcher.Services.NewInputSystem;
