@@ -10,6 +10,7 @@ using UniTAS.Patcher.Implementations.DependencyInjection;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
 using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
+using UniTAS.Patcher.Interfaces.GlobalHotkeyListener;
 using UniTAS.Patcher.Interfaces.GUI;
 using UniTAS.Patcher.Interfaces.Movie;
 using UniTAS.Patcher.Models.Customization;
@@ -231,7 +232,7 @@ public static class KernelUtils
     [SuppressMessage("ReSharper", "UnusedType.Local")]
     private class BindsDummy : IBinds
     {
-        public Bind Create(BindConfig config)
+        public Bind Create(BindConfig config, bool noGenConfig)
         {
             return null!;
         }
@@ -255,6 +256,15 @@ public static class KernelUtils
         public void ForceLastCallback()
         {
             _callbacks.Dequeue().Invoke();
+        }
+    }
+
+    [Singleton(IncludeDifferentAssembly = true)]
+    [SuppressMessage("ReSharper", "UnusedType.Local")]
+    private class GlobalHotkeyListenerDummy : IGlobalHotkey
+    {
+        public void AddGlobalHotkey(Bind bind, Action callback)
+        {
         }
     }
 

@@ -1,8 +1,7 @@
 using System.Collections.Generic;
 using UniTAS.Patcher.Implementations.Coroutine;
 using UniTAS.Patcher.Interfaces.Coroutine;
-using UniTAS.Patcher.Models.Coroutine;
-using UniTAS.Patcher.Services;
+using UniTAS.Patcher.Utils;
 
 namespace Patcher.Tests;
 
@@ -17,13 +16,16 @@ public class CoroutineTests
 
         Assert.True(status.IsRunning);
 
-        handler.UpdateUnconditional();
+        MonoBehaviourController.PausedUpdate = false;
+        MonoBehaviourEvents.InvokeUpdate();
         Assert.True(status.IsRunning);
 
-        handler.UpdateUnconditional();
+        MonoBehaviourEvents.InvokeLateUpdate();
+        MonoBehaviourEvents.InvokeUpdate();
         Assert.True(status.IsRunning);
 
-        handler.UpdateUnconditional();
+        MonoBehaviourEvents.InvokeLateUpdate();
+        MonoBehaviourEvents.InvokeUpdate();
         Assert.False(status.IsRunning);
     }
 

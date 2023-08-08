@@ -4,8 +4,6 @@ using System.Linq;
 using UniTAS.Patcher.Implementations.Coroutine;
 using UniTAS.Patcher.Interfaces.Coroutine;
 using UniTAS.Patcher.Interfaces.RuntimeTest;
-using UniTAS.Patcher.Models.Coroutine;
-using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.RuntimeTest;
 using UniTAS.Patcher.Utils;
 
@@ -76,7 +74,6 @@ public class RuntimeTest
     {
         var kernel = KernelUtils.Init();
         var processor = kernel.GetInstance<IRuntimeTestProcessor>();
-        var coroutineRunner = (CoroutineHandler)kernel.GetInstance<ICoroutine>();
 
         processor.OnDiscoveredTests += count => Assert.Equal(8, count);
 
@@ -89,10 +86,12 @@ public class RuntimeTest
         };
         processor.Test<RuntimeTest>();
 
+        MonoBehaviourController.PausedUpdate = false;
         for (var i = 0; i < 2; i++)
         {
-            coroutineRunner.PreUpdateUnconditional();
-            coroutineRunner.UpdateUnconditional();
+            MonoBehaviourEvents.InvokeUpdate();
+            MonoBehaviourEvents.InvokeLateUpdate();
+            MonoBehaviourEvents.InvokeFixedUpdate();
         }
     }
 
@@ -101,7 +100,6 @@ public class RuntimeTest
     {
         var kernel = KernelUtils.Init();
         var processor = kernel.GetInstance<IRuntimeTestProcessor>();
-        var coroutineRunner = (CoroutineHandler)kernel.GetInstance<ICoroutine>();
 
         processor.OnTestEnd += results =>
         {
@@ -111,10 +109,12 @@ public class RuntimeTest
 
         processor.Test<RuntimeTest>();
 
+        MonoBehaviourController.PausedUpdate = false;
         for (var i = 0; i < 2; i++)
         {
-            coroutineRunner.PreUpdateUnconditional();
-            coroutineRunner.UpdateUnconditional();
+            MonoBehaviourEvents.InvokeUpdate();
+            MonoBehaviourEvents.InvokeLateUpdate();
+            MonoBehaviourEvents.InvokeFixedUpdate();
         }
     }
 
@@ -123,7 +123,6 @@ public class RuntimeTest
     {
         var kernel = KernelUtils.Init();
         var processor = kernel.GetInstance<IRuntimeTestProcessor>();
-        var coroutineRunner = (CoroutineHandler)kernel.GetInstance<ICoroutine>();
 
         processor.OnTestEnd += results =>
         {
@@ -133,10 +132,12 @@ public class RuntimeTest
 
         processor.Test<RuntimeTest>();
 
+        MonoBehaviourController.PausedUpdate = false;
         for (var i = 0; i < 2; i++)
         {
-            coroutineRunner.PreUpdateUnconditional();
-            coroutineRunner.UpdateUnconditional();
+            MonoBehaviourEvents.InvokeUpdate();
+            MonoBehaviourEvents.InvokeLateUpdate();
+            MonoBehaviourEvents.InvokeFixedUpdate();
         }
     }
 
@@ -146,7 +147,6 @@ public class RuntimeTest
     {
         var kernel = KernelUtils.Init();
         var processor = kernel.GetInstance<IRuntimeTestProcessor>();
-        var coroutineRunner = (CoroutineHandler)kernel.GetInstance<ICoroutine>();
 
         var testRunCount = 0;
         processor.OnTestRun += _ => testRunCount++;
@@ -158,10 +158,12 @@ public class RuntimeTest
 
         processor.Test<RuntimeTest>();
 
+        MonoBehaviourController.PausedUpdate = false;
         for (var i = 0; i < 2; i++)
         {
-            coroutineRunner.PreUpdateUnconditional();
-            coroutineRunner.UpdateUnconditional();
+            MonoBehaviourEvents.InvokeUpdate();
+            MonoBehaviourEvents.InvokeLateUpdate();
+            MonoBehaviourEvents.InvokeFixedUpdate();
         }
     }
 }

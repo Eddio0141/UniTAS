@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
+using UniTAS.Patcher.Implementations.Coroutine;
 using UniTAS.Patcher.Interfaces.Coroutine;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
-using UniTAS.Patcher.Models.Coroutine;
+using UniTAS.Patcher.Interfaces.GlobalHotkeyListener;
 using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Customization;
@@ -52,11 +53,14 @@ public partial class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, I
     private readonly ILogger _logger;
 
     public FrameAdvancing(IMonoBehaviourController monoBehaviourController, IBinds binds,
-        ISyncFixedUpdateCycle syncFixedUpdate, ICoroutine coroutine, ITimeEnv timeEnv, ILogger logger)
+        ISyncFixedUpdateCycle syncFixedUpdate, ICoroutine coroutine, ITimeEnv timeEnv, ILogger logger,
+        IGlobalHotkey globalHotkey)
     {
-        // TODO clean these binds up
-        binds.Create(new("FrameAdvance", KeyCode.Slash));
-        binds.Create(new("FrameAdvanceResume", KeyCode.Period));
+        var frameAdvanceBind = binds.Create(new("FrameAdvance", KeyCode.Slash));
+        var frameAdvanceToggleBind = binds.Create(new("FrameAdvanceToggle", KeyCode.Period));
+        // TODO this needs to be customizable
+        globalHotkey.AddGlobalHotkey(frameAdvanceBind, () => FrameAdvance(1, FrameAdvanceMode.Update));
+        globalHotkey.AddGlobalHotkey(frameAdvanceToggleBind, TogglePause);
 
         _monoBehaviourController = monoBehaviourController;
         _syncFixedUpdate = syncFixedUpdate;

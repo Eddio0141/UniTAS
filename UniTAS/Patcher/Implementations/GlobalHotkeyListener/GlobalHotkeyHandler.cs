@@ -8,6 +8,7 @@ using UniTAS.Patcher.Models.Customization;
 namespace UniTAS.Patcher.Implementations.GlobalHotkeyListener;
 
 [Singleton]
+[ExcludeRegisterIfTesting]
 public class GlobalHotkeyHandler : IGlobalHotkey, IOnUpdateUnconditional
 {
     private readonly List<Models.GlobalHotkeyListener.GlobalHotkey> _hotkeys = new();

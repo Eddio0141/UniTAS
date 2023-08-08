@@ -9,6 +9,7 @@ using UniTAS.Patcher.Services.Logging;
 namespace UniTAS.Patcher.Implementations;
 
 [Singleton(RegisterPriority.FirstUpdateSkipOnRestart)]
+[ExcludeRegisterIfTesting]
 public class FirstUpdateSkipOnRestart : IOnGameRestartResume, IOnUpdateUnconditional, IOnInputUpdateUnconditional,
     IOnPreUpdatesUnconditional, IOnLastUpdateUnconditional
 {
