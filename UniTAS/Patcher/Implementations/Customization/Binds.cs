@@ -12,7 +12,7 @@ namespace UniTAS.Patcher.Implementations.Customization;
 [ExcludeRegisterIfTesting]
 public class Binds : IBinds
 {
-    private readonly HashSet<Bind> _binds = new();
+    private readonly List<Bind> _binds = new();
 
     private readonly IContainer _container;
 
@@ -24,7 +24,8 @@ public class Binds : IBinds
     public Bind Create(BindConfig config, bool noGenConfig = false)
     {
         var bind = _container.With(config).GetInstance<Bind>();
-        if (_binds.Contains(bind)) throw new BindAlreadyExistsException(bind);
+        // don't allow same name
+        if (_binds.Any(x => x.Name == bind.Name)) throw new ConflictingBindNameException(bind);
         _binds.Add(bind);
         bind.InitConfig(noGenConfig);
         return bind;

@@ -15,6 +15,7 @@ using UniTAS.Patcher.Interfaces.GUI;
 using UniTAS.Patcher.Interfaces.Movie;
 using UniTAS.Patcher.Models.Customization;
 using UniTAS.Patcher.Models.DependencyInjection;
+using UniTAS.Patcher.Models.GlobalHotkeyListener;
 using UniTAS.Patcher.Models.GUI;
 using UniTAS.Patcher.Models.UnitySafeWrappers.SceneManagement;
 using UniTAS.Patcher.Models.VirtualEnvironment;
@@ -263,7 +264,7 @@ public static class KernelUtils
     [SuppressMessage("ReSharper", "UnusedType.Local")]
     private class GlobalHotkeyListenerDummy : IGlobalHotkey
     {
-        public void AddGlobalHotkey(Bind bind, Action callback)
+        public void AddGlobalHotkey(GlobalHotkey config)
         {
         }
     }

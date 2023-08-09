@@ -8,9 +8,9 @@ using UnityEngine;
 namespace UniTAS.Patcher.Models.Customization;
 
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-public class Bind : IEquatable<Bind>
+public class Bind
 {
-    private KeyCode Key
+    public KeyCode Key
     {
         get
         {
@@ -55,26 +55,6 @@ public class Bind : IEquatable<Bind>
     public bool IsPressed()
     {
         return _patchReverseInvoker.Invoke(key => UnityInput.Current.GetKeyDown(key), Key);
-    }
-
-    public bool Equals(Bind other)
-    {
-        if (ReferenceEquals(null, other)) return false;
-        if (ReferenceEquals(this, other)) return true;
-        return Name == other.Name;
-    }
-
-    public override bool Equals(object obj)
-    {
-        if (ReferenceEquals(null, obj)) return false;
-        if (ReferenceEquals(this, obj)) return true;
-        if (obj.GetType() != GetType()) return false;
-        return Equals((Bind)obj);
-    }
-
-    public override int GetHashCode()
-    {
-        return Name.GetHashCode();
     }
 }
 
