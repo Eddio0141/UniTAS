@@ -3,6 +3,7 @@ using System.Linq;
 using BepInEx;
 using UniTAS.Patcher.Exceptions.GUI;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
+using UniTAS.Patcher.Interfaces.GlobalHotkeyListener;
 using UniTAS.Patcher.Interfaces.GUI;
 using UniTAS.Patcher.Models.Customization;
 using UniTAS.Patcher.Models.GUI;
@@ -15,6 +16,7 @@ using UnityEngine;
 namespace UniTAS.Patcher.Implementations.GUI.Windows;
 
 [Register]
+[ForceInstantiate]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public class TerminalWindow : Window, ITerminalWindow
 {
@@ -31,15 +33,18 @@ public class TerminalWindow : Window, ITerminalWindow
     private bool _initialFocus = true;
 
     private readonly Bind _terminalBind;
+    private readonly Bind _terminalSubmit;
 
-    public const string TERMINAL_INPUT_BIND_NAME = "NewTerminal";
-
-    public TerminalWindow(WindowDependencies windowDependencies, TerminalEntry[] terminalEntries, IBinds binds) : base(
+    public TerminalWindow(WindowDependencies windowDependencies, TerminalEntry[] terminalEntries, IBinds binds,
+        IGlobalHotkey
+            globalHotkey) : base(
         windowDependencies,
         new(defaultWindowRect: GUIUtils.WindowRect(Screen.width - 100, Screen.height - 100), windowName: "Terminal"))
     {
         _patchReverseInvoker = windowDependencies.PatchReverseInvoker;
-        _terminalBind = binds.Get(TERMINAL_INPUT_BIND_NAME);
+        _terminalBind = binds.Create(new("NewTerminal", KeyCode.BackQuote));
+        _terminalSubmit = binds.Create(new("TerminalSubmit", KeyCode.Return), true);
+        globalHotkey.AddGlobalHotkey(new(_terminalBind, Show));
 
         // check dupes
         var dupes = terminalEntries.GroupBy(x => x.Command).Where(x => x.Count() > 1).Select(x => x.Key).ToArray();
@@ -83,11 +88,6 @@ public class TerminalWindow : Window, ITerminalWindow
         GUILayout.EndVertical();
     }
 
-    private bool GetKeyDown(KeyCode keyCode)
-    {
-        return _patchReverseInvoker.Invoke(key => UnityInput.Current.GetKeyDown(key), keyCode);
-    }
-
     private bool GetKey(KeyCode keyCode)
     {
         return _patchReverseInvoker.Invoke(key => UnityInput.Current.GetKey(key), keyCode);
@@ -109,7 +109,7 @@ public class TerminalWindow : Window, ITerminalWindow
         if (UnityEngine.GUI.GetNameOfFocusedControl() != "TerminalInput" ||
             Event.current.type != EventType.Repaint) return;
 
-        if (GetKeyDown(KeyCode.Return))
+        if (_terminalSubmit.IsPressed())
         {
             // hold shift to split input
             Submit(GetKey(KeyCode.LeftShift) | GetKey(KeyCode.RightShift));
