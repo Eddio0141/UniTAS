@@ -77,7 +77,7 @@ public class RuntimeTest
 
         processor.OnDiscoveredTests += count => Assert.Equal(8, count);
 
-        processor.OnTestEnd += results =>
+        processor.OnTestsFinish += results =>
         {
             Assert.Equal(8, results.Results.Count);
             Assert.Equal(4, results.PassedCount);
@@ -101,7 +101,7 @@ public class RuntimeTest
         var kernel = KernelUtils.Init();
         var processor = kernel.GetInstance<IRuntimeTestProcessor>();
 
-        processor.OnTestEnd += results =>
+        processor.OnTestsFinish += results =>
         {
             var failedResult = results.Results.First(x => !x.Passed);
             Assert.NotNull(failedResult.Exception);
@@ -124,7 +124,7 @@ public class RuntimeTest
         var kernel = KernelUtils.Init();
         var processor = kernel.GetInstance<IRuntimeTestProcessor>();
 
-        processor.OnTestEnd += results =>
+        processor.OnTestsFinish += results =>
         {
             var failedResult = results.Results.First(x => x.Passed);
             Assert.Null(failedResult.Exception);
@@ -150,7 +150,7 @@ public class RuntimeTest
 
         var testRunCount = 0;
         processor.OnTestRun += _ => testRunCount++;
-        processor.OnTestEnd += results =>
+        processor.OnTestsFinish += results =>
         {
             Assert.Equal(8, testRunCount);
             Assert.Equal(testRunCount, results.Results.Count);

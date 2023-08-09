@@ -39,7 +39,7 @@ public class RuntimeTestAndLog : IRuntimeTestAndLog
             return;
         }
 
-        _testProcessor.OnTestEnd += TestLog;
+        _testProcessor.OnTestsFinish += TestLog;
         _testProcessor.Test<RuntimeTestAndLog>();
         _isTesting = true;
     }
@@ -48,7 +48,7 @@ public class RuntimeTestAndLog : IRuntimeTestAndLog
     {
         _logger.LogInfo($"\n{results}");
 
-        _testProcessor.OnTestEnd -= TestLog;
+        _testProcessor.OnTestsFinish -= TestLog;
         _isTesting = false;
     }
 }

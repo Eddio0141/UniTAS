@@ -22,7 +22,9 @@ public class RunUnitTests : TerminalEntry
     public override bool Execute(string[] args, ITerminalWindow terminalWindow)
     {
         _runtimeTestProcessor.Test<RunUnitTests>();
-        _runtimeTestProcessor.OnTestEnd += TestFinish;
+        _runtimeTestProcessor.OnTestsFinish += TestsFinish;
+        _runtimeTestProcessor.OnTestRun += TestRun;
+        _runtimeTestProcessor.OnTestEnd += TestEnd;
 
         _terminalWindow = terminalWindow;
 
@@ -30,9 +32,20 @@ public class RunUnitTests : TerminalEntry
         return true;
     }
 
-    private void TestFinish(TestResults testResults)
+    private void TestsFinish(TestResults testResults)
     {
         _terminalWindow.TerminalPrintLine(testResults.ToString());
         _terminalWindow.ReleaseTerminal();
+    }
+
+    private void TestEnd(TestResult result)
+    {
+        _terminalWindow.TerminalPrintLine($"Test finished : {result.TestName}");
+        _terminalWindow.TerminalPrintLine(result.Passed ? "passed" : result.Skipped ? "skipped" : "failed");
+    }
+
+    private void TestRun(string name)
+    {
+        _terminalWindow.TerminalPrintLine($"Running test {name}");
     }
 }

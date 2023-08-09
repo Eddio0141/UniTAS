@@ -13,7 +13,20 @@ public interface IRuntimeTestProcessor
     void Test<T>();
 
     event DiscoveredTests OnDiscoveredTests;
+
+    /// <summary>
+    /// Before a test is ran
+    /// </summary>
     event TestRun OnTestRun;
+
+    /// <summary>
+    /// After all tests finished running
+    /// </summary>
+    event TestsFinish OnTestsFinish;
+
+    /// <summary>
+    /// After finishing a test
+    /// </summary>
     event TestEnd OnTestEnd;
 }
 
@@ -21,4 +34,6 @@ public delegate void DiscoveredTests(int count);
 
 public delegate void TestRun(string name);
 
-public delegate void TestEnd(TestResults results);
+public delegate void TestsFinish(TestResults results);
+
+public delegate void TestEnd(TestResult result);

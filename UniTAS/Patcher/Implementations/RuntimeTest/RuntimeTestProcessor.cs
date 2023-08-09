@@ -76,14 +76,16 @@ public class RuntimeTestProcessor : IRuntimeTestProcessor
             }
             catch (Exception e)
             {
-                _testResults.Add(new(testName, false, e));
+                TestEnd(new(testName, false, e));
                 continue;
             }
+
+            StaticLogger.Log.LogDebug($"run return type {ret?.GetType().FullName}, name: {testName}");
 
             // check if skipped test
             if (ExtractReturnType<bool>(ret, out var skippedTest) && !skippedTest)
             {
-                _testResults.Add(new(testName));
+                TestEnd(new(testName));
                 continue;
             }
 
@@ -93,7 +95,7 @@ public class RuntimeTestProcessor : IRuntimeTestProcessor
                 continue;
             }
 
-            _testResults.Add(new(testName, true));
+            TestEnd(new(testName, true));
         }
 
         if (_pendingCoroutines.Count > 0)
@@ -102,7 +104,7 @@ public class RuntimeTestProcessor : IRuntimeTestProcessor
             return;
         }
 
-        OnTestEnd?.Invoke(new(_testResults));
+        OnTestsFinish?.Invoke(new(_testResults));
     }
 
     private void RunNextCoroutine()
@@ -124,11 +126,11 @@ public class RuntimeTestProcessor : IRuntimeTestProcessor
 
         if (status.Exception != null)
         {
-            _testResults.Add(new(_processingCoroutineName, false, status.Exception));
+            TestEnd(new(_processingCoroutineName, false, status.Exception));
         }
         else
         {
-            _testResults.Add(new(_processingCoroutineName, true));
+            TestEnd(new(_processingCoroutineName, true));
         }
 
         if (_pendingCoroutines.Count > 0)
@@ -137,7 +139,7 @@ public class RuntimeTestProcessor : IRuntimeTestProcessor
             return;
         }
 
-        OnTestEnd?.Invoke(new(_testResults));
+        OnTestsFinish?.Invoke(new(_testResults));
     }
 
     private static bool ExtractReturnType<T>(object returnValue, out T retValue)
@@ -195,7 +197,14 @@ public class RuntimeTestProcessor : IRuntimeTestProcessor
         return false;
     }
 
+    private void TestEnd(TestResult result)
+    {
+        _testResults.Add(result);
+        OnTestEnd?.Invoke(result);
+    }
+
     public event DiscoveredTests OnDiscoveredTests;
     public event TestRun OnTestRun;
+    public event TestsFinish OnTestsFinish;
     public event TestEnd OnTestEnd;
 }
