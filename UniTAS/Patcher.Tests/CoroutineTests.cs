@@ -39,14 +39,14 @@ public class CoroutineTests
         Assert.False(status.IsRunning);
     }
 
-    private static IEnumerator<CoroutineWait> UpdateUnconditionalCoroutine()
+    private static IEnumerable<CoroutineWait> UpdateUnconditionalCoroutine()
     {
         yield return new WaitForUpdateUnconditional();
         yield return new WaitForUpdateUnconditional();
         yield return new WaitForUpdateUnconditional();
     }
 
-    private static IEnumerator<CoroutineWait> EmptyCoroutine()
+    private static IEnumerable<CoroutineWait> EmptyCoroutine()
     {
         yield break;
     }
@@ -64,7 +64,7 @@ public class CoroutineTests
         Assert.False(status.IsRunning);
     }
 
-    private static IEnumerator<CoroutineWait> SyncFixedUpdateCoroutineTestCoroutine()
+    private static IEnumerable<CoroutineWait> SyncFixedUpdateCoroutineTestCoroutine()
     {
         yield return new WaitForOnSync();
     }

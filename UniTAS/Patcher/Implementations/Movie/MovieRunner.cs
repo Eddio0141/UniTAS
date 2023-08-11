@@ -164,7 +164,7 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvent
         }
     }
 
-    private IEnumerator<CoroutineWait> FinishMovieCleanup()
+    private IEnumerable<CoroutineWait> FinishMovieCleanup()
     {
         yield return new WaitForUpdateUnconditional();
         _virtualEnvController.RunVirtualEnvironment = false;

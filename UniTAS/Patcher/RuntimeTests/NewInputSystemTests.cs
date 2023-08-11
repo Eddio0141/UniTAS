@@ -32,12 +32,12 @@ public class NewInputSystemTests
     }
 
     [RuntimeTest]
-    public Tuple<bool, IEnumerator<CoroutineWait>> MousePosition()
+    public Tuple<bool, IEnumerable<CoroutineWait>> MousePosition()
     {
         return new(_newInputSystemExists.HasInputSystem, MousePositionInternal());
     }
 
-    private IEnumerator<CoroutineWait> MousePositionInternal()
+    private IEnumerable<CoroutineWait> MousePositionInternal()
     {
         var inputSettings = InputSystem.settings;
         var updateMode = inputSettings.updateMode;
@@ -63,12 +63,12 @@ public class NewInputSystemTests
     }
 
     [RuntimeTest]
-    public Tuple<bool, IEnumerator<CoroutineWait>> MouseButtons()
+    public Tuple<bool, IEnumerable<CoroutineWait>> MouseButtons()
     {
         return new(_newInputSystemExists.HasInputSystem, MouseButtonsInternal());
     }
 
-    private IEnumerator<CoroutineWait> MouseButtonsInternal()
+    private IEnumerable<CoroutineWait> MouseButtonsInternal()
     {
         var inputSettings = InputSystem.settings;
         var updateMode = inputSettings.updateMode;

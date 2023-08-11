@@ -198,7 +198,7 @@ public partial class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, I
             $"adding pending frame advances, pending pause frames: {_pendingPauseFrames}, current mode: {_frameAdvanceMode}");
     }
 
-    private IEnumerator<CoroutineWait> Pause(bool update)
+    private IEnumerable<CoroutineWait> Pause(bool update)
     {
         if (_paused || _pendingPause) yield break;
         _pendingPause = true;
