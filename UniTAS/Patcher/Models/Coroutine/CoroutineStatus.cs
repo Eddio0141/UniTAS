@@ -14,10 +14,27 @@ public class CoroutineStatus
             if (!_isRunning) return;
             _isRunning = value;
 
-            OnComplete?.Invoke(this);
+            OnCompleteWait?.Invoke(this);
+            OnCompleteWait = null;
         }
     }
 
     public Exception Exception { get; set; }
-    public event Action<CoroutineStatus> OnComplete;
+
+    private event Action<CoroutineStatus> OnCompleteWait;
+
+    public event Action<CoroutineStatus> OnComplete
+    {
+        add
+        {
+            // invoke if its already done
+            if (!IsRunning)
+            {
+                value.Invoke(this);
+            }
+
+            OnCompleteWait += value;
+        }
+        remove => OnCompleteWait -= value;
+    }
 }

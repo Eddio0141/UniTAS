@@ -21,10 +21,17 @@ public class CoroutineHandler : ICoroutine, ICoroutineRunNext
         _container = container;
     }
 
-    public CoroutineStatus Start(IEnumerator<CoroutineWait> coroutine)
+    public CoroutineStatus Start(IEnumerable<CoroutineWait> coroutine)
     {
         var status = new HandlingCoroutineStatus(new(), coroutine);
         RunNext(status);
+
+        // null check
+        if (coroutine == null)
+        {
+            status.CoroutineFinish();
+        }
+
         return status.CoroutineStatus;
     }
 
@@ -39,13 +46,13 @@ public class CoroutineHandler : ICoroutine, ICoroutineRunNext
         catch (Exception e)
         {
             handlingCoroutineStatus.CoroutineStatus.Exception = e;
-            handlingCoroutineStatus.CoroutineStatus.IsRunning = false;
+            handlingCoroutineStatus.CoroutineFinish();
             return;
         }
 
         if (!moveNext || coroutine.Current == null)
         {
-            handlingCoroutineStatus.CoroutineStatus.IsRunning = false;
+            handlingCoroutineStatus.CoroutineFinish();
             return;
         }
 
