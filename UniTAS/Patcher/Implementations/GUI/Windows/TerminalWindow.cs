@@ -17,6 +17,7 @@ namespace UniTAS.Patcher.Implementations.GUI.Windows;
 
 [Register]
 [ForceInstantiate]
+[ExcludeRegisterIfTesting]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public class TerminalWindow : Window, ITerminalWindow
 {
