@@ -4,14 +4,13 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using MoonSharp.Interpreter;
 using UniTAS.Patcher.Models.Movie;
-using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Implementations.Movie.Parser;
 
 [SuppressMessage("ReSharper", "UnusedType.Global")]
 public partial class MovieParser
 {
-    private Tuple<bool, PropertiesModel> ProcessConfig(Script script)
+    private Utils.Tuple<bool, PropertiesModel> ProcessConfig(Script script)
     {
         const string configVariable = "MOVIE_CONFIG";
 
@@ -31,7 +30,7 @@ public partial class MovieParser
             ),
             GetUpdateType(configTable));
 
-        return Tuple.New(IsGlobalScope(configTable), properties);
+        return new(IsGlobalScope(configTable), properties);
     }
 
     private static bool IsGlobalScope(Table configTable)
@@ -141,7 +140,7 @@ public partial class MovieParser
         return updateType;
     }
 
-    private Tuple<DynValue, string> SelectAndWarnConflictingVariables(Table table, List<string> variables)
+    private Utils.Tuple<DynValue, string> SelectAndWarnConflictingVariables(Table table, List<string> variables)
     {
         var selected = DynValue.Nil;
         var selectedString = string.Empty;
@@ -161,6 +160,6 @@ public partial class MovieParser
             selectedString = variable;
         }
 
-        return Tuple.New(selected, selectedString);
+        return new(selected, selectedString);
     }
 }

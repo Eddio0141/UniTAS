@@ -13,7 +13,6 @@ using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.Movie;
 using UniTAS.Patcher.Services.VirtualEnvironment;
-using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Implementations.Movie;
 
@@ -70,7 +69,7 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvent
             MovieRunningStatusChange(false);
         }
 
-        Tuple<IMovieEngine, PropertiesModel> parsed;
+        Utils.Tuple<IMovieEngine, PropertiesModel> parsed;
         try
         {
             parsed = _parser.Parse(input);

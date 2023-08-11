@@ -38,7 +38,7 @@ public partial class MovieParser : IMovieParser
         _movieProxyTypes = movieProxyTypes;
     }
 
-    public Tuple<IMovieEngine, PropertiesModel> Parse(string input)
+    public Utils.Tuple<IMovieEngine, PropertiesModel> Parse(string input)
     {
         var scriptAndMovieEngine = SetupScript();
         var script = scriptAndMovieEngine.Item1;
@@ -80,7 +80,8 @@ public partial class MovieParser : IMovieParser
 
     private static bool _registeredGlobals;
 
-    private Tuple<Script, MovieEngine> SetupScript(MovieEngine movieEngine = null, PropertiesModel properties = null)
+    private Utils.Tuple<Script, MovieEngine> SetupScript(MovieEngine movieEngine = null,
+        PropertiesModel properties = null)
     {
         // TODO add OS_Time, OS_System, IO later for manipulating state of the vm
         var script = new Script(CoreModules.Basic | CoreModules.GlobalConsts | CoreModules.TableIterators |
@@ -132,7 +133,7 @@ public partial class MovieParser : IMovieParser
         AddEngineMethods(movieEngine);
         AddCustomTypes(script);
 
-        return Tuple.New(script, movieEngine);
+        return new(script, movieEngine);
     }
 
     private void AddEngineMethods(IMovieEngine engine)

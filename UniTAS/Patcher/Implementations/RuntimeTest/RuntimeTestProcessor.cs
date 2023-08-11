@@ -12,7 +12,6 @@ using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Models.RuntimeTest;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.RuntimeTest;
-using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Implementations.RuntimeTest;
 
@@ -23,7 +22,7 @@ public class RuntimeTestProcessor : IRuntimeTestProcessor
     private readonly ICoroutine _coroutine;
 
     private string _processingCoroutineName;
-    private readonly Queue<Tuple<string, IEnumerable<CoroutineWait>>> _pendingCoroutines = new();
+    private readonly Queue<Utils.Tuple<string, IEnumerable<CoroutineWait>>> _pendingCoroutines = new();
     private readonly List<TestResult> _testResults = new();
 
     public RuntimeTestProcessor(IContainer container, ICoroutine coroutine)
@@ -153,7 +152,7 @@ public class RuntimeTestProcessor : IRuntimeTestProcessor
 
         var returnType = returnValue.GetType();
         if (returnType.FullName == null ||
-            !returnType.FullName.StartsWith($"{typeof(Tuple<,>).Namespace}.Tuple`")) return false;
+            !returnType.FullName.StartsWith($"{typeof(Utils.Tuple<,>).Namespace}.Tuple`")) return false;
 
         var fields = AccessTools.GetDeclaredFields(returnType);
         foreach (var field in fields)
@@ -177,7 +176,7 @@ public class RuntimeTestProcessor : IRuntimeTestProcessor
 
         if (returnType == typeof(T)) return true;
         if (returnType.FullName == null ||
-            !returnType.FullName.StartsWith($"{typeof(Tuple<,>).Namespace}.Tuple`")) return false;
+            !returnType.FullName.StartsWith($"{typeof(Utils.Tuple<,>).Namespace}.Tuple`")) return false;
 
         var fields = AccessTools.GetDeclaredFields(returnType);
         foreach (var field in fields)

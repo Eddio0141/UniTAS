@@ -165,7 +165,7 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
         return target;
     }
 
-    private Tuple<double, double> TargetSecondsAndActualSeconds(SyncData syncData)
+    private Utils.Tuple<double, double> TargetSecondsAndActualSeconds(SyncData syncData)
     {
         var targetSeconds = syncData.TimeLeftSet ? syncData.TimeLeft : GetTargetSeconds();
         // unlike normal frame time, i round up
