@@ -16,39 +16,42 @@
         </RestoreAdditionalProjectSources>
         <Configurations>Debug;Release</Configurations>
         <Platforms>AnyCPU</Platforms>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+        <IsPackable>false</IsPackable>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
         <DefineConstants/>
+        <OutputPath>bin/Release/patchers/UniTAS</OutputPath>
+        <DebugType>none</DebugType>
+        <NoWarn/>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+        <OutputPath>bin/Debug/patchers/UniTAS</OutputPath>
+        <NoWarn/>
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Remove="dependency\**"/>
-        <EmbeddedResource Remove="dependency\**"/>
-        <None Remove="dependency\**"/>
-        <Compile Remove="Extern-Assemblies\**"/>
-        <EmbeddedResource Remove="Extern-Assemblies\**"/>
-        <None Remove="Extern-Assemblies\**"/>
-        <Compile Remove="Resources\**"/>
-        <EmbeddedResource Remove="Resources\**"/>
-        <None Remove="Resources\**"/>
+        <ExternAssembliesFiles Include="RuntimeResources\ExternAssemblies\*.*"/>
+        <ResourcesFiles Include="RuntimeResources\Resources\*.*"/>
     </ItemGroup>
+
+    <Target Name="CopyOnBuild" AfterTargets="AfterBuild">
+        <Copy SourceFiles="@(ExternAssembliesFiles)" DestinationFolder="$(OutDir)"/>
+        <Copy SourceFiles="@(ResourcesFiles)" DestinationFolder="$(OutDir)\Resources"/>
+    </Target>
 
     <ItemGroup>
         <PackageReference Include="BepInEx.Analyzers" Version="1.0.8" PrivateAssets="all"/>
         <PackageReference Include="BepInEx.Core" Version="5.4.21"/>
         <PackageReference Include="BepInEx.PluginInfoProps" Version="2.1.0"/>
-        <PackageReference Include="MonoMod.Utils" Version="22.7.31.1"/>
+        <PackageReference Include="MonoMod.Utils" Version="25.0.3"/>
         <PackageReference Include="StructureMap" Version="2.6.3"/>
         <PackageReference Include="Unity.InputSystem" Version="1.5.0"/>
         <PackageReference Include="UnityEngine.Modules" Version="3.4.0" IncludeAssets="compile"/>
         <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <Reference Include="PresentationFramework">
-            <HintPath>.\Extern-Assemblies\PresentationFramework.dll</HintPath>
-        </Reference>
     </ItemGroup>
 
     <ItemGroup>
