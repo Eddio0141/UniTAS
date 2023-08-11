@@ -1,73 +1,13 @@
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using UniTAS.Patcher.Implementations.Coroutine;
-using UniTAS.Patcher.Interfaces.Coroutine;
-using UniTAS.Patcher.Interfaces.RuntimeTest;
 using UniTAS.Patcher.Services.RuntimeTest;
 using UniTAS.Patcher.Utils;
 
-namespace Patcher.Tests;
+namespace Patcher.Tests.RuntimeTests;
 
 [SuppressMessage("ReSharper", "UnusedMember.Local")]
-public class RuntimeTest
+public class RuntimeUnitTest
 {
-    [RuntimeTest]
-    private void RuntimeTestMethod()
-    {
-    }
-
-    [RuntimeTest]
-    private void RuntimeTestFail()
-    {
-        throw new("Runtime test failed");
-    }
-
-    [RuntimeTest]
-    private bool SkipTest()
-    {
-        return false;
-    }
-
-    [RuntimeTest]
-    public Tuple<bool, IEnumerator<CoroutineWait>> SkipAndCoroutineTest()
-    {
-        return new(false, null!);
-    }
-
-    [RuntimeTest]
-    public List<int> WrongReturnType()
-    {
-        return new();
-    }
-
-    [RuntimeTest]
-    public Tuple<bool, IEnumerator<CoroutineWait>> CoroutineTest()
-    {
-        return new(true, CoroutineTestInner());
-    }
-
-    private static IEnumerator<CoroutineWait> CoroutineTestInner()
-    {
-        yield return new WaitForUpdateUnconditional();
-        yield return new WaitForUpdateUnconditional();
-    }
-
-    [RuntimeTest]
-    public IEnumerator<CoroutineWait> CoroutineTest2()
-    {
-        yield return new WaitForUpdateUnconditional();
-        yield return new WaitForUpdateUnconditional();
-    }
-
-    [RuntimeTest]
-    public IEnumerator<CoroutineWait> CoroutineTestFail()
-    {
-        yield return new WaitForUpdateUnconditional();
-        yield return new WaitForUpdateUnconditional();
-        throw new("Coroutine test failed");
-    }
-
     [Fact]
     [SuppressMessage("ReSharper", "ParameterOnlyUsedForPreconditionCheck.Local")]
     public void DiscoverTests()
@@ -75,16 +15,16 @@ public class RuntimeTest
         var kernel = KernelUtils.Init();
         var processor = kernel.GetInstance<IRuntimeTestProcessor>();
 
-        processor.OnDiscoveredTests += count => Assert.Equal(8, count);
+        processor.OnDiscoveredTests += count => Assert.Equal(RuntimeTestsUtils.TotalCount, count);
 
         processor.OnTestsFinish += results =>
         {
-            Assert.Equal(8, results.Results.Count);
-            Assert.Equal(4, results.PassedCount);
-            Assert.Equal(2, results.FailedCount);
-            Assert.Equal(2, results.SkippedCount);
+            Assert.Equal(RuntimeTestsUtils.TotalCount, results.Results.Count);
+            Assert.Equal(RuntimeTestsUtils.PassCount, results.PassedCount);
+            Assert.Equal(RuntimeTestsUtils.FailCount, results.FailedCount);
+            Assert.Equal(RuntimeTestsUtils.SkipCount, results.SkippedCount);
         };
-        processor.Test<RuntimeTest>();
+        processor.Test<RuntimeTests>();
 
         MonoBehaviourController.PausedUpdate = false;
         for (var i = 0; i < 2; i++)
@@ -107,7 +47,7 @@ public class RuntimeTest
             Assert.NotNull(failedResult.Exception);
         };
 
-        processor.Test<RuntimeTest>();
+        processor.Test<RuntimeTests>();
 
         MonoBehaviourController.PausedUpdate = false;
         for (var i = 0; i < 2; i++)
@@ -130,7 +70,7 @@ public class RuntimeTest
             Assert.Null(failedResult.Exception);
         };
 
-        processor.Test<RuntimeTest>();
+        processor.Test<RuntimeTests>();
 
         MonoBehaviourController.PausedUpdate = false;
         for (var i = 0; i < 2; i++)
@@ -152,11 +92,11 @@ public class RuntimeTest
         processor.OnTestRun += _ => testRunCount++;
         processor.OnTestsFinish += results =>
         {
-            Assert.Equal(8, testRunCount);
+            Assert.Equal(RuntimeTestsUtils.TotalCount, testRunCount);
             Assert.Equal(testRunCount, results.Results.Count);
         };
 
-        processor.Test<RuntimeTest>();
+        processor.Test<RuntimeTests>();
 
         MonoBehaviourController.PausedUpdate = false;
         for (var i = 0; i < 2; i++)
@@ -165,5 +105,60 @@ public class RuntimeTest
             MonoBehaviourEvents.InvokeLateUpdate();
             MonoBehaviourEvents.InvokeFixedUpdate();
         }
+    }
+
+    [Fact]
+    public void CheckCoroutineTestEnd()
+    {
+        var kernel = KernelUtils.Init();
+        var processor = kernel.GetInstance<IRuntimeTestProcessor>();
+
+        var coroutineTestRunCount = 0;
+        var coroutineTestEndCount = 0;
+        var normalTestRunCount = 0;
+        var normalTestEndCount = 0;
+        processor.OnTestRun += name =>
+        {
+            if (RuntimeTestsUtils.CoroutineTests.Contains(name))
+            {
+                coroutineTestRunCount++;
+            }
+            else
+            {
+                normalTestRunCount++;
+            }
+        };
+        processor.OnTestEnd += result =>
+        {
+            if (RuntimeTestsUtils.CoroutineTests.Contains(result.TestName))
+            {
+                coroutineTestEndCount++;
+            }
+            else
+            {
+                normalTestEndCount++;
+            }
+        };
+
+        processor.Test<RuntimeTests>();
+
+        // normal tests should be all finished
+        Assert.Equal(RuntimeTestsUtils.NormalTests.Length, normalTestRunCount);
+        Assert.Equal(normalTestRunCount, normalTestEndCount);
+
+        // but not coroutines
+        Assert.Equal(0, coroutineTestEndCount);
+        Assert.Equal(0, coroutineTestRunCount);
+
+        MonoBehaviourController.PausedUpdate = false;
+        for (var i = 0; i < 2; i++)
+        {
+            MonoBehaviourEvents.InvokeUpdate();
+            MonoBehaviourEvents.InvokeLateUpdate();
+            MonoBehaviourEvents.InvokeFixedUpdate();
+        }
+
+        // and now coroutines should be finished too
+        Assert.Equal(RuntimeTestsUtils.CoroutineTests.Length, coroutineTestEndCount);
     }
 }
