@@ -23,7 +23,7 @@ public class RuntimeTestProcessor : IRuntimeTestProcessor
     private readonly ICoroutine _coroutine;
 
     private string _processingCoroutineName;
-    private readonly Queue<Tuple<string, IEnumerator<CoroutineWait>>> _pendingCoroutines = new();
+    private readonly Queue<Tuple<string, IEnumerable<CoroutineWait>>> _pendingCoroutines = new();
     private readonly List<TestResult> _testResults = new();
 
     public RuntimeTestProcessor(IContainer container, ICoroutine coroutine)
@@ -63,7 +63,7 @@ public class RuntimeTestProcessor : IRuntimeTestProcessor
             var testName = $"{typeName}.{test.Name}";
 
             // test run event unless return type is coroutine
-            if (!MethodHasTypeReturn<IEnumerator<CoroutineWait>>(test))
+            if (!MethodHasTypeReturn<IEnumerable<CoroutineWait>>(test))
             {
                 OnTestRun?.Invoke(testName);
             }
@@ -80,16 +80,14 @@ public class RuntimeTestProcessor : IRuntimeTestProcessor
                 continue;
             }
 
-            StaticLogger.Log.LogDebug($"run return type {ret?.GetType().FullName}, name: {testName}");
-
             // check if skipped test
-            if (ExtractReturnType<bool>(ret, out var skippedTest) && !skippedTest)
+            if (ExtractReturnType<bool>(ret, out var notSkippedTest) && !notSkippedTest)
             {
                 TestEnd(new(testName));
                 continue;
             }
 
-            if (ExtractReturnType<IEnumerator<CoroutineWait>>(ret, out var coroutine))
+            if (ExtractReturnType<IEnumerable<CoroutineWait>>(ret, out var coroutine))
             {
                 _pendingCoroutines.Enqueue(new(testName, coroutine));
                 continue;
@@ -122,8 +120,6 @@ public class RuntimeTestProcessor : IRuntimeTestProcessor
 
     private void CoroutineTestEnd(CoroutineStatus status)
     {
-        status.OnComplete -= CoroutineTestEnd;
-
         if (status.Exception != null)
         {
             TestEnd(new(_processingCoroutineName, false, status.Exception));

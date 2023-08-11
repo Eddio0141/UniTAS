@@ -22,7 +22,8 @@ public class RuntimeUnitTest
             Assert.Equal(RuntimeTestsUtils.TotalCount, results.Results.Count);
             Assert.Equal(RuntimeTestsUtils.PassCount, results.PassedCount);
             Assert.Equal(RuntimeTestsUtils.FailCount, results.FailedCount);
-            Assert.Equal(RuntimeTestsUtils.SkipCount, results.SkippedCount);
+            Assert.Equal(RuntimeTestsUtils.SkipNormalTestCount + RuntimeTestsUtils.SkippedCoroutineTestCount,
+                results.SkippedCount);
         };
         processor.Test<RuntimeTests>();
 
@@ -92,8 +93,8 @@ public class RuntimeUnitTest
         processor.OnTestRun += _ => testRunCount++;
         processor.OnTestsFinish += results =>
         {
-            Assert.Equal(RuntimeTestsUtils.TotalCount - RuntimeTestsUtils.SkipCount, testRunCount);
-            Assert.Equal(testRunCount, results.Results.Count);
+            Assert.Equal(RuntimeTestsUtils.TotalCount - RuntimeTestsUtils.SkippedCoroutineTestCount, testRunCount);
+            Assert.Equal(RuntimeTestsUtils.TotalCount, results.Results.Count);
         };
 
         processor.Test<RuntimeTests>();
@@ -143,9 +144,9 @@ public class RuntimeUnitTest
         processor.Test<RuntimeTests>();
 
         // normal tests should be all finished (and the skipped coroutine test)
-        Assert.Equal(RuntimeTestsUtils.NormalTests.Length + RuntimeTestsUtils.SkippedCoroutineTests.Length,
+        Assert.Equal(RuntimeTestsUtils.NormalTestCount + RuntimeTestsUtils.SkippedCoroutineTestCount,
             normalTestRunCount);
-        Assert.Equal(normalTestRunCount, normalTestEndCount + RuntimeTestsUtils.SkippedCoroutineTests.Length);
+        Assert.Equal(normalTestRunCount, normalTestEndCount + RuntimeTestsUtils.SkippedCoroutineTestCount);
 
         // but not coroutines
         Assert.Equal(1, coroutineTestEndCount);
@@ -162,8 +163,8 @@ public class RuntimeUnitTest
         // and now coroutines should be finished too
         Assert.Equal(
             RuntimeTestsUtils.CoroutineTests.Length -
-            RuntimeTestsUtils.SkippedCoroutineTests.Length -
-            RuntimeTestsUtils.FailedCoroutineTests.Length,
+            RuntimeTestsUtils.SkippedCoroutineTestCount -
+            RuntimeTestsUtils.FailedCoroutineTestCount,
             coroutineTestEndCount);
     }
 }

@@ -2,7 +2,7 @@ namespace Patcher.Tests.RuntimeTests;
 
 public static class RuntimeTestsUtils
 {
-    public static readonly string[] NormalTests =
+    private static readonly string[] NormalTests =
     {
         nameof(RuntimeTests.RuntimeTestMethod),
         nameof(RuntimeTests.RuntimeTestFail),
@@ -24,27 +24,32 @@ public static class RuntimeTestsUtils
         nameof(RuntimeTests.CoroutineTestFail)
     };
 
-    private static readonly string[] SkipTests =
+    private static readonly string[] SkipNormalTests =
     {
-        nameof(RuntimeTests.SkipTest),
+        nameof(RuntimeTests.SkipTest)
+    };
+
+    private static readonly string[] SkippedCoroutineTests =
+    {
         nameof(RuntimeTests.SkipAndCoroutineTest)
     };
 
-    public static readonly string[] SkippedCoroutineTests =
-    {
-        nameof(RuntimeTests.SkipAndCoroutineTest)
-    };
-
-    public static readonly string[] FailedCoroutineTests =
+    private static readonly string[] FailedCoroutineTests =
     {
         nameof(RuntimeTests.CoroutineTestFail)
     };
 
-    public static int TotalCount { get; } = NormalTests.Length + CoroutineTests.Length;
+    public static int NormalTestCount { get; } = NormalTests.Length;
+
+    public static int SkippedCoroutineTestCount { get; } = SkippedCoroutineTests.Length;
+
+    public static int FailedCoroutineTestCount { get; } = FailedCoroutineTests.Length;
+
+    public static int TotalCount { get; } = NormalTestCount + CoroutineTests.Length;
 
     public static int FailCount { get; } = FailTests.Length;
 
-    public static int SkipCount { get; } = SkipTests.Length;
+    public static int SkipNormalTestCount { get; } = SkipNormalTests.Length;
 
-    public static int PassCount { get; } = TotalCount - FailCount - SkipCount;
+    public static int PassCount { get; } = TotalCount - FailCount - SkipNormalTestCount;
 }
