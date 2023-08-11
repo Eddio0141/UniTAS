@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using UniTAS.Patcher.Implementations.Coroutine;
 using UniTAS.Patcher.Interfaces.Coroutine;
 using UniTAS.Patcher.Interfaces.RuntimeTest;
@@ -6,6 +7,7 @@ using UniTAS.Patcher.Utils;
 
 namespace Patcher.Tests.RuntimeTests;
 
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public class RuntimeTests
 {
     [RuntimeTest]

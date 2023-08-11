@@ -92,7 +92,7 @@ public class RuntimeUnitTest
         processor.OnTestRun += _ => testRunCount++;
         processor.OnTestsFinish += results =>
         {
-            Assert.Equal(RuntimeTestsUtils.TotalCount, testRunCount);
+            Assert.Equal(RuntimeTestsUtils.TotalCount - RuntimeTestsUtils.SkipCount, testRunCount);
             Assert.Equal(testRunCount, results.Results.Count);
         };
 
@@ -130,7 +130,7 @@ public class RuntimeUnitTest
         };
         processor.OnTestEnd += result =>
         {
-            if (RuntimeTestsUtils.CoroutineTests.Contains(result.TestName))
+            if (RuntimeTestsUtils.CoroutineTests.Any(x => result.TestName.EndsWith(x)))
             {
                 coroutineTestEndCount++;
             }
@@ -142,12 +142,13 @@ public class RuntimeUnitTest
 
         processor.Test<RuntimeTests>();
 
-        // normal tests should be all finished
-        Assert.Equal(RuntimeTestsUtils.NormalTests.Length, normalTestRunCount);
-        Assert.Equal(normalTestRunCount, normalTestEndCount);
+        // normal tests should be all finished (and the skipped coroutine test)
+        Assert.Equal(RuntimeTestsUtils.NormalTests.Length + RuntimeTestsUtils.SkippedCoroutineTests.Length,
+            normalTestRunCount);
+        Assert.Equal(normalTestRunCount, normalTestEndCount + RuntimeTestsUtils.SkippedCoroutineTests.Length);
 
         // but not coroutines
-        Assert.Equal(0, coroutineTestEndCount);
+        Assert.Equal(1, coroutineTestEndCount);
         Assert.Equal(0, coroutineTestRunCount);
 
         MonoBehaviourController.PausedUpdate = false;
@@ -159,6 +160,10 @@ public class RuntimeUnitTest
         }
 
         // and now coroutines should be finished too
-        Assert.Equal(RuntimeTestsUtils.CoroutineTests.Length, coroutineTestEndCount);
+        Assert.Equal(
+            RuntimeTestsUtils.CoroutineTests.Length -
+            RuntimeTestsUtils.SkippedCoroutineTests.Length -
+            RuntimeTestsUtils.FailedCoroutineTests.Length,
+            coroutineTestEndCount);
     }
 }

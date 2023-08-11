@@ -30,6 +30,16 @@ public static class RuntimeTestsUtils
         nameof(RuntimeTests.SkipAndCoroutineTest)
     };
 
+    public static readonly string[] SkippedCoroutineTests =
+    {
+        nameof(RuntimeTests.SkipAndCoroutineTest)
+    };
+
+    public static readonly string[] FailedCoroutineTests =
+    {
+        nameof(RuntimeTests.CoroutineTestFail)
+    };
+
     public static int TotalCount { get; } = NormalTests.Length + CoroutineTests.Length;
 
     public static int FailCount { get; } = FailTests.Length;
