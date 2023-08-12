@@ -21,7 +21,6 @@ jobs:
       - name: Setup ffmpeg
         uses: FedericoCarboni/setup-ffmpeg@v2
       - name: Tests
-        working-directory: ./UniTAS
         run: dotnet test UniTAS --configuration ${{ matrix.configuration }}
       - name: Build
         run: dotnet build UniTAS --configuration ${{ matrix.configuration }}
