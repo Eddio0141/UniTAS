@@ -52,7 +52,17 @@ public class RuntimeTestProcessor : IRuntimeTestProcessor
             .Where(m => !m.IsStatic && m.DeclaringType is { IsAbstract: false, IsInterface: false })
             .Select(m => m.DeclaringType)
             .Distinct()
-            .Select(t => _container.TryGetInstance(t) ?? AccessTools.CreateInstance(t))
+            .Select(t =>
+            {
+                try
+                {
+                    return _container.GetInstance(t);
+                }
+                catch (Exception)
+                {
+                    return AccessTools.CreateInstance(t);
+                }
+            })
             .ToList();
         var emptyParams = new object[0];
 
