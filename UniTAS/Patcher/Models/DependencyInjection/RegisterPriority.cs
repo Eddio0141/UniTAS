@@ -8,6 +8,7 @@ public enum RegisterPriority
     MovieRunner,
     RuntimeTestProcessor,
     Default,
+    GameRestart,
     FrameAdvancing,
     CoroutineHandler,
     ToolBar,
