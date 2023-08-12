@@ -9,6 +9,7 @@ namespace UniTAS.Patcher.Services.EventSubscribers;
 public interface IUpdateEvents
 {
     event Action OnAwakeActual;
+    event Action OnAwakeUnconditional;
     event Action OnStartActual;
     event Action OnFixedUpdateActual;
     event Action OnFixedUpdateUnconditional;
@@ -16,5 +17,7 @@ public interface IUpdateEvents
     event Action OnUpdateUnconditional;
     event Action OnGUIEventUnconditional;
     event Action OnLastUpdateUnconditional;
+    event Action OnLastUpdateActual;
+    event Action OnPreUpdatesActual;
     event InputSystemEvents.InputUpdateCall OnInputUpdateActual;
 }
