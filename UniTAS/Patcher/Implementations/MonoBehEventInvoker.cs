@@ -112,6 +112,11 @@ public class MonoBehEventInvoker : IMonoBehEventInvoker, IUpdateEvents
         MonoBehaviourEvents.InvokeAwake();
     }
 
+    public void Start()
+    {
+        MonoBehaviourEvents.InvokeStart();
+    }
+
     public void Update()
     {
         MonoBehaviourEvents.InvokeUpdate();

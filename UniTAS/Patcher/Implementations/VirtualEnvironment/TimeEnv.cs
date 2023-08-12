@@ -16,7 +16,7 @@ namespace UniTAS.Patcher.Implementations.VirtualEnvironment;
 [Singleton(RegisterPriority.TimeEnv)]
 [ExcludeRegisterIfTesting]
 public class TimeEnv : ITimeEnv, IOnPreUpdatesActual, IOnGameRestartResume, IOnStartActual, IOnLastUpdateActual,
-    IOnFixedUpdateActual, IOnAwakeUnconditional
+    IOnFixedUpdateActual, IOnStartUnconditional
 {
     private readonly ConfigEntry<float> _defaultFps;
 
@@ -49,7 +49,7 @@ public class TimeEnv : ITimeEnv, IOnPreUpdatesActual, IOnGameRestartResume, IOnS
 
     private bool _setInitialFt;
 
-    public void AwakeUnconditional()
+    public void StartUnconditional()
     {
         if (_setInitialFt) return;
         _setInitialFt = true;

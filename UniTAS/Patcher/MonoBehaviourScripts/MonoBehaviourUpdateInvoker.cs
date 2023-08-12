@@ -17,6 +17,11 @@ public class MonoBehaviourUpdateInvoker : MonoBehaviour
         StartCoroutine(EndOfFrame());
     }
 
+    private void Start()
+    {
+        _monoBehEventInvoker.Start();
+    }
+
     private void Update()
     {
         _monoBehEventInvoker.Update();
