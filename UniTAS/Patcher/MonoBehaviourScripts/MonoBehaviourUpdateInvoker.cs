@@ -13,6 +13,7 @@ public class MonoBehaviourUpdateInvoker : MonoBehaviour
     {
         var kernel = ContainerStarter.Kernel;
         _monoBehEventInvoker = kernel.GetInstance<IMonoBehEventInvoker>();
+        _monoBehEventInvoker.Awake();
         StartCoroutine(EndOfFrame());
     }
 

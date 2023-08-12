@@ -107,6 +107,11 @@ public class MonoBehEventInvoker : IMonoBehEventInvoker, IUpdateEvents
         }
     }
 
+    public void Awake()
+    {
+        MonoBehaviourEvents.InvokeAwake();
+    }
+
     public void Update()
     {
         MonoBehaviourEvents.InvokeUpdate();
@@ -131,6 +136,12 @@ public class MonoBehEventInvoker : IMonoBehEventInvoker, IUpdateEvents
     {
         add => MonoBehaviourEvents.OnAwakeActual += value;
         remove => MonoBehaviourEvents.OnAwakeActual -= value;
+    }
+
+    public event Action OnAwakeUnconditional
+    {
+        add => MonoBehaviourEvents.OnAwakeUnconditional += value;
+        remove => MonoBehaviourEvents.OnAwakeUnconditional -= value;
     }
 
     public event Action OnStartActual
@@ -185,5 +196,11 @@ public class MonoBehEventInvoker : IMonoBehEventInvoker, IUpdateEvents
     {
         add => InputSystemEvents.OnInputUpdateActual += value;
         remove => InputSystemEvents.OnInputUpdateActual -= value;
+    }
+
+    public event Action OnPreUpdatesActual
+    {
+        add => MonoBehaviourEvents.OnPreUpdateActual += value;
+        remove => MonoBehaviourEvents.OnPreUpdateActual -= value;
     }
 }
