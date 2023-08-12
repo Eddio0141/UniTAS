@@ -3,6 +3,7 @@ using BepInEx.Configuration;
 using HarmonyLib;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
+using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Patcher.Interfaces.Events.SoftRestart;
 using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Services;
@@ -15,7 +16,7 @@ namespace UniTAS.Patcher.Implementations.VirtualEnvironment;
 [Singleton(RegisterPriority.TimeEnv)]
 [ExcludeRegisterIfTesting]
 public class TimeEnv : ITimeEnv, IOnPreUpdatesActual, IOnGameRestartResume, IOnStartActual, IOnLastUpdateActual,
-    IOnFixedUpdateActual
+    IOnFixedUpdateActual, IOnAwakeUnconditional
 {
     private readonly ConfigEntry<float> _defaultFps;
 
@@ -35,7 +36,6 @@ public class TimeEnv : ITimeEnv, IOnPreUpdatesActual, IOnGameRestartResume, IOnS
         }
 
         _timeWrap = timeWrap;
-        FrameTime = 0f;
 
         // stupid but slightly fixes accuracy on game first start
         var initialFt = 1.0 / _defaultFps.Value;
@@ -47,6 +47,18 @@ public class TimeEnv : ITimeEnv, IOnPreUpdatesActual, IOnGameRestartResume, IOnS
         TimeTolerance = _timeWrap.IntFPSOnly ? 1.0 / int.MaxValue : float.Epsilon;
     }
 
+    private bool _setInitialFt;
+
+    public void AwakeUnconditional()
+    {
+        if (_setInitialFt) return;
+        _setInitialFt = true;
+
+        // set ft here
+        // for some reason unity don't set the deltaTime if I do it too early
+        FrameTime = 0f;
+    }
+
     public double TimeTolerance { get; }
 
     public double FrameTime
@@ -54,7 +66,7 @@ public class TimeEnv : ITimeEnv, IOnPreUpdatesActual, IOnGameRestartResume, IOnS
         get => _timeWrap.CaptureFrameTime;
         set
         {
-            if (value <= 0) value = 1f / _defaultFps.Value;
+            if (value <= 0f) value = 1f / _defaultFps.Value;
             _timeWrap.CaptureFrameTime = value;
         }
     }
