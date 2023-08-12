@@ -22,9 +22,9 @@ jobs:
         uses: FedericoCarboni/setup-ffmpeg@v2
       - name: Tests
         working-directory: ./UniTAS
-        run: dotnet test --configuration ${{ matrix.configuration }}
+        run: dotnet test UniTAS --configuration ${{ matrix.configuration }}
       - name: Build
-        run: dotnet build --configuration ${{ matrix.configuration }}
+        run: dotnet build UniTAS --configuration ${{ matrix.configuration }}
       - name: Get built artifacts
         uses: actions/upload-artifact@v3.1.1
         with:

@@ -42,8 +42,8 @@ You can use [unitas_setup_tool](https://github.com/Eddio0141/unitas_setup_tool) 
 # How to build
 
 - Make sure you have [.NET SDK 7.0](https://dotnet.microsoft.com/en-us/download) installed on your system
-- Switch to the inner `UniTAS` directory
-- Run `dotnet build`
+- Run `dotnet build UniTAS` at the base directory
+  - Remove the `UniTAS` if you are in the inner `UniTAS` directory
   - If you need to choose `Release` or `Debug` config, do so with the `--configuration` flag
 - Output folder would be in `UniTAS/Patcher/bin/{Debug|Release}`
   - The output content can be copied directly inside a `BepInEx` folder to be used
