@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using UniTAS.Patcher.Implementations.Coroutine;
 using UniTAS.Patcher.Interfaces.Coroutine;
 using UniTAS.Patcher.Interfaces.RuntimeTest;
+using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Utils;
 
 namespace Patcher.Tests.RuntimeTests;
@@ -10,6 +11,19 @@ namespace Patcher.Tests.RuntimeTests;
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public class RuntimeTests
 {
+    public RuntimeTests(IGameRestart gameRestart)
+    {
+        _gameRestart = gameRestart;
+    }
+
+    private readonly IGameRestart? _gameRestart;
+
+    [RuntimeTest]
+    public void GameRestartValid()
+    {
+        RuntimeAssert.True(_gameRestart != null);
+    }
+
     [RuntimeTest]
     public void RuntimeTestMethod()
     {

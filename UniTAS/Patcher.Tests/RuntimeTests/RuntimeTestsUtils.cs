@@ -7,7 +7,8 @@ public static class RuntimeTestsUtils
         nameof(RuntimeTests.RuntimeTestMethod),
         nameof(RuntimeTests.RuntimeTestFail),
         nameof(RuntimeTests.SkipTest),
-        nameof(RuntimeTests.WrongReturnType)
+        nameof(RuntimeTests.WrongReturnType),
+        nameof(RuntimeTests.GameRestartValid)
     };
 
     public static readonly string[] CoroutineTests =
