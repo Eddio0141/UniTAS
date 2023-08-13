@@ -3,7 +3,6 @@ using BepInEx.Configuration;
 using HarmonyLib;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
-using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Patcher.Interfaces.Events.SoftRestart;
 using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Services;
@@ -16,7 +15,7 @@ namespace UniTAS.Patcher.Implementations.VirtualEnvironment;
 [Singleton(RegisterPriority.TimeEnv)]
 [ExcludeRegisterIfTesting]
 public class TimeEnv : ITimeEnv, IOnPreUpdatesActual, IOnGameRestartResume, IOnStartActual, IOnLastUpdateActual,
-    IOnFixedUpdateActual, IOnStartUnconditional
+    IOnFixedUpdateActual
 {
     private readonly ConfigEntry<float> _defaultFps;
 
@@ -44,19 +43,8 @@ public class TimeEnv : ITimeEnv, IOnPreUpdatesActual, IOnGameRestartResume, IOnS
         ScaledTime += initialFt;
         SecondsSinceStartUp += initialFt;
 
-        TimeTolerance = _timeWrap.IntFPSOnly ? 1.0 / int.MaxValue : float.Epsilon;
-    }
-
-    private bool _setInitialFt;
-
-    public void StartUnconditional()
-    {
-        if (_setInitialFt) return;
-        _setInitialFt = true;
-
-        // set ft here
-        // for some reason unity don't set the deltaTime if I do it too early
         FrameTime = 0f;
+        TimeTolerance = _timeWrap.IntFPSOnly ? 1.0 / int.MaxValue : float.Epsilon;
     }
 
     public double TimeTolerance { get; }
