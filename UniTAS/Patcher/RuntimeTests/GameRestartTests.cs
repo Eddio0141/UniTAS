@@ -55,18 +55,37 @@ public class GameRestartTests
         // FixedUpdate is the first thing
         yield return new WaitForFixedUpdateActual();
 
-        RuntimeAssert.AreEqual(0f, UpdateInvokeOffset.Offset % Time.fixedDeltaTime,
-            "Didn't match offset at the first fixed update");
+        // don't test offset here, it doesn't matter as long as it syncs up properly in a bit
 
         yield return new WaitForUpdateActual();
 
-        RuntimeAssert.AreEqual(0.01f, _timeEnv.FrameTime % Time.fixedDeltaTime,
+        RuntimeAssert.AreEqual(0.01f, UpdateInvokeOffset.Offset % Time.fixedDeltaTime,
             "Didn't match the offset at the first update");
 
+        yield return new WaitForFixedUpdateActual();
+
+        RuntimeAssert.AreEqual(0.01f, UpdateInvokeOffset.Offset % Time.fixedDeltaTime,
+            "Didn't match the offset at the first fixed update");
+
         yield return new WaitForUpdateActual();
+
+        RuntimeAssert.AreEqual(0f, UpdateInvokeOffset.Offset % Time.fixedDeltaTime,
+            "Didn't match the offset at the second update");
+
+        yield return new WaitForUpdateActual();
+
+        RuntimeAssert.AreEqual(0.01f, UpdateInvokeOffset.Offset % Time.fixedDeltaTime,
+            "Didn't match the offset at the third update");
+
+        yield return new WaitForFixedUpdateActual();
+
+        RuntimeAssert.AreEqual(0.01f, UpdateInvokeOffset.Offset % Time.fixedDeltaTime,
+            "Didn't match the offset at the second fixed update");
 
         _timeEnv.FrameTime = originalFt;
         Time.fixedDeltaTime = originalFixedDt;
         Time.maximumDeltaTime = originalMaxDt;
+
+        yield return new WaitForUpdateActual();
     }
 }
