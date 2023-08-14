@@ -21,12 +21,12 @@ public class RunUnitTests : TerminalEntry
 
     public override bool Execute(string[] args, ITerminalWindow terminalWindow)
     {
-        _runtimeTestProcessor.Test<RunUnitTests>();
+        _terminalWindow = terminalWindow;
+
         _runtimeTestProcessor.OnTestsFinish += TestsFinish;
         _runtimeTestProcessor.OnTestRun += TestRun;
         _runtimeTestProcessor.OnTestEnd += TestEnd;
-
-        _terminalWindow = terminalWindow;
+        _runtimeTestProcessor.Test<RunUnitTests>();
 
         // wait till tests are finished
         return true;
