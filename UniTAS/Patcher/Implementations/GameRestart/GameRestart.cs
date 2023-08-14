@@ -110,7 +110,7 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
 
         // this invokes 2 frames before the sync since the counter is at 1
         // TODO maybe separate the counter to different OnSync calls
-        _syncFixedUpdate.OnSync(() => _pendingSoftRestartCounter = 1, -_timeEnv.FrameTime);
+        _syncFixedUpdate.OnSync(() => _pendingSoftRestartCounter = 1, -_timeEnv.FrameTime * 2f);
         _logger.LogDebug("Soft restarting, pending FixedUpdate sync");
     }
 
