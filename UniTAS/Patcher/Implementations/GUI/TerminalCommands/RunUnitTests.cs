@@ -34,6 +34,10 @@ public class RunUnitTests : TerminalEntry
 
     private void TestsFinish(TestResults testResults)
     {
+        _runtimeTestProcessor.OnTestsFinish -= TestsFinish;
+        _runtimeTestProcessor.OnTestRun -= TestRun;
+        _runtimeTestProcessor.OnTestEnd -= TestEnd;
+
         _terminalWindow.TerminalPrintLine(testResults.ToString());
         _terminalWindow.ReleaseTerminal();
     }
