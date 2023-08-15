@@ -23,13 +23,13 @@
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
         <DefineConstants/>
-        <OutputPath>bin/Release/patchers/UniTAS</OutputPath>
+        <OutputPath>bin/Release/BepInEx/patchers/UniTAS/</OutputPath>
         <DebugType>none</DebugType>
         <NoWarn/>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-        <OutputPath>bin/Debug/patchers/UniTAS</OutputPath>
+        <OutputPath>bin/Debug/BepInEx/patchers/UniTAS/</OutputPath>
         <NoWarn/>
     </PropertyGroup>
 
