@@ -10,6 +10,7 @@ using UniTAS.Patcher.Models.GUI;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Customization;
 using UniTAS.Patcher.Services.GUI;
+using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 
@@ -22,7 +23,9 @@ namespace UniTAS.Patcher.Implementations.GUI.Windows;
 public class TerminalWindow : Window, ITerminalWindow
 {
     public TerminalEntry[] TerminalEntries { get; }
+
     private readonly IPatchReverseInvoker _patchReverseInvoker;
+    private readonly ITerminalLogger _logger;
 
     private string _terminalOutput = string.Empty;
     private string _terminalInput = string.Empty;
@@ -38,7 +41,7 @@ public class TerminalWindow : Window, ITerminalWindow
 
     public TerminalWindow(WindowDependencies windowDependencies, TerminalEntry[] terminalEntries, IBinds binds,
         IGlobalHotkey
-            globalHotkey) : base(
+            globalHotkey, ITerminalLogger logger) : base(
         windowDependencies,
         new(defaultWindowRect: GUIUtils.WindowRect(Screen.width - 100, Screen.height - 100), windowName: "Terminal"))
     {
@@ -51,6 +54,7 @@ public class TerminalWindow : Window, ITerminalWindow
         var dupes = terminalEntries.GroupBy(x => x.Command).Where(x => x.Count() > 1).Select(x => x.Key).ToArray();
         if (dupes.Any()) throw new DuplicateTerminalEntryException(dupes);
         TerminalEntries = terminalEntries;
+        _logger = logger;
     }
 
     private readonly GUILayoutOption[] _textAreaOptions = { GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true) };
@@ -176,6 +180,7 @@ public class TerminalWindow : Window, ITerminalWindow
     public void TerminalPrintLine(string output)
     {
         _terminalOutput += $"{output}\n";
+        _logger.LogMessage(output);
 
         // scroll to bottom
         _terminalOutputScroll.y = Mathf.Infinity;
