@@ -17,8 +17,6 @@ public static class UpdateInvokeOffset
     private static void UpdateUnconditionalOffset()
     {
         Offset += Time.deltaTime;
-        var fixedDeltaTime = Time.fixedDeltaTime;
-        if (Offset > fixedDeltaTime)
-            Offset -= fixedDeltaTime;
+        Offset %= Time.fixedDeltaTime;
     }
 }
