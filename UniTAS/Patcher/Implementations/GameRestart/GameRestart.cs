@@ -17,7 +17,7 @@ namespace UniTAS.Patcher.Implementations.GameRestart;
 // target priority to after sync fixed update
 [Singleton(RegisterPriority.GameRestart)]
 public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUnconditional, IOnStartUnconditional,
-    IOnUpdateUnconditional
+    IOnFixedUpdateUnconditional
 {
     private DateTime _softRestartTime;
 
@@ -34,7 +34,6 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
 
     private bool _pendingRestart;
     private bool _pendingResumePausedExecution;
-    private int _pendingSoftRestartCounter = -1;
 
     [SuppressMessage("ReSharper", "MemberCanBeProtected.Global")]
     public GameRestart(ISyncFixedUpdateCycle syncFixedUpdate, ISceneWrapper sceneWrapper,
@@ -108,10 +107,7 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
         _logger.LogDebug("Enabling finalize invoke");
         _finalizeSuppressor.DisableFinalizeInvoke = false;
 
-        // this invokes 2 frames before the sync since the counter is at 1
-        // TODO maybe separate the counter to different OnSync calls
-        _syncFixedUpdate.OnSync(() => _pendingSoftRestartCounter = 1, -_timeEnv.FrameTime * 2f);
-        _logger.LogDebug("Soft restarting, pending FixedUpdate sync");
+        _syncFixedUpdate.OnSync(SoftRestartOperation, -_timeEnv.FrameTime);
     }
 
     public event GameRestartResume OnGameRestartResume;
@@ -157,23 +153,9 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
         PendingResumePausedExecution("Start");
     }
 
-    public void UpdateUnconditional()
+    public void FixedUpdateUnconditional()
     {
-        if (_pendingSoftRestartCounter > 0)
-        {
-            _pendingSoftRestartCounter--;
-            return;
-        }
-
-        if (_pendingSoftRestartCounter == 0)
-        {
-            _pendingSoftRestartCounter--;
-            SoftRestartOperation();
-        }
-        else
-        {
-            PendingResumePausedExecution("Update");
-        }
+        PendingResumePausedExecution("FixedUpdate");
     }
 
     private void PendingResumePausedExecution(string timing)
