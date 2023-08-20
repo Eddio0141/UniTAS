@@ -91,7 +91,6 @@ public class TimeEnv : ITimeEnv, IOnPreUpdatesActual, IOnGameRestartResume, IOnS
     {
         RealtimeSinceStartup += FrameTime;
         UnscaledTime += FrameTime;
-        // TODO test if this works accurately vs before
         ScaledTime += FrameTime * Time.timeScale;
         SecondsSinceStartUp += FrameTime;
     }
