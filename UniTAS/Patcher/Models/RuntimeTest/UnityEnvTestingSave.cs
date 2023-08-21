@@ -1,9 +1,11 @@
+using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Services.RuntimeTest;
 using UniTAS.Patcher.Services.VirtualEnvironment;
 using UnityEngine;
 
 namespace UniTAS.Patcher.Models.RuntimeTest;
 
+[Register]
 public class UnityEnvTestingSave : IUnityEnvTestingSave
 {
     private double _originalFt;
