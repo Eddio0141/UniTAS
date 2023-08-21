@@ -53,7 +53,13 @@ public class CoroutineHandler : ICoroutine, ICoroutineRunNext
             return;
         }
 
-        if (!moveNext || coroutine.Current == null)
+        if (coroutine.Current == null)
+        {
+            throw new NullReferenceException(
+                "Coroutine yield returned null. This is pointless and doesn't do anything");
+        }
+
+        if (!moveNext)
         {
             handlingCoroutineStatus.CoroutineFinish();
             return;
