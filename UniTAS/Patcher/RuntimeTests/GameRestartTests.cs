@@ -232,14 +232,6 @@ public class GameRestartTests
         // for testing the occasional double fixed update invokes
         var waitManual = new WaitManual();
 
-        void WaitManualCallback(DateTime dateTime, bool preMonoBehaviourResume)
-        {
-            if (!preMonoBehaviourResume)
-            {
-                waitManual.RunNext();
-            }
-        }
-
         _gameRestart.OnGameRestartResume += WaitManualCallback;
 
         _unityEnvTestingSave.Save();
@@ -259,6 +251,15 @@ public class GameRestartTests
         // wait for soft restart
         yield return waitManual;
         _gameRestart.OnGameRestartResume -= WaitManualCallback;
+        yield break;
+
+        void WaitManualCallback(DateTime dateTime, bool preMonoBehaviourResume)
+        {
+            if (!preMonoBehaviourResume)
+            {
+                waitManual.RunNext();
+            }
+        }
     }
 
     private IEnumerable<CoroutineWait> CleanupTest()
