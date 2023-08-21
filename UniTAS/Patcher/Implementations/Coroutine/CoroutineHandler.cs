@@ -24,12 +24,15 @@ public class CoroutineHandler : ICoroutine, ICoroutineRunNext
     public CoroutineStatus Start(IEnumerable<CoroutineWait> coroutine)
     {
         var status = new HandlingCoroutineStatus(new(), coroutine);
-        RunNext(status);
 
         // null check
         if (coroutine == null)
         {
             status.CoroutineFinish();
+        }
+        else
+        {
+            RunNext(status);
         }
 
         return status.CoroutineStatus;
