@@ -31,6 +31,7 @@ public class CoroutineStatus
             if (!IsRunning)
             {
                 value.Invoke(this);
+                return;
             }
 
             OnCompleteWait += value;
