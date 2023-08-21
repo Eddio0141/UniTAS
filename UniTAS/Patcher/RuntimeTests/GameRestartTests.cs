@@ -4,6 +4,7 @@ using UniTAS.Patcher.Implementations.Coroutine;
 using UniTAS.Patcher.Interfaces.Coroutine;
 using UniTAS.Patcher.Interfaces.RuntimeTest;
 using UniTAS.Patcher.Services;
+using UniTAS.Patcher.Services.RuntimeTest;
 using UniTAS.Patcher.Services.VirtualEnvironment;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
@@ -14,13 +15,15 @@ public class GameRestartTests
 {
     private readonly IGameRestart _gameRestart;
     private readonly ITimeEnv _timeEnv;
+    private readonly IUnityEnvTestingSave _unityEnvTestingSave;
 
     private const float TIME_PRECISION = 0.000001f;
 
-    public GameRestartTests(IGameRestart gameRestart, ITimeEnv timeEnv)
+    public GameRestartTests(IGameRestart gameRestart, ITimeEnv timeEnv, IUnityEnvTestingSave unityEnvTestingSave)
     {
         _gameRestart = gameRestart;
         _timeEnv = timeEnv;
+        _unityEnvTestingSave = unityEnvTestingSave;
     }
 
     [RuntimeTest]
@@ -224,10 +227,6 @@ public class GameRestartTests
         yield return new WaitForCoroutine(CleanupTest());
     }
 
-    private double _originalFt;
-    private float _originalFixedDt;
-    private float _originalMaxDt;
-
     private IEnumerable<CoroutineWait> InitTest(float ft, float fixedDeltaTime = 0.02f)
     {
         // for testing the occasional double fixed update invokes
@@ -243,13 +242,12 @@ public class GameRestartTests
 
         _gameRestart.OnGameRestartResume += WaitManualCallback;
 
-        _originalFt = _timeEnv.FrameTime;
-        _originalFixedDt = Time.fixedDeltaTime;
-        _originalMaxDt = Time.maximumDeltaTime;
+        _unityEnvTestingSave.Save();
 
         _timeEnv.FrameTime = ft;
         Time.fixedDeltaTime = fixedDeltaTime;
         Time.maximumDeltaTime = 1f / 3f;
+        Time.timeScale = 1f;
 
         yield return new WaitForFixedUpdateUnconditional();
         yield return new WaitForUpdateUnconditional();
@@ -265,9 +263,7 @@ public class GameRestartTests
 
     private IEnumerable<CoroutineWait> CleanupTest()
     {
-        _timeEnv.FrameTime = _originalFt;
-        Time.fixedDeltaTime = _originalFixedDt;
-        Time.maximumDeltaTime = _originalMaxDt;
+        _unityEnvTestingSave.Restore();
 
         yield return new WaitForFixedUpdateUnconditional();
         yield return new WaitForUpdateUnconditional();
