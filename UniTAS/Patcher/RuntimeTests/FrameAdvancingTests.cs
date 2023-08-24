@@ -100,11 +100,37 @@ public class FrameAdvancingTests
         yield return new WaitForCoroutine(CleanUp());
     }
 
-    // [RuntimeTest]
-    // public void FrameAdvanceFixedUpdate()
-    // {
-    // }
-    //
+    [RuntimeTest]
+    public IEnumerable<CoroutineWait> FrameAdvanceFixedUpdate()
+    {
+        // f
+        // u <- sync, 0
+        // u 0.01
+        // f 0 <- pause
+        // u 0
+        // u 0.01
+        // f <- frame advance
+
+        yield return new WaitForCoroutine(Init(0.01, 0.02f));
+
+        _frameAdvancing.FrameAdvance(1, FrameAdvanceMode.FixedUpdate);
+
+        // the initial pause
+        yield return new WaitForFixedUpdateUnconditional();
+        yield return new WaitForFixedUpdateUnconditional();
+
+        // actual frame advance
+        _frameAdvancing.FrameAdvance(1, FrameAdvanceMode.FixedUpdate);
+
+        yield return new WaitForFixedUpdateActual();
+
+        // time should be advanced
+        RuntimeAssert.AreEqual(_timeEnv.FrameTime, UpdateInvokeOffset.Offset % Time.fixedDeltaTime,
+            "Offset is wrong after frame advance");
+
+        yield return new WaitForCoroutine(CleanUp());
+    }
+
     // [RuntimeTest]
     // public void FrameAdvanceUpdateAndFixedUpdate()
     // {
