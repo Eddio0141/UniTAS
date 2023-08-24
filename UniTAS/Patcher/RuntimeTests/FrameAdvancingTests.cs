@@ -63,12 +63,6 @@ public class FrameAdvancingTests
 
         var actualUpdateCounter = 0;
 
-        yield return new WaitForFixedUpdateUnconditional();
-        yield return new WaitForUpdateUnconditional();
-        yield return new WaitForFixedUpdateUnconditional();
-        yield return new WaitForUpdateUnconditional();
-        yield return new WaitForOnSync();
-
         // is it paused?
         // this should pause it instantly
         _frameAdvancing.FrameAdvance(2, FrameAdvanceMode.Update);
@@ -83,22 +77,24 @@ public class FrameAdvancingTests
         yield return new WaitForCoroutine(CleanUp());
     }
 
-    // [RuntimeTest]
+    [RuntimeTest]
     public IEnumerable<CoroutineWait> FrameAdvanceUpdate()
     {
         yield return new WaitForCoroutine(Init(0.01, 0.02f));
 
-        // pause before update for offset 0 happens
         _frameAdvancing.FrameAdvance(1, FrameAdvanceMode.Update);
 
+        // the initial pause
+        yield return new WaitForUpdateUnconditional();
         yield return new WaitForUpdateUnconditional();
 
+        // actual frame advance
         _frameAdvancing.FrameAdvance(1, FrameAdvanceMode.Update);
 
         yield return new WaitForUpdateActual();
-        // at this point offset should be prev + ft
 
-        RuntimeAssert.AreEqual(0f, UpdateInvokeOffset.Offset % Time.fixedDeltaTime,
+        // time should be advanced
+        RuntimeAssert.AreEqual(_timeEnv.FrameTime, UpdateInvokeOffset.Offset % Time.fixedDeltaTime,
             "Offset is wrong after frame advance");
 
         yield return new WaitForCoroutine(CleanUp());
