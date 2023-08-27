@@ -1,9 +1,11 @@
+using System;
 using System.Collections.Generic;
 using UniTAS.Patcher.Implementations.Coroutine;
 using UniTAS.Patcher.Implementations.FrameAdvancing;
 using UniTAS.Patcher.Interfaces.Coroutine;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.RuntimeTest;
+using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.EventSubscribers;
 using UniTAS.Patcher.Services.FrameAdvancing;
 using UniTAS.Patcher.Services.RuntimeTest;
@@ -20,14 +22,16 @@ public class FrameAdvancingTests
     private readonly IFrameAdvancing _frameAdvancing;
     private readonly IUpdateEvents _updateEvents;
     private readonly IUnityEnvTestingSave _unityEnvTestingSave;
+    private readonly IGameRestart _gameRestart;
 
     public FrameAdvancingTests(ITimeEnv timeEnv, IFrameAdvancing frameAdvancing, IUpdateEvents updateEvents,
-        IUnityEnvTestingSave unityEnvTestingSave)
+        IUnityEnvTestingSave unityEnvTestingSave, IGameRestart gameRestart)
     {
         _timeEnv = timeEnv;
         _frameAdvancing = frameAdvancing;
         _updateEvents = updateEvents;
         _unityEnvTestingSave = unityEnvTestingSave;
+        _gameRestart = gameRestart;
     }
 
     private IEnumerable<CoroutineWait> Init(double ft, float fixedDt)
@@ -41,17 +45,28 @@ public class FrameAdvancingTests
 
         yield return new WaitForFixedUpdateUnconditional();
         yield return new WaitForUpdateUnconditional();
-        yield return new WaitForOnSync();
+
+        var waitManual = new WaitManual();
+        _gameRestart.OnGameRestartResume += WaitManualCallback;
+        _gameRestart.SoftRestart(DateTime.Now);
+
+        yield return waitManual;
+        _gameRestart.OnGameRestartResume -= WaitManualCallback;
+
+        void WaitManualCallback(DateTime dateTime, bool preMonoBehaviourResume)
+        {
+            if (!preMonoBehaviourResume)
+            {
+                waitManual.RunNext();
+            }
+        }
     }
 
     private IEnumerable<CoroutineWait> CleanUp()
     {
         _frameAdvancing.TogglePause();
         _unityEnvTestingSave.Restore();
-        yield return new WaitForFixedUpdateUnconditional();
-        yield return new WaitForUpdateUnconditional();
-        yield return new WaitForFixedUpdateUnconditional();
-        yield return new WaitForUpdateUnconditional();
+        yield return FrameAdvanceWaits;
     }
 
     [RuntimeTest]
@@ -60,19 +75,36 @@ public class FrameAdvancingTests
         yield return new WaitForCoroutine(Init(0.01, 0.02f));
 
         var actualUpdateCounter = 0;
+        var actualFixedUpdateCounter = 0;
 
         // is it paused?
         // this should pause it instantly
         _frameAdvancing.FrameAdvance(2, FrameAdvanceMode.Update);
-        _updateEvents.OnUpdateActual += () => { actualUpdateCounter++; };
 
-        yield return new WaitForUpdateUnconditional();
-        yield return new WaitForUpdateUnconditional();
-        yield return new WaitForUpdateUnconditional();
+        _updateEvents.OnUpdateActual += UpdateCounter;
+        _updateEvents.OnFixedUpdateActual += FixedUpdateCounter;
 
-        RuntimeAssert.AreEqual(1, actualUpdateCounter, "Update counter should be 0 since frame advance is activated");
+        yield return FrameAdvanceWaits;
+
+        RuntimeAssert.AreEqual(0, actualFixedUpdateCounter, "Assert 1");
+        RuntimeAssert.AreEqual(0, actualUpdateCounter, "Assert 2");
 
         yield return new WaitForCoroutine(CleanUp());
+
+        _updateEvents.OnUpdateActual -= UpdateCounter;
+        _updateEvents.OnFixedUpdateActual -= FixedUpdateCounter;
+
+        yield break;
+
+        void UpdateCounter()
+        {
+            actualUpdateCounter++;
+        }
+
+        void FixedUpdateCounter()
+        {
+            actualFixedUpdateCounter++;
+        }
     }
 
     [RuntimeTest]
@@ -83,8 +115,7 @@ public class FrameAdvancingTests
         _frameAdvancing.FrameAdvance(1, FrameAdvanceMode.Update);
 
         // the initial pause
-        yield return new WaitForUpdateUnconditional();
-        yield return new WaitForUpdateUnconditional();
+        yield return FrameAdvanceWaits;
 
         // actual frame advance
         _frameAdvancing.FrameAdvance(1, FrameAdvanceMode.Update);
@@ -92,11 +123,9 @@ public class FrameAdvancingTests
         yield return new WaitForUpdateActual();
 
         // time should be advanced
-        RuntimeAssert.AreEqual(_timeEnv.FrameTime, UpdateInvokeOffset.Offset % Time.fixedDeltaTime,
-            "assert 1");
+        RuntimeAssert.AreEqual(0.01f, Time.time, "assert 1");
 
-        yield return new WaitForUpdateUnconditional();
-        yield return new WaitForUpdateUnconditional();
+        yield return FrameAdvanceWaits;
 
         // =====
 
@@ -104,12 +133,9 @@ public class FrameAdvancingTests
 
         yield return new WaitForUpdateActual();
 
-        RuntimeAssert.AreEqual(_timeEnv.FrameTime * 2 % Time.fixedDeltaTime,
-            UpdateInvokeOffset.Offset % Time.fixedDeltaTime,
-            "assert ");
+        RuntimeAssert.AreEqual(0.02f, Time.time, "assert 2");
 
-        yield return new WaitForUpdateUnconditional();
-        yield return new WaitForUpdateUnconditional();
+        yield return FrameAdvanceWaits;
 
         // =====
 
@@ -117,9 +143,7 @@ public class FrameAdvancingTests
 
         yield return new WaitForUpdateActual();
 
-        RuntimeAssert.AreEqual(_timeEnv.FrameTime * 2 % Time.fixedDeltaTime,
-            UpdateInvokeOffset.Offset % Time.fixedDeltaTime,
-            "assert 3");
+        RuntimeAssert.AreEqual(0.03f, Time.time, "assert 3");
 
         yield return new WaitForCoroutine(CleanUp());
     }
@@ -140,8 +164,7 @@ public class FrameAdvancingTests
         _frameAdvancing.FrameAdvance(1, FrameAdvanceMode.FixedUpdate);
 
         // the initial pause
-        yield return new WaitForFixedUpdateUnconditional();
-        yield return new WaitForFixedUpdateUnconditional();
+        yield return FrameAdvanceWaits;
 
         // actual frame advance
         _frameAdvancing.FrameAdvance(1, FrameAdvanceMode.FixedUpdate);
@@ -149,11 +172,9 @@ public class FrameAdvancingTests
         yield return new WaitForFixedUpdateActual();
 
         // time should be advanced
-        RuntimeAssert.AreEqual(_timeEnv.FrameTime, UpdateInvokeOffset.Offset % Time.fixedDeltaTime,
-            "assert 1");
+        RuntimeAssert.AreEqual(0f, Time.time, "assert 3");
 
-        yield return new WaitForUpdateUnconditional();
-        yield return new WaitForUpdateUnconditional();
+        yield return FrameAdvanceWaits;
 
         // =====
 
@@ -161,11 +182,9 @@ public class FrameAdvancingTests
 
         yield return new WaitForFixedUpdateActual();
 
-        RuntimeAssert.AreEqual(_timeEnv.FrameTime, UpdateInvokeOffset.Offset % Time.fixedDeltaTime,
-            "assert 2");
+        RuntimeAssert.AreEqual(0.02f, Time.time, "assert 2");
 
-        yield return new WaitForUpdateUnconditional();
-        yield return new WaitForUpdateUnconditional();
+        yield return FrameAdvanceWaits;
 
         // =====
 
@@ -174,11 +193,9 @@ public class FrameAdvancingTests
         yield return new WaitForFixedUpdateActual();
 
         // time should be advanced
-        RuntimeAssert.AreEqual(_timeEnv.FrameTime, UpdateInvokeOffset.Offset % Time.fixedDeltaTime,
-            "assert 3");
+        RuntimeAssert.AreEqual(0.04f, Time.time, "assert 3");
 
-        yield return new WaitForUpdateUnconditional();
-        yield return new WaitForUpdateUnconditional();
+        yield return FrameAdvanceWaits;
 
         // =====
 
@@ -188,9 +205,8 @@ public class FrameAdvancingTests
     [RuntimeTest]
     public IEnumerable<CoroutineWait> FrameAdvanceUpdateAndFixedUpdate()
     {
-        // f
-        // u <- sync, 0
-        // u 0.01 <- first pause
+        // f <- first pause
+        // u 0.01
         // f
         // u 0
         // u 0.01
@@ -200,35 +216,30 @@ public class FrameAdvancingTests
 
         _frameAdvancing.FrameAdvance(1, FrameAdvanceMode.Update | FrameAdvanceMode.FixedUpdate);
 
-        // the initial pause
-        yield return new WaitForFixedUpdateUnconditional();
-        yield return new WaitForUpdateUnconditional();
-        yield return new WaitForFixedUpdateUnconditional();
-        yield return new WaitForUpdateUnconditional();
-
-        _frameAdvancing.FrameAdvance(1, FrameAdvanceMode.Update | FrameAdvanceMode.FixedUpdate);
-
-        yield return new WaitForUpdateActual();
-
-        RuntimeAssert.AreEqual(_timeEnv.FrameTime, UpdateInvokeOffset.Offset % Time.fixedDeltaTime,
-            "assert 1");
-
-        yield return new WaitForFixedUpdateUnconditional();
-        yield return new WaitForUpdateUnconditional();
-        yield return new WaitForFixedUpdateUnconditional();
-        yield return new WaitForUpdateUnconditional();
+        // the initial pause, we are at FixedUpdate
+        yield return FrameAdvanceWaits;
 
         _frameAdvancing.FrameAdvance(1, FrameAdvanceMode.Update | FrameAdvanceMode.FixedUpdate);
 
         yield return new WaitForFixedUpdateActual();
 
-        RuntimeAssert.AreEqual(_timeEnv.FrameTime, UpdateInvokeOffset.Offset % Time.fixedDeltaTime,
-            "assert 2");
+        yield return FrameAdvanceWaits;
 
-        yield return new WaitForFixedUpdateUnconditional();
-        yield return new WaitForUpdateUnconditional();
-        yield return new WaitForFixedUpdateUnconditional();
-        yield return new WaitForUpdateUnconditional();
+        _frameAdvancing.FrameAdvance(1, FrameAdvanceMode.Update | FrameAdvanceMode.FixedUpdate);
+
+        yield return new WaitForUpdateActual();
+
+        RuntimeAssert.AreEqual(0.01f, Time.time, "assert 1");
+
+        yield return FrameAdvanceWaits;
+
+        _frameAdvancing.FrameAdvance(1, FrameAdvanceMode.Update | FrameAdvanceMode.FixedUpdate);
+
+        yield return new WaitForFixedUpdateActual();
+
+        RuntimeAssert.AreEqual(0.02f, Time.time, "assert 2");
+
+        yield return FrameAdvanceWaits;
 
         // =====
 
@@ -236,44 +247,39 @@ public class FrameAdvancingTests
 
         yield return new WaitForUpdateActual();
 
-        RuntimeAssert.AreEqual(_timeEnv.FrameTime * 2 % Time.fixedDeltaTime,
-            UpdateInvokeOffset.Offset % Time.fixedDeltaTime,
-            "assert 3");
+        RuntimeAssert.AreEqual(0.02f, Time.time, "assert 3");
 
-        yield return new WaitForFixedUpdateUnconditional();
-        yield return new WaitForUpdateUnconditional();
-        yield return new WaitForFixedUpdateUnconditional();
-        yield return new WaitForUpdateUnconditional();
+        yield return FrameAdvanceWaits;
 
         _frameAdvancing.FrameAdvance(1, FrameAdvanceMode.Update | FrameAdvanceMode.FixedUpdate);
 
         yield return new WaitForUpdateActual();
 
-        RuntimeAssert.AreEqual(_timeEnv.FrameTime * 3 % Time.fixedDeltaTime,
-            UpdateInvokeOffset.Offset % Time.fixedDeltaTime,
-            "assert 4");
+        RuntimeAssert.AreEqual(0.03f, Time.time, "assert 4");
 
-        yield return new WaitForFixedUpdateUnconditional();
-        yield return new WaitForUpdateUnconditional();
-        yield return new WaitForFixedUpdateUnconditional();
-        yield return new WaitForUpdateUnconditional();
+        yield return FrameAdvanceWaits;
 
         _frameAdvancing.FrameAdvance(1, FrameAdvanceMode.Update | FrameAdvanceMode.FixedUpdate);
 
         yield return new WaitForFixedUpdateActual();
 
-        RuntimeAssert.AreEqual(_timeEnv.FrameTime * 3 % Time.fixedDeltaTime,
-            UpdateInvokeOffset.Offset % Time.fixedDeltaTime,
-            "assert 5");
+        RuntimeAssert.AreEqual(0.04f, Time.time, "assert 5");
 
-        yield return new WaitForFixedUpdateUnconditional();
-        yield return new WaitForUpdateUnconditional();
-        yield return new WaitForFixedUpdateUnconditional();
-        yield return new WaitForUpdateUnconditional();
+        yield return FrameAdvanceWaits;
 
         // =====
 
         yield return new WaitForCoroutine(CleanUp());
+    }
+
+    private static WaitForCoroutine FrameAdvanceWaits { get; } = new(FrameAdvanceWaitsCoroutine());
+
+    private static IEnumerable<CoroutineWait> FrameAdvanceWaitsCoroutine()
+    {
+        yield return new WaitForFixedUpdateUnconditional();
+        yield return new WaitForUpdateUnconditional();
+        yield return new WaitForFixedUpdateUnconditional();
+        yield return new WaitForUpdateUnconditional();
     }
 
     // [RuntimeTest]
