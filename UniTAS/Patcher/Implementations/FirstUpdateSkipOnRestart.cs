@@ -1,5 +1,6 @@
 using System;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
+using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
 using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Patcher.Interfaces.Events.SoftRestart;
 using UniTAS.Patcher.Models.DependencyInjection;
@@ -10,8 +11,8 @@ namespace UniTAS.Patcher.Implementations;
 
 [Singleton(RegisterPriority.FirstUpdateSkipOnRestart)]
 [ExcludeRegisterIfTesting]
-public class FirstUpdateSkipOnRestart : IOnGameRestartResume, IOnUpdateUnconditional, IOnInputUpdateUnconditional,
-    IOnPreUpdatesUnconditional, IOnLastUpdateUnconditional
+public class FirstUpdateSkipOnRestart : IOnGameRestartResume, IOnUpdateActual, IOnInputUpdateActual,
+    IOnLastUpdateActual, IOnPreUpdatesUnconditional, IOnInputUpdateUnconditional
 {
     private enum PendingState
     {
@@ -39,6 +40,12 @@ public class FirstUpdateSkipOnRestart : IOnGameRestartResume, IOnUpdateUnconditi
         _pendingState = PendingState.PendingPause;
     }
 
+    public void InputUpdateActual(bool fixedUpdate, bool newInputSystemUpdate)
+    {
+        if (fixedUpdate) return;
+        ProcessUpdates();
+    }
+
     public void InputUpdateUnconditional(bool fixedUpdate, bool newInputSystemUpdate)
     {
         if (_pendingState == PendingState.PendingResumeFinal)
@@ -47,11 +54,9 @@ public class FirstUpdateSkipOnRestart : IOnGameRestartResume, IOnUpdateUnconditi
         }
 
         ProcessResumeFinal();
-        if (fixedUpdate) return;
-        ProcessUpdates();
     }
 
-    public void UpdateUnconditional()
+    public void UpdateActual()
     {
         ProcessUpdates();
     }
@@ -85,7 +90,7 @@ public class FirstUpdateSkipOnRestart : IOnGameRestartResume, IOnUpdateUnconditi
         _monoBehaviourController.PausedUpdate = false;
     }
 
-    public void OnLastUpdateUnconditional()
+    public void OnLastUpdateActual()
     {
         if (_pendingState == PendingState.PendingResumeLastUpdate)
         {
