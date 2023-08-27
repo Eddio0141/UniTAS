@@ -91,10 +91,10 @@ public partial class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, I
 
     public void UpdateUnconditional()
     {
-        if (!_monoBehaviourController.PausedExecution && !_monoBehaviourController.PausedUpdate)
-        {
-            _fixedUpdateIndex = 0;
-        }
+        // if (!_monoBehaviourController.PausedExecution && !_monoBehaviourController.PausedUpdate)
+        // {
+        _fixedUpdateIndex = 0;
+        // }
 
         // check if update offset is valid after the last fixed update
         if (_pendingUpdateOffsetFixState == PendingUpdateOffsetFixState.PendingCheckUpdateOffset)
@@ -124,10 +124,10 @@ public partial class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, I
 
     public void FixedUpdateUnconditional()
     {
-        if (!_monoBehaviourController.PausedExecution)
-        {
-            _fixedUpdateIndex++;
-        }
+        // if (!_monoBehaviourController.PausedExecution)
+        // {
+        _fixedUpdateIndex++;
+        // }
 
         FrameAdvanceUpdate(false);
     }
@@ -203,15 +203,27 @@ public partial class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, I
         if (_paused || _pendingPause) yield break;
         _pendingPause = true;
 
-        // pause at right timing, basically let the game run until reached requirement timing of pause depending on user choice
-        if ((update && (_frameAdvanceMode & FrameAdvanceMode.Update) == 0) ||
-            (!update && (_frameAdvanceMode & FrameAdvanceMode.FixedUpdate) != 0))
+        // if not initial pause
+        if (_paused)
         {
-            yield return new WaitForFixedUpdateUnconditional();
+            // pause at right timing, basically let the game run until reached requirement timing of pause depending on user choice
+            // we run FixedUpdate if mode only includes FixedUpdate
+            // or if mode has FixedUpdate along with other mode and currently is not update
+            if (_frameAdvanceMode == FrameAdvanceMode.FixedUpdate ||
+                (!update && (_frameAdvanceMode & FrameAdvanceMode.FixedUpdate) != 0))
+            {
+                _logger.LogDebug("Pausing frame advance on FixedUpdate");
+                yield return new WaitForFixedUpdateUnconditional();
+            }
+            else
+            {
+                _logger.LogDebug("Pausing frame advance on Update");
+                yield return new WaitForUpdateUnconditional();
+            }
         }
         else
         {
-            yield return new WaitForUpdateUnconditional();
+            _logger.LogDebug("Initial frame advance pause");
         }
 
         _updateRestoreOffset = UpdateInvokeOffset.Offset;
