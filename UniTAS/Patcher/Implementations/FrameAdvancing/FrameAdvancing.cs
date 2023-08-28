@@ -4,6 +4,7 @@ using UniTAS.Patcher.Implementations.Coroutine;
 using UniTAS.Patcher.Interfaces.Coroutine;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
+using UniTAS.Patcher.Interfaces.Events.SoftRestart;
 using UniTAS.Patcher.Interfaces.GlobalHotkeyListener;
 using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Services;
@@ -19,7 +20,8 @@ namespace UniTAS.Patcher.Implementations.FrameAdvancing;
 // this class needs to run before coroutine is processed in CoroutineHandler (for tracking fixed update index)
 // also needs to run after SyncFixedUpdateCycle to process sync method invoke, then handling new fa stuff
 [Singleton(RegisterPriority.FrameAdvancing)]
-public partial class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, IOnFixedUpdateUnconditional
+public partial class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, IOnFixedUpdateUnconditional,
+    IOnGameRestartResume
 {
     private bool _active;
 
@@ -71,6 +73,13 @@ public partial class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, I
         _updateOffsetSyncFix = UpdateOffsetSyncFix;
     }
 
+    public void OnGameRestartResume(DateTime startupTime, bool preMonoBehaviourResume)
+    {
+        if (!preMonoBehaviourResume) return;
+        _fixedUpdateIndex = 0;
+        _active = false;
+    }
+
     public void FrameAdvance(uint frames, FrameAdvanceMode frameAdvanceMode)
     {
         if (!_active)
@@ -87,6 +96,7 @@ public partial class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, I
     public void TogglePause()
     {
         _active = !_active;
+        _logger.LogDebug($"toggled frame advance, active: {_active}");
     }
 
     public void UpdateUnconditional()
@@ -102,7 +112,7 @@ public partial class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, I
             var actualOffset = _pendingUpdateOffsetFixStateCheckingOffset + _timeEnv.FrameTime;
 
             // is it invalid
-            if (Math.Abs(actualOffset - UpdateInvokeOffset.Offset) > _timeEnv.TimeTolerance)
+            if (Math.Abs(actualOffset - UpdateInvokeOffset.Offset) % Time.fixedDeltaTime > _timeEnv.TimeTolerance)
             {
                 _logger.LogDebug(
                     $"invalid offset after FixedUpdate, expected {actualOffset}, current: {UpdateInvokeOffset.Offset}, fixing");
@@ -203,27 +213,19 @@ public partial class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, I
         if (_paused || _pendingPause) yield break;
         _pendingPause = true;
 
-        // if not initial pause
-        if (_paused)
+        // pause at right timing, basically let the game run until reached requirement timing of pause depending on user choice
+        // we run FixedUpdate if mode only includes FixedUpdate
+        // or if mode has FixedUpdate along with other mode and currently is not update
+        if (_frameAdvanceMode == FrameAdvanceMode.FixedUpdate ||
+            (!update && (_frameAdvanceMode & FrameAdvanceMode.FixedUpdate) != 0))
         {
-            // pause at right timing, basically let the game run until reached requirement timing of pause depending on user choice
-            // we run FixedUpdate if mode only includes FixedUpdate
-            // or if mode has FixedUpdate along with other mode and currently is not update
-            if (_frameAdvanceMode == FrameAdvanceMode.FixedUpdate ||
-                (!update && (_frameAdvanceMode & FrameAdvanceMode.FixedUpdate) != 0))
-            {
-                _logger.LogDebug("Pausing frame advance on FixedUpdate");
-                yield return new WaitForFixedUpdateUnconditional();
-            }
-            else
-            {
-                _logger.LogDebug("Pausing frame advance on Update");
-                yield return new WaitForUpdateUnconditional();
-            }
+            _logger.LogDebug("Pausing frame advance on FixedUpdate");
+            yield return new WaitForFixedUpdateUnconditional();
         }
         else
         {
-            _logger.LogDebug("Initial frame advance pause");
+            _logger.LogDebug("Pausing frame advance on Update");
+            yield return new WaitForUpdateUnconditional();
         }
 
         _updateRestoreOffset = UpdateInvokeOffset.Offset;
