@@ -86,7 +86,8 @@ public class FrameAdvancingTests
 
         yield return FrameAdvanceWaits;
 
-        RuntimeAssert.AreEqual(0, actualFixedUpdateCounter, "Assert 1");
+        // because we don't pause on FixedUpdate, it advances by 1 before the first Update
+        RuntimeAssert.AreEqual(1, actualFixedUpdateCounter, "Assert 1");
         RuntimeAssert.AreEqual(0, actualUpdateCounter, "Assert 2");
 
         yield return new WaitForCoroutine(CleanUp());
