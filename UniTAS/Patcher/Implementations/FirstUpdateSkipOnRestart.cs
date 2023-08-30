@@ -43,7 +43,12 @@ public class FirstUpdateSkipOnRestart : IOnGameRestartResume, IOnInputUpdateActu
     public void InputUpdateActual(bool fixedUpdate, bool newInputSystemUpdate)
     {
         if (fixedUpdate) return;
-        ProcessUpdates();
+
+        if (_pendingState != PendingState.PendingPause) return;
+
+        _pendingState = PendingState.PendingResumeLastUpdate;
+        _logger.LogDebug("Pausing mono behaviour to skip an update");
+        _monoBehaviourController.PausedUpdate = true;
     }
 
     public void InputUpdateUnconditional(bool fixedUpdate, bool newInputSystemUpdate)
@@ -54,16 +59,6 @@ public class FirstUpdateSkipOnRestart : IOnGameRestartResume, IOnInputUpdateActu
         }
 
         ProcessResumeFinal();
-    }
-
-    private void ProcessUpdates()
-    {
-        if (_pendingState == PendingState.PendingPause)
-        {
-            _pendingState = PendingState.PendingResumeLastUpdate;
-            _logger.LogDebug("Pausing mono behaviour to skip an update");
-            _monoBehaviourController.PausedUpdate = true;
-        }
     }
 
     public void PreUpdateUnconditional()
