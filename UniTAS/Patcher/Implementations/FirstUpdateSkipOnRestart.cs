@@ -11,8 +11,8 @@ namespace UniTAS.Patcher.Implementations;
 
 [Singleton(RegisterPriority.FirstUpdateSkipOnRestart)]
 [ExcludeRegisterIfTesting]
-public class FirstUpdateSkipOnRestart : IOnGameRestartResume, IOnUpdateActual, IOnInputUpdateActual,
-    IOnLastUpdateActual, IOnPreUpdatesUnconditional, IOnInputUpdateUnconditional
+public class FirstUpdateSkipOnRestart : IOnGameRestartResume, IOnInputUpdateActual, IOnLastUpdateActual,
+    IOnPreUpdatesUnconditional, IOnInputUpdateUnconditional
 {
     private enum PendingState
     {
@@ -54,11 +54,6 @@ public class FirstUpdateSkipOnRestart : IOnGameRestartResume, IOnUpdateActual, I
         }
 
         ProcessResumeFinal();
-    }
-
-    public void UpdateActual()
-    {
-        ProcessUpdates();
     }
 
     private void ProcessUpdates()
