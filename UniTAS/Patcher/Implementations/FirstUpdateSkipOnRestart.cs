@@ -53,39 +53,27 @@ public class FirstUpdateSkipOnRestart : IOnGameRestartResume, IOnInputUpdateActu
 
     public void InputUpdateUnconditional(bool fixedUpdate, bool newInputSystemUpdate)
     {
-        if (_pendingState == PendingState.PendingResumeFinal)
-        {
-            _logger.LogDebug("Resuming mono behaviour, input update");
-        }
-
-        ProcessResumeFinal();
+        ProcessResumeFinal("input update");
     }
 
     public void PreUpdateUnconditional()
     {
-        if (_pendingState == PendingState.PendingResumeFinal)
-        {
-            _logger.LogDebug("Resuming mono behaviour, pre update");
-        }
-
-        ProcessResumeFinal();
+        ProcessResumeFinal("pre update");
     }
 
-    private void ProcessResumeFinal()
+    private void ProcessResumeFinal(string updatePoint)
     {
         if (_pendingState != PendingState.PendingResumeFinal) return;
 
+        _logger.LogDebug($"Skipped an update after restart at {updatePoint}, resuming mono behaviour");
+
         _pendingState = PendingState.PendingRestart;
-        _logger.LogDebug("Resuming mono behaviour");
         _monoBehaviourController.PausedUpdate = false;
     }
 
     public void OnLastUpdateActual()
     {
-        if (_pendingState == PendingState.PendingResumeLastUpdate)
-        {
-            _pendingState = PendingState.PendingResumeFinal;
-            _logger.LogDebug($"new pending state: {_pendingState}");
-        }
+        if (_pendingState != PendingState.PendingResumeLastUpdate) return;
+        _pendingState = PendingState.PendingResumeFinal;
     }
 }
