@@ -20,8 +20,8 @@ namespace UniTAS.Patcher.Implementations.FrameAdvancing;
 // this class needs to run before coroutine is processed in CoroutineHandler (for tracking fixed update index)
 // also needs to run after SyncFixedUpdateCycle to process sync method invoke, then handling new fa stuff
 [Singleton(RegisterPriority.FrameAdvancing)]
-public partial class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, IOnFixedUpdateUnconditional,
-    IOnGameRestartResume
+public partial class FrameAdvancing : IFrameAdvancing, IOnFixedUpdateUnconditional, IOnGameRestartResume,
+    IOnInputUpdateUnconditional
 {
     private bool _active;
 
@@ -99,8 +99,10 @@ public partial class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, I
         _logger.LogDebug($"toggled frame advance, active: {_active}");
     }
 
-    public void UpdateUnconditional()
+    public void InputUpdateUnconditional(bool fixedUpdate, bool newInputSystemUpdate)
     {
+        if (fixedUpdate) return;
+
         // if (!_monoBehaviourController.PausedExecution && !_monoBehaviourController.PausedUpdate)
         // {
         _fixedUpdateIndex = 0;
@@ -220,12 +222,12 @@ public partial class FrameAdvancing : IFrameAdvancing, IOnUpdateUnconditional, I
             (!update && (_frameAdvanceMode & FrameAdvanceMode.FixedUpdate) != 0))
         {
             _logger.LogDebug("Pausing frame advance on FixedUpdate");
-            yield return new WaitForFixedUpdateUnconditional();
+            yield return new WaitForFixedUpdateActual();
         }
         else
         {
             _logger.LogDebug("Pausing frame advance on Update");
-            yield return new WaitForUpdateUnconditional();
+            yield return new WaitForUpdateActual();
         }
 
         _updateRestoreOffset = UpdateInvokeOffset.Offset;
