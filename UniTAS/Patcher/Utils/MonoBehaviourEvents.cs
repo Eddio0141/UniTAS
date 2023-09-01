@@ -141,14 +141,12 @@ public static class MonoBehaviourEvents
 
     public static void InvokeLastUpdate()
     {
-        var unconditionalCount = LastUpdatesUnconditional.Count;
-        for (var i = 0; i < unconditionalCount; i++)
+        for (var i = 0; i < LastUpdatesUnconditional.Count; i++)
         {
             LastUpdatesUnconditional[i]();
         }
 
-        var actualCount = LastUpdatesActual.Count;
-        for (var i = 0; i < actualCount; i++)
+        for (var i = 0; i < LastUpdatesActual.Count; i++)
         {
             var lastUpdate = LastUpdatesActual[i];
             if (MonoBehaviourController.PausedExecution || MonoBehaviourController.PausedUpdate) continue;
@@ -159,14 +157,12 @@ public static class MonoBehaviourEvents
     // calls awake before any other script
     public static void InvokeAwake()
     {
-        var unconditionalCount = AwakesUnconditional.Count;
-        for (var i = 0; i < unconditionalCount; i++)
+        for (var i = 0; i < AwakesUnconditional.Count; i++)
         {
             AwakesUnconditional[i]();
         }
 
-        var actualCount = AwakesActual.Count;
-        for (var i = 0; i < actualCount; i++)
+        for (var i = 0; i < AwakesActual.Count; i++)
         {
             var awake = AwakesActual[i];
             if (!MonoBehaviourController.PausedExecution)
@@ -177,14 +173,12 @@ public static class MonoBehaviourEvents
     // calls onEnable before any other script
     public static void InvokeOnEnable()
     {
-        var unconditionalCount = EnablesUnconditional.Count;
-        for (var i = 0; i < unconditionalCount; i++)
+        for (var i = 0; i < EnablesUnconditional.Count; i++)
         {
             EnablesUnconditional[i]();
         }
 
-        var actualCount = EnablesActual.Count;
-        for (var i = 0; i < actualCount; i++)
+        for (var i = 0; i < EnablesActual.Count; i++)
         {
             var enable = EnablesActual[i];
             if (!MonoBehaviourController.PausedExecution)
@@ -195,18 +189,12 @@ public static class MonoBehaviourEvents
     // calls start before any other script
     public static void InvokeStart()
     {
-        OnStartUnconditional?.Invoke();
-        if (!MonoBehaviourController.PausedExecution)
-            OnStartActual?.Invoke();
-    }
-        var unconditionalCount = StartsUnconditional.Count;
-        for (var i = 0; i < unconditionalCount; i++)
+        for (var i = 0; i < StartsUnconditional.Count; i++)
         {
             StartsUnconditional[i]();
         }
 
-        var actualCount = StartsActual.Count;
-        for (var i = 0; i < actualCount; i++)
+        for (var i = 0; i < StartsActual.Count; i++)
         {
             var start = StartsActual[i];
             if (!MonoBehaviourController.PausedExecution)
@@ -227,14 +215,12 @@ public static class MonoBehaviourEvents
             InvokeCallOnPreUpdate();
         }
 
-        var unconditionalCount = UpdatesUnconditional.Count;
-        for (var i = 0; i < unconditionalCount; i++)
+        for (var i = 0; i < UpdatesUnconditional.Count; i++)
         {
             UpdatesUnconditional[i]();
         }
 
-        var actualCount = UpdatesActual.Count;
-        for (var i = 0; i < actualCount; i++)
+        for (var i = 0; i < UpdatesActual.Count; i++)
         {
             var update = UpdatesActual[i];
             if (MonoBehaviourController.PausedExecution || MonoBehaviourController.PausedUpdate) continue;
@@ -256,14 +242,12 @@ public static class MonoBehaviourEvents
 
         InvokeCallOnPreUpdate();
 
-        var unconditionalCount = FixedUpdatesUnconditional.Count;
-        for (var i = 0; i < unconditionalCount; i++)
+        for (var i = 0; i < FixedUpdatesUnconditional.Count; i++)
         {
             FixedUpdatesUnconditional[i]();
         }
 
-        var actualCount = FixedUpdatesActual.Count;
-        for (var i = 0; i < actualCount; i++)
+        for (var i = 0; i < FixedUpdatesActual.Count; i++)
         {
             var fixedUpdate = FixedUpdatesActual[i];
             if (!MonoBehaviourController.PausedExecution)
@@ -274,14 +258,12 @@ public static class MonoBehaviourEvents
     public static void InvokeOnGUI()
     {
         // currently, this doesn't get called before other scripts
-        var unconditionalCount = GUIsUnconditional.Count;
-        for (var i = 0; i < unconditionalCount; i++)
+        for (var i = 0; i < GUIsUnconditional.Count; i++)
         {
             GUIsUnconditional[i]();
         }
 
-        var actualCount = GUIsActual.Count;
-        for (var i = 0; i < actualCount; i++)
+        for (var i = 0; i < GUIsActual.Count; i++)
         {
             var gui = GUIsActual[i];
             if (!MonoBehaviourController.PausedExecution)
@@ -291,14 +273,12 @@ public static class MonoBehaviourEvents
 
     private static void InvokeCallOnPreUpdate()
     {
-        var unconditionalCount = PreUpdatesUnconditional.Count;
-        for (var i = 0; i < unconditionalCount; i++)
+        for (var i = 0; i < PreUpdatesUnconditional.Count; i++)
         {
             PreUpdatesUnconditional[i]();
         }
 
-        var actualCount = PreUpdatesActual.Count;
-        for (var i = 0; i < actualCount; i++)
+        for (var i = 0; i < PreUpdatesActual.Count; i++)
         {
             var preUpdate = PreUpdatesActual[i];
             if (!MonoBehaviourController.PausedExecution)
