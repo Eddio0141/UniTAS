@@ -1,7 +1,12 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace UniTAS.Patcher.Models;
 
+/// <summary>
+/// Priority list that allows you to insert items at a specific priority.
+/// The lower the priority value, the earlier it gets inserted.
+/// </summary>
 public class PriorityList<T>
 {
     private readonly List<T> _contents = new();
@@ -20,17 +25,22 @@ public class PriorityList<T>
 
         // if the current index is valid, we insert there
         // otherwise search for the next valid index by going backwards in priority
+        var processingPriority = priority;
         while (priorityIndex < 0)
         {
-            priority--;
-            if (priority < 0)
+            processingPriority--;
+            if (processingPriority < 0)
             {
-                priority = 0;
+                // we reached the first without hitting anything
                 priorityIndex = 0;
+                _priorities[priority] = 0;
+
                 break;
             }
 
-            priorityIndex = _priorities[priority];
+            priorityIndex = _priorities[processingPriority];
+            // found the insert index, update the priority list
+            _priorities[priority] = priorityIndex;
         }
 
         // actually insert
@@ -39,7 +49,10 @@ public class PriorityList<T>
         // update priority list indexes
         for (var i = priority; i < _priorities.Count; i++)
         {
-            _priorities[i]++;
+            if (_priorities[i] >= 0)
+            {
+                _priorities[i]++;
+            }
         }
     }
 
@@ -51,12 +64,21 @@ public class PriorityList<T>
         _contents.RemoveAt(index);
 
         // finding index would be the insert index so +1
-        var priorityIndex = _priorities.BinarySearch(index + 1);
+        var priorityIndex = _priorities.IndexOf(index + 1);
 
         // update priority list indexes
         for (var i = priorityIndex; i < _priorities.Count; i++)
         {
-            _priorities[i]--;
+            if (_priorities[i] >= 0)
+            {
+                _priorities[i]--;
+            }
+        }
+
+        // remove useless priority values
+        while (_priorities.Last() < 0)
+        {
+            _priorities.RemoveAt(_priorities.Count - 1);
         }
     }
 
