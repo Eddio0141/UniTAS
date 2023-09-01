@@ -25,4 +25,7 @@ public interface IUpdateEvents
     event InputSystemEvents.InputUpdateCall OnInputUpdateUnconditional;
 
     void AddPriorityCallback(CallbackUpdate callbackUpdate, Action callback, CallbackPriority priority);
+
+    void AddPriorityCallback(CallbackInputUpdate callbackUpdate, InputSystemEvents.InputUpdateCall callback,
+        CallbackPriority priority);
 }

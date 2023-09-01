@@ -1,7 +1,8 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using UniTAS.Patcher.Interfaces.Invoker;
+using UniTAS.Patcher.Models;
+using UniTAS.Patcher.Models.EventSubscribers;
 using UnityEngine.InputSystem;
 
 namespace UniTAS.Patcher.Utils;
@@ -12,13 +13,18 @@ public static class InputSystemEvents
 
     public static event InputUpdateCall OnInputUpdateActual
     {
-        add => InputUpdateActualCalls.Add(value);
-        remove => InputUpdateActualCalls.Remove(value);
+        add => InputUpdatesActual.Add(value, (int)CallbackPriority.Default);
+        remove => InputUpdatesActual.Remove(value);
     }
 
-    public static event InputUpdateCall OnInputUpdateUnconditional;
+    public static event InputUpdateCall OnInputUpdateUnconditional
+    {
+        add => InputUpdatesUnconditional.Add(value, (int)CallbackPriority.Default);
+        remove => InputUpdatesUnconditional.Remove(value);
+    }
 
-    private static readonly List<InputUpdateCall> InputUpdateActualCalls = new();
+    public static readonly PriorityList<InputUpdateCall> InputUpdatesActual = new();
+    public static readonly PriorityList<InputUpdateCall> InputUpdatesUnconditional = new();
 
     private static bool _usingMonoBehUpdate;
     private static bool _usingMonoBehFixedUpdate;
@@ -149,13 +155,16 @@ public static class InputSystemEvents
 
     private static void InputUpdate(bool fixedUpdate, bool newInputSystemUpdate)
     {
-        OnInputUpdateUnconditional?.Invoke(fixedUpdate, newInputSystemUpdate);
+        for (var i = 0; i < InputUpdatesUnconditional.Count; i++)
+        {
+            InputUpdatesUnconditional[i](fixedUpdate, newInputSystemUpdate);
+        }
 
-        foreach (var update in InputUpdateActualCalls)
+        for (var i = 0; i < InputUpdatesActual.Count; i++)
         {
             if (MonoBehaviourController.PausedExecution ||
                 (!fixedUpdate && MonoBehaviourController.PausedUpdate)) continue;
-            update(fixedUpdate, newInputSystemUpdate);
+            InputUpdatesActual[i](fixedUpdate, newInputSystemUpdate);
         }
     }
 }

@@ -247,4 +247,17 @@ public class MonoBehEventInvoker : IMonoBehEventInvoker, IUpdateEvents
 
         callbackList.Add(callback, (int)priority);
     }
+
+    public void AddPriorityCallback(CallbackInputUpdate callbackUpdate, InputSystemEvents.InputUpdateCall callback,
+        CallbackPriority priority)
+    {
+        var callbackList = callbackUpdate switch
+        {
+            CallbackInputUpdate.InputUpdateActual => InputSystemEvents.InputUpdatesActual,
+            CallbackInputUpdate.InputUpdateUnconditional => InputSystemEvents.InputUpdatesUnconditional,
+            _ => throw new ArgumentOutOfRangeException(nameof(callbackUpdate), callbackUpdate, null)
+        };
+
+        callbackList.Add(callback, (int)priority);
+    }
 }
