@@ -91,5 +91,79 @@ public class PriorityListTests
         Assert.Equal(1, list[0]);
         Assert.Equal(2, list[1]);
         Assert.Equal(3, list[2]);
+
+        // remove in odd order
+        list.Remove(3);
+        list.Remove(1);
+        list.Remove(2);
+
+        Assert.Equal(0, list.Count);
+    }
+
+    [Fact]
+    public void RemoveSamePriorities()
+    {
+        var list = new PriorityList<int>();
+        list.Add(1, 0);
+        list.Add(2, 0);
+        list.Add(3, 0);
+        list.Add(4, 0);
+        list.Add(5, 0);
+
+        Assert.Equal(5, list.Count);
+        Assert.Equal(1, list[0]);
+        Assert.Equal(2, list[1]);
+        Assert.Equal(3, list[2]);
+        Assert.Equal(4, list[3]);
+        Assert.Equal(5, list[4]);
+
+        // remove
+        list.Remove(3);
+
+        Assert.Equal(4, list.Count);
+        Assert.Equal(1, list[0]);
+        Assert.Equal(2, list[1]);
+        Assert.Equal(4, list[2]);
+        Assert.Equal(5, list[3]);
+
+        // remove non-existent
+        list.Remove(3);
+        Assert.Equal(4, list.Count);
+
+        // remove the rest
+        list.Remove(1);
+        list.Remove(2);
+        list.Remove(4);
+        list.Remove(5);
+
+        Assert.Equal(0, list.Count);
+    }
+
+    [Fact]
+    public void AddSameItemsSamePriorities()
+    {
+        var list = new PriorityList<int>();
+        list.Add(1, 0);
+        list.Add(1, 0);
+        list.Add(1, 0);
+
+        Assert.Equal(3, list.Count);
+        Assert.Equal(1, list[0]);
+        Assert.Equal(1, list[1]);
+        Assert.Equal(1, list[2]);
+    }
+
+    [Fact]
+    public void AddSameItemsDiffPriorities()
+    {
+        var list = new PriorityList<int>();
+        list.Add(1, 0);
+        list.Add(1, 1);
+        list.Add(1, 2);
+
+        Assert.Equal(3, list.Count);
+        Assert.Equal(1, list[0]);
+        Assert.Equal(1, list[1]);
+        Assert.Equal(1, list[2]);
     }
 }
