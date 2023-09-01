@@ -1,4 +1,5 @@
 ﻿using System;
+using UniTAS.Patcher.Models.EventSubscribers;
 using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Services.EventSubscribers;
@@ -19,5 +20,9 @@ public interface IUpdateEvents
     event Action OnLastUpdateUnconditional;
     event Action OnLastUpdateActual;
     event Action OnPreUpdatesActual;
+    event Action OnPreUpdatesUnconditional;
     event InputSystemEvents.InputUpdateCall OnInputUpdateActual;
+    event InputSystemEvents.InputUpdateCall OnInputUpdateUnconditional;
+
+    void AddPriorityCallback(CallbackUpdate callbackUpdate, Action callback, CallbackPriority priority);
 }

@@ -14,7 +14,6 @@ using UniTAS.Patcher.Interfaces.GlobalHotkeyListener;
 using UniTAS.Patcher.Interfaces.GUI;
 using UniTAS.Patcher.Interfaces.Movie;
 using UniTAS.Patcher.Models.Customization;
-using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Models.GlobalHotkeyListener;
 using UniTAS.Patcher.Models.GUI;
 using UniTAS.Patcher.Models.UnitySafeWrappers.SceneManagement;
@@ -119,7 +118,7 @@ public static class KernelUtils
         }
     }
 
-    [Singleton(RegisterPriority.FirstUpdateSkipOnRestart, IncludeDifferentAssembly = true)]
+    [Singleton(IncludeDifferentAssembly = true)]
     public class TestPriority : IOnPreUpdatesActual
     {
         public void PreUpdateActual()
