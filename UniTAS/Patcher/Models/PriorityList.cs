@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 
 namespace UniTAS.Patcher.Models;
 
@@ -9,80 +8,59 @@ namespace UniTAS.Patcher.Models;
 /// </summary>
 public class PriorityList<T>
 {
-    private readonly List<T> _contents = new();
+    // list of actual items, with the priority index as the value
+    private readonly List<(T, int)> _contents = new();
     private readonly List<int> _priorities = new();
 
     public void Add(T item, int priority)
     {
         // is the priority list smaller than priority?
+        var lastPriorityIndex = _priorities.Count > 0 ? _priorities[_priorities.Count - 1] : 0;
         while (_priorities.Count <= priority)
         {
-            // fill in invalid indexes
-            _priorities.Add(-1);
+            // fill in the gaps with last index
+            _priorities.Add(lastPriorityIndex);
         }
 
-        var priorityIndex = _priorities[priority];
-
-        // if the current index is valid, we insert there
-        // otherwise search for the next valid index by going backwards in priority
-        var processingPriority = priority;
-        while (priorityIndex < 0)
-        {
-            processingPriority--;
-            if (processingPriority < 0)
-            {
-                // we reached the first without hitting anything
-                priorityIndex = 0;
-                _priorities[priority] = 0;
-
-                break;
-            }
-
-            priorityIndex = _priorities[processingPriority];
-            // found the insert index, update the priority list
-            _priorities[priority] = priorityIndex;
-        }
-
-        // actually insert
-        _contents.Insert(priorityIndex, item);
+        // actually insert item
+        _contents.Insert(_priorities[priority], (item, priority));
 
         // update priority list indexes
         for (var i = priority; i < _priorities.Count; i++)
         {
-            if (_priorities[i] >= 0)
-            {
-                _priorities[i]++;
-            }
+            _priorities[i]++;
         }
     }
 
     public void Remove(T item)
     {
-        var index = _contents.IndexOf(item);
-        if (index < 0) return;
+        if (_contents.Count <= 0) return;
 
-        _contents.RemoveAt(index);
+        var itemIndex = 0;
+        while (!_contents[itemIndex].Item1.Equals(item))
+        {
+            itemIndex++;
+            if (_contents.Count <= itemIndex) return;
+        }
 
-        // finding index would be the insert index so +1
-        var priorityIndex = _priorities.IndexOf(index + 1);
+        var priorityIndex = _contents[itemIndex].Item2;
+
+        _contents.RemoveAt(itemIndex);
 
         // update priority list indexes
         for (var i = priorityIndex; i < _priorities.Count; i++)
         {
-            if (_priorities[i] >= 0)
-            {
-                _priorities[i]--;
-            }
+            _priorities[i]--;
         }
 
-        // remove useless priority values
-        while (_priorities.Last() < 0)
+        // remove useless priority values, if first and last priority values are the 0
+        if (_priorities[0] + _priorities[_priorities.Count - 1] <= 0)
         {
-            _priorities.RemoveAt(_priorities.Count - 1);
+            _priorities.Clear();
         }
     }
 
     public int Count => _contents.Count;
 
-    public T this[int index] => _contents[index];
+    public T this[int index] => _contents[index].Item1;
 }
