@@ -1,18 +1,16 @@
 using System;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
-using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
-using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
-using UniTAS.Patcher.Interfaces.Events.SoftRestart;
-using UniTAS.Patcher.Models.DependencyInjection;
+using UniTAS.Patcher.Models.EventSubscribers;
 using UniTAS.Patcher.Services;
+using UniTAS.Patcher.Services.EventSubscribers;
 using UniTAS.Patcher.Services.Logging;
 
 namespace UniTAS.Patcher.Implementations;
 
-[Singleton(RegisterPriority.FirstUpdateSkipOnRestart)]
+[Singleton]
 [ExcludeRegisterIfTesting]
-public class FirstUpdateSkipOnRestart : IOnGameRestartResume, IOnInputUpdateActual, IOnLastUpdateUnconditional,
-    IOnPreUpdatesUnconditional, IOnInputUpdateUnconditional
+[ForceInstantiate]
+public class FirstUpdateSkipOnRestart
 {
     private enum PendingState
     {
@@ -27,10 +25,15 @@ public class FirstUpdateSkipOnRestart : IOnGameRestartResume, IOnInputUpdateActu
     private readonly IMonoBehaviourController _monoBehaviourController;
     private readonly ILogger _logger;
 
-    public FirstUpdateSkipOnRestart(IMonoBehaviourController monoBehaviourController, ILogger logger)
+    private readonly IUpdateEvents _updateEvents;
+
+    public FirstUpdateSkipOnRestart(IMonoBehaviourController monoBehaviourController, ILogger logger,
+        IUpdateEvents updateEvents, IGameRestart gameRestart)
     {
         _monoBehaviourController = monoBehaviourController;
         _logger = logger;
+        _updateEvents = updateEvents;
+        gameRestart.OnGameRestartResume += OnGameRestartResume;
     }
 
     public void OnGameRestartResume(DateTime startupTime, bool preMonoBehaviourResume)
@@ -38,6 +41,9 @@ public class FirstUpdateSkipOnRestart : IOnGameRestartResume, IOnInputUpdateActu
         if (preMonoBehaviourResume) return;
         _logger.LogDebug("Skipping first update after restart");
         _pendingState = PendingState.PendingPause;
+
+        _updateEvents.AddPriorityCallback(CallbackInputUpdate.InputUpdateActual, InputUpdateActual,
+            CallbackPriority.FirstUpdateSkipOnRestart);
     }
 
     public void InputUpdateActual(bool fixedUpdate, bool newInputSystemUpdate)
@@ -46,9 +52,14 @@ public class FirstUpdateSkipOnRestart : IOnGameRestartResume, IOnInputUpdateActu
 
         if (_pendingState != PendingState.PendingPause) return;
 
+        _updateEvents.OnInputUpdateActual -= InputUpdateActual;
+
         _pendingState = PendingState.PendingResumeLastUpdate;
         _logger.LogDebug("Pausing mono behaviour to skip an update");
         _monoBehaviourController.PausedUpdate = true;
+
+        _updateEvents.AddPriorityCallback(CallbackUpdate.LastUpdateUnconditional, OnLastUpdateUnconditional,
+            CallbackPriority.FirstUpdateSkipOnRestart);
     }
 
     public void InputUpdateUnconditional(bool fixedUpdate, bool newInputSystemUpdate)
@@ -64,6 +75,8 @@ public class FirstUpdateSkipOnRestart : IOnGameRestartResume, IOnInputUpdateActu
     private void ProcessResumeFinal(string updatePoint)
     {
         if (_pendingState != PendingState.PendingResumeFinal) return;
+        _updateEvents.OnInputUpdateUnconditional -= InputUpdateUnconditional;
+        _updateEvents.OnPreUpdatesUnconditional -= PreUpdateUnconditional;
 
         _logger.LogDebug($"Skipped an update after restart at {updatePoint}, resuming mono behaviour");
 
@@ -74,6 +87,13 @@ public class FirstUpdateSkipOnRestart : IOnGameRestartResume, IOnInputUpdateActu
     public void OnLastUpdateUnconditional()
     {
         if (_pendingState != PendingState.PendingResumeLastUpdate) return;
+        _updateEvents.OnLastUpdateUnconditional -= OnLastUpdateUnconditional;
+
         _pendingState = PendingState.PendingResumeFinal;
+
+        _updateEvents.AddPriorityCallback(CallbackInputUpdate.InputUpdateUnconditional, InputUpdateUnconditional,
+            CallbackPriority.FirstUpdateSkipOnRestart);
+        _updateEvents.AddPriorityCallback(CallbackUpdate.PreUpdateUnconditional, PreUpdateUnconditional,
+            CallbackPriority.FirstUpdateSkipOnRestart);
     }
 }
