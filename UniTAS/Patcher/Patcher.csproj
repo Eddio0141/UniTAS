@@ -57,4 +57,16 @@
     <ItemGroup>
         <ProjectReference Include="..\..\moonsharp\src\MoonSharp.Interpreter\MoonSharp.Interpreter.net35-client.csproj"/>
     </ItemGroup>
+
+    <ItemGroup>
+        <Compile Remove="RuntimeResources\**"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Remove="RuntimeResources\**"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Remove="RuntimeResources\**"/>
+    </ItemGroup>
 </Project>
