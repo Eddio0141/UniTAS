@@ -5,6 +5,7 @@ using UniTAS.Patcher.Implementations.FrameAdvancing;
 using UniTAS.Patcher.Interfaces.Coroutine;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.RuntimeTest;
+using UniTAS.Patcher.Models.EventSubscribers;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.EventSubscribers;
 using UniTAS.Patcher.Services.FrameAdvancing;
@@ -81,7 +82,8 @@ public class FrameAdvancingTests
         // this should pause it instantly
         _frameAdvancing.FrameAdvance(2, FrameAdvanceMode.Update);
 
-        _updateEvents.OnUpdateActual += UpdateCounter;
+        _updateEvents.AddPriorityCallback(CallbackUpdate.UpdateActual, UpdateCounter,
+            CallbackPriority.FrameAdvancingTest);
         _updateEvents.OnFixedUpdateActual += FixedUpdateCounter;
 
         yield return FrameAdvanceWaits;
@@ -273,7 +275,7 @@ public class FrameAdvancingTests
         yield return new WaitForCoroutine(CleanUp());
     }
 
-    private static WaitForCoroutine FrameAdvanceWaits { get; } = new(FrameAdvanceWaitsCoroutine());
+    private static WaitForCoroutine FrameAdvanceWaits => new(FrameAdvanceWaitsCoroutine());
 
     private static IEnumerable<CoroutineWait> FrameAdvanceWaitsCoroutine()
     {
