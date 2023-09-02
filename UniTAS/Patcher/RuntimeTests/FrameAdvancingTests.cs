@@ -226,13 +226,15 @@ public class FrameAdvancingTests
 
         yield return new WaitForFixedUpdateActual();
 
+        RuntimeAssert.AreEqual(0f, Time.time, "assert 1");
+
         yield return FrameAdvanceWaits;
 
         _frameAdvancing.FrameAdvance(1, FrameAdvanceMode.Update | FrameAdvanceMode.FixedUpdate);
 
         yield return new WaitForUpdateActual();
 
-        RuntimeAssert.AreEqual(0.01f, Time.time, "assert 1");
+        RuntimeAssert.AreEqual(0.01f, Time.time, "assert 2");
 
         yield return FrameAdvanceWaits;
 
@@ -240,7 +242,7 @@ public class FrameAdvancingTests
 
         yield return new WaitForFixedUpdateActual();
 
-        RuntimeAssert.AreEqual(0.02f, Time.time, "assert 2");
+        RuntimeAssert.AreEqual(0.02f, Time.time, "assert 3");
 
         yield return FrameAdvanceWaits;
 
@@ -250,7 +252,7 @@ public class FrameAdvancingTests
 
         yield return new WaitForUpdateActual();
 
-        RuntimeAssert.AreEqual(0.02f, Time.time, "assert 3");
+        RuntimeAssert.AreEqual(0.02f, Time.time, "assert 4");
 
         yield return FrameAdvanceWaits;
 
@@ -258,7 +260,7 @@ public class FrameAdvancingTests
 
         yield return new WaitForUpdateActual();
 
-        RuntimeAssert.AreEqual(0.03f, Time.time, "assert 4");
+        RuntimeAssert.AreEqual(0.03f, Time.time, "assert 5");
 
         yield return FrameAdvanceWaits;
 
@@ -266,7 +268,7 @@ public class FrameAdvancingTests
 
         yield return new WaitForFixedUpdateActual();
 
-        RuntimeAssert.AreEqual(0.04f, Time.time, "assert 5");
+        RuntimeAssert.AreEqual(0.04f, Time.time, "assert 6");
 
         yield return FrameAdvanceWaits;
 
