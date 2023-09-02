@@ -1,8 +1,10 @@
 using System;
 using UniTAS.Patcher.Models;
 using UniTAS.Patcher.Models.EventSubscribers;
+#if TRACE
 using UniTAS.Patcher.Services;
 using UnityEngine;
+#endif
 
 namespace UniTAS.Patcher.Utils;
 
@@ -202,12 +204,22 @@ public static class MonoBehaviourEvents
         }
     }
 
+#if TRACE
+    private static IPatchReverseInvoker _patchReverseInvoker;
+#endif
+
     public static void InvokeUpdate()
     {
         if (_updated) return;
         _updated = true;
 
         _calledFixedUpdate = false;
+
+#if TRACE
+        _patchReverseInvoker ??= ContainerStarter.Kernel.GetInstance<IPatchReverseInvoker>();
+        StaticLogger.Trace(
+            $"InvokeUpdate, time: {_patchReverseInvoker.Invoke(() => Time.time)}, offset: {UpdateInvokeOffset.Offset}");
+#endif
 
         if (!_calledPreUpdate)
         {
@@ -239,6 +251,11 @@ public static class MonoBehaviourEvents
     {
         if (_calledFixedUpdate) return;
         _calledFixedUpdate = true;
+
+#if TRACE
+        StaticLogger.Log.LogDebug($"InvokeFixedUpdate, time: {_patchReverseInvoker.Invoke(() => Time.time)}");
+        _patchReverseInvoker ??= ContainerStarter.Kernel.GetInstance<IPatchReverseInvoker>();
+#endif
 
         InvokeCallOnPreUpdate();
 

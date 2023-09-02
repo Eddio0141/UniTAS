@@ -155,6 +155,8 @@ public static class InputSystemEvents
 
     private static void InputUpdate(bool fixedUpdate, bool newInputSystemUpdate)
     {
+        StaticLogger.Trace(
+            $"InputUpdate, fixed update: {fixedUpdate}, new input system update: {newInputSystemUpdate}");
         for (var i = 0; i < InputUpdatesUnconditional.Count; i++)
         {
             InputUpdatesUnconditional[i](fixedUpdate, newInputSystemUpdate);
