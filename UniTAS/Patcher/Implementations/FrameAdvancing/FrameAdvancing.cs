@@ -175,7 +175,8 @@ public partial class FrameAdvancing : IFrameAdvancing, IOnFixedUpdateUncondition
 
             CheckAndAddPendingFrameAdvances();
 
-            return;
+            // if not instant callback, return
+            if (_pendingUnpause) return;
         }
 
         CheckAndAddPendingFrameAdvances();
