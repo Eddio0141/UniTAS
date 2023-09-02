@@ -14,7 +14,7 @@
             https://api.nuget.org/v3/index.json;
             https://nuget.bepinex.dev/v3/index.json
         </RestoreAdditionalProjectSources>
-        <Configurations>Debug;Release</Configurations>
+        <Configurations>Debug;Release;ReleaseTrace</Configurations>
         <Platforms>AnyCPU</Platforms>
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
         <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
@@ -30,6 +30,13 @@
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
         <OutputPath>bin/Debug/BepInEx/patchers/UniTAS/</OutputPath>
+        <NoWarn/>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'ReleaseTrace' ">
+        <OutputPath>bin/Release/BepInEx/patchers/UniTAS/</OutputPath>
+        <Optimize>true</Optimize>
+        <DebugType>none</DebugType>
         <NoWarn/>
     </PropertyGroup>
 
