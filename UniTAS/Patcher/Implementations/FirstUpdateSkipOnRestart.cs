@@ -36,7 +36,7 @@ public class FirstUpdateSkipOnRestart
         gameRestart.OnGameRestartResume += OnGameRestartResume;
     }
 
-    public void OnGameRestartResume(DateTime startupTime, bool preMonoBehaviourResume)
+    private void OnGameRestartResume(DateTime startupTime, bool preMonoBehaviourResume)
     {
         if (preMonoBehaviourResume) return;
         _logger.LogDebug("Skipping first update after restart");
@@ -46,7 +46,7 @@ public class FirstUpdateSkipOnRestart
             CallbackPriority.FirstUpdateSkipOnRestart);
     }
 
-    public void InputUpdateActual(bool fixedUpdate, bool newInputSystemUpdate)
+    private void InputUpdateActual(bool fixedUpdate, bool newInputSystemUpdate)
     {
         if (fixedUpdate) return;
 
@@ -62,12 +62,12 @@ public class FirstUpdateSkipOnRestart
             CallbackPriority.FirstUpdateSkipOnRestart);
     }
 
-    public void InputUpdateUnconditional(bool fixedUpdate, bool newInputSystemUpdate)
+    private void InputUpdateUnconditional(bool fixedUpdate, bool newInputSystemUpdate)
     {
         ProcessResumeFinal("input update");
     }
 
-    public void PreUpdateUnconditional()
+    private void PreUpdateUnconditional()
     {
         ProcessResumeFinal("pre update");
     }
@@ -84,7 +84,7 @@ public class FirstUpdateSkipOnRestart
         _monoBehaviourController.PausedUpdate = false;
     }
 
-    public void OnLastUpdateUnconditional()
+    private void OnLastUpdateUnconditional()
     {
         if (_pendingState != PendingState.PendingResumeLastUpdate) return;
         _updateEvents.OnLastUpdateUnconditional -= OnLastUpdateUnconditional;
