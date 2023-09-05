@@ -42,17 +42,20 @@ public class FirstUpdateSkipOnRestart
         _logger.LogDebug("Skipping first update after restart");
         _pendingState = PendingState.PendingPause;
 
-        _updateEvents.AddPriorityCallback(CallbackInputUpdate.InputUpdateActual, InputUpdateActual,
+        _updateEvents.AddPriorityCallback(CallbackInputUpdate.InputUpdateUnconditional, InputUpdateActual,
             CallbackPriority.FirstUpdateSkipOnRestart);
     }
 
     private void InputUpdateActual(bool fixedUpdate, bool newInputSystemUpdate)
     {
+        if (_monoBehaviourController.PausedExecution || (!fixedUpdate && _monoBehaviourController.PausedUpdate))
+            return;
+
         if (fixedUpdate) return;
 
         if (_pendingState != PendingState.PendingPause) return;
 
-        _updateEvents.OnInputUpdateActual -= InputUpdateActual;
+        _updateEvents.OnInputUpdateUnconditional -= InputUpdateActual;
 
         _pendingState = PendingState.PendingResumeLastUpdate;
         _logger.LogDebug("Pausing mono behaviour to skip an update");
