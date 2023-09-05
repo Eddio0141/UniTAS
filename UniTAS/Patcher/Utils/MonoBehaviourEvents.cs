@@ -218,7 +218,7 @@ public static class MonoBehaviourEvents
 #if TRACE
         _patchReverseInvoker ??= ContainerStarter.Kernel.GetInstance<IPatchReverseInvoker>();
         StaticLogger.Trace(
-            $"InvokeUpdate, time: {_patchReverseInvoker.Invoke(() => Time.time)}, offset: {UpdateInvokeOffset.Offset}");
+            $"InvokeUpdate, time: {_patchReverseInvoker.Invoke(() => Time.time)}");
 #endif
 
         if (!_calledPreUpdate)
@@ -253,8 +253,8 @@ public static class MonoBehaviourEvents
         _calledFixedUpdate = true;
 
 #if TRACE
-        StaticLogger.Log.LogDebug($"InvokeFixedUpdate, time: {_patchReverseInvoker.Invoke(() => Time.time)}");
         _patchReverseInvoker ??= ContainerStarter.Kernel.GetInstance<IPatchReverseInvoker>();
+        StaticLogger.Trace($"InvokeFixedUpdate, time: {_patchReverseInvoker.Invoke(() => Time.time)}");
 #endif
 
         InvokeCallOnPreUpdate();
