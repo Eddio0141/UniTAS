@@ -16,7 +16,13 @@ public static class UpdateInvokeOffset
     {
         // to make sure this is called before any other update events, we register on both Update and InputUpdate
         MonoBehaviourEvents.UpdatesUnconditional.Add(UpdateOffset, (int)CallbackPriority.UpdateInvokeOffset);
-        InputSystemEvents.InputUpdatesUnconditional.Add((_, _) => UpdateOffset(),
+        InputSystemEvents.InputUpdatesUnconditional.Add((fixedUpdate, _) =>
+            {
+                if (!fixedUpdate)
+                {
+                    UpdateOffset();
+                }
+            },
             (int)CallbackPriority.UpdateInvokeOffset);
 
         MonoBehaviourEvents.OnLastUpdateUnconditional += () => _updated = false;
