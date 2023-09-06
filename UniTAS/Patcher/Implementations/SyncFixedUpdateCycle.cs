@@ -147,7 +147,7 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
             return;
         }
 
-        if (_restoreFrametime == 0f)
+        if (_restoreFrametime == 0.0)
         {
             _restoreFrametime = _timeEnv.FrameTime;
             _logger.LogDebug($"Storing original frame time for later restore: {_restoreFrametime}");
