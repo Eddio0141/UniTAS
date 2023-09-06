@@ -175,7 +175,7 @@ public class FrameAdvancingTests
         yield return new WaitForFixedUpdateActual();
 
         // time should be advanced
-        RuntimeAssert.AreEqual(0f, Time.time, "assert 3");
+        RuntimeAssert.AreEqual(0f, Time.time, "assert 1");
 
         yield return FrameAdvanceWaits;
 
