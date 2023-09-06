@@ -72,13 +72,13 @@ public static class InputSystemEvents
     private static void AddEventToFixedUpdateUnconditional()
     {
         MonoBehaviourEvents.FixedUpdatesUnconditional.Add(_inputFixedUpdate,
-            (int)CallbackPriority.InputUpdateUnconditional);
+            (int)CallbackPriority.InputUpdate);
     }
 
     private static void AddEventToUpdateUnconditional()
     {
         MonoBehaviourEvents.UpdatesUnconditional.Add(_inputUpdate,
-            (int)CallbackPriority.InputUpdateUnconditional);
+            (int)CallbackPriority.InputUpdate);
     }
 
     public static void InputSystemChangeUpdate(InputSettings.UpdateMode updateMode)

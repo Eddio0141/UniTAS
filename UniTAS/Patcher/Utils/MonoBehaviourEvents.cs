@@ -1,4 +1,5 @@
 using System;
+using UniTAS.Patcher.Interfaces.Invoker;
 using UniTAS.Patcher.Models;
 using UniTAS.Patcher.Models.EventSubscribers;
 #if TRACE
@@ -16,6 +17,17 @@ namespace UniTAS.Patcher.Utils;
 /// </summary>
 public static class MonoBehaviourEvents
 {
+    [InvokeOnUnityInit]
+    public static void Init()
+    {
+        InputSystemEvents.InputUpdatesUnconditional.Add((fixedUpdate, _) =>
+        {
+            if (fixedUpdate || _calledPreUpdate) return;
+            _calledPreUpdate = true;
+            InvokeCallOnPreUpdate();
+        }, (int)CallbackPriority.PreUpdate);
+    }
+
     public static event Action OnAwakeUnconditional
     {
         add => AwakesUnconditional.Add(value, (int)CallbackPriority.Default);
