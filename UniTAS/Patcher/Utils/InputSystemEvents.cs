@@ -31,8 +31,8 @@ public static class InputSystemEvents
 
     // private static bool _alreadyRegisteredOnEvent;
 
-    private static Action _inputUpdateActual;
-    private static Action _inputUpdateFixedUpdate;
+    private static Action _inputUpdate;
+    private static Action _inputFixedUpdate;
 
     [SuppressMessage("ReSharper", "ConditionIsAlwaysTrueOrFalse")]
     [InvokeOnUnityInit]
@@ -40,7 +40,7 @@ public static class InputSystemEvents
     {
         if (_usingMonoBehUpdate)
         {
-            MonoBehaviourEvents.OnUpdateActual -= _inputUpdateActual;
+            MonoBehaviourEvents.OnUpdateUnconditional -= _inputUpdate;
         }
         // else if (_alreadyRegisteredOnEvent)
         // {
@@ -49,7 +49,7 @@ public static class InputSystemEvents
 
         if (_usingMonoBehFixedUpdate)
         {
-            MonoBehaviourEvents.OnFixedUpdateActual -= _inputUpdateFixedUpdate;
+            MonoBehaviourEvents.OnFixedUpdateUnconditional -= _inputFixedUpdate;
         }
         // else if (_alreadyRegisteredOnEvent)
         // {
@@ -59,14 +59,26 @@ public static class InputSystemEvents
         _usingMonoBehUpdate = true;
         _usingMonoBehFixedUpdate = true;
 
-        _inputUpdateActual = () => InputUpdate(false, false);
-        MonoBehaviourEvents.OnUpdateActual += _inputUpdateActual;
-        _inputUpdateFixedUpdate = () => InputUpdate(true, false);
-        MonoBehaviourEvents.OnFixedUpdateActual += _inputUpdateFixedUpdate;
+        _inputUpdate = () => InputUpdate(false, false);
+        AddEventToUpdateUnconditional();
+        _inputFixedUpdate = () => InputUpdate(true, false);
+        AddEventToFixedUpdateUnconditional();
 
         if (!NewInputSystemState.NewInputSystemExists) return;
 
         InputSystemChangeUpdate(InputSystem.settings.updateMode);
+    }
+
+    private static void AddEventToFixedUpdateUnconditional()
+    {
+        MonoBehaviourEvents.FixedUpdatesUnconditional.Add(_inputFixedUpdate,
+            (int)CallbackPriority.InputUpdateUnconditional);
+    }
+
+    private static void AddEventToUpdateUnconditional()
+    {
+        MonoBehaviourEvents.UpdatesUnconditional.Add(_inputUpdate,
+            (int)CallbackPriority.InputUpdateUnconditional);
     }
 
     public static void InputSystemChangeUpdate(InputSettings.UpdateMode updateMode)
@@ -79,21 +91,21 @@ public static class InputSystemEvents
 
                 if (!_usingMonoBehFixedUpdate)
                 {
-                    _inputUpdateFixedUpdate = () => InputUpdate(true, false);
-                    MonoBehaviourEvents.OnFixedUpdateActual += _inputUpdateFixedUpdate;
+                    _inputFixedUpdate = () => InputUpdate(true, false);
+                    AddEventToFixedUpdateUnconditional();
                     _usingMonoBehFixedUpdate = true;
                 }
 
                 if (_usingMonoBehUpdate)
                 {
-                    MonoBehaviourEvents.OnUpdateActual -= _inputUpdateActual;
+                    MonoBehaviourEvents.OnUpdateUnconditional -= _inputUpdate;
                     _usingMonoBehUpdate = false;
                 }
 
                 if (registerOnBeforeUpdate)
                 {
-                    _inputUpdateActual = () => InputUpdate(false, true);
-                    InputSystem.onBeforeUpdate += _inputUpdateActual;
+                    _inputUpdate = () => InputUpdate(false, true);
+                    InputSystem.onBeforeUpdate += _inputUpdate;
                 }
 
                 break;
@@ -104,21 +116,21 @@ public static class InputSystemEvents
 
                 if (!_usingMonoBehUpdate)
                 {
-                    _inputUpdateActual = () => InputUpdate(false, false);
-                    MonoBehaviourEvents.OnUpdateActual += _inputUpdateActual;
+                    _inputUpdate = () => InputUpdate(false, false);
+                    AddEventToUpdateUnconditional();
                     _usingMonoBehUpdate = true;
                 }
 
                 if (_usingMonoBehFixedUpdate)
                 {
-                    MonoBehaviourEvents.OnFixedUpdateActual -= _inputUpdateFixedUpdate;
+                    MonoBehaviourEvents.OnFixedUpdateUnconditional -= _inputFixedUpdate;
                     _usingMonoBehFixedUpdate = false;
                 }
 
                 if (registerOnBeforeUpdate)
                 {
-                    _inputUpdateFixedUpdate = () => InputUpdate(true, true);
-                    InputSystem.onBeforeUpdate += _inputUpdateFixedUpdate;
+                    _inputFixedUpdate = () => InputUpdate(true, true);
+                    InputSystem.onBeforeUpdate += _inputFixedUpdate;
                 }
 
                 break;
@@ -126,20 +138,20 @@ public static class InputSystemEvents
             case InputSettings.UpdateMode.ProcessEventsManually:
                 if (AlreadyRegisteredOnEvent)
                 {
-                    InputSystem.onBeforeUpdate -= _usingMonoBehUpdate ? _inputUpdateFixedUpdate : _inputUpdateActual;
+                    InputSystem.onBeforeUpdate -= _usingMonoBehUpdate ? _inputFixedUpdate : _inputUpdate;
                 }
 
                 if (!_usingMonoBehUpdate)
                 {
-                    _inputUpdateActual = () => InputUpdate(false, false);
-                    MonoBehaviourEvents.OnUpdateActual += _inputUpdateActual;
+                    _inputUpdate = () => InputUpdate(false, false);
+                    AddEventToUpdateUnconditional();
                     _usingMonoBehUpdate = true;
                 }
 
                 if (!_usingMonoBehFixedUpdate)
                 {
-                    _inputUpdateFixedUpdate = () => InputUpdate(true, false);
-                    MonoBehaviourEvents.OnFixedUpdateActual += _inputUpdateFixedUpdate;
+                    _inputFixedUpdate = () => InputUpdate(true, false);
+                    AddEventToFixedUpdateUnconditional();
                     _usingMonoBehFixedUpdate = true;
                 }
 
