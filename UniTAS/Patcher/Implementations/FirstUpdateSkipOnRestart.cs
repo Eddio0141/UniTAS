@@ -48,10 +48,10 @@ public class FirstUpdateSkipOnRestart
 
     private void InputUpdateActual(bool fixedUpdate, bool newInputSystemUpdate)
     {
-        if (_monoBehaviourController.PausedExecution || (!fixedUpdate && _monoBehaviourController.PausedUpdate))
-            return;
-
         if (fixedUpdate) return;
+
+        if (_monoBehaviourController.PausedExecution || _monoBehaviourController.PausedUpdate)
+            return;
 
         if (_pendingState != PendingState.PendingPause) return;
 
