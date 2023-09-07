@@ -112,6 +112,18 @@ public static class MonoBehaviourEvents
         remove => GUIsActual.Remove(value);
     }
 
+    public static event Action OnLateUpdateUnconditional
+    {
+        add => LateUpdatesUnconditional.Add(value, (int)CallbackPriority.Default);
+        remove => LateUpdatesUnconditional.Remove(value);
+    }
+
+    public static event Action OnLateUpdateActual
+    {
+        add => LateUpdatesActual.Add(value, (int)CallbackPriority.Default);
+        remove => LateUpdatesActual.Remove(value);
+    }
+
     public static event Action OnLastUpdateUnconditional
     {
         add => LastUpdatesUnconditional.Add(value, (int)CallbackPriority.Default);
@@ -146,6 +158,9 @@ public static class MonoBehaviourEvents
     public static readonly PriorityList<Action> GUIsUnconditional = new();
     public static readonly PriorityList<Action> GUIsActual = new();
 
+    private static readonly PriorityList<Action> LateUpdatesUnconditional = new();
+    private static readonly PriorityList<Action> LateUpdatesActual = new();
+
     public static readonly PriorityList<Action> LastUpdatesUnconditional = new();
     public static readonly PriorityList<Action> LastUpdatesActual = new();
 
@@ -163,7 +178,7 @@ public static class MonoBehaviourEvents
         for (var i = 0; i < LastUpdatesActual.Count; i++)
         {
             var lastUpdate = LastUpdatesActual[i];
-            if (MonoBehaviourController.PausedExecution || MonoBehaviourController.PausedUpdate) continue;
+            if (MonoBehaviourController.PausedExecution) continue;
             lastUpdate();
         }
     }
@@ -257,6 +272,18 @@ public static class MonoBehaviourEvents
     {
         _updated = false;
         _calledPreUpdate = false;
+
+        for (var i = 0; i < LateUpdatesUnconditional.Count; i++)
+        {
+            LateUpdatesUnconditional[i]();
+        }
+
+        for (var i = 0; i < LateUpdatesActual.Count; i++)
+        {
+            var lateUpdate = LateUpdatesActual[i];
+            if (!MonoBehaviourController.PausedExecution)
+                lateUpdate();
+        }
     }
 
     public static void InvokeFixedUpdate()
