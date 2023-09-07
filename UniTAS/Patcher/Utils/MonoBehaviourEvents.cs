@@ -178,7 +178,7 @@ public static class MonoBehaviourEvents
         for (var i = 0; i < LastUpdatesActual.Count; i++)
         {
             var lastUpdate = LastUpdatesActual[i];
-            if (MonoBehaviourController.PausedExecution) continue;
+            if (MonoBehaviourController.PausedExecution || MonoBehaviourController.PausedUpdate) continue;
             lastUpdate();
         }
     }
@@ -281,8 +281,8 @@ public static class MonoBehaviourEvents
         for (var i = 0; i < LateUpdatesActual.Count; i++)
         {
             var lateUpdate = LateUpdatesActual[i];
-            if (!MonoBehaviourController.PausedExecution)
-                lateUpdate();
+            if (MonoBehaviourController.PausedExecution || MonoBehaviourController.PausedUpdate) continue;
+            lateUpdate();
         }
     }
 
