@@ -25,7 +25,7 @@ public static class UpdateInvokeOffset
             },
             (int)CallbackPriority.UpdateInvokeOffset);
 
-        MonoBehaviourEvents.OnLastUpdateUnconditional += () => _updated = false;
+        MonoBehaviourEvents.OnLateUpdateUnconditional += () => _updated = false;
     }
 
     private static void UpdateOffset()
