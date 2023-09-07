@@ -4,6 +4,10 @@ using UniTAS.Patcher.Interfaces.Invoker;
 using UniTAS.Patcher.Models;
 using UniTAS.Patcher.Models.EventSubscribers;
 using UnityEngine.InputSystem;
+#if TRACE
+using UniTAS.Patcher.Services;
+using UnityEngine;
+#endif
 
 namespace UniTAS.Patcher.Utils;
 
@@ -165,10 +169,18 @@ public static class InputSystemEvents
 
     private static bool AlreadyRegisteredOnEvent => !_usingMonoBehUpdate || !_usingMonoBehFixedUpdate;
 
+#if TRACE
+    private static IPatchReverseInvoker _patchReverseInvoker;
+#endif
+
     private static void InputUpdate(bool fixedUpdate, bool newInputSystemUpdate)
     {
+#if TRACE
+        _patchReverseInvoker ??= ContainerStarter.Kernel.GetInstance<IPatchReverseInvoker>();
         StaticLogger.Trace(
-            $"InputUpdate, fixed update: {fixedUpdate}, new input system update: {newInputSystemUpdate}");
+            $"InputUpdate, time: {_patchReverseInvoker.Invoke(() => Time.time)} fixed update: {fixedUpdate}, new input system update: {newInputSystemUpdate}");
+#endif
+
         for (var i = 0; i < InputUpdatesUnconditional.Count; i++)
         {
             InputUpdatesUnconditional[i](fixedUpdate, newInputSystemUpdate);
