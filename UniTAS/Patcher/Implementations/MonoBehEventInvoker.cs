@@ -27,6 +27,7 @@ public class MonoBehEventInvoker : IMonoBehEventInvoker, IUpdateEvents
         IEnumerable<IOnUpdateActual> onUpdatesActual,
         IEnumerable<IOnInputUpdateActual> onInputUpdatesActual,
         IEnumerable<IOnInputUpdateUnconditional> onInputUpdatesUnconditional,
+        IEnumerable<IOnLateUpdateUnconditional> onLateUpdatesUnconditional,
         IEnumerable<IOnLastUpdateUnconditional> onLastUpdatesUnconditional,
         IEnumerable<IOnLastUpdateActual> onLastUpdatesActual)
     {
@@ -95,6 +96,11 @@ public class MonoBehEventInvoker : IMonoBehEventInvoker, IUpdateEvents
         {
             InputSystemEvents.OnInputUpdateUnconditional += (fixedUpdate, newInputSystemUpdateFixedUpdate) =>
                 onInputUpdateUnconditional.InputUpdateUnconditional(fixedUpdate, newInputSystemUpdateFixedUpdate);
+        }
+
+        foreach (var onLateUpdateUnconditional in onLateUpdatesUnconditional)
+        {
+            MonoBehaviourEvents.OnLateUpdateUnconditional += onLateUpdateUnconditional.OnLateUpdateUnconditional;
         }
 
         foreach (var onLastUpdateUnconditional in onLastUpdatesUnconditional)
