@@ -18,10 +18,10 @@ using UnityEngine;
 namespace UniTAS.Patcher.Implementations.FrameAdvancing;
 
 // this class needs to run before coroutine is processed in CoroutineHandler (for tracking fixed update index)
-// also needs to run after SyncFixedUpdateCycle to process sync method invoke, then handling new fa stuff
+// also needs to run before SyncFixedUpdateCycle to process sync method invoke, then handling new frame advancing stuff
 [Singleton(RegisterPriority.FrameAdvancing)]
 public partial class FrameAdvancing : IFrameAdvancing, IOnFixedUpdateUnconditional, IOnGameRestartResume,
-    IOnInputUpdateUnconditional
+    IOnInputUpdateUnconditional, IOnUpdateUnconditional, IOnLateUpdateUnconditional
 {
     private bool _active;
 
@@ -44,6 +44,7 @@ public partial class FrameAdvancing : IFrameAdvancing, IOnFixedUpdateUncondition
     private double _updateRestoreOffset;
     private uint _fixedUpdateRestoreIndex;
     private uint _fixedUpdateIndex;
+    private bool _updated;
     private bool _pendingUnpause;
 
     private readonly Action _unpauseActual;
@@ -77,6 +78,7 @@ public partial class FrameAdvancing : IFrameAdvancing, IOnFixedUpdateUncondition
     {
         if (!preMonoBehaviourResume) return;
         _fixedUpdateIndex = 0;
+        _updated = false;
         _active = false;
     }
 
@@ -99,14 +101,28 @@ public partial class FrameAdvancing : IFrameAdvancing, IOnFixedUpdateUncondition
         _logger.LogDebug($"toggled frame advance, active: {_active}");
     }
 
+    public void UpdateUnconditional()
+    {
+        Update();
+    }
+
     public void InputUpdateUnconditional(bool fixedUpdate, bool newInputSystemUpdate)
     {
         if (fixedUpdate) return;
+        Update();
+    }
 
-        // if (!_monoBehaviourController.PausedExecution && !_monoBehaviourController.PausedUpdate)
-        // {
+    public void OnLateUpdateUnconditional()
+    {
+        _updated = false;
+    }
+
+    private void Update()
+    {
+        if (_updated) return;
+        _updated = true;
+
         _fixedUpdateIndex = 0;
-        // }
 
         // check if update offset is valid after the last fixed update
         if (_pendingUpdateOffsetFixState == PendingUpdateOffsetFixState.PendingCheckUpdateOffset)
@@ -149,6 +165,7 @@ public partial class FrameAdvancing : IFrameAdvancing, IOnFixedUpdateUncondition
         if (_pendingUpdateOffsetFixState is not (PendingUpdateOffsetFixState.Done
             or PendingUpdateOffsetFixState.PendingCheckUpdateOffset))
         {
+            StaticLogger.Trace("waiting for update offset fix");
             return;
         }
 
@@ -231,6 +248,12 @@ public partial class FrameAdvancing : IFrameAdvancing, IOnFixedUpdateUncondition
             yield return new WaitForUpdateActual();
         }
 
+        PauseActual();
+        _pendingPause = false;
+    }
+
+    private void PauseActual()
+    {
         _updateRestoreOffset = UpdateInvokeOffset.Offset;
         _fixedUpdateRestoreIndex = _fixedUpdateIndex;
         _monoBehaviourController.PausedExecution = true;
@@ -238,7 +261,6 @@ public partial class FrameAdvancing : IFrameAdvancing, IOnFixedUpdateUncondition
             $"Pause frame advance, restore offset: {_updateRestoreOffset}, fixed update index: {_fixedUpdateRestoreIndex}");
 
         _paused = true;
-        _pendingPause = false;
     }
 
     private void Unpause()
@@ -267,8 +289,8 @@ public partial class FrameAdvancing : IFrameAdvancing, IOnFixedUpdateUncondition
     private void UpdateOffsetSyncFix()
     {
         // done fixing offset
-        _monoBehaviourController.PausedExecution = false;
         _pendingUpdateOffsetFixState = PendingUpdateOffsetFixState.Done;
         _logger.LogDebug("fixed update offset");
+        PauseActual();
     }
 }

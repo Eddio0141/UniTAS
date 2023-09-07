@@ -15,7 +15,8 @@ namespace UniTAS.Patcher.Implementations;
 [Singleton]
 // manually testing this so no need
 [ExcludeRegisterIfTesting]
-public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditional, IOnFixedUpdateUnconditional
+public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditional, IOnInputUpdateUnconditional,
+    IOnFixedUpdateUnconditional, IOnLateUpdateUnconditional
 {
     private readonly Queue<SyncData> _pendingSync = new();
     private SyncData _pendingCallback;
@@ -29,6 +30,8 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
 
     // increase in FixedUpdate, reset to 0 in Update
     private uint _fixedUpdateIndex;
+
+    private bool _updated;
 
     public SyncFixedUpdateCycle(ITimeEnv timeEnv, ITimeWrapper timeWrapper, ILogger logger)
     {
@@ -60,6 +63,25 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
 
     public void UpdateUnconditional()
     {
+        Update();
+    }
+
+    public void InputUpdateUnconditional(bool fixedUpdate, bool newInputSystemUpdate)
+    {
+        if (fixedUpdate) return;
+        Update();
+    }
+
+    public void OnLateUpdateUnconditional()
+    {
+        _updated = false;
+    }
+
+    private void Update()
+    {
+        if (_updated) return;
+        _updated = true;
+
         _fixedUpdateIndex = 0;
 
         if (_processingCallback != null)

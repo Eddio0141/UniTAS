@@ -6,9 +6,9 @@ public enum RegisterPriority
     TimeEnv,
     MovieRunner,
     RuntimeTestProcessor,
+    FrameAdvancing,
     Default,
     GameRestart,
-    FrameAdvancing,
     CoroutineHandler,
     ToolBar,
     InfoPrintAndWelcome
