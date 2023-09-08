@@ -1,8 +1,8 @@
 using System.Collections.Generic;
+using UniTAS.Patcher.Implementations.Coroutine;
 using UniTAS.Patcher.Interfaces.Coroutine;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.RuntimeTest;
-using UniTAS.Patcher.Models.Coroutine;
 using UniTAS.Patcher.Models.VirtualEnvironment;
 using UniTAS.Patcher.Services.InputSystemOverride;
 using UniTAS.Patcher.Services.NewInputSystem;
@@ -32,12 +32,12 @@ public class NewInputSystemTests
     }
 
     [RuntimeTest]
-    public Tuple<bool, IEnumerator<CoroutineWait>> MousePosition()
+    public Tuple<bool, IEnumerable<CoroutineWait>> MousePosition()
     {
         return new(_newInputSystemExists.HasInputSystem, MousePositionInternal());
     }
 
-    private IEnumerator<CoroutineWait> MousePositionInternal()
+    private IEnumerable<CoroutineWait> MousePositionInternal()
     {
         var inputSettings = InputSystem.settings;
         var updateMode = inputSettings.updateMode;
@@ -63,12 +63,12 @@ public class NewInputSystemTests
     }
 
     [RuntimeTest]
-    public Tuple<bool, IEnumerator<CoroutineWait>> MouseButtons()
+    public Tuple<bool, IEnumerable<CoroutineWait>> MouseButtons()
     {
         return new(_newInputSystemExists.HasInputSystem, MouseButtonsInternal());
     }
 
-    private IEnumerator<CoroutineWait> MouseButtonsInternal()
+    private IEnumerable<CoroutineWait> MouseButtonsInternal()
     {
         var inputSettings = InputSystem.settings;
         var updateMode = inputSettings.updateMode;

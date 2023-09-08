@@ -251,30 +251,44 @@ public class MonoBehaviourPatch : PreloadPatcher
                 InvokeUnityEventMethod(type, eventMethodPair.Key, assembly, eventMethodPair.Value);
             }
 
-            // update skip check
-            var updateMethod = type.Methods.FirstOrDefault(m => m.Name == "Update" && !m.HasParameters);
-            if (updateMethod is not { HasBody: true }) continue;
-
-            updateMethod.Body.SimplifyMacros();
-            var updateIl = updateMethod.Body.GetILProcessor();
-            var updateFirstInstruction = updateIl.Body.Instructions.First();
-
-            // return early check
-            updateIl.InsertBefore(updateFirstInstruction, updateIl.Create(OpCodes.Call, pausedUpdateReference));
-            updateIl.InsertBefore(updateFirstInstruction, updateIl.Create(OpCodes.Brfalse_S, updateFirstInstruction));
-
-            // if the return type isn't void, we need to return a default value
-            if (updateMethod.ReturnType != assembly.MainModule.TypeSystem.Void)
+            // update skip check and related methods
+            var updateMethods = new[]
             {
-                updateIl.InsertBefore(updateFirstInstruction, updateIl.Create(OpCodes.Ldnull));
+                type.Methods.FirstOrDefault(m => m.Name == "Update" && !m.HasParameters),
+                type.Methods.FirstOrDefault(m => m.Name == "LateUpdate" && !m.HasParameters)
+            };
+
+            foreach (var updateMethod in updateMethods)
+            {
+                UpdateEarlyReturn(updateMethod, assembly, pausedUpdateReference);
             }
 
-            updateIl.InsertBefore(updateFirstInstruction, updateIl.Create(OpCodes.Ret));
-
-            updateMethod.Body.OptimizeMacros();
-
-            StaticLogger.Log.LogDebug("Patched Update method for skipping execution");
+            StaticLogger.Log.LogDebug("Patched Update related methods for skipping execution");
         }
+    }
+
+    private static void UpdateEarlyReturn(MethodDefinition skipCheckMethod, AssemblyDefinition assembly,
+        MethodReference pausedUpdateReference)
+    {
+        if (skipCheckMethod is not { HasBody: true }) return;
+        skipCheckMethod.Body.SimplifyMacros();
+        var updateIl = skipCheckMethod.Body.GetILProcessor();
+        var updateFirstInstruction = updateIl.Body.Instructions.First();
+
+        // return early check
+        updateIl.InsertBefore(updateFirstInstruction, updateIl.Create(OpCodes.Call, pausedUpdateReference));
+        updateIl.InsertBefore(updateFirstInstruction,
+            updateIl.Create(OpCodes.Brfalse_S, updateFirstInstruction));
+
+        // if the return type isn't void, we need to return a default value
+        if (skipCheckMethod.ReturnType != assembly.MainModule.TypeSystem.Void)
+        {
+            updateIl.InsertBefore(updateFirstInstruction, updateIl.Create(OpCodes.Ldnull));
+        }
+
+        updateIl.InsertBefore(updateFirstInstruction, updateIl.Create(OpCodes.Ret));
+
+        skipCheckMethod.Body.OptimizeMacros();
     }
 
     private static void InvokeUnityEventMethod(TypeDefinition type, string methodName, AssemblyDefinition assembly,

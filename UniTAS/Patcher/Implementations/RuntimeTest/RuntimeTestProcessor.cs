@@ -8,21 +8,21 @@ using UniTAS.Patcher.Interfaces.Coroutine;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.RuntimeTest;
 using UniTAS.Patcher.Models.Coroutine;
+using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Models.RuntimeTest;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.RuntimeTest;
-using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Implementations.RuntimeTest;
 
-[Singleton]
+[Singleton(RegisterPriority.RuntimeTestProcessor)]
 public class RuntimeTestProcessor : IRuntimeTestProcessor
 {
     private readonly IContainer _container;
     private readonly ICoroutine _coroutine;
 
     private string _processingCoroutineName;
-    private readonly Queue<Tuple<string, IEnumerator<CoroutineWait>>> _pendingCoroutines = new();
+    private readonly Queue<Utils.Tuple<string, IEnumerable<CoroutineWait>>> _pendingCoroutines = new();
     private readonly List<TestResult> _testResults = new();
 
     public RuntimeTestProcessor(IContainer container, ICoroutine coroutine)
@@ -52,7 +52,17 @@ public class RuntimeTestProcessor : IRuntimeTestProcessor
             .Where(m => !m.IsStatic && m.DeclaringType is { IsAbstract: false, IsInterface: false })
             .Select(m => m.DeclaringType)
             .Distinct()
-            .Select(t => _container.TryGetInstance(t) ?? AccessTools.CreateInstance(t))
+            .Select(t =>
+            {
+                try
+                {
+                    return _container.GetInstance(t);
+                }
+                catch (Exception)
+                {
+                    return AccessTools.CreateInstance(t);
+                }
+            })
             .ToList();
         var emptyParams = new object[0];
 
@@ -62,7 +72,7 @@ public class RuntimeTestProcessor : IRuntimeTestProcessor
             var testName = $"{typeName}.{test.Name}";
 
             // test run event unless return type is coroutine
-            if (!MethodHasTypeReturn<IEnumerator<CoroutineWait>>(test))
+            if (!MethodHasTypeReturn<IEnumerable<CoroutineWait>>(test))
             {
                 OnTestRun?.Invoke(testName);
             }
@@ -75,24 +85,24 @@ public class RuntimeTestProcessor : IRuntimeTestProcessor
             }
             catch (Exception e)
             {
-                _testResults.Add(new(testName, false, e));
+                TestEnd(new(testName, false, e));
                 continue;
             }
 
             // check if skipped test
-            if (ExtractReturnType<bool>(ret, out var skippedTest) && !skippedTest)
+            if (ExtractReturnType<bool>(ret, out var notSkippedTest) && !notSkippedTest)
             {
-                _testResults.Add(new(testName));
+                TestEnd(new(testName));
                 continue;
             }
 
-            if (ExtractReturnType<IEnumerator<CoroutineWait>>(ret, out var coroutine))
+            if (ExtractReturnType<IEnumerable<CoroutineWait>>(ret, out var coroutine))
             {
                 _pendingCoroutines.Enqueue(new(testName, coroutine));
                 continue;
             }
 
-            _testResults.Add(new(testName, true));
+            TestEnd(new(testName, true));
         }
 
         if (_pendingCoroutines.Count > 0)
@@ -101,7 +111,7 @@ public class RuntimeTestProcessor : IRuntimeTestProcessor
             return;
         }
 
-        OnTestEnd?.Invoke(_testResults);
+        OnTestsFinish?.Invoke(new(_testResults));
     }
 
     private void RunNextCoroutine()
@@ -119,15 +129,13 @@ public class RuntimeTestProcessor : IRuntimeTestProcessor
 
     private void CoroutineTestEnd(CoroutineStatus status)
     {
-        status.OnComplete -= CoroutineTestEnd;
-
         if (status.Exception != null)
         {
-            _testResults.Add(new(_processingCoroutineName, false, status.Exception));
+            TestEnd(new(_processingCoroutineName, false, status.Exception));
         }
         else
         {
-            _testResults.Add(new(_processingCoroutineName, true));
+            TestEnd(new(_processingCoroutineName, true));
         }
 
         if (_pendingCoroutines.Count > 0)
@@ -136,7 +144,7 @@ public class RuntimeTestProcessor : IRuntimeTestProcessor
             return;
         }
 
-        OnTestEnd?.Invoke(_testResults);
+        OnTestsFinish?.Invoke(new(_testResults));
     }
 
     private static bool ExtractReturnType<T>(object returnValue, out T retValue)
@@ -154,7 +162,7 @@ public class RuntimeTestProcessor : IRuntimeTestProcessor
 
         var returnType = returnValue.GetType();
         if (returnType.FullName == null ||
-            !returnType.FullName.StartsWith($"{typeof(Tuple<,>).Namespace}.Tuple`")) return false;
+            !returnType.FullName.StartsWith($"{typeof(Utils.Tuple<,>).Namespace}.Tuple`")) return false;
 
         var fields = AccessTools.GetDeclaredFields(returnType);
         foreach (var field in fields)
@@ -178,7 +186,7 @@ public class RuntimeTestProcessor : IRuntimeTestProcessor
 
         if (returnType == typeof(T)) return true;
         if (returnType.FullName == null ||
-            !returnType.FullName.StartsWith($"{typeof(Tuple<,>).Namespace}.Tuple`")) return false;
+            !returnType.FullName.StartsWith($"{typeof(Utils.Tuple<,>).Namespace}.Tuple`")) return false;
 
         var fields = AccessTools.GetDeclaredFields(returnType);
         foreach (var field in fields)
@@ -194,7 +202,14 @@ public class RuntimeTestProcessor : IRuntimeTestProcessor
         return false;
     }
 
+    private void TestEnd(TestResult result)
+    {
+        _testResults.Add(result);
+        OnTestEnd?.Invoke(result);
+    }
+
     public event DiscoveredTests OnDiscoveredTests;
     public event TestRun OnTestRun;
+    public event TestsFinish OnTestsFinish;
     public event TestEnd OnTestEnd;
 }

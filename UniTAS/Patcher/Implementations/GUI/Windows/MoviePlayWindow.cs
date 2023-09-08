@@ -4,8 +4,8 @@ using System.IO;
 using BepInEx;
 using BepInEx.Logging;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
+using UniTAS.Patcher.Interfaces.GlobalHotkeyListener;
 using UniTAS.Patcher.Interfaces.GUI;
-using UniTAS.Patcher.Models.Customization;
 using UniTAS.Patcher.Models.GUI;
 using UniTAS.Patcher.Services.Customization;
 using UniTAS.Patcher.Services.GUI;
@@ -31,10 +31,8 @@ public class MoviePlayWindow : Window
     private readonly IBrowseFileWindowFactory _browseFileWindowFileWindowFactory;
     private IBrowseFileWindow _currentBrowseFileWindow;
 
-    private readonly Bind _playMovieBind;
-
     public MoviePlayWindow(WindowDependencies windowDependencies, IMovieLogger movieLogger, IMovieRunner movieRunner,
-        IBinds binds, IBrowseFileWindowFactory browseFileWindowFileWindowFactory) :
+        IBinds binds, IBrowseFileWindowFactory browseFileWindowFileWindowFactory, IGlobalHotkey globalHotkey) :
         base(windowDependencies,
             new(defaultWindowRect: GUIUtils.WindowRect(600, 200), windowName: "Movie Play"))
     {
@@ -43,8 +41,8 @@ public class MoviePlayWindow : Window
         _browseFileWindowFileWindowFactory = browseFileWindowFileWindowFactory;
         movieLogger.OnLog += OnMovieLog;
 
-        _playMovieBind = binds.Create(new("PlayMovie", KeyCode.Slash));
-        windowDependencies.UpdateEvents.OnUpdateUnconditional += UpdateUnconditional;
+        var playMovieBind = binds.Create(new("PlayMovie", KeyCode.Slash));
+        globalHotkey.AddGlobalHotkey(new(playMovieBind, RunMovieWithLogs));
     }
 
     protected override void OnGUI()
@@ -54,14 +52,6 @@ public class MoviePlayWindow : Window
         OperationButtons();
         TASRunInfo();
         GUILayout.EndVertical();
-    }
-
-    private void UpdateUnconditional()
-    {
-        if (_playMovieBind.IsPressed())
-        {
-            RunMovieWithLogs();
-        }
     }
 
     private readonly GUILayoutOption[] _moviePathOptions = { GUILayout.ExpandWidth(false) };

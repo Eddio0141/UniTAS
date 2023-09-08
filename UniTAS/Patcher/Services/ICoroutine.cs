@@ -6,5 +6,10 @@ namespace UniTAS.Patcher.Services;
 
 public interface ICoroutine
 {
-    CoroutineStatus Start(IEnumerator<CoroutineWait> coroutine);
+    /// <summary>
+    /// Initializes the coroutine and starts running it
+    /// </summary>
+    /// <param name="coroutine"></param>
+    /// <returns></returns>
+    CoroutineStatus Start(IEnumerable<CoroutineWait> coroutine);
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
 using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
+using UniTAS.Patcher.Models.EventSubscribers;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.EventSubscribers;
 using UniTAS.Patcher.Utils;
@@ -25,7 +26,10 @@ public class MonoBehEventInvoker : IMonoBehEventInvoker, IUpdateEvents
         IEnumerable<IOnStartActual> onStartsActual,
         IEnumerable<IOnUpdateActual> onUpdatesActual,
         IEnumerable<IOnInputUpdateActual> onInputUpdatesActual,
-        IEnumerable<IOnInputUpdateUnconditional> onInputUpdatesUnconditional)
+        IEnumerable<IOnInputUpdateUnconditional> onInputUpdatesUnconditional,
+        IEnumerable<IOnLateUpdateUnconditional> onLateUpdatesUnconditional,
+        IEnumerable<IOnLastUpdateUnconditional> onLastUpdatesUnconditional,
+        IEnumerable<IOnLastUpdateActual> onLastUpdatesActual)
     {
         foreach (var onAwake in onAwakesUnconditional)
         {
@@ -93,6 +97,31 @@ public class MonoBehEventInvoker : IMonoBehEventInvoker, IUpdateEvents
             InputSystemEvents.OnInputUpdateUnconditional += (fixedUpdate, newInputSystemUpdateFixedUpdate) =>
                 onInputUpdateUnconditional.InputUpdateUnconditional(fixedUpdate, newInputSystemUpdateFixedUpdate);
         }
+
+        foreach (var onLateUpdateUnconditional in onLateUpdatesUnconditional)
+        {
+            MonoBehaviourEvents.OnLateUpdateUnconditional += onLateUpdateUnconditional.OnLateUpdateUnconditional;
+        }
+
+        foreach (var onLastUpdateUnconditional in onLastUpdatesUnconditional)
+        {
+            MonoBehaviourEvents.OnLastUpdateUnconditional += onLastUpdateUnconditional.OnLastUpdateUnconditional;
+        }
+
+        foreach (var onLastUpdateActual in onLastUpdatesActual)
+        {
+            MonoBehaviourEvents.OnLastUpdateActual += onLastUpdateActual.OnLastUpdateActual;
+        }
+    }
+
+    public void Awake()
+    {
+        MonoBehaviourEvents.InvokeAwake();
+    }
+
+    public void Start()
+    {
+        MonoBehaviourEvents.InvokeStart();
     }
 
     public void Update()
@@ -121,6 +150,12 @@ public class MonoBehEventInvoker : IMonoBehEventInvoker, IUpdateEvents
         remove => MonoBehaviourEvents.OnAwakeActual -= value;
     }
 
+    public event Action OnAwakeUnconditional
+    {
+        add => MonoBehaviourEvents.OnAwakeUnconditional += value;
+        remove => MonoBehaviourEvents.OnAwakeUnconditional -= value;
+    }
+
     public event Action OnStartActual
     {
         add => MonoBehaviourEvents.OnStartActual += value;
@@ -131,6 +166,18 @@ public class MonoBehEventInvoker : IMonoBehEventInvoker, IUpdateEvents
     {
         add => MonoBehaviourEvents.OnFixedUpdateActual += value;
         remove => MonoBehaviourEvents.OnFixedUpdateActual -= value;
+    }
+
+    public event Action OnFixedUpdateUnconditional
+    {
+        add => MonoBehaviourEvents.OnFixedUpdateUnconditional += value;
+        remove => MonoBehaviourEvents.OnFixedUpdateUnconditional -= value;
+    }
+
+    public event Action OnUpdateActual
+    {
+        add => MonoBehaviourEvents.OnUpdateActual += value;
+        remove => MonoBehaviourEvents.OnUpdateActual -= value;
     }
 
     public event Action OnUpdateUnconditional
@@ -145,9 +192,78 @@ public class MonoBehEventInvoker : IMonoBehEventInvoker, IUpdateEvents
         remove => MonoBehaviourEvents.OnGUIUnconditional -= value;
     }
 
+    public event Action OnLastUpdateUnconditional
+    {
+        add => MonoBehaviourEvents.OnLastUpdateUnconditional += value;
+        remove => MonoBehaviourEvents.OnLastUpdateUnconditional -= value;
+    }
+
+    public event Action OnLastUpdateActual
+    {
+        add => MonoBehaviourEvents.OnLastUpdateActual += value;
+        remove => MonoBehaviourEvents.OnLastUpdateActual -= value;
+    }
+
     public event InputSystemEvents.InputUpdateCall OnInputUpdateActual
     {
         add => InputSystemEvents.OnInputUpdateActual += value;
         remove => InputSystemEvents.OnInputUpdateActual -= value;
+    }
+
+    public event InputSystemEvents.InputUpdateCall OnInputUpdateUnconditional
+    {
+        add => InputSystemEvents.OnInputUpdateUnconditional += value;
+        remove => InputSystemEvents.OnInputUpdateUnconditional -= value;
+    }
+
+    public event Action OnPreUpdatesActual
+    {
+        add => MonoBehaviourEvents.OnPreUpdateActual += value;
+        remove => MonoBehaviourEvents.OnPreUpdateActual -= value;
+    }
+
+    public event Action OnPreUpdatesUnconditional
+    {
+        add => MonoBehaviourEvents.OnPreUpdateUnconditional += value;
+        remove => MonoBehaviourEvents.OnPreUpdateUnconditional -= value;
+    }
+
+    public void AddPriorityCallback(CallbackUpdate callbackUpdate, Action callback, CallbackPriority priority)
+    {
+        var callbackList = callbackUpdate switch
+        {
+            CallbackUpdate.AwakeActual => MonoBehaviourEvents.AwakesActual,
+            CallbackUpdate.AwakeUnconditional => MonoBehaviourEvents.AwakesUnconditional,
+            CallbackUpdate.StartActual => MonoBehaviourEvents.StartsActual,
+            CallbackUpdate.StartUnconditional => MonoBehaviourEvents.StartsUnconditional,
+            CallbackUpdate.EnableActual => MonoBehaviourEvents.EnablesActual,
+            CallbackUpdate.EnableUnconditional => MonoBehaviourEvents.EnablesUnconditional,
+            CallbackUpdate.PreUpdateActual => MonoBehaviourEvents.PreUpdatesActual,
+            CallbackUpdate.PreUpdateUnconditional => MonoBehaviourEvents.PreUpdatesUnconditional,
+            CallbackUpdate.UpdateActual => MonoBehaviourEvents.UpdatesActual,
+            CallbackUpdate.UpdateUnconditional => MonoBehaviourEvents.UpdatesUnconditional,
+            CallbackUpdate.FixedUpdateActual => MonoBehaviourEvents.FixedUpdatesActual,
+            CallbackUpdate.FixedUpdateUnconditional => MonoBehaviourEvents.FixedUpdatesUnconditional,
+            CallbackUpdate.GUIActual => MonoBehaviourEvents.GUIsActual,
+            CallbackUpdate.GUIUnconditional => MonoBehaviourEvents.GUIsUnconditional,
+            CallbackUpdate.LastUpdateActual => MonoBehaviourEvents.LastUpdatesActual,
+            CallbackUpdate.LastUpdateUnconditional => MonoBehaviourEvents.LastUpdatesUnconditional,
+            _ => throw new ArgumentOutOfRangeException(nameof(callbackUpdate), callbackUpdate, null)
+        };
+
+        callbackList.Add(callback, (int)priority);
+    }
+
+    public void AddPriorityCallback(CallbackInputUpdate callbackUpdate, InputSystemEvents.InputUpdateCall callback,
+        CallbackPriority priority)
+    {
+        var callbackList = callbackUpdate switch
+        {
+            CallbackInputUpdate.InputUpdateActual => InputSystemEvents.InputUpdatesActual,
+            CallbackInputUpdate.InputUpdateUnconditional => InputSystemEvents.InputUpdatesUnconditional,
+            _ => throw new ArgumentOutOfRangeException(nameof(callbackUpdate), callbackUpdate, null)
+        };
+
+        callbackList.Add(callback, (int)priority);
     }
 }

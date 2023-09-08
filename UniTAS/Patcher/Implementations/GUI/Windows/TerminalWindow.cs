@@ -3,23 +3,29 @@ using System.Linq;
 using BepInEx;
 using UniTAS.Patcher.Exceptions.GUI;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
+using UniTAS.Patcher.Interfaces.GlobalHotkeyListener;
 using UniTAS.Patcher.Interfaces.GUI;
 using UniTAS.Patcher.Models.Customization;
 using UniTAS.Patcher.Models.GUI;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Customization;
 using UniTAS.Patcher.Services.GUI;
+using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations.GUI.Windows;
 
 [Register]
+[ForceInstantiate]
+[ExcludeRegisterIfTesting]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public class TerminalWindow : Window, ITerminalWindow
 {
     public TerminalEntry[] TerminalEntries { get; }
+
     private readonly IPatchReverseInvoker _patchReverseInvoker;
+    private readonly ITerminalLogger _logger;
 
     private string _terminalOutput = string.Empty;
     private string _terminalInput = string.Empty;
@@ -31,20 +37,24 @@ public class TerminalWindow : Window, ITerminalWindow
     private bool _initialFocus = true;
 
     private readonly Bind _terminalBind;
+    private readonly Bind _terminalSubmit;
 
-    public const string TERMINAL_INPUT_BIND_NAME = "NewTerminal";
-
-    public TerminalWindow(WindowDependencies windowDependencies, TerminalEntry[] terminalEntries, IBinds binds) : base(
+    public TerminalWindow(WindowDependencies windowDependencies, TerminalEntry[] terminalEntries, IBinds binds,
+        IGlobalHotkey
+            globalHotkey, ITerminalLogger logger) : base(
         windowDependencies,
         new(defaultWindowRect: GUIUtils.WindowRect(Screen.width - 100, Screen.height - 100), windowName: "Terminal"))
     {
         _patchReverseInvoker = windowDependencies.PatchReverseInvoker;
-        _terminalBind = binds.Get(TERMINAL_INPUT_BIND_NAME);
+        _terminalBind = binds.Create(new("NewTerminal", KeyCode.BackQuote));
+        _terminalSubmit = binds.Create(new("TerminalSubmit", KeyCode.Return), true);
+        globalHotkey.AddGlobalHotkey(new(_terminalBind, Show));
 
         // check dupes
         var dupes = terminalEntries.GroupBy(x => x.Command).Where(x => x.Count() > 1).Select(x => x.Key).ToArray();
         if (dupes.Any()) throw new DuplicateTerminalEntryException(dupes);
         TerminalEntries = terminalEntries;
+        _logger = logger;
     }
 
     private readonly GUILayoutOption[] _textAreaOptions = { GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true) };
@@ -83,11 +93,6 @@ public class TerminalWindow : Window, ITerminalWindow
         GUILayout.EndVertical();
     }
 
-    private bool GetKeyDown(KeyCode keyCode)
-    {
-        return _patchReverseInvoker.Invoke(key => UnityInput.Current.GetKeyDown(key), keyCode);
-    }
-
     private bool GetKey(KeyCode keyCode)
     {
         return _patchReverseInvoker.Invoke(key => UnityInput.Current.GetKey(key), keyCode);
@@ -109,7 +114,7 @@ public class TerminalWindow : Window, ITerminalWindow
         if (UnityEngine.GUI.GetNameOfFocusedControl() != "TerminalInput" ||
             Event.current.type != EventType.Repaint) return;
 
-        if (GetKeyDown(KeyCode.Return))
+        if (_terminalSubmit.IsPressed())
         {
             // hold shift to split input
             Submit(GetKey(KeyCode.LeftShift) | GetKey(KeyCode.RightShift));
@@ -175,6 +180,7 @@ public class TerminalWindow : Window, ITerminalWindow
     public void TerminalPrintLine(string output)
     {
         _terminalOutput += $"{output}\n";
+        _logger.LogMessage(output);
 
         // scroll to bottom
         _terminalOutputScroll.y = Mathf.Infinity;

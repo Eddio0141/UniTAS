@@ -1,3 +1,4 @@
+using System;
 using UniTAS.Patcher.Exceptions;
 
 namespace UniTAS.Patcher.Utils;
@@ -25,6 +26,15 @@ public static class RuntimeAssert
         if (!expected.Equals(actual))
         {
             throw new RuntimeAssertException($"RuntimeAssert.AreEqual failed, expected {expected}, got {actual}." +
+                                             (message == null ? "" : $" {message}"));
+        }
+    }
+
+    public static void FloatEquals(float expected, float actual, float precision, string message = null)
+    {
+        if (Math.Abs(expected - actual) >= precision)
+        {
+            throw new RuntimeAssertException($"RuntimeAssert.FloatEquals failed, expected {expected}, got {actual}." +
                                              (message == null ? "" : $" {message}"));
         }
     }

@@ -8,6 +8,7 @@ using UnityEngine;
 namespace UniTAS.Patcher.Implementations;
 
 [Singleton]
+[ExcludeRegisterIfTesting]
 public class UnlockCursor : IOnUpdateUnconditional
 {
     private readonly IPatchReverseInvoker _patchReverseInvoker;

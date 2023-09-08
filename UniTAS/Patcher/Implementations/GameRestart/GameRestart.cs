@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Patcher.Interfaces.Events.SoftRestart;
+using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
@@ -13,9 +14,10 @@ using Object = UnityEngine.Object;
 namespace UniTAS.Patcher.Implementations.GameRestart;
 
 // ReSharper disable once ClassNeverInstantiated.Global
-[Singleton]
+// target priority to after sync fixed update
+[Singleton(RegisterPriority.GameRestart)]
 public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUnconditional, IOnStartUnconditional,
-    IOnUpdateUnconditional
+    IOnFixedUpdateUnconditional
 {
     private DateTime _softRestartTime;
 
@@ -32,7 +34,6 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
 
     private bool _pendingRestart;
     private bool _pendingResumePausedExecution;
-    private int _pendingSoftRestartCounter = -1;
 
     [SuppressMessage("ReSharper", "MemberCanBeProtected.Global")]
     public GameRestart(ISyncFixedUpdateCycle syncFixedUpdate, ISceneWrapper sceneWrapper,
@@ -98,6 +99,7 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
         DestroyGameObjects();
 
         _logger.LogDebug("Disabling finalize invoke");
+        // TODO is this even a good idea
         _finalizeSuppressor.DisableFinalizeInvoke = true;
 
         _staticFieldManipulator.ResetStaticFields();
@@ -105,9 +107,7 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
         _logger.LogDebug("Enabling finalize invoke");
         _finalizeSuppressor.DisableFinalizeInvoke = false;
 
-        // this invokes 2 frames before the sync since the counter is at 1
-        _syncFixedUpdate.OnSync(() => _pendingSoftRestartCounter = 1, -_timeEnv.FrameTime * 1.0);
-        _logger.LogDebug("Soft restarting, pending FixedUpdate sync");
+        _syncFixedUpdate.OnSync(SoftRestartOperation, -_timeEnv.FrameTime);
     }
 
     public event GameRestartResume OnGameRestartResume;
@@ -140,41 +140,29 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
 
     public void AwakeUnconditional()
     {
-        PendingResumePausedExecution();
+        PendingResumePausedExecution("Awake");
     }
 
     public void OnEnableUnconditional()
     {
-        PendingResumePausedExecution();
+        PendingResumePausedExecution("OnEnable");
     }
 
     public void StartUnconditional()
     {
-        PendingResumePausedExecution();
+        PendingResumePausedExecution("Start");
     }
 
-    public void UpdateUnconditional()
+    public void FixedUpdateUnconditional()
     {
-        if (_pendingSoftRestartCounter > 0)
-        {
-            _pendingSoftRestartCounter--;
-            return;
-        }
-
-        if (_pendingSoftRestartCounter == 0)
-        {
-            _pendingSoftRestartCounter--;
-            SoftRestartOperation();
-        }
-        else
-        {
-            PendingResumePausedExecution();
-        }
+        PendingResumePausedExecution("FixedUpdate");
     }
 
-    private void PendingResumePausedExecution()
+    private void PendingResumePausedExecution(string timing)
     {
         if (!_pendingResumePausedExecution) return;
+        _pendingResumePausedExecution = false;
+
         InvokeOnGameRestartResume(true);
 
         _logger.LogInfo("Finish soft restarting");
@@ -182,9 +170,7 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
         _logger.LogInfo($"System time: {actualTime}");
 
         _monoBehaviourController.PausedExecution = false;
-        _logger.LogDebug("Resuming MonoBehaviour execution");
+        _logger.LogDebug($"Resuming MonoBehaviour execution at {timing}, {UpdateInvokeOffset.Offset}");
         InvokeOnGameRestartResume(false);
-
-        _pendingResumePausedExecution = false;
     }
 }

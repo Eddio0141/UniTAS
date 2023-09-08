@@ -1,7 +1,4 @@
 ﻿using System.Collections;
-using System.Linq;
-using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
-using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
@@ -11,19 +8,18 @@ namespace UniTAS.Patcher.MonoBehaviourScripts;
 public class MonoBehaviourUpdateInvoker : MonoBehaviour
 {
     private IMonoBehEventInvoker _monoBehEventInvoker;
-    private IOnLastUpdateUnconditional[] _onLastUpdatesUnconditional;
-    private IOnLastUpdateActual[] _onLastUpdatesActual;
-    private IMonoBehaviourController _monoBehaviourController;
 
     private void Awake()
     {
         var kernel = ContainerStarter.Kernel;
         _monoBehEventInvoker = kernel.GetInstance<IMonoBehEventInvoker>();
-        _onLastUpdatesUnconditional = kernel.GetAllInstances<IOnLastUpdateUnconditional>().ToArray();
-        _onLastUpdatesActual = kernel.GetAllInstances<IOnLastUpdateActual>().ToArray();
-        _monoBehaviourController = kernel.GetInstance<IMonoBehaviourController>();
-
+        _monoBehEventInvoker.Awake();
         StartCoroutine(EndOfFrame());
+    }
+
+    private void Start()
+    {
+        _monoBehEventInvoker.Start();
     }
 
     private void Update()
@@ -46,22 +42,15 @@ public class MonoBehaviourUpdateInvoker : MonoBehaviour
         _monoBehEventInvoker.OnGUI();
     }
 
+    // stupid optimization since object alloc
+    private readonly WaitForEndOfFrame _waitForEndOfFrame = new();
+
     private IEnumerator EndOfFrame()
     {
         while (true)
         {
-            yield return new WaitForEndOfFrame();
-            foreach (var update in _onLastUpdatesUnconditional)
-            {
-                update.OnLastUpdateUnconditional();
-            }
-
-            if (_monoBehaviourController.PausedExecution) continue;
-
-            foreach (var update in _onLastUpdatesActual)
-            {
-                update.OnLastUpdateActual();
-            }
+            yield return _waitForEndOfFrame;
+            MonoBehaviourEvents.InvokeLastUpdate();
         }
         // ReSharper disable once IteratorNeverReturns
     }

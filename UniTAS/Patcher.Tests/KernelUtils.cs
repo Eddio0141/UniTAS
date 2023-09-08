@@ -10,13 +10,16 @@ using UniTAS.Patcher.Implementations.DependencyInjection;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
 using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
+using UniTAS.Patcher.Interfaces.GlobalHotkeyListener;
 using UniTAS.Patcher.Interfaces.GUI;
 using UniTAS.Patcher.Interfaces.Movie;
-using UniTAS.Patcher.Models.DependencyInjection;
+using UniTAS.Patcher.Models.Customization;
+using UniTAS.Patcher.Models.GlobalHotkeyListener;
 using UniTAS.Patcher.Models.GUI;
 using UniTAS.Patcher.Models.UnitySafeWrappers.SceneManagement;
 using UniTAS.Patcher.Models.VirtualEnvironment;
 using UniTAS.Patcher.Services;
+using UniTAS.Patcher.Services.Customization;
 using UniTAS.Patcher.Services.DependencyInjection;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.Overlay;
@@ -115,7 +118,7 @@ public static class KernelUtils
         }
     }
 
-    [Singleton(RegisterPriority.FirstUpdateSkipOnRestart, IncludeDifferentAssembly = true)]
+    [Singleton(IncludeDifferentAssembly = true)]
     public class TestPriority : IOnPreUpdatesActual
     {
         public void PreUpdateActual()
@@ -202,6 +205,7 @@ public static class KernelUtils
         public double ScaledTime { get; }
         public double ScaledFixedTime { get; }
         public double RealtimeSinceStartup { get; }
+        public double TimeTolerance { get; }
     }
 
     [Register(IncludeDifferentAssembly = true)]
@@ -222,6 +226,46 @@ public static class KernelUtils
     private class OverlayVisibleToggleDummy : IOverlayVisibleToggle
     {
         public bool Enabled { get; set; }
+    }
+
+    [Register(IncludeDifferentAssembly = true)]
+    [SuppressMessage("ReSharper", "UnusedType.Local")]
+    private class BindsDummy : IBinds
+    {
+        public Bind Create(BindConfig config, bool noGenConfig)
+        {
+            return null!;
+        }
+
+        public Bind Get(string name)
+        {
+            return null!;
+        }
+    }
+
+    [Singleton(IncludeDifferentAssembly = true)]
+    public class SyncFixedUpdateCycleDummy : ISyncFixedUpdateCycle
+    {
+        private readonly Queue<Action> _callbacks = new();
+
+        public void OnSync(Action callback, double invokeOffset = 0, uint fixedUpdateIndex = 0)
+        {
+            _callbacks.Enqueue(callback);
+        }
+
+        public void ForceLastCallback()
+        {
+            _callbacks.Dequeue().Invoke();
+        }
+    }
+
+    [Singleton(IncludeDifferentAssembly = true)]
+    [SuppressMessage("ReSharper", "UnusedType.Local")]
+    private class GlobalHotkeyListenerDummy : IGlobalHotkey
+    {
+        public void AddGlobalHotkey(GlobalHotkey config)
+        {
+        }
     }
 
     public static Container Init()

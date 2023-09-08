@@ -2,18 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using UniTAS.Patcher.Exceptions.Movie.Runner;
+using UniTAS.Patcher.Implementations.Coroutine;
 using UniTAS.Patcher.Interfaces.Coroutine;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
 using UniTAS.Patcher.Interfaces.Events.Movie;
-using UniTAS.Patcher.Models.Coroutine;
 using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Models.Movie;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.Movie;
 using UniTAS.Patcher.Services.VirtualEnvironment;
-using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Implementations.Movie;
 
@@ -70,7 +69,7 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvent
             MovieRunningStatusChange(false);
         }
 
-        Tuple<IMovieEngine, PropertiesModel> parsed;
+        Utils.Tuple<IMovieEngine, PropertiesModel> parsed;
         try
         {
             parsed = _parser.Parse(input);
@@ -164,7 +163,7 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvent
         }
     }
 
-    private IEnumerator<CoroutineWait> FinishMovieCleanup()
+    private IEnumerable<CoroutineWait> FinishMovieCleanup()
     {
         yield return new WaitForUpdateUnconditional();
         _virtualEnvController.RunVirtualEnvironment = false;

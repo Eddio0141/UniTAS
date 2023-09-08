@@ -14,4 +14,6 @@ public interface ITimeEnv
     double ScaledTime { get; }
     double ScaledFixedTime { get; }
     double RealtimeSinceStartup { get; }
+
+    double TimeTolerance { get; }
 }

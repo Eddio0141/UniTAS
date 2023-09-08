@@ -41,11 +41,11 @@ You can use [unitas_setup_tool](https://github.com/Eddio0141/unitas_setup_tool) 
 
 # How to build
 
-- Make sure you have [.NET SDK 6.0 or 7.0](https://dotnet.microsoft.com/en-us/download) installed on your system
-- Run either `build.sh` for linux or `build.ps1` for windows
-  - Takes either `Debug` or `Release` as an argument for choosing building config
-    - `ReleaseTrace` builds with a `Release` profile but with trace logging for the plugin
-    - Passing in nothing will build `Debug` automatically
-- Check `build` directory for built files
+- Make sure you have [.NET SDK 7.0](https://dotnet.microsoft.com/en-us/download) installed on your system
+- Run `dotnet build UniTAS` at the base directory
+  - Remove the `UniTAS` if you are in the inner `UniTAS` directory
+  - If you need to choose `Release` or `Debug` config, do so with the `--configuration` flag
+- Output folder would be in `UniTAS/Patcher/bin/{Debug|Release}`
+  - The output content can be copied directly inside a `BepInEx` folder to be used
 
 [BepInEx 5]: https://docs.bepinex.dev/articles/user_guide/installation/index.html

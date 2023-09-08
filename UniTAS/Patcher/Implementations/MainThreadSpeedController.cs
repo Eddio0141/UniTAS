@@ -11,6 +11,7 @@ namespace UniTAS.Patcher.Implementations;
 
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 [Singleton]
+[ExcludeRegisterIfTesting]
 public class MainThreadSpeedControl : IMainThreadSpeedControl, IOnUpdateUnconditional, IOnMovieRunningStatusChange
 {
     private readonly ITimeEnv _timeEnv;

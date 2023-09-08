@@ -226,9 +226,24 @@ public class TimePatch
 
         private static bool Prefix(ref float __result)
         {
+            // currently i need this only for when i trace print Time.time
+#if TRACE
+            if (ReverseInvoker.InnerCall())
+            {
+                return true;
+            }
+#endif
+
             __result = CalledFromFixedUpdate() ? Time.fixedTime : (float)TimeEnv.ScaledTime;
             return false;
         }
+
+#if TRACE
+        private static void Postfix()
+        {
+            ReverseInvoker.Return();
+        }
+#endif
     }
 
     [HarmonyPatch(typeof(Time), "timeAsDouble", MethodType.Getter)]

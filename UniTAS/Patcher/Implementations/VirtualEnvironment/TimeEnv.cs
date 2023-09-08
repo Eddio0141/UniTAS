@@ -3,6 +3,7 @@ using BepInEx.Configuration;
 using HarmonyLib;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
+using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Patcher.Interfaces.Events.SoftRestart;
 using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Services;
@@ -15,7 +16,7 @@ namespace UniTAS.Patcher.Implementations.VirtualEnvironment;
 [Singleton(RegisterPriority.TimeEnv)]
 [ExcludeRegisterIfTesting]
 public class TimeEnv : ITimeEnv, IOnPreUpdatesActual, IOnGameRestartResume, IOnStartActual, IOnLastUpdateActual,
-    IOnFixedUpdateActual
+    IOnFixedUpdateActual, IOnUpdateUnconditional
 {
     private readonly ConfigEntry<float> _defaultFps;
 
@@ -35,22 +36,34 @@ public class TimeEnv : ITimeEnv, IOnPreUpdatesActual, IOnGameRestartResume, IOnS
         }
 
         _timeWrap = timeWrap;
+
         FrameTime = 0f;
+        TimeTolerance = _timeWrap.IntFPSOnly ? 1.0 / int.MaxValue : float.Epsilon;
+    }
+
+    private bool _initialTimeSet;
+
+    public void UpdateUnconditional()
+    {
+        if (_initialTimeSet) return;
+        _initialTimeSet = true;
 
         // stupid but slightly fixes accuracy on game first start
         var initialFt = 1.0 / _defaultFps.Value;
         RealtimeSinceStartup += initialFt;
         UnscaledTime += initialFt;
-        ScaledTime += initialFt;
+        ScaledTime += initialFt * Time.timeScale;
         SecondsSinceStartUp += initialFt;
     }
+
+    public double TimeTolerance { get; }
 
     public double FrameTime
     {
         get => _timeWrap.CaptureFrameTime;
         set
         {
-            if (value <= 0) value = 1f / _defaultFps.Value;
+            if (value <= 0f) value = 1f / _defaultFps.Value;
             _timeWrap.CaptureFrameTime = value;
         }
     }
@@ -78,7 +91,7 @@ public class TimeEnv : ITimeEnv, IOnPreUpdatesActual, IOnGameRestartResume, IOnS
     {
         RealtimeSinceStartup += FrameTime;
         UnscaledTime += FrameTime;
-        ScaledTime += Time.deltaTime;
+        ScaledTime += FrameTime * Time.timeScale;
         SecondsSinceStartUp += FrameTime;
     }
 
