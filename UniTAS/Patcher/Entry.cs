@@ -22,9 +22,8 @@ public static class Entry
     [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public static void Initialize()
     {
-        ContainerStarter.Init(RegisterTiming.Entry);
-
         LoggingUtils.InitDiskLogger();
+        ContainerStarter.Init(RegisterTiming.Entry);
 
         StaticLogger.Log.LogInfo($"Found {PreloadPatcherProcessor.PreloadPatchers.Length} preload patchers");
         StaticLogger.Log.LogInfo(
