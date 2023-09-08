@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed not using the right ILCode for returning a default value from a method
 - Fixed duplicate AssetBundle loading causing an exception
 - Fixed coroutines causing exception on restart
+- Fixed some timing issues
 
 ## Changed
 
