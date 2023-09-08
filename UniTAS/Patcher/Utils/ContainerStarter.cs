@@ -2,6 +2,7 @@ using System;
 using StructureMap;
 using UniTAS.Patcher.Implementations.DependencyInjection;
 using UniTAS.Patcher.Implementations.Logging;
+using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Services.DependencyInjection;
 using UniTAS.Patcher.Services.Logging;
 
@@ -11,29 +12,42 @@ public static class ContainerStarter
 {
     public static IContainer Kernel { get; private set; }
 
-    public static void Init()
+    public static void Init(RegisterTiming timing)
     {
-        StaticLogger.Log.LogDebug("Initializing container");
+        if (Kernel == null)
+        {
+            StaticLogger.Log.LogDebug($"Initializing container at timing {timing}");
+
+            try
+            {
+                Kernel = new Container(c =>
+                {
+                    c.ForSingletonOf<DiscoverAndRegister>().Use<DiscoverAndRegister>();
+                    c.For<IDiscoverAndRegister>().Use(x => x.GetInstance<DiscoverAndRegister>());
+
+                    c.ForSingletonOf<Logger>().Use<Logger>();
+                    c.For<ILogger>().Use(x => x.GetInstance<Logger>());
+                });
+            }
+            catch (Exception e)
+            {
+                StaticLogger.Log.LogFatal(
+                    $"An exception occurred while initializing the container at timing {timing}\n{e}");
+                throw;
+            }
+        }
 
         try
         {
-            Kernel = new Container(c =>
-            {
-                c.ForSingletonOf<DiscoverAndRegister>().Use<DiscoverAndRegister>();
-                c.For<IDiscoverAndRegister>().Use(x => x.GetInstance<DiscoverAndRegister>());
-
-                c.ForSingletonOf<Logger>().Use<Logger>();
-                c.For<ILogger>().Use(x => x.GetInstance<Logger>());
-            });
-
-            Kernel.Configure(c => Kernel.GetInstance<IDiscoverAndRegister>().Register<Logger>(c));
+            Kernel.Configure(c => Kernel.GetInstance<IDiscoverAndRegister>().Register<Logger>(c, timing));
 
             var forceInstantiateTypes = Kernel.GetInstance<IForceInstantiateTypes>();
-            forceInstantiateTypes.InstantiateTypes<Logger>();
+            forceInstantiateTypes.InstantiateTypes<ForceInstantiateTypes>();
         }
         catch (Exception e)
         {
-            StaticLogger.Log.LogFatal($"An exception occurred while initializing the container\n{e}");
+            StaticLogger.Log.LogFatal(
+                $"An exception occurred while initializing the container at timing {timing}\n{e}");
             throw;
         }
     }

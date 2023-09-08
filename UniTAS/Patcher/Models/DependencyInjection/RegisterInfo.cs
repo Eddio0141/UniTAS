@@ -9,7 +9,8 @@ public class RegisterInfo : RegisterInfoBase
 {
     private RegisterAttribute RegisterAttribute { get; }
 
-    public RegisterInfo(Type type, RegisterAttribute registerAttribute) : base(registerAttribute.Priority)
+    public RegisterInfo(Type type, RegisterAttribute registerAttribute, RegisterTiming timing) : base(
+        registerAttribute.Priority, timing)
     {
         Type = type;
         RegisterAttribute = registerAttribute;

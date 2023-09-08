@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Mono.Cecil;
 using UniTAS.Patcher.Implementations;
+using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher;
@@ -21,7 +22,7 @@ public static class Entry
     [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public static void Initialize()
     {
-        ContainerStarter.Init();
+        ContainerStarter.Init(RegisterTiming.Entry);
 
         LoggingUtils.InitDiskLogger();
 

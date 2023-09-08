@@ -17,6 +17,6 @@ public class SingletonAttribute : RegisterAttribute
 
     public override IEnumerable<RegisterInfoBase> GetRegisterInfos(Type type, Type[] allTypes, bool isTesting)
     {
-        yield return new RegisterInfo(type, this);
+        yield return new RegisterInfo(type, this, Timing);
     }
 }

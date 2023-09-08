@@ -15,14 +15,17 @@ public class RegisterAttribute : DependencyInjectionAttribute
 
     // public Type[] IgnoreInterfaces { get; set; }
     public RegisterPriority Priority { get; }
+    public RegisterTiming Timing { get; }
 
-    public RegisterAttribute(RegisterPriority priority = RegisterPriority.Default)
+    public RegisterAttribute(RegisterPriority priority = RegisterPriority.Default,
+        RegisterTiming timing = RegisterTiming.UnityInit)
     {
         Priority = priority;
+        Timing = timing;
     }
 
     public override IEnumerable<RegisterInfoBase> GetRegisterInfos(Type type, Type[] allTypes, bool isTesting)
     {
-        yield return new RegisterInfo(type, this);
+        yield return new RegisterInfo(type, this, Timing);
     }
 }
