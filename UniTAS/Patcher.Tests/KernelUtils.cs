@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using MoonSharp.Interpreter;
@@ -14,6 +15,7 @@ using UniTAS.Patcher.Interfaces.GlobalHotkeyListener;
 using UniTAS.Patcher.Interfaces.GUI;
 using UniTAS.Patcher.Interfaces.Movie;
 using UniTAS.Patcher.Models.Customization;
+using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Models.GlobalHotkeyListener;
 using UniTAS.Patcher.Models.GUI;
 using UniTAS.Patcher.Models.UnitySafeWrappers.SceneManagement;
@@ -279,15 +281,20 @@ public static class KernelUtils
             c.For<ILogger>().Use(x => x.GetInstance<FakeLogger>());
         });
 
-        kernel.Configure(c =>
-        {
-            kernel.GetInstance<IDiscoverAndRegister>().Register<FakeStaticFieldStorage>(c);
-            kernel.GetInstance<IDiscoverAndRegister>().Register<InfoPrintAndWelcome>(c);
-        });
+        var timings = Enum.GetValues(typeof(RegisterTiming)).Cast<RegisterTiming>();
 
-        var forceInstantiateTypes = kernel.GetInstance<IForceInstantiateTypes>();
-        forceInstantiateTypes.InstantiateTypes<InfoPrintAndWelcome>();
-        forceInstantiateTypes.InstantiateTypes<DummyMouseEnvLegacySystem>();
+        foreach (var timing in timings)
+        {
+            kernel.Configure(c =>
+            {
+                kernel.GetInstance<IDiscoverAndRegister>().Register<FakeStaticFieldStorage>(c, timing);
+                kernel.GetInstance<IDiscoverAndRegister>().Register<InfoPrintAndWelcome>(c, timing);
+            });
+
+            var forceInstantiateTypes = kernel.GetInstance<IForceInstantiateTypes>();
+            forceInstantiateTypes.InstantiateTypes<InfoPrintAndWelcome>();
+            forceInstantiateTypes.InstantiateTypes<DummyMouseEnvLegacySystem>();
+        }
 
         return kernel;
     }
