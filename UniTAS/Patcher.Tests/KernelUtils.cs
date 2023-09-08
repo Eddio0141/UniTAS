@@ -292,8 +292,8 @@ public static class KernelUtils
             });
 
             var forceInstantiateTypes = kernel.GetInstance<IForceInstantiateTypes>();
-            forceInstantiateTypes.InstantiateTypes<InfoPrintAndWelcome>();
-            forceInstantiateTypes.InstantiateTypes<DummyMouseEnvLegacySystem>();
+            forceInstantiateTypes.InstantiateTypes<InfoPrintAndWelcome>(timing);
+            forceInstantiateTypes.InstantiateTypes<DummyMouseEnvLegacySystem>(timing);
         }
 
         return kernel;
