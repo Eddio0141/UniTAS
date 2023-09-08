@@ -1,7 +1,9 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using StructureMap;
 using UniTAS.Patcher.Implementations.DependencyInjection;
 using UniTAS.Patcher.Implementations.Logging;
+using UniTAS.Patcher.Interfaces.Invoker;
 using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Services.DependencyInjection;
 using UniTAS.Patcher.Services.Logging;
@@ -11,6 +13,13 @@ namespace UniTAS.Patcher.Utils;
 public static class ContainerStarter
 {
     public static IContainer Kernel { get; private set; }
+
+    [InvokeOnUnityInit]
+    [SuppressMessage("ReSharper", "UnusedMember.Global")]
+    public static void UnityInit()
+    {
+        Init(RegisterTiming.UnityInit);
+    }
 
     public static void Init(RegisterTiming timing)
     {
