@@ -11,7 +11,8 @@ namespace UniTAS.Patcher.Interfaces.DependencyInjection;
 [AttributeUsage(AttributeTargets.Class)]
 public class SingletonAttribute : RegisterAttribute
 {
-    public SingletonAttribute(RegisterPriority priority = RegisterPriority.Default) : base(priority)
+    public SingletonAttribute(RegisterPriority priority = RegisterPriority.Default,
+        RegisterTiming timing = RegisterTiming.UnityInit) : base(priority, timing)
     {
     }
 
