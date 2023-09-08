@@ -16,7 +16,7 @@ public static class ContainerStarter
     {
         if (Kernel == null)
         {
-            StaticLogger.Log.LogDebug($"Initializing container at timing {timing}");
+            StaticLogger.Log.LogDebug("Initializing container");
 
             try
             {
@@ -31,8 +31,7 @@ public static class ContainerStarter
             }
             catch (Exception e)
             {
-                StaticLogger.Log.LogFatal(
-                    $"An exception occurred while initializing the container at timing {timing}\n{e}");
+                StaticLogger.Log.LogFatal($"An exception occurred while initializing the container\n{e}");
                 throw;
             }
         }
