@@ -12,7 +12,8 @@ namespace UniTAS.Patcher.Interfaces.DependencyInjection;
 public class RegisterAttribute : DependencyInjectionAttribute
 {
     public bool IncludeDifferentAssembly { get; set; }
-    public Type[] IgnoreInterfaces { get; set; }
+
+    // public Type[] IgnoreInterfaces { get; set; }
     public RegisterPriority Priority { get; }
 
     public RegisterAttribute(RegisterPriority priority = RegisterPriority.Default)
