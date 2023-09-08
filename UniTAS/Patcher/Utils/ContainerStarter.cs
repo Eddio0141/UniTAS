@@ -12,7 +12,29 @@ namespace UniTAS.Patcher.Utils;
 
 public static class ContainerStarter
 {
-    public static IContainer Kernel { get; private set; }
+    public static IContainer Kernel { get; }
+
+    static ContainerStarter()
+    {
+        StaticLogger.Log.LogDebug("Initializing container");
+
+        try
+        {
+            Kernel = new Container(c =>
+            {
+                c.ForSingletonOf<DiscoverAndRegister>().Use<DiscoverAndRegister>();
+                c.For<IDiscoverAndRegister>().Use(x => x.GetInstance<DiscoverAndRegister>());
+
+                c.ForSingletonOf<Logger>().Use<Logger>();
+                c.For<ILogger>().Use(x => x.GetInstance<Logger>());
+            });
+        }
+        catch (Exception e)
+        {
+            StaticLogger.Log.LogFatal($"An exception occurred while initializing the container\n{e}");
+            throw;
+        }
+    }
 
     [InvokeOnUnityInit]
     [SuppressMessage("ReSharper", "UnusedMember.Global")]
@@ -23,28 +45,6 @@ public static class ContainerStarter
 
     public static void Init(RegisterTiming timing)
     {
-        if (Kernel == null)
-        {
-            StaticLogger.Log.LogDebug("Initializing container");
-
-            try
-            {
-                Kernel = new Container(c =>
-                {
-                    c.ForSingletonOf<DiscoverAndRegister>().Use<DiscoverAndRegister>();
-                    c.For<IDiscoverAndRegister>().Use(x => x.GetInstance<DiscoverAndRegister>());
-
-                    c.ForSingletonOf<Logger>().Use<Logger>();
-                    c.For<ILogger>().Use(x => x.GetInstance<Logger>());
-                });
-            }
-            catch (Exception e)
-            {
-                StaticLogger.Log.LogFatal($"An exception occurred while initializing the container\n{e}");
-                throw;
-            }
-        }
-
         try
         {
             Kernel.Configure(c => Kernel.GetInstance<IDiscoverAndRegister>().Register<Logger>(c, timing));
