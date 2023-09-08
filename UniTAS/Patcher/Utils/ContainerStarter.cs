@@ -50,7 +50,7 @@ public static class ContainerStarter
             Kernel.Configure(c => Kernel.GetInstance<IDiscoverAndRegister>().Register<Logger>(c, timing));
 
             var forceInstantiateTypes = Kernel.GetInstance<IForceInstantiateTypes>();
-            forceInstantiateTypes.InstantiateTypes<ForceInstantiateTypes>();
+            forceInstantiateTypes.InstantiateTypes<ForceInstantiateTypes>(timing);
         }
         catch (Exception e)
         {
