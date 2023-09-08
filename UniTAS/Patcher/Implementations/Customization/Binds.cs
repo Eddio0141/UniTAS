@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using StructureMap;
-using UniTAS.Patcher.Exceptions.Customization;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Models.Customization;
 using UniTAS.Patcher.Services.Customization;
@@ -25,7 +24,12 @@ public class Binds : IBinds
     {
         var bind = _container.With(config).GetInstance<Bind>();
         // don't allow same name
-        if (_binds.Any(x => x.Name == bind.Name)) throw new ConflictingBindNameException(bind);
+        var sameName = Get(bind.Name);
+        if (sameName != null)
+        {
+            return sameName;
+        }
+
         _binds.Add(bind);
         bind.InitConfig(noGenConfig);
         return bind;
