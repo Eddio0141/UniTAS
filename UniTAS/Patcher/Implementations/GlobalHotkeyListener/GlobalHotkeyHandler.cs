@@ -22,6 +22,8 @@ public class GlobalHotkeyHandler : IGlobalHotkey, IOnUpdateUnconditional
             throw new GlobalBindAlreadyExistsException(config);
         }
 
+        if (sameKey?.Bind?.Name == config.Bind.Name) return;
+
         _hotkeys.Add(config);
     }
 
