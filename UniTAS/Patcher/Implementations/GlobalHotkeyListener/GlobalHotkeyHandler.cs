@@ -16,11 +16,12 @@ public class GlobalHotkeyHandler : IGlobalHotkey, IOnUpdateUnconditional
 
     public void AddGlobalHotkey(GlobalHotkey config)
     {
-        if (_hotkeys.Any(x => x.Bind.Key == config.Bind.Key))
+        var sameKey = _hotkeys.FirstOrDefault(x => x.Bind.Key == config.Bind.Key);
+        if (sameKey != null && sameKey.Bind.Name != config.Bind.Name)
         {
             throw new GlobalBindAlreadyExistsException(config);
         }
-        
+
         _hotkeys.Add(config);
     }
 
