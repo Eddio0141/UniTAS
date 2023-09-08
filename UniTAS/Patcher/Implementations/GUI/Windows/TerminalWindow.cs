@@ -157,7 +157,7 @@ public class TerminalWindow : Window, ITerminalWindow
         if (split) return;
 
         var command = _terminalInputFull.Split(' ').FirstOrDefault()?.Trim();
-        var args = _terminalInputFull.Split(' ').Skip(1).ToArray();
+        var args = _terminalInputFull.Split(' ').Skip(1).Select(x => x.Trim()).ToArray();
 
         _terminalInputFull = string.Empty;
 

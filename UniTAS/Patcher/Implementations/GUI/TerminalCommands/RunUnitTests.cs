@@ -1,3 +1,4 @@
+using System;
 using UniTAS.Patcher.Interfaces.GUI;
 using UniTAS.Patcher.Models.RuntimeTest;
 using UniTAS.Patcher.Services.GUI;
@@ -8,11 +9,15 @@ namespace UniTAS.Patcher.Implementations.GUI.TerminalCommands;
 public class RunUnitTests : TerminalEntry
 {
     public override string Command => "run_tests";
-    public override string Description => "runs defined runtime unit tests with current game";
+
+    public override string Description =>
+        "Runs defined runtime unit tests with current game. Arg 0 (uint) (optional): how many times to run the tests";
 
     private readonly IRuntimeTestProcessor _runtimeTestProcessor;
 
     private ITerminalWindow _terminalWindow;
+
+    private uint _pendingTimes;
 
     public RunUnitTests(IRuntimeTestProcessor runtimeTestProcessor)
     {
@@ -21,6 +26,19 @@ public class RunUnitTests : TerminalEntry
 
     public override bool Execute(string[] args, ITerminalWindow terminalWindow)
     {
+        var timesRaw = args.Length > 0 ? args[0] : null;
+        _pendingTimes = 1u;
+        if (timesRaw != null)
+        {
+            if (!uint.TryParse(timesRaw, out _pendingTimes))
+            {
+                terminalWindow.TerminalPrintLine("Argument 0 must be an integer");
+                return false;
+            }
+
+            _pendingTimes = Math.Max(1u, _pendingTimes);
+        }
+
         _terminalWindow = terminalWindow;
 
         _runtimeTestProcessor.OnTestsFinish += TestsFinish;
@@ -34,11 +52,20 @@ public class RunUnitTests : TerminalEntry
 
     private void TestsFinish(TestResults testResults)
     {
+        _pendingTimes--;
+        _terminalWindow.TerminalPrintLine(testResults.ToString());
+
+        if (_pendingTimes > 0)
+        {
+            _terminalWindow.TerminalPrintLine($"re-running the tests {_pendingTimes} more times");
+            _runtimeTestProcessor.Test<RunUnitTests>();
+            return;
+        }
+
         _runtimeTestProcessor.OnTestsFinish -= TestsFinish;
         _runtimeTestProcessor.OnTestRun -= TestRun;
         _runtimeTestProcessor.OnTestEnd -= TestEnd;
 
-        _terminalWindow.TerminalPrintLine(testResults.ToString());
         _terminalWindow.ReleaseTerminal();
     }
 
