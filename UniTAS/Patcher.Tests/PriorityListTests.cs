@@ -1,4 +1,4 @@
-using UniTAS.Patcher.Models;
+using UniTAS.Patcher.Models.Utils;
 
 namespace Patcher.Tests;
 

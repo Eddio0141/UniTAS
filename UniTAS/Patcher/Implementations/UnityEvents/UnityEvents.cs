@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents.DontRunIfPaused;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
-using UniTAS.Patcher.Models;
 using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Models.EventSubscribers;
+using UniTAS.Patcher.Models.Utils;
 using UniTAS.Patcher.Services.UnityEvents;
 #if TRACE
 using UniTAS.Patcher.Services;

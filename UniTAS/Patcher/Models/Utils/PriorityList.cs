@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace UniTAS.Patcher.Models;
+namespace UniTAS.Patcher.Models.Utils;
 
 /// <summary>
 /// Priority list that allows you to insert items at a specific priority.

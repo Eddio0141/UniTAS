@@ -1,6 +1,6 @@
 using System;
-using UniTAS.Patcher.Models;
 using UniTAS.Patcher.Models.EventSubscribers;
+using UniTAS.Patcher.Models.Utils;
 using UniTAS.Patcher.Services.UnityEvents;
 using UniTAS.Patcher.Utils;
 using UnityEngine.InputSystem;
