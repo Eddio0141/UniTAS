@@ -45,6 +45,8 @@ public static class ContainerStarter
 
     public static void Init(RegisterTiming timing)
     {
+        StaticLogger.Log.LogDebug($"Registering types at timing {timing}");
+
         try
         {
             Kernel.Configure(c => Kernel.GetInstance<IDiscoverAndRegister>().Register<Logger>(c, timing));
