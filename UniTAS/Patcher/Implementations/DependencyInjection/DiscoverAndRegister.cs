@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Reflection;
 using HarmonyLib;
 using StructureMap;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
@@ -17,7 +18,7 @@ public class DiscoverAndRegister : IDiscoverAndRegister
 {
     private readonly ILogger _logger;
 
-    private Dictionary<RegisterTiming, List<RegisterInfoBase>> _pendingRegisters;
+    private readonly Dictionary<Assembly, Dictionary<RegisterTiming, List<RegisterInfoBase>>> _pendingRegisters = new();
 
     public DiscoverAndRegister(ILogger logger)
     {
@@ -26,10 +27,13 @@ public class DiscoverAndRegister : IDiscoverAndRegister
 
     public void Register<TAssemblyContainingType>(ConfigurationExpression config, RegisterTiming timing)
     {
+        var assembly = typeof(TAssemblyContainingType).Assembly;
+
         // have we processed pending registers yet?
-        if (_pendingRegisters == null)
+        if (!_pendingRegisters.TryGetValue(assembly, out var pendingRegisters))
         {
-            _pendingRegisters = new();
+            pendingRegisters = new();
+            _pendingRegisters.Add(assembly, pendingRegisters);
 
             var allTypes = AccessTools.GetTypesFromAssembly(typeof(TAssemblyContainingType).Assembly);
             var types = allTypes.Where(
@@ -49,24 +53,29 @@ public class DiscoverAndRegister : IDiscoverAndRegister
             var timings = Enum.GetValues(typeof(RegisterTiming)).Cast<RegisterTiming>();
             foreach (var registerTiming in timings)
             {
-                _pendingRegisters.Add(registerTiming, new());
+                pendingRegisters.Add(registerTiming, new());
             }
 
             foreach (var register in registers)
             {
-                _pendingRegisters[register.Timing].Add(register);
+                pendingRegisters[register.Timing].Add(register);
             }
         }
 
         // actually register
-        if (!_pendingRegisters.TryGetValue(timing, out var currentRegisters)) return;
-        _pendingRegisters.Remove(timing);
+        if (!pendingRegisters.TryGetValue(timing, out var currentRegisters)) return;
+        pendingRegisters.Remove(timing);
 
         _logger.LogDebug($"registering {currentRegisters.Count} types with timing {timing}");
         foreach (var register in currentRegisters)
         {
             _logger.LogDebug($"registering {register.Type.FullName} with priority {register.Priority}");
             register.Register(config);
+        }
+
+        if (pendingRegisters.Count == 0)
+        {
+            _pendingRegisters.Remove(assembly);
         }
     }
 
