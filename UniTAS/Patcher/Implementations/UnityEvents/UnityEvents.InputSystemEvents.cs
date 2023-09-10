@@ -1,5 +1,4 @@
 using System;
-using UniTAS.Patcher.Interfaces.Events.SoftRestart;
 using UniTAS.Patcher.Models;
 using UniTAS.Patcher.Models.EventSubscribers;
 using UniTAS.Patcher.Services.UnityEvents;
@@ -12,7 +11,7 @@ using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations.UnityEvents;
 
-public partial class UnityEvents : IOnGameRestart, IInputEventInvoker
+public partial class UnityEvents
 {
     private void InputSystemEventsInit()
     {

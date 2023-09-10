@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
+using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
 using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
+using UniTAS.Patcher.Interfaces.Events.SoftRestart;
 using UniTAS.Patcher.Models;
+using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Models.EventSubscribers;
 using UniTAS.Patcher.Services.UnityEvents;
 #if TRACE
@@ -19,7 +22,8 @@ namespace UniTAS.Patcher.Implementations.UnityEvents;
 /// Unconditional events are called even if MonoBehaviour is paused
 /// Actual events are called only if MonoBehaviour is not paused
 /// </summary>
-public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker
+[Singleton(timing: RegisterTiming.Entry)]
+public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEventInvoker, IOnGameRestart
 {
     public UnityEvents(IEnumerable<IOnAwakeUnconditional> onAwakesUnconditional,
         IEnumerable<IOnStartUnconditional> onStartsUnconditional,
