@@ -23,11 +23,9 @@ public static class Entry
     public static void Initialize()
     {
         LoggingUtils.InitDiskLogger();
-        ContainerStarter.Init(RegisterTiming.Entry);
 
         StaticLogger.Log.LogInfo($"Found {PreloadPatcherProcessor.PreloadPatchers.Length} preload patchers");
-        StaticLogger.Log.LogInfo(
-            $"Target dlls: {string.Join(", ", TargetDLLs.ToArray())}");
+        StaticLogger.Log.LogInfo($"Target dlls: {string.Join(", ", PreloadPatcherProcessor.TargetDLLs.ToArray())}");
     }
 
     // Patches the assemblies
@@ -50,5 +48,6 @@ public static class Entry
     public static void Finish()
     {
         StaticLogger.Log.LogInfo("Finished preload patcher!");
+        ContainerStarter.Init(RegisterTiming.Entry);
     }
 }
