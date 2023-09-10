@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
-using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
-using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
-using UniTAS.Patcher.Interfaces.Events.SoftRestart;
+using UniTAS.Patcher.Interfaces.Events.UnityEvents.DontRunIfPaused;
+using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
 using UniTAS.Patcher.Models;
 using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Models.EventSubscribers;
@@ -23,7 +22,7 @@ namespace UniTAS.Patcher.Implementations.UnityEvents;
 /// Actual events are called only if MonoBehaviour is not paused
 /// </summary>
 [Singleton(timing: RegisterTiming.Entry)]
-public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEventInvoker, IOnGameRestart
+public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEventInvoker
 {
     public UnityEvents(IEnumerable<IOnAwakeUnconditional> onAwakesUnconditional,
         IEnumerable<IOnStartUnconditional> onStartsUnconditional,
@@ -40,8 +39,10 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         IEnumerable<IOnInputUpdateUnconditional> onInputUpdatesUnconditional,
         IEnumerable<IOnLateUpdateUnconditional> onLateUpdatesUnconditional,
         IEnumerable<IOnLastUpdateUnconditional> onLastUpdatesUnconditional,
-        IEnumerable<IOnLastUpdateActual> onLastUpdatesActual)
+        IEnumerable<IOnLastUpdateActual> onLastUpdatesActual, IGameRestart gameRestart)
     {
+        gameRestart.OnGameRestart += OnGameRestart;
+
         _inputUpdatesUnconditional.Add((fixedUpdate, _) =>
         {
             if (fixedUpdate || _calledPreUpdate) return;

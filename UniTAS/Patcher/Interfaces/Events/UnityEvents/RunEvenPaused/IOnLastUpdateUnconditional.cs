@@ -1,4 +1,4 @@
-namespace UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
+namespace UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
 
 public interface IOnLastUpdateUnconditional
 {

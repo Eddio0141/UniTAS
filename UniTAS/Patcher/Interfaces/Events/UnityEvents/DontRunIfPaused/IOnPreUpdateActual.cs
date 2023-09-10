@@ -1,4 +1,4 @@
-namespace UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
+namespace UniTAS.Patcher.Interfaces.Events.UnityEvents.DontRunIfPaused;
 
 public interface IOnPreUpdateActual
 {
