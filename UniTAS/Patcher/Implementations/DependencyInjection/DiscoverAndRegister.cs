@@ -70,7 +70,7 @@ public class DiscoverAndRegister : IDiscoverAndRegister
         }
     }
 
-    private IEnumerable<RegisterInfoBase> GetRegisterInfos(Type type, Type[] allTypes)
+    private static IEnumerable<RegisterInfoBase> GetRegisterInfos(Type type, Type[] allTypes)
     {
         var dependencyInjectionAttributes = type.GetCustomAttributes(typeof(DependencyInjectionAttribute), true);
 
