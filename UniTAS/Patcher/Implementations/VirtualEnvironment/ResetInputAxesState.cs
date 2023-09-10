@@ -5,7 +5,7 @@ using UniTAS.Patcher.Services.VirtualEnvironment;
 namespace UniTAS.Patcher.Implementations.VirtualEnvironment;
 
 [Singleton]
-public class ResetInputAxesState : IResetInputAxesState, IOnPreUpdatesActual
+public class ResetInputAxesState : IResetInputAxesState, IOnPreUpdateActual
 {
     public bool IsResetInputAxesState { get; set; }
 

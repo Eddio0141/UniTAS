@@ -26,6 +26,7 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
     private readonly IMonoBehaviourController _monoBehaviourController;
     private readonly ILogger _logger;
     private readonly IFinalizeSuppressor _finalizeSuppressor;
+    private readonly IUpdateInvokeOffset _updateInvokeOffset;
 
     private readonly IOnPreGameRestart[] _onPreGameRestart;
 
@@ -39,7 +40,8 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
     public GameRestart(ISyncFixedUpdateCycle syncFixedUpdate, ISceneWrapper sceneWrapper,
         IMonoBehaviourController monoBehaviourController, ILogger logger, IOnGameRestart[] onGameRestart,
         IOnGameRestartResume[] onGameRestartResume, IOnPreGameRestart[] onPreGameRestart,
-        IStaticFieldManipulator staticFieldManipulator, ITimeEnv timeEnv, IFinalizeSuppressor finalizeSuppressor)
+        IStaticFieldManipulator staticFieldManipulator, ITimeEnv timeEnv, IFinalizeSuppressor finalizeSuppressor,
+        IUpdateInvokeOffset updateInvokeOffset)
     {
         _syncFixedUpdate = syncFixedUpdate;
         _sceneWrapper = sceneWrapper;
@@ -49,6 +51,7 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
         _staticFieldManipulator = staticFieldManipulator;
         _timeEnv = timeEnv;
         _finalizeSuppressor = finalizeSuppressor;
+        _updateInvokeOffset = updateInvokeOffset;
 
         foreach (var gameRestartResume in onGameRestartResume)
         {
@@ -170,7 +173,7 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
         _logger.LogInfo($"System time: {actualTime}");
 
         _monoBehaviourController.PausedExecution = false;
-        _logger.LogDebug($"Resuming MonoBehaviour execution at {timing}, {UpdateInvokeOffset.Offset}");
+        _logger.LogDebug($"Resuming MonoBehaviour execution at {timing}, {_updateInvokeOffset.Offset}");
         InvokeOnGameRestartResume(false);
     }
 }

@@ -15,7 +15,7 @@ namespace UniTAS.Patcher.Implementations.VirtualEnvironment;
 
 [Singleton(RegisterPriority.TimeEnv)]
 [ExcludeRegisterIfTesting]
-public class TimeEnv : ITimeEnv, IOnPreUpdatesActual, IOnGameRestartResume, IOnStartActual, IOnLastUpdateActual,
+public class TimeEnv : ITimeEnv, IOnPreUpdateActual, IOnGameRestartResume, IOnStartActual, IOnLastUpdateActual,
     IOnFixedUpdateActual, IOnUpdateUnconditional
 {
     private readonly ConfigEntry<float> _defaultFps;

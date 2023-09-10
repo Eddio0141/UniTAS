@@ -54,10 +54,11 @@ public partial class FrameAdvancing : IFrameAdvancing, IOnFixedUpdateUncondition
     private readonly ICoroutine _coroutine;
     private readonly ITimeEnv _timeEnv;
     private readonly ILogger _logger;
+    private readonly IUpdateInvokeOffset _updateInvokeOffset;
 
     public FrameAdvancing(IMonoBehaviourController monoBehaviourController, IBinds binds,
         ISyncFixedUpdateCycle syncFixedUpdate, ICoroutine coroutine, ITimeEnv timeEnv, ILogger logger,
-        IGlobalHotkey globalHotkey)
+        IGlobalHotkey globalHotkey, IUpdateInvokeOffset updateInvokeOffset)
     {
         var frameAdvanceBind = binds.Create(new("FrameAdvance", KeyCode.Slash));
         var frameAdvanceToggleBind = binds.Create(new("FrameAdvanceToggle", KeyCode.Period));
@@ -70,6 +71,7 @@ public partial class FrameAdvancing : IFrameAdvancing, IOnFixedUpdateUncondition
         _coroutine = coroutine;
         _timeEnv = timeEnv;
         _logger = logger;
+        _updateInvokeOffset = updateInvokeOffset;
         _unpauseActual = UnpauseActual;
         _updateOffsetSyncFix = UpdateOffsetSyncFix;
     }
@@ -130,10 +132,10 @@ public partial class FrameAdvancing : IFrameAdvancing, IOnFixedUpdateUncondition
             var actualOffset = _pendingUpdateOffsetFixStateCheckingOffset + _timeEnv.FrameTime;
 
             // is it invalid
-            if (Math.Abs(actualOffset - UpdateInvokeOffset.Offset) % Time.fixedDeltaTime > _timeEnv.TimeTolerance)
+            if (Math.Abs(actualOffset - _updateInvokeOffset.Offset) % Time.fixedDeltaTime > _timeEnv.TimeTolerance)
             {
                 _logger.LogDebug(
-                    $"invalid offset after FixedUpdate, expected {actualOffset}, current: {UpdateInvokeOffset.Offset}, fixing");
+                    $"invalid offset after FixedUpdate, expected {actualOffset}, current: {_updateInvokeOffset.Offset}, fixing");
                 _syncFixedUpdate.OnSync(_updateOffsetSyncFix, actualOffset);
                 // pause until offset is synced
                 // this also prevents this broken Update
@@ -254,7 +256,7 @@ public partial class FrameAdvancing : IFrameAdvancing, IOnFixedUpdateUncondition
 
     private void PauseActual()
     {
-        _updateRestoreOffset = UpdateInvokeOffset.Offset;
+        _updateRestoreOffset = _updateInvokeOffset.Offset;
         _fixedUpdateRestoreIndex = _fixedUpdateIndex;
         _monoBehaviourController.PausedExecution = true;
         _logger.LogDebug(

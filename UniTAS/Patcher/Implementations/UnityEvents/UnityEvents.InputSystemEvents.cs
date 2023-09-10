@@ -1,50 +1,24 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
-using UniTAS.Patcher.Interfaces.Invoker;
+using UniTAS.Patcher.Interfaces.Events.SoftRestart;
 using UniTAS.Patcher.Models;
 using UniTAS.Patcher.Models.EventSubscribers;
+using UniTAS.Patcher.Services.UnityEvents;
+using UniTAS.Patcher.Utils;
 using UnityEngine.InputSystem;
 #if TRACE
 using UniTAS.Patcher.Services;
 using UnityEngine;
 #endif
 
-namespace UniTAS.Patcher.Utils;
+namespace UniTAS.Patcher.Implementations.UnityEvents;
 
-public static class InputSystemEvents
+public partial class UnityEvents : IOnGameRestart, IInputEventInvoker
 {
-    public delegate void InputUpdateCall(bool fixedUpdate, bool newInputSystemUpdate);
-
-    public static event InputUpdateCall OnInputUpdateActual
-    {
-        add => InputUpdatesActual.Add(value, (int)CallbackPriority.Default);
-        remove => InputUpdatesActual.Remove(value);
-    }
-
-    public static event InputUpdateCall OnInputUpdateUnconditional
-    {
-        add => InputUpdatesUnconditional.Add(value, (int)CallbackPriority.Default);
-        remove => InputUpdatesUnconditional.Remove(value);
-    }
-
-    public static readonly PriorityList<InputUpdateCall> InputUpdatesActual = new();
-    public static readonly PriorityList<InputUpdateCall> InputUpdatesUnconditional = new();
-
-    private static bool _usingMonoBehUpdate;
-    private static bool _usingMonoBehFixedUpdate;
-
-    // private static bool _alreadyRegisteredOnEvent;
-
-    private static Action _inputUpdate;
-    private static Action _inputFixedUpdate;
-
-    [SuppressMessage("ReSharper", "ConditionIsAlwaysTrueOrFalse")]
-    [InvokeOnUnityInit]
-    public static void Init()
+    private void InputSystemEventsInit()
     {
         if (_usingMonoBehUpdate)
         {
-            MonoBehaviourEvents.OnUpdateUnconditional -= _inputUpdate;
+            OnUpdateUnconditional -= _inputUpdate;
         }
         // else if (_alreadyRegisteredOnEvent)
         // {
@@ -53,7 +27,7 @@ public static class InputSystemEvents
 
         if (_usingMonoBehFixedUpdate)
         {
-            MonoBehaviourEvents.OnFixedUpdateUnconditional -= _inputFixedUpdate;
+            OnFixedUpdateUnconditional -= _inputFixedUpdate;
         }
         // else if (_alreadyRegisteredOnEvent)
         // {
@@ -73,19 +47,59 @@ public static class InputSystemEvents
         InputSystemChangeUpdate(InputSystem.settings.updateMode);
     }
 
-    private static void AddEventToFixedUpdateUnconditional()
+    public void OnGameRestart(DateTime startupTime, bool preSceneLoad)
     {
-        MonoBehaviourEvents.FixedUpdatesUnconditional.Add(_inputFixedUpdate,
-            (int)CallbackPriority.InputUpdate);
+        if (!preSceneLoad) return;
+        InputSystemEventsInit();
     }
 
-    private static void AddEventToUpdateUnconditional()
+    public event IUpdateEvents.InputUpdateCall OnInputUpdateActual
     {
-        MonoBehaviourEvents.UpdatesUnconditional.Add(_inputUpdate,
-            (int)CallbackPriority.InputUpdate);
+        add => _inputUpdatesActual.Add(value, (int)CallbackPriority.Default);
+        remove => _inputUpdatesActual.Remove(value);
     }
 
-    public static void InputSystemChangeUpdate(InputSettings.UpdateMode updateMode)
+    public event IUpdateEvents.InputUpdateCall OnInputUpdateUnconditional
+    {
+        add => _inputUpdatesUnconditional.Add(value, (int)CallbackPriority.Default);
+        remove => _inputUpdatesUnconditional.Remove(value);
+    }
+
+    public void AddPriorityCallback(CallbackInputUpdate callbackUpdate, IUpdateEvents.InputUpdateCall callback,
+        CallbackPriority priority)
+    {
+        var callbackList = callbackUpdate switch
+        {
+            CallbackInputUpdate.InputUpdateActual => _inputUpdatesActual,
+            CallbackInputUpdate.InputUpdateUnconditional => _inputUpdatesUnconditional,
+            _ => throw new ArgumentOutOfRangeException(nameof(callbackUpdate), callbackUpdate, null)
+        };
+
+        callbackList.Add(callback, (int)priority);
+    }
+
+    private readonly PriorityList<IUpdateEvents.InputUpdateCall> _inputUpdatesActual = new();
+    private readonly PriorityList<IUpdateEvents.InputUpdateCall> _inputUpdatesUnconditional = new();
+
+    private bool _usingMonoBehUpdate;
+    private bool _usingMonoBehFixedUpdate;
+
+    // private bool _alreadyRegisteredOnEvent;
+
+    private Action _inputUpdate;
+    private Action _inputFixedUpdate;
+
+    private void AddEventToFixedUpdateUnconditional()
+    {
+        AddPriorityCallback(CallbackUpdate.FixedUpdateUnconditional, _inputFixedUpdate, CallbackPriority.InputUpdate);
+    }
+
+    private void AddEventToUpdateUnconditional()
+    {
+        AddPriorityCallback(CallbackUpdate.UpdateUnconditional, _inputUpdate, CallbackPriority.InputUpdate);
+    }
+
+    public void InputSystemChangeUpdate(InputSettings.UpdateMode updateMode)
     {
         switch (updateMode)
         {
@@ -102,7 +116,7 @@ public static class InputSystemEvents
 
                 if (_usingMonoBehUpdate)
                 {
-                    MonoBehaviourEvents.OnUpdateUnconditional -= _inputUpdate;
+                    OnUpdateUnconditional -= _inputUpdate;
                     _usingMonoBehUpdate = false;
                 }
 
@@ -127,7 +141,7 @@ public static class InputSystemEvents
 
                 if (_usingMonoBehFixedUpdate)
                 {
-                    MonoBehaviourEvents.OnFixedUpdateUnconditional -= _inputFixedUpdate;
+                    OnFixedUpdateUnconditional -= _inputFixedUpdate;
                     _usingMonoBehFixedUpdate = false;
                 }
 
@@ -167,13 +181,9 @@ public static class InputSystemEvents
         // _alreadyRegisteredOnEvent = true;
     }
 
-    private static bool AlreadyRegisteredOnEvent => !_usingMonoBehUpdate || !_usingMonoBehFixedUpdate;
+    private bool AlreadyRegisteredOnEvent => !_usingMonoBehUpdate || !_usingMonoBehFixedUpdate;
 
-#if TRACE
-    private static IPatchReverseInvoker _patchReverseInvoker;
-#endif
-
-    private static void InputUpdate(bool fixedUpdate, bool newInputSystemUpdate)
+    private void InputUpdate(bool fixedUpdate, bool newInputSystemUpdate)
     {
 #if TRACE
         _patchReverseInvoker ??= ContainerStarter.Kernel.GetInstance<IPatchReverseInvoker>();
@@ -181,16 +191,16 @@ public static class InputSystemEvents
             $"InputUpdate, time: {_patchReverseInvoker.Invoke(() => Time.time)} fixed update: {fixedUpdate}, new input system update: {newInputSystemUpdate}");
 #endif
 
-        for (var i = 0; i < InputUpdatesUnconditional.Count; i++)
+        for (var i = 0; i < _inputUpdatesUnconditional.Count; i++)
         {
-            InputUpdatesUnconditional[i](fixedUpdate, newInputSystemUpdate);
+            _inputUpdatesUnconditional[i](fixedUpdate, newInputSystemUpdate);
         }
 
-        for (var i = 0; i < InputUpdatesActual.Count; i++)
+        for (var i = 0; i < _inputUpdatesActual.Count; i++)
         {
-            if (MonoBehaviourController.PausedExecution ||
-                (!fixedUpdate && MonoBehaviourController.PausedUpdate)) continue;
-            InputUpdatesActual[i](fixedUpdate, newInputSystemUpdate);
+            if (Utils.MonoBehaviourController.PausedExecution ||
+                (!fixedUpdate && Utils.MonoBehaviourController.PausedUpdate)) continue;
+            _inputUpdatesActual[i](fixedUpdate, newInputSystemUpdate);
         }
     }
 }

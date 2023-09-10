@@ -1,8 +1,7 @@
 ﻿using System;
 using UniTAS.Patcher.Models.EventSubscribers;
-using UniTAS.Patcher.Utils;
 
-namespace UniTAS.Patcher.Services.EventSubscribers;
+namespace UniTAS.Patcher.Services.UnityEvents;
 
 /// <summary>
 /// An interface that you can use to subscribe to MonoBehaviour events.
@@ -16,16 +15,19 @@ public interface IUpdateEvents
     event Action OnFixedUpdateUnconditional;
     event Action OnUpdateActual;
     event Action OnUpdateUnconditional;
-    event Action OnGUIEventUnconditional;
+    event Action OnGUIUnconditional;
+    event Action OnLateUpdateActual;
+    event Action OnLateUpdateUnconditional;
     event Action OnLastUpdateUnconditional;
     event Action OnLastUpdateActual;
-    event Action OnPreUpdatesActual;
-    event Action OnPreUpdatesUnconditional;
-    event InputSystemEvents.InputUpdateCall OnInputUpdateActual;
-    event InputSystemEvents.InputUpdateCall OnInputUpdateUnconditional;
+    event Action OnPreUpdateActual;
+    event Action OnPreUpdateUnconditional;
+    event InputUpdateCall OnInputUpdateActual;
+    event InputUpdateCall OnInputUpdateUnconditional;
 
     void AddPriorityCallback(CallbackUpdate callbackUpdate, Action callback, CallbackPriority priority);
 
-    void AddPriorityCallback(CallbackInputUpdate callbackUpdate, InputSystemEvents.InputUpdateCall callback,
-        CallbackPriority priority);
+    void AddPriorityCallback(CallbackInputUpdate callbackUpdate, InputUpdateCall callback, CallbackPriority priority);
+
+    public delegate void InputUpdateCall(bool fixedUpdate, bool newInputSystemUpdate);
 }

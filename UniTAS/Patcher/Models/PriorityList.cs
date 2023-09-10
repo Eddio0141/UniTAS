@@ -32,6 +32,32 @@ public class PriorityList<T>
         }
     }
 
+    public void AddRange(IEnumerable<T> items, int priority)
+    {
+        // is the priority list smaller than priority?
+        var lastPriorityIndex = _priorities.Count > 0 ? _priorities[_priorities.Count - 1] : 0;
+        while (_priorities.Count <= priority)
+        {
+            // fill in the gaps with last index
+            _priorities.Add(lastPriorityIndex);
+        }
+
+        // actually insert item
+        var itemsList = new List<(T, int)>();
+        foreach (var item in items)
+        {
+            itemsList.Add((item, priority));
+        }
+
+        _contents.InsertRange(_priorities[priority], itemsList);
+
+        // update priority list indexes
+        for (var i = priority; i < _priorities.Count; i++)
+        {
+            _priorities[i] += itemsList.Count;
+        }
+    }
+
     public void Remove(T item)
     {
         if (_contents.Count <= 0) return;

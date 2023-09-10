@@ -1,5 +1,5 @@
 using UniTAS.Patcher.Interfaces.Coroutine;
-using UniTAS.Patcher.Services.EventSubscribers;
+using UniTAS.Patcher.Services.UnityEvents;
 
 namespace UniTAS.Patcher.Implementations.Coroutine;
 

@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using HarmonyLib;
 using UniTAS.Patcher.Interfaces.Patches.PatchTypes;
+using UniTAS.Patcher.Services.UnityEvents;
 using UniTAS.Patcher.Utils;
 using UnityEngine.InputSystem;
 
@@ -12,12 +13,15 @@ namespace UniTAS.Patcher.Patches.Harmony;
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public class InputSystemUpdateMethodPatch
 {
+    private static readonly IInputEventInvoker InputEventInvoker =
+        ContainerStarter.Kernel.GetInstance<IInputEventInvoker>();
+
     [HarmonyPatch]
     private class UpdateModeSetter
     {
         private static void Prefix(InputSettings.UpdateMode value)
         {
-            InputSystemEvents.InputSystemChangeUpdate(value);
+            InputEventInvoker.InputSystemChangeUpdate(value);
         }
 
         private static MethodBase TargetMethod()

@@ -1,5 +1,4 @@
 using System;
-using UniTAS.Patcher.Models.Invoker;
 
 namespace UniTAS.Patcher.Services.Invoker;
 
@@ -9,5 +8,4 @@ namespace UniTAS.Patcher.Services.Invoker;
 [AttributeUsage(AttributeTargets.Method)]
 public abstract class InvokerAttribute : Attribute
 {
-    public InvokerPriority Priority = InvokerPriority.Default;
 }

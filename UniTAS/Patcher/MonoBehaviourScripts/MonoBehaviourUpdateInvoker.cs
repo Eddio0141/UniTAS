@@ -1,5 +1,5 @@
 ﻿using System.Collections;
-using UniTAS.Patcher.Services;
+using UniTAS.Patcher.Services.UnityEvents;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 
@@ -13,33 +13,38 @@ public class MonoBehaviourUpdateInvoker : MonoBehaviour
     {
         var kernel = ContainerStarter.Kernel;
         _monoBehEventInvoker = kernel.GetInstance<IMonoBehEventInvoker>();
-        _monoBehEventInvoker.Awake();
+        _monoBehEventInvoker.InvokeAwake();
         StartCoroutine(EndOfFrame());
     }
 
     private void Start()
     {
-        _monoBehEventInvoker.Start();
+        _monoBehEventInvoker.InvokeStart();
     }
 
     private void Update()
     {
-        _monoBehEventInvoker.Update();
+        _monoBehEventInvoker.InvokeUpdate();
     }
 
     private void FixedUpdate()
     {
-        _monoBehEventInvoker.FixedUpdate();
+        _monoBehEventInvoker.InvokeFixedUpdate();
     }
 
     private void LateUpdate()
     {
-        _monoBehEventInvoker.LateUpdate();
+        _monoBehEventInvoker.InvokeLateUpdate();
     }
 
     private void OnGUI()
     {
-        _monoBehEventInvoker.OnGUI();
+        _monoBehEventInvoker.InvokeOnGUI();
+    }
+
+    private void OnEnable()
+    {
+        _monoBehEventInvoker.InvokeOnEnable();
     }
 
     // stupid optimization since object alloc
@@ -50,7 +55,7 @@ public class MonoBehaviourUpdateInvoker : MonoBehaviour
         while (true)
         {
             yield return _waitForEndOfFrame;
-            MonoBehaviourEvents.InvokeLastUpdate();
+            _monoBehEventInvoker.InvokeLastUpdate();
         }
         // ReSharper disable once IteratorNeverReturns
     }

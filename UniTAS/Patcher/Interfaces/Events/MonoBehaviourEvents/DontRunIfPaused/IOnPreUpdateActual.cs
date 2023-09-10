@@ -1,6 +1,6 @@
 namespace UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
 
-public interface IOnPreUpdatesActual
+public interface IOnPreUpdateActual
 {
     /// <summary>
     /// Invokes before `MonoBehaviour.Update()` and `MonoBehaviour.FixedUpdate()` is called

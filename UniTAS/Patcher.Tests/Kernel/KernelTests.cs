@@ -212,7 +212,7 @@ public class KernelTests
     {
         var kernel = KernelUtils.Init();
 
-        var updates = kernel.GetAllInstances<IOnPreUpdatesActual>().ToList();
+        var updates = kernel.GetAllInstances<IOnPreUpdateActual>().ToList();
         Assert.NotNull(updates);
 
         var indexOfTestPriority = updates.FindIndex(x => x is KernelUtils.TestPriority);

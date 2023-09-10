@@ -1,10 +1,10 @@
 using System.Diagnostics.CodeAnalysis;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.InputSystemOverride;
-using UniTAS.Patcher.Services.EventSubscribers;
 using UniTAS.Patcher.Services.InputSystemOverride;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.NewInputSystem;
+using UniTAS.Patcher.Services.UnityEvents;
 using UnityEngine.InputSystem;
 
 namespace UniTAS.Patcher.Implementations.NewInputSystem;

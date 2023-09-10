@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using UniTAS.Patcher.Services.RuntimeTest;
+using UniTAS.Patcher.Services.UnityEvents;
 using UniTAS.Patcher.Utils;
 
 namespace Patcher.Tests.RuntimeTests;
@@ -14,6 +15,7 @@ public class RuntimeUnitTest
     {
         var kernel = KernelUtils.Init();
         var processor = kernel.GetInstance<IRuntimeTestProcessor>();
+        var monoBehEventInvoker = kernel.GetInstance<IMonoBehEventInvoker>();
 
         processor.OnDiscoveredTests += count => Assert.Equal(RuntimeTestsUtils.TotalCount, count);
 
@@ -30,9 +32,9 @@ public class RuntimeUnitTest
         MonoBehaviourController.PausedUpdate = false;
         for (var i = 0; i < 2; i++)
         {
-            MonoBehaviourEvents.InvokeUpdate();
-            MonoBehaviourEvents.InvokeLateUpdate();
-            MonoBehaviourEvents.InvokeFixedUpdate();
+            monoBehEventInvoker.InvokeUpdate();
+            monoBehEventInvoker.InvokeLateUpdate();
+            monoBehEventInvoker.InvokeFixedUpdate();
         }
     }
 
@@ -41,6 +43,7 @@ public class RuntimeUnitTest
     {
         var kernel = KernelUtils.Init();
         var processor = kernel.GetInstance<IRuntimeTestProcessor>();
+        var monoBehEventInvoker = kernel.GetInstance<IMonoBehEventInvoker>();
 
         processor.OnTestsFinish += results =>
         {
@@ -53,9 +56,9 @@ public class RuntimeUnitTest
         MonoBehaviourController.PausedUpdate = false;
         for (var i = 0; i < 2; i++)
         {
-            MonoBehaviourEvents.InvokeUpdate();
-            MonoBehaviourEvents.InvokeLateUpdate();
-            MonoBehaviourEvents.InvokeFixedUpdate();
+            monoBehEventInvoker.InvokeUpdate();
+            monoBehEventInvoker.InvokeLateUpdate();
+            monoBehEventInvoker.InvokeFixedUpdate();
         }
     }
 
@@ -64,6 +67,7 @@ public class RuntimeUnitTest
     {
         var kernel = KernelUtils.Init();
         var processor = kernel.GetInstance<IRuntimeTestProcessor>();
+        var monoBehEventInvoker = kernel.GetInstance<IMonoBehEventInvoker>();
 
         processor.OnTestsFinish += results =>
         {
@@ -76,9 +80,9 @@ public class RuntimeUnitTest
         MonoBehaviourController.PausedUpdate = false;
         for (var i = 0; i < 2; i++)
         {
-            MonoBehaviourEvents.InvokeUpdate();
-            MonoBehaviourEvents.InvokeLateUpdate();
-            MonoBehaviourEvents.InvokeFixedUpdate();
+            monoBehEventInvoker.InvokeUpdate();
+            monoBehEventInvoker.InvokeLateUpdate();
+            monoBehEventInvoker.InvokeFixedUpdate();
         }
     }
 
@@ -88,6 +92,7 @@ public class RuntimeUnitTest
     {
         var kernel = KernelUtils.Init();
         var processor = kernel.GetInstance<IRuntimeTestProcessor>();
+        var monoBehEventInvoker = kernel.GetInstance<IMonoBehEventInvoker>();
 
         var testRunCount = 0;
         processor.OnTestRun += _ => testRunCount++;
@@ -102,9 +107,9 @@ public class RuntimeUnitTest
         MonoBehaviourController.PausedUpdate = false;
         for (var i = 0; i < 2; i++)
         {
-            MonoBehaviourEvents.InvokeUpdate();
-            MonoBehaviourEvents.InvokeLateUpdate();
-            MonoBehaviourEvents.InvokeFixedUpdate();
+            monoBehEventInvoker.InvokeUpdate();
+            monoBehEventInvoker.InvokeLateUpdate();
+            monoBehEventInvoker.InvokeFixedUpdate();
         }
     }
 
@@ -113,6 +118,7 @@ public class RuntimeUnitTest
     {
         var kernel = KernelUtils.Init();
         var processor = kernel.GetInstance<IRuntimeTestProcessor>();
+        var monoBehEventInvoker = kernel.GetInstance<IMonoBehEventInvoker>();
 
         var coroutineTestRunCount = 0;
         var coroutineTestEndCount = 0;
@@ -155,9 +161,9 @@ public class RuntimeUnitTest
         MonoBehaviourController.PausedUpdate = false;
         for (var i = 0; i < 2; i++)
         {
-            MonoBehaviourEvents.InvokeUpdate();
-            MonoBehaviourEvents.InvokeLateUpdate();
-            MonoBehaviourEvents.InvokeFixedUpdate();
+            monoBehEventInvoker.InvokeUpdate();
+            monoBehEventInvoker.InvokeLateUpdate();
+            monoBehEventInvoker.InvokeFixedUpdate();
         }
 
         // and now coroutines should be finished too

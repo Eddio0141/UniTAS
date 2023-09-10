@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using MoonSharp.Interpreter;
@@ -121,7 +120,7 @@ public static class KernelUtils
     }
 
     [Singleton(IncludeDifferentAssembly = true)]
-    public class TestPriority : IOnPreUpdatesActual
+    public class TestPriority : IOnPreUpdateActual
     {
         public void PreUpdateActual()
         {
@@ -129,7 +128,7 @@ public static class KernelUtils
     }
 
     [Singleton(IncludeDifferentAssembly = true)]
-    public class TestPriority2 : IOnPreUpdatesActual
+    public class TestPriority2 : IOnPreUpdateActual
     {
         public void PreUpdateActual()
         {
@@ -281,14 +280,20 @@ public static class KernelUtils
             c.For<ILogger>().Use(x => x.GetInstance<FakeLogger>());
         });
 
-        var timings = Enum.GetValues(typeof(RegisterTiming)).Cast<RegisterTiming>();
+        var timings = new[]
+        {
+            RegisterTiming.Entry,
+            RegisterTiming.UnityInit
+        };
+
+        Assert.Equal(Enum.GetValues(typeof(RegisterTiming)).Length, timings.Length);
 
         foreach (var timing in timings)
         {
             kernel.Configure(c =>
             {
-                kernel.GetInstance<IDiscoverAndRegister>().Register<FakeStaticFieldStorage>(c, timing);
                 kernel.GetInstance<IDiscoverAndRegister>().Register<InfoPrintAndWelcome>(c, timing);
+                kernel.GetInstance<IDiscoverAndRegister>().Register<FakeStaticFieldStorage>(c, timing);
             });
 
             var forceInstantiateTypes = kernel.GetInstance<IForceInstantiateTypes>();

@@ -1,8 +1,7 @@
 using System.Linq;
-using HarmonyLib;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
-using UniTAS.Patcher.Services.EventSubscribers;
 using UniTAS.Patcher.Services.Logging;
+using UniTAS.Patcher.Services.UnityEvents;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 
@@ -37,12 +36,12 @@ public class IMGUIUseSystemFont
             return;
         }
 
-        _updateEvents.OnGUIEventUnconditional += OnGUIUnconditional;
+        _updateEvents.OnGUIUnconditional += OnGUIUnconditional;
     }
 
     private void OnGUIUnconditional()
     {
-        _updateEvents.OnGUIEventUnconditional -= OnGUIUnconditional;
+        _updateEvents.OnGUIUnconditional -= OnGUIUnconditional;
         UnityEngine.GUI.skin.font = _font;
         _logger.LogInfo($"Set unity IMGUI font to {FALLBACK_FONT_NAME}");
     }
