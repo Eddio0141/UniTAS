@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using StructureMap;
 using UniTAS.Patcher.Implementations.DependencyInjection;
 using UniTAS.Patcher.Implementations.Logging;
@@ -16,7 +18,7 @@ public static class ContainerStarter
 
     static ContainerStarter()
     {
-        StaticLogger.Log.LogDebug("Initializing container");
+        StaticLogger.Log.LogDebug("Initializing container instance");
 
         try
         {
@@ -34,6 +36,14 @@ public static class ContainerStarter
             StaticLogger.Log.LogFatal($"An exception occurred while initializing the container\n{e}");
             throw;
         }
+
+        var timings = Enum.GetValues(typeof(RegisterTiming)).Cast<RegisterTiming>();
+        foreach (var timing in timings)
+        {
+            ContainerInitCallbacks.Add(timing, new());
+        }
+
+        StaticLogger.Log.LogDebug("Initialized container instance");
     }
 
     [InvokeOnUnityInit]
@@ -60,5 +70,33 @@ public static class ContainerStarter
                 $"An exception occurred while initializing the container at timing {timing}\n{e}");
             throw;
         }
+
+        StaticLogger.Log.LogDebug($"Registered types at timing {timing}");
+
+        if (!ContainerInitCallbacks.TryGetValue(timing, out var callbacks)) return;
+        ContainerInitCallbacks.Remove(timing);
+
+        foreach (var callback in callbacks)
+        {
+            callback(Kernel);
+        }
     }
+
+    /// <summary>
+    /// Adds a callback to be invoked when the container is initialized at the specified timing
+    /// </summary>
+    /// <param name="timing"></param>
+    /// <param name="callback"></param>
+    public static void RegisterContainerInitCallback(RegisterTiming timing, Action<IContainer> callback)
+    {
+        if (!ContainerInitCallbacks.ContainsKey(timing))
+        {
+            callback(Kernel);
+            return;
+        }
+
+        ContainerInitCallbacks[timing].Add(callback);
+    }
+
+    private static readonly Dictionary<RegisterTiming, List<Action<IContainer>>> ContainerInitCallbacks = new();
 }
