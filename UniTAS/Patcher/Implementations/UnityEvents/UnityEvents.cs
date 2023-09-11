@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
+using UniTAS.Patcher.Interfaces.Events.UnityEvents;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents.DontRunIfPaused;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
 using UniTAS.Patcher.Models.DependencyInjection;
@@ -52,88 +53,155 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
 
         foreach (var onAwake in onAwakesUnconditional)
         {
-            OnAwakeUnconditional += onAwake.AwakeUnconditional;
+            RegisterMethod(onAwake, onAwake.AwakeUnconditional, CallbackUpdate.AwakeUnconditional);
         }
 
         foreach (var onStart in onStartsUnconditional)
         {
-            OnStartUnconditional += onStart.StartUnconditional;
+            RegisterMethod(onStart, onStart.StartUnconditional, CallbackUpdate.StartUnconditional);
         }
 
         foreach (var onEnable in onEnablesUnconditional)
         {
-            OnEnableUnconditional += onEnable.OnEnableUnconditional;
+            RegisterMethod(onEnable, onEnable.OnEnableUnconditional, CallbackUpdate.EnableUnconditional);
         }
 
         foreach (var onPreUpdate in onPreUpdatesUnconditional)
         {
-            OnPreUpdateUnconditional += onPreUpdate.PreUpdateUnconditional;
+            RegisterMethod(onPreUpdate, onPreUpdate.PreUpdateUnconditional, CallbackUpdate.PreUpdateUnconditional);
         }
 
         foreach (var onUpdate in onUpdatesUnconditional)
         {
-            OnUpdateUnconditional += onUpdate.UpdateUnconditional;
+            RegisterMethod(onUpdate, onUpdate.UpdateUnconditional, CallbackUpdate.UpdateUnconditional);
         }
 
         foreach (var onFixedUpdate in onFixedUpdatesUnconditional)
         {
-            OnFixedUpdateUnconditional += onFixedUpdate.FixedUpdateUnconditional;
+            RegisterMethod(onFixedUpdate, onFixedUpdate.FixedUpdateUnconditional,
+                CallbackUpdate.FixedUpdateUnconditional);
         }
 
         foreach (var onGui in onGUIsUnconditional)
         {
-            OnGUIUnconditional += onGui.OnGUIUnconditional;
+            RegisterMethod(onGui, onGui.OnGUIUnconditional, CallbackUpdate.GUIUnconditional);
         }
 
         foreach (var onPreUpdateActual in onPreUpdatesActual)
         {
-            OnPreUpdateActual += onPreUpdateActual.PreUpdateActual;
+            RegisterMethod(onPreUpdateActual, onPreUpdateActual.PreUpdateActual, CallbackUpdate.PreUpdateActual);
         }
 
         foreach (var onFixedUpdateActual in onFixedUpdatesActual)
         {
-            OnFixedUpdateActual += onFixedUpdateActual.FixedUpdateActual;
+            RegisterMethod(onFixedUpdateActual, onFixedUpdateActual.FixedUpdateActual,
+                CallbackUpdate.FixedUpdateActual);
         }
 
         foreach (var onStartActual in onStartsActual)
         {
-            OnStartActual += onStartActual.StartActual;
+            RegisterMethod(onStartActual, onStartActual.StartActual, CallbackUpdate.StartActual);
         }
 
         foreach (var onUpdateActual in onUpdatesActual)
         {
-            OnUpdateActual += onUpdateActual.UpdateActual;
+            RegisterMethod(onUpdateActual, onUpdateActual.UpdateActual, CallbackUpdate.UpdateActual);
         }
 
         foreach (var onLateUpdateUnconditional in onLateUpdatesUnconditional)
         {
-            OnLateUpdateUnconditional += onLateUpdateUnconditional.OnLateUpdateUnconditional;
+            RegisterMethod(onLateUpdateUnconditional, onLateUpdateUnconditional.OnLateUpdateUnconditional,
+                CallbackUpdate.LateUpdateUnconditional);
         }
 
         foreach (var onLastUpdateUnconditional in onLastUpdatesUnconditional)
         {
-            OnLastUpdateUnconditional += onLastUpdateUnconditional.OnLastUpdateUnconditional;
+            RegisterMethod(onLastUpdateUnconditional, onLastUpdateUnconditional.OnLastUpdateUnconditional,
+                CallbackUpdate.LastUpdateUnconditional);
         }
 
         foreach (var onLastUpdateActual in onLastUpdatesActual)
         {
-            OnLastUpdateActual += onLastUpdateActual.OnLastUpdateActual;
+            RegisterMethod(onLastUpdateActual, onLastUpdateActual.OnLastUpdateActual, CallbackUpdate.LastUpdateActual);
         }
 
         // input system events init
         foreach (var onInputUpdateActual in onInputUpdatesActual)
         {
-            OnInputUpdateActual += (fixedUpdate, newInputSystemUpdateFixedUpdate) =>
-                onInputUpdateActual.InputUpdateActual(fixedUpdate, newInputSystemUpdateFixedUpdate);
+            RegisterMethod(onInputUpdateActual, onInputUpdateActual.InputUpdateActual,
+                CallbackInputUpdate.InputUpdateActual);
         }
 
         foreach (var onInputUpdateUnconditional in onInputUpdatesUnconditional)
         {
-            OnInputUpdateUnconditional += (fixedUpdate, newInputSystemUpdateFixedUpdate) =>
-                onInputUpdateUnconditional.InputUpdateUnconditional(fixedUpdate, newInputSystemUpdateFixedUpdate);
+            RegisterMethod(onInputUpdateUnconditional, onInputUpdateUnconditional.InputUpdateUnconditional,
+                CallbackInputUpdate.InputUpdateUnconditional);
         }
 
         InputSystemEventsInit();
+    }
+
+    private void RegisterMethod(object processingCallback, Action callback, CallbackUpdate update)
+    {
+        var callbackList = update switch
+        {
+            CallbackUpdate.AwakeActual => _awakesActual,
+            CallbackUpdate.AwakeUnconditional => _awakesUnconditional,
+            CallbackUpdate.StartActual => _startsActual,
+            CallbackUpdate.StartUnconditional => _startsUnconditional,
+            CallbackUpdate.EnableActual => _enablesActual,
+            CallbackUpdate.EnableUnconditional => _enablesUnconditional,
+            CallbackUpdate.PreUpdateActual => _preUpdatesActual,
+            CallbackUpdate.PreUpdateUnconditional => _preUpdatesUnconditional,
+            CallbackUpdate.UpdateActual => _updatesActual,
+            CallbackUpdate.UpdateUnconditional => _updatesUnconditional,
+            CallbackUpdate.FixedUpdateActual => _fixedUpdatesActual,
+            CallbackUpdate.FixedUpdateUnconditional => _fixedUpdatesUnconditional,
+            CallbackUpdate.GUIActual => _guisActual,
+            CallbackUpdate.GUIUnconditional => _guisUnconditional,
+            CallbackUpdate.LastUpdateActual => _lastUpdatesActual,
+            CallbackUpdate.LastUpdateUnconditional => _lastUpdatesUnconditional,
+            CallbackUpdate.LateUpdateUnconditional => _lateUpdatesUnconditional,
+            CallbackUpdate.LateUpdateActual => _lateUpdatesActual,
+            _ => throw new ArgumentOutOfRangeException(nameof(update), update, null)
+        };
+
+        if (processingCallback is IUnityEventPriority unityEventPriority)
+        {
+            var priorityKey = new Either<CallbackUpdate, CallbackInputUpdate>(update);
+            if (unityEventPriority.Priorities.TryGetValue(priorityKey, out var priority))
+            {
+                unityEventPriority.Priorities.Remove(new(CallbackUpdate.UpdateUnconditional));
+                callbackList.Add(callback, (int)priority);
+                return;
+            }
+        }
+
+        callbackList.Add(callback, (int)CallbackPriority.Default);
+    }
+
+    private void RegisterMethod(object processingCallback, IUpdateEvents.InputUpdateCall callback,
+        CallbackInputUpdate update)
+    {
+        var callbackList = update switch
+        {
+            CallbackInputUpdate.InputUpdateActual => _inputUpdatesActual,
+            CallbackInputUpdate.InputUpdateUnconditional => _inputUpdatesUnconditional,
+            _ => throw new ArgumentOutOfRangeException(nameof(update), update, null)
+        };
+
+        if (processingCallback is IUnityEventPriority unityEventPriority)
+        {
+            var priorityKey = new Either<CallbackUpdate, CallbackInputUpdate>(update);
+            if (unityEventPriority.Priorities.TryGetValue(priorityKey, out var priority))
+            {
+                unityEventPriority.Priorities.Remove(new(CallbackUpdate.UpdateUnconditional));
+                callbackList.Add(callback, (int)priority);
+                return;
+            }
+        }
+
+        callbackList.Add(callback, (int)CallbackPriority.Default);
     }
 
     public event Action OnAwakeUnconditional
