@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.SoftRestart;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
@@ -7,9 +8,9 @@ using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.GameExecutionControllers;
 using UniTAS.Patcher.Services.Logging;
+using UniTAS.Patcher.Services.Trackers;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Patcher.Services.VirtualEnvironment;
-using UniTAS.Patcher.Utils;
 using Object = UnityEngine.Object;
 
 namespace UniTAS.Patcher.Implementations.GameRestart;
@@ -28,6 +29,7 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
     private readonly ILogger _logger;
     private readonly IFinalizeSuppressor _finalizeSuppressor;
     private readonly IUpdateInvokeOffset _updateInvokeOffset;
+    private readonly IObjectTracker _objectTracker;
 
     private readonly IOnPreGameRestart[] _onPreGameRestart;
 
@@ -42,7 +44,7 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
         IMonoBehaviourController monoBehaviourController, ILogger logger, IOnGameRestart[] onGameRestart,
         IOnGameRestartResume[] onGameRestartResume, IOnPreGameRestart[] onPreGameRestart,
         IStaticFieldManipulator staticFieldManipulator, ITimeEnv timeEnv, IFinalizeSuppressor finalizeSuppressor,
-        IUpdateInvokeOffset updateInvokeOffset)
+        IUpdateInvokeOffset updateInvokeOffset, IObjectTracker objectTracker)
     {
         _syncFixedUpdate = syncFixedUpdate;
         _sceneWrapper = sceneWrapper;
@@ -53,6 +55,7 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
         _timeEnv = timeEnv;
         _finalizeSuppressor = finalizeSuppressor;
         _updateInvokeOffset = updateInvokeOffset;
+        _objectTracker = objectTracker;
 
         foreach (var gameRestartResume in onGameRestartResume)
         {
@@ -71,14 +74,13 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
     /// </summary>
     private void DestroyGameObjects()
     {
-        var objs = Tracker.DontDestroyOnLoadRootObjects;
+        var objs = _objectTracker.DontDestroyOnLoadRootObjects.ToList();
         _logger.LogDebug($"Destroying {objs.Count} DontDestroyOnLoad objects");
 
         foreach (var obj in objs)
         {
-            var gameObject = (Object)obj;
-            _logger.LogDebug($"Destroying {gameObject.name}");
-            Object.Destroy(gameObject);
+            _logger.LogDebug($"Destroying {obj.name}");
+            Object.Destroy(obj);
         }
     }
 

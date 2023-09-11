@@ -10,6 +10,7 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 using UniTAS.Patcher.Extensions;
+using UniTAS.Patcher.Implementations.Trackers;
 using UniTAS.Patcher.Interfaces;
 using UniTAS.Patcher.Utils;
 
