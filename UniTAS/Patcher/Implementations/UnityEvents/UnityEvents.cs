@@ -8,6 +8,7 @@ using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Models.EventSubscribers;
 using UniTAS.Patcher.Models.Utils;
 using UniTAS.Patcher.Services;
+using UniTAS.Patcher.Services.GameExecutionControllers;
 using UniTAS.Patcher.Services.InputSystemOverride;
 using UniTAS.Patcher.Services.UnityEvents;
 #if TRACE
@@ -42,17 +43,17 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         IEnumerable<IOnLateUpdateUnconditional> onLateUpdatesUnconditional,
         IEnumerable<IOnLastUpdateUnconditional> onLastUpdatesUnconditional,
         IEnumerable<IOnLastUpdateActual> onLastUpdatesActual, IGameRestart gameRestart,
-        INewInputSystemExists newInputSystemExists
+        INewInputSystemExists newInputSystemExists, IMonoBehaviourController monoBehaviourController
 #if TRACE
         , IPatchReverseInvoker patchReverseInvoker
 #endif
     )
     {
-        _newInputSystemExists = newInputSystemExists;
-
 #if TRACE
         _patchReverseInvoker = patchReverseInvoker;
 #endif
+        _newInputSystemExists = newInputSystemExists;
+        _monoBehaviourController = monoBehaviourController;
 
         gameRestart.OnGameRestart += OnGameRestart;
 
@@ -382,6 +383,8 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
     private bool _calledFixedUpdate;
     private bool _calledPreUpdate;
 
+    private readonly IMonoBehaviourController _monoBehaviourController;
+
     public void InvokeLastUpdate()
     {
         for (var i = 0; i < _lastUpdatesUnconditional.Count; i++)
@@ -392,8 +395,7 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         for (var i = 0; i < _lastUpdatesActual.Count; i++)
         {
             var lastUpdate = _lastUpdatesActual[i];
-            if (SingletonBindings.GameExecutionControllers.MonoBehaviourController.PausedExecution ||
-                SingletonBindings.GameExecutionControllers.MonoBehaviourController.PausedUpdate) continue;
+            if (_monoBehaviourController.PausedExecution || _monoBehaviourController.PausedUpdate) continue;
             lastUpdate();
         }
     }
@@ -409,7 +411,7 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         for (var i = 0; i < _awakesActual.Count; i++)
         {
             var awake = _awakesActual[i];
-            if (!SingletonBindings.GameExecutionControllers.MonoBehaviourController.PausedExecution)
+            if (!_monoBehaviourController.PausedExecution)
                 awake();
         }
     }
@@ -425,7 +427,7 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         for (var i = 0; i < _enablesActual.Count; i++)
         {
             var enable = _enablesActual[i];
-            if (!SingletonBindings.GameExecutionControllers.MonoBehaviourController.PausedExecution)
+            if (!_monoBehaviourController.PausedExecution)
                 enable();
         }
     }
@@ -441,7 +443,7 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         for (var i = 0; i < _startsActual.Count; i++)
         {
             var start = _startsActual[i];
-            if (!SingletonBindings.GameExecutionControllers.MonoBehaviourController.PausedExecution)
+            if (!_monoBehaviourController.PausedExecution)
                 start();
         }
     }
@@ -475,8 +477,8 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         for (var i = 0; i < _updatesActual.Count; i++)
         {
             var update = _updatesActual[i];
-            if (SingletonBindings.GameExecutionControllers.MonoBehaviourController.PausedExecution ||
-                SingletonBindings.GameExecutionControllers.MonoBehaviourController.PausedUpdate) continue;
+            if (_monoBehaviourController.PausedExecution ||
+                _monoBehaviourController.PausedUpdate) continue;
             update();
         }
     }
@@ -495,8 +497,8 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         for (var i = 0; i < _lateUpdatesActual.Count; i++)
         {
             var lateUpdate = _lateUpdatesActual[i];
-            if (SingletonBindings.GameExecutionControllers.MonoBehaviourController.PausedExecution ||
-                SingletonBindings.GameExecutionControllers.MonoBehaviourController.PausedUpdate) continue;
+            if (_monoBehaviourController.PausedExecution ||
+                _monoBehaviourController.PausedUpdate) continue;
             lateUpdate();
         }
     }
@@ -520,7 +522,7 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         for (var i = 0; i < _fixedUpdatesActual.Count; i++)
         {
             var fixedUpdate = _fixedUpdatesActual[i];
-            if (!SingletonBindings.GameExecutionControllers.MonoBehaviourController.PausedExecution)
+            if (!_monoBehaviourController.PausedExecution)
                 fixedUpdate();
         }
     }
@@ -536,7 +538,7 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         for (var i = 0; i < _guisActual.Count; i++)
         {
             var gui = _guisActual[i];
-            if (!SingletonBindings.GameExecutionControllers.MonoBehaviourController.PausedExecution)
+            if (!_monoBehaviourController.PausedExecution)
                 gui();
         }
     }
@@ -551,7 +553,7 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         for (var i = 0; i < _preUpdatesActual.Count; i++)
         {
             var preUpdate = _preUpdatesActual[i];
-            if (!SingletonBindings.GameExecutionControllers.MonoBehaviourController.PausedExecution)
+            if (!_monoBehaviourController.PausedExecution)
                 preUpdate();
         }
     }

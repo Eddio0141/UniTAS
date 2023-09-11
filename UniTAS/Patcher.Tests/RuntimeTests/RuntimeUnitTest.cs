@@ -2,7 +2,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using UniTAS.Patcher.Services.RuntimeTest;
 using UniTAS.Patcher.Services.UnityEvents;
-using UniTAS.Patcher.SingletonBindings.GameExecutionControllers;
 
 namespace Patcher.Tests.RuntimeTests;
 
@@ -29,7 +28,6 @@ public class RuntimeUnitTest
         };
         processor.Test<RuntimeTests>();
 
-        MonoBehaviourController.PausedUpdate = false;
         for (var i = 0; i < 2; i++)
         {
             monoBehEventInvoker.InvokeUpdate();
@@ -53,7 +51,6 @@ public class RuntimeUnitTest
 
         processor.Test<RuntimeTests>();
 
-        MonoBehaviourController.PausedUpdate = false;
         for (var i = 0; i < 2; i++)
         {
             monoBehEventInvoker.InvokeUpdate();
@@ -77,7 +74,6 @@ public class RuntimeUnitTest
 
         processor.Test<RuntimeTests>();
 
-        MonoBehaviourController.PausedUpdate = false;
         for (var i = 0; i < 2; i++)
         {
             monoBehEventInvoker.InvokeUpdate();
@@ -104,7 +100,6 @@ public class RuntimeUnitTest
 
         processor.Test<RuntimeTests>();
 
-        MonoBehaviourController.PausedUpdate = false;
         for (var i = 0; i < 2; i++)
         {
             monoBehEventInvoker.InvokeUpdate();
@@ -158,7 +153,6 @@ public class RuntimeUnitTest
         Assert.Equal(1, coroutineTestEndCount);
         Assert.Equal(0, coroutineTestRunCount);
 
-        MonoBehaviourController.PausedUpdate = false;
         for (var i = 0; i < 2; i++)
         {
             monoBehEventInvoker.InvokeUpdate();

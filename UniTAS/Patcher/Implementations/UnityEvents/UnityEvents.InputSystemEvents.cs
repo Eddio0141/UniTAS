@@ -200,8 +200,7 @@ public partial class UnityEvents
 
         for (var i = 0; i < _inputUpdatesActual.Count; i++)
         {
-            if (SingletonBindings.GameExecutionControllers.MonoBehaviourController.PausedExecution ||
-                (!fixedUpdate && SingletonBindings.GameExecutionControllers.MonoBehaviourController.PausedUpdate))
+            if (_monoBehaviourController.PausedExecution || (!fixedUpdate && _monoBehaviourController.PausedUpdate))
                 continue;
             _inputUpdatesActual[i](fixedUpdate, newInputSystemUpdate);
         }

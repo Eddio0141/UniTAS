@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using UniTAS.Patcher.Implementations.Coroutine;
 using UniTAS.Patcher.Interfaces.Coroutine;
 using UniTAS.Patcher.Services.UnityEvents;
-using UniTAS.Patcher.SingletonBindings.GameExecutionControllers;
 
 namespace Patcher.Tests;
 
@@ -18,7 +17,6 @@ public class CoroutineTests
 
         Assert.True(status.IsRunning);
 
-        MonoBehaviourController.PausedUpdate = false;
         monoBehEventInvoker.InvokeUpdate();
         Assert.True(status.IsRunning);
 
