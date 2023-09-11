@@ -5,6 +5,7 @@ using UniTAS.Patcher.Interfaces.Events.SoftRestart;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
 using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Services;
+using UniTAS.Patcher.Services.GameExecutionControllers;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Patcher.Services.VirtualEnvironment;

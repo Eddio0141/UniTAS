@@ -1,7 +1,7 @@
 using System;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.SoftRestart;
-using UniTAS.Patcher.Services;
+using UniTAS.Patcher.Services.GameExecutionControllers;
 
 namespace UniTAS.Patcher.Implementations;
 

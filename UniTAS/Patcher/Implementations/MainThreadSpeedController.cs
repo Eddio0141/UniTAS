@@ -4,6 +4,7 @@ using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.Movie;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
 using UniTAS.Patcher.Services;
+using UniTAS.Patcher.Services.GameExecutionControllers;
 using UniTAS.Patcher.Services.VirtualEnvironment;
 using UnityEngine;
 

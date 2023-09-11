@@ -6,6 +6,7 @@ using UniTAS.Patcher.Interfaces.Events.SoftRestart;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents.DontRunIfPaused;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
 using UniTAS.Patcher.Services;
+using UniTAS.Patcher.Services.GameExecutionControllers;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.Movie;
 

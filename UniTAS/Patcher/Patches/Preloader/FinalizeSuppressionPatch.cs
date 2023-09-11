@@ -7,6 +7,7 @@ using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Interfaces;
+using UniTAS.Patcher.SingletonBindings.GameExecutionControllers;
 using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Patches.Preloader;

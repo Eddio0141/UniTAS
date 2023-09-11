@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using HarmonyLib;
 using UniTAS.Patcher.Interfaces.Patches.PatchTypes;
-using UniTAS.Patcher.Services;
+using UniTAS.Patcher.Services.GameExecutionControllers;
 using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Patches.Harmony;

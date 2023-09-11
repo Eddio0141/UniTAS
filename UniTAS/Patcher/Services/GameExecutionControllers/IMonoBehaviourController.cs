@@ -1,4 +1,4 @@
-namespace UniTAS.Patcher.Services;
+namespace UniTAS.Patcher.Services.GameExecutionControllers;
 
 public interface IMonoBehaviourController
 {

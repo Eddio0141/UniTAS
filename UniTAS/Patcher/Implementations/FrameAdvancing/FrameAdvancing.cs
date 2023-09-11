@@ -10,6 +10,7 @@ using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Customization;
 using UniTAS.Patcher.Services.FrameAdvancing;
+using UniTAS.Patcher.Services.GameExecutionControllers;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.VirtualEnvironment;
 using UniTAS.Patcher.Utils;

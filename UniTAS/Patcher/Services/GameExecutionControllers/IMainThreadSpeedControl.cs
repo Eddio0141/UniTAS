@@ -1,4 +1,4 @@
-namespace UniTAS.Patcher.Services;
+namespace UniTAS.Patcher.Services.GameExecutionControllers;
 
 /// <summary>
 /// Used to control the speed of the main thread

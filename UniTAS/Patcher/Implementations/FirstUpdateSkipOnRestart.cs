@@ -2,6 +2,7 @@ using System;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Models.EventSubscribers;
 using UniTAS.Patcher.Services;
+using UniTAS.Patcher.Services.GameExecutionControllers;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.UnityEvents;
 
