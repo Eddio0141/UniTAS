@@ -43,7 +43,7 @@ public static class DeepCopy
 
     private static int _makeDeepCopyRecursionDepth;
 
-    private const int MakeDeepCopyRecursionDepthLimit = 200;
+    private const int MAKE_DEEP_COPY_RECURSION_DEPTH_LIMIT = 200;
 
     /// <summary>Makes a deep copy of any object</summary>
     /// <param name="source">The original object</param>
@@ -55,7 +55,7 @@ public static class DeepCopy
         Func<string, Traverse, Traverse, object> processor = null, string pathRoot = "")
     {
         _makeDeepCopyRecursionDepth++;
-        if (_makeDeepCopyRecursionDepth > MakeDeepCopyRecursionDepthLimit)
+        if (_makeDeepCopyRecursionDepth > MAKE_DEEP_COPY_RECURSION_DEPTH_LIMIT)
         {
             _makeDeepCopyRecursionDepth = 0;
             throw new DeepCopyMaxRecursionException();
