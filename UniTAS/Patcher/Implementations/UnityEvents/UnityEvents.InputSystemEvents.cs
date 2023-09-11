@@ -1,10 +1,11 @@
 using System;
 using UniTAS.Patcher.Models.EventSubscribers;
 using UniTAS.Patcher.Models.Utils;
+using UniTAS.Patcher.Services.InputSystemOverride;
 using UniTAS.Patcher.Services.UnityEvents;
-using UniTAS.Patcher.Utils;
 using UnityEngine.InputSystem;
 #if TRACE
+using UniTAS.Patcher.Utils;
 using UniTAS.Patcher.Services;
 using UnityEngine;
 #endif
@@ -13,6 +14,8 @@ namespace UniTAS.Patcher.Implementations.UnityEvents;
 
 public partial class UnityEvents
 {
+    private readonly INewInputSystemExists _newInputSystemExists;
+
     private void InputSystemEventsInit()
     {
         if (_usingMonoBehUpdate)
@@ -41,7 +44,7 @@ public partial class UnityEvents
         _inputFixedUpdate = () => InputUpdate(true, false);
         AddEventToFixedUpdateUnconditional();
 
-        if (!NewInputSystemState.NewInputSystemExists) return;
+        if (!_newInputSystemExists.HasInputSystem) return;
 
         InputSystemChangeUpdate(InputSystem.settings.updateMode);
     }

@@ -8,6 +8,7 @@ using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Models.EventSubscribers;
 using UniTAS.Patcher.Models.Utils;
 using UniTAS.Patcher.Services;
+using UniTAS.Patcher.Services.InputSystemOverride;
 using UniTAS.Patcher.Services.UnityEvents;
 #if TRACE
 using UniTAS.Patcher.Utils;
@@ -40,16 +41,20 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         IEnumerable<IOnInputUpdateUnconditional> onInputUpdatesUnconditional,
         IEnumerable<IOnLateUpdateUnconditional> onLateUpdatesUnconditional,
         IEnumerable<IOnLastUpdateUnconditional> onLastUpdatesUnconditional,
-        IEnumerable<IOnLastUpdateActual> onLastUpdatesActual, IGameRestart gameRestart
+        IEnumerable<IOnLastUpdateActual> onLastUpdatesActual, IGameRestart gameRestart,
+        INewInputSystemExists newInputSystemExists
 #if TRACE
         , IPatchReverseInvoker patchReverseInvoker
 #endif
     )
     {
-        gameRestart.OnGameRestart += OnGameRestart;
+        _newInputSystemExists = newInputSystemExists;
+
 #if TRACE
         _patchReverseInvoker = patchReverseInvoker;
 #endif
+
+        gameRestart.OnGameRestart += OnGameRestart;
 
         _inputUpdatesUnconditional.Add((fixedUpdate, _) =>
         {
