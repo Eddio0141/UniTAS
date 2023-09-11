@@ -387,7 +387,8 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         for (var i = 0; i < _lastUpdatesActual.Count; i++)
         {
             var lastUpdate = _lastUpdatesActual[i];
-            if (Utils.MonoBehaviourController.PausedExecution || Utils.MonoBehaviourController.PausedUpdate) continue;
+            if (SingletonBindings.GameExecutionControllers.MonoBehaviourController.PausedExecution ||
+                SingletonBindings.GameExecutionControllers.MonoBehaviourController.PausedUpdate) continue;
             lastUpdate();
         }
     }
@@ -403,7 +404,7 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         for (var i = 0; i < _awakesActual.Count; i++)
         {
             var awake = _awakesActual[i];
-            if (!Utils.MonoBehaviourController.PausedExecution)
+            if (!SingletonBindings.GameExecutionControllers.MonoBehaviourController.PausedExecution)
                 awake();
         }
     }
@@ -419,7 +420,7 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         for (var i = 0; i < _enablesActual.Count; i++)
         {
             var enable = _enablesActual[i];
-            if (!Utils.MonoBehaviourController.PausedExecution)
+            if (!SingletonBindings.GameExecutionControllers.MonoBehaviourController.PausedExecution)
                 enable();
         }
     }
@@ -435,7 +436,7 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         for (var i = 0; i < _startsActual.Count; i++)
         {
             var start = _startsActual[i];
-            if (!Utils.MonoBehaviourController.PausedExecution)
+            if (!SingletonBindings.GameExecutionControllers.MonoBehaviourController.PausedExecution)
                 start();
         }
     }
@@ -469,7 +470,8 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         for (var i = 0; i < _updatesActual.Count; i++)
         {
             var update = _updatesActual[i];
-            if (Utils.MonoBehaviourController.PausedExecution || Utils.MonoBehaviourController.PausedUpdate) continue;
+            if (SingletonBindings.GameExecutionControllers.MonoBehaviourController.PausedExecution ||
+                SingletonBindings.GameExecutionControllers.MonoBehaviourController.PausedUpdate) continue;
             update();
         }
     }
@@ -488,7 +490,8 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         for (var i = 0; i < _lateUpdatesActual.Count; i++)
         {
             var lateUpdate = _lateUpdatesActual[i];
-            if (Utils.MonoBehaviourController.PausedExecution || Utils.MonoBehaviourController.PausedUpdate) continue;
+            if (SingletonBindings.GameExecutionControllers.MonoBehaviourController.PausedExecution ||
+                SingletonBindings.GameExecutionControllers.MonoBehaviourController.PausedUpdate) continue;
             lateUpdate();
         }
     }
@@ -512,7 +515,7 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         for (var i = 0; i < _fixedUpdatesActual.Count; i++)
         {
             var fixedUpdate = _fixedUpdatesActual[i];
-            if (!Utils.MonoBehaviourController.PausedExecution)
+            if (!SingletonBindings.GameExecutionControllers.MonoBehaviourController.PausedExecution)
                 fixedUpdate();
         }
     }
@@ -528,7 +531,7 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         for (var i = 0; i < _guisActual.Count; i++)
         {
             var gui = _guisActual[i];
-            if (!Utils.MonoBehaviourController.PausedExecution)
+            if (!SingletonBindings.GameExecutionControllers.MonoBehaviourController.PausedExecution)
                 gui();
         }
     }
@@ -543,7 +546,7 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         for (var i = 0; i < _preUpdatesActual.Count; i++)
         {
             var preUpdate = _preUpdatesActual[i];
-            if (!Utils.MonoBehaviourController.PausedExecution)
+            if (!SingletonBindings.GameExecutionControllers.MonoBehaviourController.PausedExecution)
                 preUpdate();
         }
     }

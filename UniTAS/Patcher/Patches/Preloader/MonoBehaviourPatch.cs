@@ -9,6 +9,7 @@ using Mono.Cecil.Rocks;
 using MonoMod.Utils;
 using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Interfaces;
+using UniTAS.Patcher.SingletonBindings.GameExecutionControllers;
 using UniTAS.Patcher.SingletonBindings.UnityEvents;
 using UniTAS.Patcher.Utils;
 

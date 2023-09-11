@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UniTAS.Patcher.Implementations.Coroutine;
 using UniTAS.Patcher.Interfaces.Coroutine;
 using UniTAS.Patcher.Services.UnityEvents;
-using UniTAS.Patcher.Utils;
+using UniTAS.Patcher.SingletonBindings.GameExecutionControllers;
 
 namespace Patcher.Tests;
 

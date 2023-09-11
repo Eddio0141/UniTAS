@@ -2,7 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using UniTAS.Patcher.Services.RuntimeTest;
 using UniTAS.Patcher.Services.UnityEvents;
-using UniTAS.Patcher.Utils;
+using UniTAS.Patcher.SingletonBindings.GameExecutionControllers;
 
 namespace Patcher.Tests.RuntimeTests;
 
