@@ -12,7 +12,7 @@ public static class Tracker
     private static readonly MethodBase ObjectEquals =
         AccessTools.Method(Object, nameof(object.Equals), new[] { Object });
 
-    internal static readonly List<object> DontDestroyGameObjects = new();
+    public static readonly List<object> DontDestroyGameObjects = new();
 
     /// <summary>
     /// Contains all DontDestroyOnLoad root game objects.
@@ -26,23 +26,6 @@ public static class Tracker
             return DontDestroyGameObjects;
         }
     }
-
-
-    // for now we don't need this, but it's here if we need it
-
-    // internal static readonly List<object> DontDestroyObjects = new();
-
-    /*
-    public static List<object> DontDestroyOnLoadObjects
-    {
-        get
-        {
-            // filter out destroyed objects
-            DontDestroyObjects.RemoveAll(obj => obj == null);
-            return DontDestroyObjects;
-        }
-    }
-    */
 
     /// <summary>
     /// Contains the order in which static constructors were invoked.
