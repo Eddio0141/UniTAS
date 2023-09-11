@@ -7,9 +7,9 @@ using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
 using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Models.EventSubscribers;
 using UniTAS.Patcher.Models.Utils;
+using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.UnityEvents;
 #if TRACE
-using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 #endif
@@ -40,9 +40,16 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         IEnumerable<IOnInputUpdateUnconditional> onInputUpdatesUnconditional,
         IEnumerable<IOnLateUpdateUnconditional> onLateUpdatesUnconditional,
         IEnumerable<IOnLastUpdateUnconditional> onLastUpdatesUnconditional,
-        IEnumerable<IOnLastUpdateActual> onLastUpdatesActual, IGameRestart gameRestart)
+        IEnumerable<IOnLastUpdateActual> onLastUpdatesActual, IGameRestart gameRestart
+#if TRACE
+        , IPatchReverseInvoker patchReverseInvoker
+#endif
+    )
     {
         gameRestart.OnGameRestart += OnGameRestart;
+#if TRACE
+        _patchReverseInvoker = patchReverseInvoker;
+#endif
 
         _inputUpdatesUnconditional.Add((fixedUpdate, _) =>
         {
@@ -445,9 +452,7 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         _calledFixedUpdate = false;
 
 #if TRACE
-        _patchReverseInvoker ??= ContainerStarter.Kernel.GetInstance<IPatchReverseInvoker>();
-        StaticLogger.Trace(
-            $"InvokeUpdate, time: {_patchReverseInvoker.Invoke(() => Time.time)}");
+        StaticLogger.Trace($"InvokeUpdate, time: {_patchReverseInvoker.Invoke(() => Time.time)}");
 #endif
 
         if (!_calledPreUpdate)
@@ -494,7 +499,6 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         _calledFixedUpdate = true;
 
 #if TRACE
-        _patchReverseInvoker ??= ContainerStarter.Kernel.GetInstance<IPatchReverseInvoker>();
         StaticLogger.Trace($"InvokeFixedUpdate, time: {_patchReverseInvoker.Invoke(() => Time.time)}");
 #endif
 

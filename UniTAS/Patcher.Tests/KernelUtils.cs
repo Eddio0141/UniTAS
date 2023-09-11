@@ -269,6 +269,47 @@ public static class KernelUtils
         }
     }
 
+    [Singleton(IncludeDifferentAssembly = true)]
+    [SuppressMessage("ReSharper", "UnusedType.Local")]
+    private class PatchReverseInvokerDummy : IPatchReverseInvoker
+    {
+        public bool InnerCall()
+        {
+            return false;
+        }
+
+        public void Return()
+        {
+        }
+
+        public void Invoke(Action method)
+        {
+        }
+
+        public TRet Invoke<TRet>(Func<TRet> method)
+        {
+            return default!;
+        }
+
+        public TRet Invoke<TRet, T>(Func<T, TRet> method, T arg1)
+        {
+            return default!;
+        }
+
+        public TRet Invoke<TRet, T1, T2>(Func<T1, T2, TRet> method, T1 arg1, T2 arg2)
+        {
+            return default!;
+        }
+    }
+
+    [Singleton(IncludeDifferentAssembly = true)]
+    [SuppressMessage("ReSharper", "UnusedType.Local")]
+    private class UpdateInvokeOffsetDummy : IUpdateInvokeOffset
+    {
+        [SuppressMessage("ReSharper", "UnassignedGetOnlyAutoProperty")]
+        public double Offset { get; }
+    }
+
     public static Container Init()
     {
         var kernel = new Container(c =>

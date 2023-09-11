@@ -12,6 +12,7 @@ using UnityEngine;
 namespace UniTAS.Patcher.Implementations;
 
 [Singleton(timing: RegisterTiming.Entry)]
+[ExcludeRegisterIfTesting]
 public class UpdateInvokeOffset : IUpdateInvokeOffset, IUnityEventPriority, IOnUpdateUnconditional,
     IOnInputUpdateUnconditional, IOnLateUpdateUnconditional
 {

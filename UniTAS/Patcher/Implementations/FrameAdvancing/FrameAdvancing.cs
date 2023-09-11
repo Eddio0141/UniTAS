@@ -20,6 +20,7 @@ namespace UniTAS.Patcher.Implementations.FrameAdvancing;
 // this class needs to run before coroutine is processed in CoroutineHandler (for tracking fixed update index)
 // also needs to run before SyncFixedUpdateCycle to process sync method invoke, then handling new frame advancing stuff
 [Singleton(RegisterPriority.FrameAdvancing)]
+[ExcludeRegisterIfTesting]
 public partial class FrameAdvancing : IFrameAdvancing, IOnFixedUpdateUnconditional, IOnGameRestartResume,
     IOnInputUpdateUnconditional, IOnUpdateUnconditional, IOnLateUpdateUnconditional
 {
