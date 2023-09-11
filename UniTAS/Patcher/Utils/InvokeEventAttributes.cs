@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using MonoMod.Utils;
+using UniTAS.Patcher.Models.Utils;
 using UniTAS.Patcher.Services.Invoker;
 
 namespace UniTAS.Patcher.Utils;

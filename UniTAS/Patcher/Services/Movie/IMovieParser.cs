@@ -1,5 +1,5 @@
 using UniTAS.Patcher.Models.Movie;
-using UniTAS.Patcher.Utils;
+using UniTAS.Patcher.Models.Utils;
 
 namespace UniTAS.Patcher.Services.Movie;
 

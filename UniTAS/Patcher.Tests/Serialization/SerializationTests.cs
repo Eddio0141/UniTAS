@@ -3,8 +3,8 @@ using System.IO;
 using System.Linq;
 using System.Xml.Serialization;
 using UniTAS.Patcher.Models.Serialization;
+using UniTAS.Patcher.Models.Utils;
 using UniTAS.Patcher.Services.Serialization;
-using UniTAS.Patcher.Utils;
 
 namespace Patcher.Tests.Serialization;
 

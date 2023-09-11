@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using UniTAS.Patcher.Implementations.Coroutine;
 using UniTAS.Patcher.Interfaces.Coroutine;
 using UniTAS.Patcher.Interfaces.RuntimeTest;
+using UniTAS.Patcher.Models.Utils;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Utils;
 

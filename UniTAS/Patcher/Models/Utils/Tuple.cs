@@ -1,4 +1,4 @@
-namespace UniTAS.Patcher.Utils;
+namespace UniTAS.Patcher.Models.Utils;
 
 public class Tuple<T1, T2>
 {
@@ -21,13 +21,5 @@ public struct TupleValue<T1, T2>
     {
         Item1 = item1;
         Item2 = item2;
-    }
-}
-
-public static class TupleValue
-{
-    public static TupleValue<T1, T2> New<T1, T2>(T1 item1, T2 item2)
-    {
-        return new(item1, item2);
     }
 }
