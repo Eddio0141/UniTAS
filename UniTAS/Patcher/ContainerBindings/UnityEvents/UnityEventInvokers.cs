@@ -1,7 +1,7 @@
 using StructureMap;
 using UniTAS.Patcher.Services.UnityEvents;
 
-namespace UniTAS.Patcher.SingletonBindings.UnityEvents;
+namespace UniTAS.Patcher.ContainerBindings.UnityEvents;
 
 public static class UnityEventInvokers
 {

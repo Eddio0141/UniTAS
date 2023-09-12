@@ -11,7 +11,7 @@ using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Interfaces;
-using UniTAS.Patcher.SingletonBindings.Trackers;
+using UniTAS.Patcher.ManualServices.Trackers;
 using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Patches.Preloader;
@@ -268,8 +268,7 @@ public static class PatchMethods
 
     private static bool IsNotFirstInvoke(Type type)
     {
-        // TODO remove null check
-        if (ClassStaticInfoTracker.StaticCtorInvokeOrder?.Contains(type) is true)
+        if (ClassStaticInfoTracker.StaticCtorInvokeOrder.Contains(type))
             return true;
 
         foreach (var pair in CctorDependency)

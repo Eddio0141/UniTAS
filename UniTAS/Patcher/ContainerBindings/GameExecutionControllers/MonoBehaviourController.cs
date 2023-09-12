@@ -2,7 +2,7 @@ using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Services.GameExecutionControllers;
 using UniTAS.Patcher.Utils;
 
-namespace UniTAS.Patcher.SingletonBindings.GameExecutionControllers;
+namespace UniTAS.Patcher.ContainerBindings.GameExecutionControllers;
 
 public static class MonoBehaviourController
 {

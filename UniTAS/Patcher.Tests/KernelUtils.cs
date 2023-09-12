@@ -5,6 +5,7 @@ using BepInEx.Configuration;
 using BepInEx.Logging;
 using MoonSharp.Interpreter;
 using StructureMap;
+using UniTAS.Patcher.ContainerBindings.UnityEvents;
 using UniTAS.Patcher.Implementations;
 using UniTAS.Patcher.Implementations.DependencyInjection;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
@@ -27,7 +28,6 @@ using UniTAS.Patcher.Services.Overlay;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Patcher.Services.VirtualEnvironment;
 using UniTAS.Patcher.Services.VirtualEnvironment.Input.LegacyInputSystem;
-using UniTAS.Patcher.SingletonBindings.UnityEvents;
 using UnityEngine;
 
 namespace Patcher.Tests;

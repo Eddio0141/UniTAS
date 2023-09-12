@@ -2,7 +2,7 @@ using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Services.GameExecutionControllers;
 using UniTAS.Patcher.Utils;
 
-namespace UniTAS.Patcher.SingletonBindings.GameExecutionControllers;
+namespace UniTAS.Patcher.ContainerBindings.GameExecutionControllers;
 
 public static class FinalizeSuppressor
 {
@@ -16,7 +16,7 @@ public static class FinalizeSuppressor
 
     public static bool DisableFinalizeInvoke
     {
-        // TODO make into singleton
+        // this should be fine as I don't really use this until later in the UniTAS load phase
         get => _finalizeSuppressor?.DisableFinalizeInvoke ?? false;
         set => _finalizeSuppressor.DisableFinalizeInvoke = value;
     }
