@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using StructureMap;
+using UniTAS.Patcher.ContainerBindings.UnityEvents;
 using UniTAS.Patcher.Implementations.DependencyInjection;
 using UniTAS.Patcher.Implementations.Logging;
 using UniTAS.Patcher.Interfaces.Invoker;
@@ -51,6 +52,7 @@ public static class ContainerStarter
     public static void UnityInit()
     {
         Init(RegisterTiming.UnityInit);
+        UnityEventInvokers.Init(Kernel);
     }
 
     public static void Init(RegisterTiming timing)
