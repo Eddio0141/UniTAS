@@ -4,7 +4,7 @@ using HarmonyLib;
 using UniTAS.Patcher.Implementations;
 using UniTAS.Patcher.Interfaces.Patches.PatchTypes;
 using UniTAS.Patcher.Services.Logging;
-using UniTAS.Patcher.Services.Trackers;
+using UniTAS.Patcher.Services.Trackers.UpdateTrackInfo;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 
@@ -17,7 +17,9 @@ namespace UniTAS.Patcher.Patches.Harmony;
 public class DontDestroyOnLoadTracker
 {
     private static readonly ILogger _logger = ContainerStarter.Kernel.GetInstance<ILogger>();
-    private static readonly IObjectTracker _objectTracker = ContainerStarter.Kernel.GetInstance<IObjectTracker>();
+
+    private static readonly IObjectTrackerUpdate _objectTracker =
+        ContainerStarter.Kernel.GetInstance<IObjectTrackerUpdate>();
 
     [HarmonyPatch(typeof(Object), nameof(Object.DontDestroyOnLoad))]
     private class DontDestroyOnLoadPatch

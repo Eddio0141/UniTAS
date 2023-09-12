@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace UniTAS.Patcher.Services.Trackers;
+namespace UniTAS.Patcher.Services.Trackers.UpdateTrackInfo;
 
 public interface ICoroutineRunningObjectsTracker
 {

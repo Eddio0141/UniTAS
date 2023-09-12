@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using UniTAS.Patcher.Interfaces.Patches.PatchTypes;
-using UniTAS.Patcher.Services.Trackers;
+using UniTAS.Patcher.Services.Trackers.UpdateTrackInfo;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 

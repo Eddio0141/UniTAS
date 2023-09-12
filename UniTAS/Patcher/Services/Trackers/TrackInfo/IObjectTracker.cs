@@ -1,12 +1,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace UniTAS.Patcher.Services.Trackers;
+namespace UniTAS.Patcher.Services.Trackers.TrackInfo;
 
 public interface IObjectTracker
 {
-    void DontDestroyOnLoadAddRoot(Object obj);
-
     /// <summary>
     /// Contains all DontDestroyOnLoad root game objects.
     /// </summary>
