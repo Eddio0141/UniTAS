@@ -7,6 +7,8 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 using MonoMod.Utils;
+using UniTAS.Patcher.ContainerBindings.GameExecutionControllers;
+using UniTAS.Patcher.ContainerBindings.UnityEvents;
 using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Interfaces;
 using UniTAS.Patcher.Utils;
@@ -67,17 +69,17 @@ public class MonoBehaviourPatch : PreloadPatcher
     private static readonly KeyValuePair<string, MethodBase>[] EventMethods =
     {
         new("Awake",
-            AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeAwake))),
+            AccessTools.Method(typeof(UnityEventInvokers), nameof(UnityEventInvokers.InvokeAwake))),
         new("OnEnable",
-            AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeOnEnable))),
+            AccessTools.Method(typeof(UnityEventInvokers), nameof(UnityEventInvokers.InvokeOnEnable))),
         new("Start",
-            AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeStart))),
+            AccessTools.Method(typeof(UnityEventInvokers), nameof(UnityEventInvokers.InvokeStart))),
         new("Update",
-            AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeUpdate))),
+            AccessTools.Method(typeof(UnityEventInvokers), nameof(UnityEventInvokers.InvokeUpdate))),
         new("LateUpdate",
-            AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeLateUpdate))),
+            AccessTools.Method(typeof(UnityEventInvokers), nameof(UnityEventInvokers.InvokeLateUpdate))),
         new("FixedUpdate",
-            AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeFixedUpdate)))
+            AccessTools.Method(typeof(UnityEventInvokers), nameof(UnityEventInvokers.InvokeFixedUpdate)))
         // new("OnGUI", AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeOnGUI)))
     };
 

@@ -1,8 +1,8 @@
 using System;
 using System.IO;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
-using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Patcher.Interfaces.Events.SoftRestart;
+using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
 using UniTAS.Patcher.Interfaces.GUI;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.Overlay;

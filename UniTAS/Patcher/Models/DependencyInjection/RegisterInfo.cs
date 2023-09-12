@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using StructureMap;
 using StructureMap.Configuration.DSL;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
@@ -10,7 +9,8 @@ public class RegisterInfo : RegisterInfoBase
 {
     private RegisterAttribute RegisterAttribute { get; }
 
-    public RegisterInfo(Type type, RegisterAttribute registerAttribute) : base(registerAttribute.Priority)
+    public RegisterInfo(Type type, RegisterAttribute registerAttribute, RegisterTiming timing) : base(
+        registerAttribute.Priority, timing)
     {
         Type = type;
         RegisterAttribute = registerAttribute;
@@ -37,7 +37,7 @@ public class RegisterInfo : RegisterInfoBase
 
         // register with base type
         if (baseType != null && baseType != typeof(object) &&
-            registerAttribute?.IgnoreInterfaces?.All(x => x != baseType) is true or null &&
+            // registerAttribute?.IgnoreInterfaces?.All(x => x != baseType) is true or null &&
             ((registerAttribute?.IncludeDifferentAssembly ?? false) || Equals(baseType.Assembly, typeAssembly)))
         {
             config.For(baseType).Use(x => x.GetInstance(type));

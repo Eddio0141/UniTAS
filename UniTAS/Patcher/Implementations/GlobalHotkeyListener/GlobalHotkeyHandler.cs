@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UniTAS.Patcher.Exceptions.GlobalHotkeyListener;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
-using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
+using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
 using UniTAS.Patcher.Interfaces.GlobalHotkeyListener;
 using UniTAS.Patcher.Models.GlobalHotkeyListener;
 

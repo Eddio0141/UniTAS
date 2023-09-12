@@ -2,8 +2,9 @@ using System;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Models.EventSubscribers;
 using UniTAS.Patcher.Services;
-using UniTAS.Patcher.Services.EventSubscribers;
+using UniTAS.Patcher.Services.GameExecutionControllers;
 using UniTAS.Patcher.Services.Logging;
+using UniTAS.Patcher.Services.UnityEvents;
 
 namespace UniTAS.Patcher.Implementations;
 
@@ -79,7 +80,7 @@ public class FirstUpdateSkipOnRestart
     {
         if (_pendingState != PendingState.PendingResumeFinal) return;
         _updateEvents.OnInputUpdateUnconditional -= InputUpdateUnconditional;
-        _updateEvents.OnPreUpdatesUnconditional -= PreUpdateUnconditional;
+        _updateEvents.OnPreUpdateUnconditional -= PreUpdateUnconditional;
 
         _logger.LogDebug($"Skipped an update after restart at {updatePoint}, resuming mono behaviour");
 

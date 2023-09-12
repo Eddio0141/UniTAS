@@ -16,14 +16,17 @@ public class GameRestartTests
     private readonly IGameRestart _gameRestart;
     private readonly ITimeEnv _timeEnv;
     private readonly IUnityEnvTestingSave _unityEnvTestingSave;
+    private readonly IUpdateInvokeOffset _updateInvokeOffset;
 
     private const float TIME_PRECISION = 0.000001f;
 
-    public GameRestartTests(IGameRestart gameRestart, ITimeEnv timeEnv, IUnityEnvTestingSave unityEnvTestingSave)
+    public GameRestartTests(IGameRestart gameRestart, ITimeEnv timeEnv, IUnityEnvTestingSave unityEnvTestingSave,
+        IUpdateInvokeOffset updateInvokeOffset)
     {
         _gameRestart = gameRestart;
         _timeEnv = timeEnv;
         _unityEnvTestingSave = unityEnvTestingSave;
+        _updateInvokeOffset = updateInvokeOffset;
     }
 
     [RuntimeTest]
@@ -39,13 +42,13 @@ public class GameRestartTests
 
         yield return new WaitForUpdateActual();
 
-        RuntimeAssert.FloatEquals(0.01f, (float)UpdateInvokeOffset.Offset % Time.fixedDeltaTime,
+        RuntimeAssert.FloatEquals(0.01f, (float)_updateInvokeOffset.Offset % Time.fixedDeltaTime,
             TIME_PRECISION,
             "Didn't match the offset at the first update");
 
         yield return new WaitForFixedUpdateActual();
 
-        RuntimeAssert.FloatEquals(0.01f, (float)UpdateInvokeOffset.Offset % Time.fixedDeltaTime,
+        RuntimeAssert.FloatEquals(0.01f, (float)_updateInvokeOffset.Offset % Time.fixedDeltaTime,
             TIME_PRECISION,
             "Didn't match the offset at the first fixed update");
 
@@ -53,19 +56,19 @@ public class GameRestartTests
 
         yield return new WaitForUpdateActual();
 
-        RuntimeAssert.FloatEquals(0f, (float)UpdateInvokeOffset.Offset % Time.fixedDeltaTime,
+        RuntimeAssert.FloatEquals(0f, (float)_updateInvokeOffset.Offset % Time.fixedDeltaTime,
             TIME_PRECISION,
             "Didn't match the offset at the second update");
 
         yield return new WaitForUpdateActual();
 
-        RuntimeAssert.FloatEquals(0.01f, (float)UpdateInvokeOffset.Offset % Time.fixedDeltaTime,
+        RuntimeAssert.FloatEquals(0.01f, (float)_updateInvokeOffset.Offset % Time.fixedDeltaTime,
             TIME_PRECISION,
             "Didn't match the offset at the third update");
 
         yield return new WaitForFixedUpdateActual();
 
-        RuntimeAssert.FloatEquals(0.01f, (float)UpdateInvokeOffset.Offset % Time.fixedDeltaTime,
+        RuntimeAssert.FloatEquals(0.01f, (float)_updateInvokeOffset.Offset % Time.fixedDeltaTime,
             TIME_PRECISION,
             "Didn't match the offset at the second fixed update");
 
@@ -85,12 +88,12 @@ public class GameRestartTests
 
         yield return new WaitForUpdateActual();
 
-        RuntimeAssert.FloatEquals(1f / 60f, (float)UpdateInvokeOffset.Offset % Time.fixedDeltaTime,
+        RuntimeAssert.FloatEquals(1f / 60f, (float)_updateInvokeOffset.Offset % Time.fixedDeltaTime,
             TIME_PRECISION, "Assert 2");
 
         yield return new WaitForFixedUpdateActual();
 
-        RuntimeAssert.FloatEquals(1f / 60f, (float)UpdateInvokeOffset.Offset % Time.fixedDeltaTime,
+        RuntimeAssert.FloatEquals(1f / 60f, (float)_updateInvokeOffset.Offset % Time.fixedDeltaTime,
             TIME_PRECISION, "Assert 3");
 
         RuntimeAssert.FloatEquals(0.02f, Time.time, TIME_PRECISION, "Assert 4");
@@ -98,40 +101,40 @@ public class GameRestartTests
         yield return new WaitForUpdateActual();
 
         RuntimeAssert.FloatEquals(1f / 60f * 2f % Time.fixedDeltaTime,
-            (float)UpdateInvokeOffset.Offset % Time.fixedDeltaTime, TIME_PRECISION, "Assert 5");
+            (float)_updateInvokeOffset.Offset % Time.fixedDeltaTime, TIME_PRECISION, "Assert 5");
 
         yield return new WaitForFixedUpdateActual();
 
         yield return new WaitForUpdateActual();
 
         RuntimeAssert.FloatEquals(1f / 60f * 3f % Time.fixedDeltaTime,
-            (float)UpdateInvokeOffset.Offset % Time.fixedDeltaTime, TIME_PRECISION, "Assert 6");
+            (float)_updateInvokeOffset.Offset % Time.fixedDeltaTime, TIME_PRECISION, "Assert 6");
 
         yield return new WaitForFixedUpdateActual();
 
         yield return new WaitForUpdateActual();
 
         RuntimeAssert.FloatEquals(1f / 60f * 4f % Time.fixedDeltaTime,
-            (float)UpdateInvokeOffset.Offset % Time.fixedDeltaTime, TIME_PRECISION, "Assert 7");
+            (float)_updateInvokeOffset.Offset % Time.fixedDeltaTime, TIME_PRECISION, "Assert 7");
 
         yield return new WaitForFixedUpdateActual();
 
         yield return new WaitForUpdateActual();
 
         RuntimeAssert.FloatEquals(1f / 60f * 5f % Time.fixedDeltaTime,
-            (float)UpdateInvokeOffset.Offset % Time.fixedDeltaTime, TIME_PRECISION, "Assert 8");
+            (float)_updateInvokeOffset.Offset % Time.fixedDeltaTime, TIME_PRECISION, "Assert 8");
 
         yield return new WaitForFixedUpdateActual();
 
         yield return new WaitForUpdateActual();
 
         RuntimeAssert.FloatEquals(1f / 60f * 6f % Time.fixedDeltaTime,
-            (float)UpdateInvokeOffset.Offset % Time.fixedDeltaTime, TIME_PRECISION, "Assert 9");
+            (float)_updateInvokeOffset.Offset % Time.fixedDeltaTime, TIME_PRECISION, "Assert 9");
 
         yield return new WaitForUpdateActual();
 
         RuntimeAssert.FloatEquals(1f / 60f * 7f % Time.fixedDeltaTime,
-            (float)UpdateInvokeOffset.Offset % Time.fixedDeltaTime, TIME_PRECISION, "Assert 10");
+            (float)_updateInvokeOffset.Offset % Time.fixedDeltaTime, TIME_PRECISION, "Assert 10");
 
         yield return new WaitForCoroutine(CleanupTest());
     }
@@ -168,19 +171,19 @@ public class GameRestartTests
 
         yield return new WaitForUpdateActual();
 
-        RuntimeAssert.FloatEquals(1f / 100f, (float)UpdateInvokeOffset.Offset % Time.fixedDeltaTime,
+        RuntimeAssert.FloatEquals(1f / 100f, (float)_updateInvokeOffset.Offset % Time.fixedDeltaTime,
             TIME_PRECISION, "Assert 2");
 
         RuntimeAssert.FloatEquals(0.01f, Time.time, TIME_PRECISION, "Assert 3");
 
         yield return new WaitForUpdateActual();
 
-        RuntimeAssert.FloatEquals(1f / 100f * 2f, (float)UpdateInvokeOffset.Offset % Time.fixedDeltaTime,
+        RuntimeAssert.FloatEquals(1f / 100f * 2f, (float)_updateInvokeOffset.Offset % Time.fixedDeltaTime,
             TIME_PRECISION, "Assert 4");
 
         yield return new WaitForFixedUpdateActual();
 
-        RuntimeAssert.FloatEquals(1f / 100f * 2f, (float)UpdateInvokeOffset.Offset % Time.fixedDeltaTime,
+        RuntimeAssert.FloatEquals(1f / 100f * 2f, (float)_updateInvokeOffset.Offset % Time.fixedDeltaTime,
             TIME_PRECISION, "Assert 5");
 
         RuntimeAssert.FloatEquals(fixedDeltaTime, Time.time, TIME_PRECISION, "Assert 6");
@@ -189,17 +192,17 @@ public class GameRestartTests
         yield return new WaitForUpdateActual();
 
         RuntimeAssert.FloatEquals(1f / 100f * 3f % Time.fixedDeltaTime,
-            (float)UpdateInvokeOffset.Offset % Time.fixedDeltaTime, TIME_PRECISION, "Assert 7");
+            (float)_updateInvokeOffset.Offset % Time.fixedDeltaTime, TIME_PRECISION, "Assert 7");
 
         yield return new WaitForUpdateActual();
 
         RuntimeAssert.FloatEquals(1f / 100f * 4f % Time.fixedDeltaTime,
-            (float)UpdateInvokeOffset.Offset % Time.fixedDeltaTime, TIME_PRECISION, "Assert 8");
+            (float)_updateInvokeOffset.Offset % Time.fixedDeltaTime, TIME_PRECISION, "Assert 8");
 
         yield return new WaitForUpdateActual();
 
         RuntimeAssert.FloatEquals(1f / 100f * 5f % Time.fixedDeltaTime,
-            (float)UpdateInvokeOffset.Offset % Time.fixedDeltaTime, TIME_PRECISION, "Assert 10");
+            (float)_updateInvokeOffset.Offset % Time.fixedDeltaTime, TIME_PRECISION, "Assert 10");
 
         yield return new WaitForFixedUpdateActual();
 
@@ -208,12 +211,12 @@ public class GameRestartTests
         yield return new WaitForUpdateActual();
 
         RuntimeAssert.FloatEquals(1f / 100f * 6f % Time.fixedDeltaTime,
-            (float)UpdateInvokeOffset.Offset % Time.fixedDeltaTime, TIME_PRECISION, "Assert 11");
+            (float)_updateInvokeOffset.Offset % Time.fixedDeltaTime, TIME_PRECISION, "Assert 11");
 
         yield return new WaitForUpdateActual();
 
         RuntimeAssert.FloatEquals(1f / 100f * 7f % Time.fixedDeltaTime,
-            (float)UpdateInvokeOffset.Offset % Time.fixedDeltaTime, TIME_PRECISION, "Assert 12");
+            (float)_updateInvokeOffset.Offset % Time.fixedDeltaTime, TIME_PRECISION, "Assert 12");
 
         yield return new WaitForFixedUpdateActual();
 
@@ -222,7 +225,7 @@ public class GameRestartTests
         yield return new WaitForUpdateActual();
 
         RuntimeAssert.FloatEquals(1f / 100f * 8f % Time.fixedDeltaTime,
-            (float)UpdateInvokeOffset.Offset % Time.fixedDeltaTime, TIME_PRECISION, "Assert 14");
+            (float)_updateInvokeOffset.Offset % Time.fixedDeltaTime, TIME_PRECISION, "Assert 14");
 
         yield return new WaitForCoroutine(CleanupTest());
     }

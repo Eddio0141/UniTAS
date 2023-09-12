@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using MonoMod.Utils;
+using UniTAS.Patcher.Models.Utils;
 using UniTAS.Patcher.Services.Invoker;
 
 namespace UniTAS.Patcher.Utils;
@@ -47,14 +48,14 @@ public static class InvokeEventAttributes
         }
 
         // sort it
-        toBeInvoked = toBeInvoked.OrderBy(x => (int)x.Item2.Priority).ToList();
+        // toBeInvoked = toBeInvoked.OrderBy(x => (int)x.Item2.Priority).ToList();
 
         // actually invoke it
         foreach (var invokeInfo in toBeInvoked)
         {
             var method = invokeInfo.Item1;
             StaticLogger.Log.LogDebug(
-                $"Invoking method {method.Name} for {method.GetRealDeclaringType().FullName} with attribute {typeof(TAttribute).FullName} and priority {(int)invokeInfo.Item2.Priority}");
+                $"Invoking method {method.Name} for {method.GetRealDeclaringType()?.FullName} with attribute {typeof(TAttribute).FullName}"); // and priority {(int)invokeInfo.Item2.Priority}");
             method.Invoke(null, null);
         }
     }

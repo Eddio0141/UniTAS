@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UniTAS.Patcher.Implementations.Coroutine;
 using UniTAS.Patcher.Interfaces.Coroutine;
-using UniTAS.Patcher.Utils;
+using UniTAS.Patcher.Services.UnityEvents;
 
 namespace Patcher.Tests;
 
@@ -13,19 +13,19 @@ public class CoroutineTests
         var kernel = KernelUtils.Init();
         var handler = kernel.GetInstance<CoroutineHandler>();
         var status = handler.Start(UpdateUnconditionalCoroutine());
+        var monoBehEventInvoker = kernel.GetInstance<IMonoBehEventInvoker>();
 
         Assert.True(status.IsRunning);
 
-        MonoBehaviourController.PausedUpdate = false;
-        MonoBehaviourEvents.InvokeUpdate();
+        monoBehEventInvoker.InvokeUpdate();
         Assert.True(status.IsRunning);
 
-        MonoBehaviourEvents.InvokeLateUpdate();
-        MonoBehaviourEvents.InvokeUpdate();
+        monoBehEventInvoker.InvokeLateUpdate();
+        monoBehEventInvoker.InvokeUpdate();
         Assert.True(status.IsRunning);
 
-        MonoBehaviourEvents.InvokeLateUpdate();
-        MonoBehaviourEvents.InvokeUpdate();
+        monoBehEventInvoker.InvokeLateUpdate();
+        monoBehEventInvoker.InvokeUpdate();
         Assert.False(status.IsRunning);
     }
 

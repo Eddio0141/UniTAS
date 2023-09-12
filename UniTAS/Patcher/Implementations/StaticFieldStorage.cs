@@ -1,21 +1,24 @@
 using System;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
+using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Logging;
-using UniTAS.Patcher.Utils;
+using UniTAS.Patcher.Services.Trackers.TrackInfo;
 
 namespace UniTAS.Patcher.Implementations;
 
 // ReSharper disable once ClassNeverInstantiated.Global
-[Singleton]
+[Singleton(timing: RegisterTiming.Entry)]
 [ExcludeRegisterIfTesting]
 public class StaticFieldStorage : IStaticFieldManipulator
 {
     private readonly ILogger _logger;
+    private readonly IClassStaticInfoTracker _classStaticInfoTracker;
 
-    public StaticFieldStorage(ILogger logger)
+    public StaticFieldStorage(ILogger logger, IClassStaticInfoTracker classStaticInfoTracker)
     {
         _logger = logger;
+        _classStaticInfoTracker = classStaticInfoTracker;
     }
 
     public void ResetStaticFields()
@@ -24,9 +27,7 @@ public class StaticFieldStorage : IStaticFieldManipulator
 
         UnityEngine.Resources.UnloadUnusedAssets();
 
-        var staticFieldStorage = Tracker.StaticFields;
-
-        foreach (var field in staticFieldStorage)
+        foreach (var field in _classStaticInfoTracker.StaticFields)
         {
             var typeName = field.DeclaringType?.FullName ?? "unknown_type";
             _logger.LogDebug($"resetting static field: {typeName}.{field.Name}");
@@ -47,10 +48,10 @@ public class StaticFieldStorage : IStaticFieldManipulator
         GC.WaitForPendingFinalizers();
 
         _logger.LogDebug("calling static constructors");
-        var staticCtorInvokeOrderListCount = Tracker.StaticCtorInvokeOrder.Count;
-        for (var i = 0; i < staticCtorInvokeOrderListCount; i++)
+        // ReSharper disable once ForCanBeConvertedToForeach
+        for (var i = 0; i < _classStaticInfoTracker.StaticCtorInvokeOrder.Count; i++)
         {
-            var staticCtorType = Tracker.StaticCtorInvokeOrder[i];
+            var staticCtorType = _classStaticInfoTracker.StaticCtorInvokeOrder[i];
             var cctor = staticCtorType.TypeInitializer;
             if (cctor == null) continue;
             _logger.LogDebug($"Calling static constructor for type: {cctor.DeclaringType?.FullName ?? "unknown_type"}");

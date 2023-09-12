@@ -1,4 +1,4 @@
-using UniTAS.Patcher.Models;
+using UniTAS.Patcher.Models.Utils;
 
 namespace Patcher.Tests;
 
@@ -165,5 +165,25 @@ public class PriorityListTests
         Assert.Equal(1, list[0]);
         Assert.Equal(1, list[1]);
         Assert.Equal(1, list[2]);
+    }
+
+    [Fact]
+    public void AddRangeDiffPriorities()
+    {
+        var list = new PriorityList<int>();
+        list.AddRange(new[] { 4, 5, 6 }, 1);
+        list.AddRange(new[] { 1, 2, 3 }, 0);
+        list.AddRange(new[] { 7, 8, 9 }, 2);
+
+        Assert.Equal(9, list.Count);
+        Assert.Equal(1, list[0]);
+        Assert.Equal(2, list[1]);
+        Assert.Equal(3, list[2]);
+        Assert.Equal(4, list[3]);
+        Assert.Equal(5, list[4]);
+        Assert.Equal(6, list[5]);
+        Assert.Equal(7, list[6]);
+        Assert.Equal(8, list[7]);
+        Assert.Equal(9, list[8]);
     }
 }

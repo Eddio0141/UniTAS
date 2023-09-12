@@ -8,6 +8,7 @@ namespace UniTAS.Patcher.Implementations;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 [Singleton]
+[ExcludeRegisterIfTesting]
 public class PatchReverseInvoker : IPatchReverseInvoker
 {
     public bool Invoking => _depth > 0;

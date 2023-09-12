@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UniTAS.Patcher.Models.GUI;
-using UniTAS.Patcher.Utils;
+using UniTAS.Patcher.Models.Utils;
 using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations.Drawing;

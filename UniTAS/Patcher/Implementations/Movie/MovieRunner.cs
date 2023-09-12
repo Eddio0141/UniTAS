@@ -5,8 +5,8 @@ using UniTAS.Patcher.Exceptions.Movie.Runner;
 using UniTAS.Patcher.Implementations.Coroutine;
 using UniTAS.Patcher.Interfaces.Coroutine;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
-using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
 using UniTAS.Patcher.Interfaces.Events.Movie;
+using UniTAS.Patcher.Interfaces.Events.UnityEvents.DontRunIfPaused;
 using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Models.Movie;
 using UniTAS.Patcher.Services;
@@ -69,7 +69,7 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvent
             MovieRunningStatusChange(false);
         }
 
-        Utils.Tuple<IMovieEngine, PropertiesModel> parsed;
+        Models.Utils.Tuple<IMovieEngine, PropertiesModel> parsed;
         try
         {
             parsed = _parser.Parse(input);

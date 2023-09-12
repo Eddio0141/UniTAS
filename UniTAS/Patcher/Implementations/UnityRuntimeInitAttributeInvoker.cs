@@ -7,7 +7,7 @@ using BepInEx;
 using HarmonyLib;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Services;
-using UniTAS.Patcher.Services.EventSubscribers;
+using UniTAS.Patcher.Services.UnityEvents;
 
 namespace UniTAS.Patcher.Implementations;
 

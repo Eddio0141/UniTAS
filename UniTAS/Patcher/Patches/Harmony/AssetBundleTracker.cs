@@ -7,7 +7,7 @@ using HarmonyLib;
 using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Interfaces.Patches.PatchTypes;
 using UniTAS.Patcher.Services.Logging;
-using UniTAS.Patcher.Services.Trackers;
+using UniTAS.Patcher.Services.Trackers.UpdateTrackInfo;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 

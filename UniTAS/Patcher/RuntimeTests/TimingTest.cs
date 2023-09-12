@@ -11,10 +11,12 @@ namespace UniTAS.Patcher.RuntimeTests;
 public class TimingTest
 {
     private readonly IPatchReverseInvoker _patchReverseInvoker;
+    private readonly IUpdateInvokeOffset _updateInvokeOffset;
 
-    public TimingTest(IPatchReverseInvoker patchReverseInvoker)
+    public TimingTest(IPatchReverseInvoker patchReverseInvoker, IUpdateInvokeOffset updateInvokeOffset)
     {
         _patchReverseInvoker = patchReverseInvoker;
+        _updateInvokeOffset = updateInvokeOffset;
     }
 
     [RuntimeTest]
@@ -23,6 +25,6 @@ public class TimingTest
         yield return new WaitForUpdateUnconditional();
 
         RuntimeAssert.AreEqual(_patchReverseInvoker.Invoke(() => Time.time) % Time.fixedDeltaTime,
-            UpdateInvokeOffset.Offset);
+            _updateInvokeOffset.Offset);
     }
 }

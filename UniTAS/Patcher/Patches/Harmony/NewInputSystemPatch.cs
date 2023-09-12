@@ -3,7 +3,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using HarmonyLib;
 using UniTAS.Patcher.Interfaces.Patches.PatchTypes;
-using UniTAS.Patcher.Services;
+using UniTAS.Patcher.Services.GameExecutionControllers;
+using UniTAS.Patcher.Services.InputSystemOverride;
 using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Patches.Harmony;
@@ -15,6 +16,9 @@ public class NewInputSystemPatch
 {
     private static readonly IMonoBehaviourController MonoBehaviourController =
         ContainerStarter.Kernel.GetInstance<IMonoBehaviourController>();
+
+    private static readonly INewInputSystemExists NewInputSystemState =
+        ContainerStarter.Kernel.GetInstance<INewInputSystemExists>();
 
     [HarmonyPatch]
     private class SuppressNotifyUpdate
@@ -37,7 +41,7 @@ public class NewInputSystemPatch
         [SuppressMessage("ReSharper", "ConditionIsAlwaysTrueOrFalse")]
         private static bool Prepare()
         {
-            return NewInputSystemState.NewInputSystemExists;
+            return NewInputSystemState.HasInputSystem;
         }
     }
 }

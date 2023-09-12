@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.SoftRestart;
-using UniTAS.Patcher.Services.Trackers;
+using UniTAS.Patcher.Services.Trackers.UpdateTrackInfo;
 using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations.GameRestart;

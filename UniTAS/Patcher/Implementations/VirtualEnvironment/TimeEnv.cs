@@ -2,9 +2,9 @@ using System;
 using BepInEx.Configuration;
 using HarmonyLib;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
-using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
-using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Patcher.Interfaces.Events.SoftRestart;
+using UniTAS.Patcher.Interfaces.Events.UnityEvents.DontRunIfPaused;
+using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
 using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
@@ -15,7 +15,7 @@ namespace UniTAS.Patcher.Implementations.VirtualEnvironment;
 
 [Singleton(RegisterPriority.TimeEnv)]
 [ExcludeRegisterIfTesting]
-public class TimeEnv : ITimeEnv, IOnPreUpdatesActual, IOnGameRestartResume, IOnStartActual, IOnLastUpdateActual,
+public class TimeEnv : ITimeEnv, IOnPreUpdateActual, IOnGameRestartResume, IOnStartActual, IOnLastUpdateActual,
     IOnFixedUpdateActual, IOnUpdateUnconditional
 {
     private readonly ConfigEntry<float> _defaultFps;

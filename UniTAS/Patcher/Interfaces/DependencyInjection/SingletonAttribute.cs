@@ -11,12 +11,13 @@ namespace UniTAS.Patcher.Interfaces.DependencyInjection;
 [AttributeUsage(AttributeTargets.Class)]
 public class SingletonAttribute : RegisterAttribute
 {
-    public SingletonAttribute(RegisterPriority priority = RegisterPriority.Default) : base(priority)
+    public SingletonAttribute(RegisterPriority priority = RegisterPriority.Default,
+        RegisterTiming timing = RegisterTiming.UnityInit) : base(priority, timing)
     {
     }
 
     public override IEnumerable<RegisterInfoBase> GetRegisterInfos(Type type, Type[] allTypes, bool isTesting)
     {
-        yield return new RegisterInfo(type, this);
+        yield return new RegisterInfo(type, this, Timing);
     }
 }

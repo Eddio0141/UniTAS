@@ -11,6 +11,7 @@ using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Interfaces;
+using UniTAS.Patcher.ManualServices.Trackers;
 using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Patches.Preloader;
@@ -197,7 +198,7 @@ public static class PatchMethods
 
         // find and store static fields for later
         var declaredFields = AccessTools.GetDeclaredFields(type).Where(x => x.IsStatic && !x.IsLiteral);
-        Tracker.StaticFields.AddRange(declaredFields);
+        ClassStaticInfoTracker.AddStaticFields(declaredFields);
 
         // if this is chain called, store dependency
         // in this case, we are the child since this is chain called
@@ -239,7 +240,7 @@ public static class PatchMethods
         if (PendingIgnoreAddingInvokeList.Remove(type)) return;
 
         StaticLogger.Log.LogDebug($"Adding type {type} to static ctor invoke list");
-        Tracker.StaticCtorInvokeOrder.Add(type);
+        ClassStaticInfoTracker.AddStaticCtorForTracking(type);
     }
 
     public static void CheckAndInvokeDependency()
@@ -267,7 +268,7 @@ public static class PatchMethods
 
     private static bool IsNotFirstInvoke(Type type)
     {
-        if (Tracker.StaticCtorInvokeOrder.Contains(type))
+        if (ClassStaticInfoTracker.StaticCtorInvokeOrder.Contains(type))
             return true;
 
         foreach (var pair in CctorDependency)

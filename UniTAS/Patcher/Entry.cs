@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Mono.Cecil;
 using UniTAS.Patcher.Implementations;
+using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher;
@@ -24,8 +25,7 @@ public static class Entry
         LoggingUtils.InitDiskLogger();
 
         StaticLogger.Log.LogInfo($"Found {PreloadPatcherProcessor.PreloadPatchers.Length} preload patchers");
-        StaticLogger.Log.LogInfo(
-            $"Target dlls: {string.Join(", ", TargetDLLs.ToArray())}");
+        StaticLogger.Log.LogInfo($"Target dlls: {string.Join(", ", PreloadPatcherProcessor.TargetDLLs.ToArray())}");
     }
 
     // Patches the assemblies
@@ -48,5 +48,6 @@ public static class Entry
     public static void Finish()
     {
         StaticLogger.Log.LogInfo("Finished preload patcher!");
+        ContainerStarter.Init(RegisterTiming.Entry);
     }
 }

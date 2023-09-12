@@ -1,7 +1,7 @@
 ﻿using BepInEx;
 using UniTAS.Patcher.Models.GUI;
 using UniTAS.Patcher.Services;
-using UniTAS.Patcher.Services.EventSubscribers;
+using UniTAS.Patcher.Services.UnityEvents;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 
@@ -56,13 +56,13 @@ public abstract class Window
     public void Show()
     {
         if (_showWindow) return;
-        _updateEvents.OnGUIEventUnconditional += OnGUIUnconditional;
+        _updateEvents.OnGUIUnconditional += OnGUIUnconditional;
         _showWindow = true;
     }
 
     protected virtual void Close()
     {
-        _updateEvents.OnGUIEventUnconditional -= OnGUIUnconditional;
+        _updateEvents.OnGUIUnconditional -= OnGUIUnconditional;
         _showWindow = false;
     }
 

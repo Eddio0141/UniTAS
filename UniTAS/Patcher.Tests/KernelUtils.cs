@@ -5,15 +5,17 @@ using BepInEx.Configuration;
 using BepInEx.Logging;
 using MoonSharp.Interpreter;
 using StructureMap;
+using UniTAS.Patcher.ContainerBindings.UnityEvents;
 using UniTAS.Patcher.Implementations;
 using UniTAS.Patcher.Implementations.DependencyInjection;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
-using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
-using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
+using UniTAS.Patcher.Interfaces.Events.UnityEvents.DontRunIfPaused;
+using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
 using UniTAS.Patcher.Interfaces.GlobalHotkeyListener;
 using UniTAS.Patcher.Interfaces.GUI;
 using UniTAS.Patcher.Interfaces.Movie;
 using UniTAS.Patcher.Models.Customization;
+using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Models.GlobalHotkeyListener;
 using UniTAS.Patcher.Models.GUI;
 using UniTAS.Patcher.Models.UnitySafeWrappers.SceneManagement;
@@ -119,7 +121,7 @@ public static class KernelUtils
     }
 
     [Singleton(IncludeDifferentAssembly = true)]
-    public class TestPriority : IOnPreUpdatesActual
+    public class TestPriority : IOnPreUpdateActual
     {
         public void PreUpdateActual()
         {
@@ -127,7 +129,7 @@ public static class KernelUtils
     }
 
     [Singleton(IncludeDifferentAssembly = true)]
-    public class TestPriority2 : IOnPreUpdatesActual
+    public class TestPriority2 : IOnPreUpdateActual
     {
         public void PreUpdateActual()
         {
@@ -268,6 +270,47 @@ public static class KernelUtils
         }
     }
 
+    [Singleton(IncludeDifferentAssembly = true)]
+    [SuppressMessage("ReSharper", "UnusedType.Local")]
+    private class PatchReverseInvokerDummy : IPatchReverseInvoker
+    {
+        public bool InnerCall()
+        {
+            return false;
+        }
+
+        public void Return()
+        {
+        }
+
+        public void Invoke(Action method)
+        {
+        }
+
+        public TRet Invoke<TRet>(Func<TRet> method)
+        {
+            return default!;
+        }
+
+        public TRet Invoke<TRet, T>(Func<T, TRet> method, T arg1)
+        {
+            return default!;
+        }
+
+        public TRet Invoke<TRet, T1, T2>(Func<T1, T2, TRet> method, T1 arg1, T2 arg2)
+        {
+            return default!;
+        }
+    }
+
+    [Singleton(IncludeDifferentAssembly = true)]
+    [SuppressMessage("ReSharper", "UnusedType.Local")]
+    private class UpdateInvokeOffsetDummy : IUpdateInvokeOffset
+    {
+        [SuppressMessage("ReSharper", "UnassignedGetOnlyAutoProperty")]
+        public double Offset { get; }
+    }
+
     public static Container Init()
     {
         var kernel = new Container(c =>
@@ -279,15 +322,28 @@ public static class KernelUtils
             c.For<ILogger>().Use(x => x.GetInstance<FakeLogger>());
         });
 
-        kernel.Configure(c =>
+        var timings = new[]
         {
-            kernel.GetInstance<IDiscoverAndRegister>().Register<FakeStaticFieldStorage>(c);
-            kernel.GetInstance<IDiscoverAndRegister>().Register<InfoPrintAndWelcome>(c);
-        });
+            RegisterTiming.Entry,
+            RegisterTiming.UnityInit
+        };
 
-        var forceInstantiateTypes = kernel.GetInstance<IForceInstantiateTypes>();
-        forceInstantiateTypes.InstantiateTypes<InfoPrintAndWelcome>();
-        forceInstantiateTypes.InstantiateTypes<DummyMouseEnvLegacySystem>();
+        Assert.Equal(Enum.GetValues(typeof(RegisterTiming)).Length, timings.Length);
+
+        foreach (var timing in timings)
+        {
+            kernel.Configure(c =>
+            {
+                kernel.GetInstance<IDiscoverAndRegister>().Register<InfoPrintAndWelcome>(c, timing);
+                kernel.GetInstance<IDiscoverAndRegister>().Register<FakeStaticFieldStorage>(c, timing);
+            });
+
+            var forceInstantiateTypes = kernel.GetInstance<IForceInstantiateTypes>();
+            forceInstantiateTypes.InstantiateTypes<InfoPrintAndWelcome>(timing);
+            forceInstantiateTypes.InstantiateTypes<DummyMouseEnvLegacySystem>(timing);
+        }
+
+        UnityEventInvokers.Init(kernel);
 
         return kernel;
     }
