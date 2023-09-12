@@ -89,13 +89,13 @@ public static class ContainerStarter
     /// <param name="callback"></param>
     public static void RegisterContainerInitCallback(RegisterTiming timing, Action<IContainer> callback)
     {
-        if (!ContainerInitCallbacks.ContainsKey(timing))
+        if (!ContainerInitCallbacks.TryGetValue(timing, out var callbacks))
         {
             callback(Kernel);
             return;
         }
 
-        ContainerInitCallbacks[timing].Add(callback);
+        callbacks.Add(callback);
     }
 
     private static readonly Dictionary<RegisterTiming, List<Action<IContainer>>> ContainerInitCallbacks = new();
