@@ -27,6 +27,7 @@ using UniTAS.Patcher.Services.Overlay;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Patcher.Services.VirtualEnvironment;
 using UniTAS.Patcher.Services.VirtualEnvironment.Input.LegacyInputSystem;
+using UniTAS.Patcher.SingletonBindings.UnityEvents;
 using UnityEngine;
 
 namespace Patcher.Tests;
@@ -341,6 +342,8 @@ public static class KernelUtils
             forceInstantiateTypes.InstantiateTypes<InfoPrintAndWelcome>(timing);
             forceInstantiateTypes.InstantiateTypes<DummyMouseEnvLegacySystem>(timing);
         }
+
+        UnityEventInvokers.Init(kernel);
 
         return kernel;
     }

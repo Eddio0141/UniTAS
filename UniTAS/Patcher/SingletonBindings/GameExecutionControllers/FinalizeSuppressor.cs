@@ -16,7 +16,8 @@ public static class FinalizeSuppressor
 
     public static bool DisableFinalizeInvoke
     {
-        get => _finalizeSuppressor.DisableFinalizeInvoke;
+        // TODO make into singleton
+        get => _finalizeSuppressor?.DisableFinalizeInvoke ?? false;
         set => _finalizeSuppressor.DisableFinalizeInvoke = value;
     }
 }

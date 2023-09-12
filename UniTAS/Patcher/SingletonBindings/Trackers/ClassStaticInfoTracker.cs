@@ -26,13 +26,14 @@ public static class ClassStaticInfoTracker
 
     public static void AddStaticCtorForTracking(Type type)
     {
-        _classStaticInfoTrackerUpdate.AddStaticCtorForTracking(type);
+        // TODO make into singleton
+        _classStaticInfoTrackerUpdate?.AddStaticCtorForTracking(type);
     }
 
     public static void AddStaticFields(IEnumerable<FieldInfo> fields)
     {
-        _classStaticInfoTrackerUpdate.AddStaticFields(fields);
+        _classStaticInfoTrackerUpdate?.AddStaticFields(fields);
     }
 
-    public static ReadOnlyCollection<Type> StaticCtorInvokeOrder => _classStaticInfoTracker.StaticCtorInvokeOrder;
+    public static ReadOnlyCollection<Type> StaticCtorInvokeOrder => _classStaticInfoTracker?.StaticCtorInvokeOrder;
 }

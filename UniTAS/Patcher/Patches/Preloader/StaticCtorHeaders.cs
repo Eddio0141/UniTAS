@@ -268,7 +268,8 @@ public static class PatchMethods
 
     private static bool IsNotFirstInvoke(Type type)
     {
-        if (ClassStaticInfoTracker.StaticCtorInvokeOrder.Contains(type))
+        // TODO remove null check
+        if (ClassStaticInfoTracker.StaticCtorInvokeOrder?.Contains(type) is true)
             return true;
 
         foreach (var pair in CctorDependency)
