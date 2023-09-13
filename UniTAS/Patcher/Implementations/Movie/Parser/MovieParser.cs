@@ -38,7 +38,7 @@ public partial class MovieParser : IMovieParser
         _movieProxyTypes = movieProxyTypes;
     }
 
-    public Models.Utils.Tuple<IMovieEngine, PropertiesModel> Parse(string input)
+    public (IMovieEngine, PropertiesModel) Parse(string input)
     {
         var scriptAndMovieEngine = SetupScript();
         var script = scriptAndMovieEngine.Item1;
@@ -80,7 +80,7 @@ public partial class MovieParser : IMovieParser
 
     private static bool _registeredGlobals;
 
-    private Models.Utils.Tuple<Script, MovieEngine> SetupScript(MovieEngine movieEngine = null,
+    private (Script, MovieEngine) SetupScript(MovieEngine movieEngine = null,
         PropertiesModel properties = null)
     {
         // TODO add OS_Time, OS_System, IO later for manipulating state of the vm

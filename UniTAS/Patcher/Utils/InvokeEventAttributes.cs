@@ -1,9 +1,7 @@
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using MonoMod.Utils;
-using UniTAS.Patcher.Models.Utils;
 using UniTAS.Patcher.Services.Invoker;
 
 namespace UniTAS.Patcher.Utils;
@@ -20,7 +18,7 @@ public static class InvokeEventAttributes
 
         var assembly = typeof(TAttribute).Assembly;
         var types = AccessTools.GetTypesFromAssembly(assembly);
-        var toBeInvoked = new List<TupleValue<MethodBase, InvokerAttribute>>();
+        var toBeInvoked = new List<MethodBase>();
 
         foreach (var type in types)
         {
@@ -42,20 +40,15 @@ public static class InvokeEventAttributes
                 if (attributes.Length == 0)
                     continue;
 
-                var invokerAttribute = (InvokerAttribute)attributes.First(x => x is InvokerAttribute);
-                toBeInvoked.Add(new(method, invokerAttribute));
+                toBeInvoked.Add(method);
             }
         }
 
-        // sort it
-        // toBeInvoked = toBeInvoked.OrderBy(x => (int)x.Item2.Priority).ToList();
-
         // actually invoke it
-        foreach (var invokeInfo in toBeInvoked)
+        foreach (var method in toBeInvoked)
         {
-            var method = invokeInfo.Item1;
             StaticLogger.Log.LogDebug(
-                $"Invoking method {method.Name} for {method.GetRealDeclaringType()?.FullName} with attribute {typeof(TAttribute).FullName}"); // and priority {(int)invokeInfo.Item2.Priority}");
+                $"Invoking method {method.Name} for {method.GetRealDeclaringType()?.FullName} with attribute {typeof(TAttribute).FullName}");
             method.Invoke(null, null);
         }
     }

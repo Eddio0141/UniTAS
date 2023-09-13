@@ -11,5 +11,5 @@ public abstract class PatchProcessor
     /// Processes patch modules
     /// </summary>
     /// <returns>List of patch priority and classes that contains classes for patching</returns>
-    public abstract IEnumerable<KeyValuePair<int, Type>> ProcessModules();
+    public abstract IEnumerable<(int, Type)> ProcessModules();
 }

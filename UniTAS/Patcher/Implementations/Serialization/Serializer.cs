@@ -5,7 +5,6 @@ using System.Reflection;
 using HarmonyLib;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Models.Serialization;
-using UniTAS.Patcher.Models.Utils;
 using UniTAS.Patcher.Services.Serialization;
 
 namespace UniTAS.Patcher.Implementations.Serialization;
@@ -14,7 +13,7 @@ namespace UniTAS.Patcher.Implementations.Serialization;
 public class Serializer : ISerializer
 {
     public IEnumerable<SerializedData> SerializeStaticFields(Type targetClass,
-        List<TupleValue<object, SerializedData>> references)
+        List<(object, SerializedData)> references)
     {
         if (targetClass == null)
         {
@@ -26,7 +25,7 @@ public class Serializer : ISerializer
     }
 
     private static SerializedData SerializeField(string className, FieldInfo field, object instance,
-        List<TupleValue<object, SerializedData>> references)
+        List<(object, SerializedData)> references)
     {
         var value = field.GetValue(instance);
 
@@ -56,7 +55,7 @@ public class Serializer : ISerializer
 
             if (IsTypePrimitive(field.FieldType))
             {
-                references.Add(new(value, new(newReferenceId, value)));
+                references.Add((value, new(newReferenceId, value)));
                 return new(className, field.Name, newReferenceId);
             }
 
@@ -64,7 +63,7 @@ public class Serializer : ISerializer
                 .Select(x => SerializeField(null, x, value, references));
 
             // serialize reference
-            references.Add(new(value, new(newReferenceId, fields)));
+            references.Add((value, new(newReferenceId, fields)));
             return new(className, field.Name, newReferenceId);
         }
 

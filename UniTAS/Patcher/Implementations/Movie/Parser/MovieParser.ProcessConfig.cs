@@ -10,7 +10,7 @@ namespace UniTAS.Patcher.Implementations.Movie.Parser;
 [SuppressMessage("ReSharper", "UnusedType.Global")]
 public partial class MovieParser
 {
-    private Models.Utils.Tuple<bool, PropertiesModel> ProcessConfig(Script script)
+    private (bool, PropertiesModel) ProcessConfig(Script script)
     {
         const string configVariable = "MOVIE_CONFIG";
 
@@ -30,7 +30,7 @@ public partial class MovieParser
             ),
             GetUpdateType(configTable));
 
-        return new(IsGlobalScope(configTable), properties);
+        return (IsGlobalScope(configTable), properties);
     }
 
     private static bool IsGlobalScope(Table configTable)
@@ -140,7 +140,7 @@ public partial class MovieParser
         return updateType;
     }
 
-    private Models.Utils.Tuple<DynValue, string> SelectAndWarnConflictingVariables(Table table, List<string> variables)
+    private (DynValue, string) SelectAndWarnConflictingVariables(Table table, List<string> variables)
     {
         var selected = DynValue.Nil;
         var selectedString = string.Empty;
@@ -160,6 +160,6 @@ public partial class MovieParser
             selectedString = variable;
         }
 
-        return new(selected, selectedString);
+        return (selected, selectedString);
     }
 }

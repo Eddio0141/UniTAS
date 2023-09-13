@@ -189,12 +189,12 @@ public class SyncFixedUpdateCycle : ISyncFixedUpdateCycle, IOnUpdateUnconditiona
         return target;
     }
 
-    private Models.Utils.Tuple<double, double> TargetSecondsAndActualSeconds(SyncData syncData)
+    private (double, double) TargetSecondsAndActualSeconds(SyncData syncData)
     {
         var targetSeconds = syncData.TimeLeftSet ? syncData.TimeLeft : GetTargetSeconds();
         // unlike normal frame time, i round up
         var actualSeconds = _timeWrapper.IntFPSOnly ? 1.0 / (int)Math.Ceiling(1.0 / targetSeconds) : targetSeconds;
-        return new(targetSeconds, actualSeconds);
+        return (targetSeconds, actualSeconds);
     }
 
     private void SetFrameTimeAndHandlePendingCallback()

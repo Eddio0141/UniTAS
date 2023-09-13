@@ -3,7 +3,6 @@ using System.IO;
 using System.Linq;
 using System.Xml.Serialization;
 using UniTAS.Patcher.Models.Serialization;
-using UniTAS.Patcher.Models.Utils;
 using UniTAS.Patcher.Services.Serialization;
 
 namespace Patcher.Tests.Serialization;
@@ -86,7 +85,7 @@ public class SerializationTests
         SerializationUtils.ReferencingType.ReferenceType = referenceData;
         SerializationUtils.ReferencingType2.ReferenceType = referenceData;
 
-        var references = new List<TupleValue<object, SerializedData>>();
+        var references = new List<(object, SerializedData)>();
         var serializedData =
             serializer.SerializeStaticFields(typeof(SerializationUtils.ReferencingType), references).ToList();
         var serializedData2 =

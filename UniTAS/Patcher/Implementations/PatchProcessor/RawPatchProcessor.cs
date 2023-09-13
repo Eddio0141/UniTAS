@@ -17,7 +17,7 @@ public class RawPatchProcessor : Interfaces.Patches.PatchProcessor.PatchProcesso
         _logger = logger;
     }
 
-    public override IEnumerable<KeyValuePair<int, Type>> ProcessModules()
+    public override IEnumerable<(int, Type)> ProcessModules()
     {
         var pluginTypes = AccessTools.GetTypesFromAssembly(typeof(MonoBehaviourUpdateInvoker).Assembly);
 

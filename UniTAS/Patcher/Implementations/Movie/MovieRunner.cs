@@ -69,7 +69,7 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvent
             MovieRunningStatusChange(false);
         }
 
-        Models.Utils.Tuple<IMovieEngine, PropertiesModel> parsed;
+        (IMovieEngine, PropertiesModel) parsed;
         try
         {
             parsed = _parser.Parse(input);
