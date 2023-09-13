@@ -1,5 +1,4 @@
 using UniTAS.Patcher.Models.Movie;
-using UniTAS.Patcher.Models.Utils;
 
 namespace UniTAS.Patcher.Services.Movie;
 
@@ -11,5 +10,5 @@ public interface IMovieParser
     /// </summary>
     /// <param name="input"></param>
     /// <returns></returns>
-    Tuple<IMovieEngine, PropertiesModel> Parse(string input);
+    (IMovieEngine, PropertiesModel) Parse(string input);
 }

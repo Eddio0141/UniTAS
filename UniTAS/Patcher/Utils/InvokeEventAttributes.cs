@@ -3,7 +3,6 @@ using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using MonoMod.Utils;
-using UniTAS.Patcher.Models.Utils;
 using UniTAS.Patcher.Services.Invoker;
 
 namespace UniTAS.Patcher.Utils;
@@ -20,7 +19,7 @@ public static class InvokeEventAttributes
 
         var assembly = typeof(TAttribute).Assembly;
         var types = AccessTools.GetTypesFromAssembly(assembly);
-        var toBeInvoked = new List<TupleValue<MethodBase, InvokerAttribute>>();
+        var toBeInvoked = new List<(MethodBase, InvokerAttribute)>();
 
         foreach (var type in types)
         {

@@ -3,7 +3,6 @@ using UniTAS.Patcher.Implementations.Coroutine;
 using UniTAS.Patcher.Interfaces.Coroutine;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.RuntimeTest;
-using UniTAS.Patcher.Models.Utils;
 using UniTAS.Patcher.Models.VirtualEnvironment;
 using UniTAS.Patcher.Services.InputSystemOverride;
 using UniTAS.Patcher.Services.NewInputSystem;
@@ -33,7 +32,7 @@ public class NewInputSystemTests
     }
 
     [RuntimeTest]
-    public Tuple<bool, IEnumerable<CoroutineWait>> MousePosition()
+    public (bool, IEnumerable<CoroutineWait>) MousePosition()
     {
         return new(_newInputSystemExists.HasInputSystem, MousePositionInternal());
     }
@@ -64,7 +63,7 @@ public class NewInputSystemTests
     }
 
     [RuntimeTest]
-    public Tuple<bool, IEnumerable<CoroutineWait>> MouseButtons()
+    public (bool, IEnumerable<CoroutineWait>) MouseButtons()
     {
         return new(_newInputSystemExists.HasInputSystem, MouseButtonsInternal());
     }

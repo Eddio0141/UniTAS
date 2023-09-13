@@ -3,7 +3,6 @@ using System.Diagnostics.CodeAnalysis;
 using UniTAS.Patcher.Implementations.Coroutine;
 using UniTAS.Patcher.Interfaces.Coroutine;
 using UniTAS.Patcher.Interfaces.RuntimeTest;
-using UniTAS.Patcher.Models.Utils;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Utils;
 
@@ -43,7 +42,7 @@ public class RuntimeTests
     }
 
     [RuntimeTest]
-    public Tuple<bool, IEnumerable<CoroutineWait>> SkipAndCoroutineTest()
+    public (bool, IEnumerable<CoroutineWait>) SkipAndCoroutineTest()
     {
         return new(false, null!);
     }
@@ -55,7 +54,7 @@ public class RuntimeTests
     }
 
     [RuntimeTest]
-    public Tuple<bool, IEnumerable<CoroutineWait>> CoroutineTest()
+    public (bool, IEnumerable<CoroutineWait>) CoroutineTest()
     {
         return new(true, CoroutineTestInner());
     }
