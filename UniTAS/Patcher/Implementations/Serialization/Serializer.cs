@@ -55,7 +55,7 @@ public class Serializer : ISerializer
 
             if (IsTypePrimitive(field.FieldType))
             {
-                references.Add(new(value, new(newReferenceId, value)));
+                references.Add((value, new(newReferenceId, value)));
                 return new(className, field.Name, newReferenceId);
             }
 
@@ -63,7 +63,7 @@ public class Serializer : ISerializer
                 .Select(x => SerializeField(null, x, value, references));
 
             // serialize reference
-            references.Add(new(value, new(newReferenceId, fields)));
+            references.Add((value, new(newReferenceId, fields)));
             return new(className, field.Name, newReferenceId);
         }
 

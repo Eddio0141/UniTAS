@@ -42,10 +42,10 @@ public partial class Drawing
         var labelRect = new Rect(pos.x, pos.y, size.x, size.y);
         var labelRectOriginal = new Rect(labelRect);
 
-        foreach (var shadowOffset in TextShadowOffsets)
+        foreach (var (shadowOffsetX, shadowOffsetY) in TextShadowOffsets)
         {
-            labelRect.x += shadowOffset.Item1;
-            labelRect.y += shadowOffset.Item2;
+            labelRect.x += shadowOffsetX;
+            labelRect.y += shadowOffsetY;
             UnityEngine.GUI.Label(labelRect, text.Text, _labelWithFontSize);
         }
 

@@ -98,7 +98,7 @@ public class RuntimeTestProcessor : IRuntimeTestProcessor
 
             if (ExtractReturnType<IEnumerable<CoroutineWait>>(ret, out var coroutine))
             {
-                _pendingCoroutines.Enqueue(new(testName, coroutine));
+                _pendingCoroutines.Enqueue((testName, coroutine));
                 continue;
             }
 

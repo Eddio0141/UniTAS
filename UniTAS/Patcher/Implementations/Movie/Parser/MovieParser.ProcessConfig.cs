@@ -30,7 +30,7 @@ public partial class MovieParser
             ),
             GetUpdateType(configTable));
 
-        return new(IsGlobalScope(configTable), properties);
+        return (IsGlobalScope(configTable), properties);
     }
 
     private static bool IsGlobalScope(Table configTable)
@@ -160,6 +160,6 @@ public partial class MovieParser
             selectedString = variable;
         }
 
-        return new(selected, selectedString);
+        return (selected, selectedString);
     }
 }
