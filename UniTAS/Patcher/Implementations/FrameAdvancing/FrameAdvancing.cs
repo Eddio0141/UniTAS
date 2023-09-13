@@ -65,8 +65,8 @@ public partial class FrameAdvancing : IFrameAdvancing, IOnFixedUpdateUncondition
         var frameAdvanceBind = binds.Create(new("FrameAdvance", KeyCode.Slash));
         var frameAdvanceToggleBind = binds.Create(new("FrameAdvanceToggle", KeyCode.Period));
         // TODO this needs to be customizable
-        globalHotkey.AddGlobalHotkey(new(frameAdvanceBind, () => FrameAdvance(1, FrameAdvanceMode.Update)));
-        globalHotkey.AddGlobalHotkey(new(frameAdvanceToggleBind, TogglePause));
+        // globalHotkey.AddGlobalHotkey(new(frameAdvanceBind, () => FrameAdvance(1, FrameAdvanceMode.Update)));
+        // globalHotkey.AddGlobalHotkey(new(frameAdvanceToggleBind, TogglePause));
 
         _monoBehaviourController = monoBehaviourController;
         _syncFixedUpdate = syncFixedUpdate;
