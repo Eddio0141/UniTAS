@@ -145,13 +145,12 @@ public class RuntimeUnitTest
         processor.Test<RuntimeTests>();
 
         // normal tests should be all finished (and the skipped coroutine test)
-        Assert.Equal(RuntimeTestsUtils.NormalTestCount + RuntimeTestsUtils.SkippedCoroutineTestCount,
-            normalTestRunCount);
-        Assert.Equal(normalTestRunCount, normalTestEndCount + RuntimeTestsUtils.SkippedCoroutineTestCount);
+        Assert.Equal(RuntimeTestsUtils.NormalTestCount, normalTestRunCount);
+        Assert.Equal(normalTestRunCount, normalTestEndCount);
 
         // but not coroutines
         Assert.Equal(1, coroutineTestEndCount);
-        Assert.Equal(0, coroutineTestRunCount);
+        Assert.Equal(1, coroutineTestRunCount);
 
         for (var i = 0; i < 2; i++)
         {

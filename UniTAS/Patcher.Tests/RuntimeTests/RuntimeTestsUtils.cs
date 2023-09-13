@@ -4,40 +4,40 @@ public static class RuntimeTestsUtils
 {
     private static readonly string[] NormalTests =
     {
-        nameof(RuntimeTests.RuntimeTestMethod),
-        nameof(RuntimeTests.RuntimeTestFail),
-        nameof(RuntimeTests.SkipTest),
-        nameof(RuntimeTests.WrongReturnType),
-        nameof(RuntimeTests.GameRestartValid)
+        $"RuntimeTests.{nameof(RuntimeTests.GameRestartValid)}",
+        $"RuntimeTests.{nameof(RuntimeTests.RuntimeTestMethod)}",
+        $"RuntimeTests.{nameof(RuntimeTests.RuntimeTestFail)}",
+        $"RuntimeTests.{nameof(RuntimeTests.SkipTest)}",
+        $"RuntimeTests.{nameof(RuntimeTests.WrongReturnType)}"
     };
 
     public static readonly string[] CoroutineTests =
     {
-        nameof(RuntimeTests.SkipAndCoroutineTest),
-        nameof(RuntimeTests.CoroutineTest),
-        nameof(RuntimeTests.CoroutineTest2),
-        nameof(RuntimeTests.CoroutineTestFail)
+        $"RuntimeTests.{nameof(RuntimeTests.SkipAndCoroutineTest)}",
+        $"RuntimeTests.{nameof(RuntimeTests.CoroutineTest)}",
+        $"RuntimeTests.{nameof(RuntimeTests.CoroutineTest2)}",
+        $"RuntimeTests.{nameof(RuntimeTests.CoroutineTestFail)}"
     };
 
     private static readonly string[] FailTests =
     {
-        nameof(RuntimeTests.RuntimeTestFail),
-        nameof(RuntimeTests.CoroutineTestFail)
+        $"RuntimeTests.{nameof(RuntimeTests.RuntimeTestFail)}",
+        $"RuntimeTests.{nameof(RuntimeTests.CoroutineTestFail)}"
     };
 
     private static readonly string[] SkipNormalTests =
     {
-        nameof(RuntimeTests.SkipTest)
+        $"RuntimeTests.{nameof(RuntimeTests.SkipTest)}"
     };
 
     private static readonly string[] SkippedCoroutineTests =
     {
-        nameof(RuntimeTests.SkipAndCoroutineTest)
+        $"RuntimeTests.{nameof(RuntimeTests.SkipAndCoroutineTest)}"
     };
 
     private static readonly string[] FailedCoroutineTests =
     {
-        nameof(RuntimeTests.CoroutineTestFail)
+        $"RuntimeTests.{nameof(RuntimeTests.CoroutineTestFail)}"
     };
 
     public static int NormalTestCount { get; } = NormalTests.Length;
