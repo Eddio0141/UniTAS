@@ -66,7 +66,7 @@ public class MonoBehaviourPatch : PreloadPatcher
     private const string RENDER_TEXTURE = "UnityEngine.RenderTexture";
     private const string BIT_STREAM = "UnityEngine.BitStream";
 
-    private static readonly KeyValuePair<string, MethodBase>[] EventMethods =
+    private static readonly (string, MethodBase)[] EventMethods =
     {
         new("Awake",
             AccessTools.Method(typeof(UnityEventInvokers), nameof(UnityEventInvokers.InvokeAwake))),
@@ -86,7 +86,7 @@ public class MonoBehaviourPatch : PreloadPatcher
     // event methods, with list of arg types
     // arg types in mono beh are always positional, so we can use this to determine which method to call
     // args are optionally available in the event method
-    private static readonly KeyValuePair<string, string[]>[] PauseEventMethods =
+    private static readonly (string, string[])[] PauseEventMethods =
     {
         new("Awake", new string[0]),
         new("FixedUpdate", new string[0]),
@@ -188,7 +188,7 @@ public class MonoBehaviourPatch : PreloadPatcher
             // method invoke pause
             foreach (var eventMethodPair in PauseEventMethods)
             {
-                var eventMethodName = eventMethodPair.Key;
+                var (eventMethodName, eventMethodArgs) = eventMethodPair;
 
                 // try finding method with no parameters
                 var eventMethodsMatch = type.GetMethods().Where(x => x.Name == eventMethodName).ToList();
@@ -199,8 +199,6 @@ public class MonoBehaviourPatch : PreloadPatcher
                 // it doesn't matter if the method only has part of the parameters, it just matters it comes in the right order
                 if (foundMethod == null)
                 {
-                    var eventMethodArgs = eventMethodPair.Value;
-
                     for (var i = 0; i < eventMethodArgs.Length; i++)
                     {
                         var parameterTypes = eventMethodArgs.Take(i + 1).ToArray();
@@ -250,7 +248,7 @@ public class MonoBehaviourPatch : PreloadPatcher
             // event methods invoke
             foreach (var eventMethodPair in EventMethods)
             {
-                InvokeUnityEventMethod(type, eventMethodPair.Key, assembly, eventMethodPair.Value);
+                InvokeUnityEventMethod(type, eventMethodPair.Item1, assembly, eventMethodPair.Item2);
             }
 
             // update skip check and related methods

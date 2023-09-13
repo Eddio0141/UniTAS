@@ -175,7 +175,7 @@ public static class PatchMethods
     private static readonly List<Type> CctorInvokeStack = new();
 
     // this is how we chain call static ctors, parent and child
-    private static readonly Dictionary<Type, List<KeyValuePair<Type, MethodBase>>> CctorDependency = new();
+    private static readonly Dictionary<Type, List<(Type, MethodBase)>> CctorDependency = new();
 
     private static readonly List<Type> PendingIgnoreAddingInvokeList = new();
 
@@ -254,14 +254,13 @@ public static class PatchMethods
 
         if (!IsNotFirstInvoke(type)) return;
 
-        if (!CctorDependency.TryGetValue(type, out var dependencyKeyValuePair)) return;
+        if (!CctorDependency.TryGetValue(type, out var dependencies)) return;
 
         StaticLogger.Log.LogDebug(
-            $"Found dependencies for static ctor type: {type.FullName}, dependency count: {dependencyKeyValuePair.Count}");
-        foreach (var dependencyPair in dependencyKeyValuePair)
+            $"Found dependencies for static ctor type: {type.FullName}, dependency count: {dependencies.Count}");
+        foreach (var (cctorType, dependency) in dependencies)
         {
-            var dependency = dependencyPair.Value;
-            StaticLogger.Log.LogDebug($"Invoking cctor of {dependencyPair.Key.FullName ?? "unknown type"}");
+            StaticLogger.Log.LogDebug($"Invoking cctor of {cctorType.FullName ?? "unknown type"}");
             dependency.Invoke(null, null);
         }
     }
@@ -275,7 +274,7 @@ public static class PatchMethods
         {
             foreach (var childPair in pair.Value)
             {
-                if (childPair.Key == type)
+                if (childPair.Item1 == type)
                     return true;
             }
         }
