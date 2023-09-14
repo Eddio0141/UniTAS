@@ -13,6 +13,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed TAS rendering popping up command prompt probably
 
+### Compatibility
+
+- Fixed accidentally skipping over static constructors
+- Fixed accidentally skipping over removing some readonly fields
+- Fixed crash when trying to remove readonly fields
+
+## Changed
+
+- Slight performance increase in patching static constructors
+
 # [v0.5.1] - 2023-09-13
 
 ## Fixed
