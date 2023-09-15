@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Fixed
 
+### Games
+
+- Fixed itch.io Jaded Combat crashing on file selection
+
 ### General
 
 - Fixed TAS rendering popping up command prompt probably
