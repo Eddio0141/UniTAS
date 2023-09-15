@@ -13,6 +13,7 @@ using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Interfaces;
 using UniTAS.Patcher.ManualServices.Trackers;
 using UniTAS.Patcher.Utils;
+using FieldAttributes = Mono.Cecil.FieldAttributes;
 
 namespace UniTAS.Patcher.Patches.Preloader;
 
@@ -29,22 +30,16 @@ public class StaticCtorHeaders : PreloadPatcher
 
     public override void Patch(ref AssemblyDefinition assembly)
     {
-        // get all types in assembly that has static fields or a static ctor
-        var types = assembly.Modules.SelectMany(m => m.GetAllTypes())
-            .Where(t => t.HasFields && t.Fields.Any(f => f.IsStatic && !f.IsLiteral) ||
-                        t.HasMethods && t.Methods.Any(m => m.IsStatic && m.IsConstructor));
-
         StaticLogger.Log.LogDebug("Patching static ctors");
-        foreach (var type in types)
+
+        foreach (var type in assembly.Modules.SelectMany(module => module.GetAllTypes()))
         {
             // remove readonly from all static fields
             StaticLogger.Log.LogDebug($"Removing readonly from static fields in {type.FullName}");
-            RemoveReadOnly(type);
-            // find static ctor
-            ILCodeUtils.AddCctorIfMissing(assembly, type);
-            var staticCtor = type.Methods.First(m => m.IsConstructor && m.IsStatic);
+            RemoveReadOnly(type, assembly.Name.Name == "AstarPathfindingProject");
 
             StaticLogger.Log.LogDebug($"Patching static ctor of {type.FullName}");
+            var staticCtor = ILCodeUtils.FindOrAddCctor(assembly, type);
             PatchStaticCtor(assembly, staticCtor, type);
         }
     }
@@ -52,11 +47,16 @@ public class StaticCtorHeaders : PreloadPatcher
     /// <summary>
     /// Removes "readonly" from all fields
     /// </summary>
-    private static void RemoveReadOnly(TypeDefinition type)
+    private static void RemoveReadOnly(TypeDefinition type, bool a)
     {
         foreach (var field in type.Fields)
         {
-            field.Attributes &= ~Mono.Cecil.FieldAttributes.InitOnly;
+            if (field.IsLiteral || !field.IsStatic) continue;
+
+            StaticLogger.Trace($"Removing readonly from field {field.Name}");
+            StaticLogger.Trace($"Before attributes: {field.Attributes}");
+            field.Attributes &= ~FieldAttributes.InitOnly;
+            StaticLogger.Trace($"After attributes: {field.Attributes}");
         }
     }
 

@@ -14,9 +14,7 @@ public static class ILCodeUtils
     {
         if (type == null) return;
 
-        AddCctorIfMissing(assembly, type);
-        var staticCtor = type.Methods.First(m => m.IsConstructor && m.IsStatic);
-
+        var staticCtor = FindOrAddCctor(assembly, type);
         MethodInvokeHook(assembly, staticCtor, method);
     }
 
@@ -39,10 +37,10 @@ public static class ILCodeUtils
             $"Added invoke hook to method {method.Name} of {methodDefinition.DeclaringType.FullName} invoking {method.DeclaringType?.FullName ?? "unknown"}.{method.Name}");
     }
 
-    public static void AddCctorIfMissing(AssemblyDefinition assembly, TypeDefinition type)
+    public static MethodDefinition FindOrAddCctor(AssemblyDefinition assembly, TypeDefinition type)
     {
         var staticCtor = type.Methods.FirstOrDefault(m => m.IsConstructor && m.IsStatic);
-        if (staticCtor != null) return;
+        if (staticCtor != null) return staticCtor;
 
         StaticLogger.Log.LogDebug($"Adding cctor to {type.FullName}");
         staticCtor = new(".cctor",
@@ -53,6 +51,7 @@ public static class ILCodeUtils
         type.Methods.Add(staticCtor);
         var il = staticCtor.Body.GetILProcessor();
         il.Append(il.Create(OpCodes.Ret));
+        return staticCtor;
     }
 
     public static void RedirectJumpsToNewDest(Collection<Instruction> instructions, Instruction oldDest,
