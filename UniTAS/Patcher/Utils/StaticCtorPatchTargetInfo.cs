@@ -13,14 +13,7 @@ public static class StaticCtorPatchTargetInfo
         "mscorlib",
         "Mono.*",
         "Mono",
-        "MonoMod.*",
-        "BepInEx.*",
-        "BepInEx",
-        "MonoMod.*",
-        "0Harmony",
-        "HarmonyXInterop",
-        "StructureMap",
-        "Newtonsoft.Json"
+        "MonoMod.*"
     };
 
     public static string[] AssemblyIncludeRaw { get; } =
