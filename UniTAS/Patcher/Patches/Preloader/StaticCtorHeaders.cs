@@ -36,7 +36,7 @@ public class StaticCtorHeaders : PreloadPatcher
         {
             // remove readonly from all static fields
             StaticLogger.Log.LogDebug($"Removing readonly from static fields in {type.FullName}");
-            RemoveReadOnly(type, assembly.Name.Name == "AstarPathfindingProject");
+            RemoveReadOnly(type);
 
             StaticLogger.Log.LogDebug($"Patching static ctor of {type.FullName}");
             var staticCtor = ILCodeUtils.FindOrAddCctor(assembly, type);
@@ -47,7 +47,7 @@ public class StaticCtorHeaders : PreloadPatcher
     /// <summary>
     /// Removes "readonly" from all fields
     /// </summary>
-    private static void RemoveReadOnly(TypeDefinition type, bool a)
+    private static void RemoveReadOnly(TypeDefinition type)
     {
         foreach (var field in type.Fields)
         {
