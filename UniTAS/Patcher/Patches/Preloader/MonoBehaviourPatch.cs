@@ -245,12 +245,6 @@ public class MonoBehaviourPatch : PreloadPatcher
                 foundMethod.Body.OptimizeMacros();
             }
 
-            // event methods invoke
-            foreach (var eventMethodPair in EventMethods)
-            {
-                InvokeUnityEventMethod(type, eventMethodPair.Item1, assembly, eventMethodPair.Item2);
-            }
-
             // update skip check and related methods
             var updateMethods = new[]
             {
@@ -264,6 +258,12 @@ public class MonoBehaviourPatch : PreloadPatcher
             }
 
             StaticLogger.Log.LogDebug("Patched Update related methods for skipping execution");
+
+            // event methods invoke
+            foreach (var eventMethodPair in EventMethods)
+            {
+                InvokeUnityEventMethod(type, eventMethodPair.Item1, assembly, eventMethodPair.Item2);
+            }
         }
     }
 
