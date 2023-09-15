@@ -1,3 +1,4 @@
+using System;
 using Mono.Cecil.Cil;
 using UniTAS.Patcher.Utils;
 
@@ -11,11 +12,8 @@ public static class ILProcessorExtensions
     /// - Jump targets of any instructions that jump to the replaced instruction.<br/>
     /// - Exception range fixing where if the replaced instruction is in a try block, the new instruction will be added to the try block and vice versa.<br/>
     /// </summary>
-    /// <param name="ilProcessor"></param>
-    /// <param name="replacingInstruction"></param>
-    /// <param name="newInstruction"></param>
     public static void InsertBeforeInstructionReplace(this ILProcessor ilProcessor, Instruction replacingInstruction,
-        Instruction newInstruction)
+        Instruction newInstruction, InstructionReplaceFixType fixType = InstructionReplaceFixType.All)
     {
         if (ilProcessor.Body == null)
         {
@@ -35,28 +33,34 @@ public static class ILProcessorExtensions
         var instructions = ilProcessor.Body.Instructions;
 
         // fix jump targets
-        foreach (var instruction in instructions)
+        if ((fixType & InstructionReplaceFixType.JumpTargets) != 0)
         {
-            if (instruction.Operand == replacingInstruction)
+            foreach (var instruction in instructions)
             {
-                instruction.Operand = newInstruction;
-                continue;
-            }
+                if (instruction == newInstruction) continue;
 
-            // switch
-            if (instruction.Operand is not Instruction[] instructionsArray) continue;
-
-            for (var i = 0; i < instructionsArray.Length; i++)
-            {
-                if (instructionsArray[i] == replacingInstruction)
+                if (instruction.Operand == replacingInstruction)
                 {
-                    instructionsArray[i] = newInstruction;
+                    instruction.Operand = newInstruction;
+                    continue;
+                }
+
+                // switch
+                if (instruction.Operand is not Instruction[] instructionsArray) continue;
+
+                for (var i = 0; i < instructionsArray.Length; i++)
+                {
+                    if (instructionsArray[i] == replacingInstruction)
+                    {
+                        instructionsArray[i] = newInstruction;
+                    }
                 }
             }
         }
 
         // fix exception ranges
-        if (!ilProcessor.Body.HasExceptionHandlers) return;
+        if ((fixType & InstructionReplaceFixType.ExceptionRanges) == 0 ||
+            !ilProcessor.Body.HasExceptionHandlers) return;
 
         foreach (var exceptionHandler in ilProcessor.Body.ExceptionHandlers)
         {
@@ -89,4 +93,12 @@ public static class ILProcessorExtensions
             }
         }
     }
+}
+
+[Flags]
+public enum InstructionReplaceFixType
+{
+    JumpTargets = 1,
+    ExceptionRanges = 2,
+    All = JumpTargets | ExceptionRanges
 }
