@@ -90,7 +90,8 @@ public class StaticCtorHeaders : PreloadPatcher
 
         // insert call to our method at the start of the static ctor
         var startRefInstruction = ilProcessor.Create(OpCodes.Call, patchMethodStartRef);
-        ilProcessor.InsertBefore(first, startRefInstruction);
+        ilProcessor.InsertBeforeInstructionReplace(first, startRefInstruction,
+            InstructionReplaceFixType.ExceptionRanges);
         insertedInstructions.Add(startRefInstruction);
         StaticLogger.Log.LogDebug($"Patched start of static ctor of {type.FullName}");
 
@@ -98,28 +99,27 @@ public class StaticCtorHeaders : PreloadPatcher
 
         for (var i = 0; i < instructions.Count; i++)
         {
-            var instruction = instructions[i];
-            if (instruction.OpCode != OpCodes.Ret) continue;
+            var retInstruction = instructions[i];
+            if (retInstruction.OpCode != OpCodes.Ret) continue;
+
             var endRefInstruction = ilProcessor.Create(OpCodes.Call, patchMethodEndRef);
-            ilProcessor.InsertBefore(instruction, endRefInstruction);
+            ilProcessor.InsertBeforeInstructionReplace(retInstruction, endRefInstruction);
             insertedInstructions.Add(endRefInstruction);
+
             StaticLogger.Log.LogDebug(
-                $"Found return in static ctor of {type.FullName}, instruction: {instruction}, patched");
-            ILCodeUtils.RedirectJumpsToNewDest(ilProcessor.Body.Instructions, instruction, endRefInstruction);
+                $"Found return in static ctor of {type.FullName}, instruction: {retInstruction}, patched");
+
             i++;
             insertCount++;
         }
 
         if (insertCount == 0)
         {
-            var last = instructions.Last();
             var endRefInstruction = ilProcessor.Create(OpCodes.Call, patchMethodEndRef);
-            ilProcessor.InsertAfter(last, endRefInstruction);
+            ilProcessor.InsertBeforeInstructionReplace(instructions.Last(), endRefInstruction);
             insertedInstructions.Add(endRefInstruction);
             StaticLogger.Log.LogDebug(
                 $"Found no returns in static ctor of {type.FullName}, force patching at last instruction");
-
-            ILCodeUtils.RedirectJumpsToNewDest(ilProcessor.Body.Instructions, last, endRefInstruction);
         }
 
         // i gotta find a nice place to insert call to CheckAndInvokeDependency
@@ -146,14 +146,11 @@ public class StaticCtorHeaders : PreloadPatcher
                 // ok we found it, insert call to CheckAndInvokeDependency
                 StaticLogger.Log.LogDebug("Before insert");
                 var dependencyRefInstruction = ilProcessor.Create(OpCodes.Call, patchMethodDependencyRef);
-                ilProcessor.InsertBefore(instruction, dependencyRefInstruction);
+                ilProcessor.InsertBeforeInstructionReplace(instruction, dependencyRefInstruction);
                 insertedDependencyInvoke = true;
 
                 StaticLogger.Log.LogDebug(
                     $"Found external class reference in static ctor of {type.FullName}, instruction: {instruction}, patched");
-
-                ILCodeUtils.RedirectJumpsToNewDest(ilProcessor.Body.Instructions, instruction,
-                    dependencyRefInstruction);
 
                 break;
             }

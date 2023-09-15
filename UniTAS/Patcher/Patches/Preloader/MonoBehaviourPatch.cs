@@ -219,8 +219,10 @@ public class MonoBehaviourPatch : PreloadPatcher
                 var firstInstruction = il.Body.Instructions.First();
 
                 // return early check
-                il.InsertBefore(firstInstruction, il.Create(OpCodes.Call, pauseExecutionReference));
-                il.InsertBefore(firstInstruction, il.Create(OpCodes.Brfalse_S, firstInstruction));
+                il.InsertBeforeInstructionReplace(firstInstruction, il.Create(OpCodes.Call, pauseExecutionReference),
+                    InstructionReplaceFixType.ExceptionRanges);
+                il.InsertBeforeInstructionReplace(firstInstruction, il.Create(OpCodes.Brfalse_S, firstInstruction),
+                    InstructionReplaceFixType.ExceptionRanges);
 
                 // if the return type isn't void, we need to return a default value
                 if (foundMethod.ReturnType != assembly.MainModule.TypeSystem.Void)
@@ -230,17 +232,23 @@ public class MonoBehaviourPatch : PreloadPatcher
                     {
                         var local = new VariableDefinition(foundMethod.ReturnType);
                         il.Body.Variables.Add(local);
-                        il.InsertBefore(firstInstruction, il.Create(OpCodes.Ldloca_S, local));
-                        il.InsertBefore(firstInstruction, il.Create(OpCodes.Initobj, foundMethod.ReturnType));
-                        il.InsertBefore(firstInstruction, il.Create(OpCodes.Ldloc_S, local));
+                        il.InsertBeforeInstructionReplace(firstInstruction, il.Create(OpCodes.Ldloca_S, local),
+                            InstructionReplaceFixType.ExceptionRanges);
+                        il.InsertBeforeInstructionReplace(firstInstruction,
+                            il.Create(OpCodes.Initobj, foundMethod.ReturnType),
+                            InstructionReplaceFixType.ExceptionRanges);
+                        il.InsertBeforeInstructionReplace(firstInstruction, il.Create(OpCodes.Ldloc_S, local),
+                            InstructionReplaceFixType.ExceptionRanges);
                     }
                     else
                     {
-                        il.InsertBefore(firstInstruction, il.Create(OpCodes.Ldnull));
+                        il.InsertBeforeInstructionReplace(firstInstruction, il.Create(OpCodes.Ldnull),
+                            InstructionReplaceFixType.ExceptionRanges);
                     }
                 }
 
-                il.InsertBefore(firstInstruction, il.Create(OpCodes.Ret));
+                il.InsertBeforeInstructionReplace(firstInstruction, il.Create(OpCodes.Ret),
+                    InstructionReplaceFixType.ExceptionRanges);
 
                 foundMethod.Body.OptimizeMacros();
             }
@@ -276,17 +284,20 @@ public class MonoBehaviourPatch : PreloadPatcher
         var updateFirstInstruction = updateIl.Body.Instructions.First();
 
         // return early check
-        updateIl.InsertBefore(updateFirstInstruction, updateIl.Create(OpCodes.Call, pausedUpdateReference));
-        updateIl.InsertBefore(updateFirstInstruction,
-            updateIl.Create(OpCodes.Brfalse_S, updateFirstInstruction));
+        updateIl.InsertBeforeInstructionReplace(updateFirstInstruction,
+            updateIl.Create(OpCodes.Call, pausedUpdateReference), InstructionReplaceFixType.ExceptionRanges);
+        updateIl.InsertBeforeInstructionReplace(updateFirstInstruction,
+            updateIl.Create(OpCodes.Brfalse_S, updateFirstInstruction), InstructionReplaceFixType.ExceptionRanges);
 
         // if the return type isn't void, we need to return a default value
         if (skipCheckMethod.ReturnType != assembly.MainModule.TypeSystem.Void)
         {
-            updateIl.InsertBefore(updateFirstInstruction, updateIl.Create(OpCodes.Ldnull));
+            updateIl.InsertBeforeInstructionReplace(updateFirstInstruction, updateIl.Create(OpCodes.Ldnull),
+                InstructionReplaceFixType.ExceptionRanges);
         }
 
-        updateIl.InsertBefore(updateFirstInstruction, updateIl.Create(OpCodes.Ret));
+        updateIl.InsertBeforeInstructionReplace(updateFirstInstruction, updateIl.Create(OpCodes.Ret),
+            InstructionReplaceFixType.ExceptionRanges);
 
         skipCheckMethod.Body.OptimizeMacros();
     }
@@ -301,7 +312,9 @@ public class MonoBehaviourPatch : PreloadPatcher
         var ilProcessor = method.Body.GetILProcessor();
         var reference = assembly.MainModule.ImportReference(eventInvoker);
 
-        ilProcessor.InsertBefore(method.Body.Instructions.First(), ilProcessor.Create(OpCodes.Call, reference));
+        // shouldn't be referenced by anything as it gets invoked once per type
+        ilProcessor.InsertBeforeInstructionReplace(method.Body.Instructions.First(),
+            ilProcessor.Create(OpCodes.Call, reference), InstructionReplaceFixType.ExceptionRanges);
 
         method.Body.OptimizeMacros();
 
