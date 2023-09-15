@@ -41,8 +41,9 @@ public class StaticCtorHeaders : PreloadPatcher
             StaticLogger.Log.LogDebug($"Removing readonly from static fields in {type.FullName}");
             RemoveReadOnly(type);
 
-            // ignore enums
-            if (type.IsEnum) continue;
+            // why track for cctor when there is none
+            var staticCtor = type.Methods.FirstOrDefault(m => m.IsConstructor && m.IsStatic);
+            if (staticCtor == null) continue;
 
             StaticLogger.Log.LogDebug($"Patching static ctor of {type.FullName}");
             var staticCtor = ILCodeUtils.FindOrAddCctor(assembly, type);
