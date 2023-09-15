@@ -290,10 +290,28 @@ public class MonoBehaviourPatch : PreloadPatcher
             updateIl.Create(OpCodes.Brfalse_S, updateFirstInstruction), InstructionReplaceFixType.ExceptionRanges);
 
         // if the return type isn't void, we need to return a default value
-        if (skipCheckMethod.ReturnType != assembly.MainModule.TypeSystem.Void)
+        var skipCheckMethodReturn = skipCheckMethod.ReturnType;
+        if (skipCheckMethodReturn != assembly.MainModule.TypeSystem.Void)
         {
-            updateIl.InsertBeforeInstructionReplace(updateFirstInstruction, updateIl.Create(OpCodes.Ldnull),
-                InstructionReplaceFixType.ExceptionRanges);
+            // if value type, we need to return a default value
+            if (skipCheckMethodReturn.IsValueType)
+            {
+                var local = new VariableDefinition(skipCheckMethodReturn);
+                updateIl.Body.Variables.Add(local);
+                updateIl.InsertBeforeInstructionReplace(updateFirstInstruction,
+                    updateIl.Create(OpCodes.Ldloca_S, local),
+                    InstructionReplaceFixType.ExceptionRanges);
+                updateIl.InsertBeforeInstructionReplace(updateFirstInstruction,
+                    updateIl.Create(OpCodes.Initobj, skipCheckMethodReturn),
+                    InstructionReplaceFixType.ExceptionRanges);
+                updateIl.InsertBeforeInstructionReplace(updateFirstInstruction, updateIl.Create(OpCodes.Ldloc_S, local),
+                    InstructionReplaceFixType.ExceptionRanges);
+            }
+            else
+            {
+                updateIl.InsertBeforeInstructionReplace(updateFirstInstruction, updateIl.Create(OpCodes.Ldnull),
+                    InstructionReplaceFixType.ExceptionRanges);
+            }
         }
 
         updateIl.InsertBeforeInstructionReplace(updateFirstInstruction, updateIl.Create(OpCodes.Ret),
