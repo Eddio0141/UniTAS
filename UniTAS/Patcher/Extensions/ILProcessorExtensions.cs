@@ -1,4 +1,5 @@
 using Mono.Cecil.Cil;
+using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Extensions;
 
@@ -16,7 +17,17 @@ public static class ILProcessorExtensions
     public static void InsertBeforeInstructionReplace(this ILProcessor ilProcessor, Instruction replacingInstruction,
         Instruction newInstruction)
     {
-        if (replacingInstruction == null || newInstruction == null) return;
+        if (ilProcessor.Body == null)
+        {
+            StaticLogger.Log.LogWarning("Body is null, skipping");
+            return;
+        }
+
+        if (replacingInstruction == null || newInstruction == null)
+        {
+            StaticLogger.Log.LogWarning("Instruction is null, skipping");
+            return;
+        }
 
         // insert
         ilProcessor.InsertBefore(replacingInstruction, newInstruction);
