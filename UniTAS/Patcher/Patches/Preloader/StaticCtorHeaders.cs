@@ -34,6 +34,9 @@ public class StaticCtorHeaders : PreloadPatcher
 
         foreach (var type in assembly.Modules.SelectMany(module => module.GetAllTypes()))
         {
+            // ignore enums
+            if (type.IsEnum) continue;
+
             // remove readonly from all static fields
             StaticLogger.Log.LogDebug($"Removing readonly from static fields in {type.FullName}");
             RemoveReadOnly(type);
