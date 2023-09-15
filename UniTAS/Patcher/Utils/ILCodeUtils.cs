@@ -37,7 +37,7 @@ public static class ILCodeUtils
             $"Added invoke hook to method {method.Name} of {methodDefinition.DeclaringType.FullName} invoking {method.DeclaringType?.FullName ?? "unknown"}.{method.Name}");
     }
 
-    public static MethodDefinition FindOrAddCctor(AssemblyDefinition assembly, TypeDefinition type)
+    private static MethodDefinition FindOrAddCctor(AssemblyDefinition assembly, TypeDefinition type)
     {
         var staticCtor = type.Methods.FirstOrDefault(m => m.IsConstructor && m.IsStatic);
         if (staticCtor != null) return staticCtor;
