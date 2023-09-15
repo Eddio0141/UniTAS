@@ -46,7 +46,6 @@ public class StaticCtorHeaders : PreloadPatcher
             if (staticCtor == null) continue;
 
             StaticLogger.Log.LogDebug($"Patching static ctor of {type.FullName}");
-            var staticCtor = ILCodeUtils.FindOrAddCctor(assembly, type);
             PatchStaticCtor(assembly, staticCtor, type);
         }
     }
