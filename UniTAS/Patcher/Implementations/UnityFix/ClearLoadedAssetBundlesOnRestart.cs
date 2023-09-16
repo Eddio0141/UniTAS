@@ -17,7 +17,6 @@ public class ClearLoadedAssetBundlesOnRestart : IAssetBundleTracker, IOnPreGameR
         _trackedAssetBundles.Add(assetBundle);
     }
 
-
     public void NewInstance(AssetBundleCreateRequest assetBundleCreateRequest)
     {
         _trackedAssetBundleCreateRequests.Add(assetBundleCreateRequest);
@@ -33,7 +32,7 @@ public class ClearLoadedAssetBundlesOnRestart : IAssetBundleTracker, IOnPreGameR
 
         foreach (var assetBundleCreateRequest in _trackedAssetBundleCreateRequests)
         {
-            if (assetBundleCreateRequest == null || assetBundleCreateRequest.assetBundle == null) continue;
+            if (assetBundleCreateRequest?.assetBundle == null) continue;
             assetBundleCreateRequest.assetBundle.Unload(true);
         }
 
