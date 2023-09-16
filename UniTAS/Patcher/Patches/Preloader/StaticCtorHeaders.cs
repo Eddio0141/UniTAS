@@ -137,7 +137,7 @@ public class StaticCtorHeaders : PreloadPatcher
             // don't bother with mscorlib
             if (Equals(operand.GetType().Assembly, typeof(string).Assembly)) continue;
 
-            if (operand is VariableDefinition) continue;
+            if (operand is VariableDefinition or Instruction) continue;
 
             if (operand is MemberReference m)
             {
