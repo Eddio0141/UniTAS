@@ -19,6 +19,8 @@ public static class StaticCtorPatchTargetInfo
     public static string[] AssemblyIncludeRaw { get; } =
     {
         "Unity.InputSystem",
-        "UnityEngine.InputModule"
+        "UnityEngine.InputModule",
+        // high level API that manages assets
+        "Unity.ResourceManager"
     };
 }
