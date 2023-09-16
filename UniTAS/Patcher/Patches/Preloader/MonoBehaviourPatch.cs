@@ -21,7 +21,7 @@ public class MonoBehaviourPatch : PreloadPatcher
     {
         var fileWithoutExtension = Path.GetFileNameWithoutExtension(x);
         return fileWithoutExtension == null ||
-               StaticCtorPatchTargetInfo.AssemblyIncludeRaw.Any(a => fileWithoutExtension.Like(a)) ||
+               // StaticCtorPatchTargetInfo.AssemblyIncludeRaw.Any(a => fileWithoutExtension.Like(a)) ||
                !StaticCtorPatchTargetInfo.AssemblyExclusionsRaw.Any(a => fileWithoutExtension.Like(a));
     });
 
