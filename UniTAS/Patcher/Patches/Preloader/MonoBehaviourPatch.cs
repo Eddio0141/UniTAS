@@ -185,7 +185,7 @@ public class MonoBehaviourPatch : PreloadPatcher
 
                 if (foundMethod is not { HasBody: true }) continue;
 
-                StaticLogger.Log.LogDebug($"Patching method for pausing execution {foundMethod.FullName}");
+                StaticLogger.Trace($"Patching method for pausing execution {foundMethod.FullName}");
 
                 foundMethod.Body.SimplifyMacros();
                 var il = foundMethod.Body.GetILProcessor();
@@ -238,7 +238,7 @@ public class MonoBehaviourPatch : PreloadPatcher
                 UpdateEarlyReturn(updateMethod, assembly, pausedUpdateReference);
             }
 
-            StaticLogger.Log.LogDebug("Patched Update related methods for skipping execution");
+            StaticLogger.Trace("Patched Update related methods for skipping execution");
 
             // event methods invoke
             foreach (var eventMethodPair in EventMethods)
@@ -309,7 +309,7 @@ public class MonoBehaviourPatch : PreloadPatcher
 
         method.Body.OptimizeMacros();
 
-        StaticLogger.Log.LogDebug(
+        StaticLogger.Trace(
             $"Successfully patched {methodName} for type {type.FullName} for updates, invokes {eventInvoker.Name}");
     }
 }

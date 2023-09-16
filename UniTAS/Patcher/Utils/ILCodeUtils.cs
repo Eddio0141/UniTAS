@@ -42,7 +42,7 @@ public static class ILCodeUtils
 
         body.OptimizeMacros();
 
-        StaticLogger.Log.LogDebug(
+        StaticLogger.Trace(
             $"Added invoke hook to method {method.Name} of {methodDefinition.DeclaringType.FullName} invoking {method.DeclaringType?.FullName ?? "unknown"}.{method.Name}");
     }
 
@@ -51,7 +51,7 @@ public static class ILCodeUtils
         var staticCtor = type.Methods.FirstOrDefault(m => m.IsConstructor && m.IsStatic);
         if (staticCtor != null) return staticCtor;
 
-        StaticLogger.Log.LogDebug($"Adding cctor to {type.FullName}");
+        StaticLogger.Trace($"Adding cctor to {type.FullName}");
         staticCtor = new(".cctor",
             MethodAttributes.Static | MethodAttributes.Private | MethodAttributes.HideBySig
             | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName,
