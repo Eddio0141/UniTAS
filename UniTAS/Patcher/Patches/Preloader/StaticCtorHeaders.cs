@@ -41,10 +41,8 @@ public class StaticCtorHeaders : PreloadPatcher
             StaticLogger.Log.LogDebug($"Removing readonly from static fields in {type.FullName}");
             RemoveReadOnly(type);
 
-            // why track for cctor when there is none
-            var staticCtor = type.Methods.FirstOrDefault(m => m.IsConstructor && m.IsStatic);
-            if (staticCtor == null) continue;
-
+            // we need to add a static ctor as it will be responsible for tracking and resetting static fields
+            var staticCtor = ILCodeUtils.FindOrAddCctor(assembly, type);
             StaticLogger.Log.LogDebug($"Patching static ctor of {type.FullName}");
             PatchStaticCtor(assembly, staticCtor, type);
         }
