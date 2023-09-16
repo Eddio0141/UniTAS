@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Reflection;
 using HarmonyLib;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
+using UniTAS.Patcher.Interfaces.Events.SoftRestart;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
 using UniTAS.Patcher.Models.UnitySafeWrappers.SceneManagement;
 using UniTAS.Patcher.Services.Logging;
@@ -16,7 +17,7 @@ namespace UniTAS.Patcher.Services.UnityAsyncOperationTracker;
 // ReSharper disable once ClassNeverInstantiated.Global
 [Singleton]
 public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateRequestTracker, IAssetBundleRequestTracker,
-    IOnLastUpdateUnconditional, IAsyncOperationIsInvokingOnComplete
+    IOnLastUpdateUnconditional, IAsyncOperationIsInvokingOnComplete, IOnPreGameRestart
 {
     private readonly List<AsyncSceneLoadData> _asyncLoads = new();
     private readonly List<AsyncSceneLoadData> _asyncLoadStalls = new();
@@ -43,6 +44,14 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
     {
         _sceneWrapper = sceneWrapper;
         _logger = logger;
+    }
+
+    public void OnPreGameRestart()
+    {
+        _asyncLoads.Clear();
+        _asyncLoadStalls.Clear();
+        _assetBundleCreateRequests.Clear();
+        _assetBundleRequests.Clear();
     }
 
     public void OnLastUpdateUnconditional()
