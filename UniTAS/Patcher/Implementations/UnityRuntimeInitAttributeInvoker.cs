@@ -105,6 +105,7 @@ public class UnityRuntimeInitAttributeInvoker
 
         foreach (var method in _beforeSceneLoad)
         {
+            _logger.LogDebug($"Invoking BeforeSceneLoad method {method.DeclaringType?.Name}.{method.Name}");
             method.Invoke(null, null);
         }
     }
@@ -118,6 +119,7 @@ public class UnityRuntimeInitAttributeInvoker
 
         foreach (var method in _beforeStart)
         {
+            _logger.LogDebug($"Invoking BeforeStart method {method.DeclaringType?.Name}.{method.Name}");
             method.Invoke(null, null);
         }
     }
