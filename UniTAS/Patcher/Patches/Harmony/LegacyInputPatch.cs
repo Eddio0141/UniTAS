@@ -42,9 +42,6 @@ public class LegacyInputPatch
     private static readonly IResetInputAxesState ResetInputAxesState =
         ContainerStarter.Kernel.GetInstance<IResetInputAxesState>();
 
-    private static readonly IKeyFactory KeyFactory =
-        ContainerStarter.Kernel.GetInstance<IKeyFactory>();
-
     // gets called from GetKey
     [HarmonyPatch(typeof(Input), nameof(Input.GetKeyInt))]
     private class GetKeyInt
@@ -60,7 +57,7 @@ public class LegacyInputPatch
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
 
-            __result = KeyboardStateEnvLegacySystem.IsKeyHeld(KeyFactory.CreateKey(key));
+            __result = KeyboardStateEnvLegacySystem.IsKeyHeld(key);
             return false;
         }
 
@@ -86,13 +83,13 @@ public class LegacyInputPatch
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
 
             __result = false;
-            if (!LegacyInputSystemUtils.KeyStringToKeyCode(name, out var foundKeyCode))
+            var keyCode = InputSystemUtils.KeyCodeParse(name);
+            if (keyCode == null)
             {
-                __result = KeyboardStateEnvLegacySystem.IsKeyHeld(KeyFactory.CreateKey(name));
                 return false;
             }
 
-            __result = KeyboardStateEnvLegacySystem.IsKeyHeld(KeyFactory.CreateKey(foundKeyCode));
+            __result = KeyboardStateEnvLegacySystem.IsKeyHeld(keyCode.Value);
             return false;
         }
 
@@ -117,13 +114,14 @@ public class LegacyInputPatch
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
 
-            if (!LegacyInputSystemUtils.KeyStringToKeyCode(name, out var foundKeyCode))
+            __result = false;
+            var keyCode = InputSystemUtils.KeyCodeParse(name);
+            if (keyCode == null)
             {
-                __result = KeyboardStateEnvLegacySystem.IsKeyUp(KeyFactory.CreateKey(name));
                 return false;
             }
 
-            __result = KeyboardStateEnvLegacySystem.IsKeyUp(KeyFactory.CreateKey(foundKeyCode));
+            __result = KeyboardStateEnvLegacySystem.IsKeyUp(keyCode.Value);
             return false;
         }
 
@@ -148,7 +146,7 @@ public class LegacyInputPatch
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
 
-            __result = KeyboardStateEnvLegacySystem.IsKeyUp(KeyFactory.CreateKey(key));
+            __result = KeyboardStateEnvLegacySystem.IsKeyUp(key);
             return false;
         }
 
@@ -174,13 +172,13 @@ public class LegacyInputPatch
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
 
             __result = false;
-            if (!LegacyInputSystemUtils.KeyStringToKeyCode(name, out var foundKeyCode))
+            var keyCode = InputSystemUtils.KeyCodeParse(name);
+            if (keyCode == null)
             {
-                __result = KeyboardStateEnvLegacySystem.IsKeyDown(KeyFactory.CreateKey(name));
                 return false;
             }
 
-            __result = KeyboardStateEnvLegacySystem.IsKeyDown(KeyFactory.CreateKey(foundKeyCode));
+            __result = KeyboardStateEnvLegacySystem.IsKeyDown(keyCode.Value);
             return false;
         }
 
@@ -205,7 +203,7 @@ public class LegacyInputPatch
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
 
-            __result = KeyboardStateEnvLegacySystem.IsKeyDown(KeyFactory.CreateKey(key));
+            __result = KeyboardStateEnvLegacySystem.IsKeyDown(key);
             return false;
         }
 

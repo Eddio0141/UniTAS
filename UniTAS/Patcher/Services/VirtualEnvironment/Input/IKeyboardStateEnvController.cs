@@ -1,5 +1,3 @@
-using UniTAS.Patcher.Models.VirtualEnvironment;
-
 namespace UniTAS.Patcher.Services.VirtualEnvironment.Input;
 
 /// <summary>
@@ -7,7 +5,7 @@ namespace UniTAS.Patcher.Services.VirtualEnvironment.Input;
 /// </summary>
 public interface IKeyboardStateEnvController
 {
-    void Hold(Key key);
-    void Release(Key key);
+    void Hold(string key);
+    void Release(string key);
     void Clear();
 }

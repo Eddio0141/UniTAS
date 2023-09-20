@@ -31,9 +31,7 @@ public class KeyboardDeviceOverride : IInputOverrideDevice
         var state = new KeyboardState();
         foreach (var heldKey in _keyboardStateEnvNewSystem.HeldKeys)
         {
-            var heldKeyNewSystem = heldKey.NewInputSystemKey;
-            if (heldKeyNewSystem == null) continue;
-            state.Set(heldKeyNewSystem.Value, true);
+            state.Set(heldKey.Key, true);
         }
 
         InputSystem.QueueStateEvent(_keyboard, state);

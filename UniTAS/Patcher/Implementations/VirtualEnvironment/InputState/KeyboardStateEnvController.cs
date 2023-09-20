@@ -1,8 +1,8 @@
 using UniTAS.Patcher.Interfaces.DependencyInjection;
-using UniTAS.Patcher.Models.VirtualEnvironment;
 using UniTAS.Patcher.Services.VirtualEnvironment.Input;
 using UniTAS.Patcher.Services.VirtualEnvironment.Input.LegacyInputSystem;
 using UniTAS.Patcher.Services.VirtualEnvironment.Input.NewInputSystem;
+using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Implementations.VirtualEnvironment.InputState;
 
@@ -19,16 +19,34 @@ public class KeyboardStateEnvController : IKeyboardStateEnvController
         _keyboardStateEnvNewSystem = keyboardStateEnvNewSystem;
     }
 
-    public void Hold(Key key)
+    public void Hold(string key)
     {
-        _keyboardStateEnvLegacySystem.Hold(key);
-        _keyboardStateEnvNewSystem.Hold(key);
+        InputSystemUtils.KeyStringToKeys(key, out var keyCode, out var newKey);
+
+        if (keyCode.HasValue)
+        {
+            _keyboardStateEnvLegacySystem.Hold(keyCode.Value);
+        }
+
+        if (newKey.HasValue)
+        {
+            _keyboardStateEnvNewSystem.Hold(newKey.Value);
+        }
     }
 
-    public void Release(Key key)
+    public void Release(string key)
     {
-        _keyboardStateEnvLegacySystem.Release(key);
-        _keyboardStateEnvNewSystem.Release(key);
+        InputSystemUtils.KeyStringToKeys(key, out var keyCode, out var newKey);
+
+        if (keyCode.HasValue)
+        {
+            _keyboardStateEnvLegacySystem.Release(keyCode.Value);
+        }
+
+        if (newKey.HasValue)
+        {
+            _keyboardStateEnvNewSystem.Release(newKey.Value);
+        }
     }
 
     public void Clear()

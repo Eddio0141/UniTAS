@@ -1,12 +1,13 @@
 using System.Collections.Generic;
 using UniTAS.Patcher.Models.VirtualEnvironment;
+using UnityEngine.InputSystem;
 
 namespace UniTAS.Patcher.Services.VirtualEnvironment.Input.NewInputSystem;
 
 public interface IKeyboardStateEnvNewSystem
 {
-    void Hold(Key key);
-    void Release(Key key);
-    List<Key> HeldKeys { get; }
+    void Hold(Key keyCodeWrap);
+    void Release(Key keyCodeWrap);
+    List<NewKeyCodeWrap> HeldKeys { get; }
     void Clear();
 }
