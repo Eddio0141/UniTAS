@@ -10,7 +10,7 @@ using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 
-namespace UniTAS.Patcher.Implementations;
+namespace UniTAS.Patcher.Implementations.GUI;
 
 [Singleton]
 [ExcludeRegisterIfTesting]
