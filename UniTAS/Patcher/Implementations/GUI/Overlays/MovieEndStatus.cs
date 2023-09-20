@@ -8,7 +8,6 @@ using UnityEngine;
 namespace UniTAS.Patcher.Implementations.GUI.Overlays;
 
 [Singleton]
-[ForceInstantiate]
 [ExcludeRegisterIfTesting]
 public class MovieEndStatus : BuiltInOverlay, IOnMovieRunningStatusChange
 {
@@ -20,13 +19,13 @@ public class MovieEndStatus : BuiltInOverlay, IOnMovieRunningStatusChange
     }
 
     protected override AnchoredOffset DefaultOffset => new(1, 1, 0, 0);
-    protected override string ConfigValue => "MovieEndStatus";
+    protected override string ConfigName => "MovieEndStatus";
     protected override int DefaultFontSize => 20;
 
-    protected override void Update()
+    protected override string Update()
     {
         _messageDisplayLeft -= Time.deltaTime;
-        Text = _messageDisplayLeft <= 0 ? "" : "Movie End";
+        return _messageDisplayLeft <= 0 ? "" : "Movie End";
     }
 
     public void OnMovieRunningStatusChange(bool running)
