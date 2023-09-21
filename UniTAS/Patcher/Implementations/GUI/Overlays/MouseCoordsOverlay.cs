@@ -20,6 +20,6 @@ public class MouseCoordsOverlay : BuiltInOverlay
     protected override string Update()
     {
         var mousePos = Input.mousePosition;
-        return $"Mouse X: {mousePos.x}, Y: {Screen.height - mousePos.y}";
+        return $"Mouse X: {mousePos.x}, Y: {mousePos.y}";
     }
 }
