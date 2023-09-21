@@ -23,9 +23,12 @@ public static class Entry
     public static void Initialize()
     {
         LoggingUtils.InitDiskLogger();
+        StaticLogger.Log.LogInfo("Initializing UniTAS");
+
+        BepInExUtils.GenerateMissingDirs();
 
         StaticLogger.Log.LogInfo($"Found {PreloadPatcherProcessor.PreloadPatchers.Length} preload patchers");
-        StaticLogger.Log.LogInfo($"Target dlls: {string.Join(", ", PreloadPatcherProcessor.TargetDLLs.ToArray())}");
+        StaticLogger.Log.LogDebug($"Target dlls: {string.Join(", ", PreloadPatcherProcessor.TargetDLLs.ToArray())}");
     }
 
     // Patches the assemblies
