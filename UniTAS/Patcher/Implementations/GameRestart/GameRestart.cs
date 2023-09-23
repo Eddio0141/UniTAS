@@ -31,8 +31,6 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
     private readonly IUpdateInvokeOffset _updateInvokeOffset;
     private readonly IObjectTracker _objectTracker;
 
-    private readonly IOnPreGameRestart[] _onPreGameRestart;
-
     private readonly IStaticFieldManipulator _staticFieldManipulator;
     private readonly ITimeEnv _timeEnv;
 
@@ -50,7 +48,6 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
         _sceneWrapper = sceneWrapper;
         _monoBehaviourController = monoBehaviourController;
         _logger = logger;
-        _onPreGameRestart = onPreGameRestart;
         _staticFieldManipulator = staticFieldManipulator;
         _timeEnv = timeEnv;
         _finalizeSuppressor = finalizeSuppressor;
@@ -65,6 +62,11 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
         foreach (var gameRestart in onGameRestart)
         {
             OnGameRestart += gameRestart.OnGameRestart;
+        }
+
+        foreach (var gameRestart in onPreGameRestart)
+        {
+            OnPreGameRestart += gameRestart.OnPreGameRestart;
         }
     }
 
@@ -94,7 +96,7 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
 
         _logger.LogInfo("Starting soft restart");
 
-        OnPreGameRestart();
+        InvokeOnPreGameRestart();
 
         _pendingRestart = true;
         _softRestartTime = time;
@@ -118,18 +120,16 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
 
     public event GameRestartResume OnGameRestartResume;
     public event Services.GameRestart OnGameRestart;
+    public event Action OnPreGameRestart;
 
     protected virtual void InvokeOnGameRestartResume(bool preMonoBehaviourResume)
     {
         OnGameRestartResume?.Invoke(_softRestartTime, preMonoBehaviourResume);
     }
 
-    private void OnPreGameRestart()
+    private void InvokeOnPreGameRestart()
     {
-        foreach (var gameRestart in _onPreGameRestart)
-        {
-            gameRestart.OnPreGameRestart();
-        }
+        OnPreGameRestart?.Invoke();
     }
 
     private void SoftRestartOperation()
