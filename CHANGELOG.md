@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # [Unreleased]
 
+## Changed
+
+### Performance
+
+- Loading should be faster if you've opened the game before
+
 ## Fixed
 
 ### Games
