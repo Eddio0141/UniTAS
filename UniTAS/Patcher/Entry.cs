@@ -1,8 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using Mono.Cecil;
 using UniTAS.Patcher.Implementations;
+using UniTAS.Patcher.ManualServices;
 using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Utils;
 
@@ -27,6 +30,16 @@ public static class Entry
 
         BepInExUtils.GenerateMissingDirs();
 
+        if (UniTASSha256Info.UniTASChanged)
+        {
+            // cached assemblies are invalid as UniTAS has changed
+            // .sha256 files
+            foreach (var file in Directory.GetFiles(UniTASPaths.AssemblyCache, "*.sha256"))
+            {
+                File.Delete(file);
+            }
+        }
+
         StaticLogger.Log.LogInfo($"Found {PreloadPatcherProcessor.PreloadPatchers.Length} preload patchers");
         StaticLogger.Log.LogDebug($"Target dlls: {string.Join(", ", PreloadPatcherProcessor.TargetDLLs.ToArray())}");
     }
@@ -38,6 +51,13 @@ public static class Entry
         var assemblyNameWithDll = $"{assembly.Name.Name}.dll";
         StaticLogger.Log.LogDebug($"Received assembly {assemblyNameWithDll} for patching");
 
+        // check cache validity and patch if needed
+        if (TargetAssemblyCacheIsValid(ref assembly))
+        {
+            StaticLogger.Log.LogDebug("Skipping patching as it is cached");
+            return;
+        }
+
         foreach (var patcher in PreloadPatcherProcessor.PreloadPatchers)
         {
             // only patch the assembly if it's in the list of target assemblies
@@ -45,6 +65,49 @@ public static class Entry
             StaticLogger.Log.LogInfo($"Patching {assemblyNameWithDll} with {patcher.GetType().Name}");
             patcher.Patch(ref assembly);
         }
+
+        // save patched assembly to cache
+        SavePatchedAssemblyToCache(assembly);
+    }
+
+    private static void SavePatchedAssemblyToCache(AssemblyDefinition assembly)
+    {
+        var dllCachePath = Path.Combine(UniTASPaths.AssemblyCache, $"{assembly.Name.Name}.dll");
+        assembly.Write(dllCachePath);
+    }
+
+    private static bool TargetAssemblyCacheIsValid(ref AssemblyDefinition assembly)
+    {
+        var targetDllPath = assembly.MainModule.FileName;
+        var assemblyNameWithDll = $"{assembly.Name.Name}.dll";
+
+        using var targetDllOriginal = File.OpenRead(targetDllPath);
+        using var dllSha256 = SHA256.Create();
+        var hash = dllSha256.ComputeHash(targetDllOriginal);
+
+        var cachedDllSha256Path = Path.Combine(UniTASPaths.AssemblyCache, $"{assemblyNameWithDll}.sha256");
+        if (!File.Exists(cachedDllSha256Path))
+        {
+            File.WriteAllBytes(cachedDllSha256Path, hash);
+            return false;
+        }
+
+        var cachedHash = File.ReadAllBytes(cachedDllSha256Path);
+        if (!hash.SequenceEqual(cachedHash))
+        {
+            File.WriteAllBytes(cachedDllSha256Path, hash);
+            return false;
+        }
+
+        var cachedDllPath = Path.Combine(UniTASPaths.AssemblyCache, assemblyNameWithDll);
+        if (!File.Exists(cachedDllPath))
+        {
+            return false;
+        }
+
+        assembly = AssemblyDefinition.ReadAssembly(cachedDllPath);
+
+        return true;
     }
 
     [SuppressMessage("ReSharper", "UnusedMember.Global")]
@@ -52,5 +115,12 @@ public static class Entry
     {
         StaticLogger.Log.LogInfo("Finished preload patcher!");
         ContainerStarter.Init(RegisterTiming.Entry);
+
+        // TODO way to save dlls to cache
+
+        // TODO add mechanism to skip patching the dll if that dll is cached and is the same
+
+        // TODO detection for when the target dll is changed, cache should be invalidated
+        // TODO detection for when UniTAS build is changed, cache should be invalidated
     }
 }
