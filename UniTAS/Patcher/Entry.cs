@@ -115,12 +115,5 @@ public static class Entry
     {
         StaticLogger.Log.LogInfo("Finished preload patcher!");
         ContainerStarter.Init(RegisterTiming.Entry);
-
-        // TODO way to save dlls to cache
-
-        // TODO add mechanism to skip patching the dll if that dll is cached and is the same
-
-        // TODO detection for when the target dll is changed, cache should be invalidated
-        // TODO detection for when UniTAS build is changed, cache should be invalidated
     }
 }
