@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.UnityEvents;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
@@ -8,13 +9,20 @@ namespace UniTAS.Patcher.MonoBehaviourScripts;
 public class MonoBehaviourUpdateInvoker : MonoBehaviour
 {
     private IMonoBehEventInvoker _monoBehEventInvoker;
+    private ILogger _logger;
 
     private void Awake()
     {
         var kernel = ContainerStarter.Kernel;
         _monoBehEventInvoker = kernel.GetInstance<IMonoBehEventInvoker>();
+        _logger = kernel.GetInstance<ILogger>();
         _monoBehEventInvoker.InvokeAwake();
         StartCoroutine(EndOfFrame());
+    }
+
+    private void OnDestroy()
+    {
+        _logger.LogError("MonoBehaviourUpdateInvoker destroyed, this should not happen");
     }
 
     private void Start()
