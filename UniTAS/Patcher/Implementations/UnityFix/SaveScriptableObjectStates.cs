@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.SoftRestart;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents;
+using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
 using UniTAS.Patcher.Models.UnitySafeWrappers.SceneManagement;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.Trackers.UpdateTrackInfo;
@@ -11,7 +12,8 @@ using UnityEngine;
 namespace UniTAS.Patcher.Implementations.UnityFix;
 
 [Singleton]
-public partial class SaveScriptableObjectStates : IOnPreGameRestart, IOnSceneLoad, INewScriptableObjectTracker
+public partial class SaveScriptableObjectStates : IOnSceneLoad, INewScriptableObjectTracker, IOnAwakeUnconditional,
+    IOnPreGameRestart
 {
     private readonly List<StoredState> _storedStates = new();
 
@@ -20,7 +22,16 @@ public partial class SaveScriptableObjectStates : IOnPreGameRestart, IOnSceneLoa
     public SaveScriptableObjectStates(ILogger logger)
     {
         _logger = logger;
+    }
 
+    private bool _initialized;
+
+    public void AwakeUnconditional()
+    {
+        if (_initialized) return;
+        _initialized = true;
+
+        // initial save
         SaveAll();
     }
 
@@ -29,6 +40,7 @@ public partial class SaveScriptableObjectStates : IOnPreGameRestart, IOnSceneLoa
         _logger.LogDebug("Saving all ScriptableObject states");
 
         var allScriptableObjects = ResourcesUtils.FindObjectsOfTypeAll<ScriptableObject>();
+        _logger.LogDebug($"Found {allScriptableObjects.Length} ScriptableObjects");
 
         foreach (var obj in allScriptableObjects)
         {
