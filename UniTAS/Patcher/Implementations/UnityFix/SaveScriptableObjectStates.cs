@@ -66,10 +66,11 @@ public partial class SaveScriptableObjectStates : IOnSceneLoad, INewScriptableOb
 
     public void OnPreGameRestart()
     {
-        _logger.LogDebug("Destroying all ScriptableObject that was created during runtime");
+        _logger.LogDebug(
+            $"Destroying all {_destroyObjectsOnRestart.Count} ScriptableObject that was created during runtime");
         foreach (var obj in _destroyObjectsOnRestart)
         {
-            Object.Destroy(obj);
+            Object.DestroyImmediate(obj);
         }
 
         _destroyObjectsOnRestart.Clear();
