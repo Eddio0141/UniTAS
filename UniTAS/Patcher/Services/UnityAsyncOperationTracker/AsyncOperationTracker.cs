@@ -5,6 +5,7 @@ using System.Reflection;
 using HarmonyLib;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.SoftRestart;
+using UniTAS.Patcher.Interfaces.Events.UnityEvents;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
 using UniTAS.Patcher.Models.UnitySafeWrappers.SceneManagement;
 using UniTAS.Patcher.Services.Logging;
@@ -25,6 +26,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
     private readonly Dictionary<AsyncOperation, AssetBundleRequestData> _assetBundleRequests = new();
 
     private readonly ILogger _logger;
+    private readonly IOnSceneLoad[] _onSceneLoads;
 
     private class AssetBundleRequestData
     {
@@ -40,10 +42,11 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
 
     private readonly ISceneWrapper _sceneWrapper;
 
-    public AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger)
+    public AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger, IOnSceneLoad[] onSceneLoads)
     {
         _sceneWrapper = sceneWrapper;
         _logger = logger;
+        _onSceneLoads = onSceneLoads;
     }
 
     public void OnPreGameRestart()
@@ -91,6 +94,11 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
     public void AsyncSceneLoad(string sceneName, int sceneBuildIndex, LoadSceneMode loadSceneMode,
         LocalPhysicsMode localPhysicsMode, AsyncOperation asyncOperation)
     {
+        foreach (var onSceneLoad in _onSceneLoads)
+        {
+            onSceneLoad.OnSceneLoad(sceneName, sceneBuildIndex, loadSceneMode, localPhysicsMode);
+        }
+
         _logger.LogDebug($"async scene load, {asyncOperation.GetHashCode()}");
         _asyncLoads.Add(new(sceneName, sceneBuildIndex, asyncOperation, loadSceneMode, localPhysicsMode));
     }
