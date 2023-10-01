@@ -16,6 +16,7 @@ public partial class SaveScriptableObjectStates : IOnSceneLoad, INewScriptableOb
     IOnPreGameRestart
 {
     private readonly List<StoredState> _storedStates = new();
+    private readonly List<Object> _destroyObjectsOnRestart = new();
 
     private readonly ILogger _logger;
 
@@ -60,11 +61,19 @@ public partial class SaveScriptableObjectStates : IOnSceneLoad, INewScriptableOb
 
     public void NewScriptableObject(ScriptableObject scriptableObject)
     {
-        Save(scriptableObject);
+        _destroyObjectsOnRestart.Add(scriptableObject);
     }
 
     public void OnPreGameRestart()
     {
+        _logger.LogDebug("Destroying all ScriptableObject that was created during runtime");
+        foreach (var obj in _destroyObjectsOnRestart)
+        {
+            Object.Destroy(obj);
+        }
+
+        _destroyObjectsOnRestart.Clear();
+
         _logger.LogDebug("Loading all ScriptableObject states");
 
         foreach (var storedState in _storedStates)
