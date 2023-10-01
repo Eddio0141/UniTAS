@@ -26,4 +26,7 @@ public readonly struct Either<TLeft, TRight>
 
     public TLeft Left => IsLeft ? _left : throw new InvalidOperationException("Either is not left");
     public TRight Right => !IsLeft ? _right : throw new InvalidOperationException("Either is not right");
+
+    public static implicit operator Either<TLeft, TRight>(TLeft left) => new(left);
+    public static implicit operator Either<TLeft, TRight>(TRight right) => new(right);
 }

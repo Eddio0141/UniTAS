@@ -24,4 +24,24 @@ public class EitherTests
         Assert.Equal("test", either.Right);
         Assert.Throws<InvalidOperationException>(() => either.Left);
     }
+
+    [Fact]
+    public void ImplicitLeft()
+    {
+        Either<int, string> either = 5;
+        Assert.True(either.IsLeft);
+        Assert.False(either.IsRight);
+        Assert.Equal(5, either.Left);
+        Assert.Throws<InvalidOperationException>(() => either.Right);
+    }
+
+    [Fact]
+    public void ImplicitRight()
+    {
+        Either<int, string> either = "test";
+        Assert.False(either.IsLeft);
+        Assert.True(either.IsRight);
+        Assert.Equal("test", either.Right);
+        Assert.Throws<InvalidOperationException>(() => either.Left);
+    }
 }
