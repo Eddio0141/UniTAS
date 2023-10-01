@@ -1,9 +1,7 @@
 using System.Collections.Generic;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.SoftRestart;
-using UniTAS.Patcher.Interfaces.Events.UnityEvents;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
-using UniTAS.Patcher.Models.UnitySafeWrappers.SceneManagement;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.Trackers.UpdateTrackInfo;
 using UniTAS.Patcher.Utils;
@@ -12,8 +10,7 @@ using UnityEngine;
 namespace UniTAS.Patcher.Implementations.UnityFix;
 
 [Singleton]
-public partial class SaveScriptableObjectStates : IOnSceneLoad, INewScriptableObjectTracker, IOnAwakeUnconditional,
-    IOnPreGameRestart
+public partial class SaveScriptableObjectStates : INewScriptableObjectTracker, IOnAwakeUnconditional, IOnPreGameRestart
 {
     private readonly List<StoredState> _storedStates = new();
     private readonly List<Object> _destroyObjectsOnRestart = new();
@@ -83,14 +80,11 @@ public partial class SaveScriptableObjectStates : IOnSceneLoad, INewScriptableOb
         }
     }
 
-    public void OnSceneLoad(string sceneName, int sceneBuildIndex, LoadSceneMode loadSceneMode,
-        LocalPhysicsMode localPhysicsMode)
-    {
-        if (loadSceneMode == LoadSceneMode.Single)
-        {
-            _storedStates.Clear();
-        }
-
-        SaveAll();
-    }
+    // don't think this is required
+    // testing with 2 scenes and 2 scriptable objects showed that on game start, both scriptable objects are loaded
+    // public void OnSceneLoad(string sceneName, int sceneBuildIndex, LoadSceneMode loadSceneMode,
+    //     LocalPhysicsMode localPhysicsMode)
+    // {
+    //     SaveAll();
+    // }
 }
