@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using HarmonyLib;
 using UniTAS.Patcher.Exceptions;
 
@@ -10,18 +9,10 @@ namespace UniTAS.Patcher.Utils;
 
 public static class DeepCopy
 {
-    // /// <summary>
-    // /// A cache for the <see cref="ICollection{T}.Add"/> or similar Add methods for different types.
-    // /// </summary>
-    // private static readonly Dictionary<Type, FastInvokeHandler> AddHandlerCache = new();
-    //
-    // private static readonly ReaderWriterLock AddHandlerCacheLock = new();
-
     /// <summary>Makes a deep copy of any object</summary>
     /// <typeparam name="T">The type of the instance that should be created; for legacy reasons, this must be a class or interface</typeparam>
     /// <param name="source">The original object</param>
     /// <returns>A copy of the original object but of type T</returns>
-    ///
     public static T MakeDeepCopy<T>(object source) where T : class
     {
         return MakeDeepCopy(source, typeof(T)) as T;
@@ -53,13 +44,15 @@ public static class DeepCopy
     public static object MakeDeepCopy(object source, Type resultType,
         Func<string, Traverse, Traverse, object> processor = null, string pathRoot = "")
     {
-        var foundReferences = new List<object> { source };
-        return MakeDeepCopy(source, resultType, processor, pathRoot, foundReferences, new List<object>());
+        var foundReferences = new Dictionary<ulong, object> { { 0, source } };
+        var id = 1ul;
+        return MakeDeepCopy(source, resultType, processor, pathRoot, foundReferences, new(), ref id);
     }
 
+    // dictionary is used to keep track of instances. int is the ID of the instance, which is used to compare foundReferences and newReferences
     private static object MakeDeepCopy(object source, Type resultType,
-        Func<string, Traverse, Traverse, object> processor, string pathRoot, IList<object> foundReferences,
-        IList<object> newReferences)
+        Func<string, Traverse, Traverse, object> processor, string pathRoot, Dictionary<ulong, object> foundReferences,
+        Dictionary<ulong, object> newReferences, ref ulong id)
     {
         _makeDeepCopyRecursionDepth++;
         if (_makeDeepCopyRecursionDepth > MAKE_DEEP_COPY_RECURSION_DEPTH_LIMIT)
@@ -72,6 +65,16 @@ public static class DeepCopy
         {
             _makeDeepCopyRecursionDepth--;
             return null;
+        }
+
+        if (foundReferences.ContainsValue(source))
+        {
+            var foundId = foundReferences.First(x => ReferenceEquals(x.Value, source)).Key;
+            if (newReferences.TryGetValue(foundId, out var newReference))
+            {
+                _makeDeepCopyRecursionDepth--;
+                return newReference;
+            }
         }
 
         resultType = Nullable.GetUnderlyingType(resultType) ?? resultType;
@@ -89,72 +92,25 @@ public static class DeepCopy
             return Enum.ToObject(resultType, (int)source);
         }
 
-        // if (type.IsGenericType && resultType.IsGenericType)
-        // {
-        //     AddHandlerCacheLock.AcquireReaderLock(200);
-        //     try
-        //     {
-        //         if (!AddHandlerCache.TryGetValue(resultType, out var addInvoker))
-        //         {
-        //             var addOperation = AccessTools.FirstMethod(resultType,
-        //                 m => m.Name == "Add" && m.GetParameters().Length == 1);
-        //             if (addOperation is not null)
-        //             {
-        //                 addInvoker = MethodInvoker.GetHandler(addOperation);
-        //             }
-        //
-        //             _ = AddHandlerCacheLock.UpgradeToWriterLock(200);
-        //             AddHandlerCacheLock.AcquireWriterLock(200);
-        //             try
-        //             {
-        //                 AddHandlerCache[resultType] = addInvoker;
-        //             }
-        //             finally
-        //             {
-        //                 AddHandlerCacheLock.ReleaseWriterLock();
-        //             }
-        //         }
-        //
-        //         if (addInvoker != null)
-        //         {
-        //             var addableResult = Activator.CreateInstance(resultType);
-        //             var newElementType = resultType.GetGenericArguments()[0];
-        //             var i = 0;
-        //             foreach (var element in (IEnumerable)source)
-        //             {
-        //                 var iStr = i++.ToString();
-        //                 var path = pathRoot.Length > 0 ? pathRoot + "." + iStr : iStr;
-        //                 var newElement = MakeDeepCopy(element, newElementType, processor, path, foundReferences, newReferences);
-        //                 _ = addInvoker(addableResult, newElement);
-        //             }
-        //
-        //             _makeDeepCopyRecursionDepth--;
-        //             return addableResult;
-        //         }
-        //     }
-        //     finally
-        //     {
-        //         AddHandlerCacheLock.ReleaseReaderLock();
-        //     }
-        // }
-
         if (type.IsArray && resultType.IsArray)
         {
             var newElementType = resultType.GetElementType();
             var array = (Array)source;
+            foundReferences.Add(id, source);
+            var newRefId = id;
+            id++;
             var newArray = Array.CreateInstance(newElementType ?? throw new InvalidOperationException(), array.Length);
             for (var i = 0; i < array.Length; i++)
             {
                 var iStr = i.ToString();
                 var path = pathRoot.Length > 0 ? pathRoot + "." + iStr : iStr;
                 var newElement = MakeDeepCopy(array.GetValue(i), newElementType, processor, path, foundReferences,
-                    newReferences);
+                    newReferences, ref id);
                 newArray.SetValue(newElement, i);
             }
 
             _makeDeepCopyRecursionDepth--;
-            foundReferences.Add(source);
-            newReferences.Add(newArray);
+            newReferences.Add(newRefId, newArray);
             return newArray;
         }
 
@@ -162,6 +118,9 @@ public static class DeepCopy
         if (typeof(IEnumerable).IsAssignableFrom(type) && typeof(IEnumerable).IsAssignableFrom(resultType))
         {
             var sourceCollection = (IEnumerable)source;
+            foundReferences.Add(id, source);
+            var newRefId = id;
+            id++;
 
             Type resultTypeInterface;
             if (resultType.IsInterface)
@@ -185,15 +144,14 @@ public static class DeepCopy
                 foreach (var element in sourceCollection)
                 {
                     var newElement = MakeDeepCopy(element, resultTypeGenericArgument, processor, pathRoot,
-                        foundReferences, newReferences);
+                        foundReferences, newReferences, ref id);
                     tempResultList.Add(newElement);
                 }
 
                 var addableResult = ctor.Invoke(new object[] { tempResultList });
 
                 _makeDeepCopyRecursionDepth--;
-                foundReferences.Add(source);
-                newReferences.Add(addableResult);
+                newReferences.Add(newRefId, addableResult);
                 return addableResult;
             }
         }
@@ -205,38 +163,39 @@ public static class DeepCopy
             return source;
         }
 
+        // guaranteed to be a reference type
         var result = AccessTools.CreateInstance(resultType == typeof(object) ? type : resultType);
-        newReferences.Add(result);
-        Traverse.IterateFields(source, result, (name, src, dst) =>
+        foundReferences.Add(id, source);
+        newReferences.Add(id, result);
+        id++;
+
+        var fields = AccessTools.GetDeclaredFields(type);
+
+        foreach (var field in fields)
         {
-            // stupid hack to get FieldInfo from Traverse
-            var srcField = Traverse.Create(src).Field("_info").GetValue<FieldInfo>();
-            if (srcField is null)
-            {
-                throw new NullReferenceException("srcField is null, this should never happen");
-            }
+            if (field.IsStatic || field.IsLiteral) continue;
 
-            if (srcField.IsStatic || srcField.IsLiteral)
-            {
-                return;
-            }
-
+            var name = field.Name;
             var path = pathRoot.Length > 0 ? pathRoot + "." + name : name;
-            var value = processor is not null ? processor(path, src, dst) : src.GetValue();
-
-            // check reference stuff
-            var foundReferenceIndex = foundReferences.IndexOf(value);
-            if (foundReferenceIndex >= 0 && foundReferences.Count <= newReferences.Count)
+            object value;
+            if (processor is not null)
             {
-                var newReference = newReferences[foundReferenceIndex];
-                dst.SetValue(newReference);
-                return;
+                var srcTraverse = Traverse.Create(source).Field(name);
+                var dstTraverse = Traverse.Create(result).Field(name);
+
+                value = processor(path, srcTraverse, dstTraverse);
+            }
+            else
+            {
+                value = field.GetValue(source);
             }
 
-            var copiedObj = MakeDeepCopy(value, dst.GetValueType(), processor, path, foundReferences, newReferences);
-            newReferences.Add(value);
-            dst.SetValue(copiedObj);
-        });
+            var copiedObj = MakeDeepCopy(value, field.FieldType, processor, path, foundReferences, newReferences,
+                ref id);
+
+            field.SetValue(result, copiedObj);
+        }
+
         _makeDeepCopyRecursionDepth--;
         return result;
     }
