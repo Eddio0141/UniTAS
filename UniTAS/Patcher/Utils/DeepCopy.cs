@@ -95,10 +95,10 @@ public static class DeepCopy
         {
             var newElementType = resultType.GetElementType();
             var array = (Array)source;
-            foundReferences.Add(id, source);
-            var newRefId = id;
-            id++;
             var newArray = Array.CreateInstance(newElementType ?? throw new InvalidOperationException(), array.Length);
+            foundReferences.Add(id, source);
+            newReferences.Add(id, newArray);
+            id++;
             for (var i = 0; i < array.Length; i++)
             {
                 var iStr = i.ToString();
@@ -109,7 +109,6 @@ public static class DeepCopy
             }
 
             _makeDeepCopyRecursionDepth--;
-            newReferences.Add(newRefId, newArray);
             return newArray;
         }
 
