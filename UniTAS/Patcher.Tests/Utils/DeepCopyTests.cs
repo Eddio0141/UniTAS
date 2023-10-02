@@ -145,4 +145,21 @@ public partial class DeepCopyTests
         Assert.Equal(source.IntStringDictionary, result!.IntStringDictionary);
         Assert.Equal(source.StringIntDictionary, result.StringIntDictionary);
     }
+
+    [Fact]
+    public void SelfReferencingTest()
+    {
+        var source = new SelfReferencing1();
+        var reference2 = new SelfReferencing2();
+        source.Nested = reference2;
+        reference2.Nested = source;
+
+        var result = DeepCopy.MakeDeepCopy<SelfReferencing1>(source);
+        Assert.NotSame(source, result);
+        Assert.NotSame(source.Nested, result.Nested);
+        Assert.NotSame(source.Nested.Nested, result);
+
+        Assert.Same(result, result.Nested.Nested);
+        Assert.Same(result.Nested, result.Nested.Nested.Nested);
+    }
 }

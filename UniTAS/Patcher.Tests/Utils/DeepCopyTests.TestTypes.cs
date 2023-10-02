@@ -53,4 +53,14 @@ public partial class DeepCopyTests
         public Dictionary<int, string> IntStringDictionary;
         public Dictionary<string, int> StringIntDictionary;
     }
+
+    private class SelfReferencing1
+    {
+        public SelfReferencing2 Nested;
+    }
+
+    private class SelfReferencing2
+    {
+        public SelfReferencing1 Nested;
+    }
 }
