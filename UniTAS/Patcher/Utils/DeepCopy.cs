@@ -66,7 +66,7 @@ public static class DeepCopy
             return null;
         }
 
-        if (foundReferences.ContainsValue(source))
+        if (foundReferences.Any(x => ReferenceEquals(x.Value, source)))
         {
             var foundId = foundReferences.First(x => ReferenceEquals(x.Value, source)).Key;
             if (newReferences.TryGetValue(foundId, out var newReference))
