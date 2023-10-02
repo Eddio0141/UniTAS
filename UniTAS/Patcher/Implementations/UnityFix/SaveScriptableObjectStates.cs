@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.SoftRestart;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
+using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.Trackers.UpdateTrackInfo;
 using UniTAS.Patcher.Utils;
@@ -16,10 +17,12 @@ public partial class SaveScriptableObjectStates : INewScriptableObjectTracker, I
     private readonly List<Object> _destroyObjectsOnRestart = new();
 
     private readonly ILogger _logger;
+    private readonly ITryFreeMalloc _freeMalloc;
 
-    public SaveScriptableObjectStates(ILogger logger)
+    public SaveScriptableObjectStates(ILogger logger, ITryFreeMalloc freeMalloc)
     {
         _logger = logger;
+        _freeMalloc = freeMalloc;
     }
 
     private bool _initialized;
@@ -53,7 +56,7 @@ public partial class SaveScriptableObjectStates : INewScriptableObjectTracker, I
             if (x.ScriptableObject == obj) return;
         }
 
-        _storedStates.Add(new(obj, _logger));
+        _storedStates.Add(new(obj, _logger, _freeMalloc));
     }
 
     public void NewScriptableObject(ScriptableObject scriptableObject)

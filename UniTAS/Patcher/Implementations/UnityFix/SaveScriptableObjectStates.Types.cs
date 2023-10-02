@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using UniTAS.Patcher.Models.Utils;
+using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
@@ -20,7 +21,7 @@ public partial class SaveScriptableObjectStates
 
         private readonly ILogger _logger;
 
-        public StoredState(ScriptableObject scriptableObject, ILogger logger)
+        public StoredState(ScriptableObject scriptableObject, ILogger logger, ITryFreeMalloc freeMalloc)
         {
             ScriptableObject = scriptableObject;
             _logger = logger;
@@ -29,7 +30,7 @@ public partial class SaveScriptableObjectStates
             // TODO limit fields that are serializable to save space
             var fields = AccessTools.GetDeclaredFields(scriptableObject.GetType())
                 .Where(x => !x.IsStatic && !x.IsLiteral);
-            _savedFields = fields.Select(x => new FieldData(x, scriptableObject, logger)).ToArray();
+            _savedFields = fields.Select(x => new FieldData(x, scriptableObject, logger, freeMalloc)).ToArray();
         }
 
         public void Load()
@@ -53,12 +54,20 @@ public partial class SaveScriptableObjectStates
         private readonly Either<Object, object> _value;
         private readonly FieldInfo _saveField;
 
-        public FieldData(FieldInfo fieldInfo, ScriptableObject instance, ILogger logger)
+        private readonly ITryFreeMalloc _freeMalloc;
+
+        public FieldData(FieldInfo fieldInfo, ScriptableObject instance, ILogger logger, ITryFreeMalloc freeMalloc)
         {
             _saveField = fieldInfo;
             _instance = instance;
 
             var value = fieldInfo.GetValue(instance);
+
+            if (value.GetType().IsPointer)
+            {
+                _freeMalloc = freeMalloc;
+            }
+
             if (value is Object unityObject)
             {
                 _value = unityObject;
@@ -78,6 +87,17 @@ public partial class SaveScriptableObjectStates
 
         public void Load()
         {
+            // try to free pointer if it's a pointer
+            if (_freeMalloc != null)
+            {
+                var prevValue = _saveField.GetValue(_instance);
+                unsafe
+                {
+                    var prevValueRaw = (IntPtr)Pointer.Unbox(prevValue);
+                    _freeMalloc.TryFree(prevValueRaw);
+                }
+            }
+
             _saveField.SetValue(_instance, _value.IsLeft ? _value.Left : _value.Right);
         }
     }
