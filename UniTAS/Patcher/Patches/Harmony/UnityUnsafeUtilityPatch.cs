@@ -32,7 +32,6 @@ public class UnityUnsafeUtilityPatch
 
         private static unsafe void Postfix(void* __result, object allocator)
         {
-            StaticLogger.Log.LogDebug($"Malloc, with allocator: {allocator}");
             var allocatorTranslated = (Allocator)Enum.Parse(typeof(Allocator), allocator.ToString());
             UnityMallocTracker.Malloc((IntPtr)__result, allocatorTranslated, false);
         }
@@ -53,7 +52,6 @@ public class UnityUnsafeUtilityPatch
 
         private static unsafe void Postfix(void* __result, object allocator)
         {
-            StaticLogger.Log.LogDebug($"Malloc tracked, with allocator: {allocator}");
             var allocatorTranslated = (Allocator)Enum.Parse(typeof(Allocator), allocator.ToString());
             UnityMallocTracker.Malloc((IntPtr)__result, allocatorTranslated, true);
         }
@@ -74,7 +72,6 @@ public class UnityUnsafeUtilityPatch
 
         private static unsafe void Prefix(void* memory, object allocator)
         {
-            StaticLogger.Log.LogDebug($"Free with allocator: {allocator}");
             var allocatorTranslated = (Allocator)Enum.Parse(typeof(Allocator), allocator.ToString());
             UnityMallocTracker.Free((IntPtr)memory, allocatorTranslated, false);
         }
@@ -95,7 +92,6 @@ public class UnityUnsafeUtilityPatch
 
         private static unsafe void Prefix(void* memory, object allocator)
         {
-            StaticLogger.Log.LogDebug($"FreeTracked with allocator: {allocator}");
             var allocatorTranslated = (Allocator)Enum.Parse(typeof(Allocator), allocator.ToString());
             UnityMallocTracker.Free((IntPtr)memory, allocatorTranslated, true);
         }
