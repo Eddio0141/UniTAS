@@ -161,8 +161,9 @@ public static class DeepCopy
             return source;
         }
 
+        var result =
+            AccessTools.CreateInstance(resultType == typeof(object) || resultType.IsAbstract ? type : resultType);
         // guaranteed to be a reference type
-        var result = AccessTools.CreateInstance(resultType == typeof(object) ? type : resultType);
         foundReferences.Add(id, source);
         newReferences.Add(id, result);
         id++;
@@ -188,7 +189,7 @@ public static class DeepCopy
                 value = field.GetValue(source);
             }
 
-            var copiedObj = MakeDeepCopy(value, field.FieldType, processor, path, foundReferences, newReferences,
+            var copiedObj = MakeDeepCopy(value, value.GetType(), processor, path, foundReferences, newReferences,
                 ref id);
 
             field.SetValue(result, copiedObj);
