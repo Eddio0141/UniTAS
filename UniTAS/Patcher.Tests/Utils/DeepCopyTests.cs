@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using UniTAS.Patcher.Utils;
 
@@ -179,5 +180,25 @@ public partial class DeepCopyTests
 
         Assert.Same(result, result.Nested.Nested.FirstOrDefault());
         Assert.Same(result.Nested, result.Nested.Nested.FirstOrDefault()?.Nested);
+    }
+
+    [Fact]
+    public unsafe void PointerTypeTest()
+    {
+        var source = new PointerType
+        {
+            Pointer = (void*)0x12345678,
+        };
+        var result = DeepCopy.MakeDeepCopy<PointerType>(source);
+
+        Assert.Equal((IntPtr)source.Pointer, (IntPtr)result.Pointer);
+
+        result.Pointer = (void*)0x87654321;
+
+        Assert.NotEqual((IntPtr)source.Pointer, (IntPtr)result.Pointer);
+
+        DeepCopy.MakeDeepCopy(source, out result);
+
+        Assert.Equal((IntPtr)source.Pointer, (IntPtr)result!.Pointer);
     }
 }

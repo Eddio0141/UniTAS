@@ -73,4 +73,9 @@ public partial class DeepCopyTests
     {
         public List<SelfReferencing3> Nested;
     }
+
+    private class PointerType
+    {
+        public unsafe void* Pointer;
+    }
 }
