@@ -63,7 +63,7 @@ public partial class SaveScriptableObjectStates
 
             var value = fieldInfo.GetValue(instance);
 
-            if (value.GetType().IsPointer)
+            if (fieldInfo.FieldType.IsPointer)
             {
                 _freeMalloc = freeMalloc;
             }
