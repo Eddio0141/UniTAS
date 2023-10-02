@@ -66,8 +66,6 @@ public static class DeepCopy
             return null;
         }
 
-        StaticLogger.Log.LogDebug($"making deep copy of {source.GetType().FullName}, pathRoot: {pathRoot}");
-
         if (foundReferences.Any(x => ReferenceEquals(x.Value, source)))
         {
             var foundId = foundReferences.First(x => ReferenceEquals(x.Value, source)).Key;
@@ -162,23 +160,17 @@ public static class DeepCopy
             return source;
         }
 
-        if (type == typeof(void*))
-
-            StaticLogger.Log.LogDebug("creating new instance");
         var result = AccessTools.CreateInstance(type);
         // guaranteed to be a reference type
         foundReferences.Add(id, source);
         newReferences.Add(id, result);
         id++;
 
-        StaticLogger.Log.LogDebug("getting fields");
         var fields = AccessTools.GetDeclaredFields(type);
 
         foreach (var field in fields)
         {
             if (field.IsStatic || field.IsLiteral) continue;
-
-            StaticLogger.Log.LogDebug($"field is {field.Name}");
 
             var name = field.Name;
             var path = pathRoot.Length > 0 ? pathRoot + "." + name : name;
@@ -197,7 +189,6 @@ public static class DeepCopy
 
             if (field.FieldType.IsPointer)
             {
-                StaticLogger.Log.LogDebug("its a pointer field");
                 unsafe
                 {
                     field.SetValue(result, (IntPtr)Pointer.Unbox(value));
@@ -206,9 +197,7 @@ public static class DeepCopy
                 continue;
             }
 
-            StaticLogger.Log.LogDebug($"value is {value?.GetType().FullName}, field is {field.FieldType.FullName}");
             var copiedObj = MakeDeepCopy(value, processor, path, foundReferences, newReferences, ref id);
-            StaticLogger.Log.LogDebug($"copied object type is {copiedObj?.GetType().FullName}");
 
             field.SetValue(result, copiedObj);
         }
