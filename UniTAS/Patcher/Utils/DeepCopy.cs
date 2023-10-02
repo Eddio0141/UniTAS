@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using HarmonyLib;
 using UniTAS.Patcher.Exceptions;
 
@@ -15,7 +16,7 @@ public static class DeepCopy
     /// <returns>A copy of the original object but of type T</returns>
     public static T MakeDeepCopy<T>(object source) where T : class
     {
-        return MakeDeepCopy(source, typeof(T)) as T;
+        return MakeDeepCopy(source) as T;
     }
 
     /// <summary>Makes a deep copy of any object</summary>
@@ -28,7 +29,7 @@ public static class DeepCopy
     public static void MakeDeepCopy<T>(object source, out T result,
         Func<string, Traverse, Traverse, object> processor = null, string pathRoot = "")
     {
-        result = (T)MakeDeepCopy(source, typeof(T), processor, pathRoot);
+        result = (T)MakeDeepCopy(source, processor, pathRoot);
     }
 
     private static int _makeDeepCopyRecursionDepth;
@@ -37,20 +38,19 @@ public static class DeepCopy
 
     /// <summary>Makes a deep copy of any object</summary>
     /// <param name="source">The original object</param>
-    /// <param name="resultType">The type of the instance that should be created</param>
     /// <param name="processor">Optional value transformation function (taking a field name and src/dst <see cref="Traverse"/> instances)</param>
     /// <param name="pathRoot">The optional path root to start with</param>
     /// <returns>The copy of the original object</returns>
-    public static object MakeDeepCopy(object source, Type resultType,
-        Func<string, Traverse, Traverse, object> processor = null, string pathRoot = "")
+    public static object MakeDeepCopy(object source, Func<string, Traverse, Traverse, object> processor = null,
+        string pathRoot = "")
     {
         var id = 0ul;
-        return MakeDeepCopy(source, resultType, processor, pathRoot, new(), new(), ref id);
+        return MakeDeepCopy(source, processor, pathRoot, new(), new(), ref id);
     }
 
     // dictionary is used to keep track of instances. int is the ID of the instance, which is used to compare foundReferences and newReferences
-    private static object MakeDeepCopy(object source, Type resultType,
-        Func<string, Traverse, Traverse, object> processor, string pathRoot, Dictionary<ulong, object> foundReferences,
+    private static object MakeDeepCopy(object source, Func<string, Traverse, Traverse, object> processor,
+        string pathRoot, Dictionary<ulong, object> foundReferences,
         Dictionary<ulong, object> newReferences, ref ulong id)
     {
         _makeDeepCopyRecursionDepth++;
@@ -60,11 +60,13 @@ public static class DeepCopy
             throw new DeepCopyMaxRecursionException(source, pathRoot);
         }
 
-        if (source is null || resultType is null)
+        if (source is null)
         {
             _makeDeepCopyRecursionDepth--;
             return null;
         }
+
+        StaticLogger.Log.LogDebug($"making deep copy of {source.GetType().FullName}, pathRoot: {pathRoot}");
 
         if (foundReferences.Any(x => ReferenceEquals(x.Value, source)))
         {
@@ -76,7 +78,6 @@ public static class DeepCopy
             }
         }
 
-        resultType = Nullable.GetUnderlyingType(resultType) ?? resultType;
         var type = source.GetType();
 
         if (type.IsPrimitive)
@@ -88,12 +89,12 @@ public static class DeepCopy
         if (type.IsEnum)
         {
             _makeDeepCopyRecursionDepth--;
-            return Enum.ToObject(resultType, (int)source);
+            return Enum.ToObject(type, (int)source);
         }
 
-        if (type.IsArray && resultType.IsArray)
+        if (type.IsArray)
         {
-            var newElementType = resultType.GetElementType();
+            var newElementType = type.GetElementType();
             var array = (Array)source;
             var newArray = Array.CreateInstance(newElementType ?? throw new InvalidOperationException(), array.Length);
             foundReferences.Add(id, source);
@@ -103,8 +104,8 @@ public static class DeepCopy
             {
                 var iStr = i.ToString();
                 var path = pathRoot.Length > 0 ? pathRoot + "." + iStr : iStr;
-                var newElement = MakeDeepCopy(array.GetValue(i), newElementType, processor, path, foundReferences,
-                    newReferences, ref id);
+                var newElement = MakeDeepCopy(array.GetValue(i), processor, path, foundReferences, newReferences,
+                    ref id);
                 newArray.SetValue(newElement, i);
             }
 
@@ -113,7 +114,7 @@ public static class DeepCopy
         }
 
         // is type a collection?
-        if (typeof(IEnumerable).IsAssignableFrom(type) && typeof(IEnumerable).IsAssignableFrom(resultType))
+        if (typeof(IEnumerable).IsAssignableFrom(type))
         {
             var sourceCollection = (IEnumerable)source;
             foundReferences.Add(id, source);
@@ -121,27 +122,27 @@ public static class DeepCopy
             id++;
 
             Type resultTypeInterface;
-            if (resultType.IsInterface)
+            if (type.IsInterface)
             {
-                resultTypeInterface = resultType;
+                resultTypeInterface = type;
             }
             else
             {
-                resultTypeInterface = resultType.GetInterfaces().First(i =>
+                resultTypeInterface = type.GetInterfaces().First(i =>
                     i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
             }
 
             var resultTypeGenericArgument = resultTypeInterface.GetGenericArguments()[0];
             var iEnumerableType = typeof(IEnumerable<>).MakeGenericType(resultTypeGenericArgument);
 
-            var ctor = AccessTools.Constructor(resultType, new[] { iEnumerableType });
+            var ctor = AccessTools.Constructor(type, new[] { iEnumerableType });
             if (ctor != null)
             {
                 var tempResultList =
                     (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(resultTypeGenericArgument));
                 foreach (var element in sourceCollection)
                 {
-                    var newElement = MakeDeepCopy(element, resultTypeGenericArgument, processor, pathRoot,
+                    var newElement = MakeDeepCopy(element, processor, pathRoot,
                         foundReferences, newReferences, ref id);
                     tempResultList.Add(newElement);
                 }
@@ -161,18 +162,23 @@ public static class DeepCopy
             return source;
         }
 
-        var result =
-            AccessTools.CreateInstance(resultType == typeof(object) || resultType.IsAbstract ? type : resultType);
+        if (type == typeof(void*))
+
+            StaticLogger.Log.LogDebug("creating new instance");
+        var result = AccessTools.CreateInstance(type);
         // guaranteed to be a reference type
         foundReferences.Add(id, source);
         newReferences.Add(id, result);
         id++;
 
+        StaticLogger.Log.LogDebug("getting fields");
         var fields = AccessTools.GetDeclaredFields(type);
 
         foreach (var field in fields)
         {
             if (field.IsStatic || field.IsLiteral) continue;
+
+            StaticLogger.Log.LogDebug($"field is {field.Name}");
 
             var name = field.Name;
             var path = pathRoot.Length > 0 ? pathRoot + "." + name : name;
@@ -189,8 +195,20 @@ public static class DeepCopy
                 value = field.GetValue(source);
             }
 
-            var copiedObj = MakeDeepCopy(value, value.GetType(), processor, path, foundReferences, newReferences,
-                ref id);
+            if (field.FieldType.IsPointer)
+            {
+                StaticLogger.Log.LogDebug("its a pointer field");
+                unsafe
+                {
+                    field.SetValue(result, (IntPtr)Pointer.Unbox(value));
+                }
+
+                continue;
+            }
+
+            StaticLogger.Log.LogDebug($"value is {value?.GetType().FullName}, field is {field.FieldType.FullName}");
+            var copiedObj = MakeDeepCopy(value, processor, path, foundReferences, newReferences, ref id);
+            StaticLogger.Log.LogDebug($"copied object type is {copiedObj?.GetType().FullName}");
 
             field.SetValue(result, copiedObj);
         }
