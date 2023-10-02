@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using HarmonyLib;
@@ -18,8 +19,16 @@ public class ScriptableObjectPatch
         ContainerStarter.Kernel.GetInstance<INewScriptableObjectTracker>();
 
     [HarmonyPatch]
-    private class CreateInstanceTracker
+    private class CreateInstanceTrackerString
     {
+        private static IEnumerable<MethodBase> TargetMethods()
+        {
+            yield return AccessTools.Method(typeof(ScriptableObject), nameof(ScriptableObject.CreateInstance),
+                new[] { typeof(string) });
+            yield return AccessTools.Method(typeof(ScriptableObject), nameof(ScriptableObject.CreateInstance),
+                new[] { typeof(Type) });
+        }
+
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
             return PatchHelper.CleanupIgnoreFail(original, ex);
