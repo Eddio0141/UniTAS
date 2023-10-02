@@ -44,9 +44,8 @@ public static class DeepCopy
     public static object MakeDeepCopy(object source, Type resultType,
         Func<string, Traverse, Traverse, object> processor = null, string pathRoot = "")
     {
-        var foundReferences = new Dictionary<ulong, object> { { 0, source } };
-        var id = 1ul;
-        return MakeDeepCopy(source, resultType, processor, pathRoot, foundReferences, new(), ref id);
+        var id = 0ul;
+        return MakeDeepCopy(source, resultType, processor, pathRoot, new(), new(), ref id);
     }
 
     // dictionary is used to keep track of instances. int is the ID of the instance, which is used to compare foundReferences and newReferences
