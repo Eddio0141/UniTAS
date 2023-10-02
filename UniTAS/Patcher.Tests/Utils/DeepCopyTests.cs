@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using UniTAS.Patcher.Utils;
 
 namespace Patcher.Tests.Utils;
@@ -161,5 +162,22 @@ public partial class DeepCopyTests
 
         Assert.Same(result, result.Nested.Nested);
         Assert.Same(result.Nested, result.Nested.Nested.Nested);
+    }
+
+    [Fact]
+    public void SelfReferencingTest2()
+    {
+        var source = new SelfReferencing3();
+        var reference2 = new SelfReferencing4();
+        source.Nested = reference2;
+        reference2.Nested = new() { source };
+
+        var result = DeepCopy.MakeDeepCopy<SelfReferencing3>(source);
+        Assert.NotSame(source, result);
+        Assert.NotSame(source.Nested, result.Nested);
+        Assert.NotSame(source.Nested.Nested.FirstOrDefault(), result);
+
+        Assert.Same(result, result.Nested.Nested.FirstOrDefault());
+        Assert.Same(result.Nested, result.Nested.Nested.FirstOrDefault()?.Nested);
     }
 }

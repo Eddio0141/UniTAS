@@ -16,7 +16,7 @@ public partial class DeepCopyTests
         public static bool ThisShouldBeIgnored;
 
         [SuppressMessage("ReSharper", "UnusedMember.Local")]
-        private const int ThisShouldBeIgnoredToo = 42;
+        private const int THIS_SHOULD_BE_IGNORED_TOO = 42;
     }
 
     private enum TestEnum
@@ -62,5 +62,15 @@ public partial class DeepCopyTests
     private class SelfReferencing2
     {
         public SelfReferencing1 Nested;
+    }
+
+    private class SelfReferencing3
+    {
+        public SelfReferencing4 Nested;
+    }
+
+    private class SelfReferencing4
+    {
+        public List<SelfReferencing3> Nested;
     }
 }
