@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using HarmonyLib;
+using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Models.Utils;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Logging;
@@ -18,23 +20,45 @@ public partial class SaveScriptableObjectStates
         public readonly ScriptableObject ScriptableObject;
 
         private readonly FieldData[] _savedFields;
+        private readonly FieldInfo[] _resetFields;
 
         private readonly ILogger _logger;
+        private readonly ITryFreeMalloc _freeMalloc;
 
-        public StoredState(ScriptableObject scriptableObject, ILogger logger, ITryFreeMalloc freeMalloc)
+        public StoredState(ScriptableObject scriptableObject, Object[] allObjs, ILogger logger,
+            ITryFreeMalloc freeMalloc)
         {
             ScriptableObject = scriptableObject;
             _logger = logger;
+            _freeMalloc = freeMalloc;
 
             // save
-            // TODO limit fields that are serializable to save space
-            var fields = AccessTools.GetDeclaredFields(scriptableObject.GetType())
-                .Where(x => !x.IsStatic && !x.IsLiteral);
-            _savedFields = fields.Select(x => new FieldData(x, scriptableObject, logger, freeMalloc)).ToArray();
+            var fields = scriptableObject.GetType().GetFieldsRecursive(AccessTools.all)
+                .Where(x => !x.IsStatic && !x.IsLiteral && x.DeclaringType != typeof(Object));
+
+            var resetFields = new List<FieldInfo>();
+            var savedFields = new List<FieldData>();
+
+            foreach (var field in fields)
+            {
+                if (field.IsFieldUnitySerializable())
+                {
+                    savedFields.Add(new(field, scriptableObject, allObjs, logger, freeMalloc));
+                    continue;
+                }
+
+                resetFields.Add(field);
+            }
+
+            _savedFields = savedFields.ToArray();
+            _resetFields = resetFields.ToArray();
         }
 
         public void Load()
         {
+            StaticLogger.Log.LogDebug(
+                $"loading state for type {ScriptableObject.GetType().FullName}, ({ScriptableObject.name}), field count: {_savedFields.Length}, reset field count: {_resetFields.Length}");
+
             if (ScriptableObject == null)
             {
                 _logger.LogError("ScriptableObject is null, this should not happen");
@@ -44,6 +68,13 @@ public partial class SaveScriptableObjectStates
             foreach (var savedField in _savedFields)
             {
                 savedField.Load();
+            }
+
+            foreach (var resetField in _resetFields)
+            {
+                StaticLogger.Log.LogDebug($"Resetting field {resetField.Name}");
+                _freeMalloc?.TryFree(ScriptableObject, resetField);
+                resetField.SetValue(ScriptableObject, null);
             }
         }
     }
@@ -56,7 +87,8 @@ public partial class SaveScriptableObjectStates
 
         private readonly ITryFreeMalloc _freeMalloc;
 
-        public FieldData(FieldInfo fieldInfo, ScriptableObject instance, ILogger logger, ITryFreeMalloc freeMalloc)
+        public FieldData(FieldInfo fieldInfo, ScriptableObject instance, Object[] allObjs, ILogger logger,
+            ITryFreeMalloc freeMalloc)
         {
             _saveField = fieldInfo;
             _instance = instance;
@@ -68,35 +100,22 @@ public partial class SaveScriptableObjectStates
                 _freeMalloc = freeMalloc;
             }
 
-            if (value is Object unityObject)
+            try
             {
-                _value = unityObject;
+                _value = DeepCopy.MakeDeepCopy(value, unityObjects: allObjs);
             }
-            else
+            catch (Exception e)
             {
-                try
-                {
-                    _value = DeepCopy.MakeDeepCopy(value);
-                }
-                catch (Exception e)
-                {
-                    logger.LogError($"Failed to deep copy field value, type is {fieldInfo.FieldType.FullName}, {e}");
-                }
+                logger.LogError($"Failed to deep copy field value, type is {fieldInfo.FieldType.FullName}, {e}");
             }
         }
 
         public void Load()
         {
+            StaticLogger.Log.LogDebug($"Loading field {_saveField.Name}, value is {_value}");
+
             // try to free pointer if it's a pointer
-            if (_freeMalloc != null)
-            {
-                var prevValue = _saveField.GetValue(_instance);
-                unsafe
-                {
-                    var prevValueRaw = (IntPtr)Pointer.Unbox(prevValue);
-                    _freeMalloc.TryFree(prevValueRaw);
-                }
-            }
+            _freeMalloc?.TryFree(_instance, _saveField);
 
             _saveField.SetValue(_instance, _value.IsLeft ? _value.Left : _value.Right);
         }

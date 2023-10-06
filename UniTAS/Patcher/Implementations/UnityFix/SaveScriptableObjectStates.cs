@@ -1,4 +1,7 @@
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using HarmonyLib;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.SoftRestart;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
@@ -19,10 +22,17 @@ public partial class SaveScriptableObjectStates : INewScriptableObjectTracker, I
     private readonly ILogger _logger;
     private readonly ITryFreeMalloc _freeMalloc;
 
+    private readonly Assembly[] _ignoreAssemblies;
+
     public SaveScriptableObjectStates(ILogger logger, ITryFreeMalloc freeMalloc)
     {
         _logger = logger;
         _freeMalloc = freeMalloc;
+
+        _ignoreAssemblies = new[]
+        {
+            AccessTools.TypeByName("TMPro.TMP_FontAsset")
+        }.Where(x => x != null).Select(x => x.Assembly).ToArray();
     }
 
     private bool _initialized;
@@ -40,23 +50,26 @@ public partial class SaveScriptableObjectStates : INewScriptableObjectTracker, I
     {
         _logger.LogDebug("Saving all ScriptableObject states");
 
-        var allScriptableObjects = ResourcesUtils.FindObjectsOfTypeAll<ScriptableObject>();
+        var allObjs = ResourcesUtils.FindObjectsOfTypeAll<Object>();
+        var allScriptableObjects = allObjs.Where(x =>
+                x is ScriptableObject && _ignoreAssemblies.All(a => !Equals(a, x.GetType().Assembly)))
+            .Cast<ScriptableObject>().ToArray();
         _logger.LogDebug($"Found {allScriptableObjects.Length} ScriptableObjects");
 
         foreach (var obj in allScriptableObjects)
         {
-            Save(obj);
+            Save(obj, allObjs);
         }
     }
 
-    private void Save(ScriptableObject obj)
+    private void Save(ScriptableObject obj, Object[] allObjs)
     {
         foreach (var x in _storedStates)
         {
             if (x.ScriptableObject == obj) return;
         }
 
-        _storedStates.Add(new(obj, _logger, _freeMalloc));
+        _storedStates.Add(new(obj, allObjs, _logger, _freeMalloc));
     }
 
     public void NewScriptableObject(ScriptableObject scriptableObject)
