@@ -1,11 +1,11 @@
-using System;
+using System.Reflection;
 
 namespace UniTAS.Patcher.Services;
 
 public interface ITryFreeMalloc
 {
     /// <summary>
-    /// Tries to free the memory at the given pointer
+    /// Tries to free the memory of the given field
     /// </summary>
-    void TryFree(IntPtr ptr);
+    void TryFree(object instance, FieldInfo fieldInfo);
 }

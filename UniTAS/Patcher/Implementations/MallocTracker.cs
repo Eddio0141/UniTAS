@@ -33,11 +33,23 @@ public class MallocTracker : ITryFreeMalloc, IUnityMallocTracker
         _hasUnityMalloc = _unityFree != null && _unityFreeTracked != null && _allocator != null;
     }
 
-    public void TryFree(IntPtr ptr)
+    private void TryFree(IntPtr ptr)
     {
         if (_hasUnityMalloc && TryFreeUnityMalloc(ptr)) return;
 
         _logger.LogWarning($"Could not find malloc at {ptr} to free");
+    }
+
+    public void TryFree(object instance, FieldInfo fieldInfo)
+    {
+        if (!fieldInfo.FieldType.IsPointer) return;
+
+        var prevValue = fieldInfo.GetValue(instance);
+        unsafe
+        {
+            var prevValueRaw = (IntPtr)Pointer.Unbox(prevValue);
+            TryFree(prevValueRaw);
+        }
     }
 
     private bool TryFreeUnityMalloc(IntPtr ptr)
