@@ -5,6 +5,8 @@ using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using UniTAS.Patcher.Exceptions;
+using UniTAS.Patcher.Extensions;
+using Object = UnityEngine.Object;
 
 namespace UniTAS.Patcher.Utils;
 
@@ -40,18 +42,37 @@ public static class DeepCopy
     /// <param name="source">The original object</param>
     /// <param name="processor">Optional value transformation function (taking a field name and src/dst <see cref="Traverse"/> instances)</param>
     /// <param name="pathRoot">The optional path root to start with</param>
+    /// <param name="unityObjects">Unity objects in scene to reference to</param>
     /// <returns>The copy of the original object</returns>
     public static object MakeDeepCopy(object source, Func<string, Traverse, Traverse, object> processor = null,
-        string pathRoot = "")
+        string pathRoot = "", IEnumerable<Object> unityObjects = null)
     {
+        var unityObjs = unityObjects?.ToList();
+
+        // remove itself from the list of unity objects to stop it referencing itself
+        var selfIndex = unityObjs?.FindIndex(x => ReferenceEquals(x, source));
+        Object self = null;
+        if (selfIndex is >= 0)
+        {
+            self = unityObjs[selfIndex.Value];
+            unityObjs.RemoveAt(selfIndex.Value);
+        }
+
         var id = 0ul;
-        return MakeDeepCopy(source, processor, pathRoot, new(), new(), ref id);
+        var returnObj = MakeDeepCopy(source, processor, pathRoot, new(), new(), ref id, unityObjs);
+
+        if (self is not null)
+        {
+            unityObjs.Add(self);
+        }
+
+        return returnObj;
     }
 
     // dictionary is used to keep track of instances. int is the ID of the instance, which is used to compare foundReferences and newReferences
     private static object MakeDeepCopy(object source, Func<string, Traverse, Traverse, object> processor,
         string pathRoot, Dictionary<ulong, object> foundReferences,
-        Dictionary<ulong, object> newReferences, ref ulong id)
+        Dictionary<ulong, object> newReferences, ref ulong id, List<Object> unityObjects)
     {
         _makeDeepCopyRecursionDepth++;
         if (_makeDeepCopyRecursionDepth > MAKE_DEEP_COPY_RECURSION_DEPTH_LIMIT)
@@ -103,7 +124,7 @@ public static class DeepCopy
                 var iStr = i.ToString();
                 var path = pathRoot.Length > 0 ? pathRoot + "." + iStr : iStr;
                 var newElement = MakeDeepCopy(array.GetValue(i), processor, path, foundReferences, newReferences,
-                    ref id);
+                    ref id, unityObjects);
                 newArray.SetValue(newElement, i);
             }
 
@@ -141,7 +162,7 @@ public static class DeepCopy
                 foreach (var element in sourceCollection)
                 {
                     var newElement = MakeDeepCopy(element, processor, pathRoot,
-                        foundReferences, newReferences, ref id);
+                        foundReferences, newReferences, ref id, unityObjects);
                     tempResultList.Add(newElement);
                 }
 
@@ -185,6 +206,14 @@ public static class DeepCopy
             else
             {
                 value = field.GetValue(source);
+
+                // check if field is referencing scene object
+                if (field.IsFieldUnitySerializable() && unityObjects.Any(x => ReferenceEquals(x, value)))
+                {
+                    // if it is, then just reference it
+                    field.SetValue(result, value);
+                    continue;
+                }
             }
 
             if (field.FieldType.IsPointer)
@@ -197,7 +226,7 @@ public static class DeepCopy
                 continue;
             }
 
-            var copiedObj = MakeDeepCopy(value, processor, path, foundReferences, newReferences, ref id);
+            var copiedObj = MakeDeepCopy(value, processor, path, foundReferences, newReferences, ref id, unityObjects);
 
             field.SetValue(result, copiedObj);
         }
