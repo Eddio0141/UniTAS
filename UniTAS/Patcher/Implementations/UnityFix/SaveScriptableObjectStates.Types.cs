@@ -25,8 +25,7 @@ public partial class SaveScriptableObjectStates
         private readonly ILogger _logger;
         private readonly ITryFreeMalloc _freeMalloc;
 
-        public StoredState(ScriptableObject scriptableObject, Object[] allObjs, ILogger logger,
-            ITryFreeMalloc freeMalloc)
+        public StoredState(ScriptableObject scriptableObject, ILogger logger, ITryFreeMalloc freeMalloc)
         {
             ScriptableObject = scriptableObject;
             _logger = logger;
@@ -43,7 +42,7 @@ public partial class SaveScriptableObjectStates
             {
                 if (field.IsFieldUnitySerializable())
                 {
-                    savedFields.Add(new(field, scriptableObject, allObjs, logger, freeMalloc));
+                    savedFields.Add(new(field, scriptableObject, logger, freeMalloc));
                     continue;
                 }
 
@@ -87,8 +86,7 @@ public partial class SaveScriptableObjectStates
 
         private readonly ITryFreeMalloc _freeMalloc;
 
-        public FieldData(FieldInfo fieldInfo, ScriptableObject instance, Object[] allObjs, ILogger logger,
-            ITryFreeMalloc freeMalloc)
+        public FieldData(FieldInfo fieldInfo, ScriptableObject instance, ILogger logger, ITryFreeMalloc freeMalloc)
         {
             _saveField = fieldInfo;
             _instance = instance;
@@ -102,7 +100,7 @@ public partial class SaveScriptableObjectStates
 
             try
             {
-                _value = DeepCopy.MakeDeepCopy(value, unityObjects: allObjs);
+                _value = DeepCopy.MakeDeepCopy(value);
             }
             catch (Exception e)
             {

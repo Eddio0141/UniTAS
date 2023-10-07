@@ -50,26 +50,24 @@ public partial class SaveScriptableObjectStates : INewScriptableObjectTracker, I
     {
         _logger.LogDebug("Saving all ScriptableObject states");
 
-        var allObjs = ResourcesUtils.FindObjectsOfTypeAll<Object>();
-        var allScriptableObjects = allObjs.Where(x =>
-                x is ScriptableObject && _ignoreAssemblies.All(a => !Equals(a, x.GetType().Assembly)))
-            .Cast<ScriptableObject>().ToArray();
+        var allScriptableObjects = ResourcesUtils.FindObjectsOfTypeAll<ScriptableObject>()
+            .Where(x => _ignoreAssemblies.All(a => !Equals(a, x.GetType().Assembly))).ToArray();
         _logger.LogDebug($"Found {allScriptableObjects.Length} ScriptableObjects");
 
         foreach (var obj in allScriptableObjects)
         {
-            Save(obj, allObjs);
+            Save(obj);
         }
     }
 
-    private void Save(ScriptableObject obj, Object[] allObjs)
+    private void Save(ScriptableObject obj)
     {
         foreach (var x in _storedStates)
         {
             if (x.ScriptableObject == obj) return;
         }
 
-        _storedStates.Add(new(obj, allObjs, _logger, _freeMalloc));
+        _storedStates.Add(new(obj, _logger, _freeMalloc));
     }
 
     public void NewScriptableObject(ScriptableObject scriptableObject)
