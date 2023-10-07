@@ -5,6 +5,8 @@ using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using UniTAS.Patcher.Exceptions;
+using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace UniTAS.Patcher.Utils;
 
@@ -53,6 +55,12 @@ public static class DeepCopy
         string pathRoot, Dictionary<ulong, object> foundReferences,
         Dictionary<ulong, object> newReferences, ref ulong id)
     {
+        if (source is Object and not MonoBehaviour and not ScriptableObject)
+        {
+            // this is a native unity object, so we can't make a deep copy of it
+            return source;
+        }
+
         _makeDeepCopyRecursionDepth++;
         if (_makeDeepCopyRecursionDepth > MAKE_DEEP_COPY_RECURSION_DEPTH_LIMIT)
         {
