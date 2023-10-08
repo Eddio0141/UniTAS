@@ -55,9 +55,12 @@ public static class DeepCopy
         string pathRoot, Dictionary<ulong, object> foundReferences,
         Dictionary<ulong, object> newReferences, ref ulong id)
     {
+        StaticLogger.Trace($"MakeDeepCopy, type: {source?.GetType().FullName}, pathRoot: {pathRoot}");
+
         if (source is Object and not MonoBehaviour and not ScriptableObject)
         {
             // this is a native unity object, so we can't make a deep copy of it
+            StaticLogger.Trace("MakeDeepCopy, skipping native unity object");
             return source;
         }
 
@@ -71,6 +74,7 @@ public static class DeepCopy
         if (source is null)
         {
             _makeDeepCopyRecursionDepth--;
+            StaticLogger.Trace("MakeDeepCopy, returning null");
             return null;
         }
 
@@ -80,6 +84,7 @@ public static class DeepCopy
             if (newReferences.TryGetValue(foundId, out var newReference))
             {
                 _makeDeepCopyRecursionDepth--;
+                StaticLogger.Trace($"MakeDeepCopy, returning existing reference, foundId: {foundId}");
                 return newReference;
             }
         }
@@ -89,12 +94,14 @@ public static class DeepCopy
         if (type.IsPrimitive)
         {
             _makeDeepCopyRecursionDepth--;
+            StaticLogger.Trace("MakeDeepCopy, returning primitive");
             return source;
         }
 
         if (type.IsEnum)
         {
             _makeDeepCopyRecursionDepth--;
+            StaticLogger.Trace("MakeDeepCopy, returning enum");
             return Enum.ToObject(type, (int)source);
         }
 
@@ -116,6 +123,7 @@ public static class DeepCopy
             }
 
             _makeDeepCopyRecursionDepth--;
+            StaticLogger.Trace("MakeDeepCopy, returning array");
             return newArray;
         }
 
@@ -157,6 +165,7 @@ public static class DeepCopy
 
                 _makeDeepCopyRecursionDepth--;
                 newReferences.Add(newRefId, addableResult);
+                StaticLogger.Trace("MakeDeepCopy, returning IEnumerable");
                 return addableResult;
             }
         }
@@ -165,9 +174,11 @@ public static class DeepCopy
         if (ns == "System" || (ns?.StartsWith("System.") ?? false))
         {
             _makeDeepCopyRecursionDepth--;
+            StaticLogger.Trace($"MakeDeepCopy, returning system type, namespace: {ns}");
             return source;
         }
 
+        StaticLogger.Trace("MakeDeepCopy, creating new instance and copying fields");
         var result = AccessTools.CreateInstance(type);
         // guaranteed to be a reference type
         foundReferences.Add(id, source);
@@ -211,6 +222,7 @@ public static class DeepCopy
         }
 
         _makeDeepCopyRecursionDepth--;
+        StaticLogger.Trace("MakeDeepCopy, returning result from copied fields");
         return result;
     }
 }
