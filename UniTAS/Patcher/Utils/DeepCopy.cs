@@ -108,6 +108,7 @@ public static class DeepCopy
 
         if (type.IsArray)
         {
+            StaticLogger.Trace("MakeDeepCopy, copying array");
             var newElementType = type.GetElementType();
             var array = (Array)source;
             var newArray = Array.CreateInstance(newElementType ?? throw new InvalidOperationException(), array.Length);
@@ -131,6 +132,7 @@ public static class DeepCopy
         // is type a collection?
         if (typeof(IEnumerable).IsAssignableFrom(type))
         {
+            StaticLogger.Trace("MakeDeepCopy, copying IEnumerable");
             var sourceCollection = (IEnumerable)source;
             foundReferences.Add(id, source);
             var newRefId = id;
@@ -169,6 +171,8 @@ public static class DeepCopy
                 StaticLogger.Trace("MakeDeepCopy, returning IEnumerable");
                 return addableResult;
             }
+
+            StaticLogger.Trace("MakeDeepCopy, IEnumerable has no constructor with IEnumerable argument");
         }
 
         var ns = type.Namespace;
@@ -193,10 +197,12 @@ public static class DeepCopy
             if (field.IsStatic || field.IsLiteral) continue;
 
             var name = field.Name;
+            StaticLogger.Trace($"MakeDeepCopy, processing field: {name}");
             var path = pathRoot.Length > 0 ? pathRoot + "." + name : name;
             object value;
             if (processor is not null)
             {
+                StaticLogger.Trace("MakeDeepCopy, using processor to get value for copying");
                 var srcTraverse = Traverse.Create(source).Field(name);
                 var dstTraverse = Traverse.Create(result).Field(name);
 
@@ -209,6 +215,7 @@ public static class DeepCopy
 
             if (field.FieldType.IsPointer)
             {
+                StaticLogger.Trace("MakeDeepCopy, copying pointer field");
                 unsafe
                 {
                     field.SetValue(result, (IntPtr)Pointer.Unbox(value));
@@ -217,6 +224,7 @@ public static class DeepCopy
                 continue;
             }
 
+            StaticLogger.Trace("MakeDeepCopy, copying field");
             var copiedObj = MakeDeepCopy(value, processor, path, foundReferences, newReferences, ref id);
 
             field.SetValue(result, copiedObj);
