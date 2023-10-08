@@ -55,7 +55,8 @@ public static class DeepCopy
         string pathRoot, Dictionary<ulong, object> foundReferences,
         Dictionary<ulong, object> newReferences, ref ulong id)
     {
-        StaticLogger.Trace($"MakeDeepCopy, type: {source?.GetType().FullName}, pathRoot: {pathRoot}");
+        StaticLogger.Trace(
+            $"MakeDeepCopy, depth: {_makeDeepCopyRecursionDepth}, type: {source?.GetType().FullName}, pathRoot: {pathRoot}");
 
         if (source is Object and not MonoBehaviour and not ScriptableObject)
         {
