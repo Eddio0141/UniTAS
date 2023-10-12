@@ -6,7 +6,6 @@ using HarmonyLib;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
-using MonoMod.Utils;
 using UniTAS.Patcher.ContainerBindings.GameExecutionControllers;
 using UniTAS.Patcher.ContainerBindings.UnityEvents;
 using UniTAS.Patcher.Extensions;
@@ -140,21 +139,7 @@ public class MonoBehaviourPatch : PreloadPatcher
 
         foreach (var type in types)
         {
-            // check if type base is MonoBehaviour
-            var isMonoBehaviour = false;
-            var baseType = type.BaseType?.SafeResolve();
-            while (baseType != null)
-            {
-                if (baseType.FullName == "UnityEngine.MonoBehaviour")
-                {
-                    isMonoBehaviour = true;
-                    break;
-                }
-
-                baseType = baseType.BaseType?.SafeResolve();
-            }
-
-            if (!isMonoBehaviour) continue;
+            if (!type.IsMonoBehaviour()) continue;
 
             StaticLogger.Log.LogDebug($"Patching MonoBehaviour type: {type.FullName}");
 
