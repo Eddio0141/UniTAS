@@ -7,6 +7,7 @@ using BepInEx;
 using HarmonyLib;
 using Mono.Cecil;
 using Mono.Cecil.Rocks;
+using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Interfaces;
 using UniTAS.Patcher.Utils;
 
@@ -26,13 +27,17 @@ public class UnityInitInvoke : PreloadPatcher
         var targetDLLs = foundEntryAssembly != null
             ? new[] { foundEntryAssembly }
             : new[] { "UnityEngine.CoreModule.dll", "UnityEngine.dll" };
+
+        // add patch target dlls too
+        targetDLLs = targetDLLs.Concat(TargetPatcherDlls.TargetDllsWithExclusions).Distinct().ToArray();
         TargetDLLs = targetDLLs;
+
         _targetClass = GetEntryKey(bepInExConfig, entryPoint, "Type") ??
                        // better late than never
                        "UnityEngine.Camera";
         _targetMethod = GetEntryKey(bepInExConfig, entryPoint, "Method") ?? ".cctor";
         StaticLogger.Log.LogInfo(
-            $"UniTAS will be hooked on {_targetClass}.{_targetMethod} in {string.Join(", ", targetDLLs)}");
+            $"UniTAS will be hooked on {_targetClass}.{_targetMethod} in {string.Join(", ", targetDLLs)} as a last resort init hook");
     }
 
     // why can't I even load config with BepInEx's own ConfigFile????
@@ -57,6 +62,54 @@ public class UnityInitInvoke : PreloadPatcher
 
     public override void Patch(ref AssemblyDefinition assembly)
     {
+        TryHookAwakes(assembly);
+        TryHookRuntimeInits(assembly);
+        TryHookLastResort(assembly);
+    }
+
+    private static void TryHookRuntimeInits(AssemblyDefinition assembly)
+    {
+        StaticLogger.Log.LogDebug("Trying to hook all RuntimeInitializeOnLoadMethodAttribute methods");
+
+        var types = assembly.MainModule.GetAllTypes();
+
+        foreach (var type in types)
+        {
+            // find all methods with RuntimeInitializeOnLoadMethodAttribute
+            var initMethods = type.GetMethods().Where(x =>
+                x.CustomAttributes.Any(a =>
+                    a.AttributeType.FullName == "UnityEngine.RuntimeInitializeOnLoadMethodAttribute"));
+
+            foreach (var initMethod in initMethods)
+            {
+                ILCodeUtils.MethodInvokeHook(assembly, initMethod,
+                    AccessTools.Method(typeof(InvokeTracker), nameof(InvokeTracker.OnUnityInit)));
+                LogHook(assembly, type.Name, initMethod.Name);
+            }
+        }
+    }
+
+    private static void TryHookAwakes(AssemblyDefinition assembly)
+    {
+        StaticLogger.Log.LogDebug("Trying to hook all MonoBehaviours Awake methods");
+
+        var types = assembly.MainModule.GetAllTypes().Where(x => x.IsMonoBehaviour());
+
+        foreach (var type in types)
+        {
+            var awake = type.GetMethods().FirstOrDefault(x => x.Name == "Awake" && !x.IsStatic && !x.HasParameters);
+            if (awake == null) continue;
+
+            ILCodeUtils.MethodInvokeHook(assembly, awake,
+                AccessTools.Method(typeof(InvokeTracker), nameof(InvokeTracker.OnUnityInit)));
+            LogHook(assembly, type.Name, "Awake");
+        }
+    }
+
+    private void TryHookLastResort(AssemblyDefinition assembly)
+    {
+        StaticLogger.Log.LogDebug("Trying to hook last resort init method defined in BepInEx config");
+
         // make sure it exists
         var targetType = assembly.MainModule.GetAllTypes().FirstOrDefault(t => t.Name == _targetClass);
         if (targetType == null) return;
