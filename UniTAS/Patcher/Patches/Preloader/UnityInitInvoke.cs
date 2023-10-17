@@ -29,7 +29,13 @@ public class UnityInitInvoke : PreloadPatcher
             : new[] { "UnityEngine.CoreModule.dll", "UnityEngine.dll" };
 
         // add patch target dlls too
-        targetDLLs = targetDLLs.Concat(TargetPatcherDlls.TargetDllsWithExclusions).Distinct().ToArray();
+        targetDLLs = targetDLLs.Concat(TargetPatcherDlls.AllDLLs.Where(x =>
+        {
+            var fileWithoutExtension = Path.GetFileNameWithoutExtension(x);
+            return fileWithoutExtension == null ||
+                   StaticCtorPatchTargetInfo.AssemblyIncludeRaw.Any(a => fileWithoutExtension.Like(a)) ||
+                   !StaticCtorPatchTargetInfo.AssemblyExclusionsRaw.Any(a => fileWithoutExtension.Like(a));
+        })).Distinct().ToArray();
         TargetDLLs = targetDLLs;
 
         _targetClass = GetEntryKey(bepInExConfig, entryPoint, "Type") ??
@@ -63,31 +69,32 @@ public class UnityInitInvoke : PreloadPatcher
     public override void Patch(ref AssemblyDefinition assembly)
     {
         TryHookAwakes(assembly);
-        TryHookRuntimeInits(assembly);
+        // TryHookRuntimeInits(assembly);
         TryHookLastResort(assembly);
     }
 
-    private static void TryHookRuntimeInits(AssemblyDefinition assembly)
-    {
-        StaticLogger.Log.LogDebug("Trying to hook all RuntimeInitializeOnLoadMethodAttribute methods");
-
-        var types = assembly.MainModule.GetAllTypes();
-
-        foreach (var type in types)
-        {
-            // find all methods with RuntimeInitializeOnLoadMethodAttribute
-            var initMethods = type.GetMethods().Where(x =>
-                x.CustomAttributes.Any(a =>
-                    a.AttributeType.FullName == "UnityEngine.RuntimeInitializeOnLoadMethodAttribute"));
-
-            foreach (var initMethod in initMethods)
-            {
-                ILCodeUtils.MethodInvokeHook(assembly, initMethod,
-                    AccessTools.Method(typeof(InvokeTracker), nameof(InvokeTracker.OnUnityInit)));
-                LogHook(assembly, type.Name, initMethod.Name);
-            }
-        }
-    }
+    // doing this seems to fail so Awake hooks are enough
+    // private static void TryHookRuntimeInits(AssemblyDefinition assembly)
+    // {
+    //     StaticLogger.Log.LogDebug("Trying to hook all RuntimeInitializeOnLoadMethodAttribute methods");
+    //
+    //     var types = assembly.MainModule.GetAllTypes();
+    //
+    //     foreach (var type in types)
+    //     {
+    //         // find all methods with RuntimeInitializeOnLoadMethodAttribute
+    //         var initMethods = type.GetMethods().Where(x =>
+    //             x.CustomAttributes.Any(a =>
+    //                 a.AttributeType.FullName == "UnityEngine.RuntimeInitializeOnLoadMethodAttribute"));
+    //
+    //         foreach (var initMethod in initMethods)
+    //         {
+    //             ILCodeUtils.MethodInvokeHook(assembly, initMethod,
+    //                 AccessTools.Method(typeof(InvokeTracker), nameof(InvokeTracker.OnUnityInit)));
+    //             LogHook(assembly, type.Name, initMethod.Name);
+    //         }
+    //     }
+    // }
 
     private static void TryHookAwakes(AssemblyDefinition assembly)
     {
