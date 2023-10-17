@@ -41,14 +41,7 @@ public static class TargetPatcherDlls
         "mscorlib",
         "Mono.*",
         "Mono",
-        "MonoMod.*",
-        "BepInEx.*",
-        "BepInEx",
-        "MonoMod.*",
-        "0Harmony",
-        "HarmonyXInterop",
-        "StructureMap",
-        "Newtonsoft.Json"
+        "MonoMod.*"
     };
 
     private static string[] AssemblyIncludeRaw { get; } =
