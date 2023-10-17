@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using UniTAS.Patcher.Interfaces.Invoker;
 
@@ -13,7 +14,7 @@ public static class InvokeTracker
         if (_invoked) return;
         _invoked = true;
 
-        StaticLogger.Log.LogDebug("Unity has been initialized");
+        StaticLogger.Log.LogDebug($"Unity has been initialized, entry at {new StackTrace()}");
 
         InvokeEventAttributes.Invoke<InvokeOnUnityInitAttribute>();
     }
