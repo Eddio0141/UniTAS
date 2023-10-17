@@ -32,23 +32,16 @@ public static class TargetPatcherDlls
 
     private static string[] AssemblyExclusionsRaw { get; } =
     {
-        "UnityEngine.*",
-        "UnityEngine",
-        "Unity.*",
+        // c# related
         "System.*",
         "System",
         "netstandard",
         "mscorlib",
         "Mono.*",
-        "Mono",
-        "MonoMod.*"
+        "Mono"
     };
 
     private static string[] AssemblyIncludeRaw { get; } =
     {
-        "Unity.InputSystem",
-        "UnityEngine.InputModule",
-        // high level API that manages assets
-        "Unity.ResourceManager"
     };
 }
