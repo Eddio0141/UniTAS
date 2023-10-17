@@ -8,7 +8,7 @@ namespace UniTAS.Patcher.Utils;
 
 public static class TargetPatcherDlls
 {
-    public static IEnumerable<string> AllDLLs =>
+    private static IEnumerable<string> AllDLLs =>
         Directory.GetFiles(Paths.ManagedPath, "*.dll", SearchOption.TopDirectoryOnly).Select(Path.GetFileName)
             .ToArray();
 
