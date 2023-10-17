@@ -1,12 +1,10 @@
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using HarmonyLib;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 using UniTAS.Patcher.ContainerBindings.GameExecutionControllers;
-using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Interfaces;
 using UniTAS.Patcher.Utils;
 
@@ -14,13 +12,7 @@ namespace UniTAS.Patcher.Patches.Preloader;
 
 public class FinalizeSuppressionPatch : PreloadPatcher
 {
-    public override IEnumerable<string> TargetDLLs => TargetPatcherDlls.AllDLLs.Where(x =>
-    {
-        var fileWithoutExtension = Path.GetFileNameWithoutExtension(x);
-        return fileWithoutExtension == null ||
-               StaticCtorPatchTargetInfo.AssemblyIncludeRaw.Any(a => fileWithoutExtension.Like(a)) ||
-               !StaticCtorPatchTargetInfo.AssemblyExclusionsRaw.Any(a => fileWithoutExtension.Like(a));
-    });
+    public override IEnumerable<string> TargetDLLs => TargetPatcherDlls.AllExcludedDLLs;
 
     public override void Patch(ref AssemblyDefinition assembly)
     {

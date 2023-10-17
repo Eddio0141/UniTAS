@@ -29,13 +29,7 @@ public class UnityInitInvoke : PreloadPatcher
             : new[] { "UnityEngine.CoreModule.dll", "UnityEngine.dll" };
 
         // add patch target dlls too
-        targetDLLs = targetDLLs.Concat(TargetPatcherDlls.AllDLLs.Where(x =>
-        {
-            var fileWithoutExtension = Path.GetFileNameWithoutExtension(x);
-            return fileWithoutExtension == null ||
-                   StaticCtorPatchTargetInfo.AssemblyIncludeRaw.Any(a => fileWithoutExtension.Like(a)) ||
-                   !StaticCtorPatchTargetInfo.AssemblyExclusionsRaw.Any(a => fileWithoutExtension.Like(a));
-        })).Distinct().ToArray();
+        targetDLLs = targetDLLs.Concat(TargetPatcherDlls.AllExcludedDLLs).Distinct().ToArray();
         TargetDLLs = targetDLLs;
 
         _targetClass = GetEntryKey(bepInExConfig, entryPoint, "Type") ??
