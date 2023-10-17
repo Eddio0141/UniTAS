@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using HarmonyLib;
@@ -16,13 +15,7 @@ namespace UniTAS.Patcher.Patches.Preloader;
 
 public class MonoBehaviourPatch : PreloadPatcher
 {
-    public override IEnumerable<string> TargetDLLs => TargetPatcherDlls.AllDLLs.Where(x =>
-    {
-        var fileWithoutExtension = Path.GetFileNameWithoutExtension(x);
-        return fileWithoutExtension == null ||
-               // StaticCtorPatchTargetInfo.AssemblyIncludeRaw.Any(a => fileWithoutExtension.Like(a)) ||
-               !StaticCtorPatchTargetInfo.AssemblyExclusionsRaw.Any(a => fileWithoutExtension.Like(a));
-    });
+    public override IEnumerable<string> TargetDLLs => TargetPatcherDlls.AllExcludedDLLs;
 
     private const string COLLISION = "UnityEngine.Collision";
     private const string COLLISION_2D = "UnityEngine.Collision2D";
