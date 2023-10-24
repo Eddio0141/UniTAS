@@ -46,6 +46,7 @@ public partial class SaveScriptableObjectStates
                     continue;
                 }
 
+                StaticLogger.Trace("Field is not unity serializable, resetting on load");
                 resetFields.Add(field);
             }
 
@@ -55,9 +56,6 @@ public partial class SaveScriptableObjectStates
 
         public void Load()
         {
-            StaticLogger.Log.LogDebug(
-                $"loading state for type {ScriptableObject.GetType().FullName}, ({ScriptableObject.name}), field count: {_savedFields.Length}, reset field count: {_resetFields.Length}");
-
             if (ScriptableObject == null)
             {
                 _logger.LogError("ScriptableObject is null, this should not happen");
@@ -71,7 +69,6 @@ public partial class SaveScriptableObjectStates
 
             foreach (var resetField in _resetFields)
             {
-                StaticLogger.Log.LogDebug($"Resetting field {resetField.Name}");
                 _freeMalloc?.TryFree(ScriptableObject, resetField);
                 resetField.SetValue(ScriptableObject, null);
             }
@@ -110,12 +107,12 @@ public partial class SaveScriptableObjectStates
 
         public void Load()
         {
-            StaticLogger.Log.LogDebug($"Loading field {_saveField.Name}, value is {_value}");
-
             // try to free pointer if it's a pointer
             _freeMalloc?.TryFree(_instance, _saveField);
 
-            _saveField.SetValue(_instance, _value.IsLeft ? _value.Left : _value.Right);
+            // additional one to make it not use the stored value
+            var value = DeepCopy.MakeDeepCopy(_value.IsLeft ? _value.Left : _value.Right);
+            _saveField.SetValue(_instance, value);
         }
     }
 }
