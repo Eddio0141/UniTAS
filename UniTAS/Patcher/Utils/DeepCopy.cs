@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -92,7 +91,7 @@ public static class DeepCopy
 
         var type = source.GetType();
 
-        if (type.IsPrimitive)
+        if (type.IsPrimitive || type == typeof(string))
         {
             _makeDeepCopyRecursionDepth--;
             StaticLogger.Trace("MakeDeepCopy, returning primitive");
@@ -130,58 +129,60 @@ public static class DeepCopy
         }
 
         // is type a collection?
-        if (typeof(IEnumerable).IsAssignableFrom(type))
-        {
-            StaticLogger.Trace("MakeDeepCopy, copying IEnumerable");
-            var sourceCollection = (IEnumerable)source;
-            foundReferences.Add(id, source);
-            var newRefId = id;
-            id++;
+        // if (typeof(IEnumerable).IsAssignableFrom(type))
+        // {
+        //     StaticLogger.Trace("MakeDeepCopy, copying IEnumerable");
+        //     var sourceCollection = (IEnumerable)source;
+        //     foundReferences.Add(id, source);
+        //     var newRefId = id;
+        //     id++;
+        //
+        //     Type resultTypeInterface;
+        //     if (type.IsInterface)
+        //     {
+        //         resultTypeInterface = type;
+        //     }
+        //     else
+        //     {
+        //         resultTypeInterface = type.GetInterfaces().First(i =>
+        //             i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
+        //     }
+        //
+        //     var resultTypeGenericArgument = resultTypeInterface.GetGenericArguments()[0];
+        //     var iEnumerableType = typeof(IEnumerable<>).MakeGenericType(resultTypeGenericArgument);
+        //
+        //     var ctor = AccessTools.Constructor(type, new[] { iEnumerableType });
+        //     if (ctor != null)
+        //     {
+        //         var tempResultList =
+        //             (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(resultTypeGenericArgument));
+        //         foreach (var element in sourceCollection)
+        //         {
+        //             var newElement = MakeDeepCopy(element, processor, pathRoot,
+        //                 foundReferences, newReferences, ref id, ref a);
+        //             tempResultList.Add(newElement);
+        //         }
+        //
+        //         var addableResult = ctor.Invoke(new object[] { tempResultList });
+        //
+        //         _makeDeepCopyRecursionDepth--;
+        //         newReferences.Add(newRefId, addableResult);
+        //         StaticLogger.Trace("MakeDeepCopy, returning IEnumerable");
+        //         if (a > 0) a++;
+        //         return addableResult;
+        //     }
+        //
+        //     StaticLogger.Trace("MakeDeepCopy, IEnumerable has no constructor with IEnumerable argument");
+        // }
 
-            Type resultTypeInterface;
-            if (type.IsInterface)
-            {
-                resultTypeInterface = type;
-            }
-            else
-            {
-                resultTypeInterface = type.GetInterfaces().First(i =>
-                    i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
-            }
-
-            var resultTypeGenericArgument = resultTypeInterface.GetGenericArguments()[0];
-            var iEnumerableType = typeof(IEnumerable<>).MakeGenericType(resultTypeGenericArgument);
-
-            var ctor = AccessTools.Constructor(type, new[] { iEnumerableType });
-            if (ctor != null)
-            {
-                var tempResultList =
-                    (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(resultTypeGenericArgument));
-                foreach (var element in sourceCollection)
-                {
-                    var newElement = MakeDeepCopy(element, processor, pathRoot,
-                        foundReferences, newReferences, ref id);
-                    tempResultList.Add(newElement);
-                }
-
-                var addableResult = ctor.Invoke(new object[] { tempResultList });
-
-                _makeDeepCopyRecursionDepth--;
-                newReferences.Add(newRefId, addableResult);
-                StaticLogger.Trace("MakeDeepCopy, returning IEnumerable");
-                return addableResult;
-            }
-
-            StaticLogger.Trace("MakeDeepCopy, IEnumerable has no constructor with IEnumerable argument");
-        }
-
-        var ns = type.Namespace;
-        if (ns == "System" || (ns?.StartsWith("System.") ?? false))
-        {
-            _makeDeepCopyRecursionDepth--;
-            StaticLogger.Trace($"MakeDeepCopy, returning system type, namespace: {ns}");
-            return source;
-        }
+        // var ns = type.Namespace;
+        // if (ns == "System" || (ns?.StartsWith("System.") ?? false))
+        // {
+        //     _makeDeepCopyRecursionDepth--;
+        //     StaticLogger.Trace($"MakeDeepCopy, returning system type, namespace: {ns}");
+        //     if (a > 0) a++;
+        //     return source;
+        // }
 
         StaticLogger.Trace("MakeDeepCopy, creating new instance and copying fields");
         var result = AccessTools.CreateInstance(type);
