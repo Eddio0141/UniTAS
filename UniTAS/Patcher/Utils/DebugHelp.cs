@@ -89,13 +89,6 @@ public static class DebugHelp
                 continue;
             }
 
-            var ns = fieldType.Namespace;
-            if (ns == "System" || (ns?.StartsWith("System.") ?? false))
-            {
-                str += $"{value},\n";
-                continue;
-            }
-
             // fallback
             str += $"{PrintClass(value, ref indent, foundReferences, true)},\n";
         }
