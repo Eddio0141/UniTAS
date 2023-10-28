@@ -8,7 +8,7 @@ namespace UniTAS.Patcher.Implementations.GUI.TerminalCommands;
 
 public class RunUnitTests : TerminalEntry
 {
-    public override string Command => "run_tests";
+    public override string Command => "test";
 
     public override string Description =>
         "Runs defined runtime unit tests with current game. Arg 0 (uint) (optional): how many times to run the tests";
