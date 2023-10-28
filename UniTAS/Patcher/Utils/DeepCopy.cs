@@ -185,7 +185,9 @@ public static class DeepCopy
         // }
 
         StaticLogger.Trace("MakeDeepCopy, creating new instance and copying fields");
-        var result = AccessTools.CreateInstance(type);
+        var result = source is ScriptableObject
+            ? ScriptableObject.CreateInstance(type)
+            : AccessTools.CreateInstance(type);
         // guaranteed to be a reference type
         foundReferences.Add(id, source);
         newReferences.Add(id, result);
