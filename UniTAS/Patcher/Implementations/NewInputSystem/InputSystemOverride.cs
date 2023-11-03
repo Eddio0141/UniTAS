@@ -8,7 +8,6 @@ using UniTAS.Patcher.Services.InputSystemOverride;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.Movie;
 using UniTAS.Patcher.Services.NewInputSystem;
-using UniTAS.Patcher.Services.Trackers.UpdateTrackInfo;
 using UniTAS.Patcher.Services.UnityEvents;
 using UnityEngine.InputSystem;
 
@@ -21,15 +20,14 @@ public class InputSystemOverride : IInputSystemOverride, IInputSystemAddedDevice
     private readonly IInputOverrideDevice[] _devices;
 
     private readonly ILogger _logger;
-    private readonly IMovieRunner _movieRunner;
     private readonly bool _hasInputSystem;
 
     private bool _override;
 
     [SuppressMessage("ReSharper", "ConditionIsAlwaysTrueOrFalse")]
     public InputSystemOverride(ILogger logger, IInputOverrideDevice[] devices,
-        INewInputSystemExists newInputSystemExists, IUpdateEvents updateEvents, IMovieRunner movieRunner,
-        IMovieRunnerEvents movieRunnerEvents, IGameRestart gameRestart)
+        INewInputSystemExists newInputSystemExists, IUpdateEvents updateEvents, IMovieRunnerEvents movieRunnerEvents,
+        IGameRestart gameRestart)
     {
         _hasInputSystem = newInputSystemExists.HasInputSystem;
         logger.LogMessage($"Has unity new input system: {_hasInputSystem}");
@@ -38,7 +36,6 @@ public class InputSystemOverride : IInputSystemOverride, IInputSystemAddedDevice
 
         _logger = logger;
         _devices = devices;
-        _movieRunner = movieRunner;
         updateEvents.OnInputUpdateActual += UpdateDevices;
         movieRunnerEvents.OnMovieStart += OnMovieStart;
         movieRunnerEvents.OnMovieEnd += OnMovieEnd;
@@ -57,7 +54,7 @@ public class InputSystemOverride : IInputSystemOverride, IInputSystemAddedDevice
 
                 foreach (var device in _devices)
                 {
-                    InputSystem.AddDevice(device.Device);
+                    device.AddDevice();
                 }
 
                 _logger.LogDebug("Added TAS devices to InputSystem");
@@ -70,7 +67,7 @@ public class InputSystemOverride : IInputSystemOverride, IInputSystemAddedDevice
 
                 foreach (var device in _devices)
                 {
-                    InputSystem.RemoveDevice(device.Device);
+                    device.RemoveDevice();
                 }
 
                 _logger.LogDebug("Removed TAS devices from InputSystem");

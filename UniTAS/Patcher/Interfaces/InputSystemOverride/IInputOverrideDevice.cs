@@ -1,5 +1,3 @@
-using UnityEngine.InputSystem;
-
 namespace UniTAS.Patcher.Interfaces.InputSystemOverride;
 
 public interface IInputOverrideDevice
@@ -9,5 +7,13 @@ public interface IInputOverrideDevice
     /// </summary>
     void Update();
 
-    InputDevice Device { get; }
+    /// <summary>
+    /// Called when the device is to be added to the input system
+    /// </summary>
+    void AddDevice();
+
+    /// <summary>
+    /// Called when device is to be removed from the input system
+    /// </summary>
+    void RemoveDevice();
 }
