@@ -1,9 +1,14 @@
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.InputSystemOverride;
+using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.InputSystemOverride;
 using UniTAS.Patcher.Services.Logging;
+using UniTAS.Patcher.Services.Movie;
 using UniTAS.Patcher.Services.NewInputSystem;
+using UniTAS.Patcher.Services.Trackers.UpdateTrackInfo;
 using UniTAS.Patcher.Services.UnityEvents;
 using UnityEngine.InputSystem;
 
@@ -11,29 +16,32 @@ namespace UniTAS.Patcher.Implementations.NewInputSystem;
 
 [Singleton]
 [ForceInstantiate]
-public class InputSystemOverride : IInputSystemOverride
+public class InputSystemOverride : IInputSystemOverride, IInputSystemAddedDeviceTracker
 {
     private readonly IInputOverrideDevice[] _devices;
-    private InputDevice[] _restoreDevices;
 
     private readonly ILogger _logger;
+    private readonly IMovieRunner _movieRunner;
     private readonly bool _hasInputSystem;
 
     private bool _override;
 
     [SuppressMessage("ReSharper", "ConditionIsAlwaysTrueOrFalse")]
     public InputSystemOverride(ILogger logger, IInputOverrideDevice[] devices,
-        INewInputSystemExists newInputSystemExists, IUpdateEvents updateEvents)
+        INewInputSystemExists newInputSystemExists, IUpdateEvents updateEvents, IMovieRunner movieRunner,
+        IMovieRunnerEvents movieRunnerEvents, IGameRestart gameRestart)
     {
-        _logger = logger;
-        _devices = devices;
-
         _hasInputSystem = newInputSystemExists.HasInputSystem;
-        _logger.LogMessage($"Has unity new input system: {_hasInputSystem}");
+        logger.LogMessage($"Has unity new input system: {_hasInputSystem}");
 
         if (!_hasInputSystem) return;
 
+        _logger = logger;
+        _devices = devices;
+        _movieRunner = movieRunner;
         updateEvents.OnInputUpdateActual += UpdateDevices;
+        movieRunnerEvents.OnMovieStart += OnMovieStart;
+        movieRunnerEvents.OnMovieEnd += OnMovieEnd;
     }
 
     public bool Override
@@ -41,35 +49,28 @@ public class InputSystemOverride : IInputSystemOverride
         set
         {
             if (!_hasInputSystem) return;
-
             _override = value;
-            if (_override)
+
+            if (value)
             {
                 _logger.LogDebug("Adding TAS devices to InputSystem");
 
-                _restoreDevices = InputSystem.devices.ToArray();
-                RemoveAndFlushAllDevices();
-
                 foreach (var device in _devices)
                 {
-                    device.DeviceAdded();
+                    InputSystem.AddDevice(device.Device);
                 }
 
                 _logger.LogDebug("Added TAS devices to InputSystem");
+                _logger.LogDebug(
+                    $"Connected devices:\n{string.Join("\n", InputSystem.devices.Select(x => $"name: {x.name}, type: {x.GetType().FullName}").ToArray())}");
             }
             else
             {
-                _logger.LogDebug("Removing TAS devices from InputSystem");
+                _logger.LogDebug($"Removing TAS devices from InputSystem, {new StackTrace()}");
 
-                RemoveAndFlushAllDevices();
-
-                // restore devices
-                if (_restoreDevices != null)
+                foreach (var device in _devices)
                 {
-                    foreach (var device in _restoreDevices)
-                    {
-                        InputSystem.AddDevice(device);
-                    }
+                    InputSystem.RemoveDevice(device.Device);
                 }
 
                 _logger.LogDebug("Removed TAS devices from InputSystem");
@@ -79,7 +80,7 @@ public class InputSystemOverride : IInputSystemOverride
 
     private void UpdateDevices(bool fixedUpdate, bool newInputSystemUpdate)
     {
-        if (!_override || !newInputSystemUpdate) return;
+        if (!newInputSystemUpdate || !_override) return;
 
         foreach (var device in _devices)
         {
@@ -87,13 +88,21 @@ public class InputSystemOverride : IInputSystemOverride
         }
     }
 
-    private static void RemoveAndFlushAllDevices()
+    public void AddDevice(InputDevice device)
     {
-        while (InputSystem.devices.Count > 0)
-        {
-            InputSystem.RemoveDevice(InputSystem.devices[0]);
-        }
+        // if (_movieRunner.MovieEnd) return;
+        //
+        // _logger.LogDebug($"Adding device on movie end ({device.name} - {device.GetType().Name})");
+        // _deviceToAddOnMovieEnd.Add(device);
+    }
 
-        InputSystem.FlushDisconnectedDevices();
+    private void OnMovieStart()
+    {
+        Override = true;
+    }
+
+    private void OnMovieEnd()
+    {
+        Override = false;
     }
 }

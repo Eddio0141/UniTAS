@@ -11,9 +11,8 @@ namespace UniTAS.Patcher.Implementations.NewInputSystem;
 [Singleton]
 public class KeyboardDeviceOverride : IInputOverrideDevice
 {
-    private Keyboard _keyboard;
-
     private readonly IKeyboardStateEnvNewSystem _keyboardStateEnvNewSystem;
+    public InputDevice Device { get; } = new TASKeyboard();
 
     public KeyboardDeviceOverride(IKeyboardStateEnvNewSystem keyboardStateEnvNewSystem)
     {
@@ -34,11 +33,6 @@ public class KeyboardDeviceOverride : IInputOverrideDevice
             state.Set(heldKey.Key, true);
         }
 
-        InputSystem.QueueStateEvent(_keyboard, state);
-    }
-
-    public void DeviceAdded()
-    {
-        _keyboard = InputSystem.AddDevice<TASKeyboard>();
+        InputSystem.QueueStateEvent(Device, state);
     }
 }
