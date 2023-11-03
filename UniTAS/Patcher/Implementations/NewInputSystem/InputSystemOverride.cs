@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
@@ -63,7 +62,7 @@ public class InputSystemOverride : IInputSystemOverride
             }
             else
             {
-                _logger.LogDebug($"Removing TAS devices from InputSystem, {new StackTrace()}");
+                _logger.LogDebug($"Removing TAS devices from InputSystem");
 
                 foreach (var device in _devices)
                 {
