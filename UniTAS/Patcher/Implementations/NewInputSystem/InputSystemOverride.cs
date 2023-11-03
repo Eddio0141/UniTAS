@@ -15,7 +15,7 @@ namespace UniTAS.Patcher.Implementations.NewInputSystem;
 
 [Singleton]
 [ForceInstantiate]
-public class InputSystemOverride : IInputSystemOverride, IInputSystemAddedDeviceTracker
+public class InputSystemOverride : IInputSystemOverride
 {
     private readonly IInputOverrideDevice[] _devices;
 
@@ -83,14 +83,6 @@ public class InputSystemOverride : IInputSystemOverride, IInputSystemAddedDevice
         {
             device.Update();
         }
-    }
-
-    public void AddDevice(InputDevice device)
-    {
-        // if (_movieRunner.MovieEnd) return;
-        //
-        // _logger.LogDebug($"Adding device on movie end ({device.name} - {device.GetType().Name})");
-        // _deviceToAddOnMovieEnd.Add(device);
     }
 
     private void OnMovieStart()
