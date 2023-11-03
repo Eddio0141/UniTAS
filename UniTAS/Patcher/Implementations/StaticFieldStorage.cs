@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Services;
@@ -14,11 +15,13 @@ public class StaticFieldStorage : IStaticFieldManipulator
 {
     private readonly ILogger _logger;
     private readonly IClassStaticInfoTracker _classStaticInfoTracker;
+    private readonly ITryFreeMalloc _freeMalloc;
 
-    public StaticFieldStorage(ILogger logger, IClassStaticInfoTracker classStaticInfoTracker)
+    public StaticFieldStorage(ILogger logger, IClassStaticInfoTracker classStaticInfoTracker, ITryFreeMalloc freeMalloc)
     {
         _logger = logger;
         _classStaticInfoTracker = classStaticInfoTracker;
+        _freeMalloc = freeMalloc;
     }
 
     public void ResetStaticFields()
@@ -40,6 +43,7 @@ public class StaticFieldStorage : IStaticFieldManipulator
                 disposable.Dispose();
             }
 
+            _freeMalloc?.TryFree(null, field);
             field.SetValue(null, null);
         }
 
@@ -47,9 +51,9 @@ public class StaticFieldStorage : IStaticFieldManipulator
         GC.Collect();
         GC.WaitForPendingFinalizers();
 
-        _logger.LogDebug("calling static constructors");
-        // ReSharper disable once ForCanBeConvertedToForeach
-        for (var i = 0; i < _classStaticInfoTracker.StaticCtorInvokeOrder.Count; i++)
+        var count = _classStaticInfoTracker.StaticCtorInvokeOrder.Count;
+        _logger.LogDebug($"calling {count} static constructors");
+        for (var i = 0; i < count; i++)
         {
             var staticCtorType = _classStaticInfoTracker.StaticCtorInvokeOrder[i];
             var cctor = staticCtorType.TypeInitializer;
@@ -63,6 +67,9 @@ public class StaticFieldStorage : IStaticFieldManipulator
             {
                 _logger.LogDebug($"Exception thrown while calling static constructor: {e}");
             }
+
+            // ik calling static ctors in the first place is illegal as fk but why does this prevent crashing??????
+            Thread.Sleep(1);
         }
     }
 }
