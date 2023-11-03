@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Threading;
 using BepInEx;
@@ -7,12 +8,14 @@ namespace UniTAS.Patcher.Utils;
 
 public static class LoggingUtils
 {
-    public static void InitDiskLogger()
+    public static void Init()
     {
         var diskLogger = new DiskLogger();
         if (!diskLogger.Enabled) return;
 
         Logger.Listeners.Add(diskLogger);
+
+        AppDomain.CurrentDomain.UnhandledException += UnhandledExceptionLog;
     }
 
     // separate disk logging
@@ -23,8 +26,13 @@ public static class LoggingUtils
 
         public bool Enabled { get; } = true;
 
+        public static DiskLogger Instance { get; private set; }
+
         public DiskLogger()
         {
+            if (Instance != null) return;
+            Instance = this;
+
             if (!Utility.TryOpenFileStream(Path.Combine(Paths.BepInExRootPath, "UniTAS.log"), FileMode.Create,
                     out var fileStream, FileAccess.Write))
             {
@@ -44,9 +52,20 @@ public static class LoggingUtils
             _logWriter?.Dispose();
         }
 
+        public void Flush()
+        {
+            _logWriter?.Flush();
+        }
+
         public void LogEvent(object sender, LogEventArgs eventArgs)
         {
             _logWriter.WriteLine(eventArgs.ToString());
         }
+    }
+
+    private static void UnhandledExceptionLog(object sender, UnhandledExceptionEventArgs e)
+    {
+        StaticLogger.Log.LogFatal(e.ExceptionObject);
+        DiskLogger.Instance.Flush();
     }
 }

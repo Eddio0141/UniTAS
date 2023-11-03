@@ -25,7 +25,7 @@ public static class Entry
     [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public static void Initialize()
     {
-        LoggingUtils.InitDiskLogger();
+        LoggingUtils.Init();
         StaticLogger.Log.LogInfo("Initializing UniTAS");
 
         BepInExUtils.GenerateMissingDirs();
