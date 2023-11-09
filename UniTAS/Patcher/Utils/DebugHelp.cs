@@ -26,7 +26,7 @@ public static class DebugHelp
             foundReferences.Add(obj);
         }
 
-        var fields = AccessTools.GetDeclaredFields(obj.GetType());
+        var fields = AccessTools.GetDeclaredFields(type);
 
         foreach (var field in fields)
         {
@@ -43,13 +43,13 @@ public static class DebugHelp
                 continue;
             }
 
-            var fieldType = field.FieldType;
-
             if (value is null)
             {
                 str += "null,\n";
                 continue;
             }
+
+            var fieldType = field.FieldType;
 
             // direct use cases
             if (fieldType.IsPrimitive || fieldType.IsEnum ||
