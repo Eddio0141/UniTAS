@@ -18,16 +18,18 @@ public static class DebugHelp
     private static string PrintClass(object obj, ref int indent, List<object> foundReferences,
         bool ignoreInitialIndent = false)
     {
+        var initialIndent = $"{(ignoreInitialIndent ? "" : IndentString(indent))}";
+
         if (obj == null)
         {
-            return $"{(ignoreInitialIndent ? "" : IndentString(indent))}null";
+            return $"{initialIndent}null";
         }
 
         var type = obj.GetType();
-        var str = $"{(ignoreInitialIndent ? "" : IndentString(indent))}{type.Name} {{\n";
+        var str = $"{initialIndent}{type.Name} {{\n";
         indent++;
 
-        if (type.IsClass)
+        if (type.IsClass && type != typeof(string))
         {
             foundReferences.Add(obj);
         }
@@ -59,6 +61,11 @@ public static class DebugHelp
             }
 
             var fieldType = field.FieldType;
+
+            if (fieldType.IsClass && fieldType != typeof(string))
+            {
+                foundReferences.Add(value);
+            }
 
             // direct use cases
             if (fieldType.IsPointer)
