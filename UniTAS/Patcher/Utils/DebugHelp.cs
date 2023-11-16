@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using HarmonyLib;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -17,6 +18,11 @@ public static class DebugHelp
     private static string PrintClass(object obj, ref int indent, List<object> foundReferences,
         bool ignoreInitialIndent = false)
     {
+        if (obj == null)
+        {
+            return $"{(ignoreInitialIndent ? "" : IndentString(indent))}null";
+        }
+
         var type = obj.GetType();
         var str = $"{(ignoreInitialIndent ? "" : IndentString(indent))}{type.Name} {{\n";
         indent++;
@@ -30,7 +36,10 @@ public static class DebugHelp
 
         foreach (var field in fields)
         {
-            if (field.IsStatic || field.IsLiteral) continue;
+            if (field.IsStatic || field.IsLiteral)
+            {
+                continue;
+            }
 
             str += $"{IndentString(indent)}{field.Name}: ";
 
@@ -52,6 +61,17 @@ public static class DebugHelp
             var fieldType = field.FieldType;
 
             // direct use cases
+            if (fieldType.IsPointer)
+            {
+                unsafe
+                {
+                    var rawValue = (IntPtr)Pointer.Unbox(value);
+                    str += $"ptr(0x{rawValue.ToInt64():X})";
+                }
+
+                continue;
+            }
+
             if (fieldType.IsPrimitive || fieldType.IsEnum ||
                 value is Object and not MonoBehaviour and not ScriptableObject)
             {
