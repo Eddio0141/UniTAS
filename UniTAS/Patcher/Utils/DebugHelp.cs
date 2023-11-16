@@ -101,7 +101,7 @@ public static class DebugHelp
 
                 foreach (var item in array)
                 {
-                    str += $"{PrintClass(item, ref indent, foundReferences)}\n";
+                    str += $"{PrintClass(item, ref indent, foundReferences)},\n";
                 }
 
                 indent--;
