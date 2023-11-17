@@ -37,7 +37,7 @@ public class DropdownWindow : Window
                 y < windowBgBorderSize || 0 < y - windowBgSize + 1 + windowBgBorderSize)
             {
                 // its a border
-                windowBgColours[i] = GUIUtils.HoverColour;
+                windowBgColours[i] = GUIUtils.HoldColour;
                 continue;
             }
 
@@ -65,11 +65,6 @@ public class DropdownWindow : Window
             var screenHeight = _patchReverseInvoker.Invoke(() => Screen.height);
             var leftClick = _patchReverseInvoker.Invoke(() => UnityInput.Current.GetMouseButtonDown(0));
             var mousePosVector2 = new Vector2(mousePos.x, screenHeight - mousePos.y);
-
-            if (WindowRect.Contains(mousePosVector2))
-            {
-                StaticLogger.Log.LogDebug($"{WindowRect}, {mousePosVector2}");
-            }
 
             if (!WindowRect.Contains(mousePosVector2) && leftClick)
             {
