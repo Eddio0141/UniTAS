@@ -25,6 +25,12 @@ public static class DebugHelp
             return $"{initialIndent}null";
         }
 
+        // circular reference
+        if (foundReferences.Contains(obj))
+        {
+            return $"{initialIndent}...";
+        }
+
         var type = obj.GetType();
         var str = $"{initialIndent}{type.Name} {{\n";
         indent++;
@@ -47,13 +53,6 @@ public static class DebugHelp
 
             var value = field.GetValue(obj);
 
-            // circular reference
-            if (foundReferences.Contains(value))
-            {
-                str += "...,\n";
-                continue;
-            }
-
             if (value is null)
             {
                 str += "null,\n";
@@ -61,11 +60,6 @@ public static class DebugHelp
             }
 
             var fieldType = field.FieldType;
-
-            if (fieldType.IsClass && fieldType != typeof(string))
-            {
-                foundReferences.Add(value);
-            }
 
             // direct use cases
             if (fieldType.IsPointer)
