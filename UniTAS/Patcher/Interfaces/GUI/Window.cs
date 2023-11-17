@@ -62,6 +62,7 @@ public abstract class Window
 
     protected virtual void Close()
     {
+        if (!_showWindow) return;
         _updateEvents.OnGUIUnconditional -= OnGUIUnconditional;
         _showWindow = false;
     }
