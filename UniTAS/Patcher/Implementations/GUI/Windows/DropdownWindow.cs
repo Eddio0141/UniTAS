@@ -20,6 +20,7 @@ public class DropdownWindow : Window
         new(draggable: false, resizable: false, showTitle: false, closeButton: false))
 
     {
+        windowDependencies.UpdateEvents.OnUpdateUnconditional += UpdateUnconditional;
         _entries = entries;
         _patchReverseInvoker = patchReverseInvoker;
         WindowRect = new(position.x, position.y, 200, 200);
@@ -54,30 +55,20 @@ public class DropdownWindow : Window
         };
     }
 
-    private bool _pendingClose;
+    private void UpdateUnconditional()
+    {
+        var mousePos = _patchReverseInvoker.Invoke(() => UnityInput.Current.mousePosition);
+        var screenHeight = _patchReverseInvoker.Invoke(() => Screen.height);
+        var leftClick = _patchReverseInvoker.Invoke(() => UnityInput.Current.GetMouseButtonDown(0));
+        var mousePosVector2 = new Vector2(mousePos.x, screenHeight - mousePos.y);
+
+        if (WindowRect.Contains(mousePosVector2) || !leftClick) return;
+
+        Close();
+    }
 
     protected override void OnGUI()
     {
-        // check window close by clicking elsewhere
-        if (Event.current.type == EventType.Repaint)
-        {
-            var mousePos = _patchReverseInvoker.Invoke(() => UnityInput.Current.mousePosition);
-            var screenHeight = _patchReverseInvoker.Invoke(() => Screen.height);
-            var leftClick = _patchReverseInvoker.Invoke(() => UnityInput.Current.GetMouseButtonDown(0));
-            var mousePosVector2 = new Vector2(mousePos.x, screenHeight - mousePos.y);
-
-            if (!WindowRect.Contains(mousePosVector2) && leftClick)
-            {
-                _pendingClose = true;
-            }
-        }
-
-        if (_pendingClose && Event.current.type != EventType.Repaint && Event.current.type != EventType.Layout)
-        {
-            Close();
-            Event.current.Use();
-        }
-
         GUILayout.BeginVertical(GUIUtils.EmptyOptions);
 
         foreach (var entry in _entries)
