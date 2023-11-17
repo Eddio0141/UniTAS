@@ -16,7 +16,7 @@ public class DropdownWindow : Window
 
     public DropdownWindow(WindowDependencies windowDependencies, DropdownEntry[] entries,
         IPatchReverseInvoker patchReverseInvoker) : base(windowDependencies,
-        new(draggable: false, resizable: false, showTitle: false))
+        new(draggable: false, resizable: false, showTitle: false, closeButton: false))
     {
         _entries = entries;
         _patchReverseInvoker = patchReverseInvoker;

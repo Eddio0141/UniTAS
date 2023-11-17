@@ -38,8 +38,9 @@ public abstract class Window
         _updateEvents = windowDependencies.UpdateEvents;
         _config = config;
         _windowUpdate = WindowUpdate;
-        Init();
         _updateEvents.OnGUIUnconditional += GrabStyle;
+        _style = _config.Style;
+        Init();
     }
 
     private Vector2 MousePosition => _patchReverseInvoker.Invoke(() => UnityInput.Current.mousePosition);
@@ -92,19 +93,23 @@ public abstract class Window
     {
         HandleDragResize();
 
-        GUILayout.BeginVertical(GUIUtils.EmptyOptions);
-
-        GUILayout.BeginHorizontal(GUIUtils.EmptyOptions);
-
-        // close button
-        if (UnityEngine.GUI.Button(new(WindowRect.width - CLOSE_BUTTON_SIZE, 0f, CLOSE_BUTTON_SIZE, CLOSE_BUTTON_SIZE),
-                "x"))
+        if (_config.CloseButton)
         {
-            Close();
-        }
+            GUILayout.BeginVertical(GUIUtils.EmptyOptions);
 
-        GUILayout.EndHorizontal();
-        GUILayout.EndVertical();
+            GUILayout.BeginHorizontal(GUIUtils.EmptyOptions);
+
+            // close button
+            if (UnityEngine.GUI.Button(
+                    new(WindowRect.width - CLOSE_BUTTON_SIZE, 0f, CLOSE_BUTTON_SIZE, CLOSE_BUTTON_SIZE),
+                    "x"))
+            {
+                Close();
+            }
+
+            GUILayout.EndHorizontal();
+            GUILayout.EndVertical();
+        }
 
         OnGUI();
 
@@ -224,7 +229,7 @@ public abstract class Window
     {
         if (Event.current.type != EventType.MouseDown) return;
 
-        if (!_resizing && Event.current.button == 1)
+        if (_config.Resizable && !_resizing && Event.current.button == 1)
         {
             // are we resizing now?
             var mousePos = MousePosition;
@@ -240,7 +245,7 @@ public abstract class Window
             }
         }
 
-        if (_dragging || Event.current.button != 0) return;
+        if (!_config.Draggable || _dragging || Event.current.button != 0) return;
 
         var mousePos2 = MousePosition;
         mousePos2.y = ScreenHeight - mousePos2.y;

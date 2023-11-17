@@ -10,10 +10,11 @@ public readonly struct WindowConfig
     public readonly GUIStyle Style = null;
     public readonly bool Draggable = true;
     public readonly bool Resizable = true;
-    public readonly bool ShowTitle = true;
+    public readonly bool CloseButton = true;
 
     public WindowConfig(GUILayoutOption[] layoutOptions = null, GUIStyle style = null, Rect defaultWindowRect = default,
-        string windowName = null, bool draggable = true, bool resizable = true, bool showTitle = true)
+        string windowName = null, bool draggable = true, bool resizable = true, bool showTitle = true,
+        bool closeButton = true)
     {
         DefaultWindowRect = defaultWindowRect == default ? new(0, 0, 100, 100) : defaultWindowRect;
         layoutOptions ??= new GUILayoutOption[0];
@@ -31,5 +32,8 @@ public readonly struct WindowConfig
         WindowName = windowName;
         LayoutOptions = layoutOptions;
         Style = style;
+        CloseButton = closeButton;
+        Draggable = draggable;
+        Resizable = resizable;
     }
 }
