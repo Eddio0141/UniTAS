@@ -35,8 +35,11 @@ public class ToolBar : IOnGUIUnconditional
         _buttonNormal.SetPixel(0, 0, GUIUtils.StandardBgColour);
         _buttonNormal.Apply();
         var buttonHold = new Texture2D(1, 1);
-        buttonHold.SetPixel(0, 0, GUIUtils.HoverColour);
+        buttonHold.SetPixel(0, 0, GUIUtils.HoldColour);
         buttonHold.Apply();
+        var buttonHover = new Texture2D(1, 1);
+        buttonHover.SetPixel(0, 0, GUIUtils.HoverColour);
+        buttonHover.Apply();
 
         _buttonStyle = new()
         {
@@ -44,7 +47,7 @@ public class ToolBar : IOnGUIUnconditional
             fixedHeight = TOOLBAR_HEIGHT,
             padding = new(5, 5, 5, 5),
             normal = { background = _buttonNormal, textColor = Color.white },
-            hover = { background = _buttonNormal, textColor = Color.white },
+            hover = { background = buttonHover, textColor = Color.white },
             active = { background = buttonHold, textColor = Color.white }
         };
 
