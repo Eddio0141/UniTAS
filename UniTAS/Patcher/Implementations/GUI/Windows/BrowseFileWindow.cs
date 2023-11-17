@@ -238,7 +238,7 @@ public class BrowseFileWindow : Window, IBrowseFileWindow
         _files = _paths.Select(Path.GetFileName).ToArray();
     }
 
-    protected override void Close()
+    public override void Close()
     {
         base.Close();
         OnClosed?.Invoke();

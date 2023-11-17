@@ -13,7 +13,10 @@ namespace UniTAS.Patcher.Interfaces.GUI;
 /// </summary>
 public abstract class Window
 {
-    private Rect _windowRect;
+    private readonly IUpdateEvents _updateEvents;
+    private readonly IPatchReverseInvoker _patchReverseInvoker;
+
+    protected Rect WindowRect { get; set; }
     private int _windowId;
     private readonly UnityEngine.GUI.WindowFunction _windowUpdate;
     private bool _dragging;
@@ -26,19 +29,17 @@ public abstract class Window
 
     private const int CLOSE_BUTTON_SIZE = 20;
 
-    private readonly IUpdateEvents _updateEvents;
-    private readonly IPatchReverseInvoker _patchReverseInvoker;
-
-    private string WindowName { get; }
+    private string _windowName;
+    private GUIStyle _style;
 
     protected Window(WindowDependencies windowDependencies, WindowConfig config)
     {
         _patchReverseInvoker = windowDependencies.PatchReverseInvoker;
         _updateEvents = windowDependencies.UpdateEvents;
-        _config = config ?? new();
+        _config = config;
         _windowUpdate = WindowUpdate;
-        WindowName = _config.WindowName;
         Init();
+        _updateEvents.OnGUIUnconditional += GrabStyle;
     }
 
     private Vector2 MousePosition => _patchReverseInvoker.Invoke(() => UnityInput.Current.mousePosition);
@@ -49,8 +50,9 @@ public abstract class Window
 
     private void Init()
     {
-        _windowRect = _config.DefaultWindowRect;
         _windowId = GetHashCode();
+        WindowRect = _config.DefaultWindowRect;
+        _windowName = _config.WindowName;
     }
 
     public void Show()
@@ -60,16 +62,30 @@ public abstract class Window
         _showWindow = true;
     }
 
-    protected virtual void Close()
+    public virtual void Close()
     {
         if (!_showWindow) return;
         _updateEvents.OnGUIUnconditional -= OnGUIUnconditional;
         _showWindow = false;
     }
 
+    private void GrabStyle()
+    {
+        _updateEvents.OnGUIUnconditional -= GrabStyle;
+        var skin = UnityEngine.GUI.skin;
+        if (skin == null || skin.window == null)
+        {
+            _style ??= new();
+            return;
+        }
+
+        _style ??= skin.window;
+    }
+
     private void OnGUIUnconditional()
     {
-        _windowRect = GUILayout.Window(_windowId, _windowRect, _windowUpdate, WindowName, _config.LayoutOptions);
+        WindowRect = GUILayout.Window(_windowId, WindowRect, _windowUpdate, _windowName, _style,
+            _config.LayoutOptions);
     }
 
     private void WindowUpdate(int id)
@@ -81,7 +97,7 @@ public abstract class Window
         GUILayout.BeginHorizontal(GUIUtils.EmptyOptions);
 
         // close button
-        if (UnityEngine.GUI.Button(new(_windowRect.width - CLOSE_BUTTON_SIZE, 0f, CLOSE_BUTTON_SIZE, CLOSE_BUTTON_SIZE),
+        if (UnityEngine.GUI.Button(new(WindowRect.width - CLOSE_BUTTON_SIZE, 0f, CLOSE_BUTTON_SIZE, CLOSE_BUTTON_SIZE),
                 "x"))
         {
             Close();
@@ -116,8 +132,10 @@ public abstract class Window
         {
             var mousePos = MousePosition;
 
-            _windowRect.width = _resizeSize.x + (mousePos.x - _windowRect.x - _windowClickOffset.x);
-            _windowRect.height = _resizeSize.y + (ScreenHeight - mousePos.y - _windowRect.y - _windowClickOffset.y);
+            var window = WindowRect;
+            window.width = _resizeSize.x + (mousePos.x - window.x - _windowClickOffset.x);
+            window.height = _resizeSize.y + (ScreenHeight - mousePos.y - window.y - _windowClickOffset.y);
+            WindowRect = window;
 
             // just in case
             if (!RightMouseButton)
@@ -142,8 +160,10 @@ public abstract class Window
         if (Event.current.type == EventType.Repaint)
         {
             var mousePos = MousePosition;
-            _windowRect.x = mousePos.x - _windowClickOffset.x;
-            _windowRect.y = ScreenHeight - mousePos.y - _windowClickOffset.y;
+            var window = WindowRect;
+            var newRect = new Rect(mousePos.x - _windowClickOffset.x, ScreenHeight - mousePos.y - _windowClickOffset.y,
+                window.width, window.height);
+            WindowRect = newRect;
 
             // just in case
             if (!LeftMouseButton)
@@ -164,37 +184,40 @@ public abstract class Window
 
     private void ClampWindow()
     {
-        if (_windowRect.x < 0)
+        var window = WindowRect;
+        if (window.x < 0)
         {
-            _windowRect.x = 0;
+            window.x = 0;
         }
 
-        if (_windowRect.y < 0)
+        if (window.y < 0)
         {
-            _windowRect.y = 0;
+            window.y = 0;
         }
 
         var screenWidth = ScreenWidth;
-        if (screenWidth < _windowRect.width)
+        if (screenWidth < window.width)
         {
-            _windowRect.width = screenWidth;
+            window.width = screenWidth;
         }
 
-        if (_windowRect.xMax > screenWidth)
+        if (window.xMax > screenWidth)
         {
-            _windowRect.x = screenWidth - _windowRect.width;
+            window.x = screenWidth - window.width;
         }
 
         var screenHeight = ScreenHeight;
-        if (screenHeight < _windowRect.height)
+        if (screenHeight < window.height)
         {
-            _windowRect.height = screenHeight;
+            window.height = screenHeight;
         }
 
-        if (_windowRect.yMax > screenHeight)
+        if (window.yMax > screenHeight)
         {
-            _windowRect.y = screenHeight - _windowRect.height;
+            window.y = screenHeight - window.height;
         }
+
+        WindowRect = window;
     }
 
     private void CheckDragResize()
@@ -207,11 +230,11 @@ public abstract class Window
             var mousePos = MousePosition;
             mousePos.y = ScreenHeight - mousePos.y;
 
-            if (_windowRect.Contains(mousePos))
+            if (WindowRect.Contains(mousePos))
             {
                 _resizing = true;
-                _windowClickOffset = mousePos - new Vector2(_windowRect.x, _windowRect.y);
-                _resizeSize = new(_windowRect.width, _windowRect.height);
+                _windowClickOffset = mousePos - new Vector2(WindowRect.x, WindowRect.y);
+                _resizeSize = new(WindowRect.width, WindowRect.height);
 
                 return;
             }
@@ -223,10 +246,10 @@ public abstract class Window
         mousePos2.y = ScreenHeight - mousePos2.y;
 
         // are we dragging now?
-        if (_windowRect.Contains(mousePos2))
+        if (WindowRect.Contains(mousePos2))
         {
             _dragging = true;
-            _windowClickOffset = mousePos2 - new Vector2(_windowRect.x, _windowRect.y);
+            _windowClickOffset = mousePos2 - new Vector2(WindowRect.x, WindowRect.y);
         }
     }
 

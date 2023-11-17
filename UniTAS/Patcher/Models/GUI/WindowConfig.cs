@@ -2,17 +2,34 @@ using UnityEngine;
 
 namespace UniTAS.Patcher.Models.GUI;
 
-public class WindowConfig
+public readonly struct WindowConfig
 {
-    public Rect DefaultWindowRect { get; }
-    public string WindowName { get; }
-    public GUILayoutOption[] LayoutOptions { get; }
+    public readonly Rect DefaultWindowRect = new(0, 0, 100, 100);
+    public readonly string WindowName = null;
+    public readonly GUILayoutOption[] LayoutOptions = null;
+    public readonly GUIStyle Style = null;
+    public readonly bool Draggable = true;
+    public readonly bool Resizable = true;
+    public readonly bool ShowTitle = true;
 
-    public WindowConfig(GUILayoutOption[] layoutOptions = null, Rect defaultWindowRect = default,
-        string windowName = null)
+    public WindowConfig(GUILayoutOption[] layoutOptions = null, GUIStyle style = null, Rect defaultWindowRect = default,
+        string windowName = null, bool draggable = true, bool resizable = true, bool showTitle = true)
     {
         DefaultWindowRect = defaultWindowRect == default ? new(0, 0, 100, 100) : defaultWindowRect;
-        WindowName = windowName ?? string.Empty;
-        LayoutOptions = layoutOptions ?? new GUILayoutOption[0];
+        layoutOptions ??= new GUILayoutOption[0];
+        windowName ??= string.Empty;
+
+        if (!showTitle)
+        {
+            windowName = string.Empty;
+
+            // also force top border to be hidden
+            style ??= new();
+            style.border.top = 0;
+        }
+
+        WindowName = windowName;
+        LayoutOptions = layoutOptions;
+        Style = style;
     }
 }
