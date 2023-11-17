@@ -7,7 +7,8 @@ public static class GUIUtils
     public static readonly GUILayoutOption[] EmptyOptions = new GUILayoutOption[0];
 
     public static readonly Color StandardBgColour = new(0.25f, 0.25f, 0.25f);
-    public static readonly Color HoverColour = new(0.5f, 0.5f, 0.5f);
+    public static readonly Color HoldColour = new(0.5f, 0.5f, 0.5f);
+    public static readonly Color HoverColour = new(0.75f, 0.75f, 0.75f);
 
     public static Rect WindowRect(int width, int height)
     {
