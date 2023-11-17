@@ -30,7 +30,7 @@ public abstract class Window
     private const int CLOSE_BUTTON_SIZE = 20;
 
     private string _windowName;
-    private GUIStyle _style;
+    protected GUIStyle Style { get; set; }
 
     protected Window(WindowDependencies windowDependencies, WindowConfig config)
     {
@@ -39,7 +39,7 @@ public abstract class Window
         _config = config;
         _windowUpdate = WindowUpdate;
         _updateEvents.OnGUIUnconditional += GrabStyle;
-        _style = _config.Style;
+        Style = _config.Style;
         Init();
     }
 
@@ -76,16 +76,16 @@ public abstract class Window
         var skin = UnityEngine.GUI.skin;
         if (skin == null || skin.window == null)
         {
-            _style ??= new();
+            Style ??= new();
             return;
         }
 
-        _style ??= skin.window;
+        Style ??= skin.window;
     }
 
     private void OnGUIUnconditional()
     {
-        WindowRect = GUILayout.Window(_windowId, WindowRect, _windowUpdate, _windowName, _style,
+        WindowRect = GUILayout.Window(_windowId, WindowRect, _windowUpdate, _windowName, Style,
             _config.LayoutOptions);
     }
 

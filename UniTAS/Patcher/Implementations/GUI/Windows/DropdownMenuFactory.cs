@@ -1,8 +1,11 @@
+using System.Collections.Generic;
 using StructureMap;
+using StructureMap.Pipeline;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.GUI;
 using UniTAS.Patcher.Models.GUI;
 using UniTAS.Patcher.Services.GUI;
+using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations.GUI.Windows;
 
@@ -18,10 +21,15 @@ public class DropdownMenuFactory : IDropdownMenuFactory
         _container = container;
     }
 
-    public T Create<T>(DropdownEntry[] entries) where T : Window
+    public T Create<T>(DropdownEntry[] entries, Vector2 position) where T : Window
     {
         _currentDropdown?.Close();
-        _currentDropdown = _container.With("entries").EqualTo(entries).GetInstance<T>();
+        var args = new ExplicitArguments(new Dictionary<string, object>
+        {
+            { "entries", entries },
+            { "position", position }
+        });
+        _currentDropdown = _container.GetInstance<T>(args);
         return (T)_currentDropdown;
     }
 }

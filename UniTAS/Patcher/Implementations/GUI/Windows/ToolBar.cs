@@ -32,10 +32,10 @@ public class ToolBar : IOnGUIUnconditional
         _windowFactory = windowFactory;
         _dropdownMenuFactory = dropdownMenuFactory;
 
-        _buttonNormal.SetPixel(0, 0, new(0.25f, 0.25f, 0.25f));
+        _buttonNormal.SetPixel(0, 0, GUIUtils.StandardBgColour);
         _buttonNormal.Apply();
         var buttonHold = new Texture2D(1, 1);
-        buttonHold.SetPixel(0, 0, new(0.5f, 0.5f, 0.5f));
+        buttonHold.SetPixel(0, 0, GUIUtils.HoverColour);
         buttonHold.Apply();
 
         _buttonStyle = new()
@@ -56,11 +56,22 @@ public class ToolBar : IOnGUIUnconditional
         };
     }
 
+    private bool _toolsClickable;
+    private Rect _toolsLastRect;
+
     public void OnGUIUnconditional()
     {
         if (Event.current.type == EventType.KeyDown && _toolbarVisibleBind.IsPressed())
         {
             _visible = !_visible;
+            Event.current.Use();
+        }
+
+        // left click
+        if (_toolsClickable && Event.current.type == EventType.MouseUp && Event.current.button == 0)
+        {
+            var pos = new Vector2(_toolsLastRect.xMax, _toolsLastRect.yMax);
+            _dropdownMenuFactory.Create<DropdownWindow>(_dropdownEntries, pos).Show();
             Event.current.Use();
         }
 
@@ -75,9 +86,12 @@ public class ToolBar : IOnGUIUnconditional
             _windowFactory.Create<MoviePlayWindow>().Show();
         }
 
-        if (GUILayout.Button("Tools", _buttonStyle, GUIUtils.EmptyOptions))
+        GUILayout.Button("Tools", _buttonStyle, GUIUtils.EmptyOptions);
+        if (Event.current.type == EventType.Repaint)
         {
-            _dropdownMenuFactory.Create<DropdownWindow>(_dropdownEntries).Show();
+            var lastRect = GUILayoutUtility.GetLastRect();
+            _toolsClickable = lastRect.Contains(Event.current.mousePosition);
+            _toolsLastRect = lastRect;
         }
 
         if (GUILayout.Button("Terminal", _buttonStyle, GUIUtils.EmptyOptions))
