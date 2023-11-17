@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using HarmonyLib;
-using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.SoftRestart;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
 using UniTAS.Patcher.Services;
@@ -13,7 +12,7 @@ using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations.UnityFix;
 
-[Singleton]
+// [Singleton]
 public partial class SaveScriptableObjectStates : INewScriptableObjectTracker, IOnAwakeUnconditional, IOnPreGameRestart
 {
     private readonly List<StoredState> _storedStates = new();
