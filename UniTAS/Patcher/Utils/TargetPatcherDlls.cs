@@ -38,7 +38,12 @@ public static class TargetPatcherDlls
         "netstandard",
         "mscorlib",
         "Mono.*",
-        "Mono"
+        "Mono",
+        // no need
+        "Newtonsoft.Json",
+
+        // should be fine
+        "UnityEngine.IMGUIModule",
     };
 
     private static string[] AssemblyIncludeRaw { get; } =
