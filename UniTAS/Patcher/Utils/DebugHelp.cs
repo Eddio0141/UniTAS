@@ -9,14 +9,14 @@ namespace UniTAS.Patcher.Utils;
 
 public static class DebugHelp
 {
-    public static string PrintClass(object obj)
+    public static string PrintClass(object obj, bool includeProperties = false)
     {
         var indent = 0;
-        return PrintClass(obj, ref indent, new());
+        return PrintClass(obj, ref indent, new(), false, includeProperties);
     }
 
     private static string PrintClass(object obj, ref int indent, List<object> foundReferences,
-        bool ignoreInitialIndent = false)
+        bool ignoreInitialIndent, bool includeProperties)
     {
         var initialIndent = $"{(ignoreInitialIndent ? "" : IndentString(indent))}";
 
@@ -44,79 +44,91 @@ public static class DebugHelp
 
         foreach (var field in fields)
         {
-            if (field.IsStatic || field.IsLiteral)
-            {
-                continue;
-            }
-
-            str += $"{IndentString(indent)}{field.Name}: ";
-
+            if (field.IsStatic || field.IsLiteral) continue;
             var value = field.GetValue(obj);
+            str +=
+                $"{IndentString(indent)}{field.Name}: {Stringify(value, foundReferences, includeProperties, ref indent)}";
+        }
 
-            if (value is null)
+        if (includeProperties)
+        {
+            var properties = AccessTools.GetDeclaredProperties(type);
+
+            foreach (var property in properties)
             {
-                str += "null,\n";
-                continue;
-            }
-
-            var fieldType = field.FieldType;
-
-            // direct use cases
-            if (fieldType.IsPointer)
-            {
-                unsafe
+                object value;
+                try
                 {
-                    var rawValue = (IntPtr)Pointer.Unbox(value);
-                    str += $"ptr(0x{rawValue.ToInt64():X})";
+                    value = property.GetValue(obj, null);
+                }
+                catch (Exception)
+                {
+                    value = "(Exception thrown)";
                 }
 
-                continue;
+                str +=
+                    $"{IndentString(indent)}{property.Name}: {Stringify(value, foundReferences, true, ref indent)}";
             }
-
-            if (fieldType.IsPrimitive || fieldType.IsEnum ||
-                value is Object and not MonoBehaviour and not ScriptableObject)
-            {
-                str += $"{value},\n";
-                continue;
-            }
-
-            if (value is string)
-            {
-                str += $"\"{value}\",\n";
-                continue;
-            }
-
-            if (value is Array array)
-            {
-                str += "[";
-
-                if (array.Length == 0)
-                {
-                    str += "],\n";
-                    continue;
-                }
-
-                str += "\n";
-
-                indent++;
-
-                foreach (var item in array)
-                {
-                    str += $"{PrintClass(item, ref indent, foundReferences)},\n";
-                }
-
-                indent--;
-                str += $"{IndentString(indent)}],\n";
-                continue;
-            }
-
-            // fallback
-            str += $"{PrintClass(value, ref indent, foundReferences, true)},\n";
         }
 
         indent--;
         str += $"{IndentString(indent)}}}";
         return str;
+    }
+
+    private static string Stringify(object value, List<object> foundReferences, bool includeProperties, ref int indent)
+    {
+        if (value is null)
+        {
+            return "null,\n";
+        }
+
+        var type = value.GetType();
+
+        // direct use cases
+        if (type.IsPointer)
+        {
+            unsafe
+            {
+                var rawValue = (IntPtr)Pointer.Unbox(value);
+                return $"ptr(0x{rawValue.ToInt64():X})";
+            }
+        }
+
+        if (type.IsPrimitive || type.IsEnum ||
+            value is Object and not MonoBehaviour and not ScriptableObject)
+        {
+            return $"{value},\n";
+        }
+
+        if (value is string)
+        {
+            return $"\"{value}\",\n";
+        }
+
+        if (value is Array array)
+        {
+            if (array.Length == 0)
+            {
+                return "[],\n";
+            }
+
+            var str = "[\n";
+
+            indent++;
+
+            foreach (var item in array)
+            {
+                str += $"{PrintClass(item, ref indent, foundReferences, false, includeProperties)},\n";
+            }
+
+            indent--;
+            str += $"{IndentString(indent)}],\n";
+            return str;
+        }
+
+        // fallback
+        return $"{PrintClass(value, ref indent, foundReferences, true, includeProperties)},\n";
     }
 
     private static string IndentString(int indent)
