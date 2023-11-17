@@ -87,6 +87,10 @@ public abstract class Window
     {
         WindowRect = GUILayout.Window(_windowId, WindowRect, _windowUpdate, _windowName, Style,
             _config.LayoutOptions);
+        if (_config.ForceOnTop)
+        {
+            UnityEngine.GUI.BringWindowToFront(_windowId);
+        }
     }
 
     private void WindowUpdate(int id)

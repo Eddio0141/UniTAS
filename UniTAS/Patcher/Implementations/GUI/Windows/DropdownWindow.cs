@@ -17,7 +17,7 @@ public class DropdownWindow : Window
     public DropdownWindow(WindowDependencies windowDependencies, DropdownEntry[] entries, Vector2 position,
         IPatchReverseInvoker patchReverseInvoker) : base(
         windowDependencies,
-        new(draggable: false, resizable: false, showTitle: false, closeButton: false))
+        new(draggable: false, resizable: false, showTitle: false, closeButton: false, forceOnTop: true))
 
     {
         windowDependencies.UpdateEvents.OnUpdateUnconditional += UpdateUnconditional;
