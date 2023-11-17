@@ -36,6 +36,8 @@ public class FinalizeSuppressionPatch : PreloadPatcher
             var disableFinalizeInvokeReference = assembly.MainModule.ImportReference(disableFinalizeInvoke);
 
             // basically, if DisableFinalizeInvoke is true, return
+
+            // also this doesn't need the try-catch block
             ilProcessor.InsertBefore(firstInstruction,
                 ilProcessor.Create(OpCodes.Call, disableFinalizeInvokeReference));
             ilProcessor.InsertBefore(firstInstruction, ilProcessor.Create(OpCodes.Brfalse, firstInstruction));

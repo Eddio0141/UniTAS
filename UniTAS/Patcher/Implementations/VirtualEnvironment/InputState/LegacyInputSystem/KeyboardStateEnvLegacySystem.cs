@@ -2,20 +2,22 @@
 using UniTAS.Patcher.Interfaces.VirtualEnvironment;
 using UniTAS.Patcher.Models.VirtualEnvironment;
 using UniTAS.Patcher.Services.VirtualEnvironment.Input.LegacyInputSystem;
+using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations.VirtualEnvironment.InputState.LegacyInputSystem;
 
 [Singleton]
-public class KeyboardStateEnvLegacySystem : LegacyInputSystemButtonBasedDevice<Key>, IKeyboardStateEnvLegacySystem
+public class KeyboardStateEnvLegacySystem : LegacyInputSystemButtonBasedDevice<KeyCodeWrap>,
+    IKeyboardStateEnvLegacySystem
 {
-    public new void Hold(Key key)
+    public void Hold(KeyCode keyCodeWrap)
     {
-        base.Hold(key);
+        base.Hold(new(keyCodeWrap));
     }
 
-    public new void Release(Key key)
+    public void Release(KeyCode keyCodeWrap)
     {
-        base.Release(key);
+        base.Release(new(keyCodeWrap));
     }
 
     public void Clear()
@@ -23,19 +25,19 @@ public class KeyboardStateEnvLegacySystem : LegacyInputSystemButtonBasedDevice<K
         ReleaseAllButtons();
     }
 
-    public bool IsKeyDown(Key key)
+    public bool IsKeyDown(KeyCode keyCodeWrap)
     {
-        return IsButtonDown(key);
+        return IsButtonDown(new(keyCodeWrap));
     }
 
-    public bool IsKeyUp(Key key)
+    public bool IsKeyUp(KeyCode keyCodeWrap)
     {
-        return IsButtonUp(key);
+        return IsButtonUp(new(keyCodeWrap));
     }
 
-    public bool IsKeyHeld(Key key)
+    public bool IsKeyHeld(KeyCode keyCodeWrap)
     {
-        return IsButtonHeld(key);
+        return IsButtonHeld(new(keyCodeWrap));
     }
 
     public bool AnyKeyHeld => AnyButtonHeld;

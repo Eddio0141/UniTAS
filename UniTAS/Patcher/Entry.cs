@@ -25,7 +25,7 @@ public static class Entry
     [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public static void Initialize()
     {
-        LoggingUtils.InitDiskLogger();
+        LoggingUtils.Init();
         StaticLogger.Log.LogInfo("Initializing UniTAS");
 
         BepInExUtils.GenerateMissingDirs();
@@ -41,7 +41,7 @@ public static class Entry
         }
 
         StaticLogger.Log.LogInfo($"Found {PreloadPatcherProcessor.PreloadPatchers.Length} preload patchers");
-        StaticLogger.Log.LogDebug($"Target dlls: {string.Join(", ", PreloadPatcherProcessor.TargetDLLs.ToArray())}");
+        StaticLogger.Log.LogInfo($"Target dlls: {string.Join(", ", PreloadPatcherProcessor.TargetDLLs.ToArray())}");
     }
 
     // Patches the assemblies

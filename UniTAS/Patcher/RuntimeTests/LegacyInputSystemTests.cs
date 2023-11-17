@@ -19,17 +19,15 @@ public class LegacyInputSystemTests
     private readonly LegacyInputSystemDevice _mouseControllerBase;
 
     private readonly IVirtualEnvController _virtualEnvController;
-    private readonly IKeyFactory _keyFactory;
 
     public LegacyInputSystemTests(IKeyboardStateEnvLegacySystem keyboardController,
-        IVirtualEnvController virtualEnvController, IMouseStateEnvLegacySystem mouseController, IKeyFactory keyFactory)
+        IVirtualEnvController virtualEnvController, IMouseStateEnvLegacySystem mouseController)
     {
         _keyboardController = keyboardController;
         _keyboardControllerBase = (LegacyInputSystemDevice)keyboardController;
         _virtualEnvController = virtualEnvController;
         _mouseController = mouseController;
         _mouseControllerBase = (LegacyInputSystemDevice)mouseController;
-        _keyFactory = keyFactory;
     }
 
     [RuntimeTest]
@@ -37,7 +35,7 @@ public class LegacyInputSystemTests
     {
         _virtualEnvController.RunVirtualEnvironment = true;
 
-        _keyboardController.Hold(_keyFactory.CreateKey(KeyCode.A));
+        _keyboardController.Hold(KeyCode.A);
         _keyboardControllerBase.MovieUpdate(false);
 
         RuntimeAssert.True(Input.GetKeyDown(KeyCode.A), "keycode down check");
@@ -57,7 +55,7 @@ public class LegacyInputSystemTests
         RuntimeAssert.True(Input.GetKey(KeyCode.A), "keycode 3 check");
         RuntimeAssert.True(Input.GetKey("a"), "string 3 check");
 
-        _keyboardController.Release(_keyFactory.CreateKey(KeyCode.A));
+        _keyboardController.Release(KeyCode.A);
         _keyboardControllerBase.MovieUpdate(false);
 
         RuntimeAssert.False(Input.GetKey(KeyCode.A), "keycode 4 check");
@@ -78,7 +76,7 @@ public class LegacyInputSystemTests
     {
         _virtualEnvController.RunVirtualEnvironment = true;
 
-        _keyboardController.Hold(_keyFactory.CreateKey(KeyCode.A));
+        _keyboardController.Hold(KeyCode.A);
         _keyboardControllerBase.MovieUpdate(false);
 
         RuntimeAssert.True(Input.GetKeyDown(KeyCode.A), "keycode down check 1");
@@ -95,7 +93,7 @@ public class LegacyInputSystemTests
 
         RuntimeAssert.False(Input.GetKeyDown(KeyCode.A), "keycode down check 4");
 
-        _keyboardController.Release(_keyFactory.CreateKey(KeyCode.A));
+        _keyboardController.Release(KeyCode.A);
         _virtualEnvController.RunVirtualEnvironment = false;
     }
 
@@ -104,7 +102,7 @@ public class LegacyInputSystemTests
     {
         _virtualEnvController.RunVirtualEnvironment = true;
 
-        _keyboardController.Hold(_keyFactory.CreateKey(KeyCode.A));
+        _keyboardController.Hold(KeyCode.A);
         _keyboardControllerBase.MovieUpdate(false);
 
         RuntimeAssert.True(Input.GetKeyDown(KeyCode.A), "keycode down check 1");
@@ -113,7 +111,7 @@ public class LegacyInputSystemTests
 
         RuntimeAssert.False(Input.GetKeyDown(KeyCode.A), "keycode down check 2");
 
-        _keyboardController.Release(_keyFactory.CreateKey(KeyCode.A));
+        _keyboardController.Release(KeyCode.A);
         _virtualEnvController.RunVirtualEnvironment = false;
     }
 

@@ -28,7 +28,7 @@ public class DontDestroyOnLoadTracker
         {
             "BepInEx_Manager",
             "BepInEx_ThreadingHelper",
-            InitManagerGameObject.GameObjectName
+            InitManagerGameObject.GAME_OBJECT_NAME
         };
 
         private static void Prefix(Object target)

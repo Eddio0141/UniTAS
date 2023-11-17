@@ -64,7 +64,8 @@ public class UnityInitInvoke : PreloadPatcher
     {
         TryHookAwakes(assembly);
         // TryHookRuntimeInits(assembly);
-        TryHookLastResort(assembly);
+        // this probably interferes with actual loading since it could initialise too early
+        // TryHookLastResort(assembly);
     }
 
     // doing this seems to fail so Awake hooks are enough

@@ -22,12 +22,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### General
 
 - Fixed TAS rendering popping up command prompt probably
+- Fixed music overlaying on each other every restart
 
 ### Compatibility
 
 - Fixed accidentally skipping over static constructors
 - Fixed accidentally skipping over removing some readonly fields
 - Fixed crash when trying to remove readonly fields
+- Fixed sometimes UniTAS not receiving the first update, which might cause some movie desync by 1 frame
 
 ## Changed
 

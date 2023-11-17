@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using UniTAS.Patcher.Interfaces.Patches.PatchTypes;
 using UniTAS.Patcher.MonoBehaviourScripts;
+using UniTAS.Patcher.Services.Trackers.UpdateTrackInfo;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -14,6 +16,7 @@ using Object = UnityEngine.Object;
 namespace UniTAS.Patcher.Patches.Harmony;
 
 [RawPatch]
+[SuppressMessage("ReSharper", "InconsistentNaming")]
 // ReSharper disable once ClassNeverInstantiated.Global
 public class ObjectPatch
 {
@@ -55,6 +58,9 @@ public class ObjectPatch
         }
     }
 
+    private static readonly INewScriptableObjectTracker NewScriptableObjectTracker =
+        ContainerStarter.Kernel.GetInstance<INewScriptableObjectTracker>();
+
     [HarmonyPatch]
     private class PreventPluginInstantiation
     {
@@ -82,6 +88,14 @@ public class ObjectPatch
         {
             // Don't instantiate Plugin
             return data is not MonoBehaviourUpdateInvoker;
+        }
+
+        private static void Postfix(Object __result)
+        {
+            if (__result is ScriptableObject scriptableObject)
+            {
+                NewScriptableObjectTracker.NewScriptableObject(scriptableObject);
+            }
         }
 
         // ReSharper disable once UnusedParameter.Local

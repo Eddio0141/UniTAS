@@ -147,6 +147,8 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvent
 
     private void MovieRunningStatusChange(bool running)
     {
+        MovieEnd = !running;
+
         if (running)
         {
             OnMovieStart?.Invoke();
@@ -156,7 +158,6 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvent
             OnMovieEnd?.Invoke();
         }
 
-        MovieEnd = !running;
         foreach (var onMovieRunningStatusChange in _onMovieRunningStatusChange)
         {
             onMovieRunningStatusChange.OnMovieRunningStatusChange(running);

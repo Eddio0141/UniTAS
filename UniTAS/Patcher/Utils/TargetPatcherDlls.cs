@@ -8,7 +8,7 @@ namespace UniTAS.Patcher.Utils;
 
 public static class TargetPatcherDlls
 {
-    public static IEnumerable<string> AllDLLs =>
+    private static IEnumerable<string> AllDLLs =>
         Directory.GetFiles(Paths.ManagedPath, "*.dll", SearchOption.TopDirectoryOnly).Select(Path.GetFileName)
             .ToArray();
 
@@ -32,28 +32,21 @@ public static class TargetPatcherDlls
 
     private static string[] AssemblyExclusionsRaw { get; } =
     {
-        "UnityEngine.*",
-        "UnityEngine",
-        "Unity.*",
+        // c# related
         "System.*",
         "System",
         "netstandard",
         "mscorlib",
         "Mono.*",
         "Mono",
-        "MonoMod.*",
-        "BepInEx.*",
-        "BepInEx",
-        "MonoMod.*",
-        "0Harmony",
-        "HarmonyXInterop",
-        "StructureMap",
-        "Newtonsoft.Json"
+        // no need
+        "Newtonsoft.Json",
+
+        // should be fine
+        "UnityEngine.IMGUIModule",
     };
 
     private static string[] AssemblyIncludeRaw { get; } =
     {
-        "Unity.InputSystem",
-        "UnityEngine.InputModule"
     };
 }

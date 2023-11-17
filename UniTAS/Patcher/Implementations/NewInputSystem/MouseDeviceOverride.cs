@@ -12,14 +12,14 @@ namespace UniTAS.Patcher.Implementations.NewInputSystem;
 [Singleton]
 public class MouseDeviceOverride : IInputOverrideDevice
 {
-    private Mouse _mouse;
-
     private readonly IMouseStateEnvNewSystem _mouseStateEnvNewSystem;
 
     public MouseDeviceOverride(IMouseStateEnvNewSystem mouseStateEnvNewSystem)
     {
         _mouseStateEnvNewSystem = mouseStateEnvNewSystem;
     }
+
+    private TASMouse _device;
 
     [InputControlLayout(stateType = typeof(MouseState), isGenericTypeOfDevice = true)]
     [SuppressMessage("ReSharper", "ClassNeverInstantiated.Local")]
@@ -52,11 +52,17 @@ public class MouseDeviceOverride : IInputOverrideDevice
             scroll = _mouseStateEnvNewSystem.Scroll
         };
 
-        InputSystem.QueueStateEvent(_mouse, state);
+        InputSystem.QueueStateEvent(_device, state);
     }
 
-    public void DeviceAdded()
+    public void AddDevice()
     {
-        _mouse = InputSystem.AddDevice<TASMouse>();
+        _device = InputSystem.AddDevice<TASMouse>();
+    }
+
+    public void RemoveDevice()
+    {
+        InputSystem.RemoveDevice(_device);
+        _device = null;
     }
 }

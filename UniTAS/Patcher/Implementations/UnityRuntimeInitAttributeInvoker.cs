@@ -7,6 +7,7 @@ using BepInEx;
 using HarmonyLib;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Services;
+using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.UnityEvents;
 
 namespace UniTAS.Patcher.Implementations;
@@ -22,11 +23,12 @@ public class UnityRuntimeInitAttributeInvoker
 
     private readonly IGameRestart _gameRestart;
     private readonly IUpdateEvents _updateEvents;
+    private readonly ILogger _logger;
 
     private bool _invokedBeforeSceneLoad;
     private bool _invokedBeforeStart;
 
-    public UnityRuntimeInitAttributeInvoker(IGameRestart gameRestart, IUpdateEvents updateEvents)
+    public UnityRuntimeInitAttributeInvoker(IGameRestart gameRestart, IUpdateEvents updateEvents, ILogger logger)
     {
         var runtimeInitializeOnLoadMethodAttribute =
             AccessTools.TypeByName("UnityEngine.RuntimeInitializeOnLoadMethodAttribute");
@@ -35,6 +37,7 @@ public class UnityRuntimeInitAttributeInvoker
 
         _gameRestart = gameRestart;
         _updateEvents = updateEvents;
+        _logger = logger;
         _gameRestart.OnGameRestart += GameRestart;
         _gameRestart.OnGameRestart += (_, _) =>
         {
@@ -98,8 +101,11 @@ public class UnityRuntimeInitAttributeInvoker
         if (_invokedBeforeSceneLoad) return;
         _invokedBeforeSceneLoad = true;
 
+        _logger.LogDebug($"Invoking BeforeSceneLoad methods, callback count: {_beforeSceneLoad.Length}");
+
         foreach (var method in _beforeSceneLoad)
         {
+            _logger.LogDebug($"Invoking BeforeSceneLoad method {method.DeclaringType?.Name}.{method.Name}");
             method.Invoke(null, null);
         }
     }
@@ -109,8 +115,11 @@ public class UnityRuntimeInitAttributeInvoker
         if (_invokedBeforeStart) return;
         _invokedBeforeStart = true;
 
+        _logger.LogDebug($"Invoking BeforeStart methods, callback count: {_beforeStart.Length}");
+
         foreach (var method in _beforeStart)
         {
+            _logger.LogDebug($"Invoking BeforeStart method {method.DeclaringType?.Name}.{method.Name}");
             method.Invoke(null, null);
         }
     }

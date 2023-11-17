@@ -26,12 +26,18 @@ public class StaticCtorHeaders : PreloadPatcher
 
         foreach (var type in assembly.Modules.SelectMany(module => module.GetAllTypes()))
         {
+            // ignore enums
+            if (type.IsEnum) continue;
+
+            StaticLogger.Log.LogDebug($"Patching {type.FullName} for readonly fields and cctor");
+
             // remove readonly from all static fields
-            StaticLogger.Log.LogDebug($"Removing readonly from static fields in {type.FullName}");
+            StaticLogger.Trace($"Removing readonly from static fields in {type.FullName}");
             RemoveReadOnly(type);
 
-            StaticLogger.Log.LogDebug($"Patching static ctor of {type.FullName}");
+            // we need to add a static ctor as it will be responsible for tracking and resetting static fields
             var staticCtor = ILCodeUtils.FindOrAddCctor(assembly, type);
+            StaticLogger.Trace("Patching static ctor");
             PatchStaticCtor(assembly, staticCtor, type);
         }
     }
@@ -76,36 +82,36 @@ public class StaticCtorHeaders : PreloadPatcher
 
         // insert call to our method at the start of the static ctor
         var startRefInstruction = ilProcessor.Create(OpCodes.Call, patchMethodStartRef);
-        ilProcessor.InsertBefore(first, startRefInstruction);
+        ilProcessor.InsertBeforeInstructionReplace(first, startRefInstruction,
+            InstructionReplaceFixType.ExceptionRanges);
         insertedInstructions.Add(startRefInstruction);
-        StaticLogger.Log.LogDebug($"Patched start of static ctor of {type.FullName}");
+        StaticLogger.Trace($"Patched start of static ctor of {type.FullName}");
 
         var insertCount = 0;
 
         for (var i = 0; i < instructions.Count; i++)
         {
-            var instruction = instructions[i];
-            if (instruction.OpCode != OpCodes.Ret) continue;
+            var retInstruction = instructions[i];
+            if (retInstruction.OpCode != OpCodes.Ret) continue;
+
             var endRefInstruction = ilProcessor.Create(OpCodes.Call, patchMethodEndRef);
-            ilProcessor.InsertBefore(instruction, endRefInstruction);
+            ilProcessor.InsertBeforeInstructionReplace(retInstruction, endRefInstruction);
             insertedInstructions.Add(endRefInstruction);
-            StaticLogger.Log.LogDebug(
-                $"Found return in static ctor of {type.FullName}, instruction: {instruction}, patched");
-            ILCodeUtils.RedirectJumpsToNewDest(ilProcessor.Body.Instructions, instruction, endRefInstruction);
+
+            StaticLogger.Trace(
+                $"Found return in static ctor of {type.FullName}, instruction: {retInstruction}, patched");
+
             i++;
             insertCount++;
         }
 
         if (insertCount == 0)
         {
-            var last = instructions.Last();
             var endRefInstruction = ilProcessor.Create(OpCodes.Call, patchMethodEndRef);
-            ilProcessor.InsertAfter(last, endRefInstruction);
+            ilProcessor.InsertBeforeInstructionReplace(instructions.Last(), endRefInstruction);
             insertedInstructions.Add(endRefInstruction);
-            StaticLogger.Log.LogDebug(
+            StaticLogger.Trace(
                 $"Found no returns in static ctor of {type.FullName}, force patching at last instruction");
-
-            ILCodeUtils.RedirectJumpsToNewDest(ilProcessor.Body.Instructions, last, endRefInstruction);
         }
 
         // i gotta find a nice place to insert call to CheckAndInvokeDependency
@@ -123,23 +129,20 @@ public class StaticCtorHeaders : PreloadPatcher
             // don't bother with mscorlib
             if (Equals(operand.GetType().Assembly, typeof(string).Assembly)) continue;
 
-            if (operand is VariableDefinition) continue;
+            if (operand is VariableDefinition or Instruction) continue;
 
             if (operand is MemberReference m)
             {
                 if (m.DeclaringType == null || m.DeclaringType.Equals(type)) continue;
 
                 // ok we found it, insert call to CheckAndInvokeDependency
-                StaticLogger.Log.LogDebug("Before insert");
+                StaticLogger.Trace("Before insert");
                 var dependencyRefInstruction = ilProcessor.Create(OpCodes.Call, patchMethodDependencyRef);
-                ilProcessor.InsertBefore(instruction, dependencyRefInstruction);
+                ilProcessor.InsertBeforeInstructionReplace(instruction, dependencyRefInstruction);
                 insertedDependencyInvoke = true;
 
-                StaticLogger.Log.LogDebug(
+                StaticLogger.Trace(
                     $"Found external class reference in static ctor of {type.FullName}, instruction: {instruction}, patched");
-
-                ILCodeUtils.RedirectJumpsToNewDest(ilProcessor.Body.Instructions, instruction,
-                    dependencyRefInstruction);
 
                 break;
             }
@@ -151,7 +154,7 @@ public class StaticCtorHeaders : PreloadPatcher
 
         if (!insertedDependencyInvoke)
         {
-            StaticLogger.Log.LogDebug(
+            StaticLogger.Trace(
                 $"Found no external class reference in static ctor of {type.FullName}, patching to invoke after start of static ctor");
 
             ilProcessor.InsertAfter(startRefInstruction, ilProcessor.Create(OpCodes.Call, patchMethodDependencyRef));
@@ -177,14 +180,14 @@ public static class PatchMethods
 
         if (type == null)
         {
-            throw new NullReferenceException("Could not find type of static ctor, something went horribly wrong");
+            StaticLogger.Log.LogError("Could not find type of static ctor, something went horribly wrong");
+            return;
         }
 
         CctorInvokeStack.Add(type);
 
         if (IsNotFirstInvoke(type)) return;
-        StaticLogger.Log.LogDebug(
-            $"First static ctor invoke for {type.FullName}, stack count: {CctorInvokeStack.Count}");
+        StaticLogger.Trace($"First static ctor invoke for {type.FullName}, stack count: {CctorInvokeStack.Count}");
 
         // first invoke zone
 
@@ -209,8 +212,7 @@ public static class PatchMethods
 
             PendingIgnoreAddingInvokeList.Add(type);
 
-            StaticLogger.Log.LogDebug(
-                $"Found static ctor dependency, parent: {parent.FullName}, child: {type.FullName}");
+            StaticLogger.Trace($"Found static ctor dependency, parent: {parent.FullName}, child: {type.FullName}");
         }
     }
 

@@ -5,20 +5,18 @@ using UniTAS.Patcher.Services.UnityEvents;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 
-namespace UniTAS.Patcher.Implementations.GUI;
+namespace UniTAS.Patcher.Implementations;
 
-[Register]
+[Singleton]
 [ForceInstantiate]
 [ExcludeRegisterIfTesting]
-public class IMGUIUseSystemFont
+public class IMGUIFontBackupSet
 {
     private readonly IUpdateEvents _updateEvents;
     private readonly Font _font;
     private readonly ILogger _logger;
 
-    private const string FALLBACK_FONT_NAME = "Liberation Sans";
-
-    public IMGUIUseSystemFont(ILogger logger, IUpdateEvents updateEvents)
+    public IMGUIFontBackupSet(ILogger logger, IUpdateEvents updateEvents)
     {
         _logger = logger;
         _updateEvents = updateEvents;
@@ -29,10 +27,15 @@ public class IMGUIUseSystemFont
             return;
         }
 
-        _font = fonts.FirstOrDefault(x => x.fontNames.Contains(FALLBACK_FONT_NAME));
+        foreach (var font in fonts)
+        {
+            _logger.LogDebug($"found font: {string.Join(", ", font.fontNames)}");
+        }
+
+        _font = fonts.FirstOrDefault(x => x.fontNames.Contains("Liberation Sans"));
         if (_font == null)
         {
-            logger.LogError($"couldn't find unity fallback font {FALLBACK_FONT_NAME}");
+            logger.LogWarning("no fallback font found for unity IMGUI");
             return;
         }
 
@@ -43,6 +46,6 @@ public class IMGUIUseSystemFont
     {
         _updateEvents.OnGUIUnconditional -= OnGUIUnconditional;
         UnityEngine.GUI.skin.font = _font;
-        _logger.LogInfo($"Set unity IMGUI font to {FALLBACK_FONT_NAME}");
+        _logger.LogInfo($"Set unity IMGUI font to {_font.name}");
     }
 }

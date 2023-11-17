@@ -2,23 +2,26 @@ using System.Collections.Generic;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Models.VirtualEnvironment;
 using UniTAS.Patcher.Services.VirtualEnvironment.Input.NewInputSystem;
+using UnityEngine.InputSystem;
 
 namespace UniTAS.Patcher.Implementations.VirtualEnvironment.InputState.NewInputSystem;
 
 [Singleton]
 public class KeyboardStateEnvNewSystem : Interfaces.VirtualEnvironment.InputState, IKeyboardStateEnvNewSystem
 {
-    public List<Key> HeldKeys { get; } = new();
+    public List<NewKeyCodeWrap> HeldKeys { get; } = new();
 
     public void Hold(Key key)
     {
-        if (HeldKeys.Contains(key)) return;
-        HeldKeys.Add(key);
+        var keyCodeWrap = new NewKeyCodeWrap(key);
+        if (HeldKeys.Contains(keyCodeWrap)) return;
+        HeldKeys.Add(keyCodeWrap);
     }
 
     public void Release(Key key)
     {
-        HeldKeys.Remove(key);
+        var keyCodeWrap = new NewKeyCodeWrap(key);
+        HeldKeys.Remove(keyCodeWrap);
     }
 
     public void Clear()
