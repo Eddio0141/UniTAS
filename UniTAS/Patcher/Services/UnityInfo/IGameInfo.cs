@@ -1,4 +1,4 @@
-namespace UniTAS.Patcher.Services;
+namespace UniTAS.Patcher.Services.UnityInfo;
 
 public interface IGameInfo
 {

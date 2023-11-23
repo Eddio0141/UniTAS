@@ -5,6 +5,7 @@ using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Logging;
+using UniTAS.Patcher.Services.UnityInfo;
 using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations;

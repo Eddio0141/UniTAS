@@ -5,9 +5,10 @@ using System.Linq;
 using HarmonyLib;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Services;
+using UniTAS.Patcher.Services.UnityInfo;
 using UnityEngine;
 
-namespace UniTAS.Patcher.Implementations;
+namespace UniTAS.Patcher.Implementations.UnityInfo;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 [Singleton]
