@@ -22,59 +22,60 @@
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-        <DefineConstants/>
+        <DefineConstants />
         <OutputPath>bin/Release/BepInEx/patchers/UniTAS/</OutputPath>
         <DebugType>none</DebugType>
-        <NoWarn/>
+        <NoWarn />
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
         <OutputPath>bin/Debug/BepInEx/patchers/UniTAS/</OutputPath>
-        <NoWarn/>
+        <NoWarn />
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'ReleaseTrace' ">
         <OutputPath>bin/Release/BepInEx/patchers/UniTAS/</OutputPath>
         <Optimize>true</Optimize>
         <DebugType>none</DebugType>
-        <NoWarn/>
+        <NoWarn />
     </PropertyGroup>
 
     <ItemGroup>
-        <ExternAssembliesFiles Include="RuntimeResources\ExternAssemblies\*.*"/>
-        <ResourcesFiles Include="RuntimeResources\Resources\*.*"/>
+        <ExternAssembliesFiles Include="RuntimeResources\ExternAssemblies\*.*" />
+        <ResourcesFiles Include="RuntimeResources\Resources\*.*" />
     </ItemGroup>
 
     <Target Name="CopyOnBuild" AfterTargets="AfterBuild">
-        <Copy SourceFiles="@(ExternAssembliesFiles)" DestinationFolder="$(OutDir)"/>
-        <Copy SourceFiles="@(ResourcesFiles)" DestinationFolder="$(OutDir)\Resources"/>
+        <Copy SourceFiles="@(ExternAssembliesFiles)" DestinationFolder="$(OutDir)" />
+        <Copy SourceFiles="@(ResourcesFiles)" DestinationFolder="$(OutDir)\Resources" />
     </Target>
 
     <ItemGroup>
-        <PackageReference Include="BepInEx.Analyzers" Version="1.0.8" PrivateAssets="all"/>
-        <PackageReference Include="BepInEx.Core" Version="5.4.21"/>
-        <PackageReference Include="BepInEx.PluginInfoProps" Version="2.1.0"/>
-        <PackageReference Include="JetBrains.Annotations" Version="2023.2.0"/>
-        <PackageReference Include="MonoMod.Utils" Version="25.0.3"/>
-        <PackageReference Include="StructureMap" Version="2.6.3"/>
-        <PackageReference Include="Unity.InputSystem" Version="1.5.0"/>
-        <PackageReference Include="UnityEngine.Modules" Version="3.4.0" IncludeAssets="compile"/>
-        <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all"/>
+        <PackageReference Include="AssetsTools.NET" Version="3.0.0" />
+        <PackageReference Include="BepInEx.Analyzers" Version="1.0.8" PrivateAssets="all" />
+        <PackageReference Include="BepInEx.Core" Version="5.4.21" />
+        <PackageReference Include="BepInEx.PluginInfoProps" Version="2.1.0" />
+        <PackageReference Include="JetBrains.Annotations" Version="2023.2.0" />
+        <PackageReference Include="MonoMod.Utils" Version="25.0.3" />
+        <PackageReference Include="StructureMap" Version="2.6.3" />
+        <PackageReference Include="Unity.InputSystem" Version="1.5.0" />
+        <PackageReference Include="UnityEngine.Modules" Version="3.4.0" IncludeAssets="compile" />
+        <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\moonsharp\src\MoonSharp.Interpreter\MoonSharp.Interpreter.net35-client.csproj"/>
+        <ProjectReference Include="..\..\moonsharp\src\MoonSharp.Interpreter\MoonSharp.Interpreter.net35-client.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <Compile Remove="RuntimeResources\**"/>
+        <Compile Remove="RuntimeResources\**" />
     </ItemGroup>
 
     <ItemGroup>
-        <EmbeddedResource Remove="RuntimeResources\**"/>
+        <EmbeddedResource Remove="RuntimeResources\**" />
     </ItemGroup>
 
     <ItemGroup>
-        <None Remove="RuntimeResources\**"/>
+        <None Remove="RuntimeResources\**" />
     </ItemGroup>
 </Project>
