@@ -17,7 +17,9 @@ public class DropdownWindow : Window
     public DropdownWindow(WindowDependencies windowDependencies, DropdownEntry[] entries, Vector2 position,
         IPatchReverseInvoker patchReverseInvoker) : base(
         windowDependencies,
-        new(draggable: false, resizable: false, showTitle: false, closeButton: false, forceOnTop: true))
+        new(draggable: false, resizable: false, showTitle: false, closeButton: false, forceOnTop: true,
+            forceFocus: true,
+            layoutOptions: new[] { GUILayout.ExpandHeight(true), GUILayout.Height(10) }))
 
     {
         windowDependencies.UpdateEvents.OnUpdateUnconditional += UpdateUnconditional;
@@ -53,6 +55,23 @@ public class DropdownWindow : Window
             border = new(windowBgBorderSize, windowBgBorderSize, windowBgBorderSize, windowBgBorderSize),
             normal = new() { background = windowBg }
         };
+
+        var buttonHover = new Texture2D(1, 1);
+        buttonHover.SetPixel(1, 1, new(0f, 0.5f, 1.0f));
+        buttonHover.Apply();
+        var buttonBg = new Texture2D(1, 1);
+        buttonBg.SetPixel(1, 1, GUIUtils.StandardBgColour);
+        buttonBg.Apply();
+
+        _buttonStyle = new()
+        {
+            alignment = TextAnchor.MiddleCenter,
+            normal = new() { background = buttonBg, textColor = Color.white },
+            hover = new() { background = buttonHover, textColor = Color.white },
+            active = new() { background = buttonHover, textColor = Color.white },
+            focused = new() { background = buttonHover, textColor = Color.white },
+            fixedHeight = 25
+        };
     }
 
     private void UpdateUnconditional()
@@ -67,6 +86,8 @@ public class DropdownWindow : Window
         Close();
     }
 
+    private readonly GUIStyle _buttonStyle;
+
     protected override void OnGUI()
     {
         GUILayout.BeginVertical(GUIUtils.EmptyOptions);
@@ -75,7 +96,7 @@ public class DropdownWindow : Window
         {
             var name = entry.Title;
             var action = entry.EntryFunction;
-            if (!GUILayout.Button(name, GUIUtils.EmptyOptions)) continue;
+            if (!GUILayout.Button(name, _buttonStyle, GUIUtils.EmptyOptions)) continue;
 
             action();
             Close();

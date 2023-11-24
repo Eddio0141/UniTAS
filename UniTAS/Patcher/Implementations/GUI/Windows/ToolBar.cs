@@ -19,7 +19,7 @@ public class ToolBar : IOnGUIUnconditional
     private readonly IDropdownMenuFactory _dropdownMenuFactory;
 
     private readonly GUIStyle _buttonStyle;
-    private readonly Texture2D _buttonNormal = new(1, 1);
+    private readonly Texture2D _buttonNormal;
     private const int TOOLBAR_HEIGHT = 25;
     private bool _visible;
 
@@ -32,13 +32,14 @@ public class ToolBar : IOnGUIUnconditional
         _windowFactory = windowFactory;
         _dropdownMenuFactory = dropdownMenuFactory;
 
-        _buttonNormal.SetPixel(0, 0, GUIUtils.StandardBgColour);
+        _buttonNormal = new(1, 1);
+        _buttonNormal.SetPixel(1, 1, GUIUtils.StandardBgColour);
         _buttonNormal.Apply();
         var buttonHold = new Texture2D(1, 1);
-        buttonHold.SetPixel(0, 0, GUIUtils.HoldColour);
+        buttonHold.SetPixel(1, 1, new(0f, 0.5f, 1.0f));
         buttonHold.Apply();
         var buttonHover = new Texture2D(1, 1);
-        buttonHover.SetPixel(0, 0, GUIUtils.HoverColour);
+        buttonHover.SetPixel(1, 1, new(0f, 0.5f, 1.0f));
         buttonHover.Apply();
 
         _buttonStyle = new()
@@ -46,9 +47,10 @@ public class ToolBar : IOnGUIUnconditional
             alignment = TextAnchor.MiddleCenter,
             fixedHeight = TOOLBAR_HEIGHT,
             padding = new(5, 5, 5, 5),
-            normal = { background = _buttonNormal, textColor = Color.white },
-            hover = { background = buttonHover, textColor = Color.white },
-            active = { background = buttonHold, textColor = Color.white }
+            normal = new() { background = _buttonNormal, textColor = Color.white },
+            hover = new() { background = buttonHover, textColor = new(0f, 0.5f, 1.0f) },
+            active = new() { background = buttonHold, textColor = new(0f, 0.5f, 1.0f) },
+            focused = new() { background = buttonHover, textColor = Color.white },
         };
 
         _toolbarVisibleBind = binds.Create(new("ToolbarVisible", KeyCode.F1));

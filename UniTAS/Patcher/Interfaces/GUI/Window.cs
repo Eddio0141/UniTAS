@@ -91,6 +91,11 @@ public abstract class Window
         {
             UnityEngine.GUI.BringWindowToFront(_windowId);
         }
+
+        if (_config.ForceFocus)
+        {
+            UnityEngine.GUI.FocusWindow(_windowId);
+        }
     }
 
     private void WindowUpdate(int id)
