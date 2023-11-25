@@ -40,37 +40,49 @@ public class LegacyInputInfo : ILegacyInputInfo
         var file = assetsFileInstance.file;
         manager.LoadClassDatabaseFromPackage(file.Metadata.UnityVersion);
 
-        var inputManagerAsset = file.GetAssetsOfType(AssetClassID.InputManager)[0];
+        var inputManagerAssets = file.GetAssetsOfType(AssetClassID.InputManager);
+
+        if (inputManagerAssets.Count == 0)
+        {
+            logger.LogError("Failed to find input manager asset");
+            return;
+        }
+
+        var inputManagerAsset = inputManagerAssets[0];
         var inputManager = manager.GetBaseField(assetsFileInstance, inputManagerAsset);
 
         var axes = inputManager["m_Axes.Array"];
 
         foreach (var axis in axes)
         {
-            var name = axis["m_Name"].Value?.AsString;
+            // getting those shouldn't fail, unless the new version of Unity changed the format
+
+            var name = axis["m_Name"].AsString;
             // button to press to go negative value
-            var negativeButton = axis["negativeButton"].Value?.AsString;
+            var negativeButton = axis["negativeButton"].AsString;
             // button to press to go positive value
-            var positiveButton = axis["positiveButton"].Value?.AsString;
+            var positiveButton = axis["positiveButton"].AsString;
             // button to press to go negative value (alt)
-            var altNegativeButton = axis["altNegativeButton"].Value?.AsString;
+            var altNegativeButton = axis["altNegativeButton"].AsString;
             // button to press to go positive value (alt)
-            var altPositiveButton = axis["altPositiveButton"].Value?.AsString;
+            var altPositiveButton = axis["altPositiveButton"].AsString;
             // speed (in units / sec) that the output value will fall towards neutral when device at rest
-            var gravity = axis["gravity"].Value?.AsFloat;
+            var gravity = axis["gravity"].AsFloat;
             // size of the analog dead zone (all analog device values within this range map to neutral)
-            var dead = axis["dead"].Value?.AsFloat;
+            var dead = axis["dead"].AsFloat;
             // speed to move towards target value for digital devices (in units / sec)
-            var sensitivity = axis["sensitivity"].Value?.AsFloat;
+            var sensitivity = axis["sensitivity"].AsFloat;
             // if we have input in opposite direction of current, do we jump to neutral and continue from there
-            var snap = axis["snap"].Value?.AsBool;
+            var snap = axis["snap"].AsBool;
             // flip pos and neg values
-            var invert = axis["invert"].Value?.AsBool;
+            var invert = axis["invert"].AsBool;
             // TODO translate to enum
             // 0 = Key or Mouse Button
             // 1 = Mouse Movement
             // 2 = Joystick Axis
-            var type = axis["type"].Value?.AsInt;
+            // 3 = Window Movement
+            // TODO what is 3
+            var type = axis["type"].AsInt;
             // TODO translate to enum
             // 0 = X axis
             // 1 = Y axis
@@ -79,7 +91,7 @@ public class LegacyInputInfo : ILegacyInputInfo
             // 4 = 5th axis Joystick
             // ...
             // 27 = 28th axis Joystick
-            var axisNum = axis["axis"].Value?.AsInt;
+            var axisNum = axis["axis"].AsInt;
 
             // TODO translate to enum
             // 0 = Get motion from all joysticks
@@ -87,7 +99,7 @@ public class LegacyInputInfo : ILegacyInputInfo
             // 2 = Joystick 2
             // ...
             // 16 = Joystick 16
-            var joyNum = axis["joyNum"].Value?.AsInt;
+            var joyNum = axis["joyNum"].AsInt;
 
             StaticLogger.Log.LogDebug("info:");
             StaticLogger.Log.LogDebug("name: " + name);
