@@ -3,5 +3,7 @@ namespace UniTAS.Patcher.Services.VirtualEnvironment.Input.LegacyInputSystem;
 public interface IAxisStateEnvLegacySystem
 {
     float GetAxis(string axisName);
-    void SetAxis(string axisName, float value);
+    float GetAxisRaw(string axisName);
+    void KeyDown(string key);
+    void KeyUp(string key);
 }

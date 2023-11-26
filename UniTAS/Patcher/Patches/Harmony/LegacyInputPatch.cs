@@ -279,7 +279,7 @@ public class LegacyInputPatch
                 return false;
             }
 
-            __result = AxisStateEnvLegacySystem.GetAxis(axisName);
+            __result = AxisStateEnvLegacySystem.GetAxisRaw(axisName);
             return false;
         }
 
