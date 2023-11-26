@@ -1,6 +1,6 @@
 namespace UniTAS.Patcher.Models.UnityInfo;
 
-public readonly struct LegacyInputAxis
+public class LegacyInputAxis
 {
     // name of the axis
     public readonly string Name;
@@ -59,4 +59,65 @@ public readonly struct LegacyInputAxis
         Axis = axis;
         JoyNum = joyNum;
     }
+}
+
+public enum AxisType
+{
+    KeyOrMouseButton,
+    MouseMovement,
+    JoystickAxis,
+    WindowMovement
+}
+
+public enum JoyNum
+{
+    AllJoysticks,
+    Joystick1,
+    Joystick2,
+    Joystick3,
+    Joystick4,
+    Joystick5,
+    Joystick6,
+    Joystick7,
+    Joystick8,
+    Joystick9,
+    Joystick10,
+    Joystick11,
+    Joystick12,
+    Joystick13,
+    Joystick14,
+    Joystick15,
+    Joystick16
+}
+
+public enum AxisChoice
+{
+    XAxis,
+    YAxis,
+    Axis3,
+    Axis4,
+    Axis5,
+    Axis6,
+    Axis7,
+    Axis8,
+    Axis9,
+    Axis10,
+    Axis11,
+    Axis12,
+    Axis13,
+    Axis14,
+    Axis15,
+    Axis16,
+    Axis17,
+    Axis18,
+    Axis19,
+    Axis20,
+    Axis21,
+    Axis22,
+    Axis23,
+    Axis24,
+    Axis25,
+    Axis26,
+    Axis27,
+    Axis28
 }
