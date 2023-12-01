@@ -40,7 +40,8 @@ public class AxisStateEnvLegacySystem : LegacyInputSystemDevice, IAxisStateEnvLe
 
     public void AddAxis(LegacyInputAxis axis)
     {
-        _axisInfo.Add(axis);
+        var axisState = new LegacyInputAxisState(axis);
+        _values.Add(axis.Name, axisState);
     }
 
     public void KeyDown(string key)

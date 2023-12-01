@@ -1,6 +1,6 @@
 namespace UniTAS.Patcher.Models.UnityInfo;
 
-public class LegacyInputAxis
+public readonly struct LegacyInputAxis
 {
     // name of the axis
     public readonly string Name;
