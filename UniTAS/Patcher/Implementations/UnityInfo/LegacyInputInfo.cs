@@ -5,14 +5,17 @@ using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Models.UnityInfo;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.UnityInfo;
+using UniTAS.Patcher.Services.VirtualEnvironment.Input.LegacyInputSystem;
 
 namespace UniTAS.Patcher.Implementations.UnityInfo;
 
 [Singleton]
 [ForceInstantiate]
-public class LegacyInputInfo : ILegacyInputInfo
+public class LegacyInputInfo
 {
-    public LegacyInputInfo(IAssetsManager assetsManager, ILogger logger)
+    /// Grabs legacy input info from globalgamemanagers
+    public LegacyInputInfo(IAssetsManager assetsManager, ILogger logger,
+        IAxisStateEnvLegacySystem axisStateEnvLegacySystem)
     {
         var globalGameManagersPath = Directory.GetParent(Paths.ManagedPath)?.FullName;
         if (globalGameManagersPath == null)
@@ -82,6 +85,8 @@ public class LegacyInputInfo : ILegacyInputInfo
 
             var legacyInputAxis = new LegacyInputAxis(name, negativeButton, positiveButton, altNegativeButton,
                 altPositiveButton, gravity, dead, sensitivity, snap, invert, type, axisNum, joyNum);
+
+            axisStateEnvLegacySystem.AddAxis(legacyInputAxis);
         }
     }
 }
