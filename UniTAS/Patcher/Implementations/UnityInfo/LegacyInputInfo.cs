@@ -11,6 +11,7 @@ namespace UniTAS.Patcher.Implementations.UnityInfo;
 
 [Singleton]
 [ForceInstantiate]
+[ExcludeRegisterIfTesting]
 public class LegacyInputInfo
 {
     /// Grabs legacy input info from globalgamemanagers
@@ -70,11 +71,8 @@ public class LegacyInputInfo
             var sensitivity = axis["sensitivity"].AsFloat;
             var snap = axis["snap"].AsBool;
             var invert = axis["invert"].AsBool;
-            // TODO translate to enum
             var typeRaw = axis["type"].AsInt;
-            // TODO translate to enum
             var axisNumRaw = axis["axis"].AsInt;
-            // TODO translate to enum
             var joyNumRaw = axis["joyNum"].AsInt;
 
             logger.LogDebug($"Found legacy input axis: {name}");

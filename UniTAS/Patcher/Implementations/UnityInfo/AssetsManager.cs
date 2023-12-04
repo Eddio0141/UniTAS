@@ -7,6 +7,7 @@ using UniTAS.Patcher.Utils;
 namespace UniTAS.Patcher.Implementations.UnityInfo;
 
 [Singleton]
+[ExcludeRegisterIfTesting]
 public class AssetsManager : IAssetsManager
 {
     public AssetsTools.NET.Extra.AssetsManager Instance { get; }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using AssetsTools.NET.Extra;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using MoonSharp.Interpreter;
@@ -25,6 +26,7 @@ using UniTAS.Patcher.Services.Customization;
 using UniTAS.Patcher.Services.DependencyInjection;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.Overlay;
+using UniTAS.Patcher.Services.UnityInfo;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Patcher.Services.VirtualEnvironment;
 using UniTAS.Patcher.Services.VirtualEnvironment.Input.LegacyInputSystem;
@@ -309,6 +311,12 @@ public static class KernelUtils
     {
         [SuppressMessage("ReSharper", "UnassignedGetOnlyAutoProperty")]
         public double Offset { get; }
+    }
+
+    [Singleton(IncludeDifferentAssembly = true)]
+    private class AssetsManagerDummy : IAssetsManager
+    {
+        public AssetsManager Instance => null!;
     }
 
     public static Container Init()
