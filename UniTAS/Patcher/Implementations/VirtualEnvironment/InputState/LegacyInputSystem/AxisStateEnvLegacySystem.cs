@@ -73,4 +73,16 @@ public class AxisStateEnvLegacySystem : LegacyInputSystemDevice, IAxisStateEnvLe
             axis.MousePos = pos;
         }
     }
+
+    public void SetAxis(AxisChoice axis, float value)
+    {
+        foreach (var axisState in _values)
+        {
+            var axisStateValue = axisState.Value;
+            if (axisStateValue.Axis.Axis == axis)
+            {
+                axisState.Value.SetAxis(value);
+            }
+        }
+    }
 }

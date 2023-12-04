@@ -8,19 +8,19 @@ public class LegacyInputAxisState
 {
     public float Value { get; private set; }
     public float ValueRaw { get; private set; }
-    private readonly LegacyInputAxis _axis;
+    public LegacyInputAxis Axis { get; }
 
     public Vector2 MousePos
     {
         set
         {
-            if (_axis.Type != AxisType.MouseMovement)
+            if (Axis.Type != AxisType.MouseMovement)
             {
                 return;
             }
 
             // TODO what if axis choice is not mouse x or mouse y
-            _mousePos = _axis.Axis switch
+            _mousePos = Axis.Axis switch
             {
                 AxisChoice.XAxis => value.x,
                 AxisChoice.YAxis => value.y,
@@ -38,42 +38,42 @@ public class LegacyInputAxisState
 
     public LegacyInputAxisState(LegacyInputAxis axis)
     {
-        _axis = axis;
+        Axis = axis;
     }
 
     public void KeyDown(string name)
     {
-        if (_axis.Type != AxisType.KeyOrMouseButton)
+        if (Axis.Type != AxisType.KeyOrMouseButton)
         {
             return;
         }
 
-        var negative = _axis.NegativeButton;
-        var positive = _axis.PositiveButton;
-        var negativeAlt = _axis.AltNegativeButton;
-        var positiveAlt = _axis.AltPositiveButton;
+        var negative = Axis.NegativeButton;
+        var positive = Axis.PositiveButton;
+        var negativeAlt = Axis.AltNegativeButton;
+        var positiveAlt = Axis.AltPositiveButton;
 
         if (name == negative || name == negativeAlt)
         {
-            _moveDir = _axis.Invert ? AxisMoveDirection.Positive : AxisMoveDirection.Negative;
+            _moveDir = Axis.Invert ? AxisMoveDirection.Positive : AxisMoveDirection.Negative;
         }
         else if (name == positive || name == positiveAlt)
         {
-            _moveDir = _axis.Invert ? AxisMoveDirection.Negative : AxisMoveDirection.Positive;
+            _moveDir = Axis.Invert ? AxisMoveDirection.Negative : AxisMoveDirection.Positive;
         }
     }
 
     public void KeyUp(string name)
     {
-        if (_axis.Type != AxisType.KeyOrMouseButton)
+        if (Axis.Type != AxisType.KeyOrMouseButton)
         {
             return;
         }
 
-        var negative = _axis.NegativeButton;
-        var positive = _axis.PositiveButton;
-        var negativeAlt = _axis.AltNegativeButton;
-        var positiveAlt = _axis.AltPositiveButton;
+        var negative = Axis.NegativeButton;
+        var positive = Axis.PositiveButton;
+        var negativeAlt = Axis.AltNegativeButton;
+        var positiveAlt = Axis.AltPositiveButton;
 
         if (name == negative || name == negativeAlt || name == positive || name == positiveAlt)
         {
@@ -81,11 +81,35 @@ public class LegacyInputAxisState
         }
     }
 
+    public void SetAxis(float value)
+    {
+        if (Axis.Type != AxisType.JoystickAxis)
+        {
+            return;
+        }
+
+        value *= Axis.Sensitivity;
+        if (Axis.Invert)
+        {
+            value = -value;
+        }
+
+        // either way value is clamped
+        value = Mathf.Clamp(value, -1f, 1f);
+
+        // gravity does nothing
+        // snap does nothing
+
+        // value and value raw are the same for joystick axis
+        Value = value;
+        ValueRaw = value;
+    }
+
     public void FlushBufferedInputs()
     {
         // note: the inversion for axis is handled outside of this class, but the inversion for mouse movement is handled here
 
-        if (_axis.Type == AxisType.MouseMovement)
+        if (Axis.Type == AxisType.MouseMovement)
         {
             // mouse movement is handled differently
             // 
@@ -93,25 +117,30 @@ public class LegacyInputAxisState
             // sensitivity is literally a multiplier
             // invert actually inverts
 
-            var diff = (_mousePos - _mousePrevPos) * _axis.Sensitivity;
-            if (_axis.Invert)
+            var diff = (_mousePos - _mousePrevPos) * Axis.Sensitivity;
+            if (Axis.Invert)
             {
                 diff = -diff;
             }
 
             ValueRaw = diff;
             Value = diff;
+
+            _mousePrevPos = _mousePos;
             return;
         }
 
         // TODO window movement
         // TODO negative and positive at the same time
         // TODO unit tests
-        if (_axis.Type == AxisType.WindowMovement)
+        if (Axis.Type == AxisType.WindowMovement)
         {
             throw new NotImplementedException();
         }
 
+        if (Axis.Type != AxisType.KeyOrMouseButton) return;
+
+        // below is for buttons
         var dt = Time.deltaTime;
 
         switch (_moveDir)
@@ -119,7 +148,7 @@ public class LegacyInputAxisState
             case AxisMoveDirection.Positive:
             {
                 // handle smoothing
-                if (_moveDirPrev == AxisMoveDirection.Negative && _axis.Snap)
+                if (_moveDirPrev == AxisMoveDirection.Negative && Axis.Snap)
                 {
                     // snap actually resets to 0 for a frame
                     ValueRaw = 0f;
@@ -128,7 +157,7 @@ public class LegacyInputAxisState
                 else
                 {
                     ValueRaw = 1f;
-                    Value = Math.Min(Value + _axis.Sensitivity * dt, 1f);
+                    Value = Math.Min(Value + Axis.Sensitivity * dt, 1f);
                 }
 
                 break;
@@ -136,7 +165,7 @@ public class LegacyInputAxisState
             case AxisMoveDirection.Negative:
             {
                 // handle smoothing
-                if (_moveDirPrev == AxisMoveDirection.Positive && _axis.Snap)
+                if (_moveDirPrev == AxisMoveDirection.Positive && Axis.Snap)
                 {
                     // snap actually resets to 0 for a frame
                     ValueRaw = 0f;
@@ -145,7 +174,7 @@ public class LegacyInputAxisState
                 else
                 {
                     ValueRaw = -1f;
-                    Value = Math.Max(Value - _axis.Sensitivity * dt, -1f);
+                    Value = Math.Max(Value - Axis.Sensitivity * dt, -1f);
                 }
 
                 break;
@@ -155,10 +184,10 @@ public class LegacyInputAxisState
                 // handle smoothing
                 // also yes negative gravity works its stupid
                 ValueRaw = 0f;
-                Value = Mathf.MoveTowards(Value, 0f, _axis.Gravity * dt);
+                Value = Mathf.MoveTowards(Value, 0f, Axis.Gravity * dt);
 
                 // dead zone only applies to neutral
-                if (Math.Abs(Value) < _axis.Dead)
+                if (Math.Abs(Value) < Axis.Dead)
                 {
                     Value = 0f;
                 }
@@ -170,7 +199,6 @@ public class LegacyInputAxisState
         }
 
         _moveDirPrev = _moveDir;
-        _mousePrevPos = _mousePos;
     }
 }
 
