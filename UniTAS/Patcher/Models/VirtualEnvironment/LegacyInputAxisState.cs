@@ -19,14 +19,28 @@ public class LegacyInputAxisState
                 return;
             }
 
-            // TODO what if axis choice is not mouse x or mouse y
             _mousePos = Axis.Axis switch
             {
                 AxisChoice.XAxis => value.x,
                 AxisChoice.YAxis => value.y,
-                _ => throw new ArgumentOutOfRangeException()
+                _ => 0f
             };
         }
+    }
+
+    public void MouseMoveRelative(Vector2 pos)
+    {
+        if (Axis.Type != AxisType.MouseMovement)
+        {
+            return;
+        }
+
+        _mousePos = Axis.Axis switch
+        {
+            AxisChoice.XAxis => _mousePos + pos.x,
+            AxisChoice.YAxis => _mousePos + pos.y,
+            _ => 0f
+        };
     }
 
     private AxisMoveDirection _moveDir;
@@ -81,9 +95,13 @@ public class LegacyInputAxisState
         }
     }
 
+    /// <summary>
+    /// For joystick axis or mouse wheel
+    /// </summary>
     public void SetAxis(float value)
     {
-        if (Axis.Type != AxisType.JoystickAxis)
+        if ((Axis.Type == AxisType.MouseMovement && Axis.Axis != AxisChoice.Axis3) ||
+            Axis.Type != AxisType.JoystickAxis)
         {
             return;
         }

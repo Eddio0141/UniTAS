@@ -85,4 +85,23 @@ public class AxisStateEnvLegacySystem : LegacyInputSystemDevice, IAxisStateEnvLe
             }
         }
     }
+
+    public void MouseMoveRelative(Vector2 pos)
+    {
+        foreach (var value in _values)
+        {
+            var axis = value.Value;
+            axis.MouseMoveRelative(pos);
+        }
+    }
+
+    public void MouseScroll(float scroll)
+    {
+        foreach (var value in _values)
+        {
+            var axis = value.Value;
+            if (axis.Axis.Type != AxisType.MouseMovement) return;
+            axis.SetAxis(scroll);
+        }
+    }
 }

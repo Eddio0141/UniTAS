@@ -3,6 +3,8 @@ using MoonSharp.Interpreter;
 using UniTAS.Patcher.Interfaces.Movie;
 using UniTAS.Patcher.Models.VirtualEnvironment;
 using UniTAS.Patcher.Services.VirtualEnvironment.Input;
+using UniTAS.Patcher.Services.VirtualEnvironment.Input.LegacyInputSystem;
+using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations.Movie.Engine.Modules;
 
@@ -11,21 +13,27 @@ namespace UniTAS.Patcher.Implementations.Movie.Engine.Modules;
 public class Mouse : EngineMethodClass
 {
     private readonly IMouseStateEnvController _mouseController;
+    private readonly IAxisStateEnvLegacySystem _axisStateEnvLegacySystem;
 
     [MoonSharpHidden]
-    public Mouse(IMouseStateEnvController mouseController)
+    public Mouse(IMouseStateEnvController mouseController, IAxisStateEnvLegacySystem axisStateEnvLegacySystem)
     {
         _mouseController = mouseController;
+        _axisStateEnvLegacySystem = axisStateEnvLegacySystem;
     }
 
     public void Move(float x, float y)
     {
-        _mouseController.SetPosition(new(x, y));
+        var mousePos = new Vector2(x, y);
+        _mouseController.SetPosition(mousePos);
+        _axisStateEnvLegacySystem.MouseMove(mousePos);
     }
 
     public void Move_rel(float x, float y)
     {
-        _mouseController.SetPositionRelative(new(x, y));
+        var mousePos = new Vector2(x, y);
+        _mouseController.SetPositionRelative(mousePos);
+        _axisStateEnvLegacySystem.MouseMoveRelative(mousePos);
     }
 
     public void Left(bool hold = true)
@@ -67,5 +75,6 @@ public class Mouse : EngineMethodClass
     public void Set_scroll(float x, float y)
     {
         _mouseController.SetScroll(new(x, y));
+        _axisStateEnvLegacySystem.MouseScroll(y);
     }
 }

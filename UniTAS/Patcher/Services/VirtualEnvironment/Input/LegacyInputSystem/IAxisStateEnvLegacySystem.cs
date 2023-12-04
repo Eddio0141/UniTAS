@@ -11,5 +11,7 @@ public interface IAxisStateEnvLegacySystem
     void KeyDown(string key);
     void KeyUp(string key);
     void MouseMove(Vector2 pos);
+    void MouseMoveRelative(Vector2 pos);
+    void MouseScroll(float scroll);
     void AddAxis(LegacyInputAxis axis);
 }
