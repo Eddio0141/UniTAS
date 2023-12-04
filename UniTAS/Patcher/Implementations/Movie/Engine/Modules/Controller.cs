@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using MoonSharp.Interpreter;
 using UniTAS.Patcher.Interfaces.Movie;
+using UniTAS.Patcher.Models.UnityInfo;
 using UniTAS.Patcher.Services.VirtualEnvironment.Input.LegacyInputSystem;
 
 namespace UniTAS.Patcher.Implementations.Movie.Engine.Modules;
@@ -20,9 +21,28 @@ public class Controller : EngineMethodClass
         _buttonStateEnvLegacySystem = buttonStateEnvLegacySystem;
     }
 
-    public void Axis(string axis, float value)
+    public void X_axis(float value)
     {
-        _axisStateEnvLegacySystem.SetAxis(axis, value);
+        _axisStateEnvLegacySystem.SetAxis(AxisChoice.XAxis, value);
+    }
+
+    public void Y_axis(float value)
+    {
+        _axisStateEnvLegacySystem.SetAxis(AxisChoice.YAxis, value);
+    }
+
+    public void Axis(int axis, float value)
+    {
+        // 1..=28 are the only valid values
+        if (axis is < 1 or > 28)
+        {
+            return;
+        }
+
+        axis -= 1;
+        var axisChoice = (AxisChoice)axis;
+
+        _axisStateEnvLegacySystem.SetAxis(axisChoice, value);
     }
 
     public void Hold(string button)
