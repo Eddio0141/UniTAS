@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -171,7 +172,7 @@ public static class PatchMethods
     private static readonly List<Type> CctorInvokeStack = new();
 
     // this is how we chain call static ctors, parent and child
-    private static readonly Dictionary<Type, List<(Type, MethodBase)>> CctorDependency = new();
+    private static readonly ConcurrentDictionary<Type, List<(Type, MethodBase)>> CctorDependency = new();
 
     private static readonly List<Type> PendingIgnoreAddingInvokeList = new();
 
@@ -203,10 +204,7 @@ public static class PatchMethods
             var parent = CctorInvokeStack[CctorInvokeStack.Count - 2];
             var cctor = AccessTools.DeclaredConstructor(type, searchForStatic: true);
 
-            if (!CctorDependency.ContainsKey(parent))
-            {
-                CctorDependency.Add(parent, new());
-            }
+            CctorDependency.TryAdd(parent, new());
 
             var list = CctorDependency[parent];
             list.Add(new(type, cctor));
