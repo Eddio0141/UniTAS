@@ -218,6 +218,12 @@ public class LegacyInputAxisState
 
         _moveDirPrev = _moveDir;
     }
+
+    public bool JoyNumEquals(JoyNum joyNum)
+    {
+        var axisJoyNum = Axis.JoyNum;
+        return axisJoyNum == joyNum || axisJoyNum == JoyNum.AllJoysticks;
+    }
 }
 
 public enum AxisMoveDirection

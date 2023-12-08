@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using MoonSharp.Interpreter;
 using UniTAS.Patcher.Interfaces.Movie;
+using UniTAS.Patcher.Models.UnityInfo;
 using UniTAS.Patcher.Models.VirtualEnvironment;
 using UniTAS.Patcher.Services.VirtualEnvironment.Input;
 using UniTAS.Patcher.Services.VirtualEnvironment.Input.LegacyInputSystem;
@@ -38,37 +39,32 @@ public class Mouse : EngineMethodClass
 
     public void Left(bool hold = true)
     {
-        if (hold)
-        {
-            _mouseController.HoldButton(MouseButton.Left);
-        }
-        else
-        {
-            _mouseController.ReleaseButton(MouseButton.Left);
-        }
+        HandlePress(hold, MouseButton.Left);
     }
 
     public void Right(bool hold = true)
     {
-        if (hold)
-        {
-            _mouseController.HoldButton(MouseButton.Right);
-        }
-        else
-        {
-            _mouseController.ReleaseButton(MouseButton.Right);
-        }
+        HandlePress(hold, MouseButton.Right);
     }
 
     public void Middle(bool hold = true)
     {
+        HandlePress(hold, MouseButton.Middle);
+    }
+
+    private void HandlePress(bool hold, MouseButton button)
+    {
+        var buttonChoice = $"mouse {button}";
+
         if (hold)
         {
-            _mouseController.HoldButton(MouseButton.Middle);
+            _mouseController.HoldButton(button);
+            _axisStateEnvLegacySystem.KeyDown(buttonChoice, JoyNum.AllJoysticks);
         }
         else
         {
-            _mouseController.ReleaseButton(MouseButton.Middle);
+            _mouseController.ReleaseButton(button);
+            _axisStateEnvLegacySystem.KeyUp(buttonChoice, JoyNum.AllJoysticks);
         }
     }
 

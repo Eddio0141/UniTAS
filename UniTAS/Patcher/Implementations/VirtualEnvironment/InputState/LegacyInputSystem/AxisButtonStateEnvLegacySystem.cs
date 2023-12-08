@@ -5,7 +5,8 @@ using UniTAS.Patcher.Services.VirtualEnvironment.Input.LegacyInputSystem;
 namespace UniTAS.Patcher.Implementations.VirtualEnvironment.InputState.LegacyInputSystem;
 
 [Singleton]
-public class ButtonStateEnvLegacySystem : LegacyInputSystemButtonBasedDevice<string>, IButtonStateEnvLegacySystem
+public class AxisButtonStateEnvLegacySystem : LegacyInputSystemButtonBasedDevice<string>,
+    IAxisButtonStateEnvLegacySystem, IAxisButtonStateEnvUpdate
 {
     public new void Hold(string button)
     {
@@ -15,11 +16,6 @@ public class ButtonStateEnvLegacySystem : LegacyInputSystemButtonBasedDevice<str
     public new void Release(string button)
     {
         base.Release(button);
-    }
-
-    public void Clear()
-    {
-        ReleaseAllButtons();
     }
 
     public new bool IsButtonHeld(string button)

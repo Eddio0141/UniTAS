@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using MoonSharp.Interpreter;
 using UniTAS.Patcher.Interfaces.Movie;
+using UniTAS.Patcher.Models.UnityInfo;
 using UniTAS.Patcher.Services.VirtualEnvironment.Input;
 using UniTAS.Patcher.Services.VirtualEnvironment.Input.LegacyInputSystem;
 
@@ -23,13 +24,13 @@ public class Key : EngineMethodClass
     public void Hold(string key)
     {
         _kbController.Hold(key);
-        _axisStateEnvLegacySystem.KeyDown(key);
+        _axisStateEnvLegacySystem.KeyDown(key, JoyNum.AllJoysticks);
     }
 
     public void Release(string key)
     {
-        _axisStateEnvLegacySystem.KeyUp(key);
         _kbController.Release(key);
+        _axisStateEnvLegacySystem.KeyUp(key, JoyNum.AllJoysticks);
     }
 
     public void Clear()

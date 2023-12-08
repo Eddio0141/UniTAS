@@ -11,7 +11,14 @@ namespace UniTAS.Patcher.Implementations.VirtualEnvironment.InputState.LegacyInp
 [Singleton]
 public class AxisStateEnvLegacySystem : LegacyInputSystemDevice, IAxisStateEnvLegacySystem
 {
+    private readonly IAxisButtonStateEnvUpdate _axisButtonStateEnvUpdate;
+
     private readonly Dictionary<string, LegacyInputAxisState> _values = new();
+
+    public AxisStateEnvLegacySystem(IAxisButtonStateEnvUpdate axisButtonStateEnvUpdate)
+    {
+        _axisButtonStateEnvUpdate = axisButtonStateEnvUpdate;
+    }
 
     protected override void Update()
     {
@@ -23,6 +30,16 @@ public class AxisStateEnvLegacySystem : LegacyInputSystemDevice, IAxisStateEnvLe
         {
             var axis = value.Value;
             axis.FlushBufferedInputs();
+
+            var name = value.Key;
+            if (axis.ValueRaw != 0f)
+            {
+                _axisButtonStateEnvUpdate.Hold(name);
+            }
+            else
+            {
+                _axisButtonStateEnvUpdate.Release(name);
+            }
         }
     }
 
@@ -47,20 +64,24 @@ public class AxisStateEnvLegacySystem : LegacyInputSystemDevice, IAxisStateEnvLe
         _values.Add(axis.Name, axisState);
     }
 
-    public void KeyDown(string key)
+    public void KeyDown(string key, JoyNum joystickNumber)
     {
         foreach (var value in _values)
         {
             var axis = value.Value;
+            if (!axis.JoyNumEquals(joystickNumber)) continue;
+
             axis.KeyDown(key);
         }
     }
 
-    public void KeyUp(string key)
+    public void KeyUp(string key, JoyNum joystickNumber)
     {
         foreach (var value in _values)
         {
             var axis = value.Value;
+            if (!axis.JoyNumEquals(joystickNumber)) continue;
+
             axis.KeyUp(key);
         }
     }
