@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.VirtualEnvironment;
 using UniTAS.Patcher.Models.UnityInfo;
@@ -13,7 +14,7 @@ public class AxisStateEnvLegacySystem : LegacyInputSystemDevice, IAxisStateEnvLe
 {
     private readonly IAxisButtonStateEnvUpdate _axisButtonStateEnvUpdate;
 
-    private readonly Dictionary<string, LegacyInputAxisState> _values = new();
+    private readonly List<(string, LegacyInputAxisState)> _values = new();
 
     public AxisStateEnvLegacySystem(IAxisButtonStateEnvUpdate axisButtonStateEnvUpdate)
     {
@@ -26,12 +27,10 @@ public class AxisStateEnvLegacySystem : LegacyInputSystemDevice, IAxisStateEnvLe
 
     protected override void FlushBufferedInputs()
     {
-        foreach (var value in _values)
+        foreach (var (name, axis) in _values)
         {
-            var axis = value.Value;
             axis.FlushBufferedInputs();
 
-            var name = value.Key;
             if (axis.ValueRaw != 0f)
             {
                 _axisButtonStateEnvUpdate.Hold(name);
@@ -50,25 +49,26 @@ public class AxisStateEnvLegacySystem : LegacyInputSystemDevice, IAxisStateEnvLe
 
     public float GetAxis(string axisName)
     {
-        return _values.TryGetValue(axisName, out var value) ? value.Value : 0f;
+        var (_, found) = _values.FirstOrDefault(x => x.Item1 == axisName);
+        return found?.Value ?? 0f;
     }
 
     public float GetAxisRaw(string axisName)
     {
-        return _values.TryGetValue(axisName, out var value) ? value.ValueRaw : 0f;
+        var (_, found) = _values.FirstOrDefault(x => x.Item1 == axisName);
+        return found?.ValueRaw ?? 0f;
     }
 
     public void AddAxis(LegacyInputAxis axis)
     {
         var axisState = new LegacyInputAxisState(axis);
-        _values.Add(axis.Name, axisState);
+        _values.Add((axis.Name, axisState));
     }
 
     public void KeyDown(string key, JoyNum joystickNumber)
     {
-        foreach (var value in _values)
+        foreach (var (_, axis) in _values)
         {
-            var axis = value.Value;
             if (!axis.JoyNumEquals(joystickNumber)) continue;
 
             axis.KeyDown(key);
@@ -77,9 +77,8 @@ public class AxisStateEnvLegacySystem : LegacyInputSystemDevice, IAxisStateEnvLe
 
     public void KeyUp(string key, JoyNum joystickNumber)
     {
-        foreach (var value in _values)
+        foreach (var (_, axis) in _values)
         {
-            var axis = value.Value;
             if (!axis.JoyNumEquals(joystickNumber)) continue;
 
             axis.KeyUp(key);
@@ -88,39 +87,35 @@ public class AxisStateEnvLegacySystem : LegacyInputSystemDevice, IAxisStateEnvLe
 
     public void MouseMove(Vector2 pos)
     {
-        foreach (var value in _values)
+        foreach (var (_, axis) in _values)
         {
-            var axis = value.Value;
             axis.MousePos = pos;
         }
     }
 
     public void SetAxis(AxisChoice axis, float value)
     {
-        foreach (var axisState in _values)
+        foreach (var (_, axisState) in _values)
         {
-            var axisStateValue = axisState.Value;
-            if (axisStateValue.Axis.Axis == axis)
+            if (axisState.Axis.Axis == axis)
             {
-                axisState.Value.SetAxis(value);
+                axisState.SetAxis(value);
             }
         }
     }
 
     public void MouseMoveRelative(Vector2 pos)
     {
-        foreach (var value in _values)
+        foreach (var (_, axis) in _values)
         {
-            var axis = value.Value;
             axis.MouseMoveRelative(pos);
         }
     }
 
     public void MouseScroll(float scroll)
     {
-        foreach (var value in _values)
+        foreach (var (_, axis) in _values)
         {
-            var axis = value.Value;
             if (axis.Axis.Type != AxisType.MouseMovement) return;
             axis.SetAxis(scroll);
         }
