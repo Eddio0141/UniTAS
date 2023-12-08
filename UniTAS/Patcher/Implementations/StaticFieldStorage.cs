@@ -65,7 +65,7 @@ public class StaticFieldStorage : IStaticFieldManipulator
             }
             catch (Exception e)
             {
-                _logger.LogDebug($"Exception thrown while calling static constructor: {e}");
+                _logger.LogWarning($"Exception thrown while calling static constructor: {e}");
             }
 
             // ik calling static ctors in the first place is illegal as fk but why does this prevent crashing??????
