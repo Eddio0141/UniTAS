@@ -26,7 +26,7 @@ public class ControllerInstance
             2 => JoyNum.Joystick2,
             3 => JoyNum.Joystick3,
             4 => JoyNum.Joystick4,
-            _ => throw new NotImplementedException()
+            _ => throw new InvalidOperationException()
         };
     }
 
