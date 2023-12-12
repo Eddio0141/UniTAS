@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -172,7 +171,7 @@ public static class PatchMethods
     private static readonly List<Type> CctorInvokeStack = new();
 
     // this is how we chain call static ctors, parent and child
-    private static readonly ConcurrentDictionary<Type, List<(Type, MethodBase)>> CctorDependency = new();
+    private static readonly Dictionary<Type, List<(Type, MethodBase)>> CctorDependency = new();
 
     private static readonly List<Type> PendingIgnoreAddingInvokeList = new();
 
@@ -204,7 +203,10 @@ public static class PatchMethods
             var parent = CctorInvokeStack[CctorInvokeStack.Count - 2];
             var cctor = AccessTools.DeclaredConstructor(type, searchForStatic: true);
 
-            CctorDependency.TryAdd(parent, new());
+            if (!CctorDependency.ContainsKey(parent))
+            {
+                CctorDependency.Add(parent, new());
+            }
 
             var list = CctorDependency[parent];
             list.Add(new(type, cctor));
@@ -249,10 +251,12 @@ public static class PatchMethods
 
         if (!CctorDependency.TryGetValue(type, out var dependencies)) return;
 
+        var dependenciesCount = dependencies.Count;
         StaticLogger.Log.LogDebug(
-            $"Found dependencies for static ctor type: {type.FullName}, dependency count: {dependencies.Count}");
-        foreach (var (cctorType, dependency) in dependencies)
+            $"Found dependencies for static ctor type: {type.FullName}, dependency count: {dependenciesCount}");
+        for (var i = 0; i < dependenciesCount; i++)
         {
+            var (cctorType, dependency) = dependencies[i];
             StaticLogger.Log.LogDebug($"Invoking cctor of {cctorType.FullName ?? "unknown type"}");
             dependency.Invoke(null, null);
         }
