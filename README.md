@@ -41,7 +41,15 @@ You can use [unitas_setup_tool](https://github.com/Eddio0141/unitas_setup_tool) 
 
 # How to build
 
-- Make sure you have [.NET SDK 7.0](https://dotnet.microsoft.com/en-us/download) installed on your system
+## Requirements
+
+- Make sure you have [.NET SDK 8.0](https://dotnet.microsoft.com/en-us/download) installed on your system
+- Add BepInEx nuget feed with `dotnet nuget add source "https://nuget.bepinex.dev/v3/index.json"`
+
+## Build
+
+- Clone the repo with `git clone`
+- Initialize submodules with `git submodule update --init --recursive`
 - Run `dotnet build UniTAS` at the base directory
   - Remove the `UniTAS` if you are in the inner `UniTAS` directory
   - If you need to choose `Release` or `Debug` config, do so with the `--configuration` flag
