@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using HarmonyLib;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
@@ -168,12 +170,14 @@ public class StaticCtorHeaders : PreloadPatcher
 [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
 public static class PatchMethods
 {
-    private static readonly List<Type> CctorInvokeStack = new();
+    // dictionary here are for different threads
+    private static readonly ConcurrentDictionary<int, List<Type>> CctorInvokeStack = new();
 
     // this is how we chain call static ctors, parent and child
     private static readonly Dictionary<Type, List<(Type, MethodBase)>> CctorDependency = new();
 
-    private static readonly List<Type> PendingIgnoreAddingInvokeList = new();
+    // dictionary here are for different threads
+    private static readonly ConcurrentDictionary<int, List<Type>> PendingIgnoreAddingInvokeList = new();
 
     public static void StaticCtorStart()
     {
@@ -185,7 +189,10 @@ public static class PatchMethods
             return;
         }
 
-        CctorInvokeStack.Add(type);
+        var threadId = Thread.CurrentThread.ManagedThreadId;
+
+        var invokeStack = CctorInvokeStack.GetOrAdd(threadId, _ => new());
+        invokeStack.Add(type);
 
         if (IsNotFirstInvoke(type)) return;
         StaticLogger.Trace($"First static ctor invoke for {type.FullName}, stack count: {CctorInvokeStack.Count}");
@@ -198,9 +205,9 @@ public static class PatchMethods
 
         // if this is chain called, store dependency
         // in this case, we are the child since this is chain called
-        if (CctorInvokeStack.Count > 1)
+        if (invokeStack.Count > 1)
         {
-            var parent = CctorInvokeStack[CctorInvokeStack.Count - 2];
+            var parent = invokeStack[invokeStack.Count - 2];
             var cctor = AccessTools.DeclaredConstructor(type, searchForStatic: true);
 
             if (!CctorDependency.ContainsKey(parent))
@@ -211,7 +218,8 @@ public static class PatchMethods
             var list = CctorDependency[parent];
             list.Add(new(type, cctor));
 
-            PendingIgnoreAddingInvokeList.Add(type);
+            var ignoreAddingList = PendingIgnoreAddingInvokeList.GetOrAdd(threadId, _ => new());
+            ignoreAddingList.Add(type);
 
             StaticLogger.Trace($"Found static ctor dependency, parent: {parent.FullName}, child: {type.FullName}");
         }
@@ -226,13 +234,15 @@ public static class PatchMethods
             throw new NullReferenceException("Could not find type of static ctor, something went horribly wrong");
         }
 
-        CctorInvokeStack.RemoveAt(CctorInvokeStack.Count - 1);
+        var threadId = Thread.CurrentThread.ManagedThreadId;
+
+        CctorInvokeStack[threadId].RemoveAt(CctorInvokeStack.Count - 1);
         StaticLogger.Log.LogDebug($"End of static ctor {type}, stack count: {CctorInvokeStack.Count}");
 
         if (IsNotFirstInvoke(type)) return;
 
         // add only if not in ignore list
-        if (PendingIgnoreAddingInvokeList.Remove(type)) return;
+        if (PendingIgnoreAddingInvokeList[threadId].Remove(type)) return;
 
         StaticLogger.Log.LogDebug($"Adding type {type} to static ctor invoke list");
         ClassStaticInfoTracker.AddStaticCtorForTracking(type);
