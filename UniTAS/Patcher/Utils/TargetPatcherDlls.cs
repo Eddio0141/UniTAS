@@ -44,6 +44,9 @@ public static class TargetPatcherDlls
 
         // should be fine
         "UnityEngine.IMGUIModule",
+
+        // TODO issue #287
+        "UnityEngine.CoreModule"
     };
 
     private static string[] AssemblyIncludeRaw { get; } =
