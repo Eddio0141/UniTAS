@@ -41,6 +41,8 @@ You can use [unitas_setup_tool](https://github.com/Eddio0141/unitas_setup_tool) 
 
 # How to build
 
+- Clone the repo with `git clone`
+- Initialize submodules with `git submodule update --init --recursive`
 - Make sure you have [.NET SDK 8.0](https://dotnet.microsoft.com/en-us/download) installed on your system
 - Run `dotnet build UniTAS` at the base directory
   - Remove the `UniTAS` if you are in the inner `UniTAS` directory
