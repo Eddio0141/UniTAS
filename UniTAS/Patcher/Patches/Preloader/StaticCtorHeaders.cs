@@ -194,8 +194,10 @@ public static class PatchMethods
         var invokeStack = CctorInvokeStack.GetOrAdd(threadId, _ => new());
         invokeStack.Add(type);
 
+        StaticLogger.Log.LogDebug(
+            $"Start of static ctor {type.SaneFullName()}, stack count: {invokeStack.Count}, thread id: {threadId}");
         if (IsNotFirstInvoke(type)) return;
-        StaticLogger.Trace($"First static ctor invoke for {type.FullName}, stack count: {CctorInvokeStack.Count}");
+        StaticLogger.Trace("First static ctor invoke");
 
         // first invoke zone
 
@@ -236,9 +238,11 @@ public static class PatchMethods
 
         var threadId = Thread.CurrentThread.ManagedThreadId;
 
-        CctorInvokeStack[threadId].RemoveAt(CctorInvokeStack.Count - 1);
-        StaticLogger.Log.LogDebug($"End of static ctor {type}, stack count: {CctorInvokeStack.Count}");
+        var invokeStack = CctorInvokeStack[threadId];
+        invokeStack.RemoveAt(invokeStack.Count - 1);
 
+        StaticLogger.Log.LogDebug(
+            $"End of static ctor {type.SaneFullName()}, stack count: {invokeStack.Count}, thread id: {threadId}");
         if (IsNotFirstInvoke(type)) return;
 
         // add only if not in ignore list
