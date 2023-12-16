@@ -21,4 +21,14 @@ public static class TypeExtensions
 
         return fields.ToArray();
     }
+
+    public static string SaneFullName(this Type type)
+    {
+        if (type == null) throw new ArgumentNullException(nameof(type));
+
+        var ns = type.Namespace;
+        var name = type.Name;
+
+        return string.IsNullOrEmpty(ns) ? name : $"{ns}.{name}";
+    }
 }
