@@ -6,7 +6,6 @@ using System.Reflection;
 using HarmonyLib;
 using UniTAS.Patcher.Interfaces.Patches.PatchTypes;
 using UniTAS.Patcher.MonoBehaviourScripts;
-using UniTAS.Patcher.Services.Trackers.UpdateTrackInfo;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -58,8 +57,8 @@ public class ObjectPatch
         }
     }
 
-    private static readonly INewScriptableObjectTracker NewScriptableObjectTracker =
-        ContainerStarter.Kernel.GetInstance<INewScriptableObjectTracker>();
+    // private static readonly INewScriptableObjectTracker NewScriptableObjectTracker =
+    //     ContainerStarter.Kernel.GetInstance<INewScriptableObjectTracker>();
 
     [HarmonyPatch]
     private class PreventPluginInstantiation
@@ -94,7 +93,7 @@ public class ObjectPatch
         {
             if (__result is ScriptableObject scriptableObject)
             {
-                NewScriptableObjectTracker.NewScriptableObject(scriptableObject);
+                // NewScriptableObjectTracker.NewScriptableObject(scriptableObject);
             }
         }
 
