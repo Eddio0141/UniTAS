@@ -43,10 +43,7 @@ public static class TargetPatcherDlls
         "Newtonsoft.Json",
 
         // should be fine
-        "UnityEngine.IMGUIModule",
-
-        // TODO issue #287
-        "UnityEngine.CoreModule"
+        "UnityEngine.IMGUIModule"
     };
 
     private static string[] AssemblyIncludeRaw { get; } =
