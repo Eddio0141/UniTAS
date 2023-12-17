@@ -233,15 +233,17 @@ public static class PatchMethods
 
         var threadId = Thread.CurrentThread.ManagedThreadId;
 
+        StaticLogger.Log.LogDebug($"End of static ctor {type.SaneFullName()}, thread id: {threadId}");
+
         var invokeStack = CctorInvokeStack[threadId];
         invokeStack.RemoveAt(invokeStack.Count - 1);
 
-        StaticLogger.Log.LogDebug(
-            $"End of static ctor {type.SaneFullName()}, stack count: {invokeStack.Count}, thread id: {threadId}");
+        StaticLogger.Log.LogDebug($"stack count: {invokeStack.Count}");
+
         if (IsNotFirstInvoke(type)) return;
 
         // add only if not in ignore list
-        if (PendingIgnoreAddingInvokeList[threadId].Remove(type)) return;
+        if (!PendingIgnoreAddingInvokeList.TryGetValue(threadId, out var ignoreList) || ignoreList.Remove(type)) return;
 
         StaticLogger.Log.LogDebug($"Adding type {type} to static ctor invoke list");
         ClassStaticInfoTracker.AddStaticCtorForTracking(type);
