@@ -6,7 +6,7 @@ namespace UniTAS.Patcher.Interfaces.TASRenderer;
 [RegisterAll]
 public abstract class VideoRenderer : Renderer
 {
-    public const string OutputPath = "temp.mp4";
+    public const string OUTPUT_PATH = "temp.mp4";
 
     private const int DEFAULT_FPS = 60;
     private int _fps = DEFAULT_FPS;

@@ -12,6 +12,4 @@ namespace UniTAS.Patcher.Interfaces.RuntimeTest;
 /// In order to use multiple return types as defined above, use <see cref="Tuple"/>.
 /// </summary>
 [AttributeUsage(AttributeTargets.Method, Inherited = false)]
-public class RuntimeTestAttribute : Attribute
-{
-}
+public class RuntimeTestAttribute : Attribute;

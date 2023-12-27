@@ -152,7 +152,7 @@ public class GameRender : IGameRender, IOnLastUpdateActual
 
         // start merge
         _ffmpegMergeVideoAudio.StartInfo.Arguments =
-            $"-y -i {VideoRenderer.OutputPath} -i {AudioRenderer.OutputPath} -c:v copy -c:a aac {VideoPath}";
+            $"-y -i {VideoRenderer.OUTPUT_PATH} -i {AudioRenderer.OUTPUT_PATH} -c:v copy -c:a aac {VideoPath}";
 
         _ffmpegMergeVideoAudio.Start();
         _ffmpegMergeVideoAudio.BeginErrorReadLine();
@@ -174,7 +174,7 @@ public class GameRender : IGameRender, IOnLastUpdateActual
         try
         {
             // delete video file
-            File.Delete(VideoRenderer.OutputPath);
+            File.Delete(VideoRenderer.OUTPUT_PATH);
         }
         catch (Exception e)
         {
@@ -184,7 +184,7 @@ public class GameRender : IGameRender, IOnLastUpdateActual
         try
         {
             // delete audio file
-            File.Delete(AudioRenderer.OutputPath);
+            File.Delete(AudioRenderer.OUTPUT_PATH);
         }
         catch (Exception e)
         {

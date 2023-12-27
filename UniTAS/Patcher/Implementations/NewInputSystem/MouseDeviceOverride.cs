@@ -23,9 +23,7 @@ public class MouseDeviceOverride : IInputOverrideDevice
 
     [InputControlLayout(stateType = typeof(MouseState), isGenericTypeOfDevice = true)]
     [SuppressMessage("ReSharper", "ClassNeverInstantiated.Local")]
-    private class TASMouse : Mouse
-    {
-    }
+    private class TASMouse : Mouse;
 
     public void Update()
     {
