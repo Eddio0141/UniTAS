@@ -108,6 +108,7 @@ public class UnityInitInvoke : PreloadPatcher
         }
     }
 
+    /*
     private void TryHookLastResort(AssemblyDefinition assembly)
     {
         StaticLogger.Log.LogDebug("Trying to hook last resort init method defined in BepInEx config");
@@ -133,6 +134,7 @@ public class UnityInitInvoke : PreloadPatcher
         ILCodeUtils.MethodInvokeHook(assembly, method,
             AccessTools.Method(typeof(InvokeTracker), nameof(InvokeTracker.OnUnityInit)));
     }
+    */
 
     private static void LogHook(AssemblyDefinition assembly, string type, string method)
     {

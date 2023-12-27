@@ -60,7 +60,7 @@ public class NativeAudioRenderer : AudioRenderer
     {
         base.Start();
 
-        _audioFileStream = new(OutputPath, FileMode.Create);
+        _audioFileStream = new(OUTPUT_PATH, FileMode.Create);
         _audioProcessingQueue.Clear();
 
         if (!_audioRendererWrapper.Start())

@@ -6,6 +6,4 @@ namespace UniTAS.Patcher.Services.Invoker;
 /// Attributes for invoking methods at specific timing in patcher
 /// </summary>
 [AttributeUsage(AttributeTargets.Method)]
-public abstract class InvokerAttribute : Attribute
-{
-}
+public abstract class InvokerAttribute : Attribute;

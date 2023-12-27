@@ -74,7 +74,7 @@ public class GameVideoRenderer : VideoRenderer
         // ReSharper disable StringLiteralTypo
         var ffmpegArgs =
             $"-y -f rawvideo -vcodec rawvideo -pix_fmt rgb24 -s:v {Width}x{Height} -r {Fps} -i - " +
-            $"-an -c:v libx264 -pix_fmt yuv420p -preset ultrafast -crf 16 -vf vflip {OutputPath}";
+            $"-an -c:v libx264 -pix_fmt yuv420p -preset ultrafast -crf 16 -vf vflip {OUTPUT_PATH}";
         // ReSharper restore StringLiteralTypo
         _logger.LogDebug($"ffmpeg arguments: {ffmpegArgs}");
         _ffmpeg.StartInfo.Arguments = ffmpegArgs;

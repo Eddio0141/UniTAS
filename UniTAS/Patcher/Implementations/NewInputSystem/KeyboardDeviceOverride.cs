@@ -21,9 +21,7 @@ public class KeyboardDeviceOverride : IInputOverrideDevice
 
     [InputControlLayout(stateType = typeof(KeyboardState), isGenericTypeOfDevice = true)]
     [SuppressMessage("ReSharper", "ClassNeverInstantiated.Local")]
-    private class TASKeyboard : Keyboard
-    {
-    }
+    private class TASKeyboard : Keyboard;
 
     public void Update()
     {
