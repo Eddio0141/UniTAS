@@ -87,7 +87,7 @@ public class GameRender : IGameRender, IOnLastUpdateActual
             return;
         }
 
-        _renderers = new Renderer[] { _videoRenderer, audioRenderer };
+        _renderers = [_videoRenderer, audioRenderer];
 
         _ffmpegMergeVideoAudio = ffmpegProcessFactory.CreateFfmpegProcess();
 

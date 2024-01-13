@@ -14,7 +14,7 @@ public class FfmpegProcessFactory : IFfmpegProcessFactory
 {
     public bool Available { get; private set; }
 
-    private readonly string[] _ffmpegChecks = { "ffmpeg.exe", "ffmpeg" };
+    private readonly string[] _ffmpegChecks = ["ffmpeg.exe", "ffmpeg"];
     private string _ffmpegPath;
 
     private readonly ILogger _logger;

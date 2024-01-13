@@ -24,12 +24,12 @@ public class DontDestroyOnLoadTracker
     [HarmonyPatch(typeof(Object), nameof(Object.DontDestroyOnLoad))]
     private class DontDestroyOnLoadPatch
     {
-        private static readonly List<string> _initialExcludeNames = new()
-        {
+        private static readonly List<string> _initialExcludeNames =
+        [
             "BepInEx_Manager",
             "BepInEx_ThreadingHelper",
             InitManagerGameObject.GAME_OBJECT_NAME
-        };
+        ];
 
         private static void Prefix(Object target)
         {

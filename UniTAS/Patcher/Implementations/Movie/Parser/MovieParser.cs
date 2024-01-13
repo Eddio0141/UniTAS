@@ -166,7 +166,7 @@ public partial class MovieParser : IMovieParser
     }
 
     private static readonly Assembly[] UnityTypesIgnore =
-        { typeof(MovieParser).Assembly, typeof(BepInEx.Paths).Assembly };
+        [typeof(MovieParser).Assembly, typeof(BepInEx.Paths).Assembly];
 
     private void AddUnityTypes()
     {

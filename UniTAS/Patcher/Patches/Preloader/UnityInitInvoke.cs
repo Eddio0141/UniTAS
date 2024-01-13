@@ -25,7 +25,7 @@ public class UnityInitInvoke : PreloadPatcher
         const string entryPoint = "Preloader.Entrypoint";
         var foundEntryAssembly = GetEntryKey(bepInExConfig, entryPoint, "Assembly");
         var targetDLLs = foundEntryAssembly != null
-            ? new[] { foundEntryAssembly }
+            ? [foundEntryAssembly]
             : new[] { "UnityEngine.CoreModule.dll", "UnityEngine.dll" };
 
         // add patch target dlls too

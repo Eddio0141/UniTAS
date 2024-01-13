@@ -48,20 +48,20 @@ public class SceneManagerWrapper : ISceneWrapper
         _unityInstanceWrapFactory = unityInstanceWrapFactory;
         const string loadSceneAsyncNameIndexInternal = "LoadSceneAsyncNameIndexInternal";
         _loadSceneAsyncNameIndexInternal = _sceneManager?.GetMethod(loadSceneAsyncNameIndexInternal, AccessTools.all,
-            null, new[] { typeof(string), typeof(int), typeof(bool), typeof(bool) }, null);
+            null, [typeof(string), typeof(int), typeof(bool), typeof(bool)], null);
 
         if (_loadSceneAsyncNameIndexInternal == null && _loadSceneParametersType != null)
         {
             _loadSceneAsyncNameIndexInternal = _sceneManager?.GetMethod(loadSceneAsyncNameIndexInternal,
                 AccessTools.all,
                 null,
-                new[] { typeof(string), typeof(int), _loadSceneParametersType, typeof(bool) }, null);
+                [typeof(string), typeof(int), _loadSceneParametersType, typeof(bool)], null);
         }
 
-        _loadScene = _sceneManager?.GetMethod("LoadScene", AccessTools.all, null, new[] { typeof(int) }, null);
+        _loadScene = _sceneManager?.GetMethod("LoadScene", AccessTools.all, null, [typeof(int)], null);
 
         var loadLevelAsync = AccessTools.Method(typeof(Application), "LoadLevelAsync",
-            new[] { typeof(string), typeof(int), typeof(bool), typeof(bool) });
+            [typeof(string), typeof(int), typeof(bool), typeof(bool)]);
         if (loadLevelAsync != null)
         {
             _applicationLoadLevelAsync =
@@ -73,7 +73,7 @@ public class SceneManagerWrapper : ISceneWrapper
             var usingType = _sceneManagerAPIInternal ?? _sceneManager;
             _loadSceneAsyncNameIndexInternalInjected = usingType?.GetMethod(
                 "LoadSceneAsyncNameIndexInternal_Injected", AccessTools.all,
-                null, new[] { typeof(string), typeof(int), _loadSceneParametersType.MakeByRefType(), typeof(bool) },
+                null, [typeof(string), typeof(int), _loadSceneParametersType.MakeByRefType(), typeof(bool)],
                 null);
         }
 
@@ -96,15 +96,14 @@ public class SceneManagerWrapper : ISceneWrapper
             instance.LoadSceneMode = loadSceneMode;
             instance.LocalPhysicsMode = localPhysicsMode;
             _loadSceneAsyncNameIndexInternalInjected.Invoke(null,
-                new[] { sceneName, sceneBuildIndex, instance.Instance, mustCompleteNextFrame });
+                [sceneName, sceneBuildIndex, instance.Instance, mustCompleteNextFrame]);
             return;
         }
 
         if (_loadSceneAsyncNameIndexInternal != null)
         {
             _loadSceneAsyncNameIndexInternal?.Invoke(null,
-                new object[]
-                    { sceneName, sceneBuildIndex, loadSceneMode == LoadSceneMode.Additive, mustCompleteNextFrame });
+                [sceneName, sceneBuildIndex, loadSceneMode == LoadSceneMode.Additive, mustCompleteNextFrame]);
             return;
         }
 
@@ -122,7 +121,7 @@ public class SceneManagerWrapper : ISceneWrapper
     {
         if (_loadScene != null)
         {
-            _loadScene.Invoke(null, new object[] { buildIndex });
+            _loadScene.Invoke(null, [buildIndex]);
             return;
         }
 

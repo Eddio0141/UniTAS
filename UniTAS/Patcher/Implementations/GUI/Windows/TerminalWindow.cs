@@ -57,9 +57,9 @@ public class TerminalWindow : Window, ITerminalWindow
         _logger = logger;
     }
 
-    private readonly GUILayoutOption[] _textAreaOptions = { GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true) };
-    private readonly GUILayoutOption[] _terminalInputOptions = { GUILayout.ExpandWidth(true) };
-    private readonly GUILayoutOption[] _submitOptions = { GUILayout.ExpandWidth(false) };
+    private readonly GUILayoutOption[] _textAreaOptions = [GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true)];
+    private readonly GUILayoutOption[] _terminalInputOptions = [GUILayout.ExpandWidth(true)];
+    private readonly GUILayoutOption[] _submitOptions = [GUILayout.ExpandWidth(false)];
 
     protected override void OnGUI()
     {

@@ -7,9 +7,9 @@ namespace UniTAS.Patcher.Implementations.Movie.Parser;
 public partial class MovieParser
 {
     private readonly Type[] _moduleTypes =
-    {
+    [
         typeof(Engine.Modules.Movie)
-    };
+    ];
 
     private void RegisterModuleTypes(IMovieEngine engine)
     {

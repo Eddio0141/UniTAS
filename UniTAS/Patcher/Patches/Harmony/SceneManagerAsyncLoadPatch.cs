@@ -32,14 +32,14 @@ public class SceneManagerAsyncLoadPatch
         ? null
         : AccessTools.Method(SceneManager,
             "UnloadSceneNameIndexInternal",
-            new[] { typeof(string), typeof(int), typeof(bool), UnloadSceneOptions, typeof(bool).MakeByRefType() });
+            [typeof(string), typeof(int), typeof(bool), UnloadSceneOptions, typeof(bool).MakeByRefType()]);
 
     private static readonly MethodInfo LoadSceneAsyncNameIndexInternalInjected =
         SceneManagerAPIInternal == null || LoadSceneParametersType == null
             ? null
             : AccessTools.Method(
                 SceneManagerAPIInternal, "LoadSceneAsyncNameIndexInternal_Injected",
-                new[] { typeof(string), typeof(int), LoadSceneParametersType.MakeByRefType(), typeof(bool) });
+                [typeof(string), typeof(int), LoadSceneParametersType.MakeByRefType(), typeof(bool)]);
 
     private static readonly ISceneLoadTracker SceneLoadTracker =
         ContainerStarter.Kernel.GetInstance<ISceneLoadTracker>();
@@ -110,7 +110,7 @@ public class SceneManagerAsyncLoadPatch
         private static MethodBase TargetMethod()
         {
             return AccessTools.Method(SceneManagerAPIInternal, "UnloadSceneNameIndexInternal",
-                new[] { typeof(string), typeof(int), typeof(bool), UnloadSceneOptions, typeof(bool).MakeByRefType() });
+                [typeof(string), typeof(int), typeof(bool), UnloadSceneOptions, typeof(bool).MakeByRefType()]);
         }
 
         private static Exception Cleanup(MethodBase original, Exception ex)
@@ -141,7 +141,7 @@ public class SceneManagerAsyncLoadPatch
         {
             var sceneTraverse = Traverse.Create(scene);
             var sceneBuildIndex = sceneTraverse.Property("buildIndex").GetValue<int>();
-            UnloadSceneNameIndexInternal.Invoke(null, new[] { "", sceneBuildIndex, true, options, null });
+            UnloadSceneNameIndexInternal.Invoke(null, ["", sceneBuildIndex, true, options, null]);
             return false;
         }
     }
@@ -158,7 +158,7 @@ public class SceneManagerAsyncLoadPatch
 
             // string sceneName, int sceneBuildIndex, bool isAdditive, bool mustCompleteNextFrame
             return AccessTools.Method(SceneManager, "LoadSceneAsyncNameIndexInternal",
-                new[] { typeof(string), typeof(int), typeof(bool), typeof(bool) });
+                [typeof(string), typeof(int), typeof(bool), typeof(bool)]);
         }
 
         private static Exception Cleanup(MethodBase original, Exception ex)
@@ -187,7 +187,7 @@ public class SceneManagerAsyncLoadPatch
 
             // string sceneName, int sceneBuildIndex, LoadSceneParameters parameters, bool mustCompleteNextFrame
             return AccessTools.Method(SceneManager, "LoadSceneAsyncNameIndexInternal",
-                new[] { typeof(string), typeof(int), LoadSceneParametersType, typeof(bool) });
+                [typeof(string), typeof(int), LoadSceneParametersType, typeof(bool)]);
         }
 
         private static Exception Cleanup(MethodBase original, Exception ex)

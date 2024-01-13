@@ -16,16 +16,16 @@ namespace UniTAS.Patcher.Implementations;
 [Singleton]
 public class ThreadSoftRestartHandler : IThreadTracker, IOnPreGameRestart
 {
-    private readonly List<Thread> _threads = new();
+    private readonly List<Thread> _threads = [];
     private readonly ILogger _logger;
 
     private readonly Type[] _excludeTypes =
-    {
+    [
         typeof(DiskLogListener),
         typeof(GameVideoRenderer),
         typeof(NativeAudioRenderer),
         typeof(LoggingUtils.DiskLogger)
-    };
+    ];
 
     public ThreadSoftRestartHandler(ILogger logger)
     {

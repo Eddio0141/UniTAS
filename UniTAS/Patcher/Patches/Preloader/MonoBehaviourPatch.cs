@@ -32,7 +32,7 @@ public class MonoBehaviourPatch : PreloadPatcher
     private const string BIT_STREAM = "UnityEngine.BitStream";
 
     private static readonly (string, MethodBase)[] EventMethods =
-    {
+    [
         new("Awake",
             AccessTools.Method(typeof(UnityEventInvokers), nameof(UnityEventInvokers.InvokeAwake))),
         new("OnEnable",
@@ -46,43 +46,43 @@ public class MonoBehaviourPatch : PreloadPatcher
         new("FixedUpdate",
             AccessTools.Method(typeof(UnityEventInvokers), nameof(UnityEventInvokers.InvokeFixedUpdate)))
         // new("OnGUI", AccessTools.Method(typeof(MonoBehaviourEvents), nameof(MonoBehaviourEvents.InvokeOnGUI)))
-    };
+    ];
 
     // event methods, with list of arg types
     // arg types in mono beh are always positional, so we can use this to determine which method to call
     // args are optionally available in the event method
     private static readonly (string, string[])[] PauseEventMethods =
-    {
+    [
         new("Awake", new string[0]),
         new("FixedUpdate", new string[0]),
         new("LateUpdate", new string[0]),
-        new("OnAnimatorIK", new[] { typeof(int).FullName }),
+        new("OnAnimatorIK", [typeof(int).FullName]),
         new("OnAnimatorMove", new string[0]),
-        new("OnApplicationFocus", new[] { typeof(bool).FullName }),
-        new("OnApplicationPause", new[] { typeof(bool).FullName }),
+        new("OnApplicationFocus", [typeof(bool).FullName]),
+        new("OnApplicationPause", [typeof(bool).FullName]),
         new("OnApplicationQuit", new string[0]),
-        new("OnAudioFilterRead", new[] { typeof(float[]).FullName, typeof(int).FullName }),
+        new("OnAudioFilterRead", [typeof(float[]).FullName, typeof(int).FullName]),
         new("OnBecameInvisible", new string[0]),
         new("OnBecameVisible", new string[0]),
-        new("OnCollisionEnter", new[] { COLLISION }),
-        new("OnCollisionEnter2D", new[] { COLLISION_2D }),
-        new("OnCollisionExit", new[] { COLLISION }),
-        new("OnCollisionExit2D", new[] { COLLISION_2D }),
-        new("OnCollisionStay", new[] { COLLISION }),
-        new("OnCollisionStay2D", new[] { COLLISION_2D }),
+        new("OnCollisionEnter", [COLLISION]),
+        new("OnCollisionEnter2D", [COLLISION_2D]),
+        new("OnCollisionExit", [COLLISION]),
+        new("OnCollisionExit2D", [COLLISION_2D]),
+        new("OnCollisionStay", [COLLISION]),
+        new("OnCollisionStay2D", [COLLISION_2D]),
         new("OnConnectedToServer", new string[0]),
-        new("OnControllerColliderHit", new[] { CONTROLLER_COLLIDER_HIT }),
+        new("OnControllerColliderHit", [CONTROLLER_COLLIDER_HIT]),
         new("OnDestroy", new string[0]),
         new("OnDisable", new string[0]),
-        new("OnDisconnectedFromServer", new[] { NETWORK_DISCONNECTION }),
+        new("OnDisconnectedFromServer", [NETWORK_DISCONNECTION]),
         new("OnDrawGizmos", new string[0]),
         new("OnDrawGizmosSelected", new string[0]),
         new("OnEnable", new string[0]),
-        new("OnFailedToConnect", new[] { NETWORK_CONNECTION_ERROR }),
-        new("OnFailedToConnectToMasterServer", new[] { NETWORK_CONNECTION_ERROR }),
-        new("OnJointBreak", new[] { typeof(float).FullName }),
-        new("OnJointBreak2D", new[] { typeof(float).FullName }),
-        new("OnMasterServerEvent", new[] { MASTER_SERVER_EVENT }),
+        new("OnFailedToConnect", [NETWORK_CONNECTION_ERROR]),
+        new("OnFailedToConnectToMasterServer", [NETWORK_CONNECTION_ERROR]),
+        new("OnJointBreak", [typeof(float).FullName]),
+        new("OnJointBreak2D", [typeof(float).FullName]),
+        new("OnMasterServerEvent", [MASTER_SERVER_EVENT]),
         new("OnMouseDown", new string[0]),
         new("OnMouseDrag", new string[0]),
         new("OnMouseEnter", new string[0]),
@@ -90,35 +90,35 @@ public class MonoBehaviourPatch : PreloadPatcher
         new("OnMouseOver", new string[0]),
         new("OnMouseUp", new string[0]),
         new("OnMouseUpAsButton", new string[0]),
-        new("OnNetworkInstantiate", new[] { NETWORK_MESSAGE_INFO }),
-        new("OnParticleCollision", new[] { GAME_OBJECT }),
+        new("OnNetworkInstantiate", [NETWORK_MESSAGE_INFO]),
+        new("OnParticleCollision", [GAME_OBJECT]),
         new("OnParticleSystemStopped", new string[0]),
         new("OnParticleTrigger", new string[0]),
         new("OnParticleUpdateJobScheduled", new string[0]),
-        new("OnPlayerConnected", new[] { NETWORK_PLAYER }),
-        new("OnPlayerDisconnected", new[] { NETWORK_PLAYER }),
+        new("OnPlayerConnected", [NETWORK_PLAYER]),
+        new("OnPlayerDisconnected", [NETWORK_PLAYER]),
         new("OnPostRender", new string[0]),
         new("OnPreCull", new string[0]),
         new("OnPreRender", new string[0]),
-        new("OnRenderImage", new[] { RENDER_TEXTURE, RENDER_TEXTURE }),
+        new("OnRenderImage", [RENDER_TEXTURE, RENDER_TEXTURE]),
         new("OnRenderObject", new string[0]),
-        new("OnSerializeNetworkView", new[] { BIT_STREAM, NETWORK_MESSAGE_INFO }),
+        new("OnSerializeNetworkView", [BIT_STREAM, NETWORK_MESSAGE_INFO]),
         new("OnServerInitialized", new string[0]),
         new("OnTransformChildrenChanged", new string[0]),
         new("OnTransformParentChanged", new string[0]),
-        new("OnTriggerEnter", new[] { COLLIDER }),
-        new("OnTriggerEnter2D", new[] { COLLIDER_2D }),
-        new("OnTriggerExit", new[] { COLLIDER }),
-        new("OnTriggerExit2D", new[] { COLLIDER_2D }),
-        new("OnTriggerStay", new[] { COLLIDER }),
-        new("OnTriggerStay2D", new[] { COLLIDER_2D }),
+        new("OnTriggerEnter", [COLLIDER]),
+        new("OnTriggerEnter2D", [COLLIDER_2D]),
+        new("OnTriggerExit", [COLLIDER]),
+        new("OnTriggerExit2D", [COLLIDER_2D]),
+        new("OnTriggerStay", [COLLIDER]),
+        new("OnTriggerStay2D", [COLLIDER_2D]),
         new("OnValidate", new string[0]),
         new("OnWillRenderObject", new string[0]),
         new("Reset", new string[0]),
         new("Start", new string[0]),
         new("Update", new string[0]),
         new("OnGUI", new string[0])
-    };
+    ];
 
     public override void Patch(ref AssemblyDefinition assembly)
     {

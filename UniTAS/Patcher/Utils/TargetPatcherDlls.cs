@@ -31,7 +31,7 @@ public static class TargetPatcherDlls
     }
 
     private static string[] AssemblyExclusionsRaw { get; } =
-    {
+    [
         // c# related
         "System.*",
         "System",
@@ -44,9 +44,9 @@ public static class TargetPatcherDlls
 
         // should be fine
         "UnityEngine.IMGUIModule"
-    };
+    ];
 
     private static string[] AssemblyIncludeRaw { get; } =
-    {
-    };
+    [
+    ];
 }

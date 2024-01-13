@@ -31,11 +31,11 @@ public class ObjectPatch
             return new MethodBase[]
             {
                 AccessTools.Method(typeof(Object), nameof(Object.Destroy),
-                    new[] { typeof(Object), typeof(float) }),
+                    [typeof(Object), typeof(float)]),
                 AccessTools.Method(typeof(Object), nameof(Object.DestroyObject),
-                    new[] { typeof(Object), typeof(float) }),
+                    [typeof(Object), typeof(float)]),
                 AccessTools.Method(typeof(Object), nameof(Object.DestroyImmediate),
-                    new[] { typeof(Object), typeof(bool) })
+                    [typeof(Object), typeof(bool)])
             }.Where(x => x != null);
         }
 
@@ -73,13 +73,13 @@ public class ObjectPatch
             return new MethodBase[]
             {
                 AccessTools.Method(typeof(Object), "Internal_InstantiateSingle_Injected",
-                    new[] { typeof(Object), typeof(Vector3), typeof(Quaternion) }),
+                    [typeof(Object), typeof(Vector3), typeof(Quaternion)]),
                 AccessTools.Method(typeof(Object), "Internal_InstantiateSingleWithParent_Injected",
-                    new[] { typeof(Object), typeof(Transform), typeof(Vector3), typeof(Quaternion) }),
+                    [typeof(Object), typeof(Transform), typeof(Vector3), typeof(Quaternion)]),
                 AccessTools.Method(typeof(Object), "Internal_CloneSingle",
-                    new[] { typeof(Object) }),
+                    [typeof(Object)]),
                 AccessTools.Method(typeof(Object), "Internal_CloneSingleWithParent",
-                    new[] { typeof(Object), typeof(Transform), typeof(bool) })
+                    [typeof(Object), typeof(Transform), typeof(bool)])
             }.Where(x => x != null);
         }
 

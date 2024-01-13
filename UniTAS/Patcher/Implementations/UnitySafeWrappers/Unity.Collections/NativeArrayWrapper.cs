@@ -45,13 +45,13 @@ public class NativeArrayWrapper<T> : UnityInstanceWrap
         {
             if (_nativeArrayOptions == null)
             {
-                args = new[] { args[0], args[1] };
-                Instance = AccessTools.Constructor(WrappedType, new[] { typeof(int), _allocator }).Invoke(args);
+                args = [args[0], args[1]];
+                Instance = AccessTools.Constructor(WrappedType, [typeof(int), _allocator]).Invoke(args);
             }
             else
             {
-                args = new[] { args[0], args[1], Enum.Parse(_nativeArrayOptions, "ClearMemory") };
-                Instance = AccessTools.Constructor(WrappedType, new[] { typeof(int), _allocator, _nativeArrayOptions })
+                args = [args[0], args[1], Enum.Parse(_nativeArrayOptions, "ClearMemory")];
+                Instance = AccessTools.Constructor(WrappedType, [typeof(int), _allocator, _nativeArrayOptions])
                     .Invoke(args);
             }
         }

@@ -23,9 +23,9 @@ public class ScriptableObjectPatch
         private static IEnumerable<MethodBase> TargetMethods()
         {
             yield return AccessTools.Method(typeof(ScriptableObject), nameof(ScriptableObject.CreateInstance),
-                new[] { typeof(string) });
+                [typeof(string)]);
             yield return AccessTools.Method(typeof(ScriptableObject), nameof(ScriptableObject.CreateInstance),
-                new[] { typeof(Type) });
+                [typeof(Type)]);
         }
 
         private static Exception Cleanup(MethodBase original, Exception ex)

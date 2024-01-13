@@ -52,12 +52,12 @@ public class UnityRuntimeInitAttributeInvoker
             .SelectMany(AccessTools.GetTypesFromAssembly).ToArray();
 
         _beforeSceneLoad = GetMethodsByAttribute(assemblies,
-            new[] { "BeforeSceneLoad", "AfterAssembliesLoaded", "BeforeSplashScreen", "SubsystemRegistration" },
+            ["BeforeSceneLoad", "AfterAssembliesLoaded", "BeforeSplashScreen", "SubsystemRegistration"],
             loadType,
             runtimeInitializeOnLoadMethodAttribute, runtimeInitializeLoadType).ToArray();
 
         _beforeStart = GetMethodsByAttribute(assemblies,
-            new[] { "AfterSceneLoad" },
+            ["AfterSceneLoad"],
             loadType,
             runtimeInitializeOnLoadMethodAttribute, runtimeInitializeLoadType).ToArray();
     }
