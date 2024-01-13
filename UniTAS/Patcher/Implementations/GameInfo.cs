@@ -98,7 +98,7 @@ public class GameInfo : IGameInfo
             if (_gotNet20Subset) return _net20Subset;
 
             // find File.GetAccessControl
-            var getAccessControl = typeof(File).GetMethod("GetAccessControl", new[] { typeof(string) });
+            var getAccessControl = typeof(File).GetMethod("GetAccessControl", [typeof(string)]);
 
             _gotNet20Subset = true;
             _net20Subset = getAccessControl == null;

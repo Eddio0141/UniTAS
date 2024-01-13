@@ -21,10 +21,10 @@ public partial class Drawing
     private const int TEXT_SHADOW_OFFSET = 1;
 
     private static readonly (int, int)[] TextShadowOffsets =
-    {
+    [
         new(TEXT_SHADOW_OFFSET, TEXT_SHADOW_OFFSET), new(-TEXT_SHADOW_OFFSET * 2, 0),
         new(0, -TEXT_SHADOW_OFFSET * 2), new(TEXT_SHADOW_OFFSET * 2, 0)
-    };
+    ];
 
     private void NextText()
     {

@@ -25,7 +25,7 @@ public class TestTab : Window
         IGameRestart gameRestart, ISceneWrapper sceneWrapper,
         IMonoBehaviourController monoBehaviourController, IRuntimeTestAndLog runtimeTestAndLog) : base(
         windowDependencies,
-        new(windowName: "test", layoutOptions: new[] { GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true) }
+        new(windowName: "test", layoutOptions: [GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true)]
         ))
     {
         _gameRender = gameRender;

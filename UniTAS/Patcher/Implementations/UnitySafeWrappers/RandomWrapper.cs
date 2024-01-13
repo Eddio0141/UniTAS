@@ -14,7 +14,7 @@ public class RandomWrapper : IRandomWrapper
     private readonly ILogger _logger;
 
     private readonly MethodBase _initState =
-        typeof(Random).GetMethod("InitState", AccessTools.all, null, new[] { typeof(int) }, null);
+        typeof(Random).GetMethod("InitState", AccessTools.all, null, [typeof(int)], null);
 
     public RandomWrapper(ILogger logger)
     {
@@ -29,7 +29,7 @@ public class RandomWrapper : IRandomWrapper
 
             if (_initState != null)
             {
-                _initState.Invoke(null, new object[] { value });
+                _initState.Invoke(null, [value]);
                 return;
             }
 

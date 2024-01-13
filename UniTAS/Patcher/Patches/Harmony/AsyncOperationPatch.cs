@@ -154,12 +154,12 @@ public class AsyncOperationPatch
 
         private static readonly MethodInfo _loadFromFile_Internal = AccessTools.Method(typeof(AssetBundle),
             "LoadFromFile_Internal",
-            new[] { typeof(string), typeof(uint), typeof(ulong) });
+            [typeof(string), typeof(uint), typeof(ulong)]);
 
         private static bool Prefix(string path, uint crc, ulong offset, ref AssetBundleCreateRequest __result)
         {
             // LoadFromFile fails with null return if operation fails, __result.assetBundle will also reflect that if async load fails too
-            var loadResult = _loadFromFile_Internal.Invoke(null, new object[] { path, crc, offset }) as AssetBundle;
+            var loadResult = _loadFromFile_Internal.Invoke(null, [path, crc, offset]) as AssetBundle;
             // create a new instance
             __result = new();
             AssetBundleCreateRequestTracker.NewAssetBundleCreateRequest(__result, loadResult);
@@ -178,11 +178,11 @@ public class AsyncOperationPatch
 
         private static readonly MethodBase _loadFromMemoryInternal = AccessTools.Method(typeof(AssetBundle),
             "LoadFromMemory_Internal",
-            new[] { typeof(byte[]), typeof(uint) });
+            [typeof(byte[]), typeof(uint)]);
 
         private static bool Prefix(byte[] binary, uint crc, ref AssetBundleCreateRequest __result)
         {
-            var loadResult = _loadFromMemoryInternal.Invoke(null, new object[] { binary, crc }) as AssetBundle;
+            var loadResult = _loadFromMemoryInternal.Invoke(null, [binary, crc]) as AssetBundle;
             __result = new();
             AssetBundleCreateRequestTracker.NewAssetBundleCreateRequest(__result, loadResult);
             return false;
@@ -200,13 +200,13 @@ public class AsyncOperationPatch
 
         private static readonly MethodBase _loadFromStreamInternal = AccessTools.Method(typeof(AssetBundle),
             "LoadFromStreamInternal",
-            new[] { typeof(Stream), typeof(uint), typeof(uint) });
+            [typeof(Stream), typeof(uint), typeof(uint)]);
 
         private static bool Prefix(Stream stream, uint crc, uint managedReadBufferSize,
             ref AssetBundleCreateRequest __result)
         {
             var loadResult =
-                _loadFromStreamInternal.Invoke(null, new object[] { stream, crc, managedReadBufferSize }) as
+                _loadFromStreamInternal.Invoke(null, [stream, crc, managedReadBufferSize]) as
                     AssetBundle;
             __result = new();
             AssetBundleCreateRequestTracker.NewAssetBundleCreateRequest(__result, loadResult);
@@ -225,11 +225,11 @@ public class AsyncOperationPatch
 
         private static readonly MethodBase _loadAssetInternal = AccessTools.Method(typeof(AssetBundle),
             "LoadAsset_Internal",
-            new[] { typeof(string), typeof(Type) });
+            [typeof(string), typeof(Type)]);
 
         private static bool Prefix(AssetBundle __instance, string name, Type type, ref AssetBundleRequest __result)
         {
-            var loadResult = _loadAssetInternal.Invoke(__instance, new object[] { name, type }) as Object;
+            var loadResult = _loadAssetInternal.Invoke(__instance, [name, type]) as Object;
             __result = new();
             AssetBundleRequestTracker.NewAssetBundleRequest(__result, loadResult);
             return false;
@@ -247,12 +247,12 @@ public class AsyncOperationPatch
 
         private static readonly MethodBase _loadAssetWithSubAssetsInternal = AccessTools.Method(typeof(AssetBundle),
             "LoadAssetWithSubAssets_Internal",
-            new[] { typeof(string), typeof(Type) });
+            [typeof(string), typeof(Type)]);
 
         private static bool Prefix(AssetBundle __instance, string name, Type type, ref AssetBundleRequest __result)
         {
             var loadResult =
-                _loadAssetWithSubAssetsInternal.Invoke(__instance, new object[] { name, type }) as Object[];
+                _loadAssetWithSubAssetsInternal.Invoke(__instance, [name, type]) as Object[];
             __result = new();
             AssetBundleRequestTracker.NewAssetBundleRequestMultiple(__result, loadResult);
             return false;
@@ -268,11 +268,11 @@ public class AsyncOperationPatch
         }
 
         private static readonly MethodBase _unload =
-            AccessTools.Method(typeof(AssetBundle), "Unload", new[] { typeof(bool) });
+            AccessTools.Method(typeof(AssetBundle), "Unload", [typeof(bool)]);
 
         private static bool Prefix(bool unloadAllLoadedObjects, ref object __result)
         {
-            _unload.Invoke(null, new object[] { unloadAllLoadedObjects });
+            _unload.Invoke(null, [unloadAllLoadedObjects]);
             __result = AccessTools.CreateInstance(typeof(AssetBundle));
             return false;
         }

@@ -31,11 +31,11 @@ public class BrowseFileWindow : Window, IBrowseFileWindow
     private readonly IPatchReverseInvoker _patchReverseInvoker;
 
     private readonly string[] _quickAccessPaths =
-    {
+    [
         Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
         Environment.GetFolderPath(Environment.SpecialFolder.Personal),
         Paths.GameRootPath
-    };
+    ];
 
     private readonly string[] _quickAccessNames;
 
@@ -58,9 +58,9 @@ public class BrowseFileWindow : Window, IBrowseFileWindow
         Show();
     }
 
-    private readonly GUILayoutOption[] _noExpandWidth = { GUILayout.ExpandWidth(false) };
-    private readonly GUILayoutOption[] _expandWidth = { GUILayout.ExpandWidth(true) };
-    private readonly GUILayoutOption[] _quickAccessButtonWidth = { GUILayout.Width(100) };
+    private readonly GUILayoutOption[] _noExpandWidth = [GUILayout.ExpandWidth(false)];
+    private readonly GUILayoutOption[] _expandWidth = [GUILayout.ExpandWidth(true)];
+    private readonly GUILayoutOption[] _quickAccessButtonWidth = [GUILayout.Width(100)];
 
     private float _lastFileSelectTime;
     private int _lastFileSelectIndex = -1;

@@ -54,7 +54,7 @@ public class MoviePlayWindow : Window
         GUILayout.EndVertical();
     }
 
-    private readonly GUILayoutOption[] _moviePathOptions = { GUILayout.ExpandWidth(false) };
+    private readonly GUILayoutOption[] _moviePathOptions = [GUILayout.ExpandWidth(false)];
 
     private void TASPath()
     {
@@ -117,7 +117,7 @@ public class MoviePlayWindow : Window
     }
 
     private readonly GUILayoutOption[] _tasRunInfoOptions =
-        { GUILayout.ExpandHeight(true), GUILayout.ExpandWidth(true) };
+        [GUILayout.ExpandHeight(true), GUILayout.ExpandWidth(true)];
 
     private void TASRunInfo()
     {

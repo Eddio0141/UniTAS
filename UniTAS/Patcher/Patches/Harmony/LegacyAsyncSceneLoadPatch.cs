@@ -19,7 +19,7 @@ public static class LegacyAsyncSceneLoadPatch
         private static MethodBase TargetMethod()
         {
             return AccessTools.Method(typeof(Application), nameof(Application.LoadLevelAsync),
-                new[] { typeof(string), typeof(int), typeof(bool), typeof(bool) });
+                [typeof(string), typeof(int), typeof(bool), typeof(bool)]);
         }
 
         private static Exception Cleanup(MethodBase original, Exception ex)

@@ -16,7 +16,7 @@ public class TextureWrapper : ITextureWrapper
 
     public TextureWrapper()
     {
-        var texture2dLoadImage = AccessTools.Method(typeof(Texture2D), "LoadImage", new[] { typeof(byte[]) });
+        var texture2dLoadImage = AccessTools.Method(typeof(Texture2D), "LoadImage", [typeof(byte[])]);
         if (texture2dLoadImage != null)
         {
             _texture2dLoadImage = AccessTools.MethodDelegate<Func<Texture2D, byte[], bool>>(texture2dLoadImage);
@@ -26,7 +26,7 @@ public class TextureWrapper : ITextureWrapper
         _imageConversionLoadImage =
             AccessTools.MethodDelegate<Func<Texture2D, byte[], bool, bool>>(
                 AccessTools.Method("UnityEngine.ImageConversion:LoadImage",
-                    new[] { typeof(Texture2D), typeof(byte[]), typeof(bool) }));
+                    [typeof(Texture2D), typeof(byte[]), typeof(bool)]));
     }
 
     public void LoadImage(Texture2D texture, string path)

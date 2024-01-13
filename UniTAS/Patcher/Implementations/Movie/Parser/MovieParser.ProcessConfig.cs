@@ -77,7 +77,7 @@ public partial class MovieParser
 
     private float GetFrameTime(Table table)
     {
-        var selected = SelectAndWarnConflictingVariables(table, new() { "frametime", "fps" });
+        var selected = SelectAndWarnConflictingVariables(table, ["frametime", "fps"]);
         var selectedValue = selected.Item1;
         var selectedVariable = selected.Item2;
 

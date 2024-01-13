@@ -13,7 +13,7 @@ namespace UniTAS.Patcher.Implementations;
 [Singleton]
 public class MallocTracker : ITryFreeMalloc, IUnityMallocTracker
 {
-    private readonly List<UnityMallocInfo> _unityMallocs = new();
+    private readonly List<UnityMallocInfo> _unityMallocs = [];
 
     private readonly MethodBase _unityFree = AccessTools.Method("Unity.Collections.LowLevel.Unsafe.UnsafeUtility:Free");
 
@@ -65,11 +65,11 @@ public class MallocTracker : ITryFreeMalloc, IUnityMallocTracker
         // free
         if (unityMalloc.Tracked)
         {
-            _unityFreeTracked.Invoke(null, new[] { ptr, allocator });
+            _unityFreeTracked.Invoke(null, [ptr, allocator]);
         }
         else
         {
-            _unityFree.Invoke(null, new[] { ptr, allocator });
+            _unityFree.Invoke(null, [ptr, allocator]);
         }
 
         return true;
