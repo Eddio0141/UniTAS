@@ -30,7 +30,7 @@ public static class TargetPatcherDlls
         }
     }
 
-    private static IEnumerable<string> AssemblyExclusionsRaw { get; } =
+    private static List<string> AssemblyExclusionsRaw { get; } =
     [
         // c# related
         "System.*",
