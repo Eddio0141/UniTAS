@@ -26,6 +26,7 @@ public class StaticFieldStorage(
         foreach (var field in classStaticInfoTracker.StaticFields)
         {
             var typeName = field.DeclaringType?.FullName ?? "unknown_type";
+
             logger.LogDebug($"resetting static field: {typeName}.{field.Name}");
 
             // only dispose if disposable in is in system namespace
