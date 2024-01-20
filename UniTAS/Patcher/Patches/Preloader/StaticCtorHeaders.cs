@@ -194,8 +194,9 @@ public static class PatchMethods
         var invokeStack = CctorInvokeStack.GetOrAdd(threadId, _ => new());
         invokeStack.Add(type);
 
+        var stackCount = invokeStack.Count;
         StaticLogger.Log.LogDebug(
-            $"Start of static ctor {type.SaneFullName()}, stack count: {invokeStack.Count}, thread id: {threadId}");
+            $"Start of static ctor {type.SaneFullName()}, stack count: {stackCount}, thread id: {threadId}");
         if (IsNotFirstInvoke(type)) return;
         StaticLogger.Trace("First static ctor invoke");
 
@@ -207,9 +208,9 @@ public static class PatchMethods
 
         // if this is chain called, store dependency
         // in this case, we are the child since this is chain called
-        if (invokeStack.Count > 1)
+        if (stackCount > 1)
         {
-            var parent = invokeStack[invokeStack.Count - 2];
+            var parent = invokeStack[stackCount - 2];
             var cctor = AccessTools.DeclaredConstructor(type, searchForStatic: true);
 
             var list = CctorDependency.GetOrAdd(parent, _ => new());
@@ -243,7 +244,7 @@ public static class PatchMethods
         if (IsNotFirstInvoke(type)) return;
 
         // add only if not in ignore list
-        if (!PendingIgnoreAddingInvokeList.TryGetValue(threadId, out var ignoreList) || ignoreList.Remove(type)) return;
+        if (PendingIgnoreAddingInvokeList.TryGetValue(threadId, out var ignoreList) && ignoreList.Remove(type)) return;
 
         StaticLogger.Log.LogDebug($"Adding type {type} to static ctor invoke list");
         ClassStaticInfoTracker.AddStaticCtorForTracking(type);
