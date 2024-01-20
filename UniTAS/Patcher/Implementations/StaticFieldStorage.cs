@@ -1,8 +1,5 @@
 using System;
-using System.Linq;
-using System.Reflection;
 using System.Threading;
-using HarmonyLib;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Services;
@@ -20,13 +17,6 @@ public class StaticFieldStorage(
     ITryFreeMalloc freeMalloc)
     : IStaticFieldManipulator
 {
-    private readonly FieldInfo[] _ignoredFields =
-    [
-        // don't reset this, all hell breaks loose
-        AccessTools.DeclaredField(AccessTools.TypeByName("UnityEngine.SceneManagement.SceneManager"),
-            "s_AllowLoadScene")
-    ];
-
     public void ResetStaticFields()
     {
         logger.LogDebug("resetting static fields");
@@ -36,12 +26,6 @@ public class StaticFieldStorage(
         foreach (var field in classStaticInfoTracker.StaticFields)
         {
             var typeName = field.DeclaringType?.FullName ?? "unknown_type";
-
-            if (_ignoredFields.Contains(field))
-            {
-                logger.LogDebug($"ignoring static field: {typeName}.{field.Name}");
-                continue;
-            }
 
             logger.LogDebug($"resetting static field: {typeName}.{field.Name}");
 
