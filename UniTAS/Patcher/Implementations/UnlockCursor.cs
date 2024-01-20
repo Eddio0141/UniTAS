@@ -1,8 +1,8 @@
-using System;
-using HarmonyLib;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
+using UniTAS.Patcher.Models.UnitySafeWrappers;
 using UniTAS.Patcher.Services;
+using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations;
@@ -12,36 +12,19 @@ namespace UniTAS.Patcher.Implementations;
 public class UnlockCursor : IOnUpdateUnconditional
 {
     private readonly IPatchReverseInvoker _patchReverseInvoker;
+    private readonly ICursorWrapper _cursorWrapper;
 
-    public UnlockCursor(IPatchReverseInvoker patchReverseInvoker)
+    public UnlockCursor(IPatchReverseInvoker patchReverseInvoker, ICursorWrapper cursorWrapper)
     {
         _patchReverseInvoker = patchReverseInvoker;
+        _cursorWrapper = cursorWrapper;
     }
 
     public void UpdateUnconditional()
     {
         if (!_patchReverseInvoker.Invoke(() => BepInEx.UnityInput.Current.GetKeyDown(KeyCode.F1))) return;
 
-        var cursor = AccessTools.TypeByName("UnityEngine.Cursor");
-        var lockState = AccessTools.Property(cursor, "lockState");
-
-        if (lockState == null)
-        {
-            // old unity
-            var showCursor = AccessTools.Property(typeof(Screen), "showCursor");
-            showCursor.SetValue(null, true, null);
-            var lockCursor = AccessTools.Property(typeof(Screen), "lockCursor");
-            lockCursor.SetValue(null, false, null);
-        }
-        else
-        {
-            // new unity
-            var lockMode = AccessTools.TypeByName("UnityEngine.CursorLockMode");
-            var none = Enum.Parse(lockMode, "None");
-            lockState.SetValue(null, none, null);
-
-            var visible = AccessTools.Property(cursor, "visible");
-            visible.SetValue(null, true, null);
-        }
+        _cursorWrapper.Visible = true;
+        _cursorWrapper.LockState = CursorLockMode.None;
     }
 }
