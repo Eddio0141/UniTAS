@@ -1,4 +1,6 @@
+#if TRACE
 using System;
+#endif
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using BepInEx.Logging;
@@ -30,5 +32,10 @@ public static class StaticLogger
 
         TraceLog.LogDebug($"[{path}:{lineNumber}] {data}");
 #endif
+    }
+
+    public static void LogDebug(object data)
+    {
+        Log.LogDebug(data);
     }
 }
