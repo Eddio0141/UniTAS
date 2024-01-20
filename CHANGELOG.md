@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed accidentally skipping over removing some readonly fields
 - Fixed crash when trying to remove readonly fields
 - Fixed sometimes UniTAS not receiving the first update, which might cause some movie desync by 1 frame
+- Fixed soft restart not properly taking in account for threads
 
 ## Changed
 
