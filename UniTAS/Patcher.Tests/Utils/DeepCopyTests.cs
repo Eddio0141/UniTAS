@@ -62,8 +62,8 @@ public partial class DeepCopyTests
     {
         var source = new ArrayType
         {
-            IntArray = new[] { 1, 2, 3 },
-            StringArray = new[] { "Hello", "World" },
+            IntArray = [1, 2, 3],
+            StringArray = ["Hello", "World"],
         };
         var result = DeepCopy.MakeDeepCopy<ArrayType>(source);
         Assert.Equal(source.IntArray, result.IntArray);
@@ -84,8 +84,8 @@ public partial class DeepCopyTests
     {
         var source = new ListType
         {
-            IntList = new() { 1, 2, 3 },
-            StringList = new() { "Hello", "World" },
+            IntList = [1, 2, 3],
+            StringList = ["Hello", "World"],
         };
         var result = DeepCopy.MakeDeepCopy<ListType>(source);
         Assert.Equal(source.IntList, result.IntList);
@@ -171,7 +171,7 @@ public partial class DeepCopyTests
         var source = new SelfReferencing3();
         var reference2 = new SelfReferencing4();
         source.Nested = reference2;
-        reference2.Nested = new() { source };
+        reference2.Nested = [source];
 
         var result = DeepCopy.MakeDeepCopy<SelfReferencing3>(source);
         Assert.NotSame(source, result);

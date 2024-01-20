@@ -145,12 +145,12 @@ public class NativeAudioRenderer : AudioRenderer
         var header = new List<byte>();
 
         // RIFF header
-        header.AddRange(new[] { (byte)'R', (byte)'I', (byte)'F', (byte)'F' });
+        header.AddRange("RIFF"u8.ToArray());
         header.AddRange(BitConverter.GetBytes((int)_audioFileStream.Length - 8));
-        header.AddRange(new[] { (byte)'W', (byte)'A', (byte)'V', (byte)'E' });
+        header.AddRange("WAVE"u8.ToArray());
 
         // fmt chunk
-        header.AddRange(new[] { (byte)'f', (byte)'m', (byte)'t', (byte)' ' });
+        header.AddRange("fmt "u8.ToArray());
         header.AddRange(BitConverter.GetBytes(16));
         header.AddRange(BitConverter.GetBytes((short)1));
         header.AddRange(BitConverter.GetBytes((short)_channels));
@@ -160,7 +160,7 @@ public class NativeAudioRenderer : AudioRenderer
         header.AddRange(BitConverter.GetBytes((short)16));
 
         // data chunk
-        header.AddRange(new[] { (byte)'d', (byte)'a', (byte)'t', (byte)'a' });
+        header.AddRange("data"u8.ToArray());
         header.AddRange(BitConverter.GetBytes((int)_audioFileStream.Length - 44));
 
         _audioFileStream.Position = 0;

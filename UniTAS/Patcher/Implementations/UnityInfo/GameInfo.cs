@@ -12,15 +12,8 @@ namespace UniTAS.Patcher.Implementations.UnityInfo;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 [Singleton]
-public class GameInfo : IGameInfo
+public class GameInfo(IPatchReverseInvoker reverseInvoker) : IGameInfo
 {
-    private readonly IPatchReverseInvoker _reverseInvoker;
-
-    public GameInfo(IPatchReverseInvoker reverseInvoker)
-    {
-        _reverseInvoker = reverseInvoker;
-    }
-
     private string _unityVersion;
 
     public string UnityVersion
@@ -30,9 +23,9 @@ public class GameInfo : IGameInfo
             if (_unityVersion != null) return _unityVersion;
 
             const string unityPlayerPath = @".\UnityPlayer.dll";
-            if (_reverseInvoker.Invoke(File.Exists, unityPlayerPath))
+            if (reverseInvoker.Invoke(File.Exists, unityPlayerPath))
             {
-                var fullPath = _reverseInvoker.Invoke(Path.GetFullPath, unityPlayerPath);
+                var fullPath = reverseInvoker.Invoke(Path.GetFullPath, unityPlayerPath);
                 var fileVersion = FileVersionInfo.GetVersionInfo(fullPath);
                 _unityVersion = fileVersion.FileVersion;
             }
@@ -112,7 +105,7 @@ public class GameInfo : IGameInfo
         get
         {
             if (_gameDirectory != null) return _gameDirectory;
-            _reverseInvoker.Invoke(() =>
+            reverseInvoker.Invoke(() =>
             {
                 var appBase = AppDomain.CurrentDomain.SetupInformation.ApplicationBase;
                 _gameDirectory = appBase ?? Path.GetFullPath(".");
@@ -135,7 +128,7 @@ public class GameInfo : IGameInfo
             }
 
             // fallback, try get in c# way
-            var os = _reverseInvoker.Invoke(() => Environment.OSVersion);
+            var os = reverseInvoker.Invoke(() => Environment.OSVersion);
 
             switch (os.Platform)
             {
@@ -145,7 +138,7 @@ public class GameInfo : IGameInfo
                     var foundExe = "";
                     var foundMultipleExe = false;
                     var rootDir = GameDirectory;
-                    var rootFiles = _reverseInvoker.Invoke(Directory.GetFiles, rootDir);
+                    var rootFiles = reverseInvoker.Invoke(Directory.GetFiles, rootDir);
 
                     // iterate over exes in game root dir
                     foreach (var path in rootFiles)
@@ -170,15 +163,15 @@ public class GameInfo : IGameInfo
 
                     if (!foundMultipleExe)
                     {
-                        _productName = _reverseInvoker.Invoke(Path.GetFileNameWithoutExtension, foundExe);
+                        _productName = reverseInvoker.Invoke(Path.GetFileNameWithoutExtension, foundExe);
                         return _productName;
                     }
 
                     // use game dir name and see if it matches exe
-                    var gameDirName = _reverseInvoker.Invoke(a => new DirectoryInfo(a), rootDir).Name;
+                    var gameDirName = reverseInvoker.Invoke(a => new DirectoryInfo(a), rootDir).Name;
 
-                    if (_reverseInvoker.Invoke(File.Exists,
-                            _reverseInvoker.Invoke(Path.Combine, rootDir, $"{gameDirName}.exe")))
+                    if (reverseInvoker.Invoke(File.Exists,
+                            reverseInvoker.Invoke(Path.Combine, rootDir, $"{gameDirName}.exe")))
                     {
                         _productName = gameDirName;
                         return gameDirName;
@@ -189,7 +182,7 @@ public class GameInfo : IGameInfo
                 case PlatformID.Unix:
                 {
                     var rootDir = GameDirectory;
-                    var rootFiles = _reverseInvoker.Invoke(Directory.GetFiles, rootDir);
+                    var rootFiles = reverseInvoker.Invoke(Directory.GetFiles, rootDir);
 
                     var exeExtensions = new[] { ".x86_64", ".x86" };
 
@@ -200,7 +193,7 @@ public class GameInfo : IGameInfo
                         {
                             if (rootFile.EndsWith(exeExtension))
                             {
-                                _productName = _reverseInvoker.Invoke(Path.GetFileNameWithoutExtension, rootFile);
+                                _productName = reverseInvoker.Invoke(Path.GetFileNameWithoutExtension, rootFile);
                                 return _productName;
                             }
                         }
