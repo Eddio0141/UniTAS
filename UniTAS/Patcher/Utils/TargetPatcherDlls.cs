@@ -23,14 +23,14 @@ public static class TargetPatcherDlls
             {
                 var fileWithoutExtension = Path.GetFileNameWithoutExtension(x);
                 return fileWithoutExtension == null ||
-                       AssemblyIncludeRaw.Any(a => fileWithoutExtension.Like(a)) ||
+                       // AssemblyIncludeRaw.Any(a => fileWithoutExtension.Like(a)) ||
                        !AssemblyExclusionsRaw.Any(a => fileWithoutExtension.Like(a));
             });
             return _allExcludedDLLs;
         }
     }
 
-    private static string[] AssemblyExclusionsRaw { get; } =
+    private static IEnumerable<string> AssemblyExclusionsRaw { get; } =
     [
         // c# related
         "System.*",
@@ -46,7 +46,7 @@ public static class TargetPatcherDlls
         "UnityEngine.IMGUIModule"
     ];
 
-    private static string[] AssemblyIncludeRaw { get; } =
-    [
-    ];
+    // private static string[] AssemblyIncludeRaw { get; } =
+    // [
+    // ];
 }

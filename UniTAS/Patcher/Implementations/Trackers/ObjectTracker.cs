@@ -10,7 +10,7 @@ namespace UniTAS.Patcher.Implementations.Trackers;
 [Singleton(timing: RegisterTiming.Entry)]
 public class ObjectTracker : IObjectTracker, IObjectTrackerUpdate
 {
-    private readonly List<Object> _dontDestroyGameObjects = new();
+    private readonly List<Object> _dontDestroyGameObjects = [];
 
     public void DontDestroyOnLoadAddRoot(Object obj)
     {
