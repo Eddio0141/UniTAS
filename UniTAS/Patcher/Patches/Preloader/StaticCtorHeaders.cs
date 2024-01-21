@@ -263,10 +263,12 @@ public static class PatchMethods
 
         if (!CctorDependency.TryGetValue(type, out var dependencies)) return;
 
+        var dependenciesCount = dependencies.Count;
         StaticLogger.Log.LogDebug(
-            $"Found dependencies for static ctor type: {type.FullName}, dependency count: {dependencies.Count}");
-        foreach (var (cctorType, dependency) in dependencies)
+            $"Found dependencies for static ctor type: {type.FullName}, dependency count: {dependenciesCount}");
+        for (var i = 0; i < dependenciesCount; i++)
         {
+            var (cctorType, dependency) = dependencies[i];
             StaticLogger.Log.LogDebug($"Invoking cctor of {cctorType.FullName ?? "unknown type"}");
             dependency.Invoke(null, null);
         }

@@ -1,6 +1,6 @@
+using System;
 using System.Diagnostics.CodeAnalysis;
 using MoonSharp.Interpreter;
-using UniTAS.Patcher.Interfaces.Movie;
 using UniTAS.Patcher.Models.UnityInfo;
 using UniTAS.Patcher.Services.VirtualEnvironment.Input.LegacyInputSystem;
 
@@ -8,30 +8,26 @@ namespace UniTAS.Patcher.Implementations.Movie.Engine.Modules;
 
 [SuppressMessage("ReSharper", "UnusedType.Global")]
 [SuppressMessage("ReSharper", "UnusedMember.Global")]
-public class Controller : EngineMethodClass
+public class ControllerInstance
 {
     private readonly IAxisStateEnvLegacySystem _axisStateEnvLegacySystem;
 
-    private uint _controllerCount;
-
-    // TODO controller max count depends on unity version
-    private const uint MAX_CONTROLLER_COUNT = 4;
+    private readonly uint _playerNumber;
+    private readonly JoyNum _playerJoyNum;
 
     [MoonSharpHidden]
-    public Controller(IAxisStateEnvLegacySystem axisStateEnvLegacySystem)
+    public ControllerInstance(IAxisStateEnvLegacySystem axisStateEnvLegacySystem, uint playerNumber)
     {
         _axisStateEnvLegacySystem = axisStateEnvLegacySystem;
-    }
-
-    public ControllerInstance Add_player()
-    {
-        if (_controllerCount >= MAX_CONTROLLER_COUNT)
+        _playerNumber = playerNumber;
+        _playerJoyNum = playerNumber switch
         {
-            return null;
-        }
-
-        _controllerCount += 1;
-        return new(_axisStateEnvLegacySystem, _controllerCount);
+            1 => JoyNum.Joystick1,
+            2 => JoyNum.Joystick2,
+            3 => JoyNum.Joystick3,
+            4 => JoyNum.Joystick4,
+            _ => throw new InvalidOperationException()
+        };
     }
 
     public void X_axis(float value)
@@ -65,7 +61,7 @@ public class Controller : EngineMethodClass
             return;
         }
 
-        _axisStateEnvLegacySystem.KeyDown(GetButtonChoice(button), JoyNum.AllJoysticks);
+        _axisStateEnvLegacySystem.KeyDown(GetButtonChoice(button), _playerJoyNum);
     }
 
     public void Release(int button)
@@ -75,7 +71,7 @@ public class Controller : EngineMethodClass
             return;
         }
 
-        _axisStateEnvLegacySystem.KeyUp(GetButtonChoice(button), JoyNum.AllJoysticks);
+        _axisStateEnvLegacySystem.KeyUp(GetButtonChoice(button), _playerJoyNum);
     }
 
     private static bool VerifyHoldButton(int button)
@@ -84,8 +80,8 @@ public class Controller : EngineMethodClass
         return button is >= 0 and <= 19;
     }
 
-    private static string GetButtonChoice(int button)
+    private string GetButtonChoice(int button)
     {
-        return $"joystick button {button}";
+        return $"joystick {_playerNumber} button {button}";
     }
 }
