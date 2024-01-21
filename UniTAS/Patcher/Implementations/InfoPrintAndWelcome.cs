@@ -3,7 +3,6 @@ using System.Diagnostics.CodeAnalysis;
 using HarmonyLib;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Models.DependencyInjection;
-using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.UnityInfo;
 using UnityEngine;
@@ -27,8 +26,6 @@ public class InfoPrintAndWelcome
         if (companyNameProperty.PropertyExists())
             logger.LogInfo(
                 $"Game company name: {companyNameProperty.GetValue<string>()}"); //product name: {Application.productName}, version: {Application.version}");
-
-        // TODO all axis names for help
 
         logger.LogInfo($"System time: {DateTime.Now}");
         logger.LogInfo($"UniTAS {MyPluginInfo.PLUGIN_VERSION} is loaded!");

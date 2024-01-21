@@ -10,16 +10,10 @@ using UnityEngine;
 namespace UniTAS.Patcher.Implementations.VirtualEnvironment.InputState.LegacyInputSystem;
 
 [Singleton]
-public class AxisStateEnvLegacySystem : LegacyInputSystemDevice, IAxisStateEnvLegacySystem
+public class AxisStateEnvLegacySystem(IAxisButtonStateEnvUpdate axisButtonStateEnvUpdate)
+    : LegacyInputSystemDevice, IAxisStateEnvLegacySystem
 {
-    private readonly IAxisButtonStateEnvUpdate _axisButtonStateEnvUpdate;
-
-    private readonly List<(string, LegacyInputAxisState)> _values = new();
-
-    public AxisStateEnvLegacySystem(IAxisButtonStateEnvUpdate axisButtonStateEnvUpdate)
-    {
-        _axisButtonStateEnvUpdate = axisButtonStateEnvUpdate;
-    }
+    private readonly List<(string, LegacyInputAxisState)> _values = [];
 
     protected override void Update()
     {
@@ -33,30 +27,54 @@ public class AxisStateEnvLegacySystem : LegacyInputSystemDevice, IAxisStateEnvLe
 
             if (axis.ValueRaw != 0f)
             {
-                _axisButtonStateEnvUpdate.Hold(name);
+                axisButtonStateEnvUpdate.Hold(name);
             }
             else
             {
-                _axisButtonStateEnvUpdate.Release(name);
+                axisButtonStateEnvUpdate.Release(name);
             }
         }
     }
 
     protected override void ResetState()
     {
-        _values.Clear();
+        foreach (var (_, value) in _values)
+        {
+            value.ResetState();
+        }
     }
 
     public float GetAxis(string axisName)
     {
-        var (_, found) = _values.FirstOrDefault(x => x.Item1 == axisName);
-        return found?.Value ?? 0f;
+        var value = 0f;
+        var found = _values.Where(x => x.Item1 == axisName);
+
+        foreach (var (_, axisState) in found)
+        {
+            var axisStateValue = axisState.Value;
+            if (axisStateValue > value)
+            {
+                value = axisStateValue;
+            }
+        }
+
+        return value;
     }
 
     public float GetAxisRaw(string axisName)
     {
-        var (_, found) = _values.FirstOrDefault(x => x.Item1 == axisName);
-        return found?.ValueRaw ?? 0f;
+        var value = 0f;
+        var found = _values.Where(x => x.Item1 == axisName);
+        foreach (var (_, axisState) in found)
+        {
+            var axisStateValue = axisState.ValueRaw;
+            if (axisStateValue > value)
+            {
+                value = axisStateValue;
+            }
+        }
+
+        return value;
     }
 
     public void AddAxis(LegacyInputAxis axis)

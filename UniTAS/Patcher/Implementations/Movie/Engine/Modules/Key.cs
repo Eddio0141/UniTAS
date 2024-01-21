@@ -9,32 +9,24 @@ namespace UniTAS.Patcher.Implementations.Movie.Engine.Modules;
 
 [SuppressMessage("ReSharper", "UnusedType.Global")]
 [SuppressMessage("ReSharper", "UnusedMember.Global")]
-public class Key : EngineMethodClass
+[method: MoonSharpHidden]
+public class Key(IKeyboardStateEnvController kbController, IAxisStateEnvLegacySystem axisStateEnvLegacySystem)
+    : EngineMethodClass
 {
-    private readonly IKeyboardStateEnvController _kbController;
-    private readonly IAxisStateEnvLegacySystem _axisStateEnvLegacySystem;
-
-    [MoonSharpHidden]
-    public Key(IKeyboardStateEnvController kbController, IAxisStateEnvLegacySystem axisStateEnvLegacySystem)
-    {
-        _kbController = kbController;
-        _axisStateEnvLegacySystem = axisStateEnvLegacySystem;
-    }
-
     public void Hold(string key)
     {
-        _kbController.Hold(key);
-        _axisStateEnvLegacySystem.KeyDown(key, JoyNum.AllJoysticks);
+        kbController.Hold(key);
+        axisStateEnvLegacySystem.KeyDown(key, JoyNum.AllJoysticks);
     }
 
     public void Release(string key)
     {
-        _kbController.Release(key);
-        _axisStateEnvLegacySystem.KeyUp(key, JoyNum.AllJoysticks);
+        kbController.Release(key);
+        axisStateEnvLegacySystem.KeyUp(key, JoyNum.AllJoysticks);
     }
 
     public void Clear()
     {
-        _kbController.Clear();
+        kbController.Clear();
     }
 }

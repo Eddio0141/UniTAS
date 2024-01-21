@@ -4,11 +4,21 @@ using UnityEngine;
 
 namespace UniTAS.Patcher.Models.VirtualEnvironment;
 
-public class LegacyInputAxisState
+public class LegacyInputAxisState(LegacyInputAxis axis)
 {
     public float Value { get; private set; }
     public float ValueRaw { get; private set; }
-    public LegacyInputAxis Axis { get; }
+    public LegacyInputAxis Axis { get; } = axis;
+
+    public void ResetState()
+    {
+        Value = 0f;
+        ValueRaw = 0f;
+        _moveDir = AxisMoveDirection.Neutral;
+        _moveDirPrev = AxisMoveDirection.Neutral;
+        _mousePrevPos = 0f;
+        _mousePos = 0f;
+    }
 
     public Vector2 MousePos
     {
@@ -49,11 +59,6 @@ public class LegacyInputAxisState
     // in case type is mouse movement
     private float _mousePrevPos;
     private float _mousePos;
-
-    public LegacyInputAxisState(LegacyInputAxis axis)
-    {
-        Axis = axis;
-    }
 
     public void KeyDown(string name)
     {
