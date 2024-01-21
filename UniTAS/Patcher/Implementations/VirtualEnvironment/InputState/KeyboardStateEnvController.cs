@@ -7,30 +7,23 @@ using UniTAS.Patcher.Utils;
 namespace UniTAS.Patcher.Implementations.VirtualEnvironment.InputState;
 
 [Singleton]
-public class KeyboardStateEnvController : IKeyboardStateEnvController
+public class KeyboardStateEnvController(
+    IKeyboardStateEnvLegacySystem keyboardStateEnvLegacySystem,
+    IKeyboardStateEnvNewSystem keyboardStateEnvNewSystem)
+    : IKeyboardStateEnvController
 {
-    private readonly IKeyboardStateEnvLegacySystem _keyboardStateEnvLegacySystem;
-    private readonly IKeyboardStateEnvNewSystem _keyboardStateEnvNewSystem;
-
-    public KeyboardStateEnvController(IKeyboardStateEnvLegacySystem keyboardStateEnvLegacySystem,
-        IKeyboardStateEnvNewSystem keyboardStateEnvNewSystem)
-    {
-        _keyboardStateEnvLegacySystem = keyboardStateEnvLegacySystem;
-        _keyboardStateEnvNewSystem = keyboardStateEnvNewSystem;
-    }
-
     public void Hold(string key)
     {
         InputSystemUtils.KeyStringToKeys(key, out var keyCode, out var newKey);
 
         if (keyCode.HasValue)
         {
-            _keyboardStateEnvLegacySystem.Hold(keyCode.Value);
+            keyboardStateEnvLegacySystem.Hold(keyCode.Value);
         }
 
         if (newKey.HasValue)
         {
-            _keyboardStateEnvNewSystem.Hold(newKey.Value);
+            keyboardStateEnvNewSystem.Hold(newKey.Value);
         }
     }
 
@@ -40,18 +33,18 @@ public class KeyboardStateEnvController : IKeyboardStateEnvController
 
         if (keyCode.HasValue)
         {
-            _keyboardStateEnvLegacySystem.Release(keyCode.Value);
+            keyboardStateEnvLegacySystem.Release(keyCode.Value);
         }
 
         if (newKey.HasValue)
         {
-            _keyboardStateEnvNewSystem.Release(newKey.Value);
+            keyboardStateEnvNewSystem.Release(newKey.Value);
         }
     }
 
     public void Clear()
     {
-        _keyboardStateEnvLegacySystem.Clear();
-        _keyboardStateEnvNewSystem.Clear();
+        keyboardStateEnvLegacySystem.Clear();
+        keyboardStateEnvNewSystem.Clear();
     }
 }

@@ -1,34 +1,32 @@
 using System.Diagnostics.CodeAnalysis;
 using MoonSharp.Interpreter;
 using UniTAS.Patcher.Interfaces.Movie;
+using UniTAS.Patcher.Models.UnityInfo;
 using UniTAS.Patcher.Services.VirtualEnvironment.Input;
+using UniTAS.Patcher.Services.VirtualEnvironment.Input.LegacyInputSystem;
 
 namespace UniTAS.Patcher.Implementations.Movie.Engine.Modules;
 
 [SuppressMessage("ReSharper", "UnusedType.Global")]
 [SuppressMessage("ReSharper", "UnusedMember.Global")]
-public class Key : EngineMethodClass
+[method: MoonSharpHidden]
+public class Key(IKeyboardStateEnvController kbController, IAxisStateEnvLegacySystem axisStateEnvLegacySystem)
+    : EngineMethodClass
 {
-    private readonly IKeyboardStateEnvController _kbController;
-
-    [MoonSharpHidden]
-    public Key(IKeyboardStateEnvController kbController)
-    {
-        _kbController = kbController;
-    }
-
     public void Hold(string key)
     {
-        _kbController.Hold(key);
+        kbController.Hold(key);
+        axisStateEnvLegacySystem.KeyDown(key, JoyNum.AllJoysticks);
     }
 
     public void Release(string key)
     {
-        _kbController.Release(key);
+        kbController.Release(key);
+        axisStateEnvLegacySystem.KeyUp(key, JoyNum.AllJoysticks);
     }
 
     public void Clear()
     {
-        _kbController.Clear();
+        kbController.Clear();
     }
 }

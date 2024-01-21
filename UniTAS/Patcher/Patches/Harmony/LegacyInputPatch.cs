@@ -30,8 +30,8 @@ public class LegacyInputPatch
     private static readonly IKeyboardStateEnvLegacySystem KeyboardStateEnvLegacySystem =
         ContainerStarter.Kernel.GetInstance<IKeyboardStateEnvLegacySystem>();
 
-    private static readonly IButtonStateEnvLegacySystem ButtonStateEnvLegacySystem =
-        ContainerStarter.Kernel.GetInstance<IButtonStateEnvLegacySystem>();
+    private static readonly IAxisButtonStateEnvLegacySystem AxisButtonStateEnvLegacySystem =
+        ContainerStarter.Kernel.GetInstance<IAxisButtonStateEnvLegacySystem>();
 
     private static readonly IMouseStateEnvLegacySystem MouseStateEnvLegacySystem =
         ContainerStarter.Kernel.GetInstance<IMouseStateEnvLegacySystem>();
@@ -279,7 +279,7 @@ public class LegacyInputPatch
                 return false;
             }
 
-            __result = AxisStateEnvLegacySystem.GetAxis(axisName);
+            __result = AxisStateEnvLegacySystem.GetAxisRaw(axisName);
             return false;
         }
 
@@ -482,7 +482,7 @@ public class LegacyInputPatch
                 return false;
             }
 
-            __result = ButtonStateEnvLegacySystem.IsButtonHeld(buttonName);
+            __result = AxisButtonStateEnvLegacySystem.IsButtonHeld(buttonName);
             return false;
         }
 
@@ -512,7 +512,7 @@ public class LegacyInputPatch
                 return false;
             }
 
-            __result = ButtonStateEnvLegacySystem.IsButtonDown(buttonName);
+            __result = AxisButtonStateEnvLegacySystem.IsButtonDown(buttonName);
             return false;
         }
 
@@ -542,7 +542,7 @@ public class LegacyInputPatch
                 return false;
             }
 
-            __result = ButtonStateEnvLegacySystem.IsButtonUp(buttonName);
+            __result = AxisButtonStateEnvLegacySystem.IsButtonUp(buttonName);
             return false;
         }
 
