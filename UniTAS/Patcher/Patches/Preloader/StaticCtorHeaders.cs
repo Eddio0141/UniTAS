@@ -29,8 +29,8 @@ public class StaticCtorHeaders : PreloadPatcher
 
         foreach (var type in assembly.Modules.SelectMany(module => module.GetAllTypes()))
         {
-            // ignore enums
-            if (type.IsEnum) continue;
+            // ignore enums and interfaces
+            if (type.IsEnum || type.IsInterface) continue;
 
             StaticLogger.Log.LogDebug($"Patching {type.FullName} for readonly fields and cctor");
 
