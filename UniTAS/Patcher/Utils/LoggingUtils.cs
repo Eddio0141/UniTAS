@@ -52,9 +52,9 @@ public static class LoggingUtils
             _logWriter?.Dispose();
         }
 
-        public void Flush()
+        public static void Flush()
         {
-            _logWriter?.Flush();
+            Instance?._logWriter?.Flush();
         }
 
         public void LogEvent(object sender, LogEventArgs eventArgs)
@@ -66,6 +66,6 @@ public static class LoggingUtils
     private static void UnhandledExceptionLog(object sender, UnhandledExceptionEventArgs e)
     {
         StaticLogger.Log.LogFatal(e.ExceptionObject);
-        DiskLogger.Instance.Flush();
+        DiskLogger.Flush();
     }
 }
