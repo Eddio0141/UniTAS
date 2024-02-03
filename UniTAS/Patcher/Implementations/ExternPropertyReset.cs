@@ -71,8 +71,11 @@ public class ExternPropertyReset(ILogger logger, IPatchReverseInvoker patchRever
             if (get == null || set == null) continue;
 
             // TODO this needs to be removed before merge
-            if (propDef.DeclaringType.Namespace is not ("UnityEngine.Time" or "UnityEngine.Application"))
-                continue;
+            // if (!fullName.StartsWith("UnityEngine.Time") || !fullName.StartsWith("UnityEngine.Application")) continue;
+            if (fullName.StartsWith("UnityEngine.Connect") ||
+                fullName.StartsWith("UnityEngine.Advertisements") ||
+                fullName.StartsWith("UnityEngine.Rendering")
+               ) continue;
 
             logger.LogDebug($"Saving extern property: {fullName}");
             LoggingUtils.DiskLogger.Flush();
@@ -87,6 +90,8 @@ public class ExternPropertyReset(ILogger logger, IPatchReverseInvoker patchRever
         "UnityEngine.AssetBundleLoadingCache.maxBlocksPerFile", // this crashes the game
         "UnityEngine.DynamicGI.indirectScale", // unity error: Unable to set Indirect Scale. Please set up a new Lighting Settings asset in the Lighting Settings Window.
         "System.*", // probably bad idea
+        "UnityEngine.Time.captureDeltaTime", // this is handled by unitas
+        "UnityEngine.Time.captureFramerate", // this too
     ];
 
     private readonly string[] _knownProperties =
@@ -161,5 +166,29 @@ public class ExternPropertyReset(ILogger logger, IPatchReverseInvoker patchRever
         "UnityEngine.Application.platform",
         "UnityEngine.Application.systemLanguage",
         "UnityEngine.Application.internetReachability",
+        "UnityEngine.Time.time",
+        "UnityEngine.Time.timeAsDouble",
+        "UnityEngine.Time.timeSinceLevelLoad",
+        "UnityEngine.Time.timeSinceLevelLoadAsDouble",
+        "UnityEngine.Time.deltaTime",
+        "UnityEngine.Time.fixedTime",
+        "UnityEngine.Time.fixedTimeAsDouble",
+        "UnityEngine.Time.unscaledTime",
+        "UnityEngine.Time.unscaledTimeAsDouble",
+        "UnityEngine.Time.fixedUnscaledTime",
+        "UnityEngine.Time.fixedUnscaledTimeAsDouble",
+        "UnityEngine.Time.unscaledDeltaTime",
+        "UnityEngine.Time.fixedUnscaledDeltaTime",
+        "UnityEngine.Time.fixedDeltaTime",
+        "UnityEngine.Time.maximumDeltaTime",
+        "UnityEngine.Time.smoothDeltaTime",
+        "UnityEngine.Time.maximumParticleDeltaTime",
+        "UnityEngine.Time.timeScale",
+        "UnityEngine.Time.frameCount",
+        "UnityEngine.Time.renderedFrameCount",
+        "UnityEngine.Time.realtimeSinceStartup",
+        "UnityEngine.Time.realtimeSinceStartupAsDouble",
+        "UnityEngine.Time.captureDeltaTime",
+        "UnityEngine.Time.inFixedTimeStep",
     ];
 }
