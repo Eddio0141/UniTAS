@@ -63,7 +63,7 @@ public class ExternPropertyReset(ILogger logger, IPatchReverseInvoker patchRever
             if (!_knownProperties.Contains(fullName))
             {
                 logger.LogWarning(
-                    $"Found unknown extern property: {fullName}, get exists: {get != null}, set exists: {set != null}");
+                    $"Found unknown extern property: {fullName}, get exists: {get != null}, set exists: {set != null} ");
             }
 
             // right now, we only support extern properties that have both get and set
@@ -74,7 +74,8 @@ public class ExternPropertyReset(ILogger logger, IPatchReverseInvoker patchRever
             // if (!fullName.StartsWith("UnityEngine.Time") || !fullName.StartsWith("UnityEngine.Application")) continue;
             if (fullName.StartsWith("UnityEngine.Connect") ||
                 fullName.StartsWith("UnityEngine.Advertisements") ||
-                fullName.StartsWith("UnityEngine.Rendering")
+                fullName.StartsWith("UnityEngine.Rendering") ||
+                fullName.StartsWith("UnityEngine.QualitySettings")
                ) continue;
 
             logger.LogDebug($"Saving extern property: {fullName}");
@@ -92,6 +93,10 @@ public class ExternPropertyReset(ILogger logger, IPatchReverseInvoker patchRever
         "System.*", // probably bad idea
         "UnityEngine.Time.captureDeltaTime", // this is handled by unitas
         "UnityEngine.Time.captureFramerate", // this too
+        // profilers are not supported
+        "UnityEngine.Profiling.Profiler.logFile",
+        "UnityEngine.Profiling.Profiler.enableBinaryLog",
+        "UnityEngine.Profiling.Profiler.enabled"
     ];
 
     private readonly string[] _knownProperties =
@@ -190,5 +195,56 @@ public class ExternPropertyReset(ILogger logger, IPatchReverseInvoker patchRever
         "UnityEngine.Time.realtimeSinceStartupAsDouble",
         "UnityEngine.Time.captureDeltaTime",
         "UnityEngine.Time.inFixedTimeStep",
+        "UnityEngine.QualitySettings.pixelLightCount",
+        "UnityEngine.QualitySettings.shadows",
+        "UnityEngine.QualitySettings.shadowProjection",
+        "UnityEngine.QualitySettings.shadowCascades",
+        "UnityEngine.QualitySettings.shadowDistance",
+        "UnityEngine.QualitySettings.shadowResolution",
+        "UnityEngine.QualitySettings.shadowmaskMode",
+        "UnityEngine.QualitySettings.shadowNearPlaneOffset",
+        "UnityEngine.QualitySettings.shadowCascade2Split",
+        "UnityEngine.QualitySettings.lodBias",
+        "UnityEngine.QualitySettings.anisotropicFiltering",
+        "UnityEngine.QualitySettings.masterTextureLimit",
+        "UnityEngine.QualitySettings.globalTextureMipmapLimit",
+        "UnityEngine.QualitySettings.maximumLODLevel",
+        "UnityEngine.QualitySettings.enableLODCrossFade",
+        "UnityEngine.QualitySettings.particleRaycastBudget",
+        "UnityEngine.QualitySettings.softParticles",
+        "UnityEngine.QualitySettings.softVegetation",
+        "UnityEngine.QualitySettings.vSyncCount",
+        "UnityEngine.QualitySettings.realtimeGICPUUsage",
+        "UnityEngine.QualitySettings.antiAliasing",
+        "UnityEngine.QualitySettings.asyncUploadTimeSlice",
+        "UnityEngine.QualitySettings.asyncUploadBufferSize",
+        "UnityEngine.QualitySettings.asyncUploadPersistentBuffer",
+        "UnityEngine.QualitySettings.realtimeReflectionProbes",
+        "UnityEngine.QualitySettings.billboardsFaceCameraPosition",
+        "UnityEngine.QualitySettings.useLegacyDetailDistribution",
+        "UnityEngine.QualitySettings.resolutionScalingFixedDPIFactor",
+        "UnityEngine.QualitySettings.terrainQualityOverrides",
+        "UnityEngine.QualitySettings.terrainPixelError",
+        "UnityEngine.QualitySettings.terrainDetailDensityScale",
+        "UnityEngine.QualitySettings.terrainBasemapDistance",
+        "UnityEngine.QualitySettings.terrainDetailDistance",
+        "UnityEngine.QualitySettings.terrainTreeDistance",
+        "UnityEngine.QualitySettings.terrainBillboardStart",
+        "UnityEngine.QualitySettings.terrainFadeLength",
+        "UnityEngine.QualitySettings.terrainMaxTrees",
+        "UnityEngine.QualitySettings.INTERNAL_renderPipeline",
+        "UnityEngine.QualitySettings.blendWeights",
+        "UnityEngine.QualitySettings.skinWeights",
+        "UnityEngine.QualitySettings.count",
+        "UnityEngine.QualitySettings.streamingMipmapsActive",
+        "UnityEngine.QualitySettings.streamingMipmapsMemoryBudget",
+        "UnityEngine.QualitySettings.streamingMipmapsRenderersPerFrame",
+        "UnityEngine.QualitySettings.streamingMipmapsMaxLevelReduction",
+        "UnityEngine.QualitySettings.streamingMipmapsAddAllCameras",
+        "UnityEngine.QualitySettings.streamingMipmapsMaxFileIORequests",
+        "UnityEngine.QualitySettings.maxQueuedFrames",
+        "UnityEngine.QualitySettings.names",
+        "UnityEngine.QualitySettings.desiredColorSpace",
+        "UnityEngine.QualitySettings.activeColorSpace",
     ];
 }
