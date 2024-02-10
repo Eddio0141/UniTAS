@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -15,6 +16,8 @@ using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Utils;
 using MethodImplAttributes = Mono.Cecil.MethodImplAttributes;
 
+// ReSharper disable StringLiteralTypo
+
 namespace UniTAS.Patcher.Implementations;
 
 [Singleton]
@@ -30,7 +33,14 @@ public class ExternPropertyReset(ILogger logger, IPatchReverseInvoker patchRever
             logger.LogDebug($"Resetting extern property: {name}");
             LoggingUtils.DiskLogger.Flush();
             var valueClone = DeepCopy.MakeDeepCopy(value);
-            patchReverseInvoker.Invoke(() => setMethod.Invoke(null, [valueClone]));
+            try
+            {
+                patchReverseInvoker.Invoke(() => setMethod.Invoke(null, [valueClone]));
+            }
+            catch (Exception e)
+            {
+                logger.LogError($"Failed to set value for extern property: {name}, exception: {e}");
+            }
         }
     }
 
@@ -78,7 +88,17 @@ public class ExternPropertyReset(ILogger logger, IPatchReverseInvoker patchRever
             logger.LogDebug($"Saving extern property: {fullName}");
             LoggingUtils.DiskLogger.Flush();
 
-            var value = patchReverseInvoker.Invoke(() => get.Invoke(null, []));
+            object value;
+            try
+            {
+                value = patchReverseInvoker.Invoke(() => get.Invoke(null, []));
+            }
+            catch (Exception e)
+            {
+                logger.LogError($"Failed to get value for extern property: {fullName}, exception: {e}");
+                continue;
+            }
+
             _externMethodSaves.Add((set, DeepCopy.MakeDeepCopy(value), fullName));
         }
     }
@@ -356,5 +376,15 @@ public class ExternPropertyReset(ILogger logger, IPatchReverseInvoker patchRever
         "UnityEngine.Rendering.VirtualTexturing.System.enabled",
         "UnityEngine.Rendering.VirtualTexturing.EditorHelpers.tileSize",
         "UnityEngine.Rendering.VirtualTexturing.Debugging.mipPreloadedTextureCount",
+        "UnityEngine.Camera.PreviewCullingLayer", "UnityEngine.RenderSettings.customReflection",
+        "UnityEngine.Windows.WebCam.WebCam.Mode", "UnityEngine.SceneManagement.SceneManager.sceneCountInBuildSettings",
+        "UnityEngine.Physics2D.autoSimulation", "UnityEngine.Physics2D.alwaysShowColliders",
+        "UnityEngine.Physics2D.showColliderSleep", "UnityEngine.Physics2D.showColliderContacts",
+        "UnityEngine.Physics2D.showColliderAABB", "UnityEngine.Physics2D.contactArrowScale",
+        "UnityEngine.Physics.autoSimulation", "UnityEngine.Experimental.XR.Boundary.visible",
+        "UnityEngine.Experimental.XR.Boundary.configured", "UnityEngine.XR.XRSettings.renderScale",
+        "UnityEngine.XR.XRDevice.isPresent", "UnityEngine.XR.XRDevice.userPresence", "UnityEngine.XR.XRDevice.family",
+        "UnityEngine.XR.XRDevice.model", "UnityEngine.XR.XRDevice.trackingOriginMode",
+        "UnityEngine.XR.WSA.HolographicSettings.IsContentProtectionEnabled",
     ];
 }
