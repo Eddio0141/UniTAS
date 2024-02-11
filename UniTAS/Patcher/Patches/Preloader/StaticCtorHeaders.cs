@@ -23,6 +23,9 @@ public class StaticCtorHeaders : PreloadPatcher
 {
     public override IEnumerable<string> TargetDLLs => TargetPatcherDlls.AllExcludedDLLs;
 
+    private readonly List<string> _ignoreTypes =
+        ["UnityEngine.Experimental.Rendering.ScriptableRuntimeReflectionSystemSettings"];
+
     public override void Patch(ref AssemblyDefinition assembly)
     {
         StaticLogger.Log.LogDebug("Patching static ctors");
@@ -32,10 +35,14 @@ public class StaticCtorHeaders : PreloadPatcher
             // ignore enums and interfaces
             if (type.IsEnum || type.IsInterface) continue;
 
-            StaticLogger.Log.LogDebug($"Patching {type.FullName} for readonly fields and cctor");
+            var typeFullName = type.FullName;
+
+            if (_ignoreTypes.Remove(typeFullName)) continue;
+
+            StaticLogger.Log.LogDebug($"Patching {typeFullName} for readonly fields and cctor");
 
             // remove readonly from all static fields
-            StaticLogger.Trace($"Removing readonly from static fields in {type.FullName}");
+            StaticLogger.Trace($"Removing readonly from static fields in {typeFullName}");
             RemoveReadOnly(type);
 
             // we need to add a static ctor as it will be responsible for tracking and resetting static fields
