@@ -1,10 +1,10 @@
 using System;
-using System.Threading;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.Trackers.TrackInfo;
+using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Implementations;
 
@@ -53,6 +53,8 @@ public class StaticFieldStorage(
             var cctor = staticCtorType.TypeInitializer;
             if (cctor == null) continue;
             logger.LogDebug($"Calling static constructor for type: {cctor.DeclaringType?.FullName ?? "unknown_type"}");
+
+            LoggingUtils.DiskLogger.Flush();
             try
             {
                 cctor.Invoke(null, default);
@@ -61,9 +63,6 @@ public class StaticFieldStorage(
             {
                 logger.LogDebug($"Exception thrown while calling static constructor: {e}");
             }
-
-            // ik calling static ctors in the first place is illegal as fk but why does this prevent crashing??????
-            Thread.Sleep(1);
         }
     }
 }
