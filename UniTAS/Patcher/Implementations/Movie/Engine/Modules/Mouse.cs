@@ -54,7 +54,7 @@ public class Mouse : EngineMethodClass
 
     private void HandlePress(bool hold, MouseButton button)
     {
-        var buttonChoice = $"mouse {button}";
+        var buttonChoice = $"mouse {(int)button}";
 
         if (hold)
         {
