@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.VirtualEnvironment;
@@ -15,25 +17,36 @@ public class AxisStateEnvLegacySystem(IAxisButtonStateEnvUpdate axisButtonStateE
 {
     private readonly List<(string, LegacyInputAxisState)> _values = [];
 
+    public ReadOnlyCollection<(string, LegacyInputAxisState)> AllAxis => _values.AsReadOnly();
+
     protected override void Update()
     {
+        axisButtonStateEnvUpdate.Update();
     }
 
     protected override void FlushBufferedInputs()
     {
+        // TODO: add unit tests for this
+        var pressedNames = new List<string>();
         foreach (var (name, axis) in _values)
         {
             axis.FlushBufferedInputs();
 
+            if (pressedNames.Contains(name)) continue;
+
+            // as long as value isn't 0, it is pressed
             if (axis.ValueRaw != 0f)
             {
                 axisButtonStateEnvUpdate.Hold(name);
+                pressedNames.Add(name);
             }
             else
             {
                 axisButtonStateEnvUpdate.Release(name);
             }
         }
+
+        axisButtonStateEnvUpdate.FlushBufferedInputs();
     }
 
     protected override void ResetState()
@@ -42,6 +55,8 @@ public class AxisStateEnvLegacySystem(IAxisButtonStateEnvUpdate axisButtonStateE
         {
             value.ResetState();
         }
+
+        axisButtonStateEnvUpdate.ResetState();
     }
 
     public float GetAxis(string axisName)
@@ -52,7 +67,8 @@ public class AxisStateEnvLegacySystem(IAxisButtonStateEnvUpdate axisButtonStateE
         foreach (var (_, axisState) in found)
         {
             var axisStateValue = axisState.Value;
-            if (axisStateValue > value)
+            // TODO: is this correct when the value is negative, i added Abs in case but idk
+            if (Math.Abs(axisStateValue) > Math.Abs(value))
             {
                 value = axisStateValue;
             }
@@ -68,7 +84,8 @@ public class AxisStateEnvLegacySystem(IAxisButtonStateEnvUpdate axisButtonStateE
         foreach (var (_, axisState) in found)
         {
             var axisStateValue = axisState.ValueRaw;
-            if (axisStateValue > value)
+            // TODO: is this correct when the value is negative, i added Abs in case but idk
+            if (Math.Abs(axisStateValue) > Math.Abs(value))
             {
                 value = axisStateValue;
             }

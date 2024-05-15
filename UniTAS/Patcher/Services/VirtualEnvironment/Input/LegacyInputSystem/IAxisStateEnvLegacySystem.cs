@@ -1,4 +1,6 @@
+using System.Collections.ObjectModel;
 using UniTAS.Patcher.Models.UnityInfo;
+using UniTAS.Patcher.Models.VirtualEnvironment;
 using UnityEngine;
 
 namespace UniTAS.Patcher.Services.VirtualEnvironment.Input.LegacyInputSystem;
@@ -14,4 +16,5 @@ public interface IAxisStateEnvLegacySystem
     void MouseMoveRelative(Vector2 pos);
     void MouseScroll(float scroll);
     void AddAxis(LegacyInputAxis axis);
+    ReadOnlyCollection<(string, LegacyInputAxisState)> AllAxis { get; }
 }
