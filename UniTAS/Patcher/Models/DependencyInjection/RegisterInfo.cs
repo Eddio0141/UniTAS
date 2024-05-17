@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Reflection;
 using StructureMap;
 using StructureMap.Configuration.DSL;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
@@ -31,6 +33,7 @@ public class RegisterInfo : RegisterInfoBase
         var interfaces = type.GetInterfaces();
         var baseType = type.BaseType;
         var typeAssembly = type.Assembly;
+        var includeDiffAssembly = registerAttribute?.IncludeDifferentAssembly ?? false;
 
         // register type itself
         config.For(type).Use(type);
@@ -38,15 +41,36 @@ public class RegisterInfo : RegisterInfoBase
         // register with base type
         if (baseType != null && baseType != typeof(object) &&
             // registerAttribute?.IgnoreInterfaces?.All(x => x != baseType) is true or null &&
-            ((registerAttribute?.IncludeDifferentAssembly ?? false) || Equals(baseType.Assembly, typeAssembly)))
+            (includeDiffAssembly || Equals(baseType.Assembly, typeAssembly)))
         {
             config.For(baseType).Use(x => x.GetInstance(type));
         }
 
+        RegisterAllInterfaces(type, config, interfaces, typeAssembly, includeDiffAssembly);
+
+        // now go through inheritance
+        var inheritanceType = baseType?.BaseType;
+
+        while (inheritanceType is not null && inheritanceType != typeof(object))
+        {
+            // base type
+            if (includeDiffAssembly || Equals(inheritanceType.Assembly, typeAssembly))
+                config.For(inheritanceType).Use(x => x.GetInstance(type));
+
+            // interface
+            RegisterAllInterfaces(type, config, interfaces, typeAssembly, includeDiffAssembly);
+
+            inheritanceType = inheritanceType.BaseType;
+        }
+    }
+
+    private static void RegisterAllInterfaces(Type type, IRegistry config,
+        IEnumerable<Type> interfaces, Assembly typeAssembly, bool includeDiffAssembly)
+    {
         // register with all interfaces
         foreach (var @interface in interfaces)
         {
-            if (!((registerAttribute?.IncludeDifferentAssembly ?? false) || Equals(@interface.Assembly, typeAssembly)))
+            if (!(includeDiffAssembly || Equals(@interface.Assembly, typeAssembly)))
                 continue;
 
             config.For(@interface).Use(x => x.GetInstance(type));
