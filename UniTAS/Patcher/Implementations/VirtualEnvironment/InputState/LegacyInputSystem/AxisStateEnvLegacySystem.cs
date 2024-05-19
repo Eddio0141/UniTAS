@@ -21,7 +21,6 @@ public class AxisStateEnvLegacySystem(IAxisButtonStateEnvUpdate axisButtonStateE
 
     protected override void Update()
     {
-        axisButtonStateEnvUpdate.Update();
     }
 
     protected override void FlushBufferedInputs()
@@ -45,8 +44,6 @@ public class AxisStateEnvLegacySystem(IAxisButtonStateEnvUpdate axisButtonStateE
                 axisButtonStateEnvUpdate.Release(name);
             }
         }
-
-        axisButtonStateEnvUpdate.FlushBufferedInputs();
     }
 
     protected override void ResetState()
@@ -55,8 +52,6 @@ public class AxisStateEnvLegacySystem(IAxisButtonStateEnvUpdate axisButtonStateE
         {
             value.ResetState();
         }
-
-        axisButtonStateEnvUpdate.ResetState();
     }
 
     public float GetAxis(string axisName)

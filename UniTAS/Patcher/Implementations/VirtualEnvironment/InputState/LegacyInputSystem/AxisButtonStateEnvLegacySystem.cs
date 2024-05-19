@@ -33,16 +33,6 @@ public class AxisButtonStateEnvLegacySystem : LegacyInputSystemButtonBasedDevice
         return base.IsButtonUp(button);
     }
 
-    public new void FlushBufferedInputs()
-    {
-        base.FlushBufferedInputs();
-    }
-
-    public new void Update()
-    {
-        base.Update();
-    }
-
     public new void ResetState()
     {
         base.ResetState();

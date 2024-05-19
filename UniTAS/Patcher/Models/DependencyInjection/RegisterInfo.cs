@@ -1,9 +1,9 @@
 using System;
-using System.Collections.Generic;
-using System.Reflection;
 using StructureMap;
 using StructureMap.Configuration.DSL;
+using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
+using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Models.DependencyInjection;
 
@@ -38,15 +38,26 @@ public class RegisterInfo : RegisterInfoBase
         // register type itself
         config.For(type).Use(type);
 
+        StaticLogger.Trace($"Registering {type.SaneFullName()}");
+
         // register with base type
         if (baseType != null && baseType != typeof(object) &&
             // registerAttribute?.IgnoreInterfaces?.All(x => x != baseType) is true or null &&
             (includeDiffAssembly || Equals(baseType.Assembly, typeAssembly)))
         {
+            StaticLogger.Trace($"Registering base type {baseType.SaneFullName()}");
             config.For(baseType).Use(x => x.GetInstance(type));
         }
 
-        RegisterAllInterfaces(type, config, interfaces, typeAssembly, includeDiffAssembly);
+        // register with all interfaces
+        foreach (var @interface in interfaces)
+        {
+            if (!(includeDiffAssembly || Equals(@interface.Assembly, typeAssembly)))
+                continue;
+
+            StaticLogger.Trace($"Registering interface {@interface.SaneFullName()}");
+            config.For(@interface).Use(x => x.GetInstance(type));
+        }
 
         // now go through inheritance
         var inheritanceType = baseType?.BaseType;
@@ -55,25 +66,12 @@ public class RegisterInfo : RegisterInfoBase
         {
             // base type
             if (includeDiffAssembly || Equals(inheritanceType.Assembly, typeAssembly))
+            {
                 config.For(inheritanceType).Use(x => x.GetInstance(type));
-
-            // interface
-            RegisterAllInterfaces(type, config, interfaces, typeAssembly, includeDiffAssembly);
+                StaticLogger.Trace($"Registering base type {inheritanceType.SaneFullName()}");
+            }
 
             inheritanceType = inheritanceType.BaseType;
-        }
-    }
-
-    private static void RegisterAllInterfaces(Type type, IRegistry config,
-        IEnumerable<Type> interfaces, Assembly typeAssembly, bool includeDiffAssembly)
-    {
-        // register with all interfaces
-        foreach (var @interface in interfaces)
-        {
-            if (!(includeDiffAssembly || Equals(@interface.Assembly, typeAssembly)))
-                continue;
-
-            config.For(@interface).Use(x => x.GetInstance(type));
         }
     }
 }

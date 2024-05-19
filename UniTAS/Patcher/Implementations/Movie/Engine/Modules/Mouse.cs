@@ -11,30 +11,22 @@ namespace UniTAS.Patcher.Implementations.Movie.Engine.Modules;
 
 [SuppressMessage("ReSharper", "UnusedType.Global")]
 [SuppressMessage("ReSharper", "UnusedMember.Global")]
-public class Mouse : EngineMethodClass
+[method: MoonSharpHidden]
+public class Mouse(IMouseStateEnvController mouseController, IAxisStateEnvLegacySystem axisStateEnvLegacySystem)
+    : EngineMethodClass
 {
-    private readonly IMouseStateEnvController _mouseController;
-    private readonly IAxisStateEnvLegacySystem _axisStateEnvLegacySystem;
-
-    [MoonSharpHidden]
-    public Mouse(IMouseStateEnvController mouseController, IAxisStateEnvLegacySystem axisStateEnvLegacySystem)
-    {
-        _mouseController = mouseController;
-        _axisStateEnvLegacySystem = axisStateEnvLegacySystem;
-    }
-
     public void Move(float x, float y)
     {
         var mousePos = new Vector2(x, y);
-        _mouseController.SetPosition(mousePos);
-        _axisStateEnvLegacySystem.MouseMove(mousePos);
+        mouseController.SetPosition(mousePos);
+        axisStateEnvLegacySystem.MouseMove(mousePos);
     }
 
     public void Move_rel(float x, float y)
     {
         var mousePos = new Vector2(x, y);
-        _mouseController.SetPositionRelative(mousePos);
-        _axisStateEnvLegacySystem.MouseMoveRelative(mousePos);
+        mouseController.SetPositionRelative(mousePos);
+        axisStateEnvLegacySystem.MouseMoveRelative(mousePos);
     }
 
     public void Left(bool hold = true)
@@ -58,19 +50,19 @@ public class Mouse : EngineMethodClass
 
         if (hold)
         {
-            _mouseController.HoldButton(button);
-            _axisStateEnvLegacySystem.KeyDown(buttonChoice, JoyNum.AllJoysticks);
+            mouseController.HoldButton(button);
+            axisStateEnvLegacySystem.KeyDown(buttonChoice, JoyNum.AllJoysticks);
         }
         else
         {
-            _mouseController.ReleaseButton(button);
-            _axisStateEnvLegacySystem.KeyUp(buttonChoice, JoyNum.AllJoysticks);
+            mouseController.ReleaseButton(button);
+            axisStateEnvLegacySystem.KeyUp(buttonChoice, JoyNum.AllJoysticks);
         }
     }
 
     public void Set_scroll(float x, float y)
     {
-        _mouseController.SetScroll(new(x, y));
-        _axisStateEnvLegacySystem.MouseScroll(y);
+        mouseController.SetScroll(new(x, y));
+        axisStateEnvLegacySystem.MouseScroll(y);
     }
 }
