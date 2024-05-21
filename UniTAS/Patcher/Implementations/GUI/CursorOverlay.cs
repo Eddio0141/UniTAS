@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using BepInEx;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.SoftRestart;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
@@ -44,7 +45,7 @@ public class CursorOverlay : IOnUpdateUnconditional, IMouseOverlayStatus, IOnGam
     public void UpdateUnconditional()
     {
         if (_disabled || !Visible) return;
-        var mousePos = Input.mousePosition;
+        var mousePos = UnityInput.Current.mousePosition;
         _drawing.DrawTexture(new(mousePos.x, Screen.height - mousePos.y), _cursorTexture);
     }
 
