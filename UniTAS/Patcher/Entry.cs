@@ -30,7 +30,7 @@ public static class Entry
 
         BepInExUtils.GenerateMissingDirs();
 
-        if (UniTASSha256Info.UniTASChanged)
+        if (UniTASSha256Info.InvalidCache)
         {
             // cached assemblies are invalid as UniTAS has changed
             // .sha256 files

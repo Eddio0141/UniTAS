@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -23,7 +22,7 @@ public class UnityInitInvoke : PreloadPatcher
         var bepInExConfig = File.ReadAllText(Paths.BepInExConfigPath);
 
         const string entryPoint = "Preloader.Entrypoint";
-        var foundEntryAssembly = GetEntryKey(bepInExConfig, entryPoint, "Assembly");
+        var foundEntryAssembly = ConfigUtils.GetEntryKey(bepInExConfig, entryPoint, "Assembly");
         var targetDLLs = foundEntryAssembly != null
             ? [foundEntryAssembly]
             : new[] { "UnityEngine.CoreModule.dll", "UnityEngine.dll" };
@@ -32,33 +31,17 @@ public class UnityInitInvoke : PreloadPatcher
         targetDLLs = targetDLLs.Concat(TargetPatcherDlls.AllExcludedDLLs).Distinct().ToArray();
         TargetDLLs = targetDLLs;
 
-        _targetClass = GetEntryKey(bepInExConfig, entryPoint, "Type") ??
-                       // better late than never
-                       "UnityEngine.Camera";
-        _targetMethod = GetEntryKey(bepInExConfig, entryPoint, "Method") ?? ".cctor";
+        // why can't I even load config with BepInEx's own ConfigFile????
+        var targetClass = ConfigUtils.GetEntryKey(bepInExConfig, entryPoint, "Type") ??
+                          // better late than never
+                          "UnityEngine.Camera";
+        var targetMethod = ConfigUtils.GetEntryKey(bepInExConfig, entryPoint, "Method") ?? ".cctor";
         StaticLogger.Log.LogInfo(
-            $"UniTAS will be hooked on {_targetClass}.{_targetMethod} in {string.Join(", ", targetDLLs)} as a last resort init hook");
+            $"UniTAS will be hooked on {targetClass}.{targetMethod} in {string.Join(", ", targetDLLs)} as a last resort init hook");
     }
 
-    // why can't I even load config with BepInEx's own ConfigFile????
-    private static string GetEntryKey(string configRaw, string entry, string key)
-    {
-        var entryStart = configRaw.IndexOf($"[{entry}]", StringComparison.InvariantCulture);
-        if (entryStart == -1) return null;
-
-        var keyStart = configRaw.IndexOf(key, entryStart, StringComparison.InvariantCulture);
-        if (keyStart == -1) return null;
-
-        var valueStart = configRaw.IndexOf("=", keyStart, StringComparison.InvariantCulture);
-        if (valueStart == -1) return null;
-
-        var valueEnd = configRaw.IndexOf("\n", valueStart, StringComparison.InvariantCulture);
-
-        return configRaw.Substring(valueStart + 1, valueEnd - valueStart - 1).Trim();
-    }
-
-    private readonly string _targetClass;
-    private readonly string _targetMethod;
+    // private readonly string _targetClass;
+    // private readonly string _targetMethod;
 
     public override void Patch(ref AssemblyDefinition assembly)
     {
