@@ -7,9 +7,9 @@ using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 
-namespace UniTAS.Patcher.Patches.Harmony;
+namespace UniTAS.Patcher.Patches.Harmony.UnityInit;
 
-[RawPatch]
+[RawPatchUnityInit]
 [SuppressMessage("ReSharper", "UnusedMember.Local")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 [SuppressMessage("ReSharper", "InconsistentNaming")]

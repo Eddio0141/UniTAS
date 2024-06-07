@@ -2,7 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using UniTAS.Patcher.Implementations.VirtualEnvironment;
 using UniTAS.Patcher.Utils;
 
-namespace UniTAS.Patcher.Patches.Harmony;
+namespace UniTAS.Patcher.Patches.Harmony.UnityInit;
 
 // [RawPatch]
 [SuppressMessage("ReSharper", "UnusedMember.Local")]

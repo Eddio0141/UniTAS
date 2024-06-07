@@ -12,7 +12,7 @@ namespace UniTAS.Patcher.Implementations.PatchProcessor;
 public class PatchHarmonyUnityInit
 {
     public PatchHarmonyUnityInit(IHarmony harmony,
-        IEnumerable<Interfaces.Patches.PatchProcessor.PatchProcessorUnityInit> patchProcessors,
+        IEnumerable<Interfaces.Patches.PatchProcessor.IPatchProcessorUnityInit> patchProcessors,
         ILogger logger)
     {
         var sortedPatches = patchProcessors

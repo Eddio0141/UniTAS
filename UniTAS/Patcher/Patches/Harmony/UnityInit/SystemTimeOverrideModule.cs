@@ -12,9 +12,9 @@ using UniTAS.Patcher.Utils;
 
 // ReSharper disable ClassNeverInstantiated.Global
 
-namespace UniTAS.Patcher.Patches.Harmony;
+namespace UniTAS.Patcher.Patches.Harmony.UnityInit;
 
-[RawPatch]
+[RawPatchUnityInit]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Local")]
 [SuppressMessage("ReSharper", "RedundantAssignment")]
 public class SystemTimeOverrideModule

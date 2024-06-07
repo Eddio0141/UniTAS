@@ -10,12 +10,11 @@ namespace UniTAS.Patcher.Interfaces.DependencyInjection;
 /// If the registering class has an attribute such as singleton, it will be registered as a singleton
 /// </summary>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface)]
-public class RegisterAllAttribute : RegisterAttribute
+public class RegisterAllAttribute(
+    RegisterPriority priority = RegisterPriority.Default,
+    RegisterTiming timing = RegisterTiming.UnityInit)
+    : RegisterAttribute(priority, timing)
 {
-    public RegisterAllAttribute(RegisterPriority priority = RegisterPriority.Default) : base(priority)
-    {
-    }
-
     public override IEnumerable<RegisterInfoBase> GetRegisterInfos(Type type, Type[] allTypes, bool isTesting)
     {
         var types = type.IsInterface

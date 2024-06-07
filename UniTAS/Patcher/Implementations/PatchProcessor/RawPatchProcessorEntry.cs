@@ -8,7 +8,7 @@ using UniTAS.Patcher.Services.Logging;
 namespace UniTAS.Patcher.Implementations.PatchProcessor;
 
 // ReSharper disable once UnusedType.Global
-public class RawPatchProcessorUnityInit(ILogger logger) : Interfaces.Patches.PatchProcessor.IPatchProcessorUnityInit
+public class RawPatchProcessorEntry(ILogger logger) : Interfaces.Patches.PatchProcessor.IPatchProcessorEntry
 {
     public IEnumerable<(int, Type)> ProcessModules()
     {
@@ -17,12 +17,12 @@ public class RawPatchProcessorUnityInit(ILogger logger) : Interfaces.Patches.Pat
         // list of patch groups, patch group attributes, and PatchTypes for each modules
         foreach (var type in pluginTypes)
         {
-            var attributes = type.GetCustomAttributes(typeof(RawPatchUnityInit), false);
+            var attributes = type.GetCustomAttributes(typeof(RawPatchEntry), false);
             if (attributes.Length == 0) continue;
 
-            var rawPatch = (RawPatchUnityInit)attributes[0];
+            var rawPatch = (RawPatchEntry)attributes[0];
 
-            logger.LogInfo($"Found raw patch module {type.FullName} (UnityInit)");
+            logger.LogInfo($"Found raw patch module {type.FullName} (Entry)");
 
             foreach (var innerType in type.GetNestedTypes(AccessTools.all))
             {

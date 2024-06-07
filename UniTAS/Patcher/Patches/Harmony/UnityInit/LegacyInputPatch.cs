@@ -16,9 +16,9 @@ using UnityEngine;
 
 // ReSharper disable UnusedMember.Local
 
-namespace UniTAS.Patcher.Patches.Harmony;
+namespace UniTAS.Patcher.Patches.Harmony.UnityInit;
 
-[RawPatch]
+[RawPatchUnityInit]
 public class LegacyInputPatch
 {
     private static readonly IPatchReverseInvoker ReverseInvoker =

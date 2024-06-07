@@ -7,9 +7,9 @@ using UniTAS.Patcher.Models.UnitySafeWrappers.Unity.Collections;
 using UniTAS.Patcher.Services.Trackers.UpdateTrackInfo;
 using UniTAS.Patcher.Utils;
 
-namespace UniTAS.Patcher.Patches.Harmony;
+namespace UniTAS.Patcher.Patches.Harmony.UnityInit;
 
-[RawPatch]
+[RawPatchUnityInit]
 [SuppressMessage("ReSharper", "UnusedMember.Local")]
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 public class UnityUnsafeUtilityPatch

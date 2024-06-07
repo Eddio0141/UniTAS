@@ -8,9 +8,9 @@ using UnityEngine;
 // ReSharper disable UnusedMember.Local
 // ReSharper disable RedundantAssignment
 
-namespace UniTAS.Patcher.Patches.Harmony;
+namespace UniTAS.Patcher.Patches.Harmony.UnityInit;
 
-[RawPatch]
+[RawPatchUnityInit]
 public static class LegacyAsyncSceneLoadPatch
 {
     [HarmonyPatch(typeof(Application), "LoadLevelAsync")]

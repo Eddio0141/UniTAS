@@ -12,9 +12,9 @@ using Object = UnityEngine.Object;
 
 // ReSharper disable UnusedMember.Local
 
-namespace UniTAS.Patcher.Patches.Harmony;
+namespace UniTAS.Patcher.Patches.Harmony.UnityInit;
 
-[RawPatch]
+[RawPatchUnityInit]
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 // ReSharper disable once ClassNeverInstantiated.Global
 public class ObjectPatch

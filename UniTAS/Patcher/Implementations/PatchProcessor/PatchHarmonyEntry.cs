@@ -13,7 +13,7 @@ namespace UniTAS.Patcher.Implementations.PatchProcessor;
 public class PatchHarmonyEntry
 {
     public PatchHarmonyEntry(IHarmony harmony,
-        IEnumerable<Interfaces.Patches.PatchProcessor.PatchProcessorEntry> patchProcessors,
+        IEnumerable<Interfaces.Patches.PatchProcessor.IPatchProcessorEntry> patchProcessors,
         ILogger logger)
     {
         var sortedPatches = patchProcessors

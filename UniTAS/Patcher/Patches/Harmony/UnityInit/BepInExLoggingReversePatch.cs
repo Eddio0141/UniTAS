@@ -7,7 +7,7 @@ using BepInEx.Logging;
 using HarmonyLib;
 using UniTAS.Patcher.Utils;
 
-namespace UniTAS.Patcher.Patches.Harmony;
+namespace UniTAS.Patcher.Patches.Harmony.UnityInit;
 
 // [RawPatch(1000)]
 [SuppressMessage("ReSharper", "UnusedMember.Local")]

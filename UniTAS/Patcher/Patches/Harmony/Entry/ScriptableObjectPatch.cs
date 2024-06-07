@@ -4,18 +4,19 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using HarmonyLib;
 using UniTAS.Patcher.Interfaces.Patches.PatchTypes;
+using UniTAS.Patcher.Services.Trackers.UpdateTrackInfo;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 
-namespace UniTAS.Patcher.Patches.Harmony;
+namespace UniTAS.Patcher.Patches.Harmony.Entry;
 
-[RawPatch]
+[RawPatchEntry]
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 [SuppressMessage("ReSharper", "UnusedMember.Local")]
 public class ScriptableObjectPatch
 {
-    // private static readonly INewScriptableObjectTracker NewScriptableObjectTracker =
-    //     ContainerStarter.Kernel.GetInstance<INewScriptableObjectTracker>();
+    private static readonly INewScriptableObjectTracker NewScriptableObjectTracker =
+        ContainerStarter.Kernel.GetInstance<INewScriptableObjectTracker>();
 
     [HarmonyPatch]
     private class CreateInstanceTrackerString
@@ -35,7 +36,8 @@ public class ScriptableObjectPatch
 
         private static void Postfix(ScriptableObject __result)
         {
-            // NewScriptableObjectTracker.NewScriptableObject(__result);
+            StaticLogger.LogDebug($"new obj {__result.name}, {__result.GetType()}");
+            NewScriptableObjectTracker.NewScriptableObject(__result);
         }
     }
 }
