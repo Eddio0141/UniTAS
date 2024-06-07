@@ -5,7 +5,7 @@ using UniTAS.Patcher.Interfaces.DependencyInjection;
 namespace UniTAS.Patcher.Interfaces.Patches.PatchProcessor;
 
 [RegisterAll]
-public abstract class PatchProcessor
+public abstract class PatchProcessorUnityInit
 {
     /// <summary>
     /// Processes patch modules

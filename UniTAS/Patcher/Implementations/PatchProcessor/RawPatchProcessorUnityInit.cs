@@ -8,11 +8,11 @@ using UniTAS.Patcher.Services.Logging;
 namespace UniTAS.Patcher.Implementations.PatchProcessor;
 
 // ReSharper disable once UnusedType.Global
-public class RawPatchProcessor : Interfaces.Patches.PatchProcessor.PatchProcessor
+public class RawPatchProcessorUnityInit : Interfaces.Patches.PatchProcessor.PatchProcessorUnityInit
 {
     private readonly ILogger _logger;
 
-    public RawPatchProcessor(ILogger logger)
+    public RawPatchProcessorUnityInit(ILogger logger)
     {
         _logger = logger;
     }
