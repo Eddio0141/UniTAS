@@ -12,7 +12,8 @@ public class PreloadPatcherProcessor
         new MonoBehaviourPatch(),
         new StaticCtorHeaders(),
         new UnityInitInvoke(),
-        new FinalizeSuppressionPatch()
+        new FinalizeSuppressionPatch(),
+        new FunctionCallTrace()
     ];
 
     public IEnumerable<string> TargetDLLs => PreloadPatchers.SelectMany(p => p.TargetDLLs).Distinct().ToArray();
