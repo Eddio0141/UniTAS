@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace UniTAS.Patcher.Patches.Harmony.Entry;
 
-[RawPatchEntry]
+[RawPatchUnityInit]
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 [SuppressMessage("ReSharper", "UnusedMember.Local")]
 public class ScriptableObjectPatch
