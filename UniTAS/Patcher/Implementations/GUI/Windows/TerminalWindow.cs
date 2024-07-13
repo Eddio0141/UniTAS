@@ -156,13 +156,8 @@ public class TerminalWindow : Window, ITerminalWindow
 
         if (split) return;
 
-        var terminalInputSplit = _terminalInputFull.Split(' ');
-
-        var willRepeat = ulong.TryParse(terminalInputSplit.FirstOrDefault()?.Trim() ?? "", out var repeat);
-        var command = willRepeat
-            ? terminalInputSplit.Skip(1).FirstOrDefault()?.Trim()
-            : terminalInputSplit.FirstOrDefault()?.Trim();
-        var args = terminalInputSplit.Skip(willRepeat ? 2 : 1).Select(x => x.Trim()).ToArray();
+        var command = _terminalInputFull.Split(' ').FirstOrDefault()?.Trim();
+        var args = _terminalInputFull.Split(' ').Skip(1).Select(x => x.Trim()).ToArray();
 
         _terminalInputFull = string.Empty;
 
@@ -175,13 +170,10 @@ public class TerminalWindow : Window, ITerminalWindow
             return;
         }
 
-        for (ulong i = 0; i < repeat + 1; i++)
+        var hijack = entry.Execute(args, this);
+        if (hijack)
         {
-            var hijack = entry.Execute(args, this);
-            if (hijack)
-            {
-                _hijackingEntry = entry;
-            }
+            _hijackingEntry = entry;
         }
     }
 
