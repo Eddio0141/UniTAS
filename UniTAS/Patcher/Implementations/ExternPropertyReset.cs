@@ -130,6 +130,8 @@ public class ExternPropertyReset(ILogger logger, IPatchReverseInvoker patchRever
         "UnityEngine.Analytics.*",
         // TODO this needs investigating more but i can't find any documentation on this, and it keeps crashing the game and shit
         "UnityEngine.Connect.UnityConnectSettings.*",
+        // clipboard access
+        "UnityEngine.GUIUtility.systemCopyBuffer",
     ];
 
     private readonly List<string> _knownProperties =
