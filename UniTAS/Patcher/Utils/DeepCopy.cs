@@ -101,8 +101,7 @@ public static class DeepCopy
         if (type.IsEnum)
         {
             _makeDeepCopyRecursionDepth--;
-            StaticLogger.Trace("MakeDeepCopy, returning enum");
-            return Enum.ToObject(type, (int)source);
+            return source;
         }
 
         if (type.IsArray)
