@@ -48,7 +48,7 @@ public class ToolBar : IOnGUIUnconditional
 
     public void OnGUIUnconditional()
     {
-        if (Event.current.type == EventType.KeyDown && _toolbarVisibleBind.IsPressed())
+        if (Event.current.type == EventType.KeyDown && Event.current.keyCode == _toolbarVisibleBind.Key)
         {
             _visible = !_visible;
             Event.current.Use();
