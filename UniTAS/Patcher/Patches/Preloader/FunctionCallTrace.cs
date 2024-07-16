@@ -21,6 +21,8 @@ public class FunctionCallTrace : PreloadPatcher
 
     public override void Patch(ref AssemblyDefinition assembly)
     {
+        if (!File.Exists(UniTASPaths.Config)) return;
+
         // check config if loading
         var unitasConfig = File.ReadAllText(UniTASPaths.Config);
 
