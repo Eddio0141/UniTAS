@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed itch.io Jaded Combat crashing on file selection
 - Fixed It Steals not being controllable properly with key, mouse, and controller
+- Fixed Lethal Company not loading the ship
 
 ### General
 
@@ -34,6 +35,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed soft restart not properly taking in account for threads
 - Fixed soft restart not resetting cursor visibility and lock state
 - Fixed old input system's axis not being controlled by mapped inputs
+- Fixed async scene load event callback to be at proper timings
+- Fixed AsyncOperation instance not returning proper values
 
 ## Changed
 

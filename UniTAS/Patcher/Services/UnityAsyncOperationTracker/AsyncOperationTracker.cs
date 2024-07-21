@@ -6,6 +6,7 @@ using HarmonyLib;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.SoftRestart;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents;
+using UniTAS.Patcher.Interfaces.Events.UnityEvents.DontRunIfPaused;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
 using UniTAS.Patcher.Models.UnitySafeWrappers.SceneManagement;
 using UniTAS.Patcher.Services.Logging;
@@ -17,120 +18,190 @@ namespace UniTAS.Patcher.Services.UnityAsyncOperationTracker;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 [Singleton]
-public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateRequestTracker, IAssetBundleRequestTracker,
-    IOnLastUpdateUnconditional, IAsyncOperationIsInvokingOnComplete, IOnPreGameRestart
+public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger, IOnSceneLoad[] onSceneLoads)
+    : ISceneLoadTracker, IAssetBundleCreateRequestTracker, IAssetBundleRequestTracker,
+        IOnLastUpdateUnconditional, IAsyncOperationIsInvokingOnComplete, IOnPreGameRestart, IOnUpdateActual
 {
+    private readonly List<AsyncOperation> _tracked = new();
+
     private readonly List<AsyncSceneLoadData> _asyncLoads = new();
+    private readonly List<AsyncOperation> _pendingLoadCallbacks = new();
     private readonly List<AsyncSceneLoadData> _asyncLoadStalls = new();
     private readonly Dictionary<AsyncOperation, AssetBundle> _assetBundleCreateRequests = new();
     private readonly Dictionary<AsyncOperation, AssetBundleRequestData> _assetBundleRequests = new();
+    private readonly List<(bool, AsyncOperation)> _allowSceneActivationValue = new();
+    private readonly List<AsyncOperation> _isDone = new();
 
-    private readonly ILogger _logger;
-    private readonly IOnSceneLoad[] _onSceneLoads;
-
-    private class AssetBundleRequestData
+    private class AssetBundleRequestData(Object singleResult = null, Object[] multipleResults = null)
     {
-        public Object SingleResult { get; }
-        public Object[] MultipleResults { get; }
-
-        public AssetBundleRequestData(Object singleResult = null, Object[] multipleResults = null)
-        {
-            SingleResult = singleResult;
-            MultipleResults = multipleResults;
-        }
-    }
-
-    private readonly ISceneWrapper _sceneWrapper;
-
-    public AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger, IOnSceneLoad[] onSceneLoads)
-    {
-        _sceneWrapper = sceneWrapper;
-        _logger = logger;
-        _onSceneLoads = onSceneLoads;
+        public Object SingleResult { get; } = singleResult;
+        public Object[] MultipleResults { get; } = multipleResults;
     }
 
     public void OnPreGameRestart()
     {
         _asyncLoads.Clear();
+        _pendingLoadCallbacks.Clear();
         _asyncLoadStalls.Clear();
         _assetBundleCreateRequests.Clear();
         _assetBundleRequests.Clear();
+        _allowSceneActivationValue.Clear();
+        _isDone.Clear();
+        _tracked.Clear();
     }
 
     public void OnLastUpdateUnconditional()
     {
         foreach (var scene in _asyncLoads)
         {
-            _logger.LogDebug(
+            logger.LogDebug(
                 $"force loading scene, name: {scene.SceneName}, index: {scene.SceneBuildIndex}, manually loading in loop");
-            _sceneWrapper.LoadSceneAsync(scene.SceneName, scene.SceneBuildIndex, scene.LoadSceneMode,
+            sceneWrapper.LoadSceneAsync(scene.SceneName, scene.SceneBuildIndex, scene.LoadSceneMode,
                 scene.LocalPhysicsMode, true);
 
-            // event fired
-            InvokeOnComplete(scene.AsyncOperationInstance);
+            _pendingLoadCallbacks.Add(scene.AsyncOperationInstance);
         }
 
         _asyncLoads.Clear();
     }
 
+    public void UpdateActual()
+    {
+        // to allow the scene to be findable, invoke when scene loads on update
+        var callbacks = new List<AsyncOperation>(_pendingLoadCallbacks.Count);
+        foreach (var pendingLoadCallback in _pendingLoadCallbacks)
+        {
+            callbacks.Add(pendingLoadCallback);
+            _isDone.Add(pendingLoadCallback);
+        }
+
+        // prevent allowSceneActivation to be False on event callback
+        _pendingLoadCallbacks.Clear();
+
+        foreach (var callback in callbacks)
+        {
+            // event fired
+            InvokeOnComplete(callback);
+        }
+    }
+
     public void NewAssetBundleRequest(AsyncOperation asyncOperation, Object assetBundleRequest)
     {
         _assetBundleRequests.Add(asyncOperation, new(assetBundleRequest));
+        _tracked.Add(asyncOperation);
         InvokeOnComplete(asyncOperation);
     }
 
     public void NewAssetBundleRequestMultiple(AsyncOperation asyncOperation, Object[] assetBundleRequestArray)
     {
         _assetBundleRequests.Add(asyncOperation, new(multipleResults: assetBundleRequestArray));
+        _tracked.Add(asyncOperation);
         InvokeOnComplete(asyncOperation);
     }
 
     public void NewAssetBundleCreateRequest(AsyncOperation asyncOperation, AssetBundle assetBundle)
     {
         _assetBundleCreateRequests.Add(asyncOperation, assetBundle);
+        _tracked.Add(asyncOperation);
         InvokeOnComplete(asyncOperation);
     }
 
     public void AsyncSceneLoad(string sceneName, int sceneBuildIndex, LoadSceneMode loadSceneMode,
         LocalPhysicsMode localPhysicsMode, AsyncOperation asyncOperation)
     {
-        foreach (var onSceneLoad in _onSceneLoads)
+        _tracked.Add(asyncOperation);
+
+        foreach (var onSceneLoad in onSceneLoads)
         {
             onSceneLoad.OnSceneLoad(sceneName, sceneBuildIndex, loadSceneMode, localPhysicsMode);
         }
 
-        _logger.LogDebug($"async scene load, {asyncOperation.GetHashCode()}");
+        logger.LogDebug($"async scene load, {asyncOperation.GetHashCode()}");
         _asyncLoads.Add(new(sceneName, sceneBuildIndex, asyncOperation, loadSceneMode, localPhysicsMode));
     }
 
     public void AllowSceneActivation(bool allow, AsyncOperation asyncOperation)
     {
-        _logger.LogDebug($"allow scene activation {allow}, {new StackTrace()}");
+        logger.LogDebug($"allow scene activation {allow}, {new StackTrace()}");
 
         if (allow)
         {
             var sceneToLoad = _asyncLoadStalls.Find(x => ReferenceEquals(x.AsyncOperationInstance, asyncOperation));
             if (sceneToLoad == null) return;
+            StoreAllowSceneActivation(asyncOperation, true);
             _asyncLoadStalls.Remove(sceneToLoad);
-            _sceneWrapper.LoadSceneAsync(sceneToLoad.SceneName, sceneToLoad.SceneBuildIndex, sceneToLoad.LoadSceneMode,
+            sceneWrapper.LoadSceneAsync(sceneToLoad.SceneName, sceneToLoad.SceneBuildIndex, sceneToLoad.LoadSceneMode,
                 sceneToLoad.LocalPhysicsMode, true);
-            _logger.LogDebug(
+            logger.LogDebug(
                 $"force loading scene, name: {sceneToLoad.SceneName}, build index: {sceneToLoad.SceneBuildIndex}");
-            InvokeOnComplete(sceneToLoad.AsyncOperationInstance);
+            _pendingLoadCallbacks.Add(sceneToLoad.AsyncOperationInstance);
         }
         else
         {
             var asyncSceneLoad = _asyncLoads.Find(x => ReferenceEquals(x.AsyncOperationInstance, asyncOperation));
             if (asyncSceneLoad == null) return;
+            StoreAllowSceneActivation(asyncOperation, false);
             _asyncLoads.Remove(asyncSceneLoad);
             _asyncLoadStalls.Add(asyncSceneLoad);
-            _logger.LogDebug("Added scene to stall list");
+            logger.LogDebug("Added scene to stall list");
         }
     }
 
-    public bool IsStalling(AsyncOperation asyncOperation)
+    private void StoreAllowSceneActivation(AsyncOperation asyncOperation, bool allow)
     {
-        return _asyncLoadStalls.Exists(x => ReferenceEquals(x.AsyncOperationInstance, asyncOperation));
+        var allowSceneActivationStore =
+            _allowSceneActivationValue.FindIndex(tuple => ReferenceEquals(tuple.Item2, asyncOperation));
+        if (allowSceneActivationStore >= 0)
+        {
+            _allowSceneActivationValue[allowSceneActivationStore] = (allow, asyncOperation);
+        }
+        else
+        {
+            _allowSceneActivationValue.Add((allow, asyncOperation));
+        }
+    }
+
+    public bool GetAllowSceneActivation(AsyncOperation asyncOperation, out bool state)
+    {
+        var stateIndex = _allowSceneActivationValue.FindIndex(x => ReferenceEquals(x.Item2, asyncOperation));
+        if (stateIndex >= 0)
+        {
+            state = _allowSceneActivationValue[stateIndex].Item1;
+            return true;
+        }
+
+        // not found, is it even tracked?
+        state = false;
+        return _tracked.Exists(x => ReferenceEquals(x, asyncOperation));
+    }
+
+    public bool IsDone(AsyncOperation asyncOperation, out bool isDone)
+    {
+        if (_isDone.Exists(x => ReferenceEquals(x, asyncOperation)))
+        {
+            isDone = true;
+            return true;
+        }
+
+        isDone = false;
+        return _tracked.Exists(x => ReferenceEquals(x, asyncOperation));
+    }
+
+    public bool Progress(AsyncOperation asyncOperation, out float progress)
+    {
+        if (_isDone.Exists(x => ReferenceEquals(x, asyncOperation)))
+        {
+            progress = 1f;
+            return true;
+        }
+
+        progress = 0.9f;
+        if (!_tracked.Exists(x => ReferenceEquals(x, asyncOperation)))
+        {
+            return false;
+        }
+
+        return true;
     }
 
     public AssetBundle GetAssetBundleCreateRequest(AsyncOperation asyncOperation)
@@ -163,27 +234,22 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
     {
         if (_invokeCompletionEvent == null) return;
         IsInvokingOnComplete = true;
-        _logger.LogDebug("invoking completion event");
+        logger.LogDebug("invoking completion event");
         _invokeCompletionEvent.Invoke(asyncOperation, null);
         IsInvokingOnComplete = false;
     }
 
-    private class AsyncSceneLoadData
+    private class AsyncSceneLoadData(
+        string sceneName,
+        int sceneBuildIndex,
+        AsyncOperation asyncOperationInstance,
+        LoadSceneMode loadSceneMode,
+        LocalPhysicsMode localPhysicsMode)
     {
-        public string SceneName { get; }
-        public int SceneBuildIndex { get; }
-        public AsyncOperation AsyncOperationInstance { get; }
-        public LoadSceneMode LoadSceneMode { get; }
-        public LocalPhysicsMode LocalPhysicsMode { get; }
-
-        public AsyncSceneLoadData(string sceneName, int sceneBuildIndex, AsyncOperation asyncOperationInstance,
-            LoadSceneMode loadSceneMode, LocalPhysicsMode localPhysicsMode)
-        {
-            SceneName = sceneName;
-            SceneBuildIndex = sceneBuildIndex;
-            AsyncOperationInstance = asyncOperationInstance;
-            LoadSceneMode = loadSceneMode;
-            LocalPhysicsMode = localPhysicsMode;
-        }
+        public string SceneName { get; } = sceneName;
+        public int SceneBuildIndex { get; } = sceneBuildIndex;
+        public AsyncOperation AsyncOperationInstance { get; } = asyncOperationInstance;
+        public LoadSceneMode LoadSceneMode { get; } = loadSceneMode;
+        public LocalPhysicsMode LocalPhysicsMode { get; } = localPhysicsMode;
     }
 }
