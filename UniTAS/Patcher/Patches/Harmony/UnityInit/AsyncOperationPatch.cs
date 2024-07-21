@@ -77,7 +77,12 @@ public class AsyncOperationPatch
 
         private static bool Prefix(ref bool __result, AsyncOperation __instance)
         {
-            __result = SceneLoadTracker.IsStalling(__instance);
+            if (!SceneLoadTracker.GetAllowSceneActivation(__instance, out var state))
+            {
+                return true;
+            }
+
+            __result = state;
             return false;
         }
     }
@@ -107,7 +112,17 @@ public class AsyncOperationPatch
 
         private static bool Prefix(ref float __result, AsyncOperation __instance)
         {
-            __result = SceneLoadTracker.IsStalling(__instance) ? 0.9f : 1f;
+            // behaviour on AsyncOperation returned from scene operation is
+            // 0.9f if the scene is loaded and ready, doesn't matter if allowSceneActivation is true,
+            // it will be at 0.9 till the scene loads in the next frame
+
+            if (!SceneLoadTracker.Progress(__instance, out var progress))
+            {
+                // not tracked instance, proceed as original
+                return true;
+            }
+
+            __result = progress;
             return false;
         }
     }
@@ -122,7 +137,12 @@ public class AsyncOperationPatch
 
         private static bool Prefix(ref bool __result, AsyncOperation __instance)
         {
-            __result = !SceneLoadTracker.IsStalling(__instance);
+            if (!SceneLoadTracker.IsDone(__instance, out var isDone))
+            {
+                return true;
+            }
+
+            __result = isDone;
             return false;
         }
     }
