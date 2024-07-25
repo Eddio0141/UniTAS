@@ -46,6 +46,8 @@ public class TerminalWindow : Window, ITerminalWindow
         new(defaultWindowRect: GUIUtils.WindowRect(Screen.width - 100, Screen.height - 100), windowName: "Terminal"))
     {
         _patchReverseInvoker = windowDependencies.PatchReverseInvoker;
+        windowDependencies.UpdateEvents.OnUpdateUnconditional += OnUpdateUnconditional;
+
         _terminalBind = binds.Create(new("NewTerminal", KeyCode.BackQuote));
         _terminalSubmit = binds.Create(new("TerminalSubmit", KeyCode.Return), true);
         globalHotkey.AddGlobalHotkey(new(_terminalBind, Show));
@@ -61,6 +63,16 @@ public class TerminalWindow : Window, ITerminalWindow
     private readonly GUILayoutOption[] _terminalInputOptions = [GUILayout.ExpandWidth(true)];
     private readonly GUILayoutOption[] _submitOptions = [GUILayout.ExpandWidth(false)];
 
+    private void OnUpdateUnconditional()
+    {
+        if (!_waitForTerminalBindRelease || _terminalBind.IsPressed()) return;
+
+        // if waiting for release and bind is not pressed
+        _initialFocus = true;
+        _waitForTerminalBindRelease = false;
+        Close();
+    }
+
     protected override void OnGUI()
     {
         GUILayout.BeginVertical(GUIUtils.EmptyOptions);
@@ -72,6 +84,8 @@ public class TerminalWindow : Window, ITerminalWindow
 
         GUILayout.BeginHorizontal(GUIUtils.EmptyOptions);
 
+        CheckTerminalInputBinds();
+
         UnityEngine.GUI.SetNextControlName("TerminalInput");
 
         _terminalInput = GUILayout.TextField(_terminalInput, _terminalInputOptions);
@@ -81,8 +95,6 @@ public class TerminalWindow : Window, ITerminalWindow
             _initialFocus = false;
             UnityEngine.GUI.FocusControl("TerminalInput");
         }
-
-        CheckTerminalInputBinds();
 
         if (GUILayout.Button("Submit", _submitOptions))
         {
@@ -98,39 +110,34 @@ public class TerminalWindow : Window, ITerminalWindow
         return _patchReverseInvoker.Invoke(key => UnityInput.Current.GetKey(key), keyCode);
     }
 
-    private bool _usedInputEvent;
-    private bool _waitForTerminalBindRelease = true;
+    private bool _waitForTerminalBindRelease;
 
     private void CheckTerminalInputBinds()
     {
-        // eat input if used bind
-        if (_usedInputEvent && Event.current.type != EventType.Repaint && Event.current.type != EventType.Layout)
+        if (_waitForTerminalBindRelease)
         {
-            _usedInputEvent = false;
             Event.current.Use();
             return;
         }
 
-        if (UnityEngine.GUI.GetNameOfFocusedControl() != "TerminalInput" ||
-            Event.current.type != EventType.Repaint) return;
+        if (Event.current.type != EventType.KeyDown || UnityEngine.GUI.GetNameOfFocusedControl() != "TerminalInput")
+        {
+            return;
+        }
 
-        if (_terminalSubmit.IsPressed())
+        if (Event.current.keyCode == _terminalSubmit.Key)
         {
             // hold shift to split input
             Submit(GetKey(KeyCode.LeftShift) | GetKey(KeyCode.RightShift));
-            _usedInputEvent = true;
+            Event.current.Use();
+            return;
         }
 
-        if (_terminalBind.IsPressed() && _hijackingEntry == null)
+        if (Event.current.keyCode == _terminalBind.Key && _hijackingEntry == null)
         {
-            if (_waitForTerminalBindRelease)
-            {
-                _waitForTerminalBindRelease = false;
-                return;
-            }
-
-            Close();
-            _usedInputEvent = true;
+            _waitForTerminalBindRelease = true;
+            Event.current.Use();
+            return;
         }
     }
 
@@ -189,5 +196,10 @@ public class TerminalWindow : Window, ITerminalWindow
     public void ReleaseTerminal()
     {
         _hijackingEntry = null;
+    }
+
+    protected override void Close()
+    {
+        base.Close();
     }
 }
