@@ -39,7 +39,7 @@ public class FunctionCallTrace : PreloadPatcher
         var types = assembly.Modules.SelectMany(module => module.GetAllTypes());
         var matchingTypesConfig = ConfigUtils.GetEntryKey(unitasConfig, Config.Sections.Debug.FunctionCallTrace.SECTION_NAME, Config.Sections.Debug.FunctionCallTrace.MATCHING_TYPES);
 
-        if (matchingTypesConfig != null)
+        if (matchingTypesConfig != null && matchingTypesConfig.Trim() != "*")
         {
             var matchingTypes = matchingTypesConfig.Split([','], System.StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim()).ToList();
 
