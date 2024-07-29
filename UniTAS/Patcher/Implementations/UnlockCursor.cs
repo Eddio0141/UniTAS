@@ -2,6 +2,7 @@ using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
 using UniTAS.Patcher.Models.UnitySafeWrappers;
 using UniTAS.Patcher.Services;
+using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 using UnityEngine;
 
@@ -9,22 +10,24 @@ namespace UniTAS.Patcher.Implementations;
 
 [Singleton]
 [ExcludeRegisterIfTesting]
-public class UnlockCursor : IOnUpdateUnconditional
+public class UnlockCursor(ICursorWrapper cursorWrapper, ILogger logger, IGameRestart gameRestart)
+    : IOnUpdateUnconditional
 {
-    private readonly IPatchReverseInvoker _patchReverseInvoker;
-    private readonly ICursorWrapper _cursorWrapper;
-
-    public UnlockCursor(IPatchReverseInvoker patchReverseInvoker, ICursorWrapper cursorWrapper)
-    {
-        _patchReverseInvoker = patchReverseInvoker;
-        _cursorWrapper = cursorWrapper;
-    }
+    // private readonly IPatchReverseInvoker _patchReverseInvoker = patchReverseInvoker;
 
     public void UpdateUnconditional()
     {
-        if (!_patchReverseInvoker.Invoke(() => BepInEx.UnityInput.Current.GetKeyDown(KeyCode.F1))) return;
+        // prevent null ref exception
+        if (gameRestart.Restarting) return;
 
-        _cursorWrapper.Visible = true;
-        _cursorWrapper.LockState = CursorLockMode.None;
+        var input = BepInEx.UnityInput.Current;
+        // TODO: fix this
+        // if (!_patchReverseInvoker.Invoke(() => input.GetKeyDown(KeyCode.F1))) return;
+        if (!input.GetKeyDown(KeyCode.F1)) return;
+
+        cursorWrapper.Visible = true;
+        cursorWrapper.LockState = CursorLockMode.None;
+
+        logger.LogDebug("unlocked cursor");
     }
 }

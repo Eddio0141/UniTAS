@@ -70,6 +70,8 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
         }
     }
 
+    public bool Restarting => _pendingRestart || _pendingResumePausedExecution;
+
     /// <summary>
     /// Destroys all necessary game objects to reset the game state.
     /// Default behaviour is to destroy all DontDestroyOnLoad objects.
