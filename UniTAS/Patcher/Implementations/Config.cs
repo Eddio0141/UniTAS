@@ -42,8 +42,10 @@ public class Config : IConfig, IDisposable
         }
 
         // add entry for patcher config entry
-        ConfigFile.Bind(nameof(Sections.Debug), Sections.Debug.FUNCTION_CALL_TRACE, false,
+        ConfigFile.Bind(Sections.Debug.FunctionCallTrace.SECTION_NAME, Sections.Debug.FunctionCallTrace.ENABLE, false,
             "If enabled, will hook on most functions and log every function call");
+        ConfigFile.Bind(Sections.Debug.FunctionCallTrace.SECTION_NAME, Sections.Debug.FunctionCallTrace.MATCHING_TYPES, "*",
+            "A list of glob pattern of types to hook function call tracing to. You can append to the list by separating each entry with a comma. Example: \"UnityEngine.Application, UnityEngine.Time, UnityEngine.InputSystem.*\"");
     }
 
     private void ConfigReload(bool logReload)
@@ -64,7 +66,12 @@ public class Config : IConfig, IDisposable
     {
         public static class Debug
         {
-            public const string FUNCTION_CALL_TRACE = "FunctionCallTrace";
+            public static class FunctionCallTrace
+            {
+                public const string SECTION_NAME = $"{nameof(Debug)}.FunctionCallTrace";
+                public const string ENABLE = "Enable";
+                public const string MATCHING_TYPES = "MatchingTypes";
+            }
         }
     }
 }
