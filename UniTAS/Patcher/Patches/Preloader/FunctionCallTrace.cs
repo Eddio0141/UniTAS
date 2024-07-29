@@ -50,9 +50,13 @@ public class FunctionCallTrace : PreloadPatcher
         {
             if (type.IsEnum || type.IsInterface) continue;
 
+            StaticLogger.LogDebug($"hooking on class {type.FullName}");
+
             foreach (var method in type.Methods)
             {
                 if (!method.HasBody) continue;
+
+                StaticLogger.LogDebug($"hooking on method {method.Name}");
 
                 var body = method.Body;
                 body.SimplifyMacros();
