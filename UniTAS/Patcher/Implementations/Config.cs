@@ -45,7 +45,7 @@ public class Config : IConfig, IDisposable
         ConfigFile.Bind(Sections.Debug.FunctionCallTrace.SECTION_NAME, Sections.Debug.FunctionCallTrace.ENABLE, false,
             "If enabled, will hook on most functions and log every function call");
         ConfigFile.Bind(Sections.Debug.FunctionCallTrace.SECTION_NAME, Sections.Debug.FunctionCallTrace.MATCHING_TYPES, "*",
-            "A list of glob pattern of types to hook function call tracing to. You can append to the list by separating each entry with a comma. Example: \"UnityEngine.Application, UnityEngine.Time, UnityEngine.InputSystem.*\"");
+            "A list of glob pattern of types to hook function call tracing to. You can append to the list by separating each entry with a comma. Example: `UnityEngine.Application, UnityEngine.Time, UnityEngine.InputSystem.*`");
     }
 
     private void ConfigReload(bool logReload)
