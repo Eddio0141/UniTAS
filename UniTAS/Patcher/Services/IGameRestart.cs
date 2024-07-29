@@ -8,6 +8,7 @@ public interface IGameRestart
     event GameRestartResume OnGameRestartResume;
     event GameRestart OnGameRestart;
     event Action OnPreGameRestart;
+    bool Restarting { get; }
 }
 
 public delegate void GameRestartResume(DateTime startupTime, bool preMonoBehaviourResume);
