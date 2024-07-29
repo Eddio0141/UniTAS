@@ -54,7 +54,8 @@ public class Bind
 
     public bool IsPressed()
     {
-        return _patchReverseInvoker.Invoke(key => UnityInput.Current.GetKeyDown(key), Key);
+        var current = UnityInput.Current;
+        return _patchReverseInvoker.Invoke(key => current.GetKeyDown(key), Key);
     }
 }
 
