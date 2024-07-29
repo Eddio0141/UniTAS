@@ -26,17 +26,27 @@ public class FunctionCallTrace : PreloadPatcher
         // check config if loading
         var unitasConfig = File.ReadAllText(UniTASPaths.Config);
 
-        var funcTrace = ConfigUtils.GetEntryKey(unitasConfig, nameof(Config.Sections.Debug),
-            Config.Sections.Debug.FUNCTION_CALL_TRACE);
+        var funcTraceEnable = ConfigUtils.GetEntryKey(unitasConfig, Config.Sections.Debug.FunctionCallTrace.SECTION_NAME,
+            Config.Sections.Debug.FunctionCallTrace.ENABLE);
 
-        if (funcTrace != "true") return;
+        if (funcTraceEnable != "true") return;
 
         StaticLogger.LogDebug("Hooking functions for trace logging");
 
         var methodInvokeTrace = AccessTools.Method(typeof(FunctionCallTrace), nameof(MethodInvokeTrace));
         var methodInvokeTraceRef = assembly.MainModule.ImportReference(methodInvokeTrace);
 
-        foreach (var type in assembly.Modules.SelectMany(module => module.GetAllTypes()))
+        var types = assembly.Modules.SelectMany(module => module.GetAllTypes());
+        var matchingTypesConfig = ConfigUtils.GetEntryKey(unitasConfig, Config.Sections.Debug.FunctionCallTrace.SECTION_NAME, Config.Sections.Debug.FunctionCallTrace.MATCHING_TYPES);
+
+        if (matchingTypesConfig != null)
+        {
+            var matchingTypes = matchingTypesConfig.Split([','], System.StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim()).ToList();
+
+            types = types.Where(t => matchingTypes.Any(x => t.FullName.Like(x)));
+        }
+
+        foreach (var type in types)
         {
             if (type.IsEnum || type.IsInterface) continue;
 
