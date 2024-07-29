@@ -52,7 +52,7 @@ public class UnityRuntimeInitAttributeInvoker
             .SelectMany(AccessTools.GetTypesFromAssembly).ToArray();
 
         _beforeSceneLoad = GetMethodsByAttribute(assemblies,
-            ["BeforeSceneLoad", "AfterAssembliesLoaded", "BeforeSplashScreen", "SubsystemRegistration"],
+            ["SubsystemRegistration", "AfterAssembliesLoaded", "BeforeSplashScreen", "BeforeSceneLoad"],
             loadType,
             runtimeInitializeOnLoadMethodAttribute, runtimeInitializeLoadType).ToArray();
 
@@ -67,20 +67,30 @@ public class UnityRuntimeInitAttributeInvoker
     {
         var loadTypesFiltered = loadTypes
             .Where(x => Enum.IsDefined(runtimeInitializeLoadType, x))
-            .Select(x => Enum.Parse(runtimeInitializeLoadType, x)).ToArray();
+            .Select(x => Enum.Parse(runtimeInitializeLoadType, x)).ToList();
         var methodWithAttributes = types.SelectMany(x => x
                 .GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.NonPublic)
                 .Where(m => m.GetParameters().Length == 0))
             .Where(x => x.GetCustomAttributes(runtimeInitializeOnLoadMethodAttribute, true).Length > 0);
 
+        var methodsUnordered = new List<(MethodBase, int)>();
+
         foreach (var methodWithAttribute in methodWithAttributes)
         {
-            if (!methodWithAttribute.GetCustomAttributes(runtimeInitializeOnLoadMethodAttribute, true)
-                    .Select(x => loadType.Invoke(x, null))
-                    .Any(x => loadTypesFiltered.Contains(x))) continue;
+            var attrs = methodWithAttribute.GetCustomAttributes(runtimeInitializeOnLoadMethodAttribute, true)
+                    .Select(x => loadType.Invoke(x, null));
 
-            yield return methodWithAttribute;
+            foreach (var attr in attrs)
+            {
+                var loadTypeIndex = loadTypesFiltered.IndexOf(attr);
+                if (loadTypeIndex < 0) continue;
+
+                methodsUnordered.Add((methodWithAttribute, loadTypeIndex));
+                continue;
+            }
         }
+
+        return methodsUnordered.OrderBy(x => x.Item2).Select(x => x.Item1);
     }
 
     // only invoke after game restart
