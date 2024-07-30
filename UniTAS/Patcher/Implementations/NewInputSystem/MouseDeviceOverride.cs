@@ -20,6 +20,7 @@ public class MouseDeviceOverride : IInputOverrideDevice
     }
 
     private TASMouse _device;
+    public InputDevice Device => _device;
 
     [InputControlLayout(stateType = typeof(MouseState), isGenericTypeOfDevice = true)]
     [SuppressMessage("ReSharper", "ClassNeverInstantiated.Local")]
@@ -56,11 +57,5 @@ public class MouseDeviceOverride : IInputOverrideDevice
     public void AddDevice()
     {
         _device = InputSystem.AddDevice<TASMouse>();
-    }
-
-    public void RemoveDevice()
-    {
-        InputSystem.RemoveDevice(_device);
-        _device = null;
     }
 }
