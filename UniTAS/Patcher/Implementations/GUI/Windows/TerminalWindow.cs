@@ -114,6 +114,8 @@ public class TerminalWindow : Window, ITerminalWindow
 
     private void CheckTerminalInputBinds()
     {
+        if (Event.current.type == EventType.Layout || Event.current.type == EventType.Repaint) return;
+
         if (_waitForTerminalBindRelease)
         {
             Event.current.Use();
