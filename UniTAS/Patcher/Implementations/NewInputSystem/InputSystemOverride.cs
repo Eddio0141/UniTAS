@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Reflection;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.InputSystemOverride;
 using UniTAS.Patcher.Services.InputSystemOverride;
@@ -16,47 +17,39 @@ namespace UniTAS.Patcher.Implementations.NewInputSystem;
 [ForceInstantiate]
 public class InputSystemOverride
 {
-    private readonly bool _hasInputSystem;
-
-    private readonly IInputOverrideDevice[] _devices;
+    private readonly InputOverrideDevice[] _devices;
     private readonly ILogger _logger;
     private readonly List<InputDevice> _actualDevices = new();
     private readonly IMovieRunner _movieRunner;
     private readonly IUpdateEvents _updateEvents;
 
+    private bool _overridden;
+
     [SuppressMessage("ReSharper", "ConditionIsAlwaysTrueOrFalse")]
-    public InputSystemOverride(ILogger logger, IInputOverrideDevice[] devices,
+    public InputSystemOverride(ILogger logger, InputOverrideDevice[] devices,
         IInputSystemState newInputSystemExists, IUpdateEvents updateEvents, IVirtualEnvController virtualEnv, IMovieRunner movieRunner)
     {
-        _hasInputSystem = newInputSystemExists.HasNewInputSystem;
-        logger.LogMessage($"Has unity new input system: {_hasInputSystem}");
+        logger.LogMessage($"Has unity new input system: {newInputSystemExists.HasNewInputSystem}");
 
-        if (!_hasInputSystem) return;
+        if (!newInputSystemExists.HasNewInputSystem) return;
 
         _logger = logger;
         _devices = devices;
         _movieRunner = movieRunner;
         _updateEvents = updateEvents;
+
+        _updateEvents.OnInputUpdateActual += UpdateDevices;
         virtualEnv.OnVirtualEnvStatusChange += OnVirtualEnvStatusChange;
 
         _actualDevices.AddRange(InputSystem.devices);
-
-        _logger.LogDebug("Adding TAS devices to InputSystem");
-
-        foreach (var device in _devices)
-        {
-            device.AddDevice();
-        }
-
-        LogConnectedDevices();
     }
 
     private void OnVirtualEnvStatusChange(bool runVirtualEnv)
     {
+        _overridden = runVirtualEnv;
+
         if (runVirtualEnv)
         {
-            _updateEvents.OnInputUpdateActual += UpdateDevices;
-
             foreach (var device in _actualDevices)
             {
                 InputSystem.RemoveDevice(device);
@@ -65,14 +58,24 @@ public class InputSystemOverride
             _logger.LogDebug("removed all InputSystem devices that isn't ours");
             LogConnectedDevices();
 
+            _logger.LogDebug("Adding TAS devices to InputSystem");
+
             foreach (var device in _devices)
             {
-                device.Device.MakeCurrent();
+                device.AddDevice();
+                device.MakeCurrent();
             }
+
+            LogConnectedDevices();
         }
         else
         {
-            _updateEvents.OnInputUpdateActual -= UpdateDevices;
+            foreach (var device in _devices)
+            {
+                device.RemoveDevice();
+            }
+
+            LogConnectedDevices();
 
             foreach (var device in _actualDevices)
             {
@@ -93,7 +96,7 @@ public class InputSystemOverride
 
     private void UpdateDevices(bool fixedUpdate, bool newInputSystemUpdate)
     {
-        if (!newInputSystemUpdate) return;
+        if (!newInputSystemUpdate || !_overridden) return;
 
         foreach (var device in _devices)
         {

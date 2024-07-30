@@ -20,7 +20,8 @@ public class NewInputSystemPatch
     private static readonly IInputSystemState NewInputSystemState =
         ContainerStarter.Kernel.GetInstance<IInputSystemState>();
 
-    [HarmonyPatch]
+    // [HarmonyPatch]
+    // TODO: unsure if this is even needed, check
     private class SuppressNotifyUpdate
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
