@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using HarmonyLib;
+using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.SoftRestart;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
 using UniTAS.Patcher.Services;
@@ -93,6 +94,7 @@ public partial class SaveScriptableObjectStates : INewScriptableObjectTracker, I
         }
     }
 
+    // TODO: could ScriptableObject live in an asset bundle?
     // don't think this is required
     // testing with 2 scenes and 2 scriptable objects showed that on game start, both scriptable objects are loaded
     // public void OnSceneLoad(string sceneName, int sceneBuildIndex, LoadSceneMode loadSceneMode,
