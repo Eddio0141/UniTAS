@@ -5,7 +5,6 @@ using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.RuntimeTest;
 using UniTAS.Patcher.Models.VirtualEnvironment;
 using UniTAS.Patcher.Services.InputSystemOverride;
-using UniTAS.Patcher.Services.NewInputSystem;
 using UniTAS.Patcher.Services.VirtualEnvironment;
 using UniTAS.Patcher.Services.VirtualEnvironment.Input;
 using UniTAS.Patcher.Utils;
@@ -19,22 +18,20 @@ public class NewInputSystemTests
 {
     private readonly IMouseStateEnvController _mouseController;
     private readonly IVirtualEnvController _virtualEnvController;
-    private readonly INewInputSystemExists _newInputSystemExists;
-    private readonly IInputSystemOverride _inputSystemOverride;
+    private readonly IInputSystemState _newInputSystemExists;
 
     public NewInputSystemTests(IMouseStateEnvController mouseController, IVirtualEnvController virtualEnvController,
-        INewInputSystemExists newInputSystemExists, IInputSystemOverride inputSystemOverride)
+        IInputSystemState newInputSystemExists)
     {
         _mouseController = mouseController;
         _virtualEnvController = virtualEnvController;
         _newInputSystemExists = newInputSystemExists;
-        _inputSystemOverride = inputSystemOverride;
     }
 
     [RuntimeTest]
     public (bool, IEnumerable<CoroutineWait>) MousePosition()
     {
-        return new(_newInputSystemExists.HasInputSystem, MousePositionInternal());
+        return new(_newInputSystemExists.HasNewInputSystem, MousePositionInternal());
     }
 
     private IEnumerable<CoroutineWait> MousePositionInternal()
@@ -43,7 +40,6 @@ public class NewInputSystemTests
         var updateMode = inputSettings.updateMode;
         inputSettings.updateMode = InputSettings.UpdateMode.ProcessEventsInDynamicUpdate;
         _virtualEnvController.RunVirtualEnvironment = true;
-        _inputSystemOverride.Override = true;
 
         yield return new WaitForLastUpdateUnconditional();
 
@@ -57,7 +53,6 @@ public class NewInputSystemTests
         RuntimeAssert.AreEqual(600f, pos.y, "mouse y position check");
 
         _virtualEnvController.RunVirtualEnvironment = false;
-        _inputSystemOverride.Override = false;
         _mouseController.SetPosition(Vector2.zero);
         inputSettings.updateMode = updateMode;
     }
@@ -65,7 +60,7 @@ public class NewInputSystemTests
     [RuntimeTest]
     public (bool, IEnumerable<CoroutineWait>) MouseButtons()
     {
-        return new(_newInputSystemExists.HasInputSystem, MouseButtonsInternal());
+        return new(_newInputSystemExists.HasNewInputSystem, MouseButtonsInternal());
     }
 
     private IEnumerable<CoroutineWait> MouseButtonsInternal()
@@ -74,7 +69,6 @@ public class NewInputSystemTests
         var updateMode = inputSettings.updateMode;
         inputSettings.updateMode = InputSettings.UpdateMode.ProcessEventsInDynamicUpdate;
         _virtualEnvController.RunVirtualEnvironment = true;
-        _inputSystemOverride.Override = true;
 
         yield return new WaitForLastUpdateUnconditional();
 
@@ -117,7 +111,6 @@ public class NewInputSystemTests
         RuntimeAssert.False(mouse.middleButton.isPressed, "middle button check");
 
         _virtualEnvController.RunVirtualEnvironment = false;
-        _inputSystemOverride.Override = false;
         inputSettings.updateMode = updateMode;
     }
 }

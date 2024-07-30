@@ -17,8 +17,8 @@ public class InputSystemUpdateMethodPatch
     private static readonly IInputEventInvoker InputEventInvoker =
         ContainerStarter.Kernel.GetInstance<IInputEventInvoker>();
 
-    private static readonly INewInputSystemExists NewInputSystemState =
-        ContainerStarter.Kernel.GetInstance<INewInputSystemExists>();
+    private static readonly IInputSystemState NewInputSystemState =
+        ContainerStarter.Kernel.GetInstance<IInputSystemState>();
 
     [HarmonyPatch]
     private class UpdateModeSetter
@@ -36,7 +36,7 @@ public class InputSystemUpdateMethodPatch
         [SuppressMessage("ReSharper", "ConditionIsAlwaysTrueOrFalse")]
         private static bool Prepare()
         {
-            return NewInputSystemState.HasInputSystem;
+            return NewInputSystemState.HasNewInputSystem;
         }
     }
 }

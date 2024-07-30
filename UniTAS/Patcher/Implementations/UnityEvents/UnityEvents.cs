@@ -43,7 +43,7 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         IEnumerable<IOnLateUpdateUnconditional> onLateUpdatesUnconditional,
         IEnumerable<IOnLastUpdateUnconditional> onLastUpdatesUnconditional,
         IEnumerable<IOnLastUpdateActual> onLastUpdatesActual, IGameRestart gameRestart,
-        INewInputSystemExists newInputSystemExists, IMonoBehaviourController monoBehaviourController
+        IInputSystemState newInputSystemExists, IMonoBehaviourController monoBehaviourController
 #if TRACE
         , IPatchReverseInvoker patchReverseInvoker
 #endif

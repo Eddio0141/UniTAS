@@ -14,7 +14,7 @@ namespace UniTAS.Patcher.Implementations.UnityEvents;
 
 public partial class UnityEvents
 {
-    private readonly INewInputSystemExists _newInputSystemExists;
+    private readonly IInputSystemState _newInputSystemExists;
 
     private void InputSystemEventsInit()
     {
@@ -44,7 +44,7 @@ public partial class UnityEvents
         _inputFixedUpdate = () => InputUpdate(true, false);
         AddEventToFixedUpdateUnconditional();
 
-        if (!_newInputSystemExists.HasInputSystem) return;
+        if (!_newInputSystemExists.HasNewInputSystem) return;
 
         InputSystemChangeUpdate(InputSystem.settings.updateMode);
     }
@@ -106,55 +106,55 @@ public partial class UnityEvents
         switch (updateMode)
         {
             case InputSettings.UpdateMode.ProcessEventsInDynamicUpdate:
-            {
-                var registerOnBeforeUpdate = !AlreadyRegisteredOnEvent;
-
-                if (!_usingMonoBehFixedUpdate)
                 {
-                    _inputFixedUpdate = () => InputUpdate(true, false);
-                    AddEventToFixedUpdateUnconditional();
-                    _usingMonoBehFixedUpdate = true;
-                }
+                    var registerOnBeforeUpdate = !AlreadyRegisteredOnEvent;
 
-                if (_usingMonoBehUpdate)
-                {
-                    OnUpdateUnconditional -= _inputUpdate;
-                    _usingMonoBehUpdate = false;
-                }
+                    if (!_usingMonoBehFixedUpdate)
+                    {
+                        _inputFixedUpdate = () => InputUpdate(true, false);
+                        AddEventToFixedUpdateUnconditional();
+                        _usingMonoBehFixedUpdate = true;
+                    }
 
-                if (registerOnBeforeUpdate)
-                {
-                    _inputUpdate = () => InputUpdate(false, true);
-                    InputSystem.onBeforeUpdate += _inputUpdate;
-                }
+                    if (_usingMonoBehUpdate)
+                    {
+                        OnUpdateUnconditional -= _inputUpdate;
+                        _usingMonoBehUpdate = false;
+                    }
 
-                break;
-            }
+                    if (registerOnBeforeUpdate)
+                    {
+                        _inputUpdate = () => InputUpdate(false, true);
+                        InputSystem.onBeforeUpdate += _inputUpdate;
+                    }
+
+                    break;
+                }
             case InputSettings.UpdateMode.ProcessEventsInFixedUpdate:
-            {
-                var registerOnBeforeUpdate = !AlreadyRegisteredOnEvent;
-
-                if (!_usingMonoBehUpdate)
                 {
-                    _inputUpdate = () => InputUpdate(false, false);
-                    AddEventToUpdateUnconditional();
-                    _usingMonoBehUpdate = true;
-                }
+                    var registerOnBeforeUpdate = !AlreadyRegisteredOnEvent;
 
-                if (_usingMonoBehFixedUpdate)
-                {
-                    OnFixedUpdateUnconditional -= _inputFixedUpdate;
-                    _usingMonoBehFixedUpdate = false;
-                }
+                    if (!_usingMonoBehUpdate)
+                    {
+                        _inputUpdate = () => InputUpdate(false, false);
+                        AddEventToUpdateUnconditional();
+                        _usingMonoBehUpdate = true;
+                    }
 
-                if (registerOnBeforeUpdate)
-                {
-                    _inputFixedUpdate = () => InputUpdate(true, true);
-                    InputSystem.onBeforeUpdate += _inputFixedUpdate;
-                }
+                    if (_usingMonoBehFixedUpdate)
+                    {
+                        OnFixedUpdateUnconditional -= _inputFixedUpdate;
+                        _usingMonoBehFixedUpdate = false;
+                    }
 
-                break;
-            }
+                    if (registerOnBeforeUpdate)
+                    {
+                        _inputFixedUpdate = () => InputUpdate(true, true);
+                        InputSystem.onBeforeUpdate += _inputFixedUpdate;
+                    }
+
+                    break;
+                }
             case InputSettings.UpdateMode.ProcessEventsManually:
                 if (AlreadyRegisteredOnEvent)
                 {

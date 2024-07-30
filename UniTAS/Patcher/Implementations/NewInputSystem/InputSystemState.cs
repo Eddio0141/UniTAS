@@ -2,15 +2,17 @@ using System;
 using HarmonyLib;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Services.InputSystemOverride;
+using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations.NewInputSystem;
 
 [Singleton]
-public class NewInputSystemExists : INewInputSystemExists
+public class InputSystemState : IInputSystemState
 {
-    public bool HasInputSystem { get; }
+    public bool HasNewInputSystem { get; }
+    public bool HasOldInputSystem { get; }
 
-    public NewInputSystemExists()
+    public InputSystemState()
     {
         try
         {
@@ -18,7 +20,17 @@ public class NewInputSystemExists : INewInputSystemExists
             var current = AccessTools.Property(mouseCurrent, "current");
             current.GetValue(null, null);
 
-            HasInputSystem = true;
+            HasNewInputSystem = true;
+        }
+        catch (Exception)
+        {
+            // ignored
+        }
+
+        try
+        {
+            var _ = Input.GetKeyDown(KeyCode.A);
+            HasOldInputSystem = true;
         }
         catch (Exception)
         {

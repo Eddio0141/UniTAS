@@ -3,6 +3,7 @@ using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.RuntimeTest;
 using UniTAS.Patcher.Interfaces.VirtualEnvironment;
 using UniTAS.Patcher.Models.VirtualEnvironment;
+using UniTAS.Patcher.Services.InputSystemOverride;
 using UniTAS.Patcher.Services.VirtualEnvironment;
 using UniTAS.Patcher.Services.VirtualEnvironment.Input.LegacyInputSystem;
 using UniTAS.Patcher.Utils;
@@ -16,7 +17,7 @@ public class LegacyInputSystemTests(
     IVirtualEnvController virtualEnvController,
     IMouseStateEnvLegacySystem mouseController,
     IAxisStateEnvLegacySystem axisStateEnvLegacySystem,
-    Mouse mouse)
+    Mouse mouse, IInputSystemState inputSystemState)
 {
     private readonly LegacyInputSystemDevice _keyboardControllerBase = (LegacyInputSystemDevice)keyboardController;
 
@@ -24,8 +25,10 @@ public class LegacyInputSystemTests(
     private readonly Mouse _mouse = mouse;
 
     [RuntimeTest]
-    public void GetKeyTest()
+    public bool GetKeyTest()
     {
+        if (!inputSystemState.HasOldInputSystem) return false;
+
         virtualEnvController.RunVirtualEnvironment = true;
 
         keyboardController.Hold(KeyCode.A);
@@ -62,11 +65,13 @@ public class LegacyInputSystemTests(
         RuntimeAssert.False(Input.GetKeyUp("a"), "string up check");
 
         virtualEnvController.RunVirtualEnvironment = false;
+        return true;
     }
 
     [RuntimeTest]
-    public void KeyDownTest()
+    public bool KeyDownTest()
     {
+        if (!inputSystemState.HasOldInputSystem) return false;
         virtualEnvController.RunVirtualEnvironment = true;
 
         keyboardController.Hold(KeyCode.A);
@@ -88,11 +93,13 @@ public class LegacyInputSystemTests(
 
         keyboardController.Release(KeyCode.A);
         virtualEnvController.RunVirtualEnvironment = false;
+        return true;
     }
 
     [RuntimeTest]
-    public void KeyDownTest2()
+    public bool KeyDownTest2()
     {
+        if (!inputSystemState.HasOldInputSystem) return false;
         virtualEnvController.RunVirtualEnvironment = true;
 
         keyboardController.Hold(KeyCode.A);
@@ -106,11 +113,13 @@ public class LegacyInputSystemTests(
 
         keyboardController.Release(KeyCode.A);
         virtualEnvController.RunVirtualEnvironment = false;
+        return true;
     }
 
     [RuntimeTest]
-    public void GetMousePress()
+    public bool GetMousePress()
     {
+        if (!inputSystemState.HasOldInputSystem) return false;
         virtualEnvController.RunVirtualEnvironment = true;
 
         RuntimeAssert.False(Input.GetMouseButton(0), "check 1");
@@ -147,12 +156,14 @@ public class LegacyInputSystemTests(
         RuntimeAssert.False(Input.GetMouseButtonUp(2), "check 15");
 
         virtualEnvController.RunVirtualEnvironment = false;
+        return true;
     }
 
     // TODO: move this to movie test
     // [RuntimeTest]
     public bool MouseLeftClickToAxis()
     {
+        if (!inputSystemState.HasOldInputSystem) return false;
         virtualEnvController.RunVirtualEnvironment = true;
 
         // check if the axis exists
@@ -192,6 +203,7 @@ public class LegacyInputSystemTests(
     // [RuntimeTest]
     public bool MouseRightClickToAxis()
     {
+        if (!inputSystemState.HasOldInputSystem) return false;
         virtualEnvController.RunVirtualEnvironment = true;
 
         // check if the axis exists

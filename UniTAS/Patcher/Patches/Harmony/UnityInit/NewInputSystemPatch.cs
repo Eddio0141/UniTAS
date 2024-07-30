@@ -17,8 +17,8 @@ public class NewInputSystemPatch
     private static readonly IMonoBehaviourController MonoBehaviourController =
         ContainerStarter.Kernel.GetInstance<IMonoBehaviourController>();
 
-    private static readonly INewInputSystemExists NewInputSystemState =
-        ContainerStarter.Kernel.GetInstance<INewInputSystemExists>();
+    private static readonly IInputSystemState NewInputSystemState =
+        ContainerStarter.Kernel.GetInstance<IInputSystemState>();
 
     [HarmonyPatch]
     private class SuppressNotifyUpdate
@@ -41,7 +41,7 @@ public class NewInputSystemPatch
         [SuppressMessage("ReSharper", "ConditionIsAlwaysTrueOrFalse")]
         private static bool Prepare()
         {
-            return NewInputSystemState.HasInputSystem;
+            return NewInputSystemState.HasNewInputSystem;
         }
     }
 }
