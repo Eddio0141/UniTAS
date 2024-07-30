@@ -132,6 +132,8 @@ public class ExternPropertyReset(ILogger logger, IPatchReverseInvoker patchRever
         "UnityEngine.Connect.UnityConnectSettings.*",
         // clipboard access
         "UnityEngine.GUIUtility.systemCopyBuffer",
+        // new input system stuff
+        "UnityEngineInternal.Input.NativeInputSystem.*"
     ];
 
     private readonly List<string> _knownProperties =
