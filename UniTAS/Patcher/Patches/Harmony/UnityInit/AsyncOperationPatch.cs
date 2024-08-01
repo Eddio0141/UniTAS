@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
@@ -48,6 +49,7 @@ public class AsyncOperationPatch
 
         private static bool Prefix()
         {
+            StaticLogger.Trace($"patch prefix invoke\n{new StackTrace()}");
             return AsyncOperationIsInvokingOnComplete.IsInvokingOnComplete;
         }
     }
@@ -62,6 +64,7 @@ public class AsyncOperationPatch
 
         private static bool Prefix(bool value, AsyncOperation __instance)
         {
+            StaticLogger.Trace($"patch prefix invoke\n{new StackTrace()}");
             SceneLoadTracker.AllowSceneActivation(value, __instance);
             return false;
         }
@@ -77,6 +80,7 @@ public class AsyncOperationPatch
 
         private static bool Prefix(ref bool __result, AsyncOperation __instance)
         {
+            StaticLogger.Trace($"patch prefix invoke\n{new StackTrace()}");
             if (!SceneLoadTracker.GetAllowSceneActivation(__instance, out var state))
             {
                 return true;
@@ -97,6 +101,7 @@ public class AsyncOperationPatch
 
         private static bool Prefix(int value, ref AsyncOperation __instance)
         {
+            StaticLogger.Trace($"patch prefix invoke\n{new StackTrace()}");
             Logger.LogDebug($"Priority set to {value} for instance hash {__instance.GetHashCode()}, skipping");
             return false;
         }
@@ -112,6 +117,8 @@ public class AsyncOperationPatch
 
         private static bool Prefix(ref float __result, AsyncOperation __instance)
         {
+            StaticLogger.Trace($"patch prefix invoke\n{new StackTrace()}");
+
             // behaviour on AsyncOperation returned from scene operation is
             // 0.9f if the scene is loaded and ready, doesn't matter if allowSceneActivation is true,
             // it will be at 0.9 till the scene loads in the next frame
@@ -137,11 +144,15 @@ public class AsyncOperationPatch
 
         private static bool Prefix(ref bool __result, AsyncOperation __instance)
         {
+            StaticLogger.Trace($"patch prefix invoke\n{new StackTrace()}");
+
             if (!SceneLoadTracker.IsDone(__instance, out var isDone))
             {
+                StaticLogger.Trace("didn't find a tracked AsyncOperation instance");
                 return true;
             }
 
+            StaticLogger.Trace($"result = {isDone}");
             __result = isDone;
             return false;
         }
@@ -157,6 +168,8 @@ public class AsyncOperationPatch
 
         private static bool Prefix(AsyncOperation __instance)
         {
+            StaticLogger.Trace($"patch prefix invoke\n{new StackTrace()}");
+
             var instanceTraverse = new Traverse(__instance).Field("m_Ptr");
             return instanceTraverse.GetValue<IntPtr>() != IntPtr.Zero;
         }
@@ -178,6 +191,8 @@ public class AsyncOperationPatch
 
         private static bool Prefix(string path, uint crc, ulong offset, ref AssetBundleCreateRequest __result)
         {
+            StaticLogger.Trace($"patch prefix invoke (path = {path}, crc = {crc}, offset = {offset})\n{new StackTrace()}");
+
             // LoadFromFile fails with null return if operation fails, __result.assetBundle will also reflect that if async load fails too
             var loadResult = _loadFromFile_Internal.Invoke(null, [path, crc, offset]) as AssetBundle;
             // create a new instance
@@ -202,6 +217,8 @@ public class AsyncOperationPatch
 
         private static bool Prefix(byte[] binary, uint crc, ref AssetBundleCreateRequest __result)
         {
+            StaticLogger.Trace($"patch prefix invoke\n{new StackTrace()}");
+
             var loadResult = _loadFromMemoryInternal.Invoke(null, [binary, crc]) as AssetBundle;
             __result = new();
             AssetBundleCreateRequestTracker.NewAssetBundleCreateRequest(__result, loadResult);
@@ -225,6 +242,8 @@ public class AsyncOperationPatch
         private static bool Prefix(Stream stream, uint crc, uint managedReadBufferSize,
             ref AssetBundleCreateRequest __result)
         {
+            StaticLogger.Trace($"patch prefix invoke\n{new StackTrace()}");
+
             var loadResult =
                 _loadFromStreamInternal.Invoke(null, [stream, crc, managedReadBufferSize]) as
                     AssetBundle;
@@ -249,6 +268,8 @@ public class AsyncOperationPatch
 
         private static bool Prefix(AssetBundle __instance, string name, Type type, ref AssetBundleRequest __result)
         {
+            StaticLogger.Trace($"patch prefix invoke\n{new StackTrace()}");
+
             var loadResult = _loadAssetInternal.Invoke(__instance, [name, type]) as Object;
             __result = new();
             AssetBundleRequestTracker.NewAssetBundleRequest(__result, loadResult);
@@ -271,6 +292,8 @@ public class AsyncOperationPatch
 
         private static bool Prefix(AssetBundle __instance, string name, Type type, ref AssetBundleRequest __result)
         {
+            StaticLogger.Trace($"patch prefix invoke\n{new StackTrace()}");
+
             var loadResult =
                 _loadAssetWithSubAssetsInternal.Invoke(__instance, [name, type]) as Object[];
             __result = new();
@@ -292,6 +315,8 @@ public class AsyncOperationPatch
 
         private static bool Prefix(bool unloadAllLoadedObjects, ref object __result)
         {
+            StaticLogger.Trace($"patch prefix invoke\n{new StackTrace()}");
+
             _unload.Invoke(null, [unloadAllLoadedObjects]);
             __result = AccessTools.CreateInstance(typeof(AssetBundle));
             return false;
@@ -311,6 +336,8 @@ public class AsyncOperationPatch
 
         private static bool Prefix(AssetBundleRequest __instance, ref object __result)
         {
+            StaticLogger.Trace($"patch prefix invoke\n{new StackTrace()}");
+
             __result = AssetBundleRequestTracker.GetAssetBundleRequest(__instance);
             return __result == null;
         }
@@ -342,6 +369,8 @@ public class AsyncOperationPatch
 
         private static bool Prefix(AssetBundleCreateRequest __instance, ref AssetBundle __result)
         {
+            StaticLogger.Trace($"patch prefix invoke\n{new StackTrace()}");
+
             __result = AssetBundleCreateRequestTracker.GetAssetBundleCreateRequest(__instance);
             return __result == null;
         }
@@ -357,6 +386,8 @@ public class AsyncOperationPatch
 
         private static bool Prefix(string path, Type type, ref object __result)
         {
+            StaticLogger.Trace($"patch prefix invoke\n{new StackTrace()}");
+
             // returns ResourceRequest
             // should be fine with my instance and no tinkering
             __result = AccessTools.CreateInstance(_resourceRequest);
