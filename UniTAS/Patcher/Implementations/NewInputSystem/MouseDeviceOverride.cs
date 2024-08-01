@@ -48,7 +48,10 @@ public class MouseDeviceOverride : InputOverrideDevice
             buttons = buttons,
             position = _mouseStateEnvNewSystem.Position,
             delta = _mouseStateEnvNewSystem.Delta,
-            scroll = _mouseStateEnvNewSystem.Scroll
+            scroll = _mouseStateEnvNewSystem.Scroll,
+            // TODO: testing with normal game shows its 0 regardless of how fast I click, test more to determine whats best
+            // clickCount = ??,
+            // displayIndex = ??, // TODO: probably look into it once virtual env gets more enriched with os stuff
         };
 
         InputSystem.QueueStateEvent(Device, state);
