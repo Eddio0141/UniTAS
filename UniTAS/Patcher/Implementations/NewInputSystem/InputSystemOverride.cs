@@ -57,14 +57,13 @@ public class InputSystemOverride
             _logger.LogDebug("removed all InputSystem devices that isn't ours");
             LogConnectedDevices();
 
-            _logger.LogDebug("Adding TAS devices to InputSystem");
-
             foreach (var device in _devices)
             {
                 device.AddDevice();
                 device.MakeCurrent();
             }
 
+            _logger.LogDebug("adding TAS devices to InputSystem");
             LogConnectedDevices();
         }
         else
@@ -74,6 +73,7 @@ public class InputSystemOverride
                 device.RemoveDevice();
             }
 
+            _logger.LogDebug("removed all TAS devices from InputSystem");
             LogConnectedDevices();
 
             foreach (var device in _actualDevices)
