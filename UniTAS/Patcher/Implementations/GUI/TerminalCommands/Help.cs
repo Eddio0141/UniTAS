@@ -4,7 +4,7 @@ using UniTAS.Patcher.Services.GUI;
 
 namespace UniTAS.Patcher.Implementations.GUI.TerminalCommands;
 
-public class Help : TerminalEntry
+public class Help : TerminalCmd
 {
     public override string Command => "help";
 
@@ -18,7 +18,7 @@ public class Help : TerminalEntry
         if (command != null)
         {
             // display help for a command
-            var terminalEntry = terminalWindow.TerminalEntries.FirstOrDefault(x => x.Command == command);
+            var terminalEntry = terminalWindow.TerminalCmds.FirstOrDefault(x => x.Command == command);
 
             terminalWindow.TerminalPrintLine(terminalEntry == null
                 ? $"Command {command} not found"
@@ -27,7 +27,7 @@ public class Help : TerminalEntry
             return false;
         }
 
-        var terminalEntries = terminalWindow.TerminalEntries;
+        var terminalEntries = terminalWindow.TerminalCmds;
         terminalWindow.TerminalPrintLine("Available commands:");
 
         foreach (var terminalEntry in terminalEntries)

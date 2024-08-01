@@ -6,7 +6,7 @@ using UniTAS.Patcher.Services.GUI;
 
 namespace UniTAS.Patcher.Implementations.GUI.TerminalCommands;
 
-public class LuaInterpreter : TerminalEntry
+public class LuaInterpreter : TerminalCmd
 {
     public override string Command => "lua";
     public override string Description => "Lua interpreter to interact with UniTAS and the game";

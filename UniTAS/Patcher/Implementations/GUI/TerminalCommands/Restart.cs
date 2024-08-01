@@ -7,7 +7,7 @@ using UniTAS.Patcher.Services.GUI;
 
 namespace UniTAS.Patcher.Implementations.GUI.TerminalCommands;
 
-public class Restart : TerminalEntry
+public class Restart : TerminalCmd
 {
     private readonly IGameRestart _gameRestart;
 

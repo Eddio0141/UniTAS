@@ -6,7 +6,7 @@ using UniTAS.Patcher.Services.RuntimeTest;
 
 namespace UniTAS.Patcher.Implementations.GUI.TerminalCommands;
 
-public class RunUnitTests : TerminalEntry
+public class RunUnitTests : TerminalCmd
 {
     public override string Command => "test";
 

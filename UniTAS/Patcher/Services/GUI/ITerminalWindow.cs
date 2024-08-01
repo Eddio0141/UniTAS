@@ -17,5 +17,5 @@ public interface ITerminalWindow
     /// <summary>
     /// All terminal commands.
     /// </summary>
-    TerminalEntry[] TerminalEntries { get; }
+    TerminalCmd[] TerminalCmds { get; }
 }

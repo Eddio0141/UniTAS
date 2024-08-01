@@ -22,7 +22,7 @@ namespace UniTAS.Patcher.Implementations.GUI.Windows;
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public class TerminalWindow : Window, ITerminalWindow
 {
-    public TerminalEntry[] TerminalEntries { get; }
+    public TerminalCmd[] TerminalCmds { get; }
 
     private readonly IPatchReverseInvoker _patchReverseInvoker;
     private readonly ITerminalLogger _logger;
@@ -32,14 +32,14 @@ public class TerminalWindow : Window, ITerminalWindow
     private string _terminalInputFull = string.Empty;
     private Vector2 _terminalOutputScroll;
 
-    private TerminalEntry _hijackingEntry;
+    private TerminalCmd _hijackingCmd;
 
     private bool _initialFocus = true;
 
     private readonly Bind _terminalBind;
     private readonly Bind _terminalSubmit;
 
-    public TerminalWindow(WindowDependencies windowDependencies, TerminalEntry[] terminalEntries, IBinds binds,
+    public TerminalWindow(WindowDependencies windowDependencies, TerminalCmd[] terminalEntries, IBinds binds,
         IGlobalHotkey
             globalHotkey, ITerminalLogger logger) : base(
         windowDependencies,
@@ -54,8 +54,8 @@ public class TerminalWindow : Window, ITerminalWindow
 
         // check dupes
         var dupes = terminalEntries.GroupBy(x => x.Command).Where(x => x.Count() > 1).Select(x => x.Key).ToArray();
-        if (dupes.Any()) throw new DuplicateTerminalEntryException(dupes);
-        TerminalEntries = terminalEntries;
+        if (dupes.Any()) throw new DuplicateTerminalCmdException(dupes);
+        TerminalCmds = terminalEntries;
         _logger = logger;
     }
 
@@ -135,7 +135,7 @@ public class TerminalWindow : Window, ITerminalWindow
             return;
         }
 
-        if (Event.current.keyCode == _terminalBind.Key && _hijackingEntry == null)
+        if (Event.current.keyCode == _terminalBind.Key && _hijackingCmd == null)
         {
             _waitForTerminalBindRelease = true;
             Event.current.Use();
@@ -147,12 +147,12 @@ public class TerminalWindow : Window, ITerminalWindow
     {
         _terminalInputFull += $"{_terminalInput}\n";
 
-        if (_hijackingEntry != null)
+        if (_hijackingCmd != null)
         {
-            _hijackingEntry.OnInput(_terminalInput, true);
+            _hijackingCmd.OnInput(_terminalInput, true);
             if (!split)
             {
-                _hijackingEntry.OnInput(_terminalInputFull, false);
+                _hijackingCmd.OnInput(_terminalInputFull, false);
             }
 
             _terminalInput = string.Empty;
@@ -172,17 +172,17 @@ public class TerminalWindow : Window, ITerminalWindow
 
         if (string.IsNullOrEmpty(command)) return;
 
-        var entry = TerminalEntries.FirstOrDefault(x => x.Command == command);
-        if (entry == null)
+        var cmd = TerminalCmds.FirstOrDefault(x => x.Command == command);
+        if (cmd == null)
         {
             TerminalPrintLine("command not found");
             return;
         }
 
-        var hijack = entry.Execute(args, this);
+        var hijack = cmd.Execute(args, this);
         if (hijack)
         {
-            _hijackingEntry = entry;
+            _hijackingCmd = cmd;
         }
     }
 
@@ -197,7 +197,7 @@ public class TerminalWindow : Window, ITerminalWindow
 
     public void ReleaseTerminal()
     {
-        _hijackingEntry = null;
+        _hijackingCmd = null;
     }
 
     protected override void Close()

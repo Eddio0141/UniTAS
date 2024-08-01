@@ -4,23 +4,23 @@ using UniTAS.Patcher.Services.GUI;
 namespace UniTAS.Patcher.Interfaces.GUI;
 
 /// <summary>
-/// Defines a terminal entry.
+/// Defines a terminal command
 /// </summary>
 [RegisterAll]
-public abstract class TerminalEntry
+public abstract class TerminalCmd
 {
     /// <summary>
-    /// An unique command used to identify this entry.
+    /// Command name
     /// </summary>
     public abstract string Command { get; }
 
     /// <summary>
-    /// Description of this entry to be displayed in the help command.
+    /// Description of this command. It will be displayed in the help command
     /// </summary>
     public abstract string Description { get; }
 
     /// <summary>
-    /// Method that gets executed when the command is called.
+    /// Method that gets executed when the command is called
     /// </summary>
     /// <param name="args">Arguments</param>
     /// <param name="terminalWindow">The terminal window instance invoking this method</param>
@@ -28,7 +28,7 @@ public abstract class TerminalEntry
     public abstract bool Execute(string[] args, ITerminalWindow terminalWindow);
 
     /// <summary>
-    /// Invoked when the terminal receives input while the terminal is hijacked.
+    /// Executed when the terminal receives input while the terminal is hijacked
     /// </summary>
     /// <param name="input">Input string. If not split, this is the full complete input (with newlines if split). If split, it contains the split input</param>
     /// <param name="split">If the input is split or not</param>
