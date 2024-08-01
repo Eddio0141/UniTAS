@@ -89,6 +89,7 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger, I
     {
         _assetBundleRequests.Add(asyncOperation, new(assetBundleRequest));
         _tracked.Add(asyncOperation);
+        _isDone.Add(asyncOperation);
         InvokeOnComplete(asyncOperation);
     }
 
@@ -96,6 +97,7 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger, I
     {
         _assetBundleRequests.Add(asyncOperation, new(multipleResults: assetBundleRequestArray));
         _tracked.Add(asyncOperation);
+        _isDone.Add(asyncOperation);
         InvokeOnComplete(asyncOperation);
     }
 
@@ -103,6 +105,7 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger, I
     {
         _assetBundleCreateRequests.Add(asyncOperation, assetBundle);
         _tracked.Add(asyncOperation);
+        _isDone.Add(asyncOperation);
         InvokeOnComplete(asyncOperation);
     }
 
