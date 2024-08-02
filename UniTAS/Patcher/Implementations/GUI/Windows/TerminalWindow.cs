@@ -43,7 +43,7 @@ public class TerminalWindow : Window, ITerminalWindow
         IGlobalHotkey
             globalHotkey, ITerminalLogger logger) : base(
         windowDependencies,
-        new(defaultWindowRect: GUIUtils.WindowRect(Screen.width - 100, Screen.height - 100), windowName: "Terminal"))
+        new(defaultWindowRect: GUIUtils.WindowRect(Screen.width - 100, Screen.height - 100), windowName: "Terminal"), "terminal")
     {
         _patchReverseInvoker = windowDependencies.PatchReverseInvoker;
         windowDependencies.UpdateEvents.OnUpdateUnconditional += OnUpdateUnconditional;

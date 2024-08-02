@@ -1,4 +1,5 @@
-﻿using BepInEx;
+﻿using System.Collections.Generic;
+using BepInEx;
 using UniTAS.Patcher.Models.GUI;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.UnityEvents;
@@ -28,13 +29,25 @@ public abstract class Window
 
     private readonly IUpdateEvents _updateEvents;
     private readonly IPatchReverseInvoker _patchReverseInvoker;
+    private readonly IConfig _configService;
 
     private string WindowName { get; }
+    private string _windowConfigId;
 
-    protected Window(WindowDependencies windowDependencies, WindowConfig config)
+    private static List<string> _usedWindowIDs = new();
+
+    protected Window(WindowDependencies windowDependencies, WindowConfig config, string windowId = null)
     {
+        if (_usedWindowIDs.Contains(windowId))
+        {
+            throw new DuplicateWindowIDException($"WindowID {windowId} is already used");
+        }
+        _usedWindowIDs.Add(windowId);
+        _windowConfigId = windowId;
+
         _patchReverseInvoker = windowDependencies.PatchReverseInvoker;
         _updateEvents = windowDependencies.UpdateEvents;
+        _configService = windowDependencies.Config;
         _config = config ?? new();
         _windowUpdate = WindowUpdate;
         WindowName = _config.WindowName;
@@ -51,6 +64,12 @@ public abstract class Window
     {
         _windowRect = _config.DefaultWindowRect;
         _windowId = GetHashCode();
+
+        // try load config stuff
+        if (_configService.TryGetBackendEntry($"{BACKEND_CONFIG_PREFIX}{BACKEND_CONFIG_WINDOW_RECT}{_windowConfigId}", out Models.Rect rect))
+        {
+            _windowRect = rect.ToUnityRect();
+        }
     }
 
     public void Show()
@@ -122,9 +141,13 @@ public abstract class Window
             if (!RightMouseButton)
             {
                 _resizing = false;
+                ClampWindow(); // handle clamped pos
+                SaveWindowRect();
             }
-
-            ClampWindow();
+            else
+            {
+                ClampWindow();
+            }
 
             return;
         }
@@ -148,9 +171,13 @@ public abstract class Window
             if (!LeftMouseButton)
             {
                 _dragging = false;
+                ClampWindow(); // for saving clamped pos
+                SaveWindowRect();
             }
-
-            ClampWindow();
+            else
+            {
+                ClampWindow();
+            }
 
             return;
         }
@@ -230,4 +257,13 @@ public abstract class Window
     }
 
     protected abstract void OnGUI();
+
+    private const string BACKEND_CONFIG_PREFIX = "window-";
+    private const string BACKEND_CONFIG_WINDOW_RECT = "rect-";
+
+    private void SaveWindowRect()
+    {
+        var saneRect = new Models.Rect(_windowRect);
+        _configService.WriteBackendEntry($"{BACKEND_CONFIG_PREFIX}{BACKEND_CONFIG_WINDOW_RECT}{_windowConfigId}", saneRect);
+    }
 }

@@ -34,7 +34,7 @@ public class MoviePlayWindow : Window
     public MoviePlayWindow(WindowDependencies windowDependencies, IMovieLogger movieLogger, IMovieRunner movieRunner,
         IBinds binds, IBrowseFileWindowFactory browseFileWindowFileWindowFactory, IGlobalHotkey globalHotkey) :
         base(windowDependencies,
-            new(defaultWindowRect: GUIUtils.WindowRect(600, 200), windowName: "Movie Play"))
+            new(defaultWindowRect: GUIUtils.WindowRect(600, 200), windowName: "Movie Play"), "movieplay")
     {
         _movieLogger = movieLogger;
         _movieRunner = movieRunner;
