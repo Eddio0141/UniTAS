@@ -110,7 +110,7 @@ public class LegacyInputPatch
     }
 
     // gets called from GetKeyUp
-    [HarmonyPatch(typeof(Input), nameof(Input.GetKeyUpString))]
+    [HarmonyPatch]
     private class GetKeyUpString
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
@@ -125,28 +125,28 @@ public class LegacyInputPatch
                 AccessTools.DeclaredMethod(AccessTools.TypeByName("UnityEngine.Internal.InputUnsafeUtility"), "GetKeyUpString"),
             }.Where(x => x != null);
         }
-    }
 
-    private static bool Prefix(string name, ref bool __result)
-    {
-        if (ReverseInvoker.InnerCall())
-            return true;
-        if (!VirtualEnvController.RunVirtualEnvironment) return true;
-
-        __result = false;
-        var keyCode = InputSystemUtils.KeyCodeParse(name);
-        if (keyCode == null)
+        private static bool Prefix(string name, ref bool __result)
         {
+            if (ReverseInvoker.InnerCall())
+                return true;
+            if (!VirtualEnvController.RunVirtualEnvironment) return true;
+
+            __result = false;
+            var keyCode = InputSystemUtils.KeyCodeParse(name);
+            if (keyCode == null)
+            {
+                return false;
+            }
+
+            __result = KeyboardStateEnvLegacySystem.IsKeyUp(keyCode.Value);
             return false;
         }
 
-        __result = KeyboardStateEnvLegacySystem.IsKeyUp(keyCode.Value);
-        return false;
-    }
-
-    private static void Postfix()
-    {
-        ReverseInvoker.Return();
+        private static void Postfix()
+        {
+            ReverseInvoker.Return();
+        }
     }
 
     // gets called from GetKeyUp
