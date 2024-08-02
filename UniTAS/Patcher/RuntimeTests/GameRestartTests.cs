@@ -139,7 +139,9 @@ public class GameRestartTests
         yield return new WaitForCoroutine(CleanupTest());
     }
 
-    [RuntimeTest]
+    // [RuntimeTest]
+    // TODO: this test can't be tested in a "clean" way because games aren't usually at this weir deltaTime
+    // move to a more proper testing environment
     public IEnumerable<CoroutineWait> SoftRestart100FPSWeirdFixedDeltaTime()
     {
         /* The update order with time looks like this (tested with a real game)
