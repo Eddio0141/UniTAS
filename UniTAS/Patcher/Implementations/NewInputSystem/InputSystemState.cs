@@ -1,6 +1,7 @@
 using System;
 using HarmonyLib;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
+using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.InputSystemOverride;
 using UnityEngine;
 
@@ -12,7 +13,7 @@ public class InputSystemState : IInputSystemState
     public bool HasNewInputSystem { get; }
     public bool HasOldInputSystem { get; }
 
-    public InputSystemState()
+    public InputSystemState(IPatchReverseInvoker patchReverseInvoker)
     {
         try
         {
@@ -29,7 +30,7 @@ public class InputSystemState : IInputSystemState
 
         try
         {
-            var _ = Input.GetKeyDown(KeyCode.A);
+            patchReverseInvoker.Invoke(() => Input.GetKeyDown(KeyCode.A));
             HasOldInputSystem = true;
         }
         catch (Exception)
