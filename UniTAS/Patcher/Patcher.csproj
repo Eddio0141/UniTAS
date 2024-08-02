@@ -55,8 +55,8 @@
         <PackageReference Include="BepInEx.Analyzers" Version="1.0.8" PrivateAssets="all" />
         <PackageReference Include="BepInEx.Core" Version="5.4.21" />
         <PackageReference Include="BepInEx.PluginInfoProps" Version="2.1.0" />
-        <PackageReference Include="JetBrains.Annotations" Version="2023.2.0" />
-        <PackageReference Include="MonoMod.Utils" Version="25.0.3" />
+        <PackageReference Include="JetBrains.Annotations" Version="2024.2.0" />
+        <PackageReference Include="MonoMod.Utils" Version="25.0.6" />
         <PackageReference Include="StructureMap" Version="2.6.3" />
         <PackageReference Include="Unity.InputSystem" Version="1.5.0" />
         <PackageReference Include="UnityEngine.Modules" Version="3.4.0" IncludeAssets="compile" />
