@@ -36,7 +36,7 @@ public class OpenFileStreamTrackerPatch
             var declaringType = method?.DeclaringType;
             if (declaringType == null) continue;
             var declaringAssembly = declaringType.Assembly;
-            if (Equals(declaringAssembly, typeof(UniTAS.Patcher.Entry).Assembly) ||
+            if (Equals(declaringAssembly, typeof(Entry).Assembly) ||
                 Equals(declaringAssembly, typeof(BepInEx.Paths).Assembly)) return true;
         }
 

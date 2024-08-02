@@ -22,7 +22,6 @@ public class LegacyInputSystemTests(
     private readonly LegacyInputSystemDevice _keyboardControllerBase = (LegacyInputSystemDevice)keyboardController;
 
     private readonly LegacyInputSystemDevice _mouseControllerBase = (LegacyInputSystemDevice)mouseController;
-    private readonly Mouse _mouse = mouse;
 
     [RuntimeTest]
     public bool GetKeyTest()
@@ -184,12 +183,12 @@ public class LegacyInputSystemTests(
 
         var (clickAxis, _) = allAxis[clickAxisIndex];
 
-        _mouse.Left();
+        mouse.Left();
         _mouseControllerBase.MovieUpdate(false);
 
         RuntimeAssert.FloatEquals(1f, Input.GetAxisRaw(clickAxis), 0.01f, "axis == 1");
 
-        _mouse.Left(false);
+        mouse.Left(false);
         _mouseControllerBase.MovieUpdate(false);
 
         RuntimeAssert.FloatEquals(0f, Input.GetAxisRaw(clickAxis), 0.01f, "axis == 0");
@@ -224,12 +223,12 @@ public class LegacyInputSystemTests(
 
         var (clickAxis, _) = allAxis[clickAxisIndex];
 
-        _mouse.Right();
+        mouse.Right();
         _mouseControllerBase.MovieUpdate(false);
 
         RuntimeAssert.FloatEquals(1f, Input.GetAxisRaw(clickAxis), 0.01f, "axis == 1");
 
-        _mouse.Right(false);
+        mouse.Right(false);
         _mouseControllerBase.MovieUpdate(false);
 
         RuntimeAssert.FloatEquals(0f, Input.GetAxisRaw(clickAxis), 0.01f, "axis == 0");

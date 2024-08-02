@@ -26,7 +26,7 @@ public static class LoggingUtils
 
         public bool Enabled { get; } = true;
 
-        public static DiskLogger Instance { get; private set; }
+        private static DiskLogger Instance { get; set; }
 
         public DiskLogger()
         {

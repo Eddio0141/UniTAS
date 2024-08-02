@@ -43,7 +43,7 @@ public class TerminalWindow : Window, ITerminalWindow
         IGlobalHotkey
             globalHotkey, ITerminalLogger logger) : base(
         windowDependencies,
-        new(defaultWindowRect: GUIUtils.WindowRect(Screen.width - 100, Screen.height - 100), windowName: "Terminal"), "terminal")
+        new(defaultWindowRect: GUIUtils.WindowRect(Screen.width - 200, Screen.height - 200), windowName: "Terminal"), "terminal")
     {
         _patchReverseInvoker = windowDependencies.PatchReverseInvoker;
         windowDependencies.UpdateEvents.OnUpdateUnconditional += OnUpdateUnconditional;
@@ -139,7 +139,6 @@ public class TerminalWindow : Window, ITerminalWindow
         {
             _waitForTerminalBindRelease = true;
             Event.current.Use();
-            return;
         }
     }
 
@@ -198,10 +197,5 @@ public class TerminalWindow : Window, ITerminalWindow
     public void ReleaseTerminal()
     {
         _hijackingCmd = null;
-    }
-
-    protected override void Close()
-    {
-        base.Close();
     }
 }

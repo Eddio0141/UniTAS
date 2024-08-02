@@ -16,5 +16,6 @@ public interface IConfig
 
     /// <summary>
     /// Write or update config entry for backend config
+    /// </summary>
     void WriteBackendEntry<T>(string key, T value);
 }

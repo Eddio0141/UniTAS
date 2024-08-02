@@ -8,7 +8,7 @@ public abstract class LegacyInputSystemDevice : InputState
     /// <summary>
     /// Function invoked when a frame advances.
     /// </summary>
-    protected override abstract void Update();
+    protected abstract override void Update();
 
     /// <summary>
     /// This method is called before Update and FixedUpdate is called.

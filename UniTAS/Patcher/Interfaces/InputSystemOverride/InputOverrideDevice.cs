@@ -10,7 +10,7 @@ namespace UniTAS.Patcher.Interfaces.InputSystemOverride;
 public abstract class InputOverrideDevice
 {
     private static readonly MethodInfo AddDeviceGeneric = AccessTools.DeclaredMethod(typeof(InputSystem), nameof(InputSystem.AddDevice), [typeof(string)]);
-    private static object[] AddDeviceArgs = [null];
+    private static readonly object[] AddDeviceArgs = [null];
 
     public void AddDevice()
     {

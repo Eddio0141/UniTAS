@@ -4,6 +4,8 @@ using UniTAS.Patcher.Services.GUI;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.Movie;
 
+namespace UniTAS.Patcher.Implementations.GUI.TerminalCommands;
+
 public class Play(IMovieRunner movieRunner, ILogger logger) : TerminalCmd
 {
     public override string Command => "play";

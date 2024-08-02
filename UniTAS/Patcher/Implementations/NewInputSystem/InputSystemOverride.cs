@@ -19,7 +19,6 @@ public class InputSystemOverride
     private readonly InputOverrideDevice[] _devices;
     private readonly ILogger _logger;
     private readonly List<InputDevice> _actualDevices = new();
-    private readonly IMovieRunner _movieRunner;
     private readonly IUpdateEvents _updateEvents;
 
     private bool _overridden;
@@ -34,7 +33,6 @@ public class InputSystemOverride
 
         _logger = logger;
         _devices = devices;
-        _movieRunner = movieRunner;
         _updateEvents = updateEvents;
 
         _updateEvents.OnInputUpdateActual += UpdateDevices;

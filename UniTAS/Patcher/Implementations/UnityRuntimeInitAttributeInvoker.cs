@@ -86,7 +86,6 @@ public class UnityRuntimeInitAttributeInvoker
                 if (loadTypeIndex < 0) continue;
 
                 methodsUnordered.Add((methodWithAttribute, loadTypeIndex));
-                continue;
             }
         }
 

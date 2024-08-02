@@ -62,8 +62,8 @@ public partial class FrameAdvancing : IFrameAdvancing, IOnFixedUpdateUncondition
         ISyncFixedUpdateCycle syncFixedUpdate, ICoroutine coroutine, ITimeEnv timeEnv, ILogger logger,
         IGlobalHotkey globalHotkey, IUpdateInvokeOffset updateInvokeOffset)
     {
-        var frameAdvanceBind = binds.Create(new("FrameAdvance", KeyCode.Slash));
-        var frameAdvanceToggleBind = binds.Create(new("FrameAdvanceToggle", KeyCode.Period));
+        // var frameAdvanceBind = binds.Create(new("FrameAdvance", KeyCode.Slash));
+        // var frameAdvanceToggleBind = binds.Create(new("FrameAdvanceToggle", KeyCode.Period));
         // TODO this needs to be customizable
         // globalHotkey.AddGlobalHotkey(new(frameAdvanceBind, () => FrameAdvance(1, FrameAdvanceMode.Update)));
         // globalHotkey.AddGlobalHotkey(new(frameAdvanceToggleBind, TogglePause));

@@ -22,7 +22,7 @@ public class Config : IConfig, IDisposable
     private readonly FileSystemWatcher _fileSystemWatcher;
     private readonly Timer _timer;
 
-    private Dictionary<string, string> _backendEntries = new();
+    private readonly Dictionary<string, string> _backendEntries = new();
     private const char ENTRY_SEPARATOR = ':';
 
     private readonly ILogger _logger;
@@ -58,7 +58,7 @@ public class Config : IConfig, IDisposable
         {
             backendConfigRaw = File.ReadAllLines(UniTASPaths.ConfigBackend).ToList();
         }
-        catch (System.Exception e)
+        catch (Exception e)
         {
             _logger.LogInfo($"Couldn't read backend config file: {e}");
         }
@@ -78,7 +78,7 @@ public class Config : IConfig, IDisposable
                 {
                     File.WriteAllLines(UniTASPaths.ConfigBackend, backendConfigRaw.ToArray());
                 }
-                catch (System.Exception e)
+                catch (Exception e)
                 {
                     _logger.LogWarning($"Couldn't write to backend config for some reason: {e}");
 
@@ -86,7 +86,7 @@ public class Config : IConfig, IDisposable
                     {
                         File.Delete(UniTASPaths.ConfigBackend);
                     }
-                    catch (System.Exception e2)
+                    catch (Exception e2)
                     {
                         _logger.LogError($"Couldn't delete backend config, what??? Continuing with whatever is loaded: {e2}");
                     }
@@ -127,7 +127,7 @@ public class Config : IConfig, IDisposable
         {
             File.WriteAllLines(UniTASPaths.ConfigBackend, entries);
         }
-        catch (System.Exception e)
+        catch (Exception e)
         {
             _logger.LogWarning($"Failed to save backend config for entry {key}: {e}");
         }

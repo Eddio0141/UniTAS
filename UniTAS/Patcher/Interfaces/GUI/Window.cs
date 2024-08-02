@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using BepInEx;
+using UniTAS.Patcher.Exceptions.GUI;
 using UniTAS.Patcher.Models.GUI;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.UnityEvents;
@@ -32,17 +33,17 @@ public abstract class Window
     private readonly IConfig _configService;
 
     private string WindowName { get; }
-    private string _windowConfigId;
+    private readonly string _windowConfigId;
 
-    private static List<string> _usedWindowIDs = new();
+    private static readonly List<string> UsedWindowIDs = new();
 
     protected Window(WindowDependencies windowDependencies, WindowConfig config, string windowId = null)
     {
-        if (_usedWindowIDs.Contains(windowId))
+        if (UsedWindowIDs.Contains(windowId))
         {
             throw new DuplicateWindowIDException($"WindowID {windowId} is already used");
         }
-        _usedWindowIDs.Add(windowId);
+        UsedWindowIDs.Add(windowId);
         _windowConfigId = windowId;
 
         _patchReverseInvoker = windowDependencies.PatchReverseInvoker;

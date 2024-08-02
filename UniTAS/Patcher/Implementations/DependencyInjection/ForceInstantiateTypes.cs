@@ -63,8 +63,7 @@ public class ForceInstantiateTypes : IForceInstantiateTypes
             }
         }
 
-        if (!pendingInstantiations.ContainsKey(timing)) return;
-        var instantiateTypes = pendingInstantiations[timing];
+        if (!pendingInstantiations.TryGetValue(timing, out var instantiateTypes)) return;
         pendingInstantiations.Remove(timing);
 
         foreach (var type in instantiateTypes)

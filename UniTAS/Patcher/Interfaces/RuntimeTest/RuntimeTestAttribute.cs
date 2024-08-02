@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 using UniTAS.Patcher.Interfaces.Coroutine;
 
 namespace UniTAS.Patcher.Interfaces.RuntimeTest;
@@ -12,4 +13,5 @@ namespace UniTAS.Patcher.Interfaces.RuntimeTest;
 /// In order to use multiple return types as defined above, use <see cref="Tuple"/>.
 /// </summary>
 [AttributeUsage(AttributeTargets.Method, Inherited = false)]
+[MeansImplicitUse]
 public class RuntimeTestAttribute : Attribute;

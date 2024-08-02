@@ -16,6 +16,7 @@ public static class StaticLogger
 #endif
 
     [Conditional("TRACE")]
+    // ReSharper disable once UnusedParameter.Global
     public static void Trace(object data, [CallerLineNumber] int lineNumber = 0, [CallerFilePath] string path = null)
     {
 #if TRACE

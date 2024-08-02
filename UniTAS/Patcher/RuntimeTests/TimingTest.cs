@@ -8,23 +8,14 @@ using UnityEngine;
 
 namespace UniTAS.Patcher.RuntimeTests;
 
-public class TimingTest
+public class TimingTest(IPatchReverseInvoker patchReverseInvoker, IUpdateInvokeOffset updateInvokeOffset)
 {
-    private readonly IPatchReverseInvoker _patchReverseInvoker;
-    private readonly IUpdateInvokeOffset _updateInvokeOffset;
-
-    public TimingTest(IPatchReverseInvoker patchReverseInvoker, IUpdateInvokeOffset updateInvokeOffset)
-    {
-        _patchReverseInvoker = patchReverseInvoker;
-        _updateInvokeOffset = updateInvokeOffset;
-    }
-
     [RuntimeTest]
     public IEnumerator<CoroutineWait> UpdateInvokeOffsetTest()
     {
         yield return new WaitForUpdateUnconditional();
 
-        RuntimeAssert.AreEqual(_patchReverseInvoker.Invoke(() => Time.time) % Time.fixedDeltaTime,
-            _updateInvokeOffset.Offset);
+        RuntimeAssert.AreEqual(patchReverseInvoker.Invoke(() => Time.time) % Time.fixedDeltaTime,
+            updateInvokeOffset.Offset);
     }
 }

@@ -11,7 +11,7 @@ using UniTAS.Patcher.Services.Trackers.UpdateTrackInfo;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 
-namespace UniTAS.Patcher.Patches.Harmony.Entry;
+namespace UniTAS.Patcher.Patches.Harmony.UnityInit;
 
 [RawPatchUnityInit]
 [SuppressMessage("ReSharper", "InconsistentNaming")]

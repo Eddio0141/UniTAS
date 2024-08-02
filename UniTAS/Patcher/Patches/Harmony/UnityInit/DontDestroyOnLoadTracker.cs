@@ -52,18 +52,18 @@ public class DontDestroyOnLoadTracker
 
             if (obj == null)
             {
-                _logger.LogDebug($"DontDestroyOnLoad target is neither GameObject nor Component, ignoring");
+                _logger.LogDebug("DontDestroyOnLoad target is neither GameObject nor Component, ignoring");
                 return;
             }
 
             // check if root
             if (obj.transform.parent != null)
             {
-                _logger.LogDebug($"DontDestroyOnLoad target is not root, ignoring");
+                _logger.LogDebug("DontDestroyOnLoad target is not root, ignoring");
                 return;
             }
 
-            _logger.LogDebug($"DontDestroyOnLoad target is root, adding to tracker");
+            _logger.LogDebug("DontDestroyOnLoad target is root, adding to tracker");
             _objectTracker.DontDestroyOnLoadAddRoot(obj);
         }
     }
