@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using UniTAS.Patcher.Interfaces.Patches.PatchTypes;
@@ -68,12 +70,20 @@ public class LegacyInputPatch
     }
 
     // gets called from GetKey
-    [HarmonyPatch(typeof(Input), nameof(Input.GetKeyString))]
+    [HarmonyPatch]
     private class GetKeyString
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
             return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static IEnumerable<MethodBase> TargetMethods()
+        {
+            return new MethodBase[] {
+                AccessTools.DeclaredMethod(typeof(Input), nameof(Input.GetKeyString)),
+                AccessTools.DeclaredMethod(AccessTools.TypeByName("UnityEngine.Internal.InputUnsafeUtility"), "GetKeyString")
+            }.Where(x => x != null);
         }
 
         private static bool Prefix(string name, ref bool __result)
@@ -108,27 +118,35 @@ public class LegacyInputPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix(string name, ref bool __result)
+        private static IEnumerable<MethodBase> TargetMethods()
         {
-            if (ReverseInvoker.InnerCall())
-                return true;
-            if (!VirtualEnvController.RunVirtualEnvironment) return true;
+            return new MethodBase[] {
+                AccessTools.DeclaredMethod(typeof(Input), nameof(Input.GetKeyUpString)),
+                AccessTools.DeclaredMethod(AccessTools.TypeByName("UnityEngine.Internal.InputUnsafeUtility"), "GetKeyUpString"),
+            }.Where(x => x != null);
+        }
+    }
 
-            __result = false;
-            var keyCode = InputSystemUtils.KeyCodeParse(name);
-            if (keyCode == null)
-            {
-                return false;
-            }
+    private static bool Prefix(string name, ref bool __result)
+    {
+        if (ReverseInvoker.InnerCall())
+            return true;
+        if (!VirtualEnvController.RunVirtualEnvironment) return true;
 
-            __result = KeyboardStateEnvLegacySystem.IsKeyUp(keyCode.Value);
+        __result = false;
+        var keyCode = InputSystemUtils.KeyCodeParse(name);
+        if (keyCode == null)
+        {
             return false;
         }
 
-        private static void Postfix()
-        {
-            ReverseInvoker.Return();
-        }
+        __result = KeyboardStateEnvLegacySystem.IsKeyUp(keyCode.Value);
+        return false;
+    }
+
+    private static void Postfix()
+    {
+        ReverseInvoker.Return();
     }
 
     // gets called from GetKeyUp
@@ -157,12 +175,20 @@ public class LegacyInputPatch
     }
 
     // gets called from GetKeyDown
-    [HarmonyPatch(typeof(Input), nameof(Input.GetKeyDownString))]
+    [HarmonyPatch]
     private class GetKeyDownString
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
             return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static IEnumerable<MethodBase> TargetMethods()
+        {
+            return new MethodBase[] {
+                AccessTools.DeclaredMethod(typeof(Input), nameof(Input.GetKeyDownString)),
+                AccessTools.DeclaredMethod(AccessTools.TypeByName("UnityEngine.Internal.InputUnsafeUtility"), "GetKeyDownString")
+            }.Where(x => x != null);
         }
 
         private static bool Prefix(string name, ref bool __result)
@@ -229,12 +255,20 @@ public class LegacyInputPatch
     */
 
 
-    [HarmonyPatch(typeof(Input), nameof(Input.GetAxis))]
+    [HarmonyPatch]
     private class GetAxis
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
             return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static IEnumerable<MethodBase> TargetMethods()
+        {
+            return new MethodBase[] {
+                AccessTools.DeclaredMethod(typeof(Input), nameof(Input.GetAxis)),
+                AccessTools.DeclaredMethod(AccessTools.TypeByName("UnityEngine.Internal.InputUnsafeUtility"), "GetAxis")
+            }.Where(x => x != null);
         }
 
         private static bool Prefix(string axisName, ref float __result)
@@ -259,12 +293,20 @@ public class LegacyInputPatch
         }
     }
 
-    [HarmonyPatch(typeof(Input), nameof(Input.GetAxisRaw))]
+    [HarmonyPatch]
     private class GetAxisRaw
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
             return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static IEnumerable<MethodBase> TargetMethods()
+        {
+            return new MethodBase[] {
+                AccessTools.DeclaredMethod(typeof(Input), nameof(Input.GetAxisRaw)),
+                AccessTools.DeclaredMethod(AccessTools.TypeByName("UnityEngine.Internal.InputUnsafeUtility"), "GetAxisRaw")
+            }.Where(x => x != null);
         }
 
         private static bool Prefix(string axisName, ref float __result)
@@ -462,12 +504,20 @@ public class LegacyInputPatch
         }
     }
 
-    [HarmonyPatch(typeof(Input), nameof(Input.GetButton))]
+    [HarmonyPatch]
     private class GetButton
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
             return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static IEnumerable<MethodBase> TargetMethods()
+        {
+            return new MethodBase[] {
+                AccessTools.DeclaredMethod(typeof(Input), nameof(Input.GetButton)),
+                AccessTools.DeclaredMethod(AccessTools.TypeByName("UnityEngine.Internal.InputUnsafeUtility"), "GetButton")
+            }.Where(x => x != null);
         }
 
         private static bool Prefix(string buttonName, ref bool __result)
@@ -492,12 +542,20 @@ public class LegacyInputPatch
         }
     }
 
-    [HarmonyPatch(typeof(Input), nameof(Input.GetButtonDown))]
+    [HarmonyPatch]
     private class GetButtonDown
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
             return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static IEnumerable<MethodBase> TargetMethods()
+        {
+            return new MethodBase[] {
+                AccessTools.DeclaredMethod(typeof(Input), nameof(Input.GetButtonDown)),
+                AccessTools.DeclaredMethod(AccessTools.TypeByName("UnityEngine.Internal.InputUnsafeUtility"), "GetButtonDown")
+            }.Where(x => x != null);
         }
 
         private static bool Prefix(string buttonName, ref bool __result)
@@ -522,12 +580,20 @@ public class LegacyInputPatch
         }
     }
 
-    [HarmonyPatch(typeof(Input), nameof(Input.GetButtonUp))]
+    [HarmonyPatch]
     private class GetButtonUp
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
             return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static IEnumerable<MethodBase> TargetMethods()
+        {
+            return new MethodBase[] {
+                AccessTools.DeclaredMethod(typeof(Input), nameof(Input.GetButtonUp)),
+                AccessTools.DeclaredMethod(AccessTools.TypeByName("UnityEngine.Internal.InputUnsafeUtility"), "GetButtonUp")
+            }.Where(x => x != null);
         }
 
         private static bool Prefix(string buttonName, ref bool __result)
@@ -933,4 +999,5 @@ public class LegacyInputPatch
     // TODO GetTouch
     // TODO IsJoystickPreconfigured
     // TODO ResetPenEvents
+    // also check UnityEngine.Internal.InputUnsafeUtility for those
 }
