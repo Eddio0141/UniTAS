@@ -2,7 +2,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using UniTAS.Patcher.Interfaces.InputSystemOverride;
 using UniTAS.Patcher.Services.VirtualEnvironment.Input.NewInputSystem;
-using UniTAS.Patcher.Utils;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Layouts;
 using UnityEngine.InputSystem.LowLevel;

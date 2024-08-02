@@ -5,7 +5,6 @@ using UniTAS.Patcher.Models.UnitySafeWrappers;
 using UniTAS.Patcher.Models.VirtualEnvironment;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Patcher.Services.VirtualEnvironment.Input.NewInputSystem;
-using UniTAS.Patcher.Utils;
 using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations.VirtualEnvironment.InputState.NewInputSystem;
