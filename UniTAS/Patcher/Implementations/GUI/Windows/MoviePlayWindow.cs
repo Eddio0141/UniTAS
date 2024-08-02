@@ -7,6 +7,7 @@ using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.GlobalHotkeyListener;
 using UniTAS.Patcher.Interfaces.GUI;
 using UniTAS.Patcher.Models.GUI;
+using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Customization;
 using UniTAS.Patcher.Services.GUI;
 using UniTAS.Patcher.Services.Logging;
@@ -29,7 +30,10 @@ public class MoviePlayWindow : Window
     private readonly IMovieLogger _movieLogger;
     private readonly IMovieRunner _movieRunner;
     private readonly IBrowseFileWindowFactory _browseFileWindowFileWindowFactory;
+    private readonly IConfig _config;
     private IBrowseFileWindow _currentBrowseFileWindow;
+
+    private const string TAS_PATH_CONFIG_ENTRY = "movie-play-window-tas-path";
 
     public MoviePlayWindow(WindowDependencies windowDependencies, IMovieLogger movieLogger, IMovieRunner movieRunner,
         IBinds binds, IBrowseFileWindowFactory browseFileWindowFileWindowFactory, IGlobalHotkey globalHotkey) :
@@ -39,10 +43,16 @@ public class MoviePlayWindow : Window
         _movieLogger = movieLogger;
         _movieRunner = movieRunner;
         _browseFileWindowFileWindowFactory = browseFileWindowFileWindowFactory;
+        _config = windowDependencies.Config;
         movieLogger.OnLog += OnMovieLog;
 
         var playMovieBind = binds.Create(new("PlayMovie", KeyCode.Slash));
         globalHotkey.AddGlobalHotkey(new(playMovieBind, RunMovieWithLogs));
+
+        if (_config.TryGetBackendEntry(TAS_PATH_CONFIG_ENTRY, out string path))
+        {
+            _tasPath = path;
+        }
     }
 
     protected override void OnGUI()
@@ -73,7 +83,11 @@ public class MoviePlayWindow : Window
         if (GUILayout.Button("Browse", GUIUtils.EmptyOptions) && _currentBrowseFileWindow == null)
         {
             _currentBrowseFileWindow = _browseFileWindowFileWindowFactory.Open(new("Browse Movie", Paths.GameRootPath));
-            _currentBrowseFileWindow.OnFileSelected += path => _tasPath = path;
+            _currentBrowseFileWindow.OnFileSelected += path =>
+            {
+                _tasPath = path;
+                _config.WriteBackendEntry(TAS_PATH_CONFIG_ENTRY, path);
+            };
             _currentBrowseFileWindow.OnClosed += () => _currentBrowseFileWindow = null;
         }
 
