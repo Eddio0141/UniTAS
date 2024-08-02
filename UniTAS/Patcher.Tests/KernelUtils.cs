@@ -175,7 +175,17 @@ public static class KernelUtils
     [Register(IncludeDifferentAssembly = true)]
     public class ConfigDummy : IConfig
     {
-        public ConfigFile ConfigFile => null!;
+        public ConfigFile BepInExConfigFile => null!;
+
+        public bool TryGetBackendEntry<T>(string key, out T value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void WriteBackendEntry<T>(string key, T value)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     [Register(IncludeDifferentAssembly = true)]

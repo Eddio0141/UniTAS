@@ -21,10 +21,10 @@ public class FunctionCallTrace : PreloadPatcher
 
     public override void Patch(ref AssemblyDefinition assembly)
     {
-        if (!File.Exists(UniTASPaths.Config)) return;
+        if (!File.Exists(UniTASPaths.ConfigBepInEx)) return;
 
         // check config if loading
-        var unitasConfig = File.ReadAllText(UniTASPaths.Config);
+        var unitasConfig = File.ReadAllText(UniTASPaths.ConfigBepInEx);
 
         var funcTraceEnable = ConfigUtils.GetEntryKey(unitasConfig, Config.Sections.Debug.FunctionCallTrace.SECTION_NAME,
             Config.Sections.Debug.FunctionCallTrace.ENABLE);

@@ -33,14 +33,14 @@ public abstract class BuiltInOverlay : IOnUpdateUnconditional, IOverlayVisibleTo
     private void Init(IConfig config)
     {
         var entry = $"BuiltInOverlays.{ConfigName}";
-        _anchorX = config.ConfigFile.Bind(entry, "AnchorX", DefaultOffset.AnchorX,
+        _anchorX = config.BepInExConfigFile.Bind(entry, "AnchorX", DefaultOffset.AnchorX,
             "Anchor X position. 0 is left, 1 is right.");
-        _anchorY = config.ConfigFile.Bind(entry, "AnchorY", DefaultOffset.AnchorY,
+        _anchorY = config.BepInExConfigFile.Bind(entry, "AnchorY", DefaultOffset.AnchorY,
             "Anchor Y position. 0 is top, 1 is bottom.");
-        _offsetX = config.ConfigFile.Bind(entry, "OffsetX", DefaultOffset.OffsetX, "Offset X position.");
-        _offsetY = config.ConfigFile.Bind(entry, "OffsetY", DefaultOffset.OffsetY, "Offset Y position.");
-        _enabled = config.ConfigFile.Bind(entry, "Enabled", true);
-        _fontSize = config.ConfigFile.Bind(entry, "FontSize", DefaultFontSize);
+        _offsetX = config.BepInExConfigFile.Bind(entry, "OffsetX", DefaultOffset.OffsetX, "Offset X position.");
+        _offsetY = config.BepInExConfigFile.Bind(entry, "OffsetY", DefaultOffset.OffsetY, "Offset Y position.");
+        _enabled = config.BepInExConfigFile.Bind(entry, "Enabled", true);
+        _fontSize = config.BepInExConfigFile.Bind(entry, "FontSize", DefaultFontSize);
     }
 
     public void UpdateUnconditional()

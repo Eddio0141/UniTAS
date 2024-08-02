@@ -27,7 +27,7 @@ public class TimeEnv : ITimeEnv, IOnPreUpdateActual, IOnGameRestartResume, IOnSt
         // start time to current time
         StartupTime = patchReverseInvoker.Invoke(() => DateTime.Now);
 
-        _defaultFps = config.ConfigFile.Bind("General", "DefaultFps", 100f,
+        _defaultFps = config.BepInExConfigFile.Bind("General", "DefaultFps", 100f,
             "Default FPS when the TAS isn't running. Make sure the FPS is more than 0");
 
         if (_defaultFps.Value <= 0)

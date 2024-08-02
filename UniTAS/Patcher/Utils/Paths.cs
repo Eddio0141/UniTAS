@@ -16,6 +16,8 @@ public static class UniTASPaths
     public static string Cache { get; } = Path.Combine(UniTASBase, "cache");
     public static string AssemblyCache { get; } = Path.Combine(Cache, "assemblies");
     public static string ConfigCache { get; } = Path.Combine(Cache, "config");
-    public static string Config { get; } = Path.Combine(Paths.ConfigPath, CONFIG_FILE_NAME);
-    public const string CONFIG_FILE_NAME = "UniTAS.cfg";
+    public static string ConfigBepInEx { get; } = Path.Combine(Paths.ConfigPath, BEPINEX_CONFIG_FILE_NAME);
+    public const string BEPINEX_CONFIG_FILE_NAME = "UniTAS.cfg";
+    public static string ConfigBackend { get; } = Path.Combine(UniTASBase, BACKEND_CONFIG_FILE_NAME);
+    public const string BACKEND_CONFIG_FILE_NAME = "save.dat";
 }

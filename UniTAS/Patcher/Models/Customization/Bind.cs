@@ -48,7 +48,7 @@ public class Bind
     {
         if (_initialized || noGenConfig) return;
         _initialized = true;
-        _keyConfigEntry = _config.ConfigFile.Bind(CONFIG_SECTION, Name, _key.ToString(),
+        _keyConfigEntry = _config.BepInExConfigFile.Bind(CONFIG_SECTION, Name, _key.ToString(),
             "Key to press to trigger this bind. See https://docs.unity3d.com/ScriptReference/KeyCode.html for a list of keys.");
     }
 
