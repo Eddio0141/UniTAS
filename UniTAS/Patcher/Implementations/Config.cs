@@ -48,9 +48,11 @@ public class Config : IConfig, IDisposable
         }
 
         // add entry for patcher config entry
-        BepInExConfigFile.Bind(Sections.Debug.FunctionCallTrace.SECTION_NAME, Sections.Debug.FunctionCallTrace.ENABLE, false,
+        BepInExConfigFile.Bind(Sections.Debug.FunctionCallTrace.SECTION_NAME, Sections.Debug.FunctionCallTrace.ENABLE,
+            false,
             "If enabled, will hook on most functions and log every function call");
-        BepInExConfigFile.Bind(Sections.Debug.FunctionCallTrace.SECTION_NAME, Sections.Debug.FunctionCallTrace.MATCHING_TYPES, "*",
+        BepInExConfigFile.Bind(Sections.Debug.FunctionCallTrace.SECTION_NAME,
+            Sections.Debug.FunctionCallTrace.MATCHING_TYPES, "*",
             "A list of glob pattern of types to hook function call tracing to. You can append to the list by separating each entry with a comma. Example: `UnityEngine.Application, UnityEngine.Time, UnityEngine.InputSystem.*`");
 
         var backendConfigRaw = new List<string>();
@@ -71,7 +73,8 @@ public class Config : IConfig, IDisposable
             if (separatorIndex < 0)
             {
                 // invalid
-                _logger.LogWarning($"Backend config has an invalid line at line {i}: {backendConfigEntry}, removing and saving config");
+                _logger.LogWarning(
+                    $"Backend config has an invalid line at line {i}: {backendConfigEntry}, removing and saving config");
                 backendConfigRaw.RemoveAt(i);
 
                 try
@@ -88,7 +91,8 @@ public class Config : IConfig, IDisposable
                     }
                     catch (Exception e2)
                     {
-                        _logger.LogError($"Couldn't delete backend config, what??? Continuing with whatever is loaded: {e2}");
+                        _logger.LogError(
+                            $"Couldn't delete backend config, what??? Continuing with whatever is loaded: {e2}");
                     }
                 }
 
