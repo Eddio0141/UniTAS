@@ -27,7 +27,7 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvent
 
     private readonly IMovieParser _parser;
     private IMovieEngine _engine;
-    private readonly IMovieLogger _movieLogger;
+    public IMovieLogger MovieLogger { get; }
     private readonly ILogger _logger;
 
     private readonly IOnMovieRunningStatusChange[] _onMovieRunningStatusChange;
@@ -47,7 +47,7 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvent
     {
         _gameRestart = gameRestart;
         _parser = parser;
-        _movieLogger = movieLogger;
+        MovieLogger = movieLogger;
         _onMovieRunningStatusChange = onMovieRunningStatusChange;
         _virtualEnvController = virtualEnvController;
         _timeEnv = timeEnv;
@@ -78,8 +78,8 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvent
         {
             MovieRunningStatusChange(false);
             _setup = false;
-            _movieLogger.LogError("Failed to run TAS movie, an exception was thrown!");
-            _movieLogger.LogError(e.Message);
+            MovieLogger.LogError("Failed to run TAS movie, an exception was thrown!");
+            MovieLogger.LogError(e.Message);
             _logger.LogDebug(e);
 
             return;
@@ -133,7 +133,7 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvent
             _timeEnv.FrameTime = 0;
             MovieRunningStatusChange(false);
             _coroutine.Start(FinishMovieCleanup());
-            _movieLogger.LogInfo("movie end");
+            MovieLogger.LogInfo("movie end");
         }
     }
 
