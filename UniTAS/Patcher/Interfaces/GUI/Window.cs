@@ -39,12 +39,16 @@ public abstract class Window
 
     protected Window(WindowDependencies windowDependencies, WindowConfig config, string windowId = null)
     {
-        if (UsedWindowIDs.Contains(windowId))
+        if (windowId != null)
         {
-            throw new DuplicateWindowIDException($"WindowID {windowId} is already used");
+            if (UsedWindowIDs.Contains(windowId))
+            {
+                throw new DuplicateWindowIDException($"WindowID {windowId} is already used");
+            }
+
+            UsedWindowIDs.Add(windowId);
+            _windowConfigId = windowId;
         }
-        UsedWindowIDs.Add(windowId);
-        _windowConfigId = windowId;
 
         _patchReverseInvoker = windowDependencies.PatchReverseInvoker;
         _updateEvents = windowDependencies.UpdateEvents;
@@ -67,7 +71,8 @@ public abstract class Window
         _windowId = GetHashCode();
 
         // try load config stuff
-        if (_configService.TryGetBackendEntry($"{BACKEND_CONFIG_PREFIX}{BACKEND_CONFIG_WINDOW_RECT}{_windowConfigId}", out Models.Rect rect))
+        if (_configService.TryGetBackendEntry($"{BACKEND_CONFIG_PREFIX}{BACKEND_CONFIG_WINDOW_RECT}{_windowConfigId}",
+                out Models.Rect rect))
         {
             _windowRect = rect.ToUnityRect();
         }
@@ -265,6 +270,7 @@ public abstract class Window
     private void SaveWindowRect()
     {
         var saneRect = new Models.Rect(_windowRect);
-        _configService.WriteBackendEntry($"{BACKEND_CONFIG_PREFIX}{BACKEND_CONFIG_WINDOW_RECT}{_windowConfigId}", saneRect);
+        _configService.WriteBackendEntry($"{BACKEND_CONFIG_PREFIX}{BACKEND_CONFIG_WINDOW_RECT}{_windowConfigId}",
+            saneRect);
     }
 }
