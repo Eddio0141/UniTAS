@@ -152,6 +152,7 @@ public class TerminalWindow : Window, ITerminalWindow
             if (!split)
             {
                 _hijackingCmd.OnInput(_terminalInputFull, false);
+                _terminalInputFull = string.Empty;
             }
 
             _terminalInput = string.Empty;
