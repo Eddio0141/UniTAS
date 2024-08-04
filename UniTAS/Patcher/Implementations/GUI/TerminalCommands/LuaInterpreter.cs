@@ -1,4 +1,5 @@
 using System;
+using BepInEx;
 using MoonSharp.Interpreter;
 using UniTAS.Patcher.Interfaces.GUI;
 using UniTAS.Patcher.Services;
@@ -32,6 +33,8 @@ public class LuaInterpreter : TerminalCmd
 
     public override void OnInput(string input, bool split)
     {
+        if (input.IsNullOrWhiteSpace()) return;
+        
         if (split)
         {
             _terminalWindow.TerminalPrintLine($">> {input}");
