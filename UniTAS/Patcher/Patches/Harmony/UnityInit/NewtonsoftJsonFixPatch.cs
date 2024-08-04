@@ -17,9 +17,8 @@ namespace UniTAS.Patcher.Patches.Harmony.UnityInit;
 [SuppressMessage("ReSharper", "RedundantAssignment")]
 public class NewtonsoftJsonFixPatch
 {
-    // stupid fucking hack, all this for getting configs to serialize with a library I just wanna use
     [HarmonyPatch]
-    private class GetReflectionDelegateFactory
+    private class GetDynamicCodeGeneration
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
@@ -31,14 +30,12 @@ public class NewtonsoftJsonFixPatch
             return AccessTools.PropertyGetter(
                 AccessTools.GetTypesFromAssembly(typeof(JsonConvert).Assembly).FirstOrDefault(x =>
                     x.SaneFullName() == "Newtonsoft.Json.Serialization.JsonTypeReflector"),
-                "ReflectionDelegateFactory");
+                "DynamicCodeGeneration");
         }
 
-        private static MethodBase LateBoundInstanceGetter;
-
-        private static bool Prefix(ref object __result)
+        private static bool Prefix(ref bool __result)
         {
-            __result = LateBoundInstanceGetter.Invoke(null, null);
+            __result = false;
             return false;
         }
 
@@ -52,11 +49,6 @@ public class NewtonsoftJsonFixPatch
             }
             catch (Exception)
             {
-                LateBoundInstanceGetter = AccessTools.PropertyGetter(
-                    AccessTools.GetTypesFromAssembly(typeof(JsonConvert).Assembly)
-                        .FirstOrDefault(x =>
-                            x.SaneFullName() == "Newtonsoft.Json.Utilities.LateBoundReflectionDelegateFactory"),
-                    "Instance");
                 return true;
             }
         }
