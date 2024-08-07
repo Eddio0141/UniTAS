@@ -349,7 +349,7 @@ public static class InputSystemUtils
         return null;
     }
 
-    private static Key? NewKeyParse(KeyCode keyCode)
+    public static Key? NewKeyParse(KeyCode keyCode)
     {
         switch (keyCode)
         {

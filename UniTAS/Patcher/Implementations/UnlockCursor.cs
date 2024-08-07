@@ -10,7 +10,11 @@ namespace UniTAS.Patcher.Implementations;
 
 [Singleton]
 [ExcludeRegisterIfTesting]
-public class UnlockCursor(ICursorWrapper cursorWrapper, ILogger logger, IGameRestart gameRestart)
+public class UnlockCursor(
+    ICursorWrapper cursorWrapper,
+    ILogger logger,
+    IGameRestart gameRestart,
+    IUnityInputWrapper unityInput)
     : IOnUpdateUnconditional
 {
     // private readonly IPatchReverseInvoker _patchReverseInvoker = patchReverseInvoker;
@@ -18,12 +22,9 @@ public class UnlockCursor(ICursorWrapper cursorWrapper, ILogger logger, IGameRes
     public void UpdateUnconditional()
     {
         // prevent null ref exception
-        if (gameRestart.Restarting) return;
-
-        var input = BepInEx.UnityInput.Current;
-        // TODO: fix this
-        // if (!_patchReverseInvoker.Invoke(() => input.GetKeyDown(KeyCode.F1))) return;
-        if (!input.GetKeyDown(KeyCode.F1)) return;
+        if (gameRestart.Restarting ||
+            // get real input
+            !unityInput.GetKeyDown(KeyCode.F1)) return;
 
         cursorWrapper.Visible = true;
         cursorWrapper.LockState = CursorLockMode.None;

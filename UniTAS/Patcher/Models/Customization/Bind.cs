@@ -1,8 +1,8 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
-using BepInEx;
 using BepInEx.Configuration;
 using UniTAS.Patcher.Services;
+using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 using UnityEngine;
 
 namespace UniTAS.Patcher.Models.Customization;
@@ -27,18 +27,18 @@ public class Bind
     public string Name { get; }
     private ConfigEntry<string> _keyConfigEntry;
 
-    private readonly IPatchReverseInvoker _patchReverseInvoker;
     private readonly IConfig _config;
+    private readonly IUnityInputWrapper _unityInput;
     private KeyCode _key;
 
     private const string CONFIG_SECTION = "Binds";
 
-    public Bind(BindConfig bindConfig, IPatchReverseInvoker patchReverseInvoker, IConfig config)
+    public Bind(BindConfig bindConfig, IConfig config, IUnityInputWrapper unityInput)
     {
         if (bindConfig == null) throw new ArgumentNullException(nameof(bindConfig));
         _key = bindConfig.Key;
-        _patchReverseInvoker = patchReverseInvoker;
         _config = config;
+        _unityInput = unityInput;
         Name = bindConfig.Name;
     }
 
@@ -54,19 +54,12 @@ public class Bind
 
     public bool IsPressed()
     {
-        var current = UnityInput.Current;
-        return _patchReverseInvoker.Invoke(key => current.GetKeyDown(key), Key);
+        return _unityInput.GetKeyDown(Key);
     }
 }
 
-public class BindConfig
+public class BindConfig(string name, KeyCode key)
 {
-    public string Name { get; }
-    public KeyCode Key { get; }
-
-    public BindConfig(string name, KeyCode key)
-    {
-        Name = name ?? throw new ArgumentNullException(nameof(name));
-        Key = key;
-    }
+    public string Name { get; } = name ?? throw new ArgumentNullException(nameof(name));
+    public KeyCode Key { get; } = key;
 }
