@@ -1,4 +1,6 @@
+using System;
 using System.IO;
+using MoonSharp.Interpreter;
 using UniTAS.Patcher.Interfaces.GUI;
 using UniTAS.Patcher.Services.GUI;
 using UniTAS.Patcher.Services.Logging;
@@ -8,27 +10,26 @@ namespace UniTAS.Patcher.Implementations.GUI.TerminalCommands;
 
 public class Play(IMovieRunner movieRunner, ILogger logger) : TerminalCmd
 {
-    public override string Command => "play";
+    public override string Name => "play";
 
-    public override string Description => "Plays back a movie. Arg0: path to movie script, absolute path or relative path (to the game executable)";
+    public override string Description =>
+        "Plays back a movie. Arg0: path to movie script, absolute path or relative path (to the game executable)";
 
-    public override bool Execute(string[] args, ITerminalWindow terminalWindow)
+    public override Delegate Callback => Execute;
+
+    private void Execute(Script script, string path)
     {
-        if (args.Length != 1)
-        {
-            terminalWindow.TerminalPrintLine("Missing arg 0. Run `help play` for more info");
-            return false;
-        }
+        var print = script.Options.DebugPrint;
 
         string absPath;
         try
         {
-            absPath = Path.GetFullPath(args[0]);
+            absPath = Path.GetFullPath(path);
         }
-        catch (System.Exception e)
+        catch (Exception e)
         {
-            terminalWindow.TerminalPrintLine($"Failed to get absolute path from arg0: {e.Message}");
-            return false;
+            print($"Failed to get absolute path from arg0: {e.Message}");
+            return;
         }
 
         string movieContent;
@@ -36,22 +37,20 @@ public class Play(IMovieRunner movieRunner, ILogger logger) : TerminalCmd
         {
             movieContent = File.ReadAllText(absPath);
         }
-        catch (System.Exception e)
+        catch (Exception e)
         {
-            terminalWindow.TerminalPrintLine($"Failed to read from path {absPath}: {e.Message}");
-            return false;
+            print($"Failed to read from path {absPath}: {e.Message}");
+            return;
         }
 
         try
         {
             movieRunner.RunFromInput(movieContent);
         }
-        catch (System.Exception e)
+        catch (Exception e)
         {
-            terminalWindow.TerminalPrintLine($"Failed to start movie: {e.Message}");
+            print($"Failed to start movie: {e.Message}");
             logger.LogDebug($"Movie start failed from command: {e}");
         }
-
-        return false;
     }
 }

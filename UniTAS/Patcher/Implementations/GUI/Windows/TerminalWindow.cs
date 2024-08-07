@@ -1,6 +1,8 @@
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using BepInEx;
+using MoonSharp.Interpreter;
 using UniTAS.Patcher.Exceptions.GUI;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.GlobalHotkeyListener;
@@ -32,31 +34,40 @@ public class TerminalWindow : Window, ITerminalWindow
     private string _terminalInputFull = string.Empty;
     private Vector2 _terminalOutputScroll;
 
-    private TerminalCmd _hijackingCmd;
-
     private bool _initialFocus = true;
 
     private readonly Bind _terminalBind;
     private readonly Bind _terminalSubmit;
 
-    public TerminalWindow(WindowDependencies windowDependencies, TerminalCmd[] terminalEntries, IBinds binds,
+    private readonly Script _script;
+
+    public TerminalWindow(WindowDependencies windowDependencies, TerminalCmd[] commands, IBinds binds,
         IGlobalHotkey
-            globalHotkey, ITerminalLogger logger) : base(
+            globalHotkey, ITerminalLogger logger, ILiveScripting liveScripting) : base(
         windowDependencies,
-        new(defaultWindowRect: GUIUtils.WindowRect(Screen.width - 200, Screen.height - 200), windowName: "Terminal"), "terminal")
+        new(defaultWindowRect: GUIUtils.WindowRect(Screen.width - 200, Screen.height - 200), windowName: "Terminal"),
+        "terminal")
     {
+        // check dupes
+        var dupes = commands.GroupBy(x => x.Name).Where(x => x.Count() > 1).Select(x => x.Key).ToArray();
+        if (dupes.Any()) throw new DuplicateTerminalCmdException(dupes);
+        TerminalCmds = commands;
+        _logger = logger;
+
+        _script = liveScripting.NewScript();
+        _script.Options.DebugPrint = TerminalPrintLine;
+        foreach (var cmd in commands)
+        {
+            _script.Globals[cmd.Name] = cmd.Callback;
+            cmd.TerminalWindow = this;
+        }
+
         _patchReverseInvoker = windowDependencies.PatchReverseInvoker;
         windowDependencies.UpdateEvents.OnUpdateUnconditional += OnUpdateUnconditional;
 
         _terminalBind = binds.Create(new("NewTerminal", KeyCode.BackQuote));
         _terminalSubmit = binds.Create(new("TerminalSubmit", KeyCode.Return), true);
         globalHotkey.AddGlobalHotkey(new(_terminalBind, Show));
-
-        // check dupes
-        var dupes = terminalEntries.GroupBy(x => x.Command).Where(x => x.Count() > 1).Select(x => x.Key).ToArray();
-        if (dupes.Any()) throw new DuplicateTerminalCmdException(dupes);
-        TerminalCmds = terminalEntries;
-        _logger = logger;
     }
 
     private readonly GUILayoutOption[] _textAreaOptions = [GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true)];
@@ -135,7 +146,7 @@ public class TerminalWindow : Window, ITerminalWindow
             return;
         }
 
-        if (Event.current.keyCode == _terminalBind.Key && _hijackingCmd == null)
+        if (Event.current.keyCode == _terminalBind.Key)
         {
             _waitForTerminalBindRelease = true;
             Event.current.Use();
@@ -145,45 +156,25 @@ public class TerminalWindow : Window, ITerminalWindow
     private void Submit(bool split)
     {
         _terminalInputFull += $"{_terminalInput}\n";
-
-        if (_hijackingCmd != null)
-        {
-            _hijackingCmd.OnInput(_terminalInput, true);
-            if (!split)
-            {
-                _hijackingCmd.OnInput(_terminalInputFull, false);
-                _terminalInputFull = string.Empty;
-            }
-
-            _terminalInput = string.Empty;
-            return;
-        }
-
-        TerminalPrintLine($"] {_terminalInput}");
+        TerminalPrintLine($">> {_terminalInput}");
 
         _terminalInput = string.Empty;
-
         if (split) return;
 
-        var command = _terminalInputFull.Split(' ').FirstOrDefault()?.Trim();
-        var args = _terminalInputFull.Split(' ').Skip(1).Select(x => x.Trim()).ToArray();
+        try
+        {
+            _script.DoString(_terminalInputFull);
+        }
+        catch (InterpreterException e)
+        {
+            TerminalPrintLine(e.Message);
+        }
+        catch (Exception e)
+        {
+            TerminalPrintLine(e.ToString());
+        }
 
         _terminalInputFull = string.Empty;
-
-        if (string.IsNullOrEmpty(command)) return;
-
-        var cmd = TerminalCmds.FirstOrDefault(x => x.Command == command);
-        if (cmd == null)
-        {
-            TerminalPrintLine("command not found");
-            return;
-        }
-
-        var hijack = cmd.Execute(args, this);
-        if (hijack)
-        {
-            _hijackingCmd = cmd;
-        }
     }
 
     public void TerminalPrintLine(string output)
@@ -193,10 +184,5 @@ public class TerminalWindow : Window, ITerminalWindow
 
         // scroll to bottom
         _terminalOutputScroll.y = Mathf.Infinity;
-    }
-
-    public void ReleaseTerminal()
-    {
-        _hijackingCmd = null;
     }
 }

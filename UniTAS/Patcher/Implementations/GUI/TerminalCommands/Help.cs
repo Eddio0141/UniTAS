@@ -1,40 +1,40 @@
+using System;
 using System.Linq;
+using BepInEx;
+using MoonSharp.Interpreter;
 using UniTAS.Patcher.Interfaces.GUI;
-using UniTAS.Patcher.Services.GUI;
 
 namespace UniTAS.Patcher.Implementations.GUI.TerminalCommands;
 
 public class Help : TerminalCmd
 {
-    public override string Command => "help";
+    public override string Name => "help";
 
     public override string Description =>
         "Prints all available commands. Arg 0 (string) (optional): command to get help for";
 
-    public override bool Execute(string[] args, ITerminalWindow terminalWindow)
-    {
-        var command = args.Length > 0 ? args[0] : null;
+    public override Delegate Callback => Execute;
 
-        if (command != null)
+    private void Execute(Script script, string command)
+    {
+        var print = script.Options.DebugPrint;
+
+        if (!command.IsNullOrWhiteSpace())
         {
             // display help for a command
-            var terminalEntry = terminalWindow.TerminalCmds.FirstOrDefault(x => x.Command == command);
+            var terminalEntry = TerminalWindow.TerminalCmds.FirstOrDefault(x => x.Name == command);
 
-            terminalWindow.TerminalPrintLine(terminalEntry == null
+            print(terminalEntry == null
                 ? $"Command {command} not found"
-                : $"{terminalEntry.Command} - {terminalEntry.Description}");
-
-            return false;
+                : $"{terminalEntry.Name} - {terminalEntry.Description}");
         }
 
-        var terminalEntries = terminalWindow.TerminalCmds;
-        terminalWindow.TerminalPrintLine("Available commands:");
+        var terminalEntries = TerminalWindow.TerminalCmds;
+        print("Available commands:");
 
         foreach (var terminalEntry in terminalEntries)
         {
-            terminalWindow.TerminalPrintLine($"{terminalEntry.Command} - {terminalEntry.Description}");
+            print($"{terminalEntry.Name} - {terminalEntry.Description}");
         }
-
-        return false;
     }
 }

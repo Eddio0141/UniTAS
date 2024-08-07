@@ -1,3 +1,4 @@
+using System;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Services.GUI;
 
@@ -10,9 +11,14 @@ namespace UniTAS.Patcher.Interfaces.GUI;
 public abstract class TerminalCmd
 {
     /// <summary>
+    /// Terminal window the command is used in (if instance is used in one)
+    /// </summary>
+    public ITerminalWindow TerminalWindow { get; set; }
+    
+    /// <summary>
     /// Command name
     /// </summary>
-    public abstract string Command { get; }
+    public abstract string Name { get; }
 
     /// <summary>
     /// Description of this command. It will be displayed in the help command
@@ -20,19 +26,7 @@ public abstract class TerminalCmd
     public abstract string Description { get; }
 
     /// <summary>
-    /// Method that gets executed when the command is called
+    /// Function to add to the terminal interpreter
     /// </summary>
-    /// <param name="args">Arguments</param>
-    /// <param name="terminalWindow">The terminal window instance invoking this method</param>
-    /// <returns>Return true to hijack the terminal window and prevent other entries from executing. To revert the hijacked state, check <see cref="ITerminalWindow.ReleaseTerminal"/></returns>
-    public abstract bool Execute(string[] args, ITerminalWindow terminalWindow);
-
-    /// <summary>
-    /// Executed when the terminal receives input while the terminal is hijacked
-    /// </summary>
-    /// <param name="input">Input string. If not split, this is the full complete input (with newlines if split). If split, it contains the split input</param>
-    /// <param name="split">If the input is split or not</param>
-    public virtual void OnInput(string input, bool split)
-    {
-    }
+    public abstract Delegate Callback { get; }
 }

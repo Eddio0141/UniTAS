@@ -7,27 +7,21 @@ using UniTAS.Patcher.Services.GUI;
 
 namespace UniTAS.Patcher.Implementations.GUI.TerminalCommands;
 
-public class Restart : TerminalCmd
+public class Restart(IGameRestart gameRestart) : TerminalCmd
 {
-    private readonly IGameRestart _gameRestart;
-
-    public Restart(IGameRestart gameRestart)
-    {
-        _gameRestart = gameRestart;
-    }
-
-    public override string Command => "restart";
+    public override string Name => "restart";
     public override string Description => "soft restarts the game";
 
-    public override bool Execute(string[] args, ITerminalWindow terminalWindow)
+    public override Delegate Callback => Execute;
+
+    private void Execute(string time)
     {
-        if (args.Length < 1 || !DateTime.TryParse(args.First(), CultureInfo.InvariantCulture,
-                DateTimeStyles.AdjustToUniversal, out var restartTime))
+        if (!DateTime.TryParse(time, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal,
+                out var restartTime))
         {
             restartTime = DateTime.Now;
         }
 
-        _gameRestart.SoftRestart(restartTime);
-        return false;
+        gameRestart.SoftRestart(restartTime);
     }
 }
