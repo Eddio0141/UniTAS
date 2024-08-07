@@ -7,19 +7,14 @@ using UniTAS.Patcher.Services.GUI;
 
 namespace UniTAS.Patcher.Implementations.GUI.TerminalCommands;
 
-public class LuaInterpreter : TerminalCmd
+public class LuaInterpreter(ILiveScripting liveScripting) : TerminalCmd
 {
     public override string Command => "lua";
     public override string Description => "Lua interpreter to interact with UniTAS and the game";
 
     private ITerminalWindow _terminalWindow;
 
-    private readonly Script _script;
-
-    public LuaInterpreter(ILiveScripting liveScripting)
-    {
-        _script = liveScripting.NewScript();
-    }
+    private readonly Script _script = liveScripting.NewScript();
 
     public override bool Execute(string[] args, ITerminalWindow terminalWindow)
     {
@@ -34,7 +29,7 @@ public class LuaInterpreter : TerminalCmd
     public override void OnInput(string input, bool split)
     {
         if (input.IsNullOrWhiteSpace()) return;
-        
+
         if (split)
         {
             _terminalWindow.TerminalPrintLine($">> {input}");
@@ -45,9 +40,13 @@ public class LuaInterpreter : TerminalCmd
         {
             _script.DoString(input);
         }
-        catch (Exception e)
+        catch (InterpreterException e)
         {
             _terminalWindow.TerminalPrintLine(e.Message);
+        }
+        catch (Exception e)
+        {
+            _terminalWindow.TerminalPrintLine(e.ToString());
         }
     }
 
