@@ -1,7 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using BepInEx;
 using MoonSharp.Interpreter;
 using UniTAS.Patcher.Exceptions.GUI;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
@@ -13,6 +12,7 @@ using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Customization;
 using UniTAS.Patcher.Services.GUI;
 using UniTAS.Patcher.Services.Logging;
+using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 
@@ -26,7 +26,6 @@ public class TerminalWindow : Window, ITerminalWindow
 {
     public TerminalCmd[] TerminalCmds { get; }
 
-    private readonly IPatchReverseInvoker _patchReverseInvoker;
     private readonly ITerminalLogger _logger;
 
     private string _terminalOutput = string.Empty;
@@ -42,9 +41,8 @@ public class TerminalWindow : Window, ITerminalWindow
     private readonly Script _script;
 
     public TerminalWindow(WindowDependencies windowDependencies, TerminalCmd[] commands, IBinds binds,
-        IGlobalHotkey
-            globalHotkey, ITerminalLogger logger, ILiveScripting liveScripting) : base(
-        windowDependencies,
+        IGlobalHotkey globalHotkey, ITerminalLogger logger, ILiveScripting liveScripting,
+        IUnityInputWrapper unityInput) : base(windowDependencies,
         new(defaultWindowRect: GUIUtils.WindowRect(Screen.width - 200, Screen.height - 200), windowName: "Terminal"),
         "terminal")
     {
@@ -55,14 +53,13 @@ public class TerminalWindow : Window, ITerminalWindow
         _logger = logger;
 
         _script = liveScripting.NewScript();
-        _script.Options.DebugPrint = TerminalPrintLine;
+        _script.Options.DebugPrint = msg => TerminalPrintLine($">> {msg}");
         foreach (var cmd in commands)
         {
             _script.Globals[cmd.Name] = cmd.Callback;
             cmd.TerminalWindow = this;
         }
 
-        _patchReverseInvoker = windowDependencies.PatchReverseInvoker;
         windowDependencies.UpdateEvents.OnUpdateUnconditional += OnUpdateUnconditional;
 
         _terminalBind = binds.Create(new("NewTerminal", KeyCode.BackQuote));
@@ -116,11 +113,6 @@ public class TerminalWindow : Window, ITerminalWindow
         GUILayout.EndVertical();
     }
 
-    private bool GetKey(KeyCode keyCode)
-    {
-        return _patchReverseInvoker.Invoke(key => UnityInput.Current.GetKey(key), keyCode);
-    }
-
     private bool _waitForTerminalBindRelease;
 
     private void CheckTerminalInputBinds()
@@ -140,8 +132,7 @@ public class TerminalWindow : Window, ITerminalWindow
 
         if (Event.current.keyCode == _terminalSubmit.Key)
         {
-            // hold shift to split input
-            Submit(GetKey(KeyCode.LeftShift) | GetKey(KeyCode.RightShift));
+            Submit(Event.current.shift);
             Event.current.Use();
             return;
         }
@@ -153,10 +144,28 @@ public class TerminalWindow : Window, ITerminalWindow
         }
     }
 
+    private int _indent;
+
     private void Submit(bool split)
     {
         _terminalInputFull += $"{_terminalInput}\n";
-        TerminalPrintLine($">> {_terminalInput}");
+
+        // handle indent resetting or reducing
+        var inputTrimmed = _terminalInput.Trim();
+        if (split && inputTrimmed == "end")
+            _indent = Math.Max(_indent - 1, 0);
+        else if (!split)
+            _indent = 0;
+
+        TerminalPrintLine(new string(' ', _indent * 2) + _terminalInput);
+
+        // handling indent increasing
+        if (split && _indent < int.MaxValue - 1)
+        {
+            if ((inputTrimmed.StartsWith("function ") && !inputTrimmed.EndsWith("end")) ||
+                (inputTrimmed.StartsWith("if ") && !inputTrimmed.EndsWith("end")))
+                _indent++;
+        }
 
         _terminalInput = string.Empty;
         if (split) return;
@@ -167,11 +176,11 @@ public class TerminalWindow : Window, ITerminalWindow
         }
         catch (InterpreterException e)
         {
-            TerminalPrintLine(e.Message);
+            TerminalPrintLine(">> " + e.Message);
         }
         catch (Exception e)
         {
-            TerminalPrintLine(e.ToString());
+            TerminalPrintLine(">> " + e);
         }
 
         _terminalInputFull = string.Empty;
