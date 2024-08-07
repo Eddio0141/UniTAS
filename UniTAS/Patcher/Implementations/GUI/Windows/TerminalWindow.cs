@@ -58,6 +58,7 @@ public class TerminalWindow : Window, ITerminalWindow
         {
             _script.Globals[cmd.Name] = cmd.Callback;
             cmd.TerminalWindow = this;
+            cmd.Setup();
         }
 
         windowDependencies.UpdateEvents.OnUpdateUnconditional += OnUpdateUnconditional;

@@ -14,7 +14,7 @@ public abstract class TerminalCmd
     /// Terminal window the command is used in (if instance is used in one)
     /// </summary>
     public ITerminalWindow TerminalWindow { get; set; }
-    
+
     /// <summary>
     /// Command name
     /// </summary>
@@ -29,4 +29,11 @@ public abstract class TerminalCmd
     /// Function to add to the terminal interpreter
     /// </summary>
     public abstract Delegate Callback { get; }
+
+    /// <summary>
+    /// Called once on setting up command
+    /// </summary>
+    public virtual void Setup()
+    {
+    }
 }
