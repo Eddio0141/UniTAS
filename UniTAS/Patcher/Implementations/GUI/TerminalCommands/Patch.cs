@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using HarmonyLib;
@@ -82,14 +81,14 @@ public class Patch(IHarmony harmony) : TerminalCmd
         var targetTypeRaw = target.Substring(0, targetTypeRawSepIndex);
         var targetTypeMethodRaw = targetTypeRawSepIndex < 0 ? null : target.Substring(targetTypeRawSepIndex + 1);
 
-        var targetType = FindTypeFully(targetTypeRaw);
+        var targetType = AccessToolsUtils.FindTypeFully(targetTypeRaw);
         if (targetType == null)
         {
             // maybe we got the type separated in a weird wrong way
             // try again!
             targetTypeRaw = target;
             targetTypeMethodRaw = null;
-            targetType = FindTypeFully(targetTypeRaw);
+            targetType = AccessToolsUtils.FindTypeFully(targetTypeRaw);
 
             if (targetType == null)
             {
@@ -322,16 +321,6 @@ public class Patch(IHarmony harmony) : TerminalCmd
     private static readonly List<bool> PatchCanReturn = [];
     private static readonly List<bool> PatchIsPrefix = [];
 
-    private static Type FindTypeFully(string type)
-    {
-        var targetType = AccessTools.TypeByName(type);
-        if (targetType != null) return targetType;
-
-        // could be somewhere else, and TypeByName might not be able to find it
-        return AccessTools.AllAssemblies()
-            .SelectMany(AccessTools.GetTypesFromAssembly).FirstOrDefault(x => x.SaneFullName() == type);
-    }
-
     private static MethodBase PatchMethod(Type type, string target, bool declared, string[] argsRaw,
         string[] genericsRaw, out string message, out Type returnType)
     {
@@ -370,7 +359,7 @@ public class Patch(IHarmony harmony) : TerminalCmd
         var types = new List<Type>(typesRaw.Length);
         foreach (var typeRaw in typesRaw)
         {
-            var t = FindTypeFully(typeRaw);
+            var t = AccessToolsUtils.FindTypeFully(typeRaw);
             if (t == null)
             {
                 message = $"failed to find argument type {typeRaw}";
