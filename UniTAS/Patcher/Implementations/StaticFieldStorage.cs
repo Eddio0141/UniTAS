@@ -5,6 +5,9 @@ using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.Trackers.TrackInfo;
 using UniTAS.Patcher.Utils;
+#if TRACE
+using System.Diagnostics;
+#endif
 
 namespace UniTAS.Patcher.Implementations;
 
@@ -23,6 +26,10 @@ public class StaticFieldStorage(
 
         UnityEngine.Resources.UnloadUnusedAssets();
 
+#if TRACE
+        var sw = new Stopwatch();
+        sw.Start();
+#endif
         foreach (var field in classStaticInfoTracker.StaticFields)
         {
             var typeName = field.DeclaringType?.FullName ?? "unknown_type";
@@ -40,6 +47,10 @@ public class StaticFieldStorage(
             freeMalloc?.TryFree(null, field);
             field.SetValue(null, null);
         }
+#if TRACE
+        sw.Stop();
+        StaticLogger.Trace($"Time elapsed for static fields resetting: {sw.Elapsed.Milliseconds}ms");
+#endif
 
         // idk if this even works
         GC.Collect();
@@ -47,6 +58,10 @@ public class StaticFieldStorage(
 
         var count = classStaticInfoTracker.StaticCtorInvokeOrder.Count;
         logger.LogDebug($"calling {count} static constructors");
+#if TRACE
+        sw.Reset();
+        sw.Start();
+#endif
         for (var i = 0; i < count; i++)
         {
             var staticCtorType = classStaticInfoTracker.StaticCtorInvokeOrder[i];
@@ -64,5 +79,9 @@ public class StaticFieldStorage(
                 logger.LogDebug($"Exception thrown while calling static constructor: {e}");
             }
         }
+#if TRACE
+        sw.Stop();
+        StaticLogger.Trace($"Time elapsed for static constructor invokes: {sw.Elapsed.Milliseconds}ms");
+#endif
     }
 }
