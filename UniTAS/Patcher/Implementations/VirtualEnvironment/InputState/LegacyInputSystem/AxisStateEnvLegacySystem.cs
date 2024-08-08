@@ -52,6 +52,7 @@ public class AxisStateEnvLegacySystem(IAxisButtonStateEnvUpdate axisButtonStateE
         {
             value.ResetState();
         }
+        axisButtonStateEnvUpdate.ResetState();
     }
 
     public float GetAxis(string axisName)

@@ -7,4 +7,5 @@ public interface IAxisButtonStateEnvUpdate
 {
     void Hold(string button);
     void Release(string button);
+    void ResetState();
 }
