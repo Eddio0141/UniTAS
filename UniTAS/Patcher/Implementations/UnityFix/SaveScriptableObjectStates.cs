@@ -13,7 +13,7 @@ using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations.UnityFix;
 
-// [Singleton]
+[Singleton]
 public partial class SaveScriptableObjectStates : INewScriptableObjectTracker, IOnAwakeUnconditional, IOnPreGameRestart
 {
     private readonly List<StoredState> _storedStates = new();
