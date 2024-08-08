@@ -5,7 +5,7 @@ namespace UniTAS.Patcher.Services.VirtualEnvironment.Input;
 /// </summary>
 public interface IKeyboardStateEnvController
 {
-    void Hold(string key);
-    void Release(string key);
+    void Hold(string key, out string warningMsg);
+    void Release(string key, out string warningMsg);
     void Clear();
 }
