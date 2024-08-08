@@ -8,7 +8,7 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 using UniTAS.Patcher.Extensions;
-using UniTAS.Patcher.Implementations;
+using UniTAS.Patcher.Implementations.Customization;
 using UniTAS.Patcher.Interfaces;
 using UniTAS.Patcher.Utils;
 

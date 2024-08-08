@@ -11,11 +11,11 @@ using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Utils;
 
-namespace UniTAS.Patcher.Implementations;
+namespace UniTAS.Patcher.Implementations.Customization;
 
 [Singleton]
 [ExcludeRegisterIfTesting]
-public class Config : IConfig, IDisposable
+public partial class Config : IConfig, IDisposable
 {
     public ConfigFile BepInExConfigFile { get; } = new(UniTASPaths.ConfigBepInEx, true);
 
@@ -147,18 +147,5 @@ public class Config : IConfig, IDisposable
 
         value = JsonConvert.DeserializeObject<T>(entry);
         return true;
-    }
-
-    public static class Sections
-    {
-        public static class Debug
-        {
-            public static class FunctionCallTrace
-            {
-                public const string SECTION_NAME = $"{nameof(Debug)}.FunctionCallTrace";
-                public const string ENABLE = "Enable";
-                public const string MATCHING_TYPES = "MatchingTypes";
-            }
-        }
     }
 }
