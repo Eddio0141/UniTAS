@@ -20,6 +20,8 @@ public abstract class LegacyInputSystemDevice : InputState
     {
         base.MovieUpdate(fixedUpdate);
 
+        if (fixedUpdate) return;
+        
         // this just needs to be flushed before legacy input system input is read so its fine to be pre-updates
         FlushBufferedInputs();
     }
