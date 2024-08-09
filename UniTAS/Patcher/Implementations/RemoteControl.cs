@@ -17,6 +17,7 @@ namespace UniTAS.Patcher.Implementations;
 
 [Singleton]
 [ForceInstantiate]
+[ExcludeRegisterIfTesting]
 public class RemoteControl
 {
     private readonly Script _script;
