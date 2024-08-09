@@ -15,8 +15,13 @@ jobs:
           submodules: true
       - name: Setup .NET
         uses: actions/setup-dotnet@v4.0.0
-      - name: Setup ffmpeg
-        uses: FedericoCarboni/setup-ffmpeg@v3.1
+      # NOTE: this is replaced because of https://github.com/federicocarboni/setup-ffmpeg/issues/19
+      # - name: Setup ffmpeg
+      #   uses: FedericoCarboni/setup-ffmpeg@v3.1
+      - name: Setup ffmpeg with retries
+        uses: ./.github/actions/setup-ffmpeg
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Tests
         run: dotnet test UniTAS --configuration ${{ matrix.configuration }}
       - name: Build
