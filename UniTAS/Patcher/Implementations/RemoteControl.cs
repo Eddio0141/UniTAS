@@ -179,54 +179,6 @@ public class RemoteControl
                 {
                     _script.DoString(response);
                 }
-                catch (ScriptRuntimeException e)
-                {
-                    var msg = e.Message;
-                    const string searchKey = "type ";
-                    var i = msg.IndexOf(searchKey, StringComparison.Ordinal);
-                    if (i < 0)
-                    {
-                        _printResponse.Enqueue(e.ToString());
-                        continue;
-                    }
-
-                    var typeRaw = msg.Substring(i + searchKey.Length);
-                    var type = AccessTools.TypeByName(typeRaw);
-                    if (type == null)
-                    {
-                        _printResponse.Enqueue(e.ToString());
-                        continue;
-                    }
-
-                    if (UserData.IsTypeRegistered(type))
-                    {
-                        _printResponse.Enqueue(e.ToString());
-                        continue;
-                    }
-
-                    try
-                    {
-                        UserData.RegisterType(type);
-                    }
-                    catch (Exception e2)
-                    {
-                        var err = $"failed to register type to MoonSharp: {e2}";
-                        _logger.LogError(err);
-                        _printResponse.Enqueue(err);
-                        _printResponse.Enqueue(e.ToString());
-                        continue;
-                    }
-
-                    // rerun
-                    try
-                    {
-                        _script.DoString(response);
-                    }
-                    catch (Exception e2)
-                    {
-                        _printResponse.Enqueue(e2.ToString());
-                    }
-                }
                 catch (Exception e)
                 {
                     _printResponse.Enqueue(e.ToString());
