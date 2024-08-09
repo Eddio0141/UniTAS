@@ -11,6 +11,7 @@ namespace UniTAS.Patcher.Implementations;
 
 [Singleton]
 [ForceInstantiate]
+[ExcludeRegisterIfTesting]
 public class LiveScripting : ILiveScripting
 {
     private readonly Thread _setupThread;
