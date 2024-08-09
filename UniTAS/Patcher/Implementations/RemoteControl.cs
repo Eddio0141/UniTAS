@@ -4,7 +4,9 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using HarmonyLib;
 using MoonSharp.Interpreter;
+using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Implementations.Customization;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.GUI;
@@ -69,70 +71,142 @@ public class RemoteControl
 
     private void ThreadLoop(IPAddress ipAddr, int port)
     {
-        _logger.LogDebug("connecting...");
-
         TcpListener server = new(ipAddr, port);
-
-        NetworkStream networkStream;
         try
         {
             server.Start();
-            var client = server.AcceptTcpClient();
-            networkStream = client.GetStream();
-            networkStream.ReadTimeout = 10;
         }
         catch (Exception e)
         {
-            _logger.LogError($"failed to enable remote control: {e}");
+            _logger.LogError($"failed to start remote server: {e}");
             return;
         }
 
-        _logger.LogDebug("connected!");
-
         var data = new byte[256];
+
         while (true)
         {
-            lock (_printResponseLock)
-            {
-                while (_printResponse.Count > 0)
-                {
-                    var first = $"{_printResponse.Peek()}\n";
-                    var firstBytes = Encoding.ASCII.GetBytes(first);
-                    try
-                    {
-                        _logger.LogDebug($"sending script print: {first}");
-                        networkStream.Write(firstBytes, 0, firstBytes.Length);
-                    }
-                    catch (Exception e)
-                    {
-                        _logger.LogError($"failed to send data to client: {e}");
-                        break;
-                    }
+            _logger.LogDebug($"connecting to client for remote control: {ipAddr}:{port}");
 
-                    _printResponse.Dequeue();
-                }
-            }
-
-            int bytes;
+            NetworkStream networkStream;
+            TcpClient client;
             try
             {
-                bytes = networkStream.Read(data, 0, data.Length);
-            }
-            catch (Exception)
-            {
-                continue;
-            }
-
-            var response = Encoding.ASCII.GetString(data, 0, bytes);
-            _logger.LogDebug($"remote got client data: {response}");
-
-            try
-            {
-                _script.DoString(response);
+                client = server.AcceptTcpClient();
+                networkStream = client.GetStream();
+                networkStream.ReadTimeout = 10;
             }
             catch (Exception e)
             {
-                _printResponse.Enqueue(e.ToString());
+                _logger.LogError($"failed to connect to remote control client: {e}");
+                continue;
+            }
+
+            _logger.LogDebug("connected to remote control client");
+
+            while (true)
+            {
+                if (!client.IsConnected())
+                {
+                    _logger.LogDebug("remote client has disconnected");
+                    client.Close();
+                    networkStream.Close();
+                    break;
+                }
+
+                lock (_printResponseLock)
+                {
+                    while (_printResponse.Count > 0)
+                    {
+                        var first = $"{_printResponse.Peek()}\n";
+                        var firstBytes = Encoding.ASCII.GetBytes(first);
+                        try
+                        {
+                            _logger.LogDebug($"sending script print: {first}");
+                            networkStream.Write(firstBytes, 0, firstBytes.Length);
+                        }
+                        catch (Exception e)
+                        {
+                            _logger.LogError($"failed to send data to client: {e}");
+                            Thread.Sleep(100);
+                            continue;
+                        }
+
+                        _printResponse.Dequeue();
+                    }
+                }
+
+                int bytes;
+                try
+                {
+                    bytes = networkStream.Read(data, 0, data.Length);
+                }
+                catch (Exception)
+                {
+                    continue;
+                }
+
+                if (bytes == 0) continue;
+
+                var response = Encoding.ASCII.GetString(data, 0, bytes);
+                _logger.LogDebug($"remote got client data: {response}");
+
+                try
+                {
+                    _script.DoString(response);
+                }
+                catch (ScriptRuntimeException e)
+                {
+                    var msg = e.Message;
+                    const string searchKey = "type ";
+                    var i = msg.IndexOf(searchKey, StringComparison.Ordinal);
+                    if (i < 0)
+                    {
+                        _printResponse.Enqueue(e.ToString());
+                        continue;
+                    }
+
+                    var typeRaw = msg.Substring(i + searchKey.Length);
+                    var type = AccessTools.TypeByName(typeRaw);
+                    if (type == null)
+                    {
+                        _printResponse.Enqueue(e.ToString());
+                        continue;
+                    }
+
+                    if (UserData.IsTypeRegistered(type))
+                    {
+                        _printResponse.Enqueue(e.ToString());
+                        continue;
+                    }
+
+                    try
+                    {
+                        UserData.RegisterType(type);
+                    }
+                    catch (Exception e2)
+                    {
+                        var err = $"failed to register type to MoonSharp: {e2}";
+                        _logger.LogError(err);
+                        _printResponse.Enqueue(err);
+                        _printResponse.Enqueue(e.ToString());
+                        continue;
+                    }
+
+                    // rerun
+                    try
+                    {
+                        _script.DoString(response);
+                    }
+                    catch (Exception e2)
+                    {
+                        _printResponse.Enqueue(e2.ToString());
+                    }
+                }
+                catch (Exception e)
+                {
+                    _printResponse.Enqueue(e.ToString());
+                }
             }
         }
         // ReSharper disable once FunctionNeverReturns
