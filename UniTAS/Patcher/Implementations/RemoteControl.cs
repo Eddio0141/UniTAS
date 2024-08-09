@@ -94,7 +94,7 @@ public class RemoteControl
             {
                 client = server.AcceptTcpClient();
                 networkStream = client.GetStream();
-                networkStream.ReadTimeout = 10;
+                networkStream.ReadTimeout = 50;
             }
             catch (Exception e)
             {
@@ -103,6 +103,8 @@ public class RemoteControl
             }
 
             _logger.LogDebug("connected to remote control client");
+
+            var prefixPrompt = true;
 
             while (true)
             {
@@ -136,17 +138,38 @@ public class RemoteControl
                     }
                 }
 
-                int bytes;
+                if (prefixPrompt)
+                {
+                    _logger.LogDebug("sending prefix for interpreter input");
+
+                    var prefixBytes = ">> "u8.ToArray();
+                    try
+                    {
+                        networkStream.Write(prefixBytes, 0, prefixBytes.Length);
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogError($"failed to send data to client: {e}");
+                        Thread.Sleep(100);
+                        continue;
+                    }
+
+                    prefixPrompt = false;
+                }
+
+                var bytes = 0;
                 try
                 {
                     bytes = networkStream.Read(data, 0, data.Length);
                 }
                 catch (Exception)
                 {
-                    continue;
+                    //ignored
                 }
 
                 if (bytes == 0) continue;
+
+                prefixPrompt = true;
 
                 var response = Encoding.ASCII.GetString(data, 0, bytes);
                 _logger.LogDebug($"remote got client data: {response}");
