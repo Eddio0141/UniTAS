@@ -22,7 +22,7 @@ namespace UniTAS.Patcher.Implementations.GUI.Windows;
 [ForceInstantiate]
 [ExcludeRegisterIfTesting]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-public class TerminalWindow : Window, ITerminalWindow
+public class TerminalWindow : Window
 {
     public TerminalCmd[] TerminalCmds { get; }
 
@@ -57,7 +57,6 @@ public class TerminalWindow : Window, ITerminalWindow
         foreach (var cmd in commands)
         {
             _script.Globals[cmd.Name] = cmd.Callback;
-            cmd.TerminalWindow = this;
             cmd.Setup();
         }
 

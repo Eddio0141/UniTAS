@@ -3,6 +3,7 @@ using System.Linq;
 using BepInEx;
 using MoonSharp.Interpreter;
 using UniTAS.Patcher.Interfaces.GUI;
+using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Implementations.GUI.TerminalCommands;
 
@@ -15,6 +16,8 @@ public class Help : TerminalCmd
 
     public override Delegate Callback => Execute;
 
+    private static readonly TerminalCmd[] Commands = ContainerStarter.Kernel.GetAllInstances<TerminalCmd>().ToArray();
+
     private void Execute(Script script, string command)
     {
         var print = script.Options.DebugPrint;
@@ -22,17 +25,16 @@ public class Help : TerminalCmd
         if (!command.IsNullOrWhiteSpace())
         {
             // display help for a command
-            var terminalEntry = TerminalWindow.TerminalCmds.FirstOrDefault(x => x.Name == command);
+            var terminalEntry = Commands.FirstOrDefault(x => x.Name == command);
 
             print(terminalEntry == null
                 ? $"Command {command} not found"
                 : $"{terminalEntry.Name} - {terminalEntry.Description}");
         }
 
-        var terminalEntries = TerminalWindow.TerminalCmds;
         print("Available commands:");
 
-        foreach (var terminalEntry in terminalEntries)
+        foreach (var terminalEntry in Commands)
         {
             print($"{terminalEntry.Name} - {terminalEntry.Description}");
         }

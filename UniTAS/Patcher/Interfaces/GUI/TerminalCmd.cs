@@ -1,6 +1,5 @@
 using System;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
-using UniTAS.Patcher.Services.GUI;
 
 namespace UniTAS.Patcher.Interfaces.GUI;
 
@@ -10,11 +9,6 @@ namespace UniTAS.Patcher.Interfaces.GUI;
 [RegisterAll]
 public abstract class TerminalCmd
 {
-    /// <summary>
-    /// Terminal window the command is used in (if instance is used in one)
-    /// </summary>
-    public ITerminalWindow TerminalWindow { get; set; }
-
     /// <summary>
     /// Command name
     /// </summary>
