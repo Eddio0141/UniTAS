@@ -10,7 +10,6 @@ using UniTAS.Patcher.Models.Customization;
 using UniTAS.Patcher.Models.GUI;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Customization;
-using UniTAS.Patcher.Services.GUI;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Patcher.Utils;
@@ -24,8 +23,6 @@ namespace UniTAS.Patcher.Implementations.GUI.Windows;
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public class TerminalWindow : Window
 {
-    public TerminalCmd[] TerminalCmds { get; }
-
     private readonly ITerminalLogger _logger;
 
     private string _terminalOutput = string.Empty;
@@ -49,7 +46,6 @@ public class TerminalWindow : Window
         // check dupes
         var dupes = commands.GroupBy(x => x.Name).Where(x => x.Count() > 1).Select(x => x.Key).ToArray();
         if (dupes.Any()) throw new DuplicateTerminalCmdException(dupes);
-        TerminalCmds = commands;
         _logger = logger;
 
         _script = liveScripting.NewScript();
@@ -186,7 +182,7 @@ public class TerminalWindow : Window
         _terminalInputFull = string.Empty;
     }
 
-    public void TerminalPrintLine(string output)
+    private void TerminalPrintLine(string output)
     {
         _terminalOutput += $"{output}\n";
         _logger.LogMessage(output);
