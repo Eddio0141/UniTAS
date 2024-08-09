@@ -13,5 +13,12 @@ public partial class Config
                 public const string MATCHING_TYPES = "MatchingTypes";
             }
         }
+        public static class Remote
+        {
+            public const string SECTION_NAME = $"{nameof(Remote)}";
+            public const string ENABLE = "Enable";
+            public const string ADDRESS = "Address";
+            public const string PORT = "Port";
+        }
     }
 }
