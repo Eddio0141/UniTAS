@@ -4,7 +4,6 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
-using HarmonyLib;
 using MoonSharp.Interpreter;
 using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Implementations.Customization;
