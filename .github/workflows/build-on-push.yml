@@ -33,3 +33,15 @@ jobs:
         with:
           name: ${{ matrix.configuration }}
           path: ./UniTAS/Patcher/bin/Release
+
+      - name: download test-runner
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          workflow: build-on-push.yml
+          branch: main
+          name: test-runner-unix
+          repo: Eddio0141/UniTASTestClients
+
+      - name: run test-runner
+        run: ./test-runner
