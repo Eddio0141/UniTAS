@@ -1,33 +1,35 @@
 name: build-on-push
 
-on: [ push ]
+on: [ push, pull_request ]
 
 jobs:
-  build:
+  buildAndTest:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        configuration: [ Debug, Release ]
     steps:
       - name: Checkout
         uses: actions/checkout@v4.1.6
         with:
           submodules: true
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4.0.0
       # NOTE: this is replaced because of https://github.com/federicocarboni/setup-ffmpeg/issues/19
       # - name: Setup ffmpeg
       #   uses: FedericoCarboni/setup-ffmpeg@v3.1
+
       - name: Setup ffmpeg with retries
         uses: ./.github/actions/setup-ffmpeg
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Tests
-        run: dotnet test UniTAS --configuration ${{ matrix.configuration }}
+        run: dotnet test UniTAS --configuration Release
+
       - name: Build
-        run: dotnet build UniTAS --configuration ${{ matrix.configuration }}
+        run: dotnet build UniTAS --configuration Release
+
       - name: Get built artifacts
         uses: actions/upload-artifact@v4.2.0
         with:
           name: ${{ matrix.configuration }}
-          path: ./UniTAS/Patcher/bin/${{ matrix.configuration }}
+          path: ./UniTAS/Patcher/bin/Release
