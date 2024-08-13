@@ -42,6 +42,10 @@ jobs:
           branch: main
           name: test-runner-unix
           repo: Eddio0141/UniTASTestClients
+          path: test-runner
 
       - name: run test-runner
-        run: ./test-runner
+        run: |
+          cd test-runner
+          chmod +x test-runner
+          ./test-runner
