@@ -44,6 +44,9 @@ jobs:
           repo: Eddio0141/UniTASTestClients
           path: test-runner
 
+      - name: copy UniTAS to test-runner directory
+        run: cp UniTAS/Patcher/bin/Release test-runner/UniTAS -r
+
       - name: run test-runner
         run: |
           cd test-runner
