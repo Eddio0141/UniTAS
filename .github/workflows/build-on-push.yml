@@ -29,7 +29,7 @@ jobs:
         run: dotnet build UniTAS --configuration Release
 
       - name: Get built artifacts
-        uses: actions/upload-artifact@v4.2.0
+        uses: actions/upload-artifact@v4
         with:
           name: UniTAS
           path: ./UniTAS/Patcher/bin/Release
@@ -52,3 +52,9 @@ jobs:
           cd test-runner
           chmod +x test-runner
           ./test-runner
+
+      - name: test-runner logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-runner-logs
+          path: test-runner/logs
