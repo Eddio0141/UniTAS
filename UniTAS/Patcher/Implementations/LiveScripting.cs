@@ -1,13 +1,11 @@
 using System;
-using System.Threading;
-using HarmonyLib;
 using MoonSharp.Interpreter;
+using MoonSharp.Interpreter.Interop;
+using MoonSharp.Interpreter.Interop.RegistrationPolicies;
 using MoonSharp.Interpreter.Loaders;
-using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Logging;
-using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations;
 
@@ -16,39 +14,33 @@ namespace UniTAS.Patcher.Implementations;
 [ExcludeRegisterIfTesting]
 public class LiveScripting : ILiveScripting
 {
-    private readonly Thread _setupThread;
     private readonly ILogger _logger;
+
+    private class CustomInteropRegistrationPolicy : IRegistrationPolicy
+    {
+        private static readonly IRegistrationPolicy Default = new DefaultRegistrationPolicy();
+
+        public IUserDataDescriptor HandleRegistration(IUserDataDescriptor newDescriptor,
+            IUserDataDescriptor oldDescriptor)
+        {
+            return Default.HandleRegistration(newDescriptor, oldDescriptor);
+        }
+
+        public bool AllowTypeAutoRegistration(Type type)
+        {
+            var unitasAssembly = typeof(LiveScripting).Assembly;
+            return Equals(type.Assembly, unitasAssembly);
+        }
+    }
 
     public LiveScripting(ILogger logger)
     {
+        UserData.RegistrationPolicy = new CustomInteropRegistrationPolicy();
         _logger = logger;
-        _setupThread = new(() =>
-        {
-            var allTypes = AccessTools.GetTypesFromAssembly(typeof(LiveScripting).Assembly);
-            foreach (var type in allTypes)
-            {
-                try
-                {
-                    UserData.RegisterType(type);
-                }
-                catch (Exception e)
-                {
-                    logger.LogWarning($"failed to register type {type.SaneFullName()}, {e}");
-                }
-            }
-
-            UserData.RegisterType<Vector4>();
-            UserData.RegisterType<Vector3>();
-            UserData.RegisterType<Vector2>();
-        });
-        _setupThread.Start();
     }
 
     public Script NewScript()
     {
-        if (_setupThread.ThreadState == ThreadState.Running)
-            _setupThread.Join();
-
         var script = new Script(CoreModules.Preset_Complete)
         {
             Options =
