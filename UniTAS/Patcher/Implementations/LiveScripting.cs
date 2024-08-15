@@ -1,7 +1,9 @@
+using System;
 using System.Threading;
 using HarmonyLib;
 using MoonSharp.Interpreter;
 using MoonSharp.Interpreter.Loaders;
+using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Logging;
@@ -25,7 +27,14 @@ public class LiveScripting : ILiveScripting
             var allTypes = AccessTools.GetTypesFromAssembly(typeof(LiveScripting).Assembly);
             foreach (var type in allTypes)
             {
-                UserData.RegisterType(type);
+                try
+                {
+                    UserData.RegisterType(type);
+                }
+                catch (Exception e)
+                {
+                    logger.LogWarning($"failed to register type {type.SaneFullName()}, {e}");
+                }
             }
 
             UserData.RegisterType<Vector4>();
