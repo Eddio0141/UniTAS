@@ -11,5 +11,6 @@ public enum RegisterPriority
     GameRestart,
     CoroutineHandler,
     ToolBar,
-    InfoPrintAndWelcome
+    InfoPrintAndWelcome,
+    RemoteControl
 }

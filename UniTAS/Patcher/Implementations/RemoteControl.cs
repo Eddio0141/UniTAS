@@ -9,12 +9,13 @@ using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Implementations.Customization;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.GUI;
+using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Logging;
 
 namespace UniTAS.Patcher.Implementations;
 
-[Singleton]
+[Singleton(RegisterPriority.RemoteControl)]
 [ForceInstantiate]
 [ExcludeRegisterIfTesting]
 public class RemoteControl
