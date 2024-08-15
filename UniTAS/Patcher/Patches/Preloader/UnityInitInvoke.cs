@@ -32,23 +32,23 @@ public class UnityInitInvoke : PreloadPatcher
         TargetDLLs = targetDLLs;
 
         // why can't I even load config with BepInEx's own ConfigFile????
-        var targetClass = ConfigUtils.GetEntryKey(bepInExConfig, entryPoint, "Type") ??
-                          // better late than never
-                          "UnityEngine.Camera";
-        var targetMethod = ConfigUtils.GetEntryKey(bepInExConfig, entryPoint, "Method") ?? ".cctor";
+        _targetClass = ConfigUtils.GetEntryKey(bepInExConfig, entryPoint, "Type") ??
+                       // better late than never
+                       "UnityEngine.Camera";
+        _targetMethod = ConfigUtils.GetEntryKey(bepInExConfig, entryPoint, "Method") ?? ".cctor";
         StaticLogger.Log.LogInfo(
-            $"UniTAS will be hooked on {targetClass}.{targetMethod} in {string.Join(", ", targetDLLs)} as a last resort init hook");
+            $"UniTAS will be hooked on {_targetClass}.{_targetMethod} in {string.Join(", ", targetDLLs)} as a last resort init hook");
     }
 
-    // private readonly string _targetClass;
-    // private readonly string _targetMethod;
+    private readonly string _targetClass;
+    private readonly string _targetMethod;
 
     public override void Patch(ref AssemblyDefinition assembly)
     {
         TryHookAwakes(assembly);
         // TryHookRuntimeInits(assembly);
         // this probably interferes with actual loading since it could initialise too early
-        // TryHookLastResort(assembly);
+        TryHookLastResort(assembly);
     }
 
     // doing this seems to fail so Awake hooks are enough
@@ -91,7 +91,6 @@ public class UnityInitInvoke : PreloadPatcher
         }
     }
 
-    /*
     private void TryHookLastResort(AssemblyDefinition assembly)
     {
         StaticLogger.Log.LogDebug("Trying to hook last resort init method defined in BepInEx config");
@@ -117,7 +116,6 @@ public class UnityInitInvoke : PreloadPatcher
         ILCodeUtils.MethodInvokeHook(assembly, method,
             AccessTools.Method(typeof(InvokeTracker), nameof(InvokeTracker.OnUnityInit)));
     }
-    */
 
     private static void LogHook(AssemblyDefinition assembly, string type, string method)
     {

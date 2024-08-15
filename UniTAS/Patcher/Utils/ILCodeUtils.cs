@@ -10,13 +10,13 @@ namespace UniTAS.Patcher.Utils;
 
 public static class ILCodeUtils
 {
-    // public static void MethodInvokeHookOnCctor(AssemblyDefinition assembly, TypeDefinition type, MethodBase method)
-    // {
-    //     if (type == null) return;
-    //
-    //     var staticCtor = FindOrAddCctor(assembly, type);
-    //     MethodInvokeHook(assembly, staticCtor, method);
-    // }
+    public static void MethodInvokeHookOnCctor(AssemblyDefinition assembly, TypeDefinition type, MethodBase method)
+    {
+        if (type == null) return;
+
+        var staticCtor = FindOrAddCctor(assembly, type);
+        MethodInvokeHook(assembly, staticCtor, method);
+    }
 
     public static void MethodInvokeHook(AssemblyDefinition assembly, MethodDefinition methodDefinition,
         MethodBase method)
