@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using MoonSharp.Interpreter;
 using UniTAS.Patcher.Interfaces.GUI;
-using UniTAS.Patcher.Services.GUI;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.Movie;
 
