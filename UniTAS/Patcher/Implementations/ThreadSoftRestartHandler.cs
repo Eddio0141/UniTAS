@@ -4,9 +4,11 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using BepInEx.Logging;
+using UniTAS.Patcher.Implementations.Customization;
 using UniTAS.Patcher.Implementations.TASRenderer;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.SoftRestart;
+using UniTAS.Patcher.Interfaces.Movie;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Utils;
@@ -14,23 +16,20 @@ using UniTAS.Patcher.Utils;
 namespace UniTAS.Patcher.Implementations;
 
 [Singleton]
-public class ThreadSoftRestartHandler : IThreadTracker, IOnPreGameRestart
+public class ThreadSoftRestartHandler(ILogger logger) : IThreadTracker, IOnPreGameRestart
 {
     private readonly List<Thread> _threads = [];
-    private readonly ILogger _logger;
 
     private readonly Type[] _excludeTypes =
     [
         typeof(DiskLogListener),
         typeof(GameVideoRenderer),
         typeof(NativeAudioRenderer),
-        typeof(LoggingUtils.DiskLogger)
+        typeof(LoggingUtils.DiskLogger),
+        typeof(RemoteControl),
+        typeof(ReadOnlyFieldDescriptor),
+        typeof(Config)
     ];
-
-    public ThreadSoftRestartHandler(ILogger logger)
-    {
-        _logger = logger;
-    }
 
     public void ThreadStart(Thread thread)
     {
@@ -44,14 +43,15 @@ public class ThreadSoftRestartHandler : IThreadTracker, IOnPreGameRestart
         if (allFrames == null) return;
         var frames = allFrames.Skip(3).ToArray();
 
+        // intentionally don't check if UniTAS namespace is included, any exclusions for UniTAS is to be included in _excludeTypes manually
         if (frames.Any(x => _excludeTypes.Contains(x.GetMethod()?.DeclaringType)))
         {
-            _logger.LogDebug(
+            logger.LogDebug(
                 $"Ignoring thread start, name: {thread.Name}, ID: {thread.ManagedThreadId}, stack trace: {trace}");
             return;
         }
 
-        _logger.LogDebug(
+        logger.LogDebug(
             $"Tracking thread start, name: {thread.Name}, ID: {thread.ManagedThreadId}, stack trace: {trace}");
         _threads.Add(thread);
     }
@@ -71,7 +71,7 @@ public class ThreadSoftRestartHandler : IThreadTracker, IOnPreGameRestart
             }
             catch (Exception e)
             {
-                _logger.LogDebug($"Exception thrown while aborting thread: {e}");
+                logger.LogDebug($"Exception thrown while aborting thread: {e}");
             }
         }
 
@@ -81,9 +81,9 @@ public class ThreadSoftRestartHandler : IThreadTracker, IOnPreGameRestart
         {
             thread.Join();
 
-            _logger.LogDebug($"Interrupted game thread, name: {thread.Name}, ID: {thread.ManagedThreadId}");
+            logger.LogDebug($"Interrupted game thread, name: {thread.Name}, ID: {thread.ManagedThreadId}");
         }
 
-        _logger.LogDebug("All game threads interrupted");
+        logger.LogDebug("All game threads interrupted");
     }
 }
