@@ -63,6 +63,8 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvent
     {
         if (_setup) throw new MovieAlreadySettingUpException();
         _setup = true;
+        
+        OnMovieSetup?.Invoke();
 
         if (!MovieEnd)
         {
@@ -76,6 +78,7 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvent
         }
         catch (Exception e)
         {
+            // needed for setup event to be notified of failure
             MovieRunningStatusChange(false);
             _setup = false;
             MovieLogger.LogError("Failed to run TAS movie, an exception was thrown!");
@@ -172,4 +175,5 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvent
 
     public event Action OnMovieStart;
     public event Action OnMovieEnd;
+    public event Action OnMovieSetup;
 }
