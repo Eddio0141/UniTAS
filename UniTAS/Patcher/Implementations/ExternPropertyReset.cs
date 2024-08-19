@@ -60,12 +60,15 @@ public class ExternPropertyReset(ILogger logger, IPatchReverseInvoker patchRever
                 return method.IsStatic && (method.ImplAttributes & MethodImplAttributes.InternalCall) != 0;
             });
 
+        var noGraphics = Environment.GetCommandLineArgs().Any(x => x is "-batchmode" or "-nographics");
+
         foreach (var (propDef, getMethod, setMethod) in properties)
         {
             var typeName = propDef.DeclaringType.FullName ?? "unknown_type";
             var fullName = $"{typeName}.{propDef.Name}";
 
             if (_skipProperties.Any(x => fullName.Like(x))) continue;
+            if (noGraphics && _skipPropertiesNoGraphics.Any(x => fullName.Like(x))) continue;
 
             var get = getMethod?.ResolveReflection();
             var set = setMethod?.ResolveReflection();
@@ -102,6 +105,20 @@ public class ExternPropertyReset(ILogger logger, IPatchReverseInvoker patchRever
             _externMethodSaves.Add((set, DeepCopy.MakeDeepCopy(value), fullName));
         }
     }
+
+    // for when there is no game ui
+    private readonly string[] _skipPropertiesNoGraphics =
+    [
+        "UnityEngine.Graphics.activeTier", "UnityEngine.GL.wireframe", "UnityEngine.GL.sRGBWrite",
+        "UnityEngine.GL.invertCulling", "UnityEngine.QualitySettings.maxQueuedFrames",
+        "UnityEngine.Texture.allowThreadedTextureCreation",
+        "UnityEngine.Rendering.LoadSt,eActionDebugModeSettings.LoadSt,eDebugModeEnabled",
+        "UnityEngine.Experimental.Rendering.GraphicsDeviceSettings.waitF,PresentSyncPoint",
+        "UnityEngine.Experimental.Rendering.GraphicsDeviceSettings.graphicsJobsSyncPoint",
+
+        "UnityEngine.Rendering.LoadStoreActionDebugModeSettings.LoadStoreDebugModeEnabled",
+        "UnityEngine.Experimental.Rendering.GraphicsDeviceSettings.waitForPresentSyncPoint"
+    ];
 
     private readonly string[] _skipProperties =
     [
