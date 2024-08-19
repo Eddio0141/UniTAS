@@ -12,7 +12,7 @@ namespace UniTAS.Patcher.Implementations.UnityInfo;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 [Singleton]
-public class GameInfo(IPatchReverseInvoker reverseInvoker) : IGameInfo
+public class GameInfo(IPatchReverseInvoker reverseInvoker) : IGameInfo, IGameInfoUpdate
 {
     private string _unityVersion;
 
@@ -217,4 +217,6 @@ public class GameInfo(IPatchReverseInvoker reverseInvoker) : IGameInfo
             }
         }
     }
+
+    public bool IsFocused { set; get; }
 }

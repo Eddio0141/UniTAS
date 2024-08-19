@@ -2,11 +2,13 @@ namespace UniTAS.Patcher.Services.UnityInfo;
 
 public interface IGameInfo
 {
-    public string UnityVersion { get; }
-    public string MscorlibVersion { get; }
-    public string NetStandardVersion { get; }
-    public bool Net20Subset { get; }
+    string UnityVersion { get; }
+    string MscorlibVersion { get; }
+    string NetStandardVersion { get; }
+    bool Net20Subset { get; }
 
-    public string GameDirectory { get; }
-    public string ProductName { get; }
+    string GameDirectory { get; }
+    string ProductName { get; }
+    
+    bool IsFocused { get; }
 }

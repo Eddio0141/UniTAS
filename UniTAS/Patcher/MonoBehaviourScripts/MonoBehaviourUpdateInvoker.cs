@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.UnityEvents;
+using UniTAS.Patcher.Services.UnityInfo;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 
@@ -10,13 +11,17 @@ public class MonoBehaviourUpdateInvoker : MonoBehaviour
 {
     private IMonoBehEventInvoker _monoBehEventInvoker;
     private ILogger _logger;
+    private IGameInfoUpdate _gameInfo;
 
     private void Awake()
     {
         var kernel = ContainerStarter.Kernel;
         _monoBehEventInvoker = kernel.GetInstance<IMonoBehEventInvoker>();
         _logger = kernel.GetInstance<ILogger>();
+        _gameInfo = kernel.GetInstance<IGameInfoUpdate>();
+
         _monoBehEventInvoker.InvokeAwake();
+
         StartCoroutine(EndOfFrame());
     }
 
@@ -66,5 +71,11 @@ public class MonoBehaviourUpdateInvoker : MonoBehaviour
             _monoBehEventInvoker.InvokeLastUpdate();
         }
         // ReSharper disable once IteratorNeverReturns
+    }
+
+    private void OnApplicationFocus(bool hasFocus)
+    {
+        _logger.LogDebug($"game in focus = {hasFocus}");
+        _gameInfo.IsFocused = hasFocus;
     }
 }

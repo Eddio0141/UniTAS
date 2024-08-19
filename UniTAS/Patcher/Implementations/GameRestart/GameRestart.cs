@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using UniTAS.Patcher.Implementations.Coroutine;
+using UniTAS.Patcher.Interfaces.Coroutine;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.SoftRestart;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
@@ -9,6 +12,7 @@ using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.GameExecutionControllers;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.Trackers.TrackInfo;
+using UniTAS.Patcher.Services.UnityInfo;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Patcher.Services.VirtualEnvironment;
 using Object = UnityEngine.Object;
@@ -34,6 +38,8 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
     private readonly IFinalizeSuppressor _finalizeSuppressor;
     private readonly IUpdateInvokeOffset _updateInvokeOffset;
     private readonly IObjectTracker _objectTracker;
+    private readonly ICoroutine _coroutine;
+    private readonly IGameInfo _gameInfo;
 
     private readonly IStaticFieldManipulator _staticFieldManipulator;
     private readonly ITimeEnv _timeEnv;
@@ -46,7 +52,7 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
         IMonoBehaviourController monoBehaviourController, ILogger logger, IOnGameRestart[] onGameRestart,
         IOnGameRestartResume[] onGameRestartResume, IOnPreGameRestart[] onPreGameRestart,
         IStaticFieldManipulator staticFieldManipulator, ITimeEnv timeEnv, IFinalizeSuppressor finalizeSuppressor,
-        IUpdateInvokeOffset updateInvokeOffset, IObjectTracker objectTracker)
+        IUpdateInvokeOffset updateInvokeOffset, IObjectTracker objectTracker, ICoroutine coroutine, IGameInfo gameInfo)
     {
         _syncFixedUpdate = syncFixedUpdate;
         _sceneWrapper = sceneWrapper;
@@ -57,6 +63,8 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
         _finalizeSuppressor = finalizeSuppressor;
         _updateInvokeOffset = updateInvokeOffset;
         _objectTracker = objectTracker;
+        _coroutine = coroutine;
+        _gameInfo = gameInfo;
 
         foreach (var gameRestartResume in onGameRestartResume)
         {
@@ -99,6 +107,16 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
     public void SoftRestart(DateTime time)
     {
         if (_pendingRestart && !_pendingResumePausedExecution) return;
+
+        _coroutine.Start(SoftRestartCoroutine(time));
+    }
+
+    private IEnumerable<CoroutineWait> SoftRestartCoroutine(DateTime time)
+    {
+        while (!_gameInfo.IsFocused)
+        {
+            yield return new WaitForUpdateUnconditional();
+        }
 
         _logger.LogInfo("Starting soft restart");
 
