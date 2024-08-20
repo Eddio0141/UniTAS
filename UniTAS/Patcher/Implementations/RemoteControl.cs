@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -83,8 +84,6 @@ public class RemoteControl
             return;
         }
 
-        var data = new byte[256];
-
         while (true)
         {
             _logger.LogDebug($"connecting to client for remote control: {ipAddr}:{port}");
@@ -122,11 +121,10 @@ public class RemoteControl
                     while (_printResponse.Count > 0)
                     {
                         var first = $"{_printResponse.Peek()}\n";
-                        var firstBytes = Encoding.ASCII.GetBytes(first);
                         try
                         {
                             _logger.LogDebug($"sending script print: {first}");
-                            networkStream.Write(firstBytes, 0, firstBytes.Length);
+                            Send(networkStream, first);
                         }
                         catch (Exception e)
                         {
@@ -143,10 +141,9 @@ public class RemoteControl
                 {
                     _logger.LogDebug("sending prefix for interpreter input");
 
-                    var prefixBytes = ">> "u8.ToArray();
                     try
                     {
-                        networkStream.Write(prefixBytes, 0, prefixBytes.Length);
+                        Send(networkStream, ">> ");
                     }
                     catch (Exception e)
                     {
@@ -159,9 +156,10 @@ public class RemoteControl
                 }
 
                 var bytes = 0;
+                string response = null;
                 try
                 {
-                    bytes = networkStream.Read(data, 0, data.Length);
+                    bytes = Receive(networkStream, out response);
                 }
                 catch (Exception)
                 {
@@ -172,7 +170,6 @@ public class RemoteControl
 
                 prefixPrompt = true;
 
-                var response = Encoding.ASCII.GetString(data, 0, bytes);
                 _logger.LogDebug($"remote got client data: {response}");
 
                 try
@@ -186,5 +183,38 @@ public class RemoteControl
             }
         }
         // ReSharper disable once FunctionNeverReturns
+    }
+
+    private static void Send(NetworkStream stream, string msg)
+    {
+        var msgRaw = Encoding.UTF8.GetBytes(msg);
+        var lengthRaw = BitConverter.GetBytes((ulong)msgRaw.Length);
+        // fuck you c# I hate you
+        if (!BitConverter.IsLittleEndian)
+            lengthRaw = lengthRaw.Reverse().ToArray();
+
+        var content = lengthRaw.Concat(msgRaw).ToArray();
+        stream.Write(content, 0, content.Length);
+    }
+
+    private readonly byte[] _buffer = new byte[1024];
+
+    private int Receive(NetworkStream stream, out string content)
+    {
+        var bytes = stream.Read(_buffer, 0, sizeof(ulong));
+        if (bytes == 0)
+        {
+            content = null;
+            return bytes;
+        }
+
+        // fucking c#
+        var length = (int)BitConverter.ToInt64(
+            BitConverter.IsLittleEndian ? _buffer : _buffer.Take(4).Reverse().ToArray(),
+            0);
+        bytes = stream.Read(_buffer, 0, length);
+
+        content = Encoding.UTF8.GetString(_buffer, 0, length);
+        return bytes;
     }
 }
