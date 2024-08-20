@@ -23,6 +23,7 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvent
     private readonly IGameRestart _gameRestart;
 
     public bool MovieEnd { get; private set; } = true;
+    public bool SetupOrMovieRunning { get; private set; }
     private bool _setup;
 
     private readonly IMovieParser _parser;
@@ -63,8 +64,7 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvent
     {
         if (_setup) throw new MovieAlreadySettingUpException();
         _setup = true;
-        
-        OnMovieSetup?.Invoke();
+        SetupOrMovieRunning = true;
 
         if (!MovieEnd)
         {
@@ -158,6 +158,7 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvent
         }
         else
         {
+            SetupOrMovieRunning = false;
             OnMovieEnd?.Invoke();
         }
 
@@ -175,5 +176,4 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvent
 
     public event Action OnMovieStart;
     public event Action OnMovieEnd;
-    public event Action OnMovieSetup;
 }

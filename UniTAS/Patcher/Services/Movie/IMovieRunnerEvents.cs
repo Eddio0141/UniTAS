@@ -6,5 +6,4 @@ public interface IMovieRunnerEvents
 {
     event Action OnMovieStart;
     event Action OnMovieEnd;
-    event Action OnMovieSetup;
 }
