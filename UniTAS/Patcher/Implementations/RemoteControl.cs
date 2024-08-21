@@ -197,7 +197,7 @@ public class RemoteControl
         stream.Write(content, 0, content.Length);
     }
 
-    private readonly byte[] _buffer = new byte[1024];
+    private byte[] _buffer = new byte[sizeof(ulong)];
 
     private int Receive(NetworkStream stream, out string content)
     {
@@ -212,6 +212,13 @@ public class RemoteControl
         var length = (int)BitConverter.ToInt64(
             BitConverter.IsLittleEndian ? _buffer : _buffer.Take(4).Reverse().ToArray(),
             0);
+
+        // resize as required
+        if (_buffer.Length < length)
+        {
+            _buffer = new byte[length];
+        }
+
         bytes = stream.Read(_buffer, 0, length);
 
         content = Encoding.UTF8.GetString(_buffer, 0, length);
