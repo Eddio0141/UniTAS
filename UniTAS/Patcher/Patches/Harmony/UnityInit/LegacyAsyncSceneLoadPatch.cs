@@ -13,7 +13,7 @@ namespace UniTAS.Patcher.Patches.Harmony.UnityInit;
 [RawPatchUnityInit]
 public static class LegacyAsyncSceneLoadPatch
 {
-    [HarmonyPatch(typeof(Application), "LoadLevelAsync")]
+    [HarmonyPatch]
     private class LoadLevelAsync
     {
         private static MethodBase TargetMethod()
