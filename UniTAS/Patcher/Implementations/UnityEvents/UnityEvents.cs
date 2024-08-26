@@ -34,7 +34,7 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         IEnumerable<IOnPreUpdateActual> onPreUpdatesActual,
         IEnumerable<IOnUpdateUnconditional> onUpdatesUnconditional,
         IEnumerable<IOnFixedUpdateUnconditional> onFixedUpdatesUnconditional,
-        IEnumerable<IOnGUIUnconditional> onGUIsUnconditional,
+        IEnumerable<IOnGUIUnconditional> onGuisUnconditional,
         IEnumerable<IOnFixedUpdateActual> onFixedUpdatesActual,
         IEnumerable<IOnStartActual> onStartsActual,
         IEnumerable<IOnUpdateActual> onUpdatesActual,
@@ -95,7 +95,7 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
                 CallbackUpdate.FixedUpdateUnconditional);
         }
 
-        foreach (var onGui in onGUIsUnconditional)
+        foreach (var onGui in onGuisUnconditional)
         {
             RegisterMethod(onGui, onGui.OnGUIUnconditional, CallbackUpdate.GUIUnconditional);
         }
