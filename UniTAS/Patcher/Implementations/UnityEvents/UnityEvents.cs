@@ -34,7 +34,7 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         IEnumerable<IOnPreUpdateActual> onPreUpdatesActual,
         IEnumerable<IOnUpdateUnconditional> onUpdatesUnconditional,
         IEnumerable<IOnFixedUpdateUnconditional> onFixedUpdatesUnconditional,
-        IEnumerable<IOnGUIUnconditional> onGUIsUnconditional,
+        IEnumerable<IOnGUIUnconditional> onGuisUnconditional,
         IEnumerable<IOnFixedUpdateActual> onFixedUpdatesActual,
         IEnumerable<IOnStartActual> onStartsActual,
         IEnumerable<IOnUpdateActual> onUpdatesActual,
@@ -95,7 +95,7 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
                 CallbackUpdate.FixedUpdateUnconditional);
         }
 
-        foreach (var onGui in onGUIsUnconditional)
+        foreach (var onGui in onGuisUnconditional)
         {
             RegisterMethod(onGui, onGui.OnGUIUnconditional, CallbackUpdate.GUIUnconditional);
         }
@@ -457,8 +457,6 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         if (_updated) return;
         _updated = true;
 
-        _calledFixedUpdate = false;
-
 #if TRACE
         StaticLogger.Trace($"InvokeUpdate, time: {_patchReverseInvoker.Invoke(() => Time.time)}");
 #endif
@@ -501,6 +499,12 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
                 _monoBehaviourController.PausedUpdate) continue;
             lateUpdate();
         }
+    }
+
+    // isn't called at the very first yield WaitForFixedUpdate, but this is enough
+    public void CoroutineFixedUpdate()
+    {
+        _calledFixedUpdate = false;
     }
 
     public void InvokeFixedUpdate()

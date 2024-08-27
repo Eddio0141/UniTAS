@@ -22,7 +22,8 @@ public class MonoBehaviourUpdateInvoker : MonoBehaviour
 
         _monoBehEventInvoker.InvokeAwake();
 
-        StartCoroutine(EndOfFrame());
+        StartCoroutine(EndOfFrameCoroutine());
+        StartCoroutine(FixedUpdateCoroutine());
     }
 
     private void OnDestroy()
@@ -60,10 +61,17 @@ public class MonoBehaviourUpdateInvoker : MonoBehaviour
         _monoBehEventInvoker.InvokeOnEnable();
     }
 
+    private void OnApplicationFocus(bool hasFocus)
+    {
+        _logger.LogDebug($"game in focus = {hasFocus}");
+        _gameInfo.IsFocused = hasFocus;
+    }
+
     // stupid optimization since object alloc
     private readonly WaitForEndOfFrame _waitForEndOfFrame = new();
+    private readonly WaitForFixedUpdate _waitForFixedUpdate = new();
 
-    private IEnumerator EndOfFrame()
+    private IEnumerator EndOfFrameCoroutine()
     {
         while (true)
         {
@@ -73,9 +81,13 @@ public class MonoBehaviourUpdateInvoker : MonoBehaviour
         // ReSharper disable once IteratorNeverReturns
     }
 
-    private void OnApplicationFocus(bool hasFocus)
+    private IEnumerator FixedUpdateCoroutine()
     {
-        _logger.LogDebug($"game in focus = {hasFocus}");
-        _gameInfo.IsFocused = hasFocus;
+        while (true)
+        {
+            yield return _waitForFixedUpdate;
+            _monoBehEventInvoker.CoroutineFixedUpdate();
+        }
+        // ReSharper disable once IteratorNeverReturns
     }
 }
