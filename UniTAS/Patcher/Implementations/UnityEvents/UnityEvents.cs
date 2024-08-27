@@ -457,8 +457,6 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         if (_updated) return;
         _updated = true;
 
-        _calledFixedUpdate = false;
-
 #if TRACE
         StaticLogger.Trace($"InvokeUpdate, time: {_patchReverseInvoker.Invoke(() => Time.time)}");
 #endif
@@ -501,6 +499,12 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
                 _monoBehaviourController.PausedUpdate) continue;
             lateUpdate();
         }
+    }
+
+    // isn't called at the very first yield WaitForFixedUpdate, but this is enough
+    public void CoroutineFixedUpdate()
+    {
+        _calledFixedUpdate = false;
     }
 
     public void InvokeFixedUpdate()

@@ -22,7 +22,7 @@ public class MonoBehaviourUpdateInvoker : MonoBehaviour
 
         _monoBehEventInvoker.InvokeAwake();
 
-        StartCoroutine(EndOfFrame());
+        StartCoroutine(WhileCoroutine());
     }
 
     private void OnDestroy()
@@ -62,11 +62,14 @@ public class MonoBehaviourUpdateInvoker : MonoBehaviour
 
     // stupid optimization since object alloc
     private readonly WaitForEndOfFrame _waitForEndOfFrame = new();
+    private readonly WaitForFixedUpdate _waitForFixedUpdate = new();
 
-    private IEnumerator EndOfFrame()
+    private IEnumerator WhileCoroutine()
     {
         while (true)
         {
+            yield return _waitForFixedUpdate;
+            _monoBehEventInvoker.CoroutineFixedUpdate();
             yield return _waitForEndOfFrame;
             _monoBehEventInvoker.InvokeLastUpdate();
         }
