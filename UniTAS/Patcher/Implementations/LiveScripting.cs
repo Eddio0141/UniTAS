@@ -1,8 +1,10 @@
 using System;
+using HarmonyLib;
 using MoonSharp.Interpreter;
 using MoonSharp.Interpreter.Interop;
 using MoonSharp.Interpreter.Interop.RegistrationPolicies;
 using MoonSharp.Interpreter.Loaders;
+using UniTAS.Patcher.Implementations.Proxies;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Logging;
@@ -36,6 +38,9 @@ public class LiveScripting : ILiveScripting
     public LiveScripting(ILogger logger)
     {
         UserData.RegistrationPolicy = new CustomInteropRegistrationPolicy();
+        // TODO: movie proxies should be registered here instead
+        // TODO: proxies must be gathered with some attribute
+        UserData.RegisterProxyType<TraverseProxy, Traverse>(x => new TraverseProxy(x));
         _logger = logger;
     }
 
