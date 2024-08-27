@@ -36,7 +36,7 @@ public class RemoteControl
             "If enabled, starts a TCP/IP connection for remote controlling UniTAS");
         var ipAddrConf = conf.Bind(Config.Sections.Remote.SECTION_NAME, Config.Sections.Remote.ADDRESS, "127.0.0.1",
             "IP address to use for remote connection");
-        var portConf = conf.Bind(Config.Sections.Remote.SECTION_NAME, Config.Sections.Remote.PORT, 8001,
+        var portConf = conf.Bind(Config.Sections.Remote.SECTION_NAME, Config.Sections.Remote.PORT, 8080,
             "Port to use for remote connection");
 
         if (!enableConf.Value) return;
