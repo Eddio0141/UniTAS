@@ -215,7 +215,7 @@ public class Patch(IHarmony harmony) : TerminalCmd
                 param.Name = argNames[i];
             }
 
-            var patchBody = AccessTools.Method(typeof(LiveScripting), nameof(PatchBody));
+            var patchBody = AccessTools.Method(typeof(Patch), nameof(PatchBody));
 
             var il = dmd.GetILGenerator();
 
