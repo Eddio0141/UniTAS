@@ -7,12 +7,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4.1.6
+        uses: actions/checkout@v4
         with:
           submodules: true
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4.0.0
+        uses: actions/setup-dotnet@v4
       # NOTE: this is replaced because of https://github.com/federicocarboni/setup-ffmpeg/issues/19
       # - name: Setup ffmpeg
       #   uses: FedericoCarboni/setup-ffmpeg@v3.1
