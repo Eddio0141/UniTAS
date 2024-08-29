@@ -51,7 +51,7 @@ jobs:
         run: |
           cd test-runner
           chmod +x test-runner
-          ./test-runner
+          ./test-runner --github-token ${{ secrets.GITHUB_TOKEN }}
 
       - name: test-runner logs
         uses: actions/upload-artifact@v4
