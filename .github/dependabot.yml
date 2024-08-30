@@ -1,7 +1,15 @@
 version: 2
+registries:
+  api-nuget-org:
+    type: nuget-feed
+    url: https://api.nuget.org/v3/index.json
+  nuget-bepinex-dev:
+    type: nuget-feed
+    url: https://nuget.bepinex.dev/v3/index.json
 updates:
   - package-ecosystem: "nuget"
     directory: "/UniTAS/Patcher"
+    registries: "*"
     schedule:
       interval: "weekly"
     ignore:
@@ -9,5 +17,6 @@ updates:
 
   - package-ecosystem: "nuget"
     directory: "/UniTAS/Patcher.Tests"
+    registries: "*"
     schedule:
       interval: "weekly"
