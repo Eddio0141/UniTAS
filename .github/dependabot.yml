@@ -1,0 +1,13 @@
+version: 2
+updates:
+  - package-ecosystem: "nuget"
+    directory: "/UniTAS/Patcher"
+    schedule:
+      interval: "weekly"
+    ignore:
+      - dependency-name: "StructureMap"
+
+  - package-ecosystem: "nuget"
+    directory: "/UniTAS/Patcher.Tests"
+    schedule:
+      interval: "weekly"
