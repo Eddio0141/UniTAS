@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
+using BepInEx;
 using HarmonyLib;
 using Mono.Cecil;
 using Mono.Cecil.Rocks;
@@ -13,7 +15,46 @@ namespace UniTAS.Patcher.Patches.Preloader;
 [SuppressMessage("ReSharper", "UnusedType.Global")]
 public class UnityInitInvoke : PreloadPatcher
 {
+    private const string RUNTIME_INITIALIZE_LOAD_TYPE = "UnityEngine.RuntimeInitializeLoadType";
+    private const string BEFORE_SCENE_LOAD_VARIANT = "BeforeSceneLoad";
+
     public override IEnumerable<string> TargetDLLs => TargetPatcherDlls.AllExcludedDLLs;
+
+    private readonly object _beforeSceneLoadValue;
+
+    public UnityInitInvoke()
+    {
+        var unityCoreModulePath = Path.Combine(Paths.ManagedPath, "UnityEngine.CoreModule.dll");
+        if (!File.Exists(unityCoreModulePath))
+        {
+            NotifyBeforeSceneLoadNotFound("UnityEngine.CoreModule.dll not found");
+            return;
+        }
+
+        var asm = AssemblyDefinition.ReadAssembly(unityCoreModulePath);
+
+        var loadType = asm.MainModule.Types.FirstOrDefault(x => x.FullName == RUNTIME_INITIALIZE_LOAD_TYPE);
+        if (loadType == null)
+        {
+            NotifyBeforeSceneLoadNotFound($"{RUNTIME_INITIALIZE_LOAD_TYPE} not found");
+            return;
+        }
+
+        var beforeSceneLoadField = loadType.Fields.FirstOrDefault(x => x.Name == BEFORE_SCENE_LOAD_VARIANT);
+        if (beforeSceneLoadField == null)
+        {
+            NotifyBeforeSceneLoadNotFound(
+                $"{RUNTIME_INITIALIZE_LOAD_TYPE}.{BEFORE_SCENE_LOAD_VARIANT} enum variant not found");
+            return;
+        }
+
+        _beforeSceneLoadValue = beforeSceneLoadField.Constant;
+    }
+
+    private static void NotifyBeforeSceneLoadNotFound(string reason)
+    {
+        StaticLogger.LogDebug($"couldn't obtain {RUNTIME_INITIALIZE_LOAD_TYPE}.{BEFORE_SCENE_LOAD_VARIANT}, {reason}");
+    }
 
     public override void Patch(ref AssemblyDefinition assembly)
     {
@@ -22,9 +63,12 @@ public class UnityInitInvoke : PreloadPatcher
     }
 
     // doing this seems to fail so Awake hooks are enough
-    private static void TryHookRuntimeInits(AssemblyDefinition assembly)
+    private void TryHookRuntimeInits(AssemblyDefinition assembly)
     {
-        StaticLogger.Log.LogDebug("Trying to hook all RuntimeInitializeOnLoadMethodAttribute methods");
+        if (_beforeSceneLoadValue == null) return;
+
+        StaticLogger.Log.LogDebug(
+            "Trying to hook all RuntimeInitializeOnLoadMethodAttribute methods with BeforeSceneLoad");
 
         var types = assembly.MainModule.GetAllTypes();
 
@@ -33,7 +77,10 @@ public class UnityInitInvoke : PreloadPatcher
             // find all methods with RuntimeInitializeOnLoadMethodAttribute
             var initMethods = type.GetMethods().Where(x =>
                 x.CustomAttributes.Any(a =>
-                    a.AttributeType.FullName == "UnityEngine.RuntimeInitializeOnLoadMethodAttribute"));
+                    a.AttributeType.FullName == "UnityEngine.RuntimeInitializeOnLoadMethodAttribute" &&
+                    a.HasConstructorArguments && a.ConstructorArguments.Count == 1 &&
+                    a.ConstructorArguments[0].Type.FullName == RUNTIME_INITIALIZE_LOAD_TYPE &&
+                    (int)a.ConstructorArguments[0].Value == (int)_beforeSceneLoadValue));
 
             foreach (var initMethod in initMethods)
             {
