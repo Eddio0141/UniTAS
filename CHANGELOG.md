@@ -7,16 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # [Unreleased]
 
+## Added
+
+### Compatibility
+
+- Added new input system support, with keyboard and mouse working
+
 ## Changed
 
 ### Performance
 
 - Loading should be faster if you've opened the game before
+- Slight performance increase in patching the first time
 
 ## Fixed
 
 ### Games
 
+- ULTRAKILL can be controlled now
 - Fixed itch.io Jaded Combat crashing on file selection
 - Fixed It Steals not being controllable properly with key, mouse, and controller
 - Fixed Lethal Company not loading the ship
@@ -24,12 +32,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### General
 
-- Fixed TAS rendering popping up command prompt probably
+- Fixed TAS encoding popping up command prompt probably
 - Fixed music overlaying on each other every restart
-- Fixed UniTAS not loading at all for games
 
 ### Compatibility
 
+- Fixed UniTAS not loading at all for games
 - Fixed accidentally skipping over static constructors
 - Fixed accidentally skipping over removing some readonly fields
 - Fixed crash when trying to remove readonly fields
@@ -40,10 +48,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed async scene load event callback to be at proper timings
 - Fixed AsyncOperation instance not returning proper values
 - Fixed invoking RuntimeInitializeOnLoadMethod in the wrong order
-
-## Changed
-
-- Slight performance increase in patching static constructors
 
 # [v0.5.1] - 2023-09-13
 
