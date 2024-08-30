@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Reflection;
 using Mono.Cecil;
@@ -5,6 +6,7 @@ using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 using UniTAS.Patcher.Extensions;
 using MethodAttributes = Mono.Cecil.MethodAttributes;
+using MethodBody = Mono.Cecil.Cil.MethodBody;
 
 namespace UniTAS.Patcher.Utils;
 
@@ -21,16 +23,26 @@ public static class ILCodeUtils
     public static void MethodInvokeHook(AssemblyDefinition assembly, MethodDefinition methodDefinition,
         MethodBase method)
     {
-        if (method == null) return;
+        if (method == null) throw new ArgumentNullException(nameof(method));
 
         var invoke = assembly.MainModule.ImportReference(method);
 
         var body = methodDefinition.Body;
-        body.SimplifyMacros();
+        var newBody = body == null || body.Instructions.Count == 0;
+        if (newBody)
+        {
+            methodDefinition.Body = new MethodBody(methodDefinition);
+            body = methodDefinition.Body;
+        }
+        else
+        {
+            body.SimplifyMacros();
+        }
+
         var ilProcessor = body.GetILProcessor();
 
         // insert call before first instruction
-        if (body.Instructions.Count == 0)
+        if (newBody)
         {
             ilProcessor.Append(ilProcessor.Create(OpCodes.Call, invoke));
         }
@@ -40,7 +52,14 @@ public static class ILCodeUtils
                 ilProcessor.Create(OpCodes.Call, invoke), InstructionReplaceFixType.ExceptionRanges);
         }
 
-        body.OptimizeMacros();
+        if (newBody)
+        {
+            ilProcessor.Append(ilProcessor.Create(OpCodes.Ret));
+        }
+        else
+        {
+            body.OptimizeMacros();
+        }
 
         StaticLogger.Trace(
             $"Added invoke hook to method {method.Name} of {methodDefinition.DeclaringType.FullName} invoking {method.DeclaringType?.FullName ?? "unknown"}.{method.Name}");
