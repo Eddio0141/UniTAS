@@ -4,6 +4,8 @@ on: [ push, pull_request ]
 
 jobs:
   buildAndTest:
+    strategy:
+      fail-fast: false
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
