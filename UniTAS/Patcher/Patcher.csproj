@@ -60,7 +60,7 @@
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
         <PackageReference Include="StructureMap" Version="2.6.3" />
         <PackageReference Include="Unity.InputSystem" Version="1.5.0" />
-        <PackageReference Include="UnityEngine.Modules" Version="3.4.0" IncludeAssets="compile" />
+        <PackageReference Include="UnityEngine.Modules" Version="6000.0.17" IncludeAssets="compile" />
         <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
     </ItemGroup>
 
