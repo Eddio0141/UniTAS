@@ -21,3 +21,5 @@ updates:
     registries: "*"
     schedule:
       interval: "weekly"
+    ignore:
+      - dependency-name: "StructureMap"
