@@ -8,18 +8,12 @@ registries:
     url: https://nuget.bepinex.dev/v3/index.json
 updates:
   - package-ecosystem: "nuget"
-    directory: "/UniTAS/Patcher"
+    directories:
+      - "/UniTAS/Patcher"
+      - "/UniTAS/Patcher.Tests"
     registries: "*"
     schedule:
       interval: "weekly"
     ignore:
       - dependency-name: "StructureMap"
       - dependency-name: "UnityEngine.Modules"
-
-  - package-ecosystem: "nuget"
-    directory: "/UniTAS/Patcher.Tests"
-    registries: "*"
-    schedule:
-      interval: "weekly"
-    ignore:
-      - dependency-name: "StructureMap"
