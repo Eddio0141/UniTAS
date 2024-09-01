@@ -218,6 +218,14 @@ public class Patch(IHarmony harmony) : TerminalCmd
             var patchBody = AccessTools.Method(typeof(Patch), nameof(PatchBody));
 
             var il = dmd.GetILGenerator();
+            var returnArgLocal = CanReturnPending ? null : il.DeclareLocal(typeof(object));
+
+            if (returnArgLocal != null)
+            {
+                // null into local
+                il.Emit(OpCodes.Ldnull);
+                il.Emit(OpCodes.Stloc, returnArgLocal);
+            }
 
             // load args for PatchBody call
             il.Emit(OpCodes.Ldc_I4, _patchClosureIndex);
@@ -242,14 +250,14 @@ public class Patch(IHarmony harmony) : TerminalCmd
                 il.Emit(OpCodes.Ldnull);
             }
 
-            if (CanReturnPending)
+            if (returnArgLocal == null)
             {
                 il.Emit(OpCodes.Ldarg, argIndex);
                 // argIndex++;
             }
             else
             {
-                il.Emit(OpCodes.Ldnull);
+                il.Emit(OpCodes.Ldloca, returnArgLocal);
             }
 
             // call and return, discard return value if not Prefix
