@@ -105,6 +105,7 @@ public class RemoteControl
             _logger.LogDebug("connected to remote control client");
 
             var prefixPrompt = true;
+            var whoIsClient = WhoIsClient.Unknown;
 
             while (true)
             {
@@ -124,7 +125,7 @@ public class RemoteControl
                         try
                         {
                             _logger.LogDebug($"sending script print: {first}");
-                            Send(networkStream, first);
+                            Send(networkStream, first, whoIsClient);
                         }
                         catch (Exception e)
                         {
@@ -143,7 +144,16 @@ public class RemoteControl
 
                     try
                     {
-                        Send(networkStream, ">> ");
+                        if (whoIsClient is WhoIsClient.Script)
+                        {
+                            _buffer[0] = (byte)ScriptSendTypePrefix.Prefix;
+                            networkStream.Write(_buffer, 0, sizeof(byte));
+                        }
+                        else
+                        {
+                            var msgRaw = ">> "u8.ToArray();
+                            networkStream.Write(msgRaw, 0, msgRaw.Length);
+                        }
                     }
                     catch (Exception e)
                     {
@@ -159,7 +169,7 @@ public class RemoteControl
                 string response = null;
                 try
                 {
-                    bytes = Receive(networkStream, out response);
+                    bytes = Receive(networkStream, out response, ref whoIsClient);
                 }
                 catch (Exception)
                 {
@@ -185,43 +195,110 @@ public class RemoteControl
         // ReSharper disable once FunctionNeverReturns
     }
 
-    private static void Send(NetworkStream stream, string msg)
+    private enum ScriptSendTypePrefix : byte
+    {
+        Prefix = 0,
+        Stdout = 1,
+    }
+
+    private static void Send(NetworkStream stream, string msg, WhoIsClient whoIsClient)
     {
         var msgRaw = Encoding.UTF8.GetBytes(msg);
+        if (whoIsClient is not WhoIsClient.Script)
+        {
+            // just send msg
+            stream.Write(msgRaw, 0, msgRaw.Length);
+            return;
+        }
+
         var lengthRaw = BitConverter.GetBytes((ulong)msgRaw.Length);
         // fuck you c# I hate you
         if (!BitConverter.IsLittleEndian)
             lengthRaw = lengthRaw.Reverse().ToArray();
 
-        var content = lengthRaw.Concat(msgRaw).ToArray();
+        var prefix = new[] { (byte)ScriptSendTypePrefix.Stdout };
+        var content = prefix.Concat(lengthRaw).Concat(msgRaw).ToArray();
         stream.Write(content, 0, content.Length);
     }
 
     private byte[] _buffer = new byte[sizeof(ulong)];
 
-    private int Receive(NetworkStream stream, out string content)
+    private int Receive(NetworkStream stream, out string content, ref WhoIsClient whoIsClient)
     {
-        var bytes = stream.Read(_buffer, 0, sizeof(ulong));
-        if (bytes == 0)
+        switch (whoIsClient)
         {
-            content = null;
-            return bytes;
+            case WhoIsClient.Unknown:
+            {
+                // try figure out who is the client
+                const int scriptInitialSendSize = 1;
+                var bytes = stream.Read(_buffer, 0, scriptInitialSendSize);
+                if (bytes != scriptInitialSendSize)
+                {
+                    content = null;
+                    return bytes;
+                }
+
+                if (_buffer[0] == 0)
+                {
+                    whoIsClient = WhoIsClient.Script;
+                    _logger.LogDebug("detected remote control client to be a script");
+                    content = null;
+                    return 0;
+                }
+
+                whoIsClient = WhoIsClient.Human;
+                _logger.LogDebug("detected remote control client to be a human");
+
+                // resize buffer to be big enough (probably)
+                var bufferCopy = new byte[_buffer.Length];
+                _buffer.CopyTo(bufferCopy, 0);
+                _buffer = new byte[2048];
+                bufferCopy.CopyTo(_buffer, 0);
+
+                bytes = stream.Read(_buffer, scriptInitialSendSize, _buffer.Length - scriptInitialSendSize);
+                content = Encoding.UTF8.GetString(_buffer, 0, bytes + scriptInitialSendSize);
+                return bytes;
+            }
+            case WhoIsClient.Human:
+            {
+                var bytes = stream.Read(_buffer, 0, _buffer.Length);
+                content = Encoding.UTF8.GetString(_buffer, 0, bytes);
+                return bytes;
+            }
+            case WhoIsClient.Script:
+            {
+                var bytes = stream.Read(_buffer, 0, sizeof(ulong));
+                if (bytes == 0)
+                {
+                    content = null;
+                    return bytes;
+                }
+
+                // fucking c#
+                var length = (int)BitConverter.ToInt64(
+                    BitConverter.IsLittleEndian ? _buffer : _buffer.Take(4).Reverse().ToArray(),
+                    0);
+
+                // resize as required
+                if (_buffer.Length < length)
+                {
+                    _buffer = new byte[length];
+                }
+
+                bytes = stream.Read(_buffer, 0, length);
+
+                content = Encoding.UTF8.GetString(_buffer, 0, length);
+                return bytes;
+            }
+            default:
+                throw new ArgumentOutOfRangeException(nameof(whoIsClient), whoIsClient, null);
         }
+    }
 
-        // fucking c#
-        var length = (int)BitConverter.ToInt64(
-            BitConverter.IsLittleEndian ? _buffer : _buffer.Take(4).Reverse().ToArray(),
-            0);
-
-        // resize as required
-        if (_buffer.Length < length)
-        {
-            _buffer = new byte[length];
-        }
-
-        bytes = stream.Read(_buffer, 0, length);
-
-        content = Encoding.UTF8.GetString(_buffer, 0, length);
-        return bytes;
+    private enum WhoIsClient
+    {
+        Unknown,
+        Human,
+        Script
     }
 }
