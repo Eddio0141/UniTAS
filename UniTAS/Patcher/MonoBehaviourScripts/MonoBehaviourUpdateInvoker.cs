@@ -26,9 +26,17 @@ public class MonoBehaviourUpdateInvoker : MonoBehaviour
         StartCoroutine(FixedUpdateCoroutine());
     }
 
+    private bool _quitting;
+
+    private void OnApplicationQuit()
+    {
+        _quitting = true;
+    }
+
     private void OnDestroy()
     {
-        _logger.LogError("MonoBehaviourUpdateInvoker destroyed, this should not happen");
+        if (!_quitting)
+            _logger.LogError("MonoBehaviourUpdateInvoker destroyed, this should not happen");
     }
 
     private void Start()
