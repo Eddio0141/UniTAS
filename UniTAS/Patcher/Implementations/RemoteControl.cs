@@ -214,7 +214,7 @@ public class RemoteControl
         var lengthRaw = BitConverter.GetBytes((ulong)msgRaw.Length);
         // fuck you c# I hate you
         if (!BitConverter.IsLittleEndian)
-            lengthRaw = lengthRaw.Reverse().ToArray();
+            Array.Reverse(lengthRaw);
 
         var prefix = new[] { (byte)ScriptSendTypePrefix.Stdout };
         var content = prefix.Concat(lengthRaw).Concat(msgRaw).ToArray();
