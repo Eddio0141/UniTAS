@@ -141,7 +141,7 @@ public partial class FrameAdvancing : IFrameAdvancing, IOnFixedUpdateUncondition
                 _syncFixedUpdate.OnSync(_updateOffsetSyncFix, actualOffset);
                 // pause until offset is synced
                 // this also prevents this broken Update
-                _monoBehaviourController.PausedExecution = true;
+                PauseGameExec();
                 _pendingUpdateOffsetFixState = PendingUpdateOffsetFixState.PendingSync;
 
                 return;
@@ -260,7 +260,8 @@ public partial class FrameAdvancing : IFrameAdvancing, IOnFixedUpdateUncondition
     {
         _updateRestoreOffset = _updateInvokeOffset.Offset;
         _fixedUpdateRestoreIndex = _fixedUpdateIndex;
-        _monoBehaviourController.PausedExecution = true;
+        PauseGameExec();
+
         _logger.LogDebug(
             $"Pause frame advance, restore offset: {_updateRestoreOffset}, fixed update index: {_fixedUpdateRestoreIndex}");
 
@@ -278,7 +279,7 @@ public partial class FrameAdvancing : IFrameAdvancing, IOnFixedUpdateUncondition
 
     private void UnpauseActual()
     {
-        _monoBehaviourController.PausedExecution = false;
+        ResumeGameExec();
         _paused = false;
         _pendingUnpause = false;
 
@@ -296,5 +297,17 @@ public partial class FrameAdvancing : IFrameAdvancing, IOnFixedUpdateUncondition
         _pendingUpdateOffsetFixState = PendingUpdateOffsetFixState.Done;
         _logger.LogDebug("fixed update offset");
         PauseActual();
+    }
+
+    private void PauseGameExec()
+    {
+        _monoBehaviourController.PausedExecution = true;
+        PauseAnimation();
+    }
+
+    private void ResumeGameExec()
+    {
+        _monoBehaviourController.PausedExecution = false;
+        ResumeAnimation();
     }
 }
