@@ -44,4 +44,15 @@ public class EitherTests
         Assert.Equal("test", either.Right);
         Assert.Throws<InvalidOperationException>(() => either.Left);
     }
+
+    [Fact]
+    public void Equality()
+    {
+        Either<int, string> either = "test";
+        Either<int, string> either2 = "test";
+        Assert.Equal(either, either2);
+
+        either2 = new Either<int, string>(5);
+        Assert.NotEqual(either, either2);
+    }
 }

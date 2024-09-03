@@ -1,8 +1,9 @@
 using System;
+using System.Collections.Generic;
 
 namespace UniTAS.Patcher.Models.Utils;
 
-public readonly struct Either<TLeft, TRight>
+public readonly struct Either<TLeft, TRight> : IEquatable<Either<TLeft, TRight>>
 {
     private readonly TLeft _left;
     private readonly TRight _right;
@@ -43,5 +44,22 @@ public readonly struct Either<TLeft, TRight>
         }
 
         return IsLeft ? $"Left: {value}" : $"Right: {value}";
+    }
+
+    public bool Equals(Either<TLeft, TRight> other)
+    {
+        return IsLeft == other.IsLeft && IsLeft
+            ? EqualityComparer<TLeft>.Default.Equals(_left, other._left)
+            : EqualityComparer<TRight>.Default.Equals(_right, other._right);
+    }
+
+    public override bool Equals(object obj)
+    {
+        return obj is Either<TLeft, TRight> other && Equals(other);
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(_left, _right, IsLeft);
     }
 }
