@@ -40,18 +40,22 @@ public class ScriptableObjectPatch
         private static void Postfix(ScriptableObject __result)
         {
             var st = new StackTrace();
-            var frames = st.GetFrames()?.Skip(2)?.ToArray();
+            var frames = st.GetFrames()?.Skip(2).ToArray();
+            if (frames == null) return;
+
             foreach (var frame in frames)
             {
                 var method = frame.GetMethod();
                 var declType = method.DeclaringType;
 
-                if (declType.Namespace == "UnityEngine.InputSystem")
+                if (declType?.Namespace == "UnityEngine.InputSystem")
                 {
-                    StaticLogger.Log.LogInfo($"ScriptableObject.CreateInstance was invoked from {declType.SaneFullName()}.{method.Name}, skipping tracking this instance");
+                    StaticLogger.Log.LogInfo(
+                        $"ScriptableObject.CreateInstance was invoked from {declType.SaneFullName()}.{method.Name}, skipping tracking this instance");
                     return;
                 }
             }
+
             NewScriptableObjectTracker.NewScriptableObject(__result);
         }
     }
