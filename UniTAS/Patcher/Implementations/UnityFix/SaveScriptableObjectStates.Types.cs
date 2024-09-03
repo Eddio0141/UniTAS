@@ -4,7 +4,6 @@ using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using UniTAS.Patcher.Extensions;
-using UniTAS.Patcher.Models.Utils;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Utils;
@@ -78,7 +77,7 @@ public partial class SaveScriptableObjectStates
     private readonly struct FieldData
     {
         private readonly ScriptableObject _instance;
-        private readonly Either<Object, object> _value;
+        private readonly object _value;
         private readonly FieldInfo _saveField;
 
         private readonly ITryFreeMalloc _freeMalloc;
@@ -111,7 +110,7 @@ public partial class SaveScriptableObjectStates
             _freeMalloc?.TryFree(_instance, _saveField);
 
             // additional one to make it not use the stored value
-            var value = DeepCopy.MakeDeepCopy(_value.IsLeft ? _value.Left : _value.Right);
+            var value = DeepCopy.MakeDeepCopy(_value);
             _saveField.SetValue(_instance, value);
         }
     }
