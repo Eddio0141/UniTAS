@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
+using UniTAS.Patcher.Utils;
+using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace UniTAS.Patcher.Implementations.FrameAdvancing;
@@ -10,14 +12,20 @@ namespace UniTAS.Patcher.Implementations.FrameAdvancing;
 public partial class FrameAdvancing
 {
     private readonly List<AnimatorTracker> _trackedAnimators = new();
-    // private readonly List<Animation> _trackedAnimations = new();
+    private readonly List<AnimationTracker> _trackedAnimations = new();
 
     private void PauseAnimation()
     {
         RefreshTrackedAnimators();
+        RefreshTrackedAnimations();
         foreach (var animator in _trackedAnimators)
         {
             animator.Pause();
+        }
+
+        foreach (var animation in _trackedAnimations)
+        {
+            animation.Pause();
         }
     }
 
@@ -28,7 +36,13 @@ public partial class FrameAdvancing
             animator.Resume();
         }
 
+        foreach (var animation in _trackedAnimations)
+        {
+            animation.Resume();
+        }
+
         _trackedAnimators.Clear();
+        _trackedAnimations.Clear();
     }
 
     private void RefreshTrackedAnimators()
@@ -40,6 +54,18 @@ public partial class FrameAdvancing
         foreach (var animator in animators)
         {
             _trackedAnimators.Add(new(animator));
+        }
+    }
+
+    private void RefreshTrackedAnimations()
+    {
+        var animations = ObjectUtils.FindObjectsOfType<Animation>();
+        _trackedAnimations.Clear();
+        _logger.LogDebug(
+            $"refreshing tracked animations for frame advancing, found {animations.Length} animations in scene");
+        foreach (var animation in animations)
+        {
+            _trackedAnimations.Add(new(animation));
         }
     }
 
@@ -68,6 +94,30 @@ public partial class FrameAdvancing
         public void Resume()
         {
             SetSpeed.Invoke(animator, [_speedBeforePause]);
+        }
+    }
+
+    private class AnimationTracker(Animation animation)
+    {
+        private readonly Dictionary<AnimationState, float> _speeds = new();
+
+        public void Pause()
+        {
+            foreach (AnimationState state in animation)
+            {
+                _speeds.Add(state, state.speed);
+                state.speed = 0f;
+            }
+        }
+
+        public void Resume()
+        {
+            foreach (var keyValue in _speeds)
+            {
+                keyValue.Key.speed = keyValue.Value;
+            }
+
+            _speeds.Clear();
         }
     }
 }
