@@ -12,6 +12,7 @@ using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Interfaces;
+using UniTAS.Patcher.ManualServices;
 using UniTAS.Patcher.ManualServices.Trackers;
 using UniTAS.Patcher.Utils;
 using FieldAttributes = Mono.Cecil.FieldAttributes;
@@ -186,6 +187,15 @@ public static class PatchMethods
     // dictionary here are for different threads
     private static readonly ConcurrentDictionary<int, List<Type>> PendingIgnoreAddingInvokeList = new();
 
+    private static readonly ConcurrentDictionary<string, List<string>> FieldIgnoreListConditional = new();
+
+    static PatchMethods()
+    {
+        // add this if no graphics (very silly)
+        if (GameInfoManual.NoGraphics)
+            FieldIgnoreListConditional.TryAdd("UnityEngine.Rendering.OnDemandRendering", ["m_RenderFrameInterval"]);
+    }
+
     public static void StaticCtorStart()
     {
         var type = new StackFrame(1).GetMethod()?.DeclaringType;
@@ -202,8 +212,9 @@ public static class PatchMethods
         invokeStack.Add(type);
 
         var stackCount = invokeStack.Count;
+        var typeSaneFullName = type.SaneFullName();
         StaticLogger.Log.LogDebug(
-            $"Start of static ctor {type.SaneFullName()}, stack count: {stackCount}, thread id: {threadId}");
+            $"Start of static ctor {typeSaneFullName}, stack count: {stackCount}, thread id: {threadId}");
         if (IsNotFirstInvoke(type)) return;
         StaticLogger.Trace("First static ctor invoke");
 
@@ -211,6 +222,11 @@ public static class PatchMethods
 
         // find and store static fields for later
         var declaredFields = AccessTools.GetDeclaredFields(type).Where(x => x.IsStatic && !x.IsLiteral);
+        if (FieldIgnoreListConditional.TryRemove(typeSaneFullName, out var ignoreFields))
+        {
+            declaredFields = declaredFields.Where(x => !ignoreFields.Contains(x.Name));
+        }
+
         ClassStaticInfoTracker.AddStaticFields(declaredFields);
 
         // if this is chain called, store dependency
