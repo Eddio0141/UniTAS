@@ -10,7 +10,7 @@ permissions:
 jobs:
   automated:
     runs-on: ubuntu-latest
-    if: (github.event.pull_request.user.login == 'dependabot[bot]' || github.event.pull_request.user.login == 'github-actions[bot]') && github.repository == 'Eddio0141/UniTASTestClients'
+    if: contains(github.event.pull_request.labels.*.name, 'automation') && github.repository == 'Eddio0141/UniTAS'
     steps:
       - name: Auto-merge for PRs
         run: gh pr merge --auto --merge "$PR_URL"
