@@ -11,6 +11,7 @@ using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.SoftRestart;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
+using UniTAS.Patcher.ManualServices;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Utils;
@@ -60,15 +61,13 @@ public class ExternPropertyReset(ILogger logger, IPatchReverseInvoker patchRever
                 return method.IsStatic && (method.ImplAttributes & MethodImplAttributes.InternalCall) != 0;
             });
 
-        var noGraphics = Environment.GetCommandLineArgs().Any(x => x is "-batchmode" or "-nographics");
-
         foreach (var (propDef, getMethod, setMethod) in properties)
         {
             var typeName = propDef.DeclaringType.FullName ?? "unknown_type";
             var fullName = $"{typeName}.{propDef.Name}";
 
             if (_skipProperties.Any(x => fullName.Like(x))) continue;
-            if (noGraphics && _skipPropertiesNoGraphics.Any(x => fullName.Like(x))) continue;
+            if (GameInfoManual.NoGraphics && _skipPropertiesNoGraphics.Any(x => fullName.Like(x))) continue;
 
             var get = getMethod?.ResolveReflection();
             var set = setMethod?.ResolveReflection();
