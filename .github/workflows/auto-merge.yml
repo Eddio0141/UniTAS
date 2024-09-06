@@ -10,7 +10,7 @@ permissions:
 jobs:
   automated:
     runs-on: ubuntu-latest
-    if: contains(github.event.pull_request.labels.*.name, 'automation') && github.repository == 'Eddio0141/UniTAS'
+    if: contains(github.event.pull_request.labels.*.name, 'automation')
     steps:
       - name: Wait on check
         uses: lewagon/wait-on-check-action@v1.3.4
