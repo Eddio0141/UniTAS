@@ -12,6 +12,13 @@ jobs:
     runs-on: ubuntu-latest
     if: contains(github.event.pull_request.labels.*.name, 'automation') && github.repository == 'Eddio0141/UniTAS'
     steps:
+      - name: Wait on check
+        uses: lewagon/wait-on-check-action@v1.3.4
+        with:
+          ref: ${{ github.ref }}
+          running-workflow-name: "automated"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Auto-merge for PRs
         run: gh pr merge --auto --merge "$PR_URL"
         env:
