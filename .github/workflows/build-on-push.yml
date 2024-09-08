@@ -60,3 +60,10 @@ jobs:
         with:
           name: test-runner-logs
           path: test-runner/logs
+
+      - if: contains(github.event.pull_request.labels.*.name, 'automation')
+        name: Auto-merge for automated PRs
+        run: gh pr merge --auto --merge "$PR_URL"
+        env:
+          PR_URL: ${{github.event.pull_request.html_url}}
+          GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
