@@ -1,4 +1,5 @@
 using System;
+using HarmonyLib;
 using MoonSharp.Interpreter;
 using MoonSharp.Interpreter.Interop.RegistrationPolicies;
 using UniTAS.Patcher.Interfaces.GUI;
@@ -26,13 +27,24 @@ public class FullAccess : TerminalCmd
         {
             _originalPolicy = UserData.RegistrationPolicy;
             UserData.RegistrationPolicy = new AutomaticRegistrationPolicy();
+
+            AddGlobals(script);
+
             print(
-                "Full access to types enabled, !!!IF RUNNING TAS MOVIES, DISABLE FULL ACCESS OR MAKE SURE THE MOVIE CAN BE 100% TRUSTED JUST IN CASE!!!");
+                "Full access to types enabled, !!!IF RUNNING TAS MOVIES, DISABLE FULL ACCESS OR MAKE SURE THE MOVIE CAN BE 100% TRUSTED JUST IN CASE!!!" +
+                "\n- Added global 'AccessTools'");
         }
         else
         {
             UserData.RegistrationPolicy = _originalPolicy;
             print("Restored original access to types");
         }
+    }
+
+    private static void AddGlobals(Script script)
+    {
+        // only applies to this script instance so it doesn't matter if not removed
+
+        script.Globals["AccessTools"] = UserData.CreateStatic(typeof(AccessTools));
     }
 }
