@@ -33,6 +33,7 @@ public class LiveScripting : ILiveScripting
                 ScriptLoader = new FileSystemScriptLoader(),
                 DebugInput = _ => null,
                 DebugPrint = _logger.LogInfo,
+                CheckThreadAccess = false
             }
         };
 
