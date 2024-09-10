@@ -17,9 +17,10 @@ public class TraverseProxy(Traverse traverse)
     private static readonly AccessTools.FieldRef<object, MemberInfo> TraverseInfoField =
         AccessTools.FieldRefAccess<MemberInfo>(typeof(Traverse), "_info");
 
-    public object GetValue(params object[] args) => traverse.GetValue(args);
-
-    public object GetValue() => traverse.GetValue();
+    public object GetValue(params object[] args)
+    {
+        return args.Length == 0 ? traverse.GetValue() : traverse.GetValue(args);
+    }
 
     public Traverse SetValue(DynValue value)
     {
@@ -87,4 +88,14 @@ public class TraverseProxy(Traverse traverse)
         traverse.Method(name, paramTypes, arguments);
 
     public bool PropertyExists() => traverse.PropertyExists();
+
+    public bool MethodExists() => traverse.MethodExists();
+
+    public bool TypeExists() => traverse.TypeExists();
+
+    public Table Methods(Script script)
+    {
+        var list = traverse.Methods();
+        return new Table(script, list.Select(x => DynValue.FromObject(script, x)).ToArray());
+    }
 }
