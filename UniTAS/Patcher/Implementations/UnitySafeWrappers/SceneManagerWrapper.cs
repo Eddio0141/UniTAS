@@ -39,7 +39,8 @@ public class SceneManagerWrapper : ISceneWrapper
     private readonly Func<string, int, bool, bool, AsyncOperation> _applicationLoadLevelAsync;
 
     // non-async load level
-    private readonly MethodInfo _loadScene;
+    private readonly MethodInfo _loadSceneByIndex;
+    private readonly MethodInfo _loadSceneByName;
 
     private readonly MethodInfo _getActiveScene;
 
@@ -58,7 +59,8 @@ public class SceneManagerWrapper : ISceneWrapper
                 [typeof(string), typeof(int), _loadSceneParametersType, typeof(bool)], null);
         }
 
-        _loadScene = _sceneManager?.GetMethod("LoadScene", AccessTools.all, null, [typeof(int)], null);
+        _loadSceneByIndex = _sceneManager?.GetMethod("LoadScene", AccessTools.all, null, [typeof(int)], null);
+        _loadSceneByName = _sceneManager?.GetMethod("LoadScene", AccessTools.all, null, [typeof(string)], null);
 
         var loadLevelAsync = AccessTools.Method(typeof(Application), "LoadLevelAsync",
             [typeof(string), typeof(int), typeof(bool), typeof(bool)]);
@@ -119,13 +121,24 @@ public class SceneManagerWrapper : ISceneWrapper
 
     public void LoadScene(int buildIndex)
     {
-        if (_loadScene != null)
+        if (_loadSceneByIndex != null)
         {
-            _loadScene.Invoke(null, [buildIndex]);
+            _loadSceneByIndex.Invoke(null, [buildIndex]);
             return;
         }
 
         Application.LoadLevel(buildIndex);
+    }
+
+    public void LoadScene(string name)
+    {
+        if (_loadSceneByName != null)
+        {
+            _loadSceneByName.Invoke(null, [name]);
+            return;
+        }
+
+        Application.LoadLevel(name);
     }
 
     public int TotalSceneCount => _totalSceneCount?.Invoke() ?? Application.levelCount;

@@ -200,6 +200,10 @@ public static class KernelUtils
         {
         }
 
+        public void LoadScene(string name)
+        {
+        }
+
         public int TotalSceneCount => 0;
         public int ActiveSceneIndex => 0;
         public string ActiveSceneName => "";
