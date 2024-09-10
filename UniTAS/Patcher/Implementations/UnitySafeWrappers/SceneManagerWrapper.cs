@@ -125,7 +125,7 @@ public class SceneManagerWrapper : ISceneWrapper
             return;
         }
 
-        Application.LoadLevel(0);
+        Application.LoadLevel(buildIndex);
     }
 
     public int TotalSceneCount => _totalSceneCount?.Invoke() ?? Application.levelCount;
