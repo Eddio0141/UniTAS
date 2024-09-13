@@ -19,38 +19,26 @@ public partial class SaveScriptableObjectStates
         public readonly ScriptableObject ScriptableObject;
 
         private readonly FieldData[] _savedFields;
-        private readonly FieldInfo[] _resetFields;
 
         private readonly ILogger _logger;
-        private readonly ITryFreeMalloc _freeMalloc;
 
         public StoredState(ScriptableObject scriptableObject, ILogger logger, ITryFreeMalloc freeMalloc)
         {
             ScriptableObject = scriptableObject;
             _logger = logger;
-            _freeMalloc = freeMalloc;
 
             // save
             var fields = scriptableObject.GetType().GetFieldsRecursive(AccessTools.all)
                 .Where(x => !x.IsStatic && !x.IsLiteral && x.DeclaringType != typeof(Object));
 
-            var resetFields = new List<FieldInfo>();
             var savedFields = new List<FieldData>();
 
             foreach (var field in fields)
             {
-                if (field.IsFieldUnitySerializable())
-                {
-                    savedFields.Add(new(field, scriptableObject, logger, freeMalloc));
-                    continue;
-                }
-
-                StaticLogger.Trace("Field is not unity serializable, resetting on load");
-                resetFields.Add(field);
+                savedFields.Add(new(field, scriptableObject, logger, freeMalloc));
             }
 
             _savedFields = savedFields.ToArray();
-            _resetFields = resetFields.ToArray();
         }
 
         public void Load()
@@ -64,12 +52,6 @@ public partial class SaveScriptableObjectStates
             foreach (var savedField in _savedFields)
             {
                 savedField.Load();
-            }
-
-            foreach (var resetField in _resetFields)
-            {
-                _freeMalloc?.TryFree(ScriptableObject, resetField);
-                resetField.SetValue(ScriptableObject, null);
             }
         }
     }
