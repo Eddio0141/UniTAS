@@ -282,20 +282,28 @@ public class Patch(IHarmony harmony) : TerminalCmd
         ref object __result)
     {
         var closure = PatchClosures[closureIndex];
-        var args = new List<object>();
+        var args = new List<DynValue>();
+        var script = closure.OwnerScript;
         if (__instance != null)
         {
-            args.Add(__instance);
+            args.Add(DynValue.FromObject(script, __instance));
         }
 
         if (__args != null)
         {
-            args.Add(__args);
+            var argsDynValue = DynValue.NewTable(script);
+            for (var i = 0; i < __args.Length; i++)
+            {
+                var arg = __args[i];
+                argsDynValue.Table[i] = DynValue.FromObject(script, arg);
+            }
+
+            args.Add(argsDynValue);
         }
 
         if (PatchCanReturn[closureIndex])
         {
-            args.Add(__result);
+            args.Add(DynValue.FromObject(script, __result));
         }
 
         var ret = closure.Call(args.ToArray());
