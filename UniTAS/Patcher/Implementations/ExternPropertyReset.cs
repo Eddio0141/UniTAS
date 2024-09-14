@@ -149,7 +149,9 @@ public class ExternPropertyReset(ILogger logger, IPatchReverseInvoker patchRever
         // clipboard access
         "UnityEngine.GUIUtility.systemCopyBuffer",
         // new input system stuff
-        "UnityEngineInternal.Input.NativeInputSystem.*"
+        "UnityEngineInternal.Input.NativeInputSystem.*",
+        // null exception
+        "UnityEngine.Rendering.GraphicsSettings.INTERNAL_defaultRenderPipeline"
     ];
 
     private readonly List<string> _knownProperties =
