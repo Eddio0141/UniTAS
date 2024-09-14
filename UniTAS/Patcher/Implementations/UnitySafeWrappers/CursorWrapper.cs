@@ -30,12 +30,12 @@ public class CursorWrapper : ICursorWrapper
     {
         _logger = logger;
         var cursor = AccessTools.TypeByName("UnityEngine.Cursor");
-        _newUnity = cursor != null;
+        _lockState = AccessTools.Property(cursor, "lockState");
+        _visible = AccessTools.Property(cursor, "visible");
+        _newUnity = cursor != null && _lockState != null && _visible != null;
         if (_newUnity)
         {
-            _lockState = AccessTools.Property(cursor, "lockState");
-            _visible = AccessTools.Property(cursor, "visible");
-            _cursorLockMode = _lockState.PropertyType;
+            _cursorLockMode = _lockState!.PropertyType;
         }
         else
         {
