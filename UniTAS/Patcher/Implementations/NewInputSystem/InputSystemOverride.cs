@@ -27,8 +27,6 @@ public class InputSystemOverride
     public InputSystemOverride(ILogger logger, InputOverrideDevice[] devices,
         IInputSystemState newInputSystemExists, IUpdateEvents updateEvents, IVirtualEnvController virtualEnv, IMovieRunner movieRunner)
     {
-        logger.LogMessage($"Has unity new input system: {newInputSystemExists.HasNewInputSystem}");
-
         if (!newInputSystemExists.HasNewInputSystem) return;
 
         _logger = logger;
