@@ -24,11 +24,11 @@ public static class DeepCopy
     /// <typeparam name="T">The type of the instance that should be created</typeparam>
     /// <param name="source">The original object</param>
     /// <param name="result">[out] The copy of the original object</param>
-    /// <param name="processor">Optional value transformation function (taking a field name and src/dst <see cref="Traverse"/> instances)</param>
+    /// <param name="processor">Optional custom copy function (taking a field name, src <see cref="Traverse"/>, and an output copied object. Return is to use this object or not)</param>
     /// <param name="pathRoot">The optional path root to start with</param>
     ///
     public static void MakeDeepCopy<T>(object source, out T result,
-        Func<string, Traverse, Traverse, object> processor = null, string pathRoot = "")
+        Processor processor = null, string pathRoot = "")
     {
         result = (T)MakeDeepCopy(source, processor, pathRoot);
     }
@@ -39,10 +39,10 @@ public static class DeepCopy
 
     /// <summary>Makes a deep copy of any object</summary>
     /// <param name="source">The original object</param>
-    /// <param name="processor">Optional value transformation function (taking a field name and src/dst <see cref="Traverse"/> instances)</param>
+    /// <param name="processor">Optional custom copy function (taking a field name, src <see cref="Traverse"/>, and an output copied object. Return is to use this object or not)</param>
     /// <param name="pathRoot">The optional path root to start with</param>
     /// <returns>The copy of the original object</returns>
-    public static object MakeDeepCopy(object source, Func<string, Traverse, Traverse, object> processor = null,
+    public static object MakeDeepCopy(object source, Processor processor = null,
         string pathRoot = "")
     {
         var id = 0ul;
@@ -50,12 +50,21 @@ public static class DeepCopy
     }
 
     // dictionary is used to keep track of instances. int is the ID of the instance, which is used to compare foundReferences and newReferences
-    private static object MakeDeepCopy(object source, Func<string, Traverse, Traverse, object> processor,
+    private static object MakeDeepCopy(object source, Processor processor,
         string pathRoot, Dictionary<ulong, object> foundReferences,
         Dictionary<ulong, object> newReferences, ref ulong id)
     {
         StaticLogger.Trace(
             $"MakeDeepCopy, depth: {_makeDeepCopyRecursionDepth}, type: {source?.GetType().FullName}, pathRoot: {pathRoot}");
+
+        if (processor is not null)
+        {
+            if (processor(pathRoot, source, out var processorValue))
+            {
+                StaticLogger.Trace("MakeDeepCopy, using processor to get copied value");
+                return processorValue;
+            }
+        }
 
         if (source is Object and not MonoBehaviour and not ScriptableObject)
         {
@@ -201,19 +210,8 @@ public static class DeepCopy
             var name = field.Name;
             StaticLogger.Trace($"MakeDeepCopy, processing field: {name}");
             var path = pathRoot.Length > 0 ? pathRoot + "." + name : name;
-            object value;
-            if (processor is not null)
-            {
-                StaticLogger.Trace("MakeDeepCopy, using processor to get value for copying");
-                var srcTraverse = Traverse.Create(source).Field(name);
-                var dstTraverse = Traverse.Create(result).Field(name);
 
-                value = processor(path, srcTraverse, dstTraverse);
-            }
-            else
-            {
-                value = field.GetValue(source);
-            }
+            var value = field.GetValue(source);
 
             if (field.FieldType.IsPointer)
             {
@@ -236,4 +234,6 @@ public static class DeepCopy
         StaticLogger.Trace("MakeDeepCopy, returning result from copied fields");
         return result;
     }
+
+    public delegate bool Processor(string path, object source, out object copiedObj);
 }
