@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using BepInEx.Logging;
+using HarmonyLib;
 using UniTAS.Patcher.Implementations.Customization;
 using UniTAS.Patcher.Implementations.TASRenderer;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
@@ -16,20 +17,33 @@ using UniTAS.Patcher.Utils;
 namespace UniTAS.Patcher.Implementations;
 
 [Singleton]
-public class ThreadSoftRestartHandler(ILogger logger) : IThreadTracker, IOnPreGameRestart
+public class ThreadSoftRestartHandler : IThreadTracker, IOnPreGameRestart
 {
     private readonly List<Thread> _threads = [];
 
-    private readonly Type[] _excludeTypes =
-    [
-        typeof(DiskLogListener),
-        typeof(GameVideoRenderer),
-        typeof(NativeAudioRenderer),
-        typeof(LoggingUtils.DiskLogger),
-        typeof(RemoteControl),
-        typeof(ReadOnlyFieldDescriptor),
-        typeof(Config)
-    ];
+    private readonly Type[] _excludeTypes;
+
+    private readonly ILogger _logger;
+
+    public ThreadSoftRestartHandler(ILogger logger)
+    {
+        _logger = logger;
+        _excludeTypes =
+            new[]
+            {
+                typeof(DiskLogListener),
+                typeof(GameVideoRenderer),
+                typeof(NativeAudioRenderer),
+                typeof(LoggingUtils.DiskLogger),
+                typeof(RemoteControl),
+                typeof(ReadOnlyFieldDescriptor),
+                typeof(Config),
+            }.Concat(new[]
+                {
+                    AccessTools.TypeByName("Rewired.ReInput")
+                }.Where(x => x != null)
+            ).ToArray();
+    }
 
     public void ThreadStart(Thread thread)
     {
@@ -46,12 +60,12 @@ public class ThreadSoftRestartHandler(ILogger logger) : IThreadTracker, IOnPreGa
         // intentionally don't check if UniTAS namespace is included, any exclusions for UniTAS is to be included in _excludeTypes manually
         if (frames.Any(x => _excludeTypes.Contains(x.GetMethod()?.DeclaringType)))
         {
-            logger.LogDebug(
+            _logger.LogDebug(
                 $"Ignoring thread start, name: {thread.Name}, ID: {thread.ManagedThreadId}, stack trace: {trace}");
             return;
         }
 
-        logger.LogDebug(
+        _logger.LogDebug(
             $"Tracking thread start, name: {thread.Name}, ID: {thread.ManagedThreadId}, stack trace: {trace}");
         _threads.Add(thread);
     }
@@ -71,7 +85,7 @@ public class ThreadSoftRestartHandler(ILogger logger) : IThreadTracker, IOnPreGa
             }
             catch (Exception e)
             {
-                logger.LogDebug($"Exception thrown while aborting thread: {e}");
+                _logger.LogDebug($"Exception thrown while aborting thread: {e}");
             }
         }
 
@@ -79,11 +93,18 @@ public class ThreadSoftRestartHandler(ILogger logger) : IThreadTracker, IOnPreGa
 
         foreach (var thread in pendingJoin)
         {
-            thread.Join();
+            try
+            {
+                thread.Join();
+            }
+            catch (Exception e)
+            {
+                _logger.LogDebug($"Exception thrown while joining thread: {e}");
+            }
 
-            logger.LogDebug($"Interrupted game thread, name: {thread.Name}, ID: {thread.ManagedThreadId}");
+            _logger.LogDebug($"Interrupted game thread, name: {thread.Name}, ID: {thread.ManagedThreadId}");
         }
 
-        logger.LogDebug("All game threads interrupted");
+        _logger.LogDebug("All game threads interrupted");
     }
 }

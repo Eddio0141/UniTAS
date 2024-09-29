@@ -47,7 +47,10 @@ public static class TargetPatcherDlls
 
         "Unity.InputSystem",
         "Unity.InputSystem.ForUI",
-        "UnityEngine.InputModule"
+        "UnityEngine.InputModule",
+        
+        // ignore rewired, there's a fix for it
+        "Rewired_*"
     ];
 
     // private static string[] AssemblyIncludeRaw { get; } =
