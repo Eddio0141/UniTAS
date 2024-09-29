@@ -78,7 +78,7 @@ public partial class SaveScriptableObjectStates
 
             try
             {
-                _value = DeepCopy.MakeDeepCopy(value);
+                _value = DeepCopy.MakeDeepCopy(value, processor: ProcessScriptableObjectCopy);
             }
             catch (Exception e)
             {
@@ -92,8 +92,20 @@ public partial class SaveScriptableObjectStates
             _freeMalloc?.TryFree(_instance, _saveField);
 
             // additional one to make it not use the stored value
-            var value = DeepCopy.MakeDeepCopy(_value);
+            var value = DeepCopy.MakeDeepCopy(_value, processor: ProcessScriptableObjectCopy);
             _saveField.SetValue(_instance, value);
+        }
+
+        private static bool ProcessScriptableObjectCopy(string path, object source, out object copiedObj)
+        {
+            if (source is not ScriptableObject)
+            {
+                copiedObj = null;
+                return false;
+            }
+
+            copiedObj = source;
+            return true;
         }
     }
 }
