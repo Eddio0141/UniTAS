@@ -56,6 +56,7 @@ public partial class SaveScriptableObjectStates : INewScriptableObjectTracker, I
 
         foreach (var obj in allScriptableObjects)
         {
+            _logger.LogDebug($"Saving object {obj.name}");
             Save(obj);
         }
     }
