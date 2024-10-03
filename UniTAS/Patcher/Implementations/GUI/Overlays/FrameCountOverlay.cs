@@ -1,6 +1,6 @@
 using UniTAS.Patcher.Interfaces.DependencyInjection;
-using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
 using UniTAS.Patcher.Interfaces.Events.Movie;
+using UniTAS.Patcher.Interfaces.Events.UnityEvents.DontRunIfPaused;
 using UniTAS.Patcher.Interfaces.GUI;
 using UniTAS.Patcher.Models.GUI;
 using UniTAS.Patcher.Services;
@@ -22,7 +22,7 @@ public class FrameCountOverlay : BuiltInOverlay, IOnMovieRunningStatusChange, IO
     }
 
     protected override AnchoredOffset DefaultOffset => new(0, 0, 0, 0);
-    protected override string ConfigValue => "FrameCount";
+    protected override string ConfigName => "FrameCount";
 
     public void OnMovieRunningStatusChange(bool running)
     {
@@ -38,14 +38,14 @@ public class FrameCountOverlay : BuiltInOverlay, IOnMovieRunningStatusChange, IO
         }
     }
 
-    protected override void Update()
+    protected override string Update()
     {
         if (_update)
         {
             _frameCount++;
         }
 
-        Text = $"Frame: {_frameCount.ToString()}, Fixed Frame: {_fixedFrameCount.ToString()}";
+        return $"Frame: {_frameCount.ToString()}, Fixed Frame: {_fixedFrameCount.ToString()}";
     }
 
     public void FixedUpdateActual()

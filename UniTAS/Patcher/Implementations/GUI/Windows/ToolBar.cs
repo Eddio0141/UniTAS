@@ -1,5 +1,5 @@
 using UniTAS.Patcher.Interfaces.DependencyInjection;
-using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
+using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
 using UniTAS.Patcher.Models.Customization;
 using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Services.Customization;
@@ -12,7 +12,7 @@ namespace UniTAS.Patcher.Implementations.GUI.Windows;
 [Singleton(RegisterPriority.ToolBar)]
 [ForceInstantiate]
 [ExcludeRegisterIfTesting]
-public class ToolBar : IOnGUIUnconditional, IOnUpdateUnconditional
+public class ToolBar : IOnGUIUnconditional
 {
     private readonly IWindowFactory _windowFactory;
 
@@ -22,7 +22,6 @@ public class ToolBar : IOnGUIUnconditional, IOnUpdateUnconditional
     private bool _visible;
 
     private readonly Bind _toolbarVisibleBind;
-    private readonly Bind _newTerminalWindowBind;
 
     public ToolBar(IWindowFactory windowFactory, IBinds binds)
     {
@@ -44,13 +43,12 @@ public class ToolBar : IOnGUIUnconditional, IOnUpdateUnconditional
             active = { background = buttonHold, textColor = Color.white }
         };
 
-        _newTerminalWindowBind = binds.Create(new(TerminalWindow.TERMINAL_INPUT_BIND_NAME, KeyCode.BackQuote));
         _toolbarVisibleBind = binds.Create(new("ToolbarVisible", KeyCode.F1));
     }
 
     public void OnGUIUnconditional()
     {
-        if (Event.current.type == EventType.KeyDown && _toolbarVisibleBind.IsPressed())
+        if (Event.current.type == EventType.KeyDown && Event.current.keyCode == _toolbarVisibleBind.Key)
         {
             _visible = !_visible;
             Event.current.Use();
@@ -73,13 +71,5 @@ public class ToolBar : IOnGUIUnconditional, IOnUpdateUnconditional
         }
 
         GUILayout.EndHorizontal();
-    }
-
-    public void UpdateUnconditional()
-    {
-        if (_newTerminalWindowBind.IsPressed())
-        {
-            _windowFactory.Create<TerminalWindow>().Show();
-        }
     }
 }

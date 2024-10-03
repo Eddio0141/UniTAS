@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
-using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
+using UniTAS.Patcher.Interfaces.Events.UnityEvents.DontRunIfPaused;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Logging;
 
@@ -67,7 +67,7 @@ public class GameRender : IGameRender, IOnLastUpdateActual
 
         if (_videoRenderer == null)
         {
-            _logger.LogError("No video renderer available");
+            _logger.LogWarning("No video renderer available");
             return;
         }
 
@@ -75,7 +75,7 @@ public class GameRender : IGameRender, IOnLastUpdateActual
 
         if (audioRenderer == null)
         {
-            _logger.LogError("No audio renderer available");
+            _logger.LogWarning("No audio renderer available");
             return;
         }
 
@@ -83,11 +83,11 @@ public class GameRender : IGameRender, IOnLastUpdateActual
 
         if (!ffmpegProcessFactory.Available)
         {
-            _logger.LogError("ffmpeg not available");
+            _logger.LogWarning("ffmpeg not available");
             return;
         }
 
-        _renderers = new Renderer[] { _videoRenderer, audioRenderer };
+        _renderers = [_videoRenderer, audioRenderer];
 
         _ffmpegMergeVideoAudio = ffmpegProcessFactory.CreateFfmpegProcess();
 
@@ -152,7 +152,7 @@ public class GameRender : IGameRender, IOnLastUpdateActual
 
         // start merge
         _ffmpegMergeVideoAudio.StartInfo.Arguments =
-            $"-y -i {VideoRenderer.OutputPath} -i {AudioRenderer.OutputPath} -c:v copy -c:a aac {VideoPath}";
+            $"-y -i {VideoRenderer.OUTPUT_PATH} -i {AudioRenderer.OUTPUT_PATH} -c:v copy -c:a aac {VideoPath}";
 
         _ffmpegMergeVideoAudio.Start();
         _ffmpegMergeVideoAudio.BeginErrorReadLine();
@@ -174,7 +174,7 @@ public class GameRender : IGameRender, IOnLastUpdateActual
         try
         {
             // delete video file
-            File.Delete(VideoRenderer.OutputPath);
+            File.Delete(VideoRenderer.OUTPUT_PATH);
         }
         catch (Exception e)
         {
@@ -184,7 +184,7 @@ public class GameRender : IGameRender, IOnLastUpdateActual
         try
         {
             // delete audio file
-            File.Delete(AudioRenderer.OutputPath);
+            File.Delete(AudioRenderer.OUTPUT_PATH);
         }
         catch (Exception e)
         {

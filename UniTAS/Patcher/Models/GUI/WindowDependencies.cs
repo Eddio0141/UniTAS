@@ -1,16 +1,11 @@
 using UniTAS.Patcher.Services;
-using UniTAS.Patcher.Services.EventSubscribers;
+using UniTAS.Patcher.Services.UnityEvents;
 
 namespace UniTAS.Patcher.Models.GUI;
 
-public class WindowDependencies
+public class WindowDependencies(IUpdateEvents updateEvents, IPatchReverseInvoker patchReverseInvoker, IConfig config)
 {
-    public IUpdateEvents UpdateEvents { get; }
-    public IPatchReverseInvoker PatchReverseInvoker { get; }
-
-    public WindowDependencies(IUpdateEvents updateEvents, IPatchReverseInvoker patchReverseInvoker)
-    {
-        UpdateEvents = updateEvents;
-        PatchReverseInvoker = patchReverseInvoker;
-    }
+    public IUpdateEvents UpdateEvents { get; } = updateEvents;
+    public IPatchReverseInvoker PatchReverseInvoker { get; } = patchReverseInvoker;
+    public IConfig Config { get; } = config;
 }

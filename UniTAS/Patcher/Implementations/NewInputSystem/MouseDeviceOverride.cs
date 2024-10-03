@@ -1,5 +1,5 @@
+using System;
 using System.Diagnostics.CodeAnalysis;
-using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.InputSystemOverride;
 using UniTAS.Patcher.Services.VirtualEnvironment.Input.NewInputSystem;
 using UnityEngine.InputSystem;
@@ -9,11 +9,8 @@ using MouseButton = UniTAS.Patcher.Models.VirtualEnvironment.MouseButton;
 
 namespace UniTAS.Patcher.Implementations.NewInputSystem;
 
-[Singleton]
-public class MouseDeviceOverride : IInputOverrideDevice
+public class MouseDeviceOverride : InputOverrideDevice
 {
-    private Mouse _mouse;
-
     private readonly IMouseStateEnvNewSystem _mouseStateEnvNewSystem;
 
     public MouseDeviceOverride(IMouseStateEnvNewSystem mouseStateEnvNewSystem)
@@ -23,11 +20,11 @@ public class MouseDeviceOverride : IInputOverrideDevice
 
     [InputControlLayout(stateType = typeof(MouseState), isGenericTypeOfDevice = true)]
     [SuppressMessage("ReSharper", "ClassNeverInstantiated.Local")]
-    private class TASMouse : Mouse
-    {
-    }
+    private class TASMouse : Mouse;
 
-    public void Update()
+    protected override Type InputControlLayout => typeof(TASMouse);
+
+    public override void Update()
     {
         ushort buttons = 0;
         if (_mouseStateEnvNewSystem.IsButtonHeld(MouseButton.Left))
@@ -49,14 +46,13 @@ public class MouseDeviceOverride : IInputOverrideDevice
         {
             buttons = buttons,
             position = _mouseStateEnvNewSystem.Position,
-            scroll = _mouseStateEnvNewSystem.Scroll
+            delta = _mouseStateEnvNewSystem.Delta,
+            scroll = _mouseStateEnvNewSystem.Scroll,
+            // TODO: testing with normal game shows its 0 regardless of how fast I click, test more to determine whats best
+            // clickCount = ??,
+            // displayIndex = ??, // TODO: probably look into it once virtual env gets more enriched with os stuff
         };
 
-        InputSystem.QueueStateEvent(_mouse, state);
-    }
-
-    public void DeviceAdded()
-    {
-        _mouse = InputSystem.AddDevice<TASMouse>();
+        InputSystem.QueueStateEvent(Device, state);
     }
 }

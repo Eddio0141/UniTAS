@@ -1,7 +1,9 @@
-﻿using BepInEx;
+﻿using System.Collections.Generic;
+using BepInEx;
+using UniTAS.Patcher.Exceptions.GUI;
 using UniTAS.Patcher.Models.GUI;
 using UniTAS.Patcher.Services;
-using UniTAS.Patcher.Services.EventSubscribers;
+using UniTAS.Patcher.Services.UnityEvents;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 
@@ -28,13 +30,29 @@ public abstract class Window
 
     private readonly IUpdateEvents _updateEvents;
     private readonly IPatchReverseInvoker _patchReverseInvoker;
+    private readonly IConfig _configService;
 
     private string WindowName { get; }
+    private readonly string _windowConfigId;
 
-    protected Window(WindowDependencies windowDependencies, WindowConfig config)
+    private static readonly List<string> UsedWindowIDs = new();
+
+    protected Window(WindowDependencies windowDependencies, WindowConfig config, string windowId = null)
     {
+        if (windowId != null)
+        {
+            if (UsedWindowIDs.Contains(windowId))
+            {
+                throw new DuplicateWindowIDException($"WindowID {windowId} is already used");
+            }
+
+            UsedWindowIDs.Add(windowId);
+            _windowConfigId = windowId;
+        }
+
         _patchReverseInvoker = windowDependencies.PatchReverseInvoker;
         _updateEvents = windowDependencies.UpdateEvents;
+        _configService = windowDependencies.Config;
         _config = config ?? new();
         _windowUpdate = WindowUpdate;
         WindowName = _config.WindowName;
@@ -51,18 +69,25 @@ public abstract class Window
     {
         _windowRect = _config.DefaultWindowRect;
         _windowId = GetHashCode();
+
+        // try load config stuff
+        if (_configService.TryGetBackendEntry($"{BACKEND_CONFIG_PREFIX}{BACKEND_CONFIG_WINDOW_RECT}{_windowConfigId}",
+                out Models.Rect rect))
+        {
+            _windowRect = rect.ToUnityRect();
+        }
     }
 
     public void Show()
     {
         if (_showWindow) return;
-        _updateEvents.OnGUIEventUnconditional += OnGUIUnconditional;
+        _updateEvents.OnGUIUnconditional += OnGUIUnconditional;
         _showWindow = true;
     }
 
     protected virtual void Close()
     {
-        _updateEvents.OnGUIEventUnconditional -= OnGUIUnconditional;
+        _updateEvents.OnGUIUnconditional -= OnGUIUnconditional;
         _showWindow = false;
     }
 
@@ -122,9 +147,13 @@ public abstract class Window
             if (!RightMouseButton)
             {
                 _resizing = false;
+                ClampWindow(); // handle clamped pos
+                SaveWindowRect();
             }
-
-            ClampWindow();
+            else
+            {
+                ClampWindow();
+            }
 
             return;
         }
@@ -148,9 +177,13 @@ public abstract class Window
             if (!LeftMouseButton)
             {
                 _dragging = false;
+                ClampWindow(); // for saving clamped pos
+                SaveWindowRect();
             }
-
-            ClampWindow();
+            else
+            {
+                ClampWindow();
+            }
 
             return;
         }
@@ -230,4 +263,14 @@ public abstract class Window
     }
 
     protected abstract void OnGUI();
+
+    private const string BACKEND_CONFIG_PREFIX = "window-";
+    private const string BACKEND_CONFIG_WINDOW_RECT = "rect-";
+
+    private void SaveWindowRect()
+    {
+        var saneRect = new Models.Rect(_windowRect);
+        _configService.WriteBackendEntry($"{BACKEND_CONFIG_PREFIX}{BACKEND_CONFIG_WINDOW_RECT}{_windowConfigId}",
+            saneRect);
+    }
 }

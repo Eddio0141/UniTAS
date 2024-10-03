@@ -2,10 +2,10 @@ using System;
 
 namespace UniTAS.Patcher.Exceptions.GUI;
 
-public class DuplicateTerminalEntryException : Exception
+public class DuplicateTerminalCmdException : Exception
 {
-    public DuplicateTerminalEntryException(string[] dupes) : base(
-        $"Duplicate terminal entries found: {string.Join(", ", dupes)}")
+    public DuplicateTerminalCmdException(string[] dupes) : base(
+        $"Duplicate terminal commands found: {string.Join(", ", dupes)}")
     {
     }
 }

@@ -1,8 +1,7 @@
 ﻿using System.Collections;
-using System.Linq;
-using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
-using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
-using UniTAS.Patcher.Services;
+using UniTAS.Patcher.Services.Logging;
+using UniTAS.Patcher.Services.UnityEvents;
+using UniTAS.Patcher.Services.UnityInfo;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 
@@ -11,57 +10,91 @@ namespace UniTAS.Patcher.MonoBehaviourScripts;
 public class MonoBehaviourUpdateInvoker : MonoBehaviour
 {
     private IMonoBehEventInvoker _monoBehEventInvoker;
-    private IOnLastUpdateUnconditional[] _onLastUpdatesUnconditional;
-    private IOnLastUpdateActual[] _onLastUpdatesActual;
-    private IMonoBehaviourController _monoBehaviourController;
+    private ILogger _logger;
+    private IGameInfoUpdate _gameInfo;
 
     private void Awake()
     {
         var kernel = ContainerStarter.Kernel;
         _monoBehEventInvoker = kernel.GetInstance<IMonoBehEventInvoker>();
-        _onLastUpdatesUnconditional = kernel.GetAllInstances<IOnLastUpdateUnconditional>().ToArray();
-        _onLastUpdatesActual = kernel.GetAllInstances<IOnLastUpdateActual>().ToArray();
-        _monoBehaviourController = kernel.GetInstance<IMonoBehaviourController>();
+        _logger = kernel.GetInstance<ILogger>();
+        _gameInfo = kernel.GetInstance<IGameInfoUpdate>();
 
-        StartCoroutine(EndOfFrame());
+        _monoBehEventInvoker.InvokeAwake();
+
+        StartCoroutine(EndOfFrameCoroutine());
+        StartCoroutine(FixedUpdateCoroutine());
+    }
+
+    private bool _quitting;
+
+    private void OnApplicationQuit()
+    {
+        _quitting = true;
+    }
+
+    private void OnDestroy()
+    {
+        if (!_quitting)
+            _logger.LogError("MonoBehaviourUpdateInvoker destroyed, this should not happen");
+    }
+
+    private void Start()
+    {
+        _monoBehEventInvoker.InvokeStart();
     }
 
     private void Update()
     {
-        _monoBehEventInvoker.Update();
+        _monoBehEventInvoker.InvokeUpdate();
     }
 
     private void FixedUpdate()
     {
-        _monoBehEventInvoker.FixedUpdate();
+        _monoBehEventInvoker.InvokeFixedUpdate();
     }
 
     private void LateUpdate()
     {
-        _monoBehEventInvoker.LateUpdate();
+        _monoBehEventInvoker.InvokeLateUpdate();
     }
 
     private void OnGUI()
     {
-        _monoBehEventInvoker.OnGUI();
+        _monoBehEventInvoker.InvokeOnGUI();
     }
 
-    private IEnumerator EndOfFrame()
+    private void OnEnable()
+    {
+        _monoBehEventInvoker.InvokeOnEnable();
+    }
+
+    private void OnApplicationFocus(bool hasFocus)
+    {
+        _logger.LogDebug($"game in focus = {hasFocus}");
+        _gameInfo.IsFocused = hasFocus;
+    }
+
+    // stupid optimization since object alloc
+    private readonly WaitForEndOfFrame _waitForEndOfFrame = new();
+    private readonly WaitForFixedUpdate _waitForFixedUpdate = new();
+
+    private IEnumerator EndOfFrameCoroutine()
     {
         while (true)
         {
-            yield return new WaitForEndOfFrame();
-            foreach (var update in _onLastUpdatesUnconditional)
-            {
-                update.OnLastUpdateUnconditional();
-            }
+            yield return _waitForEndOfFrame;
+            _monoBehEventInvoker.InvokeLastUpdate();
+        }
+        // ReSharper disable once IteratorNeverReturns
+    }
 
-            if (_monoBehaviourController.PausedExecution) continue;
-
-            foreach (var update in _onLastUpdatesActual)
-            {
-                update.OnLastUpdateActual();
-            }
+    private IEnumerator FixedUpdateCoroutine()
+    {
+        while (true)
+        {
+            yield return _waitForFixedUpdate;
+            _monoBehEventInvoker.CoroutineFixedUpdate();
         }
         // ReSharper disable once IteratorNeverReturns
     }

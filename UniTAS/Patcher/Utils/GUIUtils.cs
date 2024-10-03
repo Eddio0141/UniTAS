@@ -4,7 +4,7 @@ namespace UniTAS.Patcher.Utils;
 
 public static class GUIUtils
 {
-    public static readonly GUILayoutOption[] EmptyOptions = new GUILayoutOption[0];
+    public static readonly GUILayoutOption[] EmptyOptions = [];
 
     public static Rect WindowRect(int width, int height)
     {

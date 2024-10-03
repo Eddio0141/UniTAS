@@ -8,17 +8,11 @@ namespace UniTAS.Patcher.Implementations;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 [Singleton]
-public class PatchReverseInvoker : IPatchReverseInvoker
+[ExcludeRegisterIfTesting]
+public class PatchReverseInvoker(ILogger logger) : IPatchReverseInvoker
 {
     public bool Invoking => _depth > 0;
     private uint _depth;
-
-    private readonly ILogger _logger;
-
-    public PatchReverseInvoker(ILogger logger)
-    {
-        _logger = logger;
-    }
 
     public bool InnerCall()
     {
@@ -35,7 +29,7 @@ public class PatchReverseInvoker : IPatchReverseInvoker
         switch (_depth)
         {
             case 1:
-                _logger.LogError($"Something went wrong returning from reverse invoking, {new StackTrace()}");
+                logger.LogError($"Something went wrong returning from reverse invoking, {new StackTrace()}");
                 return;
             case > 0:
                 _depth--;
@@ -83,8 +77,7 @@ public class PatchReverseInvoker : IPatchReverseInvoker
     {
         if (_depth != 1)
         {
-            _logger.LogError(
-                $"Depth isn't matching 1 after reverse invoking, something went wrong, {new StackTrace()}");
+            logger.LogWarning($"Depth isn't matching 1 after reverse invoking, {new StackTrace()}");
         }
 
         _depth = 0;

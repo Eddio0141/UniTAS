@@ -4,7 +4,8 @@ namespace UniTAS.Patcher.Exceptions;
 
 public class DeepCopyMaxRecursionException : Exception
 {
-    public DeepCopyMaxRecursionException() : base("MakeDeepCopy recursion depth limit exceeded")
+    public DeepCopyMaxRecursionException(object source, string path) : base(
+        $"MakeDeepCopy recursion depth limit exceeded, object type: {source.GetType()}, path: {path}")
     {
     }
 }

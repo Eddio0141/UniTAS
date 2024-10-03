@@ -1,55 +1,81 @@
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using BepInEx;
+using MoonSharp.Interpreter;
 using UniTAS.Patcher.Exceptions.GUI;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
+using UniTAS.Patcher.Interfaces.GlobalHotkeyListener;
 using UniTAS.Patcher.Interfaces.GUI;
 using UniTAS.Patcher.Models.Customization;
 using UniTAS.Patcher.Models.GUI;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Customization;
-using UniTAS.Patcher.Services.GUI;
+using UniTAS.Patcher.Services.Logging;
+using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations.GUI.Windows;
 
 [Register]
+[ForceInstantiate]
+[ExcludeRegisterIfTesting]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-public class TerminalWindow : Window, ITerminalWindow
+public class TerminalWindow : Window
 {
-    public TerminalEntry[] TerminalEntries { get; }
-    private readonly IPatchReverseInvoker _patchReverseInvoker;
+    private readonly ITerminalLogger _logger;
 
     private string _terminalOutput = string.Empty;
     private string _terminalInput = string.Empty;
     private string _terminalInputFull = string.Empty;
     private Vector2 _terminalOutputScroll;
 
-    private TerminalEntry _hijackingEntry;
-
     private bool _initialFocus = true;
 
     private readonly Bind _terminalBind;
+    private readonly Bind _terminalSubmit;
 
-    public const string TERMINAL_INPUT_BIND_NAME = "NewTerminal";
+    private readonly Script _script;
 
-    public TerminalWindow(WindowDependencies windowDependencies, TerminalEntry[] terminalEntries, IBinds binds) : base(
-        windowDependencies,
-        new(defaultWindowRect: GUIUtils.WindowRect(Screen.width - 100, Screen.height - 100), windowName: "Terminal"))
+    public TerminalWindow(WindowDependencies windowDependencies, TerminalCmd[] commands, IBinds binds,
+        IGlobalHotkey globalHotkey, ITerminalLogger logger, ILiveScripting liveScripting,
+        IUnityInputWrapper unityInput) : base(windowDependencies,
+        new(defaultWindowRect: GUIUtils.WindowRect(Screen.width - 200, Screen.height - 200), windowName: "Terminal"),
+        "terminal")
     {
-        _patchReverseInvoker = windowDependencies.PatchReverseInvoker;
-        _terminalBind = binds.Get(TERMINAL_INPUT_BIND_NAME);
-
         // check dupes
-        var dupes = terminalEntries.GroupBy(x => x.Command).Where(x => x.Count() > 1).Select(x => x.Key).ToArray();
-        if (dupes.Any()) throw new DuplicateTerminalEntryException(dupes);
-        TerminalEntries = terminalEntries;
+        var dupes = commands.GroupBy(x => x.Name).Where(x => x.Count() > 1).Select(x => x.Key).ToArray();
+        if (dupes.Any()) throw new DuplicateTerminalCmdException(dupes);
+        _logger = logger;
+
+        _script = liveScripting.NewScript();
+        _script.Options.DebugPrint = msg => TerminalPrintLine($">> {msg}");
+        foreach (var cmd in commands)
+        {
+            _script.Globals[cmd.Name] = cmd.Callback;
+            cmd.Setup();
+        }
+
+        windowDependencies.UpdateEvents.OnUpdateUnconditional += OnUpdateUnconditional;
+
+        _terminalBind = binds.Create(new("NewTerminal", KeyCode.BackQuote));
+        _terminalSubmit = binds.Create(new("TerminalSubmit", KeyCode.Return), true);
+        globalHotkey.AddGlobalHotkey(new(_terminalBind, Show));
     }
 
-    private readonly GUILayoutOption[] _textAreaOptions = { GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true) };
-    private readonly GUILayoutOption[] _terminalInputOptions = { GUILayout.ExpandWidth(true) };
-    private readonly GUILayoutOption[] _submitOptions = { GUILayout.ExpandWidth(false) };
+    private readonly GUILayoutOption[] _textAreaOptions = [GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true)];
+    private readonly GUILayoutOption[] _terminalInputOptions = [GUILayout.ExpandWidth(true)];
+    private readonly GUILayoutOption[] _submitOptions = [GUILayout.ExpandWidth(false)];
+
+    private void OnUpdateUnconditional()
+    {
+        if (!_waitForTerminalBindRelease || _terminalBind.IsPressed()) return;
+
+        // if waiting for release and bind is not pressed
+        _initialFocus = true;
+        _waitForTerminalBindRelease = false;
+        Close();
+    }
 
     protected override void OnGUI()
     {
@@ -62,6 +88,8 @@ public class TerminalWindow : Window, ITerminalWindow
 
         GUILayout.BeginHorizontal(GUIUtils.EmptyOptions);
 
+        CheckTerminalInputBinds();
+
         UnityEngine.GUI.SetNextControlName("TerminalInput");
 
         _terminalInput = GUILayout.TextField(_terminalInput, _terminalInputOptions);
@@ -72,8 +100,6 @@ public class TerminalWindow : Window, ITerminalWindow
             UnityEngine.GUI.FocusControl("TerminalInput");
         }
 
-        CheckTerminalInputBinds();
-
         if (GUILayout.Button("Submit", _submitOptions))
         {
             Submit(false);
@@ -83,105 +109,85 @@ public class TerminalWindow : Window, ITerminalWindow
         GUILayout.EndVertical();
     }
 
-    private bool GetKeyDown(KeyCode keyCode)
-    {
-        return _patchReverseInvoker.Invoke(key => UnityInput.Current.GetKeyDown(key), keyCode);
-    }
-
-    private bool GetKey(KeyCode keyCode)
-    {
-        return _patchReverseInvoker.Invoke(key => UnityInput.Current.GetKey(key), keyCode);
-    }
-
-    private bool _usedInputEvent;
-    private bool _waitForTerminalBindRelease = true;
+    private bool _waitForTerminalBindRelease;
 
     private void CheckTerminalInputBinds()
     {
-        // eat input if used bind
-        if (_usedInputEvent && Event.current.type != EventType.Repaint && Event.current.type != EventType.Layout)
+        if (Event.current.type == EventType.Layout || Event.current.type == EventType.Repaint) return;
+
+        if (_waitForTerminalBindRelease)
         {
-            _usedInputEvent = false;
             Event.current.Use();
             return;
         }
 
-        if (UnityEngine.GUI.GetNameOfFocusedControl() != "TerminalInput" ||
-            Event.current.type != EventType.Repaint) return;
-
-        if (GetKeyDown(KeyCode.Return))
+        if (Event.current.type != EventType.KeyDown || UnityEngine.GUI.GetNameOfFocusedControl() != "TerminalInput")
         {
-            // hold shift to split input
-            Submit(GetKey(KeyCode.LeftShift) | GetKey(KeyCode.RightShift));
-            _usedInputEvent = true;
+            return;
         }
 
-        if (_terminalBind.IsPressed() && _hijackingEntry == null)
+        if (Event.current.keyCode == _terminalSubmit.Key)
         {
-            if (_waitForTerminalBindRelease)
-            {
-                _waitForTerminalBindRelease = false;
-                return;
-            }
+            Submit(Event.current.shift);
+            Event.current.Use();
+            return;
+        }
 
-            Close();
-            _usedInputEvent = true;
+        if (Event.current.keyCode == _terminalBind.Key)
+        {
+            _waitForTerminalBindRelease = true;
+            Event.current.Use();
         }
     }
+
+    private int _indent;
 
     private void Submit(bool split)
     {
         _terminalInputFull += $"{_terminalInput}\n";
 
-        if (_hijackingEntry != null)
+        // handle indent resetting or reducing
+        var inputTrimmed = _terminalInput.Trim();
+        if (split && inputTrimmed == "end")
+            _indent = Math.Max(_indent - 1, 0);
+        else if (!split)
+            _indent = 0;
+
+        TerminalPrintLine(new string(' ', _indent * 2) + _terminalInput);
+
+        // handling indent increasing
+        if (split && _indent < int.MaxValue - 1)
         {
-            _hijackingEntry.OnInput(_terminalInput, true);
-            if (!split)
-            {
-                _hijackingEntry.OnInput(_terminalInputFull, false);
-            }
-
-            _terminalInput = string.Empty;
-            return;
+            if ((inputTrimmed.StartsWith("function ") && !inputTrimmed.EndsWith("end")) ||
+                (inputTrimmed.StartsWith("if ") && !inputTrimmed.EndsWith("end")))
+                _indent++;
         }
-
-        TerminalPrintLine($"] {_terminalInput}");
 
         _terminalInput = string.Empty;
-
         if (split) return;
 
-        var command = _terminalInputFull.Split(' ').FirstOrDefault()?.Trim();
-        var args = _terminalInputFull.Split(' ').Skip(1).ToArray();
+        try
+        {
+            _script.DoString(_terminalInputFull);
+        }
+        catch (InterpreterException e)
+        {
+            TerminalPrintLine(">> " + e.Message);
+        }
+        catch (Exception e)
+        {
+            TerminalPrintLine(">> " + e);
+        }
 
         _terminalInputFull = string.Empty;
-
-        if (string.IsNullOrEmpty(command)) return;
-
-        var entry = TerminalEntries.FirstOrDefault(x => x.Command == command);
-        if (entry == null)
-        {
-            TerminalPrintLine("command not found");
-            return;
-        }
-
-        var hijack = entry.Execute(args, this);
-        if (hijack)
-        {
-            _hijackingEntry = entry;
-        }
     }
 
-    public void TerminalPrintLine(string output)
+    private void TerminalPrintLine(string output)
     {
         _terminalOutput += $"{output}\n";
+        _logger.LogMessage(output);
 
         // scroll to bottom
         _terminalOutputScroll.y = Mathf.Infinity;
-    }
-
-    public void ReleaseTerminal()
-    {
-        _hijackingEntry = null;
     }
 }

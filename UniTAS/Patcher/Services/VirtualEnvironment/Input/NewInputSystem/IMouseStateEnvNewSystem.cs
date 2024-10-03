@@ -7,6 +7,7 @@ public interface IMouseStateEnvNewSystem
 {
     Vector2 Position { get; set; }
     Vector2 Scroll { get; set; }
+    Vector2 Delta { get; }
     void HoldButton(MouseButton button);
     void ReleaseButton(MouseButton button);
     bool IsButtonHeld(MouseButton button);

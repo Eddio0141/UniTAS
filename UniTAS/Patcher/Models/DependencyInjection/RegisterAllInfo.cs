@@ -9,7 +9,7 @@ public class RegisterAllInfo : RegisterInfoBase
     private Type InnerType { get; }
 
     public RegisterAllInfo(Type type, Type innerType, RegisterAttribute registerAttribute) : base(registerAttribute
-        .Priority)
+        .Priority, registerAttribute.Timing)
     {
         Type = type;
         InnerType = innerType;

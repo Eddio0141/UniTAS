@@ -1,7 +1,9 @@
+using UniTAS.Patcher.Implementations.Movie.Engine.Modules;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.RuntimeTest;
 using UniTAS.Patcher.Interfaces.VirtualEnvironment;
 using UniTAS.Patcher.Models.VirtualEnvironment;
+using UniTAS.Patcher.Services.InputSystemOverride;
 using UniTAS.Patcher.Services.VirtualEnvironment;
 using UniTAS.Patcher.Services.VirtualEnvironment.Input.LegacyInputSystem;
 using UniTAS.Patcher.Utils;
@@ -10,34 +12,25 @@ using UnityEngine;
 namespace UniTAS.Patcher.RuntimeTests;
 
 [Register]
-public class LegacyInputSystemTests
+public class LegacyInputSystemTests(
+    IKeyboardStateEnvLegacySystem keyboardController,
+    IVirtualEnvController virtualEnvController,
+    IMouseStateEnvLegacySystem mouseController,
+    IAxisStateEnvLegacySystem axisStateEnvLegacySystem,
+    Mouse mouse, IInputSystemState inputSystemState)
 {
-    private readonly IKeyboardStateEnvLegacySystem _keyboardController;
-    private readonly LegacyInputSystemDevice _keyboardControllerBase;
+    private readonly LegacyInputSystemDevice _keyboardControllerBase = (LegacyInputSystemDevice)keyboardController;
 
-    private readonly IMouseStateEnvLegacySystem _mouseController;
-    private readonly LegacyInputSystemDevice _mouseControllerBase;
-
-    private readonly IVirtualEnvController _virtualEnvController;
-    private readonly IKeyFactory _keyFactory;
-
-    public LegacyInputSystemTests(IKeyboardStateEnvLegacySystem keyboardController,
-        IVirtualEnvController virtualEnvController, IMouseStateEnvLegacySystem mouseController, IKeyFactory keyFactory)
-    {
-        _keyboardController = keyboardController;
-        _keyboardControllerBase = (LegacyInputSystemDevice)keyboardController;
-        _virtualEnvController = virtualEnvController;
-        _mouseController = mouseController;
-        _mouseControllerBase = (LegacyInputSystemDevice)mouseController;
-        _keyFactory = keyFactory;
-    }
+    private readonly LegacyInputSystemDevice _mouseControllerBase = (LegacyInputSystemDevice)mouseController;
 
     [RuntimeTest]
-    public void GetKeyTest()
+    public bool GetKeyTest()
     {
-        _virtualEnvController.RunVirtualEnvironment = true;
+        if (!inputSystemState.HasOldInputSystem) return false;
 
-        _keyboardController.Hold(_keyFactory.CreateKey(KeyCode.A));
+        virtualEnvController.RunVirtualEnvironment = true;
+
+        keyboardController.Hold(KeyCode.A);
         _keyboardControllerBase.MovieUpdate(false);
 
         RuntimeAssert.True(Input.GetKeyDown(KeyCode.A), "keycode down check");
@@ -57,7 +50,7 @@ public class LegacyInputSystemTests
         RuntimeAssert.True(Input.GetKey(KeyCode.A), "keycode 3 check");
         RuntimeAssert.True(Input.GetKey("a"), "string 3 check");
 
-        _keyboardController.Release(_keyFactory.CreateKey(KeyCode.A));
+        keyboardController.Release(KeyCode.A);
         _keyboardControllerBase.MovieUpdate(false);
 
         RuntimeAssert.False(Input.GetKey(KeyCode.A), "keycode 4 check");
@@ -70,15 +63,17 @@ public class LegacyInputSystemTests
         RuntimeAssert.False(Input.GetKeyUp(KeyCode.A), "keycode up check");
         RuntimeAssert.False(Input.GetKeyUp("a"), "string up check");
 
-        _virtualEnvController.RunVirtualEnvironment = false;
+        virtualEnvController.RunVirtualEnvironment = false;
+        return true;
     }
 
     [RuntimeTest]
-    public void KeyDownTest()
+    public bool KeyDownTest()
     {
-        _virtualEnvController.RunVirtualEnvironment = true;
+        if (!inputSystemState.HasOldInputSystem) return false;
+        virtualEnvController.RunVirtualEnvironment = true;
 
-        _keyboardController.Hold(_keyFactory.CreateKey(KeyCode.A));
+        keyboardController.Hold(KeyCode.A);
         _keyboardControllerBase.MovieUpdate(false);
 
         RuntimeAssert.True(Input.GetKeyDown(KeyCode.A), "keycode down check 1");
@@ -95,16 +90,18 @@ public class LegacyInputSystemTests
 
         RuntimeAssert.False(Input.GetKeyDown(KeyCode.A), "keycode down check 4");
 
-        _keyboardController.Release(_keyFactory.CreateKey(KeyCode.A));
-        _virtualEnvController.RunVirtualEnvironment = false;
+        keyboardController.Release(KeyCode.A);
+        virtualEnvController.RunVirtualEnvironment = false;
+        return true;
     }
 
     [RuntimeTest]
-    public void KeyDownTest2()
+    public bool KeyDownTest2()
     {
-        _virtualEnvController.RunVirtualEnvironment = true;
+        if (!inputSystemState.HasOldInputSystem) return false;
+        virtualEnvController.RunVirtualEnvironment = true;
 
-        _keyboardController.Hold(_keyFactory.CreateKey(KeyCode.A));
+        keyboardController.Hold(KeyCode.A);
         _keyboardControllerBase.MovieUpdate(false);
 
         RuntimeAssert.True(Input.GetKeyDown(KeyCode.A), "keycode down check 1");
@@ -113,18 +110,20 @@ public class LegacyInputSystemTests
 
         RuntimeAssert.False(Input.GetKeyDown(KeyCode.A), "keycode down check 2");
 
-        _keyboardController.Release(_keyFactory.CreateKey(KeyCode.A));
-        _virtualEnvController.RunVirtualEnvironment = false;
+        keyboardController.Release(KeyCode.A);
+        virtualEnvController.RunVirtualEnvironment = false;
+        return true;
     }
 
     [RuntimeTest]
-    public void GetMousePress()
+    public bool GetMousePress()
     {
-        _virtualEnvController.RunVirtualEnvironment = true;
+        if (!inputSystemState.HasOldInputSystem) return false;
+        virtualEnvController.RunVirtualEnvironment = true;
 
         RuntimeAssert.False(Input.GetMouseButton(0), "check 1");
 
-        _mouseController.HoldButton(MouseButton.Left);
+        mouseController.HoldButton(MouseButton.Left);
         _mouseControllerBase.MovieUpdate(false);
 
         RuntimeAssert.True(Input.GetMouseButtonDown(0), "check 2");
@@ -135,14 +134,14 @@ public class LegacyInputSystemTests
         RuntimeAssert.False(Input.GetMouseButtonDown(0), "check 4");
         RuntimeAssert.True(Input.GetMouseButton(0), "check 5");
 
-        _mouseController.HoldButton(MouseButton.Middle);
+        mouseController.HoldButton(MouseButton.Middle);
         _mouseControllerBase.MovieUpdate(false);
 
         RuntimeAssert.True(Input.GetMouseButtonDown(2), "check 6");
         RuntimeAssert.True(Input.GetMouseButton(2), "check 7");
 
-        _mouseController.ReleaseButton(MouseButton.Left);
-        _mouseController.ReleaseButton(MouseButton.Middle);
+        mouseController.ReleaseButton(MouseButton.Left);
+        mouseController.ReleaseButton(MouseButton.Middle);
         _mouseControllerBase.MovieUpdate(false);
 
         RuntimeAssert.False(Input.GetMouseButtonDown(2), "check 8");
@@ -155,6 +154,87 @@ public class LegacyInputSystemTests
         RuntimeAssert.False(Input.GetMouseButtonUp(0), "check 14");
         RuntimeAssert.False(Input.GetMouseButtonUp(2), "check 15");
 
-        _virtualEnvController.RunVirtualEnvironment = false;
+        virtualEnvController.RunVirtualEnvironment = false;
+        return true;
+    }
+
+    // TODO: move this to movie test
+    // [RuntimeTest]
+    public bool MouseLeftClickToAxis()
+    {
+        if (!inputSystemState.HasOldInputSystem) return false;
+        virtualEnvController.RunVirtualEnvironment = true;
+
+        // check if the axis exists
+        var allAxis = axisStateEnvLegacySystem.AllAxis;
+        var clickAxisIndex = -1;
+        for (var i = 0; i < allAxis.Count; i++)
+        {
+            var axis = allAxis[i].Item2.Axis;
+            if (axis.PositiveButton == "mouse 0" || axis.AltPositiveButton == "mouse 0" ||
+                axis.NegativeButton == "mouse 0" || axis.AltNegativeButton == "mouse 0")
+            {
+                clickAxisIndex = i;
+                break;
+            }
+        }
+
+        if (clickAxisIndex < 0) return false;
+
+        var (clickAxis, _) = allAxis[clickAxisIndex];
+
+        mouse.Left();
+        _mouseControllerBase.MovieUpdate(false);
+
+        RuntimeAssert.FloatEquals(1f, Input.GetAxisRaw(clickAxis), 0.01f, "axis == 1");
+
+        mouse.Left(false);
+        _mouseControllerBase.MovieUpdate(false);
+
+        RuntimeAssert.FloatEquals(0f, Input.GetAxisRaw(clickAxis), 0.01f, "axis == 0");
+
+        virtualEnvController.RunVirtualEnvironment = false;
+
+        return true;
+    }
+
+    // TODO: movie test
+    // [RuntimeTest]
+    public bool MouseRightClickToAxis()
+    {
+        if (!inputSystemState.HasOldInputSystem) return false;
+        virtualEnvController.RunVirtualEnvironment = true;
+
+        // check if the axis exists
+        var allAxis = axisStateEnvLegacySystem.AllAxis;
+        var clickAxisIndex = -1;
+        for (var i = 0; i < allAxis.Count; i++)
+        {
+            var axis = allAxis[i].Item2.Axis;
+            if (axis.PositiveButton == "mouse 1" || axis.AltPositiveButton == "mouse 1" ||
+                axis.NegativeButton == "mouse 1" || axis.AltNegativeButton == "mouse 1")
+            {
+                clickAxisIndex = i;
+                break;
+            }
+        }
+
+        if (clickAxisIndex < 0) return false;
+
+        var (clickAxis, _) = allAxis[clickAxisIndex];
+
+        mouse.Right();
+        _mouseControllerBase.MovieUpdate(false);
+
+        RuntimeAssert.FloatEquals(1f, Input.GetAxisRaw(clickAxis), 0.01f, "axis == 1");
+
+        mouse.Right(false);
+        _mouseControllerBase.MovieUpdate(false);
+
+        RuntimeAssert.FloatEquals(0f, Input.GetAxisRaw(clickAxis), 0.01f, "axis == 0");
+
+        virtualEnvController.RunVirtualEnvironment = false;
+
+        return true;
     }
 }

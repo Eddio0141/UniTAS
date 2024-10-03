@@ -52,6 +52,10 @@ public class GameSpeedUnlocker : IGameSpeedUnlocker
         Unlock = false;
         Application.targetFrameRate = OriginalTargetFrameRate;
         QualitySettings.vSyncCount = OriginalVSyncCount;
+
+        _logger.LogDebug(
+            $"restored target frame rate to {OriginalTargetFrameRate}, actual value: {Application.targetFrameRate}");
+        _logger.LogDebug($"restored vsync count to {OriginalVSyncCount}, actual value: {QualitySettings.vSyncCount}");
     }
 
     public int OriginalTargetFrameRate { get; set; }

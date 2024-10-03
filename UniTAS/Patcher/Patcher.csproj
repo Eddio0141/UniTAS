@@ -5,53 +5,78 @@
         <Product>UniTAS.Patcher</Product>
         <Description>UniTAS.Patcher</Description>
         <RootNamespace>UniTAS.Patcher</RootNamespace>
-        <Version>0.5.0</Version>
-        <AssemblyVersion>0.5.0</AssemblyVersion>
-        <FileVersion>0.5.0</FileVersion>
+        <Version>0.5.1</Version>
+        <AssemblyVersion>0.5.1</AssemblyVersion>
+        <FileVersion>0.5.1</FileVersion>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-        <LangVersion>latest</LangVersion>
+        <LangVersion>12</LangVersion>
         <RestoreAdditionalProjectSources>
             https://api.nuget.org/v3/index.json;
             https://nuget.bepinex.dev/v3/index.json
         </RestoreAdditionalProjectSources>
-        <Configurations>Debug;Release</Configurations>
+        <Configurations>Debug;Release;ReleaseTrace</Configurations>
         <Platforms>AnyCPU</Platforms>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+        <IsPackable>false</IsPackable>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-        <DefineConstants/>
+        <DefineConstants />
+        <OutputPath>bin/Release/BepInEx/patchers/UniTAS/</OutputPath>
+        <DebugType>none</DebugType>
+        <NoWarn />
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+        <OutputPath>bin/Debug/BepInEx/patchers/UniTAS/</OutputPath>
+        <NoWarn />
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'ReleaseTrace' ">
+        <OutputPath>bin/Release/BepInEx/patchers/UniTAS/</OutputPath>
+        <Optimize>true</Optimize>
+        <DebugType>none</DebugType>
+        <NoWarn />
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Remove="dependency\**"/>
-        <EmbeddedResource Remove="dependency\**"/>
-        <None Remove="dependency\**"/>
-        <Compile Remove="Extern-Assemblies\**"/>
-        <EmbeddedResource Remove="Extern-Assemblies\**"/>
-        <None Remove="Extern-Assemblies\**"/>
-        <Compile Remove="Resources\**"/>
-        <EmbeddedResource Remove="Resources\**"/>
-        <None Remove="Resources\**"/>
+        <ExternAssembliesFiles Include="RuntimeResources\ExternAssemblies\*.*" />
+        <ResourcesFiles Include="RuntimeResources\Resources\*.*" />
+    </ItemGroup>
+
+    <Target Name="CopyOnBuild" AfterTargets="AfterBuild">
+        <Copy SourceFiles="@(ExternAssembliesFiles)" DestinationFolder="$(OutDir)" />
+        <Copy SourceFiles="@(ResourcesFiles)" DestinationFolder="$(OutDir)\Resources" />
+    </Target>
+
+    <ItemGroup>
+        <PackageReference Include="AssetsTools.NET" Version="3.0.0" />
+        <PackageReference Include="BepInEx.Analyzers" Version="1.0.8" PrivateAssets="all" />
+        <PackageReference Include="BepInEx.Core" Version="5.4.21" />
+        <PackageReference Include="BepInEx.PluginInfoProps" Version="2.1.0" />
+        <PackageReference Include="JetBrains.Annotations" Version="2024.2.0" />
+        <PackageReference Include="MonoMod.Utils" Version="25.0.7" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+        <PackageReference Include="StructureMap" Version="2.6.3" />
+        <PackageReference Include="Unity.InputSystem" Version="1.5.0" />
+        <PackageReference Include="UnityEngine.Modules" Version="3.4.0" IncludeAssets="compile" />
+        <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="BepInEx.Analyzers" Version="1.0.8" PrivateAssets="all"/>
-        <PackageReference Include="BepInEx.Core" Version="5.4.21"/>
-        <PackageReference Include="BepInEx.PluginInfoProps" Version="2.1.0"/>
-        <PackageReference Include="MonoMod.Utils" Version="22.7.31.1"/>
-        <PackageReference Include="StructureMap" Version="2.6.3"/>
-        <PackageReference Include="Unity.InputSystem" Version="1.5.0"/>
-        <PackageReference Include="UnityEngine.Modules" Version="3.4.0" IncludeAssets="compile"/>
-        <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all"/>
+        <ProjectReference Include="..\..\moonsharp\src\MoonSharp.Interpreter\MoonSharp.Interpreter.net35-client.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <Reference Include="PresentationFramework">
-            <HintPath>.\Extern-Assemblies\PresentationFramework.dll</HintPath>
-        </Reference>
+        <Compile Remove="RuntimeResources\**" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\moonsharp\src\MoonSharp.Interpreter\MoonSharp.Interpreter.net35-client.csproj"/>
+        <EmbeddedResource Remove="RuntimeResources\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Remove="RuntimeResources\**" />
     </ItemGroup>
 </Project>

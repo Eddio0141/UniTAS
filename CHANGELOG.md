@@ -7,6 +7,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # [Unreleased]
 
+## Added
+
+### Compatibility
+
+- Added new input system support, with keyboard and mouse working
+
+## Changed
+
+### Performance
+
+- Loading should be faster if you've opened the game before
+- Slight performance increase in patching the first time
+
+## Fixed
+
+### Games
+
+- ULTRAKILL can be controlled now
+- Fixed itch.io Jaded Combat crashing on file selection
+- Fixed It Steals not being controllable properly with key, mouse, and controller
+- Fixed Lethal Company not loading the ship
+- Fixed Lethal Company breaking on soft restart
+
+### General
+
+- Fixed TAS encoding popping up command prompt probably
+- Fixed music overlaying on each other every restart
+
+### Compatibility
+
+- Fixed UniTAS not loading at all for games
+- Fixed accidentally skipping over static constructors
+- Fixed accidentally skipping over removing some readonly fields
+- Fixed crash when trying to remove readonly fields
+- Fixed sometimes UniTAS not receiving the first update, which might cause some movie desync by 1 frame
+- Fixed soft restart not properly taking in account for threads
+- Fixed soft restart not resetting cursor visibility and lock state
+- Fixed old input system's axis not being controlled by mapped inputs
+- Fixed async scene load event callback to be at proper timings
+- Fixed AsyncOperation instance not returning proper values
+- Fixed invoking RuntimeInitializeOnLoadMethod in the wrong order
+
+# [v0.5.1] - 2023-09-13
+
 ## Fixed
 
 ### Games
@@ -15,10 +59,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed DDLC launch on crash because out of range system time
 - Fixed Needy Streamer crashing on start up
 
+### TAS playback
+- Fixed timing being offset wrong by whatever value is fixed update is at
+
 ### Compatibility
 
 - Fixed some games using switch statement skips over UniTAS tracking the end of static constructors
 - Fixed not using the right ILCode for returning a default value from a method
+- Fixed duplicate AssetBundle loading causing an exception
+- Fixed coroutines causing exception on restart
+- Fixed some timing issues
 
 ## Changed
 
@@ -243,15 +293,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Game directory access history and usage
 
 [unreleased]: https://github.com/Eddio0141/UniTAS/compare/v0.5.0...HEAD
-
+[v0.5.1]: https://github.com/Eddio0141/UniTAS/compare/v0.5.0...v0.5.1
 [v0.5.0]: https://github.com/Eddio0141/UniTAS/compare/v0.4.0...v0.5.0
-
 [v0.4.0]: https://github.com/Eddio0141/UniTAS/compare/v0.3.0...v0.4.0
-
 [v0.3.0]: https://github.com/Eddio0141/UniTAS/compare/v0.2.0_v1.1.3...v0.3.0
-
 [v0.2.0_v1.1.3]: https://github.com/Eddio0141/UniTAS/compare/v0.1.0_v1.1.2...v0.2.0_v1.1.3
-
 [v0.1.0_v1.1.2]: https://github.com/Eddio0141/UniTAS/compare/v0.1.0_v1.1.1...v0.1.0_v1.1.2
-
 [v0.1.0_v1.1.1]: https://github.com/Eddio0141/UniTAS/releases/tag/v0.1.0_v1.1.1

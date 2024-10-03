@@ -1,39 +1,78 @@
 using UniTAS.Patcher.Interfaces.DependencyInjection;
-using UniTAS.Patcher.Models.VirtualEnvironment;
+using UniTAS.Patcher.Services.InputSystemOverride;
 using UniTAS.Patcher.Services.VirtualEnvironment.Input;
 using UniTAS.Patcher.Services.VirtualEnvironment.Input.LegacyInputSystem;
 using UniTAS.Patcher.Services.VirtualEnvironment.Input.NewInputSystem;
+using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Implementations.VirtualEnvironment.InputState;
 
 [Singleton]
-public class KeyboardStateEnvController : IKeyboardStateEnvController
+public class KeyboardStateEnvController(
+    IKeyboardStateEnvLegacySystem keyboardStateEnvLegacySystem,
+    IKeyboardStateEnvNewSystem keyboardStateEnvNewSystem,
+    IInputSystemState inputSystemState)
+    : IKeyboardStateEnvController
 {
-    private readonly IKeyboardStateEnvLegacySystem _keyboardStateEnvLegacySystem;
-    private readonly IKeyboardStateEnvNewSystem _keyboardStateEnvNewSystem;
-
-    public KeyboardStateEnvController(IKeyboardStateEnvLegacySystem keyboardStateEnvLegacySystem,
-        IKeyboardStateEnvNewSystem keyboardStateEnvNewSystem)
+    public void Hold(string key, out string warningMsg)
     {
-        _keyboardStateEnvLegacySystem = keyboardStateEnvLegacySystem;
-        _keyboardStateEnvNewSystem = keyboardStateEnvNewSystem;
+        InputSystemUtils.KeyStringToKeys(key, out var keyCode, out var newKey);
+        warningMsg = null;
+
+        if (keyCode.HasValue)
+        {
+            keyboardStateEnvLegacySystem.Hold(keyCode.Value);
+        }
+        else if (inputSystemState.HasOldInputSystem)
+        {
+            warningMsg = "failed to find matching KeyCode, make sure it's a valid entry in UnityEngine.KeyCode";
+        }
+
+        if (newKey.HasValue)
+        {
+            keyboardStateEnvNewSystem.Hold(newKey.Value);
+        }
+        else if (inputSystemState.HasNewInputSystem)
+        {
+            if (warningMsg == null)
+                warningMsg = "";
+            else
+                warningMsg += "\n";
+            warningMsg += "failed to find matching keycode for new unity input system, COULD BE A BUG";
+        }
     }
 
-    public void Hold(Key key)
+    public void Release(string key, out string warningMsg)
     {
-        _keyboardStateEnvLegacySystem.Hold(key);
-        _keyboardStateEnvNewSystem.Hold(key);
-    }
+        InputSystemUtils.KeyStringToKeys(key, out var keyCode, out var newKey);
+        warningMsg = null;
 
-    public void Release(Key key)
-    {
-        _keyboardStateEnvLegacySystem.Release(key);
-        _keyboardStateEnvNewSystem.Release(key);
+        if (keyCode.HasValue)
+        {
+            keyboardStateEnvLegacySystem.Release(keyCode.Value);
+        }
+        else if (inputSystemState.HasOldInputSystem)
+        {
+            warningMsg = "failed to find matching KeyCode, make sure it's a valid entry in UnityEngine.KeyCode";
+        }
+
+        if (newKey.HasValue)
+        {
+            keyboardStateEnvNewSystem.Release(newKey.Value);
+        }
+        else if (inputSystemState.HasNewInputSystem)
+        {
+            if (warningMsg == null)
+                warningMsg = "";
+            else
+                warningMsg += "\n";
+            warningMsg += "failed to find matching keycode for new unity input system, COULD BE A BUG";
+        }
     }
 
     public void Clear()
     {
-        _keyboardStateEnvLegacySystem.Clear();
-        _keyboardStateEnvNewSystem.Clear();
+        keyboardStateEnvLegacySystem.Clear();
+        keyboardStateEnvNewSystem.Clear();
     }
 }

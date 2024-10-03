@@ -8,45 +8,38 @@ using UnityEngine;
 namespace UniTAS.Patcher.Implementations.VirtualEnvironment.InputState;
 
 [Singleton]
-public class MouseStateEnvController : IMouseStateEnvController
+public class MouseStateEnvController(
+    IMouseStateEnvLegacySystem mouseStateEnvLegacySystem,
+    IMouseStateEnvNewSystem mouseStateEnvNewSystem)
+    : IMouseStateEnvController
 {
-    private readonly IMouseStateEnvLegacySystem _mouseStateEnvLegacySystem;
-    private readonly IMouseStateEnvNewSystem _mouseStateEnvNewSystem;
-
-    public MouseStateEnvController(IMouseStateEnvLegacySystem mouseStateEnvLegacySystem,
-        IMouseStateEnvNewSystem mouseStateEnvNewSystem)
-    {
-        _mouseStateEnvLegacySystem = mouseStateEnvLegacySystem;
-        _mouseStateEnvNewSystem = mouseStateEnvNewSystem;
-    }
-
     public void SetPosition(Vector2 position)
     {
-        _mouseStateEnvNewSystem.Position = position;
-        _mouseStateEnvLegacySystem.Position = position;
+        mouseStateEnvNewSystem.Position = position;
+        mouseStateEnvLegacySystem.Position = position;
     }
 
     public void SetPositionRelative(Vector2 position)
     {
-        _mouseStateEnvNewSystem.Position += position;
-        _mouseStateEnvLegacySystem.Position += position;
+        mouseStateEnvNewSystem.Position += position;
+        mouseStateEnvLegacySystem.Position += position;
     }
 
     public void SetScroll(Vector2 scroll)
     {
-        _mouseStateEnvNewSystem.Scroll = scroll;
-        _mouseStateEnvLegacySystem.Scroll = scroll;
+        mouseStateEnvNewSystem.Scroll = scroll;
+        mouseStateEnvLegacySystem.Scroll = scroll;
     }
 
     public void HoldButton(MouseButton button)
     {
-        _mouseStateEnvNewSystem.HoldButton(button);
-        _mouseStateEnvLegacySystem.HoldButton(button);
+        mouseStateEnvNewSystem.HoldButton(button);
+        mouseStateEnvLegacySystem.HoldButton(button);
     }
 
     public void ReleaseButton(MouseButton button)
     {
-        _mouseStateEnvNewSystem.ReleaseButton(button);
-        _mouseStateEnvLegacySystem.ReleaseButton(button);
+        mouseStateEnvNewSystem.ReleaseButton(button);
+        mouseStateEnvLegacySystem.ReleaseButton(button);
     }
 }

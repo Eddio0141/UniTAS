@@ -1,46 +1,34 @@
-using System;
-using HarmonyLib;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
-using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
+using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
+using UniTAS.Patcher.Models.UnitySafeWrappers;
 using UniTAS.Patcher.Services;
+using UniTAS.Patcher.Services.Logging;
+using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations;
 
 [Singleton]
-public class UnlockCursor : IOnUpdateUnconditional
+[ExcludeRegisterIfTesting]
+public class UnlockCursor(
+    ICursorWrapper cursorWrapper,
+    ILogger logger,
+    IGameRestart gameRestart,
+    IUnityInputWrapper unityInput)
+    : IOnUpdateUnconditional
 {
-    private readonly IPatchReverseInvoker _patchReverseInvoker;
-
-    public UnlockCursor(IPatchReverseInvoker patchReverseInvoker)
-    {
-        _patchReverseInvoker = patchReverseInvoker;
-    }
+    // private readonly IPatchReverseInvoker _patchReverseInvoker = patchReverseInvoker;
 
     public void UpdateUnconditional()
     {
-        if (!_patchReverseInvoker.Invoke(() => BepInEx.UnityInput.Current.GetKeyDown(KeyCode.F1))) return;
+        // prevent null ref exception
+        if (gameRestart.Restarting ||
+            // get real input
+            !unityInput.GetKeyDown(KeyCode.F1)) return;
 
-        var cursor = AccessTools.TypeByName("UnityEngine.Cursor");
-        var lockState = AccessTools.Property(cursor, "lockState");
+        cursorWrapper.Visible = true;
+        cursorWrapper.LockState = CursorLockMode.None;
 
-        if (lockState == null)
-        {
-            // old unity
-            var showCursor = AccessTools.Property(typeof(Screen), "showCursor");
-            showCursor.SetValue(null, true, null);
-            var lockCursor = AccessTools.Property(typeof(Screen), "lockCursor");
-            lockCursor.SetValue(null, false, null);
-        }
-        else
-        {
-            // new unity
-            var lockMode = AccessTools.TypeByName("UnityEngine.CursorLockMode");
-            var none = Enum.Parse(lockMode, "None");
-            lockState.SetValue(null, none, null);
-
-            var visible = AccessTools.Property(cursor, "visible");
-            visible.SetValue(null, true, null);
-        }
+        logger.LogDebug("unlocked cursor");
     }
 }

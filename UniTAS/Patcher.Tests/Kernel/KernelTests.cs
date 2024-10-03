@@ -2,10 +2,11 @@ using System.Linq;
 using MoonSharp.Interpreter;
 using StructureMap.Pipeline;
 using UniTAS.Patcher.Implementations.VirtualEnvironment;
-using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
-using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
 using UniTAS.Patcher.Interfaces.Events.SoftRestart;
+using UniTAS.Patcher.Interfaces.Events.UnityEvents.DontRunIfPaused;
+using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
 using UniTAS.Patcher.Services;
+using UniTAS.Patcher.Services.GameExecutionControllers;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.Movie;
 
@@ -212,7 +213,7 @@ public class KernelTests
     {
         var kernel = KernelUtils.Init();
 
-        var updates = kernel.GetAllInstances<IOnPreUpdatesActual>().ToList();
+        var updates = kernel.GetAllInstances<IOnPreUpdateActual>().ToList();
         Assert.NotNull(updates);
 
         var indexOfTestPriority = updates.FindIndex(x => x is KernelUtils.TestPriority);

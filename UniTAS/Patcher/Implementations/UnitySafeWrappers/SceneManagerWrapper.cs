@@ -39,7 +39,8 @@ public class SceneManagerWrapper : ISceneWrapper
     private readonly Func<string, int, bool, bool, AsyncOperation> _applicationLoadLevelAsync;
 
     // non-async load level
-    private readonly MethodInfo _loadScene;
+    private readonly MethodInfo _loadSceneByIndex;
+    private readonly MethodInfo _loadSceneByName;
 
     private readonly MethodInfo _getActiveScene;
 
@@ -48,20 +49,21 @@ public class SceneManagerWrapper : ISceneWrapper
         _unityInstanceWrapFactory = unityInstanceWrapFactory;
         const string loadSceneAsyncNameIndexInternal = "LoadSceneAsyncNameIndexInternal";
         _loadSceneAsyncNameIndexInternal = _sceneManager?.GetMethod(loadSceneAsyncNameIndexInternal, AccessTools.all,
-            null, new[] { typeof(string), typeof(int), typeof(bool), typeof(bool) }, null);
+            null, [typeof(string), typeof(int), typeof(bool), typeof(bool)], null);
 
         if (_loadSceneAsyncNameIndexInternal == null && _loadSceneParametersType != null)
         {
             _loadSceneAsyncNameIndexInternal = _sceneManager?.GetMethod(loadSceneAsyncNameIndexInternal,
                 AccessTools.all,
                 null,
-                new[] { typeof(string), typeof(int), _loadSceneParametersType, typeof(bool) }, null);
+                [typeof(string), typeof(int), _loadSceneParametersType, typeof(bool)], null);
         }
 
-        _loadScene = _sceneManager?.GetMethod("LoadScene", AccessTools.all, null, new[] { typeof(int) }, null);
+        _loadSceneByIndex = _sceneManager?.GetMethod("LoadScene", AccessTools.all, null, [typeof(int)], null);
+        _loadSceneByName = _sceneManager?.GetMethod("LoadScene", AccessTools.all, null, [typeof(string)], null);
 
         var loadLevelAsync = AccessTools.Method(typeof(Application), "LoadLevelAsync",
-            new[] { typeof(string), typeof(int), typeof(bool), typeof(bool) });
+            [typeof(string), typeof(int), typeof(bool), typeof(bool)]);
         if (loadLevelAsync != null)
         {
             _applicationLoadLevelAsync =
@@ -73,7 +75,7 @@ public class SceneManagerWrapper : ISceneWrapper
             var usingType = _sceneManagerAPIInternal ?? _sceneManager;
             _loadSceneAsyncNameIndexInternalInjected = usingType?.GetMethod(
                 "LoadSceneAsyncNameIndexInternal_Injected", AccessTools.all,
-                null, new[] { typeof(string), typeof(int), _loadSceneParametersType.MakeByRefType(), typeof(bool) },
+                null, [typeof(string), typeof(int), _loadSceneParametersType.MakeByRefType(), typeof(bool)],
                 null);
         }
 
@@ -96,15 +98,14 @@ public class SceneManagerWrapper : ISceneWrapper
             instance.LoadSceneMode = loadSceneMode;
             instance.LocalPhysicsMode = localPhysicsMode;
             _loadSceneAsyncNameIndexInternalInjected.Invoke(null,
-                new[] { sceneName, sceneBuildIndex, instance.Instance, mustCompleteNextFrame });
+                [sceneName, sceneBuildIndex, instance.Instance, mustCompleteNextFrame]);
             return;
         }
 
         if (_loadSceneAsyncNameIndexInternal != null)
         {
             _loadSceneAsyncNameIndexInternal?.Invoke(null,
-                new object[]
-                    { sceneName, sceneBuildIndex, loadSceneMode == LoadSceneMode.Additive, mustCompleteNextFrame });
+                [sceneName, sceneBuildIndex, loadSceneMode == LoadSceneMode.Additive, mustCompleteNextFrame]);
             return;
         }
 
@@ -120,13 +121,24 @@ public class SceneManagerWrapper : ISceneWrapper
 
     public void LoadScene(int buildIndex)
     {
-        if (_loadScene != null)
+        if (_loadSceneByIndex != null)
         {
-            _loadScene.Invoke(null, new object[] { buildIndex });
+            _loadSceneByIndex.Invoke(null, [buildIndex]);
             return;
         }
 
-        Application.LoadLevel(0);
+        Application.LoadLevel(buildIndex);
+    }
+
+    public void LoadScene(string name)
+    {
+        if (_loadSceneByName != null)
+        {
+            _loadSceneByName.Invoke(null, [name]);
+            return;
+        }
+
+        Application.LoadLevel(name);
     }
 
     public int TotalSceneCount => _totalSceneCount?.Invoke() ?? Application.levelCount;

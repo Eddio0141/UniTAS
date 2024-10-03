@@ -1,16 +1,16 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
-using BepInEx;
 using BepInEx.Configuration;
 using UniTAS.Patcher.Services;
+using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 using UnityEngine;
 
 namespace UniTAS.Patcher.Models.Customization;
 
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-public class Bind : IEquatable<Bind>
+public class Bind
 {
-    private KeyCode Key
+    public KeyCode Key
     {
         get
         {
@@ -27,68 +27,39 @@ public class Bind : IEquatable<Bind>
     public string Name { get; }
     private ConfigEntry<string> _keyConfigEntry;
 
-    private readonly IPatchReverseInvoker _patchReverseInvoker;
     private readonly IConfig _config;
+    private readonly IUnityInputWrapper _unityInput;
     private KeyCode _key;
 
     private const string CONFIG_SECTION = "Binds";
 
-    public Bind(BindConfig bindConfig, IPatchReverseInvoker patchReverseInvoker, IConfig config)
+    public Bind(BindConfig bindConfig, IConfig config, IUnityInputWrapper unityInput)
     {
         if (bindConfig == null) throw new ArgumentNullException(nameof(bindConfig));
         _key = bindConfig.Key;
-        _patchReverseInvoker = patchReverseInvoker;
         _config = config;
+        _unityInput = unityInput;
         Name = bindConfig.Name;
     }
 
     private bool _initialized;
 
-    public void InitConfig()
+    public void InitConfig(bool noGenConfig)
     {
-        if (_initialized) return;
+        if (_initialized || noGenConfig) return;
         _initialized = true;
-        _keyConfigEntry = _config.ConfigFile.Bind(CONFIG_SECTION, Name, _key.ToString(),
+        _keyConfigEntry = _config.BepInExConfigFile.Bind(CONFIG_SECTION, Name, _key.ToString(),
             "Key to press to trigger this bind. See https://docs.unity3d.com/ScriptReference/KeyCode.html for a list of keys.");
     }
 
     public bool IsPressed()
     {
-        return _patchReverseInvoker.Invoke(key => UnityInput.Current.GetKeyDown(key), Key);
-    }
-
-    public bool Equals(Bind other)
-    {
-        if (ReferenceEquals(null, other)) return false;
-        if (ReferenceEquals(this, other)) return true;
-        return Key == other.Key && string.Equals(Name, other.Name, StringComparison.InvariantCulture);
-    }
-
-    public override bool Equals(object obj)
-    {
-        if (ReferenceEquals(null, obj)) return false;
-        if (ReferenceEquals(this, obj)) return true;
-        if (obj.GetType() != GetType()) return false;
-        return Equals((Bind)obj);
-    }
-
-    public override int GetHashCode()
-    {
-        unchecked
-        {
-            return ((int)Key * 397) ^ StringComparer.InvariantCulture.GetHashCode(Name);
-        }
+        return _unityInput.GetKeyDown(Key);
     }
 }
 
-public class BindConfig
+public class BindConfig(string name, KeyCode key)
 {
-    public string Name { get; }
-    public KeyCode Key { get; }
-
-    public BindConfig(string name, KeyCode key)
-    {
-        Name = name ?? throw new ArgumentNullException(nameof(name));
-        Key = key;
-    }
+    public string Name { get; } = name ?? throw new ArgumentNullException(nameof(name));
+    public KeyCode Key { get; } = key;
 }

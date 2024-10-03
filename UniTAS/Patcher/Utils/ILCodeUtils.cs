@@ -1,9 +1,12 @@
+using System;
 using System.Linq;
 using System.Reflection;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using Mono.Collections.Generic;
+using Mono.Cecil.Rocks;
+using UniTAS.Patcher.Extensions;
 using MethodAttributes = Mono.Cecil.MethodAttributes;
+using MethodBody = Mono.Cecil.Cil.MethodBody;
 
 namespace UniTAS.Patcher.Utils;
 
@@ -13,34 +16,61 @@ public static class ILCodeUtils
     {
         if (type == null) return;
 
-        AddCctorIfMissing(assembly, type);
-        var staticCtor = type.Methods.First(m => m.IsConstructor && m.IsStatic);
-
+        var staticCtor = FindOrAddCctor(assembly, type);
         MethodInvokeHook(assembly, staticCtor, method);
     }
 
     public static void MethodInvokeHook(AssemblyDefinition assembly, MethodDefinition methodDefinition,
         MethodBase method)
     {
-        if (method == null) return;
+        if (method == null) throw new ArgumentNullException(nameof(method));
 
         var invoke = assembly.MainModule.ImportReference(method);
 
-        var firstInstruction = methodDefinition.Body.Instructions.First();
-        var ilProcessor = methodDefinition.Body.GetILProcessor();
+        var body = methodDefinition.Body;
+        var newBody = body == null || body.Instructions.Count == 0;
+        if (newBody)
+        {
+            methodDefinition.Body = new MethodBody(methodDefinition);
+            body = methodDefinition.Body;
+        }
+        else
+        {
+            body.SimplifyMacros();
+        }
+
+        var ilProcessor = body.GetILProcessor();
 
         // insert call before first instruction
-        ilProcessor.InsertBefore(firstInstruction, ilProcessor.Create(OpCodes.Call, invoke));
-        StaticLogger.Log.LogDebug(
+        if (newBody)
+        {
+            ilProcessor.Append(ilProcessor.Create(OpCodes.Call, invoke));
+        }
+        else
+        {
+            ilProcessor.InsertBeforeInstructionReplace(body.Instructions.First(),
+                ilProcessor.Create(OpCodes.Call, invoke), InstructionReplaceFixType.ExceptionRanges);
+        }
+
+        if (newBody)
+        {
+            ilProcessor.Append(ilProcessor.Create(OpCodes.Ret));
+        }
+        else
+        {
+            body.OptimizeMacros();
+        }
+
+        StaticLogger.Trace(
             $"Added invoke hook to method {method.Name} of {methodDefinition.DeclaringType.FullName} invoking {method.DeclaringType?.FullName ?? "unknown"}.{method.Name}");
     }
 
-    public static void AddCctorIfMissing(AssemblyDefinition assembly, TypeDefinition type)
+    public static MethodDefinition FindOrAddCctor(AssemblyDefinition assembly, TypeDefinition type)
     {
         var staticCtor = type.Methods.FirstOrDefault(m => m.IsConstructor && m.IsStatic);
-        if (staticCtor != null) return;
+        if (staticCtor != null) return staticCtor;
 
-        StaticLogger.Log.LogDebug($"Adding cctor to {type.FullName}");
+        StaticLogger.Trace($"Adding cctor to {type.FullName}");
         staticCtor = new(".cctor",
             MethodAttributes.Static | MethodAttributes.Private | MethodAttributes.HideBySig
             | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName,
@@ -49,30 +79,6 @@ public static class ILCodeUtils
         type.Methods.Add(staticCtor);
         var il = staticCtor.Body.GetILProcessor();
         il.Append(il.Create(OpCodes.Ret));
-    }
-
-    public static void RedirectJumpsToNewDest(Collection<Instruction> instructions, Instruction oldDest,
-        Instruction newDest)
-    {
-        foreach (var instruction in instructions)
-        {
-            if (instruction.Operand == oldDest)
-            {
-                instruction.Operand = newDest;
-                continue;
-            }
-
-            // switch
-            if (instruction.Operand is Instruction[] instructionsArray)
-            {
-                for (var i = 0; i < instructionsArray.Length; i++)
-                {
-                    if (instructionsArray[i] == oldDest)
-                    {
-                        instructionsArray[i] = newDest;
-                    }
-                }
-            }
-        }
+        return staticCtor;
     }
 }

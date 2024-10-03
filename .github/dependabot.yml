@@ -1,0 +1,24 @@
+version: 2
+
+registries:
+  api-nuget-org:
+    type: nuget-feed
+    url: https://api.nuget.org/v3/index.json
+  nuget-bepinex-dev:
+    type: nuget-feed
+    url: https://nuget.bepinex.dev/v3/index.json
+
+updates:
+  - package-ecosystem: "nuget"
+    directories:
+      - "/UniTAS/Patcher"
+      - "/UniTAS/Patcher.Tests"
+    registries: "*"
+    schedule:
+      interval: "weekly"
+    ignore:
+      - dependency-name: "StructureMap"
+      - dependency-name: "UnityEngine.Modules"
+    labels:
+      - "dependencies"
+      - "automation"

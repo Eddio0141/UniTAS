@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using UniTAS.Patcher.Utils;
 
 namespace Patcher.Tests.Utils;
@@ -60,8 +62,8 @@ public partial class DeepCopyTests
     {
         var source = new ArrayType
         {
-            IntArray = new[] { 1, 2, 3 },
-            StringArray = new[] { "Hello", "World" },
+            IntArray = [1, 2, 3],
+            StringArray = ["Hello", "World"],
         };
         var result = DeepCopy.MakeDeepCopy<ArrayType>(source);
         Assert.Equal(source.IntArray, result.IntArray);
@@ -82,8 +84,8 @@ public partial class DeepCopyTests
     {
         var source = new ListType
         {
-            IntList = new() { 1, 2, 3 },
-            StringList = new() { "Hello", "World" },
+            IntList = [1, 2, 3],
+            StringList = ["Hello", "World"],
         };
         var result = DeepCopy.MakeDeepCopy<ListType>(source);
         Assert.Equal(source.IntList, result.IntList);
@@ -144,5 +146,59 @@ public partial class DeepCopyTests
 
         Assert.Equal(source.IntStringDictionary, result!.IntStringDictionary);
         Assert.Equal(source.StringIntDictionary, result.StringIntDictionary);
+    }
+
+    [Fact]
+    public void SelfReferencingTest()
+    {
+        var source = new SelfReferencing1();
+        var reference2 = new SelfReferencing2();
+        source.Nested = reference2;
+        reference2.Nested = source;
+
+        var result = DeepCopy.MakeDeepCopy<SelfReferencing1>(source);
+        Assert.NotSame(source, result);
+        Assert.NotSame(source.Nested, result.Nested);
+        Assert.NotSame(source.Nested.Nested, result);
+
+        Assert.Same(result, result.Nested.Nested);
+        Assert.Same(result.Nested, result.Nested.Nested.Nested);
+    }
+
+    [Fact]
+    public void SelfReferencingTest2()
+    {
+        var source = new SelfReferencing3();
+        var reference2 = new SelfReferencing4();
+        source.Nested = reference2;
+        reference2.Nested = [source];
+
+        var result = DeepCopy.MakeDeepCopy<SelfReferencing3>(source);
+        Assert.NotSame(source, result);
+        Assert.NotSame(source.Nested, result.Nested);
+        Assert.NotSame(source.Nested.Nested.FirstOrDefault(), result);
+
+        Assert.Same(result, result.Nested.Nested.FirstOrDefault());
+        Assert.Same(result.Nested, result.Nested.Nested.FirstOrDefault()?.Nested);
+    }
+
+    [Fact]
+    public unsafe void PointerTypeTest()
+    {
+        var source = new PointerType
+        {
+            Pointer = (void*)0x12345678,
+        };
+        var result = DeepCopy.MakeDeepCopy<PointerType>(source);
+
+        Assert.Equal((IntPtr)source.Pointer, (IntPtr)result.Pointer);
+
+        result.Pointer = (void*)0x87654321;
+
+        Assert.NotEqual((IntPtr)source.Pointer, (IntPtr)result.Pointer);
+
+        DeepCopy.MakeDeepCopy(source, out result);
+
+        Assert.Equal((IntPtr)source.Pointer, (IntPtr)result!.Pointer);
     }
 }

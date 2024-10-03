@@ -1,71 +1,68 @@
 using System.Diagnostics.CodeAnalysis;
 using MoonSharp.Interpreter;
 using UniTAS.Patcher.Interfaces.Movie;
+using UniTAS.Patcher.Models.UnityInfo;
 using UniTAS.Patcher.Models.VirtualEnvironment;
 using UniTAS.Patcher.Services.VirtualEnvironment.Input;
+using UniTAS.Patcher.Services.VirtualEnvironment.Input.LegacyInputSystem;
+using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations.Movie.Engine.Modules;
 
 [SuppressMessage("ReSharper", "UnusedType.Global")]
 [SuppressMessage("ReSharper", "UnusedMember.Global")]
-public class Mouse : EngineMethodClass
+[method: MoonSharpHidden]
+public class Mouse(IMouseStateEnvController mouseController, IAxisStateEnvLegacySystem axisStateEnvLegacySystem)
+    : EngineMethodClass
 {
-    private readonly IMouseStateEnvController _mouseController;
-
-    [MoonSharpHidden]
-    public Mouse(IMouseStateEnvController mouseController)
-    {
-        _mouseController = mouseController;
-    }
-
     public void Move(float x, float y)
     {
-        _mouseController.SetPosition(new(x, y));
+        var mousePos = new Vector2(x, y);
+        mouseController.SetPosition(mousePos);
+        axisStateEnvLegacySystem.MouseMove(mousePos);
     }
 
     public void Move_rel(float x, float y)
     {
-        _mouseController.SetPositionRelative(new(x, y));
+        var mousePos = new Vector2(x, y);
+        mouseController.SetPositionRelative(mousePos);
+        axisStateEnvLegacySystem.MouseMoveRelative(mousePos);
     }
 
     public void Left(bool hold = true)
     {
-        if (hold)
-        {
-            _mouseController.HoldButton(MouseButton.Left);
-        }
-        else
-        {
-            _mouseController.ReleaseButton(MouseButton.Left);
-        }
+        HandlePress(hold, MouseButton.Left);
     }
 
     public void Right(bool hold = true)
     {
-        if (hold)
-        {
-            _mouseController.HoldButton(MouseButton.Right);
-        }
-        else
-        {
-            _mouseController.ReleaseButton(MouseButton.Right);
-        }
+        HandlePress(hold, MouseButton.Right);
     }
 
     public void Middle(bool hold = true)
     {
+        HandlePress(hold, MouseButton.Middle);
+    }
+
+    private void HandlePress(bool hold, MouseButton button)
+    {
+        var buttonChoice = $"mouse {(int)button}";
+
         if (hold)
         {
-            _mouseController.HoldButton(MouseButton.Middle);
+            mouseController.HoldButton(button);
+            axisStateEnvLegacySystem.KeyDown(buttonChoice, JoyNum.AllJoysticks);
         }
         else
         {
-            _mouseController.ReleaseButton(MouseButton.Middle);
+            mouseController.ReleaseButton(button);
+            axisStateEnvLegacySystem.KeyUp(buttonChoice, JoyNum.AllJoysticks);
         }
     }
 
     public void Set_scroll(float x, float y)
     {
-        _mouseController.SetScroll(new(x, y));
+        mouseController.SetScroll(new(x, y));
+        axisStateEnvLegacySystem.MouseScroll(y);
     }
 }

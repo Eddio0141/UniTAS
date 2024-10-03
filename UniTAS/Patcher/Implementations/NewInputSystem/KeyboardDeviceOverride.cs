@@ -1,5 +1,5 @@
+using System;
 using System.Diagnostics.CodeAnalysis;
-using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.InputSystemOverride;
 using UniTAS.Patcher.Services.VirtualEnvironment.Input.NewInputSystem;
 using UnityEngine.InputSystem;
@@ -8,11 +8,8 @@ using UnityEngine.InputSystem.LowLevel;
 
 namespace UniTAS.Patcher.Implementations.NewInputSystem;
 
-[Singleton]
-public class KeyboardDeviceOverride : IInputOverrideDevice
+public class KeyboardDeviceOverride : InputOverrideDevice
 {
-    private Keyboard _keyboard;
-
     private readonly IKeyboardStateEnvNewSystem _keyboardStateEnvNewSystem;
 
     public KeyboardDeviceOverride(IKeyboardStateEnvNewSystem keyboardStateEnvNewSystem)
@@ -22,25 +19,18 @@ public class KeyboardDeviceOverride : IInputOverrideDevice
 
     [InputControlLayout(stateType = typeof(KeyboardState), isGenericTypeOfDevice = true)]
     [SuppressMessage("ReSharper", "ClassNeverInstantiated.Local")]
-    private class TASKeyboard : Keyboard
-    {
-    }
+    private class TASKeyboard : Keyboard;
 
-    public void Update()
+    protected override Type InputControlLayout => typeof(TASKeyboard);
+
+    public override void Update()
     {
         var state = new KeyboardState();
         foreach (var heldKey in _keyboardStateEnvNewSystem.HeldKeys)
         {
-            var heldKeyNewSystem = heldKey.NewInputSystemKey;
-            if (heldKeyNewSystem == null) continue;
-            state.Set(heldKeyNewSystem.Value, true);
+            state.Set(heldKey.Key, true);
         }
 
-        InputSystem.QueueStateEvent(_keyboard, state);
-    }
-
-    public void DeviceAdded()
-    {
-        _keyboard = InputSystem.AddDevice<TASKeyboard>();
+        InputSystem.QueueStateEvent(Device, state);
     }
 }

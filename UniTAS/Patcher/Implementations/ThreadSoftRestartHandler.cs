@@ -4,9 +4,12 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using BepInEx.Logging;
+using HarmonyLib;
+using UniTAS.Patcher.Implementations.Customization;
 using UniTAS.Patcher.Implementations.TASRenderer;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.SoftRestart;
+using UniTAS.Patcher.Interfaces.Movie;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Utils;
@@ -16,20 +19,30 @@ namespace UniTAS.Patcher.Implementations;
 [Singleton]
 public class ThreadSoftRestartHandler : IThreadTracker, IOnPreGameRestart
 {
-    private readonly List<Thread> _threads = new();
-    private readonly ILogger _logger;
+    private readonly List<Thread> _threads = [];
 
-    private readonly Type[] _excludeTypes =
-    {
-        typeof(DiskLogListener),
-        typeof(GameVideoRenderer),
-        typeof(NativeAudioRenderer),
-        typeof(LoggingUtils.DiskLogger)
-    };
+    private readonly Type[] _excludeTypes;
+
+    private readonly ILogger _logger;
 
     public ThreadSoftRestartHandler(ILogger logger)
     {
         _logger = logger;
+        _excludeTypes =
+            new[]
+            {
+                typeof(DiskLogListener),
+                typeof(GameVideoRenderer),
+                typeof(NativeAudioRenderer),
+                typeof(LoggingUtils.DiskLogger),
+                typeof(RemoteControl),
+                typeof(ReadOnlyFieldDescriptor),
+                typeof(Config),
+            }.Concat(new[]
+                {
+                    AccessTools.TypeByName("Rewired.ReInput")
+                }.Where(x => x != null)
+            ).ToArray();
     }
 
     public void ThreadStart(Thread thread)
@@ -44,6 +57,7 @@ public class ThreadSoftRestartHandler : IThreadTracker, IOnPreGameRestart
         if (allFrames == null) return;
         var frames = allFrames.Skip(3).ToArray();
 
+        // intentionally don't check if UniTAS namespace is included, any exclusions for UniTAS is to be included in _excludeTypes manually
         if (frames.Any(x => _excludeTypes.Contains(x.GetMethod()?.DeclaringType)))
         {
             _logger.LogDebug(
@@ -79,7 +93,14 @@ public class ThreadSoftRestartHandler : IThreadTracker, IOnPreGameRestart
 
         foreach (var thread in pendingJoin)
         {
-            thread.Join();
+            try
+            {
+                thread.Join();
+            }
+            catch (Exception e)
+            {
+                _logger.LogDebug($"Exception thrown while joining thread: {e}");
+            }
 
             _logger.LogDebug($"Interrupted game thread, name: {thread.Name}, ID: {thread.ManagedThreadId}");
         }

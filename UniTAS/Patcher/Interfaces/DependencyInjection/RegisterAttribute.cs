@@ -9,19 +9,19 @@ namespace UniTAS.Patcher.Interfaces.DependencyInjection;
 /// The interfaces has to be in the same assembly as the class to be registered
 /// </summary>
 [AttributeUsage(AttributeTargets.Class)]
-public class RegisterAttribute : DependencyInjectionAttribute
+public class RegisterAttribute(
+    RegisterPriority priority = RegisterPriority.Default,
+    RegisterTiming timing = RegisterTiming.UnityInit)
+    : DependencyInjectionAttribute
 {
     public bool IncludeDifferentAssembly { get; set; }
-    public Type[] IgnoreInterfaces { get; set; }
-    public RegisterPriority Priority { get; }
 
-    public RegisterAttribute(RegisterPriority priority = RegisterPriority.Default)
-    {
-        Priority = priority;
-    }
+    // public Type[] IgnoreInterfaces { get; set; }
+    public RegisterPriority Priority { get; } = priority;
+    public RegisterTiming Timing { get; } = timing;
 
     public override IEnumerable<RegisterInfoBase> GetRegisterInfos(Type type, Type[] allTypes, bool isTesting)
     {
-        yield return new RegisterInfo(type, this);
+        yield return new RegisterInfo(type, this, Timing);
     }
 }

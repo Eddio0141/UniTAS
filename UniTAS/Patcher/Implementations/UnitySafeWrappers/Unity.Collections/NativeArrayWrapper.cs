@@ -45,13 +45,13 @@ public class NativeArrayWrapper<T> : UnityInstanceWrap
         {
             if (_nativeArrayOptions == null)
             {
-                args = new[] { args[0], args[1] };
-                Instance = AccessTools.Constructor(WrappedType, new[] { typeof(int), _allocator }).Invoke(args);
+                args = [args[0], args[1]];
+                Instance = AccessTools.Constructor(WrappedType, [typeof(int), _allocator]).Invoke(args);
             }
             else
             {
-                args = new[] { args[0], args[1], Enum.Parse(_nativeArrayOptions, "ClearMemory") };
-                Instance = AccessTools.Constructor(WrappedType, new[] { typeof(int), _allocator, _nativeArrayOptions })
+                args = [args[0], args[1], Enum.Parse(_nativeArrayOptions, "ClearMemory")];
+                Instance = AccessTools.Constructor(WrappedType, [typeof(int), _allocator, _nativeArrayOptions])
                     .Invoke(args);
             }
         }
@@ -66,12 +66,12 @@ public class NativeArrayWrapper<T> : UnityInstanceWrap
     public T[] ToArray()
     {
         if (Instance == null) return null;
-        return (T[])_toArray.Invoke(Instance, new object[0]);
+        return (T[])_toArray.Invoke(Instance, []);
     }
 
     public void Dispose()
     {
         if (Instance == null) return;
-        _dispose.Invoke(Instance, new object[0]);
+        _dispose.Invoke(Instance, []);
     }
 }

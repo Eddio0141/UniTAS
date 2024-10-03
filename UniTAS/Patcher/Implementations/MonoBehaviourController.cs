@@ -1,21 +1,23 @@
+using System;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
-using UniTAS.Patcher.Services;
+using UniTAS.Patcher.Interfaces.Events.SoftRestart;
+using UniTAS.Patcher.Models.DependencyInjection;
+using UniTAS.Patcher.Services.GameExecutionControllers;
 
 namespace UniTAS.Patcher.Implementations;
 
 // ReSharper disable once ClassNeverInstantiated.Global
-[Singleton]
-public class MonoBehaviourController : IMonoBehaviourController
+[Singleton(timing: RegisterTiming.Entry)]
+public class MonoBehaviourController : IMonoBehaviourController, IOnGameRestartResume
 {
-    public bool PausedExecution
-    {
-        get => Utils.MonoBehaviourController.PausedExecution;
-        set => Utils.MonoBehaviourController.PausedExecution = value;
-    }
+    public bool PausedExecution { get; set; }
 
-    public bool PausedUpdate
+    public bool PausedUpdate { get; set; }
+
+    public void OnGameRestartResume(DateTime startupTime, bool preMonoBehaviourResume)
     {
-        get => Utils.MonoBehaviourController.PausedUpdate;
-        set => Utils.MonoBehaviourController.PausedUpdate = value;
+        // make sure we reset the paused update state on restart
+        if (preMonoBehaviourResume) return;
+        PausedUpdate = false;
     }
 }

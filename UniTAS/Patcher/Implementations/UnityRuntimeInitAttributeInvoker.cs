@@ -7,7 +7,8 @@ using BepInEx;
 using HarmonyLib;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Services;
-using UniTAS.Patcher.Services.EventSubscribers;
+using UniTAS.Patcher.Services.Logging;
+using UniTAS.Patcher.Services.UnityEvents;
 
 namespace UniTAS.Patcher.Implementations;
 
@@ -22,11 +23,12 @@ public class UnityRuntimeInitAttributeInvoker
 
     private readonly IGameRestart _gameRestart;
     private readonly IUpdateEvents _updateEvents;
+    private readonly ILogger _logger;
 
     private bool _invokedBeforeSceneLoad;
     private bool _invokedBeforeStart;
 
-    public UnityRuntimeInitAttributeInvoker(IGameRestart gameRestart, IUpdateEvents updateEvents)
+    public UnityRuntimeInitAttributeInvoker(IGameRestart gameRestart, IUpdateEvents updateEvents, ILogger logger)
     {
         var runtimeInitializeOnLoadMethodAttribute =
             AccessTools.TypeByName("UnityEngine.RuntimeInitializeOnLoadMethodAttribute");
@@ -35,6 +37,7 @@ public class UnityRuntimeInitAttributeInvoker
 
         _gameRestart = gameRestart;
         _updateEvents = updateEvents;
+        _logger = logger;
         _gameRestart.OnGameRestart += GameRestart;
         _gameRestart.OnGameRestart += (_, _) =>
         {
@@ -49,12 +52,12 @@ public class UnityRuntimeInitAttributeInvoker
             .SelectMany(AccessTools.GetTypesFromAssembly).ToArray();
 
         _beforeSceneLoad = GetMethodsByAttribute(assemblies,
-            new[] { "BeforeSceneLoad", "AfterAssembliesLoaded", "BeforeSplashScreen", "SubsystemRegistration" },
+            ["SubsystemRegistration", "AfterAssembliesLoaded", "BeforeSplashScreen", "BeforeSceneLoad"],
             loadType,
             runtimeInitializeOnLoadMethodAttribute, runtimeInitializeLoadType).ToArray();
 
         _beforeStart = GetMethodsByAttribute(assemblies,
-            new[] { "AfterSceneLoad" },
+            ["AfterSceneLoad"],
             loadType,
             runtimeInitializeOnLoadMethodAttribute, runtimeInitializeLoadType).ToArray();
     }
@@ -64,20 +67,29 @@ public class UnityRuntimeInitAttributeInvoker
     {
         var loadTypesFiltered = loadTypes
             .Where(x => Enum.IsDefined(runtimeInitializeLoadType, x))
-            .Select(x => Enum.Parse(runtimeInitializeLoadType, x)).ToArray();
+            .Select(x => Enum.Parse(runtimeInitializeLoadType, x)).ToList();
         var methodWithAttributes = types.SelectMany(x => x
                 .GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.NonPublic)
                 .Where(m => m.GetParameters().Length == 0))
             .Where(x => x.GetCustomAttributes(runtimeInitializeOnLoadMethodAttribute, true).Length > 0);
 
+        var methodsUnordered = new List<(MethodBase, int)>();
+
         foreach (var methodWithAttribute in methodWithAttributes)
         {
-            if (!methodWithAttribute.GetCustomAttributes(runtimeInitializeOnLoadMethodAttribute, true)
-                    .Select(x => loadType.Invoke(x, null))
-                    .Any(x => loadTypesFiltered.Contains(x))) continue;
+            var attrs = methodWithAttribute.GetCustomAttributes(runtimeInitializeOnLoadMethodAttribute, true)
+                    .Select(x => loadType.Invoke(x, null));
 
-            yield return methodWithAttribute;
+            foreach (var attr in attrs)
+            {
+                var loadTypeIndex = loadTypesFiltered.IndexOf(attr);
+                if (loadTypeIndex < 0) continue;
+
+                methodsUnordered.Add((methodWithAttribute, loadTypeIndex));
+            }
         }
+
+        return methodsUnordered.OrderBy(x => x.Item2).Select(x => x.Item1);
     }
 
     // only invoke after game restart
@@ -98,8 +110,11 @@ public class UnityRuntimeInitAttributeInvoker
         if (_invokedBeforeSceneLoad) return;
         _invokedBeforeSceneLoad = true;
 
+        _logger.LogDebug($"Invoking BeforeSceneLoad methods, callback count: {_beforeSceneLoad.Length}");
+
         foreach (var method in _beforeSceneLoad)
         {
+            _logger.LogDebug($"Invoking BeforeSceneLoad method {method.DeclaringType?.Name}.{method.Name}");
             method.Invoke(null, null);
         }
     }
@@ -109,8 +124,11 @@ public class UnityRuntimeInitAttributeInvoker
         if (_invokedBeforeStart) return;
         _invokedBeforeStart = true;
 
+        _logger.LogDebug($"Invoking BeforeStart methods, callback count: {_beforeStart.Length}");
+
         foreach (var method in _beforeStart)
         {
+            _logger.LogDebug($"Invoking BeforeStart method {method.DeclaringType?.Name}.{method.Name}");
             method.Invoke(null, null);
         }
     }

@@ -1,99 +1,101 @@
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.InputSystemOverride;
-using UniTAS.Patcher.Services.EventSubscribers;
 using UniTAS.Patcher.Services.InputSystemOverride;
 using UniTAS.Patcher.Services.Logging;
-using UniTAS.Patcher.Services.NewInputSystem;
+using UniTAS.Patcher.Services.Movie;
+using UniTAS.Patcher.Services.UnityEvents;
+using UniTAS.Patcher.Services.VirtualEnvironment;
 using UnityEngine.InputSystem;
 
 namespace UniTAS.Patcher.Implementations.NewInputSystem;
 
 [Singleton]
 [ForceInstantiate]
-public class InputSystemOverride : IInputSystemOverride
+public class InputSystemOverride
 {
-    private readonly IInputOverrideDevice[] _devices;
-    private InputDevice[] _restoreDevices;
-
+    private readonly InputOverrideDevice[] _devices;
     private readonly ILogger _logger;
-    private readonly bool _hasInputSystem;
+    private readonly List<InputDevice> _actualDevices = new();
+    private readonly IUpdateEvents _updateEvents;
 
-    private bool _override;
+    private bool _overridden;
 
     [SuppressMessage("ReSharper", "ConditionIsAlwaysTrueOrFalse")]
-    public InputSystemOverride(ILogger logger, IInputOverrideDevice[] devices,
-        INewInputSystemExists newInputSystemExists, IUpdateEvents updateEvents)
+    public InputSystemOverride(ILogger logger, InputOverrideDevice[] devices,
+        IInputSystemState newInputSystemExists, IUpdateEvents updateEvents, IVirtualEnvController virtualEnv, IMovieRunner movieRunner)
     {
+        if (!newInputSystemExists.HasNewInputSystem) return;
+
         _logger = logger;
         _devices = devices;
+        _updateEvents = updateEvents;
 
-        _hasInputSystem = newInputSystemExists.HasInputSystem;
-        _logger.LogMessage($"Has unity new input system: {_hasInputSystem}");
+        _updateEvents.OnInputUpdateActual += UpdateDevices;
+        virtualEnv.OnVirtualEnvStatusChange += OnVirtualEnvStatusChange;
 
-        if (!_hasInputSystem) return;
-
-        updateEvents.OnInputUpdateActual += UpdateDevices;
+        _actualDevices.AddRange(InputSystem.devices);
     }
 
-    public bool Override
+    private void OnVirtualEnvStatusChange(bool runVirtualEnv)
     {
-        set
+        _overridden = runVirtualEnv;
+
+        if (runVirtualEnv)
         {
-            if (!_hasInputSystem) return;
-
-            _override = value;
-            if (_override)
+            foreach (var device in _actualDevices)
             {
-                _logger.LogDebug("Adding TAS devices to InputSystem");
-
-                _restoreDevices = InputSystem.devices.ToArray();
-                RemoveAndFlushAllDevices();
-
-                foreach (var device in _devices)
-                {
-                    device.DeviceAdded();
-                }
-
-                _logger.LogDebug("Added TAS devices to InputSystem");
+                InputSystem.RemoveDevice(device);
             }
-            else
+
+            _logger.LogDebug("removed all InputSystem devices that isn't ours");
+            LogConnectedDevices();
+
+            foreach (var device in _devices)
             {
-                _logger.LogDebug("Removing TAS devices from InputSystem");
-
-                RemoveAndFlushAllDevices();
-
-                // restore devices
-                if (_restoreDevices != null)
-                {
-                    foreach (var device in _restoreDevices)
-                    {
-                        InputSystem.AddDevice(device);
-                    }
-                }
-
-                _logger.LogDebug("Removed TAS devices from InputSystem");
+                device.AddDevice();
+                device.MakeCurrent();
             }
+
+            _logger.LogDebug("adding TAS devices to InputSystem");
+            LogConnectedDevices();
         }
+        else
+        {
+            foreach (var device in _devices)
+            {
+                device.RemoveDevice();
+            }
+
+            _logger.LogDebug("removed all TAS devices from InputSystem");
+            LogConnectedDevices();
+
+            foreach (var device in _actualDevices)
+            {
+                InputSystem.AddDevice(device);
+                device.MakeCurrent();
+            }
+
+            _logger.LogDebug("restored all InputSystem devices that isn't ours");
+            LogConnectedDevices();
+        }
+    }
+
+    private void LogConnectedDevices()
+    {
+        _logger.LogDebug(
+            $"Connected devices:\n{string.Join("\n", InputSystem.devices.Select(x => $"name: {x.name}, type: {x.GetType().FullName}").ToArray())}");
     }
 
     private void UpdateDevices(bool fixedUpdate, bool newInputSystemUpdate)
     {
-        if (!_override || !newInputSystemUpdate) return;
+        if (!newInputSystemUpdate || !_overridden) return;
 
         foreach (var device in _devices)
         {
             device.Update();
         }
-    }
-
-    private static void RemoveAndFlushAllDevices()
-    {
-        while (InputSystem.devices.Count > 0)
-        {
-            InputSystem.RemoveDevice(InputSystem.devices[0]);
-        }
-
-        InputSystem.FlushDisconnectedDevices();
     }
 }

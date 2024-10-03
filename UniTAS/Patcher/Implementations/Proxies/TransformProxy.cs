@@ -9,6 +9,7 @@ namespace UniTAS.Patcher.Implementations.Proxies;
 
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 [ExcludeRegisterIfTesting]
+[SuppressMessage("ReSharper", "UnusedMember.Global")]
 public class TransformProxy : MovieProxyType<TransformProxy, Transform>
 {
     private readonly Transform _transform;

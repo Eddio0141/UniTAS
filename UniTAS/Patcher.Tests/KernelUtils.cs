@@ -1,25 +1,32 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using AssetsTools.NET.Extra;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using MoonSharp.Interpreter;
 using StructureMap;
+using UniTAS.Patcher.ContainerBindings.UnityEvents;
 using UniTAS.Patcher.Implementations;
 using UniTAS.Patcher.Implementations.DependencyInjection;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
-using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.DontRunIfPaused;
-using UniTAS.Patcher.Interfaces.Events.MonoBehaviourEvents.RunEvenPaused;
+using UniTAS.Patcher.Interfaces.Events.UnityEvents.DontRunIfPaused;
+using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
+using UniTAS.Patcher.Interfaces.GlobalHotkeyListener;
 using UniTAS.Patcher.Interfaces.GUI;
 using UniTAS.Patcher.Interfaces.Movie;
+using UniTAS.Patcher.Models.Customization;
 using UniTAS.Patcher.Models.DependencyInjection;
+using UniTAS.Patcher.Models.GlobalHotkeyListener;
 using UniTAS.Patcher.Models.GUI;
 using UniTAS.Patcher.Models.UnitySafeWrappers.SceneManagement;
 using UniTAS.Patcher.Models.VirtualEnvironment;
 using UniTAS.Patcher.Services;
+using UniTAS.Patcher.Services.Customization;
 using UniTAS.Patcher.Services.DependencyInjection;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.Overlay;
+using UniTAS.Patcher.Services.UnityInfo;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Patcher.Services.VirtualEnvironment;
 using UniTAS.Patcher.Services.VirtualEnvironment.Input.LegacyInputSystem;
@@ -115,8 +122,8 @@ public static class KernelUtils
         }
     }
 
-    [Singleton(RegisterPriority.FirstUpdateSkipOnRestart, IncludeDifferentAssembly = true)]
-    public class TestPriority : IOnPreUpdatesActual
+    [Singleton(IncludeDifferentAssembly = true)]
+    public class TestPriority : IOnPreUpdateActual
     {
         public void PreUpdateActual()
         {
@@ -124,7 +131,7 @@ public static class KernelUtils
     }
 
     [Singleton(IncludeDifferentAssembly = true)]
-    public class TestPriority2 : IOnPreUpdatesActual
+    public class TestPriority2 : IOnPreUpdateActual
     {
         public void PreUpdateActual()
         {
@@ -168,7 +175,17 @@ public static class KernelUtils
     [Register(IncludeDifferentAssembly = true)]
     public class ConfigDummy : IConfig
     {
-        public ConfigFile ConfigFile => null!;
+        public ConfigFile BepInExConfigFile => null!;
+
+        public bool TryGetBackendEntry<T>(string key, out T value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void WriteBackendEntry<T>(string key, T value)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     [Register(IncludeDifferentAssembly = true)]
@@ -180,6 +197,10 @@ public static class KernelUtils
         }
 
         public void LoadScene(int buildIndex)
+        {
+        }
+
+        public void LoadScene(string name)
         {
         }
 
@@ -202,6 +223,7 @@ public static class KernelUtils
         public double ScaledTime { get; }
         public double ScaledFixedTime { get; }
         public double RealtimeSinceStartup { get; }
+        public double TimeTolerance { get; }
     }
 
     [Register(IncludeDifferentAssembly = true)]
@@ -224,6 +246,93 @@ public static class KernelUtils
         public bool Enabled { get; set; }
     }
 
+    [Register(IncludeDifferentAssembly = true)]
+    [SuppressMessage("ReSharper", "UnusedType.Local")]
+    private class BindsDummy : IBinds
+    {
+        public Bind Create(BindConfig config, bool noGenConfig)
+        {
+            return null!;
+        }
+
+        public Bind Get(string name)
+        {
+            return null!;
+        }
+    }
+
+    [Singleton(IncludeDifferentAssembly = true)]
+    public class SyncFixedUpdateCycleDummy : ISyncFixedUpdateCycle
+    {
+        private readonly Queue<Action> _callbacks = new();
+
+        public void OnSync(Action callback, double invokeOffset = 0, uint fixedUpdateIndex = 0)
+        {
+            _callbacks.Enqueue(callback);
+        }
+
+        public void ForceLastCallback()
+        {
+            _callbacks.Dequeue().Invoke();
+        }
+    }
+
+    [Singleton(IncludeDifferentAssembly = true)]
+    [SuppressMessage("ReSharper", "UnusedType.Local")]
+    private class GlobalHotkeyListenerDummy : IGlobalHotkey
+    {
+        public void AddGlobalHotkey(GlobalHotkey config)
+        {
+        }
+    }
+
+    [Singleton(IncludeDifferentAssembly = true)]
+    [SuppressMessage("ReSharper", "UnusedType.Local")]
+    private class PatchReverseInvokerDummy : IPatchReverseInvoker
+    {
+        public bool InnerCall()
+        {
+            return false;
+        }
+
+        public void Return()
+        {
+        }
+
+        public void Invoke(Action method)
+        {
+        }
+
+        public TRet Invoke<TRet>(Func<TRet> method)
+        {
+            return default!;
+        }
+
+        public TRet Invoke<TRet, T>(Func<T, TRet> method, T arg1)
+        {
+            return default!;
+        }
+
+        public TRet Invoke<TRet, T1, T2>(Func<T1, T2, TRet> method, T1 arg1, T2 arg2)
+        {
+            return default!;
+        }
+    }
+
+    [Singleton(IncludeDifferentAssembly = true)]
+    [SuppressMessage("ReSharper", "UnusedType.Local")]
+    private class UpdateInvokeOffsetDummy : IUpdateInvokeOffset
+    {
+        [SuppressMessage("ReSharper", "UnassignedGetOnlyAutoProperty")]
+        public double Offset { get; }
+    }
+
+    [Singleton(IncludeDifferentAssembly = true)]
+    private class AssetsManagerDummy : IAssetsManager
+    {
+        public AssetsManager Instance => null!;
+    }
+
     public static Container Init()
     {
         var kernel = new Container(c =>
@@ -235,15 +344,28 @@ public static class KernelUtils
             c.For<ILogger>().Use(x => x.GetInstance<FakeLogger>());
         });
 
-        kernel.Configure(c =>
+        var timings = new[]
         {
-            kernel.GetInstance<IDiscoverAndRegister>().Register<FakeStaticFieldStorage>(c);
-            kernel.GetInstance<IDiscoverAndRegister>().Register<InfoPrintAndWelcome>(c);
-        });
+            RegisterTiming.Entry,
+            RegisterTiming.UnityInit
+        };
 
-        var forceInstantiateTypes = kernel.GetInstance<IForceInstantiateTypes>();
-        forceInstantiateTypes.InstantiateTypes<InfoPrintAndWelcome>();
-        forceInstantiateTypes.InstantiateTypes<DummyMouseEnvLegacySystem>();
+        Assert.Equal(Enum.GetValues(typeof(RegisterTiming)).Length, timings.Length);
+
+        foreach (var timing in timings)
+        {
+            kernel.Configure(c =>
+            {
+                kernel.GetInstance<IDiscoverAndRegister>().Register<InfoPrintAndWelcome>(c, timing);
+                kernel.GetInstance<IDiscoverAndRegister>().Register<FakeStaticFieldStorage>(c, timing);
+            });
+
+            var forceInstantiateTypes = kernel.GetInstance<IForceInstantiateTypes>();
+            forceInstantiateTypes.InstantiateTypes<InfoPrintAndWelcome>(timing);
+            forceInstantiateTypes.InstantiateTypes<DummyMouseEnvLegacySystem>(timing);
+        }
+
+        UnityEventInvokers.Init(kernel);
 
         return kernel;
     }

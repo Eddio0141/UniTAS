@@ -1,67 +1,87 @@
 using System;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
+using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Logging;
+using UniTAS.Patcher.Services.Trackers.TrackInfo;
 using UniTAS.Patcher.Utils;
+#if TRACE
+using System.Diagnostics;
+#endif
 
 namespace UniTAS.Patcher.Implementations;
 
 // ReSharper disable once ClassNeverInstantiated.Global
-[Singleton]
+[Singleton(timing: RegisterTiming.Entry)]
 [ExcludeRegisterIfTesting]
-public class StaticFieldStorage : IStaticFieldManipulator
+public class StaticFieldStorage(
+    ILogger logger,
+    IClassStaticInfoTracker classStaticInfoTracker,
+    ITryFreeMalloc freeMalloc)
+    : IStaticFieldManipulator
 {
-    private readonly ILogger _logger;
-
-    public StaticFieldStorage(ILogger logger)
-    {
-        _logger = logger;
-    }
-
     public void ResetStaticFields()
     {
-        _logger.LogDebug("resetting static fields");
+        logger.LogDebug("resetting static fields");
 
         UnityEngine.Resources.UnloadUnusedAssets();
 
-        var staticFieldStorage = Tracker.StaticFields;
-
-        foreach (var field in staticFieldStorage)
+#if TRACE
+        var sw = new Stopwatch();
+        sw.Start();
+#endif
+        foreach (var field in classStaticInfoTracker.StaticFields)
         {
             var typeName = field.DeclaringType?.FullName ?? "unknown_type";
-            _logger.LogDebug($"resetting static field: {typeName}.{field.Name}");
+
+            logger.LogDebug($"resetting static field: {typeName}.{field.Name}");
 
             // only dispose if disposable in is in system namespace
             if (field.GetValue(null) is IDisposable disposable &&
                 field.FieldType.Namespace?.StartsWith("System") is true)
             {
-                _logger.LogDebug("disposing object via IDisposable");
+                logger.LogDebug("disposing object via IDisposable");
                 disposable.Dispose();
             }
 
+            freeMalloc?.TryFree(null, field);
             field.SetValue(null, null);
         }
+#if TRACE
+        sw.Stop();
+        StaticLogger.Trace($"Time elapsed for static fields resetting: {sw.Elapsed.Milliseconds}ms");
+#endif
 
         // idk if this even works
         GC.Collect();
         GC.WaitForPendingFinalizers();
 
-        _logger.LogDebug("calling static constructors");
-        var staticCtorInvokeOrderListCount = Tracker.StaticCtorInvokeOrder.Count;
-        for (var i = 0; i < staticCtorInvokeOrderListCount; i++)
+        var count = classStaticInfoTracker.StaticCtorInvokeOrder.Count;
+        logger.LogDebug($"calling {count} static constructors");
+#if TRACE
+        sw.Reset();
+        sw.Start();
+#endif
+        for (var i = 0; i < count; i++)
         {
-            var staticCtorType = Tracker.StaticCtorInvokeOrder[i];
+            var staticCtorType = classStaticInfoTracker.StaticCtorInvokeOrder[i];
             var cctor = staticCtorType.TypeInitializer;
             if (cctor == null) continue;
-            _logger.LogDebug($"Calling static constructor for type: {cctor.DeclaringType?.FullName ?? "unknown_type"}");
+            logger.LogDebug($"Calling static constructor for type: {cctor.DeclaringType?.FullName ?? "unknown_type"}");
+
+            LoggingUtils.DiskLogger.Flush();
             try
             {
                 cctor.Invoke(null, default);
             }
             catch (Exception e)
             {
-                _logger.LogDebug($"Exception thrown while calling static constructor: {e}");
+                logger.LogDebug($"Exception thrown while calling static constructor: {e}");
             }
         }
+#if TRACE
+        sw.Stop();
+        StaticLogger.Trace($"Time elapsed for static constructor invokes: {sw.Elapsed.Milliseconds}ms");
+#endif
     }
 }
