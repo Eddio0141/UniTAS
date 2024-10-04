@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using HarmonyLib;
 using UniTAS.Patcher.Implementations.Coroutine;
 using UniTAS.Patcher.Interfaces.Coroutine;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
@@ -86,19 +85,6 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
     public bool Restarting => _pendingRestart || _pendingResumePausedExecution;
 
     /// <summary>
-    /// Deinitializes GOG Galaxy so that it can be reinitialized again for games that use it
-    /// </summary>
-    private void DeinitGOGGalaxy()
-    {
-        var galaxyManager = AccessTools.TypeByName("Galaxy.Api.GalaxyInstance");
-        if (galaxyManager != null)
-        {
-            _logger.LogDebug("Deinitializing GOG Galaxy");
-            galaxyManager.GetMethod("Shutdown").Invoke(null, [true]);
-        }
-    }
-
-    /// <summary>
     /// Destroys all necessary game objects to reset the game state.
     /// Default behaviour is to destroy all DontDestroyOnLoad objects.
     /// </summary>
@@ -147,7 +133,6 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
         _monoBehaviourController.PausedExecution = true;
 
         DestroyGameObjects();
-        DeinitGOGGalaxy();
 
         _logger.LogDebug("Disabling finalize invoke");
         // TODO is this even a good idea
