@@ -13,6 +13,7 @@ public class GOGGalaxyStopOnRestart
     private readonly ILogger _logger;
     private readonly IGameRestart _gameRestart;
     private readonly MethodInfo _shutdown;
+
     public GOGGalaxyStopOnRestart(ILogger logger, IGameRestart gameRestart)
     {
         var galaxyManager = AccessTools.TypeByName("Galaxy.Api.GalaxyInstance");
@@ -29,7 +30,7 @@ public class GOGGalaxyStopOnRestart
             _gameRestart.OnPreGameRestart += Deinit;
     }
 
-    public void Deinit()
+    private void Deinit()
     {
         _logger.LogDebug("Deinitializing GOG Galaxy");
         _shutdown.Invoke(null, [true]);
