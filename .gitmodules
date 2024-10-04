@@ -1,3 +1,6 @@
 [submodule "moonsharp"]
 	path = moonsharp
 	url = https://github.com/Eddio0141/moonsharp.git
+[submodule "Newtonsoft.Json"]
+	path = Newtonsoft.Json
+	url = git@github.com:H3VR-Modding/Newtonsoft.Json.git

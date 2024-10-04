@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Patcher.Tests", "Patcher.Te
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MoonSharp.Interpreter.net35-client", "..\moonsharp\src\MoonSharp.Interpreter\MoonSharp.Interpreter.net35-client.csproj", "{91EA9B9D-FE03-4273-BDAF-8AD42EDE1E59}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Newtonsoft.Json", "..\Newtonsoft.Json\Src\Newtonsoft.Json\Newtonsoft.Json.csproj", "{71232739-5507-4A37-BE37-1DD5CB3088D6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -31,5 +33,11 @@ Global
 		{91EA9B9D-FE03-4273-BDAF-8AD42EDE1E59}.Release|Any CPU.Build.0 = Release|Any CPU
 		{91EA9B9D-FE03-4273-BDAF-8AD42EDE1E59}.ReleaseTrace|Any CPU.ActiveCfg = Release|Any CPU
 		{91EA9B9D-FE03-4273-BDAF-8AD42EDE1E59}.ReleaseTrace|Any CPU.Build.0 = Release|Any CPU
+		{71232739-5507-4A37-BE37-1DD5CB3088D6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{71232739-5507-4A37-BE37-1DD5CB3088D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{71232739-5507-4A37-BE37-1DD5CB3088D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{71232739-5507-4A37-BE37-1DD5CB3088D6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{71232739-5507-4A37-BE37-1DD5CB3088D6}.ReleaseTrace|Any CPU.ActiveCfg = Debug|Any CPU
+		{71232739-5507-4A37-BE37-1DD5CB3088D6}.ReleaseTrace|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 EndGlobal
