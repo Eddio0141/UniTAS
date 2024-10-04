@@ -154,7 +154,9 @@ public class ExternPropertyReset(ILogger logger, IPatchReverseInvoker patchRever
         // new input system stuff
         "UnityEngineInternal.Input.NativeInputSystem.*",
         // null exception
-        "UnityEngine.Rendering.GraphicsSettings.INTERNAL_defaultRenderPipeline"
+        "UnityEngine.Rendering.GraphicsSettings.INTERNAL_defaultRenderPipeline",
+        // readonly property (?)
+        "UnityEngine.Caching.enabled"
     ];
 
     private readonly List<string> _knownProperties =
