@@ -123,6 +123,9 @@ public class ExternPropertyReset(ILogger logger, IPatchReverseInvoker patchRever
     [
         // crashes game
         "UnityEngine.AssetBundleLoadingCache.maxBlocksPerFile",
+        "UnityEngine.Advertisements.UnityAdsManager.enabled",
+        "UnityEngine.Advertisements.UnityAdsManager.initializeOnStartup",
+        "UnityEngine.Advertisements.UnityAdsManager.testMode",
         "UnityEngine.Advertisements.UnityAdsSettings.enabled",
         "UnityEngine.Advertisements.UnityAdsSettings.initializeOnStartup",
         "UnityEngine.Advertisements.UnityAdsSettings.testMode",
