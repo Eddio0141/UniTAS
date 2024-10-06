@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Reflection;
 
 namespace UniTAS.Patcher.Services;
 
 public interface IPatchReverseInvoker
 {
+    MethodInfo RecursiveReversePatch(MethodInfo original);
     bool InnerCall();
     void Return();
     void Invoke(Action method);

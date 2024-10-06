@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Reflection;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
+using UniTAS.Patcher.ManualServices;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Logging;
 
@@ -13,6 +15,9 @@ public class PatchReverseInvoker(ILogger logger) : IPatchReverseInvoker
 {
     public bool Invoking => _depth > 0;
     private uint _depth;
+
+    public MethodInfo RecursiveReversePatch(MethodInfo original) =>
+        PatchReverseInvokerManual.RecursiveReversePatch(original);
 
     public bool InnerCall()
     {
