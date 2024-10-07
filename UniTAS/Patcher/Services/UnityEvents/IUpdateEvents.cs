@@ -11,6 +11,8 @@ public interface IUpdateEvents
     event Action OnAwakeActual;
     event Action OnAwakeUnconditional;
     event Action OnStartActual;
+    event Action OnStartUnconditional;
+    event Action OnEnableUnconditional;
     event Action OnFixedUpdateActual;
     event Action OnFixedUpdateUnconditional;
     event Action OnUpdateActual;

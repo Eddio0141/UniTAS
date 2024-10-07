@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Added
 
+### TAS Movie
+
+- `movie.no_refresh` function for disabling and enabling game rendering for faster playback
+
 ### Compatibility
 
 - Added new input system support, with keyboard and mouse working

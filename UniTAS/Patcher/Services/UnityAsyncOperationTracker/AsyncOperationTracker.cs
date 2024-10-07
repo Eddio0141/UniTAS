@@ -5,7 +5,6 @@ using System.Reflection;
 using HarmonyLib;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.SoftRestart;
-using UniTAS.Patcher.Interfaces.Events.UnityEvents;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents.DontRunIfPaused;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
 using UniTAS.Patcher.Models.UnitySafeWrappers.SceneManagement;
@@ -18,7 +17,7 @@ namespace UniTAS.Patcher.Services.UnityAsyncOperationTracker;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 [Singleton]
-public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger, IOnSceneLoad[] onSceneLoads)
+public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger)
     : ISceneLoadTracker, IAssetBundleCreateRequestTracker, IAssetBundleRequestTracker,
         IOnLastUpdateUnconditional, IAsyncOperationIsInvokingOnComplete, IOnPreGameRestart, IOnUpdateActual
 {
@@ -113,11 +112,6 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger, I
         LocalPhysicsMode localPhysicsMode, AsyncOperation asyncOperation)
     {
         _tracked.Add(asyncOperation);
-
-        foreach (var onSceneLoad in onSceneLoads)
-        {
-            onSceneLoad.OnSceneLoad(sceneName, sceneBuildIndex, loadSceneMode, localPhysicsMode);
-        }
 
         logger.LogDebug($"async scene load, {asyncOperation.GetHashCode()}");
         _asyncLoads.Add(new(sceneName, sceneBuildIndex, asyncOperation, loadSceneMode, localPhysicsMode));

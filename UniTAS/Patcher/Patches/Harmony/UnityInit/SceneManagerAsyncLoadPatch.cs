@@ -8,6 +8,7 @@ using UniTAS.Patcher.Interfaces.Patches.PatchTypes;
 using UniTAS.Patcher.Models.UnitySafeWrappers.SceneManagement;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.UnityAsyncOperationTracker;
+using UniTAS.Patcher.Services.UnityEvents;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 
@@ -47,12 +48,19 @@ public class SceneManagerAsyncLoadPatch
     private static readonly UnityInstanceWrapFactory UnityInstanceWrapFactory =
         ContainerStarter.Kernel.GetInstance<UnityInstanceWrapFactory>();
 
+    private static readonly ISceneLoadInvoke SceneLoadInvoke = ContainerStarter.Kernel.GetInstance<ISceneLoadInvoke>();
+
     private static readonly ILogger Logger = ContainerStarter.Kernel.GetInstance<ILogger>();
 
     private static bool AsyncSceneLoad(bool mustCompleteNextFrame, string sceneName, int sceneBuildIndex,
         object parameters, bool? isAdditive, ref AsyncOperation __result)
     {
-        if (mustCompleteNextFrame) return true;
+        if (mustCompleteNextFrame)
+        {
+            SceneLoadInvoke.SceneLoadCall();
+            return true;
+        }
+
         Logger.LogDebug($"async scene load, instance id: {__result.GetHashCode()}");
 
         if (parameters != null)
