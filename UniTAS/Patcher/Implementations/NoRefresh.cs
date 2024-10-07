@@ -95,7 +95,7 @@ public class NoRefresh : INoRefresh, IUpdateCameraInfo, IOverridingCameraInfo, I
 
     public bool SetRect(Camera camera, Rect rect)
     {
-        if (camera == null) return false;
+        if (!_enabled || camera == null) return false;
         var camIndex = _cameras.FindIndex(x => ReferenceEquals(x.Item1.Instance, camera));
         if (camIndex < 0) return false;
         var camTuple = _cameras[camIndex];
@@ -106,6 +106,12 @@ public class NoRefresh : INoRefresh, IUpdateCameraInfo, IOverridingCameraInfo, I
 
     public bool GetRect(Camera camera, out Rect rect)
     {
+        if (!_enabled)
+        {
+            rect = default;
+            return false;
+        }
+
         var camIndex = _cameras.FindIndex(x => ReferenceEquals(x.Item1.Instance, camera));
         if (camIndex < 0)
         {
@@ -119,6 +125,8 @@ public class NoRefresh : INoRefresh, IUpdateCameraInfo, IOverridingCameraInfo, I
 
     public void OnSceneLoad()
     {
+        if (!_enabled) return;
+
         // cameras are probably dead
         for (var i = 0; i < _cameras.Count; i++)
         {
