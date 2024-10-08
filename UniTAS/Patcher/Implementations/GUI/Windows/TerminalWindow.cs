@@ -17,7 +17,7 @@ using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations.GUI.Windows;
 
-[Register]
+[Singleton]
 [ForceInstantiate]
 [ExcludeRegisterIfTesting]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
