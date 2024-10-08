@@ -156,7 +156,9 @@ public class ExternPropertyReset(ILogger logger, IPatchReverseInvoker patchRever
         // null exception
         "UnityEngine.Rendering.GraphicsSettings.INTERNAL_defaultRenderPipeline",
         // readonly property (?)
-        "UnityEngine.Caching.enabled"
+        "UnityEngine.Caching.enabled",
+        // missing method exception, also pointless
+        "UnityEngine.AndroidJNIHelper.debug"
     ];
 
     private readonly List<string> _knownProperties =
@@ -244,7 +246,7 @@ public class ExternPropertyReset(ILogger logger, IPatchReverseInvoker patchRever
         "UnityEngine.RenderSettings.defaultReflectionMode", "UnityEngine.RenderSettings.defaultReflectionResolution",
         "UnityEngine.RenderSettings.haloStrength", "UnityEngine.RenderSettings.flareStrength",
         "UnityEngine.RenderSettings.flareFadeSpeed", "UnityEngine.AI.NavMesh.avoidancePredictionTime",
-        "UnityEngine.AI.NavMesh.pathfindingIterationsPerFrame", "UnityEngine.AndroidJNIHelper.debug",
+        "UnityEngine.AI.NavMesh.pathfindingIterationsPerFrame",
         "UnityEngine.HumanTrait.MuscleCount", "UnityEngine.HumanTrait.MuscleName", "UnityEngine.HumanTrait.BoneCount",
         "UnityEngine.HumanTrait.BoneName", "UnityEngine.HumanTrait.RequiredBoneCount",
         "UnityEngine.AssetBundleLoadingCache.blockCount", "UnityEngine.AssetBundleLoadingCache.blockSize",
