@@ -24,30 +24,33 @@ public class NoRefresh : INoRefresh, IUpdateCameraInfo, IOverridingCameraInfo, I
     private const string CONFIG_ENTRY_NAME = "NoRefreshCache";
 
     private readonly IUnityInstanceWrapFactory _unityInstanceWrapFactory;
+    private readonly ILogger _logger;
 
     public NoRefresh(IConfig config, IUnityInstanceWrapFactory unityInstanceWrapFactory, ILogger logger,
         IPatchReverseInvoker patchReverseInvoker)
     {
         _unityInstanceWrapFactory = unityInstanceWrapFactory;
+        _logger = logger;
 
         if (!UniTASSha256Info.InvalidCache)
         {
             if (config.TryGetBackendEntry(CONFIG_ENTRY_NAME, out NoRefreshCacheConfig entry))
             {
                 _canNoRefresh = entry.CanNoRefresh;
+                logger.LogDebug("using cached no-refresh search result");
                 LogCanRefresh(logger);
                 return;
             }
         }
 
         // find if we can no-refresh
-        _canNoRefresh = AccessTools.AllTypes().Any(x => !x.IsAbstract && x.IsSubclassOf(typeof(MonoBehaviour)) &&
-                                                        (x.GetMethod("OnBecameVisible",
-                                                             BindingFlags.Instance | BindingFlags.Public |
-                                                             BindingFlags.NonPublic) != null ||
-                                                         x.GetMethod("OnBecameInvisible",
-                                                             BindingFlags.Instance | BindingFlags.Public |
-                                                             BindingFlags.NonPublic) != null));
+        _canNoRefresh = !AccessTools.AllTypes().Any(x => !x.IsAbstract && x.IsSubclassOf(typeof(MonoBehaviour)) &&
+                                                         (x.GetMethod("OnBecameVisible",
+                                                              BindingFlags.Instance | BindingFlags.Public |
+                                                              BindingFlags.NonPublic) != null ||
+                                                          x.GetMethod("OnBecameInvisible",
+                                                              BindingFlags.Instance | BindingFlags.Public |
+                                                              BindingFlags.NonPublic) != null));
 
         LogCanRefresh(logger);
 
@@ -80,12 +83,16 @@ public class NoRefresh : INoRefresh, IUpdateCameraInfo, IOverridingCameraInfo, I
 
             if (value)
             {
+                _logger.LogInfo("enabling no refresh");
                 AddCameras();
                 return;
             }
 
+            _logger.LogDebug("disabling no refresh");
+
             foreach (var (cam, rect) in _cameras)
             {
+                if (cam.Instance == null) continue;
                 cam.Rect = rect;
             }
 
@@ -106,7 +113,7 @@ public class NoRefresh : INoRefresh, IUpdateCameraInfo, IOverridingCameraInfo, I
 
     public bool GetRect(Camera camera, out Rect rect)
     {
-        if (!_enabled)
+        if (!_enabled || camera == null)
         {
             rect = default;
             return false;
