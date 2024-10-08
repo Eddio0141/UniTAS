@@ -3,6 +3,7 @@ using BepInEx;
 using UniTAS.Patcher.Exceptions.GUI;
 using UniTAS.Patcher.Models.GUI;
 using UniTAS.Patcher.Services;
+using UniTAS.Patcher.Services.NoRefresh;
 using UniTAS.Patcher.Services.UnityEvents;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
@@ -31,6 +32,7 @@ public abstract class Window
     private readonly IUpdateEvents _updateEvents;
     private readonly IPatchReverseInvoker _patchReverseInvoker;
     private readonly IConfig _configService;
+    private readonly INoRefresh _noRefresh;
 
     private string WindowName { get; }
     private readonly string _windowConfigId;
@@ -53,6 +55,7 @@ public abstract class Window
         _patchReverseInvoker = windowDependencies.PatchReverseInvoker;
         _updateEvents = windowDependencies.UpdateEvents;
         _configService = windowDependencies.Config;
+        _noRefresh = windowDependencies.NoRefresh;
         _config = config ?? new();
         _windowUpdate = WindowUpdate;
         WindowName = _config.WindowName;
@@ -93,6 +96,7 @@ public abstract class Window
 
     private void OnGUIUnconditional()
     {
+        if (_noRefresh.Enable) return;
         _windowRect = GUILayout.Window(_windowId, _windowRect, _windowUpdate, WindowName, _config.LayoutOptions);
     }
 

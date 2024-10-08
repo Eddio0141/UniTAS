@@ -4,6 +4,7 @@ using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
 using UniTAS.Patcher.Interfaces.GUI;
 using UniTAS.Patcher.Models.GUI;
+using UniTAS.Patcher.Services.NoRefresh;
 using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations.Drawing;
@@ -14,15 +15,18 @@ public partial class Drawing : IOnGUIUnconditional, IDrawing
 {
     private readonly List<Action> _pendingDraws = new();
 
-    public Drawing()
+    private readonly INoRefresh _noRefresh;
+
+    public Drawing(INoRefresh noRefresh)
     {
+        _noRefresh = noRefresh;
         _nextText = NextText;
         _nextTexture = NextTexture;
     }
 
     public void OnGUIUnconditional()
     {
-        if (Event.current.type != EventType.Repaint) return;
+        if (_noRefresh.Enable || Event.current.type != EventType.Repaint) return;
 
         foreach (var pendingDraw in _pendingDraws)
         {
