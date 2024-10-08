@@ -92,7 +92,7 @@ public class NoRefresh : INoRefresh, IUpdateCameraInfo, IOverridingCameraInfo, I
 
             foreach (var (cam, rect) in _cameras)
             {
-                if (cam.Instance == null) continue;
+                if ((Object)cam.Instance == null) continue;
                 cam.Rect = rect;
             }
 
@@ -135,13 +135,7 @@ public class NoRefresh : INoRefresh, IUpdateCameraInfo, IOverridingCameraInfo, I
         if (!_enabled) return;
 
         // cameras are probably dead
-        for (var i = 0; i < _cameras.Count; i++)
-        {
-            if (_cameras[i].Item1.Instance != null) continue;
-
-            _cameras.RemoveAt(i);
-            i--;
-        }
+        _cameras.RemoveAll(x => (Camera)x.Item1.Instance == null);
 
         // bring in the cameras
         AddCameras();
@@ -151,15 +145,14 @@ public class NoRefresh : INoRefresh, IUpdateCameraInfo, IOverridingCameraInfo, I
     {
         var cams = ObjectUtils.FindObjectsOfType<Camera>();
 
-        _cameras.AddRange(cams.Select(cam =>
+        foreach (var cam in cams)
         {
+            if (_cameras.Any(x => (Camera)x.Item1.Instance == cam)) continue;
             var wrap = _unityInstanceWrapFactory.Create<CameraWrapper>(cam);
-            return (wrap, wrap.Rect);
-        }));
-
-        foreach (var (cam, _) in _cameras)
-        {
-            cam.Rect = new(0, 0, 0, 0);
+            _cameras.Add((wrap, cam.rect));
+            wrap.Rect = new();
         }
+
+        _logger.LogDebug($"no refresh: tracking {_cameras.Count} cameras");
     }
 }
