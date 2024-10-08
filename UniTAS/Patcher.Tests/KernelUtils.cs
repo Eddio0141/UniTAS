@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using AssetsTools.NET.Extra;
 using BepInEx.Configuration;
 using BepInEx.Logging;
@@ -290,6 +291,11 @@ public static class KernelUtils
     [SuppressMessage("ReSharper", "UnusedType.Local")]
     private class PatchReverseInvokerDummy : IPatchReverseInvoker
     {
+        public MethodInfo RecursiveReversePatch(MethodInfo original)
+        {
+            return null!;
+        }
+
         public bool InnerCall()
         {
             return false;
