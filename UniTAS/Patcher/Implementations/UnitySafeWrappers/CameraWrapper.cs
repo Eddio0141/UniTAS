@@ -6,29 +6,27 @@ using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations.UnitySafeWrappers;
 
-public class CameraWrapper : UnityInstanceWrap
+public class CameraWrapper(object instance, IPatchReverseInvoker patchReverseInvoker) : UnityInstanceWrap(instance)
 {
-    private readonly IPatchReverseInvoker _patchReverseInvoker;
+    private static readonly Func<Camera, Rect> GetScreenRect;
+    private static readonly Action<Camera, Rect> SetScreenRect;
+    // private static readonly MethodInfo _setScreenRect;
 
-    public CameraWrapper(object instance, IPatchReverseInvoker patchReverseInvoker) : base(instance)
+    static CameraWrapper()
     {
-        _patchReverseInvoker = patchReverseInvoker;
         var getScreenRect = AccessTools.PropertyGetter(typeof(Camera), nameof(Camera.rect));
         var setScreenRect = AccessTools.PropertySetter(typeof(Camera), nameof(Camera.rect));
         // var getScreenRectReverse = patchReverseInvoker.RecursiveReversePatch(getScreenRect);
         // var setScreenRectReverse = patchReverseInvoker.RecursiveReversePatch(setScreenRect);
-        _getScreenRect = AccessTools.MethodDelegate<Func<Rect>>(getScreenRect, instance);
-        _setScreenRect = AccessTools.MethodDelegate<Action<Rect>>(setScreenRect, instance);
+        GetScreenRect = AccessTools.MethodDelegate<Func<Camera, Rect>>(getScreenRect);
+        SetScreenRect = AccessTools.MethodDelegate<Action<Camera, Rect>>(setScreenRect);
     }
-
-    private readonly Func<Rect> _getScreenRect;
-    private readonly Action<Rect> _setScreenRect;
 
     protected override Type WrappedType => typeof(Camera);
 
     public Rect Rect
     {
-        get => _patchReverseInvoker.Invoke(() => _getScreenRect());
-        set => _patchReverseInvoker.Invoke(() => _setScreenRect(value));
+        get => patchReverseInvoker.Invoke(() => GetScreenRect((Camera)Instance));
+        set => patchReverseInvoker.Invoke(() => SetScreenRect((Camera)Instance, value));
     }
 }
