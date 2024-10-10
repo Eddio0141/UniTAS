@@ -19,6 +19,8 @@ namespace UniTAS.Patcher.Implementations.GUI.Windows;
 
 [SuppressMessage("ReSharper", "UnusedType.Global")]
 [Singleton]
+[ForceInstantiate]
+[ExcludeRegisterIfTesting]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public class MoviePlayWindow : Window
 {
@@ -33,7 +35,7 @@ public class MoviePlayWindow : Window
     private readonly IConfig _config;
     private IBrowseFileWindow _currentBrowseFileWindow;
 
-    private const string TAS_PATH_CONFIG_ENTRY = "movie-play-window-tas-path";
+    private const string TASPathConfigEntry = "movie-play-window-tas-path";
 
     public MoviePlayWindow(WindowDependencies windowDependencies, IMovieLogger movieLogger, IMovieRunner movieRunner,
         IBinds binds, IBrowseFileWindowFactory browseFileWindowFileWindowFactory, IGlobalHotkey globalHotkey) :
@@ -49,7 +51,7 @@ public class MoviePlayWindow : Window
         var playMovieBind = binds.Create(new("PlayMovie", KeyCode.Slash));
         globalHotkey.AddGlobalHotkey(new(playMovieBind, RunMovieWithLogs));
 
-        if (_config.TryGetBackendEntry(TAS_PATH_CONFIG_ENTRY, out string path))
+        if (_config.TryGetBackendEntry(TASPathConfigEntry, out string path))
         {
             _tasPath = path;
         }
@@ -86,7 +88,7 @@ public class MoviePlayWindow : Window
             _currentBrowseFileWindow.OnFileSelected += path =>
             {
                 _tasPath = path;
-                _config.WriteBackendEntry(TAS_PATH_CONFIG_ENTRY, path);
+                _config.WriteBackendEntry(TASPathConfigEntry, path);
             };
             _currentBrowseFileWindow.OnClosed += () => _currentBrowseFileWindow = null;
         }
