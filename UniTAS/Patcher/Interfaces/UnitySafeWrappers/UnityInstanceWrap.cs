@@ -1,8 +1,10 @@
 ﻿using System;
+using HarmonyLib;
+using UniTAS.Patcher.Services.UnitySafeWrappers;
 
 namespace UniTAS.Patcher.Interfaces.UnitySafeWrappers;
 
-public abstract class UnityInstanceWrap
+public abstract class UnityInstanceWrap : IUnityInstanceWrap
 {
     public object Instance { get; protected set; }
     protected abstract Type WrappedType { get; }
@@ -10,15 +12,14 @@ public abstract class UnityInstanceWrap
     protected UnityInstanceWrap(object instance)
     {
         Instance = instance;
+        Init();
     }
 
-    /// <summary>
-    /// Creates a new instance of the wrapped type with the given args
-    /// </summary>
-    /// <param name="args">Arguments passed to the constructor, which tries to match the best constructor for this</param>
-    public virtual void NewInstance(params object[] args)
+    private void Init()
     {
-        if (WrappedType == null) return;
-        Instance = Activator.CreateInstance(WrappedType, args);
+        if (Instance == null && WrappedType != null)
+        {
+            Instance = AccessTools.CreateInstance(WrappedType);
+        }
     }
 }

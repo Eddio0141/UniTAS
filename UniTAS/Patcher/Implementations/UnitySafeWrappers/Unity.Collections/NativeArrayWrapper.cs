@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using HarmonyLib;
+using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Interfaces.UnitySafeWrappers;
 using UniTAS.Patcher.Models.UnitySafeWrappers.Unity.Collections;
 
@@ -28,36 +29,30 @@ public class NativeArrayWrapper<T> : UnityInstanceWrap
         WrappedType = wrappedType;
     }
 
-    public override void NewInstance(params object[] args)
+    public NativeArrayWrapper(int length, object allocator) : this(null)
     {
-        if (WrappedType == null) return;
-
-        for (var i = 0; i < args.Length; i++)
+        if (allocator.GetType() != _allocator)
         {
-            var arg = args[i];
-            if (arg is Allocator allocator)
-            {
-                args[i] = Enum.Parse(_allocator, allocator.ToString());
-            }
+            throw new ArgumentException($"Allocator must be the type: {_allocator.SaneFullName()}", nameof(allocator));
         }
 
-        if (args.Length == 2 && args[0] is int && args[1].GetType() == _allocator)
+        PostConstructor(length, allocator);
+    }
+
+    private void PostConstructor(int length, object allocator)
+    {
+        var allocatorParsed = Enum.Parse(_allocator, allocator.ToString());
+
+        if (_nativeArrayOptions == null)
         {
-            if (_nativeArrayOptions == null)
-            {
-                args = [args[0], args[1]];
-                Instance = AccessTools.Constructor(WrappedType, [typeof(int), _allocator]).Invoke(args);
-            }
-            else
-            {
-                args = [args[0], args[1], Enum.Parse(_nativeArrayOptions, "ClearMemory")];
-                Instance = AccessTools.Constructor(WrappedType, [typeof(int), _allocator, _nativeArrayOptions])
-                    .Invoke(args);
-            }
+            Instance = AccessTools.Constructor(WrappedType, [typeof(int), _allocator])
+                .Invoke([length, allocatorParsed]);
         }
         else
         {
-            base.NewInstance(args);
+            var options = Enum.Parse(_nativeArrayOptions, "ClearMemory");
+            Instance = AccessTools.Constructor(WrappedType, [typeof(int), _allocator, _nativeArrayOptions])
+                .Invoke([length, allocatorParsed, options]);
         }
     }
 

@@ -17,17 +17,17 @@ public class SceneManagerWrapper : ISceneWrapper
 {
     private readonly IUnityInstanceWrapFactory _unityInstanceWrapFactory;
 
-    private const string SCENE_MANAGEMENT_NAMESPACE = "UnityEngine.SceneManagement";
+    private const string SceneManagementNamespace = "UnityEngine.SceneManagement";
 
-    private readonly Type _sceneManager = AccessTools.TypeByName($"{SCENE_MANAGEMENT_NAMESPACE}.SceneManager");
+    private readonly Type _sceneManager = AccessTools.TypeByName($"{SceneManagementNamespace}.SceneManager");
 
     private readonly Func<int> _totalSceneCount;
 
     private readonly Type _loadSceneParametersType =
-        AccessTools.TypeByName($"{SCENE_MANAGEMENT_NAMESPACE}.LoadSceneParameters");
+        AccessTools.TypeByName($"{SceneManagementNamespace}.LoadSceneParameters");
 
     private readonly Type _sceneManagerAPIInternal =
-        AccessTools.TypeByName($"{SCENE_MANAGEMENT_NAMESPACE}.SceneManagerAPIInternal");
+        AccessTools.TypeByName($"{SceneManagementNamespace}.SceneManagerAPIInternal");
 
     // load level async
     private readonly MethodInfo _loadSceneAsyncNameIndexInternalInjected;
@@ -94,7 +94,7 @@ public class SceneManagerWrapper : ISceneWrapper
     {
         if (_loadSceneAsyncNameIndexInternalInjected != null && _loadSceneParametersType != null)
         {
-            var instance = _unityInstanceWrapFactory.CreateNew<LoadSceneParametersWrapper>();
+            var instance = _unityInstanceWrapFactory.Create<LoadSceneParametersWrapper>(null);
             instance.LoadSceneMode = loadSceneMode;
             instance.LocalPhysicsMode = localPhysicsMode;
             _loadSceneAsyncNameIndexInternalInjected.Invoke(null,

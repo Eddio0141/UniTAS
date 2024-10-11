@@ -38,13 +38,14 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvent
     private readonly ITimeEnv _timeEnv;
     private readonly IRandomEnv _randomEnv;
     private readonly ICoroutine _coroutine;
+    private readonly IWindowEnv _windowEnv;
 
     public UpdateType UpdateType { get; set; }
 
     public MovieRunner(IGameRestart gameRestart, IMovieParser parser, IMovieLogger movieLogger,
         IOnMovieRunningStatusChange[] onMovieRunningStatusChange,
         IVirtualEnvController virtualEnvController, ITimeEnv timeEnv, IRandomEnv randomEnv, ILogger logger,
-        IOnMovieUpdate[] onMovieUpdates, ICoroutine coroutine)
+        IOnMovieUpdate[] onMovieUpdates, ICoroutine coroutine, IWindowEnv windowEnv)
     {
         _gameRestart = gameRestart;
         _parser = parser;
@@ -56,6 +57,7 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvent
         _logger = logger;
         _onMovieUpdates = onMovieUpdates;
         _coroutine = coroutine;
+        _windowEnv = windowEnv;
 
         _gameRestart.OnGameRestartResume += OnGameRestartResume;
     }
@@ -92,15 +94,15 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvent
         var properties = parsed.Item2;
 
         // set env from properties
+        _logger.LogDebug($"Using startup property: {properties.StartupProperties}");
+        _timeEnv.FrameTime = properties.StartupProperties.FrameTime;
+        _randomEnv.StartUpSeed = properties.StartupProperties.Seed;
+        properties.StartupProperties.WindowState.SetWindowEnv(_windowEnv);
+
+        // this runs after setting venv up
         _virtualEnvController.RunVirtualEnvironment = true;
 
-        if (properties.StartupProperties != null)
-        {
-            _logger.LogDebug($"Using startup property: {properties.StartupProperties}");
-            _timeEnv.FrameTime = properties.StartupProperties.FrameTime;
-            _randomEnv.StartUpSeed = properties.StartupProperties.Seed;
-            _gameRestart.SoftRestart(properties.StartupProperties.StartTime);
-        }
+        _gameRestart.SoftRestart(properties.StartupProperties.StartTime);
 
         UpdateType = properties.UpdateType;
         _logger.LogDebug($"set update type to {UpdateType}");
