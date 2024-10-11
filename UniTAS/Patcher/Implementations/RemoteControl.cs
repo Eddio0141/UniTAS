@@ -96,6 +96,11 @@ public class RemoteControl
                 networkStream = client.GetStream();
                 networkStream.ReadTimeout = 50;
             }
+            catch (ThreadAbortException)
+            {
+                // no error logging for those
+                return;
+            }
             catch (Exception e)
             {
                 _logger.LogError($"failed to connect to remote control client: {e}");
@@ -192,7 +197,6 @@ public class RemoteControl
                 }
             }
         }
-        // ReSharper disable once FunctionNeverReturns
     }
 
     private enum ScriptSendTypePrefix : byte
