@@ -132,8 +132,8 @@ public class ExternPropertyReset(ILogger logger, IPatchReverseInvoker patchRever
         "UnityEngine.DynamicGI.indirectScale", // unity error: Unable to set Indirect Scale. Please set up a new Lighting Settings asset in the Lighting Settings Window.
         "System.*", // probably bad idea
         // handled by unitas
-        "UnityEngine.Time.captureDeltaTime",
-        "UnityEngine.Time.captureFramerate",
+        "UnityEngine.Time.captureDeltaTime", "UnityEngine.Time.captureFramerate",
+        "UnityEngine.Screen.fullScreen", "UnityEngine.Screen.fullScreenMode",
         // profilers are not supported
         "UnityEngine.Profiling.Profiler.logFile",
         "UnityEngine.Profiling.Profiler.enableBinaryLog",
@@ -276,7 +276,7 @@ public class ExternPropertyReset(ILogger logger, IPatchReverseInvoker patchRever
         "UnityEngine.DynamicGI.scheduledMaterialUpdatesCount", "UnityEngine.DynamicGI.asyncMaterialUpdates",
         "UnityEngine.Gizmos.exposure", "UnityEngine.Gizmos.probeSize", "UnityEngine.Screen.width",
         "UnityEngine.Screen.height", "UnityEngine.Screen.dpi", "UnityEngine.Screen.sleepTimeout",
-        "UnityEngine.Screen.fullScreen", "UnityEngine.Screen.fullScreenMode", "UnityEngine.Screen.cutouts",
+        "UnityEngine.Screen.cutouts",
         "UnityEngine.Screen.resolutions", "UnityEngine.Screen.brightness", "UnityEngine.Graphics.activeTier",
         "UnityEngine.GL.wireframe", "UnityEngine.GL.sRGBWrite", "UnityEngine.GL.invertCulling",
         "UnityEngine.ScalableBufferManager.widthScaleFactor", "UnityEngine.ScalableBufferManager.heightScaleFactor",

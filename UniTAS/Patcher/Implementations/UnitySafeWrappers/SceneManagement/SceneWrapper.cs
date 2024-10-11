@@ -8,10 +8,10 @@ namespace UniTAS.Patcher.Implementations.UnitySafeWrappers.SceneManagement;
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public class SceneWrapper : UnityInstanceWrap
 {
-    private Traverse _instanceTraverse;
+    private readonly Traverse _instanceTraverse;
 
-    private const string BUILD_INDEX_FIELD = "buildIndex";
-    private const string NAME_FIELD = "name";
+    private const string BuildIndexField = "buildIndex";
+    private const string NameField = "name";
 
     protected override Type WrappedType { get; } = AccessTools.TypeByName("UnityEngine.SceneManagement.Scene");
 
@@ -21,13 +21,6 @@ public class SceneWrapper : UnityInstanceWrap
         _instanceTraverse = Traverse.Create(instance);
     }
 
-    public override void NewInstance(params object[] args)
-    {
-        base.NewInstance(args);
-        if (Instance == null) return;
-        _instanceTraverse = Traverse.Create(Instance);
-    }
-
-    public int? BuildIndex => _instanceTraverse?.Property(BUILD_INDEX_FIELD).GetValue<int>();
-    public string Name => _instanceTraverse?.Property(NAME_FIELD).GetValue<string>();
+    public int? BuildIndex => _instanceTraverse?.Property(BuildIndexField).GetValue<int>();
+    public string Name => _instanceTraverse?.Property(NameField).GetValue<string>();
 }

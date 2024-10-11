@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using MoonSharp.Interpreter;
+using UniTAS.Patcher.Implementations.UnitySafeWrappers;
 using UniTAS.Patcher.Models.Movie;
+using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 
 namespace UniTAS.Patcher.Implementations.Movie.Parser;
 
@@ -26,7 +28,8 @@ public partial class MovieParser
         var properties = new PropertiesModel(new(
                 GetStartTime(configTable),
                 GetFrameTime(configTable),
-                GetSeed(configTable)
+                GetSeed(configTable),
+                GetWindowState(configTable)
             ),
             GetUpdateType(configTable));
 
@@ -138,6 +141,169 @@ public partial class MovieParser
         }
 
         return updateType;
+    }
+
+    private WindowState GetWindowState(Table table)
+    {
+        var window = table.Get("window");
+
+        const int fallbackWidth = 1920;
+        const int fallbackHeight = 1080;
+        var fallbackRr = _unityInstanceWrapFactory.CreateNew<RefreshRateWrap>();
+        fallbackRr.Rate = 60;
+
+        if (window.Type != DataType.Table)
+        {
+            _logger.LogWarning(
+                window.Type == DataType.Nil
+                    ? $"`window` config is nil, falling back to resolution of {fallbackWidth}x{fallbackHeight}@{fallbackRr.Rate}hz with no extra screen resolutions"
+                    : $"`window` isn't a table, falling back to resolution of {fallbackWidth}x{fallbackHeight}@{fallbackRr.Rate}hz with no extra screen resolutions");
+
+            return new WindowState(
+                _unityInstanceWrapFactory.CreateNew<IResolutionWrapper>(fallbackWidth, fallbackHeight, fallbackRr), []);
+        }
+
+        var windowTable = window.Table;
+
+        var width = (int)(windowTable.Get("width").CastToNumber() ?? fallbackWidth);
+        var height = (int)(windowTable.Get("height").CastToNumber() ?? fallbackHeight);
+
+        if (width <= 0 || height <= 0)
+        {
+            _logger.LogWarning(
+                $"the screen resolution value can't be 0 or lower, using default value of {fallbackWidth}x{fallbackHeight}");
+            width = fallbackWidth;
+            height = fallbackHeight;
+        }
+
+        // fallback is 0hz (unlimited for unity)
+        var rr = RefreshRateParser(windowTable.Get("refresh_rate"), out var rrParsed)
+            ? rrParsed
+            : fallbackRr;
+
+        var resolutionsRaw = windowTable.Get("resolutions");
+        var resolutions = new List<IResolutionWrapper>();
+        if (resolutionsRaw.Type == DataType.Table)
+        {
+            var resolutionRawValues = resolutionsRaw.Table.Values;
+            foreach (var resolution in resolutionRawValues)
+            {
+                if (resolution.Type != DataType.Table)
+                {
+                    _logger.LogWarning(
+                        "entry of `resolutions` isn't a table containing `width`, `height`, and `refresh_rate` values");
+                }
+
+                var resolutionTable = resolution.Table;
+                var resWidthRaw = resolutionTable.Get("width");
+                var resHeightRaw = resolutionTable.Get("height");
+                var refreshRateRaw = resolutionTable.Get("refresh_rate");
+                var resW = resWidthRaw.CastToNumber();
+                var resH = resHeightRaw.CastToNumber();
+
+                if (resW == null)
+                {
+                    _logger.LogWarning(
+                        $"in `resolutions`, the width value {resWidthRaw} isn't a number, ignoring this entry");
+                    continue;
+                }
+
+                if ((uint)resW.Value <= 0)
+                {
+                    _logger.LogWarning($"in `resolutions`, the width value {resW} is invalid, ignoring this entry");
+                    continue;
+                }
+
+                if (resH == null)
+                {
+                    _logger.LogWarning(
+                        $"in `resolutions`, the height value {resHeightRaw} isn't a number, ignoring this entry");
+                    continue;
+                }
+
+                if ((uint)resH.Value <= 0)
+                {
+                    _logger.LogWarning($"in `resolutions`, the height value {resH} is invalid, ignoring this entry");
+                    continue;
+                }
+
+                if (!RefreshRateParser(refreshRateRaw, out var refreshRateParsed))
+                {
+                    continue;
+                }
+
+                resolutions.Add(_unityInstanceWrapFactory.CreateNew<IResolutionWrapper>((int)resW.Value,
+                    (int)resH.Value,
+                    refreshRateParsed));
+            }
+        }
+        else if (resolutionsRaw.Type != DataType.Nil)
+        {
+            _logger.LogWarning("`resolutions` isn't an array, no additional supported screen resolutions are added");
+        }
+
+        return new WindowState(_unityInstanceWrapFactory.CreateNew<IResolutionWrapper>(width, height, rr),
+            resolutions.ToArray());
+    }
+
+    private bool RefreshRateParser(DynValue entry, out RefreshRateWrap refreshRate)
+    {
+        var refreshRateNum = entry.CastToNumber();
+        if (refreshRateNum.HasValue)
+        {
+            refreshRate = new RefreshRateWrap(null)
+            {
+                Rate = refreshRateNum.Value
+            };
+        }
+        else
+        {
+            // is it specifying the raw values
+            if (entry.Type != DataType.Table)
+            {
+                _logger.LogWarning(
+                    $"the refresh rate `{entry}` isn't either a number or a table containing " +
+                    "`numerator` and `denominator` (or `n` and `d`), ignoring this entry");
+                refreshRate = null;
+                return false;
+            }
+
+            var refreshRateTable = entry.Table;
+
+            var (nRaw, _) = SelectAndWarnConflictingVariables(refreshRateTable, ["n", "numerator"]);
+            var n = nRaw.CastToNumber();
+            if (n == null)
+            {
+                _logger.LogWarning(
+                    $"the numerator value {nRaw} isn't a number, ignoring this entry");
+                refreshRate = null;
+                return false;
+            }
+
+            var (dRaw, _) = SelectAndWarnConflictingVariables(refreshRateTable, ["d", "denominator"]);
+            var d = dRaw.CastToNumber();
+            if (d == null)
+            {
+                _logger.LogWarning(
+                    $"in `resolutions`, the denominator value {dRaw} isn't a number, ignoring this entry");
+                refreshRate = null;
+                return false;
+            }
+
+            refreshRate = _unityInstanceWrapFactory.CreateNew<RefreshRateWrap>();
+            refreshRate.Denominator = (uint)d;
+            refreshRate.Numerator = (uint)n;
+        }
+
+        if (refreshRate.Rate < 0)
+        {
+            _logger.LogWarning(
+                $"the refresh rate {refreshRate.Rate} is invalid, it has to be 0hz (0 is valid) or higher, ignoring this entry");
+            refreshRate = null;
+            return false;
+        }
+
+        return true;
     }
 
     private (DynValue, string) SelectAndWarnConflictingVariables(Table table, List<string> variables)

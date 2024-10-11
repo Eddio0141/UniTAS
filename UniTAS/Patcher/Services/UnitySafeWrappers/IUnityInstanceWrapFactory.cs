@@ -1,6 +1,4 @@
-﻿using UniTAS.Patcher.Interfaces.UnitySafeWrappers;
-
-namespace UniTAS.Patcher.Services.UnitySafeWrappers;
+﻿namespace UniTAS.Patcher.Services.UnitySafeWrappers;
 
 /// <summary>
 /// A factory for creating unity instance wraps with extra functionality or for creating types that may or may not be present in the current unity version
@@ -13,7 +11,8 @@ public interface IUnityInstanceWrapFactory
     /// <param name="instance">Actual instance to pass to the wrapper</param>
     /// <typeparam name="T">Type of the wrap type</typeparam>
     /// <returns>Wrapped instance</returns>
-    T Create<T>(object instance) where T : UnityInstanceWrap;
+    T Create<T>(object instance) where T : class;
+    // TODO: T Create<T>(object instance) where T : UnityInstanceWrap;
 
     /// <summary>
     /// Creates a new instance of the type T
@@ -22,5 +21,5 @@ public interface IUnityInstanceWrapFactory
     /// <param name="args">Arguments to pass to the constructor</param>
     /// <typeparam name="T">Type of the wrap type</typeparam>
     /// <returns>Wrapped instance</returns>
-    T CreateNew<T>(params object[] args) where T : UnityInstanceWrap;
+    T CreateNew<T>(params object[] args) where T : class; // TODO: yeah this is wrong
 }

@@ -15,6 +15,7 @@ using UniTAS.Patcher.Interfaces.Movie;
 using UniTAS.Patcher.Models.Movie;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.Movie;
+using UniTAS.Patcher.Services.UnitySafeWrappers;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 
@@ -28,14 +29,16 @@ public partial class MovieParser : IMovieParser
     private readonly IEngineModuleClassesFactory _engineModuleClassesFactory;
     private readonly IContainer _container;
     private readonly MovieProxyType[] _movieProxyTypes;
+    private readonly IUnityInstanceWrapFactory _unityInstanceWrapFactory;
 
     public MovieParser(IMovieLogger logger, IEngineModuleClassesFactory engineModuleClassesFactory,
-        IContainer container, MovieProxyType[] movieProxyTypes)
+        IContainer container, MovieProxyType[] movieProxyTypes, IUnityInstanceWrapFactory unityInstanceWrapFactory)
     {
         _logger = logger;
         _engineModuleClassesFactory = engineModuleClassesFactory;
         _container = container;
         _movieProxyTypes = movieProxyTypes;
+        _unityInstanceWrapFactory = unityInstanceWrapFactory;
     }
 
     public (IMovieEngine, PropertiesModel) Parse(string input)
