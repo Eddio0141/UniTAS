@@ -7,9 +7,14 @@ using UniTAS.Patcher.Models.UnitySafeWrappers.SceneManagement;
 namespace UniTAS.Patcher.Implementations.UnitySafeWrappers.SceneManagement;
 
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-public class LoadSceneParametersWrapper(object instance) : UnityInstanceWrap(instance)
+public class LoadSceneParametersWrapper : UnityInstanceWrap
 {
-    private readonly Traverse _instanceTraverse = Traverse.Create(instance);
+    private readonly Traverse _instanceTraverse;
+
+    public LoadSceneParametersWrapper(object instance) : base(instance)
+    {
+        _instanceTraverse = Traverse.Create(Instance);
+    }
 
     protected override Type WrappedType { get; } =
         AccessTools.TypeByName("UnityEngine.SceneManagement.LoadSceneParameters");
