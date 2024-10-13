@@ -22,3 +22,4 @@ public class SceneWrapper : UnityInstanceWrap
 
     public int? BuildIndex => _instanceTraverse?.Property(BuildIndexField).GetValue<int>();
     public string Name => _instanceTraverse?.Property(NameField).GetValue<string>();
+}

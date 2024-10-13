@@ -7,7 +7,7 @@ using UniTAS.Patcher.Models.UnitySafeWrappers.SceneManagement;
 namespace UniTAS.Patcher.Implementations.UnitySafeWrappers.SceneManagement;
 
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-public class LoadSceneParametersWrapper(object instance) : UnityInstanceWrap(instance)
+public class LoadSceneParametersWrapper : UnityInstanceWrap
 {
     private readonly Traverse _instanceTraverse;
 
@@ -53,3 +53,4 @@ public class LoadSceneParametersWrapper(object instance) : UnityInstanceWrap(ins
             _instanceTraverse.Property(LocalPhysicsModeField).SetValue(intValue);
         }
     }
+}
