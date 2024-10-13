@@ -296,7 +296,7 @@ public static class KernelUtils
     [SuppressMessage("ReSharper", "UnusedType.Local")]
     private class PatchReverseInvokerDummy : IPatchReverseInvoker
     {
-        public MethodInfo RecursiveReversePatch(MethodInfo original)
+        public MethodBase RecursiveReversePatch(MethodBase original)
         {
             return null!;
         }
