@@ -9,7 +9,12 @@ namespace UniTAS.Patcher.Implementations.UnitySafeWrappers.SceneManagement;
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public class LoadSceneParametersWrapper(object instance) : UnityInstanceWrap(instance)
 {
-    private readonly Traverse _instanceTraverse = Traverse.Create(instance);
+    private readonly Traverse _instanceTraverse;
+
+    public LoadSceneParametersWrapper(object instance) : base(instance)
+    {
+        _instanceTraverse = Traverse.Create(Instance);
+    }
 
     protected override Type WrappedType { get; } =
         AccessTools.TypeByName("UnityEngine.SceneManagement.LoadSceneParameters");
@@ -48,4 +53,3 @@ public class LoadSceneParametersWrapper(object instance) : UnityInstanceWrap(ins
             _instanceTraverse.Property(LocalPhysicsModeField).SetValue(intValue);
         }
     }
-}

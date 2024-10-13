@@ -17,10 +17,8 @@ public class SceneWrapper : UnityInstanceWrap
 
     public SceneWrapper(object instance) : base(instance)
     {
-        if (instance == null) return;
-        _instanceTraverse = Traverse.Create(instance);
+        _instanceTraverse = Traverse.Create(Instance);
     }
 
     public int? BuildIndex => _instanceTraverse?.Property(BuildIndexField).GetValue<int>();
     public string Name => _instanceTraverse?.Property(NameField).GetValue<string>();
-}

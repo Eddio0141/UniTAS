@@ -66,7 +66,7 @@ public class ScreenPatch
 
         private static void Prefix(int width, int height, ref bool fullscreen)
         {
-            if (PatchReverseInvoker.InnerCall()) return;
+            if (PatchReverseInvoker.InnerCall() || !VirtualEnvController.RunVirtualEnvironment) return;
 
             ScreenTrackerUpdate.SetResolution(width, height, fullscreen);
             fullscreen = false;
@@ -88,7 +88,7 @@ public class ScreenPatch
 
         private static void Prefix(int width, int height, ref bool fullscreen, int preferredRefreshRate)
         {
-            if (PatchReverseInvoker.InnerCall()) return;
+            if (PatchReverseInvoker.InnerCall() || !VirtualEnvController.RunVirtualEnvironment) return;
 
             ScreenTrackerUpdate.SetResolution(width, height, fullscreen, preferredRefreshRate);
             fullscreen = false;
@@ -118,7 +118,7 @@ public class ScreenPatch
 
         private static void Prefix(int width, int height, ref object fullscreenMode, int preferredRefreshRate)
         {
-            if (PatchReverseInvoker.InnerCall()) return;
+            if (PatchReverseInvoker.InnerCall() || !VirtualEnvController.RunVirtualEnvironment) return;
 
             ScreenTrackerUpdate.SetResolution(width, height, fullscreenMode, preferredRefreshRate);
             fullscreenMode = FullScreenModeWrap.FullScreenModeWindowed;
@@ -150,7 +150,7 @@ public class ScreenPatch
 
         private static void Prefix(int width, int height, ref object fullscreenMode, object preferredRefreshRate)
         {
-            if (PatchReverseInvoker.InnerCall()) return;
+            if (PatchReverseInvoker.InnerCall() || !VirtualEnvController.RunVirtualEnvironment) return;
 
             ScreenTrackerUpdate.SetResolution(width, height, fullscreenMode, preferredRefreshRate);
             fullscreenMode = FullScreenModeWrap.FullScreenModeWindowed;
@@ -245,4 +245,3 @@ public class ScreenPatch
             PatchReverseInvoker.Return();
         }
     }
-}

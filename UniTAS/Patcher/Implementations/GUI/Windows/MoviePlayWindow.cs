@@ -48,13 +48,13 @@ public class MoviePlayWindow : Window
         _config = windowDependencies.Config;
         movieLogger.OnLog += OnMovieLog;
 
-        var playMovieBind = binds.Create(new("PlayMovie", KeyCode.Slash));
-        globalHotkey.AddGlobalHotkey(new(playMovieBind, RunMovieWithLogs));
-
         if (_config.TryGetBackendEntry(TASPathConfigEntry, out string path))
         {
             _tasPath = path;
         }
+
+        var playMovieBind = binds.Create(new("PlayMovie", KeyCode.Slash));
+        globalHotkey.AddGlobalHotkey(new(playMovieBind, RunMovieWithLogs));
     }
 
     protected override void OnGUI()

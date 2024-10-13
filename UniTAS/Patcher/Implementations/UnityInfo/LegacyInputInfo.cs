@@ -75,11 +75,15 @@ public class LegacyInputInfo
             var axisNumRaw = axis["axis"].AsInt;
             var joyNumRaw = axis["joyNum"].AsInt;
 
-            logger.LogDebug($"Found legacy input axis: {name}");
-
             var type = (AxisType)typeRaw;
             var axisNum = (AxisChoice)axisNumRaw;
             var joyNum = (JoyNum)joyNumRaw;
+
+            logger.LogDebug(
+                $"Found legacy input axis: {name}, positive button: `{positiveButton}` (alt `{altPositiveButton}`), " +
+                $"negative button: `{negativeButton}` (alt `{altNegativeButton}`), gravity: {gravity}, dead zone: {dead}, " +
+                $"sensitivity: {sensitivity}, snap: {snap}, invert: {invert}, type: {type}, axis: {axisNum}, joystick num: {joyNum}"
+            );
 
             var legacyInputAxis = new LegacyInputAxis(name, negativeButton, positiveButton, altNegativeButton,
                 altPositiveButton, gravity, dead, sensitivity, snap, invert, type, axisNum, joyNum);
