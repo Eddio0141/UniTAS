@@ -29,20 +29,17 @@ public class PatchReverseInvoker(ILogger logger) : IPatchReverseInvoker
     private readonly List<MethodDefinition> _workingMethods = new();
     private readonly List<AssemblyDefinition> _workingAssemblyDefs = new();
 
-    private readonly List<Assembly> _loadedAssemblies = new();
-
     public MethodBase RecursiveReversePatch(MethodBase original)
     {
-        _workingAssemblyDefs.Clear();
-        _workingMethods.Clear();
         GenerateAssemblies(original);
-        LoadGeneratedAssemblies();
+        var asm = LoadGeneratedAssemblies();
         _generatedCount++;
 
         // find the method
         var methodType = original.GetRealDeclaringType() ?? throw new NullReferenceException();
         var originalParams = original.GetParameters();
-        return _loadedAssemblies[_loadedAssemblies.Count - 1].GetType(methodType.SaneFullName())
+
+        var reverseMethod = asm.GetType(methodType.SaneFullName())
             .GetMethods(AccessTools.all)
             .First(x =>
             {
@@ -51,6 +48,16 @@ public class PatchReverseInvoker(ILogger logger) : IPatchReverseInvoker
                 return !methodParams.Where((t, i) =>
                     t.ParameterType.SaneFullName() != originalParams[i].ParameterType.SaneFullName()).Any();
             });
+
+        foreach (var asmDef in _workingAssemblyDefs)
+        {
+            asmDef.Dispose();
+        }
+
+        _workingAssemblyDefs.Clear();
+        _workingMethods.Clear();
+
+        return reverseMethod;
     }
 
     private void GenerateAssemblies(MethodBase original)
@@ -116,15 +123,18 @@ public class PatchReverseInvoker(ILogger logger) : IPatchReverseInvoker
         }
     }
 
-    private void LoadGeneratedAssemblies()
+    private Assembly LoadGeneratedAssemblies()
     {
+        Assembly ret = null;
         for (var i = _workingAssemblyDefs.Count - 1; i > -1; i--)
         {
             var def = _workingAssemblyDefs[i];
             using var stream = new MemoryStream();
             def.Write(stream);
-            _loadedAssemblies.Add(Assembly.Load(stream.ToArray()));
+            ret = Assembly.Load(stream.GetBuffer());
         }
+
+        return ret!;
     }
 
     public bool InnerCall()
