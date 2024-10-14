@@ -26,7 +26,7 @@ public class PatchReverseInvoker(ILogger logger) : IPatchReverseInvoker
 
     private readonly Dictionary<Assembly, AssemblyDefinition> _assemblyCache = new();
 
-    public MethodBase RecursiveReversePatch(MethodBase original)
+    public MethodInfo RecursiveReversePatch(MethodInfo original)
     {
         var originalHash = original.GetHashCode();
         var module = ModuleDefinition.CreateModule($"UniTAS.ReversePatching-{originalHash}",

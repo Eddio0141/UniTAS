@@ -5,7 +5,7 @@ namespace UniTAS.Patcher.Services;
 
 public interface IPatchReverseInvoker
 {
-    MethodBase RecursiveReversePatch(MethodBase original);
+    MethodInfo RecursiveReversePatch(MethodInfo original);
     bool InnerCall();
     void Return();
     void Invoke(Action method);
