@@ -24,8 +24,9 @@
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
         <DefineConstants />
         <OutputPath>bin/Release/BepInEx/patchers/UniTAS/</OutputPath>
-        <DebugType>none</DebugType>
+        <DebugType>portable</DebugType>
         <NoWarn />
+        <DebugSymbols>true</DebugSymbols>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -36,8 +37,9 @@
     <PropertyGroup Condition=" '$(Configuration)' == 'ReleaseTrace' ">
         <OutputPath>bin/Release/BepInEx/patchers/UniTAS/</OutputPath>
         <Optimize>true</Optimize>
-        <DebugType>none</DebugType>
+        <DebugType>portable</DebugType>
         <NoWarn />
+        <DebugSymbols>true</DebugSymbols>
     </PropertyGroup>
 
     <ItemGroup>
