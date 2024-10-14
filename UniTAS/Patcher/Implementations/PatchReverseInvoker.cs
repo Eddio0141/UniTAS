@@ -143,18 +143,41 @@ public class PatchReverseInvoker(ILogger logger) : IPatchReverseInvoker
         }
 
         var newMethod = original.Clone();
+        newMethod.IsPublic = true;
         doneMethods.Add(original, newMethod);
         newMethod.DeclaringType = typeDef;
 
+        var retRef = module.ImportReference(newMethod.ReturnType);
+        newMethod.ReturnType = retRef;
+
+        foreach (var ex in newMethod.Body.ExceptionHandlers)
+        {
+            var newRef = module.ImportReference(ex.CatchType);
+            ex.CatchType = newRef;
+        }
+
+        // import references
         foreach (var customAttr in newMethod.CustomAttributes)
         {
             var newRef = module.ImportReference(customAttr.Constructor);
             customAttr.Constructor = newRef;
         }
 
+        foreach (var param in newMethod.Parameters)
+        {
+            var newRef = module.ImportReference(param.ParameterType);
+            param.ParameterType = newRef;
+        }
+
         typeDef.Methods.Add(newMethod);
 
         if (!original.HasBody) return newMethod;
+
+        foreach (var varDef in newMethod.Body.Variables)
+        {
+            var newRef = module.ImportReference(varDef.VariableType);
+            varDef.VariableType = newRef;
+        }
 
         newMethod.Name = $"{original.Name.Replace('.', '_')}-{original.GetHashCode()}";
 
