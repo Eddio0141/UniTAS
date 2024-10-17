@@ -26,9 +26,10 @@ public static class TypeExtensions
     {
         if (type == null) throw new ArgumentNullException(nameof(type));
 
-        var ns = type.Namespace;
         var name = type.Name;
+        if (type.IsGenericParameter) return name;
 
+        var ns = type.Namespace;
         return string.IsNullOrEmpty(ns) ? name : $"{ns}.{name}";
     }
 }
