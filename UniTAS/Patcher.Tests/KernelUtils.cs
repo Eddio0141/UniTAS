@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 using AssetsTools.NET.Extra;
 using BepInEx.Configuration;
 using BepInEx.Logging;
@@ -289,44 +288,6 @@ public static class KernelUtils
     {
         public void AddGlobalHotkey(GlobalHotkey config)
         {
-        }
-    }
-
-    [Singleton(IncludeDifferentAssembly = true)]
-    [SuppressMessage("ReSharper", "UnusedType.Local")]
-    private class PatchReverseInvokerDummy : IPatchReverseInvoker
-    {
-        public MethodInfo RecursiveReversePatch(MethodInfo original)
-        {
-            return null!;
-        }
-
-        public bool InnerCall()
-        {
-            return false;
-        }
-
-        public void Return()
-        {
-        }
-
-        public void Invoke(Action method)
-        {
-        }
-
-        public TRet Invoke<TRet>(Func<TRet> method)
-        {
-            return default!;
-        }
-
-        public TRet Invoke<TRet, T>(Func<T, TRet> method, T arg1)
-        {
-            return default!;
-        }
-
-        public TRet Invoke<TRet, T1, T2>(Func<T1, T2, TRet> method, T1 arg1, T2 arg2)
-        {
-            return default!;
         }
     }
 
