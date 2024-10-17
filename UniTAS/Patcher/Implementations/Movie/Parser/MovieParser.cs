@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using BepInEx;
 using HarmonyLib;
 using MoonSharp.Interpreter;
 using MoonSharp.Interpreter.Interop;
@@ -23,24 +24,14 @@ namespace UniTAS.Patcher.Implementations.Movie.Parser;
 
 [SuppressMessage("ReSharper", "UnusedType.Global")]
 [Register]
-public partial class MovieParser : IMovieParser
+public partial class MovieParser(
+    IMovieLogger logger,
+    IEngineModuleClassesFactory engineModuleClassesFactory,
+    IContainer container,
+    MovieProxyType[] movieProxyTypes,
+    IUnityInstanceWrapFactory unityInstanceWrapFactory)
+    : IMovieParser
 {
-    private readonly IMovieLogger _logger;
-    private readonly IEngineModuleClassesFactory _engineModuleClassesFactory;
-    private readonly IContainer _container;
-    private readonly MovieProxyType[] _movieProxyTypes;
-    private readonly IUnityInstanceWrapFactory _unityInstanceWrapFactory;
-
-    public MovieParser(IMovieLogger logger, IEngineModuleClassesFactory engineModuleClassesFactory,
-        IContainer container, MovieProxyType[] movieProxyTypes, IUnityInstanceWrapFactory unityInstanceWrapFactory)
-    {
-        _logger = logger;
-        _engineModuleClassesFactory = engineModuleClassesFactory;
-        _container = container;
-        _movieProxyTypes = movieProxyTypes;
-        _unityInstanceWrapFactory = unityInstanceWrapFactory;
-    }
-
     public (IMovieEngine, PropertiesModel) Parse(string input)
     {
         var scriptAndMovieEngine = SetupScript();
@@ -95,7 +86,8 @@ public partial class MovieParser : IMovieParser
             Options =
             {
                 // do NOT use unity loader
-                ScriptLoader = new FileSystemScriptLoader(),
+                ScriptLoader = new FileSystemScriptLoader
+                    { ModulePaths = [$"{Paths.GameRootPath}/?.lua", $"{Paths.GameRootPath}/?"] },
                 DebugInput = _ => null
             }
         };
@@ -106,14 +98,14 @@ public partial class MovieParser : IMovieParser
         }
         else
         {
-            script.Options.DebugPrint = s => _logger.LogInfo(s);
+            script.Options.DebugPrint = s => logger.LogInfo(s);
         }
 
         if (movieEngine == null)
         {
             var args = new ExplicitArguments();
             args.Set(script);
-            movieEngine = _container.GetInstance<MovieEngine>(args);
+            movieEngine = container.GetInstance<MovieEngine>(args);
         }
         else
         {
@@ -143,7 +135,7 @@ public partial class MovieParser : IMovieParser
     {
         var script = engine.Script;
 
-        var engineMethodClasses = _engineModuleClassesFactory.GetAll(engine);
+        var engineMethodClasses = engineModuleClassesFactory.GetAll(engine);
 
         foreach (var methodClass in engineMethodClasses)
         {
@@ -162,14 +154,13 @@ public partial class MovieParser : IMovieParser
 
     private void AddProxyTypes()
     {
-        foreach (var movieProxyType in _movieProxyTypes)
+        foreach (var movieProxyType in movieProxyTypes)
         {
             UserData.RegisterProxyType(movieProxyType);
         }
     }
 
-    private static readonly Assembly[] UnityTypesIgnore =
-        [typeof(MovieParser).Assembly, typeof(BepInEx.Paths).Assembly];
+    private static readonly Assembly[] UnityTypesIgnore = [typeof(MovieParser).Assembly, typeof(Paths).Assembly];
 
     private void AddUnityTypes()
     {
@@ -193,7 +184,7 @@ public partial class MovieParser : IMovieParser
             var userDataDesc = UserData.RegisterType(monoBehaviour, InteropAccessMode.HideMembers);
             if (userDataDesc is not StandardUserDataDescriptor desc)
             {
-                _logger.LogWarning(
+                logger.LogWarning(
                     $"Failed to register type: {monoBehaviour.FullName}, you won't be able to access it in the script");
                 continue;
             }

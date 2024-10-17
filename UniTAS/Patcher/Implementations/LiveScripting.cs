@@ -1,3 +1,4 @@
+using BepInEx;
 using HarmonyLib;
 using MoonSharp.Interpreter;
 using MoonSharp.Interpreter.Loaders;
@@ -30,7 +31,8 @@ public class LiveScripting : ILiveScripting
             Options =
             {
                 // do NOT use unity loader
-                ScriptLoader = new FileSystemScriptLoader(),
+                ScriptLoader = new FileSystemScriptLoader
+                    { ModulePaths = [$"{Paths.GameRootPath}/?.lua", $"{Paths.GameRootPath}/?"], },
                 DebugInput = _ => null,
                 DebugPrint = _logger.LogInfo,
                 CheckThreadAccess = false

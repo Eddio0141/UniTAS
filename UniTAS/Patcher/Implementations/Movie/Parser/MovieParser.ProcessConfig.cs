@@ -58,7 +58,7 @@ public partial class MovieParser
                         out startTime))
                 {
                     startTime = default;
-                    _logger.LogWarning(
+                    logger.LogWarning(
                         $"{startTimeVariable} is invalid, using default time of {startTime.ToString(CultureInfo.InvariantCulture)}");
                 }
 
@@ -70,7 +70,7 @@ public partial class MovieParser
                 break;
             default:
                 startTime = default;
-                _logger.LogWarning(
+                logger.LogWarning(
                     $"{startTimeVariable} is not defined, using default value of {startTime.ToString(CultureInfo.InvariantCulture)}");
                 break;
         }
@@ -87,14 +87,14 @@ public partial class MovieParser
         var valueParsed = selectedValue.CastToNumber();
         if (valueParsed is null)
         {
-            _logger.LogWarning($"Could not parse {selectedVariable} as a number, using default value of 100 fps");
+            logger.LogWarning($"Could not parse {selectedVariable} as a number, using default value of 100 fps");
             return 1f / 100f;
         }
 
         var frameTime = selectedVariable == "fps" ? 1f / valueParsed.Value : valueParsed.Value;
         if (frameTime <= 0)
         {
-            _logger.LogWarning("Frame time must be greater than 0, using default value of 100 fps");
+            logger.LogWarning("Frame time must be greater than 0, using default value of 100 fps");
             return 1f / 100f;
         }
 
@@ -108,7 +108,7 @@ public partial class MovieParser
         var valueParsed = selectedValue.CastToNumber();
         if (valueParsed is null)
         {
-            _logger.LogWarning("Could not parse seed as a number, using default value of 0");
+            logger.LogWarning("Could not parse seed as a number, using default value of 0");
             return 0;
         }
 
@@ -123,7 +123,7 @@ public partial class MovieParser
         var valueParsed = selectedValue.CastToString();
         if (valueParsed is null)
         {
-            _logger.LogWarning(
+            logger.LogWarning(
                 $"Could not parse update_type as a string, using default value of {fallback}");
             return fallback;
         }
@@ -135,7 +135,7 @@ public partial class MovieParser
         }
         catch (Exception)
         {
-            _logger.LogWarning(
+            logger.LogWarning(
                 $"Could not parse update_type as a valid variant, using default value of {fallback}");
             return fallback;
         }
@@ -149,18 +149,18 @@ public partial class MovieParser
 
         const int fallbackWidth = 1920;
         const int fallbackHeight = 1080;
-        var fallbackRr = _unityInstanceWrapFactory.CreateNew<RefreshRateWrap>();
+        var fallbackRr = unityInstanceWrapFactory.CreateNew<RefreshRateWrap>();
         fallbackRr.Rate = 60;
 
         if (window.Type != DataType.Table)
         {
-            _logger.LogWarning(
+            logger.LogWarning(
                 window.Type == DataType.Nil
                     ? $"`window` config is nil, falling back to resolution of {fallbackWidth}x{fallbackHeight}@{fallbackRr.Rate}hz with no extra screen resolutions"
                     : $"`window` isn't a table, falling back to resolution of {fallbackWidth}x{fallbackHeight}@{fallbackRr.Rate}hz with no extra screen resolutions");
 
             return new WindowState(
-                _unityInstanceWrapFactory.CreateNew<IResolutionWrapper>(fallbackWidth, fallbackHeight, fallbackRr), []);
+                unityInstanceWrapFactory.CreateNew<IResolutionWrapper>(fallbackWidth, fallbackHeight, fallbackRr), []);
         }
 
         var windowTable = window.Table;
@@ -170,7 +170,7 @@ public partial class MovieParser
 
         if (width <= 0 || height <= 0)
         {
-            _logger.LogWarning(
+            logger.LogWarning(
                 $"the screen resolution value can't be 0 or lower, using default value of {fallbackWidth}x{fallbackHeight}");
             width = fallbackWidth;
             height = fallbackHeight;
@@ -190,7 +190,7 @@ public partial class MovieParser
             {
                 if (resolution.Type != DataType.Table)
                 {
-                    _logger.LogWarning(
+                    logger.LogWarning(
                         "entry of `resolutions` isn't a table containing `width`, `height`, and `refresh_rate` values");
                 }
 
@@ -203,27 +203,27 @@ public partial class MovieParser
 
                 if (resW == null)
                 {
-                    _logger.LogWarning(
+                    logger.LogWarning(
                         $"in `resolutions`, the width value {resWidthRaw} isn't a number, ignoring this entry");
                     continue;
                 }
 
                 if ((uint)resW.Value <= 0)
                 {
-                    _logger.LogWarning($"in `resolutions`, the width value {resW} is invalid, ignoring this entry");
+                    logger.LogWarning($"in `resolutions`, the width value {resW} is invalid, ignoring this entry");
                     continue;
                 }
 
                 if (resH == null)
                 {
-                    _logger.LogWarning(
+                    logger.LogWarning(
                         $"in `resolutions`, the height value {resHeightRaw} isn't a number, ignoring this entry");
                     continue;
                 }
 
                 if ((uint)resH.Value <= 0)
                 {
-                    _logger.LogWarning($"in `resolutions`, the height value {resH} is invalid, ignoring this entry");
+                    logger.LogWarning($"in `resolutions`, the height value {resH} is invalid, ignoring this entry");
                     continue;
                 }
 
@@ -232,17 +232,17 @@ public partial class MovieParser
                     continue;
                 }
 
-                resolutions.Add(_unityInstanceWrapFactory.CreateNew<IResolutionWrapper>((int)resW.Value,
+                resolutions.Add(unityInstanceWrapFactory.CreateNew<IResolutionWrapper>((int)resW.Value,
                     (int)resH.Value,
                     refreshRateParsed));
             }
         }
         else if (resolutionsRaw.Type != DataType.Nil)
         {
-            _logger.LogWarning("`resolutions` isn't an array, no additional supported screen resolutions are added");
+            logger.LogWarning("`resolutions` isn't an array, no additional supported screen resolutions are added");
         }
 
-        return new WindowState(_unityInstanceWrapFactory.CreateNew<IResolutionWrapper>(width, height, rr),
+        return new WindowState(unityInstanceWrapFactory.CreateNew<IResolutionWrapper>(width, height, rr),
             resolutions.ToArray());
     }
 
@@ -261,7 +261,7 @@ public partial class MovieParser
             // is it specifying the raw values
             if (entry.Type != DataType.Table)
             {
-                _logger.LogWarning(
+                logger.LogWarning(
                     $"the refresh rate `{entry}` isn't either a number or a table containing " +
                     "`numerator` and `denominator` (or `n` and `d`), ignoring this entry");
                 refreshRate = null;
@@ -274,7 +274,7 @@ public partial class MovieParser
             var n = nRaw.CastToNumber();
             if (n == null)
             {
-                _logger.LogWarning(
+                logger.LogWarning(
                     $"the numerator value {nRaw} isn't a number, ignoring this entry");
                 refreshRate = null;
                 return false;
@@ -284,20 +284,20 @@ public partial class MovieParser
             var d = dRaw.CastToNumber();
             if (d == null)
             {
-                _logger.LogWarning(
+                logger.LogWarning(
                     $"in `resolutions`, the denominator value {dRaw} isn't a number, ignoring this entry");
                 refreshRate = null;
                 return false;
             }
 
-            refreshRate = _unityInstanceWrapFactory.CreateNew<RefreshRateWrap>();
+            refreshRate = unityInstanceWrapFactory.CreateNew<RefreshRateWrap>();
             refreshRate.Denominator = (uint)d;
             refreshRate.Numerator = (uint)n;
         }
 
         if (refreshRate.Rate < 0)
         {
-            _logger.LogWarning(
+            logger.LogWarning(
                 $"the refresh rate {refreshRate.Rate} is invalid, it has to be 0hz (0 is valid) or higher, ignoring this entry");
             refreshRate = null;
             return false;
@@ -318,7 +318,7 @@ public partial class MovieParser
 
             if (selected.Type != DataType.Nil)
             {
-                _logger.LogWarning($"{selectedString} and {variable} are both defined, using {selectedString}");
+                logger.LogWarning($"{selectedString} and {variable} are both defined, using {selectedString}");
                 continue;
             }
 

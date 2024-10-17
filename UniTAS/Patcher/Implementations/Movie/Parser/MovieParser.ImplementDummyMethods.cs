@@ -16,7 +16,7 @@ public partial class MovieParser
     {
         var script = engine.Script;
 
-        var engineMethodClasses = _engineModuleClassesFactory.GetAll(engine);
+        var engineMethodClasses = engineModuleClassesFactory.GetAll(engine);
 
         foreach (var methodClass in engineMethodClasses)
         {
