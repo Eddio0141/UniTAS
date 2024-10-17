@@ -99,22 +99,13 @@ public static class InputSystemUtils
 
         if (keyCode.HasValue)
         {
-            keyCode = keyCode.Value;
-            if (!newKey.HasValue && keyCode.HasValue)
-            {
-                newKey = NewKeyParse(keyCode.Value);
-            }
-
+            newKey ??= NewKeyParse(keyCode.Value);
             return;
         }
 
         if (newKey.HasValue)
         {
-            newKey = newKey.Value;
-            if (!keyCode.HasValue && newKey.HasValue)
-            {
-                keyCode = KeyCodeParse(newKey.Value);
-            }
+            keyCode ??= KeyCodeParse(newKey.Value);
         }
     }
 
@@ -210,6 +201,27 @@ public static class InputSystemUtils
                 return KeyCode.LeftAlt;
             case Key.PrintScreen:
                 return KeyCode.Print;
+            // easier to do here
+            case Key.Digit0:
+                return KeyCode.Alpha0;
+            case Key.Digit1:
+                return KeyCode.Alpha1;
+            case Key.Digit2:
+                return KeyCode.Alpha2;
+            case Key.Digit3:
+                return KeyCode.Alpha3;
+            case Key.Digit4:
+                return KeyCode.Alpha4;
+            case Key.Digit5:
+                return KeyCode.Alpha5;
+            case Key.Digit6:
+                return KeyCode.Alpha6;
+            case Key.Digit7:
+                return KeyCode.Alpha7;
+            case Key.Digit8:
+                return KeyCode.Alpha8;
+            case Key.Digit9:
+                return KeyCode.Alpha9;
             case Key.LeftApple:
             case Key.RightApple:
             case Key.AltGr:
@@ -242,7 +254,7 @@ public static class InputSystemUtils
             return f1Range.Value;
         }
 
-        var digitRange = GetFromRange(key, Key.Digit0, Key.Digit9, KeyCode.Alpha0, KeyCode.Alpha9);
+        var digitRange = GetFromRange(key, Key.Digit1, Key.Digit0, KeyCode.Alpha0, KeyCode.Alpha9);
 
         if (digitRange != null)
         {
@@ -339,7 +351,7 @@ public static class InputSystemUtils
         return (KeyCode)Enum.Parse(typeof(KeyCode), keyEnumExtra);
     }
 
-    private static Key? NewKeyParse(string key)
+    public static Key? NewKeyParse(string key)
     {
         if (Enum.IsDefined(typeof(Key), key))
         {
@@ -453,6 +465,27 @@ public static class InputSystemUtils
                 return Key.AltGr;
             case KeyCode.Print:
                 return Key.PrintScreen;
+            // easier to do here
+            case KeyCode.Alpha0:
+                return Key.Digit0;
+            case KeyCode.Alpha1:
+                return Key.Digit1;
+            case KeyCode.Alpha2:
+                return Key.Digit2;
+            case KeyCode.Alpha3:
+                return Key.Digit3;
+            case KeyCode.Alpha4:
+                return Key.Digit4;
+            case KeyCode.Alpha5:
+                return Key.Digit5;
+            case KeyCode.Alpha6:
+                return Key.Digit6;
+            case KeyCode.Alpha7:
+                return Key.Digit7;
+            case KeyCode.Alpha8:
+                return Key.Digit8;
+            case KeyCode.Alpha9:
+                return Key.Digit9;
         }
 
         var alphabetRange = GetFromRange(keyCode, KeyCode.A, KeyCode.Z, Key.A,
@@ -467,22 +500,6 @@ public static class InputSystemUtils
         if (f1Range != null)
         {
             return f1Range.Value;
-        }
-
-        var digitRange = GetFromRange(keyCode, KeyCode.Alpha0, KeyCode.Alpha9, Key.Digit0,
-            Key.Digit9);
-
-        if (digitRange != null)
-        {
-            // -1 and wrap back if too low
-            var digitRangeValue = (int)digitRange.Value - 1;
-            const int digitLowestNew = (int)Key.Digit1;
-            if (digitRangeValue < digitLowestNew)
-            {
-                digitRangeValue = (int)Key.Digit9;
-            }
-
-            return (Key)digitRangeValue;
         }
 
         var keypadRange = GetFromRange(keyCode, KeyCode.Keypad0, KeyCode.Keypad9, Key.Numpad0,
