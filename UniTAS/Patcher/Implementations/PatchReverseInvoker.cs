@@ -8,17 +8,18 @@ using System.Security;
 using BepInEx;
 using HarmonyLib;
 using Mono.Cecil;
+using Mono.Cecil.Rocks;
 using MonoMod.Utils;
 using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Logging;
+using TypeAttributes = Mono.Cecil.TypeAttributes;
 
 namespace UniTAS.Patcher.Implementations;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 [Singleton]
-[ExcludeRegisterIfTesting]
 public class PatchReverseInvoker(ILogger logger) : IPatchReverseInvoker
 {
     public bool Invoking => _depth > 0;
@@ -45,13 +46,27 @@ public class PatchReverseInvoker(ILogger logger) : IPatchReverseInvoker
 
         if (!_assemblyCache.TryGetValue(typeAssembly, out var asmDef))
         {
-            asmDef = AssemblyDefinition.ReadAssembly(Path.Combine(Paths.ManagedPath,
-                $"{typeAssembly.GetName().Name}.dll"));
+            var location = typeAssembly.Location;
+            asmDef = AssemblyDefinition.ReadAssembly(location.IsNullOrWhiteSpace()
+                ? Path.Combine(Paths.ManagedPath, $"{typeAssembly.GetName().Name}.dll")
+                : location);
             _assemblyCache.Add(typeAssembly, asmDef);
         }
 
-        var typeFullName = type.SaneFullName();
-        var typeDef = asmDef.MainModule.Types.First(x => x.FullName == typeFullName);
+        var typeDef = asmDef.MainModule.GetAllTypes().First(x =>
+        {
+            Type resolved;
+            try
+            {
+                resolved = x.ResolveReflection();
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+
+            return resolved == type;
+        });
         var originalParams = original.GetParameters();
         var methodDef = typeDef.Methods.First(x =>
         {
@@ -106,9 +121,9 @@ public class PatchReverseInvoker(ILogger logger) : IPatchReverseInvoker
                 randomTypeDef = new TypeDefinition(
                     "",
                     $"UniTAS-ReversePatching-{original.Name.Replace('.', '_')}-{original.GetHashCode()}",
-                    Mono.Cecil.TypeAttributes.Public | Mono.Cecil.TypeAttributes.Abstract |
-                    Mono.Cecil.TypeAttributes.Sealed |
-                    Mono.Cecil.TypeAttributes.Class
+                    TypeAttributes.Public | TypeAttributes.Abstract |
+                    TypeAttributes.Sealed |
+                    TypeAttributes.Class
                 )
                 {
                     BaseType = module.TypeSystem.Object
@@ -127,10 +142,10 @@ public class PatchReverseInvoker(ILogger logger) : IPatchReverseInvoker
             if (typeDefSearch == null)
             {
                 typeDef = new TypeDefinition(originalDeclaringType.Namespace, originalDeclaringType.Name,
-                    Mono.Cecil.TypeAttributes.Public |
-                    Mono.Cecil.TypeAttributes.Abstract |
-                    Mono.Cecil.TypeAttributes.Sealed |
-                    Mono.Cecil.TypeAttributes.Class)
+                    TypeAttributes.Public |
+                    TypeAttributes.Abstract |
+                    TypeAttributes.Sealed |
+                    TypeAttributes.Class)
                 {
                     BaseType = module.TypeSystem.Object
                 };
@@ -150,12 +165,6 @@ public class PatchReverseInvoker(ILogger logger) : IPatchReverseInvoker
         var retRef = module.ImportReference(newMethod.ReturnType);
         newMethod.ReturnType = retRef;
 
-        foreach (var ex in newMethod.Body.ExceptionHandlers)
-        {
-            var newRef = module.ImportReference(ex.CatchType);
-            ex.CatchType = newRef;
-        }
-
         // import references
         foreach (var customAttr in newMethod.CustomAttributes)
         {
@@ -172,6 +181,12 @@ public class PatchReverseInvoker(ILogger logger) : IPatchReverseInvoker
         typeDef.Methods.Add(newMethod);
 
         if (!original.HasBody) return newMethod;
+
+        foreach (var ex in newMethod.Body.ExceptionHandlers)
+        {
+            var newRef = module.ImportReference(ex.CatchType);
+            ex.CatchType = newRef;
+        }
 
         foreach (var varDef in newMethod.Body.Variables)
         {
