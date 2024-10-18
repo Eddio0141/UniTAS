@@ -14,7 +14,6 @@ using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Logging;
-using TypeAttributes = Mono.Cecil.TypeAttributes;
 
 namespace UniTAS.Patcher.Implementations;
 
@@ -25,33 +24,21 @@ public class PatchReverseInvoker(ILogger logger) : IPatchReverseInvoker
     public bool Invoking => _depth > 0;
     private uint _depth;
 
-    private readonly Dictionary<Assembly, AssemblyDefinition> _assemblyCache = new();
-
     public MethodInfo RecursiveReversePatch(MethodInfo original)
     {
         var originalHash = original.GetHashCode();
-        var module = ModuleDefinition.CreateModule($"UniTAS.ReversePatching-{originalHash}",
-            new ModuleParameters
-            {
-                Kind = ModuleKind.Dll,
-                ReflectionImporterProvider = MMReflectionImporter.ProviderNoDefault
-            });
-
-        module.Assembly.CustomAttributes.Add(
-            new CustomAttribute(module.ImportReference(UnverifiableCodeAttr)));
 
         // i dont care
         var type = original.GetRealDeclaringType() ?? throw new NullReferenceException();
         var typeAssembly = type.Assembly;
+        string typeFullName = null;
 
-        if (!_assemblyCache.TryGetValue(typeAssembly, out var asmDef))
-        {
-            var location = typeAssembly.Location;
-            asmDef = AssemblyDefinition.ReadAssembly(location.IsNullOrWhiteSpace()
-                ? Path.Combine(Paths.ManagedPath, $"{typeAssembly.GetName().Name}.dll")
-                : location);
-            _assemblyCache.Add(typeAssembly, asmDef);
-        }
+        var location = typeAssembly.Location;
+        var asmDef = AssemblyDefinition.ReadAssembly(location.IsNullOrWhiteSpace()
+            ? Path.Combine(Paths.ManagedPath, $"{typeAssembly.GetName().Name}.dll")
+            : location);
+
+        var module = asmDef.MainModule;
 
         var typeDef = asmDef.MainModule.GetAllTypes().First(x =>
         {
@@ -62,30 +49,39 @@ public class PatchReverseInvoker(ILogger logger) : IPatchReverseInvoker
             }
             catch (Exception)
             {
-                return false;
+                typeFullName ??= type.SaneFullName();
+                return MonoModTypeNameToReflection(x.FullName) == typeFullName;
             }
 
             return resolved == type;
         });
-        var originalParams = original.GetParameters();
-        var methodDef = typeDef.Methods.First(x =>
+
+        var methodDef = typeDef.GetMethods().First(x =>
         {
-            if (x.Name != original.Name || x.Parameters.Count != originalParams.Length) return false;
-            for (var i = 0; i < x.Parameters.Count; i++)
+            MethodBase resolved;
+            try
             {
-                if (x.Parameters[i].ParameterType.FullName != originalParams[i].ParameterType.SaneFullName())
-                    return false;
+                resolved = x.ResolveReflection();
+            }
+            catch (Exception)
+            {
+                return false;
             }
 
-            return true;
+            return resolved == original;
         });
 
-        var newDef = RecursiveReversePatch(methodDef, module, null, new());
+        var originalParams = original.GetParameters();
+
+        var newDef = RecursiveReversePatch(methodDef, module, new());
+
+        module.Name = $"UniTAS.ReversePatching-{originalHash}";
+        asmDef.CustomAttributes.Add(new CustomAttribute(module.ImportReference(UnverifiableCodeAttr)));
 
         var asm = ReflectionHelper.Load(module);
 
         // find the method
-        var reverseMethod = asm.GetType(newDef.DeclaringType.FullName)
+        var reverseMethod = asm.GetType(MonoModTypeNameToReflection(newDef.DeclaringType.FullName))
             .GetMethods(AccessTools.all)
             .First(x =>
             {
@@ -103,121 +99,50 @@ public class PatchReverseInvoker(ILogger logger) : IPatchReverseInvoker
     /// <summary>
     /// Recursively generates reverse patching methods
     /// </summary>
-    /// <param name="original">Original method</param>
+    /// <param name="methodDef">Original method</param>
     /// <param name="module">Module to patch the copied methods into</param>
-    /// <param name="randomTypeDef">A type definition that has a random name containing reverse methods that doesn't matter</param>
     /// <param name="doneMethods">A dictionary with original method as key, and patched ones as the value</param>
     /// <returns>Full name of type containing method, and name of method</returns>
-    private MethodDefinition RecursiveReversePatch(MethodDefinition original, ModuleDefinition module,
-        TypeDefinition randomTypeDef, Dictionary<MethodDefinition, MethodDefinition> doneMethods)
+    private static MethodDefinition RecursiveReversePatch(MethodDefinition methodDef, ModuleDefinition module,
+        List<MethodDefinition> doneMethods)
     {
-        if (doneMethods.TryGetValue(original, out var alreadyPatched)) return alreadyPatched;
+        if (doneMethods.Contains(methodDef)) return methodDef;
+        doneMethods.Add(methodDef);
 
-        TypeDefinition typeDef;
-        if (original.HasBody)
+        methodDef.IsPublic = true;
+
+        if (!methodDef.HasBody) return methodDef;
+
+        // TODO:
+        // newMethod.Name = $"{original.Name.Replace('.', '_')}-{original.GetHashCode()}";
+
+        foreach (var instruction in methodDef.Body.Instructions)
         {
-            if (randomTypeDef == null)
-            {
-                randomTypeDef = new TypeDefinition(
-                    "",
-                    $"UniTAS-ReversePatching-{original.Name.Replace('.', '_')}-{original.GetHashCode()}",
-                    TypeAttributes.Public | TypeAttributes.Abstract |
-                    TypeAttributes.Sealed |
-                    TypeAttributes.Class
-                )
-                {
-                    BaseType = module.TypeSystem.Object
-                };
-
-                module.Types.Add(randomTypeDef);
-            }
-
-            typeDef = randomTypeDef;
-        }
-        else
-        {
-            var originalDeclaringType = original.DeclaringType;
-            var typeDefSearch = module.Types.FirstOrDefault(x => x.FullName == originalDeclaringType.FullName);
-
-            if (typeDefSearch == null)
-            {
-                typeDef = new TypeDefinition(originalDeclaringType.Namespace, originalDeclaringType.Name,
-                    TypeAttributes.Public |
-                    TypeAttributes.Abstract |
-                    TypeAttributes.Sealed |
-                    TypeAttributes.Class)
-                {
-                    BaseType = module.TypeSystem.Object
-                };
-                module.Types.Add(typeDef);
-            }
-            else
-            {
-                typeDef = typeDefSearch;
-            }
-        }
-
-        var newMethod = original.Clone();
-        newMethod.IsPublic = true;
-        doneMethods.Add(original, newMethod);
-        newMethod.DeclaringType = typeDef;
-
-        var retRef = module.ImportReference(newMethod.ReturnType);
-        newMethod.ReturnType = retRef;
-
-        // import references
-        foreach (var customAttr in newMethod.CustomAttributes)
-        {
-            var newRef = module.ImportReference(customAttr.Constructor);
-            customAttr.Constructor = newRef;
-        }
-
-        foreach (var param in newMethod.Parameters)
-        {
-            var newRef = module.ImportReference(param.ParameterType);
-            param.ParameterType = newRef;
-        }
-
-        typeDef.Methods.Add(newMethod);
-
-        if (!original.HasBody) return newMethod;
-
-        foreach (var ex in newMethod.Body.ExceptionHandlers)
-        {
-            var newRef = module.ImportReference(ex.CatchType);
-            ex.CatchType = newRef;
-        }
-
-        foreach (var varDef in newMethod.Body.Variables)
-        {
-            var newRef = module.ImportReference(varDef.VariableType);
-            varDef.VariableType = newRef;
-        }
-
-        newMethod.Name = $"{original.Name.Replace('.', '_')}-{original.GetHashCode()}";
-
-        for (var i = 0; i < newMethod.Body.Instructions.Count; i++)
-        {
-            var instruction = newMethod.Body.Instructions[i];
-            var originalInstruction = original.Body.Instructions[i];
-
             switch (instruction.Operand)
             {
-                case MethodReference:
+                case MethodReference methodRef:
                 {
-                    var originalMethodRef = (MethodReference)originalInstruction.Operand;
-                    var reverseMethod =
-                        RecursiveReversePatch(originalMethodRef.Resolve(), module, randomTypeDef, doneMethods);
-                    var newRef = module.ImportReference(reverseMethod);
-                    instruction.Operand = newRef;
+                    // TODO: method in external assembly must be also generated
+                    RecursiveReversePatch(methodRef.Resolve(), module, doneMethods);
                     break;
                 }
                 case FieldReference fieldRef:
                 {
                     // find actual field
-                    var fieldType =
-                        AccessTools.TypeByName(((FieldReference)originalInstruction.Operand).DeclaringType.FullName);
-                    var field = fieldType.GetField(fieldRef.Name, AccessTools.all);
+                    Type declaringType;
+                    try
+                    {
+                        declaringType = fieldRef.DeclaringType.ResolveReflection();
+                    }
+                    catch (Exception)
+                    {
+                        // find by name
+                        var name = MonoModTypeNameToReflection(fieldRef.DeclaringType.FullName);
+
+                        declaringType = AccessTools.TypeByName(name);
+                    }
+
+                    var field = declaringType.GetField(fieldRef.Name, AccessTools.all);
                     var newRef = module.ImportReference(field);
                     instruction.Operand = newRef;
                     break;
@@ -225,7 +150,23 @@ public class PatchReverseInvoker(ILogger logger) : IPatchReverseInvoker
             }
         }
 
-        return newMethod;
+        return methodDef;
+    }
+
+    private static string MonoModTypeNameToReflection(string name)
+    {
+        name = name.Replace('/', '+');
+
+        while (true)
+        {
+            var genericStart = name.IndexOf('<');
+            if (genericStart < 0) break;
+            var genericEnd = name.IndexOf('>', genericStart + 1);
+            if (genericEnd < 0) break;
+            name = name.Remove(genericStart, genericEnd - genericStart + 1);
+        }
+
+        return name;
     }
 
     private static readonly ConstructorInfo UnverifiableCodeAttr =
