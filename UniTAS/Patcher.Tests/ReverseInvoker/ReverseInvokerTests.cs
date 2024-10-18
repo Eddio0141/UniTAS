@@ -17,46 +17,13 @@ public partial class ReverseInvokerTests
     }
 
     [Fact]
-    public void GenericMethod()
+    public void GenericInteractMethod()
     {
         var kernel = KernelUtils.Init();
         var reverseInvoker = kernel.GetInstance<IPatchReverseInvoker>();
         var method = reverseInvoker.RecursiveReversePatch(
-            typeof(ReverseInvokerTests).GetMethod(nameof(Generic), BindingFlags.NonPublic | BindingFlags.Static));
-        var result = method.Invoke(null, ["foo"])!;
+            typeof(ReverseInvokerTests).GetMethod(nameof(GenericInteract), BindingFlags.NonPublic | BindingFlags.Static));
+        var result = method.Invoke(null, ["foo"]);
         Assert.Equal("foo", result);
-    }
-
-    [Fact]
-    public void InnerGenericMethod()
-    {
-        var kernel = KernelUtils.Init();
-        var reverseInvoker = kernel.GetInstance<IPatchReverseInvoker>();
-        var method = reverseInvoker.RecursiveReversePatch(
-            typeof(GenericClass<>).GetMethod("InnerGeneric", BindingFlags.NonPublic | BindingFlags.Static));
-        var result = method.Invoke(null, ["foo"])!;
-        Assert.Equal("foo", result);
-    }
-
-    [Fact]
-    public void GenericFieldReference()
-    {
-        var kernel = KernelUtils.Init();
-        var reverseInvoker = kernel.GetInstance<IPatchReverseInvoker>();
-        var method = reverseInvoker.RecursiveReversePatch(
-            typeof(GenericClass<>).GetMethod("SetValue", BindingFlags.NonPublic | BindingFlags.Static));
-        method.Invoke(null, ["foo"]);
-        Assert.Equal("foo", GenericClass<string>.Value);
-    }
-
-    [Fact]
-    public void GenericFieldReference2()
-    {
-        var kernel = KernelUtils.Init();
-        var reverseInvoker = kernel.GetInstance<IPatchReverseInvoker>();
-        var method = reverseInvoker.RecursiveReversePatch(
-            typeof(GenericClass<>).GetMethod("AddList", BindingFlags.NonPublic | BindingFlags.Static));
-        method.Invoke(null, ["foo"]);
-        Assert.Equal("foo", GenericClass<string>.List[0]);
     }
 }

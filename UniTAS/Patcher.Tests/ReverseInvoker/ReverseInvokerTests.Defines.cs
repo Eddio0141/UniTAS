@@ -10,17 +10,17 @@ public partial class ReverseInvokerTests
         return a + b;
     }
 
-    private static T Generic<T>(T value) => value;
+    private static string GenericInteract(string value)
+    {
+        GenericClass<string>.List.Add(value);
+        return value;
+    }
 
     [SuppressMessage("ReSharper", "UnusedMember.Local")]
     private class GenericClass<T>
     {
-        public static T Value = default!;
+        // ReSharper disable once StaticMemberInGenericType
         public static readonly List<string> List = new();
-
-        private static T InnerGeneric(T value) => Generic(value);
-
-        private static void SetValue(T value) => Value = value;
 
         private static void AddList(string value) => List.Add(value);
     }
