@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics.CodeAnalysis;
 using MoonSharp.Interpreter;
 using UniTAS.Patcher.Interfaces.Movie;
@@ -46,7 +47,13 @@ public class Mouse(IMouseStateEnvController mouseController, IAxisStateEnvLegacy
 
     private void HandlePress(bool hold, MouseButton button)
     {
-        var buttonChoice = $"mouse {(int)button}";
+        var buttonChoice = button switch
+        {
+            MouseButton.Left => KeyCode.Mouse0,
+            MouseButton.Right => KeyCode.Mouse1,
+            MouseButton.Middle => KeyCode.Mouse2,
+            _ => throw new ArgumentOutOfRangeException(nameof(button), button, null)
+        };
 
         if (hold)
         {

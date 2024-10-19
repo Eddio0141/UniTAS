@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 namespace UniTAS.Patcher.Extensions;
@@ -16,5 +17,19 @@ public static class StringExtensions
             "^" + Regex.Escape(pattern).Replace(@"\*", ".*").Replace(@"\?", ".") + "$",
             RegexOptions.IgnoreCase | RegexOptions.Singleline
         ).IsMatch(str);
+    }
+
+    public static int[] AllIndexesOfAny(this string str, char[] chars, int startIndex = 0)
+    {
+        var lastFound = str.IndexOfAny(chars, startIndex);
+        if (lastFound == -1) return [];
+
+        var indexes = new List<int> { lastFound };
+        while (true)
+        {
+            lastFound = str.IndexOfAny(chars, lastFound + 1);
+            if (lastFound == -1) return indexes.ToArray();
+            indexes.Add(lastFound);
+        }
     }
 }

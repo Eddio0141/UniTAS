@@ -1,5 +1,6 @@
 using System;
 using UniTAS.Patcher.Models.UnityInfo;
+using UniTAS.Patcher.Utils;
 using UnityEngine;
 
 namespace UniTAS.Patcher.Models.VirtualEnvironment;
@@ -60,7 +61,7 @@ public class LegacyInputAxisState(LegacyInputAxis axis)
     private float _mousePrevPos;
     private float _mousePos;
 
-    public void KeyDown(string name)
+    public void KeyDown(KeyCode key)
     {
         if (Axis.Type != AxisType.KeyOrMouseButton)
         {
@@ -71,6 +72,8 @@ public class LegacyInputAxisState(LegacyInputAxis axis)
         var positive = Axis.PositiveButton;
         var negativeAlt = Axis.AltNegativeButton;
         var positiveAlt = Axis.AltPositiveButton;
+
+        var name = InputSystemUtils.KeyCodeToStringVariant(key);
 
         if (name == negative || name == negativeAlt)
         {
@@ -82,7 +85,7 @@ public class LegacyInputAxisState(LegacyInputAxis axis)
         }
     }
 
-    public void KeyUp(string name)
+    public void KeyUp(KeyCode key)
     {
         if (Axis.Type != AxisType.KeyOrMouseButton)
         {
@@ -93,6 +96,8 @@ public class LegacyInputAxisState(LegacyInputAxis axis)
         var positive = Axis.PositiveButton;
         var negativeAlt = Axis.AltNegativeButton;
         var positiveAlt = Axis.AltPositiveButton;
+
+        var name = InputSystemUtils.KeyCodeToStringVariant(key);
 
         if (name == negative || name == negativeAlt || name == positive || name == positiveAlt)
         {

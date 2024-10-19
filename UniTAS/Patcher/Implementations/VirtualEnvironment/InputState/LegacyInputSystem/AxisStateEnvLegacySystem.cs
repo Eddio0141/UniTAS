@@ -96,7 +96,7 @@ public class AxisStateEnvLegacySystem(IAxisButtonStateEnvUpdate axisButtonStateE
         _values.Add((axis.Name, axisState));
     }
 
-    public void KeyDown(string key, JoyNum joystickNumber)
+    public void KeyDown(KeyCode key, JoyNum joystickNumber)
     {
         foreach (var (_, axis) in _values)
         {
@@ -106,7 +106,7 @@ public class AxisStateEnvLegacySystem(IAxisButtonStateEnvUpdate axisButtonStateE
         }
     }
 
-    public void KeyUp(string key, JoyNum joystickNumber)
+    public void KeyUp(KeyCode key, JoyNum joystickNumber)
     {
         foreach (var (_, axis) in _values)
         {

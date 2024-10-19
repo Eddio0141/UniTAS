@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using MoonSharp.Interpreter;
 using UniTAS.Patcher.Models.UnityInfo;
 using UniTAS.Patcher.Services.VirtualEnvironment.Input.LegacyInputSystem;
+using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations.Movie.Engine.Modules;
 
@@ -80,8 +81,16 @@ public class ControllerInstance
         return button is >= 0 and <= 19;
     }
 
-    private string GetButtonChoice(int button)
+    private KeyCode GetButtonChoice(int button)
     {
-        return $"joystick {_playerNumber} button {button}";
+        var playerNumberBase = _playerNumber switch
+        {
+            1 => KeyCode.Joystick1Button0,
+            2 => KeyCode.Joystick2Button0,
+            3 => KeyCode.Joystick3Button0,
+            _ => throw new InvalidOperationException()
+        };
+
+        return playerNumberBase + button;
     }
 }

@@ -4,6 +4,7 @@ using UniTAS.Patcher.Interfaces.Movie;
 using UniTAS.Patcher.Models.UnityInfo;
 using UniTAS.Patcher.Services.Movie;
 using UniTAS.Patcher.Services.VirtualEnvironment.Input.LegacyInputSystem;
+using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations.Movie.Engine.Modules;
 
@@ -16,16 +17,16 @@ public class Controller(IAxisStateEnvLegacySystem axisStateEnvLegacySystem, IMov
     private uint _controllerCount;
 
     // TODO controller max count depends on unity version
-    private const uint MAX_CONTROLLER_COUNT = 4;
-    private const int BUTTON_MIN_VALUE = 0;
-    private const int BUTTON_MAX_VALUE = 19;
+    private const uint MaxControllerCount = 4;
+    private const int ButtonMinValue = 0;
+    private const int ButtonMaxValue = 19;
 
     public ControllerInstance Add_player()
     {
-        if (_controllerCount >= MAX_CONTROLLER_COUNT)
+        if (_controllerCount >= MaxControllerCount)
         {
             movieRunner.MovieLogger.LogError(
-                $"Couldn't add another player as it exceeds {MAX_CONTROLLER_COUNT} controllers allowed in this unity version");
+                $"Couldn't add another player as it exceeds {MaxControllerCount} controllers allowed in this unity version");
             return null;
         }
 
@@ -86,17 +87,18 @@ public class Controller(IAxisStateEnvLegacySystem axisStateEnvLegacySystem, IMov
     private void ButtonNumberOutOfRangeWarn()
     {
         movieRunner.MovieLogger.LogWarning(
-            $"Button number is not in the range {BUTTON_MIN_VALUE} ~ {BUTTON_MAX_VALUE}");
+            $"Button number is not in the range {ButtonMinValue} ~ {ButtonMaxValue}");
     }
 
     private static bool VerifyHoldButton(int button)
     {
         // 0..=19 are the only valid values
-        return button is >= BUTTON_MIN_VALUE and <= BUTTON_MAX_VALUE;
+        return button is >= ButtonMinValue and <= ButtonMaxValue;
     }
 
-    private static string GetButtonChoice(int button)
+    private static KeyCode GetButtonChoice(int button)
     {
-        return $"joystick button {button}";
+        // wont fail
+        return KeyCode.JoystickButton0 + button;
     }
 }

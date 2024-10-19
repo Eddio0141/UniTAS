@@ -10,8 +10,8 @@ public interface IAxisStateEnvLegacySystem
     float GetAxis(string axisName);
     float GetAxisRaw(string axisName);
     void SetAxis(AxisChoice axis, float value);
-    void KeyDown(string key, JoyNum joystickNumber);
-    void KeyUp(string key, JoyNum joystickNumber);
+    void KeyDown(KeyCode key, JoyNum joystickNumber);
+    void KeyUp(KeyCode key, JoyNum joystickNumber);
     void MouseMove(Vector2 pos);
     void MouseMoveRelative(Vector2 pos);
     void MouseScroll(float scroll);

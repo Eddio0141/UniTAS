@@ -1,3 +1,6 @@
+using UnityEngine;
+using UnityEngine.InputSystem;
+
 namespace UniTAS.Patcher.Services.VirtualEnvironment.Input;
 
 /// <summary>
@@ -5,7 +8,7 @@ namespace UniTAS.Patcher.Services.VirtualEnvironment.Input;
 /// </summary>
 public interface IKeyboardStateEnvController
 {
-    void Hold(string key, out string warningMsg);
-    void Release(string key, out string warningMsg);
+    void Hold(KeyCode? keyCode, Key? key);
+    void Release(KeyCode? keyCode, Key? key);
     void Clear();
 }
