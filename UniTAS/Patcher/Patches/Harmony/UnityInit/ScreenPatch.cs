@@ -43,16 +43,11 @@ public class ScreenPatch
 
         private static bool Prefix(ref Resolution[] __result)
         {
-            if (PatchReverseInvoker.InnerCall() || !VirtualEnvController.RunVirtualEnvironment) return true;
+            if (PatchReverseInvoker.Invoking || !VirtualEnvController.RunVirtualEnvironment) return true;
             var allRes = WindowEnv.ExtraSupportedResolutions.AddItem(WindowEnv.CurrentResolution)
                 .Select(x => (Resolution)((ResolutionWrapper)x).Instance).ToArray();
             __result = allRes;
             return false;
-        }
-
-        private static void Postfix()
-        {
-            PatchReverseInvoker.Return();
         }
     }
 
@@ -66,15 +61,10 @@ public class ScreenPatch
 
         private static void Prefix(int width, int height, ref bool fullscreen)
         {
-            if (PatchReverseInvoker.InnerCall() || !VirtualEnvController.RunVirtualEnvironment) return;
+            if (PatchReverseInvoker.Invoking || !VirtualEnvController.RunVirtualEnvironment) return;
 
             ScreenTrackerUpdate.SetResolution(width, height, fullscreen);
             fullscreen = false;
-        }
-
-        private static void Postfix()
-        {
-            PatchReverseInvoker.Return();
         }
     }
 
@@ -88,15 +78,10 @@ public class ScreenPatch
 
         private static void Prefix(int width, int height, ref bool fullscreen, int preferredRefreshRate)
         {
-            if (PatchReverseInvoker.InnerCall() || !VirtualEnvController.RunVirtualEnvironment) return;
+            if (PatchReverseInvoker.Invoking || !VirtualEnvController.RunVirtualEnvironment) return;
 
             ScreenTrackerUpdate.SetResolution(width, height, fullscreen, preferredRefreshRate);
             fullscreen = false;
-        }
-
-        private static void Postfix()
-        {
-            PatchReverseInvoker.Return();
         }
     }
 
@@ -118,15 +103,10 @@ public class ScreenPatch
 
         private static void Prefix(int width, int height, ref object fullscreenMode, int preferredRefreshRate)
         {
-            if (PatchReverseInvoker.InnerCall() || !VirtualEnvController.RunVirtualEnvironment) return;
+            if (PatchReverseInvoker.Invoking || !VirtualEnvController.RunVirtualEnvironment) return;
 
             ScreenTrackerUpdate.SetResolution(width, height, fullscreenMode, preferredRefreshRate);
             fullscreenMode = FullScreenModeWrap.FullScreenModeWindowed;
-        }
-
-        private static void Postfix()
-        {
-            PatchReverseInvoker.Return();
         }
     }
 
@@ -150,15 +130,10 @@ public class ScreenPatch
 
         private static void Prefix(int width, int height, ref object fullscreenMode, object preferredRefreshRate)
         {
-            if (PatchReverseInvoker.InnerCall() || !VirtualEnvController.RunVirtualEnvironment) return;
+            if (PatchReverseInvoker.Invoking || !VirtualEnvController.RunVirtualEnvironment) return;
 
             ScreenTrackerUpdate.SetResolution(width, height, fullscreenMode, preferredRefreshRate);
             fullscreenMode = FullScreenModeWrap.FullScreenModeWindowed;
-        }
-
-        private static void Postfix()
-        {
-            PatchReverseInvoker.Return();
         }
     }
 
@@ -172,14 +147,9 @@ public class ScreenPatch
 
         private static bool Prefix(ref bool __result)
         {
-            if (PatchReverseInvoker.InnerCall() || !VirtualEnvController.RunVirtualEnvironment) return true;
+            if (PatchReverseInvoker.Invoking || !VirtualEnvController.RunVirtualEnvironment) return true;
             __result = WindowEnv.FullScreen;
             return false;
-        }
-
-        private static void Postfix()
-        {
-            PatchReverseInvoker.Return();
         }
     }
 
@@ -193,14 +163,9 @@ public class ScreenPatch
 
         private static bool Prefix(bool value)
         {
-            if (PatchReverseInvoker.InnerCall() || !VirtualEnvController.RunVirtualEnvironment) return true;
+            if (PatchReverseInvoker.Invoking || !VirtualEnvController.RunVirtualEnvironment) return true;
             WindowEnv.FullScreen = value;
             return false;
-        }
-
-        private static void Postfix()
-        {
-            PatchReverseInvoker.Return();
         }
     }
 
@@ -214,14 +179,9 @@ public class ScreenPatch
 
         private static bool Prefix(ref object __result)
         {
-            if (PatchReverseInvoker.InnerCall() || !VirtualEnvController.RunVirtualEnvironment) return true;
+            if (PatchReverseInvoker.Invoking || !VirtualEnvController.RunVirtualEnvironment) return true;
             __result = WindowEnv.FullScreenMode.Instance;
             return false;
-        }
-
-        private static void Postfix()
-        {
-            PatchReverseInvoker.Return();
         }
     }
 
@@ -235,14 +195,9 @@ public class ScreenPatch
 
         private static bool Prefix(object value)
         {
-            if (PatchReverseInvoker.InnerCall() || !VirtualEnvController.RunVirtualEnvironment) return true;
+            if (PatchReverseInvoker.Invoking || !VirtualEnvController.RunVirtualEnvironment) return true;
             WindowEnv.FullScreenMode = UnityInstanceWrapFactory.Create<FullScreenModeWrap>(value);
             return false;
-        }
-
-        private static void Postfix()
-        {
-            PatchReverseInvoker.Return();
         }
     }
 }

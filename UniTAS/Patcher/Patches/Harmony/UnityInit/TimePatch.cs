@@ -48,12 +48,7 @@ public class TimePatch
 
         private static bool Prefix()
         {
-            return ReverseInvoker.InnerCall();
-        }
-
-        private static void Postfix()
-        {
-            ReverseInvoker.Return();
+            return ReverseInvoker.Invoking;
         }
     }
 
@@ -67,12 +62,7 @@ public class TimePatch
 
         private static bool Prefix()
         {
-            return ReverseInvoker.InnerCall();
-        }
-
-        private static void Postfix()
-        {
-            ReverseInvoker.Return();
+            return ReverseInvoker.Invoking;
         }
     }
 
@@ -186,18 +176,13 @@ public class TimePatch
 
         private static bool Prefix(ref float __result)
         {
-            if (ReverseInvoker.InnerCall())
+            if (ReverseInvoker.Invoking)
             {
                 return true;
             }
 
             __result = (float)TimeEnv.SecondsSinceStartUp;
             return false;
-        }
-
-        private static void Postfix()
-        {
-            ReverseInvoker.Return();
         }
     }
 
@@ -228,7 +213,7 @@ public class TimePatch
         {
             // currently i need this only for when i trace print Time.time
 #if TRACE
-            if (ReverseInvoker.InnerCall())
+            if (ReverseInvoker.Invoking)
             {
                 return true;
             }
@@ -237,13 +222,6 @@ public class TimePatch
             __result = CalledFromFixedUpdate() ? Time.fixedTime : (float)TimeEnv.ScaledTime;
             return false;
         }
-
-#if TRACE
-        private static void Postfix()
-        {
-            ReverseInvoker.Return();
-        }
-#endif
     }
 
     [HarmonyPatch(typeof(Time), "timeAsDouble", MethodType.Getter)]

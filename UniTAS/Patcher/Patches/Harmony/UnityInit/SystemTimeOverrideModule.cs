@@ -35,15 +35,10 @@ public class SystemTimeOverrideModule
 
         private static bool Prefix(ref DateTime __result)
         {
-            if (ReverseInvoker.InnerCall())
+            if (ReverseInvoker.Invoking)
                 return true;
             __result = TimeEnv.CurrentTime;
             return false;
-        }
-
-        private static void Postfix()
-        {
-            ReverseInvoker.Return();
         }
     }
 

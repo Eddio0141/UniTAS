@@ -1,13 +1,10 @@
 ﻿using System;
-using System.Reflection;
 
 namespace UniTAS.Patcher.Services;
 
 public interface IPatchReverseInvoker
 {
-    MethodInfo RecursiveReversePatch(MethodInfo original);
-    bool InnerCall();
-    void Return();
+    bool Invoking { get; }
     void Invoke(Action method);
     TRet Invoke<TRet>(Func<TRet> method);
     TRet Invoke<TRet, T>(Func<T, TRet> method, T arg1);

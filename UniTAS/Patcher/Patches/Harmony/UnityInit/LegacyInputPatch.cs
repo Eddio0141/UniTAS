@@ -55,17 +55,12 @@ public class LegacyInputPatch
 
         private static bool Prefix(KeyCode key, ref bool __result)
         {
-            if (ReverseInvoker.InnerCall())
+            if (ReverseInvoker.Invoking)
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
 
             __result = KeyboardStateEnvLegacySystem.IsKeyHeld(key);
             return false;
-        }
-
-        private static void Postfix()
-        {
-            ReverseInvoker.Return();
         }
     }
 
@@ -80,15 +75,17 @@ public class LegacyInputPatch
 
         private static IEnumerable<MethodBase> TargetMethods()
         {
-            return new MethodBase[] {
+            return new MethodBase[]
+            {
                 AccessTools.DeclaredMethod(typeof(Input), nameof(Input.GetKeyString)),
-                AccessTools.DeclaredMethod(AccessTools.TypeByName("UnityEngine.Internal.InputUnsafeUtility"), "GetKeyString")
+                AccessTools.DeclaredMethod(AccessTools.TypeByName("UnityEngine.Internal.InputUnsafeUtility"),
+                    "GetKeyString")
             }.Where(x => x != null);
         }
 
         private static bool Prefix(string name, ref bool __result)
         {
-            if (ReverseInvoker.InnerCall())
+            if (ReverseInvoker.Invoking)
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
 
@@ -101,11 +98,6 @@ public class LegacyInputPatch
 
             __result = KeyboardStateEnvLegacySystem.IsKeyHeld(keyCode.Value);
             return false;
-        }
-
-        private static void Postfix()
-        {
-            ReverseInvoker.Return();
         }
     }
 
@@ -120,15 +112,17 @@ public class LegacyInputPatch
 
         private static IEnumerable<MethodBase> TargetMethods()
         {
-            return new MethodBase[] {
+            return new MethodBase[]
+            {
                 AccessTools.DeclaredMethod(typeof(Input), nameof(Input.GetKeyUpString)),
-                AccessTools.DeclaredMethod(AccessTools.TypeByName("UnityEngine.Internal.InputUnsafeUtility"), "GetKeyUpString"),
+                AccessTools.DeclaredMethod(AccessTools.TypeByName("UnityEngine.Internal.InputUnsafeUtility"),
+                    "GetKeyUpString"),
             }.Where(x => x != null);
         }
 
         private static bool Prefix(string name, ref bool __result)
         {
-            if (ReverseInvoker.InnerCall())
+            if (ReverseInvoker.Invoking)
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
 
@@ -141,11 +135,6 @@ public class LegacyInputPatch
 
             __result = KeyboardStateEnvLegacySystem.IsKeyUp(keyCode.Value);
             return false;
-        }
-
-        private static void Postfix()
-        {
-            ReverseInvoker.Return();
         }
     }
 
@@ -160,17 +149,12 @@ public class LegacyInputPatch
 
         private static bool Prefix(KeyCode key, ref bool __result)
         {
-            if (ReverseInvoker.InnerCall())
+            if (ReverseInvoker.Invoking)
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
 
             __result = KeyboardStateEnvLegacySystem.IsKeyUp(key);
             return false;
-        }
-
-        private static void Postfix()
-        {
-            ReverseInvoker.Return();
         }
     }
 
@@ -185,15 +169,17 @@ public class LegacyInputPatch
 
         private static IEnumerable<MethodBase> TargetMethods()
         {
-            return new MethodBase[] {
+            return new MethodBase[]
+            {
                 AccessTools.DeclaredMethod(typeof(Input), nameof(Input.GetKeyDownString)),
-                AccessTools.DeclaredMethod(AccessTools.TypeByName("UnityEngine.Internal.InputUnsafeUtility"), "GetKeyDownString")
+                AccessTools.DeclaredMethod(AccessTools.TypeByName("UnityEngine.Internal.InputUnsafeUtility"),
+                    "GetKeyDownString")
             }.Where(x => x != null);
         }
 
         private static bool Prefix(string name, ref bool __result)
         {
-            if (ReverseInvoker.InnerCall())
+            if (ReverseInvoker.Invoking)
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
 
@@ -206,11 +192,6 @@ public class LegacyInputPatch
 
             __result = KeyboardStateEnvLegacySystem.IsKeyDown(keyCode.Value);
             return false;
-        }
-
-        private static void Postfix()
-        {
-            ReverseInvoker.Return();
         }
     }
 
@@ -225,17 +206,12 @@ public class LegacyInputPatch
 
         private static bool Prefix(KeyCode key, ref bool __result)
         {
-            if (ReverseInvoker.InnerCall())
+            if (ReverseInvoker.Invoking)
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
 
             __result = KeyboardStateEnvLegacySystem.IsKeyDown(key);
             return false;
-        }
-
-        private static void Postfix()
-        {
-            ReverseInvoker.Return();
         }
     }
 
@@ -265,7 +241,8 @@ public class LegacyInputPatch
 
         private static IEnumerable<MethodBase> TargetMethods()
         {
-            return new MethodBase[] {
+            return new MethodBase[]
+            {
                 AccessTools.DeclaredMethod(typeof(Input), nameof(Input.GetAxis)),
                 AccessTools.DeclaredMethod(AccessTools.TypeByName("UnityEngine.Internal.InputUnsafeUtility"), "GetAxis")
             }.Where(x => x != null);
@@ -273,7 +250,7 @@ public class LegacyInputPatch
 
         private static bool Prefix(string axisName, ref float __result)
         {
-            if (ReverseInvoker.InnerCall())
+            if (ReverseInvoker.Invoking)
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
 
@@ -285,11 +262,6 @@ public class LegacyInputPatch
 
             __result = AxisStateEnvLegacySystem.GetAxis(axisName);
             return false;
-        }
-
-        private static void Postfix()
-        {
-            ReverseInvoker.Return();
         }
     }
 
@@ -303,15 +275,17 @@ public class LegacyInputPatch
 
         private static IEnumerable<MethodBase> TargetMethods()
         {
-            return new MethodBase[] {
+            return new MethodBase[]
+            {
                 AccessTools.DeclaredMethod(typeof(Input), nameof(Input.GetAxisRaw)),
-                AccessTools.DeclaredMethod(AccessTools.TypeByName("UnityEngine.Internal.InputUnsafeUtility"), "GetAxisRaw")
+                AccessTools.DeclaredMethod(AccessTools.TypeByName("UnityEngine.Internal.InputUnsafeUtility"),
+                    "GetAxisRaw")
             }.Where(x => x != null);
         }
 
         private static bool Prefix(string axisName, ref float __result)
         {
-            if (ReverseInvoker.InnerCall())
+            if (ReverseInvoker.Invoking)
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
 
@@ -323,11 +297,6 @@ public class LegacyInputPatch
 
             __result = AxisStateEnvLegacySystem.GetAxisRaw(axisName);
             return false;
-        }
-
-        private static void Postfix()
-        {
-            ReverseInvoker.Return();
         }
     }
 
@@ -341,16 +310,11 @@ public class LegacyInputPatch
 
         private static bool Prefix(ref Vector3 __result)
         {
-            if (ReverseInvoker.InnerCall())
+            if (ReverseInvoker.Invoking)
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
             __result = MouseStateEnvLegacySystem.Position;
             return false;
-        }
-
-        private static void Postfix()
-        {
-            ReverseInvoker.Return();
         }
     }
 
@@ -366,16 +330,11 @@ public class LegacyInputPatch
 
         private static bool Prefix(ref Vector3 ret)
         {
-            if (ReverseInvoker.InnerCall())
+            if (ReverseInvoker.Invoking)
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
             ret = MouseStateEnvLegacySystem.Position;
             return false;
-        }
-
-        private static void Postfix()
-        {
-            ReverseInvoker.Return();
         }
     }
 
@@ -389,7 +348,7 @@ public class LegacyInputPatch
 
         private static bool Prefix(ref bool __result, int button)
         {
-            if (ReverseInvoker.InnerCall())
+            if (ReverseInvoker.Invoking)
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
 
@@ -401,11 +360,6 @@ public class LegacyInputPatch
 
             __result = MouseStateEnvLegacySystem.IsButtonHeld(GetMouseButtonVariant(button));
             return false;
-        }
-
-        private static void Postfix()
-        {
-            ReverseInvoker.Return();
         }
     }
 
@@ -419,7 +373,7 @@ public class LegacyInputPatch
 
         private static bool Prefix(ref bool __result, int button)
         {
-            if (ReverseInvoker.InnerCall())
+            if (ReverseInvoker.Invoking)
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
 
@@ -431,11 +385,6 @@ public class LegacyInputPatch
 
             __result = MouseStateEnvLegacySystem.IsButtonDown(GetMouseButtonVariant(button));
             return false;
-        }
-
-        private static void Postfix()
-        {
-            ReverseInvoker.Return();
         }
     }
 
@@ -449,7 +398,7 @@ public class LegacyInputPatch
 
         private static bool Prefix(ref bool __result, int button)
         {
-            if (ReverseInvoker.InnerCall())
+            if (ReverseInvoker.Invoking)
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
 
@@ -461,11 +410,6 @@ public class LegacyInputPatch
 
             __result = MouseStateEnvLegacySystem.IsButtonUp(GetMouseButtonVariant(button));
             return false;
-        }
-
-        private static void Postfix()
-        {
-            ReverseInvoker.Return();
         }
     }
 
@@ -491,16 +435,11 @@ public class LegacyInputPatch
         // Resets all input. After ResetInputAxes all axes return to 0 and all buttons return to 0 for one frame.
         private static bool Prefix()
         {
-            if (ReverseInvoker.InnerCall())
+            if (ReverseInvoker.Invoking)
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
             ResetInputAxesState.IsResetInputAxesState = true;
             return false;
-        }
-
-        private static void Postfix()
-        {
-            ReverseInvoker.Return();
         }
     }
 
@@ -514,15 +453,17 @@ public class LegacyInputPatch
 
         private static IEnumerable<MethodBase> TargetMethods()
         {
-            return new MethodBase[] {
+            return new MethodBase[]
+            {
                 AccessTools.DeclaredMethod(typeof(Input), nameof(Input.GetButton)),
-                AccessTools.DeclaredMethod(AccessTools.TypeByName("UnityEngine.Internal.InputUnsafeUtility"), "GetButton")
+                AccessTools.DeclaredMethod(AccessTools.TypeByName("UnityEngine.Internal.InputUnsafeUtility"),
+                    "GetButton")
             }.Where(x => x != null);
         }
 
         private static bool Prefix(string buttonName, ref bool __result)
         {
-            if (ReverseInvoker.InnerCall())
+            if (ReverseInvoker.Invoking)
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
 
@@ -534,11 +475,6 @@ public class LegacyInputPatch
 
             __result = AxisButtonStateEnvLegacySystem.IsButtonHeld(buttonName);
             return false;
-        }
-
-        private static void Postfix()
-        {
-            ReverseInvoker.Return();
         }
     }
 
@@ -552,15 +488,17 @@ public class LegacyInputPatch
 
         private static IEnumerable<MethodBase> TargetMethods()
         {
-            return new MethodBase[] {
+            return new MethodBase[]
+            {
                 AccessTools.DeclaredMethod(typeof(Input), nameof(Input.GetButtonDown)),
-                AccessTools.DeclaredMethod(AccessTools.TypeByName("UnityEngine.Internal.InputUnsafeUtility"), "GetButtonDown")
+                AccessTools.DeclaredMethod(AccessTools.TypeByName("UnityEngine.Internal.InputUnsafeUtility"),
+                    "GetButtonDown")
             }.Where(x => x != null);
         }
 
         private static bool Prefix(string buttonName, ref bool __result)
         {
-            if (ReverseInvoker.InnerCall())
+            if (ReverseInvoker.Invoking)
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
 
@@ -572,11 +510,6 @@ public class LegacyInputPatch
 
             __result = AxisButtonStateEnvLegacySystem.IsButtonDown(buttonName);
             return false;
-        }
-
-        private static void Postfix()
-        {
-            ReverseInvoker.Return();
         }
     }
 
@@ -590,15 +523,17 @@ public class LegacyInputPatch
 
         private static IEnumerable<MethodBase> TargetMethods()
         {
-            return new MethodBase[] {
+            return new MethodBase[]
+            {
                 AccessTools.DeclaredMethod(typeof(Input), nameof(Input.GetButtonUp)),
-                AccessTools.DeclaredMethod(AccessTools.TypeByName("UnityEngine.Internal.InputUnsafeUtility"), "GetButtonUp")
+                AccessTools.DeclaredMethod(AccessTools.TypeByName("UnityEngine.Internal.InputUnsafeUtility"),
+                    "GetButtonUp")
             }.Where(x => x != null);
         }
 
         private static bool Prefix(string buttonName, ref bool __result)
         {
-            if (ReverseInvoker.InnerCall())
+            if (ReverseInvoker.Invoking)
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
 
@@ -610,11 +545,6 @@ public class LegacyInputPatch
 
             __result = AxisButtonStateEnvLegacySystem.IsButtonUp(buttonName);
             return false;
-        }
-
-        private static void Postfix()
-        {
-            ReverseInvoker.Return();
         }
     }
 
