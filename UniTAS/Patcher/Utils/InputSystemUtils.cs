@@ -278,9 +278,13 @@ public static class InputSystemUtils
     {
         if (string.IsNullOrEmpty(key)) return null;
 
-        if (Enum.IsDefined(typeof(KeyCode), key))
+        try
         {
-            return (KeyCode)Enum.Parse(typeof(KeyCode), key);
+            return (KeyCode)Enum.Parse(typeof(KeyCode), key, true);
+        }
+        catch (Exception)
+        {
+            // do nothing
         }
 
         key = key.ToLower();
@@ -351,14 +355,16 @@ public static class InputSystemUtils
         return (KeyCode)Enum.Parse(typeof(KeyCode), keyEnumExtra);
     }
 
-    public static Key? NewKeyParse(string key)
+    private static Key? NewKeyParse(string key)
     {
-        if (Enum.IsDefined(typeof(Key), key))
+        try
         {
-            return (Key)Enum.Parse(typeof(Key), key);
+            return (Key)Enum.Parse(typeof(Key), key, true);
         }
-
-        return null;
+        catch (Exception)
+        {
+            return null;
+        }
     }
 
     public static Key? NewKeyParse(KeyCode keyCode)
