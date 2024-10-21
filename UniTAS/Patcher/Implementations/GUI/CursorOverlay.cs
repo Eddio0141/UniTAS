@@ -15,10 +15,8 @@ namespace UniTAS.Patcher.Implementations.GUI;
 
 [Singleton]
 [ExcludeRegisterIfTesting]
-public class CursorOverlay : IOnUpdateUnconditional, IMouseOverlayStatus, IOnGameRestart
+public class CursorOverlay : IOnUpdateUnconditional, IMouseOverlayStatus, IOnGameRestart, IOnGUIUnconditional
 {
-    private readonly IDrawing _drawing;
-
     private readonly Texture2D _cursorTexture = new(1, 1, TextureFormat.ARGB32, false);
     private readonly bool _disabled;
 
@@ -26,8 +24,6 @@ public class CursorOverlay : IOnUpdateUnconditional, IMouseOverlayStatus, IOnGam
 
     public CursorOverlay(IDrawing drawing, ILogger logger, ITextureWrapper textureWrapper)
     {
-        _drawing = drawing;
-
         var imagePath = Path.Combine(UniTASPaths.Resources, "cursor.png");
 
         try
@@ -42,11 +38,19 @@ public class CursorOverlay : IOnUpdateUnconditional, IMouseOverlayStatus, IOnGam
         }
     }
 
+    private Vector3 _lastPosition;
+
     public void UpdateUnconditional()
     {
+        _lastPosition = UnityInput.Current.mousePosition;
+    }
+
+    public void OnGUIUnconditional()
+    {
         if (_disabled || !Visible) return;
-        var mousePos = UnityInput.Current.mousePosition;
-        _drawing.DrawTexture(new(mousePos.x, Screen.height - mousePos.y), _cursorTexture);
+        UnityEngine.GUI.DrawTexture(
+            new(_lastPosition.x, Screen.height - _lastPosition.y, _cursorTexture.width, _cursorTexture.height),
+            _cursorTexture);
     }
 
     public void OnGameRestart(DateTime startupTime, bool preSceneLoad)
