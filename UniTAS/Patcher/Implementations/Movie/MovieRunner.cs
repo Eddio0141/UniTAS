@@ -31,7 +31,6 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvent
     public IMovieLogger MovieLogger { get; }
     private readonly ILogger _logger;
 
-    private readonly IOnMovieRunningStatusChange[] _onMovieRunningStatusChange;
     private readonly IOnMovieUpdate[] _onMovieUpdates;
 
     private readonly IVirtualEnvController _virtualEnvController;
@@ -50,7 +49,6 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvent
         _gameRestart = gameRestart;
         _parser = parser;
         MovieLogger = movieLogger;
-        _onMovieRunningStatusChange = onMovieRunningStatusChange;
         _virtualEnvController = virtualEnvController;
         _timeEnv = timeEnv;
         _randomEnv = randomEnv;
@@ -60,6 +58,11 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvent
         _windowEnv = windowEnv;
 
         _gameRestart.OnGameRestartResume += OnGameRestartResume;
+
+        foreach (var e in onMovieRunningStatusChange)
+        {
+            OnMovieRunningStatusChange += e.OnMovieRunningStatusChange;
+        }
     }
 
     public void RunFromInput(string input)
@@ -164,10 +167,7 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvent
             OnMovieEnd?.Invoke();
         }
 
-        foreach (var onMovieRunningStatusChange in _onMovieRunningStatusChange)
-        {
-            onMovieRunningStatusChange.OnMovieRunningStatusChange(running);
-        }
+        OnMovieRunningStatusChange?.Invoke(running);
     }
 
     private IEnumerable<CoroutineWait> FinishMovieCleanup()
@@ -178,4 +178,5 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvent
 
     public event Action OnMovieStart;
     public event Action OnMovieEnd;
+    public event Action<bool> OnMovieRunningStatusChange;
 }

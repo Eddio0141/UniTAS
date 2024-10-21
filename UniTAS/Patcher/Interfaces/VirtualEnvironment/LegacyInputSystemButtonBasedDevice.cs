@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using UniTAS.Patcher.Extensions;
 
 namespace UniTAS.Patcher.Interfaces.VirtualEnvironment;
@@ -17,6 +18,8 @@ public abstract class LegacyInputSystemButtonBasedDevice<TButton> : LegacyInputS
 
     private readonly List<TButton> _bufferedPressButtons = new();
     private readonly List<TButton> _bufferedReleaseButtons = new();
+
+    protected ReadOnlyCollection<TButton> Buttons => _buttons.AsReadOnly();
 
     protected override void ResetState()
     {

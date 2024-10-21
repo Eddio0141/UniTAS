@@ -1,25 +1,26 @@
 using UniTAS.Patcher.Interfaces.DependencyInjection;
-using UniTAS.Patcher.Interfaces.Events.Movie;
 using UniTAS.Patcher.Interfaces.GUI;
 using UniTAS.Patcher.Models.GUI;
-using UniTAS.Patcher.Services;
+using UniTAS.Patcher.Services.Movie;
 using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations.GUI.Overlays;
 
 [Singleton]
 [ExcludeRegisterIfTesting]
-public class MovieEndStatus : BuiltInOverlay, IOnMovieRunningStatusChange
+public class MovieEndStatus : BuiltInOverlay
 {
     private float _messageDisplayLeft;
-    private const float MESSAGE_DISPLAY_TIME = 1f;
 
-    public MovieEndStatus(IConfig config, IDrawing drawing) : base(config, drawing)
+    public MovieEndStatus(WindowDependencies windowDependencies, IMovieRunnerEvents movieRunnerEvents) : base(
+        windowDependencies, "Movie end status")
     {
+        movieRunnerEvents.OnMovieRunningStatusChange += OnMovieRunningStatusChange;
     }
 
-    protected override AnchoredOffset DefaultOffset => new(1, 1, 0, 0);
-    protected override string ConfigName => "MovieEndStatus";
+    private const float MessageDisplayTime = 1f;
+
+    protected override AnchoredOffset DefaultOffset => new(1, 1, -210, -5);
     protected override int DefaultFontSize => 20;
 
     protected override string Update()
@@ -28,9 +29,9 @@ public class MovieEndStatus : BuiltInOverlay, IOnMovieRunningStatusChange
         return _messageDisplayLeft <= 0 ? "" : "Movie End";
     }
 
-    public void OnMovieRunningStatusChange(bool running)
+    private void OnMovieRunningStatusChange(bool running)
     {
         if (running) return;
-        _messageDisplayLeft = MESSAGE_DISPLAY_TIME;
+        _messageDisplayLeft = MessageDisplayTime;
     }
 }

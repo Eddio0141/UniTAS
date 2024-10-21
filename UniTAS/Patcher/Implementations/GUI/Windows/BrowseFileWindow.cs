@@ -40,7 +40,8 @@ public class BrowseFileWindow : Window, IBrowseFileWindow
     private readonly string[] _quickAccessNames;
 
     public BrowseFileWindow(WindowDependencies windowDependencies, BrowseFileWindowArgs args) : base(windowDependencies,
-        new(defaultWindowRect: GUIUtils.WindowRect(Screen.width - 200, Screen.height - 200), windowName: args.Title))
+        new WindowConfig(defaultWindowRect: GUIUtils.WindowRect(Screen.width - 200, Screen.height - 200),
+            windowName: args.Title, showByDefault: true))
     {
         var path = args.Path;
 
@@ -54,8 +55,6 @@ public class BrowseFileWindow : Window, IBrowseFileWindow
         _quickAccessNames = _quickAccessPaths.Select(Path.GetFileName).ToArray();
 
         _patchReverseInvoker = windowDependencies.PatchReverseInvoker;
-
-        Show();
     }
 
     private readonly GUILayoutOption[] _noExpandWidth = [GUILayout.ExpandWidth(false)];
@@ -64,7 +63,7 @@ public class BrowseFileWindow : Window, IBrowseFileWindow
 
     private float _lastFileSelectTime;
     private int _lastFileSelectIndex = -1;
-    private const float DOUBLE_CLICK_TIME = 0.3f;
+    private const float DoubleClickTime = 0.3f;
 
     private float CurrentTime => _patchReverseInvoker.Invoke(() => Time.realtimeSinceStartup);
 
@@ -147,7 +146,7 @@ public class BrowseFileWindow : Window, IBrowseFileWindow
 
             // double click check
             var currentTime = CurrentTime;
-            if (_lastFileSelectIndex != i || currentTime > _lastFileSelectTime + DOUBLE_CLICK_TIME)
+            if (_lastFileSelectIndex != i || currentTime > _lastFileSelectTime + DoubleClickTime)
             {
                 _lastFileSelectIndex = i;
                 _lastFileSelectTime = currentTime;
@@ -158,7 +157,7 @@ public class BrowseFileWindow : Window, IBrowseFileWindow
             if (File.Exists(path))
             {
                 OnFileSelected?.Invoke(path);
-                Close();
+                Show = false;
             }
             else
             {
@@ -186,7 +185,7 @@ public class BrowseFileWindow : Window, IBrowseFileWindow
             if (File.Exists(_selectedPath))
             {
                 OnFileSelected?.Invoke(_selectedPath);
-                Close();
+                Show = false;
             }
             else
             {
@@ -215,7 +214,7 @@ public class BrowseFileWindow : Window, IBrowseFileWindow
         if (File.Exists(_selectedPath))
         {
             OnFileSelected?.Invoke(_selectedPath);
-            Close();
+            Show = false;
             return;
         }
 
@@ -238,10 +237,13 @@ public class BrowseFileWindow : Window, IBrowseFileWindow
         _files = _paths.Select(Path.GetFileName).ToArray();
     }
 
-    protected override void Close()
+    public override bool Show
     {
-        base.Close();
-        OnClosed?.Invoke();
+        set
+        {
+            base.Show = value;
+            OnClosed?.Invoke();
+        }
     }
 
     public event Action<string> OnFileSelected;

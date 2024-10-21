@@ -39,7 +39,7 @@ public class ForceInstantiateTypes(IContainer container, ILogger logger) : IForc
             var allTypes = AccessTools.GetTypesFromAssembly(assembly);
             foreach (var type in allTypes)
             {
-                var attributes = type.GetCustomAttributes(typeof(ForceInstantiateAttribute), false);
+                var attributes = type.GetCustomAttributes(typeof(ForceInstantiateAttribute), true);
                 if (attributes.Length == 0) continue;
 
                 attributes = type.GetCustomAttributes(typeof(ExcludeRegisterIfTestingAttribute), false);

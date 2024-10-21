@@ -1,29 +1,28 @@
 using System;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
-using UniTAS.Patcher.Interfaces.Events.Movie;
 using UniTAS.Patcher.Interfaces.GUI;
 using UniTAS.Patcher.Models.GUI;
-using UniTAS.Patcher.Services;
+using UniTAS.Patcher.Services.Movie;
 using UniTAS.Patcher.Services.VirtualEnvironment;
 
 namespace UniTAS.Patcher.Implementations.GUI.Overlays;
 
 [Singleton]
 [ExcludeRegisterIfTesting]
-public class TimeOverlay : BuiltInOverlay, IOnMovieRunningStatusChange
+public class TimeOverlay : BuiltInOverlay
 {
     private bool _update;
+    private string _text = "0.000";
     private readonly ITimeEnv _timeEnv;
-    private string _text;
 
-    public TimeOverlay(IConfig config, IDrawing drawing, ITimeEnv timeEnv) : base(config, drawing)
+    public TimeOverlay(WindowDependencies windowDependencies, ITimeEnv timeEnv, IMovieRunnerEvents movieRunnerEvents) :
+        base(windowDependencies, "Time")
     {
         _timeEnv = timeEnv;
-        _text = "0.000";
+        movieRunnerEvents.OnMovieRunningStatusChange += OnMovieRunningStatusChange;
     }
 
-    protected override AnchoredOffset DefaultOffset => new(0, 0, 0, 30);
-    protected override string ConfigName => "Time";
+    protected override AnchoredOffset DefaultOffset => new(0, 0, 0, 60);
 
     protected override string Update()
     {
@@ -59,7 +58,7 @@ public class TimeOverlay : BuiltInOverlay, IOnMovieRunningStatusChange
         return _text;
     }
 
-    public void OnMovieRunningStatusChange(bool running)
+    private void OnMovieRunningStatusChange(bool running)
     {
         _update = running;
     }

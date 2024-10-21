@@ -28,4 +28,18 @@ public class UnityInputWrapper(
         var key = InputSystemUtils.NewKeyParse(keyCode);
         return key != null && Keyboard.current[key.Value].wasPressedThisFrame;
     }
+
+    public Vector2 MousePosition
+    {
+        get
+        {
+            if (_useOldInputSystem)
+                return reverseInvoker.Invoke(() => Input.mousePosition);
+
+            // new input system
+            if (venvController.RunVirtualEnvironment) return new();
+
+            return Mouse.current.position.ReadValue();
+        }
+    }
 }

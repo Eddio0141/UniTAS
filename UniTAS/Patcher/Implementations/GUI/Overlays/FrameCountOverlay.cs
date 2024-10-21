@@ -1,35 +1,31 @@
 using UniTAS.Patcher.Interfaces.DependencyInjection;
-using UniTAS.Patcher.Interfaces.Events.Movie;
-using UniTAS.Patcher.Interfaces.Events.UnityEvents.DontRunIfPaused;
 using UniTAS.Patcher.Interfaces.GUI;
 using UniTAS.Patcher.Models.GUI;
-using UniTAS.Patcher.Services;
+using UniTAS.Patcher.Services.Movie;
 
 namespace UniTAS.Patcher.Implementations.GUI.Overlays;
 
-[ForceInstantiate]
 [Singleton]
 [ExcludeRegisterIfTesting]
-public class FrameCountOverlay : BuiltInOverlay, IOnMovieRunningStatusChange, IOnFixedUpdateActual
+public class FrameCountOverlay : BuiltInOverlay
 {
     private uint _frameCount;
-    private uint _fixedFrameCount;
 
     private bool _update;
 
-    public FrameCountOverlay(IConfig config, IDrawing drawing) : base(config, drawing)
+    public FrameCountOverlay(WindowDependencies windowDependencies, IMovieRunnerEvents movieRunnerEvents) : base(
+        windowDependencies, "Frame count")
     {
+        movieRunnerEvents.OnMovieRunningStatusChange += OnMovieRunningStatusChange;
     }
 
-    protected override AnchoredOffset DefaultOffset => new(0, 0, 0, 0);
-    protected override string ConfigName => "FrameCount";
+    protected override AnchoredOffset DefaultOffset => new(0, 0, 0, 30);
 
-    public void OnMovieRunningStatusChange(bool running)
+    private void OnMovieRunningStatusChange(bool running)
     {
         if (running)
         {
             _frameCount = 0;
-            _fixedFrameCount = 0;
             _update = true;
         }
         else
@@ -45,12 +41,6 @@ public class FrameCountOverlay : BuiltInOverlay, IOnMovieRunningStatusChange, IO
             _frameCount++;
         }
 
-        return $"Frame: {_frameCount.ToString()}, Fixed Frame: {_fixedFrameCount.ToString()}";
-    }
-
-    public void FixedUpdateActual()
-    {
-        if (!_update) return;
-        _fixedFrameCount++;
+        return $"Frame: {_frameCount.ToString()}";
     }
 }

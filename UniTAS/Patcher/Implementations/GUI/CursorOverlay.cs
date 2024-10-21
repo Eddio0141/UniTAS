@@ -4,7 +4,6 @@ using BepInEx;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.SoftRestart;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
-using UniTAS.Patcher.Interfaces.GUI;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.Overlay;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
@@ -22,7 +21,7 @@ public class CursorOverlay : IOnUpdateUnconditional, IMouseOverlayStatus, IOnGam
 
     public bool Visible { private get; set; } = true;
 
-    public CursorOverlay(IDrawing drawing, ILogger logger, ITextureWrapper textureWrapper)
+    public CursorOverlay(ILogger logger, ITextureWrapper textureWrapper)
     {
         var imagePath = Path.Combine(UniTASPaths.Resources, "cursor.png");
 

@@ -40,7 +40,7 @@ public class TerminalWindow : Window
     public TerminalWindow(WindowDependencies windowDependencies, TerminalCmd[] commands, IBinds binds,
         IGlobalHotkey globalHotkey, ITerminalLogger logger, ILiveScripting liveScripting,
         IUnityInputWrapper unityInput) : base(windowDependencies,
-        new(defaultWindowRect: GUIUtils.WindowRect(Screen.width - 200, Screen.height - 200), windowName: "Terminal"),
+        new(defaultWindowRect: GUIUtils.WindowRect(700, 500), windowName: "Terminal"),
         "terminal")
     {
         // check dupes
@@ -60,7 +60,7 @@ public class TerminalWindow : Window
 
         _terminalBind = binds.Create(new("NewTerminal", KeyCode.BackQuote));
         _terminalSubmit = binds.Create(new("TerminalSubmit", KeyCode.Return), true);
-        globalHotkey.AddGlobalHotkey(new(_terminalBind, Show));
+        globalHotkey.AddGlobalHotkey(new(_terminalBind, () => Show = true));
     }
 
     private readonly GUILayoutOption[] _textAreaOptions = [GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true)];
@@ -74,7 +74,7 @@ public class TerminalWindow : Window
         // if waiting for release and bind is not pressed
         _initialFocus = true;
         _waitForTerminalBindRelease = false;
-        Close();
+        Show = false;
     }
 
     protected override void OnGUI()

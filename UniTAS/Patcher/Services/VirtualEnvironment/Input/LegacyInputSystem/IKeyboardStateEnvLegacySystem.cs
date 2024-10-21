@@ -1,9 +1,12 @@
+using System.Collections.ObjectModel;
+using UniTAS.Patcher.Models.VirtualEnvironment;
 using UnityEngine;
 
 namespace UniTAS.Patcher.Services.VirtualEnvironment.Input.LegacyInputSystem;
 
 public interface IKeyboardStateEnvLegacySystem
 {
+    ReadOnlyCollection<KeyCodeWrap> HeldKeys { get; }
     void Hold(KeyCode keyCode);
     void Release(KeyCode keyCode);
     void Clear();

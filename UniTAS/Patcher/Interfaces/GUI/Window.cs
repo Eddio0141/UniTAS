@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using BepInEx;
 using UniTAS.Patcher.Exceptions.GUI;
 using UniTAS.Patcher.Models.GUI;
 using UniTAS.Patcher.Services;
+using UniTAS.Patcher.Services.GUI;
 using UniTAS.Patcher.Services.UnityEvents;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
@@ -16,47 +18,129 @@ namespace UniTAS.Patcher.Interfaces.GUI;
 public abstract class Window
 {
     private Rect _windowRect;
+
+    public Rect WindowRect
+    {
+        get => _windowRect;
+        set => _windowRect = value;
+    }
+
     private int _windowId;
-    private readonly UnityEngine.GUI.WindowFunction _windowUpdate;
     private bool _dragging;
     private bool _resizing;
     private Vector2 _windowClickOffset;
     private Vector2 _resizeSize;
-    private bool _showWindow;
 
-    private readonly WindowConfig _config;
+    public virtual bool Show
+    {
+        get => _show;
+        set
+        {
+            if (_show == value) return;
+            _show = value;
 
-    private const int CLOSE_BUTTON_SIZE = 20;
+            if (_show)
+            {
+                _updateEvents.OnGUIUnconditional += OnGUIUnconditional;
+                _toolBar.OnShowChange += OnToolBarOnOnShowChange;
+                ClampWindow();
+            }
+            else
+            {
+                _updateEvents.OnGUIUnconditional -= OnGUIUnconditional;
+                _toolBar.OnShowChange -= OnToolBarOnOnShowChange;
+            }
+
+            SaveWindowShown();
+
+            return;
+
+            void OnToolBarOnOnShowChange(bool _) => ClampWindow();
+        }
+    }
+
+    private bool _initialized;
+
+    protected WindowConfig Config
+    {
+        get => _config;
+        set
+        {
+            _config = value;
+            WindowName = Config.WindowName;
+        }
+    }
+
+    private const int CloseButtonSize = 20;
 
     private readonly IUpdateEvents _updateEvents;
     private readonly IPatchReverseInvoker _patchReverseInvoker;
     private readonly IConfig _configService;
+    private readonly IToolBar _toolBar;
 
-    private string WindowName { get; }
-    private readonly string _windowConfigId;
+    private string WindowName { get; set; }
+    public string WindowConfigId { get; }
+    private WindowConfig _config = new();
 
     private static readonly List<string> UsedWindowIDs = new();
 
-    protected Window(WindowDependencies windowDependencies, WindowConfig config, string windowId = null)
-    {
-        if (windowId != null)
-        {
-            if (UsedWindowIDs.Contains(windowId))
-            {
-                throw new DuplicateWindowIDException($"WindowID {windowId} is already used");
-            }
+    protected bool NoWindowDuringToolBarHide { get; set; }
+    private bool _windowShownToolbarHide;
+    protected bool Resizable { get; set; }
 
-            UsedWindowIDs.Add(windowId);
-            _windowConfigId = windowId;
-        }
+    protected Window(WindowDependencies windowDependencies, string windowId = null)
+    {
+        WindowConfigId = windowId;
+        ValidateWindowId();
+        InitConfigNames();
 
         _patchReverseInvoker = windowDependencies.PatchReverseInvoker;
         _updateEvents = windowDependencies.UpdateEvents;
         _configService = windowDependencies.Config;
-        _config = config ?? new();
-        _windowUpdate = WindowUpdate;
-        WindowName = _config.WindowName;
+        _toolBar = windowDependencies.ToolBar;
+    }
+
+    protected Window(WindowDependencies windowDependencies, WindowConfig config, string windowId = null)
+    {
+        WindowConfigId = windowId;
+        ValidateWindowId();
+        InitConfigNames();
+
+        _patchReverseInvoker = windowDependencies.PatchReverseInvoker;
+        _updateEvents = windowDependencies.UpdateEvents;
+        _configService = windowDependencies.Config;
+        _toolBar = windowDependencies.ToolBar;
+        if (config != null)
+        {
+            Config = config;
+        }
+
         Init();
+    }
+
+    private const string BackendConfigPrefix = "window-";
+
+    private string _backendConfigWindowRect;
+    private string _backendConfigWindowShown;
+    private bool _show;
+
+    private void InitConfigNames()
+    {
+        if (WindowConfigId == null) return;
+        _backendConfigWindowRect = $"{BackendConfigPrefix}rect-{WindowConfigId}";
+        _backendConfigWindowShown = $"{BackendConfigPrefix}show-{WindowConfigId}";
+    }
+
+    private void ValidateWindowId()
+    {
+        if (WindowConfigId == null) return;
+
+        if (UsedWindowIDs.Contains(WindowConfigId))
+        {
+            throw new DuplicateWindowIDException($"WindowID {WindowConfigId} is already used");
+        }
+
+        UsedWindowIDs.Add(WindowConfigId);
     }
 
     private Vector2 MousePosition => _patchReverseInvoker.Invoke(() => UnityInput.Current.mousePosition);
@@ -65,58 +149,115 @@ public abstract class Window
     private bool LeftMouseButton => _patchReverseInvoker.Invoke(() => UnityInput.Current.GetMouseButton(0));
     private bool RightMouseButton => _patchReverseInvoker.Invoke(() => UnityInput.Current.GetMouseButton(1));
 
-    private void Init()
+    protected void Init()
     {
-        _windowRect = _config.DefaultWindowRect;
+        if (_initialized) return;
+        _initialized = true;
+
+        _windowRect = Config.DefaultWindowRect;
         _windowId = GetHashCode();
 
+        _windowShownToolbarHide = !_toolBar.Show;
+
+        if (WindowConfigId == null)
+        {
+            if (Config.ShowByDefault)
+                Show = true;
+            return;
+        }
+
         // try load config stuff
-        if (_configService.TryGetBackendEntry($"{BACKEND_CONFIG_PREFIX}{BACKEND_CONFIG_WINDOW_RECT}{_windowConfigId}",
-                out Models.Rect rect))
+        if (_configService.TryGetBackendEntry(_backendConfigWindowRect, out Models.Rect rect))
         {
             _windowRect = rect.ToUnityRect();
         }
+
+        if (_configService.TryGetBackendEntry(_backendConfigWindowShown, out bool shown))
+        {
+            if (shown)
+                Show = true;
+        }
+        else if (Config.ShowByDefault)
+        {
+            Show = true;
+        }
     }
 
-    public void Show()
-    {
-        if (_showWindow) return;
-        _updateEvents.OnGUIUnconditional += OnGUIUnconditional;
-        _showWindow = true;
-    }
-
-    protected virtual void Close()
-    {
-        _updateEvents.OnGUIUnconditional -= OnGUIUnconditional;
-        _showWindow = false;
-    }
+    private bool _pendingNewLayout = true;
 
     private void OnGUIUnconditional()
     {
-        _windowRect = GUILayout.Window(_windowId, _windowRect, _windowUpdate, WindowName, _config.LayoutOptions);
+        var currentEvent = Event.current;
+
+        if (!_toolBar.Show && NoWindowDuringToolBarHide)
+        {
+            if (!_windowShownToolbarHide)
+            {
+                _pendingNewLayout = true;
+                _windowShownToolbarHide = true;
+            }
+
+            if (_pendingNewLayout && currentEvent.type != EventType.Layout)
+            {
+                return;
+            }
+
+            _pendingNewLayout = false;
+
+            GUILayout.BeginArea(_windowRect);
+            WindowUpdate(-1);
+            GUILayout.EndArea();
+
+            return;
+        }
+
+        if (_windowShownToolbarHide)
+        {
+            _pendingNewLayout = true;
+            _windowShownToolbarHide = false;
+        }
+
+        if (_pendingNewLayout && currentEvent.type != EventType.Layout)
+        {
+            return;
+        }
+
+        _pendingNewLayout = false;
+
+        _windowRect = GUILayout.Window(_windowId, _windowRect, WindowUpdate, WindowName, Config.LayoutOptions);
     }
 
     private void WindowUpdate(int id)
     {
         HandleDragResize();
 
-        GUILayout.BeginVertical(GUIUtils.EmptyOptions);
-
-        GUILayout.BeginHorizontal(GUIUtils.EmptyOptions);
-
-        // close button
-        if (UnityEngine.GUI.Button(new(_windowRect.width - CLOSE_BUTTON_SIZE, 0f, CLOSE_BUTTON_SIZE, CLOSE_BUTTON_SIZE),
-                "x"))
+        if (_toolBar.Show || !NoWindowDuringToolBarHide)
         {
-            Close();
+            GUILayout.BeginVertical(GUIUtils.EmptyOptions);
+            GUILayout.BeginHorizontal(GUIUtils.EmptyOptions);
+
+            // close button
+            if (UnityEngine.GUI.Button(new(_windowRect.width - CloseButtonSize, 0f, CloseButtonSize, CloseButtonSize),
+                    "x"))
+            {
+                Show = false;
+            }
+
+            GUILayout.EndHorizontal();
+            GUILayout.EndVertical();
         }
 
-        GUILayout.EndHorizontal();
-        GUILayout.EndVertical();
+        if (_toolBar.Show)
+        {
+            OnGUIWhileToolbarHide();
+        }
+        else
+        {
+            OnGUI();
+        }
 
-        OnGUI();
-
-        CheckDragResize();
+        if (_toolBar.Show || !NoWindowDuringToolBarHide)
+            CheckDragResize();
     }
 
     private void HandleDragResize()
@@ -144,7 +285,7 @@ public abstract class Window
             _windowRect.height = _resizeSize.y + (ScreenHeight - mousePos.y - _windowRect.y - _windowClickOffset.y);
 
             // just in case
-            if (!RightMouseButton)
+            if (!RightMouseButton || (!_toolBar.Show && NoWindowDuringToolBarHide) || !Resizable)
             {
                 _resizing = false;
                 ClampWindow(); // handle clamped pos
@@ -174,11 +315,12 @@ public abstract class Window
             _windowRect.y = ScreenHeight - mousePos.y - _windowClickOffset.y;
 
             // just in case
-            if (!LeftMouseButton)
+            if (!LeftMouseButton || (!_toolBar.Show && NoWindowDuringToolBarHide))
             {
                 _dragging = false;
                 ClampWindow(); // for saving clamped pos
                 SaveWindowRect();
+                OnDragEnd?.Invoke();
             }
             else
             {
@@ -233,7 +375,7 @@ public abstract class Window
     {
         if (Event.current.type != EventType.MouseDown) return;
 
-        if (!_resizing && Event.current.button == 1)
+        if (Resizable && !_resizing && Event.current.button == 1)
         {
             // are we resizing now?
             var mousePos = MousePosition;
@@ -264,13 +406,29 @@ public abstract class Window
 
     protected abstract void OnGUI();
 
-    private const string BACKEND_CONFIG_PREFIX = "window-";
-    private const string BACKEND_CONFIG_WINDOW_RECT = "rect-";
+    /// <summary>
+    /// Function that is called instead when toolbar is hidden
+    /// By default, OnGUI is called
+    /// </summary>
+    protected virtual void OnGUIWhileToolbarHide()
+    {
+        OnGUI();
+    }
 
     private void SaveWindowRect()
     {
+        if (WindowConfigId == null) return;
+
         var saneRect = new Models.Rect(_windowRect);
-        _configService.WriteBackendEntry($"{BACKEND_CONFIG_PREFIX}{BACKEND_CONFIG_WINDOW_RECT}{_windowConfigId}",
-            saneRect);
+        _configService.WriteBackendEntry(_backendConfigWindowRect, saneRect);
     }
+
+    private void SaveWindowShown()
+    {
+        if (WindowConfigId == null) return;
+
+        _configService.WriteBackendEntry(_backendConfigWindowShown, Show);
+    }
+
+    public event Action OnDragEnd;
 }

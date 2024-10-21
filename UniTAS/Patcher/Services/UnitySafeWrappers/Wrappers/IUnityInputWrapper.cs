@@ -8,4 +8,5 @@ namespace UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 public interface IUnityInputWrapper
 {
     bool GetKeyDown(KeyCode keyCode);
+    Vector2 MousePosition { get; }
 }

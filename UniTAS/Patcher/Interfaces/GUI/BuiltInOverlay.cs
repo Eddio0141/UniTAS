@@ -1,54 +1,101 @@
-using BepInEx.Configuration;
-using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
+using BepInEx;
+using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Models.GUI;
-using UniTAS.Patcher.Services;
-using UniTAS.Patcher.Services.Overlay;
+using UniTAS.Patcher.Utils;
+using UnityEngine;
 
 namespace UniTAS.Patcher.Interfaces.GUI;
 
-public abstract class BuiltInOverlay : IOnUpdateUnconditional, IOverlayVisibleToggle
+[ForceInstantiate]
+public abstract class BuiltInOverlay : Window
 {
     protected abstract AnchoredOffset DefaultOffset { get; }
+    private const float SizeXExtra = 50;
+    private const float SizeYExtra = 5;
+    private const float MinXSize = 100;
+    private const float MinYSize = 30;
     protected virtual int DefaultFontSize => 25;
 
-    private ConfigEntry<int> _anchorX;
-    private ConfigEntry<int> _anchorY;
-    private ConfigEntry<int> _offsetX;
-    private ConfigEntry<int> _offsetY;
-    private ConfigEntry<bool> _enabled;
-    private ConfigEntry<int> _fontSize;
-
-    protected abstract string ConfigName { get; }
-
-    private readonly IDrawing _drawing;
-
-    public bool Enabled { get; set; } = true;
-
-    protected BuiltInOverlay(IConfig config, IDrawing drawing)
+    protected BuiltInOverlay(WindowDependencies windowDependencies, string windowId, bool showByDefault = true) : base(
+        windowDependencies, windowId)
     {
-        _drawing = drawing;
-        Init(config);
+        windowDependencies.UpdateEvents.OnUpdateUnconditional += UpdateUnconditional;
+        Init(showByDefault);
     }
 
-    private void Init(IConfig config)
+    private void Init(bool showByDefault)
     {
-        var entry = $"BuiltInOverlays.{ConfigName}";
-        _anchorX = config.BepInExConfigFile.Bind(entry, "AnchorX", DefaultOffset.AnchorX,
-            "Anchor X position. 0 is left, 1 is right.");
-        _anchorY = config.BepInExConfigFile.Bind(entry, "AnchorY", DefaultOffset.AnchorY,
-            "Anchor Y position. 0 is top, 1 is bottom.");
-        _offsetX = config.BepInExConfigFile.Bind(entry, "OffsetX", DefaultOffset.OffsetX, "Offset X position.");
-        _offsetY = config.BepInExConfigFile.Bind(entry, "OffsetY", DefaultOffset.OffsetY, "Offset Y position.");
-        _enabled = config.BepInExConfigFile.Bind(entry, "Enabled", true);
-        _fontSize = config.BepInExConfigFile.Bind(entry, "FontSize", DefaultFontSize);
+        Config = new(
+            defaultWindowRect: new(DefaultOffset.X, DefaultOffset.Y, MinXSize, MinYSize), showByDefault: showByDefault);
+        base.Init();
+        NoWindowDuringToolBarHide = true;
+        Resizable = false;
     }
+
+    protected override void OnGUIWhileToolbarHide()
+    {
+        GUILayout.BeginArea(new Rect(5, 0, Screen.width, Screen.height));
+        var size = GUIUtils.ShadowedText(WindowConfigId, DefaultFontSize, 0, 0);
+        GUILayout.EndArea();
+
+        FixWindowSize(Event.current, size);
+    }
+
+    protected override void OnGUI()
+    {
+        var currentEvent = Event.current;
+
+        if (_text.IsNullOrWhiteSpace())
+        {
+            if (_showOverlay)
+            {
+                _pendingNewLayout = true;
+                _showOverlay = false;
+            }
+
+            if (!_pendingNewLayout || currentEvent.type == EventType.Layout)
+            {
+                _pendingNewLayout = false;
+                return;
+            }
+        }
+        else
+        {
+            _showOverlay = true;
+        }
+
+        if (_showOverlay && _pendingNewLayout && currentEvent.type != EventType.Layout) return;
+        if (_showOverlay)
+            _pendingNewLayout = false;
+
+        GUILayout.BeginArea(new Rect(5, 0, Screen.width, Screen.height));
+
+        var size = GUIUtils.ShadowedText(_text, DefaultFontSize, 0, 0);
+
+        GUILayout.EndArea();
+
+        FixWindowSize(currentEvent, size);
+    }
+
+    private void FixWindowSize(Event currentEvent, Vector2 size)
+    {
+        if (currentEvent.type != EventType.Layout) return;
+
+        size.x = Mathf.Max(size.x + SizeXExtra, MinXSize);
+        size.y = Mathf.Max(size.y + SizeYExtra, MinYSize);
+
+        var prevWindowRect = WindowRect;
+
+        WindowRect = new(prevWindowRect.x, prevWindowRect.y, size.x, size.y);
+    }
+
+    private string _text;
+    private bool _pendingNewLayout;
+    private bool _showOverlay;
 
     public void UpdateUnconditional()
     {
-        if (!Enabled || !_enabled.Value) return;
-        var text = Update();
-        if (text == null) return;
-        _drawing.PrintText(new(_anchorX.Value, _anchorY.Value, _offsetX.Value, _offsetY.Value), text, _fontSize.Value);
+        _text = Update();
     }
 
     /// <summary>

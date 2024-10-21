@@ -233,26 +233,6 @@ public static class KernelUtils
 
     [Register(IncludeDifferentAssembly = true)]
     [SuppressMessage("ReSharper", "UnusedType.Local")]
-    private class DrawingDummy : IDrawing
-    {
-        public void PrintText(AnchoredOffset offset, string text, int fontSize)
-        {
-        }
-
-        public void DrawTexture(Vector2 pos, Texture2D texture)
-        {
-        }
-    }
-
-    [Register(IncludeDifferentAssembly = true)]
-    [SuppressMessage("ReSharper", "UnusedType.Local")]
-    private class OverlayVisibleToggleDummy : IOverlayVisibleToggle
-    {
-        public bool Enabled { get; set; }
-    }
-
-    [Register(IncludeDifferentAssembly = true)]
-    [SuppressMessage("ReSharper", "UnusedType.Local")]
     private class BindsDummy : IBinds
     {
         public Bind Create(BindConfig config, bool noGenConfig)
