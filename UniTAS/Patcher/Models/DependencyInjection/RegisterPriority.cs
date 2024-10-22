@@ -11,6 +11,7 @@ public enum RegisterPriority
     GameRestart,
     CoroutineHandler,
     ToolBar,
+    KeyBindsWindow,
     InfoPrintAndWelcome,
     RemoteControl
 }

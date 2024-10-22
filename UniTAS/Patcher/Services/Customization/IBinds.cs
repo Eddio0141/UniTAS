@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using UniTAS.Patcher.Models.Customization;
 
 namespace UniTAS.Patcher.Services.Customization;
@@ -10,4 +11,5 @@ public interface IBinds
 {
     Bind Create(BindConfig config, bool noGenConfig = false);
     Bind Get(string name);
+    ReadOnlyCollection<Bind> AllBinds { get; }
 }

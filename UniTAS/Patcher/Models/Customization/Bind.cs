@@ -1,6 +1,6 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using BepInEx.Configuration;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 using UnityEngine;
@@ -12,44 +12,69 @@ public class Bind
 {
     public KeyCode Key
     {
-        get
+        get => _key;
+        set
         {
-            var configEntry = _keyConfigEntry?.Value;
-            if (configEntry != null && _key.ToString() != configEntry && Enum.IsDefined(typeof(KeyCode), configEntry))
-            {
-                _key = (KeyCode)Enum.Parse(typeof(KeyCode), configEntry);
-            }
+            if (_key == value) return;
+            if (_key == KeyCode.None) throw new ArgumentException($"Key {value} is not a valid key.", nameof(value));
+            _key = value;
+            if (NoGenConfig) return;
 
-            return _key;
+            _config.WriteBackendEntry(_configEntry, value);
         }
     }
 
     public string Name { get; }
-    private ConfigEntry<string> _keyConfigEntry;
+    public BindCategory Category { get; }
+    private static readonly List<string> UsedNames = new();
+    private string _configEntry;
 
     private readonly IConfig _config;
     private readonly IUnityInputWrapper _unityInput;
     private KeyCode _key;
 
-    private const string CONFIG_SECTION = "Binds";
+    private const string ConfigPrefix = "Binds";
 
     public Bind(BindConfig bindConfig, IConfig config, IUnityInputWrapper unityInput)
     {
         if (bindConfig == null) throw new ArgumentNullException(nameof(bindConfig));
         _key = bindConfig.Key;
+        Category = bindConfig.Category;
         _config = config;
         _unityInput = unityInput;
         Name = bindConfig.Name;
     }
 
     private bool _initialized;
+    public bool NoGenConfig { get; private set; }
 
     public void InitConfig(bool noGenConfig)
     {
-        if (_initialized || noGenConfig) return;
+        if (_initialized || noGenConfig)
+        {
+            NoGenConfig = noGenConfig;
+            _initialized = true;
+            return;
+        }
+
         _initialized = true;
-        _keyConfigEntry = _config.BepInExConfigFile.Bind(CONFIG_SECTION, Name, _key.ToString(),
-            "Key to press to trigger this bind. See https://docs.unity3d.com/ScriptReference/KeyCode.html for a list of keys.");
+
+        if (UsedNames.Contains(Name))
+        {
+            throw new Exception($"Duplicate bind name: {Name}");
+        }
+
+        UsedNames.Add(Name);
+
+        _configEntry = $"{ConfigPrefix}-{Name}";
+        if (_config.TryGetBackendEntry(_configEntry, out KeyCode key))
+        {
+            _key = key;
+        }
+        else
+        {
+            _config.WriteBackendEntry(_configEntry, _key);
+        }
     }
 
     public bool IsPressed()
@@ -58,8 +83,16 @@ public class Bind
     }
 }
 
-public class BindConfig(string name, KeyCode key)
+public class BindConfig(string name, KeyCode key, BindCategory category = BindCategory.Misc)
 {
     public string Name { get; } = name ?? throw new ArgumentNullException(nameof(name));
     public KeyCode Key { get; } = key;
+    public BindCategory Category { get; } = category;
+}
+
+public enum BindCategory
+{
+    UniTAS,
+    Movie,
+    Misc
 }

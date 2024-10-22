@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using AssetsTools.NET.Extra;
 using BepInEx.Configuration;
@@ -16,20 +17,17 @@ using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents.DontRunIfPaused;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
 using UniTAS.Patcher.Interfaces.GlobalHotkeyListener;
-using UniTAS.Patcher.Interfaces.GUI;
 using UniTAS.Patcher.Interfaces.Movie;
 using UniTAS.Patcher.Interfaces.UnitySafeWrappers;
 using UniTAS.Patcher.Models.Customization;
 using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Models.GlobalHotkeyListener;
-using UniTAS.Patcher.Models.GUI;
 using UniTAS.Patcher.Models.UnitySafeWrappers.SceneManagement;
 using UniTAS.Patcher.Models.VirtualEnvironment;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Customization;
 using UniTAS.Patcher.Services.DependencyInjection;
 using UniTAS.Patcher.Services.Logging;
-using UniTAS.Patcher.Services.Overlay;
 using UniTAS.Patcher.Services.UnityInfo;
 using UniTAS.Patcher.Services.UnitySafeWrappers;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
@@ -244,6 +242,8 @@ public static class KernelUtils
         {
             return null!;
         }
+
+        public ReadOnlyCollection<Bind> AllBinds => null!;
     }
 
     [Singleton(IncludeDifferentAssembly = true)]

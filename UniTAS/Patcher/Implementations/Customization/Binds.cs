@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using StructureMap;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
@@ -9,20 +10,15 @@ namespace UniTAS.Patcher.Implementations.Customization;
 
 [Singleton]
 [ExcludeRegisterIfTesting]
-public class Binds : IBinds
+public class Binds(IContainer container) : IBinds
 {
     private readonly List<Bind> _binds = new();
 
-    private readonly IContainer _container;
-
-    public Binds(IContainer container)
-    {
-        _container = container;
-    }
+    public ReadOnlyCollection<Bind> AllBinds => _binds.AsReadOnly();
 
     public Bind Create(BindConfig config, bool noGenConfig = false)
     {
-        var bind = _container.With(config).GetInstance<Bind>();
+        var bind = container.With(config).GetInstance<Bind>();
         // don't allow same name
         var sameName = Get(bind.Name);
         if (sameName != null)

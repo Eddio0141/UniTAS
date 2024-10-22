@@ -60,7 +60,7 @@ public class ToolBar : IOnGUIUnconditional, IToolBar
             active = { background = buttonHold, textColor = Color.white }
         };
 
-        _toolbarVisibleBind = binds.Create(new("ToolbarVisible", KeyCode.F1));
+        _toolbarVisibleBind = binds.Create(new("Toolbar visible", KeyCode.F1, BindCategory.UniTAS));
 
         // each index corresponds to DropDownSection entry
         _dropdownButtons =
@@ -68,25 +68,30 @@ public class ToolBar : IOnGUIUnconditional, IToolBar
             [
                 ("Overlays", () => { _windowFactory.Create<OverlayControlWindow>().Show = true; }),
                 ("Terminal", () => { _windowFactory.Create<TerminalWindow>().Show = true; })
+            ],
+            [
+                ("Key binds", () => { _windowFactory.Create<KeyBindsWindow>().Show = true; })
             ]
         ];
     }
 
     private enum DropDownSection
     {
-        Windows
+        Windows,
+        Settings,
     }
 
     private DropDownSection? _currentDropDown;
-    private Rect _currentDropDownRect;
-    private bool _gotDropDownRect;
+    private bool _gotDropDownRects;
+    private readonly Rect[] _dropDownRects = new Rect[Enum.GetValues(typeof(DropDownSection)).Length];
     private Rect _barRect;
 
     private const float BarWidthPercentage = 0.25f;
 
     public void OnGUIUnconditional()
     {
-        if (Event.current.type == EventType.KeyDown && Event.current.keyCode == _toolbarVisibleBind.Key)
+        var currentEvent = Event.current;
+        if (currentEvent.type == EventType.KeyDown && Event.current.keyCode == _toolbarVisibleBind.Key)
         {
             Show = !Show;
             Event.current.Use();
@@ -117,11 +122,29 @@ public class ToolBar : IOnGUIUnconditional, IToolBar
 
         if (GUILayout.Button("Windows", _buttonStyle, GUIUtils.EmptyOptions))
         {
-            _gotDropDownRect = false;
             _currentDropDown = DropDownSection.Windows;
         }
 
-        SetDropDownRect();
+        var updateDropDownRects = !_gotDropDownRects && currentEvent.type == EventType.Repaint;
+        if (updateDropDownRects)
+        {
+            _dropDownRects[(int)DropDownSection.Windows] = CalcDropDownRect();
+        }
+
+        GUILayout.FlexibleSpace();
+
+        if (GUILayout.Button("Settings", _buttonStyle, GUIUtils.EmptyOptions))
+        {
+            _currentDropDown = DropDownSection.Settings;
+        }
+
+        if (updateDropDownRects)
+        {
+            _dropDownRects[(int)DropDownSection.Settings] = CalcDropDownRect();
+        }
+
+        if (updateDropDownRects)
+            _gotDropDownRects = true;
 
         GUILayout.FlexibleSpace();
 
@@ -132,20 +155,17 @@ public class ToolBar : IOnGUIUnconditional, IToolBar
 
         if (!_currentDropDown.HasValue) return;
 
-        if (_dropdownList.DropdownButtons(_currentDropDownRect, _dropdownButtons[(int)_currentDropDown.Value]))
+        var currentDropDownValue = (int)_currentDropDown.Value;
+        if (_dropdownList.DropdownButtons(_dropDownRects[currentDropDownValue], _dropdownButtons[currentDropDownValue]))
         {
             _currentDropDown = null;
         }
     }
 
-    // place this in front of all dropdown buttons
-    private void SetDropDownRect()
+    private Rect CalcDropDownRect()
     {
-        if (_gotDropDownRect || Event.current.type != EventType.Repaint) return;
-        _gotDropDownRect = true;
-
         var lastRect = GUILayoutUtility.GetLastRect();
-        _currentDropDownRect = new(lastRect.x + _barRect.x, lastRect.y + _barRect.y + lastRect.height, 150, 0);
+        return new(lastRect.x + _barRect.x, lastRect.y + _barRect.y + lastRect.height, 150, 0);
     }
 
     private readonly (string, Action)[][] _dropdownButtons;

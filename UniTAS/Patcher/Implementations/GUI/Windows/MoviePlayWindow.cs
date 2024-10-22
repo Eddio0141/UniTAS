@@ -6,6 +6,7 @@ using BepInEx.Logging;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.GlobalHotkeyListener;
 using UniTAS.Patcher.Interfaces.GUI;
+using UniTAS.Patcher.Models.Customization;
 using UniTAS.Patcher.Models.GUI;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Customization;
@@ -53,7 +54,7 @@ public class MoviePlayWindow : Window
             _tasPath = path;
         }
 
-        var playMovieBind = binds.Create(new("PlayMovie", KeyCode.Slash));
+        var playMovieBind = binds.Create(new("Play movie", KeyCode.Slash, BindCategory.Movie));
         globalHotkey.AddGlobalHotkey(new(playMovieBind, RunMovieWithLogs));
     }
 

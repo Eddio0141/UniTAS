@@ -58,7 +58,7 @@ public class TerminalWindow : Window
 
         windowDependencies.UpdateEvents.OnUpdateUnconditional += OnUpdateUnconditional;
 
-        _terminalBind = binds.Create(new("NewTerminal", KeyCode.BackQuote));
+        _terminalBind = binds.Create(new("New terminal", KeyCode.BackQuote));
         _terminalSubmit = binds.Create(new("TerminalSubmit", KeyCode.Return), true);
         globalHotkey.AddGlobalHotkey(new(_terminalBind, () => Show = true));
     }
