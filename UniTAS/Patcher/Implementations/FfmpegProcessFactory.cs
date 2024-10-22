@@ -48,7 +48,6 @@ public class FfmpegProcessFactory : IFfmpegProcessFactory
         string path = null;
         foreach (var ffmpegCheck in _ffmpegChecks)
         {
-            _logger.LogDebug($"checking ffmpeg at path: {ffmpegCheck}");
             if (TryRunning(ffmpegCheck))
             {
                 path = ffmpegCheck;
@@ -68,7 +67,6 @@ public class FfmpegProcessFactory : IFfmpegProcessFactory
                     if (string.IsNullOrEmpty(envPath)) continue;
 
                     var envPathCheck = Path.Combine(envPath.Trim(), ffmpegCheck);
-                    _logger.LogDebug($"checking ffmpeg at path: {envPathCheck}");
 
                     if (TryRunning(envPathCheck))
                     {
@@ -83,7 +81,6 @@ public class FfmpegProcessFactory : IFfmpegProcessFactory
             if (BepInEx.Paths.GameRootPath != null)
             {
                 var gamePath = Path.Combine(BepInEx.Paths.GameRootPath, ffmpegCheck);
-                _logger.LogDebug($"checking ffmpeg at path: {gamePath}");
                 if (TryRunning(gamePath))
                 {
                     path = gamePath;
@@ -99,7 +96,7 @@ public class FfmpegProcessFactory : IFfmpegProcessFactory
 
         _ffmpegPath = path;
         Available = true;
-        _logger.LogInfo($"Ffmpeg found at {_ffmpegPath}");
+        _logger.LogInfo("Ffmpeg found");
     }
 
     private static bool TryRunning(string path)
