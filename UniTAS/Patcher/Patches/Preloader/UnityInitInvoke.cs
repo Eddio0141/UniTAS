@@ -15,8 +15,8 @@ namespace UniTAS.Patcher.Patches.Preloader;
 [SuppressMessage("ReSharper", "UnusedType.Global")]
 public class UnityInitInvoke : PreloadPatcher
 {
-    private const string RUNTIME_INITIALIZE_LOAD_TYPE = "UnityEngine.RuntimeInitializeLoadType";
-    private const string BEFORE_SCENE_LOAD_VARIANT = "BeforeSceneLoad";
+    private const string RuntimeInitializeLoadType = "UnityEngine.RuntimeInitializeLoadType";
+    private const string BeforeSceneLoadVariant = "BeforeSceneLoad";
 
     public override IEnumerable<string> TargetDLLs => TargetPatcherDlls.AllExcludedDLLs;
 
@@ -33,18 +33,18 @@ public class UnityInitInvoke : PreloadPatcher
 
         var asm = AssemblyDefinition.ReadAssembly(unityCoreModulePath);
 
-        var loadType = asm.MainModule.Types.FirstOrDefault(x => x.FullName == RUNTIME_INITIALIZE_LOAD_TYPE);
+        var loadType = asm.MainModule.Types.FirstOrDefault(x => x.FullName == RuntimeInitializeLoadType);
         if (loadType == null)
         {
-            NotifyBeforeSceneLoadNotFound($"{RUNTIME_INITIALIZE_LOAD_TYPE} not found");
+            NotifyBeforeSceneLoadNotFound($"{RuntimeInitializeLoadType} not found");
             return;
         }
 
-        var beforeSceneLoadField = loadType.Fields.FirstOrDefault(x => x.Name == BEFORE_SCENE_LOAD_VARIANT);
+        var beforeSceneLoadField = loadType.Fields.FirstOrDefault(x => x.Name == BeforeSceneLoadVariant);
         if (beforeSceneLoadField == null)
         {
             NotifyBeforeSceneLoadNotFound(
-                $"{RUNTIME_INITIALIZE_LOAD_TYPE}.{BEFORE_SCENE_LOAD_VARIANT} enum variant not found");
+                $"{RuntimeInitializeLoadType}.{BeforeSceneLoadVariant} enum variant not found");
             return;
         }
 
@@ -53,14 +53,17 @@ public class UnityInitInvoke : PreloadPatcher
 
     private static void NotifyBeforeSceneLoadNotFound(string reason)
     {
-        StaticLogger.LogDebug($"couldn't obtain {RUNTIME_INITIALIZE_LOAD_TYPE}.{BEFORE_SCENE_LOAD_VARIANT}, {reason}");
+        StaticLogger.LogDebug($"couldn't obtain {RuntimeInitializeLoadType}.{BeforeSceneLoadVariant}, {reason}");
     }
 
     public override void Patch(ref AssemblyDefinition assembly)
     {
-        TryHookUnityEvent(assembly);
         TryHookRuntimeInits(assembly);
+        if (!_hookedRuntimeInits)
+            TryHookUnityEvent(assembly);
     }
+
+    private bool _hookedRuntimeInits;
 
     // doing this seems to fail so Awake hooks are enough
     private void TryHookRuntimeInits(AssemblyDefinition assembly)
@@ -79,11 +82,32 @@ public class UnityInitInvoke : PreloadPatcher
                 x.CustomAttributes.Any(a =>
                     a.AttributeType.FullName == "UnityEngine.RuntimeInitializeOnLoadMethodAttribute" &&
                     a.HasConstructorArguments && a.ConstructorArguments.Count == 1 &&
-                    a.ConstructorArguments[0].Type.FullName == RUNTIME_INITIALIZE_LOAD_TYPE &&
+                    a.ConstructorArguments[0].Type.FullName == RuntimeInitializeLoadType &&
                     (int)a.ConstructorArguments[0].Value == (int)_beforeSceneLoadValue));
 
             foreach (var initMethod in initMethods)
             {
+                if (!initMethod.HasBody || initMethod.Body.Instructions.Count == 0) return;
+                var skipMethod = true;
+                foreach (var instruction in initMethod.Body.Instructions)
+                {
+                    // if no unity API references, don't do anything
+                    if (instruction.Operand is not MethodReference methodCall) continue;
+
+                    if (methodCall.Module.Assembly.FullName.Like("UnityEngine*"))
+                    {
+                        skipMethod = false;
+                        break;
+                    }
+                }
+
+                if (skipMethod) continue;
+
+                if (!_hookedRuntimeInits && assembly.Name.Name == "Assembly-CSharp")
+                {
+                    _hookedRuntimeInits = true;
+                }
+
                 ILCodeUtils.MethodInvokeHook(assembly, initMethod,
                     AccessTools.Method(typeof(InvokeTracker), nameof(InvokeTracker.OnUnityInit)));
                 LogHook(assembly, type.Name, initMethod.Name);
