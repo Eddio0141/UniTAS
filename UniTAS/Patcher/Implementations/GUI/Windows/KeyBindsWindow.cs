@@ -14,6 +14,7 @@ namespace UniTAS.Patcher.Implementations.GUI.Windows;
 
 [Singleton(RegisterPriority.KeyBindsWindow)]
 [ForceInstantiate]
+[ExcludeRegisterIfTesting]
 public class KeyBindsWindow : Window
 {
     // category name and binds

@@ -27,6 +27,7 @@ using UniTAS.Patcher.Models.VirtualEnvironment;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Customization;
 using UniTAS.Patcher.Services.DependencyInjection;
+using UniTAS.Patcher.Services.GUI;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.UnityInfo;
 using UniTAS.Patcher.Services.UnitySafeWrappers;
@@ -376,6 +377,13 @@ public static class KernelUtils
         }
 
         public RefreshRateWrap RefreshRateWrap { get; set; } = null!;
+    }
+
+    [Singleton(IncludeDifferentAssembly = true)]
+    public class ToolBar : IToolBar
+    {
+        public bool Show => false;
+        public event Action<bool>? OnShowChange;
     }
 
     public static Container Init()
