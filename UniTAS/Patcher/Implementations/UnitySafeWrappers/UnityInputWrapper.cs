@@ -42,4 +42,34 @@ public class UnityInputWrapper(
             return Mouse.current.position.ReadValue();
         }
     }
+
+    public bool AnyKeyDown
+    {
+        get
+        {
+            if (_useOldInputSystem)
+                return reverseInvoker.Invoke(() => Input.anyKeyDown);
+
+            if (venvController.RunVirtualEnvironment) return false;
+
+            return Keyboard.current.anyKey.wasPressedThisFrame;
+        }
+    }
+
+    public bool GetMouseButtonDown(int button)
+    {
+        if (_useOldInputSystem)
+            return reverseInvoker.Invoke(() => Input.GetMouseButtonDown(button));
+
+        if (venvController.RunVirtualEnvironment) return false;
+
+        var mouse = Mouse.current;
+        return button switch
+        {
+            0 => mouse.leftButton.wasPressedThisFrame,
+            1 => mouse.rightButton.wasPressedThisFrame,
+            2 => mouse.middleButton.wasPressedThisFrame,
+            _ => false
+        };
+    }
 }

@@ -9,4 +9,6 @@ public interface IUnityInputWrapper
 {
     bool GetKeyDown(KeyCode keyCode);
     Vector2 MousePosition { get; }
+    bool AnyKeyDown { get; }
+    bool GetMouseButtonDown(int button);
 }

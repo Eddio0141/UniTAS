@@ -18,9 +18,9 @@ namespace UniTAS.Patcher.Services.UnityAsyncOperationTracker;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 [Singleton]
-public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger, IOnSceneLoad[] onSceneLoads)
-    : ISceneLoadTracker, IAssetBundleCreateRequestTracker, IAssetBundleRequestTracker,
-        IOnLastUpdateUnconditional, IAsyncOperationIsInvokingOnComplete, IOnPreGameRestart, IOnUpdateActual
+public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateRequestTracker, IAssetBundleRequestTracker,
+    IOnLastUpdateUnconditional, IAsyncOperationIsInvokingOnComplete, IOnPreGameRestart, IOnUpdateActual,
+    IOnSceneLoadEvent
 {
     private readonly List<AsyncOperation> _tracked = new();
 
@@ -54,9 +54,9 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger, I
     {
         foreach (var scene in _asyncLoads)
         {
-            logger.LogDebug(
+            _logger.LogDebug(
                 $"force loading scene, name: {scene.SceneName}, index: {scene.SceneBuildIndex}, manually loading in loop");
-            sceneWrapper.LoadSceneAsync(scene.SceneName, scene.SceneBuildIndex, scene.LoadSceneMode,
+            _sceneWrapper.LoadSceneAsync(scene.SceneName, scene.SceneBuildIndex, scene.LoadSceneMode,
                 scene.LocalPhysicsMode, true);
 
             _pendingLoadCallbacks.Add(scene.AsyncOperationInstance);
@@ -114,18 +114,15 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger, I
     {
         _tracked.Add(asyncOperation);
 
-        foreach (var onSceneLoad in onSceneLoads)
-        {
-            onSceneLoad.OnSceneLoad(sceneName, sceneBuildIndex, loadSceneMode, localPhysicsMode);
-        }
+        OnSceneLoadEvent?.Invoke(sceneName, sceneBuildIndex, loadSceneMode, localPhysicsMode);
 
-        logger.LogDebug($"async scene load, {asyncOperation.GetHashCode()}");
+        _logger.LogDebug($"async scene load, {asyncOperation.GetHashCode()}");
         _asyncLoads.Add(new(sceneName, sceneBuildIndex, asyncOperation, loadSceneMode, localPhysicsMode));
     }
 
     public void AllowSceneActivation(bool allow, AsyncOperation asyncOperation)
     {
-        logger.LogDebug($"allow scene activation {allow}, {new StackTrace()}");
+        _logger.LogDebug($"allow scene activation {allow}, {new StackTrace()}");
 
         if (allow)
         {
@@ -133,9 +130,9 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger, I
             if (sceneToLoad == null) return;
             StoreAllowSceneActivation(asyncOperation, true);
             _asyncLoadStalls.Remove(sceneToLoad);
-            sceneWrapper.LoadSceneAsync(sceneToLoad.SceneName, sceneToLoad.SceneBuildIndex, sceneToLoad.LoadSceneMode,
+            _sceneWrapper.LoadSceneAsync(sceneToLoad.SceneName, sceneToLoad.SceneBuildIndex, sceneToLoad.LoadSceneMode,
                 sceneToLoad.LocalPhysicsMode, true);
-            logger.LogDebug(
+            _logger.LogDebug(
                 $"force loading scene, name: {sceneToLoad.SceneName}, build index: {sceneToLoad.SceneBuildIndex}");
             _pendingLoadCallbacks.Add(sceneToLoad.AsyncOperationInstance);
         }
@@ -146,7 +143,7 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger, I
             StoreAllowSceneActivation(asyncOperation, false);
             _asyncLoads.Remove(asyncSceneLoad);
             _asyncLoadStalls.Add(asyncSceneLoad);
-            logger.LogDebug("Added scene to stall list");
+            _logger.LogDebug("Added scene to stall list");
         }
     }
 
@@ -231,16 +228,31 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger, I
     private readonly MethodBase _invokeCompletionEvent =
         AccessTools.Method("UnityEngine.AsyncOperation:InvokeCompletionEvent", Type.EmptyTypes);
 
+    private readonly ISceneWrapper _sceneWrapper;
+    private readonly ILogger _logger;
+
+    public AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger, IOnSceneLoad[] onSceneLoads)
+    {
+        _sceneWrapper = sceneWrapper;
+        _logger = logger;
+        foreach (var onSceneLoad in onSceneLoads)
+        {
+            OnSceneLoadEvent += onSceneLoad.OnSceneLoad;
+        }
+    }
+
     public bool IsInvokingOnComplete { get; private set; }
 
     private void InvokeOnComplete(AsyncOperation asyncOperation)
     {
         if (_invokeCompletionEvent == null) return;
         IsInvokingOnComplete = true;
-        logger.LogDebug("invoking completion event");
+        _logger.LogDebug("invoking completion event");
         _invokeCompletionEvent.Invoke(asyncOperation, null);
         IsInvokingOnComplete = false;
     }
+
+    public event IOnSceneLoadEvent.OnSceneLoad OnSceneLoadEvent;
 
     private class AsyncSceneLoadData(
         string sceneName,

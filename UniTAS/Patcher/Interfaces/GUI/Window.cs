@@ -42,20 +42,20 @@ public abstract class Window
             if (_show)
             {
                 _updateEvents.OnGUIUnconditional += OnGUIUnconditional;
-                _toolBar.OnShowChange += OnToolBarOnOnShowChange;
+                _toolBar.OnShowChange += ToolBarOnOnShowChange;
                 ClampWindow();
             }
             else
             {
                 _updateEvents.OnGUIUnconditional -= OnGUIUnconditional;
-                _toolBar.OnShowChange -= OnToolBarOnOnShowChange;
+                _toolBar.OnShowChange -= ToolBarOnOnShowChange;
             }
 
             SaveWindowShown();
 
             return;
 
-            void OnToolBarOnOnShowChange(bool _) => ClampWindow();
+            void ToolBarOnOnShowChange(bool _) => ClampWindow();
         }
     }
 
@@ -249,11 +249,11 @@ public abstract class Window
 
         if (_toolBar.Show)
         {
-            OnGUIWhileToolbarHide();
+            OnGUI();
         }
         else
         {
-            OnGUI();
+            OnGUIWhileToolbarHide();
         }
 
         if (_toolBar.Show || !NoWindowDuringToolBarHide)

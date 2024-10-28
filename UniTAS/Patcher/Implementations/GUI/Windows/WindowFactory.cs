@@ -2,23 +2,22 @@
 using StructureMap;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.GUI;
+using UniTAS.Patcher.Models;
 using UniTAS.Patcher.Services.GUI;
 
 namespace UniTAS.Patcher.Implementations.GUI.Windows;
 
 [SuppressMessage("ReSharper", "UnusedType.Global")]
 [Register]
-public class WindowFactory : IWindowFactory
+public class WindowFactory(IContainer container) : IWindowFactory
 {
-    private readonly IContainer _container;
-
-    public WindowFactory(IContainer container)
-    {
-        _container = container;
-    }
-
     public T Create<T>() where T : Window
     {
-        return _container.GetInstance<T>();
+        return container.GetInstance<T>();
+    }
+
+    public ObjectTrackerInstanceWindow Create(UnityObjectIdentifier identifier)
+    {
+        return container.With(identifier).GetInstance<ObjectTrackerInstanceWindow>();
     }
 }

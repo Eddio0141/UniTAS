@@ -383,7 +383,9 @@ public static class KernelUtils
     public class ToolBar : IToolBar
     {
         public bool Show => false;
+#pragma warning disable CS0067
         public event Action<bool>? OnShowChange;
+#pragma warning restore CS0067
     }
 
     public static Container Init()

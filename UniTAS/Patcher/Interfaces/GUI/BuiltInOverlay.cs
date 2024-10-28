@@ -34,15 +34,6 @@ public abstract class BuiltInOverlay : Window
 
     protected override void OnGUIWhileToolbarHide()
     {
-        GUILayout.BeginArea(new Rect(5, 0, Screen.width, Screen.height));
-        var size = GUIUtils.ShadowedText(WindowConfigId, DefaultFontSize, 0, 0);
-        GUILayout.EndArea();
-
-        FixWindowSize(Event.current, size);
-    }
-
-    protected override void OnGUI()
-    {
         var currentEvent = Event.current;
 
         if (_text.IsNullOrWhiteSpace())
@@ -77,6 +68,15 @@ public abstract class BuiltInOverlay : Window
         FixWindowSize(currentEvent, size);
     }
 
+    protected override void OnGUI()
+    {
+        GUILayout.BeginArea(new Rect(5, 0, Screen.width, Screen.height));
+        var size = GUIUtils.ShadowedText(WindowConfigId, DefaultFontSize, 0, 0);
+        GUILayout.EndArea();
+
+        FixWindowSize(Event.current, size);
+    }
+
     private void FixWindowSize(Event currentEvent, Vector2 size)
     {
         if (currentEvent.type != EventType.Layout) return;
@@ -93,7 +93,7 @@ public abstract class BuiltInOverlay : Window
     private bool _pendingNewLayout;
     private bool _showOverlay;
 
-    public void UpdateUnconditional()
+    private void UpdateUnconditional()
     {
         _text = Update();
     }

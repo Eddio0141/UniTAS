@@ -23,7 +23,7 @@ public partial class Config : IConfig, IDisposable
     private readonly Timer _timer;
 
     private readonly Dictionary<string, string> _backendEntries = new();
-    private const char ENTRY_SEPARATOR = ':';
+    private const char EntrySeparator = '\u0D9E';
 
     private readonly ILogger _logger;
 
@@ -69,7 +69,7 @@ public partial class Config : IConfig, IDisposable
         {
             var backendConfigEntry = backendConfigRaw[i];
 
-            var separatorIndex = backendConfigEntry.IndexOf(ENTRY_SEPARATOR);
+            var separatorIndex = backendConfigEntry.IndexOf(EntrySeparator);
             if (separatorIndex < 0)
             {
                 // invalid
@@ -125,7 +125,7 @@ public partial class Config : IConfig, IDisposable
         var entry = JsonConvert.SerializeObject(value);
         _backendEntries[key] = entry;
 
-        var entries = _backendEntries.Select(x => $"{x.Key}{ENTRY_SEPARATOR}{x.Value}").ToArray();
+        var entries = _backendEntries.Select(x => $"{x.Key}{EntrySeparator}{x.Value}").ToArray();
 
         try
         {

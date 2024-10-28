@@ -70,14 +70,18 @@ public class ToolBar : IOnGUIUnconditional, IToolBar
                 ("Terminal", () => { _windowFactory.Create<TerminalWindow>().Show = true; })
             ],
             [
+                ("New object tracker", () => { _windowFactory.Create<ObjectTrackerManagerWindow>().Show = true; })
+            ],
+            [
                 ("Key binds", () => { _windowFactory.Create<KeyBindsWindow>().Show = true; })
-            ]
+            ],
         ];
     }
 
     private enum DropDownSection
     {
         Windows,
+        View,
         Settings,
     }
 
@@ -120,12 +124,24 @@ public class ToolBar : IOnGUIUnconditional, IToolBar
 
         GUILayout.FlexibleSpace();
 
+        if (GUILayout.Button("View", _buttonStyle, GUIUtils.EmptyOptions))
+        {
+            _currentDropDown = DropDownSection.View;
+        }
+
+        var updateDropDownRects = !_gotDropDownRects && currentEvent.type == EventType.Repaint;
+        if (updateDropDownRects)
+        {
+            _dropDownRects[(int)DropDownSection.View] = CalcDropDownRect();
+        }
+
+        GUILayout.FlexibleSpace();
+
         if (GUILayout.Button("Windows", _buttonStyle, GUIUtils.EmptyOptions))
         {
             _currentDropDown = DropDownSection.Windows;
         }
 
-        var updateDropDownRects = !_gotDropDownRects && currentEvent.type == EventType.Repaint;
         if (updateDropDownRects)
         {
             _dropDownRects[(int)DropDownSection.Windows] = CalcDropDownRect();
