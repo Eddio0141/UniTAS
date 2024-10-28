@@ -24,7 +24,7 @@
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
         <DefineConstants />
         <OutputPath>bin/Release/BepInEx/patchers/UniTAS/</OutputPath>
-        <DebugType>portable</DebugType>
+        <DebugType>full</DebugType>
         <NoWarn />
         <DebugSymbols>true</DebugSymbols>
     </PropertyGroup>

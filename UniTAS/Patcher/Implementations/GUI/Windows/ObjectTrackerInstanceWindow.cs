@@ -320,7 +320,7 @@ public class ObjectTrackerInstanceWindow : Window
             GUILayout.Space(SpacingFromCategory);
         }
 
-        if (_hasTransform)
+        if (_transform != null)
         {
             if (_trackSettings.ShowPos)
             {
@@ -378,27 +378,27 @@ public class ObjectTrackerInstanceWindow : Window
 
                 GUILayout.Space(10);
             }
+
+            if (_trackSettings.ShowEstVel)
+            {
+                GUILayoutUtils.ShadowedLabel("Est velocity");
+                GUILayout.Space(SpacingFromCategory);
+
+                if (_trackSettings.ShowEstVelX)
+                    GUILayoutUtils.ShadowedLabel($"x: {_estVel.x}");
+
+                if (_trackSettings.ShowEstVelY)
+                    GUILayoutUtils.ShadowedLabel($"y: {_estVel.y}");
+
+                if (_trackSettings.ShowEstVelZ)
+                    GUILayoutUtils.ShadowedLabel($"z: {_estVel.z}");
+
+                if (_trackSettings.ShowEstHSpd)
+                    GUILayoutUtils.ShadowedLabel($"h spd: {new Vector3(_estVel.x, 0, _estVel.z).magnitude}");
+            }
         }
 
-        if (_hasTransform && _trackSettings.ShowEstVel)
-        {
-            GUILayoutUtils.ShadowedLabel("Est velocity");
-            GUILayout.Space(SpacingFromCategory);
-
-            if (_trackSettings.ShowEstVelX)
-                GUILayoutUtils.ShadowedLabel($"x: {_estVel.x}");
-
-            if (_trackSettings.ShowEstVelY)
-                GUILayoutUtils.ShadowedLabel($"y: {_estVel.y}");
-
-            if (_trackSettings.ShowEstVelZ)
-                GUILayoutUtils.ShadowedLabel($"z: {_estVel.z}");
-
-            if (_trackSettings.ShowEstHSpd)
-                GUILayoutUtils.ShadowedLabel($"h spd: {new Vector3(_estVel.x, 0, _estVel.z).magnitude}");
-        }
-
-        if (_hasRigidbody && _trackSettings.ShowVel)
+        if (_rigidbody != null && _trackSettings.ShowVel)
         {
             GUILayoutUtils.ShadowedLabel("Velocity");
             GUILayout.Space(SpacingFromCategory);

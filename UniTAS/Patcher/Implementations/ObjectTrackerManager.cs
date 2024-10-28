@@ -70,7 +70,6 @@ public class ObjectTrackerManager : IObjectTrackerManager
         sender.OnObjectSelected -= ObjectSelected;
         if (o == null) return;
         var newTracker = _objectIdentifierFactory.NewUnityObjectIdentifier(o);
-        if (_trackers.Contains(newTracker)) return;
         _trackers.Add(newTracker);
         SaveTrackers();
         NewTrackerWindow(newTracker);
