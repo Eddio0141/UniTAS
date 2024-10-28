@@ -34,7 +34,6 @@ public class ObjectTrackerManager : IObjectTrackerManager
         }
 
         // stupid hack to stop dependency loop on constructor phase
-        updateEvents.OnAwakeUnconditional += InitTrackerWindows;
         updateEvents.OnFixedUpdateUnconditional += InitTrackerWindows;
     }
 
@@ -45,7 +44,6 @@ public class ObjectTrackerManager : IObjectTrackerManager
             NewTrackerWindow(tracker);
         }
 
-        _updateEvents.OnAwakeUnconditional -= InitTrackerWindows;
         _updateEvents.OnFixedUpdateUnconditional -= InitTrackerWindows;
     }
 

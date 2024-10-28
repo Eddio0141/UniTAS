@@ -14,13 +14,13 @@ public class UnityObjectIdentifier
 {
     private bool Equals(UnityObjectIdentifier other)
     {
-        return _objectType == other._objectType && _id == other._id && Equals(Parent, other.Parent) &&
-               string.Equals(Name, other.Name, StringComparison.InvariantCulture);
+        return _objectType == other._objectType && _id == other._id && Equals(_parent, other._parent) &&
+               string.Equals(_name, other._name, StringComparison.InvariantCulture);
     }
 
     public override string ToString()
     {
-        return $"_id: {_id}, Name: {Name}, Parent: {Parent}";
+        return $"_id: {_id}, Name: {_name}, Parent: {_parent}";
     }
 
     public override bool Equals(object obj)
@@ -36,8 +36,8 @@ public class UnityObjectIdentifier
         var hashCode = new HashCode();
         hashCode.Add(_objectType);
         hashCode.Add(_id);
-        hashCode.Add(Parent);
-        hashCode.Add(Name, StringComparer.InvariantCulture);
+        hashCode.Add(_parent);
+        hashCode.Add(_name, StringComparer.InvariantCulture);
         return hashCode.ToHashCode();
     }
 
@@ -61,7 +61,7 @@ public class UnityObjectIdentifier
         }
 
         // runtime object
-        Name = o.name;
+        _name = o.name;
 
         var t = o switch
         {
@@ -73,7 +73,7 @@ public class UnityObjectIdentifier
 
         var parent = t?.parent?.gameObject;
         if (parent == null) return;
-        Parent = unityObjectIdentifierFactory.NewUnityObjectIdentifier(parent);
+        _parent = unityObjectIdentifierFactory.NewUnityObjectIdentifier(parent);
     }
 
     [JsonProperty] private readonly Type _objectType;
@@ -93,10 +93,9 @@ public class UnityObjectIdentifier
     /// A parent object, if any
     /// Either an ID of an object existing in disk, or another runtime object
     /// </summary>
-    [JsonProperty]
-    private UnityObjectIdentifier Parent { get; }
+    [JsonProperty] private readonly UnityObjectIdentifier _parent;
 
-    [JsonProperty] private string Name { get; }
+    [JsonProperty] private readonly string _name;
 
     #endregion
 
@@ -118,10 +117,10 @@ public class UnityObjectIdentifier
         // runtime find
         if (allObjectsWithType.Length == 1) return allObjectsWithType[0]; // how lucky!
 
-        var filteredObjs = allObjectsWithType.Where(o => o.name == Name).ToArray();
+        var filteredObjs = allObjectsWithType.Where(o => o.name == _name).ToArray();
         if (filteredObjs.Length == 1) return filteredObjs[0];
 
-        var parent = Parent?.FindObject(allObjects, allObjectsWithType) as GameObject;
+        var parent = _parent?.FindObject(allObjects, allObjectsWithType) as GameObject;
         if (parent == null) return null;
         var filteredChildren = parent.GetComponentsInChildren(_objectType, true)
             .Where(t => filteredObjs.Any(o => o == t))

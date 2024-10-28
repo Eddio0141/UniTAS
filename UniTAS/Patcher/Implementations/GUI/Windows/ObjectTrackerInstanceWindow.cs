@@ -33,9 +33,8 @@ public class ObjectTrackerInstanceWindow : Window
         _config = windowDependencies.Config;
         _toolBar = windowDependencies.ToolBar;
         _unityObjectIdentifier = identifier;
-        _instance = identifier.FindObject();
         onSceneLoadEvent.OnSceneLoadEvent += OnSceneLoad;
-        UpdateWindowFromInstance();
+        UpdateInstance();
         Init();
 
         _trackSettingsConfigKey = $"ObjectTracker-Instance-trackSettings-{identifier}";
@@ -60,9 +59,7 @@ public class ObjectTrackerInstanceWindow : Window
         LocalPhysicsMode localPhysicsMode)
     {
         // instance might have updated
-        if (_instance != null) return;
-        _instance = _unityObjectIdentifier.FindObject();
-        UpdateWindowFromInstance();
+        UpdateInstance();
     }
 
     private Transform _transform;
@@ -70,11 +67,19 @@ public class ObjectTrackerInstanceWindow : Window
     private Rigidbody _rigidbody;
     private bool _hasRigidbody;
 
-    private void UpdateWindowFromInstance()
+    private void UpdateInstance()
     {
+        var updateComponents = false;
+        if (_instance == null)
+        {
+            _instance = _unityObjectIdentifier.FindObject();
+            updateComponents = true;
+        }
+
         if (_instance == null) return;
         var config = Config;
         config.WindowName = $"Tracking '{_instance.name}'";
+
         _transform = _instance switch
         {
             Transform t => t.transform,
@@ -82,9 +87,13 @@ public class ObjectTrackerInstanceWindow : Window
             Component comp => comp.transform,
             _ => null
         };
-        _rigidbody = _transform?.GetComponent<Rigidbody>();
         _hasTransform = _transform != null;
-        _hasRigidbody = _rigidbody != null;
+
+        if (updateComponents || !_hasRigidbody)
+        {
+            _rigidbody = _transform?.GetComponent<Rigidbody>();
+            _hasRigidbody = _rigidbody != null;
+        }
     }
 
     // configuration of this
@@ -94,6 +103,7 @@ public class ObjectTrackerInstanceWindow : Window
         {
             _prevToolbarShow = true;
             _resizeWindow = true;
+            UpdateInstance();
         }
 
         GUILayout.BeginVertical();
@@ -232,6 +242,7 @@ public class ObjectTrackerInstanceWindow : Window
         {
             _prevToolbarShow = false;
             _resizeWindow = true;
+            UpdateInstance();
         }
 
         GUILayout.BeginVertical();
