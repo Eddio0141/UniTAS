@@ -1,10 +1,11 @@
 using System;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
-using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
 using UniTAS.Patcher.Models.Customization;
 using UniTAS.Patcher.Models.DependencyInjection;
+using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Customization;
 using UniTAS.Patcher.Services.GUI;
+using UniTAS.Patcher.Services.UnityEvents;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 
@@ -13,7 +14,7 @@ namespace UniTAS.Patcher.Implementations.GUI.Windows;
 [Singleton(RegisterPriority.ToolBar)]
 [ForceInstantiate]
 [ExcludeRegisterIfTesting]
-public class ToolBar : IOnGUIUnconditional, IToolBar
+public class ToolBar : IToolBar
 {
     private readonly IWindowFactory _windowFactory;
 
@@ -38,7 +39,8 @@ public class ToolBar : IOnGUIUnconditional, IToolBar
     private bool _show;
     private readonly IDropdownList _dropdownList;
 
-    public ToolBar(IWindowFactory windowFactory, IBinds binds, IGUIComponentFactory guiComponentFactory)
+    public ToolBar(IWindowFactory windowFactory, IBinds binds, IGUIComponentFactory guiComponentFactory,
+        IObjectTrackerManager objectTrackerManager, IUpdateEvents updateEvents)
     {
         _windowFactory = windowFactory;
         _dropdownList = guiComponentFactory.CreateComponent<IDropdownList>();
@@ -70,12 +72,14 @@ public class ToolBar : IOnGUIUnconditional, IToolBar
                 ("Terminal", () => { _windowFactory.Create<TerminalWindow>().Show = true; })
             ],
             [
-                ("New object tracker", () => { _windowFactory.Create<ObjectTrackerManagerWindow>().Show = true; })
+                ("New object tracker", objectTrackerManager.AddNew)
             ],
             [
                 ("Key binds", () => { _windowFactory.Create<KeyBindsWindow>().Show = true; })
             ],
         ];
+
+        updateEvents.OnGUIUnconditional += OnGUIUnconditional;
     }
 
     private enum DropDownSection
@@ -92,7 +96,7 @@ public class ToolBar : IOnGUIUnconditional, IToolBar
 
     private const float BarWidthPercentage = 0.25f;
 
-    public void OnGUIUnconditional()
+    private void OnGUIUnconditional()
     {
         var currentEvent = Event.current;
         if (currentEvent.type == EventType.KeyDown && Event.current.keyCode == _toolbarVisibleBind.Key)
