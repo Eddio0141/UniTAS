@@ -43,7 +43,8 @@ public class ObjectTrackerInstanceWindow : Window
             _trackSettings = new TrackSettings
             {
                 ShowEulerRotation = true, ShowPos = true, ShowPosX = true, ShowPosY = true, ShowPosZ = true,
-                ShowRot = true, ShowRotW = true, ShowRotX = true, ShowRotY = true, ShowRotZ = true
+                ShowRot = true, ShowRotW = true, ShowRotX = true, ShowRotY = true, ShowRotZ = true,
+                Name = _instance?.name ?? "", ShowName = true
             };
         }
 
@@ -53,6 +54,7 @@ public class ObjectTrackerInstanceWindow : Window
     private new void Init()
     {
         NoWindowDuringToolBarHide = true;
+        Resizable = false;
     }
 
     private void OnSceneLoad(string sceneName, int sceneBuildIndex, LoadSceneMode loadSceneMode,
@@ -96,6 +98,8 @@ public class ObjectTrackerInstanceWindow : Window
         }
     }
 
+    private GUIStyle _labelNoWordWrap;
+
     // configuration of this
     protected override void OnGUI()
     {
@@ -108,10 +112,25 @@ public class ObjectTrackerInstanceWindow : Window
 
         GUILayout.BeginVertical();
 
+        var newBool = GUILayout.Toggle(_trackSettings.ShowName, "Show tracker name");
+        SaveTrackSettings(newBool, ref _trackSettings.ShowName);
+        UnityEngine.GUI.enabled = _trackSettings.ShowName;
+
+        GUILayout.BeginHorizontal();
+        _labelNoWordWrap ??= new GUIStyle(UnityEngine.GUI.skin.label) { wordWrap = false };
+        GUILayout.Label("Name: ", _labelNoWordWrap);
+        GUILayout.Space(3);
+        var newStr = GUILayout.TextField(_trackSettings.Name, 30, GUILayout.ExpandWidth(false));
+        if (newStr != _trackSettings.Name)
+            _resizeWindow = true;
+        SaveTrackSettings(newStr, ref _trackSettings.Name);
+        GUILayout.FlexibleSpace();
+        GUILayout.EndHorizontal();
+
         UnityEngine.GUI.enabled = _hasTransform;
-        var newValue = GUILayout.Toggle(_trackSettings.ShowPos, "Position");
+        newBool = GUILayout.Toggle(_trackSettings.ShowPos, "Position");
         UnityEngine.GUI.enabled = _trackSettings.ShowPos && _hasTransform;
-        SaveTrackSettings(newValue, ref _trackSettings.ShowPos);
+        SaveTrackSettings(newBool, ref _trackSettings.ShowPos);
         if (_trackSettings is { ShowPos: true, ShowPosX: false, ShowPosY: false, ShowPosZ: false })
         {
             SaveTrackSettings(true, ref _trackSettings.ShowPosX);
@@ -122,12 +141,12 @@ public class ObjectTrackerInstanceWindow : Window
         GUILayout.FlexibleSpace();
 
         GUILayout.BeginHorizontal();
-        newValue = GUILayout.Toggle(_trackSettings.ShowPosX, "x");
-        SaveTrackSettings(newValue, ref _trackSettings.ShowPosX);
-        newValue = GUILayout.Toggle(_trackSettings.ShowPosY, "y");
-        SaveTrackSettings(newValue, ref _trackSettings.ShowPosY);
-        newValue = GUILayout.Toggle(_trackSettings.ShowPosZ, "z");
-        SaveTrackSettings(newValue, ref _trackSettings.ShowPosZ);
+        newBool = GUILayout.Toggle(_trackSettings.ShowPosX, "x");
+        SaveTrackSettings(newBool, ref _trackSettings.ShowPosX);
+        newBool = GUILayout.Toggle(_trackSettings.ShowPosY, "y");
+        SaveTrackSettings(newBool, ref _trackSettings.ShowPosY);
+        newBool = GUILayout.Toggle(_trackSettings.ShowPosZ, "z");
+        SaveTrackSettings(newBool, ref _trackSettings.ShowPosZ);
 
         if (_trackSettings is { ShowPosX: false, ShowPosY: false, ShowPosZ: false })
         {
@@ -138,9 +157,9 @@ public class ObjectTrackerInstanceWindow : Window
         GUILayout.EndHorizontal();
 
         UnityEngine.GUI.enabled = _hasTransform;
-        newValue = GUILayout.Toggle(_trackSettings.ShowRot, "Rotation");
+        newBool = GUILayout.Toggle(_trackSettings.ShowRot, "Rotation");
         UnityEngine.GUI.enabled = _trackSettings.ShowRot && _hasTransform;
-        SaveTrackSettings(newValue, ref _trackSettings.ShowRot);
+        SaveTrackSettings(newBool, ref _trackSettings.ShowRot);
         GUILayout.FlexibleSpace();
         if (_trackSettings is { ShowRot: true, ShowRotX: false, ShowRotY: false, ShowRotZ: false }
             and ({ ShowEulerRotation: true } or { ShowEulerRotation: false, ShowRotW: false }))
@@ -153,12 +172,12 @@ public class ObjectTrackerInstanceWindow : Window
         }
 
         GUILayout.BeginHorizontal();
-        newValue = GUILayout.Toggle(_trackSettings.ShowRotX, "x");
-        SaveTrackSettings(newValue, ref _trackSettings.ShowRotX);
-        newValue = GUILayout.Toggle(_trackSettings.ShowRotY, "y");
-        SaveTrackSettings(newValue, ref _trackSettings.ShowRotY);
-        newValue = GUILayout.Toggle(_trackSettings.ShowRotZ, "z");
-        SaveTrackSettings(newValue, ref _trackSettings.ShowRotZ);
+        newBool = GUILayout.Toggle(_trackSettings.ShowRotX, "x");
+        SaveTrackSettings(newBool, ref _trackSettings.ShowRotX);
+        newBool = GUILayout.Toggle(_trackSettings.ShowRotY, "y");
+        SaveTrackSettings(newBool, ref _trackSettings.ShowRotY);
+        newBool = GUILayout.Toggle(_trackSettings.ShowRotZ, "z");
+        SaveTrackSettings(newBool, ref _trackSettings.ShowRotZ);
 
         if (_trackSettings is { ShowRotX: false, ShowRotY: false, ShowRotZ: false, ShowEulerRotation: true })
         {
@@ -167,11 +186,11 @@ public class ObjectTrackerInstanceWindow : Window
 
         GUILayout.Space(10);
 
-        newValue = GUILayout.Toggle(_trackSettings.ShowEulerRotation, "Euler");
-        SaveTrackSettings(newValue, ref _trackSettings.ShowEulerRotation);
+        newBool = GUILayout.Toggle(_trackSettings.ShowEulerRotation, "Euler");
+        SaveTrackSettings(newBool, ref _trackSettings.ShowEulerRotation);
         UnityEngine.GUI.enabled = _hasTransform && _trackSettings is { ShowRot: true, ShowEulerRotation: false };
-        newValue = GUILayout.Toggle(_trackSettings.ShowRotW, "w");
-        SaveTrackSettings(newValue, ref _trackSettings.ShowRotW);
+        newBool = GUILayout.Toggle(_trackSettings.ShowRotW, "w");
+        SaveTrackSettings(newBool, ref _trackSettings.ShowRotW);
 
         if (_trackSettings is { ShowRotX: false, ShowRotY: false, ShowRotZ: false }
             and ({ ShowEulerRotation: true, ShowRotW: false } or { ShowEulerRotation: false }))
@@ -183,9 +202,9 @@ public class ObjectTrackerInstanceWindow : Window
         GUILayout.EndHorizontal();
 
         UnityEngine.GUI.enabled = _hasRigidbody;
-        newValue = GUILayout.Toggle(_trackSettings.ShowVel, "Velocity");
+        newBool = GUILayout.Toggle(_trackSettings.ShowVel, "Velocity");
         UnityEngine.GUI.enabled = _trackSettings.ShowVel && _hasRigidbody;
-        SaveTrackSettings(newValue, ref _trackSettings.ShowVel);
+        SaveTrackSettings(newBool, ref _trackSettings.ShowVel);
         if (_trackSettings is { ShowVel: true, ShowVelX: false, ShowVelY: false, ShowVelZ: false })
         {
             SaveTrackSettings(true, ref _trackSettings.ShowVelX);
@@ -196,12 +215,12 @@ public class ObjectTrackerInstanceWindow : Window
         GUILayout.FlexibleSpace();
 
         GUILayout.BeginHorizontal();
-        newValue = GUILayout.Toggle(_trackSettings.ShowVelX, "x");
-        SaveTrackSettings(newValue, ref _trackSettings.ShowVelX);
-        newValue = GUILayout.Toggle(_trackSettings.ShowVelY, "y");
-        SaveTrackSettings(newValue, ref _trackSettings.ShowVelY);
-        newValue = GUILayout.Toggle(_trackSettings.ShowVelZ, "z");
-        SaveTrackSettings(newValue, ref _trackSettings.ShowVelZ);
+        newBool = GUILayout.Toggle(_trackSettings.ShowVelX, "x");
+        SaveTrackSettings(newBool, ref _trackSettings.ShowVelX);
+        newBool = GUILayout.Toggle(_trackSettings.ShowVelY, "y");
+        SaveTrackSettings(newBool, ref _trackSettings.ShowVelY);
+        newBool = GUILayout.Toggle(_trackSettings.ShowVelZ, "z");
+        SaveTrackSettings(newBool, ref _trackSettings.ShowVelZ);
 
         if (_trackSettings is { ShowVelZ: false, ShowVelY: false, ShowVelZ: false })
         {
@@ -213,9 +232,9 @@ public class ObjectTrackerInstanceWindow : Window
 
         GUILayout.EndVertical();
 
-        UnityEngine.GUI.enabled = true;
-
         FixWindowSize();
+
+        UnityEngine.GUI.enabled = true;
     }
 
     private void FixWindowSize()
@@ -235,6 +254,8 @@ public class ObjectTrackerInstanceWindow : Window
     private bool _resizeWindow = true;
     private bool _prevToolbarShow;
 
+    private GUIStyle _nameLabel;
+
     // just data
     protected override void OnGUIWhileToolbarHide()
     {
@@ -246,6 +267,14 @@ public class ObjectTrackerInstanceWindow : Window
         }
 
         GUILayout.BeginVertical();
+
+        if (_trackSettings.ShowName)
+        {
+            _nameLabel ??= new GUIStyle(UnityEngine.GUI.skin.label) { alignment = TextAnchor.MiddleCenter };
+
+            GUILayout.Label(_trackSettings.Name, _nameLabel);
+            GUILayout.Space(SpacingFromCategory);
+        }
 
         if (_hasTransform)
         {
@@ -331,8 +360,6 @@ public class ObjectTrackerInstanceWindow : Window
 
     // update field entry and save to settings if different
     private void SaveTrackSettings<T>(T newValue, ref T settingsField)
-        where
-        T : struct
     {
         if (newValue.Equals(settingsField)) return;
         settingsField = newValue;
@@ -341,6 +368,9 @@ public class ObjectTrackerInstanceWindow : Window
 
     private struct TrackSettings
     {
+        public bool ShowName;
+        public string Name;
+
         public bool ShowPos;
         public bool ShowPosX;
         public bool ShowPosY;
