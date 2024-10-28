@@ -71,8 +71,7 @@ public class UnityObjectIdentifier
             _ => null
         };
 
-        if (t == null) return;
-        var parent = t.parent.gameObject;
+        var parent = t?.parent?.gameObject;
         if (parent == null) return;
         Parent = unityObjectIdentifierFactory.NewUnityObjectIdentifier(parent);
     }
