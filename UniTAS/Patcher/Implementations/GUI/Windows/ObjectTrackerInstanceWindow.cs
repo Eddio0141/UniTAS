@@ -34,6 +34,8 @@ public class ObjectTrackerInstanceWindow : Window
         _toolBar = windowDependencies.ToolBar;
         _unityObjectIdentifier = identifier;
         onSceneLoadEvent.OnSceneLoadEvent += OnSceneLoad;
+        windowDependencies.UpdateEvents.OnLateUpdateActual += OnLateUpdateActual;
+        windowDependencies.UpdateEvents.OnFixedUpdateActual += OnFixedUpdateActual;
         UpdateInstance();
         Init();
 
@@ -44,7 +46,8 @@ public class ObjectTrackerInstanceWindow : Window
             {
                 ShowEulerRotation = true, ShowPos = true, ShowPosX = true, ShowPosY = true, ShowPosZ = true,
                 ShowRot = true, ShowRotW = true, ShowRotX = true, ShowRotY = true, ShowRotZ = true,
-                Name = _instance?.name ?? "", ShowName = true
+                Name = _instance?.name ?? "", ShowName = true, ShowVel = true, ShowVelY = true, ShowHSpd = true,
+                ShowEstVel = true, ShowEstHSpd = true, ShowEstVelY = true
             };
         }
 
@@ -95,6 +98,11 @@ public class ObjectTrackerInstanceWindow : Window
         {
             _rigidbody = _transform?.GetComponent<Rigidbody>();
             _hasRigidbody = _rigidbody != null;
+        }
+
+        if (_hasTransform)
+        {
+            _prevPos = _transform!.position;
         }
     }
 
@@ -201,15 +209,49 @@ public class ObjectTrackerInstanceWindow : Window
         GUILayout.FlexibleSpace();
         GUILayout.EndHorizontal();
 
+        UnityEngine.GUI.enabled = _hasTransform;
+        newBool = GUILayout.Toggle(_trackSettings.ShowEstVel, "Est velocity");
+        UnityEngine.GUI.enabled = _trackSettings.ShowEstVel && _hasTransform;
+        SaveTrackSettings(newBool, ref _trackSettings.ShowEstVel);
+        if (_trackSettings is
+            { ShowEstVel: true, ShowEstVelX: false, ShowEstVelY: false, ShowEstVelZ: false, ShowEstHSpd: false })
+        {
+            SaveTrackSettings(false, ref _trackSettings.ShowEstVelX);
+            SaveTrackSettings(true, ref _trackSettings.ShowEstVelY);
+            SaveTrackSettings(false, ref _trackSettings.ShowEstVelZ);
+            SaveTrackSettings(true, ref _trackSettings.ShowEstHSpd);
+        }
+
+        GUILayout.FlexibleSpace();
+
+        GUILayout.BeginHorizontal();
+        newBool = GUILayout.Toggle(_trackSettings.ShowEstVelX, "x");
+        SaveTrackSettings(newBool, ref _trackSettings.ShowEstVelX);
+        newBool = GUILayout.Toggle(_trackSettings.ShowEstVelY, "y");
+        SaveTrackSettings(newBool, ref _trackSettings.ShowEstVelY);
+        newBool = GUILayout.Toggle(_trackSettings.ShowEstVelZ, "z");
+        SaveTrackSettings(newBool, ref _trackSettings.ShowEstVelZ);
+        newBool = GUILayout.Toggle(_trackSettings.ShowEstHSpd, "h spd");
+        SaveTrackSettings(newBool, ref _trackSettings.ShowEstHSpd);
+
+        if (_trackSettings is { ShowEstVelX: false, ShowEstVelY: false, ShowEstVelZ: false, ShowEstHSpd: false })
+        {
+            SaveTrackSettings(false, ref _trackSettings.ShowEstVel);
+        }
+
+        GUILayout.FlexibleSpace();
+        GUILayout.EndHorizontal();
+
         UnityEngine.GUI.enabled = _hasRigidbody;
         newBool = GUILayout.Toggle(_trackSettings.ShowVel, "Velocity");
         UnityEngine.GUI.enabled = _trackSettings.ShowVel && _hasRigidbody;
         SaveTrackSettings(newBool, ref _trackSettings.ShowVel);
-        if (_trackSettings is { ShowVel: true, ShowVelX: false, ShowVelY: false, ShowVelZ: false })
+        if (_trackSettings is { ShowVel: true, ShowVelX: false, ShowVelY: false, ShowVelZ: false, ShowHSpd: false })
         {
-            SaveTrackSettings(true, ref _trackSettings.ShowVelX);
+            SaveTrackSettings(false, ref _trackSettings.ShowVelX);
             SaveTrackSettings(true, ref _trackSettings.ShowVelY);
-            SaveTrackSettings(true, ref _trackSettings.ShowVelZ);
+            SaveTrackSettings(false, ref _trackSettings.ShowVelZ);
+            SaveTrackSettings(true, ref _trackSettings.ShowHSpd);
         }
 
         GUILayout.FlexibleSpace();
@@ -221,8 +263,10 @@ public class ObjectTrackerInstanceWindow : Window
         SaveTrackSettings(newBool, ref _trackSettings.ShowVelY);
         newBool = GUILayout.Toggle(_trackSettings.ShowVelZ, "z");
         SaveTrackSettings(newBool, ref _trackSettings.ShowVelZ);
+        newBool = GUILayout.Toggle(_trackSettings.ShowHSpd, "h spd");
+        SaveTrackSettings(newBool, ref _trackSettings.ShowHSpd);
 
-        if (_trackSettings is { ShowVelZ: false, ShowVelY: false, ShowVelZ: false })
+        if (_trackSettings is { ShowVelX: false, ShowVelY: false, ShowVelZ: false, ShowHSpd: false })
         {
             SaveTrackSettings(false, ref _trackSettings.ShowVel);
         }
@@ -272,7 +316,7 @@ public class ObjectTrackerInstanceWindow : Window
         {
             _nameLabel ??= new GUIStyle(UnityEngine.GUI.skin.label) { alignment = TextAnchor.MiddleCenter };
 
-            GUILayout.Label(_trackSettings.Name, _nameLabel);
+            GUILayoutUtils.ShadowedLabel(_trackSettings.Name, _nameLabel);
             GUILayout.Space(SpacingFromCategory);
         }
 
@@ -280,26 +324,26 @@ public class ObjectTrackerInstanceWindow : Window
         {
             if (_trackSettings.ShowPos)
             {
-                GUILayout.Label("Position");
+                GUILayoutUtils.ShadowedLabel("Position");
                 GUILayout.Space(SpacingFromCategory);
 
                 var pos = _transform.position;
 
                 if (_trackSettings.ShowPosX)
-                    GUILayout.Label($"x: {pos.x}");
+                    GUILayoutUtils.ShadowedLabel($"x: {pos.x}");
 
                 if (_trackSettings.ShowPosY)
-                    GUILayout.Label($"y: {pos.y}");
+                    GUILayoutUtils.ShadowedLabel($"y: {pos.y}");
 
                 if (_trackSettings.ShowPosZ)
-                    GUILayout.Label($"z: {pos.z}");
+                    GUILayoutUtils.ShadowedLabel($"z: {pos.z}");
 
                 GUILayout.Space(10);
             }
 
             if (_trackSettings.ShowRot)
             {
-                GUILayout.Label("Rotation");
+                GUILayoutUtils.ShadowedLabel("Rotation");
                 GUILayout.Space(SpacingFromCategory);
 
                 var rot = _transform.rotation;
@@ -321,41 +365,89 @@ public class ObjectTrackerInstanceWindow : Window
                 }
 
                 if (_trackSettings.ShowRotX)
-                    GUILayout.Label($"x: {x}");
+                    GUILayoutUtils.ShadowedLabel($"x: {x}");
 
                 if (_trackSettings.ShowRotY)
-                    GUILayout.Label($"y: {y}");
+                    GUILayoutUtils.ShadowedLabel($"y: {y}");
 
                 if (_trackSettings.ShowRotZ)
-                    GUILayout.Label($"z: {z}");
+                    GUILayoutUtils.ShadowedLabel($"z: {z}");
 
                 if (_trackSettings is { ShowEulerRotation: false, ShowRotW: true })
-                    GUILayout.Label($"w: {w}");
+                    GUILayoutUtils.ShadowedLabel($"w: {w}");
 
                 GUILayout.Space(10);
             }
         }
 
+        if (_hasTransform && _trackSettings.ShowEstVel)
+        {
+            GUILayoutUtils.ShadowedLabel("Est velocity");
+            GUILayout.Space(SpacingFromCategory);
+
+            if (_trackSettings.ShowEstVelX)
+                GUILayoutUtils.ShadowedLabel($"x: {_estVel.x}");
+
+            if (_trackSettings.ShowEstVelY)
+                GUILayoutUtils.ShadowedLabel($"y: {_estVel.y}");
+
+            if (_trackSettings.ShowEstVelZ)
+                GUILayoutUtils.ShadowedLabel($"z: {_estVel.z}");
+
+            if (_trackSettings.ShowEstHSpd)
+                GUILayoutUtils.ShadowedLabel($"h spd: {new Vector3(_estVel.x, 0, _estVel.z).magnitude}");
+        }
+
         if (_hasRigidbody && _trackSettings.ShowVel)
         {
-            GUILayout.Label("Velocity");
+            GUILayoutUtils.ShadowedLabel("Velocity");
             GUILayout.Space(SpacingFromCategory);
 
             var vel = _rigidbody.velocity;
 
             if (_trackSettings.ShowVelX)
-                GUILayout.Label($"x: {vel.x}");
+                GUILayoutUtils.ShadowedLabel($"x: {vel.x}");
 
             if (_trackSettings.ShowVelY)
-                GUILayout.Label($"y: {vel.y}");
+                GUILayoutUtils.ShadowedLabel($"y: {vel.y}");
 
             if (_trackSettings.ShowVelZ)
-                GUILayout.Label($"z: {vel.z}");
+                GUILayoutUtils.ShadowedLabel($"z: {vel.z}");
+
+            if (_trackSettings.ShowHSpd)
+                GUILayoutUtils.ShadowedLabel($"h spd: {new Vector3(vel.x, 0, vel.z).magnitude}");
         }
 
+        GUILayout.FlexibleSpace();
         GUILayout.EndVertical();
 
         FixWindowSize();
+    }
+
+    private Vector3 _prevPos;
+    private Vector3 _estVel;
+
+    private void OnLateUpdateActual()
+    {
+        // rigid body would only update every fixed update, so unrelated to here
+        if (!_hasTransform || _hasRigidbody) return;
+        var pos = _transform.position;
+        if (_trackSettings.ShowEstVel)
+            _estVel = pos - _prevPos;
+        _prevPos = pos;
+    }
+
+    private void OnFixedUpdateActual()
+    {
+        if (!_hasTransform || !_hasRigidbody) return;
+        var pos = _transform.position;
+        if (_trackSettings.ShowEstVel)
+        {
+            _estVel = pos - _prevPos;
+            _estVel /= Time.fixedDeltaTime;
+        }
+
+        _prevPos = pos;
     }
 
     // update field entry and save to settings if different
@@ -387,5 +479,12 @@ public class ObjectTrackerInstanceWindow : Window
         public bool ShowVelX;
         public bool ShowVelY;
         public bool ShowVelZ;
+        public bool ShowHSpd;
+
+        public bool ShowEstVel;
+        public bool ShowEstVelX;
+        public bool ShowEstVelY;
+        public bool ShowEstVelZ;
+        public bool ShowEstHSpd;
     }
 }

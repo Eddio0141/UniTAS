@@ -31,6 +31,7 @@ public class ObjectPickerWindow : Window
 
     private Vector2 _scrollPos = Vector2.zero;
     private GameObject[] _objects;
+    private GameObject[] _objectsBeforeSearch;
     private readonly List<GameObject> _childFilter = new();
 
     public override bool Show
@@ -65,6 +66,8 @@ public class ObjectPickerWindow : Window
 
     private void ApplyFilterToObjects()
     {
+        if (_childFilter.Count == 0) return;
+
         _objects = _objects.Where(x =>
         {
             var t = x.transform;
@@ -146,6 +149,7 @@ public class ObjectPickerWindow : Window
     }
 
     private bool _clickSelect;
+    private string _search;
 
     protected override void OnGUI()
     {
@@ -164,10 +168,39 @@ public class ObjectPickerWindow : Window
         {
             // refresh everything
             _objects = ObjectUtils.FindObjectsOfType<GameObject>();
+
             ApplyFilterToObjects();
+
+            if (_search != null)
+            {
+                _objectsBeforeSearch = _objects;
+                _objects = FilterBySearch(_objectsBeforeSearch);
+            }
 
             _raycastCamera = Camera.main;
             _canClickSelect = _raycastCamera == null;
+        }
+
+        GUILayout.EndHorizontal();
+
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("Search: ", GUILayout.ExpandWidth(false));
+        var newSearch = GUILayout.TextField(_search, GUILayout.ExpandWidth(true));
+        if (newSearch != _search)
+        {
+            _search = newSearch.ToLowerInvariant();
+
+            if (_search.Length == 0 && _objectsBeforeSearch != null)
+            {
+                _objects = _objectsBeforeSearch;
+                _objectsBeforeSearch = null;
+                _search = null;
+            }
+            else
+            {
+                _objectsBeforeSearch ??= _objects;
+                _objects = FilterBySearch(_objectsBeforeSearch);
+            }
         }
 
         GUILayout.EndHorizontal();
@@ -176,6 +209,8 @@ public class ObjectPickerWindow : Window
 
         foreach (var obj in _objects)
         {
+            if (obj == null) continue;
+
             GUILayout.BeginHorizontal();
 
             if (GUILayout.Button(obj.name))
@@ -194,6 +229,11 @@ public class ObjectPickerWindow : Window
         {
             Show = false;
         }
+    }
+
+    private GameObject[] FilterBySearch(GameObject[] objects)
+    {
+        return objects.Where(x => x != null && x.name.ToLowerInvariant().Contains(_search)).ToArray();
     }
 
     public event Action<ObjectPickerWindow, GameObject> OnObjectSelected;
