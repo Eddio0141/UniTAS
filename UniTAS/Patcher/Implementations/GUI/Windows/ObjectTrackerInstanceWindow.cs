@@ -86,9 +86,7 @@ public class ObjectTrackerInstanceWindow : Window
     }
 
     private Transform _transform;
-    private bool _hasTransform;
     private Rigidbody _rigidbody;
-    private bool _hasRigidbody;
 
     private void UpdateInstance()
     {
@@ -110,17 +108,15 @@ public class ObjectTrackerInstanceWindow : Window
             Component comp => comp.transform,
             _ => null
         };
-        _hasTransform = _transform != null;
 
-        if (updateComponents || !_hasRigidbody)
+        if (updateComponents || _rigidbody == null)
         {
             _rigidbody = _transform?.GetComponent<Rigidbody>();
-            _hasRigidbody = _rigidbody != null;
         }
 
-        if (_hasTransform)
+        if (_transform != null)
         {
-            _prevPos = _transform!.position;
+            _prevPos = _transform.position;
         }
     }
 
@@ -170,10 +166,10 @@ public class ObjectTrackerInstanceWindow : Window
             };
         }
 
-
-        UnityEngine.GUI.enabled = _hasTransform;
+        var hasTransform = _transform != null;
+        UnityEngine.GUI.enabled = hasTransform;
         newBool = GUILayout.Toggle(_trackSettings.ShowPos, "Position");
-        UnityEngine.GUI.enabled = _trackSettings.ShowPos && _hasTransform;
+        UnityEngine.GUI.enabled = _trackSettings.ShowPos && hasTransform;
         SaveTrackSettings(newBool, ref _trackSettings.ShowPos);
         if (_trackSettings is { ShowPos: true, ShowPosX: false, ShowPosY: false, ShowPosZ: false })
         {
@@ -200,9 +196,9 @@ public class ObjectTrackerInstanceWindow : Window
         GUILayout.FlexibleSpace();
         GUILayout.EndHorizontal();
 
-        UnityEngine.GUI.enabled = _hasTransform;
+        UnityEngine.GUI.enabled = hasTransform;
         newBool = GUILayout.Toggle(_trackSettings.ShowRot, "Rotation");
-        UnityEngine.GUI.enabled = _trackSettings.ShowRot && _hasTransform;
+        UnityEngine.GUI.enabled = _trackSettings.ShowRot && hasTransform;
         SaveTrackSettings(newBool, ref _trackSettings.ShowRot);
         GUILayout.FlexibleSpace();
         if (_trackSettings is { ShowRot: true, ShowRotX: false, ShowRotY: false, ShowRotZ: false }
@@ -232,7 +228,7 @@ public class ObjectTrackerInstanceWindow : Window
 
         newBool = GUILayout.Toggle(_trackSettings.ShowEulerRotation, "Euler");
         SaveTrackSettings(newBool, ref _trackSettings.ShowEulerRotation);
-        UnityEngine.GUI.enabled = _hasTransform && _trackSettings is { ShowRot: true, ShowEulerRotation: false };
+        UnityEngine.GUI.enabled = hasTransform && _trackSettings is { ShowRot: true, ShowEulerRotation: false };
         newBool = GUILayout.Toggle(_trackSettings.ShowRotW, "w");
         SaveTrackSettings(newBool, ref _trackSettings.ShowRotW);
 
@@ -245,9 +241,9 @@ public class ObjectTrackerInstanceWindow : Window
         GUILayout.FlexibleSpace();
         GUILayout.EndHorizontal();
 
-        UnityEngine.GUI.enabled = _hasTransform;
+        UnityEngine.GUI.enabled = hasTransform;
         newBool = GUILayout.Toggle(_trackSettings.ShowEstVel, "Est velocity");
-        UnityEngine.GUI.enabled = _trackSettings.ShowEstVel && _hasTransform;
+        UnityEngine.GUI.enabled = _trackSettings.ShowEstVel && hasTransform;
         SaveTrackSettings(newBool, ref _trackSettings.ShowEstVel);
         if (_trackSettings is
             { ShowEstVel: true, ShowEstVelX: false, ShowEstVelY: false, ShowEstVelZ: false, ShowEstHSpd: false })
@@ -278,9 +274,10 @@ public class ObjectTrackerInstanceWindow : Window
         GUILayout.FlexibleSpace();
         GUILayout.EndHorizontal();
 
-        UnityEngine.GUI.enabled = _hasRigidbody;
+        var hasRigidbody = _rigidbody != null;
+        UnityEngine.GUI.enabled = hasRigidbody;
         newBool = GUILayout.Toggle(_trackSettings.ShowVel, "Velocity");
-        UnityEngine.GUI.enabled = _trackSettings.ShowVel && _hasRigidbody;
+        UnityEngine.GUI.enabled = _trackSettings.ShowVel && hasRigidbody;
         SaveTrackSettings(newBool, ref _trackSettings.ShowVel);
         if (_trackSettings is { ShowVel: true, ShowVelX: false, ShowVelY: false, ShowVelZ: false, ShowHSpd: false })
         {
@@ -469,7 +466,7 @@ public class ObjectTrackerInstanceWindow : Window
     private void OnLateUpdateActual()
     {
         // rigid body would only update every fixed update, so unrelated to here
-        if (!_hasTransform || _hasRigidbody) return;
+        if (_transform == null || _rigidbody != null) return;
         var pos = _transform.position;
         if (_trackSettings.ShowEstVel)
             _estVel = pos - _prevPos;
@@ -478,7 +475,7 @@ public class ObjectTrackerInstanceWindow : Window
 
     private void OnFixedUpdateActual()
     {
-        if (!_hasTransform || !_hasRigidbody) return;
+        if (_transform == null || _rigidbody == null) return;
         var pos = _transform.position;
         if (_trackSettings.ShowEstVel)
         {
