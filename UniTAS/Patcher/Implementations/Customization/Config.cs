@@ -125,16 +125,7 @@ public partial class Config : IConfig, IDisposable
         var entry = JsonConvert.SerializeObject(value);
         _backendEntries[key] = entry;
 
-        var entries = _backendEntries.Select(x => $"{x.Key}{EntrySeparator}{x.Value}").ToArray();
-
-        try
-        {
-            File.WriteAllLines(UniTASPaths.ConfigBackend, entries);
-        }
-        catch (Exception e)
-        {
-            _logger.LogWarning($"Failed to save backend config for entry {key}: {e}");
-        }
+        WriteEntries();
     }
 
     public bool TryGetBackendEntry<T>(string key, out T value)
@@ -147,5 +138,25 @@ public partial class Config : IConfig, IDisposable
 
         value = JsonConvert.DeserializeObject<T>(entry);
         return true;
+    }
+
+    public void RemoveBackendEntry(string key)
+    {
+        if (_backendEntries.Remove(key))
+            WriteEntries();
+    }
+
+    private void WriteEntries()
+    {
+        var entries = _backendEntries.Select(x => $"{x.Key}{EntrySeparator}{x.Value}").ToArray();
+
+        try
+        {
+            File.WriteAllLines(UniTASPaths.ConfigBackend, entries);
+        }
+        catch (Exception e)
+        {
+            _logger.LogWarning($"Failed to save backend config: {e}");
+        }
     }
 }

@@ -18,4 +18,9 @@ public interface IConfig
     /// Write or update config entry for backend config
     /// </summary>
     void WriteBackendEntry<T>(string key, T value);
+
+    /// <summary>
+    /// Safely removes backend entry by key
+    /// </summary>
+    void RemoveBackendEntry(string key);
 }

@@ -190,6 +190,11 @@ public static class KernelUtils
         {
             throw new NotImplementedException();
         }
+
+        public void RemoveBackendEntry(string key)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     [Register(IncludeDifferentAssembly = true)]
