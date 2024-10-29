@@ -194,11 +194,15 @@ public class UnityObjectIdentifier
     /// </summary>
     public struct SearchSettings
     {
-        public IdSearchType IdSearchType;
-        public bool NameMatch;
-        public bool ParentMatch;
-        public bool ComponentMatch;
-        public bool SceneMatch;
+        public IdSearchType IdSearchType = IdSearchType.Fallback;
+        public bool NameMatch = true;
+        public bool ParentMatch = true;
+        public bool ComponentMatch = true;
+        public bool SceneMatch = false;
+
+        public SearchSettings()
+        {
+        }
     }
 
     public enum IdSearchType

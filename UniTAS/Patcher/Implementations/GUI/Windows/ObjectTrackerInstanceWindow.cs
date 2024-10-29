@@ -6,6 +6,7 @@ using UniTAS.Patcher.Models.GUI;
 using UniTAS.Patcher.Models.UnitySafeWrappers.SceneManagement;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.GUI;
+using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 
@@ -23,20 +24,24 @@ public class ObjectTrackerInstanceWindow : Window
 
     private readonly IConfig _config;
     private readonly IToolBar _toolBar;
+    private readonly ISceneWrapper _sceneWrapper;
+    private readonly IWindowFactory _windowFactory;
 
     public ObjectTrackerInstanceWindow(WindowDependencies windowDependencies,
         UnityObjectIdentifier identifier,
-        IOnSceneLoadEvent onSceneLoadEvent) : base(windowDependencies,
+        IOnSceneLoadEvent onSceneLoadEvent, ISceneWrapper sceneWrapper, IWindowFactory windowFactory) : base(
+        windowDependencies,
         new WindowConfig(defaultWindowRect: GUIUtils.WindowRect(200, 200), showByDefault: true),
         $"ObjectTracker-{identifier}")
     {
         _config = windowDependencies.Config;
         _toolBar = windowDependencies.ToolBar;
         _unityObjectIdentifier = identifier;
+        _sceneWrapper = sceneWrapper;
+        _windowFactory = windowFactory;
         onSceneLoadEvent.OnSceneLoadEvent += OnSceneLoad;
         windowDependencies.UpdateEvents.OnLateUpdateActual += OnLateUpdateActual;
         windowDependencies.UpdateEvents.OnFixedUpdateActual += OnFixedUpdateActual;
-        UpdateInstance();
         Init();
 
         _trackSettingsConfigKey = $"ObjectTracker-Instance-trackSettings-{identifier}";
@@ -47,9 +52,11 @@ public class ObjectTrackerInstanceWindow : Window
                 ShowEulerRotation = true, ShowPos = true, ShowPosX = true, ShowPosY = true, ShowPosZ = true,
                 ShowRot = true, ShowRotW = true, ShowRotX = true, ShowRotY = true, ShowRotZ = true,
                 Name = _instance?.name ?? "", ShowName = true, ShowVel = true, ShowVelY = true, ShowHSpd = true,
-                ShowEstVel = true, ShowEstHSpd = true, ShowEstVelY = true
+                ShowEstVel = true, ShowEstHSpd = true, ShowEstVelY = true, ObjectSearch = new()
             };
         }
+
+        UpdateInstance();
 
         _prevToolbarShow = _toolBar.Show;
     }
@@ -77,7 +84,7 @@ public class ObjectTrackerInstanceWindow : Window
         var updateComponents = false;
         if (_instance == null)
         {
-            _instance = _unityObjectIdentifier.FindObject();
+            _instance = _unityObjectIdentifier.FindObject(_trackSettings.ObjectSearch, _sceneWrapper);
             updateComponents = true;
         }
 
@@ -107,6 +114,7 @@ public class ObjectTrackerInstanceWindow : Window
     }
 
     private GUIStyle _labelNoWordWrap;
+    private ObjectSearchConfigWindow _searchConfigWindow;
 
     // configuration of this
     protected override void OnGUI()
@@ -134,6 +142,23 @@ public class ObjectTrackerInstanceWindow : Window
         SaveTrackSettings(newStr, ref _trackSettings.Name);
         GUILayout.FlexibleSpace();
         GUILayout.EndHorizontal();
+
+        UnityEngine.GUI.enabled = true;
+        if (GUILayout.Button("Object search settings") && _searchConfigWindow == null)
+        {
+            _searchConfigWindow = _windowFactory.Create(_trackSettings.ObjectSearch);
+            _searchConfigWindow.OnSearchSettingsChanged += (_, updatedSettings) =>
+            {
+                if (updatedSettings != null)
+                {
+                    _trackSettings.ObjectSearch = updatedSettings.Value;
+                    _config.WriteBackendEntry(_trackSettingsConfigKey, _trackSettings);
+                }
+
+                _searchConfigWindow = null;
+            };
+        }
+
 
         UnityEngine.GUI.enabled = _hasTransform;
         newBool = GUILayout.Toggle(_trackSettings.ShowPos, "Position");
@@ -486,5 +511,7 @@ public class ObjectTrackerInstanceWindow : Window
         public bool ShowEstVelY;
         public bool ShowEstVelZ;
         public bool ShowEstHSpd;
+
+        public UnityObjectIdentifier.SearchSettings ObjectSearch;
     }
 }

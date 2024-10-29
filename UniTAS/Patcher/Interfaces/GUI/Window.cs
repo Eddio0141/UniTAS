@@ -68,6 +68,8 @@ public abstract class Window
         {
             _config = value;
             WindowName = Config.WindowName;
+            if (Config.AutoScale)
+                Resizable = false;
         }
     }
 
@@ -254,6 +256,12 @@ public abstract class Window
         else
         {
             OnGUIWhileToolbarHide();
+        }
+
+        if (Config.AutoScale && Event.current.type == EventType.Repaint)
+        {
+            var rect = GUILayoutUtility.GetLastRect();
+            WindowRect = new Rect(_windowRect) { width = rect.width, height = rect.height };
         }
 
         if (_toolBar.Show || !NoWindowDuringToolBarHide)
