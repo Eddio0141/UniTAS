@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using BepInEx;
-using UniTAS.Patcher.Exceptions.GUI;
 using UniTAS.Patcher.Models.GUI;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.GUI;
@@ -38,6 +36,7 @@ public abstract class Window
         {
             if (_show == value) return;
             _show = value;
+            OnShowChange?.Invoke(this, _show);
 
             if (_show)
             {
@@ -51,7 +50,13 @@ public abstract class Window
                 _toolBar.OnShowChange -= ToolBarOnOnShowChange;
             }
 
-            SaveWindowShown();
+            if (!_show && _config.RemoveConfigOnClose)
+            {
+                _configService.RemoveBackendEntry(_backendConfigWindowRect);
+                _configService.RemoveBackendEntry(_backendConfigWindowShown);
+            }
+            else
+                SaveWindowShown();
 
             return;
 
@@ -68,8 +73,7 @@ public abstract class Window
         {
             _config = value;
             WindowName = Config.WindowName;
-            if (Config.AutoScale)
-                Resizable = false;
+            Resizable = false;
         }
     }
 
@@ -84,8 +88,6 @@ public abstract class Window
     public string WindowConfigId { get; }
     private WindowConfig _config = new();
 
-    private static readonly List<string> UsedWindowIDs = new();
-
     protected bool NoWindowDuringToolBarHide { get; set; }
     private bool _windowShownToolbarHide;
     protected bool Resizable { get; set; }
@@ -93,7 +95,6 @@ public abstract class Window
     protected Window(WindowDependencies windowDependencies, string windowId = null)
     {
         WindowConfigId = windowId;
-        ValidateWindowId();
         InitConfigNames();
 
         _patchReverseInvoker = windowDependencies.PatchReverseInvoker;
@@ -105,7 +106,6 @@ public abstract class Window
     protected Window(WindowDependencies windowDependencies, WindowConfig config, string windowId = null)
     {
         WindowConfigId = windowId;
-        ValidateWindowId();
         InitConfigNames();
 
         _patchReverseInvoker = windowDependencies.PatchReverseInvoker;
@@ -131,18 +131,6 @@ public abstract class Window
         if (WindowConfigId == null) return;
         _backendConfigWindowRect = $"{BackendConfigPrefix}rect-{WindowConfigId}";
         _backendConfigWindowShown = $"{BackendConfigPrefix}show-{WindowConfigId}";
-    }
-
-    private void ValidateWindowId()
-    {
-        if (WindowConfigId == null) return;
-
-        if (UsedWindowIDs.Contains(WindowConfigId))
-        {
-            throw new DuplicateWindowIDException($"WindowID {WindowConfigId} is already used");
-        }
-
-        UsedWindowIDs.Add(WindowConfigId);
     }
 
     private Vector2 MousePosition => _patchReverseInvoker.Invoke(() => UnityInput.Current.mousePosition);
@@ -256,12 +244,6 @@ public abstract class Window
         else
         {
             OnGUIWhileToolbarHide();
-        }
-
-        if (Config.AutoScale && Event.current.type == EventType.Repaint)
-        {
-            var rect = GUILayoutUtility.GetLastRect();
-            WindowRect = new Rect(_windowRect) { width = rect.width, height = rect.height };
         }
 
         if (_toolBar.Show || !NoWindowDuringToolBarHide)
@@ -439,4 +421,22 @@ public abstract class Window
     }
 
     public event Action OnDragEnd;
+    public event Action<Window, bool> OnShowChange;
+
+    /// <summary>
+    /// Updates window size based on last element's size
+    /// </summary>
+    /// <returns>True if the function was able to resize</returns>
+    protected bool FitWindowSize()
+    {
+        if (Event.current.type != EventType.Repaint)
+            return false;
+
+        var rect = GUILayoutUtility.GetLastRect();
+        var windowRect = WindowRect;
+        windowRect.width = rect.width;
+        windowRect.height = rect.height;
+        WindowRect = windowRect;
+        return true;
+    }
 }

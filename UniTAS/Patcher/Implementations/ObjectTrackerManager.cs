@@ -37,7 +37,7 @@ public class ObjectTrackerManager : IObjectTrackerManager
         updateEvents.OnFixedUpdateUnconditional += InitTrackerWindows;
     }
 
-    public void InitTrackerWindows()
+    private void InitTrackerWindows()
     {
         foreach (var tracker in _trackers)
         {
@@ -84,6 +84,13 @@ public class ObjectTrackerManager : IObjectTrackerManager
 
     private void NewTrackerWindow(UnityObjectIdentifier identifier)
     {
-        _windowFactory.Create(identifier);
+        var window = _windowFactory.Create(identifier);
+        window.OnShowChange += (_, show) =>
+        {
+            if (show) return;
+            // if its hiding, remove from tracker
+            _trackers.Remove(identifier);
+            SaveTrackers();
+        };
     }
 }

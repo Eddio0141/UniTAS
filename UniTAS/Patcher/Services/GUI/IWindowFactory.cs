@@ -7,6 +7,6 @@ namespace UniTAS.Patcher.Services.GUI;
 public interface IWindowFactory
 {
     T Create<T>() where T : Window;
-    void Create(UnityObjectIdentifier identifier);
+    ObjectTrackerInstanceWindow Create(UnityObjectIdentifier identifier);
     ObjectSearchConfigWindow Create(UnityObjectIdentifier.SearchSettings searchSettings);
 }

@@ -31,7 +31,8 @@ public class ObjectTrackerInstanceWindow : Window
         UnityObjectIdentifier identifier,
         IOnSceneLoadEvent onSceneLoadEvent, ISceneWrapper sceneWrapper, IWindowFactory windowFactory) : base(
         windowDependencies,
-        new WindowConfig(defaultWindowRect: GUIUtils.WindowRect(200, 200), showByDefault: true),
+        new WindowConfig(defaultWindowRect: GUIUtils.WindowRect(200, 200), showByDefault: true,
+            removeConfigOnClose: true),
         $"ObjectTracker-{identifier}")
     {
         _config = windowDependencies.Config;
@@ -47,6 +48,7 @@ public class ObjectTrackerInstanceWindow : Window
         _trackSettingsConfigKey = $"ObjectTracker-Instance-trackSettings-{identifier}";
         if (!_config.TryGetBackendEntry(_trackSettingsConfigKey, out _trackSettings))
         {
+            UpdateInstance();
             _trackSettings = new TrackSettings
             {
                 ShowEulerRotation = true, ShowPos = true, ShowPosX = true, ShowPosY = true, ShowPosZ = true,
@@ -55,10 +57,19 @@ public class ObjectTrackerInstanceWindow : Window
                 ShowEstVel = true, ShowEstHSpd = true, ShowEstVelY = true, ObjectSearch = new()
             };
         }
-
-        UpdateInstance();
+        else
+        {
+            UpdateInstance();
+        }
 
         _prevToolbarShow = _toolBar.Show;
+
+        OnShowChange += (_, show) =>
+        {
+            if (show) return;
+            // dispose config stuff
+            _config.RemoveBackendEntry(_trackSettingsConfigKey);
+        };
     }
 
     private new void Init()
@@ -136,7 +147,7 @@ public class ObjectTrackerInstanceWindow : Window
         _labelNoWordWrap ??= new GUIStyle(UnityEngine.GUI.skin.label) { wordWrap = false };
         GUILayout.Label("Name: ", _labelNoWordWrap);
         GUILayout.Space(3);
-        var newStr = GUILayout.TextField(_trackSettings.Name, 30, GUILayout.ExpandWidth(false));
+        var newStr = GUILayout.TextField(_trackSettings.Name, 30, GUILayout.ExpandWidth(false), GUILayout.MinWidth(15));
         if (newStr != _trackSettings.Name)
             _resizeWindow = true;
         SaveTrackSettings(newStr, ref _trackSettings.Name);
@@ -296,34 +307,23 @@ public class ObjectTrackerInstanceWindow : Window
             SaveTrackSettings(false, ref _trackSettings.ShowVel);
         }
 
+        UnityEngine.GUI.enabled = true;
+
         GUILayout.FlexibleSpace();
         GUILayout.EndHorizontal();
 
         GUILayout.EndVertical();
 
-        FixWindowSize();
-
-        UnityEngine.GUI.enabled = true;
-    }
-
-    private void FixWindowSize()
-    {
-        if (!_resizeWindow || Event.current.type != EventType.Repaint)
-            return;
-        _resizeWindow = false;
-
-        var rect = GUILayoutUtility.GetLastRect();
-        var windowRect = WindowRect;
-        windowRect.width = rect.width;
-        windowRect.height = rect.height;
-        WindowRect = windowRect;
+        if (_resizeWindow && FitWindowSize())
+            _resizeWindow = false;
     }
 
     private const int SpacingFromCategory = 3;
     private bool _resizeWindow = true;
     private bool _prevToolbarShow;
 
-    private GUIStyle _nameLabel;
+    private GUIStyle _valueDisplayLabel;
+    private GUIStyle _categoryLabel;
 
     // just data
     protected override void OnGUIWhileToolbarHide()
@@ -337,38 +337,50 @@ public class ObjectTrackerInstanceWindow : Window
 
         GUILayout.BeginVertical();
 
+        _categoryLabel ??= new GUIStyle(UnityEngine.GUI.skin.label)
+        {
+            fontStyle = FontStyle.Bold
+        };
+
         if (_trackSettings.ShowName)
         {
-            _nameLabel ??= new GUIStyle(UnityEngine.GUI.skin.label) { alignment = TextAnchor.MiddleCenter };
-
-            GUILayoutUtils.ShadowedLabel(_trackSettings.Name, _nameLabel);
+            GUILayoutUtils.ShadowedLabel(_trackSettings.Name, _categoryLabel);
             GUILayout.Space(SpacingFromCategory);
         }
+
+        _valueDisplayLabel ??= new GUIStyle(UnityEngine.GUI.skin.label)
+        {
+            padding = new(),
+            margin =
+            {
+                bottom = 0
+            }
+        };
 
         if (_transform != null)
         {
             if (_trackSettings.ShowPos)
             {
-                GUILayoutUtils.ShadowedLabel("Position");
+                GUILayoutUtils.ShadowedLabel("Position", _categoryLabel);
                 GUILayout.Space(SpacingFromCategory);
 
                 var pos = _transform.position;
 
                 if (_trackSettings.ShowPosX)
-                    GUILayoutUtils.ShadowedLabel($"x: {pos.x}");
+                    GUILayoutUtils.ShadowedLabel($"x: {pos.x}", _valueDisplayLabel);
 
                 if (_trackSettings.ShowPosY)
-                    GUILayoutUtils.ShadowedLabel($"y: {pos.y}");
+                    GUILayoutUtils.ShadowedLabel($"y: {pos.y}", _valueDisplayLabel);
 
                 if (_trackSettings.ShowPosZ)
-                    GUILayoutUtils.ShadowedLabel($"z: {pos.z}");
+                    GUILayoutUtils.ShadowedLabel($"z: {pos.z}", _valueDisplayLabel);
 
                 GUILayout.Space(10);
             }
 
             if (_trackSettings.ShowRot)
             {
-                GUILayoutUtils.ShadowedLabel("Rotation");
+                GUILayoutUtils.ShadowedLabel("Rotation", _categoryLabel);
                 GUILayout.Space(SpacingFromCategory);
 
                 var rot = _transform.rotation;
@@ -390,63 +402,65 @@ public class ObjectTrackerInstanceWindow : Window
                 }
 
                 if (_trackSettings.ShowRotX)
-                    GUILayoutUtils.ShadowedLabel($"x: {x}");
+                    GUILayoutUtils.ShadowedLabel($"x: {x}", _valueDisplayLabel);
 
                 if (_trackSettings.ShowRotY)
-                    GUILayoutUtils.ShadowedLabel($"y: {y}");
+                    GUILayoutUtils.ShadowedLabel($"y: {y}", _valueDisplayLabel);
 
                 if (_trackSettings.ShowRotZ)
-                    GUILayoutUtils.ShadowedLabel($"z: {z}");
+                    GUILayoutUtils.ShadowedLabel($"z: {z}", _valueDisplayLabel);
 
                 if (_trackSettings is { ShowEulerRotation: false, ShowRotW: true })
-                    GUILayoutUtils.ShadowedLabel($"w: {w}");
+                    GUILayoutUtils.ShadowedLabel($"w: {w}", _valueDisplayLabel);
 
                 GUILayout.Space(10);
             }
 
             if (_trackSettings.ShowEstVel)
             {
-                GUILayoutUtils.ShadowedLabel("Est velocity");
+                GUILayoutUtils.ShadowedLabel("Est velocity", _categoryLabel);
                 GUILayout.Space(SpacingFromCategory);
 
                 if (_trackSettings.ShowEstVelX)
-                    GUILayoutUtils.ShadowedLabel($"x: {_estVel.x}");
+                    GUILayoutUtils.ShadowedLabel($"x: {_estVel.x}", _valueDisplayLabel);
 
                 if (_trackSettings.ShowEstVelY)
-                    GUILayoutUtils.ShadowedLabel($"y: {_estVel.y}");
+                    GUILayoutUtils.ShadowedLabel($"y: {_estVel.y}", _valueDisplayLabel);
 
                 if (_trackSettings.ShowEstVelZ)
-                    GUILayoutUtils.ShadowedLabel($"z: {_estVel.z}");
+                    GUILayoutUtils.ShadowedLabel($"z: {_estVel.z}", _valueDisplayLabel);
 
                 if (_trackSettings.ShowEstHSpd)
-                    GUILayoutUtils.ShadowedLabel($"h spd: {new Vector3(_estVel.x, 0, _estVel.z).magnitude}");
+                    GUILayoutUtils.ShadowedLabel($"h spd: {new Vector3(_estVel.x, 0, _estVel.z).magnitude}",
+                        _valueDisplayLabel);
             }
         }
 
         if (_rigidbody != null && _trackSettings.ShowVel)
         {
-            GUILayoutUtils.ShadowedLabel("Velocity");
+            GUILayoutUtils.ShadowedLabel("Velocity", _categoryLabel);
             GUILayout.Space(SpacingFromCategory);
 
             var vel = _rigidbody.velocity;
 
             if (_trackSettings.ShowVelX)
-                GUILayoutUtils.ShadowedLabel($"x: {vel.x}");
+                GUILayoutUtils.ShadowedLabel($"x: {vel.x}", _valueDisplayLabel);
 
             if (_trackSettings.ShowVelY)
-                GUILayoutUtils.ShadowedLabel($"y: {vel.y}");
+                GUILayoutUtils.ShadowedLabel($"y: {vel.y}", _valueDisplayLabel);
 
             if (_trackSettings.ShowVelZ)
-                GUILayoutUtils.ShadowedLabel($"z: {vel.z}");
+                GUILayoutUtils.ShadowedLabel($"z: {vel.z}", _valueDisplayLabel);
 
             if (_trackSettings.ShowHSpd)
-                GUILayoutUtils.ShadowedLabel($"h spd: {new Vector3(vel.x, 0, vel.z).magnitude}");
+                GUILayoutUtils.ShadowedLabel($"h spd: {new Vector3(vel.x, 0, vel.z).magnitude}", _valueDisplayLabel);
         }
 
         GUILayout.FlexibleSpace();
         GUILayout.EndVertical();
 
-        FixWindowSize();
+        if (_resizeWindow && FitWindowSize())
+            _resizeWindow = false;
     }
 
     private Vector3 _prevPos;

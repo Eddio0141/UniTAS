@@ -13,7 +13,7 @@ public class ObjectSearchConfigWindow(
     WindowDependencies windowDependencies,
     UnityObjectIdentifier.SearchSettings searchSettings)
     : Window(windowDependencies,
-        new WindowConfig(autoScale: true, windowName: "Object detection options", showByDefault: true))
+        new WindowConfig(windowName: "Object detection options", showByDefault: true))
 {
     private UnityObjectIdentifier.SearchSettings _searchSettings = searchSettings;
 
@@ -64,7 +64,12 @@ public class ObjectSearchConfigWindow(
         GUILayout.EndHorizontal();
 
         GUILayout.EndVertical();
+
+        if (!_initialResize && FitWindowSize())
+            _initialResize = true;
     }
+
+    private bool _initialResize;
 
     public event Action<ObjectSearchConfigWindow, UnityObjectIdentifier.SearchSettings?> OnSearchSettingsChanged;
 }

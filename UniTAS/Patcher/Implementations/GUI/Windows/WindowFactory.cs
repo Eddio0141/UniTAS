@@ -16,9 +16,9 @@ public class WindowFactory(IContainer container) : IWindowFactory
         return container.GetInstance<T>();
     }
 
-    public void Create(UnityObjectIdentifier identifier)
+    public ObjectTrackerInstanceWindow Create(UnityObjectIdentifier identifier)
     {
-        container.With(identifier).GetInstance<ObjectTrackerInstanceWindow>();
+        return container.With(identifier).GetInstance<ObjectTrackerInstanceWindow>();
     }
 
     public ObjectSearchConfigWindow Create(UnityObjectIdentifier.SearchSettings searchSettings)
