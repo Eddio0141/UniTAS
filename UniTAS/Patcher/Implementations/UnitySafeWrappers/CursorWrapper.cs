@@ -3,6 +3,7 @@ using System.Reflection;
 using HarmonyLib;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Models.UnitySafeWrappers;
+using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 using UnityEngine;
@@ -14,6 +15,7 @@ public class CursorWrapper : ICursorWrapper
 {
     // TODO test in old unity
     private readonly ILogger _logger;
+    private readonly IPatchReverseInvoker _patchReverseInvoker;
 
     private readonly bool _newUnity;
 
@@ -26,9 +28,10 @@ public class CursorWrapper : ICursorWrapper
     private readonly PropertyInfo _showCursor;
     private readonly PropertyInfo _lockCursor;
 
-    public CursorWrapper(ILogger logger)
+    public CursorWrapper(ILogger logger, IPatchReverseInvoker patchReverseInvoker)
     {
         _logger = logger;
+        _patchReverseInvoker = patchReverseInvoker;
         var cursor = AccessTools.TypeByName("UnityEngine.Cursor");
         _lockState = AccessTools.Property(cursor, "lockState");
         _visible = AccessTools.Property(cursor, "visible");
@@ -47,7 +50,7 @@ public class CursorWrapper : ICursorWrapper
     public bool Visible
     {
         get => (bool)(_newUnity ? _visible : _showCursor).GetValue(null, null);
-        set => (_newUnity ? _visible : _showCursor).SetValue(null, value, null);
+        set => _patchReverseInvoker.Invoke(() => (_newUnity ? _visible : _showCursor).SetValue(null, value, null));
     }
 
     public CursorLockMode LockState
@@ -68,7 +71,7 @@ public class CursorWrapper : ICursorWrapper
             if (_newUnity)
             {
                 var mode = Enum.Parse(_cursorLockMode, value.ToString());
-                _lockState.SetValue(null, mode, null);
+                _patchReverseInvoker.Invoke(() => _lockState.SetValue(null, mode, null));
             }
             else
             {
@@ -78,7 +81,7 @@ public class CursorWrapper : ICursorWrapper
                     value = CursorLockMode.None;
                 }
 
-                _lockCursor.SetValue(null, value == CursorLockMode.Locked, null);
+                _patchReverseInvoker.Invoke(() => _lockCursor.SetValue(null, value == CursorLockMode.Locked, null));
             }
         }
     }

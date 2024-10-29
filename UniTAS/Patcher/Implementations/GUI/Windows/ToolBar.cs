@@ -2,10 +2,12 @@ using System;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Models.Customization;
 using UniTAS.Patcher.Models.DependencyInjection;
+using UniTAS.Patcher.Models.UnitySafeWrappers;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Customization;
 using UniTAS.Patcher.Services.GUI;
 using UniTAS.Patcher.Services.UnityEvents;
+using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 
@@ -14,13 +16,25 @@ namespace UniTAS.Patcher.Implementations.GUI.Windows;
 [Singleton(RegisterPriority.ToolBar)]
 [ForceInstantiate]
 [ExcludeRegisterIfTesting]
-public class ToolBar : IToolBar
+public class ToolBar : IToolBar, IActualCursorStateUpdate
 {
     private readonly IWindowFactory _windowFactory;
+    private readonly ICursorWrapper _cursorWrapper;
 
     private readonly GUIStyle _buttonStyle;
     private readonly Texture2D _buttonNormal = new(1, 1);
     private const int ToolbarHeight = 35;
+
+    public CursorLockMode CursorLockState { get; set; } = CursorLockMode.None;
+    public bool CursorVisible { get; set; } = true;
+    public bool PreventCursorChange { get; private set; }
+
+    private void OnGameRestart(DateTime startupTime, bool preSceneLoad)
+    {
+        if (preSceneLoad) return;
+        CursorLockState = CursorLockMode.None;
+        CursorVisible = true;
+    }
 
     public bool Show
     {
@@ -29,6 +43,19 @@ public class ToolBar : IToolBar
         {
             if (_show == value) return;
             _show = value;
+            if (_show)
+            {
+                _cursorWrapper.LockState = CursorLockMode.None;
+                _cursorWrapper.Visible = true;
+                PreventCursorChange = true;
+            }
+            else
+            {
+                PreventCursorChange = false;
+                _cursorWrapper.LockState = CursorLockState;
+                _cursorWrapper.Visible = CursorVisible;
+            }
+
             OnShowChange?.Invoke(value);
         }
     }
@@ -40,9 +67,11 @@ public class ToolBar : IToolBar
     private readonly IDropdownList _dropdownList;
 
     public ToolBar(IWindowFactory windowFactory, IBinds binds, IGUIComponentFactory guiComponentFactory,
-        IObjectTrackerManager objectTrackerManager, IUpdateEvents updateEvents)
+        IObjectTrackerManager objectTrackerManager, IUpdateEvents updateEvents, ICursorWrapper cursorWrapper, IGameRestart gameRestart)
     {
         _windowFactory = windowFactory;
+        _cursorWrapper = cursorWrapper;
+        gameRestart.OnGameRestart += OnGameRestart;
         _dropdownList = guiComponentFactory.CreateComponent<IDropdownList>();
 
         _buttonNormal.SetPixel(0, 0, new(0.25f, 0.25f, 0.25f));

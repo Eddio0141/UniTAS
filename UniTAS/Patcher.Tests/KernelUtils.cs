@@ -391,6 +391,7 @@ public static class KernelUtils
 #pragma warning disable CS0067
         public event Action<bool>? OnShowChange;
 #pragma warning restore CS0067
+        public bool PreventCursorChange => false;
     }
 
     public static Container Init()
