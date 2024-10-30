@@ -13,25 +13,17 @@ using UnityEngine;
 namespace UniTAS.Patcher.Implementations.GUI.Windows;
 
 [Register]
-public class ObjectPickerWindow : Window
-{
-    private readonly IUpdateEvents _updateEvents;
-    private readonly IUnityInputWrapper _unityInput;
-    private bool _canClickSelect;
-
-    public ObjectPickerWindow(WindowDependencies windowDependencies, IUnityInputWrapper unityInput) : base(
-        windowDependencies,
+public class ObjectPickerWindow(WindowDependencies windowDependencies, IUnityInputWrapper unityInput)
+    : Window(windowDependencies,
         config: new WindowConfig(defaultWindowRect: GUIUtils.WindowRect(500, 500), windowName: "Object picker"))
-    {
-        _unityInput = unityInput;
-        _updateEvents = windowDependencies.UpdateEvents;
-        _raycastCamera = Camera.main;
-        _canClickSelect = _raycastCamera != null;
-    }
+{
+    private readonly IUpdateEvents _updateEvents = windowDependencies.UpdateEvents;
 
     private Vector2 _scrollPos = Vector2.zero;
-    private GameObject[] _objects;
-    private GameObject[] _objectsBeforeSearch;
+
+    // layer and object, 0 being the root
+    private List<(int, GameObject)> _objects;
+    private List<(int, GameObject)> _objectsBeforeSearch;
     private readonly List<GameObject> _childFilter = new();
 
     public override bool Show
@@ -41,7 +33,7 @@ public class ObjectPickerWindow : Window
             if (_selected && value) return;
             if (value)
             {
-                _objects ??= ObjectUtils.FindObjectsOfType<GameObject>();
+                RefreshObjects();
             }
             else
             {
@@ -50,6 +42,37 @@ public class ObjectPickerWindow : Window
             }
 
             base.Show = value;
+        }
+    }
+
+    private void RefreshObjects()
+    {
+        _objects = ObjectUtils.FindObjectsOfType<GameObject>().Where(g => g.transform.parent == null)
+            .Select(g => (0, g)).ToList();
+        for (var i = 0; i < _objects.Count; i++)
+        {
+            var (_, go) = _objects[i];
+            var children = GrabChildrenRecursive(go, 1).ToArray();
+            _objects.InsertRange(i + 1, children);
+            i += children.Length;
+        }
+
+        ApplyFilterToObjects();
+    }
+
+    private static IEnumerable<(int, GameObject)> GrabChildrenRecursive(GameObject parent, int depth)
+    {
+        var parentTransform = parent.transform;
+        var childCount = parentTransform.childCount;
+        for (var i = 0; i < childCount; i++)
+        {
+            var child = parentTransform.GetChild(i);
+            var go = child.gameObject;
+            yield return (depth, go);
+            foreach (var foundRecursive in GrabChildrenRecursive(go, depth + 1))
+            {
+                yield return foundRecursive;
+            }
         }
     }
 
@@ -68,8 +91,9 @@ public class ObjectPickerWindow : Window
     {
         if (_childFilter.Count == 0) return;
 
-        _objects = _objects.Where(x =>
+        _objects = _objects.Where(tupleArg =>
         {
+            var (_, x) = tupleArg;
             var t = x.transform;
             for (var i = 0; i < t.childCount; i++)
             {
@@ -81,7 +105,7 @@ public class ObjectPickerWindow : Window
             }
 
             return false;
-        }).ToArray();
+        }).ToList();
     }
 
     private Camera _raycastCamera;
@@ -89,7 +113,18 @@ public class ObjectPickerWindow : Window
 
     private void ClickSelectUpdate()
     {
-        var mousePos = _unityInput.MousePosition;
+        var mousePos = unityInput.MousePosition;
+        if (_raycastCamera == null)
+        {
+            _raycastCamera = Camera.main;
+        }
+
+        if (_raycastCamera == null)
+        {
+            _clickSelect = false;
+            _updateEvents.OnUpdateUnconditional -= ClickSelectUpdate;
+        }
+
         var raycastHit = RaycastFromCamera(_raycastCamera, mousePos);
 
         var builder = new StringBuilder();
@@ -106,13 +141,13 @@ public class ObjectPickerWindow : Window
         _clickSelectText = builder.ToString();
 
         var close = false;
-        if (_unityInput.GetMouseButtonDown(0))
+        if (unityInput.GetMouseButtonDown(0))
         {
             close = true;
-            _objects = [raycastHit.gameObject];
+            _objects = [(0, raycastHit.gameObject)];
         }
 
-        if (!close && _unityInput.AnyKeyDown)
+        if (!close && unityInput.AnyKeyDown)
         {
             close = true;
         }
@@ -150,35 +185,35 @@ public class ObjectPickerWindow : Window
 
     private bool _clickSelect;
     private string _search;
+    private GUIStyle _objNameStyle;
 
     protected override void OnGUI()
     {
         GUILayout.BeginVertical();
 
         GUILayout.BeginHorizontal();
-        if (_canClickSelect && GUILayout.Button("Click select"))
+        if (GUILayout.Button("Click select"))
         {
-            // switch mode to click and select
-            _updateEvents.OnUpdateUnconditional += ClickSelectUpdate;
-            _updateEvents.OnGUIUnconditional += ClickSelectGUIUpdate;
-            _clickSelect = true;
+            _raycastCamera = Camera.main;
+            if (_raycastCamera != null)
+            {
+                // switch mode to click and select
+                _updateEvents.OnUpdateUnconditional += ClickSelectUpdate;
+                _updateEvents.OnGUIUnconditional += ClickSelectGUIUpdate;
+                _clickSelect = true;
+            }
         }
 
         if (GUILayout.Button("Refresh"))
         {
             // refresh everything
-            _objects = ObjectUtils.FindObjectsOfType<GameObject>();
-
-            ApplyFilterToObjects();
+            RefreshObjects();
 
             if (_search != null)
             {
                 _objectsBeforeSearch = _objects;
-                _objects = FilterBySearch(_objectsBeforeSearch);
+                _objects = FilterBySearch(_objectsBeforeSearch).ToList();
             }
-
-            _raycastCamera = Camera.main;
-            _canClickSelect = _raycastCamera == null;
         }
 
         GUILayout.EndHorizontal();
@@ -199,7 +234,7 @@ public class ObjectPickerWindow : Window
             else
             {
                 _objectsBeforeSearch ??= _objects;
-                _objects = FilterBySearch(_objectsBeforeSearch);
+                _objects = FilterBySearch(_objectsBeforeSearch).ToList();
             }
         }
 
@@ -207,13 +242,16 @@ public class ObjectPickerWindow : Window
 
         _scrollPos = GUILayout.BeginScrollView(_scrollPos);
 
-        foreach (var obj in _objects)
+        foreach (var (depth, obj) in _objects)
         {
             if (obj == null) continue;
 
             GUILayout.BeginHorizontal();
 
-            if (GUILayout.Button(obj.name))
+            if (depth > 0)
+                GUILayout.Space(depth * 20);
+            _objNameStyle ??= new GUIStyle(UnityEngine.GUI.skin.label) { alignment = TextAnchor.MiddleLeft };
+            if (GUILayout.Button(obj.name, _objNameStyle))
             {
                 OnObjectSelected?.Invoke(this, obj);
                 _selected = true;
@@ -231,9 +269,9 @@ public class ObjectPickerWindow : Window
         }
     }
 
-    private GameObject[] FilterBySearch(GameObject[] objects)
+    private IEnumerable<(int, GameObject)> FilterBySearch(IEnumerable<(int, GameObject)> objects)
     {
-        return objects.Where(x => x != null && x.name.ToLowerInvariant().Contains(_search)).ToArray();
+        return objects.Where(x => x.Item2 != null && x.Item2.name.ToLowerInvariant().Contains(_search));
     }
 
     public event Action<ObjectPickerWindow, GameObject> OnObjectSelected;
