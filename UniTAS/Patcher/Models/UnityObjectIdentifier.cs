@@ -80,7 +80,7 @@ public class UnityObjectIdentifier
 
     /// <summary>
     /// A parent object, if any
-    /// Either an ID of an object existing in disk, or another runtime object
+    /// It will point to a GameObject
     /// </summary>
     [JsonProperty] private readonly UnityObjectIdentifier _parent;
 
@@ -127,10 +127,25 @@ public class UnityObjectIdentifier
             var parent =
                 _parent?.FindObject(searchSettings, sceneWrapper, allObjects, allObjectsWithType) as GameObject;
             if (parent == null) return null;
-            filteredObjs = parent.GetComponentsInChildren(_objectType, true)
-                .Where(t => filteredObjs.Any(o => o == t)).Select(Object (t) => t)
-                .ToArray();
+            var parentTransform = parent.transform;
+            var childCount = parentTransform.childCount;
+            var childrenSearch = new List<Object>();
+            for (var i = 0; i < childCount; i++)
+            {
+                var child = parentTransform.GetChild(i);
+                var childFixed = _unityObjectType switch
+                {
+                    UnityObjectType.GameObject => [child.gameObject],
+                    UnityObjectType.Transform => [child],
+                    UnityObjectType.Component => child.GetComponents(_objectType).Cast<Object>(),
+                    UnityObjectType.Other => throw new InvalidOperationException(
+                        "Considering there's a parent, this is not possible"),
+                    _ => throw new ArgumentOutOfRangeException()
+                };
+                childrenSearch.AddRange(childFixed);
+            }
 
+            filteredObjs = filteredObjs.Where(o => childrenSearch.Remove(o)).ToArray();
             if (filteredObjs.Length == 1) return filteredObjs[0];
         }
 
