@@ -35,13 +35,8 @@ public class CameraPatch
 
         private static bool Prefix(Camera __instance, Rect value)
         {
-            if (PatchReverseInvoker.InnerCall()) return true;
+            if (PatchReverseInvoker.Invoking) return true;
             return !UpdateCameraInfo.SetRect(__instance, value);
-        }
-
-        private static void Postfix()
-        {
-            PatchReverseInvoker.Return();
         }
     }
 
@@ -55,7 +50,7 @@ public class CameraPatch
 
         private static bool Prefix(Camera __instance, ref Rect __result)
         {
-            if (PatchReverseInvoker.InnerCall()) return true;
+            if (PatchReverseInvoker.Invoking) return true;
             if (!OverridingCameraInfo.GetRect(__instance, out var value))
             {
                 return true;
@@ -63,11 +58,6 @@ public class CameraPatch
 
             __result = value;
             return false;
-        }
-
-        private static void Postfix()
-        {
-            PatchReverseInvoker.Return();
         }
     }
 }

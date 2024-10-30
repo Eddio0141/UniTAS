@@ -3,7 +3,6 @@ using UniTAS.Patcher.Interfaces.Events.UnityEvents;
 using UniTAS.Patcher.Interfaces.GUI;
 using UniTAS.Patcher.Models;
 using UniTAS.Patcher.Models.GUI;
-using UniTAS.Patcher.Models.UnitySafeWrappers.SceneManagement;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.GUI;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
@@ -40,7 +39,7 @@ public class ObjectTrackerInstanceWindow : Window
         _unityObjectIdentifier = identifier;
         _sceneWrapper = sceneWrapper;
         _windowFactory = windowFactory;
-        onSceneLoadEvent.OnSceneLoadEvent += OnSceneLoad;
+        onSceneLoadEvent.OnSceneLoadEvent += UpdateInstance;
         windowDependencies.UpdateEvents.OnLateUpdateActual += OnLateUpdateActual;
         windowDependencies.UpdateEvents.OnFixedUpdateActual += OnFixedUpdateActual;
         Init();
@@ -76,13 +75,6 @@ public class ObjectTrackerInstanceWindow : Window
     {
         NoWindowDuringToolBarHide = true;
         Resizable = false;
-    }
-
-    private void OnSceneLoad(string sceneName, int sceneBuildIndex, LoadSceneMode loadSceneMode,
-        LocalPhysicsMode localPhysicsMode)
-    {
-        // instance might have updated
-        UpdateInstance();
     }
 
     private Transform _transform;

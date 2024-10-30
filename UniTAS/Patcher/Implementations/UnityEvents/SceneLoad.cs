@@ -1,3 +1,4 @@
+using System;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents;
 using UniTAS.Patcher.Services.UnityEvents;
@@ -5,26 +6,36 @@ using UniTAS.Patcher.Services.UnityEvents;
 namespace UniTAS.Patcher.Implementations.UnityEvents;
 
 [Singleton]
-public class SceneLoad(IUpdateEvents updateEvent, IOnSceneLoad[] onSceneLoads) : ISceneLoadInvoke
+public class SceneLoad : ISceneLoadInvoke, IOnSceneLoadEvent
 {
+    private readonly IUpdateEvents _updateEvent;
+
+    public SceneLoad(IUpdateEvents updateEvent, IOnSceneLoad[] onSceneLoads)
+    {
+        _updateEvent = updateEvent;
+        foreach (var onSceneLoad in onSceneLoads)
+        {
+            OnSceneLoadEvent += onSceneLoad.OnSceneLoad;
+        }
+    }
+
     public void SceneLoadCall()
     {
-        updateEvent.OnAwakeUnconditional += SceneLoadActual;
-        updateEvent.OnStartUnconditional += SceneLoadActual;
-        updateEvent.OnEnableUnconditional += SceneLoadActual;
-        updateEvent.OnFixedUpdateUnconditional += SceneLoadActual;
+        _updateEvent.OnAwakeUnconditional += SceneLoadActual;
+        _updateEvent.OnStartUnconditional += SceneLoadActual;
+        _updateEvent.OnEnableUnconditional += SceneLoadActual;
+        _updateEvent.OnFixedUpdateUnconditional += SceneLoadActual;
     }
 
     private void SceneLoadActual()
     {
-        updateEvent.OnAwakeUnconditional -= SceneLoadActual;
-        updateEvent.OnStartUnconditional -= SceneLoadActual;
-        updateEvent.OnEnableUnconditional -= SceneLoadActual;
-        updateEvent.OnFixedUpdateUnconditional -= SceneLoadActual;
+        _updateEvent.OnAwakeUnconditional -= SceneLoadActual;
+        _updateEvent.OnStartUnconditional -= SceneLoadActual;
+        _updateEvent.OnEnableUnconditional -= SceneLoadActual;
+        _updateEvent.OnFixedUpdateUnconditional -= SceneLoadActual;
 
-        foreach (var onSceneLoad in onSceneLoads)
-        {
-            onSceneLoad.OnSceneLoad();
-        }
+        OnSceneLoadEvent?.Invoke();
     }
+
+    public event Action OnSceneLoadEvent;
 }
