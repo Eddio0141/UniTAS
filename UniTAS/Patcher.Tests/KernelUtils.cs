@@ -19,6 +19,7 @@ using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
 using UniTAS.Patcher.Interfaces.GlobalHotkeyListener;
 using UniTAS.Patcher.Interfaces.Movie;
 using UniTAS.Patcher.Interfaces.UnitySafeWrappers;
+using UniTAS.Patcher.Models;
 using UniTAS.Patcher.Models.Customization;
 using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Models.GlobalHotkeyListener;
@@ -35,6 +36,7 @@ using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Patcher.Services.VirtualEnvironment;
 using UniTAS.Patcher.Services.VirtualEnvironment.Input.LegacyInputSystem;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Patcher.Tests;
 
@@ -392,6 +394,15 @@ public static class KernelUtils
         public event Action<bool>? OnShowChange;
 #pragma warning restore CS0067
         public bool PreventCursorChange => false;
+    }
+
+    [Singleton(IncludeDifferentAssembly = true)]
+    public class UnityObjectIdentifierFactory : IUnityObjectIdentifierFactory
+    {
+        public UnityObjectIdentifier NewUnityObjectIdentifier(Object o)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public static Container Init()

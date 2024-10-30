@@ -11,6 +11,7 @@ namespace UniTAS.Patcher.Implementations;
 
 [Singleton]
 [ForceInstantiate]
+[ExcludeRegisterIfTesting]
 public class ObjectTrackerManager : IObjectTrackerManager
 {
     private bool _addPickerOpen;
