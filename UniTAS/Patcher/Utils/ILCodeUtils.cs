@@ -81,4 +81,27 @@ public static class ILCodeUtils
         il.Append(il.Create(OpCodes.Ret));
         return staticCtor;
     }
+
+    /// <summary>
+    /// Returns null or a default value for a struct type
+    /// </summary>
+    public static void ReturnDefaultValueOnMethod(MethodDefinition method, ILProcessor il)
+    {
+        var retType = method.ReturnType;
+
+        if (retType.IsValueType)
+        {
+            var retVar = new VariableDefinition(retType);
+            method.Body.Variables.Add(retVar);
+
+            il.Emit(OpCodes.Ldloca, retVar);
+            il.Emit(OpCodes.Initobj, retType);
+        }
+        else
+        {
+            il.Emit(OpCodes.Ldnull);
+        }
+
+        il.Emit(OpCodes.Ret);
+    }
 }

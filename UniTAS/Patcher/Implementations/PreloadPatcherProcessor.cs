@@ -13,7 +13,8 @@ public class PreloadPatcherProcessor
         new StaticCtorHeaders(),
         new UnityInitInvoke(),
         new FinalizeSuppressionPatch(),
-        new FunctionCallTrace()
+        new FunctionCallTrace(),
+        new SteamAPIPatch(),
     ];
 
     public IEnumerable<string> TargetDLLs => PreloadPatchers.SelectMany(p => p.TargetDLLs).Distinct().ToArray();
