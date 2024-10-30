@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **maybe breaking**: `MOVIE_CONFIG` now has a `window` table entry. `width` and `height` sets the game window's initial width and height. **1920** x **1080** by default unless specified. You can also set the resolution refresh rate (though it wouldn't matter unless the game is using this information) by setting `refresh_rate` to a number or a table containing `numerator` (or `n`) and `denominator` (or `d`)
   - Additional screen resolutions for the game to pick up on can be added to the list `MOVIE_CONFIG.window.resolutions` (this could be used for changing screen resolutions later on in the menu or something), where each entry of `resolutions` is a table containing `width`, `height`, and `refresh_rate`. Make sure they are valid or it is ignored otherwise
+- `movie.no_refresh` function for disabling and enabling game rendering for faster playback
 
 ### Compatibility
 

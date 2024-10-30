@@ -3,6 +3,7 @@ using BepInEx;
 using UniTAS.Patcher.Models.GUI;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.GUI;
+using UniTAS.Patcher.Services.NoRefresh;
 using UniTAS.Patcher.Services.UnityEvents;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
@@ -83,6 +84,7 @@ public abstract class Window
     private readonly IPatchReverseInvoker _patchReverseInvoker;
     private readonly IConfig _configService;
     private readonly IToolBar _toolBar;
+    private readonly INoRefresh _noRefresh;
 
     private string WindowName { get; set; }
     public string WindowConfigId { get; }
@@ -101,6 +103,7 @@ public abstract class Window
         _updateEvents = windowDependencies.UpdateEvents;
         _configService = windowDependencies.Config;
         _toolBar = windowDependencies.ToolBar;
+        _noRefresh = windowDependencies.NoRefresh;
     }
 
     protected Window(WindowDependencies windowDependencies, WindowConfig config, string windowId = null)
@@ -112,6 +115,7 @@ public abstract class Window
         _updateEvents = windowDependencies.UpdateEvents;
         _configService = windowDependencies.Config;
         _toolBar = windowDependencies.ToolBar;
+        _noRefresh = windowDependencies.NoRefresh;
         if (config != null)
         {
             Config = config;

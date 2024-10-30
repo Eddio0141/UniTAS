@@ -4,6 +4,7 @@ using UniTAS.Patcher.Interfaces.TASRenderer;
 using UniTAS.Patcher.Services.GameExecutionControllers;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.Movie;
+using UniTAS.Patcher.Services.NoRefresh;
 using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Implementations.Movie.Engine.Modules;
@@ -23,9 +24,15 @@ public class Movie
 
     private static readonly IMovieLogger MovieLogger = ContainerStarter.Kernel.GetInstance<IMovieLogger>();
 
+    private static readonly INoRefresh NoRefresh = ContainerStarter.Kernel.GetInstance<INoRefresh>();
+
     static Movie()
     {
-        MovieRunnerEvents.OnMovieEnd += () => GameRender.Stop();
+        MovieRunnerEvents.OnMovieEnd += () =>
+        {
+            GameRender.Stop();
+            NoRefresh.Enable = false;
+        };
     }
 
     [MoonSharpModuleMethod]
@@ -93,6 +100,14 @@ public class Movie
     public static DynValue stop_capture(ScriptExecutionContext _, CallbackArguments args)
     {
         GameRender.Stop();
+        return DynValue.Nil;
+    }
+
+    [MoonSharpModuleMethod]
+    public static DynValue no_refresh(ScriptExecutionContext _, CallbackArguments args)
+    {
+        var enable = args.AsType(0, nameof(no_refresh), DataType.Boolean).Boolean;
+        NoRefresh.Enable = enable;
         return DynValue.Nil;
     }
 }
