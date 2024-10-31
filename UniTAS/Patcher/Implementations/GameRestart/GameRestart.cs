@@ -7,6 +7,7 @@ using UniTAS.Patcher.Interfaces.Coroutine;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.SoftRestart;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
+using UniTAS.Patcher.ManualServices;
 using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.GameExecutionControllers;
@@ -113,9 +114,12 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
 
     private IEnumerable<CoroutineWait> SoftRestartCoroutine(DateTime time)
     {
-        while (!_gameInfo.IsFocused)
+        if (!GameInfoManual.NoGraphics)
         {
-            yield return new WaitForUpdateUnconditional();
+            while (!_gameInfo.IsFocused)
+            {
+                yield return new WaitForUpdateUnconditional();
+            }
         }
 
         _logger.LogInfo("Starting soft restart");
