@@ -19,17 +19,17 @@ public class DropdownList : IDropdownList
             alignment = TextAnchor.MiddleLeft,
             normal = new()
             {
-                background = TextureUtils.MakeSolidColourTexture(2, 2, new Color(0.15f, 0.15f, 0.15f)),
+                background = TextureUtils.MakeSolidColourTexture(2, 2, new Color(0.09f, 0.12f, 0.22f)),
                 textColor = Color.white
             },
             hover = new()
             {
-                background = TextureUtils.MakeSolidColourTexture(2, 2, new Color(0.22f, 0.22f, 0.22f)),
+                background = TextureUtils.MakeSolidColourTexture(2, 2, new Color(0.12f, 0.16f, 0.29f)),
                 textColor = Color.white
             },
             active = new()
             {
-                background = TextureUtils.MakeSolidColourTexture(2, 2, new Color(0.32f, 0.32f, 0.32f)),
+                background = TextureUtils.MakeSolidColourTexture(2, 2, new Color(0.15f, 0.27f, 0.37f)),
                 textColor = Color.white
             },
             fixedHeight = 25,

@@ -1,10 +1,12 @@
 ﻿using System;
+using System.IO;
 using BepInEx;
 using UniTAS.Patcher.Models.GUI;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.GUI;
 using UniTAS.Patcher.Services.NoRefresh;
 using UniTAS.Patcher.Services.UnityEvents;
+using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 
@@ -85,6 +87,7 @@ public abstract class Window
     private readonly IConfig _configService;
     private readonly IToolBar _toolBar;
     private readonly INoRefresh _noRefresh;
+    private readonly ITextureWrapper _textureWrapper;
 
     private string WindowName { get; set; }
     public string WindowConfigId { get; }
@@ -104,6 +107,7 @@ public abstract class Window
         _configService = windowDependencies.Config;
         _toolBar = windowDependencies.ToolBar;
         _noRefresh = windowDependencies.NoRefresh;
+        _textureWrapper = windowDependencies.TextureWrapper;
     }
 
     protected Window(WindowDependencies windowDependencies, WindowConfig config, string windowId = null)
@@ -116,6 +120,7 @@ public abstract class Window
         _configService = windowDependencies.Config;
         _toolBar = windowDependencies.ToolBar;
         _noRefresh = windowDependencies.NoRefresh;
+        _textureWrapper = windowDependencies.TextureWrapper;
         if (config != null)
         {
             Config = config;
@@ -179,6 +184,10 @@ public abstract class Window
 
     private bool _pendingNewLayout = true;
 
+    private static GUIStyle _windowStyle;
+    private static readonly Texture2D WindowBgOnNormal = new Texture2D(1, 1, TextureFormat.ARGB32, false);
+    private static readonly Texture2D WindowBgNormal = new Texture2D(1, 1, TextureFormat.ARGB32, false);
+
     private void OnGUIUnconditional()
     {
         var currentEvent = Event.current;
@@ -218,8 +227,23 @@ public abstract class Window
 
         _pendingNewLayout = false;
 
-        _windowRect = GUILayout.Window(_windowId, _windowRect, WindowUpdate, WindowName, Config.LayoutOptions);
+        if (_windowStyle == null)
+        {
+            _windowStyle = new GUIStyle(UnityEngine.GUI.skin.window);
+            _textureWrapper.LoadImage(WindowBgOnNormal, Path.Combine(UniTASPaths.Resources, "window-on-normal.png"));
+            _textureWrapper.LoadImage(WindowBgNormal, Path.Combine(UniTASPaths.Resources, "window-normal.png"));
+            _windowStyle.onNormal.background = WindowBgOnNormal;
+            _windowStyle.normal.background = WindowBgNormal;
+        }
+
+        _windowRect = GUILayout.Window(_windowId, _windowRect, WindowUpdate, WindowName, _windowStyle,
+            Config.LayoutOptions);
     }
+
+    private static GUIStyle _closeButtonStyle;
+    private static readonly Texture2D CloseButtonNormal = new Texture2D(1, 1, TextureFormat.ARGB32, false);
+    private static readonly Texture2D CloseButtonHover = new Texture2D(1, 1, TextureFormat.ARGB32, false);
+    private static readonly Texture2D CloseButtonClick = new Texture2D(1, 1, TextureFormat.ARGB32, false);
 
     private void WindowUpdate(int id)
     {
@@ -231,8 +255,23 @@ public abstract class Window
             GUILayout.BeginHorizontal(GUIUtils.EmptyOptions);
 
             // close button
+            if (_closeButtonStyle == null)
+            {
+                _closeButtonStyle = new GUIStyle(UnityEngine.GUI.skin.button);
+
+                _textureWrapper.LoadImage(CloseButtonNormal,
+                    Path.Combine(UniTASPaths.Resources, "window-close-normal.png"));
+                _textureWrapper.LoadImage(CloseButtonHover,
+                    Path.Combine(UniTASPaths.Resources, "window-close-hover.png"));
+                _textureWrapper.LoadImage(CloseButtonClick,
+                    Path.Combine(UniTASPaths.Resources, "window-close-click.png"));
+                _closeButtonStyle.normal.background = CloseButtonNormal;
+                _closeButtonStyle.hover.background = CloseButtonHover;
+                _closeButtonStyle.active.background = CloseButtonClick;
+            }
+
             if (UnityEngine.GUI.Button(new(_windowRect.width - CloseButtonSize, 0f, CloseButtonSize, CloseButtonSize),
-                    "x"))
+                    GUIContent.none, _closeButtonStyle))
             {
                 Show = false;
             }

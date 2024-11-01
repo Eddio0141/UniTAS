@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
@@ -13,11 +14,21 @@ using UnityEngine;
 namespace UniTAS.Patcher.Implementations.GUI.Windows;
 
 [Register]
-public class ObjectPickerWindow(WindowDependencies windowDependencies, IUnityInputWrapper unityInput)
-    : Window(windowDependencies,
-        config: new WindowConfig(defaultWindowRect: GUIUtils.WindowRect(500, 500), windowName: "Object picker"))
+public class ObjectPickerWindow : Window
 {
-    private readonly IUpdateEvents _updateEvents = windowDependencies.UpdateEvents;
+    public ObjectPickerWindow(WindowDependencies windowDependencies, IUnityInputWrapper unityInput) : base(
+        windowDependencies,
+        config: new WindowConfig(defaultWindowRect: GUIUtils.WindowRect(500, 500), windowName: "Object picker"))
+    {
+        _unityInput = unityInput;
+        _updateEvents = windowDependencies.UpdateEvents;
+        var objectIconTexture = new Texture2D(1, 1, TextureFormat.ARGB32, false);
+        windowDependencies.TextureWrapper.LoadImage(objectIconTexture,
+            Path.Combine(UniTASPaths.Resources, "object-icon.png"));
+        _objNameContent = new(objectIconTexture);
+    }
+
+    private readonly IUpdateEvents _updateEvents;
 
     private Vector2 _scrollPos = Vector2.zero;
 
@@ -113,7 +124,7 @@ public class ObjectPickerWindow(WindowDependencies windowDependencies, IUnityInp
 
     private void ClickSelectUpdate()
     {
-        var mousePos = unityInput.MousePosition;
+        var mousePos = _unityInput.MousePosition;
         if (_raycastCamera == null)
         {
             _raycastCamera = Camera.main;
@@ -141,13 +152,13 @@ public class ObjectPickerWindow(WindowDependencies windowDependencies, IUnityInp
         _clickSelectText = builder.ToString();
 
         var close = false;
-        if (unityInput.GetMouseButtonDown(0))
+        if (_unityInput.GetMouseButtonDown(0))
         {
             close = true;
             _objects = [(0, raycastHit.gameObject)];
         }
 
-        if (!close && unityInput.AnyKeyDown)
+        if (!close && _unityInput.AnyKeyDown)
         {
             close = true;
         }
@@ -186,6 +197,8 @@ public class ObjectPickerWindow(WindowDependencies windowDependencies, IUnityInp
     private bool _clickSelect;
     private string _search;
     private GUIStyle _objNameStyle;
+
+    private readonly GUIContent _objNameContent;
 
     protected override void OnGUI()
     {
@@ -251,7 +264,8 @@ public class ObjectPickerWindow(WindowDependencies windowDependencies, IUnityInp
             if (depth > 0)
                 GUILayout.Space(depth * 20);
             _objNameStyle ??= new GUIStyle(UnityEngine.GUI.skin.label) { alignment = TextAnchor.MiddleLeft };
-            if (GUILayout.Button(obj.name, _objNameStyle))
+            _objNameContent.text = $" {obj.name}";
+            if (GUILayout.Button(_objNameContent, _objNameStyle))
             {
                 OnObjectSelected?.Invoke(this, obj);
                 _selected = true;
@@ -276,4 +290,5 @@ public class ObjectPickerWindow(WindowDependencies windowDependencies, IUnityInp
 
     public event Action<ObjectPickerWindow, GameObject> OnObjectSelected;
     private bool _selected;
+    private readonly IUnityInputWrapper _unityInput;
 }

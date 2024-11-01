@@ -67,14 +67,15 @@ public class ToolBar : IToolBar, IActualCursorStateUpdate
     private readonly IDropdownList _dropdownList;
 
     public ToolBar(IWindowFactory windowFactory, IBinds binds, IGUIComponentFactory guiComponentFactory,
-        IObjectTrackerManager objectTrackerManager, IUpdateEvents updateEvents, ICursorWrapper cursorWrapper, IGameRestart gameRestart)
+        IObjectTrackerManager objectTrackerManager, IUpdateEvents updateEvents, ICursorWrapper cursorWrapper,
+        IGameRestart gameRestart)
     {
         _windowFactory = windowFactory;
         _cursorWrapper = cursorWrapper;
         gameRestart.OnGameRestart += OnGameRestart;
         _dropdownList = guiComponentFactory.CreateComponent<IDropdownList>();
 
-        _buttonNormal.SetPixel(0, 0, new(0.25f, 0.25f, 0.25f));
+        _buttonNormal.SetPixel(0, 0, new(0.129f, 0.149f, 0.263f));
         _buttonNormal.Apply();
         var buttonHold = new Texture2D(1, 1);
         buttonHold.SetPixel(0, 0, new(0.5f, 0.5f, 0.5f));
