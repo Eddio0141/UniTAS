@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using BepInEx;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.GUI;
 using UniTAS.Patcher.Models.GUI;
@@ -249,10 +250,10 @@ public class ObjectPickerWindow : Window
             // refresh everything
             RefreshObjects();
 
-            if (_search != null)
+            if (!_search.IsNullOrWhiteSpace())
             {
-                _objectsBeforeSearch = _objects;
-                _objects = FilterBySearch(_objectsBeforeSearch).ToList();
+                _objectsBeforeSearch = _objects.ToList();
+                FilterBySearch();
             }
         }
 
@@ -287,14 +288,14 @@ public class ObjectPickerWindow : Window
 
             if (_search.Length == 0 && _objectsBeforeSearch != null)
             {
-                _objects = _objectsBeforeSearch;
+                _objects = _objectsBeforeSearch.ToList();
                 _objectsBeforeSearch = null;
                 _search = null;
             }
             else
             {
-                _objectsBeforeSearch ??= _objects;
-                _objects = FilterBySearch(_objectsBeforeSearch).ToList();
+                _objectsBeforeSearch ??= _objects.ToList();
+                FilterBySearch();
             }
         }
 
@@ -445,9 +446,40 @@ public class ObjectPickerWindow : Window
 
     private float? _objFoldIconXEnd;
 
-    private IEnumerable<ObjectData> FilterBySearch(IEnumerable<ObjectData> objects)
+    private void FilterBySearch()
     {
-        return objects.Where(x => x.Object != null && x.Object.name.ToLowerInvariant().Contains(_search));
+        _objects.Clear();
+
+        var addedIndexes = new bool[_objectsBeforeSearch.Count];
+        for (var i = 0; i < _objectsBeforeSearch.Count; i++)
+        {
+            var objData = _objectsBeforeSearch[i];
+            if (!objData.Object.name.ToLowerInvariant().Contains(_search)) continue;
+            objData.Folded = false;
+
+            var objInsertIndex = _objects.Count;
+            _objects.Add(objData);
+            addedIndexes[i] = true;
+
+            // traverse till depth 0
+            var targetDepth = objData.Depth;
+            if (targetDepth == 0) continue;
+
+            for (var j = i - 1; j >= 0; j--)
+            {
+                var objPrev = _objectsBeforeSearch[j];
+                if (objPrev.Depth >= targetDepth)
+                    continue;
+
+                targetDepth = objPrev.Depth;
+                if (addedIndexes[j]) continue;
+                objPrev.Folded = false;
+                _objects.Insert(objInsertIndex, objPrev);
+                addedIndexes[j] = true;
+
+                if (objPrev.Depth == 0) break;
+            }
+        }
     }
 
     public event Action<ObjectPickerWindow, GameObject> OnObjectSelected;
