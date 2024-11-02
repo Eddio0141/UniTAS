@@ -6,6 +6,7 @@ using System.Text;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.GUI;
 using UniTAS.Patcher.Models.GUI;
+using UniTAS.Patcher.Services.GUI;
 using UniTAS.Patcher.Services.UnityEvents;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Patcher.Utils;
@@ -16,11 +17,13 @@ namespace UniTAS.Patcher.Implementations.GUI.Windows;
 [Register]
 public class ObjectPickerWindow : Window
 {
-    public ObjectPickerWindow(WindowDependencies windowDependencies, IUnityInputWrapper unityInput) : base(
+    public ObjectPickerWindow(WindowDependencies windowDependencies, IUnityInputWrapper unityInput,
+        IWindowFactory windowFactory) : base(
         windowDependencies,
         config: new WindowConfig(defaultWindowRect: GUIUtils.WindowRect(500, 500), windowName: "Object picker"))
     {
         _unityInput = unityInput;
+        _windowFactory = windowFactory;
         _updateEvents = windowDependencies.UpdateEvents;
         var objectIconTexture = new Texture2D(1, 1, TextureFormat.ARGB32, false);
         windowDependencies.TextureWrapper.LoadImage(objectIconTexture,
@@ -29,13 +32,13 @@ public class ObjectPickerWindow : Window
     }
 
     private readonly IUpdateEvents _updateEvents;
+    private readonly IWindowFactory _windowFactory;
 
     private Vector2 _scrollPos = Vector2.zero;
 
     // layer and object, 0 being the root
     private List<(int, GameObject)> _objects;
     private List<(int, GameObject)> _objectsBeforeSearch;
-    private readonly List<GameObject> _childFilter = new();
 
     public override bool Show
     {
@@ -87,36 +90,38 @@ public class ObjectPickerWindow : Window
         }
     }
 
-    /// <summary>
-    /// Filters by attached children objects
-    /// </summary>
-    public void AddRangeChildFilter(IEnumerable<GameObject> obj)
-    {
-        if (obj == null) throw new ArgumentNullException(nameof(obj));
-        obj = obj.Where(x => !_childFilter.Contains(x));
-        _childFilter.AddRange(obj);
-        ApplyFilterToObjects();
-    }
-
     private void ApplyFilterToObjects()
     {
-        if (_childFilter.Count == 0) return;
+        if (_searchSettings.FilterComponents.Count == 0) return;
 
-        _objects = _objects.Where(tupleArg =>
+        // filter out objs by component type
+        var filterOut = new List<GameObject>(_objects.Count);
+        var parentIndex = 0;
+        var lastRemoveIndex = -1;
+        for (var i = 0; i < _objects.Count; i++)
         {
-            var (_, x) = tupleArg;
-            var t = x.transform;
-            for (var i = 0; i < t.childCount; i++)
+            var (depth, go) = _objects[i];
+            if (go == null) continue;
+            if (depth == 0)
+                parentIndex = i;
+            else if (parentIndex == lastRemoveIndex)
             {
-                var child = t.GetChild(i).gameObject;
-                foreach (var filterObj in _childFilter)
-                {
-                    if (child == filterObj) return true;
-                }
+                filterOut.Add(go);
+                continue;
             }
 
-            return false;
-        }).ToList();
+            // component match?
+            if (!_searchSettings.FilterComponents.Any(c => go.GetComponent(c))) continue;
+            lastRemoveIndex = parentIndex;
+            filterOut.Add(go);
+            // also add objects backwards till reaching parent
+            for (var j = parentIndex; j < i; j++)
+            {
+                filterOut.Add(_objects[j].Item2);
+            }
+        }
+
+        _objects = _objects.Where(tuple => tuple.Item2 != null && filterOut.Contains(tuple.Item2)).ToList();
     }
 
     private Camera _raycastCamera;
@@ -200,6 +205,9 @@ public class ObjectPickerWindow : Window
 
     private readonly GUIContent _objNameContent;
 
+    private bool _settingsOpen;
+    private SearchSettings _searchSettings = new();
+
     protected override void OnGUI()
     {
         GUILayout.BeginVertical();
@@ -232,6 +240,26 @@ public class ObjectPickerWindow : Window
         GUILayout.EndHorizontal();
 
         GUILayout.BeginHorizontal();
+
+        if (GUILayout.Button("Search settings") && !_settingsOpen)
+        {
+            _settingsOpen = true;
+            var searchSettings = _windowFactory.Create(_searchSettings);
+            searchSettings.OnSearchSettingsComplete += newSettings =>
+            {
+                if (newSettings != null)
+                {
+                    _searchSettings = newSettings;
+                    ApplyFilterToObjects();
+                }
+
+                _settingsOpen = false;
+            };
+        }
+
+        GUILayout.EndHorizontal();
+
+        GUILayout.BeginHorizontal();
         GUILayout.Label("Search: ", GUILayout.ExpandWidth(false));
         var newSearch = GUILayout.TextField(_search, GUILayout.ExpandWidth(true));
         if (newSearch != _search)
@@ -255,26 +283,85 @@ public class ObjectPickerWindow : Window
 
         _scrollPos = GUILayout.BeginScrollView(_scrollPos);
 
-        foreach (var (depth, obj) in _objects)
+        var objsCount = _scrollViewElementHeight == null ? 1 : _objects.Count;
+        var dummyEntryCount = 0;
+        var beforeVisible = true;
+        var afterVisible = false;
+        var iActual = 0;
+
+        for (var i = 0; i < objsCount; i++)
         {
+            var (depth, obj) = _objects[i];
             if (obj == null) continue;
+            iActual++;
 
-            GUILayout.BeginHorizontal();
-
-            if (depth > 0)
-                GUILayout.Space(depth * 20);
-            _objNameStyle ??= new GUIStyle(UnityEngine.GUI.skin.label) { alignment = TextAnchor.MiddleLeft };
-            _objNameContent.text = $" {obj.name}";
-            if (GUILayout.Button(_objNameContent, _objNameStyle))
+            // is this entry out of view
+            if (_scrollViewElementHeight.HasValue)
             {
-                OnObjectSelected?.Invoke(this, obj);
-                _selected = true;
+                if (beforeVisible)
+                {
+                    var entryY = iActual * _scrollViewElementHeight.Value;
+
+                    if (entryY + _scrollViewElementHeight.Value >= _scrollPos.y)
+                    {
+                        // now the elements are visible, put the big ass spacing before rendering new stuff
+                        if (dummyEntryCount > 0)
+                        {
+                            GUILayout.Space(dummyEntryCount * _scrollViewElementHeight.Value);
+                            dummyEntryCount = 0;
+                        }
+
+                        beforeVisible = false;
+                    }
+                    else
+                    {
+                        dummyEntryCount++;
+                        continue;
+                    }
+                }
+                else if (afterVisible)
+                {
+                    // current in after visible section, just count
+                    dummyEntryCount++;
+                    continue;
+                }
+                else
+                {
+                    var entryY = iActual * _scrollViewElementHeight.Value;
+
+                    // visible
+                    if (entryY > _scrollViewHeight.Value + _scrollPos.y)
+                    {
+                        // sike not anymore
+                        dummyEntryCount++;
+                        afterVisible = true;
+                    }
+                }
             }
 
+            GUILayout.BeginHorizontal();
+            RenderObjectEntry(depth, obj);
             GUILayout.EndHorizontal();
+
+            if (i == 0 && _scrollViewElementHeight == null && Event.current.type == EventType.Repaint)
+            {
+                var scrollViewLineRect = GUILayoutUtility.GetLastRect();
+                _scrollViewElementHeight = scrollViewLineRect.height;
+            }
         }
 
+        // now fill with remaining space
+        if (dummyEntryCount > 0 && _scrollViewElementHeight.HasValue)
+            GUILayout.Space(_scrollViewElementHeight.Value * dummyEntryCount);
+
         GUILayout.EndScrollView();
+
+        if (_scrollViewHeight == null && Event.current.type == EventType.Repaint)
+        {
+            var scrollViewLineRect = GUILayoutUtility.GetLastRect();
+            _scrollViewHeight = scrollViewLineRect.height;
+        }
+
         GUILayout.EndVertical();
 
         if (_selected)
@@ -282,6 +369,22 @@ public class ObjectPickerWindow : Window
             Show = false;
         }
     }
+
+    private void RenderObjectEntry(int depth, GameObject obj)
+    {
+        if (depth > 0)
+            GUILayout.Space(depth * 20);
+        _objNameStyle ??= new GUIStyle(UnityEngine.GUI.skin.label) { alignment = TextAnchor.MiddleLeft };
+        _objNameContent.text = $" {obj.name}";
+        if (GUILayout.Button(_objNameContent, _objNameStyle))
+        {
+            OnObjectSelected?.Invoke(this, obj);
+            _selected = true;
+        }
+    }
+
+    private float? _scrollViewElementHeight;
+    private float? _scrollViewHeight;
 
     private IEnumerable<(int, GameObject)> FilterBySearch(IEnumerable<(int, GameObject)> objects)
     {
@@ -291,4 +394,9 @@ public class ObjectPickerWindow : Window
     public event Action<ObjectPickerWindow, GameObject> OnObjectSelected;
     private bool _selected;
     private readonly IUnityInputWrapper _unityInput;
+
+    public class SearchSettings
+    {
+        public readonly List<Type> FilterComponents = new();
+    }
 }

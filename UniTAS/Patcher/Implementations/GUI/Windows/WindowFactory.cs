@@ -25,4 +25,9 @@ public class WindowFactory(IContainer container) : IWindowFactory
     {
         return container.With(searchSettings).GetInstance<ObjectSearchConfigWindow>();
     }
+
+    public ObjectPickerSearchSettings Create(ObjectPickerWindow.SearchSettings searchSettings)
+    {
+        return container.With(searchSettings).GetInstance<ObjectPickerSearchSettings>();
+    }
 }

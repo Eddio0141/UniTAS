@@ -9,4 +9,5 @@ public interface IWindowFactory
     T Create<T>() where T : Window;
     ObjectTrackerInstanceWindow Create(UnityObjectIdentifier identifier);
     ObjectSearchConfigWindow Create(UnityObjectIdentifier.SearchSettings searchSettings);
+    ObjectPickerSearchSettings Create(ObjectPickerWindow.SearchSettings searchSettings);
 }
