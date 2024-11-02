@@ -80,7 +80,7 @@ public class ObjectPickerWindow : Window
     private void RefreshObjects()
     {
         _objects = ObjectUtils.FindObjectsOfType<GameObject>().Where(g => g.transform.parent == null)
-            .Select(g => new ObjectData { Depth = 0, Object = g, Folded = true }).ToList();
+            .Select(g => new ObjectData { Depth = 0, Object = g, Folded = true }).OrderBy(o => o.Object.name).ToList();
         for (var i = 0; i < _objects.Count; i++)
         {
             var objInfo = _objects[i];
@@ -113,33 +113,38 @@ public class ObjectPickerWindow : Window
         if (_searchSettings.FilterComponents.Count == 0) return;
 
         // filter out objs by component type
-        var filterOut = new List<GameObject>(_objects.Count);
-        var parentIndex = 0;
-        var lastRemoveIndex = -1;
-        for (var i = 0; i < _objects.Count; i++)
+        var objsBefore = _objects.Where(o => o.Object != null).ToList();
+        _objects.Clear();
+
+        var addedIndexes = new bool[objsBefore.Count];
+        for (var i = 0; i < objsBefore.Count; i++)
         {
-            var objInfo = _objects[i];
-            if (objInfo.Object == null) continue;
-            if (objInfo.Depth == 0)
-                parentIndex = i;
-            else if (parentIndex == lastRemoveIndex)
-            {
-                filterOut.Add(objInfo.Object);
-                continue;
-            }
+            var objInfo = objsBefore[i];
 
             // component match?
             if (!_searchSettings.FilterComponents.Any(c => objInfo.Object.GetComponent(c))) continue;
-            lastRemoveIndex = parentIndex;
-            filterOut.Add(objInfo.Object);
+
+            var insertIndex = _objects.Count;
+            addedIndexes[i] = true;
+            objInfo.Folded = false;
+            _objects.Add(objInfo);
+
+            if (objInfo.Depth == 0) continue;
+
             // also add objects backwards till reaching parent
-            for (var j = parentIndex; j < i; j++)
+            for (var j = i - 1; j >= 0; j--)
             {
-                filterOut.Add(objInfo.Object);
+                var prev = objsBefore[j];
+                if (prev.Depth >= objInfo.Depth) continue;
+                if (addedIndexes[j]) continue;
+
+                _objects.Insert(insertIndex, prev);
+                addedIndexes[j] = true;
+                prev.Folded = false;
+
+                if (prev.Depth == 0) break;
             }
         }
-
-        _objects = _objects.Where(objData => objData.Object != null && filterOut.Contains(objData.Object)).ToList();
     }
 
     private Camera _raycastCamera;
@@ -290,7 +295,6 @@ public class ObjectPickerWindow : Window
             {
                 _objects = _objectsBeforeSearch.ToList();
                 _objectsBeforeSearch = null;
-                _search = null;
             }
             else
             {
@@ -454,6 +458,7 @@ public class ObjectPickerWindow : Window
         for (var i = 0; i < _objectsBeforeSearch.Count; i++)
         {
             var objData = _objectsBeforeSearch[i];
+            if (objData.Object == null) continue;
             if (!objData.Object.name.ToLowerInvariant().Contains(_search)) continue;
             objData.Folded = false;
 
