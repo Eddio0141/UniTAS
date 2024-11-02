@@ -55,6 +55,7 @@ public class ObjectTrackerInstanceWindow : Window
                 Name = _instance?.name ?? "", ShowName = true, ShowVel = true, ShowVelY = true, ShowHSpd = true,
                 ShowEstVel = true, ShowEstHSpd = true, ShowEstVelY = true, ObjectSearch = new()
             };
+            _config.WriteBackendEntry(_trackSettingsConfigKey, _trackSettings);
         }
         else
         {
