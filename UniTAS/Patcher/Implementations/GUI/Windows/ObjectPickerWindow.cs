@@ -308,21 +308,28 @@ public class ObjectPickerWindow : Window
         var dummyEntryCount = 0;
         var beforeVisible = true;
         var afterVisible = false;
-        var iActual = 0;
+        var iActual = -1;
 
-        var lastCollapsedDepth = -1;
+        var collapseDepths = new Stack<int>();
 
         for (var i = 0; i < objsCount; i++)
         {
             var objData = _objects[i];
 
-            if (lastCollapsedDepth >= 0 && objData.Depth > lastCollapsedDepth)
+            if (collapseDepths.Count > 0 && objData.Depth > collapseDepths.Peek())
                 continue;
 
-            if (objData is { Depth: 0, Folded: false })
-                lastCollapsedDepth = -1;
-            else if (objData.Folded)
-                lastCollapsedDepth = objData.Depth;
+            while (collapseDepths.Count > 0)
+            {
+                // any pop?
+                if (collapseDepths.Peek() >= objData.Depth)
+                    collapseDepths.Pop();
+
+                break;
+            }
+
+            if (objData.Folded)
+                collapseDepths.Push(objData.Depth);
 
             iActual++;
 
