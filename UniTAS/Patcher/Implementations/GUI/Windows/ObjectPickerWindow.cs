@@ -29,6 +29,16 @@ public class ObjectPickerWindow : Window
         windowDependencies.TextureWrapper.LoadImage(objectIconTexture,
             Path.Combine(UniTASPaths.Resources, "object-icon.png"));
         _objNameContent = new(objectIconTexture);
+
+        var objExpandable = new Texture2D(1, 1, TextureFormat.ARGB32, false);
+        windowDependencies.TextureWrapper.LoadImage(objExpandable,
+            Path.Combine(UniTASPaths.Resources, "object-expandable.png"));
+        _objExpandable = new(objExpandable);
+
+        var objClosable = new Texture2D(1, 1, TextureFormat.ARGB32, false);
+        windowDependencies.TextureWrapper.LoadImage(objClosable,
+            Path.Combine(UniTASPaths.Resources, "object-closable.png"));
+        _objClosable = new(objClosable);
     }
 
     private readonly IUpdateEvents _updateEvents;
@@ -37,8 +47,15 @@ public class ObjectPickerWindow : Window
     private Vector2 _scrollPos = Vector2.zero;
 
     // layer and object, 0 being the root
-    private List<(int, GameObject)> _objects;
-    private List<(int, GameObject)> _objectsBeforeSearch;
+    private List<ObjectData> _objects;
+    private List<ObjectData> _objectsBeforeSearch;
+
+    private struct ObjectData
+    {
+        public int Depth;
+        public GameObject Object;
+        public bool Folded;
+    }
 
     public override bool Show
     {
@@ -62,11 +79,11 @@ public class ObjectPickerWindow : Window
     private void RefreshObjects()
     {
         _objects = ObjectUtils.FindObjectsOfType<GameObject>().Where(g => g.transform.parent == null)
-            .Select(g => (0, g)).ToList();
+            .Select(g => new ObjectData { Depth = 0, Object = g, Folded = true }).ToList();
         for (var i = 0; i < _objects.Count; i++)
         {
-            var (_, go) = _objects[i];
-            var children = GrabChildrenRecursive(go, 1).ToArray();
+            var objInfo = _objects[i];
+            var children = GrabChildrenRecursive(objInfo.Object, 1).ToArray();
             _objects.InsertRange(i + 1, children);
             i += children.Length;
         }
@@ -74,7 +91,7 @@ public class ObjectPickerWindow : Window
         ApplyFilterToObjects();
     }
 
-    private static IEnumerable<(int, GameObject)> GrabChildrenRecursive(GameObject parent, int depth)
+    private static IEnumerable<ObjectData> GrabChildrenRecursive(GameObject parent, int depth)
     {
         var parentTransform = parent.transform;
         var childCount = parentTransform.childCount;
@@ -82,7 +99,7 @@ public class ObjectPickerWindow : Window
         {
             var child = parentTransform.GetChild(i);
             var go = child.gameObject;
-            yield return (depth, go);
+            yield return new ObjectData { Depth = depth, Object = go, Folded = true };
             foreach (var foundRecursive in GrabChildrenRecursive(go, depth + 1))
             {
                 yield return foundRecursive;
@@ -100,28 +117,28 @@ public class ObjectPickerWindow : Window
         var lastRemoveIndex = -1;
         for (var i = 0; i < _objects.Count; i++)
         {
-            var (depth, go) = _objects[i];
-            if (go == null) continue;
-            if (depth == 0)
+            var objInfo = _objects[i];
+            if (objInfo.Object == null) continue;
+            if (objInfo.Depth == 0)
                 parentIndex = i;
             else if (parentIndex == lastRemoveIndex)
             {
-                filterOut.Add(go);
+                filterOut.Add(objInfo.Object);
                 continue;
             }
 
             // component match?
-            if (!_searchSettings.FilterComponents.Any(c => go.GetComponent(c))) continue;
+            if (!_searchSettings.FilterComponents.Any(c => objInfo.Object.GetComponent(c))) continue;
             lastRemoveIndex = parentIndex;
-            filterOut.Add(go);
+            filterOut.Add(objInfo.Object);
             // also add objects backwards till reaching parent
             for (var j = parentIndex; j < i; j++)
             {
-                filterOut.Add(_objects[j].Item2);
+                filterOut.Add(objInfo.Object);
             }
         }
 
-        _objects = _objects.Where(tuple => tuple.Item2 != null && filterOut.Contains(tuple.Item2)).ToList();
+        _objects = _objects.Where(objData => objData.Object != null && filterOut.Contains(objData.Object)).ToList();
     }
 
     private Camera _raycastCamera;
@@ -160,7 +177,7 @@ public class ObjectPickerWindow : Window
         if (_unityInput.GetMouseButtonDown(0))
         {
             close = true;
-            _objects = [(0, raycastHit.gameObject)];
+            _objects = [new ObjectData { Depth = 0, Object = raycastHit.gameObject, Folded = true }];
         }
 
         if (!close && _unityInput.AnyKeyDown)
@@ -204,6 +221,8 @@ public class ObjectPickerWindow : Window
     private GUIStyle _objNameStyle;
 
     private readonly GUIContent _objNameContent;
+    private readonly GUIContent _objExpandable;
+    private readonly GUIContent _objClosable;
 
     private bool _settingsOpen;
     private SearchSettings _searchSettings = new();
@@ -283,16 +302,28 @@ public class ObjectPickerWindow : Window
 
         _scrollPos = GUILayout.BeginScrollView(_scrollPos);
 
+        _objects.RemoveAll(x => x.Object == null);
+
         var objsCount = _scrollViewElementHeight == null ? 1 : _objects.Count;
         var dummyEntryCount = 0;
         var beforeVisible = true;
         var afterVisible = false;
         var iActual = 0;
 
+        var lastCollapsedDepth = -1;
+
         for (var i = 0; i < objsCount; i++)
         {
-            var (depth, obj) = _objects[i];
-            if (obj == null) continue;
+            var objData = _objects[i];
+
+            if (lastCollapsedDepth >= 0 && objData.Depth > lastCollapsedDepth)
+                continue;
+
+            if (objData is { Depth: 0, Folded: false })
+                lastCollapsedDepth = -1;
+            else if (objData.Folded)
+                lastCollapsedDepth = objData.Depth;
+
             iActual++;
 
             // is this entry out of view
@@ -340,7 +371,8 @@ public class ObjectPickerWindow : Window
             }
 
             GUILayout.BeginHorizontal();
-            RenderObjectEntry(depth, obj);
+            RenderObjectEntry(ref objData, i + 1 < _objects.Count ? _objects[i + 1] : null);
+            _objects[i] = objData;
             GUILayout.EndHorizontal();
 
             if (i == 0 && _scrollViewElementHeight == null && Event.current.type == EventType.Repaint)
@@ -351,8 +383,10 @@ public class ObjectPickerWindow : Window
         }
 
         // now fill with remaining space
-        if (dummyEntryCount > 0 && _scrollViewElementHeight.HasValue)
+        if (dummyEntryCount > 0 && _scrollViewElementHeight.HasValue && afterVisible)
+        {
             GUILayout.Space(_scrollViewElementHeight.Value * dummyEntryCount);
+        }
 
         GUILayout.EndScrollView();
 
@@ -370,15 +404,31 @@ public class ObjectPickerWindow : Window
         }
     }
 
-    private void RenderObjectEntry(int depth, GameObject obj)
+    private void RenderObjectEntry(ref ObjectData objData, ObjectData? nextObjData)
     {
-        if (depth > 0)
-            GUILayout.Space(depth * 20);
+        if (objData.Depth > 0)
+            GUILayout.Space(objData.Depth * _objFoldIconXEnd.GetValueOrDefault(1));
         _objNameStyle ??= new GUIStyle(UnityEngine.GUI.skin.label) { alignment = TextAnchor.MiddleLeft };
-        _objNameContent.text = $" {obj.name}";
+
+        // can we fold?
+        if (nextObjData.HasValue && nextObjData.Value.Depth > objData.Depth)
+        {
+            var foldTexture = objData.Folded ? _objExpandable : _objClosable;
+            if (GUILayout.Button(foldTexture, _objNameStyle, GUILayout.ExpandWidth(false)))
+            {
+                objData.Folded = !objData.Folded;
+            }
+
+            if (_objFoldIconXEnd == null && Event.current.type == EventType.Repaint)
+            {
+                _objFoldIconXEnd = GUILayoutUtility.GetLastRect().xMax + _objNameStyle.margin.left;
+            }
+        }
+
+        _objNameContent.text = $" {objData.Object.name}";
         if (GUILayout.Button(_objNameContent, _objNameStyle))
         {
-            OnObjectSelected?.Invoke(this, obj);
+            OnObjectSelected?.Invoke(this, objData.Object);
             _selected = true;
         }
     }
@@ -386,9 +436,11 @@ public class ObjectPickerWindow : Window
     private float? _scrollViewElementHeight;
     private float? _scrollViewHeight;
 
-    private IEnumerable<(int, GameObject)> FilterBySearch(IEnumerable<(int, GameObject)> objects)
+    private float? _objFoldIconXEnd;
+
+    private IEnumerable<ObjectData> FilterBySearch(IEnumerable<ObjectData> objects)
     {
-        return objects.Where(x => x.Item2 != null && x.Item2.name.ToLowerInvariant().Contains(_search));
+        return objects.Where(x => x.Object != null && x.Object.name.ToLowerInvariant().Contains(_search));
     }
 
     public event Action<ObjectPickerWindow, GameObject> OnObjectSelected;
