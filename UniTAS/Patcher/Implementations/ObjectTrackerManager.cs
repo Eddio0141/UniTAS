@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using UniTAS.Patcher.Implementations.GUI.Windows;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Models;
@@ -16,6 +18,11 @@ public class ObjectTrackerManager : IObjectTrackerManager
 {
     private bool _addPickerOpen;
     private readonly List<UnityObjectIdentifier> _trackers;
+    private readonly List<ObjectTrackerInstanceWindow> _trackerWindows = new();
+
+    public ReadOnlyCollection<(UnityObjectIdentifier, ObjectTrackerInstanceWindow)> Trackers =>
+        _trackers.Select((t, i) => (t, _trackerWindows[i])).ToList().AsReadOnly();
+
     private readonly IConfig _config;
     private readonly IWindowFactory _windowFactory;
     private readonly IUnityObjectIdentifierFactory _objectIdentifierFactory;
@@ -91,7 +98,9 @@ public class ObjectTrackerManager : IObjectTrackerManager
             if (show) return;
             // if its hiding, remove from tracker
             _trackers.Remove(identifier);
+            _trackerWindows.Remove(window);
             SaveTrackers();
         };
+        _trackerWindows.Add(window);
     }
 }

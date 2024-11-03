@@ -20,6 +20,7 @@ public class ObjectTrackerInstanceWindow : Window
 
     private readonly string _trackSettingsConfigKey;
     private TrackSettings _trackSettings;
+    public TrackSettings TrackingSettings => _trackSettings;
 
     private readonly IConfig _config;
     private readonly IToolBar _toolBar;
@@ -78,7 +79,7 @@ public class ObjectTrackerInstanceWindow : Window
         Resizable = false;
     }
 
-    private Transform _transform;
+    public Transform Transform { get; private set; }
     private Rigidbody _rigidbody;
 
     private void UpdateInstance()
@@ -94,7 +95,7 @@ public class ObjectTrackerInstanceWindow : Window
         var config = Config;
         config.WindowName = $"Tracking '{_instance.name}'";
 
-        _transform = _instance switch
+        Transform = _instance switch
         {
             Transform t => t.transform,
             GameObject go => go.transform,
@@ -104,12 +105,12 @@ public class ObjectTrackerInstanceWindow : Window
 
         if (updateComponents || _rigidbody == null)
         {
-            _rigidbody = _transform?.GetComponent<Rigidbody>();
+            _rigidbody = Transform?.GetComponent<Rigidbody>();
         }
 
-        if (_transform != null)
+        if (Transform != null)
         {
-            _prevPos = _transform.position;
+            _prevPos = Transform.position;
         }
     }
 
@@ -159,7 +160,7 @@ public class ObjectTrackerInstanceWindow : Window
             };
         }
 
-        var hasTransform = _transform != null;
+        var hasTransform = Transform != null;
         UnityEngine.GUI.enabled = hasTransform;
         newBool = GUILayout.Toggle(_trackSettings.ShowPos, "Position");
         UnityEngine.GUI.enabled = _trackSettings.ShowPos && hasTransform;
@@ -347,14 +348,14 @@ public class ObjectTrackerInstanceWindow : Window
             }
         };
 
-        if (_transform != null)
+        if (Transform != null)
         {
             if (_trackSettings.ShowPos)
             {
                 GUILayoutUtils.ShadowedLabel("Position", _categoryLabel);
                 GUILayout.Space(SpacingFromCategory);
 
-                var pos = _transform.position;
+                var pos = Transform.position;
 
                 if (_trackSettings.ShowPosX)
                     GUILayoutUtils.ShadowedLabel($"x: {pos.x}", _valueDisplayLabel);
@@ -373,7 +374,7 @@ public class ObjectTrackerInstanceWindow : Window
                 GUILayoutUtils.ShadowedLabel("Rotation", _categoryLabel);
                 GUILayout.Space(SpacingFromCategory);
 
-                var rot = _transform.rotation;
+                var rot = Transform.rotation;
                 float x, y, z, w;
                 if (_trackSettings.ShowEulerRotation)
                 {
@@ -459,8 +460,8 @@ public class ObjectTrackerInstanceWindow : Window
     private void OnLateUpdateActual()
     {
         // rigid body would only update every fixed update, so unrelated to here
-        if (_transform == null || _rigidbody != null) return;
-        var pos = _transform.position;
+        if (Transform == null || _rigidbody != null) return;
+        var pos = Transform.position;
         if (_trackSettings.ShowEstVel)
             _estVel = pos - _prevPos;
         _prevPos = pos;
@@ -468,8 +469,8 @@ public class ObjectTrackerInstanceWindow : Window
 
     private void OnFixedUpdateActual()
     {
-        if (_transform == null || _rigidbody == null) return;
-        var pos = _transform.position;
+        if (Transform == null || _rigidbody == null) return;
+        var pos = Transform.position;
         if (_trackSettings.ShowEstVel)
         {
             _estVel = pos - _prevPos;
@@ -487,7 +488,7 @@ public class ObjectTrackerInstanceWindow : Window
         _config.WriteBackendEntry(_trackSettingsConfigKey, _trackSettings);
     }
 
-    private struct TrackSettings
+    public struct TrackSettings
     {
         public bool ShowName;
         public string Name;

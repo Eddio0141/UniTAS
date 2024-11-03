@@ -1,21 +1,31 @@
 using System;
+using System.Linq;
 using HarmonyLib;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.GUI;
+using UniTAS.Patcher.Models;
 using UniTAS.Patcher.Models.GUI;
+using UniTAS.Patcher.Services;
+using UniTAS.Patcher.Services.GUI;
 using UnityEngine;
 using Object = UnityEngine.Object;
+using Rect = UnityEngine.Rect;
 
 namespace UniTAS.Patcher.Implementations.GUI.Windows;
 
 [Register]
 public class ObjectPickerSearchSettings(
     WindowDependencies windowDependencies,
-    ObjectPickerWindow.SearchSettings searchSettings) : Window(windowDependencies,
-    new WindowConfig(showByDefault: true))
+    ObjectPickerWindow.SearchSettings searchSettings,
+    IDropdownList dropdownList,
+    IObjectTrackerManager objectTrackerManager) : Window(windowDependencies,
+    new WindowConfig(windowName: "Object picker settings"))
 {
     private string _filterComponentsText = string.Empty;
     private bool _filterObjsInvalid;
+    private bool _sortByTrackerDropDown;
+    private (string, Action)[] _sortByTrackerButtons;
+    private static Rect? _sortByTrackerRect;
 
     private bool _completed;
 
@@ -91,7 +101,7 @@ public class ObjectPickerSearchSettings(
         }
 
         GUILayout.EndVertical();
-        
+
         GUILayout.BeginVertical();
 
         GUILayout.Label("Presets");
@@ -103,7 +113,39 @@ public class ObjectPickerSearchSettings(
             _searchSettings.FilterComponents.Add(typeof(Camera));
             _searchSettings.Active = true;
         }
-        
+
+        if (GUILayout.Button("Sort by tracker distance") && !_sortByTrackerDropDown)
+        {
+            _sortByTrackerDropDown = true;
+            _sortByTrackerButtons = objectTrackerManager.Trackers
+                .Select<(UnityObjectIdentifier, ObjectTrackerInstanceWindow), (string, Action)>(tuple => (
+                    tuple.Item2.TrackingSettings.Name,
+                    () =>
+                    {
+                        var t = tuple.Item2.Transform;
+                        if (t != null)
+                            _searchSettings.SortByDist = (tuple.Item2, t.position, t);
+                    })).ToArray();
+        }
+
+        if (_sortByTrackerDropDown)
+        {
+            if (_sortByTrackerRect == null && Event.current.type == EventType.Repaint)
+            {
+                var lastRect = GUILayoutUtility.GetLastRect();
+                _sortByTrackerRect =
+                    new Rect(lastRect.x, lastRect.y + lastRect.height, lastRect.width, lastRect.height);
+            }
+
+            if (_sortByTrackerRect != null)
+                if (dropdownList.DropdownButtons(_sortByTrackerRect.Value, _sortByTrackerButtons))
+                    _sortByTrackerDropDown = false;
+        }
+
+        if (!_sortByTrackerDropDown)
+            GUILayout.Label(
+                $"Selected: {(_searchSettings.SortByDist == null ? "None" : _searchSettings.SortByDist.Value.Item1.TrackingSettings.Name)}");
+
         GUILayout.EndVertical();
 
         GUILayout.EndHorizontal();
@@ -122,6 +164,7 @@ public class ObjectPickerSearchSettings(
         if (GUILayout.Button("Reset"))
         {
             _searchSettings = new();
+            _filterComponentsText = string.Empty;
         }
 
         if (GUILayout.Button("Cancel"))

@@ -122,39 +122,55 @@ public class ObjectPickerWindow : Window
             _objects = objs.ToList();
         }
 
-        if (_searchSettings.FilterComponents.Count == 0) return;
-
-        // filter out objs by component type
-        var objsBefore = _objects.Where(o => o.Object != null).ToList();
-        _objects.Clear();
-
-        var addedIndexes = new bool[objsBefore.Count];
-        for (var i = 0; i < objsBefore.Count; i++)
+        if (_searchSettings.FilterComponents.Count > 0)
         {
-            var objInfo = objsBefore[i];
+            // filter out objs by component type
+            var objsBefore = _objects.Where(o => o.Object != null).ToList();
+            _objects.Clear();
 
-            // component match?
-            if (!_searchSettings.FilterComponents.Any(c => objInfo.Object.GetComponent(c))) continue;
-
-            var insertIndex = _objects.Count;
-            addedIndexes[i] = true;
-            objInfo.Folded = false;
-            _objects.Add(objInfo);
-
-            if (objInfo.Depth == 0) continue;
-
-            // also add objects backwards till reaching parent
-            for (var j = i - 1; j >= 0; j--)
+            var addedIndexes = new bool[objsBefore.Count];
+            for (var i = 0; i < objsBefore.Count; i++)
             {
-                var prev = objsBefore[j];
-                if (prev.Depth >= objInfo.Depth) continue;
-                if (addedIndexes[j]) continue;
+                var objInfo = objsBefore[i];
 
-                _objects.Insert(insertIndex, prev);
-                addedIndexes[j] = true;
-                prev.Folded = false;
+                // component match?
+                if (!_searchSettings.FilterComponents.Any(c => objInfo.Object.GetComponent(c))) continue;
 
-                if (prev.Depth == 0) break;
+                var insertIndex = _objects.Count;
+                addedIndexes[i] = true;
+                objInfo.Folded = false;
+                _objects.Add(objInfo);
+
+                if (objInfo.Depth == 0) continue;
+
+                // also add objects backwards till reaching parent
+                for (var j = i - 1; j >= 0; j--)
+                {
+                    var prev = objsBefore[j];
+                    if (prev.Depth >= objInfo.Depth) continue;
+                    if (addedIndexes[j]) continue;
+
+                    _objects.Insert(insertIndex, prev);
+                    addedIndexes[j] = true;
+                    prev.Folded = false;
+
+                    if (prev.Depth == 0) break;
+                }
+            }
+        }
+
+        // sorting stuff
+        if (_searchSettings.SortByDist != null)
+        {
+            var (_, posBackup, transform) = _searchSettings.SortByDist.Value;
+            if (posBackup != null || transform != null)
+            {
+                var posSortFrom = transform == null ? posBackup!.Value : transform.position;
+                _objects = _objects.Select(o =>
+                {
+                    o.Depth = 0;
+                    return o;
+                }).OrderBy(o => Vector3.Distance(o.Object.transform.position, posSortFrom)).ToList();
             }
         }
     }
@@ -508,6 +524,7 @@ public class ObjectPickerWindow : Window
     {
         public bool? Active;
         public readonly List<Type> FilterComponents = new();
+        public (ObjectTrackerInstanceWindow, Vector3?, Transform)? SortByDist;
     }
 
     static ObjectPickerWindow()
