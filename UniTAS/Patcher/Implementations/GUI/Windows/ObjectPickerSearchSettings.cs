@@ -14,7 +14,7 @@ public class ObjectPickerSearchSettings(
     ObjectPickerWindow.SearchSettings searchSettings) : Window(windowDependencies,
     new WindowConfig(showByDefault: true))
 {
-    private string _filterObjsText = string.Empty;
+    private string _filterComponentsText = string.Empty;
     private bool _filterObjsInvalid;
 
     private bool _completed;
@@ -34,6 +34,7 @@ public class ObjectPickerSearchSettings(
     }
 
     private GUIStyle _invalidText;
+    private ObjectPickerWindow.SearchSettings _searchSettings = searchSettings;
 
     protected override void OnGUI()
     {
@@ -43,20 +44,32 @@ public class ObjectPickerSearchSettings(
 
         GUILayout.BeginVertical();
 
+        GUILayout.Label("Object active");
+        var selectionInt = GUILayout.Toolbar(
+            _searchSettings.Active == null ? 0 : (_searchSettings.Active.Value ? 1 : 2),
+            ["Ignore", "Active", "Inactive"]);
+        _searchSettings.Active = selectionInt switch
+        {
+            0 => null,
+            1 => true,
+            2 => false,
+            _ => throw new ArgumentOutOfRangeException()
+        };
+
         GUILayout.Label("Filter by component type");
 
         _invalidText ??= new GUIStyle(UnityEngine.GUI.skin.textArea) { normal = { textColor = Color.red } };
         var filterObjsStyle = _filterObjsInvalid ? _invalidText : UnityEngine.GUI.skin.textArea;
 
-        var newStr = GUILayout.TextArea(_filterObjsText, filterObjsStyle, GUILayout.MinWidth(250),
+        var newStr = GUILayout.TextArea(_filterComponentsText, filterObjsStyle, GUILayout.MinWidth(250),
             GUILayout.MinHeight(100));
-        if (newStr != _filterObjsText)
+        if (newStr != _filterComponentsText)
         {
             // whatever idc parse them all
             _filterObjsInvalid = false;
-            _filterObjsText = newStr;
-            searchSettings.FilterComponents.Clear();
-            foreach (var objTypeName in _filterObjsText.Split(['\n'], StringSplitOptions.RemoveEmptyEntries))
+            _filterComponentsText = newStr;
+            _searchSettings.FilterComponents.Clear();
+            foreach (var objTypeName in _filterComponentsText.Split(['\n'], StringSplitOptions.RemoveEmptyEntries))
             {
                 var objTypeName2 = objTypeName.Trim();
                 if (objTypeName2.Length == 0) continue;
@@ -73,10 +86,24 @@ public class ObjectPickerSearchSettings(
                     continue;
                 }
 
-                searchSettings.FilterComponents.Add(objType);
+                _searchSettings.FilterComponents.Add(objType);
             }
         }
 
+        GUILayout.EndVertical();
+        
+        GUILayout.BeginVertical();
+
+        GUILayout.Label("Presets");
+
+        if (GUILayout.Button("FPS game - main character"))
+        {
+            _filterComponentsText = "UnityEngine.Camera\n";
+            _searchSettings.FilterComponents.Clear();
+            _searchSettings.FilterComponents.Add(typeof(Camera));
+            _searchSettings.Active = true;
+        }
+        
         GUILayout.EndVertical();
 
         GUILayout.EndHorizontal();
@@ -86,13 +113,16 @@ public class ObjectPickerSearchSettings(
         UnityEngine.GUI.enabled = !_filterObjsInvalid;
         if (GUILayout.Button("Done"))
         {
-            OnSearchSettingsComplete?.Invoke(searchSettings);
+            OnSearchSettingsComplete?.Invoke(_searchSettings);
             Show = false;
         }
 
         UnityEngine.GUI.enabled = true;
 
-        GUILayout.FlexibleSpace();
+        if (GUILayout.Button("Reset"))
+        {
+            _searchSettings = new();
+        }
 
         if (GUILayout.Button("Cancel"))
         {

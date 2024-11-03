@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using BepInEx;
+using HarmonyLib;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.GUI;
 using UniTAS.Patcher.Models.GUI;
@@ -108,8 +109,19 @@ public class ObjectPickerWindow : Window
         }
     }
 
+    private static readonly Func<GameObject, bool> ActiveInHierarchy;
+
     private void ApplyFilterToObjects()
     {
+        if (_searchSettings.Active.HasValue)
+        {
+            var objs = _objects.Where(o => o.Object != null);
+            objs = ActiveInHierarchy == null
+                ? objs.Where(o => o.Object.active == _searchSettings.Active.Value)
+                : objs.Where(o => ActiveInHierarchy(o.Object) == _searchSettings.Active.Value);
+            _objects = objs.ToList();
+        }
+
         if (_searchSettings.FilterComponents.Count == 0) return;
 
         // filter out objs by component type
@@ -275,6 +287,7 @@ public class ObjectPickerWindow : Window
                 if (newSettings != null)
                 {
                     _searchSettings = newSettings;
+                    RefreshObjects();
                     ApplyFilterToObjects();
                 }
 
@@ -493,6 +506,14 @@ public class ObjectPickerWindow : Window
 
     public class SearchSettings
     {
+        public bool? Active;
         public readonly List<Type> FilterComponents = new();
+    }
+
+    static ObjectPickerWindow()
+    {
+        var activeInHierarchy = AccessTools.PropertyGetter(typeof(GameObject), "activeInHierarchy");
+        if (activeInHierarchy != null)
+            ActiveInHierarchy = AccessTools.MethodDelegate<Func<GameObject, bool>>(activeInHierarchy);
     }
 }
