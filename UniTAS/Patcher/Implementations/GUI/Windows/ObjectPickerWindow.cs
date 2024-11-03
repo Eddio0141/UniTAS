@@ -22,7 +22,8 @@ public class ObjectPickerWindow : Window
     public ObjectPickerWindow(WindowDependencies windowDependencies, IUnityInputWrapper unityInput,
         IWindowFactory windowFactory) : base(
         windowDependencies,
-        config: new WindowConfig(defaultWindowRect: GUIUtils.WindowRect(500, 500), windowName: "Object picker"))
+        config: new WindowConfig(showByDefault: true, defaultWindowRect: GUIUtils.WindowRect(500, 500),
+            windowName: "Object picker"))
     {
         _unityInput = unityInput;
         _windowFactory = windowFactory;
