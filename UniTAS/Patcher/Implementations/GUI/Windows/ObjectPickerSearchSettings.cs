@@ -18,8 +18,9 @@ public class ObjectPickerSearchSettings(
     WindowDependencies windowDependencies,
     ObjectPickerWindow.SearchSettings searchSettings,
     IDropdownList dropdownList,
-    IObjectTrackerManager objectTrackerManager) : Window(windowDependencies,
-    new WindowConfig(windowName: "Object picker settings"))
+    IObjectTrackerManager objectTrackerManager)
+    : Window(windowDependencies,
+        new WindowConfig(showByDefault: true, windowName: "Object picker settings", closeButtonShow: false))
 {
     private string _filterComponentsText = string.Empty;
     private bool _filterObjsInvalid;

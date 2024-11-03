@@ -8,7 +8,8 @@ public class WindowConfig(
     UnityEngine.Rect? defaultWindowRect = null,
     string windowName = null,
     bool showByDefault = false,
-    bool removeConfigOnClose = false)
+    bool removeConfigOnClose = false,
+    bool closeButtonShow = true)
 {
     public UnityEngine.Rect DefaultWindowRect { get; } = defaultWindowRect ?? GUIUtils.WindowRect(100, 100);
 
@@ -16,4 +17,5 @@ public class WindowConfig(
     public GUILayoutOption[] LayoutOptions { get; } = layoutOptions ?? [];
     public bool ShowByDefault { get; } = showByDefault;
     public bool RemoveConfigOnClose { get; } = removeConfigOnClose;
+    public bool CloseButtonShow { get; } = closeButtonShow;
 }

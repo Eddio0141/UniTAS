@@ -270,7 +270,8 @@ public abstract class Window
                 _closeButtonStyle.active.background = CloseButtonClick;
             }
 
-            if (UnityEngine.GUI.Button(new(_windowRect.width - CloseButtonSize, 0f, CloseButtonSize, CloseButtonSize),
+            if (_config.CloseButtonShow && UnityEngine.GUI.Button(
+                    new(_windowRect.width - CloseButtonSize, 0f, CloseButtonSize, CloseButtonSize),
                     GUIContent.none, _closeButtonStyle))
             {
                 Show = false;
