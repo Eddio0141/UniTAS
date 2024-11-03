@@ -36,7 +36,7 @@ public class DropdownList : IDropdownList
             padding = new(5, 5, 5, 5),
             margin = new(),
         };
-
+        _buttonStyle.fixedWidth = position.width;
         _buttonHeight ??= _buttonStyle.CalcHeight(GUIContent.none, position.width);
         position.height = _buttonHeight.Value * buttons.Length;
 
@@ -51,20 +51,20 @@ public class DropdownList : IDropdownList
             clicked = true;
         }
 
-        GUILayout.BeginArea(position);
-        GUILayout.BeginVertical();
+        UnityEngine.GUI.BeginGroup(position);
 
-        foreach (var (label, onClick) in buttons)
+        for (var i = 0; i < buttons.Length; i++)
         {
-            if (GUILayout.Button(label, _buttonStyle, GUILayout.Width(position.width)))
+            var (label, onClick) = buttons[i];
+            var pos = new Rect(0, _buttonHeight.Value * i, position.width, position.height);
+            if (UnityEngine.GUI.Button(pos, label, _buttonStyle))
             {
                 onClick();
                 clicked = true;
             }
         }
 
-        GUILayout.EndVertical();
-        GUILayout.EndArea();
+        UnityEngine.GUI.EndGroup();
 
         return clicked;
     }
