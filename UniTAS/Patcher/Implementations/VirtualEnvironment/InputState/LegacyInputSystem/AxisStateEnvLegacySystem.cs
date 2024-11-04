@@ -135,14 +135,6 @@ public class AxisStateEnvLegacySystem(IAxisButtonStateEnvUpdate axisButtonStateE
         }
     }
 
-    public void MouseMoveRelative(Vector2 pos)
-    {
-        foreach (var (_, axis) in _values)
-        {
-            axis.MouseMoveRelative(pos);
-        }
-    }
-
     public void MouseScroll(float scroll)
     {
         foreach (var (_, axis) in _values)

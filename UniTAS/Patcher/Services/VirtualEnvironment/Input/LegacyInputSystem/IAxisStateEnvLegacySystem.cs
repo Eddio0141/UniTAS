@@ -13,7 +13,6 @@ public interface IAxisStateEnvLegacySystem
     void KeyDown(KeyCode key, JoyNum joystickNumber);
     void KeyUp(KeyCode key, JoyNum joystickNumber);
     void MouseMove(Vector2 pos);
-    void MouseMoveRelative(Vector2 pos);
     void MouseScroll(float scroll);
     void AddAxis(LegacyInputAxis axis);
     ReadOnlyCollection<(string, LegacyInputAxisState)> AllAxis { get; }

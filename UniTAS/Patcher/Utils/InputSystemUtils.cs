@@ -690,4 +690,14 @@ public static class InputSystemUtils
             _ => null
         };
     }
+
+    /// <summary>
+    /// Fixes position to be inside screen space
+    /// </summary>
+    public static Vector2 MousePosConstraintInScreen(Vector2 position)
+    {
+        position.x = Mathf.Clamp(position.x, 0, Screen.width);
+        position.y = Mathf.Clamp(position.y, 0, Screen.height);
+        return position;
+    }
 }

@@ -136,7 +136,18 @@ public partial class Config : IConfig, IDisposable
             return false;
         }
 
-        value = JsonConvert.DeserializeObject<T>(entry);
+        try
+        {
+            value = JsonConvert.DeserializeObject<T>(entry);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError($"Failed to deserialize key `{key}`, deleting entry: {e}");
+            RemoveBackendEntry(key);
+            value = default;
+            return false;
+        }
+
         return true;
     }
 
