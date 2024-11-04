@@ -32,4 +32,23 @@ public static class StringExtensions
             indexes.Add(lastFound);
         }
     }
+
+    public static string[] SplitByUpperCase(this string str)
+    {
+        var result = new List<string>();
+        var lastFound = 0;
+        for (var i = 1; i < str.Length; i++)
+        {
+            var c = str[i];
+            if (!char.IsUpper(c)) continue;
+            var chunk = str.Substring(lastFound, i - lastFound);
+            result.Add(chunk);
+            lastFound = i;
+        }
+        
+        if (lastFound < str.Length - 1)
+            result.Add(str.Substring(lastFound));
+
+        return result.ToArray();
+    }
 }

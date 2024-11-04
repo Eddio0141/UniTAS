@@ -1,5 +1,7 @@
 using System;
 using System.Linq;
+using HarmonyLib;
+using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.GUI;
 using UniTAS.Patcher.Models;
@@ -22,7 +24,8 @@ public class ObjectSearchConfigWindow(
 
     private static readonly string[] MultipleMatchHandleTypes =
         Enum.GetValues(typeof(UnityObjectIdentifier.MultipleMatchHandle))
-            .Cast<UnityObjectIdentifier.MultipleMatchHandle>().Select(x => x.ToString()).ToArray();
+            .Cast<UnityObjectIdentifier.MultipleMatchHandle>()
+            .Select(x => x.ToString().SplitByUpperCase().Join(delimiter: " ")).ToArray();
 
     private bool _done;
 
@@ -48,6 +51,19 @@ public class ObjectSearchConfigWindow(
         var multipleMatchHandleType =
             GUILayout.Toolbar((int)_searchSettings.MultipleMatchHandle, MultipleMatchHandleTypes);
         _searchSettings.MultipleMatchHandle = (UnityObjectIdentifier.MultipleMatchHandle)multipleMatchHandleType;
+
+        GUILayout.Label("Object active match");
+        var objActiveSelection =
+            GUILayout.Toolbar(_searchSettings.Active == null ? 0 : _searchSettings.Active.Value ? 1 : 2,
+                ["Disabled", "Active", "Inactive"]);
+        _searchSettings.Active = objActiveSelection switch
+        {
+            0 => null,
+            1 => true,
+            2 => false,
+            _ => throw new ArgumentOutOfRangeException()
+        };
+
         GUILayout.Space(5);
 
         _searchSettings.NameMatch = GUILayout.Toggle(_searchSettings.NameMatch, "Match by name");

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents;
 using UniTAS.Patcher.Interfaces.GUI;
@@ -70,6 +71,8 @@ public class ObjectTrackerInstanceWindow : Window
             if (show) return;
             // dispose config stuff
             _config.RemoveBackendEntry(_trackSettingsConfigKey);
+            if (_instance != null)
+                TrackedObjects.Remove(_instance);
         };
     }
 
@@ -82,16 +85,24 @@ public class ObjectTrackerInstanceWindow : Window
     public Transform Transform { get; private set; }
     private Rigidbody _rigidbody;
 
+    private static readonly List<Object> TrackedObjects = [];
+
     private void UpdateInstance()
     {
         var updateComponents = false;
+        TrackedObjects.Remove(_instance);
+
         if (_instance == null)
         {
-            _instance = _unityObjectIdentifier.FindObject(_trackSettings.ObjectSearch, _sceneWrapper);
+            _instance = _unityObjectIdentifier.FindObject(_trackSettings.ObjectSearch, _sceneWrapper,
+                TrackedObjects.ToArray());
             updateComponents = true;
         }
 
         if (_instance == null) return;
+        if (!TrackedObjects.Contains(_instance))
+            TrackedObjects.Add(_instance);
+
         var config = Config;
         config.WindowName = $"Tracking '{_instance.name}'";
 
