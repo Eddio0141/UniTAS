@@ -20,6 +20,10 @@ public class ObjectSearchConfigWindow(
     private static readonly string[] IDSearchTypes = Enum.GetValues(typeof(UnityObjectIdentifier.IdSearchType))
         .Cast<UnityObjectIdentifier.IdSearchType>().Select(x => x.ToString()).ToArray();
 
+    private static readonly string[] MultipleMatchHandleTypes =
+        Enum.GetValues(typeof(UnityObjectIdentifier.MultipleMatchHandle))
+            .Cast<UnityObjectIdentifier.MultipleMatchHandle>().Select(x => x.ToString()).ToArray();
+
     private bool _done;
 
     public override bool Show
@@ -39,6 +43,11 @@ public class ObjectSearchConfigWindow(
         GUILayout.Label("ID search type");
         var searchType = GUILayout.Toolbar((int)_searchSettings.IdSearchType, IDSearchTypes);
         _searchSettings.IdSearchType = (UnityObjectIdentifier.IdSearchType)searchType;
+
+        GUILayout.Label("Multiple match handler");
+        var multipleMatchHandleType =
+            GUILayout.Toolbar((int)_searchSettings.MultipleMatchHandle, MultipleMatchHandleTypes);
+        _searchSettings.MultipleMatchHandle = (UnityObjectIdentifier.MultipleMatchHandle)multipleMatchHandleType;
         GUILayout.Space(5);
 
         _searchSettings.NameMatch = GUILayout.Toggle(_searchSettings.NameMatch, "Match by name");

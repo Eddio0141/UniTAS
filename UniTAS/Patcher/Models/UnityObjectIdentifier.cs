@@ -92,6 +92,8 @@ public class UnityObjectIdentifier
 
     #endregion
 
+    private Object _previousFind;
+
     /// <summary>
     /// Finds runtime object
     /// </summary>
@@ -102,6 +104,12 @@ public class UnityObjectIdentifier
     public Object FindObject(SearchSettings searchSettings, ISceneWrapper sceneWrapper, Object[] allObjects = null,
         Object[] allObjectsWithType = null)
     {
+        if (_previousFind != null)
+        {
+            Tracking.Remove(_previousFind);
+            _previousFind = null;
+        }
+
         if (searchSettings.SceneMatch && _foundScene != sceneWrapper.ActiveSceneIndex) return null;
 
         allObjects ??= Resources.FindObjectsOfTypeAll(_objectType);
@@ -109,23 +117,43 @@ public class UnityObjectIdentifier
 
         if (_id.HasValue && searchSettings.IdSearchType is IdSearchType.Match)
         {
-            return allObjectsWithType.FirstOrDefault(o => o.GetInstanceID() == _id.Value);
+            var match = allObjectsWithType.FirstOrDefault(o => o.GetInstanceID() == _id.Value);
+            if (match != null)
+            {
+                _previousFind = match;
+                Tracking.Add(match);
+            }
+
+            return match;
         }
 
         // runtime find
-        if (allObjectsWithType.Length == 1) return allObjectsWithType[0]; // how lucky!
+        if (allObjectsWithType.Length == 1)
+        {
+            var obj = allObjectsWithType[0]; // how lucky!
+            Tracking.Add(obj);
+            _previousFind = obj;
+            return obj;
+        }
 
         var filteredObjs = allObjectsWithType;
         if (searchSettings.NameMatch)
         {
             filteredObjs = filteredObjs.Where(o => o.name == _name).ToArray();
-            if (filteredObjs.Length == 1) return filteredObjs[0];
+            if (filteredObjs.Length == 1)
+            {
+                var obj = filteredObjs[0];
+                Tracking.Add(obj);
+                _previousFind = obj;
+                return obj;
+            }
         }
 
-        if (searchSettings.ParentMatch)
+        if (searchSettings.ParentMatch && _parent != null)
         {
             var parent =
-                _parent?.FindObject(searchSettings, sceneWrapper, allObjects, allObjectsWithType) as GameObject;
+                _parent.FindObject(searchSettings, sceneWrapper, allObjects, allObjectsWithType) as GameObject;
+            parent ??= _parent.FindObject(new(), sceneWrapper, allObjects, allObjectsWithType) as GameObject;
             if (parent == null) return null;
             var parentTransform = parent.transform;
             var childCount = parentTransform.childCount;
@@ -146,7 +174,13 @@ public class UnityObjectIdentifier
             }
 
             filteredObjs = filteredObjs.Where(o => childrenSearch.Remove(o)).ToArray();
-            if (filteredObjs.Length == 1) return filteredObjs[0];
+            if (filteredObjs.Length == 1)
+            {
+                var obj = filteredObjs[0];
+                Tracking.Add(obj);
+                _previousFind = obj;
+                return obj;
+            }
         }
 
         if (searchSettings.ComponentMatch && _unityObjectType != UnityObjectType.Other)
@@ -185,15 +219,47 @@ public class UnityObjectIdentifier
 
             filteredObjs = filteredObjsList.ToArray();
 
-            if (filteredObjs.Length == 1) return filteredObjs[0];
+            if (filteredObjs.Length == 1)
+            {
+                var obj = filteredObjs[0];
+                Tracking.Add(obj);
+                _previousFind = obj;
+                return obj;
+            }
         }
 
         if (_id.HasValue && searchSettings.IdSearchType is IdSearchType.Fallback)
         {
-            return allObjectsWithType.FirstOrDefault(o => o.GetInstanceID() == _id.Value);
+            var id = _id.Value;
+            var obj = allObjectsWithType.FirstOrDefault(o => o.GetInstanceID() == id);
+            if (obj != null)
+            {
+                Tracking.Add(obj);
+                _previousFind = obj;
+                return obj;
+            }
+        }
+
+        if (searchSettings.MultipleMatchHandle is MultipleMatchHandle.FirstUntracked)
+        {
+            TrackingCleanup();
+            foreach (var obj in filteredObjs)
+            {
+                if (Tracking.Contains(obj)) continue;
+                Tracking.Add(obj);
+                _previousFind = obj;
+                return obj;
+            }
         }
 
         return null;
+    }
+
+    private static readonly List<Object> Tracking = [];
+
+    private static void TrackingCleanup()
+    {
+        Tracking.RemoveAll(x => x == null);
     }
 
     private enum UnityObjectType
@@ -210,6 +276,12 @@ public class UnityObjectIdentifier
     public struct SearchSettings
     {
         public IdSearchType IdSearchType = IdSearchType.Fallback;
+
+        /// <summary>
+        /// How to handle multiple of the same results at the end
+        /// </summary>
+        public MultipleMatchHandle MultipleMatchHandle = MultipleMatchHandle.FirstUntracked;
+
         public bool NameMatch = true;
         public bool ParentMatch = true;
         public bool ComponentMatch = true;
@@ -225,5 +297,11 @@ public class UnityObjectIdentifier
         Match,
         Fallback,
         Disabled
+    }
+
+    public enum MultipleMatchHandle
+    {
+        FirstUntracked,
+        FailMatch
     }
 }
