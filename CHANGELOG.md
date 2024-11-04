@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Added
 
+### UniTAS
+
+- Added object tracker and object picker
+
 ### TAS movie
 
 - **maybe breaking**: `MOVIE_CONFIG` now has a `window` table entry. `width` and `height` sets the game window's initial width and height. **1920** x **1080** by default unless specified. You can also set the resolution refresh rate (though it wouldn't matter unless the game is using this information) by setting `refresh_rate` to a number or a table containing `numerator` (or `n`) and `denominator` (or `d`)
@@ -20,6 +24,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added new input system support, with keyboard and mouse working
 
 ## Changed
+
+### UniTAS
+
+- Cooler UI
+- UI now can be configured within UniTAS
 
 ### Performance
 
