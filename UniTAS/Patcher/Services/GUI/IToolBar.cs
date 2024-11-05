@@ -10,8 +10,8 @@ public interface IToolBar
     bool PreventCursorChange { get; }
 }
 
-public interface IActualCursorStateUpdate
+public interface IActualCursorState
 {
-    CursorLockMode CursorLockState { set; }
-    bool CursorVisible { set; }
+    CursorLockMode CursorLockState { set; get; }
+    bool CursorVisible { set; get; }
 }

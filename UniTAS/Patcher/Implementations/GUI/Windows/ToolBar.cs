@@ -16,7 +16,7 @@ namespace UniTAS.Patcher.Implementations.GUI.Windows;
 [Singleton(RegisterPriority.ToolBar)]
 [ForceInstantiate]
 [ExcludeRegisterIfTesting]
-public class ToolBar : IToolBar, IActualCursorStateUpdate
+public class ToolBar : IToolBar, IActualCursorState
 {
     private readonly IWindowFactory _windowFactory;
     private readonly ICursorWrapper _cursorWrapper;
@@ -31,7 +31,7 @@ public class ToolBar : IToolBar, IActualCursorStateUpdate
 
     private void OnGameRestart(DateTime startupTime, bool preSceneLoad)
     {
-        if (preSceneLoad) return;
+        if (!preSceneLoad) return;
         CursorLockState = CursorLockMode.None;
         CursorVisible = true;
     }
