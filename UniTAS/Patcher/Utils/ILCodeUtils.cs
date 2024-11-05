@@ -96,6 +96,7 @@ public static class ILCodeUtils
 
             il.Emit(OpCodes.Ldloca, retVar);
             il.Emit(OpCodes.Initobj, retType);
+            il.Emit(OpCodes.Ldloc, retVar);
         }
         else
         {
