@@ -339,7 +339,7 @@ public class AsyncOperationPatch
             StaticLogger.Trace($"patch prefix invoke\n{new StackTrace()}");
 
             __result = AssetBundleRequestTracker.GetAssetBundleRequest(__instance);
-            return __result == null;
+            return false;
         }
     }
 
@@ -372,7 +372,7 @@ public class AsyncOperationPatch
             StaticLogger.Trace($"patch prefix invoke\n{new StackTrace()}");
 
             __result = AssetBundleCreateRequestTracker.GetAssetBundleCreateRequest(__instance);
-            return __result == null;
+            return false;
         }
     }
 
