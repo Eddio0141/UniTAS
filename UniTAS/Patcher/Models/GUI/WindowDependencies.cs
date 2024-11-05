@@ -12,7 +12,8 @@ public class WindowDependencies(
     IConfig config,
     IToolBar toolBar,
     INoRefresh noRefresh,
-    ITextureWrapper textureWrapper)
+    ITextureWrapper textureWrapper,
+    IUnityInputWrapper unityInputWrapper)
 {
     public IUpdateEvents UpdateEvents { get; } = updateEvents;
     public IPatchReverseInvoker PatchReverseInvoker { get; } = patchReverseInvoker;
@@ -20,4 +21,5 @@ public class WindowDependencies(
     public INoRefresh NoRefresh { get; } = noRefresh;
     public IToolBar ToolBar { get; } = toolBar;
     public ITextureWrapper TextureWrapper { get; } = textureWrapper;
+    public IUnityInputWrapper UnityInputWrapper { get; } = unityInputWrapper;
 }

@@ -7,8 +7,9 @@ namespace UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 /// </summary>
 public interface IUnityInputWrapper
 {
-    bool GetKeyDown(KeyCode keyCode);
-    Vector2 MousePosition { get; }
-    bool AnyKeyDown { get; }
-    bool GetMouseButtonDown(int button);
+    bool GetKeyDown(KeyCode keyCode, bool reverseInvoke = true);
+    Vector2 GetMousePosition(bool reverseInvoke = true);
+    bool GetAnyKeyDown(bool reverseInvoke = true);
+    bool GetMouseButtonDown(int button, bool reverseInvoke = true);
+    bool GetMouseButton(int button, bool reverseInvoke = true);
 }

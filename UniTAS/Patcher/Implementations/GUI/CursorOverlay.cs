@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using BepInEx;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.SoftRestart;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
@@ -18,11 +17,13 @@ public class CursorOverlay : IOnUpdateUnconditional, IMouseOverlayStatus, IOnGam
 {
     private readonly Texture2D _cursorTexture = new(1, 1, TextureFormat.ARGB32, false);
     private readonly bool _disabled;
+    private readonly IUnityInputWrapper _inputWrapper;
 
     public bool Visible { private get; set; } = true;
 
-    public CursorOverlay(ILogger logger, ITextureWrapper textureWrapper)
+    public CursorOverlay(ILogger logger, ITextureWrapper textureWrapper, IUnityInputWrapper inputWrapper)
     {
+        _inputWrapper = inputWrapper;
         var imagePath = Path.Combine(UniTASPaths.Resources, "cursor.png");
 
         try
@@ -41,7 +42,7 @@ public class CursorOverlay : IOnUpdateUnconditional, IMouseOverlayStatus, IOnGam
 
     public void UpdateUnconditional()
     {
-        _lastPosition = UnityInput.Current.mousePosition;
+        _lastPosition = _inputWrapper.GetMousePosition(false);
     }
 
     public void OnGUIUnconditional()

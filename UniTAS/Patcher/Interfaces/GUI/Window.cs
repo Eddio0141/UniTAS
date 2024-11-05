@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using BepInEx;
 using UniTAS.Patcher.Models.GUI;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.GUI;
@@ -88,6 +87,7 @@ public abstract class Window
     private readonly IToolBar _toolBar;
     private readonly INoRefresh _noRefresh;
     private readonly ITextureWrapper _textureWrapper;
+    private readonly IUnityInputWrapper _unityInputWrapper;
 
     private string WindowName { get; set; }
     public string WindowConfigId { get; }
@@ -121,6 +121,7 @@ public abstract class Window
         _toolBar = windowDependencies.ToolBar;
         _noRefresh = windowDependencies.NoRefresh;
         _textureWrapper = windowDependencies.TextureWrapper;
+        _unityInputWrapper = windowDependencies.UnityInputWrapper;
         if (config != null)
         {
             Config = config;
@@ -142,11 +143,11 @@ public abstract class Window
         _backendConfigWindowShown = $"{BackendConfigPrefix}show-{WindowConfigId}";
     }
 
-    private Vector2 MousePosition => _patchReverseInvoker.Invoke(() => UnityInput.Current.mousePosition);
+    private Vector2 MousePosition => _patchReverseInvoker.Invoke(() => _unityInputWrapper.GetMousePosition());
     private int ScreenWidth => _patchReverseInvoker.Invoke(() => Screen.width);
     private int ScreenHeight => _patchReverseInvoker.Invoke(() => Screen.height);
-    private bool LeftMouseButton => _patchReverseInvoker.Invoke(() => UnityInput.Current.GetMouseButton(0));
-    private bool RightMouseButton => _patchReverseInvoker.Invoke(() => UnityInput.Current.GetMouseButton(1));
+    private bool LeftMouseButton => _patchReverseInvoker.Invoke(() => _unityInputWrapper.GetMouseButton(0));
+    private bool RightMouseButton => _patchReverseInvoker.Invoke(() => _unityInputWrapper.GetMouseButton(1));
 
     protected void Init()
     {

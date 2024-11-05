@@ -181,7 +181,7 @@ public class ObjectPickerWindow : Window
 
     private void ClickSelectUpdate()
     {
-        var mousePos = _unityInput.MousePosition;
+        var mousePos = _unityInput.GetMousePosition();
         if (_raycastCamera == null)
         {
             _raycastCamera = Camera.main;
@@ -215,7 +215,7 @@ public class ObjectPickerWindow : Window
             _objects = [new ObjectData { Depth = 0, Object = raycastHit.gameObject, Folded = true }];
         }
 
-        if (!close && _unityInput.AnyKeyDown)
+        if (!close && _unityInput.GetAnyKeyDown())
         {
             close = true;
         }
