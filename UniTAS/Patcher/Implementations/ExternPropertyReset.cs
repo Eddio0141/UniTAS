@@ -155,6 +155,7 @@ public class ExternPropertyReset(ILogger logger, IPatchReverseInvoker patchRever
         "UnityEngineInternal.Input.NativeInputSystem.*",
         // null exception
         "UnityEngine.Rendering.GraphicsSettings.INTERNAL_defaultRenderPipeline",
+        "UnityEngine.QualitySettings.INTERNAL_renderPipeline",
         // readonly property (?)
         "UnityEngine.Caching.enabled",
         // missing method exception, also pointless
@@ -227,7 +228,7 @@ public class ExternPropertyReset(ILogger logger, IPatchReverseInvoker patchRever
         "UnityEngine.QualitySettings.terrainDetailDensityScale", "UnityEngine.QualitySettings.terrainBasemapDistance",
         "UnityEngine.QualitySettings.terrainDetailDistance", "UnityEngine.QualitySettings.terrainTreeDistance",
         "UnityEngine.QualitySettings.terrainBillboardStart", "UnityEngine.QualitySettings.terrainFadeLength",
-        "UnityEngine.QualitySettings.terrainMaxTrees", "UnityEngine.QualitySettings.INTERNAL_renderPipeline",
+        "UnityEngine.QualitySettings.terrainMaxTrees",
         "UnityEngine.QualitySettings.blendWeights", "UnityEngine.QualitySettings.skinWeights",
         "UnityEngine.QualitySettings.count", "UnityEngine.QualitySettings.streamingMipmapsActive",
         "UnityEngine.QualitySettings.streamingMipmapsMemoryBudget",
