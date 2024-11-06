@@ -108,6 +108,7 @@ public abstract class Window
         _toolBar = windowDependencies.ToolBar;
         _noRefresh = windowDependencies.NoRefresh;
         _textureWrapper = windowDependencies.TextureWrapper;
+        _unityInputWrapper = windowDependencies.UnityInputWrapper;
     }
 
     protected Window(WindowDependencies windowDependencies, WindowConfig config, string windowId = null)
