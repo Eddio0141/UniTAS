@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.TASRenderer;
+using UniTAS.Patcher.ManualServices;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Utils;
@@ -26,12 +27,6 @@ public class GameVideoRenderer : VideoRenderer
     private readonly Queue<int> _videoProcessingQueueHeight = new();
 
     private readonly ILogger _logger;
-
-#if TRACE
-    private long _avgTicks;
-    private long _totalTicks;
-    private int _measurements;
-#endif
 
     public override bool Available { get; } = true;
 
@@ -93,12 +88,6 @@ public class GameVideoRenderer : VideoRenderer
         _videoProcessingThread = new(VideoProcessingThread);
         _videoProcessingThread.Start();
 
-#if TRACE
-        _avgTicks = 0;
-        _totalTicks = 0;
-        _measurements = 0;
-#endif
-
         _logger.LogInfo("Video capture started");
     }
 
@@ -116,19 +105,6 @@ public class GameVideoRenderer : VideoRenderer
         _ffmpeg.CancelErrorRead();
         _ffmpeg.CancelOutputRead();
 
-#if TRACE
-        if (_measurements == 0)
-        {
-            _logger.LogDebug("No render avg measurements");
-        }
-        else
-        {
-            var avgTicks = _avgTicks / _measurements;
-            _logger.LogDebug($"Average ticks: {_avgTicks}, ms: {avgTicks / (float)Stopwatch.Frequency * 1000f}");
-            _logger.LogDebug($"Total ticks: {_totalTicks}, ms: {_totalTicks / (float)Stopwatch.Frequency * 1000f}");
-        }
-#endif
-
         if (_ffmpeg.ExitCode != 0)
         {
             _logger.LogError("ffmpeg exited with non-zero exit code for video");
@@ -143,15 +119,13 @@ public class GameVideoRenderer : VideoRenderer
             return;
         }
 
+        using var _ = Bench.Measure();
+
         if (_initialSkipVideoTimeLeft)
         {
             _initialSkipVideoTimeLeft = false;
             _renderTimeLeft = 0f;
         }
-
-#if TRACE
-        var sw = Stopwatch.StartNew();
-#endif
 
         var width = Screen.width;
         var height = Screen.height;
@@ -179,13 +153,6 @@ public class GameVideoRenderer : VideoRenderer
         }
 
         PushQueue(pixels, width, height);
-
-#if TRACE
-        sw.Stop();
-        _avgTicks += sw.ElapsedTicks;
-        _totalTicks += sw.ElapsedTicks;
-        _measurements++;
-#endif
 
         _renderTimeLeft += RecordFrameTime;
     }

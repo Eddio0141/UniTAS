@@ -25,7 +25,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Tests
-        run: dotnet test UniTAS --configuration Release
+        run: dotnet test UniTAS --configuration ReleaseBench
 
       - name: Build
         run: dotnet build UniTAS --configuration Release

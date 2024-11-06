@@ -17,10 +17,6 @@ using UniTAS.Patcher.Services.UnityInfo;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Patcher.Services.VirtualEnvironment;
 using Object = UnityEngine.Object;
-#if TRACE
-using System.Diagnostics;
-using UniTAS.Patcher.Utils;
-#endif
 
 namespace UniTAS.Patcher.Implementations.GameRestart;
 
@@ -124,10 +120,7 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
 
         _logger.LogInfo("Starting soft restart");
 
-#if TRACE
-        var sw = new Stopwatch();
-        sw.Start();
-#endif
+        var bench = Bench.Measure();
         InvokeOnPreGameRestart();
 
         _pendingRestart = true;
@@ -146,11 +139,7 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
 
         _logger.LogDebug("Enabling finalize invoke");
         _finalizeSuppressor.DisableFinalizeInvoke = false;
-
-#if TRACE
-        sw.Stop();
-        StaticLogger.Trace($"time elapsed for soft restart first phase: {sw.Elapsed.Milliseconds}ms");
-#endif
+        bench.Dispose();
 
         _syncFixedUpdate.OnSync(SoftRestartOperation, -_timeEnv.FrameTime);
     }
@@ -173,19 +162,9 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
     {
         _logger.LogInfo("Soft restarting");
 
-#if TRACE
-        var sw = new Stopwatch();
-        sw.Start();
-#endif
-
         OnGameRestart?.Invoke(_softRestartTime, true);
         _sceneWrapper.LoadScene(0);
         OnGameRestart?.Invoke(_softRestartTime, false);
-
-#if TRACE
-        sw.Stop();
-        StaticLogger.Trace($"time elapsed for soft restart scene reload: {sw.Elapsed.Milliseconds}ms");
-#endif
 
         _pendingRestart = false;
         _pendingResumePausedExecution = true;

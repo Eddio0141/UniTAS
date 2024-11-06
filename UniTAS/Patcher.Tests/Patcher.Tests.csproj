@@ -17,10 +17,12 @@
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
         <NoWarn>NU1701;NU1702;IL2121</NoWarn>
+        <DefineConstants>TRACE;BENCH</DefineConstants>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
         <NoWarn>NU1701;NU1702;IL2121</NoWarn>
+        <DefineConstants>TRACE;BENCH</DefineConstants>
     </PropertyGroup>
 
     <ItemGroup>

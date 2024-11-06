@@ -6,6 +6,7 @@ using System.Reflection;
 using HarmonyLib;
 using StructureMap;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
+using UniTAS.Patcher.ManualServices;
 using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Services.DependencyInjection;
 using UniTAS.Patcher.Services.Logging;
@@ -21,6 +22,7 @@ public class ForceInstantiateTypes(IContainer container, ILogger logger) : IForc
 
     public void InstantiateTypes<TAssemblyContainingType>(RegisterTiming timing)
     {
+        using var _ = Bench.Measure();
         var assembly = typeof(TAssemblyContainingType).Assembly;
 
         if (!_pendingInstantiations.TryGetValue(assembly,

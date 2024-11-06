@@ -8,9 +8,6 @@ using UniTAS.Patcher.Implementations;
 using UniTAS.Patcher.ManualServices;
 using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Utils;
-#if TRACE
-using System.Diagnostics;
-#endif
 
 namespace UniTAS.Patcher;
 
@@ -54,19 +51,12 @@ public static class Entry
         var assemblyNameWithDll = $"{assembly.Name.Name}.dll";
         StaticLogger.Log.LogDebug($"Received assembly {assemblyNameWithDll} for patching");
 
-#if TRACE
-        var sw = new Stopwatch();
-        sw.Start();
-#endif
+        using var _ = Bench.Measure();
 
         // check cache validity and patch if needed
         if (TargetAssemblyCacheIsValid(ref assembly))
         {
             StaticLogger.Log.LogDebug("Skipping patching as it is cached");
-#if TRACE
-            sw.Stop();
-            StaticLogger.Trace($"time elapsed modifying assembly: {sw.Elapsed.Milliseconds}ms");
-#endif
             return;
         }
 
@@ -75,21 +65,11 @@ public static class Entry
             // only patch the assembly if it's in the list of target assemblies
             if (!patcher.TargetDLLs.Contains(assemblyNameWithDll)) continue;
             StaticLogger.Log.LogInfo($"Patching {assemblyNameWithDll} with {patcher.GetType().Name}");
-#if TRACE
-            var swPatch = new Stopwatch();
-            swPatch.Start();
-#endif
-            patcher.Patch(ref assembly);
-#if TRACE
-            swPatch.Stop();
-            StaticLogger.Trace($"time elapsed processing patch: {swPatch.Elapsed.TotalMilliseconds}ms");
-#endif
-        }
 
-#if TRACE
-        sw.Stop();
-        StaticLogger.Trace($"time elapsed modifying assembly: {sw.Elapsed.Milliseconds}ms");
-#endif
+            var bench = Bench.Measure();
+            patcher.Patch(ref assembly);
+            bench.Dispose();
+        }
 
         // save patched assembly to cache
         SavePatchedAssemblyToCache(assembly);
