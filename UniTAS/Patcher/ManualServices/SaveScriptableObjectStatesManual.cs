@@ -4,38 +4,53 @@ using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using UniTAS.Patcher.Extensions;
-using UniTAS.Patcher.Services;
-using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
-using Object = UnityEngine.Object;
 
-namespace UniTAS.Patcher.Implementations.UnityFix;
+namespace UniTAS.Patcher.ManualServices;
 
-public partial class SaveScriptableObjectStates
+public static class SaveScriptableObjectStatesManual
 {
+    private static readonly Dictionary<ScriptableObject, StoredState> StoredStates = [];
+
+    public static void LoadAll()
+    {
+        StaticLogger.LogDebug("Loading all ScriptableObject states");
+
+        foreach (var storedState in StoredStates)
+        {
+            storedState.Value.Load();
+        }
+    }
+
+    public static void Save(ScriptableObject obj)
+    {
+        if (obj == null) return;
+        if (StoredStates.ContainsKey(obj)) return;
+
+        StaticLogger.LogDebug($"Saving object {obj.name}");
+        StoredStates.Add(obj, new(obj));
+    }
+
     private readonly struct StoredState
     {
-        public readonly ScriptableObject ScriptableObject;
+        private readonly ScriptableObject _scriptableObject;
 
         private readonly FieldData[] _savedFields;
 
-        private readonly ILogger _logger;
-
-        public StoredState(ScriptableObject scriptableObject, ILogger logger, ITryFreeMalloc freeMalloc)
+        public StoredState(ScriptableObject scriptableObject)
         {
-            ScriptableObject = scriptableObject;
-            _logger = logger;
+            _scriptableObject = scriptableObject;
 
             // save
             var fields = scriptableObject.GetType().GetFieldsRecursive(AccessTools.all)
-                .Where(x => !x.IsStatic && !x.IsLiteral && x.DeclaringType != typeof(Object));
+                .Where(x => !x.IsStatic && !x.IsLiteral);
 
             var savedFields = new List<FieldData>();
 
             foreach (var field in fields)
             {
-                savedFields.Add(new(field, scriptableObject, logger, freeMalloc));
+                savedFields.Add(new(field, scriptableObject));
             }
 
             _savedFields = savedFields.ToArray();
@@ -43,9 +58,9 @@ public partial class SaveScriptableObjectStates
 
         public void Load()
         {
-            if (ScriptableObject == null)
+            if (_scriptableObject == null)
             {
-                _logger.LogError("ScriptableObject is null, this should not happen");
+                StaticLogger.LogError("ScriptableObject is null, this should not happen");
                 return;
             }
 
@@ -61,20 +76,16 @@ public partial class SaveScriptableObjectStates
         private readonly ScriptableObject _instance;
         private readonly object _value;
         private readonly FieldInfo _saveField;
+        private readonly bool _pointerField;
 
-        private readonly ITryFreeMalloc _freeMalloc;
-
-        public FieldData(FieldInfo fieldInfo, ScriptableObject instance, ILogger logger, ITryFreeMalloc freeMalloc)
+        public FieldData(FieldInfo fieldInfo, ScriptableObject instance)
         {
             _saveField = fieldInfo;
             _instance = instance;
 
             var value = fieldInfo.GetValue(instance);
 
-            if (fieldInfo.FieldType.IsPointer)
-            {
-                _freeMalloc = freeMalloc;
-            }
+            _pointerField = fieldInfo.FieldType.IsPointer;
 
             try
             {
@@ -82,14 +93,17 @@ public partial class SaveScriptableObjectStates
             }
             catch (Exception e)
             {
-                logger.LogError($"Failed to deep copy field value, type is {fieldInfo.FieldType.FullName}, {e}");
+                StaticLogger.LogError($"Failed to deep copy field value, type is {fieldInfo.FieldType.FullName}, {e}");
             }
         }
 
         public void Load()
         {
-            // try to free pointer if it's a pointer
-            _freeMalloc?.TryFree(_instance, _saveField);
+            if (_pointerField)
+            {
+                // try to free pointer if it's a pointer
+                TryFreeMallocManual.TryFree(_instance, _saveField);
+            }
 
             // additional one to make it not use the stored value
             var value = DeepCopy.MakeDeepCopy(_value, processor: ProcessScriptableObjectCopy);

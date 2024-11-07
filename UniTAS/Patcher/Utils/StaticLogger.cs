@@ -35,8 +35,7 @@ public static class StaticLogger
 #endif
     }
 
-    public static void LogDebug(object data)
-    {
-        Log.LogDebug(data);
-    }
+    public static void LogDebug(object data) => Log.LogDebug(data);
+    public static void LogError(object data) => Log.LogError(data);
+    public static void LogWarning(object data) => Log.LogWarning(data);
 }

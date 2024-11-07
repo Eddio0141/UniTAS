@@ -15,6 +15,7 @@ public class PreloadPatcherProcessor
         new FinalizeSuppressionPatch(),
         new FunctionCallTrace(),
         new SteamAPIPatch(),
+        new SerializationCallbackPatch()
     ];
 
     public IEnumerable<string> TargetDLLs => PreloadPatchers.SelectMany(p => p.TargetDLLs).Distinct().ToArray();

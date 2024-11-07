@@ -5,7 +5,7 @@ using HarmonyLib;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.SoftRestart;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
-using UniTAS.Patcher.Services;
+using UniTAS.Patcher.ManualServices;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.Trackers.UpdateTrackInfo;
 using UniTAS.Patcher.Utils;
@@ -14,20 +14,17 @@ using UnityEngine;
 namespace UniTAS.Patcher.Implementations.UnityFix;
 
 [Singleton]
-public partial class SaveScriptableObjectStates : INewScriptableObjectTracker, IOnAwakeUnconditional, IOnPreGameRestart
+public class SaveScriptableObjectStates : INewScriptableObjectTracker, IOnAwakeUnconditional, IOnPreGameRestart
 {
-    private readonly List<StoredState> _storedStates = new();
-    private readonly List<Object> _destroyObjectsOnRestart = new();
+    private readonly List<Object> _destroyObjectsOnRestart = [];
 
     private readonly ILogger _logger;
-    private readonly ITryFreeMalloc _freeMalloc;
 
     private readonly Assembly[] _ignoreAssemblies;
 
-    public SaveScriptableObjectStates(ILogger logger, ITryFreeMalloc freeMalloc)
+    public SaveScriptableObjectStates(ILogger logger)
     {
         _logger = logger;
-        _freeMalloc = freeMalloc;
 
         _ignoreAssemblies = new[]
         {
@@ -56,19 +53,8 @@ public partial class SaveScriptableObjectStates : INewScriptableObjectTracker, I
 
         foreach (var obj in allScriptableObjects)
         {
-            _logger.LogDebug($"Saving object {obj.name}");
-            Save(obj);
+            SaveScriptableObjectStatesManual.Save(obj);
         }
-    }
-
-    private void Save(ScriptableObject obj)
-    {
-        foreach (var x in _storedStates)
-        {
-            if (x.ScriptableObject == obj) return;
-        }
-
-        _storedStates.Add(new(obj, _logger, _freeMalloc));
     }
 
     public void NewScriptableObject(ScriptableObject scriptableObject)
@@ -87,20 +73,6 @@ public partial class SaveScriptableObjectStates : INewScriptableObjectTracker, I
 
         _destroyObjectsOnRestart.Clear();
 
-        _logger.LogDebug("Loading all ScriptableObject states");
-
-        foreach (var storedState in _storedStates)
-        {
-            storedState.Load();
-        }
+        SaveScriptableObjectStatesManual.LoadAll();
     }
-
-    // TODO: could ScriptableObject live in an asset bundle?
-    // don't think this is required
-    // testing with 2 scenes and 2 scriptable objects showed that on game start, both scriptable objects are loaded
-    // public void OnSceneLoad(string sceneName, int sceneBuildIndex, LoadSceneMode loadSceneMode,
-    //     LocalPhysicsMode localPhysicsMode)
-    // {
-    //     SaveAll();
-    // }
 }

@@ -8,6 +8,7 @@ using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.SoftRestart;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
 using UniTAS.Patcher.ManualServices;
+using UniTAS.Patcher.ManualServices.Trackers;
 using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.GameExecutionControllers;
@@ -136,6 +137,8 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
         _finalizeSuppressor.DisableFinalizeInvoke = true;
 
         _staticFieldManipulator.ResetStaticFields();
+
+        SerializationCallbackTracker.InvokeAllAfterDeserialization();
 
         _logger.LogDebug("Enabling finalize invoke");
         _finalizeSuppressor.DisableFinalizeInvoke = false;
