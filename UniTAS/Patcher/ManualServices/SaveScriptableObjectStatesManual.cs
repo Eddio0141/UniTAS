@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using HarmonyLib;
-using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 
@@ -43,17 +42,9 @@ public static class SaveScriptableObjectStatesManual
             _scriptableObject = scriptableObject;
 
             // save
-            var fields = scriptableObject.GetType().GetFieldsRecursive(AccessTools.all)
-                .Where(x => !x.IsStatic && !x.IsLiteral);
+            var fields = scriptableObject.GetType().GetFields(AccessTools.all).Where(x => !x.IsStatic && !x.IsLiteral);
 
-            var savedFields = new List<FieldData>();
-
-            foreach (var field in fields)
-            {
-                savedFields.Add(new(field, scriptableObject));
-            }
-
-            _savedFields = savedFields.ToArray();
+            _savedFields = fields.Select(field => new FieldData(field, scriptableObject)).ToArray();
         }
 
         public void Load()
