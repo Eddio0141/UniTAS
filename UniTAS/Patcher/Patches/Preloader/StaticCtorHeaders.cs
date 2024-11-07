@@ -24,7 +24,7 @@ public class StaticCtorHeaders : PreloadPatcher
 {
     public override IEnumerable<string> TargetDLLs => TargetPatcherDlls.AllExcludedDLLs;
 
-    private readonly List<string> _ignoreTypes =
+    private readonly HashSet<string> _ignoreTypes =
         ["UnityEngine.Experimental.Rendering.ScriptableRuntimeReflectionSystemSettings"];
 
     public override void Patch(ref AssemblyDefinition assembly)
@@ -187,7 +187,7 @@ public static class PatchMethods
     // dictionary here are for different threads
     private static readonly ConcurrentDictionary<int, List<Type>> PendingIgnoreAddingInvokeList = new();
 
-    private static readonly ConcurrentDictionary<string, List<string>> FieldIgnoreListConditional = new();
+    private static readonly ConcurrentDictionary<string, HashSet<string>> FieldIgnoreListConditional = new();
 
     static PatchMethods()
     {
@@ -208,7 +208,7 @@ public static class PatchMethods
 
         var threadId = Thread.CurrentThread.ManagedThreadId;
 
-        var invokeStack = CctorInvokeStack.GetOrAdd(threadId, _ => new());
+        var invokeStack = CctorInvokeStack.GetOrAdd(threadId, _ => []);
         invokeStack.Add(type);
 
         var stackCount = invokeStack.Count;

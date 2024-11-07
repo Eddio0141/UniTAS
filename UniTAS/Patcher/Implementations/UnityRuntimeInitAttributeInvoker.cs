@@ -47,7 +47,8 @@ public class UnityRuntimeInitAttributeInvoker
 
         var loadType = AccessTools.PropertyGetter(runtimeInitializeOnLoadMethodAttribute, "loadType");
 
-        var dlls = Directory.GetFiles(Paths.ManagedPath, "*.dll").Select(Path.GetFileNameWithoutExtension).ToList();
+        var dlls = new HashSet<string>(Directory.GetFiles(Paths.ManagedPath, "*.dll")
+            .Select(Path.GetFileNameWithoutExtension));
         var assemblies = AccessTools.AllAssemblies().Where(x => dlls.Contains(x.GetName().Name))
             .SelectMany(AccessTools.GetTypesFromAssembly).ToArray();
 
@@ -78,7 +79,7 @@ public class UnityRuntimeInitAttributeInvoker
         foreach (var methodWithAttribute in methodWithAttributes)
         {
             var attrs = methodWithAttribute.GetCustomAttributes(runtimeInitializeOnLoadMethodAttribute, true)
-                    .Select(x => loadType.Invoke(x, null));
+                .Select(x => loadType.Invoke(x, null));
 
             foreach (var attr in attrs)
             {

@@ -18,4 +18,12 @@ public static class EnumerableExtensions
 
         return total / count;
     }
+
+    public static void AddRange<T>(this HashSet<T> collection, IEnumerable<T> items)
+    {
+        foreach (var item in items)
+        {
+            collection.Add(item);
+        }
+    }
 }

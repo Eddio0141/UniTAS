@@ -10,13 +10,14 @@ using UnityEngine;
 namespace UniTAS.Patcher.Implementations.VirtualEnvironment.InputState.NewInputSystem;
 
 [Singleton]
-public class MouseStateEnvNewSystem(ICursorWrapper cursorWrapper) : Interfaces.VirtualEnvironment.InputState, IMouseStateEnvNewSystem
+public class MouseStateEnvNewSystem(ICursorWrapper cursorWrapper)
+    : Interfaces.VirtualEnvironment.InputState, IMouseStateEnvNewSystem
 {
     public Vector2 Position { get; set; }
     public Vector2 Delta { get; private set; }
     public Vector2 Scroll { get; set; }
     private Vector2 _prevPos;
-    private readonly List<MouseButton> _heldButtons = new();
+    private readonly HashSet<MouseButton> _heldButtons = [];
 
     protected override void ResetState()
     {
@@ -34,7 +35,7 @@ public class MouseStateEnvNewSystem(ICursorWrapper cursorWrapper) : Interfaces.V
         _prevPos = Position;
 
         // simulate cursor warping in different cursor lock state
-        // note: i've seen the mouse cursor being able to stay at a non-center coordinate, which is why this operation is done first
+        // note: I've seen the mouse cursor being able to stay at a non-center coordinate, which is why this operation is done first
         if (Delta != Vector2.zero && cursorWrapper.LockState == CursorLockMode.Locked)
         {
             // div by float, decimal point is possible in mouse cursor pos
@@ -53,7 +54,6 @@ public class MouseStateEnvNewSystem(ICursorWrapper cursorWrapper) : Interfaces.V
 
     public void HoldButton(MouseButton button)
     {
-        if (_heldButtons.Contains(button)) return;
         _heldButtons.Add(button);
     }
 

@@ -115,7 +115,7 @@ public class UnityInitInvoke : PreloadPatcher
         }
     }
 
-    private static readonly string[] PatchEventMethod =
+    private static readonly HashSet<string> PatchEventMethod =
     [
         "Awake",
         "OnEnable",

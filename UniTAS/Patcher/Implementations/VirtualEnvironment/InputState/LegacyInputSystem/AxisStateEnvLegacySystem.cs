@@ -26,7 +26,7 @@ public class AxisStateEnvLegacySystem(IAxisButtonStateEnvUpdate axisButtonStateE
     protected override void FlushBufferedInputs()
     {
         // TODO: add unit tests for this
-        var pressedNames = new List<string>();
+        var pressedNames = new HashSet<string>();
         foreach (var (name, axis) in _values)
         {
             axis.FlushBufferedInputs();

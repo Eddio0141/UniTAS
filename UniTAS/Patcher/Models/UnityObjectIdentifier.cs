@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
 using Newtonsoft.Json;
+using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 using UnityEngine;
@@ -101,7 +102,7 @@ public class UnityObjectIdentifier
     /// <param name="allObjects">Objects to search from, otherwise it will automatically search</param>
     /// <param name="allObjectsWithType">Objects with matching type as identifier, otherwise it will search automatically</param>
     public Object FindObject(SearchSettings searchSettings, ISceneWrapper sceneWrapper,
-        Object[] alreadyTrackedObjects, Object[] allObjects = null,
+        HashSet<Object> alreadyTrackedObjects, Object[] allObjects = null,
         Object[] allObjectsWithType = null)
     {
         if (searchSettings.SceneMatch && _foundScene != sceneWrapper.ActiveSceneIndex) return null;
@@ -148,7 +149,7 @@ public class UnityObjectIdentifier
             if (parent == null) return null;
             var parentTransform = parent.transform;
             var childCount = parentTransform.childCount;
-            var childrenSearch = new List<Object>();
+            var childrenSearch = new HashSet<Object>();
             for (var i = 0; i < childCount; i++)
             {
                 var child = parentTransform.GetChild(i);
@@ -185,7 +186,7 @@ public class UnityObjectIdentifier
             for (var i = 0; i < componentTypes.Length; i++)
             {
                 var types = componentTypes[i];
-                var searchTypes = _componentTypes.ToList();
+                var searchTypes = new HashSet<Type>(_componentTypes);
                 foreach (var t in types)
                 {
                     if (!searchTypes.Remove(t)) break;

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using MoonSharp.Interpreter;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Models.Movie;
@@ -14,11 +13,10 @@ namespace UniTAS.Patcher.Implementations.Movie.Engine;
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public partial class MovieEngine : IMovieEngine
 {
-    private readonly List<CoroutineHolder> _preUpdateCoroutines = new();
-    private readonly List<CoroutineHolder> _postUpdateCoroutines = new();
+    private readonly Dictionary<ConcurrentIdentifier, CoroutineHolder> _preUpdateCoroutines = new();
+    private readonly Dictionary<ConcurrentIdentifier, CoroutineHolder> _postUpdateCoroutines = new();
     private DynValue _coroutine;
     private Script _script;
-    private readonly List<ConcurrentIdentifier> _concurrentIdentifiers = new();
 
     private readonly IMovieLogger _movieLogger;
     private readonly ILogger _logger;
@@ -33,7 +31,6 @@ public partial class MovieEngine : IMovieEngine
             // because script instance is changing, clear the coroutines
             _preUpdateCoroutines.Clear();
             _postUpdateCoroutines.Clear();
-            _concurrentIdentifiers.Clear();
             _script = value;
         }
     }
@@ -65,9 +62,11 @@ public partial class MovieEngine : IMovieEngine
     {
         if (Finished) return;
 
-        for (var i = 0; i < _preUpdateCoroutines.Count; i++)
+        foreach (var pair in _preUpdateCoroutines)
         {
-            var coroutine = _preUpdateCoroutines[i];
+            var identifier = pair.Key;
+            var coroutine = pair.Value;
+
             try
             {
                 coroutine.Resume();
@@ -79,8 +78,7 @@ public partial class MovieEngine : IMovieEngine
             }
 
             if (!coroutine.RunOnce || !coroutine.Finished) continue;
-            UnregisterConcurrent(new(i, false));
-            i--;
+            UnregisterConcurrent(identifier);
         }
 
         try
@@ -93,9 +91,10 @@ public partial class MovieEngine : IMovieEngine
             return;
         }
 
-        for (var i = 0; i < _postUpdateCoroutines.Count; i++)
+        foreach (var pair in _postUpdateCoroutines)
         {
-            var coroutine = _postUpdateCoroutines[i];
+            var identifier = pair.Key;
+            var coroutine = pair.Value;
             try
             {
                 coroutine.Resume();
@@ -107,8 +106,7 @@ public partial class MovieEngine : IMovieEngine
             }
 
             if (!coroutine.RunOnce || !coroutine.Finished) continue;
-            UnregisterConcurrent(new(i, true));
-            i--;
+            UnregisterConcurrent(identifier);
         }
 
         if (_coroutine.Coroutine.State == CoroutineState.Dead)
@@ -131,55 +129,31 @@ public partial class MovieEngine : IMovieEngine
     {
         if (coroutine.Type != DataType.Function) return null;
         var coroutineWrap = new CoroutineHolder(this, coroutine, defaultArgs, runOnce);
-        int index;
+        var identifier = new ConcurrentIdentifier(postUpdate);
         if (postUpdate)
         {
-            _postUpdateCoroutines.Add(coroutineWrap);
-
-            index = _postUpdateCoroutines.Count - 1;
+            _postUpdateCoroutines.Add(identifier, coroutineWrap);
         }
         else
         {
             coroutineWrap.Resume();
             if (coroutineWrap.RunOnce && coroutineWrap.Finished) return null;
 
-            _preUpdateCoroutines.Add(coroutineWrap);
-
-            index = _preUpdateCoroutines.Count - 1;
+            _preUpdateCoroutines.Add(identifier, coroutineWrap);
         }
-
-        var identifier = new ConcurrentIdentifier(index, postUpdate);
-        _concurrentIdentifiers.Add(identifier);
 
         return identifier;
     }
 
     public void UnregisterConcurrent(ConcurrentIdentifier identifier)
     {
-        var foundIdentifier = _concurrentIdentifiers.FirstOrDefault(x => x.Equals(identifier));
-        if (foundIdentifier == null) return;
-
-        // remove
-        if (foundIdentifier.PostUpdate)
+        if (identifier.PostUpdate)
         {
-            _postUpdateCoroutines.RemoveAt(foundIdentifier.Index);
+            _postUpdateCoroutines.Remove(identifier);
         }
         else
         {
-            _preUpdateCoroutines.RemoveAt(foundIdentifier.Index);
-        }
-
-        _concurrentIdentifiers.Remove(foundIdentifier);
-
-        // fix indexes
-        foreach (var concurrentIdentifier in _concurrentIdentifiers)
-        {
-            if (concurrentIdentifier.PostUpdate != foundIdentifier.PostUpdate) continue;
-
-            if (concurrentIdentifier.Index > foundIdentifier.Index)
-            {
-                concurrentIdentifier.Index--;
-            }
+            _preUpdateCoroutines.Remove(identifier);
         }
     }
 }

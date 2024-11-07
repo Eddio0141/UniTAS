@@ -8,17 +8,11 @@ using UniTAS.Patcher.Services.Logging;
 namespace UniTAS.Patcher.Implementations;
 
 [Singleton]
-public class FileStreamTrackAndClose : IFileStreamTracker, IOnPreGameRestart
+public class FileStreamTrackAndClose(ILogger logger) : IFileStreamTracker, IOnPreGameRestart
 {
-    private readonly List<FileStream> _openedFileStreams = new();
-    private readonly ILogger _logger;
+    private readonly HashSet<FileStream> _openedFileStreams = new();
 
     private bool _disposing;
-
-    public FileStreamTrackAndClose(ILogger logger)
-    {
-        _logger = logger;
-    }
 
     public void NewFileStream(FileStream fileStream)
     {
@@ -34,10 +28,10 @@ public class FileStreamTrackAndClose : IFileStreamTracker, IOnPreGameRestart
     public void OnPreGameRestart()
     {
         _disposing = true;
-        _logger.LogDebug("Closing all open file streams");
+        logger.LogDebug("Closing all open file streams");
         foreach (var fileStream in _openedFileStreams)
         {
-            _logger.LogDebug($"Closing file stream: {fileStream.Name}");
+            logger.LogDebug($"Closing file stream: {fileStream.Name}");
             fileStream.Dispose();
         }
 

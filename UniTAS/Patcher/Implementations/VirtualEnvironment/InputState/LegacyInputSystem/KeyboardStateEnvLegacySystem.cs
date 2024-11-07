@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Collections.Generic;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.VirtualEnvironment;
 using UniTAS.Patcher.Models.VirtualEnvironment;
@@ -44,5 +44,5 @@ public class KeyboardStateEnvLegacySystem : LegacyInputSystemButtonBasedDevice<K
     public bool AnyKeyHeld => AnyButtonHeld;
     public bool AnyKeyDown => AnyButtonDown;
 
-    public ReadOnlyCollection<KeyCodeWrap> HeldKeys => Buttons;
+    public HashSet<KeyCodeWrap> HeldKeys => Buttons;
 }

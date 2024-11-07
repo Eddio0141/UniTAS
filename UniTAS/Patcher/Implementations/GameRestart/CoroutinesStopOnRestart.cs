@@ -9,14 +9,12 @@ namespace UniTAS.Patcher.Implementations.GameRestart;
 [Singleton]
 public class CoroutinesStopOnRestart : ICoroutineRunningObjectsTracker, IOnPreGameRestart
 {
-    private readonly List<MonoBehaviour> _instances = new();
+    private readonly HashSet<MonoBehaviour> _instances = [];
 
     public void NewCoroutine(MonoBehaviour instance)
     {
-        if (!_instances.Contains(instance) && instance != null)
-        {
-            _instances.Add(instance);
-        }
+        if (instance == null) return;
+        _instances.Add(instance);
     }
 
     public void OnPreGameRestart()
@@ -26,5 +24,7 @@ public class CoroutinesStopOnRestart : ICoroutineRunningObjectsTracker, IOnPreGa
             if (coroutine == null) continue;
             coroutine.StopAllCoroutines();
         }
+
+        _instances.Clear();
     }
 }

@@ -23,9 +23,9 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger)
 {
     private readonly List<AsyncOperation> _tracked = new();
 
-    private readonly List<AsyncSceneLoadData> _asyncLoads = new();
+    private readonly Dictionary<AsyncOperation, AsyncSceneLoadData> _asyncLoads = new();
     private readonly List<AsyncOperation> _pendingLoadCallbacks = new();
-    private readonly List<AsyncSceneLoadData> _asyncLoadStalls = new();
+    private readonly Dictionary<AsyncOperation, AsyncSceneLoadData> _asyncLoadStalls = new();
     private readonly Dictionary<AsyncOperation, AssetBundle> _assetBundleCreateRequests = new();
     private readonly Dictionary<AsyncOperation, AssetBundleRequestData> _assetBundleRequests = new();
     private readonly List<(bool, AsyncOperation)> _allowSceneActivationValue = new();
@@ -51,8 +51,9 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger)
 
     public void OnLastUpdateUnconditional()
     {
-        foreach (var scene in _asyncLoads)
+        foreach (var pair in _asyncLoads)
         {
+            var scene = pair.Value;
             logger.LogDebug(
                 $"force loading scene, name: {scene.SceneName}, index: {scene.SceneBuildIndex}, manually loading in loop");
             sceneWrapper.LoadSceneAsync(scene.SceneName, scene.SceneBuildIndex, scene.LoadSceneMode,
@@ -114,7 +115,8 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger)
         _tracked.Add(asyncOperation);
 
         logger.LogDebug($"async scene load, {asyncOperation.GetHashCode()}");
-        _asyncLoads.Add(new(sceneName, sceneBuildIndex, asyncOperation, loadSceneMode, localPhysicsMode));
+        _asyncLoads.Add(asyncOperation,
+            new(sceneName, sceneBuildIndex, asyncOperation, loadSceneMode, localPhysicsMode));
     }
 
     public void AllowSceneActivation(bool allow, AsyncOperation asyncOperation)
@@ -123,10 +125,10 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger)
 
         if (allow)
         {
-            var sceneToLoad = _asyncLoadStalls.Find(x => ReferenceEquals(x.AsyncOperationInstance, asyncOperation));
-            if (sceneToLoad == null) return;
+            if (!_asyncLoadStalls.ContainsKey(asyncOperation)) return;
             StoreAllowSceneActivation(asyncOperation, true);
-            _asyncLoadStalls.Remove(sceneToLoad);
+            var sceneToLoad = _asyncLoadStalls[asyncOperation];
+            _asyncLoadStalls.Remove(asyncOperation);
             sceneWrapper.LoadSceneAsync(sceneToLoad.SceneName, sceneToLoad.SceneBuildIndex, sceneToLoad.LoadSceneMode,
                 sceneToLoad.LocalPhysicsMode, true);
             logger.LogDebug(
@@ -135,11 +137,10 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger)
         }
         else
         {
-            var asyncSceneLoad = _asyncLoads.Find(x => ReferenceEquals(x.AsyncOperationInstance, asyncOperation));
-            if (asyncSceneLoad == null) return;
+            if (!_asyncLoads.ContainsKey(asyncOperation)) return;
             StoreAllowSceneActivation(asyncOperation, false);
-            _asyncLoads.Remove(asyncSceneLoad);
-            _asyncLoadStalls.Add(asyncSceneLoad);
+            _asyncLoadStalls.Add(asyncOperation, _asyncLoads[asyncOperation]);
+            _asyncLoads.Remove(asyncOperation);
             logger.LogDebug("Added scene to stall list");
         }
     }

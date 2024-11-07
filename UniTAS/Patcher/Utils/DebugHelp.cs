@@ -12,10 +12,10 @@ public static class DebugHelp
     public static string PrintClass(object obj)
     {
         var indent = 0;
-        return PrintClass(obj, ref indent, new());
+        return PrintClass(obj, ref indent, []);
     }
 
-    private static string PrintClass(object obj, ref int indent, List<object> foundReferences,
+    private static string PrintClass(object obj, ref int indent, HashSet<object> foundReferences,
         bool ignoreInitialIndent = false)
     {
         var initialIndent = $"{(ignoreInitialIndent ? "" : IndentString(indent))}";

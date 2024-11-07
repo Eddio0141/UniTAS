@@ -19,7 +19,7 @@ namespace UniTAS.Patcher.Implementations;
 [Singleton]
 public class ThreadSoftRestartHandler : IThreadTracker, IOnPreGameRestart
 {
-    private readonly List<Thread> _threads = [];
+    private readonly HashSet<Thread> _threads = [];
 
     private readonly Type[] _excludeTypes;
 

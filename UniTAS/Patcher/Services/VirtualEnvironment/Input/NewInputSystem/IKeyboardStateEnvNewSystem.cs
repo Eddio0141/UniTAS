@@ -8,6 +8,6 @@ public interface IKeyboardStateEnvNewSystem
 {
     void Hold(Key keyCodeWrap);
     void Release(Key keyCodeWrap);
-    List<NewKeyCodeWrap> HeldKeys { get; }
+    HashSet<NewKeyCodeWrap> HeldKeys { get; }
     void Clear();
 }

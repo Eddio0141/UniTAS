@@ -26,7 +26,7 @@ public class Bind
 
     public string Name { get; }
     public BindCategory Category { get; }
-    private static readonly List<string> UsedNames = new();
+    private static readonly HashSet<string> UsedNames = [];
     private string _configEntry;
 
     private readonly IConfig _config;

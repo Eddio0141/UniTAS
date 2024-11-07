@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using UniTAS.Patcher.Extensions;
 
 namespace UniTAS.Patcher.Interfaces.VirtualEnvironment;
 
@@ -12,18 +10,16 @@ namespace UniTAS.Patcher.Interfaces.VirtualEnvironment;
 public abstract class LegacyInputSystemButtonBasedDevice<TButton> : LegacyInputSystemDevice
     where TButton : IEquatable<TButton>
 {
-    private readonly List<TButton> _buttons = new();
-    private readonly List<TButton> _buttonsDown = new();
-    private readonly List<TButton> _buttonsUp = new();
+    protected HashSet<TButton> Buttons { get; } = [];
+    private readonly HashSet<TButton> _buttonsDown = [];
+    private readonly HashSet<TButton> _buttonsUp = [];
 
-    private readonly List<TButton> _bufferedPressButtons = new();
-    private readonly List<TButton> _bufferedReleaseButtons = new();
-
-    protected ReadOnlyCollection<TButton> Buttons => _buttons.AsReadOnly();
+    private readonly HashSet<TButton> _bufferedPressButtons = [];
+    private readonly HashSet<TButton> _bufferedReleaseButtons = [];
 
     protected override void ResetState()
     {
-        _buttons.Clear();
+        Buttons.Clear();
         _buttonsDown.Clear();
         _buttonsUp.Clear();
         _bufferedPressButtons.Clear();
@@ -38,21 +34,19 @@ public abstract class LegacyInputSystemButtonBasedDevice<TButton> : LegacyInputS
     {
         foreach (var button in _bufferedPressButtons)
         {
-            if (_buttons.Contains(button)) continue;
+            if (Buttons.Contains(button)) continue;
             _buttonsDown.Add(button);
-            _buttons.Add(button);
+            Buttons.Add(button);
         }
 
         foreach (var bufferedRelease in _bufferedReleaseButtons)
         {
-            for (var i = 0; i < _buttons.Count; i++)
+            Buttons.RemoveWhere(button =>
             {
-                var button = _buttons[i];
-                if (!button.Equals(bufferedRelease)) continue;
+                if (!button.Equals(bufferedRelease)) return false;
                 _buttonsUp.Add(button);
-                _buttons.RemoveAt(i);
-                i--;
-            }
+                return true;
+            });
         }
 
         _bufferedPressButtons.Clear();
@@ -77,7 +71,7 @@ public abstract class LegacyInputSystemButtonBasedDevice<TButton> : LegacyInputS
     {
         if (_bufferedPressButtons.Contains(button)) return;
         _bufferedPressButtons.Add(button);
-        _bufferedReleaseButtons.RemoveAllEquals(button);
+        _bufferedReleaseButtons.RemoveWhere(button.Equals);
     }
 
     /// <summary>
@@ -86,9 +80,9 @@ public abstract class LegacyInputSystemButtonBasedDevice<TButton> : LegacyInputS
     /// <param name="button">The button that is released.</param>
     protected void Release(TButton button)
     {
-        _bufferedPressButtons.RemoveAllEquals(button);
+        _bufferedPressButtons.RemoveWhere(button.Equals);
 
-        if (_buttons.Contains(button))
+        if (Buttons.Contains(button))
         {
             _bufferedReleaseButtons.Add(button);
         }
@@ -100,7 +94,10 @@ public abstract class LegacyInputSystemButtonBasedDevice<TButton> : LegacyInputS
     protected void ReleaseAllButtons()
     {
         _bufferedPressButtons.Clear();
-        _bufferedReleaseButtons.AddRange(_buttons);
+        foreach (var button in Buttons)
+        {
+            _bufferedReleaseButtons.Add(button);
+        }
     }
 
     /// <summary>
@@ -130,9 +127,9 @@ public abstract class LegacyInputSystemButtonBasedDevice<TButton> : LegacyInputS
     /// <returns>If the button is held.</returns>
     protected bool IsButtonHeld(TButton button)
     {
-        return _buttons.Contains(button);
+        return Buttons.Contains(button);
     }
 
-    protected bool AnyButtonHeld => _buttons.Count > 0;
+    protected bool AnyButtonHeld => Buttons.Count > 0;
     protected bool AnyButtonDown => _buttonsDown.Count > 0;
 }

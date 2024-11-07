@@ -85,7 +85,7 @@ public class ObjectTrackerInstanceWindow : Window
     public Transform Transform { get; private set; }
     private Rigidbody _rigidbody;
 
-    private static readonly List<Object> TrackedObjects = [];
+    private static readonly HashSet<Object> TrackedObjects = [];
 
     private void UpdateInstance()
     {
@@ -94,8 +94,7 @@ public class ObjectTrackerInstanceWindow : Window
 
         if (_instance == null)
         {
-            _instance = _unityObjectIdentifier.FindObject(_trackSettings.ObjectSearch, _sceneWrapper,
-                TrackedObjects.ToArray());
+            _instance = _unityObjectIdentifier.FindObject(_trackSettings.ObjectSearch, _sceneWrapper, TrackedObjects);
             updateComponents = true;
         }
 

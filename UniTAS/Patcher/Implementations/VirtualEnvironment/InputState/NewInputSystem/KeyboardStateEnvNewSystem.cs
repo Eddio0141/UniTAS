@@ -9,12 +9,11 @@ namespace UniTAS.Patcher.Implementations.VirtualEnvironment.InputState.NewInputS
 [Singleton]
 public class KeyboardStateEnvNewSystem : Interfaces.VirtualEnvironment.InputState, IKeyboardStateEnvNewSystem
 {
-    public List<NewKeyCodeWrap> HeldKeys { get; } = new();
+    public HashSet<NewKeyCodeWrap> HeldKeys { get; } = new();
 
     public void Hold(Key key)
     {
         var keyCodeWrap = new NewKeyCodeWrap(key);
-        if (HeldKeys.Contains(keyCodeWrap)) return;
         HeldKeys.Add(keyCodeWrap);
     }
 

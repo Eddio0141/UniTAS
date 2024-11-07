@@ -24,7 +24,7 @@ public class DontDestroyOnLoadTracker
     [HarmonyPatch(typeof(Object), nameof(Object.DontDestroyOnLoad))]
     private class DontDestroyOnLoadPatch
     {
-        private static readonly List<string> _initialExcludeNames =
+        private static readonly HashSet<string> _initialExcludeNames =
         [
             "BepInEx_Manager",
             "BepInEx_ThreadingHelper",
