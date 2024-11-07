@@ -31,7 +31,7 @@ public class DontDestroyOnLoadTracker
             InitManagerGameObject.GAME_OBJECT_NAME
         ];
 
-        private static void Prefix(Object target)
+        private static void Postfix(Object target)
         {
             if (_initialExcludeNames.Contains(target.name))
             {
