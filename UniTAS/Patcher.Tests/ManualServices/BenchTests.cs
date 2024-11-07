@@ -1,3 +1,4 @@
+#if BENCH
 using System.Linq;
 using System.Threading;
 using UniTAS.Patcher.ManualServices;
@@ -60,3 +61,4 @@ public class BenchTests
         Thread.Sleep(500);
     }
 }
+#endif
