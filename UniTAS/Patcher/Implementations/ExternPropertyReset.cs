@@ -66,18 +66,14 @@ public class ExternPropertyReset(ILogger logger, IPatchReverseInvoker patchRever
             var typeName = propDef.DeclaringType.FullName ?? "unknown_type";
             var fullName = $"{typeName}.{propDef.Name}";
 
-            if (_skipProperties.Any(x => fullName.Like(x))) continue;
-            if (GameInfoManual.NoGraphics && _skipPropertiesNoGraphics.Any(x => fullName.Like(x))) continue;
+            if (_skipProperties.Contains(fullName) || _skipProperties.Any(x => fullName.Like(x))) continue;
+            if (GameInfoManual.NoGraphics && _skipPropertiesNoGraphics.Contains(fullName) ||
+                _skipPropertiesNoGraphics.Any(x => fullName.Like(x))) continue;
 
             var get = getMethod?.ResolveReflection();
             var set = setMethod?.ResolveReflection();
 
-            var knownIndex = _knownProperties.IndexOf(fullName);
-            if (knownIndex >= 0)
-            {
-                _knownProperties.RemoveAt(knownIndex);
-            }
-            else
+            if (!_knownProperties.Contains(fullName))
             {
                 logger.LogWarning(
                     $"Found unknown extern property: {fullName}, get exists: {get != null}, set exists: {set != null}");
@@ -106,7 +102,7 @@ public class ExternPropertyReset(ILogger logger, IPatchReverseInvoker patchRever
     }
 
     // for when there is no game ui
-    private readonly string[] _skipPropertiesNoGraphics =
+    private readonly HashSet<string> _skipPropertiesNoGraphics =
     [
         "UnityEngine.Graphics.activeTier", "UnityEngine.GL.wireframe", "UnityEngine.GL.sRGBWrite",
         "UnityEngine.GL.invertCulling", "UnityEngine.QualitySettings.maxQueuedFrames",
@@ -119,7 +115,7 @@ public class ExternPropertyReset(ILogger logger, IPatchReverseInvoker patchRever
         "UnityEngine.Experimental.Rendering.GraphicsDeviceSettings.waitForPresentSyncPoint"
     ];
 
-    private readonly string[] _skipProperties =
+    private readonly HashSet<string> _skipProperties =
     [
         // crashes game
         "UnityEngine.AssetBundleLoadingCache.maxBlocksPerFile",
@@ -162,7 +158,7 @@ public class ExternPropertyReset(ILogger logger, IPatchReverseInvoker patchRever
         "UnityEngine.AndroidJNIHelper.debug"
     ];
 
-    private readonly List<string> _knownProperties =
+    private readonly HashSet<string> _knownProperties =
     [
         "UnityEngine.Application.isLoadingLevel", "UnityEngine.Application.isPlaying",
         "UnityEngine.Application.isFocused", "UnityEngine.Application.buildGUID",
