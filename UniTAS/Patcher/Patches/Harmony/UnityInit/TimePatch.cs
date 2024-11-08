@@ -211,14 +211,8 @@ public class TimePatch
 
         private static bool Prefix(ref float __result)
         {
-            // currently i need this only for when i trace print Time.time
-#if TRACE
             if (ReverseInvoker.Invoking)
-            {
                 return true;
-            }
-#endif
-
             __result = CalledFromFixedUpdate() ? Time.fixedTime : (float)TimeEnv.ScaledTime;
             return false;
         }
