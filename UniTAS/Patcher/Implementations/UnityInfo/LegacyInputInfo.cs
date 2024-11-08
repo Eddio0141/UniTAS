@@ -29,7 +29,7 @@ public class LegacyInputInfo
 
         if (!File.Exists(globalGameManagersPath))
         {
-            logger.LogError("Failed to find globalGameManagers file");
+            logger.LogInfo("Failed to find globalGameManagers file");
             return;
         }
 
