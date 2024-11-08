@@ -1,9 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Threading;
 using BepInEx;
+using HarmonyLib;
 using JetBrains.Annotations;
 using Mono.Cecil;
 using UniTAS.Patcher.Extensions;
@@ -61,24 +64,104 @@ public static class Entry
     [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public static void Initialize()
     {
+        using var _ = Bench.Measure();
+
         LoggingUtils.Init();
         StaticLogger.Log.LogInfo("Initializing UniTAS");
 
-        BepInExUtils.GenerateMissingDirs();
+        ThreadPool.QueueUserWorkItem(_ => { BepInExUtils.GenerateMissingDirs(); });
 
-        if (UniTASSha256Info.InvalidCache)
+        if (UniTASSha256Info.UniTASInvalidCache)
         {
-            // cached assemblies are invalid as UniTAS has changed
-            // .sha256 files
-            foreach (var file in Directory.GetFiles(UniTASPaths.AssemblyCache, "*.sha256"))
+            AssemblyCacheFilled.Set();
+
+            ThreadPool.QueueUserWorkItem(_ =>
             {
-                File.Delete(file);
-            }
+                // cached assemblies are invalid as UniTAS has changed
+                // .sha256 files
+                foreach (var file in Directory.GetFiles(UniTASPaths.AssemblyCache, "*.sha256"))
+                {
+                    File.Delete(file);
+                }
+
+                DeletedCacheInfo.Set();
+            });
+        }
+        else
+        {
+            DeletedCacheInfo.Set();
+            ThreadPool.QueueUserWorkItem(_ =>
+            {
+                // load all cached assemblies
+                var paths = Directory.GetFiles(UniTASPaths.AssemblyCache, "*.sha256", SearchOption.TopDirectoryOnly);
+                StaticLogger.LogDebug($"Found {paths.Length} cached assemblies");
+
+                foreach (var hashPath in paths)
+                {
+                    ThreadPool.QueueUserWorkItem(_ =>
+                    {
+                        var dllPath = Path.Combine(Path.GetDirectoryName(hashPath)!,
+                            Path.GetFileNameWithoutExtension(hashPath));
+                        var originalDllPathFile = Path.Combine(UniTASPaths.AssemblyCache,
+                            $"{Path.GetFileNameWithoutExtension(hashPath)}.path");
+                        var originalDllPath =
+                            File.Exists(originalDllPathFile) ? File.ReadAllText(originalDllPathFile) : null;
+                        var actualDllPath = Path.Combine(Paths.ManagedPath, Path.GetFileName(dllPath));
+
+                        if (!File.Exists(dllPath))
+                        {
+                            var writtenHash = File.Exists(actualDllPath);
+                            if (writtenHash)
+                            {
+                                using var original = File.OpenRead(actualDllPath);
+                                using var hashOriginal = SHA256.Create();
+                                var writeHash = hashOriginal.ComputeHash(original);
+                                File.WriteAllBytes(hashPath, writeHash);
+                            }
+
+                            AssemblyCache.TryAdd(Path.GetFileNameWithoutExtension(dllPath),
+                                (null, writtenHash || originalDllPath == null ? null : hashPath));
+                            AssemblyCacheFilled.Set();
+                            return;
+                        }
+
+                        if (originalDllPath == null)
+                        {
+                            AssemblyCache.TryAdd(Path.GetFileNameWithoutExtension(dllPath), (null, hashPath));
+                            AssemblyCacheFilled.Set();
+                            return;
+                        }
+
+                        var hash = File.ReadAllBytes(hashPath);
+                        var assembly = AssemblyDefinition.ReadAssembly(dllPath);
+
+                        using var targetDllOriginal = File.OpenRead(originalDllPath);
+                        using var dllSha256 = SHA256.Create();
+                        var originalHash = dllSha256.ComputeHash(targetDllOriginal);
+
+                        if (!hash.SequenceEqual(originalHash))
+                        {
+                            File.WriteAllBytes(hashPath, originalHash);
+
+                            AssemblyCache.TryAdd(assembly.Name.Name, (null, null));
+                            AssemblyCacheFilled.Set();
+
+                            UniTASSha256Info.GameCacheInvalid = true;
+                            return;
+                        }
+
+                        AssemblyCache.TryAdd(assembly.Name.Name, (assembly, null));
+                        AssemblyCacheFilled.Set();
+                    });
+                }
+            });
         }
 
         StaticLogger.Log.LogInfo($"Found {PreloadPatcherProcessor.PreloadPatchers.Length} preload patchers");
-        StaticLogger.Log.LogInfo($"Target dlls: {string.Join(", ", TargetDLLs.ToArray())}");
+        StaticLogger.Log.LogInfo($"Target dlls: {TargetDLLs.Join()}");
     }
+
+    private static readonly ManualResetEvent DeletedCacheInfo = new(false);
 
     // Patches the assemblies
     [SuppressMessage("ReSharper", "UnusedMember.Global")]
@@ -90,7 +173,7 @@ public static class Entry
         using var _ = Bench.Measure();
 
         // check cache validity and patch if needed
-        if (TargetAssemblyCacheIsValid(ref assembly))
+        if (TargetAssemblyCache(ref assembly))
         {
             StaticLogger.Log.LogDebug("Skipping patching as it is cached");
             return;
@@ -105,48 +188,64 @@ public static class Entry
             bench.Dispose();
         }
 
-        // save patched assembly to cache
-        SavePatchedAssemblyToCache(assembly);
+        ThreadPool.QueueUserWorkItem(state =>
+        {
+            // save patched assembly to cache
+            var assembly = (AssemblyDefinition)state;
+
+            var dllCachePath = Path.Combine(UniTASPaths.AssemblyCache, $"{assembly.Name.Name}.dll");
+            DeletedCacheInfo.WaitOne();
+            assembly.Write(dllCachePath);
+        }, assembly);
     }
 
-    private static void SavePatchedAssemblyToCache(AssemblyDefinition assembly)
+    private static readonly ConcurrentDictionary<string, (AssemblyDefinition def, string writeHashPath)>
+        AssemblyCache = new();
+
+    private static readonly ManualResetEvent AssemblyCacheFilled = new(false);
+
+    private static bool TargetAssemblyCache(ref AssemblyDefinition assembly)
     {
-        var dllCachePath = Path.Combine(UniTASPaths.AssemblyCache, $"{assembly.Name.Name}.dll");
-        assembly.Write(dllCachePath);
-    }
-
-    private static bool TargetAssemblyCacheIsValid(ref AssemblyDefinition assembly)
-    {
-        var targetDllPath = assembly.MainModule.FileName;
-        var assemblyNameWithDll = $"{assembly.Name.Name}.dll";
-
-        using var targetDllOriginal = File.OpenRead(targetDllPath);
-        using var dllSha256 = SHA256.Create();
-        var hash = dllSha256.ComputeHash(targetDllOriginal);
-
-        var cachedDllSha256Path = Path.Combine(UniTASPaths.AssemblyCache, $"{assemblyNameWithDll}.sha256");
-        if (!File.Exists(cachedDllSha256Path))
+        if (UniTASSha256Info.UniTASInvalidCache)
         {
-            File.WriteAllBytes(cachedDllSha256Path, hash);
+            WriteHash(assembly, Path.Combine(UniTASPaths.AssemblyCache, $"{assembly.Name.Name}.dll.sha256"));
+            WriteDllPath(assembly);
             return false;
         }
 
-        var cachedHash = File.ReadAllBytes(cachedDllSha256Path);
-        if (!hash.SequenceEqual(cachedHash))
+        while (!AssemblyCache.ContainsKey(assembly.Name.Name))
         {
-            File.WriteAllBytes(cachedDllSha256Path, hash);
+            AssemblyCacheFilled.WaitOne();
+        }
+
+        var (def, writeHashPath2) = AssemblyCache[assembly.Name.Name];
+        if (def == null)
+        {
+            if (writeHashPath2 != null)
+            {
+                WriteHash(assembly, writeHashPath2);
+                WriteDllPath(assembly);
+            }
+
             return false;
         }
 
-        var cachedDllPath = Path.Combine(UniTASPaths.AssemblyCache, assemblyNameWithDll);
-        if (!File.Exists(cachedDllPath))
-        {
-            return false;
-        }
-
-        assembly = AssemblyDefinition.ReadAssembly(cachedDllPath);
-
+        assembly = def;
         return true;
+
+        void WriteDllPath(AssemblyDefinition asmDef)
+        {
+            var path = Path.Combine(UniTASPaths.AssemblyCache, $"{asmDef.Name.Name}.dll.path");
+            File.WriteAllText(path, asmDef.MainModule.FileName);
+        }
+
+        void WriteHash(AssemblyDefinition asmDef, string hashPath)
+        {
+            using var original = File.OpenRead(asmDef.MainModule.FileName);
+            using var hashOriginal = SHA256.Create();
+            var hash = hashOriginal.ComputeHash(original);
+            File.WriteAllBytes(hashPath, hash);
+        }
     }
 
     [SuppressMessage("ReSharper", "UnusedMember.Global")]
