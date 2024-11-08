@@ -27,7 +27,7 @@ public static class SaveScriptableObjectStatesManual
         if (obj == null) return;
         if (StoredStates.ContainsKey(obj)) return;
 
-        StaticLogger.LogDebug($"Saving object {obj.name}");
+        StaticLogger.LogDebug($"Saving ScriptableObject {obj.name}");
         StoredStates.Add(obj, new(obj));
     }
 
