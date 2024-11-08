@@ -11,7 +11,6 @@ public class PreloadPatcherProcessor
         new StaticCtorHeaders(),
         new UnityInitInvoke(),
         new FinalizeSuppressionPatch(),
-        new FunctionCallTrace(),
         new SteamAPIPatch(),
         new SerializationCallbackPatch()
     ];
