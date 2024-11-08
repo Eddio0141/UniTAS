@@ -60,6 +60,6 @@ public static class UniTASSha256Info
         File.WriteAllBytes(oldRunSha256Path, currentRunSha256);
     }
 
-    public static bool UniTASInvalidCache { get; set; }
+   public static bool UniTASInvalidCache { get; }
     public static bool GameCacheInvalid { get; set; }
 }
