@@ -44,6 +44,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed It Steals not being controllable properly with key, mouse, and controller
 - Fixed Lethal Company not loading the ship
 - Fixed Lethal Company breaking on soft restart
+- Fixed HuniePop soft locking after dialogs due to time being frozen
+- Fixed Rain World not booting and being stuck at a black screen
 
 ### General
 
@@ -63,6 +65,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed async scene load event callback to be at proper timings
 - Fixed AsyncOperation instance not returning proper values
 - Fixed invoking RuntimeInitializeOnLoadMethod in the wrong order
+- Fixed games using ISerializationCallbackReceiver not receiving OnAfterDeserialize callback on soft restart
+- Fixed old games with only Time.captureFramerate appearing to have frozen time
 
 # [v0.5.1] - 2023-09-13
 
