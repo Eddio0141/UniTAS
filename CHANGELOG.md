@@ -51,6 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed TAS encoding popping up command prompt probably
 - Fixed music overlaying on each other every restart
+- Fixed UniTAS not limiting realtime FPS making things go super fast
 
 ### Compatibility
 
