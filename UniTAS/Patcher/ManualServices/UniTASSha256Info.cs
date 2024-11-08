@@ -22,7 +22,7 @@ public static class UniTASSha256Info
             if (!File.Exists(cfgCachedPath))
             {
                 // new file, just save and move on
-                InvalidCache = true;
+                UniTASInvalidCache = true;
 
                 File.WriteAllBytes(cfgCachedPath, cfgHashBytes);
                 continue;
@@ -30,9 +30,9 @@ public static class UniTASSha256Info
 
             var cacheHash = File.ReadAllBytes(cfgCachedPath);
 
-            if (!InvalidCache && !cfgHashBytes.SequenceEqual(cacheHash))
+            if (!UniTASInvalidCache && !cfgHashBytes.SequenceEqual(cacheHash))
             {
-                InvalidCache = true;
+                UniTASInvalidCache = true;
             }
 
             File.WriteAllBytes(cfgCachedPath, cfgHashBytes);
@@ -44,21 +44,22 @@ public static class UniTASSha256Info
         using var sha256 = SHA256.Create();
         var currentRunSha256 = sha256.ComputeHash(currentRunSha256Stream);
 
-        if (!InvalidCache)
+        if (!UniTASInvalidCache)
         {
             if (File.Exists(oldRunSha256Path))
             {
                 var oldRunSha256 = File.ReadAllBytes(oldRunSha256Path);
-                InvalidCache = !currentRunSha256.SequenceEqual(oldRunSha256);
+                UniTASInvalidCache = !currentRunSha256.SequenceEqual(oldRunSha256);
             }
             else
             {
-                InvalidCache = true;
+                UniTASInvalidCache = true;
             }
         }
 
         File.WriteAllBytes(oldRunSha256Path, currentRunSha256);
     }
 
-    public static bool InvalidCache { get; }
+    public static bool UniTASInvalidCache { get; set; }
+    public static bool GameCacheInvalid { get; set; }
 }

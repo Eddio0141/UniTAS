@@ -21,7 +21,7 @@ public class NoRefresh : INoRefresh, IUpdateCameraInfo, IOverridingCameraInfo, I
 {
     private readonly bool _canNoRefresh;
 
-    private const string CONFIG_ENTRY_NAME = "NoRefreshCache";
+    private const string ConfigEntryName = "NoRefreshCache";
 
     private readonly IUnityInstanceWrapFactory _unityInstanceWrapFactory;
     private readonly ILogger _logger;
@@ -32,9 +32,9 @@ public class NoRefresh : INoRefresh, IUpdateCameraInfo, IOverridingCameraInfo, I
         _unityInstanceWrapFactory = unityInstanceWrapFactory;
         _logger = logger;
 
-        if (!UniTASSha256Info.InvalidCache)
+        if (!UniTASSha256Info.GameCacheInvalid && !UniTASSha256Info.UniTASInvalidCache)
         {
-            if (config.TryGetBackendEntry(CONFIG_ENTRY_NAME, out NoRefreshCacheConfig entry))
+            if (config.TryGetBackendEntry(ConfigEntryName, out NoRefreshCacheConfig entry))
             {
                 _canNoRefresh = entry.CanNoRefresh;
                 logger.LogDebug("using cached no-refresh search result");
@@ -55,7 +55,7 @@ public class NoRefresh : INoRefresh, IUpdateCameraInfo, IOverridingCameraInfo, I
         LogCanRefresh(logger);
 
         var cache = new NoRefreshCacheConfig(_canNoRefresh);
-        config.WriteBackendEntry(CONFIG_ENTRY_NAME, cache);
+        config.WriteBackendEntry(ConfigEntryName, cache);
     }
 
     private void LogCanRefresh(ILogger logger)
