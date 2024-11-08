@@ -31,8 +31,16 @@ public class TimePatch
         foreach (var frame in frames)
         {
             var method = frame.GetMethod();
-            if (method?.Name is "FixedUpdate" && method.DeclaringType?.IsSubclassOf(typeof(MonoBehaviour)) is true)
-                return true;
+            if (method?.Name is not "FixedUpdate") return true;
+
+            var declType = method.DeclaringType;
+            while (declType != null)
+            {
+                if (declType.IsSubclassOf(typeof(MonoBehaviour))) return true;
+                declType = declType.DeclaringType;
+            }
+
+            return true;
         }
 
         return false;
@@ -213,7 +221,7 @@ public class TimePatch
         {
             if (ReverseInvoker.Invoking)
                 return true;
-            __result = CalledFromFixedUpdate() ? Time.fixedTime : (float)TimeEnv.ScaledTime;
+            __result = CalledFromFixedUpdate() ? (float)TimeEnv.ScaledFixedTime : (float)TimeEnv.ScaledTime;
             return false;
         }
     }
