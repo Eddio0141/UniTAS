@@ -1,5 +1,4 @@
 using System;
-using BepInEx.Configuration;
 using HarmonyLib;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.SoftRestart;
@@ -16,29 +15,29 @@ namespace UniTAS.Patcher.Implementations.VirtualEnvironment;
 [Singleton(RegisterPriority.TimeEnv)]
 [ExcludeRegisterIfTesting]
 public class TimeEnv : ITimeEnv, IOnPreUpdateActual, IOnGameRestartResume, IOnStartActual, IOnLastUpdateActual,
-    IOnFixedUpdateActual, IOnUpdateUnconditional
+    IOnFixedUpdateActual, IOnUpdateUnconditional, IOnStartUnconditional
 {
-    private readonly ConfigEntry<float> _defaultFps;
-
     private readonly ITimeWrapper _timeWrap;
 
-    public TimeEnv(IConfig config, ITimeWrapper timeWrap, IPatchReverseInvoker patchReverseInvoker)
+    public TimeEnv(ITimeWrapper timeWrap, IPatchReverseInvoker patchReverseInvoker)
     {
-        // start time to current time
-        StartupTime = patchReverseInvoker.Invoke(() => DateTime.Now);
-
-        _defaultFps = config.BepInExConfigFile.Bind("General", "DefaultFps", 100f,
-            "Default FPS when the TAS isn't running. Make sure the FPS is more than 0");
-
-        if (_defaultFps.Value <= 0)
-        {
-            _defaultFps.Value = 100f;
-        }
-
         _timeWrap = timeWrap;
 
-        FrameTime = 0f;
+        // start time to current time
+        StartupTime = patchReverseInvoker.Invoke(() => DateTime.Now);
         TimeTolerance = _timeWrap.IntFPSOnly ? 1.0 / int.MaxValue : float.Epsilon;
+    }
+
+    private const double DefaultFt = 0.01f;
+
+    private bool _setInitialFt;
+
+    public void StartUnconditional()
+    {
+        if (_setInitialFt) return;
+        _setInitialFt = true;
+
+        FrameTime = DefaultFt;
     }
 
     private bool _initialTimeSet;
@@ -49,11 +48,10 @@ public class TimeEnv : ITimeEnv, IOnPreUpdateActual, IOnGameRestartResume, IOnSt
         _initialTimeSet = true;
 
         // stupid but slightly fixes accuracy on game first start
-        var initialFt = 1.0 / _defaultFps.Value;
-        RealtimeSinceStartup += initialFt;
-        UnscaledTime += initialFt;
-        ScaledTime += initialFt * Time.timeScale;
-        SecondsSinceStartUp += initialFt;
+        RealtimeSinceStartup += DefaultFt;
+        UnscaledTime += DefaultFt;
+        ScaledTime += DefaultFt * Time.timeScale;
+        SecondsSinceStartUp += DefaultFt;
     }
 
     public double TimeTolerance { get; }
@@ -63,7 +61,7 @@ public class TimeEnv : ITimeEnv, IOnPreUpdateActual, IOnGameRestartResume, IOnSt
         get => _timeWrap.CaptureFrameTime;
         set
         {
-            if (value <= 0f) value = 1f / _defaultFps.Value;
+            if (value <= 0f) value = DefaultFt;
             _timeWrap.CaptureFrameTime = value;
         }
     }
@@ -102,13 +100,13 @@ public class TimeEnv : ITimeEnv, IOnPreUpdateActual, IOnGameRestartResume, IOnSt
         var newFixedUnscaledTime = FixedUnscaledTime + fixedDt;
         if (newFixedUnscaledTime <= UnscaledTime)
         {
-            FixedUnscaledTime += fixedDt;
+            FixedUnscaledTime = newFixedUnscaledTime;
         }
 
-        var newScaledFixedTime = ScaledFixedTime + fixedDt;
+        var newScaledFixedTime = ScaledFixedTime + fixedDt * Time.timeScale;
         if (newScaledFixedTime <= ScaledTime)
         {
-            ScaledFixedTime += fixedDt;
+            ScaledFixedTime = newScaledFixedTime;
         }
     }
 
