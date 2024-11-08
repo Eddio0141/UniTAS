@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
 using Mono.Cecil;
@@ -12,8 +11,6 @@ namespace UniTAS.Patcher.Patches.Preloader;
 
 public class FinalizeSuppressionPatch : PreloadPatcher
 {
-    public override IEnumerable<string> TargetDLLs => TargetPatcherDlls.AllExcludedDLLs;
-
     public override void Patch(ref AssemblyDefinition assembly)
     {
         var types = assembly.MainModule.GetAllTypes().Where(x => x.IsClass && !x.IsAbstract);

@@ -18,8 +18,6 @@ public class UnityInitInvoke : PreloadPatcher
     private const string RuntimeInitializeLoadType = "UnityEngine.RuntimeInitializeLoadType";
     private const string BeforeSceneLoadVariant = "BeforeSceneLoad";
 
-    public override IEnumerable<string> TargetDLLs => TargetPatcherDlls.AllExcludedDLLs;
-
     private readonly object _beforeSceneLoadValue;
 
     public UnityInitInvoke()

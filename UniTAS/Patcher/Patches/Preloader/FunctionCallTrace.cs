@@ -16,7 +16,6 @@ namespace UniTAS.Patcher.Patches.Preloader;
 
 public class FunctionCallTrace : PreloadPatcher
 {
-    public override IEnumerable<string> TargetDLLs => TargetPatcherDlls.AllExcludedDLLs;
     private static readonly ManualLogSource LOG = Logger.CreateLogSource("FunctionCallTrace");
 
     public override void Patch(ref AssemblyDefinition assembly)

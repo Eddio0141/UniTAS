@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using HarmonyLib;
@@ -15,21 +14,19 @@ namespace UniTAS.Patcher.Patches.Preloader;
 
 public class MonoBehaviourPatch : PreloadPatcher
 {
-    public override IEnumerable<string> TargetDLLs => TargetPatcherDlls.AllExcludedDLLs;
-
-    private const string COLLISION = "UnityEngine.Collision";
-    private const string COLLISION_2D = "UnityEngine.Collision2D";
-    private const string CONTROLLER_COLLIDER_HIT = "UnityEngine.ControllerColliderHit";
-    private const string NETWORK_DISCONNECTION = "UnityEngine.NetworkDisconnection";
-    private const string NETWORK_CONNECTION_ERROR = "UnityEngine.NetworkConnectionError";
-    private const string NETWORK_MESSAGE_INFO = "UnityEngine.NetworkMessageInfo";
-    private const string NETWORK_PLAYER = "UnityEngine.NetworkPlayer";
-    private const string MASTER_SERVER_EVENT = "UnityEngine.MasterServerEvent";
-    private const string COLLIDER = "UnityEngine.Collider";
-    private const string COLLIDER_2D = "UnityEngine.Collider2D";
-    private const string GAME_OBJECT = "UnityEngine.GameObject";
-    private const string RENDER_TEXTURE = "UnityEngine.RenderTexture";
-    private const string BIT_STREAM = "UnityEngine.BitStream";
+    private const string Collision = "UnityEngine.Collision";
+    private const string Collision2D = "UnityEngine.Collision2D";
+    private const string ControllerColliderHit = "UnityEngine.ControllerColliderHit";
+    private const string NetworkDisconnection = "UnityEngine.NetworkDisconnection";
+    private const string NetworkConnectionError = "UnityEngine.NetworkConnectionError";
+    private const string NetworkMessageInfo = "UnityEngine.NetworkMessageInfo";
+    private const string NetworkPlayer = "UnityEngine.NetworkPlayer";
+    private const string MasterServerEvent = "UnityEngine.MasterServerEvent";
+    private const string Collider = "UnityEngine.Collider";
+    private const string Collider2D = "UnityEngine.Collider2D";
+    private const string GameObject = "UnityEngine.GameObject";
+    private const string RenderTexture = "UnityEngine.RenderTexture";
+    private const string BITStream = "UnityEngine.BitStream";
 
     private static readonly (string, MethodBase)[] EventMethods =
     [
@@ -64,25 +61,25 @@ public class MonoBehaviourPatch : PreloadPatcher
         new("OnAudioFilterRead", [typeof(float[]).FullName, typeof(int).FullName]),
         new("OnBecameInvisible", []),
         new("OnBecameVisible", []),
-        new("OnCollisionEnter", [COLLISION]),
-        new("OnCollisionEnter2D", [COLLISION_2D]),
-        new("OnCollisionExit", [COLLISION]),
-        new("OnCollisionExit2D", [COLLISION_2D]),
-        new("OnCollisionStay", [COLLISION]),
-        new("OnCollisionStay2D", [COLLISION_2D]),
+        new("OnCollisionEnter", [Collision]),
+        new("OnCollisionEnter2D", [Collision2D]),
+        new("OnCollisionExit", [Collision]),
+        new("OnCollisionExit2D", [Collision2D]),
+        new("OnCollisionStay", [Collision]),
+        new("OnCollisionStay2D", [Collision2D]),
         new("OnConnectedToServer", []),
-        new("OnControllerColliderHit", [CONTROLLER_COLLIDER_HIT]),
+        new("OnControllerColliderHit", [ControllerColliderHit]),
         new("OnDestroy", []),
         new("OnDisable", []),
-        new("OnDisconnectedFromServer", [NETWORK_DISCONNECTION]),
+        new("OnDisconnectedFromServer", [NetworkDisconnection]),
         new("OnDrawGizmos", []),
         new("OnDrawGizmosSelected", []),
         new("OnEnable", []),
-        new("OnFailedToConnect", [NETWORK_CONNECTION_ERROR]),
-        new("OnFailedToConnectToMasterServer", [NETWORK_CONNECTION_ERROR]),
+        new("OnFailedToConnect", [NetworkConnectionError]),
+        new("OnFailedToConnectToMasterServer", [NetworkConnectionError]),
         new("OnJointBreak", [typeof(float).FullName]),
         new("OnJointBreak2D", [typeof(float).FullName]),
-        new("OnMasterServerEvent", [MASTER_SERVER_EVENT]),
+        new("OnMasterServerEvent", [MasterServerEvent]),
         new("OnMouseDown", []),
         new("OnMouseDrag", []),
         new("OnMouseEnter", []),
@@ -90,28 +87,28 @@ public class MonoBehaviourPatch : PreloadPatcher
         new("OnMouseOver", []),
         new("OnMouseUp", []),
         new("OnMouseUpAsButton", []),
-        new("OnNetworkInstantiate", [NETWORK_MESSAGE_INFO]),
-        new("OnParticleCollision", [GAME_OBJECT]),
+        new("OnNetworkInstantiate", [NetworkMessageInfo]),
+        new("OnParticleCollision", [GameObject]),
         new("OnParticleSystemStopped", []),
         new("OnParticleTrigger", []),
         new("OnParticleUpdateJobScheduled", []),
-        new("OnPlayerConnected", [NETWORK_PLAYER]),
-        new("OnPlayerDisconnected", [NETWORK_PLAYER]),
+        new("OnPlayerConnected", [NetworkPlayer]),
+        new("OnPlayerDisconnected", [NetworkPlayer]),
         new("OnPostRender", []),
         new("OnPreCull", []),
         new("OnPreRender", []),
-        new("OnRenderImage", [RENDER_TEXTURE, RENDER_TEXTURE]),
+        new("OnRenderImage", [RenderTexture, RenderTexture]),
         new("OnRenderObject", []),
-        new("OnSerializeNetworkView", [BIT_STREAM, NETWORK_MESSAGE_INFO]),
+        new("OnSerializeNetworkView", [BITStream, NetworkMessageInfo]),
         new("OnServerInitialized", []),
         new("OnTransformChildrenChanged", []),
         new("OnTransformParentChanged", []),
-        new("OnTriggerEnter", [COLLIDER]),
-        new("OnTriggerEnter2D", [COLLIDER_2D]),
-        new("OnTriggerExit", [COLLIDER]),
-        new("OnTriggerExit2D", [COLLIDER_2D]),
-        new("OnTriggerStay", [COLLIDER]),
-        new("OnTriggerStay2D", [COLLIDER_2D]),
+        new("OnTriggerEnter", [Collider]),
+        new("OnTriggerEnter2D", [Collider2D]),
+        new("OnTriggerExit", [Collider]),
+        new("OnTriggerExit2D", [Collider2D]),
+        new("OnTriggerStay", [Collider]),
+        new("OnTriggerStay2D", [Collider2D]),
         new("OnValidate", []),
         new("OnWillRenderObject", []),
         new("Reset", []),

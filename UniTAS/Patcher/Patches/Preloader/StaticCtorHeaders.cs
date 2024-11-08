@@ -22,8 +22,6 @@ namespace UniTAS.Patcher.Patches.Preloader;
 [SuppressMessage("ReSharper", "UnusedType.Global")]
 public class StaticCtorHeaders : PreloadPatcher
 {
-    public override IEnumerable<string> TargetDLLs => TargetPatcherDlls.AllExcludedDLLs;
-
     private readonly HashSet<string> _ignoreTypes =
         ["UnityEngine.Experimental.Rendering.ScriptableRuntimeReflectionSystemSettings"];
 

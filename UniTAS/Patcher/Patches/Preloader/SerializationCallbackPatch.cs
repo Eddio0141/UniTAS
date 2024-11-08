@@ -1,9 +1,9 @@
-using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
+using MonoMod.Utils;
 using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Interfaces;
 using UniTAS.Patcher.ManualServices.Trackers;
@@ -13,19 +13,39 @@ namespace UniTAS.Patcher.Patches.Preloader;
 
 public class SerializationCallbackPatch : PreloadPatcher
 {
-    public override IEnumerable<string> TargetDLLs => TargetPatcherDlls.AllExcludedDLLs;
-
     public override void Patch(ref AssemblyDefinition assembly)
     {
         var types = assembly.MainModule.GetAllTypes();
 
         foreach (var type in types)
         {
-            if (type.Interfaces.All(i => i.InterfaceType.FullName != "UnityEngine.ISerializationCallbackReceiver"))
+            if (type.IsInterface || type.IsAbstract) continue;
+
+            var serializationCallback = false;
+            foreach (var i in type.Interfaces)
+            {
+                var iType = i.InterfaceType;
+                while (iType != null)
+                {
+                    if (iType.FullName == "UnityEngine.ISerializationCallbackReceiver")
+                    {
+                        serializationCallback = true;
+                        break;
+                    }
+
+                    iType = iType.SafeResolve()?.BaseType;
+                }
+
+                if (serializationCallback) break;
+            }
+
+            if (!serializationCallback)
                 continue;
-            var method = type.Methods.First(m =>
+
+            var method = type.Methods.FirstOrDefault(m =>
                 m.Name is "OnAfterDeserialize" or "UnityEngine.ISerializationCallbackReceiver.OnAfterDeserialize");
-            if (!method.HasBody) continue;
+            if (method is not { HasBody: true }) continue;
+            
             method.Body.SimplifyMacros();
             var il = method.Body.GetILProcessor();
 

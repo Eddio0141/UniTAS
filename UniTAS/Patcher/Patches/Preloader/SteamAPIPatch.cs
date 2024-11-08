@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
@@ -9,8 +8,6 @@ namespace UniTAS.Patcher.Patches.Preloader;
 
 public class SteamAPIPatch : PreloadPatcher
 {
-    public override IEnumerable<string> TargetDLLs => TargetPatcherDlls.AllExcludedDLLs;
-
     public override void Patch(ref AssemblyDefinition assembly)
     {
         var types = assembly.MainModule.GetAllTypes();

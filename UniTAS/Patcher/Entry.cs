@@ -3,7 +3,10 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
+using BepInEx;
+using JetBrains.Annotations;
 using Mono.Cecil;
+using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Implementations;
 using UniTAS.Patcher.ManualServices;
 using UniTAS.Patcher.Models.DependencyInjection;
@@ -14,10 +17,43 @@ namespace UniTAS.Patcher;
 [SuppressMessage("ReSharper", "UnusedType.Global")]
 public static class Entry
 {
+    static Entry()
+    {
+        var assemblyExclusions = new HashSet<string>
+        {
+            // c# related
+            "System.*",
+            "System",
+            "netstandard",
+            "mscorlib",
+            "Mono.*",
+            "Mono",
+            // no need
+            "Newtonsoft.Json",
+
+            // should be fine
+            "UnityEngine.IMGUIModule",
+
+            "Unity.InputSystem",
+            "Unity.InputSystem.ForUI",
+            "UnityEngine.InputModule",
+
+            // ignore rewired, there's a fix for it
+            "Rewired_*"
+        };
+
+        TargetDLLs = Directory.GetFiles(Paths.ManagedPath, "*.dll", SearchOption.TopDirectoryOnly)
+            .Select(Path.GetFileName).Where(
+                x =>
+                {
+                    var fileWithoutExtension = Path.GetFileNameWithoutExtension(x);
+                    return fileWithoutExtension == null || assemblyExclusions.Contains(fileWithoutExtension) ||
+                           !assemblyExclusions.Any(a => fileWithoutExtension.Like(a));
+                });
+    }
+
     // List of assemblies to patch
-    [SuppressMessage("ReSharper", "UnusedMember.Global")]
-    [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
-    public static IEnumerable<string> TargetDLLs => PreloadPatcherProcessor.TargetDLLs;
+    [UsedImplicitly] public static IEnumerable<string> TargetDLLs { get; }
 
     private static readonly PreloadPatcherProcessor PreloadPatcherProcessor = new();
 
@@ -41,7 +77,7 @@ public static class Entry
         }
 
         StaticLogger.Log.LogInfo($"Found {PreloadPatcherProcessor.PreloadPatchers.Length} preload patchers");
-        StaticLogger.Log.LogInfo($"Target dlls: {string.Join(", ", PreloadPatcherProcessor.TargetDLLs.ToArray())}");
+        StaticLogger.Log.LogInfo($"Target dlls: {string.Join(", ", TargetDLLs.ToArray())}");
     }
 
     // Patches the assemblies
@@ -62,8 +98,6 @@ public static class Entry
 
         foreach (var patcher in PreloadPatcherProcessor.PreloadPatchers)
         {
-            // only patch the assembly if it's in the list of target assemblies
-            if (!patcher.TargetDLLs.Contains(assemblyNameWithDll)) continue;
             StaticLogger.Log.LogInfo($"Patching {assemblyNameWithDll} with {patcher.GetType().Name}");
 
             var bench = Bench.Measure();
