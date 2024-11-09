@@ -14,6 +14,7 @@ using UniTAS.Patcher.Services.UnityEvents;
 #if TRACE
 using UniTAS.Patcher.Utils;
 using UnityEngine;
+using UniTAS.Patcher.Services;
 #endif
 
 namespace UniTAS.Patcher.Implementations.UnityEvents;
