@@ -49,7 +49,7 @@ public partial class UnityEvents
         InputSystemChangeUpdate(InputSystem.settings.updateMode);
     }
 
-    private void OnGameRestart(DateTime startupTime, bool preSceneLoad)
+    public void OnGameRestart(DateTime startupTime, bool preSceneLoad)
     {
         if (!preSceneLoad) return;
         InputSystemEventsInit();

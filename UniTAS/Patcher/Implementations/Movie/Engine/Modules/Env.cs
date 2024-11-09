@@ -2,21 +2,20 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using MoonSharp.Interpreter;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
-using UniTAS.Patcher.Interfaces.Events.UnityEvents.DontRunIfPaused;
 using UniTAS.Patcher.Interfaces.Movie;
 using UniTAS.Patcher.Models.Movie;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.Movie;
+using UniTAS.Patcher.Services.UnityEvents;
 using UniTAS.Patcher.Services.VirtualEnvironment;
 using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations.Movie.Engine.Modules;
 
-[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-[SuppressMessage("ReSharper", "UnusedMember.Global")]
 [ExcludeRegisterIfTesting]
 [Singleton]
-public class Env : EngineMethodClass, IOnLastUpdateActual
+[SuppressMessage("ReSharper", "UnusedMember.Global")]
+public class Env : EngineMethodClass
 {
     private readonly ITimeEnv _timeEnv;
     private readonly IMovieLogger _logger;
@@ -25,12 +24,18 @@ public class Env : EngineMethodClass, IOnLastUpdateActual
     private readonly bool _mobile = Application.platform is RuntimePlatform.Android or RuntimePlatform.IPhonePlayer;
 
     [MoonSharpHidden]
-    public Env(ITimeEnv timeEnv, IMovieLogger logger, IMovieRunner movieRunner, IMovieRunnerEvents movieEvents)
+    public Env(ITimeEnv timeEnv, IMovieLogger logger, IMovieRunner movieRunner, IUpdateEvents updateEvents)
     {
         _timeEnv = timeEnv;
         _logger = logger;
         _movieRunner = movieRunner;
-        movieEvents.OnMovieStart += OnMovieStart;
+        movieRunner.OnMovieStart += UpdateLastTrackers;
+        movieRunner.OnMovieStart += () =>
+        {
+            UpdateLastTrackers();
+            updateEvents.OnLastUpdateActual += OnLastUpdateActual;
+        };
+        movieRunner.OnMovieEnd += () => { updateEvents.OnLastUpdateActual -= OnLastUpdateActual; };
     }
 
     public double Fps
@@ -81,22 +86,14 @@ public class Env : EngineMethodClass, IOnLastUpdateActual
         _timeEnv.FrameTime = 1f / fps;
     }
 
-    [MoonSharpHidden]
-    public void OnLastUpdateActual()
+    private void OnLastUpdateActual()
     {
-        if (_movieRunner.MovieEnd) return;
-
         // check if game has changed either targetFrameRate or vSyncCount
         // either of these values can change at any time, so we need to check for changes
         if (_lastTargetFrameRate != Application.targetFrameRate || _lastVSyncCount != QualitySettings.vSyncCount)
         {
             SetFrametime(_timeEnv.FrameTime);
         }
-    }
-
-    private void OnMovieStart()
-    {
-        UpdateLastTrackers();
     }
 
     private void UpdateLastTrackers()

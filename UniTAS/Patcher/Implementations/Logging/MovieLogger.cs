@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using BepInEx.Logging;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.Movie;
@@ -10,10 +9,9 @@ namespace UniTAS.Patcher.Implementations.Logging;
 /// <summary>
 /// Logger specifically for TAS movies.
 /// </summary>
-[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 [Singleton]
 [ExcludeRegisterIfTesting]
-public class MovieLogger : IMovieLogger, IOnMovieRunningStatusChange
+public class MovieLogger : IMovieLogger, IOnMovieStart, IOnMovieEnd
 {
     private readonly ManualLogSource _logSource = new("Movie playback");
     private bool _movieRunning;
@@ -21,6 +19,16 @@ public class MovieLogger : IMovieLogger, IOnMovieRunningStatusChange
     public void OnMovieRunningStatusChange(bool running)
     {
         _movieRunning = running;
+    }
+
+    public void OnMovieStart()
+    {
+        _movieRunning = true;
+    }
+
+    public void OnMovieEnd()
+    {
+        _movieRunning = false;
     }
 
     public MovieLogger()

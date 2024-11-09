@@ -13,26 +13,18 @@ public class FrameCountOverlay : BuiltInOverlay
 
     private bool _update;
 
-    public FrameCountOverlay(WindowDependencies windowDependencies, IMovieRunnerEvents movieRunnerEvents) : base(
+    public FrameCountOverlay(WindowDependencies windowDependencies, IMovieRunner movieRunner) : base(
         windowDependencies, "Frame count")
     {
-        movieRunnerEvents.OnMovieRunningStatusChange += OnMovieRunningStatusChange;
-    }
-
-    protected override AnchoredOffset DefaultOffset => new(0, 0, 0, 30);
-
-    private void OnMovieRunningStatusChange(bool running)
-    {
-        if (running)
+        movieRunner.OnMovieStart += () =>
         {
             _frameCount = 0;
             _update = true;
-        }
-        else
-        {
-            _update = false;
-        }
+        };
+        movieRunner.OnMovieEnd += () => { _update = false; };
     }
+
+    protected override AnchoredOffset DefaultOffset => new(0, 0, 0, 30);
 
     protected override string Update()
     {

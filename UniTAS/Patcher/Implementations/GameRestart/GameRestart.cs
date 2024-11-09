@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using UniTAS.Patcher.Implementations.Coroutine;
 using UniTAS.Patcher.Interfaces.Coroutine;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.SoftRestart;
-using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
 using UniTAS.Patcher.ManualServices;
 using UniTAS.Patcher.ManualServices.Trackers;
 using UniTAS.Patcher.Models.DependencyInjection;
@@ -14,6 +12,7 @@ using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.GameExecutionControllers;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.Trackers.TrackInfo;
+using UniTAS.Patcher.Services.UnityEvents;
 using UniTAS.Patcher.Services.UnityInfo;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Patcher.Services.VirtualEnvironment;
@@ -24,8 +23,7 @@ namespace UniTAS.Patcher.Implementations.GameRestart;
 // ReSharper disable once ClassNeverInstantiated.Global
 // target priority to after sync fixed update
 [Singleton(RegisterPriority.GameRestart)]
-public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUnconditional, IOnStartUnconditional,
-    IOnFixedUpdateUnconditional
+public class GameRestart : IGameRestart
 {
     private DateTime _softRestartTime;
 
@@ -38,19 +36,19 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
     private readonly IObjectTracker _objectTracker;
     private readonly ICoroutine _coroutine;
     private readonly IGameInfo _gameInfo;
-
+    private readonly IUpdateEvents _updateEvents;
     private readonly IStaticFieldManipulator _staticFieldManipulator;
     private readonly ITimeEnv _timeEnv;
 
     private bool _pendingRestart;
     private bool _pendingResumePausedExecution;
 
-    [SuppressMessage("ReSharper", "MemberCanBeProtected.Global")]
     public GameRestart(ISyncFixedUpdateCycle syncFixedUpdate, ISceneWrapper sceneWrapper,
         IMonoBehaviourController monoBehaviourController, ILogger logger, IOnGameRestart[] onGameRestart,
         IOnGameRestartResume[] onGameRestartResume, IOnPreGameRestart[] onPreGameRestart,
         IStaticFieldManipulator staticFieldManipulator, ITimeEnv timeEnv, IFinalizeSuppressor finalizeSuppressor,
-        IUpdateInvokeOffset updateInvokeOffset, IObjectTracker objectTracker, ICoroutine coroutine, IGameInfo gameInfo)
+        IUpdateInvokeOffset updateInvokeOffset, IObjectTracker objectTracker, ICoroutine coroutine, IGameInfo gameInfo,
+        IUpdateEvents updateEvents)
     {
         _syncFixedUpdate = syncFixedUpdate;
         _sceneWrapper = sceneWrapper;
@@ -63,6 +61,7 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
         _objectTracker = objectTracker;
         _coroutine = coroutine;
         _gameInfo = gameInfo;
+        _updateEvents = updateEvents;
 
         foreach (var gameRestartResume in onGameRestartResume)
         {
@@ -171,31 +170,38 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
 
         _pendingRestart = false;
         _pendingResumePausedExecution = true;
+        _updateEvents.OnAwakeUnconditional += AwakeUnconditional;
+        _updateEvents.OnEnableUnconditional += OnEnableUnconditional;
+        _updateEvents.OnStartUnconditional += StartUnconditional;
+        _updateEvents.OnFixedUpdateUnconditional += FixedUpdateUnconditional;
     }
 
-    public void AwakeUnconditional()
+    private void AwakeUnconditional()
     {
         PendingResumePausedExecution("Awake");
     }
 
-    public void OnEnableUnconditional()
+    private void OnEnableUnconditional()
     {
         PendingResumePausedExecution("OnEnable");
     }
 
-    public void StartUnconditional()
+    private void StartUnconditional()
     {
         PendingResumePausedExecution("Start");
     }
 
-    public void FixedUpdateUnconditional()
+    private void FixedUpdateUnconditional()
     {
         PendingResumePausedExecution("FixedUpdate");
     }
 
     private void PendingResumePausedExecution(string timing)
     {
-        if (!_pendingResumePausedExecution) return;
+        _updateEvents.OnAwakeUnconditional -= AwakeUnconditional;
+        _updateEvents.OnEnableUnconditional -= OnEnableUnconditional;
+        _updateEvents.OnStartUnconditional -= StartUnconditional;
+        _updateEvents.OnFixedUpdateUnconditional -= FixedUpdateUnconditional;
         _pendingResumePausedExecution = false;
 
         InvokeOnGameRestartResume(true);

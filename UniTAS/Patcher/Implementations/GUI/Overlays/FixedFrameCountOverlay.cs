@@ -2,7 +2,6 @@ using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.GUI;
 using UniTAS.Patcher.Models.GUI;
 using UniTAS.Patcher.Services.Movie;
-using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations.GUI.Overlays;
 
@@ -14,27 +13,19 @@ public class FixedFrameCountOverlay : BuiltInOverlay
 
     private bool _update;
 
-    public FixedFrameCountOverlay(WindowDependencies windowDependencies, IMovieRunnerEvents movieRunnerEvents) : base(
+    public FixedFrameCountOverlay(WindowDependencies windowDependencies, IMovieRunner movieRunner) : base(
         windowDependencies, "Fixed frames count", showByDefault: false)
     {
         windowDependencies.UpdateEvents.OnFixedUpdateActual += FixedUpdateActual;
-        movieRunnerEvents.OnMovieRunningStatusChange += OnMovieRunningStatusChange;
-    }
-
-    protected override AnchoredOffset DefaultOffset => new(0, 0, 200, 30);
-
-    private void OnMovieRunningStatusChange(bool running)
-    {
-        if (running)
+        movieRunner.OnMovieStart += () =>
         {
             _fixedFrameCount = 0;
             _update = true;
-        }
-        else
-        {
-            _update = false;
-        }
+        };
+        movieRunner.OnMovieEnd += () => { _update = false; };
     }
+
+    protected override AnchoredOffset DefaultOffset => new(0, 0, 200, 30);
 
     protected override string Update()
     {

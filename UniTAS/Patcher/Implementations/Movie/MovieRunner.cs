@@ -1,24 +1,22 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using UniTAS.Patcher.Exceptions.Movie.Runner;
 using UniTAS.Patcher.Implementations.Coroutine;
 using UniTAS.Patcher.Interfaces.Coroutine;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.Movie;
-using UniTAS.Patcher.Interfaces.Events.UnityEvents.DontRunIfPaused;
 using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Models.Movie;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.Movie;
+using UniTAS.Patcher.Services.UnityEvents;
 using UniTAS.Patcher.Services.VirtualEnvironment;
 
 namespace UniTAS.Patcher.Implementations.Movie;
 
-[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 [Singleton(RegisterPriority.MovieRunner)]
-public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvents
+public class MovieRunner : IMovieRunner
 {
     private readonly IGameRestart _gameRestart;
 
@@ -38,13 +36,14 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvent
     private readonly IRandomEnv _randomEnv;
     private readonly ICoroutine _coroutine;
     private readonly IWindowEnv _windowEnv;
+    private readonly IUpdateEvents _updateEvents;
 
     public UpdateType UpdateType { get; set; }
 
     public MovieRunner(IGameRestart gameRestart, IMovieParser parser, IMovieLogger movieLogger,
-        IOnMovieRunningStatusChange[] onMovieRunningStatusChange,
+        IOnMovieStart[] onMovieStart, IOnMovieEnd[] onMovieEnd,
         IVirtualEnvController virtualEnvController, ITimeEnv timeEnv, IRandomEnv randomEnv, ILogger logger,
-        IOnMovieUpdate[] onMovieUpdates, ICoroutine coroutine, IWindowEnv windowEnv)
+        IOnMovieUpdate[] onMovieUpdates, ICoroutine coroutine, IWindowEnv windowEnv, IUpdateEvents updateEvents)
     {
         _gameRestart = gameRestart;
         _parser = parser;
@@ -56,12 +55,18 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvent
         _onMovieUpdates = onMovieUpdates;
         _coroutine = coroutine;
         _windowEnv = windowEnv;
+        _updateEvents = updateEvents;
 
         _gameRestart.OnGameRestartResume += OnGameRestartResume;
 
-        foreach (var e in onMovieRunningStatusChange)
+        foreach (var movieStart in onMovieStart)
         {
-            OnMovieRunningStatusChange += e.OnMovieRunningStatusChange;
+            OnMovieStart += movieStart.OnMovieStart;
+        }
+
+        foreach (var movieEnd in onMovieEnd)
+        {
+            OnMovieEnd += movieEnd.OnMovieEnd;
         }
     }
 
@@ -119,10 +124,8 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvent
         MovieRunningStatusChange(true);
     }
 
-    public void InputUpdateActual(bool fixedUpdate, bool newInputSystemUpdate)
+    private void InputUpdateActual(bool fixedUpdate, bool newInputSystemUpdate)
     {
-        if (MovieEnd) return;
-
         // skip if update type doesn't match current update type
         if (UpdateType != UpdateType.Both &&
             ((fixedUpdate && UpdateType != UpdateType.FixedUpdate) ||
@@ -157,6 +160,15 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvent
     {
         MovieEnd = !running;
 
+        if (MovieEnd)
+        {
+            _updateEvents.OnInputUpdateActual -= InputUpdateActual;
+        }
+        else
+        {
+            _updateEvents.OnInputUpdateActual += InputUpdateActual;
+        }
+
         if (running)
         {
             OnMovieStart?.Invoke();
@@ -166,8 +178,6 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvent
             SetupOrMovieRunning = false;
             OnMovieEnd?.Invoke();
         }
-
-        OnMovieRunningStatusChange?.Invoke(running);
     }
 
     private IEnumerable<CoroutineWait> FinishMovieCleanup()
@@ -178,5 +188,4 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvent
 
     public event Action OnMovieStart;
     public event Action OnMovieEnd;
-    public event Action<bool> OnMovieRunningStatusChange;
 }

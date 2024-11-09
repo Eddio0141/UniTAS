@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.Movie;
@@ -10,11 +9,10 @@ using UniTAS.Patcher.Services.VirtualEnvironment;
 
 namespace UniTAS.Patcher.Implementations;
 
-[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 [Singleton]
 [ExcludeRegisterIfTesting]
 public class MainThreadSpeedControl(ITimeEnv timeEnv)
-    : IMainThreadSpeedControl, IOnUpdateUnconditional, IOnMovieRunningStatusChange, IOnSceneLoad
+    : IMainThreadSpeedControl, IOnUpdateUnconditional, IOnMovieStart, IOnMovieEnd, IOnSceneLoad
 {
     public float SpeedMultiplier
     {
@@ -97,8 +95,13 @@ public class MainThreadSpeedControl(ITimeEnv timeEnv)
         sw.Stop();
     }
 
-    public void OnMovieRunningStatusChange(bool running)
+    public void OnMovieStart()
     {
-        SpeedMultiplier = running ? 0f : 1f;
+        SpeedMultiplier = 0f;
+    }
+
+    public void OnMovieEnd()
+    {
+        SpeedMultiplier = 1f;
     }
 }

@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using MoonSharp.Interpreter;
 using UniTAS.Patcher.Interfaces.TASRenderer;
 using UniTAS.Patcher.Services.GameExecutionControllers;
@@ -9,8 +8,6 @@ using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Implementations.Movie.Engine.Modules;
 
-[SuppressMessage("ReSharper", "UnusedType.Global")]
-[SuppressMessage("ReSharper", "UnusedMember.Global")]
 [MoonSharpModule(Namespace = "movie")]
 public class Movie
 {
@@ -18,17 +15,13 @@ public class Movie
         ContainerStarter.Kernel.GetInstance<IMainThreadSpeedControl>();
 
     private static readonly IGameRender GameRender = ContainerStarter.Kernel.GetInstance<IGameRender>();
-
-    private static readonly IMovieRunnerEvents MovieRunnerEvents =
-        ContainerStarter.Kernel.GetInstance<IMovieRunnerEvents>();
-
+    private static readonly IMovieRunner MovieRunner = ContainerStarter.Kernel.GetInstance<IMovieRunner>();
     private static readonly IMovieLogger MovieLogger = ContainerStarter.Kernel.GetInstance<IMovieLogger>();
-
     private static readonly INoRefresh NoRefresh = ContainerStarter.Kernel.GetInstance<INoRefresh>();
 
     static Movie()
     {
-        MovieRunnerEvents.OnMovieEnd += () =>
+        MovieRunner.OnMovieEnd += () =>
         {
             GameRender.Stop();
             NoRefresh.Enable = false;
