@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using UniTAS.Patcher.Interfaces.GUI;
 #if BENCH
 using System.IO;
@@ -32,7 +33,8 @@ public class Bench : TerminalCmd
         {
             case "dump":
             {
-                var stats = ManualServices.Bench.GetStats();
+                var stats = ManualServices.Bench.GetStats().OrderBy(s => s.Key.Path).ThenBy(s => s.Key.LineNumber)
+                    .ToList();
                 var statsRaw = JsonConvert.SerializeObject(stats, Formatting.Indented);
                 if (!Directory.Exists(UniTASPaths.Benchmarks))
                 {

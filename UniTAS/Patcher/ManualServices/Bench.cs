@@ -105,8 +105,8 @@ public class BenchmarkStats
 {
     public int SampleCount { get; set; }
     public double AverageMs { get; set; }
-    public double MinMs { get; set; }
-    public double MaxMs { get; set; }
-    public double MedianMs { get; set; }
-    public double Percentile95Ms { get; set; }
+    public double MinMs { [UsedImplicitly] get; set; }
+    public double MaxMs { [UsedImplicitly] get; set; }
+    public double MedianMs { [UsedImplicitly] get; set; }
+    public double Percentile95Ms { [UsedImplicitly] get; set; }
 }
