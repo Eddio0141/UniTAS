@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Logging;
@@ -9,6 +10,7 @@ namespace UniTAS.Patcher.Implementations;
 /// <summary>
 /// Removes vsync limit while playing a movie
 /// </summary>
+[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 [Singleton]
 [ForceInstantiate]
 public class GameSpeedUnlocker : IGameSpeedUnlocker
@@ -16,11 +18,11 @@ public class GameSpeedUnlocker : IGameSpeedUnlocker
     public bool Unlock { get; private set; }
     private readonly ILogger _logger;
 
-    public GameSpeedUnlocker(ILogger logger, IMovieRunner movieRunner)
+    public GameSpeedUnlocker(ILogger logger, IMovieRunnerEvents movieEvents)
     {
         _logger = logger;
-        movieRunner.OnMovieStart += OnMovieStart;
-        movieRunner.OnMovieEnd += OnMovieEnd;
+        movieEvents.OnMovieStart += OnMovieStart;
+        movieEvents.OnMovieEnd += OnMovieEnd;
     }
 
     private void OnMovieStart()

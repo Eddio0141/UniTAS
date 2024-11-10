@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
-using UniTAS.Patcher.Interfaces.Events.SoftRestart;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents.DontRunIfPaused;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
 using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Models.EventSubscribers;
 using UniTAS.Patcher.Models.Utils;
+using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.GameExecutionControllers;
 using UniTAS.Patcher.Services.InputSystemOverride;
 using UniTAS.Patcher.Services.UnityEvents;
@@ -26,7 +26,7 @@ namespace UniTAS.Patcher.Implementations.UnityEvents;
 /// Actual events are called only if MonoBehaviour is not paused
 /// </summary>
 [Singleton(timing: RegisterTiming.Entry)]
-public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEventInvoker, IOnGameRestart
+public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEventInvoker
 {
     public UnityEvents(IEnumerable<IOnAwakeUnconditional> onAwakesUnconditional,
         IEnumerable<IOnStartUnconditional> onStartsUnconditional,
@@ -43,7 +43,7 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         IEnumerable<IOnInputUpdateUnconditional> onInputUpdatesUnconditional,
         IEnumerable<IOnLateUpdateUnconditional> onLateUpdatesUnconditional,
         IEnumerable<IOnLastUpdateUnconditional> onLastUpdatesUnconditional,
-        IEnumerable<IOnLastUpdateActual> onLastUpdatesActual,
+        IEnumerable<IOnLastUpdateActual> onLastUpdatesActual, IGameRestart gameRestart,
         IInputSystemState newInputSystemExists, IMonoBehaviourController monoBehaviourController
 #if TRACE
         , IPatchReverseInvoker patchReverseInvoker
@@ -55,6 +55,8 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
 #endif
         _newInputSystemExists = newInputSystemExists;
         _monoBehaviourController = monoBehaviourController;
+
+        gameRestart.OnGameRestart += OnGameRestart;
 
         _inputUpdatesUnconditional.Add((fixedUpdate, _) =>
         {

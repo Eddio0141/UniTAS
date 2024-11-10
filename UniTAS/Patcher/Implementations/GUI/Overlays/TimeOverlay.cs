@@ -15,12 +15,11 @@ public class TimeOverlay : BuiltInOverlay
     private string _text = "0.000";
     private readonly ITimeEnv _timeEnv;
 
-    public TimeOverlay(WindowDependencies windowDependencies, ITimeEnv timeEnv, IMovieRunner movieRunner) :
+    public TimeOverlay(WindowDependencies windowDependencies, ITimeEnv timeEnv, IMovieRunnerEvents movieRunnerEvents) :
         base(windowDependencies, "Time")
     {
         _timeEnv = timeEnv;
-        movieRunner.OnMovieStart += () => { _update = true; };
-        movieRunner.OnMovieEnd += () => { _update = false; };
+        movieRunnerEvents.OnMovieRunningStatusChange += OnMovieRunningStatusChange;
     }
 
     protected override AnchoredOffset DefaultOffset => new(0, 0, 0, 60);
@@ -57,5 +56,10 @@ public class TimeOverlay : BuiltInOverlay
         _text += $"{time.Seconds}.{time.Milliseconds:D3}";
 
         return _text;
+    }
+
+    private void OnMovieRunningStatusChange(bool running)
+    {
+        _update = running;
     }
 }

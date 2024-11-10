@@ -12,10 +12,10 @@ public class MovieEndStatus : BuiltInOverlay
 {
     private float _messageDisplayLeft;
 
-    public MovieEndStatus(WindowDependencies windowDependencies, IMovieRunner movieRunner) : base(
+    public MovieEndStatus(WindowDependencies windowDependencies, IMovieRunnerEvents movieRunnerEvents) : base(
         windowDependencies, "Movie end status")
     {
-        movieRunner.OnMovieEnd += () => { _messageDisplayLeft = MessageDisplayTime; };
+        movieRunnerEvents.OnMovieRunningStatusChange += OnMovieRunningStatusChange;
     }
 
     private const float MessageDisplayTime = 1f;
@@ -27,5 +27,11 @@ public class MovieEndStatus : BuiltInOverlay
     {
         _messageDisplayLeft -= Time.deltaTime;
         return _messageDisplayLeft <= 0 ? "" : "Movie End";
+    }
+
+    private void OnMovieRunningStatusChange(bool running)
+    {
+        if (running) return;
+        _messageDisplayLeft = MessageDisplayTime;
     }
 }
