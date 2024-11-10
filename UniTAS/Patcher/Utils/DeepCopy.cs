@@ -45,20 +45,7 @@ public static class DeepCopy
     public static object MakeDeepCopy(object source, Processor processor = null,
         string pathRoot = "")
     {
-        return MakeDeepCopy(source, processor, pathRoot, new(new ReferenceComparer()));
-    }
-
-    private class ReferenceComparer : IEqualityComparer<object>
-    {
-        bool IEqualityComparer<object>.Equals(object x, object y)
-        {
-            return ReferenceEquals(x, y);
-        }
-
-        public int GetHashCode(object obj)
-        {
-            return RuntimeHelpers.GetHashCode(obj);
-        }
+        return MakeDeepCopy(source, processor, pathRoot, new(new HashUtils.ReferenceComparer()));
     }
 
     // references: (before, after)

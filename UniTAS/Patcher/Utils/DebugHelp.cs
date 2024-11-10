@@ -14,7 +14,7 @@ public static class DebugHelp
     public static string PrintClass(object obj)
     {
         var indent = 0;
-        return PrintClass(obj, ref indent, []);
+        return PrintClass(obj, ref indent, new(new HashUtils.ReferenceComparer()));
     }
 
     private static string PrintClass(object obj, ref int indent, HashSet<object> foundReferences,
