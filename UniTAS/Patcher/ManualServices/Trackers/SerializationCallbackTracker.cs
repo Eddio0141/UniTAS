@@ -8,7 +8,7 @@ namespace UniTAS.Patcher.ManualServices.Trackers;
 
 public static class SerializationCallbackTracker
 {
-    private static readonly HashSet<object> AfterDeserializationInvoked = [];
+    private static readonly HashSet<object> AfterDeserializationInvoked = new(new HashUtils.ReferenceComparer());
     private static readonly object AfterDeserializationInvokedLock = new();
 
     private static bool _initializedDelegates;
@@ -16,18 +16,29 @@ public static class SerializationCallbackTracker
     // TODO: faster invoker
     private static MethodInfo _afterDeserialization;
 
-    public static void OnAfterDeserializeInvoke(object instance)
+    /// <returns>True if original function should run</returns>
+    public static bool OnAfterDeserializeInvoke(object instance)
     {
+        var newInstance = false;
         lock (AfterDeserializationInvokedLock)
         {
-            if (AfterDeserializationInvoked.Contains(instance)) return;
-            AfterDeserializationInvoked.Add(instance);
+            if (!AfterDeserializationInvoked.Contains(instance))
+            {
+                newInstance = true;
+                AfterDeserializationInvoked.Add(instance);
+            }
         }
 
         // now scriptable object handling
-        if (instance is not ScriptableObject so) return;
-        SaveScriptableObjectStatesManual.Save(so);
+        if (newInstance && instance is ScriptableObject so)
+        {
+            SaveScriptableObjectStatesManual.Save(so);
+        }
+
+        return !AfterSerializationManuallyInvoked.Contains(instance);
     }
+
+    private static readonly HashSet<object> AfterSerializationManuallyInvoked = new(new HashUtils.ReferenceComparer());
 
     public static void InvokeAllAfterDeserialization()
     {
@@ -57,7 +68,10 @@ public static class SerializationCallbackTracker
             foreach (var obj in AfterDeserializationInvoked)
             {
                 _afterDeserialization.Invoke(obj, null);
+                AfterSerializationManuallyInvoked.Add(obj);
             }
+
+            AfterSerializationManuallyInvoked.Clear();
         }
     }
 }

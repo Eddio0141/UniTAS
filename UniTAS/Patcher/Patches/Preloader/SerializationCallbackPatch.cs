@@ -4,7 +4,6 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 using MonoMod.Utils;
-using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Interfaces;
 using UniTAS.Patcher.ManualServices.Trackers;
 using UniTAS.Patcher.Utils;
@@ -54,9 +53,11 @@ public class SerializationCallbackPatch : PreloadPatcher
             var hookRef = assembly.MainModule.ImportReference(hook);
 
             var first = method.Body.Instructions.First();
-            il.InsertBeforeInstructionReplace(first, il.Create(OpCodes.Ldarg_0));
-            il.InsertBeforeInstructionReplace(first, il.Create(OpCodes.Call, hookRef),
-                InstructionReplaceFixType.ExceptionRanges);
+            il.InsertBefore(first, il.Create(OpCodes.Ldarg_0));
+            il.InsertBefore(first, il.Create(OpCodes.Call, hookRef));
+            // if true, run original
+            il.InsertBefore(first, il.Create(OpCodes.Brtrue, first));
+            il.InsertBefore(first, il.Create(OpCodes.Ret));
 
             method.Body.OptimizeMacros();
 
