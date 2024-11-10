@@ -81,7 +81,7 @@ public class StaticCtorHeaders : PreloadPatcher
         var patchMethodDependencyRef = assembly.MainModule.ImportReference(patchMethodDependency);
 
         // we track our inserted instructions
-        var insertedInstructions = new List<Instruction>();
+        var insertedInstructions = new HashSet<Instruction>();
 
         // we insert call before any returns
         staticCtor.Body.SimplifyMacros();
@@ -96,6 +96,8 @@ public class StaticCtorHeaders : PreloadPatcher
         insertedInstructions.Add(startRefInstruction);
         StaticLogger.Trace($"Patched start of static ctor of {type.FullName}");
 
+        var finalRet = ilProcessor.Create(OpCodes.Ret);
+
         var insertCount = 0;
 
         for (var i = 0; i < instructions.Count; i++)
@@ -106,6 +108,7 @@ public class StaticCtorHeaders : PreloadPatcher
             var endRefInstruction = ilProcessor.Create(OpCodes.Call, patchMethodEndRef);
             ilProcessor.InsertBeforeInstructionReplace(retInstruction, endRefInstruction);
             insertedInstructions.Add(endRefInstruction);
+            ilProcessor.Replace(retInstruction, ilProcessor.Create(OpCodes.Leave, finalRet));
 
             StaticLogger.Trace(
                 $"Found return in static ctor of {type.FullName}, instruction: {retInstruction}, patched");
@@ -168,6 +171,29 @@ public class StaticCtorHeaders : PreloadPatcher
 
             ilProcessor.InsertAfter(startRefInstruction, ilProcessor.Create(OpCodes.Call, patchMethodDependencyRef));
         }
+
+        // surround the cctor with catch, otherwise exceptions will break tracking and I HATE EXCEPTIONS
+        // also I know I'm surrounding everything here, it should be fine!!!
+        var last = instructions.Last();
+        var ex = new ExceptionHandler(ExceptionHandlerType.Catch)
+        {
+            CatchType = assembly.MainModule.ImportReference(typeof(Exception)),
+            TryStart = instructions.First(),
+        };
+
+        // handler, the order of instruction is flipped since InsertAfter
+        var exHandlerInst = ilProcessor.Create(OpCodes.Call, patchMethodEndRef);
+        var rethrowInst = ilProcessor.Create(OpCodes.Rethrow);
+
+        ilProcessor.InsertAfter(last, rethrowInst);
+        ilProcessor.InsertAfter(last, exHandlerInst);
+        ilProcessor.Append(finalRet);
+
+        ex.TryEnd = exHandlerInst;
+        ex.HandlerStart = exHandlerInst;
+        ex.HandlerEnd = finalRet;
+
+        staticCtor.Body.ExceptionHandlers.Add(ex);
 
         staticCtor.Body.OptimizeMacros();
     }
