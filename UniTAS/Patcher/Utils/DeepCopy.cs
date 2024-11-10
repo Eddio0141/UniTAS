@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using HarmonyLib;
 using UniTAS.Patcher.Exceptions;
 using UnityEngine;
@@ -45,20 +45,39 @@ public static class DeepCopy
     public static object MakeDeepCopy(object source, Processor processor = null,
         string pathRoot = "")
     {
-        var id = 0ul;
-        return MakeDeepCopy(source, processor, pathRoot, new(), new(), ref id);
+        return MakeDeepCopy(source, processor, pathRoot, new(new ReferenceComparer()));
     }
 
-    // dictionary is used to keep track of instances. int is the ID of the instance, which is used to compare foundReferences and newReferences
-    private static object MakeDeepCopy(object source, Processor processor,
-        string pathRoot, Dictionary<ulong, object> foundReferences,
-        Dictionary<ulong, object> newReferences, ref ulong id)
+    private class ReferenceComparer : IEqualityComparer<object>
+    {
+        bool IEqualityComparer<object>.Equals(object x, object y)
+        {
+            return ReferenceEquals(x, y);
+        }
+
+        public int GetHashCode(object obj)
+        {
+            return RuntimeHelpers.GetHashCode(obj);
+        }
+    }
+
+    // references: (before, after)
+    private static object MakeDeepCopy(object source, Processor processor, string pathRoot,
+        Dictionary<object, object> references)
     {
         StaticLogger.Trace(
             $"MakeDeepCopy, depth: {_makeDeepCopyRecursionDepth}, type: {source?.GetType().FullName}, pathRoot: {pathRoot}");
 
         if (processor is not null)
         {
+            if (source != null)
+            {
+                if (references.TryGetValue(source, out var reference))
+                {
+                    return reference;
+                }
+            }
+
             if (processor(pathRoot, source, out var processorValue))
             {
                 StaticLogger.Trace("MakeDeepCopy, using processor to get copied value");
@@ -73,61 +92,49 @@ public static class DeepCopy
             return source;
         }
 
-        _makeDeepCopyRecursionDepth++;
         if (_makeDeepCopyRecursionDepth > MakeDeepCopyRecursionDepthLimit)
         {
-            _makeDeepCopyRecursionDepth = 0;
             throw new DeepCopyMaxRecursionException(source, pathRoot);
         }
 
         if (source is null)
         {
-            _makeDeepCopyRecursionDepth--;
             StaticLogger.Trace("MakeDeepCopy, returning null");
             return null;
         }
 
-        if (foundReferences.Any(x => ReferenceEquals(x.Value, source)))
+        if (references.TryGetValue(source, out var referenceEntry))
         {
-            var foundId = foundReferences.First(x => ReferenceEquals(x.Value, source)).Key;
-            if (newReferences.TryGetValue(foundId, out var newReference))
-            {
-                _makeDeepCopyRecursionDepth--;
-                StaticLogger.Trace($"MakeDeepCopy, returning existing reference, foundId: {foundId}");
-                return newReference;
-            }
+            StaticLogger.Trace($"MakeDeepCopy, returning existing reference");
+            return referenceEntry;
         }
 
         var type = source.GetType();
 
         if (type.IsPrimitive || type == typeof(string))
         {
-            _makeDeepCopyRecursionDepth--;
             StaticLogger.Trace("MakeDeepCopy, returning primitive");
             return source;
         }
 
         if (type.IsEnum)
         {
-            _makeDeepCopyRecursionDepth--;
             return source;
         }
 
+        _makeDeepCopyRecursionDepth++;
         if (type.IsArray)
         {
             StaticLogger.Trace("MakeDeepCopy, copying array");
             var newElementType = type.GetElementType();
             var array = (Array)source;
             var newArray = Array.CreateInstance(newElementType ?? throw new InvalidOperationException(), array.Length);
-            foundReferences.Add(id, source);
-            newReferences.Add(id, newArray);
-            id++;
+            references.Add(source, newArray);
             for (var i = 0; i < array.Length; i++)
             {
                 var iStr = i.ToString();
                 var path = pathRoot.Length > 0 ? pathRoot + "." + iStr : iStr;
-                var newElement = MakeDeepCopy(array.GetValue(i), processor, path, foundReferences, newReferences,
-                    ref id);
+                var newElement = MakeDeepCopy(array.GetValue(i), processor, path, references);
                 newArray.SetValue(newElement, i);
             }
 
@@ -197,9 +204,7 @@ public static class DeepCopy
             ? ScriptableObject.CreateInstance(type)
             : AccessTools.CreateInstance(type);
         // guaranteed to be a reference type
-        foundReferences.Add(id, source);
-        newReferences.Add(id, result);
-        id++;
+        references.Add(source, result);
 
         var fields = type.GetFields(AccessTools.all);
 
@@ -225,7 +230,7 @@ public static class DeepCopy
             }
 
             StaticLogger.Trace("MakeDeepCopy, copying field");
-            var copiedObj = MakeDeepCopy(value, processor, path, foundReferences, newReferences, ref id);
+            var copiedObj = MakeDeepCopy(value, processor, path, references);
 
             field.SetValue(result, copiedObj);
         }
