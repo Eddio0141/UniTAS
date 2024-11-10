@@ -89,6 +89,12 @@ public static class ILCodeUtils
     {
         var retType = method.ReturnType;
 
+        if (retType == method.Module.TypeSystem.Void)
+        {
+            il.Emit(OpCodes.Ret);
+            return;
+        }
+
         if (retType.IsValueType)
         {
             var retVar = new VariableDefinition(retType);
