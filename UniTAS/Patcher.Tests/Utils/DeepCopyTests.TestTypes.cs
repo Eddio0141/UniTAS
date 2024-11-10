@@ -78,4 +78,14 @@ public partial class DeepCopyTests
     {
         public unsafe void* Pointer;
     }
+
+    private class ParentClass
+    {
+        public List<int> Foo;
+    }
+
+    private class ChildClass : ParentClass
+    {
+        public List<int> Bar;
+    }
 }

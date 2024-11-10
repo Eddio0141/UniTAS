@@ -35,7 +35,7 @@ public static class DeepCopy
 
     private static int _makeDeepCopyRecursionDepth;
 
-    private const int MAKE_DEEP_COPY_RECURSION_DEPTH_LIMIT = 200;
+    private const int MakeDeepCopyRecursionDepthLimit = 200;
 
     /// <summary>Makes a deep copy of any object</summary>
     /// <param name="source">The original object</param>
@@ -74,7 +74,7 @@ public static class DeepCopy
         }
 
         _makeDeepCopyRecursionDepth++;
-        if (_makeDeepCopyRecursionDepth > MAKE_DEEP_COPY_RECURSION_DEPTH_LIMIT)
+        if (_makeDeepCopyRecursionDepth > MakeDeepCopyRecursionDepthLimit)
         {
             _makeDeepCopyRecursionDepth = 0;
             throw new DeepCopyMaxRecursionException(source, pathRoot);
@@ -201,7 +201,7 @@ public static class DeepCopy
         newReferences.Add(id, result);
         id++;
 
-        var fields = AccessTools.GetDeclaredFields(type);
+        var fields = type.GetFields(AccessTools.all);
 
         foreach (var field in fields)
         {

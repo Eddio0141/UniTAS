@@ -201,4 +201,20 @@ public partial class DeepCopyTests
 
         Assert.Equal((IntPtr)source.Pointer, (IntPtr)result!.Pointer);
     }
+
+    [Fact]
+    public void InheritanceTest()
+    {
+        var source = new ChildClass { Foo = [0], Bar = [1] };
+        var copied = DeepCopy.MakeDeepCopy<ChildClass>(source);
+
+        Assert.Equal(source.Foo, copied.Foo);
+        Assert.Equal(source.Bar, copied.Bar);
+
+        source.Foo.Add(1);
+        source.Bar.Add(2);
+
+        Assert.Equal(copied.Foo, [0]);
+        Assert.Equal(copied.Bar, [1]);
+    }
 }
