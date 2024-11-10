@@ -19,7 +19,7 @@ public class SerializationCallbackPatch : PreloadPatcher
 
         foreach (var type in types)
         {
-            if (type.IsInterface || type.IsAbstract) continue;
+            if (type.IsInterface || type.IsAbstract || type.IsValueType) continue;
 
             var serializationCallback = false;
             foreach (var i in type.Interfaces)
@@ -45,7 +45,7 @@ public class SerializationCallbackPatch : PreloadPatcher
             var method = type.Methods.FirstOrDefault(m =>
                 m.Name is "OnAfterDeserialize" or "UnityEngine.ISerializationCallbackReceiver.OnAfterDeserialize");
             if (method is not { HasBody: true }) continue;
-            
+
             method.Body.SimplifyMacros();
             var il = method.Body.GetILProcessor();
 
