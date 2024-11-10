@@ -85,7 +85,7 @@ public static class DeepCopy
             }
         }
 
-        if (source is Object and not MonoBehaviour and not ScriptableObject)
+        if (source is Object and not ScriptableObject)
         {
             // this is a native unity object, so we can't make a deep copy of it
             StaticLogger.Trace("MakeDeepCopy, skipping native unity object");
