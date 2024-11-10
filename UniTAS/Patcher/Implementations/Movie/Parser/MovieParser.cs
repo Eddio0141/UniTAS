@@ -189,7 +189,7 @@ public partial class MovieParser(
                 continue;
             }
 
-            var fields = AccessTools.GetDeclaredFields(monoBehaviour);
+            var fields = monoBehaviour.GetFields(AccessTools.all);
             foreach (var field in fields)
             {
                 desc.AddMember(field.Name, new ReadOnlyFieldDescriptor(field, InteropAccessMode.Default));

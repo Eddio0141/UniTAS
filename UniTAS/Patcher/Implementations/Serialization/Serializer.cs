@@ -20,7 +20,7 @@ public class Serializer : ISerializer
             throw new ArgumentNullException(nameof(targetClass));
         }
 
-        return AccessTools.GetDeclaredFields(targetClass).Where(x => x.IsStatic && !x.IsLiteral)
+        return targetClass.GetFields(AccessTools.all).Where(x => x.IsStatic && !x.IsLiteral)
             .Select(x => SerializeField(targetClass.FullName, x, null, references));
     }
 
@@ -59,7 +59,7 @@ public class Serializer : ISerializer
                 return new(className, field.Name, newReferenceId);
             }
 
-            var fields = AccessTools.GetDeclaredFields(value.GetType()).Where(x => !x.IsStatic && !x.IsLiteral)
+            var fields = value.GetType().GetFields(AccessTools.all).Where(x => !x.IsStatic && !x.IsLiteral)
                 .Select(x => SerializeField(null, x, value, references));
 
             // serialize reference
@@ -68,7 +68,7 @@ public class Serializer : ISerializer
         }
 
         // have to go through fields
-        var fields2 = AccessTools.GetDeclaredFields(value.GetType()).Where(x => !x.IsStatic && !x.IsLiteral)
+        var fields2 = value.GetType().GetFields(AccessTools.all).Where(x => !x.IsStatic && !x.IsLiteral)
             .Select(x => SerializeField(null, x, value, references));
         return new(className, field.Name, fields2);
     }
