@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
+using JetBrains.Annotations;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -9,6 +10,7 @@ namespace UniTAS.Patcher.Utils;
 
 public static class DebugHelp
 {
+    [UsedImplicitly]
     public static string PrintClass(object obj)
     {
         var indent = 0;
@@ -40,7 +42,7 @@ public static class DebugHelp
             foundReferences.Add(obj);
         }
 
-        var fields = AccessTools.GetDeclaredFields(type);
+        var fields = type.GetFields(AccessTools.all);
 
         foreach (var field in fields)
         {
