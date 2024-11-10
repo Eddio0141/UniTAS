@@ -50,8 +50,8 @@ public static class Entry
                 x =>
                 {
                     var fileWithoutExtension = Path.GetFileNameWithoutExtension(x);
-                    return fileWithoutExtension == null || assemblyExclusions.Contains(fileWithoutExtension) ||
-                           !assemblyExclusions.Any(a => fileWithoutExtension.Like(a));
+                    return fileWithoutExtension == null || !(assemblyExclusions.Contains(fileWithoutExtension) ||
+                                                             assemblyExclusions.Any(a => fileWithoutExtension.Like(a)));
                 });
     }
 
