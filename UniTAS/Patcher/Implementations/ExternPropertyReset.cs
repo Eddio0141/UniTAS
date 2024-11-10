@@ -9,46 +9,58 @@ using Mono.Cecil.Rocks;
 using MonoMod.Utils;
 using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
-using UniTAS.Patcher.Interfaces.Events.SoftRestart;
-using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
 using UniTAS.Patcher.ManualServices;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Logging;
+using UniTAS.Patcher.Services.UnityEvents;
 using UniTAS.Patcher.Utils;
 using MethodImplAttributes = Mono.Cecil.MethodImplAttributes;
-
-// ReSharper disable StringLiteralTypo
 
 namespace UniTAS.Patcher.Implementations;
 
 [Singleton]
-public class ExternPropertyReset(ILogger logger, IPatchReverseInvoker patchReverseInvoker)
-    : IOnAwakeUnconditional, IOnPreGameRestart
+[ForceInstantiate]
+public class ExternPropertyReset
 {
-    private List<(MethodBase, object, string)> _externMethodSaves;
+    private readonly List<(MethodBase, object, string)> _externMethodSaves = [];
 
-    public void OnPreGameRestart()
+    private readonly ILogger _logger;
+    private readonly IPatchReverseInvoker _patchReverseInvoker;
+    private readonly IUpdateEvents _updateEvents;
+
+    public ExternPropertyReset(ILogger logger,
+        IPatchReverseInvoker patchReverseInvoker,
+        IGameRestart gameRestart,
+        IUpdateEvents updateEvents)
+    {
+        _logger = logger;
+        _patchReverseInvoker = patchReverseInvoker;
+        _updateEvents = updateEvents;
+        updateEvents.OnAwakeUnconditional += AwakeUnconditional;
+        gameRestart.OnPreGameRestart += OnPreGameRestart;
+    }
+
+    private void OnPreGameRestart()
     {
         foreach (var (setMethod, value, name) in _externMethodSaves)
         {
-            logger.LogDebug($"Resetting extern property: {name}");
+            _logger.LogDebug($"Resetting extern property: {name}");
             LoggingUtils.DiskLogger.Flush();
             var valueClone = DeepCopy.MakeDeepCopy(value);
             try
             {
-                patchReverseInvoker.Invoke(() => setMethod.Invoke(null, [valueClone]));
+                _patchReverseInvoker.Invoke(() => setMethod.Invoke(null, [valueClone]));
             }
             catch (Exception e)
             {
-                logger.LogError($"Failed to set value for extern property: {name}, exception: {e}");
+                _logger.LogError($"Failed to set value for extern property: {name}, exception: {e}");
             }
         }
     }
 
-    public void AwakeUnconditional()
+    private void AwakeUnconditional()
     {
-        if (_externMethodSaves != null) return;
-        _externMethodSaves = [];
+        _updateEvents.OnAwakeUnconditional -= AwakeUnconditional;
 
         var assembliesPath = Paths.ManagedPath;
         var assembliesPaths = Directory.GetFiles(assembliesPath, "*.dll", SearchOption.TopDirectoryOnly);
@@ -75,7 +87,7 @@ public class ExternPropertyReset(ILogger logger, IPatchReverseInvoker patchRever
 
             if (!_knownProperties.Contains(fullName))
             {
-                logger.LogWarning(
+                _logger.LogWarning(
                     $"Found unknown extern property: {fullName}, get exists: {get != null}, set exists: {set != null}");
             }
 
@@ -83,17 +95,17 @@ public class ExternPropertyReset(ILogger logger, IPatchReverseInvoker patchRever
             // this could be included explicitly in the future with a list, but this is fine until set needs to be handled
             if (get == null || set == null) continue;
 
-            logger.LogDebug($"Saving extern property: {fullName}");
+            _logger.LogDebug($"Saving extern property: {fullName}");
             LoggingUtils.DiskLogger.Flush();
 
             object value;
             try
             {
-                value = patchReverseInvoker.Invoke(() => get.Invoke(null, []));
+                value = _patchReverseInvoker.Invoke(() => get.Invoke(null, []));
             }
             catch (Exception e)
             {
-                logger.LogError($"Failed to get value for extern property: {fullName}, exception: {e}");
+                _logger.LogError($"Failed to get value for extern property: {fullName}, exception: {e}");
                 continue;
             }
 
@@ -135,7 +147,7 @@ public class ExternPropertyReset(ILogger logger, IPatchReverseInvoker patchRever
         "UnityEngine.Profiling.Profiler.enableBinaryLog",
         "UnityEngine.Profiling.Profiler.enabled",
         // error: Virtual texturing is not enabled in the player settings
-        // might not matter, but i'm putting it here for now lmao
+        // might not matter, but I'm putting it here for now lmao
         "UnityEngine.Rendering.VirtualTexturing.Debugging.debugTilesEnabled",
         "UnityEngine.Rendering.VirtualTexturing.Debugging.resolvingEnabled",
         "UnityEngine.Rendering.VirtualTexturing.Debugging.flushEveryTickEnabled",
@@ -143,7 +155,6 @@ public class ExternPropertyReset(ILogger logger, IPatchReverseInvoker patchRever
         "UnityEngine.CrashReportHandler.CrashReportHandler.*",
         // no point in these
         "UnityEngine.Analytics.*",
-        // TODO this needs investigating more but i can't find any documentation on this, and it keeps crashing the game and shit
         "UnityEngine.Connect.UnityConnectSettings.*",
         // clipboard access
         "UnityEngine.GUIUtility.systemCopyBuffer",
