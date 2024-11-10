@@ -28,7 +28,7 @@ public static class SaveScriptableObjectStatesManual
         if (StoredStates.ContainsKey(obj)) return;
 
         StaticLogger.LogDebug($"Saving ScriptableObject {obj.name}");
-        StoredStates.Add(obj, new(obj));
+        StoredStates.Add(obj, new StoredState(obj));
     }
 
     private readonly struct StoredState
@@ -54,6 +54,8 @@ public static class SaveScriptableObjectStatesManual
                 StaticLogger.LogError("ScriptableObject is null, this should not happen");
                 return;
             }
+
+            StaticLogger.LogDebug($"Loading ScriptableObject {_scriptableObject.name}");
 
             foreach (var savedField in _savedFields)
             {
