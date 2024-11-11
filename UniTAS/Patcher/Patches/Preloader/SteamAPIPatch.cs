@@ -20,6 +20,12 @@ public class SteamAPIPatch : PreloadPatcher
 
                 StaticLogger.LogDebug($"Found steam API use in method `{method.FullName}`");
 
+                if (method.Name == "SteamAPI_Init")
+                {
+                    StaticLogger.LogDebug("Initialization method, skipping");
+                    continue;
+                }
+
                 method.PInvokeInfo = null;
                 method.Attributes &= ~MethodAttributes.PInvokeImpl;
 
