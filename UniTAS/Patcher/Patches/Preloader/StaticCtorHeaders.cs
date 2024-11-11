@@ -130,8 +130,9 @@ public class StaticCtorHeaders : PreloadPatcher
         // for this i can just analyze the static ctor and find the first external class
 
         var insertedDependencyInvoke = false;
-        foreach (var instruction in instructions)
+        for (var i = 0; i < instructions.Count; i++)
         {
+            var instruction = instructions[i];
             // ignore our own inserted instructions
             if (insertedInstructions.Contains(instruction)) continue;
 
@@ -150,7 +151,14 @@ public class StaticCtorHeaders : PreloadPatcher
                 // ok we found it, insert call to CheckAndInvokeDependency
                 StaticLogger.Trace("Before insert");
                 var dependencyRefInstruction = ilProcessor.Create(OpCodes.Call, patchMethodDependencyRef);
-                ilProcessor.InsertBeforeInstructionReplace(instruction, dependencyRefInstruction);
+
+                // BEFORE WE DO THIS... ensure opcode `constrained` is handled
+                // sandwiching my method between `constrained` and a `callvirt` will BREAK STUFF
+                if (i > 0 && instructions[i - 1].OpCode == OpCodes.Constrained)
+                    ilProcessor.InsertBeforeInstructionReplace(instructions[i - 1], dependencyRefInstruction);
+                else
+                    ilProcessor.InsertBeforeInstructionReplace(instruction, dependencyRefInstruction);
+
                 insertedDependencyInvoke = true;
 
                 StaticLogger.Trace(
