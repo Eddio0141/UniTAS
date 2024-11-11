@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -133,8 +134,7 @@ public static class DeepCopy
 
         StaticLogger.Trace("MakeDeepCopy, creating new instance and copying fields");
 
-        var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic |
-                                    BindingFlags.GetField | BindingFlags.SetField).Where(f => !f.IsLiteral);
+        FieldInfo[] fields;
 
         object result;
 
@@ -142,13 +142,23 @@ public static class DeepCopy
 
         if (source is AnimationCurve || typeFullName == "UnityEngine.AnimationCurve.AnimationCurve")
         {
+            fields = FieldInfoCache.GetOrAdd(type, t =>
+            {
+                return t.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic |
+                                   BindingFlags.GetField | BindingFlags.SetField).Where(f => !f.IsLiteral)
+                    .Where(f => !(f.Name == "m_Ptr" && f.FieldType == typeof(IntPtr))).ToArray();
+            });
+
             // call the default ctor
             result = Activator.CreateInstance(type);
-            // also ignore unmanaged stuff
-            fields = fields.Where(f => !(f.Name == "m_Ptr" && f.FieldType == typeof(IntPtr)));
         }
         else
         {
+            fields = FieldInfoCache.GetOrAdd(type, t => t.GetFields(BindingFlags.Instance | BindingFlags.Public |
+                                                                    BindingFlags.NonPublic |
+                                                                    BindingFlags.GetField | BindingFlags.SetField)
+                .Where(f => !f.IsLiteral).ToArray());
+
             result = source is ScriptableObject
                 ? ScriptableObject.CreateInstance(type)
                 : AccessTools.CreateInstance(type);
@@ -187,6 +197,8 @@ public static class DeepCopy
         StaticLogger.Trace("MakeDeepCopy, returning result from copied fields");
         return result;
     }
+
+    private static readonly ConcurrentDictionary<Type, FieldInfo[]> FieldInfoCache = [];
 
     // path removed because unused right now
     // public delegate bool Processor(string path, object source, out object copiedObj);
