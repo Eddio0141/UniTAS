@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using HarmonyLib;
 using UniTAS.Patcher.Exceptions;
+using UniTAS.Patcher.Extensions;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -72,22 +73,17 @@ public static class DeepCopy
             }
         }
 
+        if (source is null)
+        {
+            StaticLogger.Trace("MakeDeepCopy, returning null");
+            return null;
+        }
+
         if (source is Object and not ScriptableObject)
         {
             // this is a native unity object, so we can't make a deep copy of it
             StaticLogger.Trace("MakeDeepCopy, skipping native unity object");
             return source;
-        }
-
-        if (_makeDeepCopyRecursionDepth > MakeDeepCopyRecursionDepthLimit)
-        {
-            throw new DeepCopyMaxRecursionException(source, pathRoot);
-        }
-
-        if (source is null)
-        {
-            StaticLogger.Trace("MakeDeepCopy, returning null");
-            return null;
         }
 
         if (references.TryGetValue(source, out var referenceEntry))
@@ -110,6 +106,12 @@ public static class DeepCopy
         }
 
         _makeDeepCopyRecursionDepth++;
+
+        if (_makeDeepCopyRecursionDepth > MakeDeepCopyRecursionDepthLimit)
+        {
+            throw new DeepCopyMaxRecursionException(source, pathRoot);
+        }
+
         if (type.IsArray)
         {
             StaticLogger.Trace("MakeDeepCopy, copying array");
@@ -187,18 +189,33 @@ public static class DeepCopy
         // }
 
         StaticLogger.Trace("MakeDeepCopy, creating new instance and copying fields");
-        var result = source is ScriptableObject
-            ? ScriptableObject.CreateInstance(type)
-            : AccessTools.CreateInstance(type);
+
+        var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic |
+                                    BindingFlags.GetField | BindingFlags.SetField).Where(f => !f.IsLiteral);
+
+        object result;
+
+        var typeFullName = type.SaneFullName();
+
+        if (source is AnimationCurve || typeFullName == "UnityEngine.AnimationCurve.AnimationCurve")
+        {
+            // call the default ctor
+            result = Activator.CreateInstance(type);
+            // also ignore unmanaged stuff
+            fields = fields.Where(f => !(f.Name == "m_Ptr" && f.FieldType == typeof(IntPtr)));
+        }
+        else
+        {
+            result = source is ScriptableObject
+                ? ScriptableObject.CreateInstance(type)
+                : AccessTools.CreateInstance(type);
+        }
+
         // guaranteed to be a reference type
         references.Add(source, result);
 
-        var fields = type.GetFields(AccessTools.all);
-
         foreach (var field in fields)
         {
-            if (field.IsStatic || field.IsLiteral) continue;
-
             var name = field.Name;
             StaticLogger.Trace($"MakeDeepCopy, processing field: {name}");
             var path = pathRoot.Length > 0 ? pathRoot + "." + name : name;
@@ -214,6 +231,11 @@ public static class DeepCopy
                 }
 
                 continue;
+            }
+
+            if (field.FieldType == typeof(IntPtr) || field.FieldType == typeof(UIntPtr))
+            {
+                StaticLogger.LogDebug($"DeepCopy: found pointer field `{typeFullName}.{field.Name}`, may be unmanaged");
             }
 
             StaticLogger.Trace("MakeDeepCopy, copying field");
