@@ -16,6 +16,9 @@ public class FinalizeSuppressionPatch : PreloadPatcher
         var types = assembly.MainModule.GetAllTypes().Where(x => x.IsClass && !x.IsAbstract);
         foreach (var type in types)
         {
+            // special case
+            if (type.FullName is "UnityEngine.AnimationCurve.AnimationCurve" or "UnityEngine.AnimationCurve") continue;
+
             var method = type.Methods.FirstOrDefault(x =>
                 x.Name == "Finalize" && !x.HasParameters && x.ReturnType.FullName == "System.Void");
             if (method is not { HasBody: true }) continue;
