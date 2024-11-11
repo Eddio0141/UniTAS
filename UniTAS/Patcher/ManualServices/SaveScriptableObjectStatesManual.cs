@@ -103,7 +103,7 @@ public static class SaveScriptableObjectStatesManual
             _saveField.SetValue(_instance, value);
         }
 
-        private static bool ProcessScriptableObjectCopy(string path, object source, out object copiedObj)
+        private static bool ProcessScriptableObjectCopy(object source, out object copiedObj)
         {
             if (source is not ScriptableObject)
             {

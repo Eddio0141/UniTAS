@@ -5,6 +5,7 @@ using System.Reflection;
 using HarmonyLib;
 using UniTAS.Patcher.Exceptions;
 using UniTAS.Patcher.Extensions;
+using UniTAS.Patcher.ManualServices;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -26,12 +27,9 @@ public static class DeepCopy
     /// <param name="source">The original object</param>
     /// <param name="result">[out] The copy of the original object</param>
     /// <param name="processor">Optional custom copy function (taking a field name, src <see cref="Traverse"/>, and an output copied object. Return is to use this object or not)</param>
-    /// <param name="pathRoot">The optional path root to start with</param>
-    ///
-    public static void MakeDeepCopy<T>(object source, out T result,
-        Processor processor = null, string pathRoot = "")
+    public static void MakeDeepCopy<T>(object source, out T result, Processor processor = null)
     {
-        result = (T)MakeDeepCopy(source, processor, pathRoot);
+        result = (T)MakeDeepCopy(source, processor);
     }
 
     private static int _makeDeepCopyRecursionDepth;
@@ -41,20 +39,18 @@ public static class DeepCopy
     /// <summary>Makes a deep copy of any object</summary>
     /// <param name="source">The original object</param>
     /// <param name="processor">Optional custom copy function (taking a field name, src <see cref="Traverse"/>, and an output copied object. Return is to use this object or not)</param>
-    /// <param name="pathRoot">The optional path root to start with</param>
     /// <returns>The copy of the original object</returns>
-    public static object MakeDeepCopy(object source, Processor processor = null,
-        string pathRoot = "")
+    public static object MakeDeepCopy(object source, Processor processor = null)
     {
-        return MakeDeepCopy(source, processor, pathRoot, new(new HashUtils.ReferenceComparer()));
+        return MakeDeepCopy(source, processor, new(new HashUtils.ReferenceComparer()));
     }
 
     // references: (before, after)
-    private static object MakeDeepCopy(object source, Processor processor, string pathRoot,
-        Dictionary<object, object> references)
+    private static object MakeDeepCopy(object source, Processor processor, Dictionary<object, object> references)
     {
-        StaticLogger.Trace(
-            $"MakeDeepCopy, depth: {_makeDeepCopyRecursionDepth}, type: {source?.GetType().FullName}, pathRoot: {pathRoot}");
+        using var _ = Bench.Measure();
+
+        StaticLogger.Trace($"MakeDeepCopy, depth: {_makeDeepCopyRecursionDepth}, type: {source?.GetType().FullName}");
 
         if (processor is not null)
         {
@@ -66,7 +62,7 @@ public static class DeepCopy
                 }
             }
 
-            if (processor(pathRoot, source, out var processorValue))
+            if (processor(source, out var processorValue))
             {
                 StaticLogger.Trace("MakeDeepCopy, using processor to get copied value");
                 return processorValue;
@@ -114,7 +110,7 @@ public static class DeepCopy
 
         if (_makeDeepCopyRecursionDepth > MakeDeepCopyRecursionDepthLimit)
         {
-            throw new DeepCopyMaxRecursionException(source, pathRoot);
+            throw new DeepCopyMaxRecursionException(source);
         }
 
         if (type.IsArray)
@@ -126,9 +122,7 @@ public static class DeepCopy
             references.Add(source, newArray);
             for (var i = 0; i < array.Length; i++)
             {
-                var iStr = i.ToString();
-                var path = pathRoot.Length > 0 ? pathRoot + "." + iStr : iStr;
-                var newElement = MakeDeepCopy(array.GetValue(i), processor, path, references);
+                var newElement = MakeDeepCopy(array.GetValue(i), processor, references);
                 newArray.SetValue(newElement, i);
             }
 
@@ -136,62 +130,6 @@ public static class DeepCopy
             StaticLogger.Trace("MakeDeepCopy, returning array");
             return newArray;
         }
-
-        // is type a collection?
-        // if (typeof(IEnumerable).IsAssignableFrom(type))
-        // {
-        //     StaticLogger.Trace("MakeDeepCopy, copying IEnumerable");
-        //     var sourceCollection = (IEnumerable)source;
-        //     foundReferences.Add(id, source);
-        //     var newRefId = id;
-        //     id++;
-        //
-        //     Type resultTypeInterface;
-        //     if (type.IsInterface)
-        //     {
-        //         resultTypeInterface = type;
-        //     }
-        //     else
-        //     {
-        //         resultTypeInterface = type.GetInterfaces().First(i =>
-        //             i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
-        //     }
-        //
-        //     var resultTypeGenericArgument = resultTypeInterface.GetGenericArguments()[0];
-        //     var iEnumerableType = typeof(IEnumerable<>).MakeGenericType(resultTypeGenericArgument);
-        //
-        //     var ctor = AccessTools.Constructor(type, new[] { iEnumerableType });
-        //     if (ctor != null)
-        //     {
-        //         var tempResultList =
-        //             (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(resultTypeGenericArgument));
-        //         foreach (var element in sourceCollection)
-        //         {
-        //             var newElement = MakeDeepCopy(element, processor, pathRoot,
-        //                 foundReferences, newReferences, ref id, ref a);
-        //             tempResultList.Add(newElement);
-        //         }
-        //
-        //         var addableResult = ctor.Invoke(new object[] { tempResultList });
-        //
-        //         _makeDeepCopyRecursionDepth--;
-        //         newReferences.Add(newRefId, addableResult);
-        //         StaticLogger.Trace("MakeDeepCopy, returning IEnumerable");
-        //         if (a > 0) a++;
-        //         return addableResult;
-        //     }
-        //
-        //     StaticLogger.Trace("MakeDeepCopy, IEnumerable has no constructor with IEnumerable argument");
-        // }
-
-        // var ns = type.Namespace;
-        // if (ns == "System" || (ns?.StartsWith("System.") ?? false))
-        // {
-        //     _makeDeepCopyRecursionDepth--;
-        //     StaticLogger.Trace($"MakeDeepCopy, returning system type, namespace: {ns}");
-        //     if (a > 0) a++;
-        //     return source;
-        // }
 
         StaticLogger.Trace("MakeDeepCopy, creating new instance and copying fields");
 
@@ -221,10 +159,6 @@ public static class DeepCopy
 
         foreach (var field in fields)
         {
-            var name = field.Name;
-            StaticLogger.Trace($"MakeDeepCopy, processing field: {name}");
-            var path = pathRoot.Length > 0 ? pathRoot + "." + name : name;
-
             var value = field.GetValue(source);
 
             if (field.FieldType.IsPointer)
@@ -244,7 +178,7 @@ public static class DeepCopy
             }
 
             StaticLogger.Trace("MakeDeepCopy, copying field");
-            var copiedObj = MakeDeepCopy(value, processor, path, references);
+            var copiedObj = MakeDeepCopy(value, processor, references);
 
             field.SetValue(result, copiedObj);
         }
@@ -254,5 +188,7 @@ public static class DeepCopy
         return result;
     }
 
-    public delegate bool Processor(string path, object source, out object copiedObj);
+    // path removed because unused right now
+    // public delegate bool Processor(string path, object source, out object copiedObj);
+    public delegate bool Processor(object source, out object copiedObj);
 }
