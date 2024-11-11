@@ -144,11 +144,17 @@ public abstract class Window
         _backendConfigWindowShown = $"{BackendConfigPrefix}show-{WindowConfigId}";
     }
 
-    private Vector2 MousePosition => _patchReverseInvoker.Invoke(() => _unityInputWrapper.GetMousePosition());
+    private Vector2 MousePosition =>
+        _patchReverseInvoker.Invoke(wrapper => wrapper.GetMousePosition(), _unityInputWrapper);
+
     private int ScreenWidth => _patchReverseInvoker.Invoke(() => Screen.width);
     private int ScreenHeight => _patchReverseInvoker.Invoke(() => Screen.height);
-    private bool LeftMouseButton => _patchReverseInvoker.Invoke(() => _unityInputWrapper.GetMouseButton(0));
-    private bool RightMouseButton => _patchReverseInvoker.Invoke(() => _unityInputWrapper.GetMouseButton(1));
+
+    private bool LeftMouseButton =>
+        _patchReverseInvoker.Invoke(wrapper => wrapper.GetMouseButton(0), _unityInputWrapper);
+
+    private bool RightMouseButton =>
+        _patchReverseInvoker.Invoke(wrapper => wrapper.GetMouseButton(1), _unityInputWrapper);
 
     protected void Init()
     {
