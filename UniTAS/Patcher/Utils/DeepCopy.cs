@@ -92,6 +92,11 @@ public static class DeepCopy
             return referenceEntry;
         }
 
+        if (source is IntPtr or UIntPtr)
+        {
+            StaticLogger.LogDebug($"DeepCopy: received pointer type: `{source}`, may be unmanaged");
+        }
+
         var type = source.GetType();
 
         if (type.IsPrimitive || type == typeof(string))
