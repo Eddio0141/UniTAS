@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MoonSharp.Interpreter.net35
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Newtonsoft.Json", "..\Newtonsoft.Json\Src\Newtonsoft.Json\Newtonsoft.Json.csproj", "{71232739-5507-4A37-BE37-1DD5CB3088D6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Patcher.Bench", "Patcher.Bench\Patcher.Bench.csproj", "{E629E473-B4C5-491C-A773-4549CE9E32A3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -48,5 +50,13 @@ Global
 		{71232739-5507-4A37-BE37-1DD5CB3088D6}.ReleaseTrace|Any CPU.Build.0 = Debug|Any CPU
 		{71232739-5507-4A37-BE37-1DD5CB3088D6}.ReleaseBench|Any CPU.ActiveCfg = Release|Any CPU
 		{71232739-5507-4A37-BE37-1DD5CB3088D6}.ReleaseBench|Any CPU.Build.0 = Release|Any CPU
+		{E629E473-B4C5-491C-A773-4549CE9E32A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E629E473-B4C5-491C-A773-4549CE9E32A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E629E473-B4C5-491C-A773-4549CE9E32A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E629E473-B4C5-491C-A773-4549CE9E32A3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E629E473-B4C5-491C-A773-4549CE9E32A3}.ReleaseTrace|Any CPU.ActiveCfg = Debug|Any CPU
+		{E629E473-B4C5-491C-A773-4549CE9E32A3}.ReleaseTrace|Any CPU.Build.0 = Debug|Any CPU
+		{E629E473-B4C5-491C-A773-4549CE9E32A3}.ReleaseBench|Any CPU.ActiveCfg = Debug|Any CPU
+		{E629E473-B4C5-491C-A773-4549CE9E32A3}.ReleaseBench|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 EndGlobal
