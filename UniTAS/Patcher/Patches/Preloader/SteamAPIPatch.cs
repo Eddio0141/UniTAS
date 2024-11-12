@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
@@ -8,6 +9,16 @@ namespace UniTAS.Patcher.Patches.Preloader;
 
 public class SteamAPIPatch : PreloadPatcher
 {
+    private static readonly HashSet<string> SkipSteamMethods =
+    [
+        "SteamAPI_Init",
+        "SteamAPI_GetHSteamUser",
+        "SteamAPI_GetHSteamPipe",
+        "SteamInternal_CreateInterface",
+        // "ISteamClient_GetISteamUser",
+        // "ISteamClient_GetISteamFriends"
+    ];
+
     public override void Patch(ref AssemblyDefinition assembly)
     {
         var types = assembly.MainModule.GetAllTypes();
@@ -20,9 +31,9 @@ public class SteamAPIPatch : PreloadPatcher
 
                 StaticLogger.LogDebug($"Found steam API use in method `{method.FullName}`");
 
-                if (method.Name == "SteamAPI_Init")
+                if (SkipSteamMethods.Contains(method.Name))
                 {
-                    StaticLogger.LogDebug("Initialization method, skipping");
+                    StaticLogger.LogDebug("Method required, skipping");
                     continue;
                 }
 
