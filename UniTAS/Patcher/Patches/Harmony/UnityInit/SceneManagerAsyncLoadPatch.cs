@@ -110,6 +110,15 @@ public class SceneManagerAsyncLoadPatch
         {
             immediately = true;
         }
+        
+
+        private static void Postfix(bool immediately, ref AsyncOperation __result)
+        {
+            if (immediately) return;
+
+            __result = new();
+            SceneLoadTracker.AsyncSceneUnload(__result);
+        }
     }
 
     [HarmonyPatch]
@@ -130,6 +139,14 @@ public class SceneManagerAsyncLoadPatch
         {
             immediately = true;
         }
+
+        private static void Postfix(bool immediately, ref AsyncOperation __result)
+        {
+            if (immediately) return;
+
+            __result = new();
+            SceneLoadTracker.AsyncSceneUnload(__result);
+        }
     }
 
     [HarmonyPatch]
@@ -145,10 +162,14 @@ public class SceneManagerAsyncLoadPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix(object scene, object options)
+        private static bool Prefix(object scene, object options, ref AsyncOperation __result)
         {
             var sceneTraverse = Traverse.Create(scene);
             var sceneBuildIndex = sceneTraverse.Property("buildIndex").GetValue<int>();
+
+            __result = new();
+            SceneLoadTracker.AsyncSceneUnload(__result);
+
             UnloadSceneNameIndexInternal.Invoke(null, ["", sceneBuildIndex, true, options, null]);
             return false;
         }

@@ -109,6 +109,13 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger)
         InvokeOnComplete(asyncOperation);
     }
 
+    public void AsyncSceneUnload(AsyncOperation asyncOperation)
+    {
+        _tracked.Add(asyncOperation);
+        _isDone.Add(asyncOperation);
+        InvokeOnComplete(asyncOperation);
+    }
+
     public void AsyncSceneLoad(string sceneName, int sceneBuildIndex, LoadSceneMode loadSceneMode,
         LocalPhysicsMode localPhysicsMode, AsyncOperation asyncOperation)
     {
