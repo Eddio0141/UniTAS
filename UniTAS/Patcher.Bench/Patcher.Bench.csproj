@@ -9,6 +9,8 @@
             https://api.nuget.org/v3/index.json;
             https://nuget.bepinex.dev/v3/index.json
         </RestoreAdditionalProjectSources>
+        <Configurations>Release</Configurations>
+        <NoWarn>NU1701;NU1702</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
