@@ -8,7 +8,9 @@ namespace UniTAS.Patcher.ManualServices.Trackers;
 
 public static class SerializationCallbackTracker
 {
-    private static readonly HashSet<object> AfterDeserializationInvoked = new(new HashUtils.ReferenceComparer());
+    private static readonly HashSet<object>
+        AfterDeserializationInvoked = new(new HashUtils.ReferenceComparer<object>());
+
     private static readonly object AfterDeserializationInvokedLock = new();
 
     private static bool _initializedDelegates;
@@ -38,7 +40,8 @@ public static class SerializationCallbackTracker
         return !AfterSerializationManuallyInvoked.Contains(instance);
     }
 
-    private static readonly HashSet<object> AfterSerializationManuallyInvoked = new(new HashUtils.ReferenceComparer());
+    private static readonly HashSet<object> AfterSerializationManuallyInvoked =
+        new(new HashUtils.ReferenceComparer<object>());
 
     public static void InvokeAllAfterDeserialization()
     {

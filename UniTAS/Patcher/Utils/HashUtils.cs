@@ -5,14 +5,14 @@ namespace UniTAS.Patcher.Utils;
 
 public static class HashUtils
 {
-    public class ReferenceComparer : IEqualityComparer<object>
+    public class ReferenceComparer<T> : IEqualityComparer<T>
     {
-        bool IEqualityComparer<object>.Equals(object x, object y)
+        bool IEqualityComparer<T>.Equals(T x, T y)
         {
             return ReferenceEquals(x, y);
         }
 
-        public int GetHashCode(object obj)
+        public int GetHashCode(T obj)
         {
             return RuntimeHelpers.GetHashCode(obj);
         }

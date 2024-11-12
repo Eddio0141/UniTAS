@@ -10,6 +10,7 @@ using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
 using UniTAS.Patcher.Models.UnitySafeWrappers.SceneManagement;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
+using UniTAS.Patcher.Utils;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -21,15 +22,19 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger)
     : ISceneLoadTracker, IAssetBundleCreateRequestTracker, IAssetBundleRequestTracker,
         IOnLastUpdateUnconditional, IAsyncOperationIsInvokingOnComplete, IOnPreGameRestart, IOnUpdateActual
 {
-    private readonly List<AsyncOperation> _tracked = new();
+    private readonly HashSet<AsyncOperation> _tracked = new(new HashUtils.ReferenceComparer<AsyncOperation>());
 
     private readonly Dictionary<AsyncOperation, AsyncSceneLoadData> _asyncLoads = new();
     private readonly List<AsyncOperation> _pendingLoadCallbacks = new();
     private readonly Dictionary<AsyncOperation, AsyncSceneLoadData> _asyncLoadStalls = new();
     private readonly Dictionary<AsyncOperation, AssetBundle> _assetBundleCreateRequests = new();
+
     private readonly Dictionary<AsyncOperation, AssetBundleRequestData> _assetBundleRequests = new();
-    private readonly List<(bool, AsyncOperation)> _allowSceneActivationValue = new();
-    private readonly List<AsyncOperation> _isDone = new();
+
+    private readonly Dictionary<AsyncOperation, bool> _allowSceneActivationValue =
+        new(new HashUtils.ReferenceComparer<AsyncOperation>());
+
+    private readonly HashSet<AsyncOperation> _isDone = new(new HashUtils.ReferenceComparer<AsyncOperation>());
 
     private class AssetBundleRequestData(Object singleResult = null, Object[] multipleResults = null)
     {
@@ -154,59 +159,43 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger)
 
     private void StoreAllowSceneActivation(AsyncOperation asyncOperation, bool allow)
     {
-        var allowSceneActivationStore =
-            _allowSceneActivationValue.FindIndex(tuple => ReferenceEquals(tuple.Item2, asyncOperation));
-        if (allowSceneActivationStore >= 0)
-        {
-            _allowSceneActivationValue[allowSceneActivationStore] = (allow, asyncOperation);
-        }
-        else
-        {
-            _allowSceneActivationValue.Add((allow, asyncOperation));
-        }
+        _allowSceneActivationValue[asyncOperation] = allow;
     }
 
     public bool GetAllowSceneActivation(AsyncOperation asyncOperation, out bool state)
     {
-        var stateIndex = _allowSceneActivationValue.FindIndex(x => ReferenceEquals(x.Item2, asyncOperation));
-        if (stateIndex >= 0)
+        if (_allowSceneActivationValue.TryGetValue(asyncOperation, out state))
         {
-            state = _allowSceneActivationValue[stateIndex].Item1;
             return true;
         }
 
         // not found, is it even tracked?
         state = false;
-        return _tracked.Exists(x => ReferenceEquals(x, asyncOperation));
+        return _tracked.Contains(asyncOperation);
     }
 
     public bool IsDone(AsyncOperation asyncOperation, out bool isDone)
     {
-        if (_isDone.Exists(x => ReferenceEquals(x, asyncOperation)))
+        if (_isDone.Contains(asyncOperation))
         {
             isDone = true;
             return true;
         }
 
         isDone = false;
-        return _tracked.Exists(x => ReferenceEquals(x, asyncOperation));
+        return _tracked.Contains(asyncOperation);
     }
 
     public bool Progress(AsyncOperation asyncOperation, out float progress)
     {
-        if (_isDone.Exists(x => ReferenceEquals(x, asyncOperation)))
+        if (_isDone.Contains(asyncOperation))
         {
             progress = 1f;
             return true;
         }
 
         progress = 0.9f;
-        if (!_tracked.Exists(x => ReferenceEquals(x, asyncOperation)))
-        {
-            return false;
-        }
-
-        return true;
+        return _tracked.Contains(asyncOperation);
     }
 
     public AssetBundle GetAssetBundleCreateRequest(AsyncOperation asyncOperation)

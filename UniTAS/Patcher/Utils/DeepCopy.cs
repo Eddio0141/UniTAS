@@ -43,7 +43,7 @@ public static class DeepCopy
     /// <returns>The copy of the original object</returns>
     public static object MakeDeepCopy(object source, Processor processor = null)
     {
-        return MakeDeepCopy(source, processor, new(new HashUtils.ReferenceComparer()));
+        return MakeDeepCopy(source, processor, new(new HashUtils.ReferenceComparer<object>()));
     }
 
     // references: (before, after)
