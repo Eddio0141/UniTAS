@@ -149,6 +149,7 @@ public partial class MovieParser
 
         const int fallbackWidth = 1920;
         const int fallbackHeight = 1080;
+        const int fallbackResClosestDefault = 100;
         var fallbackRr = unityInstanceWrapFactory.CreateNew<RefreshRateWrap>();
         fallbackRr.Rate = 60;
 
@@ -159,14 +160,17 @@ public partial class MovieParser
                     ? $"`window` config is nil, falling back to resolution of {fallbackWidth}x{fallbackHeight}@{fallbackRr.Rate}hz with no extra screen resolutions"
                     : $"`window` isn't a table, falling back to resolution of {fallbackWidth}x{fallbackHeight}@{fallbackRr.Rate}hz with no extra screen resolutions");
 
-            return new WindowState(
-                unityInstanceWrapFactory.CreateNew<IResolutionWrapper>(fallbackWidth, fallbackHeight, fallbackRr), []);
+            return new WindowState(unityInstanceWrapFactory,
+                unityInstanceWrapFactory.CreateNew<IResolutionWrapper>(fallbackWidth, fallbackHeight, fallbackRr), [],
+                fallbackResClosestDefault);
         }
 
         var windowTable = window.Table;
 
         var width = (int)(windowTable.Get("width").CastToNumber() ?? fallbackWidth);
         var height = (int)(windowTable.Get("height").CastToNumber() ?? fallbackHeight);
+        var fallbackResClosest =
+            (int)(windowTable.Get("fallback_res_closest").CastToNumber() ?? fallbackResClosestDefault);
 
         if (width <= 0 || height <= 0)
         {
@@ -174,6 +178,13 @@ public partial class MovieParser
                 $"the screen resolution value can't be 0 or lower, using default value of {fallbackWidth}x{fallbackHeight}");
             width = fallbackWidth;
             height = fallbackHeight;
+        }
+
+        if (fallbackResClosest < 1)
+        {
+            logger.LogWarning(
+                $"the fallback resolution value can't be 0 or lower, using default value of {fallbackResClosestDefault}");
+            fallbackResClosest = fallbackResClosestDefault;
         }
 
         // fallback is 0hz (unlimited for unity)
@@ -242,8 +253,9 @@ public partial class MovieParser
             logger.LogWarning("`resolutions` isn't an array, no additional supported screen resolutions are added");
         }
 
-        return new WindowState(unityInstanceWrapFactory.CreateNew<IResolutionWrapper>(width, height, rr),
-            resolutions.ToArray());
+        return new WindowState(unityInstanceWrapFactory,
+            unityInstanceWrapFactory.CreateNew<IResolutionWrapper>(width, height, rr), resolutions.ToArray(),
+            fallbackResClosest);
     }
 
     private bool RefreshRateParser(DynValue entry, out RefreshRateWrap refreshRate)

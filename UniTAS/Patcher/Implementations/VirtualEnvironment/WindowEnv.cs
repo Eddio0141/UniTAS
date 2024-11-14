@@ -52,6 +52,14 @@ public class WindowEnv(
     public IResolutionWrapper CurrentResolution { get; set; } = new ResolutionWrapper(Screen.currentResolution);
 
     public IResolutionWrapper[] ExtraSupportedResolutions { get; set; } = [];
+    public void AddExtraSupportedResolutions(IResolutionWrapper[] extraSupportedResolutions)
+    {
+    }
+
+    public void ClearExtraSupportedResolutions()
+    {
+    }
+
     public bool FullScreen { get; set; } = Screen.fullScreen;
 
     public FullScreenModeWrap FullScreenMode { get; set; } = GetFullScreenModeMethod == null

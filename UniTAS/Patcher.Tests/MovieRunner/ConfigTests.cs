@@ -18,6 +18,7 @@ public class ConfigTests
                                      width = 500,
                                      height = 600,
                                      refresh_rate = 144,
+                                     fallback_res_closest = 101,
                                      resolutions = {
                                      {
                                          width = 900,
@@ -55,6 +56,7 @@ public class ConfigTests
         Assert.Equal(600, windowState.CurrentResolution.Height);
         Assert.Equal(144, windowState.CurrentResolution.RefreshRateWrap.Rate);
         Assert.Equal(3, windowState.ExtraResolutions.Length);
+        Assert.Equal(101, windowState.ExtraResolutionClosest);
 
         var res = windowState.ExtraResolutions[0];
         Assert.Equal(900, res.Width);
