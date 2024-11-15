@@ -5,7 +5,6 @@ using UniTAS.Patcher.Implementations.UnitySafeWrappers.Unity.Collections;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Services.UnitySafeWrappers;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
-using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations.UnitySafeWrappers;
 
@@ -55,20 +54,6 @@ public class UnityInstanceWrapFactory(IContainer container) : IUnityInstanceWrap
 
             newRr.Denominator = (uint)args[1];
             newRr.Numerator = (uint)args[0];
-            return newRr as T;
-        }
-
-        if (typeof(T) == typeof(IResolutionWrapper))
-        {
-            var newRr = new ResolutionWrapper(new Resolution());
-            if (args.Length == 0)
-            {
-                return newRr as T;
-            }
-
-            newRr.Width = (int)args[0];
-            newRr.Height = (int)args[1];
-            newRr.RefreshRateWrap = (RefreshRateWrap)args[2];
             return newRr as T;
         }
 

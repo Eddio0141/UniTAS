@@ -1,4 +1,7 @@
-﻿namespace UniTAS.Patcher.Services.UnitySafeWrappers;
+﻿using UniTAS.Patcher.Implementations.UnitySafeWrappers;
+using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
+
+namespace UniTAS.Patcher.Services.UnitySafeWrappers;
 
 /// <summary>
 /// A factory for creating unity instance wraps with extra functionality or for creating types that may or may not be present in the current unity version

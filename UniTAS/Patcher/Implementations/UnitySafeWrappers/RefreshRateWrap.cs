@@ -51,7 +51,7 @@ public class RefreshRateWrap : UnityInstanceWrap
 
     public RefreshRateWrap(object instance) : base(instance)
     {
-        if (Instance == null || NumeratorField == null) return;
+        if (NumeratorField == null) return;
         _numerator = (uint)NumeratorField.GetValue(Instance);
         _denominator = (uint)DenominatorField.GetValue(Instance);
     }

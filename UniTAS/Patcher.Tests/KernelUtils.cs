@@ -18,7 +18,6 @@ using UniTAS.Patcher.Interfaces.Events.UnityEvents.DontRunIfPaused;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
 using UniTAS.Patcher.Interfaces.GlobalHotkeyListener;
 using UniTAS.Patcher.Interfaces.Movie;
-using UniTAS.Patcher.Interfaces.UnitySafeWrappers;
 using UniTAS.Patcher.Models;
 using UniTAS.Patcher.Models.Customization;
 using UniTAS.Patcher.Models.DependencyInjection;
@@ -296,9 +295,9 @@ public static class KernelUtils
     [Singleton(IncludeDifferentAssembly = true)]
     private class WindowEnvDummy : IWindowEnv
     {
-        public IResolutionWrapper CurrentResolution { get; set; } = null!;
+        public ResolutionWrapper CurrentResolution { get; set; } = default;
         public bool FullScreen { get; set; }
-        public IResolutionWrapper[] ExtraSupportedResolutions { get; set; } = null!;
+        public ResolutionWrapper[] ExtraSupportedResolutions { get; set; } = null!;
         public FullScreenModeWrap FullScreenMode { get; set; } = null!;
     }
 
@@ -348,42 +347,11 @@ public static class KernelUtils
                 return (newRr as T)!;
             }
 
-            if (typeof(T) == typeof(IResolutionWrapper))
-            {
-                if (args.Length == 0)
-                {
-#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
-#pragma warning disable CS8603 // Possible null reference return.
-                    return new ResolutionWrapperDummy(null) as T;
-#pragma warning restore CS8603 // Possible null reference return.
-#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
-                }
-
-                return (new ResolutionWrapperDummy((int)args[0], (int)args[1], (RefreshRateWrap)args[2]) as T)!;
-            }
-
             // NativeArrayWrapper<T>, I don't care whatever, fix when more generics shit
             var tGenerics = typeof(T).GetGenericArguments();
             var newNativeArray = typeof(NativeArrayWrapper<>).MakeGenericType(tGenerics);
             return (Activator.CreateInstance(newNativeArray, args) as T)!;
         }
-    }
-
-    private class ResolutionWrapperDummy(object instance) : UnityInstanceWrap(instance), IResolutionWrapper
-    {
-        protected override Type WrappedType => null!;
-
-        public int Height { get; set; }
-        public int Width { get; set; }
-
-        public ResolutionWrapperDummy(int width, int height, RefreshRateWrap refreshRateWrap) : this(null!)
-        {
-            Width = width;
-            Height = height;
-            RefreshRateWrap = refreshRateWrap;
-        }
-
-        public RefreshRateWrap RefreshRateWrap { get; set; } = null!;
     }
 
     [Singleton(IncludeDifferentAssembly = true)]

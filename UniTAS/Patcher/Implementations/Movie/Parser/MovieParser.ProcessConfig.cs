@@ -5,7 +5,6 @@ using System.Globalization;
 using MoonSharp.Interpreter;
 using UniTAS.Patcher.Implementations.UnitySafeWrappers;
 using UniTAS.Patcher.Models.Movie;
-using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 
 namespace UniTAS.Patcher.Implementations.Movie.Parser;
 
@@ -161,7 +160,8 @@ public partial class MovieParser
                     : $"`window` isn't a table, falling back to resolution of {fallbackWidth}x{fallbackHeight}@{fallbackRr.Rate}hz with no extra screen resolutions");
 
             return new WindowState(unityInstanceWrapFactory,
-                unityInstanceWrapFactory.CreateNew<IResolutionWrapper>(fallbackWidth, fallbackHeight, fallbackRr), [],
+                new ResolutionWrapper(fallbackWidth, fallbackHeight, fallbackRr),
+                [],
                 fallbackResClosestDefault);
         }
 
@@ -193,7 +193,7 @@ public partial class MovieParser
             : fallbackRr;
 
         var resolutionsRaw = windowTable.Get("resolutions");
-        var resolutions = new List<IResolutionWrapper>();
+        var resolutions = new List<ResolutionWrapper>();
         if (resolutionsRaw.Type == DataType.Table)
         {
             var resolutionRawValues = resolutionsRaw.Table.Values;
@@ -243,9 +243,7 @@ public partial class MovieParser
                     continue;
                 }
 
-                resolutions.Add(unityInstanceWrapFactory.CreateNew<IResolutionWrapper>((int)resW.Value,
-                    (int)resH.Value,
-                    refreshRateParsed));
+                resolutions.Add(new ResolutionWrapper((int)resW.Value, (int)resH.Value, refreshRateParsed));
             }
         }
         else if (resolutionsRaw.Type != DataType.Nil)
@@ -253,9 +251,8 @@ public partial class MovieParser
             logger.LogWarning("`resolutions` isn't an array, no additional supported screen resolutions are added");
         }
 
-        return new WindowState(unityInstanceWrapFactory,
-            unityInstanceWrapFactory.CreateNew<IResolutionWrapper>(width, height, rr), resolutions.ToArray(),
-            fallbackResClosest);
+        return new WindowState(unityInstanceWrapFactory, new ResolutionWrapper(width, height, rr),
+            resolutions.ToArray(), fallbackResClosest);
     }
 
     private bool RefreshRateParser(DynValue entry, out RefreshRateWrap refreshRate)

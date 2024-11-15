@@ -1,6 +1,5 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using UniTAS.Patcher.Implementations.UnitySafeWrappers;
@@ -11,6 +10,9 @@ using UniTAS.Patcher.Services.UnitySafeWrappers;
 using UniTAS.Patcher.Services.VirtualEnvironment;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
+#if !UNIT_TESTS
+using System.Linq;
+#endif
 
 namespace UniTAS.Patcher.Patches.Harmony.UnityInit;
 
@@ -33,6 +35,7 @@ public class ScreenPatch
     private static readonly IUnityInstanceWrapFactory UnityInstanceWrapFactory =
         ContainerStarter.Kernel.GetInstance<IUnityInstanceWrapFactory>();
 
+#if !UNIT_TESTS
     [HarmonyPatch(typeof(Screen), nameof(Screen.resolutions), MethodType.Getter)]
     private class Resolutions
     {
@@ -45,11 +48,12 @@ public class ScreenPatch
         {
             if (PatchReverseInvoker.Invoking || !VirtualEnvController.RunVirtualEnvironment) return true;
             var allRes = WindowEnv.ExtraSupportedResolutions.AddItem(WindowEnv.CurrentResolution)
-                .Select(x => (Resolution)((ResolutionWrapper)x).Instance).ToArray();
+                .Select(x => x.Instance).ToArray();
             __result = allRes;
             return false;
         }
     }
+#endif
 
     [HarmonyPatch(typeof(Screen), nameof(Screen.SetResolution), typeof(int), typeof(int), typeof(bool))]
     private class SetResolutionIntIntBool

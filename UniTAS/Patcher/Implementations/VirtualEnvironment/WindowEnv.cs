@@ -7,7 +7,6 @@ using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.Trackers.UpdateTrackInfo;
 using UniTAS.Patcher.Services.UnitySafeWrappers;
-using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Patcher.Services.VirtualEnvironment;
 using UnityEngine;
 
@@ -25,7 +24,9 @@ public class WindowEnv(
         if (runVirtualEnv)
         {
             var currentRes = patchReverseInvoker.Invoke(() => Screen.currentResolution);
-            _originalResolution = unityInstanceWrapFactory.Create<IResolutionWrapper>(currentRes);
+#if !UNIT_TESTS
+            _originalResolution = new ResolutionWrapper(currentRes);
+#endif
             _originalIsFullScreen = GetFullScreenMode == null
                 ? patchReverseInvoker.Invoke(() => Screen.fullScreen)
                 : unityInstanceWrapFactory
@@ -49,28 +50,26 @@ public class WindowEnv(
             Screen.SetResolution(_originalResolution.Width, _originalResolution.Height, _originalIsFullScreen));
     }
 
-    public IResolutionWrapper CurrentResolution { get; set; } = new ResolutionWrapper(Screen.currentResolution);
+#if UNIT_TESTS
+    public ResolutionWrapper CurrentResolution { get; set; }
+#else
+    public ResolutionWrapper CurrentResolution { get; set; } = new ResolutionWrapper(Screen.currentResolution);
+#endif
 
-    public IResolutionWrapper[] ExtraSupportedResolutions { get; set; } = [];
-    public void AddExtraSupportedResolutions(IResolutionWrapper[] extraSupportedResolutions)
-    {
-    }
-
-    public void ClearExtraSupportedResolutions()
-    {
-    }
+    public ResolutionWrapper[] ExtraSupportedResolutions { get; set; } = [];
 
     public bool FullScreen { get; set; } = Screen.fullScreen;
 
     public FullScreenModeWrap FullScreenMode { get; set; } = GetFullScreenModeMethod == null
         ? null
-        : patchReverseInvoker.Invoke(() =>
-            unityInstanceWrapFactory.Create<FullScreenModeWrap>(GetFullScreenModeMethod.Invoke(null, null)));
+        : patchReverseInvoker.Invoke(
+            factory => factory.Create<FullScreenModeWrap>(GetFullScreenModeMethod.Invoke(null, null)),
+            unityInstanceWrapFactory);
 
     private static readonly MethodInfo GetFullScreenModeMethod =
         AccessTools.PropertyGetter(typeof(Screen), "fullScreenMode");
 
-    private IResolutionWrapper _originalResolution;
+    private ResolutionWrapper _originalResolution;
     private bool _originalIsFullScreen;
 
     public void SetResolution(int width, int height, bool fullScreen)
