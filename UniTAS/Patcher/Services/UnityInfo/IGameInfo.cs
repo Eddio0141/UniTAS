@@ -1,3 +1,5 @@
+using System;
+
 namespace UniTAS.Patcher.Services.UnityInfo;
 
 public interface IGameInfo
@@ -11,4 +13,6 @@ public interface IGameInfo
     string ProductName { get; }
     
     bool IsFocused { get; }
+
+    event Action<bool> OnFocusChange;
 }

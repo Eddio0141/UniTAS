@@ -6,6 +6,7 @@ using UniTAS.Patcher.Interfaces.Events.Movie;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
 using UniTAS.Patcher.Services.GameExecutionControllers;
+using UniTAS.Patcher.Services.UnityInfo;
 using UniTAS.Patcher.Services.VirtualEnvironment;
 
 namespace UniTAS.Patcher.Implementations;
@@ -13,8 +14,8 @@ namespace UniTAS.Patcher.Implementations;
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 [Singleton]
 [ExcludeRegisterIfTesting]
-public class MainThreadSpeedControl(ITimeEnv timeEnv)
-    : IMainThreadSpeedControl, IOnUpdateUnconditional, IOnMovieRunningStatusChange, IOnSceneLoad
+public class MainThreadSpeedControl : IMainThreadSpeedControl, IOnUpdateUnconditional, IOnMovieRunningStatusChange,
+    IOnSceneLoad
 {
     public float SpeedMultiplier
     {
@@ -30,6 +31,18 @@ public class MainThreadSpeedControl(ITimeEnv timeEnv)
     private Stopwatch _actualTime = Stopwatch.StartNew();
     private double _gameTime;
     private float _speedMultiplier = 1f;
+    private readonly ITimeEnv _timeEnv;
+
+    public MainThreadSpeedControl(ITimeEnv timeEnv, IGameInfo gameInfo)
+    {
+        _timeEnv = timeEnv;
+        gameInfo.OnFocusChange += focused =>
+        {
+            if (!focused) return;
+            _actualTime = Stopwatch.StartNew();
+            _gameTime = 0.0;
+        };
+    }
 
     public void OnSceneLoad()
     {
@@ -41,7 +54,7 @@ public class MainThreadSpeedControl(ITimeEnv timeEnv)
     {
         if (_speedMultiplier == 0) return;
 
-        _gameTime += timeEnv.FrameTime / _speedMultiplier;
+        _gameTime += _timeEnv.FrameTime / _speedMultiplier;
         var actualTime = _actualTime.Elapsed.TotalSeconds;
 
         // if the actual time passed is less than the time that should have passed, wait

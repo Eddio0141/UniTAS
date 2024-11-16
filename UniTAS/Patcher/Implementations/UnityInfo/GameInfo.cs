@@ -218,5 +218,18 @@ public class GameInfo(IPatchReverseInvoker reverseInvoker) : IGameInfo, IGameInf
         }
     }
 
-    public bool IsFocused { set; get; }
+    private bool _isFocused;
+
+    public bool IsFocused
+    {
+        set
+        {
+            if (_isFocused == value) return;
+            _isFocused = value;
+            OnFocusChange?.Invoke(value);
+        }
+        get => _isFocused;
+    }
+
+    public event Action<bool> OnFocusChange;
 }
