@@ -106,15 +106,15 @@ public class SceneManagerAsyncLoadPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static void Prefix(ref bool immediately)
+        private static void Prefix(ref bool immediately, out bool __state)
         {
+            __state = immediately;
             immediately = true;
         }
-        
 
-        private static void Postfix(bool immediately, ref AsyncOperation __result)
+        private static void Postfix(ref AsyncOperation __result, bool __state)
         {
-            if (immediately) return;
+            if (__state) return;
 
             __result = new();
             SceneLoadTracker.AsyncSceneUnload(__result);
@@ -135,14 +135,15 @@ public class SceneManagerAsyncLoadPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static void Prefix(ref bool immediately)
+        private static void Prefix(ref bool immediately, out bool __state)
         {
+            __state = immediately;
             immediately = true;
         }
 
-        private static void Postfix(bool immediately, ref AsyncOperation __result)
+        private static void Postfix(ref AsyncOperation __result, bool __state)
         {
-            if (immediately) return;
+            if (__state) return;
 
             __result = new();
             SceneLoadTracker.AsyncSceneUnload(__result);
@@ -162,16 +163,29 @@ public class SceneManagerAsyncLoadPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
+        private static readonly MethodInfo _getName = AccessTools.TypeByName($"{Namespace}.Scene")
+            .GetProperty("name", AccessTools.all)?.GetGetMethod();
+
         private static bool Prefix(object scene, object options, ref AsyncOperation __result)
         {
-            var sceneTraverse = Traverse.Create(scene);
-            var sceneBuildIndex = sceneTraverse.Property("buildIndex").GetValue<int>();
+            var sceneName = (string)_getName.Invoke(scene, null);
+
+            StaticLogger.LogDebug($"async scene unload, forcing scene `{sceneName}` to unload");
+            StaticLogger.LogWarning(
+                "THIS OPERATION MIGHT BREAK THE GAME, scene unloading patch is using an unstable unity function, and it may fail");
+            var args = new[] { sceneName, -1, true, options, null };
+            UnloadSceneNameIndexInternal.Invoke(null, args);
+            if (!(bool)args[4])
+                StaticLogger.LogError("async unload most likely failed, prepare for game to go nuts");
 
             __result = new();
-            SceneLoadTracker.AsyncSceneUnload(__result);
-
-            UnloadSceneNameIndexInternal.Invoke(null, ["", sceneBuildIndex, true, options, null]);
             return false;
+        }
+
+        private static void Postfix(ref AsyncOperation __result)
+        {
+            __result = new();
+            SceneLoadTracker.AsyncSceneUnload(__result);
         }
     }
 

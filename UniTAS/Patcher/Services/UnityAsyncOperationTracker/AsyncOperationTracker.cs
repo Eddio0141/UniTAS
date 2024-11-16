@@ -116,6 +116,8 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger)
 
     public void AsyncSceneUnload(AsyncOperation asyncOperation)
     {
+        logger.LogDebug("async scene unload");
+
         _tracked.Add(asyncOperation);
         _isDone.Add(asyncOperation);
         InvokeOnComplete(asyncOperation);
