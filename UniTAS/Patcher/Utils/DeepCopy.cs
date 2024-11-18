@@ -51,8 +51,6 @@ public static class DeepCopy
     {
         using var _ = Bench.Measure();
 
-        StaticLogger.Trace($"MakeDeepCopy, depth: {_makeDeepCopyRecursionDepth}, type: {source?.GetType().FullName}");
-
         if (processor is not null)
         {
             if (source != null)
@@ -65,27 +63,23 @@ public static class DeepCopy
 
             if (processor(source, out var processorValue))
             {
-                StaticLogger.Trace("MakeDeepCopy, using processor to get copied value");
                 return processorValue;
             }
         }
 
         if (source is null)
         {
-            StaticLogger.Trace("MakeDeepCopy, returning null");
             return null;
         }
 
         if (source is Object and not ScriptableObject)
         {
             // this is a native unity object, so we can't make a deep copy of it
-            StaticLogger.Trace("MakeDeepCopy, skipping native unity object");
             return source;
         }
 
         if (references.TryGetValue(source, out var referenceEntry))
         {
-            StaticLogger.Trace($"MakeDeepCopy, returning existing reference");
             return referenceEntry;
         }
 
@@ -98,7 +92,6 @@ public static class DeepCopy
 
         if (type.IsPrimitive || type == typeof(string))
         {
-            StaticLogger.Trace("MakeDeepCopy, returning primitive");
             return source;
         }
 
@@ -116,7 +109,6 @@ public static class DeepCopy
 
         if (type.IsArray)
         {
-            StaticLogger.Trace("MakeDeepCopy, copying array");
             var newElementType = type.GetElementType();
             var array = (Array)source;
             var newArray = Array.CreateInstance(newElementType ?? throw new InvalidOperationException(), array.Length);
@@ -128,11 +120,8 @@ public static class DeepCopy
             }
 
             _makeDeepCopyRecursionDepth--;
-            StaticLogger.Trace("MakeDeepCopy, returning array");
             return newArray;
         }
-
-        StaticLogger.Trace("MakeDeepCopy, creating new instance and copying fields");
 
         FieldInfo[] fields;
 
@@ -173,7 +162,6 @@ public static class DeepCopy
 
             if (field.FieldType.IsPointer)
             {
-                StaticLogger.Trace("MakeDeepCopy, copying pointer field");
                 unsafe
                 {
                     field.SetValue(result, (IntPtr)Pointer.Unbox(value));
@@ -187,14 +175,12 @@ public static class DeepCopy
                 StaticLogger.LogDebug($"DeepCopy: found pointer field `{typeFullName}.{field.Name}`, may be unmanaged");
             }
 
-            StaticLogger.Trace("MakeDeepCopy, copying field");
             var copiedObj = MakeDeepCopy(value, processor, references);
 
             field.SetValue(result, copiedObj);
         }
 
         _makeDeepCopyRecursionDepth--;
-        StaticLogger.Trace("MakeDeepCopy, returning result from copied fields");
         return result;
     }
 
