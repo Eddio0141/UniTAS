@@ -178,7 +178,7 @@ public class AsyncOperationPatch
     // AssetBundleCreateRequest for static methods, AssetBundleRequest for instance methods
 
     // static
-    [HarmonyPatch(typeof(AssetBundle))]
+    [HarmonyPatch]
     private class LoadFromFileAsync
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
