@@ -17,7 +17,6 @@ using UniTAS.Patcher.Models.Movie;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.Movie;
 using UniTAS.Patcher.Services.UnitySafeWrappers;
-using UniTAS.Patcher.Utils;
 using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations.Movie.Parser;
@@ -25,7 +24,8 @@ namespace UniTAS.Patcher.Implementations.Movie.Parser;
 [SuppressMessage("ReSharper", "UnusedType.Global")]
 [Register]
 public partial class MovieParser(
-    IMovieLogger logger,
+    IMovieLogger movieLogger,
+    ILogger logger,
     IEngineModuleClassesFactory engineModuleClassesFactory,
     IContainer container,
     MovieProxyType[] movieProxyTypes,
@@ -98,7 +98,7 @@ public partial class MovieParser(
         }
         else
         {
-            script.Options.DebugPrint = s => logger.LogInfo(s);
+            script.Options.DebugPrint = s => movieLogger.LogInfo(s);
         }
 
         if (movieEngine == null)
@@ -164,7 +164,7 @@ public partial class MovieParser(
 
     private void AddUnityTypes()
     {
-        if (UnitTestUtils.IsTesting) return;
+#if !UNIT_TESTS
 
         // only add types that isn't going to affect unity
         UserData.RegisterType<Vector3>();
@@ -184,7 +184,7 @@ public partial class MovieParser(
             var userDataDesc = UserData.RegisterType(monoBehaviour, InteropAccessMode.HideMembers);
             if (userDataDesc is not StandardUserDataDescriptor desc)
             {
-                logger.LogWarning(
+                movieLogger.LogWarning(
                     $"Failed to register type: {monoBehaviour.FullName}, you won't be able to access it in the script");
                 continue;
             }
@@ -192,9 +192,17 @@ public partial class MovieParser(
             var fields = monoBehaviour.GetFields(AccessTools.all);
             foreach (var field in fields)
             {
-                desc.AddMember(field.Name, new ReadOnlyFieldDescriptor(field, InteropAccessMode.Default));
+                try
+                {
+                    desc.AddMember(field.Name, new ReadOnlyFieldDescriptor(field, InteropAccessMode.Default));
+                }
+                catch (Exception e)
+                {
+                    logger.LogWarning($"something went wrong while calling desc.AddMember, ignoring: {e}");
+                }
             }
         }
+#endif
     }
 
     private static void AddFrameAdvance(Script script)
