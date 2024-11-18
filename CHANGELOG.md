@@ -22,17 +22,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Compatibility
 
 - Added new input system support, with keyboard and mouse working
+- Added basic support for rewired input system support
 
 ## Changed
 
 ### UniTAS
 
-- Cooler UI
-- UI now can be configured within UniTAS
+- Cooler GUI theme
+- Most things can be configured within UniTAS GUI
+
+### TAS Movie
+
+- **BREAKING**: Changed `controller` functions, they don't use axis names for controlling anymore for accuracy
 
 ### Performance
 
-- Loading should be faster if you've opened the game before
+- Loading should be faster if you've opened the game once with UniTAS
 - Slight performance increase in patching the first time
 
 ## Fixed
@@ -46,10 +51,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed Lethal Company breaking on soft restart
 - Fixed HuniePop soft locking after dialogs due to time being frozen
 - Fixed Rain World not booting and being stuck at a black screen
+- Fixed Cuphead not loading
+- Fixed Baldi's Basics itch.io release from not working
 
 ### General
 
-- Fixed TAS encoding popping up command prompt probably
+- TAS encoding shouldn't show a command prompt anymore, probably
 - Fixed music overlaying on each other every restart
 - Fixed UniTAS not limiting realtime FPS making things go super fast
 
@@ -68,6 +75,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed invoking RuntimeInitializeOnLoadMethod in the wrong order
 - Fixed games using ISerializationCallbackReceiver not receiving OnAfterDeserialize callback on soft restart
 - Fixed old games with only Time.captureFramerate appearing to have frozen time
+- Fixed most things related to asset bundles
+- Fixed old unity game times being frozen (unity 5 games and before most likely was affected)
+- Fixed static constructor throwing causing UniTAS to incorrectly track static constructors
+- Fixed unity not being reset, related to static extern properties
+- Fixed ScriptableObject not being reset to their initial state
 
 # [v0.5.1] - 2023-09-13
 
