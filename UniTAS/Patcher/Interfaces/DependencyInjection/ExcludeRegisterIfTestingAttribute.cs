@@ -8,7 +8,8 @@ namespace UniTAS.Patcher.Interfaces.DependencyInjection;
 /// </summary>
 public class ExcludeRegisterIfTestingAttribute : DependencyInjectionAttribute
 {
-    public override IEnumerable<RegisterInfoBase> GetRegisterInfos(Type type, Type[] allTypes, bool isTesting)
+    // TODO: should eventually remove this
+    public override IEnumerable<RegisterInfoBase> GetRegisterInfos(Type type, Type[] allTypes)
     {
         yield break;
     }

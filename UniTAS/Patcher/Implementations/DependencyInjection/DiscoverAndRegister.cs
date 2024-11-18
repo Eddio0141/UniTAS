@@ -9,21 +9,13 @@ using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Services.DependencyInjection;
 using UniTAS.Patcher.Services.Logging;
-using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Implementations.DependencyInjection;
 
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-public class DiscoverAndRegister : IDiscoverAndRegister
+public class DiscoverAndRegister(ILogger logger) : IDiscoverAndRegister
 {
-    private readonly ILogger _logger;
-
     private readonly Dictionary<Assembly, Dictionary<RegisterTiming, List<RegisterInfoBase>>> _pendingRegisters = new();
-
-    public DiscoverAndRegister(ILogger logger)
-    {
-        _logger = logger;
-    }
 
     public void Register<TAssemblyContainingType>(ConfigurationExpression config, RegisterTiming timing)
     {
@@ -66,10 +58,10 @@ public class DiscoverAndRegister : IDiscoverAndRegister
         if (!pendingRegisters.TryGetValue(timing, out var currentRegisters)) return;
         pendingRegisters.Remove(timing);
 
-        _logger.LogDebug($"registering {currentRegisters.Count} types with timing {timing}");
+        logger.LogDebug($"registering {currentRegisters.Count} types with timing {timing}");
         foreach (var register in currentRegisters)
         {
-            _logger.LogDebug($"registering {register.Type.FullName} with priority {register.Priority}");
+            logger.LogDebug($"registering {register.Type.FullName} with priority {register.Priority}");
             register.Register(config);
         }
 
@@ -84,13 +76,14 @@ public class DiscoverAndRegister : IDiscoverAndRegister
         var dependencyInjectionAttributes = type.GetCustomAttributes(typeof(DependencyInjectionAttribute), true);
 
         // early return if ExcludeRegisterIfTestingAttribute is present
-        if (UnitTestUtils.IsTesting &&
-            dependencyInjectionAttributes.Any(x => x is ExcludeRegisterIfTestingAttribute)) yield break;
+#if UNIT_TESTS
+        if (dependencyInjectionAttributes.Any(x => x is ExcludeRegisterIfTestingAttribute)) yield break;
+#endif
 
         foreach (var dependencyInjectionAttribute in dependencyInjectionAttributes)
         {
             var registerAttribute = (DependencyInjectionAttribute)dependencyInjectionAttribute;
-            var infos = registerAttribute.GetRegisterInfos(type, allTypes, UnitTestUtils.IsTesting);
+            var infos = registerAttribute.GetRegisterInfos(type, allTypes);
             foreach (var info in infos)
             {
                 yield return info;

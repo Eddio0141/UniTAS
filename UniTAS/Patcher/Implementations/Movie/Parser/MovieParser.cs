@@ -1,11 +1,6 @@
-using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Reflection;
 using BepInEx;
-using HarmonyLib;
 using MoonSharp.Interpreter;
-using MoonSharp.Interpreter.Interop;
 using MoonSharp.Interpreter.Loaders;
 using StructureMap;
 using StructureMap.Pipeline;
@@ -17,7 +12,14 @@ using UniTAS.Patcher.Models.Movie;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.Movie;
 using UniTAS.Patcher.Services.UnitySafeWrappers;
+#if !UNIT_TESTS
 using UnityEngine;
+using MoonSharp.Interpreter.Interop;
+using HarmonyLib;
+using System;
+using System.Linq;
+using System.Reflection;
+#endif
 
 namespace UniTAS.Patcher.Implementations.Movie.Parser;
 
@@ -25,7 +27,9 @@ namespace UniTAS.Patcher.Implementations.Movie.Parser;
 [Register]
 public partial class MovieParser(
     IMovieLogger movieLogger,
+#if !UNIT_TESTS
     ILogger logger,
+#endif
     IEngineModuleClassesFactory engineModuleClassesFactory,
     IContainer container,
     MovieProxyType[] movieProxyTypes,
@@ -122,7 +126,9 @@ public partial class MovieParser(
             _registeredGlobals = true;
             UserData.RegisterAssembly(typeof(MovieParser).Assembly);
             AddProxyTypes();
+#if !UNIT_TESTS
             AddUnityTypes();
+#endif
         }
 
         AddEngineMethods(movieEngine);
@@ -160,12 +166,11 @@ public partial class MovieParser(
         }
     }
 
+#if !UNIT_TESTS
     private static readonly Assembly[] UnityTypesIgnore = [typeof(MovieParser).Assembly, typeof(Paths).Assembly];
 
     private void AddUnityTypes()
     {
-#if !UNIT_TESTS
-
         // only add types that isn't going to affect unity
         UserData.RegisterType<Vector3>();
         UserData.RegisterType<Matrix4x4>();
@@ -202,8 +207,8 @@ public partial class MovieParser(
                 }
             }
         }
-#endif
     }
+#endif
 
     private static void AddFrameAdvance(Script script)
     {

@@ -14,7 +14,7 @@ public class SingletonAttribute(
     RegisterTiming timing = RegisterTiming.UnityInit)
     : RegisterAttribute(priority, timing)
 {
-    public override IEnumerable<RegisterInfoBase> GetRegisterInfos(Type type, Type[] allTypes, bool isTesting)
+    public override IEnumerable<RegisterInfoBase> GetRegisterInfos(Type type, Type[] allTypes)
     {
         yield return new RegisterInfo(type, this, Timing);
     }

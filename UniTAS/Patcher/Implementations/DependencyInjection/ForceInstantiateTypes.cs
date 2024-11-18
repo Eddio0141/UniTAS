@@ -10,7 +10,6 @@ using UniTAS.Patcher.ManualServices;
 using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Services.DependencyInjection;
 using UniTAS.Patcher.Services.Logging;
-using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Implementations.DependencyInjection;
 
@@ -44,8 +43,10 @@ public class ForceInstantiateTypes(IContainer container, ILogger logger) : IForc
                 var attributes = type.GetCustomAttributes(typeof(ForceInstantiateAttribute), true);
                 if (attributes.Length == 0) continue;
 
+#if UNIT_TESTS
                 attributes = type.GetCustomAttributes(typeof(ExcludeRegisterIfTestingAttribute), false);
-                if (attributes.Length > 0 && UnitTestUtils.IsTesting) continue;
+                if (attributes.Length > 0) continue;
+#endif
 
                 var registerAttribute = type.GetCustomAttributes(typeof(RegisterAttribute), true)
                     .Select(x => (RegisterAttribute)x).FirstOrDefault();

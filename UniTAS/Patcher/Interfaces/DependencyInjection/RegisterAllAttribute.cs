@@ -15,7 +15,7 @@ public class RegisterAllAttribute(
     RegisterTiming timing = RegisterTiming.UnityInit)
     : RegisterAttribute(priority, timing)
 {
-    public override IEnumerable<RegisterInfoBase> GetRegisterInfos(Type type, Type[] allTypes, bool isTesting)
+    public override IEnumerable<RegisterInfoBase> GetRegisterInfos(Type type, Type[] allTypes)
     {
         var types = type.IsInterface
             ? allTypes.Where(x => x.GetInterfaces().Contains(type))
@@ -24,15 +24,15 @@ public class RegisterAllAttribute(
         // if type is abstract, recursively register inner types
         foreach (var innerType in types)
         {
+#if UNIT_TESTS
             var innerTypeAttributes =
                 innerType.GetCustomAttributes(typeof(DependencyInjectionAttribute), true);
-            var excludeTesting = isTesting &&
-                                 innerTypeAttributes.Any(x => x is ExcludeRegisterIfTestingAttribute);
-            if (excludeTesting) continue;
+            if (innerTypeAttributes.Any(x => x is ExcludeRegisterIfTestingAttribute)) continue;
+#endif
 
             yield return new RegisterAllInfo(type, innerType, this);
 
-            var innerRegisterInfos = GetRegisterInfos(innerType, allTypes, isTesting);
+            var innerRegisterInfos = GetRegisterInfos(innerType, allTypes);
             foreach (var innerRegisterInfo in innerRegisterInfos)
             {
                 yield return innerRegisterInfo;
