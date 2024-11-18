@@ -25,15 +25,19 @@ public class SceneManagerAsyncLoadPatch
     private static readonly Type SceneManager = AccessTools.TypeByName($"{Namespace}.SceneManager");
     private static readonly Type UnloadSceneOptions = AccessTools.TypeByName($"{Namespace}.UnloadSceneOptions");
     private static readonly Type LoadSceneParametersType = AccessTools.TypeByName($"{Namespace}.LoadSceneParameters");
+    private static readonly Type SceneType = AccessTools.TypeByName($"{Namespace}.Scene");
 
     private static readonly Type SceneManagerAPIInternal =
         AccessTools.TypeByName($"{Namespace}.SceneManagerAPIInternal");
 
     private static readonly MethodInfo UnloadSceneNameIndexInternal = UnloadSceneOptions == null
         ? null
-        : AccessTools.Method(SceneManager,
-            "UnloadSceneNameIndexInternal",
-            [typeof(string), typeof(int), typeof(bool), UnloadSceneOptions, typeof(bool).MakeByRefType()]);
+        : AccessTools.Method(SceneManagerAPIInternal ?? SceneManager,
+              "UnloadSceneNameIndexInternal",
+              [typeof(string), typeof(int), typeof(bool), UnloadSceneOptions, typeof(bool).MakeByRefType()]) ??
+          AccessTools.Method(SceneManagerAPIInternal ?? SceneManager,
+              "UnloadSceneNameIndexInternal",
+              [typeof(string), typeof(int), typeof(bool), typeof(bool).MakeByRefType()]);
 
     private static readonly MethodInfo LoadSceneAsyncNameIndexInternalInjected =
         SceneManagerAPIInternal == null || LoadSceneParametersType == null
@@ -53,7 +57,7 @@ public class SceneManagerAsyncLoadPatch
     private static readonly ILogger Logger = ContainerStarter.Kernel.GetInstance<ILogger>();
 
     private static bool AsyncSceneLoad(bool mustCompleteNextFrame, string sceneName, int sceneBuildIndex,
-        object parameters, bool? isAdditive, ref AsyncOperation __result)
+        object parameters, bool? isAdditive, AsyncOperation __result)
     {
         if (mustCompleteNextFrame)
         {
@@ -98,7 +102,7 @@ public class SceneManagerAsyncLoadPatch
     {
         private static MethodBase TargetMethod()
         {
-            return AccessTools.Method(SceneManager, "UnloadSceneNameIndexInternal");
+            return UnloadSceneNameIndexInternal;
         }
 
         private static Exception Cleanup(MethodBase original, Exception ex)
@@ -122,12 +126,11 @@ public class SceneManagerAsyncLoadPatch
     }
 
     [HarmonyPatch]
-    private class APIInternalUnloadSceneNameIndexInternalPatch
+    private class UnloadSceneAsyncInternalInjected
     {
         private static MethodBase TargetMethod()
         {
-            return AccessTools.Method(SceneManagerAPIInternal, "UnloadSceneNameIndexInternal",
-                [typeof(string), typeof(int), typeof(bool), UnloadSceneOptions, typeof(bool).MakeByRefType()]);
+            return AccessTools.Method(SceneManager, "UnloadSceneAsyncInternal_Injected", [SceneType.MakeByRefType()]);
         }
 
         private static Exception Cleanup(MethodBase original, Exception ex)
@@ -135,27 +138,38 @@ public class SceneManagerAsyncLoadPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static void Prefix(ref bool immediately, out bool __state)
+        private static readonly MethodInfo _getName = SceneType.GetProperty("name", AccessTools.all)?.GetGetMethod();
+
+        private static bool Prefix(object scene, ref AsyncOperation __result)
         {
-            __state = immediately;
-            immediately = true;
+            var sceneName = (string)_getName.Invoke(scene, null);
+
+            StaticLogger.LogDebug($"async scene unload, forcing scene `{sceneName}` to unload");
+            StaticLogger.LogWarning(
+                "THIS OPERATION MIGHT BREAK THE GAME, scene unloading patch is using an unstable unity function, and it may fail");
+            var args = new object[] { sceneName, -1, true, null };
+            UnloadSceneNameIndexInternal.Invoke(null, args);
+            if (!(bool)args[4])
+                StaticLogger.LogError("async unload most likely failed, prepare for game to go nuts");
+
+            __result = new();
+            return false;
         }
 
-        private static void Postfix(ref AsyncOperation __result, bool __state)
+        private static void Postfix(ref AsyncOperation __result)
         {
-            if (__state) return;
-
             __result = new();
             SceneLoadTracker.AsyncSceneUnload(__result);
         }
     }
 
     [HarmonyPatch]
-    private class UnloadSceneAsyncInternalInjectedPatch
+    private class UnloadSceneAsyncInternalInjected_NoOptions
     {
         private static MethodBase TargetMethod()
         {
-            return AccessTools.Method(SceneManager, "UnloadSceneAsyncInternal_Injected");
+            return AccessTools.Method(SceneManager, "UnloadSceneAsyncInternal_Injected",
+                [SceneType.MakeByRefType(), UnloadSceneOptions]);
         }
 
         private static Exception Cleanup(MethodBase original, Exception ex)
@@ -213,8 +227,7 @@ public class SceneManagerAsyncLoadPatch
             ref AsyncOperation __result)
         {
             __result = new();
-            return AsyncSceneLoad(mustCompleteNextFrame, sceneName, sceneBuildIndex, null, isAdditive,
-                ref __result);
+            return AsyncSceneLoad(mustCompleteNextFrame, sceneName, sceneBuildIndex, null, isAdditive, __result);
         }
     }
 
@@ -242,8 +255,7 @@ public class SceneManagerAsyncLoadPatch
             ref AsyncOperation __result)
         {
             __result = new();
-            return AsyncSceneLoad(mustCompleteNextFrame, sceneName, sceneBuildIndex, parameters, null,
-                ref __result);
+            return AsyncSceneLoad(mustCompleteNextFrame, sceneName, sceneBuildIndex, parameters, null, __result);
         }
     }
 
@@ -264,8 +276,7 @@ public class SceneManagerAsyncLoadPatch
             ref AsyncOperation __result)
         {
             __result = new();
-            return AsyncSceneLoad(mustCompleteNextFrame, sceneName, sceneBuildIndex, parameters, null,
-                ref __result);
+            return AsyncSceneLoad(mustCompleteNextFrame, sceneName, sceneBuildIndex, parameters, null, __result);
         }
     }
 }
