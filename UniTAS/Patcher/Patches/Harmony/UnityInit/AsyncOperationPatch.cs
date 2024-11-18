@@ -176,25 +176,41 @@ public class AsyncOperationPatch
     }
 
     // AssetBundleCreateRequest for static methods, AssetBundleRequest for instance methods
+
     // static
-    [HarmonyPatch(typeof(AssetBundle), "LoadFromFileAsync_Internal")]
-    private class LoadFromFileAsync_Internal
+    [HarmonyPatch(typeof(AssetBundle))]
+    private class LoadFromFileAsync
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static readonly MethodInfo _loadFromFile_Internal = AccessTools.Method(typeof(AssetBundle),
-            "LoadFromFile_Internal",
-            [typeof(string), typeof(uint), typeof(ulong)]);
+        private static MethodInfo TargetMethod()
+        {
+            var internalMethod = AccessTools.Method(typeof(AssetBundle), "LoadFromFileAsync_Internal",
+                [typeof(string), typeof(uint), typeof(ulong)]);
+
+            if (internalMethod != null)
+                return internalMethod;
+
+            return AccessTools.Method(typeof(AssetBundle), "LoadFromFileAsync",
+                [typeof(string), typeof(uint), typeof(ulong)]);
+        }
+
+        private static readonly MethodInfo _loadFromFile =
+            AccessTools.Method(typeof(AssetBundle), "LoadFromFile_Internal",
+                [typeof(string), typeof(uint), typeof(ulong)]) ??
+            AccessTools.Method(typeof(AssetBundle), "LoadFromFile",
+                [typeof(string), typeof(uint), typeof(ulong)]);
 
         private static bool Prefix(string path, uint crc, ulong offset, ref AssetBundleCreateRequest __result)
         {
-            StaticLogger.Trace($"patch prefix invoke (path = {path}, crc = {crc}, offset = {offset})\n{new StackTrace()}");
+            StaticLogger.Trace(
+                $"patch prefix invoke (path = {path}, crc = {crc}, offset = {offset})\n{new StackTrace()}");
 
             // LoadFromFile fails with null return if operation fails, __result.assetBundle will also reflect that if async load fails too
-            var loadResult = _loadFromFile_Internal.Invoke(null, [path, crc, offset]) as AssetBundle;
+            var loadResult = _loadFromFile.Invoke(null, [path, crc, offset]) as AssetBundle;
             // create a new instance
             __result = new();
             AssetBundleCreateRequestTracker.NewAssetBundleCreateRequest(__result, loadResult);
@@ -227,7 +243,7 @@ public class AsyncOperationPatch
     }
 
     // static
-    [HarmonyPatch(typeof(AssetBundle), "LoadFromStreamAsyncInternal")]
+    [HarmonyPatch(typeof(AssetBundle), "LoadFromStreamAsyncInternal", typeof(Stream), typeof(uint), typeof(uint))]
     private class LoadFromStreamAsyncInternal
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
