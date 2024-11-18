@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
@@ -18,7 +19,7 @@ namespace UniTAS.Patcher.Services.UnityAsyncOperationTracker;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 [Singleton]
-public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger)
+public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger, IPatchReverseInvoker reverseInvoker)
     : ISceneLoadTracker, IAssetBundleCreateRequestTracker, IAssetBundleRequestTracker,
         IOnLastUpdateUnconditional, IAsyncOperationIsInvokingOnComplete, IOnPreGameRestart, IOnUpdateActual
 {
@@ -131,6 +132,22 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger)
         logger.LogDebug($"async scene load, {asyncOperation.GetHashCode()}");
         _asyncLoads.Add(asyncOperation,
             new(sceneName, sceneBuildIndex, asyncOperation, loadSceneMode, localPhysicsMode));
+    }
+
+    public void NonAsyncSceneLoad()
+    {
+        foreach (var pair in _asyncLoads.Concat(_asyncLoadStalls))
+        {
+            var scene = pair.Value;
+            logger.LogDebug(
+                $"force loading scene, name: {scene.SceneName}, index: {scene.SceneBuildIndex}, manually loading in loop");
+            reverseInvoker.Invoke(s => sceneWrapper.LoadSceneAsync(s.SceneName, s.SceneBuildIndex,
+                s.LoadSceneMode,
+                s.LocalPhysicsMode, true), scene);
+            _pendingLoadCallbacks.Add(scene.AsyncOperationInstance);
+        }
+
+        _asyncLoads.Clear();
     }
 
     public void AllowSceneActivation(bool allow, AsyncOperation asyncOperation)

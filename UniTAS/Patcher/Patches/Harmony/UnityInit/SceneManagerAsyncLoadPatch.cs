@@ -6,6 +6,7 @@ using UniTAS.Patcher.Implementations.UnitySafeWrappers;
 using UniTAS.Patcher.Implementations.UnitySafeWrappers.SceneManagement;
 using UniTAS.Patcher.Interfaces.Patches.PatchTypes;
 using UniTAS.Patcher.Models.UnitySafeWrappers.SceneManagement;
+using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.UnityAsyncOperationTracker;
 using UniTAS.Patcher.Services.UnityEvents;
@@ -56,12 +57,30 @@ public class SceneManagerAsyncLoadPatch
 
     private static readonly ILogger Logger = ContainerStarter.Kernel.GetInstance<ILogger>();
 
+    private static readonly IPatchReverseInvoker ReverseInvoker =
+        ContainerStarter.Kernel.GetInstance<IPatchReverseInvoker>();
+
     private static bool AsyncSceneLoad(bool mustCompleteNextFrame, string sceneName, int sceneBuildIndex,
-        object parameters, bool? isAdditive, AsyncOperation __result)
+        object parameters, bool? isAdditive, ref AsyncOperation __result)
     {
+        // everything goes through here, so yeah why not
+        if (ReverseInvoker.Invoking)
+            return true;
+
+        __result = new();
+
         if (mustCompleteNextFrame)
         {
             SceneLoadInvoke.SceneLoadCall();
+
+            // uh oh, time to do the wacky thing unity does!!!
+            //
+            // https://docs.unity3d.com/ScriptReference/SceneManagement.SceneManager.LoadScene.html
+            /*
+             * Because loading is set to complete in the next rendered frame, calling SceneManager.LoadScene
+             * forces all previous AsyncOperations to complete, even if AsyncOperation.allowSceneActivation is set to false
+             */
+            SceneLoadTracker.NonAsyncSceneLoad();
             return true;
         }
 
@@ -226,8 +245,7 @@ public class SceneManagerAsyncLoadPatch
         private static bool Prefix(string sceneName, int sceneBuildIndex, bool isAdditive, bool mustCompleteNextFrame,
             ref AsyncOperation __result)
         {
-            __result = new();
-            return AsyncSceneLoad(mustCompleteNextFrame, sceneName, sceneBuildIndex, null, isAdditive, __result);
+            return AsyncSceneLoad(mustCompleteNextFrame, sceneName, sceneBuildIndex, null, isAdditive, ref __result);
         }
     }
 
@@ -254,8 +272,7 @@ public class SceneManagerAsyncLoadPatch
         private static bool Prefix(bool mustCompleteNextFrame, string sceneName, int sceneBuildIndex, object parameters,
             ref AsyncOperation __result)
         {
-            __result = new();
-            return AsyncSceneLoad(mustCompleteNextFrame, sceneName, sceneBuildIndex, parameters, null, __result);
+            return AsyncSceneLoad(mustCompleteNextFrame, sceneName, sceneBuildIndex, parameters, null, ref __result);
         }
     }
 
@@ -275,8 +292,7 @@ public class SceneManagerAsyncLoadPatch
         private static bool Prefix(string sceneName, int sceneBuildIndex, object parameters, bool mustCompleteNextFrame,
             ref AsyncOperation __result)
         {
-            __result = new();
-            return AsyncSceneLoad(mustCompleteNextFrame, sceneName, sceneBuildIndex, parameters, null, __result);
+            return AsyncSceneLoad(mustCompleteNextFrame, sceneName, sceneBuildIndex, parameters, null, ref __result);
         }
     }
 }
