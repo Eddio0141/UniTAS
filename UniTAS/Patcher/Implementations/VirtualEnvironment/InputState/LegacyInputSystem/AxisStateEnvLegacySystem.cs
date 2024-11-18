@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.VirtualEnvironment;
 using UniTAS.Patcher.Models.UnityInfo;
@@ -15,9 +13,7 @@ namespace UniTAS.Patcher.Implementations.VirtualEnvironment.InputState.LegacyInp
 public class AxisStateEnvLegacySystem(IAxisButtonStateEnvUpdate axisButtonStateEnvUpdate)
     : LegacyInputSystemDevice, IAxisStateEnvLegacySystem
 {
-    private readonly List<(string, LegacyInputAxisState)> _values = [];
-
-    public ReadOnlyCollection<(string, LegacyInputAxisState)> AllAxis => _values.AsReadOnly();
+    private readonly Dictionary<string, List<LegacyInputAxisState>> _values = new();
 
     protected override void Update()
     {
@@ -27,40 +23,50 @@ public class AxisStateEnvLegacySystem(IAxisButtonStateEnvUpdate axisButtonStateE
     {
         // TODO: add unit tests for this
         var pressedNames = new HashSet<string>();
-        foreach (var (name, axis) in _values)
+        foreach (var pair in _values)
         {
-            axis.FlushBufferedInputs();
+            var name = pair.Key;
+            var axisStates = pair.Value;
 
-            if (pressedNames.Contains(name)) continue;
+            foreach (var axis in axisStates)
+            {
+                axis.FlushBufferedInputs();
 
-            // as long as value isn't 0, it is pressed
-            if (axis.ValueRaw != 0f)
-            {
-                axisButtonStateEnvUpdate.Hold(name);
-                pressedNames.Add(name);
-            }
-            else
-            {
-                axisButtonStateEnvUpdate.Release(name);
+                if (pressedNames.Contains(name)) continue;
+
+                // as long as value isn't 0, it is pressed
+                if (axis.ValueRaw != 0f)
+                {
+                    axisButtonStateEnvUpdate.Hold(name);
+                    pressedNames.Add(name);
+                }
+                else
+                {
+                    axisButtonStateEnvUpdate.Release(name);
+                }
             }
         }
     }
 
     protected override void ResetState()
     {
-        foreach (var (_, value) in _values)
+        foreach (var pair in _values)
         {
-            value.ResetState();
+            foreach (var axis in pair.Value)
+            {
+                axis.ResetState();
+            }
         }
+
         axisButtonStateEnvUpdate.ResetState();
     }
 
     public float GetAxis(string axisName)
     {
         var value = 0f;
-        var found = _values.Where(x => x.Item1 == axisName);
+        var axisStates = _values[axisName];
 
-        foreach (var (_, axisState) in found)
+        foreach (var axisState in axisStates)
         {
             var axisStateValue = axisState.Value;
             // TODO: is this correct when the value is negative, i added Abs in case but idk
@@ -76,8 +82,9 @@ public class AxisStateEnvLegacySystem(IAxisButtonStateEnvUpdate axisButtonStateE
     public float GetAxisRaw(string axisName)
     {
         var value = 0f;
-        var found = _values.Where(x => x.Item1 == axisName);
-        foreach (var (_, axisState) in found)
+        var axisStates = _values[axisName];
+
+        foreach (var axisState in axisStates)
         {
             var axisStateValue = axisState.ValueRaw;
             // TODO: is this correct when the value is negative, i added Abs in case but idk
@@ -93,54 +100,67 @@ public class AxisStateEnvLegacySystem(IAxisButtonStateEnvUpdate axisButtonStateE
     public void AddAxis(LegacyInputAxis axis)
     {
         var axisState = new LegacyInputAxisState(axis);
-        _values.Add((axis.Name, axisState));
+        if (!_values.ContainsKey(axis.Name))
+            _values.Add(axis.Name, []);
+        _values[axis.Name].Add(axisState);
     }
 
     public void KeyDown(KeyCode key, JoyNum joystickNumber)
     {
-        foreach (var (_, axis) in _values)
+        foreach (var pair in _values)
         {
-            if (!axis.JoyNumEquals(joystickNumber)) continue;
-
-            axis.KeyDown(key);
+            foreach (var axis in pair.Value)
+            {
+                if (axis.JoyNumEquals(joystickNumber))
+                    axis.KeyDown(key);
+            }
         }
     }
 
     public void KeyUp(KeyCode key, JoyNum joystickNumber)
     {
-        foreach (var (_, axis) in _values)
+        foreach (var pair in _values)
         {
-            if (!axis.JoyNumEquals(joystickNumber)) continue;
-
-            axis.KeyUp(key);
+            foreach (var axis in pair.Value)
+            {
+                if (axis.JoyNumEquals(joystickNumber))
+                    axis.KeyUp(key);
+            }
         }
     }
 
     public void MouseMove(Vector2 pos)
     {
-        foreach (var (_, axis) in _values)
+        foreach (var pair in _values)
         {
-            axis.MousePos = pos;
+            foreach (var axis in pair.Value)
+            {
+                axis.MousePos = pos;
+            }
         }
     }
 
     public void SetAxis(AxisChoice axis, float value)
     {
-        foreach (var (_, axisState) in _values)
+        foreach (var pair in _values)
         {
-            if (axisState.Axis.Axis == axis)
+            foreach (var axisState in pair.Value)
             {
-                axisState.SetAxis(value);
+                if (axisState.Axis.Axis == axis)
+                    axisState.SetAxis(value);
             }
         }
     }
 
     public void MouseScroll(float scroll)
     {
-        foreach (var (_, axis) in _values)
+        foreach (var pair in _values)
         {
-            if (axis.Axis.Type != AxisType.MouseMovement) return;
-            axis.SetAxis(scroll);
+            foreach (var axis in pair.Value)
+            {
+                if (axis.Axis.Type == AxisType.MouseMovement)
+                    axis.SetAxis(scroll);
+            }
         }
     }
 }

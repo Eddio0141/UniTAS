@@ -1,4 +1,3 @@
-using UniTAS.Patcher.Implementations.Movie.Engine.Modules;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.RuntimeTest;
 using UniTAS.Patcher.Interfaces.VirtualEnvironment;
@@ -16,8 +15,7 @@ public class LegacyInputSystemTests(
     IKeyboardStateEnvLegacySystem keyboardController,
     IVirtualEnvController virtualEnvController,
     IMouseStateEnvLegacySystem mouseController,
-    IAxisStateEnvLegacySystem axisStateEnvLegacySystem,
-    Mouse mouse, IInputSystemState inputSystemState)
+    IInputSystemState inputSystemState)
 {
     private readonly LegacyInputSystemDevice _keyboardControllerBase = (LegacyInputSystemDevice)keyboardController;
 
@@ -160,81 +158,81 @@ public class LegacyInputSystemTests(
 
     // TODO: move this to movie test
     // [RuntimeTest]
-    public bool MouseLeftClickToAxis()
-    {
-        if (!inputSystemState.HasOldInputSystem) return false;
-        virtualEnvController.RunVirtualEnvironment = true;
-
-        // check if the axis exists
-        var allAxis = axisStateEnvLegacySystem.AllAxis;
-        var clickAxisIndex = -1;
-        for (var i = 0; i < allAxis.Count; i++)
-        {
-            var axis = allAxis[i].Item2.Axis;
-            if (axis.PositiveButton == "mouse 0" || axis.AltPositiveButton == "mouse 0" ||
-                axis.NegativeButton == "mouse 0" || axis.AltNegativeButton == "mouse 0")
-            {
-                clickAxisIndex = i;
-                break;
-            }
-        }
-
-        if (clickAxisIndex < 0) return false;
-
-        var (clickAxis, _) = allAxis[clickAxisIndex];
-
-        mouse.Left();
-        _mouseControllerBase.MovieUpdate(false);
-
-        RuntimeAssert.FloatEquals(1f, Input.GetAxisRaw(clickAxis), 0.01f, "axis == 1");
-
-        mouse.Left(false);
-        _mouseControllerBase.MovieUpdate(false);
-
-        RuntimeAssert.FloatEquals(0f, Input.GetAxisRaw(clickAxis), 0.01f, "axis == 0");
-
-        virtualEnvController.RunVirtualEnvironment = false;
-
-        return true;
-    }
+    // public bool MouseLeftClickToAxis()
+    // {
+    //     if (!inputSystemState.HasOldInputSystem) return false;
+    //     virtualEnvController.RunVirtualEnvironment = true;
+    //
+    //     // check if the axis exists
+    //     var allAxis = axisStateEnvLegacySystem._values;
+    //     var clickAxisIndex = -1;
+    //     for (var i = 0; i < allAxis.Count; i++)
+    //     {
+    //         var axis = allAxis[i].Item2.Axis;
+    //         if (axis.PositiveButton == "mouse 0" || axis.AltPositiveButton == "mouse 0" ||
+    //             axis.NegativeButton == "mouse 0" || axis.AltNegativeButton == "mouse 0")
+    //         {
+    //             clickAxisIndex = i;
+    //             break;
+    //         }
+    //     }
+    //
+    //     if (clickAxisIndex < 0) return false;
+    //
+    //     var (clickAxis, _) = allAxis[clickAxisIndex];
+    //
+    //     mouse.Left();
+    //     _mouseControllerBase.MovieUpdate(false);
+    //
+    //     RuntimeAssert.FloatEquals(1f, Input.GetAxisRaw(clickAxis), 0.01f, "axis == 1");
+    //
+    //     mouse.Left(false);
+    //     _mouseControllerBase.MovieUpdate(false);
+    //
+    //     RuntimeAssert.FloatEquals(0f, Input.GetAxisRaw(clickAxis), 0.01f, "axis == 0");
+    //
+    //     virtualEnvController.RunVirtualEnvironment = false;
+    //
+    //     return true;
+    // }
 
     // TODO: movie test
     // [RuntimeTest]
-    public bool MouseRightClickToAxis()
-    {
-        if (!inputSystemState.HasOldInputSystem) return false;
-        virtualEnvController.RunVirtualEnvironment = true;
-
-        // check if the axis exists
-        var allAxis = axisStateEnvLegacySystem.AllAxis;
-        var clickAxisIndex = -1;
-        for (var i = 0; i < allAxis.Count; i++)
-        {
-            var axis = allAxis[i].Item2.Axis;
-            if (axis.PositiveButton == "mouse 1" || axis.AltPositiveButton == "mouse 1" ||
-                axis.NegativeButton == "mouse 1" || axis.AltNegativeButton == "mouse 1")
-            {
-                clickAxisIndex = i;
-                break;
-            }
-        }
-
-        if (clickAxisIndex < 0) return false;
-
-        var (clickAxis, _) = allAxis[clickAxisIndex];
-
-        mouse.Right();
-        _mouseControllerBase.MovieUpdate(false);
-
-        RuntimeAssert.FloatEquals(1f, Input.GetAxisRaw(clickAxis), 0.01f, "axis == 1");
-
-        mouse.Right(false);
-        _mouseControllerBase.MovieUpdate(false);
-
-        RuntimeAssert.FloatEquals(0f, Input.GetAxisRaw(clickAxis), 0.01f, "axis == 0");
-
-        virtualEnvController.RunVirtualEnvironment = false;
-
-        return true;
-    }
+    // public bool MouseRightClickToAxis()
+    // {
+    //     if (!inputSystemState.HasOldInputSystem) return false;
+    //     virtualEnvController.RunVirtualEnvironment = true;
+    //
+    //     // check if the axis exists
+    //     var allAxis = axisStateEnvLegacySystem._values;
+    //     var clickAxisIndex = -1;
+    //     for (var i = 0; i < allAxis.Count; i++)
+    //     {
+    //         var axis = allAxis[i].Item2.Axis;
+    //         if (axis.PositiveButton == "mouse 1" || axis.AltPositiveButton == "mouse 1" ||
+    //             axis.NegativeButton == "mouse 1" || axis.AltNegativeButton == "mouse 1")
+    //         {
+    //             clickAxisIndex = i;
+    //             break;
+    //         }
+    //     }
+    //
+    //     if (clickAxisIndex < 0) return false;
+    //
+    //     var (clickAxis, _) = allAxis[clickAxisIndex];
+    //
+    //     mouse.Right();
+    //     _mouseControllerBase.MovieUpdate(false);
+    //
+    //     RuntimeAssert.FloatEquals(1f, Input.GetAxisRaw(clickAxis), 0.01f, "axis == 1");
+    //
+    //     mouse.Right(false);
+    //     _mouseControllerBase.MovieUpdate(false);
+    //
+    //     RuntimeAssert.FloatEquals(0f, Input.GetAxisRaw(clickAxis), 0.01f, "axis == 0");
+    //
+    //     virtualEnvController.RunVirtualEnvironment = false;
+    //
+    //     return true;
+    // }
 }
