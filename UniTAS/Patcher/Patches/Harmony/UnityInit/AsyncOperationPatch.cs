@@ -47,10 +47,10 @@ public class AsyncOperationPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix()
+        private static bool Prefix(AsyncOperation __instance)
         {
             StaticLogger.Trace($"patch prefix invoke\n{new StackTrace()}");
-            return AsyncOperationIsInvokingOnComplete.IsInvokingOnComplete;
+            return AsyncOperationIsInvokingOnComplete.IsInvokingOnComplete(__instance, out var invoking) && invoking;
         }
     }
 

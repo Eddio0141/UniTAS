@@ -224,15 +224,27 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger)
     private readonly MethodBase _invokeCompletionEvent =
         AccessTools.Method("UnityEngine.AsyncOperation:InvokeCompletionEvent", Type.EmptyTypes);
 
-    public bool IsInvokingOnComplete { get; private set; }
+    private bool _isInvokingOnComplete;
+
+    public bool IsInvokingOnComplete(AsyncOperation asyncOperation, out bool wasInvoked)
+    {
+        if (_tracked.Contains(asyncOperation))
+        {
+            wasInvoked = _isInvokingOnComplete;
+            return true;
+        }
+
+        wasInvoked = default;
+        return false;
+    }
 
     private void InvokeOnComplete(AsyncOperation asyncOperation)
     {
         if (_invokeCompletionEvent == null) return;
-        IsInvokingOnComplete = true;
+        _isInvokingOnComplete = true;
         logger.LogDebug("invoking completion event");
         _invokeCompletionEvent.Invoke(asyncOperation, null);
-        IsInvokingOnComplete = false;
+        _isInvokingOnComplete = false;
     }
 
     private class AsyncSceneLoadData(

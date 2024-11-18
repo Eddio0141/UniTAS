@@ -1,6 +1,8 @@
+using UnityEngine;
+
 namespace UniTAS.Patcher.Services.UnityAsyncOperationTracker;
 
 public interface IAsyncOperationIsInvokingOnComplete
 {
-    bool IsInvokingOnComplete { get; }
+    bool IsInvokingOnComplete(AsyncOperation asyncOperation, out bool wasInvoked);
 }
