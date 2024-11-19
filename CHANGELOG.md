@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Fixed
 
+### Games
+
+- Fixed Baldi's basics itch.io throwing exceptions during TAS playback
+
+### UniTAS
+
+- Fixed non-existant axis name checks causing UniTAS to throw exceptions
+
 ### Compatibility
 
 - AsyncOperation's InvokeCompletionEvent is only disabled for tracked AsyncOperation instances

@@ -63,9 +63,9 @@ public class AxisStateEnvLegacySystem(IAxisButtonStateEnvUpdate axisButtonStateE
 
     public float GetAxis(string axisName)
     {
-        var value = 0f;
-        var axisStates = _values[axisName];
+        if (!_values.TryGetValue(axisName, out var axisStates)) return 0;
 
+        var value = 0f;
         foreach (var axisState in axisStates)
         {
             var axisStateValue = axisState.Value;
@@ -81,9 +81,9 @@ public class AxisStateEnvLegacySystem(IAxisButtonStateEnvUpdate axisButtonStateE
 
     public float GetAxisRaw(string axisName)
     {
-        var value = 0f;
-        var axisStates = _values[axisName];
+        if (!_values.TryGetValue(axisName, out var axisStates)) return 0;
 
+        var value = 0f;
         foreach (var axisState in axisStates)
         {
             var axisStateValue = axisState.ValueRaw;
@@ -100,9 +100,10 @@ public class AxisStateEnvLegacySystem(IAxisButtonStateEnvUpdate axisButtonStateE
     public void AddAxis(LegacyInputAxis axis)
     {
         var axisState = new LegacyInputAxisState(axis);
-        if (!_values.ContainsKey(axis.Name))
-            _values.Add(axis.Name, []);
-        _values[axis.Name].Add(axisState);
+        if (_values.TryGetValue(axis.Name, out var value))
+            value.Add(axisState);
+        else
+            _values.Add(axis.Name, [axisState]);
     }
 
     public void KeyDown(KeyCode key, JoyNum joystickNumber)
