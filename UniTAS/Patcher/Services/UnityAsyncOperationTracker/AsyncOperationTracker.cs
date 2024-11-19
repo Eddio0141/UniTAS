@@ -160,11 +160,8 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger, I
             StoreAllowSceneActivation(asyncOperation, true);
             var sceneToLoad = _asyncLoadStalls[asyncOperation];
             _asyncLoadStalls.Remove(asyncOperation);
-            sceneWrapper.LoadSceneAsync(sceneToLoad.SceneName, sceneToLoad.SceneBuildIndex, sceneToLoad.LoadSceneMode,
-                sceneToLoad.LocalPhysicsMode, true);
-            logger.LogDebug(
-                $"force loading scene via AllowSceneActivation true, name: {sceneToLoad.SceneName}, build index: {sceneToLoad.SceneBuildIndex}");
-            _pendingLoadCallbacks.Add(sceneToLoad.AsyncOperationInstance);
+            _asyncLoads[asyncOperation] = sceneToLoad;
+            logger.LogDebug("restored scene activation");
         }
         else
         {
