@@ -34,6 +34,49 @@ public static class DebugHelp
         }
 
         var type = obj.GetType();
+
+        // direct use cases
+        if (type.IsPointer)
+        {
+            unsafe
+            {
+                var rawValue = (IntPtr)Pointer.Unbox(obj);
+                return $"{initialIndent}ptr(0x{rawValue.ToInt64():X})";
+            }
+        }
+
+        if (type.IsPrimitive || type.IsEnum || obj is Object and not MonoBehaviour and not ScriptableObject)
+        {
+            return $"{initialIndent}{obj}";
+        }
+
+        if (obj is string)
+        {
+            return $"{initialIndent}\"{obj}\",\n";
+        }
+
+        if (obj is Array array)
+        {
+            var arrayStr = $"{initialIndent}[";
+
+            if (array.Length == 0)
+            {
+                return $"{arrayStr}]";
+            }
+
+            arrayStr += "\n";
+
+            indent++;
+
+            foreach (var item in array)
+            {
+                arrayStr += $"{PrintClass(item, ref indent, foundReferences)},\n";
+            }
+
+            indent--;
+            return $"{initialIndent}]";
+        }
+
         var str = $"{initialIndent}{type.Name} {{\n";
         indent++;
 
@@ -47,73 +90,10 @@ public static class DebugHelp
         foreach (var field in fields)
         {
             if (field.IsStatic || field.IsLiteral)
-            {
                 continue;
-            }
-
-            str += $"{IndentString(indent)}{field.Name}: ";
 
             var value = field.GetValue(obj);
-
-            if (value is null)
-            {
-                str += "null,\n";
-                continue;
-            }
-
-            var fieldType = field.FieldType;
-
-            // direct use cases
-            if (fieldType.IsPointer)
-            {
-                unsafe
-                {
-                    var rawValue = (IntPtr)Pointer.Unbox(value);
-                    str += $"ptr(0x{rawValue.ToInt64():X})";
-                }
-
-                continue;
-            }
-
-            if (fieldType.IsPrimitive || fieldType.IsEnum ||
-                value is Object and not MonoBehaviour and not ScriptableObject)
-            {
-                str += $"{value},\n";
-                continue;
-            }
-
-            if (value is string)
-            {
-                str += $"\"{value}\",\n";
-                continue;
-            }
-
-            if (value is Array array)
-            {
-                str += "[";
-
-                if (array.Length == 0)
-                {
-                    str += "],\n";
-                    continue;
-                }
-
-                str += "\n";
-
-                indent++;
-
-                foreach (var item in array)
-                {
-                    str += $"{PrintClass(item, ref indent, foundReferences)},\n";
-                }
-
-                indent--;
-                str += $"{IndentString(indent)}],\n";
-                continue;
-            }
-
-            // fallback
-            str += $"{PrintClass(value, ref indent, foundReferences, true)},\n";
+            str += $"{IndentString(indent)}{field.Name}: {PrintClass(value, ref indent, foundReferences, true)},\n";
         }
 
         indent--;
