@@ -2,6 +2,7 @@
 using System.Reflection;
 using HarmonyLib;
 using UniTAS.Patcher.Interfaces.Patches.PatchTypes;
+using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.UnityEvents;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
@@ -15,6 +16,9 @@ namespace UniTAS.Patcher.Patches.Harmony.UnityInit;
 public static class LegacyAsyncSceneLoadPatch
 {
     private static readonly ISceneLoadInvoke SceneLoadInvoke = ContainerStarter.Kernel.GetInstance<ISceneLoadInvoke>();
+
+    private static readonly IPatchReverseInvoker PatchReverseInvoker =
+        ContainerStarter.Kernel.GetInstance<IPatchReverseInvoker>();
 
     [HarmonyPatch]
     private class LoadLevelAsync
@@ -32,7 +36,8 @@ public static class LegacyAsyncSceneLoadPatch
 
         private static void Prefix(ref bool mustCompleteNextFrame)
         {
-            mustCompleteNextFrame = true;
+            if (!PatchReverseInvoker.Invoking)
+                mustCompleteNextFrame = true;
             SceneLoadInvoke.SceneLoadCall();
         }
     }

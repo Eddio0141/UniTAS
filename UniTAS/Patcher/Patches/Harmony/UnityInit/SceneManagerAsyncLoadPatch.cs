@@ -65,12 +65,16 @@ public class SceneManagerAsyncLoadPatch
     {
         // everything goes through here, so yeah why not
         if (ReverseInvoker.Invoking)
+        {
+            SceneLoadInvoke.SceneLoadCall();
             return true;
+        }
 
         __result = new();
 
         if (mustCompleteNextFrame)
         {
+            // needed
             SceneLoadInvoke.SceneLoadCall();
 
             // uh oh, time to do the wacky thing unity does!!!

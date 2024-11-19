@@ -4,6 +4,7 @@ using HarmonyLib;
 using UniTAS.Patcher.Implementations.UnitySafeWrappers.SceneManagement;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Models.UnitySafeWrappers.SceneManagement;
+using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.UnitySafeWrappers;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 using UnityEngine;
@@ -16,6 +17,7 @@ namespace UniTAS.Patcher.Implementations.UnitySafeWrappers;
 public class SceneManagerWrapper : ISceneWrapper
 {
     private readonly IUnityInstanceWrapFactory _unityInstanceWrapFactory;
+    private readonly IPatchReverseInvoker _patchReverseInvoker;
 
     private const string SceneManagementNamespace = "UnityEngine.SceneManagement";
 
@@ -44,9 +46,11 @@ public class SceneManagerWrapper : ISceneWrapper
 
     private readonly MethodInfo _getActiveScene;
 
-    public SceneManagerWrapper(IUnityInstanceWrapFactory unityInstanceWrapFactory)
+    public SceneManagerWrapper(IUnityInstanceWrapFactory unityInstanceWrapFactory,
+        IPatchReverseInvoker patchReverseInvoker)
     {
         _unityInstanceWrapFactory = unityInstanceWrapFactory;
+        _patchReverseInvoker = patchReverseInvoker;
         const string loadSceneAsyncNameIndexInternal = "LoadSceneAsyncNameIndexInternal";
         _loadSceneAsyncNameIndexInternal = _sceneManager?.GetMethod(loadSceneAsyncNameIndexInternal, AccessTools.all,
             null, [typeof(string), typeof(int), typeof(bool), typeof(bool)], null);
@@ -97,21 +101,31 @@ public class SceneManagerWrapper : ISceneWrapper
             var instance = _unityInstanceWrapFactory.Create<LoadSceneParametersWrapper>(null);
             instance.LoadSceneMode = loadSceneMode;
             instance.LocalPhysicsMode = localPhysicsMode;
-            _loadSceneAsyncNameIndexInternalInjected.Invoke(null,
-                [sceneName, sceneBuildIndex, instance.Instance, mustCompleteNextFrame]);
+            _patchReverseInvoker.Invoke(
+                (load, sceneNameInner, sceneBuildIndexInner, loadSceneParams, mustCompleteNextFrameInner) =>
+                    load.Invoke(null,
+                        [sceneNameInner, sceneBuildIndexInner, loadSceneParams, mustCompleteNextFrameInner]),
+                _loadSceneAsyncNameIndexInternalInjected, sceneName, sceneBuildIndex, instance.Instance,
+                mustCompleteNextFrame);
             return;
         }
 
         if (_loadSceneAsyncNameIndexInternal != null)
         {
-            _loadSceneAsyncNameIndexInternal?.Invoke(null,
-                [sceneName, sceneBuildIndex, loadSceneMode == LoadSceneMode.Additive, mustCompleteNextFrame]);
+            _patchReverseInvoker.Invoke(
+                (load, sceneNameInner, sceneBuildIndexInner, additive, mustCompleteNextFrameInner) => load?.Invoke(null,
+                    [sceneNameInner, sceneBuildIndexInner, additive, mustCompleteNextFrameInner]),
+                _loadSceneAsyncNameIndexInternal, sceneName, sceneBuildIndex, loadSceneMode == LoadSceneMode.Additive,
+                mustCompleteNextFrame);
             return;
         }
 
         if (_applicationLoadLevelAsync != null)
         {
-            _applicationLoadLevelAsync.Invoke(sceneName, sceneBuildIndex, loadSceneMode == LoadSceneMode.Additive,
+            _patchReverseInvoker.Invoke(
+                (load, sceneNameInner, sceneBuildIndexInner, additive, mustCompleteNextFrameInner) =>
+                    load.Invoke(sceneNameInner, sceneBuildIndexInner, additive, mustCompleteNextFrameInner),
+                _applicationLoadLevelAsync, sceneName, sceneBuildIndex, loadSceneMode == LoadSceneMode.Additive,
                 mustCompleteNextFrame);
             return;
         }

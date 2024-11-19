@@ -61,7 +61,7 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger, I
         {
             var scene = pair.Value;
             logger.LogDebug(
-                $"force loading scene, name: {scene.SceneName}, index: {scene.SceneBuildIndex}, manually loading in loop");
+                $"force loading scene via OnLastUpdate, name: {scene.SceneName}, index: {scene.SceneBuildIndex}, manually loading in loop");
             sceneWrapper.LoadSceneAsync(scene.SceneName, scene.SceneBuildIndex, scene.LoadSceneMode,
                 scene.LocalPhysicsMode, true);
 
@@ -140,7 +140,7 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger, I
         {
             var scene = pair.Value;
             logger.LogDebug(
-                $"force loading scene, name: {scene.SceneName}, index: {scene.SceneBuildIndex}, manually loading in loop");
+                $"force loading scene via non-async scene load, name: {scene.SceneName}, index: {scene.SceneBuildIndex}, manually loading in loop");
             reverseInvoker.Invoke(s => sceneWrapper.LoadSceneAsync(s.SceneName, s.SceneBuildIndex,
                 s.LoadSceneMode,
                 s.LocalPhysicsMode, true), scene);
@@ -163,7 +163,7 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger, I
             sceneWrapper.LoadSceneAsync(sceneToLoad.SceneName, sceneToLoad.SceneBuildIndex, sceneToLoad.LoadSceneMode,
                 sceneToLoad.LocalPhysicsMode, true);
             logger.LogDebug(
-                $"force loading scene, name: {sceneToLoad.SceneName}, build index: {sceneToLoad.SceneBuildIndex}");
+                $"force loading scene via AllowSceneActivation true, name: {sceneToLoad.SceneName}, build index: {sceneToLoad.SceneBuildIndex}");
             _pendingLoadCallbacks.Add(sceneToLoad.AsyncOperationInstance);
         }
         else
