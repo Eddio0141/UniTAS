@@ -12,7 +12,7 @@ public static class StaticLogger
     public static ManualLogSource Log { get; } = Logger.CreateLogSource("UniTAS");
 
 #if TRACE
-    private static readonly ManualLogSource TraceLog = Logger.CreateLogSource("UniTAS-Trace");
+    public static ManualLogSource TraceLog { get; } = Logger.CreateLogSource("UniTAS-Trace");
 #endif
 
     [Conditional("TRACE")]
