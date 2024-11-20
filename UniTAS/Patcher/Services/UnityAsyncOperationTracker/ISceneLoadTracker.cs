@@ -8,7 +8,8 @@ public interface ISceneLoadTracker
     void AsyncSceneLoad(string sceneName, int sceneBuildIndex, LoadSceneMode loadSceneMode,
         LocalPhysicsMode localPhysicsMode, AsyncOperation asyncOperation);
 
-    void NonAsyncSceneLoad();
+    void NonAsyncSceneLoad(string sceneName, int sceneBuildIndex, LoadSceneMode loadSceneMode,
+        LocalPhysicsMode localPhysicsMode);
 
     void AsyncSceneUnload(AsyncOperation asyncOperation);
 
@@ -37,4 +38,6 @@ public interface ISceneLoadTracker
     /// <param name="state">State of the AsyncOperation if it is tracked by UniTAS</param>
     /// <returns>True if is our tracked instance, otherwise it is some user created one</returns>
     bool GetAllowSceneActivation(AsyncOperation asyncOperation, out bool state);
+
+    int LoadingSceneCount { get; }
 }

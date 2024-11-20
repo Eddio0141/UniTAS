@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
@@ -19,15 +18,20 @@ namespace UniTAS.Patcher.Services.UnityAsyncOperationTracker;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 [Singleton]
-public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger, IPatchReverseInvoker reverseInvoker)
+public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger)
     : ISceneLoadTracker, IAssetBundleCreateRequestTracker, IAssetBundleRequestTracker,
         IOnLastUpdateUnconditional, IAsyncOperationIsInvokingOnComplete, IOnPreGameRestart, IOnUpdateActual
 {
     private readonly HashSet<AsyncOperation> _tracked = new(new HashUtils.ReferenceComparer<AsyncOperation>());
 
-    private readonly Dictionary<AsyncOperation, AsyncSceneLoadData> _asyncLoads = new();
-    private readonly List<AsyncOperation> _pendingLoadCallbacks = new();
-    private readonly Dictionary<AsyncOperation, AsyncSceneLoadData> _asyncLoadStalls = new();
+    // any scene related things are stored as a list
+    // it is a list of scenes in load order
+    private readonly List<AsyncSceneLoadData> _asyncLoads = new();
+
+    // not allowed to be disabled anymore
+    private readonly HashSet<AsyncOperation> _allowSceneActivationNotAllowed = new();
+    private readonly List<AsyncSceneLoadData> _pendingLoadCallbacks = new();
+    private readonly List<AsyncSceneLoadData> _asyncLoadStalls = new();
     private readonly Dictionary<AsyncOperation, AssetBundle> _assetBundleCreateRequests = new();
 
     private readonly Dictionary<AsyncOperation, AssetBundleRequestData> _assetBundleRequests = new();
@@ -53,19 +57,27 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger, I
         _allowSceneActivationValue.Clear();
         _isDone.Clear();
         _tracked.Clear();
+        _allowSceneActivationNotAllowed.Clear();
+        LoadingSceneCount = 0;
     }
 
     public void OnLastUpdateUnconditional()
     {
-        foreach (var pair in _asyncLoads)
-        {
-            var scene = pair.Value;
-            logger.LogDebug(
-                $"force loading scene via OnLastUpdate, name: {scene.SceneName}, index: {scene.SceneBuildIndex}, manually loading in loop");
-            sceneWrapper.LoadSceneAsync(scene.SceneName, scene.SceneBuildIndex, scene.LoadSceneMode,
-                scene.LocalPhysicsMode, true);
+        if (_asyncLoads.Count == 0) return;
 
-            _pendingLoadCallbacks.Add(scene.AsyncOperationInstance);
+        foreach (var loadData in _asyncLoads)
+        {
+            logger.LogDebug(
+                $"force loading scene via OnLastUpdate, name: {loadData.SceneName}, index: {loadData.SceneBuildIndex}, manually loading in loop");
+            sceneWrapper.TrackSceneCount = false;
+            sceneWrapper.LoadSceneAsync(loadData.SceneName, loadData.SceneBuildIndex, loadData.LoadSceneMode,
+                loadData.LocalPhysicsMode, true);
+            sceneWrapper.TrackSceneCount = true;
+
+            _pendingLoadCallbacks.Add(loadData);
+            var op = loadData.AsyncOperation;
+            if (op == null) continue;
+            _allowSceneActivationNotAllowed.Remove(op);
         }
 
         _asyncLoads.Clear();
@@ -74,20 +86,28 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger, I
     public void UpdateActual()
     {
         // to allow the scene to be findable, invoke when scene loads on update
-        var callbacks = new List<AsyncOperation>(_pendingLoadCallbacks.Count);
-        foreach (var pendingLoadCallback in _pendingLoadCallbacks)
+        var callbacks = new List<AsyncSceneLoadData>(_pendingLoadCallbacks.Count);
+        foreach (var data in _pendingLoadCallbacks)
         {
-            callbacks.Add(pendingLoadCallback);
-            _isDone.Add(pendingLoadCallback);
+            callbacks.Add(data);
+            var op = data.AsyncOperation;
+            if (op == null) continue;
+            _isDone.Add(op);
         }
 
         // prevent allowSceneActivation to be False on event callback
         _pendingLoadCallbacks.Clear();
 
-        foreach (var callback in callbacks)
+        foreach (var data in callbacks)
         {
-            // event fired
-            InvokeOnComplete(callback);
+            LoadingSceneCount--;
+            if (data.LoadSceneMode == LoadSceneMode.Additive)
+                sceneWrapper.SceneCount++;
+            else
+                sceneWrapper.SceneCount = 1;
+            var op = data.AsyncOperation;
+            if (op == null) continue;
+            InvokeOnComplete(op);
         }
     }
 
@@ -122,32 +142,40 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger, I
         _tracked.Add(asyncOperation);
         _isDone.Add(asyncOperation);
         InvokeOnComplete(asyncOperation);
+
+        // TODO: extra scene count
     }
 
     public void AsyncSceneLoad(string sceneName, int sceneBuildIndex, LoadSceneMode loadSceneMode,
         LocalPhysicsMode localPhysicsMode, AsyncOperation asyncOperation)
     {
+        LoadingSceneCount++;
+
         _tracked.Add(asyncOperation);
 
         logger.LogDebug($"async scene load, {asyncOperation.GetHashCode()}");
-        _asyncLoads.Add(asyncOperation,
-            new(sceneName, sceneBuildIndex, asyncOperation, loadSceneMode, localPhysicsMode));
+        _asyncLoads.Add(new(sceneName, sceneBuildIndex, loadSceneMode, localPhysicsMode, asyncOperation));
     }
 
-    public void NonAsyncSceneLoad()
+    public void NonAsyncSceneLoad(string sceneName, int sceneBuildIndex, LoadSceneMode loadSceneMode,
+        LocalPhysicsMode localPhysicsMode)
     {
-        foreach (var pair in _asyncLoads.Concat(_asyncLoadStalls))
+        LoadingSceneCount++;
+
+        // first, all stalls are moved to load
+        _asyncLoads.AddRange(_asyncLoadStalls);
+        foreach (var sceneData in _asyncLoads)
         {
-            var scene = pair.Value;
             logger.LogDebug(
-                $"force loading scene via non-async scene load, name: {scene.SceneName}, index: {scene.SceneBuildIndex}, manually loading in loop");
-            reverseInvoker.Invoke(s => sceneWrapper.LoadSceneAsync(s.SceneName, s.SceneBuildIndex,
-                s.LoadSceneMode,
-                s.LocalPhysicsMode, true), scene);
-            _pendingLoadCallbacks.Add(scene.AsyncOperationInstance);
+                $"force loading scene via non-async scene load, name: {sceneData.SceneName}, index: {sceneData.SceneBuildIndex}");
+            _allowSceneActivationNotAllowed.Add(sceneData.AsyncOperation);
         }
 
-        _asyncLoads.Clear();
+        _asyncLoadStalls.Clear();
+
+        // next, queue the non async scene load
+        logger.LogDebug($"scene load, {sceneName}, index: {sceneBuildIndex}");
+        _asyncLoads.Add(new(sceneName, sceneBuildIndex, loadSceneMode, localPhysicsMode, null));
     }
 
     public void AllowSceneActivation(bool allow, AsyncOperation asyncOperation)
@@ -156,19 +184,22 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger, I
 
         if (allow)
         {
-            if (!_asyncLoadStalls.ContainsKey(asyncOperation)) return;
+            var stallIndex = _asyncLoadStalls.FindIndex(d => d.AsyncOperation == asyncOperation);
+            if (stallIndex < 0) return;
             StoreAllowSceneActivation(asyncOperation, true);
-            var sceneToLoad = _asyncLoadStalls[asyncOperation];
-            _asyncLoadStalls.Remove(asyncOperation);
-            _asyncLoads[asyncOperation] = sceneToLoad;
+            if (_allowSceneActivationNotAllowed.Contains(asyncOperation)) return;
+            _asyncLoads.Add(_asyncLoadStalls[stallIndex]);
+            _asyncLoadStalls.RemoveAt(stallIndex);
             logger.LogDebug("restored scene activation");
         }
         else
         {
-            if (!_asyncLoads.ContainsKey(asyncOperation)) return;
+            var loadIndex = _asyncLoads.FindIndex(d => d.AsyncOperation == asyncOperation);
+            if (loadIndex < 0) return;
             StoreAllowSceneActivation(asyncOperation, false);
-            _asyncLoadStalls.Add(asyncOperation, _asyncLoads[asyncOperation]);
-            _asyncLoads.Remove(asyncOperation);
+            if (_allowSceneActivationNotAllowed.Contains(asyncOperation)) return;
+            _asyncLoadStalls.Add(_asyncLoads[loadIndex]);
+            _asyncLoads.RemoveAt(loadIndex);
             logger.LogDebug("Added scene to stall list");
         }
     }
@@ -261,17 +292,20 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger, I
         _isInvokingOnComplete = false;
     }
 
+    // I don't think I need to track unload, they get invoked immediately, but maybe I should delay unload till end of frame and track till then?
+    public int LoadingSceneCount { get; private set; }
+
     private class AsyncSceneLoadData(
         string sceneName,
         int sceneBuildIndex,
-        AsyncOperation asyncOperationInstance,
         LoadSceneMode loadSceneMode,
-        LocalPhysicsMode localPhysicsMode)
+        LocalPhysicsMode localPhysicsMode,
+        AsyncOperation asyncOperation)
     {
         public string SceneName { get; } = sceneName;
         public int SceneBuildIndex { get; } = sceneBuildIndex;
-        public AsyncOperation AsyncOperationInstance { get; } = asyncOperationInstance;
         public LoadSceneMode LoadSceneMode { get; } = loadSceneMode;
         public LocalPhysicsMode LocalPhysicsMode { get; } = localPhysicsMode;
+        public AsyncOperation AsyncOperation { get; } = asyncOperation;
     }
 }

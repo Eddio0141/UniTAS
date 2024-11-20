@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using HarmonyLib;
@@ -10,8 +11,12 @@ using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.UnityAsyncOperationTracker;
 using UniTAS.Patcher.Services.UnityEvents;
+using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
+#if TRACE
+using UniTAS.Patcher.ManualServices;
+#endif
 
 namespace UniTAS.Patcher.Patches.Harmony.UnityInit;
 
@@ -50,6 +55,9 @@ public class SceneManagerAsyncLoadPatch
     private static readonly ISceneLoadTracker SceneLoadTracker =
         ContainerStarter.Kernel.GetInstance<ISceneLoadTracker>();
 
+    private static readonly ISceneWrapper SceneWrapper =
+        ContainerStarter.Kernel.GetInstance<ISceneWrapper>();
+
     private static readonly UnityInstanceWrapFactory UnityInstanceWrapFactory =
         ContainerStarter.Kernel.GetInstance<UnityInstanceWrapFactory>();
 
@@ -63,6 +71,15 @@ public class SceneManagerAsyncLoadPatch
     private static bool AsyncSceneLoad(bool mustCompleteNextFrame, string sceneName, int sceneBuildIndex,
         object parameters, bool? isAdditive, ref AsyncOperation __result)
     {
+#if TRACE
+        using var _ = Trace.MethodStart(methodArgs:
+        [
+            (nameof(mustCompleteNextFrame), mustCompleteNextFrame), (nameof(sceneName), sceneName),
+            (nameof(sceneBuildIndex), sceneBuildIndex),
+            (nameof(parameters), parameters), (nameof(isAdditive), isAdditive)
+        ]);
+#endif
+
         // everything goes through here, so yeah why not
         if (ReverseInvoker.Invoking)
         {
@@ -70,25 +87,19 @@ public class SceneManagerAsyncLoadPatch
             return true;
         }
 
-        __result = new();
-
-        if (mustCompleteNextFrame)
+        // if mustCompleteNextFrame is true, time to do the wacky thing unity does!!!
+        //
+        // https://docs.unity3d.com/ScriptReference/SceneManagement.SceneManager.LoadScene.html
+        /*
+         * Because loading is set to complete in the next rendered frame, calling SceneManager.LoadScene
+         * forces all previous AsyncOperations to complete, even if AsyncOperation.allowSceneActivation is set to false
+         */
+        if (!mustCompleteNextFrame)
         {
-            // needed
-            SceneLoadInvoke.SceneLoadCall();
+            __result = new();
 
-            // uh oh, time to do the wacky thing unity does!!!
-            //
-            // https://docs.unity3d.com/ScriptReference/SceneManagement.SceneManager.LoadScene.html
-            /*
-             * Because loading is set to complete in the next rendered frame, calling SceneManager.LoadScene
-             * forces all previous AsyncOperations to complete, even if AsyncOperation.allowSceneActivation is set to false
-             */
-            SceneLoadTracker.NonAsyncSceneLoad();
-            return true;
+            Logger.LogDebug($"async scene load, instance id: {__result.GetHashCode()}");
         }
-
-        Logger.LogDebug($"async scene load, instance id: {__result.GetHashCode()}");
 
         if (parameters != null)
         {
@@ -103,8 +114,17 @@ public class SceneManagerAsyncLoadPatch
             var loadSceneModeValue = (int)instance.LoadSceneMode;
             var localPhysicsModeValue = (int)instance.LocalPhysicsMode;
 
-            SceneLoadTracker.AsyncSceneLoad(sceneName, sceneBuildIndex, (LoadSceneMode)loadSceneModeValue,
-                (LocalPhysicsMode)localPhysicsModeValue, __result);
+            if (mustCompleteNextFrame)
+            {
+                SceneLoadTracker.NonAsyncSceneLoad(sceneName, sceneBuildIndex, (LoadSceneMode)loadSceneModeValue,
+                    (LocalPhysicsMode)localPhysicsModeValue);
+            }
+            else
+            {
+                SceneLoadTracker.AsyncSceneLoad(sceneName, sceneBuildIndex, (LoadSceneMode)loadSceneModeValue,
+                    (LocalPhysicsMode)localPhysicsModeValue, __result);
+            }
+
             return false;
         }
 
@@ -113,9 +133,17 @@ public class SceneManagerAsyncLoadPatch
             throw new ArgumentNullException(nameof(isAdditive));
         }
 
-        SceneLoadTracker.AsyncSceneLoad(sceneName, sceneBuildIndex,
-            isAdditive.Value ? LoadSceneMode.Additive : LoadSceneMode.Single,
-            LocalPhysicsMode.None, __result);
+        if (mustCompleteNextFrame)
+        {
+            SceneLoadTracker.NonAsyncSceneLoad(sceneName, sceneBuildIndex,
+                isAdditive.Value ? LoadSceneMode.Additive : LoadSceneMode.Single, LocalPhysicsMode.None);
+        }
+        else
+        {
+            SceneLoadTracker.AsyncSceneLoad(sceneName, sceneBuildIndex,
+                isAdditive.Value ? LoadSceneMode.Additive : LoadSceneMode.Single,
+                LocalPhysicsMode.None, __result);
+        }
 
         return false;
     }
@@ -297,6 +325,64 @@ public class SceneManagerAsyncLoadPatch
             ref AsyncOperation __result)
         {
             return AsyncSceneLoad(mustCompleteNextFrame, sceneName, sceneBuildIndex, parameters, null, ref __result);
+        }
+    }
+
+    [HarmonyPatch]
+    private class get_loadedSceneCount
+    {
+        private static readonly MethodInfo GetLoadedSceneCount =
+            SceneManager == null ? null : AccessTools.PropertyGetter(SceneManager, "loadedSceneCount");
+
+        private static MethodBase TargetMethod()
+        {
+            return GetLoadedSceneCount;
+        }
+
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static bool Prefix(ref int __result)
+        {
+            __result = SceneWrapper.SceneCount;
+            return false;
+        }
+    }
+
+    [HarmonyPatch]
+    private class get_sceneCount
+    {
+        private static readonly MethodInfo GetSceneCount =
+            SceneManager == null ? null : AccessTools.PropertyGetter(SceneManager, "sceneCount");
+
+        private static MethodBase TargetMethod()
+        {
+            return GetSceneCount;
+        }
+
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static bool Prefix(ref int __result)
+        {
+            // check if it came from the specific method, since we want real data for this
+            var frames = new StackTrace().GetFrames();
+            if (frames != null)
+            {
+                foreach (var frame in frames)
+                {
+                    var method = frame.GetMethod();
+                    if (method.DeclaringType == SceneManager && method.Name == "LoadScene")
+                        return true;
+                }
+            }
+
+            __result = SceneWrapper.SceneCount + SceneLoadTracker.LoadingSceneCount;
+            return false;
         }
     }
 }

@@ -217,6 +217,8 @@ public static class KernelUtils
         public int TotalSceneCount => 0;
         public int ActiveSceneIndex => 0;
         public string ActiveSceneName => "";
+        public int SceneCount { get; set; }
+        public bool TrackSceneCount { get; set; }
     }
 
     [Register(IncludeDifferentAssembly = true)]

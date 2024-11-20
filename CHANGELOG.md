@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - AsyncOperation's InvokeCompletionEvent is only disabled for tracked AsyncOperation instances
 - Implemented LoadScene forcing pending LoadSceneAsync to be all loaded
 - Fixed accidentally obliterating return value of LoadScene instances
+- Fixed inaccurate scene load counter
 
 # [v0.6.0] - 2024-11-18
 

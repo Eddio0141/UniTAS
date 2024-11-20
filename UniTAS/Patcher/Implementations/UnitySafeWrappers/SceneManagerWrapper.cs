@@ -3,6 +3,7 @@ using System.Reflection;
 using HarmonyLib;
 using UniTAS.Patcher.Implementations.UnitySafeWrappers.SceneManagement;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
+using UniTAS.Patcher.Interfaces.Events.SoftRestart;
 using UniTAS.Patcher.Models.UnitySafeWrappers.SceneManagement;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.UnitySafeWrappers;
@@ -14,7 +15,7 @@ namespace UniTAS.Patcher.Implementations.UnitySafeWrappers;
 // ReSharper disable once ClassNeverInstantiated.Global
 [Singleton]
 [ExcludeRegisterIfTesting]
-public class SceneManagerWrapper : ISceneWrapper
+public class SceneManagerWrapper : ISceneWrapper, IOnPreGameRestart
 {
     private readonly IUnityInstanceWrapFactory _unityInstanceWrapFactory;
     private readonly IPatchReverseInvoker _patchReverseInvoker;
@@ -93,9 +94,22 @@ public class SceneManagerWrapper : ISceneWrapper
         _getActiveScene = _sceneManager?.GetMethod("GetActiveScene", AccessTools.all);
     }
 
+    public void OnPreGameRestart()
+    {
+        SceneCount = 1;
+    }
+
     public void LoadSceneAsync(string sceneName, int sceneBuildIndex, LoadSceneMode loadSceneMode,
         LocalPhysicsMode localPhysicsMode, bool mustCompleteNextFrame)
     {
+        if (TrackSceneCount)
+        {
+            if (loadSceneMode == LoadSceneMode.Additive)
+                SceneCount++;
+            else
+                SceneCount = 1;
+        }
+
         if (_loadSceneAsyncNameIndexInternalInjected != null && _loadSceneParametersType != null)
         {
             var instance = _unityInstanceWrapFactory.Create<LoadSceneParametersWrapper>(null);
@@ -135,24 +149,30 @@ public class SceneManagerWrapper : ISceneWrapper
 
     public void LoadScene(int buildIndex)
     {
+        if (TrackSceneCount)
+            SceneCount = 1;
+
         if (_loadSceneByIndex != null)
         {
-            _loadSceneByIndex.Invoke(null, [buildIndex]);
+            _patchReverseInvoker.Invoke((load, index) => load.Invoke(null, [index]), _loadSceneByIndex, buildIndex);
             return;
         }
 
-        Application.LoadLevel(buildIndex);
+        _patchReverseInvoker.Invoke(Application.LoadLevel, buildIndex);
     }
 
     public void LoadScene(string name)
     {
+        if (TrackSceneCount)
+            SceneCount = 1;
+
         if (_loadSceneByName != null)
         {
-            _loadSceneByName.Invoke(null, [name]);
+            _patchReverseInvoker.Invoke((load, n) => load.Invoke(null, [n]), _loadSceneByName, name);
             return;
         }
 
-        Application.LoadLevel(name);
+        _patchReverseInvoker.Invoke(Application.LoadLevel, name);
     }
 
     public int TotalSceneCount => _totalSceneCount?.Invoke() ?? Application.levelCount;
@@ -186,4 +206,7 @@ public class SceneManagerWrapper : ISceneWrapper
             return Application.loadedLevelName;
         }
     }
+
+    public int SceneCount { get; set; } = 1;
+    public bool TrackSceneCount { get; set; }
 }
