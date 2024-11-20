@@ -61,9 +61,7 @@ public class StaticCtorHeaders : PreloadPatcher
             if (field.IsLiteral || !field.IsStatic) continue;
 
             StaticLogger.Trace($"Removing readonly from field {field.Name}");
-            StaticLogger.Trace($"Before attributes: {field.Attributes}");
             field.Attributes &= ~FieldAttributes.InitOnly;
-            StaticLogger.Trace($"After attributes: {field.Attributes}");
         }
     }
 
