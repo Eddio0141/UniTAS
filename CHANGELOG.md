@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Games
 
 - Fixed Baldi's basics itch.io throwing exceptions during TAS playback
+- Fixed Resonance Of The Ocean not saving some information at the start
 
 ### UniTAS
 

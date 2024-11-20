@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization;
 using HarmonyLib;
 using UniTAS.Patcher.Exceptions;
 using UniTAS.Patcher.Extensions;
@@ -150,7 +151,8 @@ public static class DeepCopy
 
             result = source is ScriptableObject
                 ? ScriptableObject.CreateInstance(type)
-                : AccessTools.CreateInstance(type);
+                // this is not calling a constructor, there is no reason to do
+                : FormatterServices.GetUninitializedObject(type);
         }
 
         // guaranteed to be a reference type
