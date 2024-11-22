@@ -15,7 +15,7 @@ using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 #if TRACE
-using UniTAS.Patcher.ManualServices;
+using Trace = UniTAS.Patcher.ManualServices.Trace;
 #endif
 
 namespace UniTAS.Patcher.Patches.Harmony.UnityInit;
