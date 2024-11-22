@@ -189,7 +189,7 @@ public class SceneManagerAsyncLoadPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static readonly MethodInfo _getName = SceneType.GetProperty("name", AccessTools.all)?.GetGetMethod();
+        private static readonly MethodInfo _getName = SceneType?.GetProperty("name", AccessTools.all)?.GetGetMethod();
 
         private static bool Prefix(object scene, ref AsyncOperation __result)
         {
