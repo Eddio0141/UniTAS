@@ -188,15 +188,10 @@ public static class Entry
             bench.Dispose();
         }
 
-        ThreadPool.QueueUserWorkItem(state =>
-        {
-            // save patched assembly to cache
-            var assembly = (AssemblyDefinition)state;
-
-            var dllCachePath = Path.Combine(UniTASPaths.AssemblyCache, $"{assembly.Name.Name}.dll");
-            DeletedCacheInfo.WaitOne();
-            assembly.Write(dllCachePath);
-        }, assembly);
+        // this cannot be done in another thread, it causes issues writing
+        var dllCachePath = Path.Combine(UniTASPaths.AssemblyCache, assemblyNameWithDll);
+        DeletedCacheInfo.WaitOne();
+        assembly.Write(dllCachePath);
     }
 
     private static readonly ConcurrentDictionary<string, (AssemblyDefinition def, string writeHashPath)>

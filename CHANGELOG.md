@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### UniTAS
 
 - Fixed non-existant axis name checks causing UniTAS to throw exceptions
+- Fixed first load caching creating broken caches, which completely breaks things
 
 ### Compatibility
 
