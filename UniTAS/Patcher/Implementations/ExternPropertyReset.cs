@@ -49,7 +49,7 @@ public class ExternPropertyReset
             var valueClone = DeepCopy.MakeDeepCopy(value);
             try
             {
-                _patchReverseInvoker.Invoke(() => setMethod.Invoke(null, [valueClone]));
+                _patchReverseInvoker.Invoke((setter, cloned) => setter.Invoke(null, [cloned]), setMethod, valueClone);
             }
             catch (Exception e)
             {
@@ -101,7 +101,7 @@ public class ExternPropertyReset
             object value;
             try
             {
-                value = _patchReverseInvoker.Invoke(() => get.Invoke(null, []));
+                value = _patchReverseInvoker.Invoke(getter => getter.Invoke(null, []), get);
             }
             catch (Exception e)
             {
