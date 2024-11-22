@@ -68,6 +68,9 @@ public static class Entry
 
         LoggingUtils.Init();
         StaticLogger.Log.LogInfo("Initializing UniTAS");
+        
+        UniTASSha256Info.AssemblyLockFileValidate();
+        UniTASSha256Info.AssemblyLockFileCreate();
 
         ThreadPool.QueueUserWorkItem(_ => { BepInExUtils.GenerateMissingDirs(); });
 
@@ -247,6 +250,7 @@ public static class Entry
     public static void Finish()
     {
         StaticLogger.Log.LogInfo("Finished preload patcher!");
+        UniTASSha256Info.AssemblyLockFileDelete();
         ContainerStarter.Init(RegisterTiming.Entry);
     }
 }

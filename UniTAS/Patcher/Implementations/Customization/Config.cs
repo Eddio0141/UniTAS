@@ -32,7 +32,7 @@ public partial class Config : IConfig, IDisposable
         _logger = logger;
         try
         {
-            _fileSystemWatcher = new(Paths.ConfigPath, UniTASPaths.BEPINEX_CONFIG_FILE_NAME)
+            _fileSystemWatcher = new(Paths.ConfigPath, UniTASPaths.BepInExConfigFileName)
             {
                 NotifyFilter = NotifyFilters.LastWrite
             };

@@ -60,6 +60,28 @@ public static class UniTASSha256Info
         File.WriteAllBytes(oldRunSha256Path, currentRunSha256);
     }
 
-   public static bool UniTASInvalidCache { get; }
+    private static readonly string LockFilePath = Path.Combine(UniTASPaths.AssemblyCache, ".lock");
+
+    public static void AssemblyLockFileValidate()
+    {
+        // has UniTAS failed to complete preload phase
+        if (!File.Exists(LockFilePath)) return;
+
+        StaticLogger.LogInfo("UniTAS apparently failed to save caches on the last run");
+        UniTASInvalidCache = true;
+        File.Delete(LockFilePath);
+    }
+
+    public static void AssemblyLockFileCreate()
+    {
+        File.Create(LockFilePath);
+    }
+
+    public static void AssemblyLockFileDelete()
+    {
+        File.Delete(LockFilePath);
+    }
+
+    public static bool UniTASInvalidCache { get; private set; }
     public static bool GameCacheInvalid { get; set; }
 }
