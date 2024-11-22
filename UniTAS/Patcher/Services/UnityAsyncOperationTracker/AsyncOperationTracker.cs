@@ -8,6 +8,7 @@ using UniTAS.Patcher.Interfaces.Events.SoftRestart;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents.DontRunIfPaused;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
 using UniTAS.Patcher.Models.UnitySafeWrappers.SceneManagement;
+using UniTAS.Patcher.Models.Utils;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Patcher.Utils;
@@ -30,7 +31,9 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger)
 
     // not allowed to be disabled anymore
     private readonly HashSet<AsyncOperation> _allowSceneActivationNotAllowed = new();
-    private readonly List<AsyncSceneLoadData> _pendingLoadCallbacks = new();
+
+    // this can have unload operations too, which is why its Either
+    private readonly List<Either<AsyncSceneLoadData, AsyncOperation>> _pendingLoadCallbacks = new();
     private readonly List<AsyncSceneLoadData> _asyncLoadStalls = new();
     private readonly Dictionary<AsyncOperation, AssetBundle> _assetBundleCreateRequests = new();
 
@@ -86,11 +89,11 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger)
     public void UpdateActual()
     {
         // to allow the scene to be findable, invoke when scene loads on update
-        var callbacks = new List<AsyncSceneLoadData>(_pendingLoadCallbacks.Count);
+        var callbacks = new List<Either<AsyncSceneLoadData, AsyncOperation>>(_pendingLoadCallbacks.Count);
         foreach (var data in _pendingLoadCallbacks)
         {
             callbacks.Add(data);
-            var op = data.AsyncOperation;
+            var op = data.IsLeft ? data.Left.AsyncOperation : data.Right;
             if (op == null) continue;
             _isDone.Add(op);
         }
@@ -101,11 +104,22 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger)
         foreach (var data in callbacks)
         {
             LoadingSceneCount--;
-            if (data.LoadSceneMode == LoadSceneMode.Additive)
-                sceneWrapper.SceneCount++;
+            AsyncOperation op;
+            if (data.IsLeft)
+            {
+                var left = data.Left;
+                if (left.LoadSceneMode == LoadSceneMode.Additive)
+                    sceneWrapper.SceneCount++;
+                else
+                    sceneWrapper.SceneCount = 1;
+
+                op = left.AsyncOperation;
+            }
             else
-                sceneWrapper.SceneCount = 1;
-            var op = data.AsyncOperation;
+            {
+                op = data.Right;
+            }
+
             if (op == null) continue;
             InvokeOnComplete(op);
         }
@@ -140,10 +154,9 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger)
         logger.LogDebug("async scene unload");
 
         _tracked.Add(asyncOperation);
-        _isDone.Add(asyncOperation);
-        InvokeOnComplete(asyncOperation);
-
-        // TODO: extra scene count
+        _pendingLoadCallbacks.Add(asyncOperation);
+        sceneWrapper.SceneCount--;
+        LoadingSceneCount++;
     }
 
     public void AsyncSceneLoad(string sceneName, int sceneBuildIndex, LoadSceneMode loadSceneMode,
@@ -293,6 +306,7 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger)
     }
 
     // I don't think I need to track unload, they get invoked immediately, but maybe I should delay unload till end of frame and track till then?
+    // note: this property exists here, because this class handles async scene loading, not scene wrapper
     public int LoadingSceneCount { get; private set; }
 
     private class AsyncSceneLoadData(
