@@ -200,7 +200,7 @@ public class SceneManagerAsyncLoadPatch
                 "THIS OPERATION MIGHT BREAK THE GAME, scene unloading patch is using an unstable unity function, and it may fail");
             var args = new object[] { sceneName, -1, true, null };
             UnloadSceneNameIndexInternal.Invoke(null, args);
-            if (!(bool)args[4])
+            if (!(bool)args[3])
                 StaticLogger.LogError("async unload most likely failed, prepare for game to go nuts");
 
             __result = new();
