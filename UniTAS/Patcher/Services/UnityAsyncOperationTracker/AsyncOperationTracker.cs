@@ -21,7 +21,8 @@ namespace UniTAS.Patcher.Services.UnityAsyncOperationTracker;
 [Singleton]
 public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger)
     : ISceneLoadTracker, IAssetBundleCreateRequestTracker, IAssetBundleRequestTracker,
-        IOnLastUpdateUnconditional, IAsyncOperationIsInvokingOnComplete, IOnPreGameRestart, IOnUpdateActual
+        IOnLastUpdateUnconditional, IAsyncOperationIsInvokingOnComplete, IOnPreGameRestart, IOnUpdateActual,
+        IOnStartActual, IOnFixedUpdateActual
 {
     private readonly HashSet<AsyncOperation> _tracked = new(new HashUtils.ReferenceComparer<AsyncOperation>());
 
@@ -86,8 +87,14 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger)
         _asyncLoads.Clear();
     }
 
-    public void UpdateActual()
+    public void FixedUpdateActual() => CallPendingCallbacks();
+    public void UpdateActual() => CallPendingCallbacks();
+    public void StartActual() => CallPendingCallbacks();
+
+    private void CallPendingCallbacks()
     {
+        if (_pendingLoadCallbacks.Count == 0) return;
+
         // to allow the scene to be findable, invoke when scene loads on update
         var callbacks = new List<Either<AsyncSceneLoadData, AsyncOperation>>(_pendingLoadCallbacks.Count);
         foreach (var data in _pendingLoadCallbacks)
