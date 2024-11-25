@@ -32,11 +32,11 @@ public class RemoteControl
     {
         var conf = config.BepInExConfigFile;
 
-        var enableConf = conf.Bind(Config.Sections.Remote.SECTION_NAME, Config.Sections.Remote.ENABLE, false,
+        var enableConf = conf.Bind(Config.Sections.Remote.SectionName, Config.Sections.Remote.Enable, false,
             "If enabled, starts a TCP/IP connection for remote controlling UniTAS");
-        var ipAddrConf = conf.Bind(Config.Sections.Remote.SECTION_NAME, Config.Sections.Remote.ADDRESS, "127.0.0.1",
+        var ipAddrConf = conf.Bind(Config.Sections.Remote.SectionName, Config.Sections.Remote.Address, "127.0.0.1",
             "IP address to use for remote connection");
-        var portConf = conf.Bind(Config.Sections.Remote.SECTION_NAME, Config.Sections.Remote.PORT, 8080,
+        var portConf = conf.Bind(Config.Sections.Remote.SectionName, Config.Sections.Remote.Port, 8080,
             "Port to use for remote connection");
 
         if (!enableConf.Value) return;

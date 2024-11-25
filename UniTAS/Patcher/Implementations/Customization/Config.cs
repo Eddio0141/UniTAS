@@ -48,12 +48,12 @@ public partial class Config : IConfig, IDisposable
         }
 
         // add entry for patcher config entry
-        BepInExConfigFile.Bind(Sections.Debug.FunctionCallTrace.SECTION_NAME, Sections.Debug.FunctionCallTrace.ENABLE,
+        BepInExConfigFile.Bind(Sections.Debug.FunctionCallTrace.SectionName, Sections.Debug.FunctionCallTrace.Enable,
             false,
             "If enabled, will hook on most functions and log every function call");
-        BepInExConfigFile.Bind(Sections.Debug.FunctionCallTrace.SECTION_NAME,
-            Sections.Debug.FunctionCallTrace.MATCHING_TYPES, "*",
-            "A list of glob pattern of types to hook function call tracing to. You can append to the list by separating each entry with a comma. Example: `UnityEngine.Application, UnityEngine.Time, UnityEngine.InputSystem.*`");
+        BepInExConfigFile.Bind(Sections.Debug.FunctionCallTrace.SectionName,
+            Sections.Debug.FunctionCallTrace.Methods, "",
+            "A list of methods to hook call tracing to. Each entry must consist of `Type:method`. You can append to the list by separating each entry with a comma. Example: `UnityEngine.Time:get_captureDeltaTime, Game.HeadCrab:Update`");
 
         var backendConfigRaw = new List<string>();
         try

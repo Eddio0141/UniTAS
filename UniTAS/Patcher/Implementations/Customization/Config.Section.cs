@@ -8,17 +8,18 @@ public partial class Config
         {
             public static class FunctionCallTrace
             {
-                public const string SECTION_NAME = $"{nameof(Debug)}.FunctionCallTrace";
-                public const string ENABLE = "Enable";
-                public const string MATCHING_TYPES = "MatchingTypes";
+                public const string SectionName = $"{nameof(Debug)}.FunctionCallTrace";
+                public const string Enable = "Enable";
+                public const string Methods = "Methods";
             }
         }
+
         public static class Remote
         {
-            public const string SECTION_NAME = $"{nameof(Remote)}";
-            public const string ENABLE = "Enable";
-            public const string ADDRESS = "Address";
-            public const string PORT = "Port";
+            public const string SectionName = $"{nameof(Remote)}";
+            public const string Enable = "Enable";
+            public const string Address = "Address";
+            public const string Port = "Port";
         }
     }
 }

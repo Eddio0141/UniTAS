@@ -11,8 +11,8 @@ public class PreloadPatcherProcessor
         new StaticCtorHeaders(),
         new UnityInitInvoke(),
         new FinalizeSuppressionPatch(),
-        new FunctionCallTrace(),
         new SteamAPIPatch(),
-        new SerializationCallbackPatch()
+        new SerializationCallbackPatch(),
+        new FunctionCallTrace() // this must run last, it hooks logs on start and ret
     ];
 }
