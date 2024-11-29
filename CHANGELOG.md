@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed Baldi's basics itch.io throwing exceptions during TAS playback
 - Fixed Resonance Of The Ocean not saving some information at the start
+- Fixed Cat Quest 2 from soft locking in the first cave
 
 ### UniTAS
 
@@ -21,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Compatibility
 
+- **BREAKING**: Async scene load is not supposed to be instant, there is a frame of delay before loading
 - **MAYBE BREAKING**: Setting async operation activation to true won't instantly load, which was the case before which is inaccurate
 - AsyncOperation's InvokeCompletionEvent is only disabled for tracked AsyncOperation instances
 - Implemented LoadScene forcing pending LoadSceneAsync to be all loaded
