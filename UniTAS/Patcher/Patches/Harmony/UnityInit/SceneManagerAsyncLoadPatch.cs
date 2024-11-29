@@ -204,13 +204,8 @@ public class SceneManagerAsyncLoadPatch
                 StaticLogger.LogError("async unload most likely failed, prepare for game to go nuts");
 
             __result = new();
-            return false;
-        }
-
-        private static void Postfix(ref AsyncOperation __result)
-        {
-            __result = new();
             SceneLoadTracker.AsyncSceneUnload(__result);
+            return false;
         }
     }
 
@@ -244,13 +239,8 @@ public class SceneManagerAsyncLoadPatch
                 StaticLogger.LogError("async unload most likely failed, prepare for game to go nuts");
 
             __result = new();
-            return false;
-        }
-
-        private static void Postfix(ref AsyncOperation __result)
-        {
-            __result = new();
             SceneLoadTracker.AsyncSceneUnload(__result);
+            return false;
         }
     }
 
