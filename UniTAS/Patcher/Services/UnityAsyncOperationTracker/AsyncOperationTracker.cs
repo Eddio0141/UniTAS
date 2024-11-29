@@ -12,7 +12,6 @@ using UniTAS.Patcher.Models.UnitySafeWrappers.SceneManagement;
 using UniTAS.Patcher.Models.Utils;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
-using UniTAS.Patcher.Utils;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -25,26 +24,27 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger)
         IOnLastUpdateUnconditional, IAsyncOperationIsInvokingOnComplete, IOnPreGameRestart, IOnUpdateActual,
         IOnStartActual, IOnFixedUpdateActual
 {
-    private readonly HashSet<AsyncOperation> _tracked = new(new HashUtils.ReferenceComparer<AsyncOperation>());
+    private readonly HashSet<AsyncOperation> _tracked = [];
 
     // any scene related things are stored as a list
     // it is a list of scenes in load order
-    private readonly List<AsyncSceneLoadData> _asyncLoads = new();
+    private readonly List<AsyncSceneLoadData> _asyncLoads = [];
 
     // not allowed to be disabled anymore
-    private readonly HashSet<AsyncOperation> _allowSceneActivationNotAllowed = new();
+    private readonly HashSet<AsyncOperation> _allowSceneActivationNotAllowed = [];
 
     // this can have unload operations too, which is why its Either
-    private readonly List<Either<AsyncSceneLoadData, AsyncOperation>> _pendingLoadCallbacks = new();
-    private readonly List<AsyncSceneLoadData> _asyncLoadStalls = new();
+    private readonly List<Either<AsyncSceneLoadData, AsyncOperation>> _pendingLoadCallbacks = [];
+    private readonly List<AsyncSceneLoadData> _asyncLoadStalls = [];
 
     private readonly Dictionary<AsyncOperation, AssetBundle> _assetBundleCreateRequests = new();
     private readonly Dictionary<AsyncOperation, AssetBundleRequestData> _assetBundleRequests = new();
 
-    private readonly Dictionary<AsyncOperation, bool> _allowSceneActivationValue =
-        new(new HashUtils.ReferenceComparer<AsyncOperation>());
+    private readonly Dictionary<AsyncOperation, bool> _allowSceneActivationValue = new();
 
-    private readonly HashSet<AsyncOperation> _isDone = new(new HashUtils.ReferenceComparer<AsyncOperation>());
+    private readonly HashSet<AsyncOperation> _isDone = [];
+
+    private bool _sceneLoadSync;
 
     private class AssetBundleRequestData(Object singleResult = null, Object[] multipleResults = null)
     {
@@ -64,6 +64,7 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger)
         _tracked.Clear();
         _allowSceneActivationNotAllowed.Clear();
         LoadingSceneCount = 0;
+        _sceneLoadSync = false;
     }
 
     public void OnLastUpdateUnconditional()
@@ -100,6 +101,8 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger)
 
     public void UpdateActual()
     {
+        _sceneLoadSync = false;
+        
         // doesn't matter, as long as next frame happens, before the game update adds more scenes, delay is gone
         foreach (var load in _asyncLoads.Concat(_asyncLoadStalls))
         {
@@ -197,17 +200,27 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger)
         var loadData =
             new AsyncSceneLoadData(sceneName, sceneBuildIndex, loadSceneMode, localPhysicsMode, asyncOperation);
         _asyncLoads.Add(loadData);
+
+        if (!_sceneLoadSync) return;
+        logger.LogDebug("load scene sync is happening for next frame");
+        
+        // sync load is going to happen, make this load too
+        loadData.DelayFrame = false;
+        _allowSceneActivationNotAllowed.Add(asyncOperation);
     }
 
     public void NonAsyncSceneLoad(string sceneName, int sceneBuildIndex, LoadSceneMode loadSceneMode,
         LocalPhysicsMode localPhysicsMode)
     {
+        _sceneLoadSync = true;
         LoadingSceneCount++;
 
         // first, all stalls are moved to load
         _asyncLoads.AddRange(_asyncLoadStalls);
         foreach (var sceneData in _asyncLoads)
         {
+            // delays are all gone now
+            sceneData.DelayFrame = false;
             logger.LogDebug(
                 $"force loading scene via non-async scene load, name: {sceneData.SceneName}, index: {sceneData.SceneBuildIndex}");
             _allowSceneActivationNotAllowed.Add(sceneData.AsyncOperation);
