@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
@@ -36,8 +37,8 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger)
     // this can have unload operations too, which is why its Either
     private readonly List<Either<AsyncSceneLoadData, AsyncOperation>> _pendingLoadCallbacks = new();
     private readonly List<AsyncSceneLoadData> _asyncLoadStalls = new();
-    private readonly Dictionary<AsyncOperation, AssetBundle> _assetBundleCreateRequests = new();
 
+    private readonly Dictionary<AsyncOperation, AssetBundle> _assetBundleCreateRequests = new();
     private readonly Dictionary<AsyncOperation, AssetBundleRequestData> _assetBundleRequests = new();
 
     private readonly Dictionary<AsyncOperation, bool> _allowSceneActivationValue =
@@ -69,8 +70,13 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger)
     {
         if (_asyncLoads.Count == 0) return;
 
-        foreach (var loadData in _asyncLoads)
+        var removes = new List<int>();
+        for (var i = 0; i < _asyncLoads.Count; i++)
         {
+            var loadData = _asyncLoads[i];
+            if (loadData.DelayFrame) continue;
+            removes.Add(i);
+
             logger.LogDebug(
                 $"force loading scene via OnLastUpdate, name: {loadData.SceneName}, index: {loadData.SceneBuildIndex}, manually loading in loop");
             sceneWrapper.TrackSceneCount = false;
@@ -84,11 +90,26 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger)
             _allowSceneActivationNotAllowed.Remove(op);
         }
 
-        _asyncLoads.Clear();
+        foreach (var i in ((IEnumerable<int>)removes).Reverse())
+        {
+            _asyncLoads.RemoveAt(i);
+        }
     }
 
     public void FixedUpdateActual() => CallPendingCallbacks();
-    public void UpdateActual() => CallPendingCallbacks();
+
+    public void UpdateActual()
+    {
+        CallPendingCallbacks();
+
+        for (var i = _asyncLoads.Count - 1; i >= 0; i--)
+        {
+            var asyncLoad = _asyncLoads[i];
+            if (_asyncLoadStalls.Contains(asyncLoad)) continue;
+            asyncLoad.DelayFrame = false;
+        }
+    }
+
     public void StartActual() => CallPendingCallbacks();
 
     private void CallPendingCallbacks()
@@ -174,7 +195,9 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger)
         _tracked.Add(asyncOperation);
 
         logger.LogDebug($"async scene load, {asyncOperation.GetHashCode()}");
-        _asyncLoads.Add(new(sceneName, sceneBuildIndex, loadSceneMode, localPhysicsMode, asyncOperation));
+        var loadData =
+            new AsyncSceneLoadData(sceneName, sceneBuildIndex, loadSceneMode, localPhysicsMode, asyncOperation);
+        _asyncLoads.Add(loadData);
     }
 
     public void NonAsyncSceneLoad(string sceneName, int sceneBuildIndex, LoadSceneMode loadSceneMode,
@@ -328,5 +351,6 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger)
         public LoadSceneMode LoadSceneMode { get; } = loadSceneMode;
         public LocalPhysicsMode LocalPhysicsMode { get; } = localPhysicsMode;
         public AsyncOperation AsyncOperation { get; } = asyncOperation;
+        public bool DelayFrame = true;
     }
 }
