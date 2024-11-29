@@ -100,14 +100,13 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger)
 
     public void UpdateActual()
     {
-        CallPendingCallbacks();
-
-        for (var i = _asyncLoads.Count - 1; i >= 0; i--)
+        // doesn't matter, as long as next frame happens, before the game update adds more scenes, delay is gone
+        foreach (var load in _asyncLoads.Concat(_asyncLoadStalls))
         {
-            var asyncLoad = _asyncLoads[i];
-            if (_asyncLoadStalls.Contains(asyncLoad)) continue;
-            asyncLoad.DelayFrame = false;
+            load.DelayFrame = false;
         }
+
+        CallPendingCallbacks();
     }
 
     public void StartActual() => CallPendingCallbacks();
