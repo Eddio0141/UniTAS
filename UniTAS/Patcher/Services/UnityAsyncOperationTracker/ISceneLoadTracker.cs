@@ -11,7 +11,7 @@ public interface ISceneLoadTracker
     void NonAsyncSceneLoad(string sceneName, int sceneBuildIndex, LoadSceneMode loadSceneMode,
         LocalPhysicsMode localPhysicsMode);
 
-    void AsyncSceneUnload(AsyncOperation asyncOperation);
+    void AsyncSceneUnload(ref AsyncOperation asyncOperation, string sceneName);
 
     void AllowSceneActivation(bool allow, AsyncOperation asyncOperation);
 

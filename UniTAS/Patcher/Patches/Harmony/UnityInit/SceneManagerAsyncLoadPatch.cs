@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using BepInEx;
 using HarmonyLib;
 using UniTAS.Patcher.Implementations.UnitySafeWrappers;
 using UniTAS.Patcher.Implementations.UnitySafeWrappers.SceneManagement;
@@ -51,6 +52,11 @@ public class SceneManagerAsyncLoadPatch
             : AccessTools.Method(
                 SceneManagerAPIInternal, "LoadSceneAsyncNameIndexInternal_Injected",
                 [typeof(string), typeof(int), LoadSceneParametersType.MakeByRefType(), typeof(bool)]);
+
+    private static readonly MethodInfo GetSceneByBuildIndex =
+        SceneManager?.GetMethod("GetSceneByBuildIndex", AccessTools.all, null, [typeof(int)], null);
+
+    private static readonly MethodInfo SceneGetName = SceneType?.GetProperty("name", AccessTools.all)?.GetGetMethod();
 
     private static readonly ISceneLoadTracker SceneLoadTracker =
         ContainerStarter.Kernel.GetInstance<ISceneLoadTracker>();
@@ -164,15 +170,30 @@ public class SceneManagerAsyncLoadPatch
         private static void Prefix(ref bool immediately, out bool __state)
         {
             __state = immediately;
+            if (immediately) return;
             immediately = true;
         }
 
-        private static void Postfix(ref AsyncOperation __result, bool __state)
+        private static void Postfix(string sceneName, int sceneBuildIndex, ref AsyncOperation __result, bool __state)
         {
             if (__state) return;
 
             __result = new();
-            SceneLoadTracker.AsyncSceneUnload(__result);
+            if (sceneName.IsNullOrWhiteSpace())
+            {
+                var scene = GetSceneByBuildIndex.Invoke(null, [sceneBuildIndex]);
+                if (scene != null)
+                {
+                    var name = (string)SceneGetName.Invoke(scene, null);
+                    if (!name.IsNullOrWhiteSpace())
+                    {
+                        SceneLoadTracker.AsyncSceneUnload(ref __result, name);
+                        return;
+                    }
+                }
+            }
+
+            SceneLoadTracker.AsyncSceneUnload(ref __result, sceneName);
         }
     }
 
@@ -189,11 +210,9 @@ public class SceneManagerAsyncLoadPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static readonly MethodInfo _getName = SceneType?.GetProperty("name", AccessTools.all)?.GetGetMethod();
-
         private static bool Prefix(object scene, ref AsyncOperation __result)
         {
-            var sceneName = (string)_getName.Invoke(scene, null);
+            var sceneName = (string)SceneGetName.Invoke(scene, null);
 
             StaticLogger.LogDebug($"async scene unload, forcing scene `{sceneName}` to unload");
             StaticLogger.LogWarning(
@@ -204,7 +223,7 @@ public class SceneManagerAsyncLoadPatch
                 StaticLogger.LogError("async unload most likely failed, prepare for game to go nuts");
 
             __result = new();
-            SceneLoadTracker.AsyncSceneUnload(__result);
+            SceneLoadTracker.AsyncSceneUnload(ref __result, sceneName);
             return false;
         }
     }
@@ -223,12 +242,9 @@ public class SceneManagerAsyncLoadPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static readonly MethodInfo _getName =
-            SceneType?.GetProperty("name", AccessTools.all)?.GetGetMethod();
-
         private static bool Prefix(object scene, object options, ref AsyncOperation __result)
         {
-            var sceneName = (string)_getName.Invoke(scene, null);
+            var sceneName = (string)SceneGetName.Invoke(scene, null);
 
             StaticLogger.LogDebug($"async scene unload, forcing scene `{sceneName}` to unload");
             StaticLogger.LogWarning(
@@ -239,7 +255,7 @@ public class SceneManagerAsyncLoadPatch
                 StaticLogger.LogError("async unload most likely failed, prepare for game to go nuts");
 
             __result = new();
-            SceneLoadTracker.AsyncSceneUnload(__result);
+            SceneLoadTracker.AsyncSceneUnload(ref __result, sceneName);
             return false;
         }
     }

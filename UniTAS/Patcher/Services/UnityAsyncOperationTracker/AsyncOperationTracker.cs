@@ -34,7 +34,7 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger)
     private readonly HashSet<AsyncOperation> _allowSceneActivationNotAllowed = [];
 
     // this can have unload operations too, which is why its Either
-    private readonly List<Either<AsyncSceneLoadData, AsyncOperation>> _pendingLoadCallbacks = [];
+    private readonly List<Either<AsyncSceneLoadData, AsyncSceneUnloadData>> _pendingLoadCallbacks = [];
     private readonly List<AsyncSceneLoadData> _asyncLoadStalls = [];
 
     private readonly Dictionary<AsyncOperation, AssetBundle> _assetBundleCreateRequests = new();
@@ -102,7 +102,7 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger)
     public void UpdateActual()
     {
         _sceneLoadSync = false;
-        
+
         // doesn't matter, as long as next frame happens, before the game update adds more scenes, delay is gone
         foreach (var load in _asyncLoads.Concat(_asyncLoadStalls))
         {
@@ -119,11 +119,11 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger)
         if (_pendingLoadCallbacks.Count == 0) return;
 
         // to allow the scene to be findable, invoke when scene loads on update
-        var callbacks = new List<Either<AsyncSceneLoadData, AsyncOperation>>(_pendingLoadCallbacks.Count);
+        var callbacks = new List<Either<AsyncSceneLoadData, AsyncSceneUnloadData>>(_pendingLoadCallbacks.Count);
         foreach (var data in _pendingLoadCallbacks)
         {
             callbacks.Add(data);
-            var op = data.IsLeft ? data.Left.AsyncOperation : data.Right;
+            var op = data.IsLeft ? data.Left.AsyncOperation : data.Right.AsyncOperation;
             if (op == null) continue;
             _isDone.Add(op);
         }
@@ -147,7 +147,7 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger)
             }
             else
             {
-                op = data.Right;
+                op = data.Right.AsyncOperation;
             }
 
             if (op == null) continue;
@@ -179,12 +179,19 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger)
         InvokeOnComplete(asyncOperation);
     }
 
-    public void AsyncSceneUnload(AsyncOperation asyncOperation)
+    public void AsyncSceneUnload(ref AsyncOperation asyncOperation, string sceneName)
     {
         logger.LogDebug("async scene unload");
 
         _tracked.Add(asyncOperation);
-        _pendingLoadCallbacks.Add(asyncOperation);
+        if (_pendingLoadCallbacks.Any(p => p.IsRight && p.Right.SceneName == sceneName))
+        {
+            logger.LogDebug("scene is already to be unloaded, skipping this operation");
+            asyncOperation = null;
+            return;
+        }
+
+        _pendingLoadCallbacks.Add(new AsyncSceneUnloadData(sceneName, asyncOperation));
         sceneWrapper.SceneCount--;
         LoadingSceneCount++;
     }
@@ -203,7 +210,7 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger)
 
         if (!_sceneLoadSync) return;
         logger.LogDebug("load scene sync is happening for next frame");
-        
+
         // sync load is going to happen, make this load too
         loadData.DelayFrame = false;
         _allowSceneActivationNotAllowed.Add(asyncOperation);
@@ -364,5 +371,11 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger)
         public LocalPhysicsMode LocalPhysicsMode { get; } = localPhysicsMode;
         public AsyncOperation AsyncOperation { get; } = asyncOperation;
         public bool DelayFrame = true;
+    }
+
+    private class AsyncSceneUnloadData(string sceneName, AsyncOperation asyncOperation)
+    {
+        public string SceneName { get; } = sceneName;
+        public AsyncOperation AsyncOperation { get; } = asyncOperation;
     }
 }
