@@ -103,8 +103,6 @@ public class SceneManagerAsyncLoadPatch
         if (!mustCompleteNextFrame)
         {
             __result = new();
-
-            Logger.LogDebug($"async scene load, instance id: {__result.GetHashCode()}");
         }
 
         if (parameters != null)
@@ -214,9 +212,8 @@ public class SceneManagerAsyncLoadPatch
         {
             var sceneName = (string)SceneGetName.Invoke(scene, null);
 
-            StaticLogger.LogDebug($"async scene unload, forcing scene `{sceneName}` to unload");
             StaticLogger.LogWarning(
-                "THIS OPERATION MIGHT BREAK THE GAME, scene unloading patch is using an unstable unity function, and it may fail");
+                "async unload call: THIS OPERATION MIGHT BREAK THE GAME, scene unloading patch is using an unstable unity function, and it may fail");
             var args = new object[] { sceneName, -1, true, null };
             UnloadSceneNameIndexInternal.Invoke(null, args);
             if (!(bool)args[3])
@@ -246,9 +243,8 @@ public class SceneManagerAsyncLoadPatch
         {
             var sceneName = (string)SceneGetName.Invoke(scene, null);
 
-            StaticLogger.LogDebug($"async scene unload, forcing scene `{sceneName}` to unload");
             StaticLogger.LogWarning(
-                "THIS OPERATION MIGHT BREAK THE GAME, scene unloading patch is using an unstable unity function, and it may fail");
+                "async unload call: THIS OPERATION MIGHT BREAK THE GAME, scene unloading patch is using an unstable unity function, and it may fail");
             var args = new[] { sceneName, -1, true, options, null };
             UnloadSceneNameIndexInternal.Invoke(null, args);
             if (!(bool)args[4])

@@ -181,7 +181,7 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger)
 
     public void AsyncSceneUnload(ref AsyncOperation asyncOperation, string sceneName)
     {
-        logger.LogDebug("async scene unload");
+        logger.LogDebug($"async scene unload, name: {sceneName}");
 
         _tracked.Add(asyncOperation);
         if (_pendingLoadCallbacks.Any(p => p.IsRight && p.Right.SceneName == sceneName))
@@ -203,7 +203,7 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger)
 
         _tracked.Add(asyncOperation);
 
-        logger.LogDebug($"async scene load, {asyncOperation.GetHashCode()}");
+        logger.LogDebug($"async scene load, name: `{sceneName}`, index: {sceneBuildIndex}");
         var loadData =
             new AsyncSceneLoadData(sceneName, sceneBuildIndex, loadSceneMode, localPhysicsMode, asyncOperation);
         _asyncLoads.Add(loadData);
@@ -349,7 +349,6 @@ public class AsyncOperationTracker(ISceneWrapper sceneWrapper, ILogger logger)
     {
         if (_invokeCompletionEvent == null) return;
         _isInvokingOnComplete = true;
-        logger.LogDebug("invoking completion event");
         _invokeCompletionEvent.Invoke(asyncOperation, null);
         _isInvokingOnComplete = false;
     }
