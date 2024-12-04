@@ -111,6 +111,39 @@ public class SceneStructPatch
     }
 
     [HarmonyPatch]
+    private class set_name
+    {
+        private static MethodBase TargetMethod()
+        {
+            return AccessTools.PropertySetter(SceneType, "name");
+        }
+
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static bool Prefix(ref object __instance)
+        {
+            if (PatchReverseInvoker.Invoking) return true;
+
+            var instanceAddr = InstanceToAddr(__instance);
+            foreach (var loadInfo in SceneLoadTracker.LoadingScenes)
+            {
+                if (loadInfo.dummyScenePtr != instanceAddr) continue;
+                if (loadInfo.actualSceneStruct != null) return true;
+
+                CheckAndWarnAPIUsage();
+                // well this ain't the proper error, but it should do the same thing
+                throw new InvalidOperationException(
+                    $"Setting a name on a saved scene is not allowed (the filename is used as name). Scene: '{loadInfo.loadingScene.Path}'");
+            }
+
+            return true;
+        }
+    }
+
+    [HarmonyPatch]
     private class get_isLoaded
     {
         private static MethodBase TargetMethod()
