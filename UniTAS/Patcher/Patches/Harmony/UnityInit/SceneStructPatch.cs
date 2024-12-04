@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using UniTAS.Patcher.Interfaces.Patches.PatchTypes;
@@ -58,6 +59,7 @@ public class SceneStructPatch
                 if (loadInfo.dummyScenePtr != instanceAddr) continue;
                 if (loadInfo.actualSceneStruct == null)
                 {
+                    CheckAndWarnAPIUsage();
                     __result = true;
                     return false;
                 }
@@ -93,6 +95,7 @@ public class SceneStructPatch
                 if (loadInfo.dummyScenePtr != instanceAddr) continue;
                 if (loadInfo.actualSceneStruct == null)
                 {
+                    CheckAndWarnAPIUsage();
                     __result = loadInfo.loadingScene.Name;
                     return false;
                 }
@@ -128,6 +131,7 @@ public class SceneStructPatch
                 if (loadInfo.dummyScenePtr != instanceAddr) continue;
                 if (loadInfo.actualSceneStruct == null)
                 {
+                    CheckAndWarnAPIUsage();
                     __result = false;
                     return false;
                 }
@@ -163,6 +167,7 @@ public class SceneStructPatch
                 if (loadInfo.dummyScenePtr != instanceAddr) continue;
                 if (loadInfo.actualSceneStruct == null)
                 {
+                    CheckAndWarnAPIUsage();
                     __result = loadInfo.loadingScene.BuildIndex;
                     return false;
                 }
@@ -198,6 +203,7 @@ public class SceneStructPatch
                 if (loadInfo.dummyScenePtr != instanceAddr) continue;
                 if (loadInfo.actualSceneStruct == null)
                 {
+                    CheckAndWarnAPIUsage();
                     __result = false;
                     return false;
                 }
@@ -233,6 +239,7 @@ public class SceneStructPatch
                 if (loadInfo.dummyScenePtr != instanceAddr) continue;
                 if (loadInfo.actualSceneStruct == null)
                 {
+                    CheckAndWarnAPIUsage();
                     __result = 0;
                     return false;
                 }
@@ -268,6 +275,7 @@ public class SceneStructPatch
                 if (loadInfo.dummyScenePtr != instanceAddr) continue;
                 if (loadInfo.actualSceneStruct == null)
                 {
+                    CheckAndWarnAPIUsage();
                     __result = false;
                     return false;
                 }
@@ -303,6 +311,7 @@ public class SceneStructPatch
                 if (loadInfo.dummyScenePtr != instanceAddr) continue;
                 if (loadInfo.actualSceneStruct == null)
                 {
+                    CheckAndWarnAPIUsage();
                     __result = loadInfo.loadingScene.Path;
                     return false;
                 }
@@ -463,23 +472,7 @@ public class SceneStructPatch
                 if (loadInfo.dummyScenePtr != instanceAddr) continue;
                 if (loadInfo.actualSceneStruct == null)
                 {
-                    MethodBase whoCalled;
-                    try
-                    {
-                        whoCalled = AccessTools.GetOutsideCaller();
-                    }
-                    catch (Exception e)
-                    {
-                        StaticLogger.LogError($"exception in Scene.handle getter while getting outside caller: {e}");
-                        return false;
-                    }
-
-                    if (whoCalled.DeclaringType != SceneType)
-                    {
-                        StaticLogger.LogWarning(
-                            $"Something is called Scene.handle that isn't inside Scene struct, this could be bad, stacktrace: {new StackTrace()}");
-                    }
-
+                    CheckAndWarnAPIUsage();
                     return false;
                 }
 
@@ -488,6 +481,26 @@ public class SceneStructPatch
             }
 
             return true;
+        }
+    }
+
+    private static void CheckAndWarnAPIUsage()
+    {
+        var frames = new StackTrace(true).GetFrames();
+        if (frames == null) return;
+
+        foreach (var frame in frames.Skip(1))
+        {
+            var method = frame.GetMethod();
+            if (method.DeclaringType?.Namespace == typeof(HarmonyLib.Harmony).Namespace) continue;
+
+            if (method.DeclaringType != SceneType)
+            {
+                StaticLogger.LogWarning(
+                    $"Something is calling scene struct API that is managed by UniTAS outside of Scene struct, this could be bad, stacktrace: {new StackTrace()}");
+            }
+
+            return;
         }
     }
 }
