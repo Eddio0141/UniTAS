@@ -1,16 +1,19 @@
 using System.Collections.Generic;
+using UniTAS.Patcher.Interfaces.DependencyInjection;
+using UniTAS.Patcher.Services.UnityInfo;
+#if !UNIT_TESTS
 using System.IO;
 using AssetsTools.NET.Extra;
 using BepInEx;
-using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Services.Logging;
-using UniTAS.Patcher.Services.UnityInfo;
+#endif
 
 namespace UniTAS.Patcher.Implementations.UnityInfo;
 
 [Singleton]
 public class GameBuildScenesInfo : IGameBuildScenesInfo
 {
+#if !UNIT_TESTS
     public GameBuildScenesInfo(IAssetsManager assetsManager, ILogger logger)
     {
         var globalGameManagersPath = Directory.GetParent(Paths.ManagedPath)?.FullName;
@@ -87,6 +90,7 @@ public class GameBuildScenesInfo : IGameBuildScenesInfo
             i++;
         }
     }
+#endif
 
     public Dictionary<string, int> PathToIndex { get; } = new();
     public Dictionary<string, string> PathToName { get; } = new();
