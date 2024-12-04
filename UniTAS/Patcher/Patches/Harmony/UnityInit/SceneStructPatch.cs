@@ -446,7 +446,7 @@ public class SceneStructPatch
                     return false;
                 }
 
-                __result = loadInfo.actualSceneStruct.Instance.GetHashCode();
+                __result = PatchReverseInvoker.Invoke(l => l.actualSceneStruct.Instance.GetHashCode(), loadInfo);
                 return false;
             }
 
