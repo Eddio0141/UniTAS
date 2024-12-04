@@ -199,7 +199,7 @@ public static class KernelUtils
     }
 
     [Register(IncludeDifferentAssembly = true)]
-    public class SceneManagerWrapperDummy : ISceneWrapper
+    public class ISceneManagerManagerWrapperDummy : ISceneManagerWrapper
     {
         public void LoadSceneAsync(string sceneName, int sceneBuildIndex, LoadSceneMode loadSceneMode,
             LocalPhysicsMode localPhysicsMode, bool mustCompleteNextFrame)
@@ -217,8 +217,14 @@ public static class KernelUtils
         public int TotalSceneCount => 0;
         public int ActiveSceneIndex => 0;
         public string ActiveSceneName => "";
-        public int SceneCount { get; set; }
-        public bool TrackSceneCount { get; set; }
+        public int SceneCountDummy { get; set; }
+        public bool TrackSceneCountDummy { get; set; }
+        public int SceneCount => 0;
+
+        public SceneWrapper GetSceneAt(int index)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     [Register(IncludeDifferentAssembly = true)]
@@ -321,7 +327,7 @@ public static class KernelUtils
 
             if (typeof(T) == typeof(SceneWrapper))
             {
-                return (new SceneWrapper(null) as T)!;
+                return (new SceneWrapper(null, container.GetInstance<IPatchReverseInvoker>()) as T)!;
             }
 
             if (typeof(T) == typeof(RefreshRateWrap))

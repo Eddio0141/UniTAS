@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using UniTAS.Patcher.Implementations.UnitySafeWrappers.SceneManagement;
 using UniTAS.Patcher.Models.UnitySafeWrappers.SceneManagement;
 using UnityEngine;
 
@@ -40,4 +43,11 @@ public interface ISceneLoadTracker
     bool GetAllowSceneActivation(AsyncOperation asyncOperation, out bool state);
 
     int LoadingSceneCount { get; }
+
+    /// <summary>
+    /// The LoadingScene will provide dummy data for the fake instances, but once the scene is actually loaded,
+    /// SceneWrapper will give real information for the fake instance to use 
+    /// </summary>
+    List<(object dummySceneStruct, IntPtr dummyScenePtr, AsyncOperationTracker.LoadingScene loadingScene, SceneWrapper actualSceneStruct)>
+        LoadingScenes { get; }
 }

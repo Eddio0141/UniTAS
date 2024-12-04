@@ -38,6 +38,9 @@ public class AsyncOperationPatch
     private static readonly IAsyncOperationIsInvokingOnComplete AsyncOperationIsInvokingOnComplete =
         ContainerStarter.Kernel.GetInstance<IAsyncOperationIsInvokingOnComplete>();
 
+    private static readonly IAssetBundleTracker AssetBundleTracker =
+        ContainerStarter.Kernel.GetInstance<IAssetBundleTracker>();
+
     private static readonly ILogger Logger = ContainerStarter.Kernel.GetInstance<ILogger>();
 
     [HarmonyPatch(typeof(AsyncOperation), "InvokeCompletionEvent")]
@@ -308,11 +311,13 @@ public class AsyncOperationPatch
 
         private static bool Prefix(AssetBundle __instance, string name, Type type, ref AssetBundleRequest __result)
         {
-            StaticLogger.LogDebug($"Async op, load asset with sub assets async, name: {name}, type: {type.SaneFullName()}");
+            StaticLogger.LogDebug(
+                $"Async op, load asset with sub assets async, name: {name}, type: {type.SaneFullName()}");
 
             var loadResult =
                 _loadAssetWithSubAssetsInternal.Invoke(__instance, [name, type]) as Object[];
             __result = new();
+            // TODO: do i track scenes from those
             AssetBundleRequestTracker.NewAssetBundleRequestMultiple(__result, loadResult);
             return false;
         }
@@ -326,16 +331,32 @@ public class AsyncOperationPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static readonly MethodBase _unload =
-            AccessTools.Method(typeof(AssetBundle), "Unload", [typeof(bool)]);
+        private static readonly Type AssetBundleUnloadOperationType =
+            AccessTools.TypeByName("UnityEngine.AssetBundleUnloadOperation");
 
-        private static bool Prefix(bool unloadAllLoadedObjects, ref object __result)
+        private static bool Prefix(AssetBundle __instance, bool unloadAllLoadedObjects, ref object __result)
         {
             StaticLogger.LogDebug("Async op, unload AssetBundle");
 
-            _unload.Invoke(null, [unloadAllLoadedObjects]);
-            __result = AccessTools.CreateInstance(typeof(AssetBundle));
+            __instance.Unload(unloadAllLoadedObjects);
+            __result = AccessTools.CreateInstance(AssetBundleUnloadOperationType);
+            AssetBundleTracker.UnloadAsync((AsyncOperation)__result);
             return false;
+        }
+    }
+
+    [HarmonyPatch(typeof(AssetBundle), nameof(AssetBundle.Unload))]
+    private class Unload
+    {
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static void Postfix(AssetBundle __instance)
+        {
+            StaticLogger.LogDebug("non async op, unload AssetBundle");
+            AssetBundleTracker.Unload(__instance);
         }
     }
 

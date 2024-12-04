@@ -17,7 +17,7 @@ public class TestTab(
     WindowDependencies windowDependencies,
     IGameRender gameRender,
     IGameRestart gameRestart,
-    ISceneWrapper sceneWrapper,
+    ISceneManagerWrapper iSceneManagerWrapper,
     IMonoBehaviourController monoBehaviourController,
     IRuntimeTestAndLog runtimeTestAndLog)
     : Window(windowDependencies,
@@ -48,7 +48,7 @@ public class TestTab(
 
         if (GUILayout.Button("Scene 0", GUIUtils.EmptyOptions))
         {
-            sceneWrapper.LoadScene(0);
+            iSceneManagerWrapper.LoadScene(0);
         }
 
         if (GUILayout.Button("Toggle MonoBehaviour pause", GUIUtils.EmptyOptions))

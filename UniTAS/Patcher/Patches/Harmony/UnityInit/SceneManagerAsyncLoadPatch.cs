@@ -61,8 +61,8 @@ public class SceneManagerAsyncLoadPatch
     private static readonly ISceneLoadTracker SceneLoadTracker =
         ContainerStarter.Kernel.GetInstance<ISceneLoadTracker>();
 
-    private static readonly ISceneWrapper SceneWrapper =
-        ContainerStarter.Kernel.GetInstance<ISceneWrapper>();
+    private static readonly ISceneManagerWrapper SceneManagerWrapper =
+        ContainerStarter.Kernel.GetInstance<ISceneManagerWrapper>();
 
     private static readonly UnityInstanceWrapFactory UnityInstanceWrapFactory =
         ContainerStarter.Kernel.GetInstance<UnityInstanceWrapFactory>();
@@ -348,7 +348,7 @@ public class SceneManagerAsyncLoadPatch
 
         private static bool Prefix(ref int __result)
         {
-            __result = SceneWrapper.SceneCount;
+            __result = SceneManagerWrapper.SceneCountDummy;
             return false;
         }
     }
@@ -371,7 +371,10 @@ public class SceneManagerAsyncLoadPatch
 
         private static bool Prefix(ref int __result)
         {
+            if (ReverseInvoker.Invoking) return true;
+
             // check if it came from the specific method, since we want real data for this
+            // TODO: do i keep below now that ive patched shit
             var frames = new StackTrace().GetFrames();
             if (frames != null)
             {
@@ -383,7 +386,37 @@ public class SceneManagerAsyncLoadPatch
                 }
             }
 
-            __result = SceneWrapper.SceneCount + SceneLoadTracker.LoadingSceneCount;
+            __result = SceneManagerWrapper.SceneCountDummy + SceneLoadTracker.LoadingSceneCount;
+            return false;
+        }
+    }
+
+    [HarmonyPatch]
+    private class GetSceneAt
+    {
+        private static readonly MethodInfo GetSceneAtMethod =
+            SceneManager?.GetMethod("GetSceneAt", AccessTools.all, null, [typeof(int)], null);
+
+        private static MethodBase TargetMethod()
+        {
+            return GetSceneAtMethod;
+        }
+
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static bool Prefix(int index, ref object __result)
+        {
+            var sceneCount = SceneManagerWrapper.SceneCount;
+            if (index < sceneCount) return true;
+
+            // check loading ones
+            var loadIndex = index - sceneCount;
+            if (loadIndex >= SceneLoadTracker.LoadingScenes.Count) return true;
+
+            __result = SceneLoadTracker.LoadingScenes[loadIndex].dummySceneStruct;
             return false;
         }
     }
