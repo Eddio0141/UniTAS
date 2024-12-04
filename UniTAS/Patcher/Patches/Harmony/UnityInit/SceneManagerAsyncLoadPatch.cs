@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using BepInEx;
@@ -372,20 +371,6 @@ public class SceneManagerAsyncLoadPatch
         private static bool Prefix(ref int __result)
         {
             if (ReverseInvoker.Invoking) return true;
-
-            // check if it came from the specific method, since we want real data for this
-            // TODO: do i keep below now that ive patched shit
-            var frames = new StackTrace().GetFrames();
-            if (frames != null)
-            {
-                foreach (var frame in frames)
-                {
-                    var method = frame.GetMethod();
-                    if (method.DeclaringType == SceneManager && method.Name == "LoadScene")
-                        return true;
-                }
-            }
-
             __result = SceneManagerWrapper.SceneCountDummy + SceneLoadTracker.LoadingSceneCount;
             return false;
         }
