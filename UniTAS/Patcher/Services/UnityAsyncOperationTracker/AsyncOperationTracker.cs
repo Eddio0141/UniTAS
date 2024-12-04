@@ -441,7 +441,9 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         IntPtr instancePtr;
         unsafe
         {
+#pragma warning disable CS8500
             instancePtr = *(IntPtr*)(&tr);
+#pragma warning restore CS8500
         }
 
         LoadingScenes.Add((instance, instancePtr, loadingScene, null));

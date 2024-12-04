@@ -31,7 +31,9 @@ public class SceneStructPatch
         var tr = __makeref(instance);
         unsafe
         {
+#pragma warning disable CS8500
             var ptr = *(IntPtr*)(&tr);
+#pragma warning restore CS8500
             return ptr;
         }
     }
