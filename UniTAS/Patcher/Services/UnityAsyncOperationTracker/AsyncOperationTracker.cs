@@ -191,19 +191,25 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         InvokeOnComplete(asyncOperation);
     }
 
-    public void AsyncSceneUnload(ref AsyncOperation asyncOperation, string sceneName)
+    public void AsyncSceneUnload(ref AsyncOperation asyncOperation, Either<string, int> scene)
     {
-        _logger.LogDebug($"async scene unload, name: {sceneName}");
+        _logger.LogDebug("async scene unload, " + (scene.IsLeft ? $"name: {scene.Left}" : $"index: {scene.Right}"));
 
         _tracked.Add(asyncOperation);
-        if (_pendingLoadCallbacks.Any(p => p.IsRight && p.Right.SceneName == sceneName))
+        var sceneInfo = GetSceneInfo(scene);
+        if (sceneInfo == null)
+        {
+            throw new ArgumentException("Scene to unload is invalid");
+        }
+
+        if (_pendingLoadCallbacks.Any(p => p.IsRight && p.Right.SceneInfo == sceneInfo))
         {
             _logger.LogDebug("scene is already to be unloaded, skipping this operation");
             asyncOperation = null;
             return;
         }
 
-        _pendingLoadCallbacks.Add(new AsyncSceneUnloadData(sceneName, asyncOperation));
+        _pendingLoadCallbacks.Add(new AsyncSceneUnloadData(sceneInfo, asyncOperation));
         _iSceneManagerWrapper.SceneCountDummy--;
         LoadingSceneCount++;
     }
@@ -382,7 +388,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
     // note: this property exists here, because this class handles async scene loading, not scene wrapper
     public int LoadingSceneCount { get; private set; }
 
-    public List<(object dummySceneStruct, IntPtr dummyScenePtr, LoadingScene loadingScene, SceneWrapper
+    public List<(object dummySceneStruct, IntPtr dummyScenePtr, SceneInfo loadingScene, SceneWrapper
             actualSceneStruct)>
         LoadingScenes { get; } = new();
 
@@ -405,37 +411,8 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         if (_sceneStruct == null) return;
         var instance = Activator.CreateInstance(_sceneStruct);
 
-        // find info about scene
-        LoadingScene loadingScene;
-
-        if (_gameBuildScenesInfo.NameToPath.TryGetValue(loadName, out var path))
-        {
-            // loadName is name
-            loadingScene = new(path, loadName, _gameBuildScenesInfo.PathToIndex[path]);
-        }
-        else if (_gameBuildScenesInfo.PathToIndex.TryGetValue(loadName, out var index2))
-        {
-            // loadName is path
-            loadingScene = new(loadName, _gameBuildScenesInfo.PathToName[loadName], index2);
-        }
-        // TODO: in AssetBundle scenes, can i load from just name, or do i need path
-        // bundleScenes contains paths, not names
-        else if (_bundleScenes.Values.Any(scenes => scenes.Any(scene => scene == loadName)))
-        {
-            // TODO: fix below after resolving above
-            loadingScene = new(loadName, loadName, -1);
-        }
-        else
-        {
-            if (_getAllScenePaths == null)
-            {
-                _logger.LogError(
-                    "A load was done but scene wasn't found, this may be wrong as " +
-                    "AssetBundle.GetAllScenePaths doesn't exist in this unity version");
-            }
-
-            return;
-        }
+        var sceneInfo = GetSceneInfo(loadName);
+        if (sceneInfo == null) return;
 
         var tr = __makeref(instance);
         IntPtr instancePtr;
@@ -446,7 +423,51 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
 #pragma warning restore CS8500
         }
 
-        LoadingScenes.Add((instance, instancePtr, loadingScene, null));
+        LoadingScenes.Add((instance, instancePtr, sceneInfo, null));
+    }
+
+    private SceneInfo GetSceneInfo(Either<string, int> scene)
+    {
+        if (scene.IsRight)
+        {
+            var buildIndex = scene.Right;
+            if (buildIndex >= _gameBuildScenesInfo.IndexToPath.Count) return null;
+            var path = _gameBuildScenesInfo.IndexToPath[buildIndex];
+            var name = _gameBuildScenesInfo.PathToName[path];
+            return new(path, name, buildIndex);
+        }
+
+        var name2 = scene.Left;
+
+        // find info about scene
+        if (_gameBuildScenesInfo.NameToPath.TryGetValue(name2, out var path2))
+        {
+            // sceneName is name
+            return new(path2, name2, _gameBuildScenesInfo.PathToIndex[path2]);
+        }
+
+        if (_gameBuildScenesInfo.PathToIndex.TryGetValue(name2, out var index2))
+        {
+            // sceneName is path
+            return new(name2, _gameBuildScenesInfo.PathToName[name2], index2);
+        }
+        // TODO: in AssetBundle scenes, can i load from just name, or do i need path
+        // bundleScenes contains paths, not names
+
+        if (_bundleScenes.Values.Any(scenes => scenes.Any(s => s == name2)))
+        {
+            // TODO: fix below after resolving above
+            return new(name2, name2, -1);
+        }
+
+        if (_getAllScenePaths == null)
+        {
+            throw new InvalidOperationException(
+                "Tried to search for scene name but scene wasn't found, this may be wrong as " +
+                "AssetBundle.GetAllScenePaths doesn't exist in this unity version");
+        }
+
+        return null;
     }
 
     private void ReplaceDummyScene()
@@ -476,14 +497,49 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         public bool DelayFrame = true;
     }
 
-    private class AsyncSceneUnloadData(string sceneName, AsyncOperation asyncOperation)
+    private class AsyncSceneUnloadData(SceneInfo sceneInfo, AsyncOperation asyncOperation)
     {
-        public string SceneName { get; } = sceneName;
+        public SceneInfo SceneInfo { get; } = sceneInfo;
         public AsyncOperation AsyncOperation { get; } = asyncOperation;
     }
 
-    public class LoadingScene(string path, string name, int buildIndex)
+    public class SceneInfo(string path, string name, int buildIndex)
     {
+        private bool Equals(SceneInfo other)
+        {
+            return string.Equals(Path, other.Path, StringComparison.InvariantCulture) &&
+                   string.Equals(Name, other.Name, StringComparison.InvariantCulture) && BuildIndex == other.BuildIndex;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is null) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != GetType()) return false;
+            return Equals((SceneInfo)obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = Path != null ? StringComparer.InvariantCulture.GetHashCode(Path) : 0;
+                hashCode = (hashCode * 397) ^ (Name != null ? StringComparer.InvariantCulture.GetHashCode(Name) : 0);
+                hashCode = (hashCode * 397) ^ BuildIndex;
+                return hashCode;
+            }
+        }
+
+        public static bool operator ==(SceneInfo left, SceneInfo right)
+        {
+            return Equals(left, right);
+        }
+
+        public static bool operator !=(SceneInfo left, SceneInfo right)
+        {
+            return !Equals(left, right);
+        }
+
         public string Path { get; } = path;
         public string Name { get; } = name;
         public int BuildIndex { get; } = buildIndex;

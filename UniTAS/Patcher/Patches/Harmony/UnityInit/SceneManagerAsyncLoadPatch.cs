@@ -1,7 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using BepInEx;
 using HarmonyLib;
 using UniTAS.Patcher.Implementations.UnitySafeWrappers;
 using UniTAS.Patcher.Implementations.UnitySafeWrappers.SceneManagement;
@@ -176,21 +175,7 @@ public class SceneManagerAsyncLoadPatch
             if (__state) return;
 
             __result = new();
-            if (sceneName.IsNullOrWhiteSpace())
-            {
-                var scene = GetSceneByBuildIndex.Invoke(null, [sceneBuildIndex]);
-                if (scene != null)
-                {
-                    var name = (string)SceneGetName.Invoke(scene, null);
-                    if (!name.IsNullOrWhiteSpace())
-                    {
-                        SceneLoadTracker.AsyncSceneUnload(ref __result, name);
-                        return;
-                    }
-                }
-            }
-
-            SceneLoadTracker.AsyncSceneUnload(ref __result, sceneName);
+            SceneLoadTracker.AsyncSceneUnload(ref __result, sceneBuildIndex >= 0 ? sceneBuildIndex : sceneName);
         }
     }
 

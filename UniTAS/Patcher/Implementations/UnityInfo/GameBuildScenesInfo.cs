@@ -86,6 +86,7 @@ public class GameBuildScenesInfo : IGameBuildScenesInfo
             PathToIndex[path] = i;
             PathToName[path] = name;
             NameToPath[name] = path;
+            IndexToPath.Add(path);
 
             i++;
         }
@@ -95,4 +96,5 @@ public class GameBuildScenesInfo : IGameBuildScenesInfo
     public Dictionary<string, int> PathToIndex { get; } = new();
     public Dictionary<string, string> PathToName { get; } = new();
     public Dictionary<string, string> NameToPath { get; } = new();
+    public List<string> IndexToPath { get; } = new();
 }

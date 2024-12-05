@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UniTAS.Patcher.Implementations.UnitySafeWrappers.SceneManagement;
 using UniTAS.Patcher.Models.UnitySafeWrappers.SceneManagement;
+using UniTAS.Patcher.Models.Utils;
 using UnityEngine;
 
 namespace UniTAS.Patcher.Services.UnityAsyncOperationTracker;
@@ -14,7 +15,7 @@ public interface ISceneLoadTracker
     void NonAsyncSceneLoad(string sceneName, int sceneBuildIndex, LoadSceneMode loadSceneMode,
         LocalPhysicsMode localPhysicsMode);
 
-    void AsyncSceneUnload(ref AsyncOperation asyncOperation, string sceneName);
+    void AsyncSceneUnload(ref AsyncOperation asyncOperation, Either<string, int> scene);
 
     void AllowSceneActivation(bool allow, AsyncOperation asyncOperation);
 
@@ -48,6 +49,6 @@ public interface ISceneLoadTracker
     /// The LoadingScene will provide dummy data for the fake instances, but once the scene is actually loaded,
     /// SceneWrapper will give real information for the fake instance to use 
     /// </summary>
-    List<(object dummySceneStruct, IntPtr dummyScenePtr, AsyncOperationTracker.LoadingScene loadingScene, SceneWrapper actualSceneStruct)>
+    List<(object dummySceneStruct, IntPtr dummyScenePtr, AsyncOperationTracker.SceneInfo loadingScene, SceneWrapper actualSceneStruct)>
         LoadingScenes { get; }
 }
