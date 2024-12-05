@@ -124,7 +124,7 @@ public class SceneManagerAsyncLoadPatch
             else
             {
                 SceneLoadTracker.AsyncSceneLoad(sceneName, sceneBuildIndex, (LoadSceneMode)loadSceneModeValue,
-                    (LocalPhysicsMode)localPhysicsModeValue, __result);
+                    (LocalPhysicsMode)localPhysicsModeValue, ref __result);
             }
 
             return false;
@@ -144,7 +144,7 @@ public class SceneManagerAsyncLoadPatch
         {
             SceneLoadTracker.AsyncSceneLoad(sceneName, sceneBuildIndex,
                 isAdditive.Value ? LoadSceneMode.Additive : LoadSceneMode.Single,
-                LocalPhysicsMode.None, __result);
+                LocalPhysicsMode.None, ref __result);
         }
 
         return false;

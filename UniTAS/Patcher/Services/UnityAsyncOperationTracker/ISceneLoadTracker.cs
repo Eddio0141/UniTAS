@@ -10,7 +10,7 @@ namespace UniTAS.Patcher.Services.UnityAsyncOperationTracker;
 public interface ISceneLoadTracker
 {
     void AsyncSceneLoad(string sceneName, int sceneBuildIndex, LoadSceneMode loadSceneMode,
-        LocalPhysicsMode localPhysicsMode, AsyncOperation asyncOperation);
+        LocalPhysicsMode localPhysicsMode, ref AsyncOperation asyncOperation);
 
     void NonAsyncSceneLoad(string sceneName, int sceneBuildIndex, LoadSceneMode loadSceneMode,
         LocalPhysicsMode localPhysicsMode);

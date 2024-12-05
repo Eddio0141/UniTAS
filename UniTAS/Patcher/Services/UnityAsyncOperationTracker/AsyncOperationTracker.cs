@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using HarmonyLib;
 using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Implementations.UnitySafeWrappers.SceneManagement;
@@ -16,6 +17,7 @@ using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.UnityInfo;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 using Object = UnityEngine.Object;
 
 namespace UniTAS.Patcher.Services.UnityAsyncOperationTracker;
@@ -215,8 +217,14 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
     }
 
     public void AsyncSceneLoad(string sceneName, int sceneBuildIndex, LoadSceneMode loadSceneMode,
-        LocalPhysicsMode localPhysicsMode, AsyncOperation asyncOperation)
+        LocalPhysicsMode localPhysicsMode, ref AsyncOperation asyncOperation)
     {
+        if (InvalidSceneLoadAndLog(sceneBuildIndex >= 0 ? sceneBuildIndex : sceneName))
+        {
+            asyncOperation = null;
+            return;
+        }
+
         LoadingSceneCount++;
         CreateDummySceneStruct(sceneName);
 
@@ -238,6 +246,8 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
     public void NonAsyncSceneLoad(string sceneName, int sceneBuildIndex, LoadSceneMode loadSceneMode,
         LocalPhysicsMode localPhysicsMode)
     {
+        if (InvalidSceneLoadAndLog(sceneBuildIndex >= 0 ? sceneBuildIndex : sceneName)) return;
+
         _sceneLoadSync = true;
         LoadingSceneCount++;
 
@@ -257,6 +267,21 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         // next, queue the non async scene load
         _logger.LogDebug($"scene load, {sceneName}, index: {sceneBuildIndex}");
         _asyncLoads.Add(new(sceneName, sceneBuildIndex, loadSceneMode, localPhysicsMode, null));
+    }
+
+    private bool InvalidSceneLoadAndLog(Either<string, int> scene)
+    {
+        if (GetSceneInfo(scene) != null) return false;
+        var errorBuilder = new StringBuilder();
+
+        errorBuilder.AppendLine(
+            scene.IsLeft
+                ? $"Scene '{scene.Left}' couldn't be loaded because it has not been added to the build settings or the AssetBundle has not been loaded."
+                : $"Scene with build index: {scene.Right} couldn't be loaded because it has not been added to the build settings.");
+
+        errorBuilder.AppendLine("To add a scene to the build settings use the menu File->Build Settings...");
+        Debug.LogError(errorBuilder);
+        return true;
     }
 
     public void AllowSceneActivation(bool allow, AsyncOperation asyncOperation)
