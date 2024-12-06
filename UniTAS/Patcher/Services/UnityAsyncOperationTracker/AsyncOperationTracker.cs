@@ -347,6 +347,12 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
             return true;
         }
 
+        if (_pendingLoadCallbacks.Any(load => load.IsRight && load.Right.AsyncOperation == asyncOperation))
+        {
+            progress = 0f;
+            return true;
+        }
+
         progress = 0.9f;
         return _tracked.Contains(asyncOperation);
     }
