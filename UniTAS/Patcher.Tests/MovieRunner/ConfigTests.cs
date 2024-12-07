@@ -13,6 +13,7 @@ public class ConfigTests
                                  is_global_scope = false,
                                  frametime = 1/60,
                                  start_time = "03/28/2021 12:00:00",
+                                 seed = 123,
                                  update_type = "fixedupdate",
                                  window = {
                                      width = 500,
@@ -51,6 +52,7 @@ public class ConfigTests
         Assert.Equal(new(2021, 3, 28, 12, 0, 0, DateTimeKind.Utc), properties.StartupProperties.StartTime);
         Assert.Equal(1 / 60f, properties.StartupProperties.FrameTime);
         Assert.Equal(UpdateType.FixedUpdate, properties.UpdateType);
+        Assert.Equal(123, properties.StartupProperties.Seed);
         var windowState = properties.StartupProperties.WindowState;
         Assert.Equal(500, windowState.CurrentResolution.Width);
         Assert.Equal(600, windowState.CurrentResolution.Height);
