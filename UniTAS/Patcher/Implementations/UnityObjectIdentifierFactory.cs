@@ -8,10 +8,10 @@ namespace UniTAS.Patcher.Implementations;
 
 [Singleton]
 [ExcludeRegisterIfTesting]
-public class UnityObjectIdentifierFactory(ISceneWrapper sceneWrapper) : IUnityObjectIdentifierFactory
+public class UnityObjectIdentifierFactory(ISceneManagerWrapper iSceneManagerWrapper) : IUnityObjectIdentifierFactory
 {
     public UnityObjectIdentifier NewUnityObjectIdentifier(Object o)
     {
-        return new UnityObjectIdentifier(o, this, sceneWrapper);
+        return new UnityObjectIdentifier(o, this, iSceneManagerWrapper);
     }
 }

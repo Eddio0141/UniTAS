@@ -30,7 +30,7 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
     private DateTime _softRestartTime;
 
     private readonly ISyncFixedUpdateCycle _syncFixedUpdate;
-    private readonly ISceneWrapper _sceneWrapper;
+    private readonly ISceneManagerWrapper _iSceneManagerWrapper;
     private readonly IMonoBehaviourController _monoBehaviourController;
     private readonly ILogger _logger;
     private readonly IFinalizeSuppressor _finalizeSuppressor;
@@ -46,14 +46,14 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
     private bool _pendingResumePausedExecution;
 
     [SuppressMessage("ReSharper", "MemberCanBeProtected.Global")]
-    public GameRestart(ISyncFixedUpdateCycle syncFixedUpdate, ISceneWrapper sceneWrapper,
+    public GameRestart(ISyncFixedUpdateCycle syncFixedUpdate, ISceneManagerWrapper iSceneManagerWrapper,
         IMonoBehaviourController monoBehaviourController, ILogger logger, IOnGameRestart[] onGameRestart,
         IOnGameRestartResume[] onGameRestartResume, IOnPreGameRestart[] onPreGameRestart,
         IStaticFieldManipulator staticFieldManipulator, ITimeEnv timeEnv, IFinalizeSuppressor finalizeSuppressor,
         IUpdateInvokeOffset updateInvokeOffset, IObjectTracker objectTracker, ICoroutine coroutine, IGameInfo gameInfo)
     {
         _syncFixedUpdate = syncFixedUpdate;
-        _sceneWrapper = sceneWrapper;
+        _iSceneManagerWrapper = iSceneManagerWrapper;
         _monoBehaviourController = monoBehaviourController;
         _logger = logger;
         _staticFieldManipulator = staticFieldManipulator;
@@ -166,7 +166,7 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
         _logger.LogInfo("Soft restarting");
 
         OnGameRestart?.Invoke(_softRestartTime, true);
-        _sceneWrapper.LoadScene(0);
+        _iSceneManagerWrapper.LoadScene(0);
         OnGameRestart?.Invoke(_softRestartTime, false);
 
         _pendingRestart = false;

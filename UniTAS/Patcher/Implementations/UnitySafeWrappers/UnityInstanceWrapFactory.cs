@@ -3,8 +3,8 @@ using StructureMap;
 using UniTAS.Patcher.Implementations.UnitySafeWrappers.SceneManagement;
 using UniTAS.Patcher.Implementations.UnitySafeWrappers.Unity.Collections;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
+using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.UnitySafeWrappers;
-using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 
 namespace UniTAS.Patcher.Implementations.UnitySafeWrappers;
 
@@ -29,7 +29,7 @@ public class UnityInstanceWrapFactory(IContainer container) : IUnityInstanceWrap
 
         if (typeof(T) == typeof(SceneWrapper))
         {
-            return new SceneWrapper(null) as T;
+            return new SceneWrapper(null, container.GetInstance<IPatchReverseInvoker>()) as T;
         }
 
         if (typeof(T) == typeof(RefreshRateWrap))
