@@ -84,7 +84,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         for (var i = 0; i < _asyncLoads.Count; i++)
         {
             var loadData = _asyncLoads[i];
-            if (loadData.DelayFrame) continue;
+            if (loadData.DelayFrame > 0) continue;
             removes.Add(i);
 
             _logger.LogDebug(
@@ -118,7 +118,10 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         // doesn't matter, as long as next frame happens, before the game update adds more scenes, delay is gone
         foreach (var load in _asyncLoads.Concat(_asyncLoadStalls))
         {
-            load.DelayFrame = false;
+            if (load.DelayFrame > 0)
+                load.DelayFrame--;
+            if (load.ProgressBlocked > 0)
+                load.ProgressBlocked--;
         }
 
         CallPendingCallbacks();
@@ -231,15 +234,25 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         _tracked.Add(asyncOperation);
 
         _logger.LogDebug($"async scene load, name: `{sceneName}`, index: {sceneBuildIndex}");
-        var loadData =
-            new AsyncSceneLoadData(sceneName, sceneBuildIndex, loadSceneMode, localPhysicsMode, asyncOperation);
+        var singleIndex = _asyncLoads
+            .FindIndex(a => a.LoadSceneMode == LoadSceneMode.Single);
+        var delayFrames = 1;
+        if (singleIndex >= 0)
+        {
+            delayFrames = 4 + _asyncLoads.Skip(singleIndex + 1)
+                .Count(load => load.LoadSceneMode == LoadSceneMode.Additive);
+        }
+
+        var loadData = new AsyncSceneLoadData(sceneName, sceneBuildIndex, loadSceneMode, localPhysicsMode,
+            asyncOperation, delayFrames, delayFrames > 1 ? 2 : 0);
+        _logger.LogDebug($"delay frames: {delayFrames}");
         _asyncLoads.Add(loadData);
 
         if (!_sceneLoadSync) return;
         _logger.LogDebug("load scene sync is happening for next frame");
 
         // sync load is going to happen, make this load too
-        loadData.DelayFrame = false;
+        loadData.DelayFrame = 0;
         _allowSceneActivationNotAllowed.Add(asyncOperation);
     }
 
@@ -256,7 +269,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         foreach (var sceneData in _asyncLoads)
         {
             // delays are all gone now
-            sceneData.DelayFrame = false;
+            sceneData.DelayFrame = 0;
             _logger.LogDebug(
                 $"force loading scene via non-async scene load, name: {sceneData.SceneName}, index: {sceneData.SceneBuildIndex}");
             _allowSceneActivationNotAllowed.Add(sceneData.AsyncOperation);
@@ -266,7 +279,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
 
         // next, queue the non async scene load
         _logger.LogDebug($"scene load, {sceneName}, index: {sceneBuildIndex}");
-        _asyncLoads.Add(new(sceneName, sceneBuildIndex, loadSceneMode, localPhysicsMode, null));
+        _asyncLoads.Add(new(sceneName, sceneBuildIndex, loadSceneMode, localPhysicsMode, null, 0, 0));
     }
 
     private bool InvalidSceneLoadAndLog(Either<string, int> scene)
@@ -348,6 +361,12 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         }
 
         if (_pendingLoadCallbacks.Any(load => load.IsRight && load.Right.AsyncOperation == asyncOperation))
+        {
+            progress = 0f;
+            return true;
+        }
+
+        if (_asyncLoads.FirstOrDefault(a => a.AsyncOperation == asyncOperation) is { ProgressBlocked: > 0 })
         {
             progress = 0f;
             return true;
@@ -518,14 +537,17 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         int sceneBuildIndex,
         LoadSceneMode loadSceneMode,
         LocalPhysicsMode localPhysicsMode,
-        AsyncOperation asyncOperation)
+        AsyncOperation asyncOperation,
+        int delayFrame,
+        int progressBlocked)
     {
         public string SceneName { get; } = sceneName;
         public int SceneBuildIndex { get; } = sceneBuildIndex;
         public LoadSceneMode LoadSceneMode { get; } = loadSceneMode;
         public LocalPhysicsMode LocalPhysicsMode { get; } = localPhysicsMode;
         public AsyncOperation AsyncOperation { get; } = asyncOperation;
-        public bool DelayFrame = true;
+        public int DelayFrame = delayFrame;
+        public int ProgressBlocked = progressBlocked;
     }
 
     private class AsyncSceneUnloadData(SceneInfo sceneInfo, AsyncOperation asyncOperation)
