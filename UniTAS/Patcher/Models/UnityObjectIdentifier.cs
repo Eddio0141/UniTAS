@@ -33,7 +33,7 @@ public class UnityObjectIdentifier
     /// Initialise from object
     /// </summary>
     public UnityObjectIdentifier(Object o, IUnityObjectIdentifierFactory unityObjectIdentifierFactory,
-        ISceneWrapper sceneWrapper)
+        ISceneManagerWrapper iSceneManagerWrapper)
     {
         _objectType = o.GetType();
 
@@ -58,7 +58,7 @@ public class UnityObjectIdentifier
 
         _componentTypes = t?.GetComponents<Component>()?.Select(x => x.GetType()).ToArray() ?? [];
 
-        _foundScene = sceneWrapper.ActiveSceneIndex;
+        _foundScene = iSceneManagerWrapper.ActiveSceneIndex;
 
         var parent = t?.parent?.gameObject;
         if (parent == null) return;
@@ -97,15 +97,15 @@ public class UnityObjectIdentifier
     /// Finds runtime object
     /// </summary>
     /// <param name="searchSettings">Search settings to loosen or strict search</param>
-    /// <param name="sceneWrapper"></param>
+    /// <param name="iSceneManagerWrapper"></param>
     /// <param name="alreadyTrackedObjects">Array of already tracked objects</param>
     /// <param name="allObjects">Objects to search from, otherwise it will automatically search</param>
     /// <param name="allObjectsWithType">Objects with matching type as identifier, otherwise it will search automatically</param>
-    public Object FindObject(SearchSettings searchSettings, ISceneWrapper sceneWrapper,
+    public Object FindObject(SearchSettings searchSettings, ISceneManagerWrapper iSceneManagerWrapper,
         HashSet<Object> alreadyTrackedObjects, Object[] allObjects = null,
         Object[] allObjectsWithType = null)
     {
-        if (searchSettings.SceneMatch && _foundScene != sceneWrapper.ActiveSceneIndex) return null;
+        if (searchSettings.SceneMatch && _foundScene != iSceneManagerWrapper.ActiveSceneIndex) return null;
 
         allObjects ??= Resources.FindObjectsOfTypeAll(_objectType);
         allObjectsWithType ??= allObjects.Where(x => x.GetType() == _objectType).ToArray();
@@ -144,8 +144,8 @@ public class UnityObjectIdentifier
             // must fail match because it could mess up parent matching completely
             parentFindSettings.MultipleMatchHandle = MultipleMatchHandle.FailMatch;
             var parent =
-                _parent.FindObject(parentFindSettings, sceneWrapper, alreadyTrackedObjects, allObjects) as GameObject;
-            parent ??= _parent.FindObject(new(), sceneWrapper, alreadyTrackedObjects, allObjects) as GameObject;
+                _parent.FindObject(parentFindSettings, iSceneManagerWrapper, alreadyTrackedObjects, allObjects) as GameObject;
+            parent ??= _parent.FindObject(new(), iSceneManagerWrapper, alreadyTrackedObjects, allObjects) as GameObject;
             if (parent == null) return null;
             var parentTransform = parent.transform;
             var childCount = parentTransform.childCount;

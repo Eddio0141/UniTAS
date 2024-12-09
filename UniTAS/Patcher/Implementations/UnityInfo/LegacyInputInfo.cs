@@ -21,7 +21,7 @@ public class LegacyInputInfo
         var globalGameManagersPath = Directory.GetParent(Paths.ManagedPath)?.FullName;
         if (globalGameManagersPath == null)
         {
-            logger.LogError("Failed to get globalGameManagers path");
+            logger.LogError("Failed to get globalgamemanagers path");
             return;
         }
 
@@ -29,7 +29,7 @@ public class LegacyInputInfo
 
         if (!File.Exists(globalGameManagersPath))
         {
-            logger.LogInfo("Failed to find globalGameManagers file");
+            logger.LogInfo("Failed to find globalgamemanagers file");
             return;
         }
 
