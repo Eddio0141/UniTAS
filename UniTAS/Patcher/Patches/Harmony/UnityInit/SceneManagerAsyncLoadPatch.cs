@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using HarmonyLib;
@@ -52,11 +51,16 @@ public class SceneManagerAsyncLoadPatch
                 SceneManagerAPIInternal, "LoadSceneAsyncNameIndexInternal_Injected",
                 [typeof(string), typeof(int), LoadSceneParametersType.MakeByRefType(), typeof(bool)]);
 
+    private static readonly MethodInfo GetSceneByBuildIndex =
+        SceneManager?.GetMethod("GetSceneByBuildIndex", AccessTools.all, null, [typeof(int)], null);
+
+    private static readonly MethodInfo SceneGetName = SceneType?.GetProperty("name", AccessTools.all)?.GetGetMethod();
+
     private static readonly ISceneLoadTracker SceneLoadTracker =
         ContainerStarter.Kernel.GetInstance<ISceneLoadTracker>();
 
-    private static readonly ISceneWrapper SceneWrapper =
-        ContainerStarter.Kernel.GetInstance<ISceneWrapper>();
+    private static readonly ISceneManagerWrapper SceneManagerWrapper =
+        ContainerStarter.Kernel.GetInstance<ISceneManagerWrapper>();
 
     private static readonly UnityInstanceWrapFactory UnityInstanceWrapFactory =
         ContainerStarter.Kernel.GetInstance<UnityInstanceWrapFactory>();
@@ -97,8 +101,6 @@ public class SceneManagerAsyncLoadPatch
         if (!mustCompleteNextFrame)
         {
             __result = new();
-
-            Logger.LogDebug($"async scene load, instance id: {__result.GetHashCode()}");
         }
 
         if (parameters != null)
@@ -122,7 +124,7 @@ public class SceneManagerAsyncLoadPatch
             else
             {
                 SceneLoadTracker.AsyncSceneLoad(sceneName, sceneBuildIndex, (LoadSceneMode)loadSceneModeValue,
-                    (LocalPhysicsMode)localPhysicsModeValue, __result);
+                    (LocalPhysicsMode)localPhysicsModeValue, ref __result);
             }
 
             return false;
@@ -142,7 +144,7 @@ public class SceneManagerAsyncLoadPatch
         {
             SceneLoadTracker.AsyncSceneLoad(sceneName, sceneBuildIndex,
                 isAdditive.Value ? LoadSceneMode.Additive : LoadSceneMode.Single,
-                LocalPhysicsMode.None, __result);
+                LocalPhysicsMode.None, ref __result);
         }
 
         return false;
@@ -164,15 +166,16 @@ public class SceneManagerAsyncLoadPatch
         private static void Prefix(ref bool immediately, out bool __state)
         {
             __state = immediately;
+            if (immediately) return;
             immediately = true;
         }
 
-        private static void Postfix(ref AsyncOperation __result, bool __state)
+        private static void Postfix(string sceneName, int sceneBuildIndex, ref AsyncOperation __result, bool __state)
         {
             if (__state) return;
 
             __result = new();
-            SceneLoadTracker.AsyncSceneUnload(__result);
+            SceneLoadTracker.AsyncSceneUnload(ref __result, sceneBuildIndex >= 0 ? sceneBuildIndex : sceneName);
         }
     }
 
@@ -189,28 +192,20 @@ public class SceneManagerAsyncLoadPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static readonly MethodInfo _getName = SceneType?.GetProperty("name", AccessTools.all)?.GetGetMethod();
-
         private static bool Prefix(object scene, ref AsyncOperation __result)
         {
-            var sceneName = (string)_getName.Invoke(scene, null);
+            var sceneName = (string)SceneGetName.Invoke(scene, null);
 
-            StaticLogger.LogDebug($"async scene unload, forcing scene `{sceneName}` to unload");
             StaticLogger.LogWarning(
-                "THIS OPERATION MIGHT BREAK THE GAME, scene unloading patch is using an unstable unity function, and it may fail");
+                "async unload call: THIS OPERATION MIGHT BREAK THE GAME, scene unloading patch is using an unstable unity function, and it may fail");
             var args = new object[] { sceneName, -1, true, null };
             UnloadSceneNameIndexInternal.Invoke(null, args);
             if (!(bool)args[3])
                 StaticLogger.LogError("async unload most likely failed, prepare for game to go nuts");
 
             __result = new();
+            SceneLoadTracker.AsyncSceneUnload(ref __result, sceneName);
             return false;
-        }
-
-        private static void Postfix(ref AsyncOperation __result)
-        {
-            __result = new();
-            SceneLoadTracker.AsyncSceneUnload(__result);
         }
     }
 
@@ -228,29 +223,20 @@ public class SceneManagerAsyncLoadPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static readonly MethodInfo _getName =
-            SceneType?.GetProperty("name", AccessTools.all)?.GetGetMethod();
-
         private static bool Prefix(object scene, object options, ref AsyncOperation __result)
         {
-            var sceneName = (string)_getName.Invoke(scene, null);
+            var sceneName = (string)SceneGetName.Invoke(scene, null);
 
-            StaticLogger.LogDebug($"async scene unload, forcing scene `{sceneName}` to unload");
             StaticLogger.LogWarning(
-                "THIS OPERATION MIGHT BREAK THE GAME, scene unloading patch is using an unstable unity function, and it may fail");
+                "async unload call: THIS OPERATION MIGHT BREAK THE GAME, scene unloading patch is using an unstable unity function, and it may fail");
             var args = new[] { sceneName, -1, true, options, null };
             UnloadSceneNameIndexInternal.Invoke(null, args);
             if (!(bool)args[4])
                 StaticLogger.LogError("async unload most likely failed, prepare for game to go nuts");
 
             __result = new();
+            SceneLoadTracker.AsyncSceneUnload(ref __result, sceneName);
             return false;
-        }
-
-        private static void Postfix(ref AsyncOperation __result)
-        {
-            __result = new();
-            SceneLoadTracker.AsyncSceneUnload(__result);
         }
     }
 
@@ -346,7 +332,7 @@ public class SceneManagerAsyncLoadPatch
 
         private static bool Prefix(ref int __result)
         {
-            __result = SceneWrapper.SceneCount;
+            __result = SceneManagerWrapper.SceneCountDummy;
             return false;
         }
     }
@@ -369,19 +355,38 @@ public class SceneManagerAsyncLoadPatch
 
         private static bool Prefix(ref int __result)
         {
-            // check if it came from the specific method, since we want real data for this
-            var frames = new StackTrace().GetFrames();
-            if (frames != null)
-            {
-                foreach (var frame in frames)
-                {
-                    var method = frame.GetMethod();
-                    if (method.DeclaringType == SceneManager && method.Name == "LoadScene")
-                        return true;
-                }
-            }
+            if (ReverseInvoker.Invoking) return true;
+            __result = SceneManagerWrapper.SceneCountDummy + SceneLoadTracker.LoadingSceneCount;
+            return false;
+        }
+    }
 
-            __result = SceneWrapper.SceneCount + SceneLoadTracker.LoadingSceneCount;
+    [HarmonyPatch]
+    private class GetSceneAt
+    {
+        private static readonly MethodInfo GetSceneAtMethod =
+            SceneManager?.GetMethod("GetSceneAt", AccessTools.all, null, [typeof(int)], null);
+
+        private static MethodBase TargetMethod()
+        {
+            return GetSceneAtMethod;
+        }
+
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static bool Prefix(int index, ref object __result)
+        {
+            var sceneCount = SceneManagerWrapper.SceneCount;
+            if (index < sceneCount) return true;
+
+            // check loading ones
+            var loadIndex = index - sceneCount;
+            if (loadIndex >= SceneLoadTracker.LoadingScenes.Count) return true;
+
+            __result = SceneLoadTracker.LoadingScenes[loadIndex].dummySceneStruct;
             return false;
         }
     }
