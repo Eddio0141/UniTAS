@@ -288,7 +288,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
                 ? $"Scene '{scene.Left}' couldn't be loaded because it has not been added to the build settings or the AssetBundle has not been loaded."
                 : $"Scene with build index: {scene.Right} couldn't be loaded because it has not been added to the build settings.");
 
-        errorBuilder.AppendLine("To add a scene to the build settings use the menu File->Build Settings...");
+        errorBuilder.Append("To add a scene to the build settings use the menu File->Build Settings...");
         Debug.LogError(errorBuilder);
         return true;
     }
