@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using HarmonyLib;
+using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Interfaces.Patches.PatchTypes;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.UnityAsyncOperationTracker;
@@ -26,18 +27,6 @@ public class SceneStructPatch
     private static readonly IPatchReverseInvoker PatchReverseInvoker =
         ContainerStarter.Kernel.GetInstance<IPatchReverseInvoker>();
 
-    private static IntPtr InstanceToAddr(object instance)
-    {
-        var tr = __makeref(instance);
-        unsafe
-        {
-#pragma warning disable CS8500
-            var ptr = *(IntPtr*)(&tr);
-#pragma warning restore CS8500
-            return ptr;
-        }
-    }
-
     [HarmonyPatch]
     private class IsValid
     {
@@ -55,7 +44,7 @@ public class SceneStructPatch
         {
             if (PatchReverseInvoker.Invoking) return true;
 
-            var instanceAddr = InstanceToAddr(__instance);
+            var instanceAddr = __instance.Addr();
             foreach (var loadInfo in SceneLoadTracker.LoadingScenes)
             {
                 if (loadInfo.dummyScenePtr != instanceAddr) continue;
@@ -91,7 +80,7 @@ public class SceneStructPatch
         {
             if (PatchReverseInvoker.Invoking) return true;
 
-            var instanceAddr = InstanceToAddr(__instance);
+            var instanceAddr = __instance.Addr();
             foreach (var loadInfo in SceneLoadTracker.LoadingScenes)
             {
                 if (loadInfo.dummyScenePtr != instanceAddr) continue;
@@ -127,7 +116,7 @@ public class SceneStructPatch
         {
             if (PatchReverseInvoker.Invoking) return true;
 
-            var instanceAddr = InstanceToAddr(__instance);
+            var instanceAddr = __instance.Addr();
             foreach (var loadInfo in SceneLoadTracker.LoadingScenes)
             {
                 if (loadInfo.dummyScenePtr != instanceAddr) continue;
@@ -160,7 +149,7 @@ public class SceneStructPatch
         {
             if (PatchReverseInvoker.Invoking) return true;
 
-            var instanceAddr = InstanceToAddr(__instance);
+            var instanceAddr = __instance.Addr();
             foreach (var loadInfo in SceneLoadTracker.LoadingScenes)
             {
                 if (loadInfo.dummyScenePtr != instanceAddr) continue;
@@ -196,7 +185,7 @@ public class SceneStructPatch
         {
             if (PatchReverseInvoker.Invoking) return true;
 
-            var instanceAddr = InstanceToAddr(__instance);
+            var instanceAddr = __instance.Addr();
             foreach (var loadInfo in SceneLoadTracker.LoadingScenes)
             {
                 if (loadInfo.dummyScenePtr != instanceAddr) continue;
@@ -232,7 +221,7 @@ public class SceneStructPatch
         {
             if (PatchReverseInvoker.Invoking) return true;
 
-            var instanceAddr = InstanceToAddr(__instance);
+            var instanceAddr = __instance.Addr();
             foreach (var loadInfo in SceneLoadTracker.LoadingScenes)
             {
                 if (loadInfo.dummyScenePtr != instanceAddr) continue;
@@ -268,7 +257,7 @@ public class SceneStructPatch
         {
             if (PatchReverseInvoker.Invoking) return true;
 
-            var instanceAddr = InstanceToAddr(__instance);
+            var instanceAddr = __instance.Addr();
             foreach (var loadInfo in SceneLoadTracker.LoadingScenes)
             {
                 if (loadInfo.dummyScenePtr != instanceAddr) continue;
@@ -304,7 +293,7 @@ public class SceneStructPatch
         {
             if (PatchReverseInvoker.Invoking) return true;
 
-            var instanceAddr = InstanceToAddr(__instance);
+            var instanceAddr = __instance.Addr();
             foreach (var loadInfo in SceneLoadTracker.LoadingScenes)
             {
                 if (loadInfo.dummyScenePtr != instanceAddr) continue;
@@ -340,7 +329,7 @@ public class SceneStructPatch
         {
             if (PatchReverseInvoker.Invoking) return true;
 
-            var instanceAddr = InstanceToAddr(__instance);
+            var instanceAddr = __instance.Addr();
             foreach (var loadInfo in SceneLoadTracker.LoadingScenes)
             {
                 if (loadInfo.dummyScenePtr != instanceAddr) continue;
@@ -376,8 +365,8 @@ public class SceneStructPatch
         {
             if (PatchReverseInvoker.Invoking) return true;
 
-            var lhsAddr = InstanceToAddr(lhs);
-            var rhsAddr = InstanceToAddr(rhs);
+            var lhsAddr = lhs.Addr();
+            var rhsAddr = rhs.Addr();
             foreach (var loadInfo in SceneLoadTracker.LoadingScenes)
             {
                 if (loadInfo.dummyScenePtr != lhsAddr && loadInfo.dummyScenePtr != rhsAddr) continue;
@@ -406,8 +395,8 @@ public class SceneStructPatch
         {
             if (PatchReverseInvoker.Invoking) return true;
 
-            var lhsAddr = InstanceToAddr(lhs);
-            var rhsAddr = InstanceToAddr(rhs);
+            var lhsAddr = lhs.Addr();
+            var rhsAddr = rhs.Addr();
             foreach (var loadInfo in SceneLoadTracker.LoadingScenes)
             {
                 if (loadInfo.dummyScenePtr != lhsAddr && loadInfo.dummyScenePtr != rhsAddr) continue;
@@ -436,7 +425,7 @@ public class SceneStructPatch
         {
             if (PatchReverseInvoker.Invoking) return true;
 
-            var instanceAddr = InstanceToAddr(__instance);
+            var instanceAddr = __instance.Addr();
             foreach (var loadInfo in SceneLoadTracker.LoadingScenes)
             {
                 if (loadInfo.dummyScenePtr != instanceAddr) continue;
@@ -471,8 +460,8 @@ public class SceneStructPatch
         {
             if (PatchReverseInvoker.Invoking) return true;
 
-            var instanceAddr = InstanceToAddr(__instance);
-            var otherAddr = InstanceToAddr(other);
+            var instanceAddr = __instance.Addr();
+            var otherAddr = other.Addr();
             foreach (var loadInfo in SceneLoadTracker.LoadingScenes)
             {
                 if (loadInfo.dummyScenePtr != instanceAddr && loadInfo.dummyScenePtr != otherAddr) continue;
@@ -501,7 +490,7 @@ public class SceneStructPatch
         {
             if (PatchReverseInvoker.Invoking) return true;
 
-            var instanceAddr = InstanceToAddr(__instance);
+            var instanceAddr = __instance.Addr();
             foreach (var loadInfo in SceneLoadTracker.LoadingScenes)
             {
                 if (loadInfo.dummyScenePtr != instanceAddr) continue;

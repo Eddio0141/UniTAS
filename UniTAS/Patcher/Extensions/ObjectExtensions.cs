@@ -12,9 +12,9 @@ public static class ObjectExtensions
     {
         if (obj == null)
             return DynValue.Nil;
-        
+
         DynValue v = null;
-        
+
         if (obj is Type type)
             v = UserData.CreateStatic(type);
 
@@ -49,5 +49,17 @@ public static class ObjectExtensions
         if (enumerator != null) return enumerator;
 
         return DynValue.FromObject(script, obj);
+    }
+
+    public static IntPtr Addr(this object obj)
+    {
+        var tr = __makeref(obj);
+        unsafe
+        {
+#pragma warning disable CS8500
+            var ptr = *(IntPtr*)(&tr);
+#pragma warning restore CS8500
+            return ptr;
+        }
     }
 }
