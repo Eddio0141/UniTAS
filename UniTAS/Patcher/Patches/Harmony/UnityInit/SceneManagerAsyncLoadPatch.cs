@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using HarmonyLib;
+using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Implementations.UnitySafeWrappers;
 using UniTAS.Patcher.Implementations.UnitySafeWrappers.SceneManagement;
 using UniTAS.Patcher.Interfaces.Patches.PatchTypes;
@@ -409,6 +410,41 @@ public class SceneManagerAsyncLoadPatch
 
             __result = SceneLoadTracker.LoadingScenes[loadIndex].dummySceneStruct;
             return false;
+        }
+    }
+
+    [HarmonyPatch]
+    private class SetActiveScene_Injected
+    {
+        private static readonly MethodInfo Method = SceneManager?.GetMethod("SetActiveScene_Injected", AccessTools.all,
+            null, [SceneType.MakeByRefType()], null);
+
+        private static MethodBase TargetMethod()
+        {
+            return Method;
+        }
+
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static void Prefix(ref object scene)
+        {
+            var scenePtr = scene.Addr();
+            foreach (var loading in SceneLoadTracker.LoadingScenes)
+            {
+                if (loading.dummyScenePtr != scenePtr) continue;
+                if (loading.actualSceneStruct == null)
+                {
+                    // scene is still loading, so do the intended error
+                    throw new ArgumentException(
+                        $"SceneManager.SetActiveScene failed; scene '{loading.loadingScene.Name}' is not loaded and therefore cannot be set active");
+                }
+
+                scene = loading.actualSceneStruct.Instance;
+                break;
+            }
         }
     }
 }
