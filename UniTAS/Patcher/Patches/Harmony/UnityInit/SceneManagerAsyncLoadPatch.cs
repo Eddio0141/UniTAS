@@ -315,6 +315,27 @@ public class SceneManagerAsyncLoadPatch
     }
 
     [HarmonyPatch]
+    private class LoadLevelAsync
+    {
+        private static MethodBase TargetMethod()
+        {
+            return AccessTools.Method(typeof(Application), nameof(Application.LoadLevelAsync),
+                [typeof(string), typeof(int), typeof(bool), typeof(bool)]);
+        }
+
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static bool Prefix(string monoLevelName, int index, bool additive, bool mustCompleteNextFrame,
+            ref AsyncOperation __result)
+        {
+            return AsyncSceneLoad(mustCompleteNextFrame, monoLevelName, index, null, additive, ref __result);
+        }
+    }
+
+    [HarmonyPatch]
     private class get_loadedSceneCount
     {
         private static readonly MethodInfo GetLoadedSceneCount =
