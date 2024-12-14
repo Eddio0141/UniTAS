@@ -15,6 +15,11 @@ public class UnityInstanceWrapFactory(IContainer container) : IUnityInstanceWrap
 {
     public T Create<T>(object instance) where T : class
     {
+        if (typeof(T) == typeof(SceneWrapper))
+        {
+            return (T)(object)new SceneWrapper(instance, container.GetInstance<IPatchReverseInvoker>());
+        }
+
         // because the wrap could have dependencies, we need to use the container to create it, and pass the instance to the constructor
         return container.With(instance).GetInstance<T>();
     }

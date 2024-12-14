@@ -11,6 +11,7 @@ using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.UnityAsyncOperationTracker;
 using UniTAS.Patcher.Services.UnityEvents;
+using UniTAS.Patcher.Services.UnitySafeWrappers;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
@@ -57,6 +58,33 @@ public class SceneManagerAsyncLoadPatch
 
     private static readonly MethodInfo SceneGetName = SceneType?.GetProperty("name", AccessTools.all)?.GetGetMethod();
 
+    private static readonly MethodInfo SetActiveSceneInjected = SceneType == null
+        ? null
+        : SceneManager?.GetMethod("SetActiveScene_Injected", AccessTools.all,
+            null, [SceneType.MakeByRefType()], null);
+
+    private static readonly MethodInfo GetSceneByNameInjected = SceneType == null
+        ? null
+        : SceneManager?.GetMethod("GetSceneByName_Injected", AccessTools.all, null,
+            [typeof(string), SceneType.MakeByRefType()], null);
+
+    private static readonly MethodInfo GetSceneByPathInjected = SceneType == null
+        ? null
+        : SceneManager?.GetMethod("GetSceneByPath_Injected", AccessTools.all,
+            null,
+            [typeof(string), SceneType.MakeByRefType()], null);
+
+    private static readonly MethodInfo GetSceneByBuildIndexInjected = SceneType == null
+        ? null
+        : (SceneManagerAPIInternal ?? SceneManager)?.GetMethod("GetSceneByBuildIndex_Injected", AccessTools.all,
+            null,
+            [typeof(int), SceneType.MakeByRefType()], null);
+
+    private static readonly MethodInfo GetSceneAtInjected = SceneType == null
+        ? null
+        : SceneManager?.GetMethod("GetSceneAt_Injected", AccessTools.all, null,
+            [typeof(int), SceneType.MakeByRefType()], null);
+
     private static readonly ISceneLoadTracker SceneLoadTracker =
         ContainerStarter.Kernel.GetInstance<ISceneLoadTracker>();
 
@@ -72,6 +100,9 @@ public class SceneManagerAsyncLoadPatch
 
     private static readonly IPatchReverseInvoker ReverseInvoker =
         ContainerStarter.Kernel.GetInstance<IPatchReverseInvoker>();
+
+    private static readonly IUnityInstanceWrapFactory WrapFactory =
+        ContainerStarter.Kernel.GetInstance<IUnityInstanceWrapFactory>();
 
     private static bool AsyncSceneLoad(bool mustCompleteNextFrame, string sceneName, int sceneBuildIndex,
         object parameters, bool? isAdditive, ref AsyncOperation __result)
@@ -386,12 +417,9 @@ public class SceneManagerAsyncLoadPatch
     [HarmonyPatch]
     private class GetSceneAt
     {
-        private static readonly MethodInfo GetSceneAtMethod =
-            SceneManager?.GetMethod("GetSceneAt", AccessTools.all, null, [typeof(int)], null);
-
         private static MethodBase TargetMethod()
         {
-            return GetSceneAtMethod;
+            return GetSceneAtInjected;
         }
 
         private static Exception Cleanup(MethodBase original, Exception ex)
@@ -399,7 +427,7 @@ public class SceneManagerAsyncLoadPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix(int index, ref object __result)
+        private static bool Prefix(int index, ref object ret)
         {
             var sceneCount = SceneManagerWrapper.SceneCount;
             if (index < sceneCount) return true;
@@ -408,20 +436,95 @@ public class SceneManagerAsyncLoadPatch
             var loadIndex = index - sceneCount;
             if (loadIndex >= SceneLoadTracker.LoadingScenes.Count) return true;
 
-            __result = SceneLoadTracker.LoadingScenes[loadIndex].dummySceneStruct;
+            ret = SceneLoadTracker.LoadingScenes[loadIndex].dummySceneStruct;
             return false;
+        }
+    }
+
+    [HarmonyPatch]
+    private class GetSceneByName_Injected
+    {
+        private static MethodBase TargetMethod()
+        {
+            return GetSceneByNameInjected;
+        }
+
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static bool Prefix(string name, ref object ret)
+        {
+            foreach (var loading in SceneLoadTracker.LoadingScenes)
+            {
+                if (loading.loadingScene.Name != name) continue;
+                ret = loading.dummySceneStruct;
+                return false;
+            }
+
+            return true;
+        }
+    }
+
+    [HarmonyPatch]
+    private class GetSceneByBuildIndex_Injected
+    {
+        private static MethodBase TargetMethod()
+        {
+            return GetSceneByBuildIndexInjected;
+        }
+
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static bool Prefix(int buildIndex, ref object ret)
+        {
+            foreach (var loading in SceneLoadTracker.LoadingScenes)
+            {
+                if (loading.loadingScene.BuildIndex != buildIndex) continue;
+                ret = loading.dummySceneStruct;
+                return false;
+            }
+
+            return true;
+        }
+    }
+
+    [HarmonyPatch]
+    private class GetSceneByPath_Injected
+    {
+        private static MethodBase TargetMethod()
+        {
+            return GetSceneByPathInjected;
+        }
+
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static bool Prefix(string scenePath, ref object ret)
+        {
+            foreach (var loading in SceneLoadTracker.LoadingScenes)
+            {
+                if (loading.loadingScene.Path != scenePath) continue;
+                ret = loading.dummySceneStruct;
+                return false;
+            }
+
+            return true;
         }
     }
 
     [HarmonyPatch]
     private class SetActiveScene_Injected
     {
-        private static readonly MethodInfo Method = SceneManager?.GetMethod("SetActiveScene_Injected", AccessTools.all,
-            null, [SceneType.MakeByRefType()], null);
-
         private static MethodBase TargetMethod()
         {
-            return Method;
+            return SetActiveSceneInjected;
         }
 
         private static Exception Cleanup(MethodBase original, Exception ex)
@@ -431,19 +534,13 @@ public class SceneManagerAsyncLoadPatch
 
         private static void Prefix(ref object scene)
         {
-            var scenePtr = scene.Addr();
+            var sceneWrapped = WrapFactory.Create<SceneWrapper>(scene);
             foreach (var loading in SceneLoadTracker.LoadingScenes)
             {
-                if (loading.dummyScenePtr != scenePtr) continue;
-                if (loading.actualSceneStruct == null)
-                {
-                    // scene is still loading, so do the intended error
-                    throw new ArgumentException(
-                        $"SceneManager.SetActiveScene failed; scene '{loading.loadingScene.Name}' is not loaded and therefore cannot be set active");
-                }
-
-                scene = loading.actualSceneStruct.Instance;
-                break;
+                if (loading.trackingHandle != sceneWrapped.Handle) continue;
+                // scene is still loading, so do the intended error
+                throw new ArgumentException(
+                    $"SceneManager.SetActiveScene failed; scene '{loading.loadingScene.Name}' is not loaded and therefore cannot be set active");
             }
         }
     }

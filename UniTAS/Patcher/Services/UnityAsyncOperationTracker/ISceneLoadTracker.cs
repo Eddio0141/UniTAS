@@ -49,6 +49,5 @@ public interface ISceneLoadTracker
     /// The LoadingScene will provide dummy data for the fake instances, but once the scene is actually loaded,
     /// SceneWrapper will give real information for the fake instance to use 
     /// </summary>
-    List<(object dummySceneStruct, IntPtr dummyScenePtr, AsyncOperationTracker.SceneInfo loadingScene, SceneWrapper actualSceneStruct)>
-        LoadingScenes { get; }
+    List<(object dummySceneStruct, int trackingHandle, AsyncOperationTracker.SceneInfo loadingScene)> LoadingScenes { get; }
 }

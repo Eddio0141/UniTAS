@@ -4,10 +4,11 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using HarmonyLib;
-using UniTAS.Patcher.Extensions;
+using UniTAS.Patcher.Implementations.UnitySafeWrappers.SceneManagement;
 using UniTAS.Patcher.Interfaces.Patches.PatchTypes;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.UnityAsyncOperationTracker;
+using UniTAS.Patcher.Services.UnitySafeWrappers;
 using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Patches.Harmony.UnityInit;
@@ -27,6 +28,9 @@ public class SceneStructPatch
     private static readonly IPatchReverseInvoker PatchReverseInvoker =
         ContainerStarter.Kernel.GetInstance<IPatchReverseInvoker>();
 
+    private static readonly IUnityInstanceWrapFactory WrapFactory =
+        ContainerStarter.Kernel.GetInstance<IUnityInstanceWrapFactory>();
+
     [HarmonyPatch]
     private class IsValid
     {
@@ -44,18 +48,12 @@ public class SceneStructPatch
         {
             if (PatchReverseInvoker.Invoking) return true;
 
-            var instanceAddr = __instance.Addr();
+            var instanceAddr = WrapFactory.Create<SceneWrapper>(__instance).Handle;
             foreach (var loadInfo in SceneLoadTracker.LoadingScenes)
             {
-                if (loadInfo.dummyScenePtr != instanceAddr) continue;
-                if (loadInfo.actualSceneStruct == null)
-                {
-                    CheckAndWarnAPIUsage();
-                    __result = true;
-                    return false;
-                }
-
-                __result = loadInfo.actualSceneStruct.IsValid;
+                if (loadInfo.trackingHandle != instanceAddr) continue;
+                CheckAndWarnAPIUsage();
+                __result = true;
                 return false;
             }
 
@@ -80,18 +78,12 @@ public class SceneStructPatch
         {
             if (PatchReverseInvoker.Invoking) return true;
 
-            var instanceAddr = __instance.Addr();
+            var instanceAddr = WrapFactory.Create<SceneWrapper>(__instance).Handle;
             foreach (var loadInfo in SceneLoadTracker.LoadingScenes)
             {
-                if (loadInfo.dummyScenePtr != instanceAddr) continue;
-                if (loadInfo.actualSceneStruct == null)
-                {
-                    CheckAndWarnAPIUsage();
-                    __result = loadInfo.loadingScene.Name;
-                    return false;
-                }
-
-                __result = loadInfo.actualSceneStruct.Name;
+                if (loadInfo.trackingHandle != instanceAddr) continue;
+                CheckAndWarnAPIUsage();
+                __result = loadInfo.loadingScene.Name;
                 return false;
             }
 
@@ -116,11 +108,10 @@ public class SceneStructPatch
         {
             if (PatchReverseInvoker.Invoking) return true;
 
-            var instanceAddr = __instance.Addr();
+            var instanceAddr = WrapFactory.Create<SceneWrapper>(__instance).Handle;
             foreach (var loadInfo in SceneLoadTracker.LoadingScenes)
             {
-                if (loadInfo.dummyScenePtr != instanceAddr) continue;
-                if (loadInfo.actualSceneStruct != null) return true;
+                if (loadInfo.trackingHandle != instanceAddr) continue;
 
                 CheckAndWarnAPIUsage();
                 // well this ain't the proper error, but it should do the same thing
@@ -149,18 +140,13 @@ public class SceneStructPatch
         {
             if (PatchReverseInvoker.Invoking) return true;
 
-            var instanceAddr = __instance.Addr();
+            var instanceAddr = WrapFactory.Create<SceneWrapper>(__instance).Handle;
             foreach (var loadInfo in SceneLoadTracker.LoadingScenes)
             {
-                if (loadInfo.dummyScenePtr != instanceAddr) continue;
-                if (loadInfo.actualSceneStruct == null)
-                {
-                    CheckAndWarnAPIUsage();
-                    __result = false;
-                    return false;
-                }
+                if (loadInfo.trackingHandle != instanceAddr) continue;
 
-                __result = loadInfo.actualSceneStruct.IsLoaded;
+                CheckAndWarnAPIUsage();
+                __result = false;
                 return false;
             }
 
@@ -185,18 +171,12 @@ public class SceneStructPatch
         {
             if (PatchReverseInvoker.Invoking) return true;
 
-            var instanceAddr = __instance.Addr();
+            var instanceAddr = WrapFactory.Create<SceneWrapper>(__instance).Handle;
             foreach (var loadInfo in SceneLoadTracker.LoadingScenes)
             {
-                if (loadInfo.dummyScenePtr != instanceAddr) continue;
-                if (loadInfo.actualSceneStruct == null)
-                {
-                    CheckAndWarnAPIUsage();
-                    __result = loadInfo.loadingScene.BuildIndex;
-                    return false;
-                }
-
-                __result = loadInfo.actualSceneStruct.BuildIndex;
+                if (loadInfo.trackingHandle != instanceAddr) continue;
+                CheckAndWarnAPIUsage();
+                __result = loadInfo.loadingScene.BuildIndex;
                 return false;
             }
 
@@ -221,18 +201,12 @@ public class SceneStructPatch
         {
             if (PatchReverseInvoker.Invoking) return true;
 
-            var instanceAddr = __instance.Addr();
+            var instanceAddr = WrapFactory.Create<SceneWrapper>(__instance).Handle;
             foreach (var loadInfo in SceneLoadTracker.LoadingScenes)
             {
-                if (loadInfo.dummyScenePtr != instanceAddr) continue;
-                if (loadInfo.actualSceneStruct == null)
-                {
-                    CheckAndWarnAPIUsage();
-                    __result = false;
-                    return false;
-                }
-
-                __result = loadInfo.actualSceneStruct.IsDirty;
+                if (loadInfo.trackingHandle != instanceAddr) continue;
+                CheckAndWarnAPIUsage();
+                __result = false;
                 return false;
             }
 
@@ -257,18 +231,12 @@ public class SceneStructPatch
         {
             if (PatchReverseInvoker.Invoking) return true;
 
-            var instanceAddr = __instance.Addr();
+            var instanceAddr = WrapFactory.Create<SceneWrapper>(__instance).Handle;
             foreach (var loadInfo in SceneLoadTracker.LoadingScenes)
             {
-                if (loadInfo.dummyScenePtr != instanceAddr) continue;
-                if (loadInfo.actualSceneStruct == null)
-                {
-                    CheckAndWarnAPIUsage();
-                    __result = 0;
-                    return false;
-                }
-
-                __result = loadInfo.actualSceneStruct.RootCount;
+                if (loadInfo.trackingHandle != instanceAddr) continue;
+                CheckAndWarnAPIUsage();
+                __result = 0;
                 return false;
             }
 
@@ -293,18 +261,12 @@ public class SceneStructPatch
         {
             if (PatchReverseInvoker.Invoking) return true;
 
-            var instanceAddr = __instance.Addr();
+            var instanceAddr = WrapFactory.Create<SceneWrapper>(__instance).Handle;
             foreach (var loadInfo in SceneLoadTracker.LoadingScenes)
             {
-                if (loadInfo.dummyScenePtr != instanceAddr) continue;
-                if (loadInfo.actualSceneStruct == null)
-                {
-                    CheckAndWarnAPIUsage();
-                    __result = false;
-                    return false;
-                }
-
-                __result = loadInfo.actualSceneStruct.IsSubScene;
+                if (loadInfo.trackingHandle != instanceAddr) continue;
+                CheckAndWarnAPIUsage();
+                __result = false;
                 return false;
             }
 
@@ -329,18 +291,12 @@ public class SceneStructPatch
         {
             if (PatchReverseInvoker.Invoking) return true;
 
-            var instanceAddr = __instance.Addr();
+            var instanceAddr = WrapFactory.Create<SceneWrapper>(__instance).Handle;
             foreach (var loadInfo in SceneLoadTracker.LoadingScenes)
             {
-                if (loadInfo.dummyScenePtr != instanceAddr) continue;
-                if (loadInfo.actualSceneStruct == null)
-                {
-                    CheckAndWarnAPIUsage();
-                    __result = loadInfo.loadingScene.Path;
-                    return false;
-                }
-
-                __result = loadInfo.actualSceneStruct.Path;
+                if (loadInfo.trackingHandle != instanceAddr) continue;
+                CheckAndWarnAPIUsage();
+                __result = loadInfo.loadingScene.Path;
                 return false;
             }
 
@@ -365,11 +321,11 @@ public class SceneStructPatch
         {
             if (PatchReverseInvoker.Invoking) return true;
 
-            var lhsAddr = lhs.Addr();
-            var rhsAddr = rhs.Addr();
+            var lhsAddr = WrapFactory.Create<SceneWrapper>(lhs).Handle;
+            var rhsAddr = WrapFactory.Create<SceneWrapper>(rhs).Handle;
             foreach (var loadInfo in SceneLoadTracker.LoadingScenes)
             {
-                if (loadInfo.dummyScenePtr != lhsAddr && loadInfo.dummyScenePtr != rhsAddr) continue;
+                if (loadInfo.trackingHandle != lhsAddr && loadInfo.trackingHandle != rhsAddr) continue;
                 __result = lhsAddr == rhsAddr;
                 return false;
             }
@@ -395,11 +351,11 @@ public class SceneStructPatch
         {
             if (PatchReverseInvoker.Invoking) return true;
 
-            var lhsAddr = lhs.Addr();
-            var rhsAddr = rhs.Addr();
+            var lhsAddr = WrapFactory.Create<SceneWrapper>(lhs).Handle;
+            var rhsAddr = WrapFactory.Create<SceneWrapper>(rhs).Handle;
             foreach (var loadInfo in SceneLoadTracker.LoadingScenes)
             {
-                if (loadInfo.dummyScenePtr != lhsAddr && loadInfo.dummyScenePtr != rhsAddr) continue;
+                if (loadInfo.trackingHandle != lhsAddr && loadInfo.trackingHandle != rhsAddr) continue;
                 __result = lhsAddr != rhsAddr;
                 return false;
             }
@@ -425,17 +381,11 @@ public class SceneStructPatch
         {
             if (PatchReverseInvoker.Invoking) return true;
 
-            var instanceAddr = __instance.Addr();
+            var sceneWrapped = WrapFactory.Create<SceneWrapper>(__instance);
             foreach (var loadInfo in SceneLoadTracker.LoadingScenes)
             {
-                if (loadInfo.dummyScenePtr != instanceAddr) continue;
-                if (loadInfo.actualSceneStruct == null)
-                {
-                    __result = 0;
-                    return false;
-                }
-
-                __result = PatchReverseInvoker.Invoke(l => l.actualSceneStruct.Instance.GetHashCode(), loadInfo);
+                if (loadInfo.trackingHandle != sceneWrapped.Handle) continue;
+                __result = 0;
                 return false;
             }
 
@@ -460,12 +410,12 @@ public class SceneStructPatch
         {
             if (PatchReverseInvoker.Invoking) return true;
 
-            var instanceAddr = __instance.Addr();
-            var otherAddr = other.Addr();
+            var instanceId = WrapFactory.Create<SceneWrapper>(__instance).Handle;
+            var otherId = WrapFactory.Create<SceneWrapper>(other).Handle;
             foreach (var loadInfo in SceneLoadTracker.LoadingScenes)
             {
-                if (loadInfo.dummyScenePtr != instanceAddr && loadInfo.dummyScenePtr != otherAddr) continue;
-                __result = instanceAddr == otherAddr;
+                if (loadInfo.trackingHandle != instanceId && loadInfo.trackingHandle != otherId) continue;
+                __result = instanceId == otherId;
                 return false;
             }
 
@@ -486,21 +436,15 @@ public class SceneStructPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix(ref object __instance, ref int __result)
+        private static bool Prefix(ref object __instance)
         {
             if (PatchReverseInvoker.Invoking) return true;
 
-            var instanceAddr = __instance.Addr();
+            var instanceId = WrapFactory.Create<SceneWrapper>(__instance).Handle;
             foreach (var loadInfo in SceneLoadTracker.LoadingScenes)
             {
-                if (loadInfo.dummyScenePtr != instanceAddr) continue;
-                if (loadInfo.actualSceneStruct == null)
-                {
-                    CheckAndWarnAPIUsage();
-                    return false;
-                }
-
-                __result = loadInfo.actualSceneStruct.Handle;
+                if (loadInfo.trackingHandle != instanceId) continue;
+                CheckAndWarnAPIUsage();
                 return false;
             }
 

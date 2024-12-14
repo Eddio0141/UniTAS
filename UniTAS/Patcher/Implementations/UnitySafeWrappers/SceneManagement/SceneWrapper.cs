@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using HarmonyLib;
 using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Interfaces.UnitySafeWrappers;
@@ -19,7 +20,17 @@ public class SceneWrapper(object instance, IPatchReverseInvoker patchReverseInvo
     public int BuildIndex => patchReverseInvoker.Invoke((m, i) => m(i), BuildIndexGetter, Instance);
     public bool IsDirty => patchReverseInvoker.Invoke((m, i) => m(i), IsDirtyGetter, Instance);
     public int RootCount => patchReverseInvoker.Invoke((m, i) => m(i), RootCountGetter, Instance);
-    public int Handle => patchReverseInvoker.Invoke((m, i) => m(i), HandleGetter, Instance);
+
+    public int Handle
+    {
+        get => (int)HandleField.GetValue(Instance);
+        set
+        {
+            var i = Instance;
+            HandleField.SetValue(i, value);
+            Instance = i;
+        }
+    }
 
     // TODO: when does this exist from?
     public bool IsSubScene => patchReverseInvoker.Invoke((m, i) => m?.Invoke(i) ?? false, IsSubSceneGetter, Instance);
@@ -33,7 +44,7 @@ public class SceneWrapper(object instance, IPatchReverseInvoker patchReverseInvo
     private static readonly Func<object, bool> IsDirtyGetter;
     private static readonly Func<object, bool> IsSubSceneGetter;
     private static readonly Func<object, int> RootCountGetter;
-    private static readonly Func<object, int> HandleGetter;
+    private static readonly FieldInfo HandleField;
 
     static SceneWrapper()
     {
@@ -52,8 +63,7 @@ public class SceneWrapper(object instance, IPatchReverseInvoker patchReverseInvo
         IsDirtyGetter = isDirty.MethodDelegate<Func<object, bool>>();
         var rootCount = AccessTools.PropertyGetter(SceneType, "rootCount");
         RootCountGetter = rootCount.MethodDelegate<Func<object, int>>();
-        var handle = AccessTools.PropertyGetter(SceneType, "handle");
-        HandleGetter = handle.MethodDelegate<Func<object, int>>();
+        HandleField = AccessTools.Field(SceneType, "m_Handle");
         var isSubScene = AccessTools.PropertyGetter(SceneType, "isSubScene");
         // TODO: does it exist
         IsSubSceneGetter = isSubScene?.MethodDelegate<Func<object, bool>>();
