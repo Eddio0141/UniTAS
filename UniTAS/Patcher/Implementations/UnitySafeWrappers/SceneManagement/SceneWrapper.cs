@@ -1,7 +1,8 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
+using System.Reflection.Emit;
 using HarmonyLib;
+using MonoMod.Utils;
 using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Interfaces.UnitySafeWrappers;
 using UniTAS.Patcher.Services;
@@ -23,11 +24,11 @@ public class SceneWrapper(object instance, IPatchReverseInvoker patchReverseInvo
 
     public int Handle
     {
-        get => (int)HandleField.GetValue(Instance);
+        get => GetHandleField(Instance);
         set
         {
             var i = Instance;
-            HandleField.SetValue(i, value);
+            SetHandleField(ref i, value);
             Instance = i;
         }
     }
@@ -44,7 +45,10 @@ public class SceneWrapper(object instance, IPatchReverseInvoker patchReverseInvo
     private static readonly Func<object, bool> IsDirtyGetter;
     private static readonly Func<object, bool> IsSubSceneGetter;
     private static readonly Func<object, int> RootCountGetter;
-    private static readonly FieldInfo HandleField;
+    private static readonly Func<object, int> GetHandleField;
+    private static readonly SetHandleFieldDelegate SetHandleField;
+
+    private delegate void SetHandleFieldDelegate(ref object instance, int handle);
 
     static SceneWrapper()
     {
@@ -63,9 +67,27 @@ public class SceneWrapper(object instance, IPatchReverseInvoker patchReverseInvo
         IsDirtyGetter = isDirty.MethodDelegate<Func<object, bool>>();
         var rootCount = AccessTools.PropertyGetter(SceneType, "rootCount");
         RootCountGetter = rootCount.MethodDelegate<Func<object, int>>();
-        HandleField = AccessTools.Field(SceneType, "m_Handle");
         var isSubScene = AccessTools.PropertyGetter(SceneType, "isSubScene");
         // TODO: does it exist
         IsSubSceneGetter = isSubScene?.MethodDelegate<Func<object, bool>>();
+
+        var handleField = AccessTools.Field(SceneType, "m_Handle");
+        var dmd = new DynamicMethodDefinition("m_Handle_get", typeof(int), [typeof(object)]);
+        var il = dmd.GetILGenerator();
+        il.Emit(OpCodes.Ldarg_0);
+        il.Emit(OpCodes.Unbox_Any, SceneType);
+        il.Emit(OpCodes.Ldfld, handleField);
+        il.Emit(OpCodes.Ret);
+        GetHandleField = dmd.Generate().CreateDelegate<Func<object, int>>();
+
+        dmd = new DynamicMethodDefinition("m_Handle_set", null, [typeof(object).MakeByRefType(), typeof(int)]);
+        il = dmd.GetILGenerator();
+        il.Emit(OpCodes.Ldarg_0);
+        il.Emit(OpCodes.Ldind_Ref);
+        il.Emit(OpCodes.Unbox, SceneType);
+        il.Emit(OpCodes.Ldarg_1);
+        il.Emit(OpCodes.Stfld, handleField);
+        il.Emit(OpCodes.Ret);
+        SetHandleField = dmd.Generate().CreateDelegate<SetHandleFieldDelegate>();
     }
 }

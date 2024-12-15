@@ -17,6 +17,7 @@ using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.UnityInfo;
 using UniTAS.Patcher.Services.UnitySafeWrappers;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
+using UniTAS.Patcher.Utils;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 using Object = UnityEngine.Object;
@@ -33,17 +34,14 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
     private readonly ISceneManagerWrapper _sceneManagerWrapper;
     private readonly ILogger _logger;
     private readonly IGameBuildScenesInfo _gameBuildScenesInfo;
-    private readonly IPatchReverseInvoker _reverseInvoker;
     private readonly IUnityInstanceWrapFactory _wrapFactory;
 
     public AsyncOperationTracker(ISceneManagerWrapper sceneManagerWrapper, ILogger logger,
-        IGameBuildScenesInfo gameBuildScenesInfo, IPatchReverseInvoker reverseInvoker,
-        IUnityInstanceWrapFactory wrapFactory)
+        IGameBuildScenesInfo gameBuildScenesInfo, IUnityInstanceWrapFactory wrapFactory)
     {
         _sceneManagerWrapper = sceneManagerWrapper;
         _logger = logger;
         _gameBuildScenesInfo = gameBuildScenesInfo;
-        _reverseInvoker = reverseInvoker;
         _wrapFactory = wrapFactory;
         var getAllScenePaths = AccessTools.Method(typeof(AssetBundle), "GetAllScenePaths");
         _getAllScenePaths = getAllScenePaths?.MethodDelegate<Func<AssetBundle, string[]>>();
@@ -94,6 +92,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         _tracked.Clear();
         _allowSceneActivationNotAllowed.Clear();
         _bundleScenes.Clear();
+        DummyScenes.Clear();
         LoadingScenes.Clear();
         LoadingSceneCount = 0;
         _sceneLoadSync = false;
@@ -283,6 +282,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
 
         _sceneLoadSync = true;
         LoadingSceneCount++;
+        CreateDummySceneStruct(sceneName);
 
         // first, all stalls are moved to load
         _asyncLoads.AddRange(_asyncLoadStalls);
@@ -437,7 +437,8 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
     // note: this property exists here, because this class handles async scene loading, not scene wrapper
     public int LoadingSceneCount { get; private set; }
 
-    public List<(object dummySceneStruct, int trackingHandle, SceneInfo loadingScene)> LoadingScenes { get; } = new();
+    public List<(DummyScene dummyScene, SceneWrapper actualScene)> DummyScenes { get; } = new();
+    public List<DummyScene> LoadingScenes { get; } = new();
 
     public void Unload(AssetBundle assetBundle)
     {
@@ -457,12 +458,28 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
     {
         if (_sceneStruct == null) return;
         var sceneInfo = GetSceneInfo(loadName);
+        StaticLogger.LogDebug($"sceneInfo is null? {sceneInfo == null}");
         if (sceneInfo == null) return;
 
         var instance = _wrapFactory.Create<SceneWrapper>(null);
         instance.Handle = _sceneStructHandleId;
-        LoadingScenes.Add((instance, _sceneStructHandleId, sceneInfo));
+        var dummyScene = new DummyScene(instance.Instance, _sceneStructHandleId, sceneInfo);
+        LoadingScenes.Add(dummyScene);
+        DummyScenes.Add((dummyScene, null));
         _sceneStructHandleId++;
+    }
+
+    private void ReplaceDummyScene()
+    {
+        var sceneCount = _sceneManagerWrapper.SceneCount;
+        if (sceneCount < 0) return;
+        if (LoadingScenes.Count == 0) return;
+
+        var actualScene = _sceneManagerWrapper.GetSceneAt(sceneCount - 1);
+        var loadingInfoIndex = LoadingScenes.FindIndex(x => x.LoadingScene.Path == actualScene.Path);
+        LoadingScenes.RemoveAt(loadingInfoIndex);
+        var dummySceneIndex = DummyScenes.FindIndex(x => x.Item1.LoadingScene.Path == actualScene.Path);
+        DummyScenes[dummySceneIndex] = (DummyScenes[dummySceneIndex].Item1, actualScene);
     }
 
     private SceneInfo GetSceneInfo(Either<string, int> scene)
@@ -507,18 +524,6 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         }
 
         return null;
-    }
-
-    private void ReplaceDummyScene()
-    {
-        var sceneCount = _sceneManagerWrapper.SceneCount;
-        if (sceneCount < 0) return;
-        if (LoadingScenes.Count == 0) return;
-
-        var actualScene = _sceneManagerWrapper.GetSceneAt(sceneCount - 1);
-        var loadingInfoIndex = LoadingScenes.FindIndex(x => x.loadingScene.Path == actualScene.Path);
-        new SceneWrapper(LoadingScenes[loadingInfoIndex].dummySceneStruct, _reverseInvoker).Handle = actualScene.Handle;
-        LoadingScenes.RemoveAt(loadingInfoIndex);
     }
 
     private class AsyncSceneLoadData(
@@ -582,5 +587,12 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         public string Path { get; } = path;
         public string Name { get; } = name;
         public int BuildIndex { get; } = buildIndex;
+    }
+
+    public readonly struct DummyScene(object dummySceneStruct, int trackingHandle, SceneInfo loadingScene)
+    {
+        public readonly object DummySceneStruct = dummySceneStruct;
+        public readonly int TrackingHandle = trackingHandle;
+        public readonly SceneInfo LoadingScene = loadingScene;
     }
 }
