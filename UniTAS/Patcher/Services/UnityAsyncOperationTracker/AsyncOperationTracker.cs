@@ -45,6 +45,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         _wrapFactory = wrapFactory;
         var getAllScenePaths = AccessTools.Method(typeof(AssetBundle), "GetAllScenePaths");
         _getAllScenePaths = getAllScenePaths?.MethodDelegate<Func<AssetBundle, string[]>>();
+        _loaded = [GetSceneInfo(0)];
     }
 
     private readonly HashSet<AsyncOperation> _tracked = [];
@@ -75,7 +76,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
     private int _sceneStructHandleId = int.MaxValue / 2;
 
     // loaded in this game session
-    private readonly HashSet<SceneInfo> _loaded = new();
+    private readonly HashSet<SceneInfo> _loaded;
 
     private class AssetBundleRequestData(Object singleResult = null, Object[] multipleResults = null)
     {
@@ -101,6 +102,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         _sceneLoadSync = false;
         _sceneStructHandleId = int.MaxValue / 2;
         _loaded.Clear();
+        _loaded.Add(GetSceneInfo(0));
     }
 
     public void OnLastUpdateUnconditional()
@@ -234,11 +236,17 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
     {
         _logger.LogDebug("async scene unload, " + (scene.IsLeft ? $"name: {scene.Left}" : $"index: {scene.Right}"));
 
-        _tracked.Add(asyncOperation);
         var sceneInfo = GetSceneInfo(scene);
         if (sceneInfo == null || !_loaded.Contains(sceneInfo))
         {
             throw new ArgumentException("Scene to unload is invalid");
+        }
+        
+        if (_sceneManagerWrapper.LoadedSceneCountDummy + LoadingSceneCount == 1)
+        {
+            _logger.LogDebug("there is only 1 scene loaded, cannot unload, skipping this operation");
+            asyncOperation = null;
+            return;
         }
 
         if (_pendingLoadCallbacks.Any(p => p.IsRight && p.Right.SceneInfo == sceneInfo))
@@ -248,6 +256,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
             return;
         }
 
+        _tracked.Add(asyncOperation);
         _pendingLoadCallbacks.Add(new AsyncSceneUnloadData(sceneInfo, asyncOperation));
         _sceneManagerWrapper.LoadedSceneCountDummy--;
         LoadingSceneCount++;
@@ -269,7 +278,8 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
 
         _logger.LogDebug($"async scene load, name: `{sceneName}`, index: {sceneBuildIndex}");
         var loadData =
-            new AsyncSceneLoadData(sceneName, sceneBuildIndex, loadSceneMode, localPhysicsMode, asyncOperation, sceneInfo);
+            new AsyncSceneLoadData(sceneName, sceneBuildIndex, loadSceneMode, localPhysicsMode, asyncOperation,
+                sceneInfo);
         _asyncLoads.Add(loadData);
 
         if (!_sceneLoadSync) return;
