@@ -381,25 +381,6 @@ public class SceneStructPatch
         }
     }
 
-    [HarmonyPatch]
-    private class get_handle
-    {
-        private static MethodBase TargetMethod()
-        {
-            return AccessTools.PropertyGetter(SceneType, "handle");
-        }
-
-        private static Exception Cleanup(MethodBase original, Exception ex)
-        {
-            return PatchHelper.CleanupIgnoreFail(original, ex);
-        }
-
-        private static bool Prefix(int ___m_Handle, ref int __result)
-        {
-            return CheckAndSetDefault(___m_Handle, ref __result, _ => 0, actual => actual.Handle);
-        }
-    }
-
     private static bool CheckAndSetDefault<T>(int mHandle, ref T __result,
         Func<AsyncOperationTracker.SceneInfo, T> dummySet, Func<SceneWrapper, T> actualSet)
     {

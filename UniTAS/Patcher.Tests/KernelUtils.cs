@@ -217,7 +217,7 @@ public static class KernelUtils
         public int TotalSceneCount => 0;
         public int ActiveSceneIndex => 0;
         public string ActiveSceneName => "";
-        public int SceneCountDummy { get; set; }
+        public int LoadedSceneCountDummy { get; set; }
         public bool TrackSceneCountDummy { get; set; }
         public int SceneCount => 0;
 

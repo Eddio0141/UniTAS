@@ -102,7 +102,7 @@ public class SceneManagerWrapper : ISceneManagerWrapper, IOnPreGameRestart
 
     public void OnPreGameRestart()
     {
-        SceneCountDummy = 1;
+        LoadedSceneCountDummy = 1;
     }
 
     public void LoadSceneAsync(string sceneName, int sceneBuildIndex, LoadSceneMode loadSceneMode,
@@ -111,9 +111,9 @@ public class SceneManagerWrapper : ISceneManagerWrapper, IOnPreGameRestart
         if (TrackSceneCountDummy)
         {
             if (loadSceneMode == LoadSceneMode.Additive)
-                SceneCountDummy++;
+                LoadedSceneCountDummy++;
             else
-                SceneCountDummy = 1;
+                LoadedSceneCountDummy = 1;
         }
 
         if (_loadSceneAsyncNameIndexInternalInjected != null && _loadSceneParametersType != null)
@@ -156,7 +156,7 @@ public class SceneManagerWrapper : ISceneManagerWrapper, IOnPreGameRestart
     public void LoadScene(int buildIndex)
     {
         if (TrackSceneCountDummy)
-            SceneCountDummy = 1;
+            LoadedSceneCountDummy = 1;
 
         if (_loadSceneByIndex != null)
         {
@@ -170,7 +170,7 @@ public class SceneManagerWrapper : ISceneManagerWrapper, IOnPreGameRestart
     public void LoadScene(string name)
     {
         if (TrackSceneCountDummy)
-            SceneCountDummy = 1;
+            LoadedSceneCountDummy = 1;
 
         if (_loadSceneByName != null)
         {
@@ -213,7 +213,7 @@ public class SceneManagerWrapper : ISceneManagerWrapper, IOnPreGameRestart
         }
     }
 
-    public int SceneCountDummy { get; set; } = 1;
+    public int LoadedSceneCountDummy { get; set; } = 1;
     public bool TrackSceneCountDummy { get; set; }
 
     public SceneWrapper GetSceneAt(int index)

@@ -20,7 +20,7 @@ public interface ISceneManagerWrapper
     string ActiveSceneName { get; }
 
     // not really an actual call, but to keep track of stuff
-    int SceneCountDummy { get; set; }
+    int LoadedSceneCountDummy { get; set; }
     /// <summary>
     /// Disabling this would not update SceneCount from any of the LoadScene functions here
     /// </summary>

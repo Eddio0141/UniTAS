@@ -196,19 +196,14 @@ public class SceneManagerAsyncLoadPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static void Prefix(ref bool immediately, out bool __state)
+        private static bool Prefix(ref bool immediately, string sceneName, int sceneBuildIndex, ref AsyncOperation __result)
         {
-            __state = immediately;
-            if (immediately) return;
+            if (immediately) return true;
             immediately = true;
-        }
-
-        private static void Postfix(string sceneName, int sceneBuildIndex, ref AsyncOperation __result, bool __state)
-        {
-            if (__state) return;
-
-            __result = new();
+            
+            __result = new AsyncOperation();
             SceneLoadTracker.AsyncSceneUnload(ref __result, sceneBuildIndex >= 0 ? sceneBuildIndex : sceneName);
+            return false;
         }
     }
 
@@ -386,7 +381,7 @@ public class SceneManagerAsyncLoadPatch
 
         private static bool Prefix(ref int __result)
         {
-            __result = SceneManagerWrapper.SceneCountDummy;
+            __result = SceneManagerWrapper.LoadedSceneCountDummy;
             return false;
         }
     }
@@ -410,7 +405,7 @@ public class SceneManagerAsyncLoadPatch
         private static bool Prefix(ref int __result)
         {
             if (ReverseInvoker.Invoking) return true;
-            __result = SceneManagerWrapper.SceneCountDummy + SceneLoadTracker.LoadingSceneCount;
+            __result = SceneManagerWrapper.LoadedSceneCountDummy + SceneLoadTracker.LoadingSceneCount;
             return false;
         }
     }
@@ -435,7 +430,6 @@ public class SceneManagerAsyncLoadPatch
 
             // check loading ones
             var loadIndex = index - sceneCount;
-            StaticLogger.LogDebug($"thingy index: {loadIndex}, count: {SceneLoadTracker.LoadingScenes.Count}");
             if (loadIndex >= SceneLoadTracker.LoadingScenes.Count) return true;
 
             ret = SceneLoadTracker.LoadingScenes[loadIndex].DummySceneStruct;
