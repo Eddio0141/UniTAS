@@ -196,13 +196,15 @@ public class SceneManagerAsyncLoadPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix(ref bool immediately, string sceneName, int sceneBuildIndex, ref AsyncOperation __result)
+        private static bool Prefix(string sceneName, int sceneBuildIndex, ref bool immediately, ref bool outSuccess,
+            ref AsyncOperation __result)
         {
             if (immediately) return true;
             immediately = true;
-            
+
             __result = new AsyncOperation();
             SceneLoadTracker.AsyncSceneUnload(ref __result, sceneBuildIndex >= 0 ? sceneBuildIndex : sceneName);
+            outSuccess = __result != null;
             return false;
         }
     }
@@ -224,6 +226,10 @@ public class SceneManagerAsyncLoadPatch
         {
             var sceneName = (string)SceneGetName.Invoke(scene, null);
 
+            __result = new();
+            SceneLoadTracker.AsyncSceneUnload(ref __result, sceneName);
+            if (__result == null)
+                return false;
             StaticLogger.LogWarning(
                 "async unload call: THIS OPERATION MIGHT BREAK THE GAME, scene unloading patch is using an unstable unity function, and it may fail");
             var args = new object[] { sceneName, -1, true, null };
@@ -231,8 +237,6 @@ public class SceneManagerAsyncLoadPatch
             if (!(bool)args[3])
                 StaticLogger.LogError("async unload most likely failed, prepare for game to go nuts");
 
-            __result = new();
-            SceneLoadTracker.AsyncSceneUnload(ref __result, sceneName);
             return false;
         }
     }
@@ -254,16 +258,16 @@ public class SceneManagerAsyncLoadPatch
         private static bool Prefix(object scene, object options, ref AsyncOperation __result)
         {
             var sceneName = (string)SceneGetName.Invoke(scene, null);
-
+            __result = new();
+            SceneLoadTracker.AsyncSceneUnload(ref __result, sceneName);
+            if (__result == null)
+                return false;
             StaticLogger.LogWarning(
                 "async unload call: THIS OPERATION MIGHT BREAK THE GAME, scene unloading patch is using an unstable unity function, and it may fail");
             var args = new[] { sceneName, -1, true, options, null };
             UnloadSceneNameIndexInternal.Invoke(null, args);
             if (!(bool)args[4])
                 StaticLogger.LogError("async unload most likely failed, prepare for game to go nuts");
-
-            __result = new();
-            SceneLoadTracker.AsyncSceneUnload(ref __result, sceneName);
             return false;
         }
     }
