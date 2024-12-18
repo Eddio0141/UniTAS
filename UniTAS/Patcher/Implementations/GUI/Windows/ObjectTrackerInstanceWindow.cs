@@ -25,12 +25,12 @@ public class ObjectTrackerInstanceWindow : Window
 
     private readonly IConfig _config;
     private readonly IToolBar _toolBar;
-    private readonly ISceneWrapper _sceneWrapper;
+    private readonly ISceneManagerWrapper _iSceneManagerWrapper;
     private readonly IWindowFactory _windowFactory;
 
     public ObjectTrackerInstanceWindow(WindowDependencies windowDependencies,
         UnityObjectIdentifier identifier,
-        IOnSceneLoadEvent onSceneLoadEvent, ISceneWrapper sceneWrapper, IWindowFactory windowFactory) : base(
+        IOnSceneLoadEvent onSceneLoadEvent, ISceneManagerWrapper iSceneManagerWrapper, IWindowFactory windowFactory) : base(
         windowDependencies,
         new WindowConfig(defaultWindowRect: GUIUtils.WindowRect(200, 200), showByDefault: true,
             removeConfigOnClose: true),
@@ -39,7 +39,7 @@ public class ObjectTrackerInstanceWindow : Window
         _config = windowDependencies.Config;
         _toolBar = windowDependencies.ToolBar;
         _unityObjectIdentifier = identifier;
-        _sceneWrapper = sceneWrapper;
+        _iSceneManagerWrapper = iSceneManagerWrapper;
         _windowFactory = windowFactory;
         onSceneLoadEvent.OnSceneLoadEvent += UpdateInstance;
         windowDependencies.UpdateEvents.OnLateUpdateActual += OnLateUpdateActual;
@@ -94,7 +94,7 @@ public class ObjectTrackerInstanceWindow : Window
 
         if (_instance == null)
         {
-            _instance = _unityObjectIdentifier.FindObject(_trackSettings.ObjectSearch, _sceneWrapper, TrackedObjects);
+            _instance = _unityObjectIdentifier.FindObject(_trackSettings.ObjectSearch, _iSceneManagerWrapper, TrackedObjects);
             updateComponents = true;
         }
 

@@ -32,6 +32,8 @@
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
         <OutputPath>bin/Debug/BepInEx/patchers/UniTAS/</OutputPath>
         <NoWarn />
+        <DefineConstants>;</DefineConstants>
+        <DebugType>full</DebugType>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'ReleaseTrace' ">

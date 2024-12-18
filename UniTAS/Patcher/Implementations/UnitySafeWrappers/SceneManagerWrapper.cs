@@ -1,6 +1,7 @@
 using System;
 using System.Reflection;
 using HarmonyLib;
+using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Implementations.UnitySafeWrappers.SceneManagement;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.SoftRestart;
@@ -15,7 +16,7 @@ namespace UniTAS.Patcher.Implementations.UnitySafeWrappers;
 // ReSharper disable once ClassNeverInstantiated.Global
 [Singleton]
 [ExcludeRegisterIfTesting]
-public class SceneManagerWrapper : ISceneWrapper, IOnPreGameRestart
+public class SceneManagerWrapper : ISceneManagerWrapper, IOnPreGameRestart
 {
     private readonly IUnityInstanceWrapFactory _unityInstanceWrapFactory;
     private readonly IPatchReverseInvoker _patchReverseInvoker;
@@ -45,7 +46,12 @@ public class SceneManagerWrapper : ISceneWrapper, IOnPreGameRestart
     private readonly MethodInfo _loadSceneByIndex;
     private readonly MethodInfo _loadSceneByName;
 
+    private readonly MethodInfo _unloadSceneNameIndexInternal;
+    private readonly bool _unloadSceneNameIndexInternalHasOptions;
+
     private readonly MethodInfo _getActiveScene;
+    private readonly MethodInfo _getSceneAt;
+    private readonly Func<int> _sceneCount;
 
     public SceneManagerWrapper(IUnityInstanceWrapFactory unityInstanceWrapFactory,
         IPatchReverseInvoker patchReverseInvoker)
@@ -92,22 +98,47 @@ public class SceneManagerWrapper : ISceneWrapper, IOnPreGameRestart
         }
 
         _getActiveScene = _sceneManager?.GetMethod("GetActiveScene", AccessTools.all);
+        _getSceneAt = _sceneManager?.GetMethod("GetSceneAt", AccessTools.all, null, [typeof(int)], null);
+        _sceneCount = _sceneManager?.GetProperty("sceneCount", AccessTools.all)?.GetGetMethod()
+            ?.MethodDelegate<Func<int>>();
+
+        var unloadSceneOptions = AccessTools.TypeByName($"{SceneManagementNamespace}.UnloadSceneOptions");
+        _unloadSceneNameIndexInternal = unloadSceneOptions == null
+            ? null
+            : AccessTools.Method(_sceneManagerAPIInternal ?? _sceneManager,
+                  "UnloadSceneNameIndexInternal",
+                  [typeof(string), typeof(int), typeof(bool), unloadSceneOptions, typeof(bool).MakeByRefType()]) ??
+              AccessTools.Method(_sceneManagerAPIInternal ?? _sceneManager,
+                  "UnloadSceneNameIndexInternal",
+                  [typeof(string), typeof(int), typeof(bool), typeof(bool).MakeByRefType()]);
+
+        if (unloadSceneOptions != null)
+        {
+            _unloadSceneNameIndexInternal = AccessTools.Method(_sceneManagerAPIInternal ?? _sceneManager,
+                "UnloadSceneNameIndexInternal",
+                [typeof(string), typeof(int), typeof(bool), unloadSceneOptions, typeof(bool).MakeByRefType()]);
+            _unloadSceneNameIndexInternalHasOptions = _unloadSceneNameIndexInternal != null;
+        }
+
+        _unloadSceneNameIndexInternal ??= AccessTools.Method(_sceneManagerAPIInternal ?? _sceneManager,
+            "UnloadSceneNameIndexInternal",
+            [typeof(string), typeof(int), typeof(bool), typeof(bool).MakeByRefType()]);
     }
 
     public void OnPreGameRestart()
     {
-        SceneCount = 1;
+        LoadedSceneCountDummy = 1;
     }
 
     public void LoadSceneAsync(string sceneName, int sceneBuildIndex, LoadSceneMode loadSceneMode,
         LocalPhysicsMode localPhysicsMode, bool mustCompleteNextFrame)
     {
-        if (TrackSceneCount)
+        if (TrackSceneCountDummy)
         {
             if (loadSceneMode == LoadSceneMode.Additive)
-                SceneCount++;
+                LoadedSceneCountDummy++;
             else
-                SceneCount = 1;
+                LoadedSceneCountDummy = 1;
         }
 
         if (_loadSceneAsyncNameIndexInternalInjected != null && _loadSceneParametersType != null)
@@ -149,8 +180,8 @@ public class SceneManagerWrapper : ISceneWrapper, IOnPreGameRestart
 
     public void LoadScene(int buildIndex)
     {
-        if (TrackSceneCount)
-            SceneCount = 1;
+        if (TrackSceneCountDummy)
+            LoadedSceneCountDummy = 1;
 
         if (_loadSceneByIndex != null)
         {
@@ -163,8 +194,8 @@ public class SceneManagerWrapper : ISceneWrapper, IOnPreGameRestart
 
     public void LoadScene(string name)
     {
-        if (TrackSceneCount)
-            SceneCount = 1;
+        if (TrackSceneCountDummy)
+            LoadedSceneCountDummy = 1;
 
         if (_loadSceneByName != null)
         {
@@ -173,6 +204,26 @@ public class SceneManagerWrapper : ISceneWrapper, IOnPreGameRestart
         }
 
         _patchReverseInvoker.Invoke(Application.LoadLevel, name);
+    }
+
+    public void UnloadSceneAsync(string sceneName, int sceneBuildIndex, object options, bool immediate,
+        out bool success)
+    {
+        object[] args;
+        if (_unloadSceneNameIndexInternalHasOptions)
+        {
+            args = [sceneName, sceneBuildIndex, immediate, options, null];
+        }
+        else
+        {
+            args = [sceneName, sceneBuildIndex, immediate, null];
+        }
+
+        var op = _patchReverseInvoker.Invoke((m, a) => m.Invoke(null, a), _unloadSceneNameIndexInternal, args);
+        success = (bool)args[args.Length - 1];
+        
+        if (TrackSceneCountDummy && op != null && success)
+            LoadedSceneCountDummy = Math.Max(1, LoadedSceneCountDummy - 1);
     }
 
     public int TotalSceneCount => _totalSceneCount?.Invoke() ?? Application.levelCount;
@@ -185,7 +236,7 @@ public class SceneManagerWrapper : ISceneWrapper, IOnPreGameRestart
             {
                 var sceneWrapInstance =
                     _unityInstanceWrapFactory.Create<SceneWrapper>(_getActiveScene.Invoke(null, null));
-                return sceneWrapInstance.BuildIndex ?? Application.loadedLevel;
+                return sceneWrapInstance.BuildIndex;
             }
 
             return Application.loadedLevel;
@@ -207,6 +258,20 @@ public class SceneManagerWrapper : ISceneWrapper, IOnPreGameRestart
         }
     }
 
-    public int SceneCount { get; set; } = 1;
-    public bool TrackSceneCount { get; set; }
+    public int LoadedSceneCountDummy { get; set; } = 1;
+    public bool TrackSceneCountDummy { get; set; }
+
+    public SceneWrapper GetSceneAt(int index)
+    {
+        return _getSceneAt == null ? null : new SceneWrapper(_getSceneAt.Invoke(null, [index]), _patchReverseInvoker);
+    }
+
+    public int SceneCount
+    {
+        get
+        {
+            if (_sceneCount == null) return -1;
+            return _patchReverseInvoker.Invoke(call => call(), _sceneCount);
+        }
+    }
 }

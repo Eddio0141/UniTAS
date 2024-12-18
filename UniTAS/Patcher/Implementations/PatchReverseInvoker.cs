@@ -1,16 +1,33 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Services;
+using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Implementations;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 [Singleton]
+// TODO: probably make this into a manual service
 public class PatchReverseInvoker : IPatchReverseInvoker
 {
     private readonly ThreadLocal<bool> _invoking = new(() => false);
-    public bool Invoking => _invoking.Value;
+
+    public bool Invoking
+    {
+        get => _invoking.Value;
+        set
+        {
+            if (_invoking.Value == value)
+            {
+                StaticLogger.LogWarning($"reverse patcher is already in use for this thread at {new StackTrace(true)}");
+                return;
+            }
+
+            _invoking.Value = value;
+        }
+    }
 
     public void Invoke(Action method)
     {
