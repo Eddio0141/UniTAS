@@ -31,6 +31,8 @@ public class SceneStructPatch
     private static readonly IUnityInstanceWrapFactory WrapFactory =
         ContainerStarter.Kernel.GetInstance<IUnityInstanceWrapFactory>();
 
+    private static readonly ISceneOverride SceneOverride = ContainerStarter.Kernel.GetInstance<ISceneOverride>();
+
     [HarmonyPatch]
     private class IsValid
     {
@@ -131,6 +133,12 @@ public class SceneStructPatch
 
         private static bool Prefix(int ___m_Handle, ref bool __result)
         {
+            if (SceneOverride.IsLoaded(___m_Handle, out var loaded))
+            {
+                __result = loaded;
+                return false;
+            }
+
             return CheckAndSetDefault(___m_Handle, ref __result, _ => false, actual => actual.IsLoaded);
         }
     }

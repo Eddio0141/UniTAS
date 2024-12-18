@@ -9,6 +9,8 @@ public interface ISceneManagerWrapper
     void LoadSceneAsync(string sceneName, int sceneBuildIndex, LoadSceneMode loadSceneMode,
         LocalPhysicsMode localPhysicsMode, bool mustCompleteNextFrame);
 
+    void UnloadSceneAsync(string sceneName, int sceneBuildIndex, object options, bool immediate, out bool success);
+
     void LoadScene(int buildIndex);
     void LoadScene(string name);
 
@@ -21,10 +23,12 @@ public interface ISceneManagerWrapper
 
     // not really an actual call, but to keep track of stuff
     int LoadedSceneCountDummy { get; set; }
+
     /// <summary>
     /// Disabling this would not update SceneCount from any of the LoadScene functions here
     /// </summary>
     bool TrackSceneCountDummy { get; set; }
+
     int SceneCount { get; }
     SceneWrapper GetSceneAt(int index);
 }

@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using UniTAS.Patcher.Implementations.UnitySafeWrappers.SceneManagement;
 using UniTAS.Patcher.Models.UnitySafeWrappers.SceneManagement;
@@ -15,7 +14,9 @@ public interface ISceneLoadTracker
     void NonAsyncSceneLoad(string sceneName, int sceneBuildIndex, LoadSceneMode loadSceneMode,
         LocalPhysicsMode localPhysicsMode);
 
-    void AsyncSceneUnload(ref AsyncOperation asyncOperation, Either<string, int> scene);
+    void AsyncSceneUnload(ref AsyncOperation asyncOperation, Either<string, int> scene, object options);
+
+    void AsyncSceneUnload(ref AsyncOperation asyncOperation, object scene, object options);
 
     void AllowSceneActivation(bool allow, AsyncOperation asyncOperation);
 

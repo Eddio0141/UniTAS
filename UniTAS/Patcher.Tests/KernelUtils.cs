@@ -206,6 +206,11 @@ public static class KernelUtils
         {
         }
 
+        public void UnloadSceneAsync(string sceneName, int sceneBuildIndex, object options, bool immediate, out bool success)
+        {
+            success = false;
+        }
+
         public void LoadScene(int buildIndex)
         {
         }

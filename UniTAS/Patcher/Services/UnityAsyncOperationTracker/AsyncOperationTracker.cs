@@ -28,7 +28,7 @@ namespace UniTAS.Patcher.Services.UnityAsyncOperationTracker;
 [Singleton]
 public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateRequestTracker, IAssetBundleRequestTracker,
     IOnLastUpdateUnconditional, IAsyncOperationIsInvokingOnComplete, IOnPreGameRestart, IOnUpdateActual,
-    IOnStartActual, IOnFixedUpdateActual, IAssetBundleTracker
+    IOnStartActual, IOnFixedUpdateActual, IAssetBundleTracker, ISceneOverride
 {
     private bool _isInvokingOnComplete;
     private readonly ISceneManagerWrapper _sceneManagerWrapper;
@@ -52,7 +52,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
 
     // any scene related things are stored as a list
     // it is a list of scenes in load order
-    private readonly List<AsyncSceneLoadData> _asyncLoads = [];
+    private readonly List<Either<AsyncSceneLoadData, AsyncSceneUnloadData>> _asyncLoads = [];
 
     // not allowed to be disabled anymore
     private readonly HashSet<AsyncOperation> _allowSceneActivationNotAllowed = [];
@@ -103,10 +103,13 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         _sceneStructHandleId = int.MaxValue / 2;
         _loaded.Clear();
         _loaded.Add(GetSceneInfo(0));
+        _firstMatchUnloadPaths.Clear();
     }
 
     public void OnLastUpdateUnconditional()
     {
+        _firstMatchUnloadPaths.Clear();
+
         if (_sceneLoadSync)
         {
             foreach (var loadData in _asyncLoads)
@@ -120,32 +123,76 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
 
         if (_asyncLoads.Count == 0) return;
 
-        var loadIndex = _asyncLoads.FindIndex(a => !a.DelayFrame);
-        if (loadIndex < 0) return;
+        var removes = new List<int>();
+        var foundLoad = false;
+        for (var i = 0; i < _asyncLoads.Count; i++)
+        {
+            var load = _asyncLoads[i];
 
-        ProcessLoadFromData(_asyncLoads[loadIndex]);
-        _asyncLoads.RemoveAt(loadIndex);
+            if (!foundLoad)
+            {
+                if (load.IsLeft)
+                {
+                    foundLoad = true;
+                    if (load.Left.DelayFrame) break;
+                }
+
+                ProcessLoadFromData(load);
+                removes.Add(i);
+                continue;
+            }
+
+            if (load.IsLeft) break;
+            // add the rest of the unloads
+            ProcessLoadFromData(load);
+            removes.Add(i);
+        }
+
+        foreach (var i in ((IEnumerable<int>)removes).Reverse())
+        {
+            _asyncLoads.RemoveAt(i);
+        }
     }
 
-    private void ProcessLoadFromData(AsyncSceneLoadData loadData)
+    private void ProcessLoadFromData(Either<AsyncSceneLoadData, AsyncSceneUnloadData> data)
     {
-        _logger.LogDebug(
-            $"force loading scene via OnLastUpdate, name: {loadData.SceneName}, index: {loadData.SceneBuildIndex}");
-        _sceneManagerWrapper.TrackSceneCountDummy = false;
-        _sceneManagerWrapper.LoadSceneAsync(loadData.SceneName, loadData.SceneBuildIndex, loadData.LoadSceneMode,
-            loadData.LocalPhysicsMode, true);
-        _sceneManagerWrapper.TrackSceneCountDummy = true;
+        if (data.IsLeft)
+        {
+            var loadData = data.Left;
+            _logger.LogDebug(
+                $"force loading scene via OnLastUpdate, name: {loadData.SceneName}, index: {loadData.SceneBuildIndex}");
+            _sceneManagerWrapper.TrackSceneCountDummy = false;
+            _sceneManagerWrapper.LoadSceneAsync(loadData.SceneName, loadData.SceneBuildIndex, loadData.LoadSceneMode,
+                loadData.LocalPhysicsMode, true);
+            _sceneManagerWrapper.TrackSceneCountDummy = true;
 
-        // call after scene is loaded
-        ReplaceDummyScene();
+            // call after scene is loaded
+            ReplaceDummyScene(loadData.AsyncOperation);
 
-        _pendingLoadCallbacks.Add(loadData);
-        _loaded.Add(loadData.SceneInfo);
-        var op = loadData.AsyncOperation;
-        if (op == null)
+            _pendingLoadCallbacks.Add(loadData);
+            _loaded.Add(loadData.SceneInfo);
+            var op = loadData.AsyncOperation;
+            if (op == null)
+                return;
+
+            _allowSceneActivationNotAllowed.Remove(op);
             return;
+        }
 
-        _allowSceneActivationNotAllowed.Remove(op);
+        var unloadData = data.Right;
+        _logger.LogWarning(
+            "async unload call: THIS OPERATION MIGHT BREAK THE GAME, scene unloading patch is using an unstable unity function, and it may fail");
+        _sceneManagerWrapper.TrackSceneCountDummy = false;
+        _sceneManagerWrapper.UnloadSceneAsync(unloadData.SceneWrapper.Name, -1, unloadData.Options, true,
+            out var success);
+        _sceneManagerWrapper.TrackSceneCountDummy = true;
+        if (!success)
+        {
+            _logger.LogError("async unload failed, prepare for game to maybe go nuts");
+            return;
+        }
+
+        _pendingLoadCallbacks.Add(unloadData);
     }
 
     public void FixedUpdateActual() => CallPendingCallbacks();
@@ -155,7 +202,13 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         _sceneLoadSync = false;
 
         // doesn't matter, as long as next frame happens, before the game update adds more scenes, delay is gone
-        foreach (var load in _asyncLoads.Concat(_asyncLoadStalls))
+        foreach (var op in _asyncLoads)
+        {
+            if (op.IsLeft)
+                op.Left.DelayFrame = false;
+        }
+
+        foreach (var load in _asyncLoadStalls)
         {
             load.DelayFrame = false;
         }
@@ -232,16 +285,20 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         InvokeOnComplete(asyncOperation);
     }
 
-    public void AsyncSceneUnload(ref AsyncOperation asyncOperation, Either<string, int> scene)
+    // silly but simple and efficient enough check
+    private readonly HashSet<string> _firstMatchUnloadPaths = [];
+
+    public void AsyncSceneUnload(ref AsyncOperation asyncOperation, Either<string, int> scene, object options)
     {
         _logger.LogDebug("async scene unload, " + (scene.IsLeft ? $"name: {scene.Left}" : $"index: {scene.Right}"));
+        StaticLogger.LogDebug(new StackTrace());
 
         var sceneInfo = GetSceneInfo(scene);
         if (sceneInfo == null || !_loaded.Contains(sceneInfo))
         {
             throw new ArgumentException("Scene to unload is invalid");
         }
-        
+
         if (_sceneManagerWrapper.LoadedSceneCountDummy + LoadingSceneCount == 1)
         {
             _logger.LogDebug("there is only 1 scene loaded, cannot unload, skipping this operation");
@@ -249,7 +306,48 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
             return;
         }
 
-        if (_pendingLoadCallbacks.Any(p => p.IsRight && p.Right.SceneInfo == sceneInfo))
+        if (_firstMatchUnloadPaths.Contains(sceneInfo.Path))
+        {
+            _logger.LogDebug("scene is already to be unloaded, skipping this operation");
+            asyncOperation = null;
+            return;
+        }
+
+        _firstMatchUnloadPaths.Add(sceneInfo.Path);
+
+        SceneWrapper sceneFound = null;
+        var sceneCount = _sceneManagerWrapper.SceneCount;
+        for (var i = 0; i < sceneCount; i++)
+        {
+            // shouldn't be null, if unity version is so old Scene struct doesn't exist, async unload also shouldn't exist neither
+            var sceneWrapper = _sceneManagerWrapper.GetSceneAt(i);
+            if (sceneWrapper.Path != sceneInfo.Path) continue;
+            sceneFound = sceneWrapper;
+            break;
+        }
+
+        _tracked.Add(asyncOperation);
+        _asyncLoads.Add(new AsyncSceneUnloadData(asyncOperation, options, sceneFound,
+            ResolveDummyHandle(sceneFound!.Handle)));
+        _sceneManagerWrapper.LoadedSceneCountDummy--;
+        LoadingSceneCount++;
+    }
+
+    public void AsyncSceneUnload(ref AsyncOperation asyncOperation, object scene, object options)
+    {
+        var sceneWrap = _wrapFactory.Create<SceneWrapper>(scene);
+        _logger.LogDebug($"async scene unload, {sceneWrap.Path}");
+
+        if (_sceneManagerWrapper.LoadedSceneCountDummy + LoadingSceneCount == 1)
+        {
+            _logger.LogDebug("there is only 1 scene loaded, cannot unload, skipping this operation");
+            asyncOperation = null;
+            return;
+        }
+
+        var handle = ResolveDummyHandle(sceneWrap.Handle);
+
+        if (_asyncLoads.Any(x => x.IsRight && x.Right.SceneWrapper.Handle == handle))
         {
             _logger.LogDebug("scene is already to be unloaded, skipping this operation");
             asyncOperation = null;
@@ -257,9 +355,15 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         }
 
         _tracked.Add(asyncOperation);
-        _pendingLoadCallbacks.Add(new AsyncSceneUnloadData(sceneInfo, asyncOperation));
+        _asyncLoads.Add(new AsyncSceneUnloadData(asyncOperation, options, sceneWrap, handle));
         _sceneManagerWrapper.LoadedSceneCountDummy--;
         LoadingSceneCount++;
+    }
+
+    private int ResolveDummyHandle(int handle)
+    {
+        var dummySceneIndex = DummyScenes.FindIndex(x => x.dummyScene.TrackingHandle == handle);
+        return dummySceneIndex >= 0 ? DummyScenes[dummySceneIndex].actualScene?.Handle ?? handle : handle;
     }
 
     public void AsyncSceneLoad(string sceneName, int sceneBuildIndex, LoadSceneMode loadSceneMode,
@@ -272,7 +376,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         }
 
         LoadingSceneCount++;
-        CreateDummySceneStruct(sceneName);
+        CreateDummySceneStruct(sceneName, asyncOperation);
 
         _tracked.Add(asyncOperation);
 
@@ -294,27 +398,39 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         LocalPhysicsMode localPhysicsMode)
     {
         if (InvalidSceneLoadAndLog(sceneBuildIndex >= 0 ? sceneBuildIndex : sceneName, out var sceneInfo)) return;
+        _logger.LogDebug($"scene load, {sceneName}, index: {sceneBuildIndex}");
 
-        _sceneLoadSync = true;
-        LoadingSceneCount++;
-        CreateDummySceneStruct(sceneName);
-
-        // first, all stalls are moved to load
-        _asyncLoads.AddRange(_asyncLoadStalls);
-        foreach (var sceneData in _asyncLoads)
+        if (!_sceneLoadSync)
         {
-            // delays are all gone now
-            sceneData.DelayFrame = false;
-            _logger.LogDebug(
-                $"force loading scene via non-async scene load, name: {sceneData.SceneName}, index: {sceneData.SceneBuildIndex}");
-            _allowSceneActivationNotAllowed.Add(sceneData.AsyncOperation);
+            _sceneLoadSync = true;
+
+            // first, all stalls are moved to load
+            foreach (var load in _asyncLoadStalls)
+            {
+                _asyncLoads.Add(load);
+            }
+
+            _asyncLoadStalls.Clear();
+
+            foreach (var sceneData in _asyncLoads)
+            {
+                // delays are all gone now
+                if (!sceneData.IsLeft) continue;
+
+                var left = sceneData.Left;
+                left.DelayFrame = false;
+                _logger.LogDebug(
+                    $"force loading scene via non-async scene load, name: {left.SceneName}, index: {left.SceneBuildIndex}");
+                _allowSceneActivationNotAllowed.Add(left.AsyncOperation);
+            }
         }
 
-        _asyncLoadStalls.Clear();
-
         // next, queue the non async scene load
-        _logger.LogDebug($"scene load, {sceneName}, index: {sceneBuildIndex}");
-        _asyncLoads.Add(new(sceneName, sceneBuildIndex, loadSceneMode, localPhysicsMode, null, sceneInfo));
+        LoadingSceneCount++;
+        CreateDummySceneStruct(sceneName, null);
+
+        _asyncLoads.Add(new AsyncSceneLoadData(sceneName, sceneBuildIndex, loadSceneMode, localPhysicsMode, null,
+            sceneInfo));
     }
 
     private bool InvalidSceneLoadAndLog(Either<string, int> scene, out SceneInfo sceneInfo)
@@ -350,11 +466,11 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         }
         else
         {
-            var loadIndex = _asyncLoads.FindIndex(d => d.AsyncOperation == asyncOperation);
+            var loadIndex = _asyncLoads.FindIndex(d => d.IsLeft && d.Left.AsyncOperation == asyncOperation);
             if (loadIndex < 0) return;
             StoreAllowSceneActivation(asyncOperation, false);
             if (_allowSceneActivationNotAllowed.Contains(asyncOperation)) return;
-            _asyncLoadStalls.Add(_asyncLoads[loadIndex]);
+            _asyncLoadStalls.Add(_asyncLoads[loadIndex].Left);
             _asyncLoads.RemoveAt(loadIndex);
             _logger.LogDebug("Added scene to stall list");
         }
@@ -397,7 +513,8 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
             return true;
         }
 
-        if (_pendingLoadCallbacks.Any(load => load.IsRight && load.Right.AsyncOperation == asyncOperation))
+        if (_asyncLoads.Concat(_pendingLoadCallbacks)
+            .Any(load => load.IsRight && load.Right.AsyncOperation == asyncOperation))
         {
             progress = 0f;
             return true;
@@ -447,7 +564,15 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
     {
         if (_invokeCompletionEvent == null) return;
         _isInvokingOnComplete = true;
-        _invokeCompletionEvent.Invoke(asyncOperation, null);
+        try
+        {
+            _invokeCompletionEvent.Invoke(asyncOperation, null);
+        }
+        catch (Exception e)
+        {
+            Debug.LogError(e);
+        }
+
         _isInvokingOnComplete = false;
     }
 
@@ -471,32 +596,31 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
 
     private readonly Type _sceneStruct = AccessTools.TypeByName("UnityEngine.SceneManagement.Scene");
 
-    private void CreateDummySceneStruct(string loadName)
+    private void CreateDummySceneStruct(string loadName, AsyncOperation op)
     {
         if (_sceneStruct == null) return;
         var sceneInfo = GetSceneInfo(loadName);
-        StaticLogger.LogDebug($"sceneInfo is null? {sceneInfo == null}");
         if (sceneInfo == null) return;
 
         var instance = _wrapFactory.Create<SceneWrapper>(null);
         instance.Handle = _sceneStructHandleId;
-        var dummyScene = new DummyScene(instance.Instance, _sceneStructHandleId, sceneInfo);
+        var dummyScene = new DummyScene(instance.Instance, _sceneStructHandleId, sceneInfo, op);
         LoadingScenes.Add(dummyScene);
         DummyScenes.Add((dummyScene, null));
         _sceneStructHandleId++;
     }
 
-    private void ReplaceDummyScene()
+    private void ReplaceDummyScene(AsyncOperation op)
     {
         var sceneCount = _sceneManagerWrapper.SceneCount;
         if (sceneCount < 0) return;
         if (LoadingScenes.Count == 0) return;
 
         var actualScene = _sceneManagerWrapper.GetSceneAt(sceneCount - 1);
-        var loadingInfoIndex = LoadingScenes.FindIndex(x => x.LoadingScene.Path == actualScene.Path);
+        var loadingInfoIndex = LoadingScenes.FindIndex(x => ReferenceEquals(x.Op, op));
         LoadingScenes.RemoveAt(loadingInfoIndex);
-        var dummySceneIndex = DummyScenes.FindIndex(x => x.Item1.LoadingScene.Path == actualScene.Path);
-        DummyScenes[dummySceneIndex] = (DummyScenes[dummySceneIndex].Item1, actualScene);
+        var dummySceneIndex = DummyScenes.FindIndex(x => ReferenceEquals(x.dummyScene.Op, op));
+        DummyScenes[dummySceneIndex] = (DummyScenes[dummySceneIndex].dummyScene, actualScene);
     }
 
     private SceneInfo GetSceneInfo(Either<string, int> scene)
@@ -543,6 +667,18 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         return null;
     }
 
+    public bool IsLoaded(int handle, out bool loaded)
+    {
+        if (_asyncLoads.Any(x => x.IsRight && x.Right.RealHandle == ResolveDummyHandle(handle)))
+        {
+            loaded = false;
+            return true;
+        }
+
+        loaded = false;
+        return false;
+    }
+
     private class AsyncSceneLoadData(
         string sceneName,
         int sceneBuildIndex,
@@ -560,10 +696,16 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         public SceneInfo SceneInfo { get; } = sceneInfo;
     }
 
-    private class AsyncSceneUnloadData(SceneInfo sceneInfo, AsyncOperation asyncOperation)
+    private class AsyncSceneUnloadData(
+        AsyncOperation asyncOperation,
+        object options,
+        SceneWrapper sceneWrapper,
+        int realHandle)
     {
-        public SceneInfo SceneInfo { get; } = sceneInfo;
         public AsyncOperation AsyncOperation { get; } = asyncOperation;
+        public object Options { get; } = options;
+        public SceneWrapper SceneWrapper { get; } = sceneWrapper;
+        public int RealHandle { get; } = realHandle;
     }
 
     public class SceneInfo(string path, string name, int buildIndex)
@@ -608,10 +750,15 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         public int BuildIndex { get; } = buildIndex;
     }
 
-    public readonly struct DummyScene(object dummySceneStruct, int trackingHandle, SceneInfo loadingScene)
+    public readonly struct DummyScene(
+        object dummySceneStruct,
+        int trackingHandle,
+        SceneInfo loadingScene,
+        AsyncOperation op)
     {
         public readonly object DummySceneStruct = dummySceneStruct;
         public readonly int TrackingHandle = trackingHandle;
         public readonly SceneInfo LoadingScene = loadingScene;
+        public readonly AsyncOperation Op = op;
     }
 }

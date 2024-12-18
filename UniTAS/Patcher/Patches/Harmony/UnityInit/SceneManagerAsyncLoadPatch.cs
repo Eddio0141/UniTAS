@@ -29,6 +29,21 @@ namespace UniTAS.Patcher.Patches.Harmony.UnityInit;
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 public class SceneManagerAsyncLoadPatch
 {
+    static SceneManagerAsyncLoadPatch()
+    {
+        if (UnloadSceneOptions != null)
+        {
+            UnloadSceneNameIndexInternal = AccessTools.Method(SceneManagerAPIInternal ?? SceneManager,
+                "UnloadSceneNameIndexInternal",
+                [typeof(string), typeof(int), typeof(bool), UnloadSceneOptions, typeof(bool).MakeByRefType()]);
+            UnloadSceneNameIndexInternalHasOptions = UnloadSceneNameIndexInternal != null;
+        }
+
+        UnloadSceneNameIndexInternal ??= AccessTools.Method(SceneManagerAPIInternal ?? SceneManager,
+            "UnloadSceneNameIndexInternal",
+            [typeof(string), typeof(int), typeof(bool), typeof(bool).MakeByRefType()]);
+    }
+
     private const string Namespace = "UnityEngine.SceneManagement";
     private static readonly Type SceneManager = AccessTools.TypeByName($"{Namespace}.SceneManager");
     private static readonly Type UnloadSceneOptions = AccessTools.TypeByName($"{Namespace}.UnloadSceneOptions");
@@ -38,14 +53,8 @@ public class SceneManagerAsyncLoadPatch
     private static readonly Type SceneManagerAPIInternal =
         AccessTools.TypeByName($"{Namespace}.SceneManagerAPIInternal");
 
-    private static readonly MethodInfo UnloadSceneNameIndexInternal = UnloadSceneOptions == null
-        ? null
-        : AccessTools.Method(SceneManagerAPIInternal ?? SceneManager,
-              "UnloadSceneNameIndexInternal",
-              [typeof(string), typeof(int), typeof(bool), UnloadSceneOptions, typeof(bool).MakeByRefType()]) ??
-          AccessTools.Method(SceneManagerAPIInternal ?? SceneManager,
-              "UnloadSceneNameIndexInternal",
-              [typeof(string), typeof(int), typeof(bool), typeof(bool).MakeByRefType()]);
+    private static readonly MethodInfo UnloadSceneNameIndexInternal;
+    private static readonly bool UnloadSceneNameIndexInternalHasOptions;
 
     private static readonly MethodInfo LoadSceneAsyncNameIndexInternalInjected =
         SceneManagerAPIInternal == null || LoadSceneParametersType == null
@@ -184,8 +193,10 @@ public class SceneManagerAsyncLoadPatch
     }
 
     [HarmonyPatch]
-    private class UnloadSceneNameIndexInternalPatch
+    private class UnloadSceneNameIndexInternalPatchOptions
     {
+        private static bool Prepare() => UnloadSceneNameIndexInternalHasOptions;
+
         private static MethodBase TargetMethod()
         {
             return UnloadSceneNameIndexInternal;
@@ -196,14 +207,41 @@ public class SceneManagerAsyncLoadPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix(string sceneName, int sceneBuildIndex, ref bool immediately, ref bool outSuccess,
+        private static bool Prefix(string sceneName, int sceneBuildIndex, ref bool outSuccess, object options,
             ref AsyncOperation __result)
         {
-            if (immediately) return true;
-            immediately = true;
+            if (ReverseInvoker.Invoking) return true;
 
             __result = new AsyncOperation();
-            SceneLoadTracker.AsyncSceneUnload(ref __result, sceneBuildIndex >= 0 ? sceneBuildIndex : sceneName);
+            SceneLoadTracker.AsyncSceneUnload(ref __result, sceneBuildIndex >= 0 ? sceneBuildIndex : sceneName,
+                options);
+            outSuccess = __result != null;
+            return false;
+        }
+    }
+
+    [HarmonyPatch]
+    private class UnloadSceneNameIndexInternalPatch
+    {
+        private static bool Prepare() => !UnloadSceneNameIndexInternalHasOptions;
+
+        private static MethodBase TargetMethod()
+        {
+            return UnloadSceneNameIndexInternal;
+        }
+
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static bool Prefix(string sceneName, int sceneBuildIndex, ref bool outSuccess,
+            ref AsyncOperation __result)
+        {
+            if (ReverseInvoker.Invoking) return true;
+
+            __result = new AsyncOperation();
+            SceneLoadTracker.AsyncSceneUnload(ref __result, sceneBuildIndex >= 0 ? sceneBuildIndex : sceneName, null);
             outSuccess = __result != null;
             return false;
         }
@@ -224,19 +262,8 @@ public class SceneManagerAsyncLoadPatch
 
         private static bool Prefix(object scene, ref AsyncOperation __result)
         {
-            var sceneName = (string)SceneGetName.Invoke(scene, null);
-
             __result = new();
-            SceneLoadTracker.AsyncSceneUnload(ref __result, sceneName);
-            if (__result == null)
-                return false;
-            StaticLogger.LogWarning(
-                "async unload call: THIS OPERATION MIGHT BREAK THE GAME, scene unloading patch is using an unstable unity function, and it may fail");
-            var args = new object[] { sceneName, -1, true, null };
-            UnloadSceneNameIndexInternal.Invoke(null, args);
-            if (!(bool)args[3])
-                StaticLogger.LogError("async unload most likely failed, prepare for game to go nuts");
-
+            SceneLoadTracker.AsyncSceneUnload(ref __result, scene, null);
             return false;
         }
     }
@@ -257,17 +284,10 @@ public class SceneManagerAsyncLoadPatch
 
         private static bool Prefix(object scene, object options, ref AsyncOperation __result)
         {
-            var sceneName = (string)SceneGetName.Invoke(scene, null);
+            if (ReverseInvoker.Invoking) return true;
+
             __result = new();
-            SceneLoadTracker.AsyncSceneUnload(ref __result, sceneName);
-            if (__result == null)
-                return false;
-            StaticLogger.LogWarning(
-                "async unload call: THIS OPERATION MIGHT BREAK THE GAME, scene unloading patch is using an unstable unity function, and it may fail");
-            var args = new[] { sceneName, -1, true, options, null };
-            UnloadSceneNameIndexInternal.Invoke(null, args);
-            if (!(bool)args[4])
-                StaticLogger.LogError("async unload most likely failed, prepare for game to go nuts");
+            SceneLoadTracker.AsyncSceneUnload(ref __result, scene, options);
             return false;
         }
     }
