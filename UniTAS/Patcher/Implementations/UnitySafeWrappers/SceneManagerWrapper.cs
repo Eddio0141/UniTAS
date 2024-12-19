@@ -221,8 +221,8 @@ public class SceneManagerWrapper : ISceneManagerWrapper, IOnPreGameRestart
 
         var op = _patchReverseInvoker.Invoke((m, a) => m.Invoke(null, a), _unloadSceneNameIndexInternal, args);
         success = (bool)args[args.Length - 1];
-        
-        if (TrackSceneCountDummy && op != null && success)
+
+        if (TrackSceneCountDummy && (!immediate || op != null) && success)
             LoadedSceneCountDummy = Math.Max(1, LoadedSceneCountDummy - 1);
     }
 
