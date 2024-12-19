@@ -17,7 +17,6 @@ using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.UnityInfo;
 using UniTAS.Patcher.Services.UnitySafeWrappers;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
-using UniTAS.Patcher.Utils;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 using Object = UnityEngine.Object;
@@ -291,7 +290,6 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
     public void AsyncSceneUnload(ref AsyncOperation asyncOperation, Either<string, int> scene, object options)
     {
         _logger.LogDebug("async scene unload, " + (scene.IsLeft ? $"name: {scene.Left}" : $"index: {scene.Right}"));
-        StaticLogger.LogDebug(new StackTrace());
 
         var sceneInfo = GetSceneInfo(scene);
         if (sceneInfo == null || !_loaded.Contains(sceneInfo))
@@ -353,6 +351,8 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
             asyncOperation = null;
             return;
         }
+        
+        _firstMatchUnloadPaths.Add(sceneWrap.Path);
 
         _tracked.Add(asyncOperation);
         _asyncLoads.Add(new AsyncSceneUnloadData(asyncOperation, options, sceneWrap, handle));
