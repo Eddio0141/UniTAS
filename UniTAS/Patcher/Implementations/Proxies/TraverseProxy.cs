@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using MoonSharp.Interpreter;
+using UniTAS.Patcher.Extensions;
 
 namespace UniTAS.Patcher.Implementations.Proxies;
 
@@ -17,9 +18,10 @@ public class TraverseProxy(Traverse traverse)
     private static readonly AccessTools.FieldRef<object, MemberInfo> TraverseInfoField =
         AccessTools.FieldRefAccess<MemberInfo>(typeof(Traverse), "_info");
 
-    public object GetValue(params object[] args)
+    public DynValue GetValue(Script script, params object[] args)
     {
-        return args.Length == 0 ? traverse.GetValue() : traverse.GetValue(args);
+        var ret = args.Length == 0 ? traverse.GetValue() : traverse.GetValue(args);
+        return ret.ToDynValue(script);
     }
 
     public Traverse SetValue(DynValue value)

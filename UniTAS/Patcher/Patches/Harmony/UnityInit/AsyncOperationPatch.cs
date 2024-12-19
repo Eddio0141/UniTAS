@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
 using HarmonyLib;
+using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Interfaces.Patches.PatchTypes;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.UnityAsyncOperationTracker;
@@ -36,6 +37,9 @@ public class AsyncOperationPatch
 
     private static readonly IAsyncOperationIsInvokingOnComplete AsyncOperationIsInvokingOnComplete =
         ContainerStarter.Kernel.GetInstance<IAsyncOperationIsInvokingOnComplete>();
+
+    private static readonly IAssetBundleTracker AssetBundleTracker =
+        ContainerStarter.Kernel.GetInstance<IAssetBundleTracker>();
 
     private static readonly ILogger Logger = ContainerStarter.Kernel.GetInstance<ILogger>();
 
@@ -206,8 +210,7 @@ public class AsyncOperationPatch
 
         private static bool Prefix(string path, uint crc, ulong offset, ref AssetBundleCreateRequest __result)
         {
-            StaticLogger.Trace(
-                $"patch prefix invoke (path = {path}, crc = {crc}, offset = {offset})\n{new StackTrace()}");
+            StaticLogger.LogDebug($"Async op, load file async, path: {path}");
 
             // LoadFromFile fails with null return if operation fails, __result.assetBundle will also reflect that if async load fails too
             var loadResult = _loadFromFile.Invoke(null, [path, crc, offset]) as AssetBundle;
@@ -233,7 +236,7 @@ public class AsyncOperationPatch
 
         private static bool Prefix(byte[] binary, uint crc, ref AssetBundleCreateRequest __result)
         {
-            StaticLogger.Trace($"patch prefix invoke\n{new StackTrace()}");
+            StaticLogger.LogDebug("Async op, load memory async");
 
             var loadResult = _loadFromMemoryInternal.Invoke(null, [binary, crc]) as AssetBundle;
             __result = new();
@@ -258,7 +261,7 @@ public class AsyncOperationPatch
         private static bool Prefix(Stream stream, uint crc, uint managedReadBufferSize,
             ref AssetBundleCreateRequest __result)
         {
-            StaticLogger.Trace($"patch prefix invoke\n{new StackTrace()}");
+            StaticLogger.LogDebug("Async op, load stream async");
 
             var loadResult =
                 _loadFromStreamInternal.Invoke(null, [stream, crc, managedReadBufferSize]) as
@@ -284,7 +287,7 @@ public class AsyncOperationPatch
 
         private static bool Prefix(AssetBundle __instance, string name, Type type, ref AssetBundleRequest __result)
         {
-            StaticLogger.Trace($"patch prefix invoke\n{new StackTrace()}");
+            StaticLogger.LogDebug($"Async op, load asset async, name: {name}, type: {type.SaneFullName()}");
 
             var loadResult = _loadAssetInternal.Invoke(__instance, [name, type]) as Object;
             __result = new();
@@ -308,11 +311,13 @@ public class AsyncOperationPatch
 
         private static bool Prefix(AssetBundle __instance, string name, Type type, ref AssetBundleRequest __result)
         {
-            StaticLogger.Trace($"patch prefix invoke\n{new StackTrace()}");
+            StaticLogger.LogDebug(
+                $"Async op, load asset with sub assets async, name: {name}, type: {type.SaneFullName()}");
 
             var loadResult =
                 _loadAssetWithSubAssetsInternal.Invoke(__instance, [name, type]) as Object[];
             __result = new();
+            // TODO: do i track scenes from those
             AssetBundleRequestTracker.NewAssetBundleRequestMultiple(__result, loadResult);
             return false;
         }
@@ -326,16 +331,32 @@ public class AsyncOperationPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static readonly MethodBase _unload =
-            AccessTools.Method(typeof(AssetBundle), "Unload", [typeof(bool)]);
+        private static readonly Type AssetBundleUnloadOperationType =
+            AccessTools.TypeByName("UnityEngine.AssetBundleUnloadOperation");
 
-        private static bool Prefix(bool unloadAllLoadedObjects, ref object __result)
+        private static bool Prefix(AssetBundle __instance, bool unloadAllLoadedObjects, ref object __result)
         {
-            StaticLogger.Trace($"patch prefix invoke\n{new StackTrace()}");
+            StaticLogger.LogDebug("Async op, unload AssetBundle");
 
-            _unload.Invoke(null, [unloadAllLoadedObjects]);
-            __result = AccessTools.CreateInstance(typeof(AssetBundle));
+            __instance.Unload(unloadAllLoadedObjects);
+            __result = AccessTools.CreateInstance(AssetBundleUnloadOperationType);
+            AssetBundleTracker.UnloadAsync((AsyncOperation)__result);
             return false;
+        }
+    }
+
+    [HarmonyPatch(typeof(AssetBundle), nameof(AssetBundle.Unload))]
+    private class Unload
+    {
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static void Postfix(AssetBundle __instance)
+        {
+            StaticLogger.LogDebug("non async op, unload AssetBundle");
+            AssetBundleTracker.Unload(__instance);
         }
     }
 
@@ -352,8 +373,6 @@ public class AsyncOperationPatch
 
         private static bool Prefix(AssetBundleRequest __instance, ref object __result)
         {
-            StaticLogger.Trace($"patch prefix invoke\n{new StackTrace()}");
-
             __result = AssetBundleRequestTracker.GetAssetBundleRequest(__instance);
             return false;
         }
@@ -402,7 +421,7 @@ public class AsyncOperationPatch
 
         private static bool Prefix(string path, Type type, ref object __result)
         {
-            StaticLogger.Trace($"patch prefix invoke\n{new StackTrace()}");
+            StaticLogger.LogDebug("Resources async op, load");
 
             // returns ResourceRequest
             // should be fine with my instance and no tinkering
