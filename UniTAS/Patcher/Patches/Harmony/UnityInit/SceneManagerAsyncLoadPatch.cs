@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
@@ -554,6 +555,7 @@ public class SceneManagerAsyncLoadPatch
 
         private static void Prefix(ref object scene)
         {
+            StaticLogger.Trace($"prefix invoke: {new StackTrace()}");
             var handle = WrapFactory.Create<SceneWrapper>(scene).Handle;
             foreach (var loading in SceneLoadTracker.LoadingScenes)
             {

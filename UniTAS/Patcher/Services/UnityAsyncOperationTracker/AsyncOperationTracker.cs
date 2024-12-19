@@ -351,7 +351,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
             asyncOperation = null;
             return;
         }
-        
+
         _firstMatchUnloadPaths.Add(sceneWrap.Path);
 
         _tracked.Add(asyncOperation);
@@ -380,7 +380,8 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
 
         _tracked.Add(asyncOperation);
 
-        _logger.LogDebug($"async scene load, name: `{sceneName}`, index: {sceneBuildIndex}");
+        _logger.LogDebug(
+            $"async scene load, {sceneName}, index: {sceneBuildIndex}, loadSceneMode: {loadSceneMode}, localPhysicsMode: {localPhysicsMode}");
         var loadData =
             new AsyncSceneLoadData(sceneName, sceneBuildIndex, loadSceneMode, localPhysicsMode, asyncOperation,
                 sceneInfo);
@@ -398,7 +399,8 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         LocalPhysicsMode localPhysicsMode)
     {
         if (InvalidSceneLoadAndLog(sceneBuildIndex >= 0 ? sceneBuildIndex : sceneName, out var sceneInfo)) return;
-        _logger.LogDebug($"scene load, {sceneName}, index: {sceneBuildIndex}");
+        _logger.LogDebug(
+            $"scene load, {sceneName}, index: {sceneBuildIndex}, loadSceneMode: {loadSceneMode}, localPhysicsMode: {localPhysicsMode}");
 
         if (!_sceneLoadSync)
         {
@@ -613,8 +615,17 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
     private void ReplaceDummyScene(AsyncOperation op)
     {
         var sceneCount = _sceneManagerWrapper.SceneCount;
-        if (sceneCount < 0) return;
-        if (LoadingScenes.Count == 0) return;
+        if (sceneCount < 0)
+        {
+            _logger.LogWarning("Scene count is invalid");
+            return;
+        }
+
+        if (LoadingScenes.Count == 0)
+        {
+            _logger.LogWarning("Usually there are loading scenes, but there isn't");
+            return;
+        }
 
         var actualScene = _sceneManagerWrapper.GetSceneAt(sceneCount - 1);
         var loadingInfoIndex = LoadingScenes.FindIndex(x => ReferenceEquals(x.Op, op));
