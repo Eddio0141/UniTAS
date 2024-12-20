@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -34,11 +35,11 @@ public class SceneStructPatch
     private static readonly ISceneOverride SceneOverride = ContainerStarter.Kernel.GetInstance<ISceneOverride>();
 
     [HarmonyPatch]
-    private class IsValid
+    private class IsValidInternal
     {
         private static MethodBase TargetMethod()
         {
-            return AccessTools.Method(SceneType, "IsValid", []);
+            return AccessTools.Method(SceneType, "IsValidInternal");
         }
 
         private static Exception Cleanup(MethodBase original, Exception ex)
@@ -46,18 +47,18 @@ public class SceneStructPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix(ref bool __result, int ___m_Handle)
+        private static bool Prefix(ref bool __result, int sceneHandle)
         {
-            return CheckAndSetDefault(___m_Handle, ref __result, _ => true, actual => actual.IsValid);
+            return CheckAndSetDefault(sceneHandle, ref __result, _ => true, actual => actual.IsValid);
         }
     }
 
     [HarmonyPatch]
-    private class get_name
+    private class GetNameInternal
     {
         private static MethodBase TargetMethod()
         {
-            return AccessTools.PropertyGetter(SceneType, "name");
+            return AccessTools.Method(SceneType, "GetNameInternal");
         }
 
         private static Exception Cleanup(MethodBase original, Exception ex)
@@ -65,49 +66,32 @@ public class SceneStructPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix(ref string __result, int ___m_Handle)
+        private static bool Prefix(ref string __result, int sceneHandle)
+        {
+            return CheckAndSetDefault(sceneHandle, ref __result, x => x.Name, x => x.Name);
+        }
+    }
+
+    [HarmonyPatch]
+    private class SetNameInternal
+    {
+        private static MethodBase TargetMethod()
+        {
+            return AccessTools.Method(SceneType, "SetNameInternal");
+        }
+
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static bool Prefix(int sceneHandle)
         {
             if (PatchReverseInvoker.Invoking) return true;
 
             foreach (var loading in SceneLoadTracker.LoadingScenes)
             {
-                if (loading.TrackingHandle != ___m_Handle) continue;
-                CheckAndWarnAPIUsage();
-                __result = loading.LoadingScene.Name;
-                return false;
-            }
-
-            foreach (var loading in SceneLoadTracker.DummyScenes)
-            {
-                if (loading.dummyScene.TrackingHandle != ___m_Handle) continue;
-                __result = loading.actualScene.Name;
-                return false;
-            }
-
-            return true;
-        }
-    }
-
-    [HarmonyPatch]
-    private class set_name
-    {
-        private static MethodBase TargetMethod()
-        {
-            return AccessTools.PropertySetter(SceneType, "name");
-        }
-
-        private static Exception Cleanup(MethodBase original, Exception ex)
-        {
-            return PatchHelper.CleanupIgnoreFail(original, ex);
-        }
-
-        private static bool Prefix(int ___m_Handle)
-        {
-            if (PatchReverseInvoker.Invoking) return true;
-
-            foreach (var loading in SceneLoadTracker.LoadingScenes)
-            {
-                if (loading.TrackingHandle != ___m_Handle) continue;
+                if (loading.TrackingHandle != sceneHandle) continue;
                 CheckAndWarnAPIUsage();
                 // well this ain't the proper error, but it should do the same thing
                 throw new InvalidOperationException(
@@ -119,11 +103,11 @@ public class SceneStructPatch
     }
 
     [HarmonyPatch]
-    private class get_isLoaded
+    private class GetBuildIndexInternal
     {
         private static MethodBase TargetMethod()
         {
-            return AccessTools.PropertyGetter(SceneType, "isLoaded");
+            return AccessTools.Method(SceneType, "GetBuildIndexInternal");
         }
 
         private static Exception Cleanup(MethodBase original, Exception ex)
@@ -131,44 +115,19 @@ public class SceneStructPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix(int ___m_Handle, ref bool __result)
+        private static bool Prefix(int sceneHandle, ref int __result)
         {
-            if (SceneOverride.IsLoaded(___m_Handle, out var loaded))
-            {
-                __result = loaded;
-                return false;
-            }
-
-            return CheckAndSetDefault(___m_Handle, ref __result, _ => false, actual => actual.IsLoaded);
-        }
-    }
-
-    [HarmonyPatch]
-    private class get_buildIndex
-    {
-        private static MethodBase TargetMethod()
-        {
-            return AccessTools.PropertyGetter(SceneType, "buildIndex");
-        }
-
-        private static Exception Cleanup(MethodBase original, Exception ex)
-        {
-            return PatchHelper.CleanupIgnoreFail(original, ex);
-        }
-
-        private static bool Prefix(int ___m_Handle, ref int __result)
-        {
-            return CheckAndSetDefault(___m_Handle, ref __result, dummy => dummy.BuildIndex,
+            return CheckAndSetDefault(sceneHandle, ref __result, dummy => dummy.BuildIndex,
                 actual => actual.BuildIndex);
         }
     }
 
     [HarmonyPatch]
-    private class get_isDirty
+    private class GetPathInternal
     {
         private static MethodBase TargetMethod()
         {
-            return AccessTools.PropertyGetter(SceneType, "isDirty");
+            return AccessTools.Method(SceneType, "GetPathInternal");
         }
 
         private static Exception Cleanup(MethodBase original, Exception ex)
@@ -176,66 +135,9 @@ public class SceneStructPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix(int ___m_Handle, ref bool __result)
+        private static bool Prefix(int sceneHandle, ref string __result)
         {
-            return CheckAndSetDefault(___m_Handle, ref __result, _ => false, actual => actual.IsDirty);
-        }
-    }
-
-    [HarmonyPatch]
-    private class get_rootCount
-    {
-        private static MethodBase TargetMethod()
-        {
-            return AccessTools.PropertyGetter(SceneType, "rootCount");
-        }
-
-        private static Exception Cleanup(MethodBase original, Exception ex)
-        {
-            return PatchHelper.CleanupIgnoreFail(original, ex);
-        }
-
-        private static bool Prefix(int ___m_Handle, ref int __result)
-        {
-            return CheckAndSetDefault(___m_Handle, ref __result, _ => 0, actual => actual.RootCount);
-        }
-    }
-
-    [HarmonyPatch]
-    private class get_isSubScene
-    {
-        private static MethodBase TargetMethod()
-        {
-            return AccessTools.PropertyGetter(SceneType, "isSubScene");
-        }
-
-        private static Exception Cleanup(MethodBase original, Exception ex)
-        {
-            return PatchHelper.CleanupIgnoreFail(original, ex);
-        }
-
-        private static bool Prefix(int ___m_Handle, ref bool __result)
-        {
-            return CheckAndSetDefault(___m_Handle, ref __result, _ => false, actual => actual.IsSubScene);
-        }
-    }
-
-    [HarmonyPatch]
-    private class get_path
-    {
-        private static MethodBase TargetMethod()
-        {
-            return AccessTools.PropertyGetter(SceneType, "path");
-        }
-
-        private static Exception Cleanup(MethodBase original, Exception ex)
-        {
-            return PatchHelper.CleanupIgnoreFail(original, ex);
-        }
-
-        private static bool Prefix(int ___m_Handle, ref string __result)
-        {
-            return CheckAndSetDefault(___m_Handle, ref __result, dummy => dummy.Path, actual => actual.Path);
+            return CheckAndSetDefault(sceneHandle, ref __result, dummy => dummy.Path, actual => actual.Path);
         }
     }
 
@@ -387,6 +289,99 @@ public class SceneStructPatch
 
             return true;
         }
+    }
+    
+    [HarmonyPatch]
+    private class GetIsLoadedInternal
+    {
+        private static MethodBase TargetMethod()
+        {
+            return AccessTools.Method(SceneType, "GetIsLoadedInternal");
+        }
+
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static bool Prefix(int sceneHandle, ref bool __result)
+        {
+            if (SceneOverride.IsLoaded(sceneHandle, out var loaded))
+            {
+                __result = loaded;
+                return false;
+            }
+
+            return CheckAndSetDefault(sceneHandle, ref __result, _ => false, actual => actual.IsLoaded);
+        }
+    }
+
+    [HarmonyPatch]
+    private class FixHandleOrReturnDefault
+    {
+        private static IEnumerable<MethodInfo> TargetMethods()
+        {
+            return new[]
+            {
+                AccessTools.Method(SceneType, "GetRootGameObjectsInternal"),
+                AccessTools.Method(SceneType, "GetRootCountInternal"),
+                AccessTools.Method(SceneType, "GetDirtyID"),
+                AccessTools.Method(SceneType, "GetIsDirtyInternal"),
+
+                // these shouldn't matter
+                AccessTools.Method(SceneType, "GetLoadingStateInternal"),
+                AccessTools.Method(SceneType, "GetGUIDInternal"),
+                AccessTools.Method(SceneType, "SetPathAndGUIDInternal"),
+
+                AccessTools.Method(SceneType, "IsSubScene")
+                // TODO: SetIsSubScene, IsSubScene
+            }.Where(x => x != null);
+        }
+
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static bool Prefix(ref int sceneHandle)
+        {
+            return CheckAndSetHandleArg(ref sceneHandle);
+        }
+    }
+
+    private static bool CheckAndSetHandleArg(ref int sceneHandle)
+    {
+        foreach (var dummy in SceneLoadTracker.DummyScenes)
+        {
+            if (dummy.dummyScene.TrackingHandle != sceneHandle) continue;
+            CheckAndWarnAPIUsage();
+            if (dummy.actualScene == null)
+                return false;
+
+            sceneHandle = dummy.actualScene.Handle;
+            return true;
+        }
+
+        return true;
+    }
+
+    private static bool CheckAndSetHandleArg<T>(ref int sceneHandle, ref T __result, Func<T> dummySet)
+    {
+        foreach (var dummy in SceneLoadTracker.DummyScenes)
+        {
+            if (dummy.dummyScene.TrackingHandle != sceneHandle) continue;
+            CheckAndWarnAPIUsage();
+            if (dummy.actualScene == null)
+            {
+                __result = dummySet();
+                return false;
+            }
+
+            sceneHandle = dummy.actualScene.Handle;
+            return true;
+        }
+
+        return true;
     }
 
     private static bool CheckAndSetDefault<T>(int mHandle, ref T __result,
