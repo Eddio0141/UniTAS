@@ -166,7 +166,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
             _sceneManagerWrapper.TrackSceneCountDummy = true;
 
             // call after scene is loaded
-            ReplaceDummyScene(loadData.AsyncOperation);
+            ReplaceDummyScene(loadData.AsyncOperation, loadData.SceneInfo.Path);
 
             _pendingLoadCallbacks.Add(loadData);
             _loaded.Add(loadData.SceneInfo);
@@ -369,14 +369,15 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
     public void AsyncSceneLoad(string sceneName, int sceneBuildIndex, LoadSceneMode loadSceneMode,
         LocalPhysicsMode localPhysicsMode, ref AsyncOperation asyncOperation)
     {
-        if (InvalidSceneLoadAndLog(sceneBuildIndex >= 0 ? sceneBuildIndex : sceneName, out var sceneInfo))
+        Either<string, int> scene = sceneBuildIndex >= 0 ? sceneBuildIndex : sceneName;
+        if (InvalidSceneLoadAndLog(scene, out var sceneInfo))
         {
             asyncOperation = null;
             return;
         }
 
         LoadingSceneCount++;
-        CreateDummySceneStruct(sceneName, asyncOperation);
+        CreateDummySceneStruct(scene, asyncOperation);
 
         _tracked.Add(asyncOperation);
 
@@ -398,7 +399,8 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
     public void NonAsyncSceneLoad(string sceneName, int sceneBuildIndex, LoadSceneMode loadSceneMode,
         LocalPhysicsMode localPhysicsMode)
     {
-        if (InvalidSceneLoadAndLog(sceneBuildIndex >= 0 ? sceneBuildIndex : sceneName, out var sceneInfo)) return;
+        Either<string, int> scene = sceneBuildIndex >= 0 ? sceneBuildIndex : sceneName;
+        if (InvalidSceneLoadAndLog(scene, out var sceneInfo)) return;
         _logger.LogDebug(
             $"scene load, {sceneName}, index: {sceneBuildIndex}, loadSceneMode: {loadSceneMode}, localPhysicsMode: {localPhysicsMode}");
 
@@ -429,7 +431,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
 
         // next, queue the non async scene load
         LoadingSceneCount++;
-        CreateDummySceneStruct(sceneName, null);
+        CreateDummySceneStruct(scene, null);
 
         _asyncLoads.Add(new AsyncSceneLoadData(sceneName, sceneBuildIndex, loadSceneMode, localPhysicsMode, null,
             sceneInfo));
@@ -598,10 +600,10 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
 
     private readonly Type _sceneStruct = AccessTools.TypeByName("UnityEngine.SceneManagement.Scene");
 
-    private void CreateDummySceneStruct(string loadName, AsyncOperation op)
+    private void CreateDummySceneStruct(Either<string, int> load, AsyncOperation op)
     {
         if (_sceneStruct == null) return;
-        var sceneInfo = GetSceneInfo(loadName);
+        var sceneInfo = GetSceneInfo(load);
         if (sceneInfo == null) return;
 
         var instance = _wrapFactory.Create<SceneWrapper>(null);
@@ -612,7 +614,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         _sceneStructHandleId++;
     }
 
-    private void ReplaceDummyScene(AsyncOperation op)
+    private void ReplaceDummyScene(AsyncOperation op, string path)
     {
         var sceneCount = _sceneManagerWrapper.SceneCount;
         if (sceneCount < 0)
@@ -628,9 +630,12 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         }
 
         var actualScene = _sceneManagerWrapper.GetSceneAt(sceneCount - 1);
-        var loadingInfoIndex = LoadingScenes.FindIndex(x => ReferenceEquals(x.Op, op));
+        var loadingInfoIndex = op == null
+            ? LoadingScenes.FindIndex(x => x.Op == null && x.LoadingScene.Path == path)
+            : LoadingScenes.FindIndex(x => ReferenceEquals(x.Op, op));
+        var dummyHandle = LoadingScenes[loadingInfoIndex].TrackingHandle;
         LoadingScenes.RemoveAt(loadingInfoIndex);
-        var dummySceneIndex = DummyScenes.FindIndex(x => ReferenceEquals(x.dummyScene.Op, op));
+        var dummySceneIndex = DummyScenes.FindIndex(x => x.dummyScene.TrackingHandle == dummyHandle);
         DummyScenes[dummySceneIndex] = (DummyScenes[dummySceneIndex].dummyScene, actualScene);
     }
 
