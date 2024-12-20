@@ -290,7 +290,7 @@ public class SceneStructPatch
             return true;
         }
     }
-    
+
     [HarmonyPatch]
     private class GetIsLoadedInternal
     {
@@ -400,7 +400,7 @@ public class SceneStructPatch
         foreach (var loading in SceneLoadTracker.DummyScenes)
         {
             if (loading.dummyScene.TrackingHandle != mHandle) continue;
-            __result = actualSet(loading.actualScene);
+            __result = PatchReverseInvoker.Invoke((a, b) => a(b), actualSet, loading.actualScene);
             return false;
         }
 

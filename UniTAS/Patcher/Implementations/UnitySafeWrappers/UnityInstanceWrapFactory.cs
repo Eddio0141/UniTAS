@@ -3,7 +3,6 @@ using StructureMap;
 using UniTAS.Patcher.Implementations.UnitySafeWrappers.SceneManagement;
 using UniTAS.Patcher.Implementations.UnitySafeWrappers.Unity.Collections;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
-using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.UnitySafeWrappers;
 
 namespace UniTAS.Patcher.Implementations.UnitySafeWrappers;
@@ -15,11 +14,6 @@ public class UnityInstanceWrapFactory(IContainer container) : IUnityInstanceWrap
 {
     public T Create<T>(object instance) where T : class
     {
-        if (typeof(T) == typeof(SceneWrapper))
-        {
-            return (T)(object)new SceneWrapper(instance, container.GetInstance<IPatchReverseInvoker>());
-        }
-
         // because the wrap could have dependencies, we need to use the container to create it, and pass the instance to the constructor
         return container.With(instance).GetInstance<T>();
     }
@@ -34,7 +28,7 @@ public class UnityInstanceWrapFactory(IContainer container) : IUnityInstanceWrap
 
         if (typeof(T) == typeof(SceneWrapper))
         {
-            return new SceneWrapper(null, container.GetInstance<IPatchReverseInvoker>()) as T;
+            return new SceneWrapper(null) as T;
         }
 
         if (typeof(T) == typeof(RefreshRateWrap))

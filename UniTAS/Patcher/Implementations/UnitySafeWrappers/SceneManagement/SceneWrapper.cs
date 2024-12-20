@@ -5,22 +5,21 @@ using HarmonyLib;
 using MonoMod.Utils;
 using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Interfaces.UnitySafeWrappers;
-using UniTAS.Patcher.Services;
 
 namespace UniTAS.Patcher.Implementations.UnitySafeWrappers.SceneManagement;
 
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-public class SceneWrapper(object instance, IPatchReverseInvoker patchReverseInvoker) : UnityInstanceWrap(instance)
+public class SceneWrapper(object instance) : UnityInstanceWrap(instance)
 {
     protected override Type WrappedType { get; } = AccessTools.TypeByName("UnityEngine.SceneManagement.Scene");
 
-    public bool IsValid => patchReverseInvoker.Invoke((m, i) => m(i), IsValidMethod, Instance);
-    public string Name => patchReverseInvoker.Invoke((m, i) => m(i), NameGetter, Instance);
-    public string Path => patchReverseInvoker.Invoke((m, i) => m(i), PathGetter, Instance);
-    public bool IsLoaded => patchReverseInvoker.Invoke((m, i) => m(i), IsLoadedGetter, Instance);
-    public int BuildIndex => patchReverseInvoker.Invoke((m, i) => m(i), BuildIndexGetter, Instance);
-    public bool IsDirty => patchReverseInvoker.Invoke((m, i) => m(i), IsDirtyGetter, Instance);
-    public int RootCount => patchReverseInvoker.Invoke((m, i) => m(i), RootCountGetter, Instance);
+    public bool IsValid => IsValidMethod(Instance);
+    public string Name => NameGetter(Instance);
+    public string Path => PathGetter(Instance);
+    public bool IsLoaded => IsLoadedGetter(Instance);
+    public int BuildIndex => BuildIndexGetter(Instance);
+    // public bool IsDirty => IsDirtyGetter(Instance);
+    // public int RootCount => RootCountGetter(Instance);
 
     public int Handle
     {
@@ -34,7 +33,7 @@ public class SceneWrapper(object instance, IPatchReverseInvoker patchReverseInvo
     }
 
     // TODO: when does this exist from?
-    public bool IsSubScene => patchReverseInvoker.Invoke((m, i) => m?.Invoke(i) ?? false, IsSubSceneGetter, Instance);
+    public bool IsSubScene => IsSubSceneGetter(Instance);
 
     private static readonly Type SceneType = AccessTools.TypeByName("UnityEngine.SceneManagement.Scene");
     private static readonly Func<object, string> NameGetter;
@@ -42,9 +41,9 @@ public class SceneWrapper(object instance, IPatchReverseInvoker patchReverseInvo
     private static readonly Func<object, int> BuildIndexGetter;
     private static readonly Func<object, bool> IsValidMethod;
     private static readonly Func<object, bool> IsLoadedGetter;
-    private static readonly Func<object, bool> IsDirtyGetter;
+    // private static readonly Func<object, bool> IsDirtyGetter;
     private static readonly Func<object, bool> IsSubSceneGetter;
-    private static readonly Func<object, int> RootCountGetter;
+    // private static readonly Func<object, int> RootCountGetter;
     private static readonly Func<object, int> GetHandleField;
     private static readonly SetHandleFieldDelegate SetHandleField;
 
@@ -63,10 +62,10 @@ public class SceneWrapper(object instance, IPatchReverseInvoker patchReverseInvo
         IsValidMethod = isValid.MethodDelegate<Func<object, bool>>();
         var isLoaded = AccessTools.PropertyGetter(SceneType, "isLoaded");
         IsLoadedGetter = isLoaded.MethodDelegate<Func<object, bool>>();
-        var isDirty = AccessTools.PropertyGetter(SceneType, "isDirty");
-        IsDirtyGetter = isDirty.MethodDelegate<Func<object, bool>>();
-        var rootCount = AccessTools.PropertyGetter(SceneType, "rootCount");
-        RootCountGetter = rootCount.MethodDelegate<Func<object, int>>();
+        // var isDirty = AccessTools.PropertyGetter(SceneType, "isDirty");
+        // IsDirtyGetter = isDirty.MethodDelegate<Func<object, bool>>();
+        // var rootCount = AccessTools.PropertyGetter(SceneType, "rootCount");
+        // RootCountGetter = rootCount.MethodDelegate<Func<object, int>>();
         var isSubScene = AccessTools.PropertyGetter(SceneType, "isSubScene");
         // TODO: does it exist
         IsSubSceneGetter = isSubScene?.MethodDelegate<Func<object, bool>>();

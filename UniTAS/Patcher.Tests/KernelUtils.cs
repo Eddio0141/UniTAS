@@ -332,7 +332,7 @@ public static class KernelUtils
 
             if (typeof(T) == typeof(SceneWrapper))
             {
-                return (new SceneWrapper(null, container.GetInstance<IPatchReverseInvoker>()) as T)!;
+                return (new SceneWrapper(null) as T)!;
             }
 
             if (typeof(T) == typeof(RefreshRateWrap))

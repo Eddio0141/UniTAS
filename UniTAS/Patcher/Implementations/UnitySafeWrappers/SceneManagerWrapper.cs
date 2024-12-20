@@ -263,7 +263,7 @@ public class SceneManagerWrapper : ISceneManagerWrapper, IOnPreGameRestart
 
     public SceneWrapper GetSceneAt(int index)
     {
-        return _getSceneAt == null ? null : new SceneWrapper(_getSceneAt.Invoke(null, [index]), _patchReverseInvoker);
+        return _getSceneAt == null ? null : new SceneWrapper(_getSceneAt.Invoke(null, [index]));
     }
 
     public int SceneCount
