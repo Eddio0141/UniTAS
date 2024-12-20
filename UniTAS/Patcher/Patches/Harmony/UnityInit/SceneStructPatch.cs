@@ -317,6 +317,50 @@ public class SceneStructPatch
     }
 
     [HarmonyPatch]
+    private class IsSubScene
+    {
+        private static MethodBase TargetMethod()
+        {
+            return AccessTools.Method(SceneType, "IsSubScene");
+        }
+
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static bool Prefix(int sceneHandle, ref bool __result)
+        {
+            if (SceneOverride.IsSubScene(sceneHandle, out var sub))
+            {
+                __result = sub;
+                return false;
+            }
+
+            return CheckAndSetDefault(sceneHandle, ref __result, _ => false, actual => actual.IsSubScene);
+        }
+    }
+
+    [HarmonyPatch]
+    private class SetIsSubScene
+    {
+        private static MethodBase TargetMethod()
+        {
+            return AccessTools.Method(SceneType, "SetIsSubScene");
+        }
+
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static bool Prefix(int sceneHandle, bool value)
+        {
+            return !SceneOverride.SetSubScene(sceneHandle, value);
+        }
+    }
+
+    [HarmonyPatch]
     private class FixHandleOrReturnDefault
     {
         private static IEnumerable<MethodInfo> TargetMethods()
@@ -332,9 +376,6 @@ public class SceneStructPatch
                 AccessTools.Method(SceneType, "GetLoadingStateInternal"),
                 AccessTools.Method(SceneType, "GetGUIDInternal"),
                 AccessTools.Method(SceneType, "SetPathAndGUIDInternal"),
-
-                AccessTools.Method(SceneType, "IsSubScene")
-                // TODO: SetIsSubScene, IsSubScene
             }.Where(x => x != null);
         }
 

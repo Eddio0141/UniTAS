@@ -17,6 +17,7 @@ public class SceneWrapper(object instance) : UnityInstanceWrap(instance)
     public string Name => NameGetter(Instance);
     public string Path => PathGetter(Instance);
     public bool IsLoaded => IsLoadedGetter(Instance);
+
     public int BuildIndex => BuildIndexGetter(Instance);
     // public bool IsDirty => IsDirtyGetter(Instance);
     // public int RootCount => RootCountGetter(Instance);
@@ -33,21 +34,37 @@ public class SceneWrapper(object instance) : UnityInstanceWrap(instance)
     }
 
     // TODO: when does this exist from?
-    public bool IsSubScene => IsSubSceneGetter(Instance);
+    public bool IsSubScene
+    {
+        get => IsSubSceneGetter(Instance);
+        set
+        {
+            var i = Instance;
+            IsSubSceneSetter(ref i, value);
+            Instance = i;
+        }
+    }
 
     private static readonly Type SceneType = AccessTools.TypeByName("UnityEngine.SceneManagement.Scene");
     private static readonly Func<object, string> NameGetter;
     private static readonly Func<object, string> PathGetter;
     private static readonly Func<object, int> BuildIndexGetter;
     private static readonly Func<object, bool> IsValidMethod;
+
     private static readonly Func<object, bool> IsLoadedGetter;
+
     // private static readonly Func<object, bool> IsDirtyGetter;
+    private static readonly SetBoolDelegate IsSubSceneSetter;
+
     private static readonly Func<object, bool> IsSubSceneGetter;
+
     // private static readonly Func<object, int> RootCountGetter;
     private static readonly Func<object, int> GetHandleField;
-    private static readonly SetHandleFieldDelegate SetHandleField;
+    private static readonly SetIntDelegate SetHandleField;
 
-    private delegate void SetHandleFieldDelegate(ref object instance, int handle);
+    private delegate void SetBoolDelegate(ref object instance, bool value);
+
+    private delegate void SetIntDelegate(ref object instance, int handle);
 
     static SceneWrapper()
     {
@@ -66,9 +83,14 @@ public class SceneWrapper(object instance) : UnityInstanceWrap(instance)
         // IsDirtyGetter = isDirty.MethodDelegate<Func<object, bool>>();
         // var rootCount = AccessTools.PropertyGetter(SceneType, "rootCount");
         // RootCountGetter = rootCount.MethodDelegate<Func<object, int>>();
-        var isSubScene = AccessTools.PropertyGetter(SceneType, "isSubScene");
         // TODO: does it exist
-        IsSubSceneGetter = isSubScene?.MethodDelegate<Func<object, bool>>();
+        var subScene = AccessTools.Property(SceneType, "isSubScene");
+        if (subScene != null)
+        {
+            IsSubSceneGetter = subScene.GetGetMethod().MethodDelegate<Func<object, bool>>();
+            IsSubSceneSetter = subScene.GetSetMethod().MethodDelegate<SetBoolDelegate>(delegateArgs:
+                [typeof(object).MakeByRefType(), typeof(bool)]);
+        }
 
         var handleField = AccessTools.Field(SceneType, "m_Handle");
         var dmd = new DynamicMethodDefinition("m_Handle_get", typeof(int), [typeof(object)]);
@@ -87,6 +109,6 @@ public class SceneWrapper(object instance) : UnityInstanceWrap(instance)
         il.Emit(OpCodes.Ldarg_1);
         il.Emit(OpCodes.Stfld, handleField);
         il.Emit(OpCodes.Ret);
-        SetHandleField = dmd.Generate().CreateDelegate<SetHandleFieldDelegate>();
+        SetHandleField = dmd.Generate().CreateDelegate<SetIntDelegate>();
     }
 }

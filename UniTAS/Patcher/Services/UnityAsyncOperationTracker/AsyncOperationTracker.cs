@@ -104,6 +104,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         _loaded.Clear();
         _loaded.Add(GetSceneInfo(0));
         _firstMatchUnloadPaths.Clear();
+        _subSceneTracker.Clear();
     }
 
     public void OnLastUpdateUnconditional()
@@ -590,7 +591,11 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
     public int LoadingSceneCount { get; private set; }
 
     public List<(DummyScene dummyScene, SceneWrapper actualScene)> DummyScenes { get; } = new();
+
     public List<DummyScene> LoadingScenes { get; } = new();
+
+    // tracks sub scene for dummy scenes during load
+    private readonly Dictionary<int, bool> _subSceneTracker = new();
 
     public void Unload(AssetBundle assetBundle)
     {
@@ -643,6 +648,12 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         LoadingScenes.RemoveAt(loadingInfoIndex);
         var dummySceneIndex = DummyScenes.FindIndex(x => x.dummyScene.TrackingHandle == dummyHandle);
         DummyScenes[dummySceneIndex] = (DummyScenes[dummySceneIndex].dummyScene, actualScene);
+
+        // sub scene value copied
+        if (_subSceneTracker.TryGetValue(dummyHandle, out var sub))
+        {
+            actualScene.IsSubScene = sub;
+        }
     }
 
     private SceneInfo GetSceneInfo(Either<string, int> scene)
@@ -699,6 +710,25 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
 
         loaded = false;
         return false;
+    }
+
+    public bool IsSubScene(int handle, out bool subScene)
+    {
+        if (_subSceneTracker.TryGetValue(handle, out var sub))
+        {
+            subScene = sub;
+            return true;
+        }
+
+        subScene = false;
+        return false;
+    }
+
+    public bool SetSubScene(int handle, bool subScene)
+    {
+        if (DummyScenes.FindIndex(x => x.dummyScene.TrackingHandle == handle) < 0) return false;
+        _subSceneTracker[handle] = subScene;
+        return true;
     }
 
     private class AsyncSceneLoadData(
