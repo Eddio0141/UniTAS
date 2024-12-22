@@ -10,7 +10,6 @@ using UniTAS.Patcher.Implementations.UnitySafeWrappers.SceneManagement;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.SoftRestart;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents.DontRunIfPaused;
-using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
 using UniTAS.Patcher.Models.UnitySafeWrappers.SceneManagement;
 using UniTAS.Patcher.Models.Utils;
 using UniTAS.Patcher.Services.Logging;
@@ -27,7 +26,7 @@ namespace UniTAS.Patcher.Services.UnityAsyncOperationTracker;
 // ReSharper disable once ClassNeverInstantiated.Global
 [Singleton]
 public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateRequestTracker, IAssetBundleRequestTracker,
-    IOnLastUpdateUnconditional, IAsyncOperationIsInvokingOnComplete, IOnPreGameRestart, IOnUpdateActual,
+    IOnLastUpdateActual, IAsyncOperationIsInvokingOnComplete, IOnPreGameRestart, IOnUpdateActual,
     IOnStartActual, IOnFixedUpdateActual, IAssetBundleTracker, ISceneOverride, IAsyncOperationOverride
 {
     private bool _isInvokingOnComplete;
@@ -92,7 +91,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         _subSceneTracker.Clear();
     }
 
-    public void OnLastUpdateUnconditional()
+    public void OnLastUpdateActual()
     {
         _firstMatchUnloadPaths.Clear();
 
@@ -122,6 +121,13 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
                 {
                     foundLoad = true;
                     if (data.DelayFrame) break;
+
+                    var op = load.Op;
+                    if (op != null)
+                    {
+                        var trackState = _tracked[load.Op];
+                        if (trackState is { NotAllowedToStall: false, AllowSceneActivation: false }) break;
+                    }
                 }
 
                 load.Load();
@@ -342,7 +348,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
             _sceneLoadSync = true;
 
             // first, all stalls are moved to load
-            foreach (var pair in _tracked)
+            foreach (var pair in _tracked.ToList())
             {
                 var op = pair.Key;
                 var data = pair.Value;
@@ -392,6 +398,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
 
         var state = _tracked[asyncOperation];
         state.AllowSceneActivation = allow;
+        _tracked[asyncOperation] = state;
         if (state.NotAllowedToStall) return;
 
         _logger.LogDebug(allow ? "restored scene activation" : "scene load is stalled");
@@ -423,8 +430,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
 
     public bool Progress(AsyncOperation asyncOperation, out float progress)
     {
-        if (_ops.Concat(_pendingLoadCallbacks)
-            .Any(load => load is AsyncSceneUnloadData && ReferenceEquals(load.Op, asyncOperation)))
+        if (_ops.Any(load => load is AsyncSceneUnloadData && ReferenceEquals(load.Op, asyncOperation)))
         {
             progress = 0f;
             return true;
@@ -509,7 +515,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
 
     public void UnloadBundleAsync(AsyncOperation op)
     {
-        _tracked.Add(op, new AsyncOperationData() { IsDone = true });
+        _tracked.Add(op, new AsyncOperationData { IsDone = true });
         InvokeOnComplete(op);
     }
 
@@ -656,12 +662,12 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         return true;
     }
 
-    private struct AsyncOperationData
+    private struct AsyncOperationData()
     {
-        public bool IsDone;
-        public bool AllowSceneActivation;
-        public bool NotAllowedToStall;
-        public int Priority;
+        public bool IsDone = false;
+        public bool AllowSceneActivation = true;
+        public bool NotAllowedToStall = false;
+        public int Priority = 0;
     }
 
     private class AsyncSceneLoadData(
@@ -688,9 +694,8 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
             // call after scene is loaded
             tracker.ReplaceDummyScene(Op, sceneInfo.Path);
 
-            tracker._pendingLoadCallbacks.Add(this);
             tracker._loaded.Add(sceneInfo);
-            if (!tracker._tracked.TryGetValue(Op, out var state)) return;
+            if (Op == null || !tracker._tracked.TryGetValue(Op, out var state)) return;
             state.NotAllowedToStall = false;
             tracker._tracked[Op] = state;
         }
