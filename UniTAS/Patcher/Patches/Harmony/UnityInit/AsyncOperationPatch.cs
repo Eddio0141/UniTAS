@@ -188,12 +188,11 @@ public class AsyncOperationPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix(AsyncOperation __instance)
+        private static bool Prefix(IntPtr ___m_Ptr)
         {
             StaticLogger.Trace($"patch prefix invoke\n{new StackTrace()}");
 
-            var instanceTraverse = new Traverse(__instance).Field("m_Ptr");
-            return instanceTraverse.GetValue<IntPtr>() != IntPtr.Zero;
+            return ___m_Ptr != IntPtr.Zero;
         }
     }
 
