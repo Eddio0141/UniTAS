@@ -28,7 +28,7 @@ namespace UniTAS.Patcher.Services.UnityAsyncOperationTracker;
 [Singleton]
 public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateRequestTracker, IAssetBundleRequestTracker,
     IOnLastUpdateUnconditional, IAsyncOperationIsInvokingOnComplete, IOnPreGameRestart, IOnUpdateActual,
-    IOnStartActual, IOnFixedUpdateActual, IAssetBundleTracker, ISceneOverride
+    IOnStartActual, IOnFixedUpdateActual, IAssetBundleTracker, ISceneOverride, IAsyncOperationOverride
 {
     private bool _isInvokingOnComplete;
     private readonly ISceneManagerWrapper _sceneManagerWrapper;
@@ -48,11 +48,11 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         _loaded = [GetSceneInfo(0)];
     }
 
-    private readonly HashSet<AsyncOperation> _tracked = [];
+    private readonly Dictionary<AsyncOperation, AsyncOperationData> _tracked = [];
 
     // any scene related things are stored as a list
     // it is a list of scenes in load order
-    private readonly List<Either<AsyncSceneLoadData, AsyncSceneUnloadData>> _asyncLoads = [];
+    private readonly List<Either<AsyncSceneLoadData, AsyncSceneUnloadData>> _ops = [];
 
     // not allowed to be disabled anymore
     private readonly HashSet<AsyncOperation> _allowSceneActivationNotAllowed = [];
@@ -64,10 +64,6 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
     private readonly Dictionary<AsyncOperation, AssetBundle> _assetBundleCreateRequests = new();
     private readonly Dictionary<AsyncOperation, AssetBundleRequestData> _assetBundleRequests = new();
     private readonly Dictionary<AssetBundle, string[]> _bundleScenes = new();
-
-    private readonly Dictionary<AsyncOperation, bool> _allowSceneActivationValue = new();
-
-    private readonly HashSet<AsyncOperation> _isDone = [];
 
     private bool _sceneLoadSync;
 
@@ -86,13 +82,11 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
 
     public void OnPreGameRestart()
     {
-        _asyncLoads.Clear();
+        _ops.Clear();
         _pendingLoadCallbacks.Clear();
         _asyncLoadStalls.Clear();
         _assetBundleCreateRequests.Clear();
         _assetBundleRequests.Clear();
-        _allowSceneActivationValue.Clear();
-        _isDone.Clear();
         _tracked.Clear();
         _allowSceneActivationNotAllowed.Clear();
         _bundleScenes.Clear();
@@ -113,22 +107,22 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
 
         if (_sceneLoadSync)
         {
-            foreach (var loadData in _asyncLoads)
+            foreach (var loadData in _ops)
             {
                 ProcessLoadFromData(loadData);
             }
 
-            _asyncLoads.Clear();
+            _ops.Clear();
             return;
         }
 
-        if (_asyncLoads.Count == 0) return;
+        if (_ops.Count == 0) return;
 
         var removes = new List<int>();
         var foundLoad = false;
-        for (var i = 0; i < _asyncLoads.Count; i++)
+        for (var i = 0; i < _ops.Count; i++)
         {
-            var load = _asyncLoads[i];
+            var load = _ops[i];
 
             if (!foundLoad)
             {
@@ -151,7 +145,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
 
         foreach (var i in ((IEnumerable<int>)removes).Reverse())
         {
-            _asyncLoads.RemoveAt(i);
+            _ops.RemoveAt(i);
         }
     }
 
@@ -203,7 +197,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         _sceneLoadSync = false;
 
         // doesn't matter, as long as next frame happens, before the game update adds more scenes, delay is gone
-        foreach (var op in _asyncLoads)
+        foreach (var op in _ops)
         {
             if (op.IsLeft)
                 op.Left.DelayFrame = false;
@@ -230,7 +224,9 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
             callbacks.Add(data);
             var op = data.IsLeft ? data.Left.AsyncOperation : data.Right.AsyncOperation;
             if (op == null) continue;
-            _isDone.Add(op);
+            var state = _tracked[op];
+            state.IsDone = true;
+            _tracked[op] = state;
         }
 
         // prevent allowSceneActivation to be False on event callback
@@ -263,16 +259,14 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
     public void NewAssetBundleRequest(AsyncOperation asyncOperation, Object assetBundleRequest)
     {
         _assetBundleRequests.Add(asyncOperation, new(assetBundleRequest));
-        _tracked.Add(asyncOperation);
-        _isDone.Add(asyncOperation);
+        _tracked.Add(asyncOperation, new() { IsDone = true });
         InvokeOnComplete(asyncOperation);
     }
 
     public void NewAssetBundleRequestMultiple(AsyncOperation asyncOperation, Object[] assetBundleRequestArray)
     {
         _assetBundleRequests.Add(asyncOperation, new(multipleResults: assetBundleRequestArray));
-        _tracked.Add(asyncOperation);
-        _isDone.Add(asyncOperation);
+        _tracked.Add(asyncOperation, new() { IsDone = true });
         InvokeOnComplete(asyncOperation);
     }
 
@@ -281,8 +275,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         _assetBundleCreateRequests.Add(asyncOperation, assetBundle);
         if (_getAllScenePaths != null)
             _bundleScenes[assetBundle] = _getAllScenePaths(assetBundle);
-        _tracked.Add(asyncOperation);
-        _isDone.Add(asyncOperation);
+        _tracked.Add(asyncOperation, new() { IsDone = true });
         InvokeOnComplete(asyncOperation);
     }
 
@@ -326,8 +319,8 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
             break;
         }
 
-        _tracked.Add(asyncOperation);
-        _asyncLoads.Add(new AsyncSceneUnloadData(asyncOperation, options, sceneFound,
+        _tracked.Add(asyncOperation, new());
+        _ops.Add(new AsyncSceneUnloadData(asyncOperation, options, sceneFound,
             ResolveDummyHandle(sceneFound!.Handle)));
         _sceneManagerWrapper.LoadedSceneCountDummy--;
         LoadingSceneCount++;
@@ -352,7 +345,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
 
         var handle = ResolveDummyHandle(sceneWrap.Handle);
 
-        if (_asyncLoads.Any(x => x.IsRight && x.Right.SceneWrapper.Handle == handle))
+        if (_ops.Any(x => x.IsRight && x.Right.SceneWrapper.Handle == handle))
         {
             _logger.LogDebug("scene is already to be unloaded, skipping this operation");
             asyncOperation = null;
@@ -361,8 +354,8 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
 
         _firstMatchUnloadPaths.Add(sceneWrap.Path);
 
-        _tracked.Add(asyncOperation);
-        _asyncLoads.Add(new AsyncSceneUnloadData(asyncOperation, options, sceneWrap, handle));
+        _tracked.Add(asyncOperation, new());
+        _ops.Add(new AsyncSceneUnloadData(asyncOperation, options, sceneWrap, handle));
         _sceneManagerWrapper.LoadedSceneCountDummy--;
         LoadingSceneCount++;
     }
@@ -386,14 +379,14 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         LoadingSceneCount++;
         CreateDummySceneStruct(scene, asyncOperation);
 
-        _tracked.Add(asyncOperation);
+        _tracked.Add(asyncOperation, new());
 
         _logger.LogDebug(
             $"async scene load, {sceneName}, index: {sceneBuildIndex}, loadSceneMode: {loadSceneMode}, localPhysicsMode: {localPhysicsMode}");
         var loadData =
             new AsyncSceneLoadData(sceneName, sceneBuildIndex, loadSceneMode, localPhysicsMode, asyncOperation,
                 sceneInfo);
-        _asyncLoads.Add(loadData);
+        _ops.Add(loadData);
 
         if (!_sceneLoadSync) return;
         _logger.LogDebug("load scene sync is happening for next frame");
@@ -418,12 +411,12 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
             // first, all stalls are moved to load
             foreach (var load in _asyncLoadStalls)
             {
-                _asyncLoads.Add(load);
+                _ops.Add(load);
             }
 
             _asyncLoadStalls.Clear();
 
-            foreach (var sceneData in _asyncLoads)
+            foreach (var sceneData in _ops)
             {
                 // delays are all gone now
                 if (!sceneData.IsLeft) continue;
@@ -440,7 +433,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         LoadingSceneCount++;
         CreateDummySceneStruct(scene, null);
 
-        _asyncLoads.Add(new AsyncSceneLoadData(sceneName, sceneBuildIndex, loadSceneMode, localPhysicsMode, null,
+        _ops.Add(new AsyncSceneLoadData(sceneName, sceneBuildIndex, loadSceneMode, localPhysicsMode, null,
             sceneInfo));
     }
 
@@ -471,68 +464,70 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
             if (stallIndex < 0) return;
             StoreAllowSceneActivation(asyncOperation, true);
             if (_allowSceneActivationNotAllowed.Contains(asyncOperation)) return;
-            _asyncLoads.Add(_asyncLoadStalls[stallIndex]);
+            _ops.Add(_asyncLoadStalls[stallIndex]);
             _asyncLoadStalls.RemoveAt(stallIndex);
             _logger.LogDebug("restored scene activation");
         }
         else
         {
-            var loadIndex = _asyncLoads.FindIndex(d => d.IsLeft && d.Left.AsyncOperation == asyncOperation);
+            var loadIndex = _ops.FindIndex(d => d.IsLeft && d.Left.AsyncOperation == asyncOperation);
             if (loadIndex < 0) return;
             StoreAllowSceneActivation(asyncOperation, false);
             if (_allowSceneActivationNotAllowed.Contains(asyncOperation)) return;
-            _asyncLoadStalls.Add(_asyncLoads[loadIndex].Left);
-            _asyncLoads.RemoveAt(loadIndex);
+            _asyncLoadStalls.Add(_ops[loadIndex].Left);
+            _ops.RemoveAt(loadIndex);
             _logger.LogDebug("Added scene to stall list");
         }
     }
 
     private void StoreAllowSceneActivation(AsyncOperation asyncOperation, bool allow)
     {
-        _allowSceneActivationValue[asyncOperation] = allow;
+        var state = _tracked[asyncOperation];
+        state.AllowSceneActivation = allow;
+        _tracked[asyncOperation] = state;
     }
 
     public bool GetAllowSceneActivation(AsyncOperation asyncOperation, out bool state)
     {
-        if (_allowSceneActivationValue.TryGetValue(asyncOperation, out state))
+        if (_tracked.TryGetValue(asyncOperation, out var data))
         {
+            state = data.AllowSceneActivation;
             return true;
         }
 
-        // not found, is it even tracked?
         state = false;
-        return _tracked.Contains(asyncOperation);
+        return false;
     }
 
     public bool IsDone(AsyncOperation asyncOperation, out bool isDone)
     {
-        if (_isDone.Contains(asyncOperation))
+        if (_tracked.TryGetValue(asyncOperation, out var data))
         {
-            isDone = true;
+            isDone = data.IsDone;
             return true;
         }
 
         isDone = false;
-        return _tracked.Contains(asyncOperation);
+        return false;
     }
 
     public bool Progress(AsyncOperation asyncOperation, out float progress)
     {
-        if (_isDone.Contains(asyncOperation))
-        {
-            progress = 1f;
-            return true;
-        }
-
-        if (_asyncLoads.Concat(_pendingLoadCallbacks)
+        if (_ops.Concat(_pendingLoadCallbacks)
             .Any(load => load.IsRight && load.Right.AsyncOperation == asyncOperation))
         {
             progress = 0f;
             return true;
         }
 
-        progress = 0.9f;
-        return _tracked.Contains(asyncOperation);
+        if (_tracked.TryGetValue(asyncOperation, out var data))
+        {
+            progress = data.IsDone ? 1f : 0.9f;
+            return true;
+        }
+
+        progress = 0f;
+        return false;
     }
 
     public AssetBundle GetAssetBundleCreateRequest(AsyncOperation asyncOperation)
@@ -561,13 +556,13 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
 
     public bool IsInvokingOnComplete(AsyncOperation asyncOperation, out bool wasInvoked)
     {
-        if (_tracked.Contains(asyncOperation))
+        if (_tracked.ContainsKey(asyncOperation))
         {
             wasInvoked = _isInvokingOnComplete;
             return true;
         }
 
-        wasInvoked = default;
+        wasInvoked = false;
         return false;
     }
 
@@ -602,10 +597,9 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         _bundleScenes.Remove(assetBundle);
     }
 
-    public void UnloadAsync(AsyncOperation op)
+    public void UnloadBundleAsync(AsyncOperation op)
     {
-        _tracked.Add(op);
-        _isDone.Add(op);
+        _tracked.Add(op, new AsyncOperationData() { IsDone = true });
         InvokeOnComplete(op);
     }
 
@@ -702,7 +696,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
 
     public bool IsLoaded(int handle, out bool loaded)
     {
-        if (_asyncLoads.Any(x => x.IsRight && x.Right.RealHandle == ResolveDummyHandle(handle)))
+        if (_ops.Any(x => x.IsRight && x.Right.RealHandle == ResolveDummyHandle(handle)))
         {
             loaded = false;
             return true;
@@ -729,6 +723,34 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         if (DummyScenes.FindIndex(x => x.dummyScene.TrackingHandle == handle) < 0) return false;
         _subSceneTracker[handle] = subScene;
         return true;
+    }
+
+    public bool GetPriority(AsyncOperation op, out int priority)
+    {
+        if (_tracked.TryGetValue(op, out var data))
+        {
+            priority = data.Priority;
+            return true;
+        }
+
+        priority = 0;
+        return false;
+    }
+
+    public bool SetPriority(AsyncOperation op, int priority)
+    {
+        if (!_tracked.TryGetValue(op, out var data)) return false;
+
+        data.Priority = priority;
+        _tracked[op] = data;
+        return true;
+    }
+
+    private struct AsyncOperationData
+    {
+        public bool IsDone;
+        public bool AllowSceneActivation;
+        public int Priority;
     }
 
     private class AsyncSceneLoadData(

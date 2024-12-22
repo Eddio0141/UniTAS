@@ -41,6 +41,9 @@ public class AsyncOperationPatch
     private static readonly IAssetBundleTracker AssetBundleTracker =
         ContainerStarter.Kernel.GetInstance<IAssetBundleTracker>();
 
+    private static readonly IAsyncOperationOverride AsyncOperationOverride =
+        ContainerStarter.Kernel.GetInstance<IAsyncOperationOverride>();
+
     private static readonly ILogger Logger = ContainerStarter.Kernel.GetInstance<ILogger>();
 
     [HarmonyPatch(typeof(AsyncOperation), "InvokeCompletionEvent")]
@@ -96,7 +99,7 @@ public class AsyncOperationPatch
     }
 
     [HarmonyPatch(typeof(AsyncOperation), nameof(AsyncOperation.priority), MethodType.Setter)]
-    private class prioritySetter
+    private class set_priority
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
@@ -105,8 +108,23 @@ public class AsyncOperationPatch
 
         private static bool Prefix(int value, ref AsyncOperation __instance)
         {
-            StaticLogger.Trace($"patch prefix invoke\n{new StackTrace()}");
-            Logger.LogDebug($"Priority set to {value} for instance hash {__instance.GetHashCode()}, skipping");
+            return !AsyncOperationOverride.SetPriority(__instance, value);
+        }
+    }
+
+    [HarmonyPatch(typeof(AsyncOperation), nameof(AsyncOperation.priority), MethodType.Getter)]
+    private class get_priority
+    {
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static bool Prefix(ref int __result, ref AsyncOperation __instance)
+        {
+            if (!AsyncOperationOverride.GetPriority(__instance, out var priority)) return true;
+
+            __result = priority;
             return false;
         }
     }
@@ -127,7 +145,7 @@ public class AsyncOperationPatch
             // 0.9f if the scene is loaded and ready, doesn't matter if allowSceneActivation is true,
             // it will be at 0.9 till the scene loads in the next frame
 
-            if (!SceneLoadTracker.Progress(__instance, out var progress))
+            if (!AsyncOperationOverride.Progress(__instance, out var progress))
             {
                 // not tracked instance, proceed as original
                 return true;
@@ -150,7 +168,7 @@ public class AsyncOperationPatch
         {
             StaticLogger.Trace($"patch prefix invoke\n{new StackTrace()}");
 
-            if (!SceneLoadTracker.IsDone(__instance, out var isDone))
+            if (!AsyncOperationOverride.IsDone(__instance, out var isDone))
             {
                 StaticLogger.Trace("didn't find a tracked AsyncOperation instance");
                 return true;
@@ -340,7 +358,7 @@ public class AsyncOperationPatch
 
             __instance.Unload(unloadAllLoadedObjects);
             __result = AccessTools.CreateInstance(AssetBundleUnloadOperationType);
-            AssetBundleTracker.UnloadAsync((AsyncOperation)__result);
+            AssetBundleTracker.UnloadBundleAsync((AsyncOperation)__result);
             return false;
         }
     }

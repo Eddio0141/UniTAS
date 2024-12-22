@@ -5,5 +5,5 @@ namespace UniTAS.Patcher.Services.UnityAsyncOperationTracker;
 public interface IAssetBundleTracker
 {
     void Unload(AssetBundle assetBundle);
-    void UnloadAsync(AsyncOperation op);
+    void UnloadBundleAsync(AsyncOperation op);
 }
