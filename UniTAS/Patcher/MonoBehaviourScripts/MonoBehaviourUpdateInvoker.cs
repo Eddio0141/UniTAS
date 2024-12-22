@@ -24,6 +24,7 @@ public class MonoBehaviourUpdateInvoker : MonoBehaviour
 
         StartCoroutine(EndOfFrameCoroutine());
         StartCoroutine(FixedUpdateCoroutine());
+        StartCoroutine(UpdateCoroutine());
     }
 
     private bool _quitting;
@@ -79,6 +80,16 @@ public class MonoBehaviourUpdateInvoker : MonoBehaviour
     private readonly WaitForEndOfFrame _waitForEndOfFrame = new();
     private readonly WaitForFixedUpdate _waitForFixedUpdate = new();
 
+    private IEnumerator UpdateCoroutine()
+    {
+        while (true)
+        {
+            yield return null;
+            _monoBehEventInvoker.InvokeUpdate();
+        }
+        // ReSharper disable once IteratorNeverReturns       
+    }
+
     private IEnumerator EndOfFrameCoroutine()
     {
         while (true)
@@ -94,6 +105,7 @@ public class MonoBehaviourUpdateInvoker : MonoBehaviour
         while (true)
         {
             yield return _waitForFixedUpdate;
+            _monoBehEventInvoker.InvokeFixedUpdate();
             _monoBehEventInvoker.CoroutineFixedUpdate();
         }
         // ReSharper disable once IteratorNeverReturns
