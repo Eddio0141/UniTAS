@@ -10,7 +10,6 @@ using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.UnityAsyncOperationTracker;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
-using Object = UnityEngine.Object;
 
 namespace UniTAS.Patcher.Patches.Harmony.UnityInit;
 
@@ -43,6 +42,9 @@ public class AsyncOperationPatch
 
     private static readonly IAsyncOperationOverride AsyncOperationOverride =
         ContainerStarter.Kernel.GetInstance<IAsyncOperationOverride>();
+
+    private static readonly IResourceAsyncTracker ResourceAsyncTracker =
+        ContainerStarter.Kernel.GetInstance<IResourceAsyncTracker>();
 
     private static readonly ILogger Logger = ContainerStarter.Kernel.GetInstance<ILogger>();
 
@@ -274,17 +276,11 @@ public class AsyncOperationPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static readonly MethodBase _loadAssetInternal = AccessTools.Method(typeof(AssetBundle),
-            "LoadAsset_Internal",
-            [typeof(string), typeof(Type)]);
-
         private static bool Prefix(AssetBundle __instance, string name, Type type, ref AssetBundleRequest __result)
         {
             StaticLogger.LogDebug($"Async op, load asset async, name: {name}, type: {type.SaneFullName()}");
-
-            var loadResult = _loadAssetInternal.Invoke(__instance, [name, type]) as Object;
             __result = new AssetBundleRequest();
-            AssetBundleRequestTracker.NewAssetBundleRequest(__result, loadResult);
+            AssetBundleRequestTracker.NewAssetBundleRequest(__result, __instance, name, type);
             return false;
         }
     }
@@ -298,20 +294,12 @@ public class AsyncOperationPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static readonly MethodBase _loadAssetWithSubAssetsInternal = AccessTools.Method(typeof(AssetBundle),
-            "LoadAssetWithSubAssets_Internal",
-            [typeof(string), typeof(Type)]);
-
         private static bool Prefix(AssetBundle __instance, string name, Type type, ref AssetBundleRequest __result)
         {
             StaticLogger.LogDebug(
                 $"Async op, load asset with sub assets async, name: {name}, type: {type.SaneFullName()}");
-
-            var loadResult =
-                _loadAssetWithSubAssetsInternal.Invoke(__instance, [name, type]) as Object[];
             __result = new AssetBundleRequest();
-            // TODO: do i track scenes from those
-            AssetBundleRequestTracker.NewAssetBundleRequestMultiple(__result, loadResult);
+            AssetBundleRequestTracker.NewAssetBundleRequestMultiple(__result, __instance, name, type);
             return false;
         }
     }
@@ -330,10 +318,8 @@ public class AsyncOperationPatch
         private static bool Prefix(AssetBundle __instance, bool unloadAllLoadedObjects, ref object __result)
         {
             StaticLogger.LogDebug("Async op, unload AssetBundle");
-
-            __instance.Unload(unloadAllLoadedObjects);
             __result = AccessTools.CreateInstance(AssetBundleUnloadOperationType);
-            AssetBundleTracker.UnloadBundleAsync((AsyncOperation)__result);
+            AssetBundleTracker.UnloadBundleAsync((AsyncOperation)__result, __instance, unloadAllLoadedObjects);
             return false;
         }
     }
@@ -412,16 +398,11 @@ public class AsyncOperationPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix(string path, Type type, ref object __result)
+        private static bool Prefix(string path, Type type, ref AsyncOperation __result)
         {
             StaticLogger.LogDebug("Resources async op, load");
-
-            // returns ResourceRequest
-            // should be fine with my instance and no tinkering
-            __result = AccessTools.CreateInstance(_resourceRequest);
-            var resultTraverse = Traverse.Create(__result);
-            _ = resultTraverse.Field("m_Path").SetValue(path);
-            _ = resultTraverse.Field("m_Type").SetValue(type);
+            __result = (AsyncOperation)AccessTools.CreateInstance(_resourceRequest);
+            ResourceAsyncTracker.ResourceLoadAsync(__result, path, type);
             return false;
         }
     }

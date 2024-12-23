@@ -27,7 +27,8 @@ namespace UniTAS.Patcher.Services.UnityAsyncOperationTracker;
 [Singleton]
 public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateRequestTracker, IAssetBundleRequestTracker,
     IOnLastUpdateActual, IAsyncOperationIsInvokingOnComplete, IOnPreGameRestart, IOnUpdateActual,
-    IOnStartActual, IOnFixedUpdateActual, IAssetBundleTracker, ISceneOverride, IAsyncOperationOverride
+    IOnStartActual, IOnFixedUpdateActual, IAssetBundleTracker, ISceneOverride, IAsyncOperationOverride,
+    IResourceAsyncTracker
 {
     private bool _isInvokingOnComplete;
     private readonly ISceneManagerWrapper _sceneManagerWrapper;
@@ -129,16 +130,14 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
                     }
                 }
 
-                load.Load();
-                _pendingLoadCallbacks.Add(load);
+                LoadOp(load);
                 removes.Add(i);
                 continue;
             }
 
             if (load is AsyncSceneLoadData) break;
             // add the rest of the operations
-            load.Load();
-            _pendingLoadCallbacks.Add(load);
+            LoadOp(load);
             removes.Add(i);
         }
 
@@ -146,6 +145,13 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         {
             _ops.RemoveAt(i);
         }
+    }
+
+    private void LoadOp(IAsyncOperation op)
+    {
+        _logger.LogDebug($"loading operation {op}");
+        op.Load();
+        _pendingLoadCallbacks.Add(op);
     }
 
     public void FixedUpdateActual() => CallPendingCallbacks();
@@ -193,18 +199,16 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         }
     }
 
-    public void NewAssetBundleRequest(AsyncOperation asyncOperation, Object assetBundleRequest)
+    public void NewAssetBundleRequest(AsyncOperation op, AssetBundle bundle, string name, Type type)
     {
-        _assetBundleRequests.Add(asyncOperation, new AssetBundleRequestData(assetBundleRequest));
-        _tracked.Add(asyncOperation, new AsyncOperationData { IsDone = true });
-        InvokeOnComplete(asyncOperation);
+        _tracked.Add(op, new AsyncOperationData());
+        _ops.Add(new NewAssetBundleRequestData(op, bundle, name, type, this));
     }
 
-    public void NewAssetBundleRequestMultiple(AsyncOperation asyncOperation, Object[] assetBundleRequestArray)
+    public void NewAssetBundleRequestMultiple(AsyncOperation op, AssetBundle bundle, string name, Type type)
     {
-        _assetBundleRequests.Add(asyncOperation, new AssetBundleRequestData(multipleResults: assetBundleRequestArray));
-        _tracked.Add(asyncOperation, new AsyncOperationData { IsDone = true });
-        InvokeOnComplete(asyncOperation);
+        _tracked.Add(op, new AsyncOperationData());
+        _ops.Add(new NewAssetBundleRequestMultipleData(op, bundle, name, type, this));
     }
 
     public void NewAssetBundleCreateRequest(AsyncOperation op, string path, uint crc, ulong offset)
@@ -517,10 +521,16 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         _bundleScenes.Remove(assetBundle);
     }
 
-    public void UnloadBundleAsync(AsyncOperation op)
+    public void UnloadBundleAsync(AsyncOperation op, AssetBundle bundle, bool unloadAllLoadedObjects)
     {
-        _tracked.Add(op, new AsyncOperationData { IsDone = true });
-        InvokeOnComplete(op);
+        _tracked.Add(op, new AsyncOperationData());
+        _ops.Add(new UnloadBundleAsyncData(op, bundle, unloadAllLoadedObjects));
+    }
+
+    public void ResourceLoadAsync(AsyncOperation op, string path, Type type)
+    {
+        _tracked.Add(op, new AsyncOperationData());
+        _ops.Add(new ResourceLoadAsyncData(op, path, type));
     }
 
     private readonly Type _sceneStruct = AccessTools.TypeByName("UnityEngine.SceneManagement.Scene");
@@ -756,6 +766,88 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         public AsyncOperation Op { get; } = op;
     }
 
+    private class NewAssetBundleRequestData(
+        AsyncOperation op,
+        AssetBundle bundle,
+        string name,
+        Type type,
+        AsyncOperationTracker tracker)
+        : IAsyncOperation
+    {
+        private static readonly Func<AssetBundle, string, Type, Object> LoadAssetInternal = AccessTools.Method(
+            typeof(AssetBundle),
+            "LoadAsset_Internal",
+            [typeof(string), typeof(Type)]).MethodDelegate<Func<AssetBundle, string, Type, Object>>();
+
+        public void Load()
+        {
+            var obj = LoadAssetInternal(bundle, name, type);
+            tracker._assetBundleRequests.Add(Op, new AssetBundleRequestData(obj));
+        }
+
+        public void Callback()
+        {
+        }
+
+        public AsyncOperation Op { get; } = op;
+    }
+
+    private class NewAssetBundleRequestMultipleData(
+        AsyncOperation op,
+        AssetBundle bundle,
+        string name,
+        Type type,
+        AsyncOperationTracker tracker) : IAsyncOperation
+    {
+        private static readonly Func<AssetBundle, string, Type, Object[]> LoadAssetWithSubAssetsInternal = AccessTools
+            .Method(typeof(AssetBundle),
+                "LoadAssetWithSubAssets_Internal",
+                [typeof(string), typeof(Type)]).MethodDelegate<Func<AssetBundle, string, Type, Object[]>>();
+
+        public void Load()
+        {
+            var objs = LoadAssetWithSubAssetsInternal(bundle, name, type);
+            tracker._assetBundleRequests.Add(Op, new AssetBundleRequestData(multipleResults: objs));
+        }
+
+        public void Callback()
+        {
+        }
+
+        public AsyncOperation Op { get; } = op;
+    }
+
+    private class UnloadBundleAsyncData(AsyncOperation op, AssetBundle bundle, bool unloadAllLoadedObjects)
+        : IAsyncOperation
+    {
+        public void Load()
+        {
+            bundle.Unload(unloadAllLoadedObjects);
+        }
+
+        public void Callback()
+        {
+        }
+
+        public AsyncOperation Op { get; } = op;
+    }
+
+    private class ResourceLoadAsyncData(AsyncOperation op, string path, Type type) : IAsyncOperation
+    {
+        public void Load()
+        {
+            var resultTraverse = Traverse.Create(Op);
+            resultTraverse.Field("m_Path").SetValue(path);
+            resultTraverse.Field("m_Type").SetValue(type);
+        }
+
+        public void Callback()
+        {
+        }
+
+        public AsyncOperation Op { get; } = op;
+    }
+
     private class AsyncSceneLoadData(
         string sceneName,
         int sceneBuildIndex,
@@ -770,8 +862,6 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
 
         public void Load()
         {
-            tracker._logger.LogDebug(
-                $"force loading scene via OnLastUpdate, name: {sceneName}, index: {sceneBuildIndex}");
             tracker._sceneManagerWrapper.TrackSceneCountDummy = false;
             tracker._sceneManagerWrapper.LoadSceneAsync(sceneName, sceneBuildIndex, loadSceneMode, localPhysicsMode,
                 true);
@@ -794,6 +884,11 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
             else
                 tracker._sceneManagerWrapper.LoadedSceneCountDummy = 1;
         }
+
+        public override string ToString()
+        {
+            return $"scene load, name: {sceneName}, index: {sceneBuildIndex}";
+        }
     }
 
     private class AsyncSceneUnloadData(
@@ -810,7 +905,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         public void Load()
         {
             tracker._logger.LogWarning(
-                "async unload call: THIS OPERATION MIGHT BREAK THE GAME, scene unloading patch is using an unstable unity function, and it may fail");
+                "THIS OPERATION MIGHT BREAK THE GAME, scene unloading patch is using an unstable unity function, and it may fail");
             tracker._sceneManagerWrapper.TrackSceneCountDummy = false;
             tracker._sceneManagerWrapper.UnloadSceneAsync(SceneWrapper.Name, -1, options, true,
                 out var success);
@@ -822,6 +917,11 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         public void Callback()
         {
             tracker.LoadingSceneCount--;
+        }
+
+        public override string ToString()
+        {
+            return $"scene unload, name: {SceneWrapper.Name}";
         }
     }
 
