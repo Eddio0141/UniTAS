@@ -17,7 +17,6 @@ using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.UnityInfo;
 using UniTAS.Patcher.Services.UnitySafeWrappers;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
-using UniTAS.Patcher.Utils;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 using Object = UnityEngine.Object;
@@ -126,7 +125,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
                     if (op != null)
                     {
                         var trackState = _tracked[load.Op];
-                        if (trackState is { NotAllowedToStall: false, AllowSceneActivation: false }) break;
+                        if (trackState.NotAllowedToStall || !trackState.AllowSceneActivation) break;
                     }
                 }
 
@@ -139,6 +138,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
             if (load is AsyncSceneLoadData) break;
             // add the rest of the operations
             load.Load();
+            _pendingLoadCallbacks.Add(load);
             removes.Add(i);
         }
 
@@ -276,11 +276,6 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
     {
         var sceneWrap = _wrapFactory.Create<SceneWrapper>(scene);
         _logger.LogDebug($"async scene unload, {sceneWrap.Path}");
-        var a = DummyScenes.FindIndex(x => x.dummyScene.TrackingHandle == sceneWrap.Handle);
-        if (a >= 0)
-        {
-            StaticLogger.LogDebug($"thingy: {DummyScenes[a].actualScene.Path}");
-        }
 
         if (_sceneManagerWrapper.LoadedSceneCountDummy + LoadingSceneCount == 1)
         {
