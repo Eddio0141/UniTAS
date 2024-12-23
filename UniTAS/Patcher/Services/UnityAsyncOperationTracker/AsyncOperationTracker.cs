@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -42,8 +43,6 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         _logger = logger;
         _gameBuildScenesInfo = gameBuildScenesInfo;
         _wrapFactory = wrapFactory;
-        var getAllScenePaths = AccessTools.Method(typeof(AssetBundle), "GetAllScenePaths");
-        _getAllScenePaths = getAllScenePaths?.MethodDelegate<Func<AssetBundle, string[]>>();
         _loaded = [GetSceneInfo(0)];
     }
 
@@ -59,7 +58,8 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
 
     private bool _sceneLoadSync;
 
-    private readonly Func<AssetBundle, string[]> _getAllScenePaths;
+    private static readonly Func<AssetBundle, string[]> GetAllScenePaths = AccessTools
+        .Method(typeof(AssetBundle), "GetAllScenePaths")?.MethodDelegate<Func<AssetBundle, string[]>>();
 
     private int _sceneStructHandleId = int.MaxValue / 2;
 
@@ -207,13 +207,22 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         InvokeOnComplete(asyncOperation);
     }
 
-    public void NewAssetBundleCreateRequest(AsyncOperation asyncOperation, AssetBundle assetBundle)
+    public void NewAssetBundleCreateRequest(AsyncOperation op, string path, uint crc, ulong offset)
     {
-        _assetBundleCreateRequests.Add(asyncOperation, assetBundle);
-        if (_getAllScenePaths != null)
-            _bundleScenes[assetBundle] = _getAllScenePaths(assetBundle);
-        _tracked.Add(asyncOperation, new AsyncOperationData { IsDone = true });
-        InvokeOnComplete(asyncOperation);
+        _tracked.Add(op, new AsyncOperationData());
+        _ops.Add(new NewAssetBundleFromFileData(op, path, crc, offset, this));
+    }
+
+    public void NewAssetBundleCreateRequest(AsyncOperation op, byte[] binary, uint crc)
+    {
+        _tracked.Add(op, new AsyncOperationData());
+        _ops.Add(new NewAssetBundleFromMemoryData(op, binary, crc, this));
+    }
+
+    public void NewAssetBundleCreateRequest(AsyncOperation op, Stream stream, uint crc, uint managedReadBufferSize)
+    {
+        _tracked.Add(op, new AsyncOperationData());
+        _ops.Add(new NewAssetBundleFromStreamData(op, stream, crc, managedReadBufferSize, this));
     }
 
     // silly but simple and efficient enough check
@@ -600,7 +609,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
             return new SceneInfo(name2, name2, -1);
         }
 
-        if (_getAllScenePaths == null)
+        if (GetAllScenePaths == null)
         {
             throw new InvalidOperationException(
                 "Tried to search for scene name but scene wasn't found, this may be wrong as " +
@@ -668,6 +677,88 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         public bool AllowSceneActivation = true;
         public bool NotAllowedToStall = false;
         public int Priority = 0;
+    }
+
+    private class NewAssetBundleFromFileData(
+        AsyncOperation op,
+        string path,
+        uint crc,
+        ulong offset,
+        AsyncOperationTracker tracker) : IAsyncOperation
+    {
+        private static readonly Func<string, uint, ulong, AssetBundle> LoadFromFile =
+            (AccessTools.Method(typeof(AssetBundle), "LoadFromFile_Internal",
+                 [typeof(string), typeof(uint), typeof(ulong)]) ??
+             AccessTools.Method(typeof(AssetBundle), "LoadFromFile",
+                 [typeof(string), typeof(uint), typeof(ulong)]))
+            .MethodDelegate<Func<string, uint, ulong, AssetBundle>>();
+
+        public void Load()
+        {
+            var bundle = LoadFromFile(path, crc, offset);
+            tracker._assetBundleCreateRequests.Add(Op, bundle);
+            if (GetAllScenePaths != null)
+                tracker._bundleScenes[bundle] = GetAllScenePaths(bundle);
+        }
+
+        public void Callback()
+        {
+        }
+
+        public AsyncOperation Op { get; } = op;
+    }
+
+    private class NewAssetBundleFromMemoryData(
+        AsyncOperation op,
+        byte[] binary,
+        uint crc,
+        AsyncOperationTracker tracker) : IAsyncOperation
+    {
+        private static readonly Func<byte[], uint, AssetBundle> LoadFromMemoryInternal = AccessTools.Method(
+            typeof(AssetBundle),
+            "LoadFromMemory_Internal",
+            [typeof(byte[]), typeof(uint)]).MethodDelegate<Func<byte[], uint, AssetBundle>>();
+
+        public void Load()
+        {
+            var bundle = LoadFromMemoryInternal(binary, crc);
+            tracker._assetBundleCreateRequests.Add(Op, bundle);
+            if (GetAllScenePaths != null)
+                tracker._bundleScenes[bundle] = GetAllScenePaths(bundle);
+        }
+
+        public void Callback()
+        {
+        }
+
+        public AsyncOperation Op { get; } = op;
+    }
+
+    private class NewAssetBundleFromStreamData(
+        AsyncOperation op,
+        Stream stream,
+        uint crc,
+        uint managedReadBufferSize,
+        AsyncOperationTracker tracker) : IAsyncOperation
+    {
+        private static readonly Func<Stream, uint, uint, AssetBundle> LoadFromStreamInternal = AccessTools.Method(
+                typeof(AssetBundle),
+                "LoadFromStreamInternal", [typeof(Stream), typeof(uint), typeof(uint)])
+            .MethodDelegate<Func<Stream, uint, uint, AssetBundle>>();
+
+        public void Load()
+        {
+            var bundle = LoadFromStreamInternal(stream, crc, managedReadBufferSize);
+            tracker._assetBundleCreateRequests.Add(Op, bundle);
+            if (GetAllScenePaths != null)
+                tracker._bundleScenes[bundle] = GetAllScenePaths(bundle);
+        }
+
+        public void Callback()
+        {
+        }
+
+        public AsyncOperation Op { get; } = op;
     }
 
     private class AsyncSceneLoadData(

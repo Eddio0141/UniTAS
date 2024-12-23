@@ -219,21 +219,11 @@ public class AsyncOperationPatch
                 [typeof(string), typeof(uint), typeof(ulong)]);
         }
 
-        private static readonly MethodInfo _loadFromFile =
-            AccessTools.Method(typeof(AssetBundle), "LoadFromFile_Internal",
-                [typeof(string), typeof(uint), typeof(ulong)]) ??
-            AccessTools.Method(typeof(AssetBundle), "LoadFromFile",
-                [typeof(string), typeof(uint), typeof(ulong)]);
-
         private static bool Prefix(string path, uint crc, ulong offset, ref AssetBundleCreateRequest __result)
         {
             StaticLogger.LogDebug($"Async op, load file async, path: {path}");
-
-            // LoadFromFile fails with null return if operation fails, __result.assetBundle will also reflect that if async load fails too
-            var loadResult = _loadFromFile.Invoke(null, [path, crc, offset]) as AssetBundle;
-            // create a new instance
-            __result = new();
-            AssetBundleCreateRequestTracker.NewAssetBundleCreateRequest(__result, loadResult);
+            __result = new AssetBundleCreateRequest();
+            AssetBundleCreateRequestTracker.NewAssetBundleCreateRequest(__result, path, crc, offset);
             return false;
         }
     }
@@ -247,17 +237,11 @@ public class AsyncOperationPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static readonly MethodBase _loadFromMemoryInternal = AccessTools.Method(typeof(AssetBundle),
-            "LoadFromMemory_Internal",
-            [typeof(byte[]), typeof(uint)]);
-
         private static bool Prefix(byte[] binary, uint crc, ref AssetBundleCreateRequest __result)
         {
             StaticLogger.LogDebug("Async op, load memory async");
-
-            var loadResult = _loadFromMemoryInternal.Invoke(null, [binary, crc]) as AssetBundle;
-            __result = new();
-            AssetBundleCreateRequestTracker.NewAssetBundleCreateRequest(__result, loadResult);
+            __result = new AssetBundleCreateRequest();
+            AssetBundleCreateRequestTracker.NewAssetBundleCreateRequest(__result, binary, crc);
             return false;
         }
     }
@@ -271,20 +255,12 @@ public class AsyncOperationPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static readonly MethodBase _loadFromStreamInternal = AccessTools.Method(typeof(AssetBundle),
-            "LoadFromStreamInternal",
-            [typeof(Stream), typeof(uint), typeof(uint)]);
-
         private static bool Prefix(Stream stream, uint crc, uint managedReadBufferSize,
             ref AssetBundleCreateRequest __result)
         {
             StaticLogger.LogDebug("Async op, load stream async");
-
-            var loadResult =
-                _loadFromStreamInternal.Invoke(null, [stream, crc, managedReadBufferSize]) as
-                    AssetBundle;
-            __result = new();
-            AssetBundleCreateRequestTracker.NewAssetBundleCreateRequest(__result, loadResult);
+            __result = new AssetBundleCreateRequest();
+            AssetBundleCreateRequestTracker.NewAssetBundleCreateRequest(__result, stream, crc, managedReadBufferSize);
             return false;
         }
     }
@@ -307,7 +283,7 @@ public class AsyncOperationPatch
             StaticLogger.LogDebug($"Async op, load asset async, name: {name}, type: {type.SaneFullName()}");
 
             var loadResult = _loadAssetInternal.Invoke(__instance, [name, type]) as Object;
-            __result = new();
+            __result = new AssetBundleRequest();
             AssetBundleRequestTracker.NewAssetBundleRequest(__result, loadResult);
             return false;
         }
@@ -333,7 +309,7 @@ public class AsyncOperationPatch
 
             var loadResult =
                 _loadAssetWithSubAssetsInternal.Invoke(__instance, [name, type]) as Object[];
-            __result = new();
+            __result = new AssetBundleRequest();
             // TODO: do i track scenes from those
             AssetBundleRequestTracker.NewAssetBundleRequestMultiple(__result, loadResult);
             return false;
