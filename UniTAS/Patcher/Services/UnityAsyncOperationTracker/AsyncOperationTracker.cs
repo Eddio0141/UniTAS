@@ -199,10 +199,11 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         }
     }
 
-    public void NewAssetBundleRequest(AsyncOperation op, AssetBundle bundle, string name, Type type)
+    public void NewAssetBundleRequest(AsyncOperation op, Object obj)
     {
-        _tracked.Add(op, new AsyncOperationData());
-        _ops.Add(new NewAssetBundleRequestData(op, bundle, name, type, this));
+        _tracked.Add(op, new AsyncOperationData { IsDone = true });
+        _assetBundleRequests.Add(op, new AssetBundleRequestData(obj));
+        InvokeOnComplete(op);
     }
 
     public void NewAssetBundleRequestMultiple(AsyncOperation op, AssetBundle bundle, string name, Type type)
@@ -402,9 +403,14 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
 
     public void AllowSceneActivation(bool allow, AsyncOperation asyncOperation)
     {
+        if (!_tracked.TryGetValue(asyncOperation, out var state))
+        {
+            WarnAsyncOperationAPI();
+            return;
+        }
+
         _logger.LogDebug($"allow scene activation {allow}, {new StackTrace()}");
 
-        var state = _tracked[asyncOperation];
         state.AllowSceneActivation = allow;
         _tracked[asyncOperation] = state;
         if (state.NotAllowedToStall) return;
@@ -420,6 +426,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
             return true;
         }
 
+        WarnAsyncOperationAPI();
         state = false;
         return false;
     }
@@ -432,6 +439,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
             return true;
         }
 
+        WarnAsyncOperationAPI();
         isDone = false;
         return false;
     }
@@ -450,6 +458,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
             return true;
         }
 
+        WarnAsyncOperationAPI();
         progress = 0f;
         return false;
     }
@@ -486,6 +495,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
             return true;
         }
 
+        WarnAsyncOperationAPI();
         wasInvoked = false;
         return false;
     }
@@ -664,16 +674,26 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         }
 
         priority = 0;
+        WarnAsyncOperationAPI();
         return false;
     }
 
     public bool SetPriority(AsyncOperation op, int priority)
     {
-        if (!_tracked.TryGetValue(op, out var data)) return false;
+        if (!_tracked.TryGetValue(op, out var data))
+        {
+            WarnAsyncOperationAPI();
+            return false;
+        }
 
         data.Priority = priority;
         _tracked[op] = data;
         return true;
+    }
+
+    private void WarnAsyncOperationAPI()
+    {
+        _logger.LogWarning($"found untracked async operation, API use at {new StackTrace()}");
     }
 
     private struct AsyncOperationData()
@@ -757,32 +777,6 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
             tracker._assetBundleCreateRequests.Add(Op, bundle);
             if (GetAllScenePaths != null)
                 tracker._bundleScenes[bundle] = GetAllScenePaths(bundle);
-        }
-
-        public void Callback()
-        {
-        }
-
-        public AsyncOperation Op { get; } = op;
-    }
-
-    private class NewAssetBundleRequestData(
-        AsyncOperation op,
-        AssetBundle bundle,
-        string name,
-        Type type,
-        AsyncOperationTracker tracker)
-        : IAsyncOperation
-    {
-        private static readonly Func<AssetBundle, string, Type, Object> LoadAssetInternal = AccessTools.Method(
-            typeof(AssetBundle),
-            "LoadAsset_Internal",
-            [typeof(string), typeof(Type)]).MethodDelegate<Func<AssetBundle, string, Type, Object>>();
-
-        public void Load()
-        {
-            var obj = LoadAssetInternal(bundle, name, type);
-            tracker._assetBundleRequests.Add(Op, new AssetBundleRequestData(obj));
         }
 
         public void Callback()

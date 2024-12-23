@@ -24,6 +24,12 @@ public class ClearLoadedAssetBundlesOnRestart : IAssetBundleTracker, IOnPreGameR
 
     public void OnPreGameRestart()
     {
+        if (SafeAPI.UnityEngine.AssetBundle.UnloadAllAssetBundles != null)
+        {
+            SafeAPI.UnityEngine.AssetBundle.UnloadAllAssetBundles(true);
+            return;
+        }
+        
         foreach (var assetBundle in _trackedAssetBundles)
         {
             if (assetBundle == null) continue;

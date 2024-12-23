@@ -25,6 +25,11 @@ public class AssetBundleTracker
     [HarmonyPatch]
     private static class LoadMethods
     {
+        private static bool Prepare()
+        {
+            return SafeAPI.UnityEngine.AssetBundle.UnloadAllAssetBundles == null;
+        }
+
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
             return PatchHelper.CleanupIgnoreFail(original, ex);

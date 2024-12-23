@@ -22,7 +22,7 @@ public class StaticFieldStorage(
     {
         logger.LogDebug("resetting static fields");
 
-        UnityEngine.Resources.UnloadUnusedAssets();
+        // UnityEngine.Resources.UnloadUnusedAssets();
 
         var bench = Bench.Measure();
         foreach (var field in classStaticInfoTracker.StaticFields)
