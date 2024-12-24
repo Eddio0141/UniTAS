@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Collections.Generic;
 using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Services.GameExecutionControllers;
 using UniTAS.Patcher.Utils;
@@ -25,4 +27,6 @@ public static class MonoBehaviourController
         get => _monoBehaviourController.PausedUpdate;
         set => _monoBehaviourController.PausedUpdate = value;
     }
+    
+    public static HashSet<IEnumerator> IgnoreCoroutines => _monoBehaviourController.IgnoreCoroutines;
 }

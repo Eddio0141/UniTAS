@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.SoftRestart;
 using UniTAS.Patcher.Models.DependencyInjection;
@@ -11,8 +13,9 @@ namespace UniTAS.Patcher.Implementations;
 public class MonoBehaviourController : IMonoBehaviourController, IOnGameRestartResume
 {
     public bool PausedExecution { get; set; }
-
     public bool PausedUpdate { get; set; }
+
+    public HashSet<IEnumerator> IgnoreCoroutines { get; } = new();
 
     public void OnGameRestartResume(DateTime startupTime, bool preMonoBehaviourResume)
     {

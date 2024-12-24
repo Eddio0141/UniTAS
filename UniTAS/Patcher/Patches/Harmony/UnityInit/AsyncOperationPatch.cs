@@ -225,6 +225,7 @@ public class AsyncOperationPatch
         private static bool Prefix(string path, uint crc, ulong offset, ref AssetBundleCreateRequest __result)
         {
             StaticLogger.LogDebug($"Async op, load file async, path: {path}");
+            StaticLogger.Trace(new StackTrace());
             __result = new AssetBundleCreateRequest();
             AssetBundleCreateRequestTracker.NewAssetBundleCreateRequest(__result, path, crc, offset);
             return false;
