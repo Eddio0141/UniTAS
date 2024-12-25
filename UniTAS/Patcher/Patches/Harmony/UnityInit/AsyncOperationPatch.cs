@@ -46,6 +46,8 @@ public class AsyncOperationPatch
 
     private static readonly IResourceAsyncTracker ResourceAsyncTracker =
         ContainerStarter.Kernel.GetInstance<IResourceAsyncTracker>();
+    
+    private static readonly IAssetBundleTracker Tracker = ContainerStarter.Kernel.GetInstance<IAssetBundleTracker>();
 
     private static readonly ILogger Logger = ContainerStarter.Kernel.GetInstance<ILogger>();
 
@@ -277,7 +279,7 @@ public class AsyncOperationPatch
         {
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
-        
+
         private static readonly Func<AssetBundle, string, Type, Object> LoadAssetInternal = AccessTools.Method(
             typeof(AssetBundle),
             "LoadAsset_Internal",
@@ -359,10 +361,11 @@ public class AsyncOperationPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix(AssetBundleRequest __instance, ref object __result)
+        private static bool Prefix(AssetBundleRequest __instance, ref Object __result)
         {
-            __result = AssetBundleRequestTracker.GetAssetBundleRequest(__instance);
-            return false;
+            StaticLogger.Trace($"patch prefix invoke\n{new StackTrace()}");
+            
+            return !AssetBundleRequestTracker.GetAssetBundleRequest(__instance, out __result);
         }
     }
 
@@ -374,15 +377,15 @@ public class AsyncOperationPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix(AssetBundleRequest __instance, ref object __result)
+        private static bool Prefix(AssetBundleRequest __instance, ref Object[] __result)
         {
-            __result = AssetBundleRequestTracker.GetAssetBundleRequestMultiple(__instance);
-            return __result == null;
+            StaticLogger.Trace($"patch prefix invoke\n{new StackTrace()}");
+
+            return !AssetBundleRequestTracker.GetAssetBundleRequestMultiple(__instance, out __result);
         }
     }
 
-    [HarmonyPatch(typeof(AssetBundleCreateRequest), nameof(AssetBundleCreateRequest.assetBundle),
-        MethodType.Getter)]
+    [HarmonyPatch(typeof(AssetBundleCreateRequest), nameof(AssetBundleCreateRequest.assetBundle), MethodType.Getter)]
     private class get_assetBundle
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
@@ -394,8 +397,7 @@ public class AsyncOperationPatch
         {
             StaticLogger.Trace($"patch prefix invoke\n{new StackTrace()}");
 
-            __result = AssetBundleCreateRequestTracker.GetAssetBundleCreateRequest(__instance);
-            return false;
+            return !AssetBundleCreateRequestTracker.GetAssetBundleCreateRequest(__instance, out __result);
         }
     }
 

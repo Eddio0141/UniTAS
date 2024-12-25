@@ -74,6 +74,18 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
 
     public void OnPreGameRestart()
     {
+        if (SafeAPI.UnityEngine.AssetBundle.UnloadAllAssetBundles == null)
+        {
+            foreach (var bundle in _assetBundleCreateRequests.Values)
+            {
+                bundle.Unload(true);
+            }
+        }
+        else
+        {
+            SafeAPI.UnityEngine.AssetBundle.UnloadAllAssetBundles(true);
+        }
+
         _ops.Clear();
         _pendingLoadCallbacks.Clear();
         _assetBundleCreateRequests.Clear();
@@ -463,25 +475,38 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         return false;
     }
 
-    public AssetBundle GetAssetBundleCreateRequest(AsyncOperation asyncOperation)
+    public bool GetAssetBundleCreateRequest(AsyncOperation asyncOperation, out AssetBundle assetBundle)
     {
-        return _assetBundleCreateRequests.TryGetValue(asyncOperation, out var assetBundle)
-            ? assetBundle
-            : null;
+        if (_assetBundleCreateRequests.TryGetValue(asyncOperation, out assetBundle)) return true;
+
+        WarnAsyncOperationAPI();
+        return false;
     }
 
-    public object GetAssetBundleRequest(AsyncOperation asyncOperation)
+    public bool GetAssetBundleRequest(AsyncOperation asyncOperation, out Object obj)
     {
-        return _assetBundleRequests.TryGetValue(asyncOperation, out var assetBundleRequest)
-            ? assetBundleRequest.SingleResult
-            : null;
+        if (_assetBundleRequests.TryGetValue(asyncOperation, out var data))
+        {
+            obj = data.SingleResult;
+            return true;
+        }
+
+        WarnAsyncOperationAPI();
+        obj = null;
+        return false;
     }
 
-    public object GetAssetBundleRequestMultiple(AsyncOperation asyncOperation)
+    public bool GetAssetBundleRequestMultiple(AsyncOperation asyncOperation, out Object[] objects)
     {
-        return _assetBundleRequests.TryGetValue(asyncOperation, out var assetBundleRequest)
-            ? assetBundleRequest.MultipleResults
-            : null;
+        if (_assetBundleRequests.TryGetValue(asyncOperation, out var data))
+        {
+            objects = data.MultipleResults;
+            return true;
+        }
+
+        WarnAsyncOperationAPI();
+        objects = null;
+        return false;
     }
 
     private readonly MethodBase _invokeCompletionEvent =

@@ -9,6 +9,6 @@ public interface IAssetBundleRequestTracker
     void NewAssetBundleRequest(AsyncOperation op, Object obj);
     void NewAssetBundleRequestMultiple(AsyncOperation op, AssetBundle bundle, string name, Type type);
 
-    object GetAssetBundleRequest(AsyncOperation asyncOperation);
-    object GetAssetBundleRequestMultiple(AsyncOperation asyncOperation);
+    bool GetAssetBundleRequest(AsyncOperation asyncOperation, out Object obj);
+    bool GetAssetBundleRequestMultiple(AsyncOperation asyncOperation, out Object[] objects);
 }
