@@ -28,15 +28,16 @@ public class CoroutineRunningObjectsTrackerPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static IEnumerable<MethodBase> TargetMethods()
+        private static IEnumerable<MethodInfo> TargetMethods()
         {
             // just patch them all, duplicate instances will be detected anyway
             return AccessTools.GetDeclaredMethods(typeof(MonoBehaviour))
-                .Where(x => !x.IsStatic && x.Name == "StartCoroutine").Select(x => (MethodBase)x);
+                .Where(x => !x.IsStatic && x.Name == "StartCoroutine");
         }
 
         private static void Prefix(MonoBehaviour __instance)
         {
+            if (Equals(__instance.GetType().Assembly, typeof(CoroutineRunningObjectsTrackerPatch).Assembly)) return;
             Tracker.NewCoroutine(__instance);
         }
     }
