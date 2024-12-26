@@ -28,7 +28,8 @@ public class CoroutinePausePatch
         private static bool Prefix(IEnumerator enumerator)
         {
             if (MonoBehaviourController.IgnoreCoroutines.Contains(enumerator)) return true;
-            return !MonoBehaviourController.PausedExecution && !MonoBehaviourController.PausedUpdate;
+            // TODO: pause update
+            return !MonoBehaviourController.PausedExecution;
         }
     }
 }
