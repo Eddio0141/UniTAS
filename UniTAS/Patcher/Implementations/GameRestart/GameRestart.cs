@@ -106,7 +106,11 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
     {
         if (_pendingRestart && !_pendingResumePausedExecution) return;
 
-        _coroutine.Start(SoftRestartCoroutine(time));
+        _coroutine.Start(SoftRestartCoroutine(time)).OnComplete += status =>
+        {
+            if (status.Exception != null)
+                _logger.LogFatal($"failed to soft restart: {status.Exception}");
+        };
     }
 
     private IEnumerable<CoroutineWait> SoftRestartCoroutine(DateTime time)
@@ -153,7 +157,15 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
 
     protected virtual void InvokeOnGameRestartResume(bool preMonoBehaviourResume)
     {
-        OnGameRestartResume?.Invoke(_softRestartTime, preMonoBehaviourResume);
+        try
+        {
+            OnGameRestartResume?.Invoke(_softRestartTime, preMonoBehaviourResume);
+        }
+        catch (Exception e)
+        {
+            _logger.LogFatal($"something went wrong during GameRestartResume: {e}");
+            throw;
+        }
     }
 
     private void InvokeOnPreGameRestart()

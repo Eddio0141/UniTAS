@@ -1,21 +1,20 @@
 using System.Collections.Generic;
 using UniTAS.Patcher.Interfaces.Coroutine;
 using UniTAS.Patcher.Services;
+using UniTAS.Patcher.Services.Logging;
 
 namespace UniTAS.Patcher.Implementations.Coroutine;
 
-public class WaitForCoroutine : CoroutineWait
+public class WaitForCoroutine(IEnumerable<CoroutineWait> coroutineMethod) : CoroutineWait
 {
-    private readonly IEnumerable<CoroutineWait> _coroutineMethod;
-
-    public WaitForCoroutine(IEnumerable<CoroutineWait> coroutineMethod)
-    {
-        _coroutineMethod = coroutineMethod;
-    }
-
     protected override void HandleWait()
     {
-        var coroutineStatus = Container.GetInstance<ICoroutine>().Start(_coroutineMethod);
-        coroutineStatus.OnComplete += _ => RunNext();
+        var coroutineStatus = Container.GetInstance<ICoroutine>().Start(coroutineMethod);
+        coroutineStatus.OnComplete += status =>
+        {
+            if (status.Exception != null)
+                Container.GetInstance<ILogger>().LogFatal($"coroutine exception: {status.Exception}");
+            RunNext();
+        };
     }
 }
