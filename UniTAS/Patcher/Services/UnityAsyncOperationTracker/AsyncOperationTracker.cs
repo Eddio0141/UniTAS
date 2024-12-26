@@ -78,6 +78,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         {
             foreach (var bundle in _assetBundleCreateRequests.Values)
             {
+                if (bundle == null) continue;
                 bundle.Unload(true);
             }
         }
