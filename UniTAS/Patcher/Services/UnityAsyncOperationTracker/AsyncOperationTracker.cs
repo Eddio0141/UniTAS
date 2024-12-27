@@ -17,6 +17,7 @@ using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.UnityInfo;
 using UniTAS.Patcher.Services.UnitySafeWrappers;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
+using UniTAS.Patcher.Utils;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 using Object = UnityEngine.Object;
@@ -418,7 +419,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
     {
         if (!_tracked.TryGetValue(asyncOperation, out var state))
         {
-            WarnAsyncOperationAPI();
+            WarnAsyncOperationAPI(asyncOperation);
             return;
         }
 
@@ -439,7 +440,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
             return true;
         }
 
-        WarnAsyncOperationAPI();
+        WarnAsyncOperationAPI(asyncOperation);
         state = false;
         return false;
     }
@@ -452,7 +453,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
             return true;
         }
 
-        WarnAsyncOperationAPI();
+        WarnAsyncOperationAPI(asyncOperation);
         isDone = false;
         return false;
     }
@@ -471,7 +472,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
             return true;
         }
 
-        WarnAsyncOperationAPI();
+        WarnAsyncOperationAPI(asyncOperation);
         progress = 0f;
         return false;
     }
@@ -480,7 +481,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
     {
         if (_assetBundleCreateRequests.TryGetValue(asyncOperation, out assetBundle)) return true;
 
-        WarnAsyncOperationAPI();
+        WarnAsyncOperationAPI(asyncOperation);
         return false;
     }
 
@@ -492,7 +493,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
             return true;
         }
 
-        WarnAsyncOperationAPI();
+        WarnAsyncOperationAPI(asyncOperation);
         obj = null;
         return false;
     }
@@ -505,7 +506,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
             return true;
         }
 
-        WarnAsyncOperationAPI();
+        WarnAsyncOperationAPI(asyncOperation);
         objects = null;
         return false;
     }
@@ -521,7 +522,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
             return true;
         }
 
-        WarnAsyncOperationAPI();
+        WarnAsyncOperationAPI(asyncOperation);
         wasInvoked = false;
         return false;
     }
@@ -700,7 +701,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         }
 
         priority = 0;
-        WarnAsyncOperationAPI();
+        WarnAsyncOperationAPI(op);
         return false;
     }
 
@@ -708,7 +709,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
     {
         if (!_tracked.TryGetValue(op, out var data))
         {
-            WarnAsyncOperationAPI();
+            WarnAsyncOperationAPI(op);
             return false;
         }
 
@@ -717,9 +718,9 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
         return true;
     }
 
-    private void WarnAsyncOperationAPI()
+    private void WarnAsyncOperationAPI(AsyncOperation op)
     {
-        _logger.LogWarning($"found untracked async operation, API use at {new StackTrace()}");
+        _logger.LogWarning($"found untracked async operation, API use at {new StackTrace()}, {op.GetHashCode()}, {DebugHelp.PrintClass(op)}");
     }
 
     private struct AsyncOperationData()

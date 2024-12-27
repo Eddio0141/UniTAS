@@ -11,6 +11,9 @@ using UniTAS.Patcher.Services.UnityAsyncOperationTracker;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 using Object = UnityEngine.Object;
+#if TRACE
+using System.Collections.Generic;
+#endif
 
 namespace UniTAS.Patcher.Patches.Harmony.UnityInit;
 
@@ -46,10 +49,59 @@ public class AsyncOperationPatch
 
     private static readonly IResourceAsyncTracker ResourceAsyncTracker =
         ContainerStarter.Kernel.GetInstance<IResourceAsyncTracker>();
-    
+
     private static readonly IAssetBundleTracker Tracker = ContainerStarter.Kernel.GetInstance<IAssetBundleTracker>();
 
     private static readonly ILogger Logger = ContainerStarter.Kernel.GetInstance<ILogger>();
+
+#if TRACE
+    [HarmonyPatch]
+    private class AsyncOperationReturnTrace
+    {
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static IEnumerable<MethodInfo> TargetMethods()
+        {
+            foreach (var type in AccessTools.AllTypes())
+            {
+                if (Equals(type.Assembly, typeof(AsyncOperationReturnTrace).Assembly)) continue;
+
+                IEnumerable<MethodInfo> methods;
+                try
+                {
+                    methods = AccessTools.GetDeclaredMethods(type);
+                }
+                catch (Exception)
+                {
+                    continue;
+                }
+
+                foreach (var method in methods)
+                {
+                    Type ret;
+                    try
+                    {
+                        ret = method.ReturnType;
+                    }
+                    catch (Exception)
+                    {
+                        continue;
+                    }
+
+                    if (ret == typeof(AsyncOperation)) yield return method;
+                }
+            }
+        }
+
+        private static void Postfix(AsyncOperation __result)
+        {
+            StaticLogger.LogDebug($"thingy: {DebugHelp.PrintClass(__result)}, {new StackTrace()}");
+        }
+    }
+#endif
 
     [HarmonyPatch(typeof(AsyncOperation), "InvokeCompletionEvent")]
     private class InvokeCompletionEvent
@@ -62,7 +114,7 @@ public class AsyncOperationPatch
         private static bool Prefix(AsyncOperation __instance)
         {
             StaticLogger.Trace($"patch prefix invoke\n{new StackTrace()}");
-            if (!AsyncOperationIsInvokingOnComplete.IsInvokingOnComplete(__instance, out var invoking)) return true;
+            if (!AsyncOperationIsInvokingOnComplete.IsInvokingOnComplete(__instance, out var invoking)) return false;
             return !invoking;
         }
     }
@@ -365,7 +417,7 @@ public class AsyncOperationPatch
         private static bool Prefix(AssetBundleRequest __instance, ref Object __result)
         {
             StaticLogger.Trace($"patch prefix invoke\n{new StackTrace()}");
-            
+
             return !AssetBundleRequestTracker.GetAssetBundleRequest(__instance, out __result);
         }
     }
