@@ -23,16 +23,14 @@ public class CoroutineRunningObjectsTrackerPatch
     [HarmonyPatch]
     private class RunCoroutine
     {
-        private static Exception Cleanup(MethodBase original, Exception ex)
-        {
-            return PatchHelper.CleanupIgnoreFail(original, ex);
-        }
+        private static Exception Cleanup(MethodBase original, Exception ex) =>
+            PatchHelper.CleanupIgnoreFail(original, ex);
 
-        private static IEnumerable<MethodInfo> TargetMethods()
+        private static IEnumerable<MethodBase> TargetMethods()
         {
             // just patch them all, duplicate instances will be detected anyway
             return AccessTools.GetDeclaredMethods(typeof(MonoBehaviour))
-                .Where(x => !x.IsStatic && x.Name == "StartCoroutine");
+                .Where(x => !x.IsStatic && x.Name == "StartCoroutine").Select(MethodBase (x) => x);
         }
 
         private static void Prefix(MonoBehaviour __instance)
