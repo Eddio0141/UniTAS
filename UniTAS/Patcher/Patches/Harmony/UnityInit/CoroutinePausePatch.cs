@@ -10,7 +10,7 @@ using UniTAS.Patcher.ContainerBindings.GameExecutionControllers;
 
 namespace UniTAS.Patcher.Patches.Harmony.UnityInit;
 
-[RawPatchUnityInit]
+// [RawPatchUnityInit]
 [SuppressMessage("ReSharper", "UnusedMember.Local")]
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 [SuppressMessage("ReSharper", "RedundantAssignment")]
@@ -24,11 +24,11 @@ public class CoroutinePausePatch
         {
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
-
+    
         private static bool Prefix(IEnumerator enumerator)
         {
             if (MonoBehaviourController.IgnoreCoroutines.Contains(enumerator)) return true;
-            // TODO: pause update
+            if (MonoBehaviourController.PausedUpdate && enumerator.Current == null) return false;
             return !MonoBehaviourController.PausedExecution;
         }
     }
