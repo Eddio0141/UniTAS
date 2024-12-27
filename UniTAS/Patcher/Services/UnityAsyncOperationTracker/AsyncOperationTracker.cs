@@ -163,7 +163,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
 
     private void LoadOp(IAsyncOperation op)
     {
-        _logger.LogDebug($"loading operation {op}");
+        _logger.LogDebug($"processing operation {op}");
         op.Load();
         _pendingLoadCallbacks.Add(op);
     }
@@ -522,7 +522,7 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
             return true;
         }
 
-        WarnAsyncOperationAPI(asyncOperation);
+        // WarnAsyncOperationAPI(asyncOperation);
         wasInvoked = false;
         return false;
     }
