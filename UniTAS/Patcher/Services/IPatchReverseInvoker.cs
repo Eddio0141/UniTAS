@@ -7,6 +7,7 @@ public interface IPatchReverseInvoker
     bool Invoking { get; set; }
     void Invoke(Action method);
     void Invoke<T1>(Action<T1> method, T1 arg1);
+    void Invoke<T1, T2, T3, T4>(Action<T1, T2, T3, T4> method, T1 arg1, T2 arg2, T3 arg3, T4 arg4);
     void Invoke<T1, T2, T3, T4, T5>(Action5<T1, T2, T3, T4, T5> method, T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5);
     TRet Invoke<TRet>(Func<TRet> method);
     TRet Invoke<TRet, T>(Func<T, TRet> method, T arg1);
