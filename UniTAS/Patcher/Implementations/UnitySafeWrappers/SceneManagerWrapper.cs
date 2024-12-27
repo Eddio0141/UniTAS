@@ -39,13 +39,6 @@ public class SceneManagerWrapper : ISceneManagerWrapper, IOnPreGameRestart
     // fallback load level async 1
     private readonly MethodInfo _loadSceneAsyncNameIndexInternal;
 
-    // fallback load level async 2
-    private readonly Func<string, int, bool, bool, AsyncOperation> _applicationLoadLevelAsync;
-
-    // non-async load level
-    private readonly MethodInfo _loadSceneByIndex;
-    private readonly MethodInfo _loadSceneByName;
-
     private readonly MethodInfo _unloadSceneNameIndexInternal;
     private readonly bool _unloadSceneNameIndexInternalHasOptions;
 
@@ -68,17 +61,6 @@ public class SceneManagerWrapper : ISceneManagerWrapper, IOnPreGameRestart
                 AccessTools.all,
                 null,
                 [typeof(string), typeof(int), _loadSceneParametersType, typeof(bool)], null);
-        }
-
-        _loadSceneByIndex = _sceneManager?.GetMethod("LoadScene", AccessTools.all, null, [typeof(int)], null);
-        _loadSceneByName = _sceneManager?.GetMethod("LoadScene", AccessTools.all, null, [typeof(string)], null);
-
-        var loadLevelAsync = AccessTools.Method(typeof(Application), "LoadLevelAsync",
-            [typeof(string), typeof(int), typeof(bool), typeof(bool)]);
-        if (loadLevelAsync != null)
-        {
-            _applicationLoadLevelAsync =
-                AccessTools.MethodDelegate<Func<string, int, bool, bool, AsyncOperation>>(loadLevelAsync);
         }
 
         if (_loadSceneParametersType != null)
@@ -165,45 +147,23 @@ public class SceneManagerWrapper : ISceneManagerWrapper, IOnPreGameRestart
             return;
         }
 
-        if (_applicationLoadLevelAsync != null)
-        {
-            _patchReverseInvoker.Invoke(
-                (load, sceneNameInner, sceneBuildIndexInner, additive, mustCompleteNextFrameInner) =>
-                    load.Invoke(sceneNameInner, sceneBuildIndexInner, additive, mustCompleteNextFrameInner),
-                _applicationLoadLevelAsync, sceneName, sceneBuildIndex, loadSceneMode == LoadSceneMode.Additive,
-                mustCompleteNextFrame);
-            return;
-        }
-
-        throw new InvalidOperationException("Could not find any more alternative load async methods");
+        _patchReverseInvoker.Invoke(
+            (sceneNameInner, sceneBuildIndexInner, additive, mustCompleteNextFrameInner) =>
+                Application.LoadLevelAsync(sceneNameInner, sceneBuildIndexInner, additive,
+                    mustCompleteNextFrameInner), sceneName, sceneBuildIndex,
+            loadSceneMode == LoadSceneMode.Additive, mustCompleteNextFrame);
     }
 
     public void LoadScene(int buildIndex)
     {
-        if (TrackSceneCountDummy)
-            LoadedSceneCountDummy = 1;
-
-        if (_loadSceneByIndex != null)
-        {
-            _patchReverseInvoker.Invoke((load, index) => load.Invoke(null, [index]), _loadSceneByIndex, buildIndex);
-            return;
-        }
-
-        _patchReverseInvoker.Invoke(Application.LoadLevel, buildIndex);
+        _patchReverseInvoker.Invoke(
+            index => LoadSceneAsync(null, index, LoadSceneMode.Single, LocalPhysicsMode.None, true), buildIndex);
     }
 
     public void LoadScene(string name)
     {
-        if (TrackSceneCountDummy)
-            LoadedSceneCountDummy = 1;
-
-        if (_loadSceneByName != null)
-        {
-            _patchReverseInvoker.Invoke((load, n) => load.Invoke(null, [n]), _loadSceneByName, name);
-            return;
-        }
-
-        _patchReverseInvoker.Invoke(Application.LoadLevel, name);
+        _patchReverseInvoker.Invoke(n => LoadSceneAsync(n, -1, LoadSceneMode.Single, LocalPhysicsMode.None, true),
+            name);
     }
 
     public void UnloadSceneAsync(string sceneName, int sceneBuildIndex, object options, bool immediate,
