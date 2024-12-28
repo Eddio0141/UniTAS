@@ -11,9 +11,9 @@ using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.GameExecutionControllers;
 using UniTAS.Patcher.Services.InputSystemOverride;
 using UniTAS.Patcher.Services.UnityEvents;
+using UnityEngine;
 #if TRACE
 using UniTAS.Patcher.Utils;
-using UnityEngine;
 #endif
 
 namespace UniTAS.Patcher.Implementations.UnityEvents;
@@ -27,6 +27,8 @@ namespace UniTAS.Patcher.Implementations.UnityEvents;
 [Singleton(timing: RegisterTiming.Entry)]
 public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEventInvoker
 {
+    private readonly IPatchReverseInvoker _patchReverseInvoker;
+
     public UnityEvents(IEnumerable<IOnAwakeUnconditional> onAwakesUnconditional,
         IEnumerable<IOnStartUnconditional> onStartsUnconditional,
         IEnumerable<IOnEnableUnconditional> onEnablesUnconditional,
@@ -43,15 +45,11 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         IEnumerable<IOnLateUpdateUnconditional> onLateUpdatesUnconditional,
         IEnumerable<IOnLastUpdateUnconditional> onLastUpdatesUnconditional,
         IEnumerable<IOnLastUpdateActual> onLastUpdatesActual, IGameRestart gameRestart,
-        IInputSystemState newInputSystemExists, IMonoBehaviourController monoBehaviourController
-#if TRACE
-        , IPatchReverseInvoker patchReverseInvoker
-#endif
+        IInputSystemState newInputSystemExists, IMonoBehaviourController monoBehaviourController,
+        IPatchReverseInvoker patchReverseInvoker
     )
     {
-#if TRACE
         _patchReverseInvoker = patchReverseInvoker;
-#endif
         _newInputSystemExists = newInputSystemExists;
         _monoBehaviourController = monoBehaviourController;
 
@@ -380,7 +378,6 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
     private readonly PriorityList<Action> _lastUpdatesActual = new();
 
     private bool _updated;
-    private bool _calledFixedUpdate;
     private bool _calledPreUpdate;
 
     private readonly IMonoBehaviourController _monoBehaviourController;
@@ -448,10 +445,6 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         }
     }
 
-#if TRACE
-    private IPatchReverseInvoker _patchReverseInvoker;
-#endif
-
     public void InvokeUpdate()
     {
         if (_updated) return;
@@ -501,16 +494,13 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         }
     }
 
-    // isn't called at the very first yield WaitForFixedUpdate, but this is enough
-    public void CoroutineFixedUpdate()
-    {
-        _calledFixedUpdate = false;
-    }
+    private int _prevFrameCount = -1;
 
     public void InvokeFixedUpdate()
     {
-        if (_calledFixedUpdate) return;
-        _calledFixedUpdate = true;
+        var frameCount = _patchReverseInvoker.Invoke(() => Time.frameCount);
+        if (_prevFrameCount == frameCount) return;
+        _prevFrameCount = frameCount;
 
 #if TRACE
         StaticLogger.Trace($"InvokeFixedUpdate, time: {_patchReverseInvoker.Invoke(() => Time.time)}");

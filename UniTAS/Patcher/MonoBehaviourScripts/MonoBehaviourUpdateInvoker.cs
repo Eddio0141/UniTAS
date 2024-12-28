@@ -22,7 +22,7 @@ public class MonoBehaviourUpdateInvoker : MonoBehaviour
         _gameInfo = kernel.GetInstance<IGameInfoUpdate>();
 
         _monoBehEventInvoker.InvokeAwake();
-        
+
         var controller = kernel.GetInstance<IMonoBehaviourController>();
 
         var endOfFrame = EndOfFrameCoroutine();
@@ -115,7 +115,6 @@ public class MonoBehaviourUpdateInvoker : MonoBehaviour
         {
             yield return _waitForFixedUpdate;
             _monoBehEventInvoker.InvokeFixedUpdate();
-            _monoBehEventInvoker.CoroutineFixedUpdate();
         }
         // ReSharper disable once IteratorNeverReturns
     }
