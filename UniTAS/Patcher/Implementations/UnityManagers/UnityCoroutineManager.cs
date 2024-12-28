@@ -1,0 +1,202 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
+using HarmonyLib;
+using UniTAS.Patcher.Extensions;
+using UniTAS.Patcher.Interfaces.DependencyInjection;
+using UniTAS.Patcher.Interfaces.Events.SoftRestart;
+using UniTAS.Patcher.Services;
+using UniTAS.Patcher.Services.GameExecutionControllers;
+using UniTAS.Patcher.Services.Logging;
+using UniTAS.Patcher.Services.Trackers.UpdateTrackInfo;
+using UniTAS.Patcher.Services.UnityAsyncOperationTracker;
+using UniTAS.Patcher.Utils;
+using UnityEngine;
+
+namespace UniTAS.Patcher.Implementations.UnityManagers;
+
+[Singleton]
+public class UnityCoroutineManager(ILogger logger, IHarmony harmony) : ICoroutineTracker, IOnPreGameRestart
+{
+    private readonly HashSet<MonoBehaviour> _instances = [];
+    private readonly HashSet<Type> _patchedCoroutines = [];
+
+    public void NewCoroutine(MonoBehaviour instance, IEnumerator routine)
+    {
+        if (instance == null) return;
+        // don't track ours
+        if (Equals(instance.GetType().Assembly, typeof(UnityCoroutineManager).Assembly)) return;
+
+        var routineType = routine.GetType();
+        logger.LogDebug(
+            $"new coroutine made in script {instance.GetType().SaneFullName()}, got IEnumerator {routineType.SaneFullName()}");
+        StaticLogger.Trace($"call from {new StackTrace()}");
+
+        _instances.Add(instance);
+
+        if (_patchedCoroutines.Contains(routineType)) return;
+        _patchedCoroutines.Add(routineType);
+        logger.LogDebug("this coroutine is yet to be patched");
+
+        var current =
+            AccessTools.PropertyGetter(routineType, $"{typeof(IEnumerator).FullName}.{nameof(IEnumerator.Current)}") ??
+            AccessTools.PropertyGetter(routineType, nameof(IEnumerator.Current));
+        var moveNext =
+            AccessTools.Method(routineType, $"{typeof(IEnumerator).FullName}.{nameof(IEnumerator.MoveNext)}") ??
+            AccessTools.Method(routineType, nameof(IEnumerator.MoveNext));
+        harmony.Harmony.Patch(current, postfix: CurrentPostfix);
+        harmony.Harmony.Patch(moveNext, MoveNextPrefix);
+    }
+
+    private readonly Dictionary<Type, HashSet<MethodBase>> _patchedCoroutinesMethods = [];
+
+    public void NewCoroutine(MonoBehaviour instance, string methodName, object value)
+    {
+        // find target method
+        var method = AccessTools.GetDeclaredMethods(instance.GetType())
+            .FirstOrDefault(x => !x.IsStatic && x.Name == methodName);
+        if (method == null) return;
+        var requiredArgs = value == null ? 0 : 1;
+        if (method.GetParameters().Length != requiredArgs) return;
+        var instanceType = instance.GetType();
+        if (_patchedCoroutinesMethods.TryGetValue(instanceType, out var coroutineMethods))
+        {
+            if (coroutineMethods.Contains(method)) return;
+            coroutineMethods.Add(method);
+        }
+        else
+        {
+            _patchedCoroutinesMethods[instanceType] = [method];
+        }
+
+        harmony.Harmony.Patch(method, postfix: NewCoroutinePostfixMethod);
+    }
+
+    private void NewCoroutineHandle(MonoBehaviour instance, Type routineType)
+    {
+        if (instance == null) return;
+        // don't track ours
+        if (Equals(instance.GetType().Assembly, typeof(UnityCoroutineManager).Assembly)) return;
+
+        logger.LogDebug(
+            $"new coroutine made in script {instance.GetType().SaneFullName()}, got IEnumerator {routineType.SaneFullName()}");
+        StaticLogger.Trace($"call from {new StackTrace()}");
+
+        _instances.Add(instance);
+
+        if (_patchedCoroutines.Contains(routineType)) return;
+        _patchedCoroutines.Add(routineType);
+        logger.LogDebug("this coroutine is yet to be patched");
+
+        var current =
+            AccessTools.PropertyGetter(routineType, $"{typeof(IEnumerator).FullName}.{nameof(IEnumerator.Current)}") ??
+            AccessTools.PropertyGetter(routineType, nameof(IEnumerator.Current));
+        var moveNext =
+            AccessTools.Method(routineType, $"{typeof(IEnumerator).FullName}.{nameof(IEnumerator.MoveNext)}",
+                [typeof(bool)]) ??
+            AccessTools.Method(routineType, nameof(IEnumerator.MoveNext), [typeof(bool)]);
+        harmony.Harmony.Patch(current, postfix: CurrentPostfix);
+        harmony.Harmony.Patch(moveNext, MoveNextPrefix);
+    }
+
+    public void OnPreGameRestart()
+    {
+        foreach (var coroutine in _instances)
+        {
+            if (coroutine == null) continue;
+            coroutine.StopAllCoroutines();
+        }
+
+        _instances.Clear();
+    }
+
+    private static readonly HarmonyMethod CurrentPostfix =
+        new(typeof(UnityCoroutineManager), nameof(CoroutineCurrentPostfix));
+
+    private static readonly HarmonyMethod MoveNextPrefix =
+        new(typeof(UnityCoroutineManager), nameof(CoroutineMoveNextPrefix));
+
+    private static readonly HarmonyMethod NewCoroutinePostfixMethod =
+        new(typeof(UnityCoroutineManager), nameof(NewCoroutinePostfix));
+
+    private static readonly IMonoBehaviourController MonoBehaviourController =
+        ContainerStarter.Kernel.GetInstance<IMonoBehaviourController>();
+
+    private static readonly IAsyncOperationTracker AsyncOperationTracker =
+        ContainerStarter.Kernel.GetInstance<IAsyncOperationTracker>();
+
+    private static readonly IPatchReverseInvoker ReverseInvoker =
+        ContainerStarter.Kernel.GetInstance<IPatchReverseInvoker>();
+
+    // ReSharper disable InconsistentNaming
+    // TODO: for both, handle time based coroutines and check the rest
+
+    private static void CoroutineCurrentPostfix(ref object __result)
+    {
+        if (__result == null) return;
+        if (ReverseInvoker.Invoking) return;
+
+        if (MonoBehaviourController.PausedExecution)
+        {
+            // TODO: i can probably just manually check for CoreModule / UnityEngine since its not like there's many of this
+            if (__result.GetType().Assembly.GetName().Name.StartsWith("UnityEngine"))
+                __result = null;
+
+            return;
+        }
+
+        if (MonoBehaviourController.PausedUpdate && __result is WaitForEndOfFrame)
+        {
+            __result = null;
+            return;
+        }
+
+        // managed async operation?
+        if (__result is AsyncOperation op && AsyncOperationTracker.ManagedInstance(op) && !op.isDone)
+        {
+            __result = null;
+            // return;
+        }
+    }
+
+    private static bool CoroutineMoveNextPrefix(IEnumerator __instance)
+    {
+        var current = ReverseInvoker.Invoke(i => i.Current, __instance);
+        if (MonoBehaviourController.PausedExecution)
+        {
+            if (current is null) return false;
+            // TODO: i can probably just manually check for CoreModule / UnityEngine since its not like there's many of this
+            if (current.GetType().Assembly.GetName().Name.StartsWith("UnityEngine")) return false;
+            return true;
+        }
+
+        if (MonoBehaviourController.PausedUpdate && current is null or WaitForEndOfFrame)
+            return false;
+
+        // managed async operation?
+        if (current is AsyncOperation op && AsyncOperationTracker.ManagedInstance(op))
+        {
+            return op.isDone;
+        }
+
+        return true;
+    }
+
+    private static readonly HashSet<MethodBase> _newCoroutineRan = [];
+
+    private static readonly UnityCoroutineManager CoroutineManager =
+        ContainerStarter.Kernel.GetInstance<UnityCoroutineManager>();
+
+    private static void NewCoroutinePostfix(MonoBehaviour __instance, IEnumerator __result, MethodBase __originalMethod)
+    {
+        if (__result == null) return;
+        if (_newCoroutineRan.Contains(__originalMethod)) return;
+        _newCoroutineRan.Add(__originalMethod);
+        CoroutineManager.NewCoroutineHandle(__instance, __result.GetType());
+    }
+
+    // ReSharper restore InconsistentNaming
+}

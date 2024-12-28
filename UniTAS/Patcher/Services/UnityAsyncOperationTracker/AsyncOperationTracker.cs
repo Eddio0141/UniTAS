@@ -26,7 +26,8 @@ namespace UniTAS.Patcher.Services.UnityAsyncOperationTracker;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 [Singleton]
-public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateRequestTracker, IAssetBundleRequestTracker,
+public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, IAssetBundleCreateRequestTracker,
+    IAssetBundleRequestTracker,
     IOnLastUpdateActual, IAsyncOperationIsInvokingOnComplete, IOnPreGameRestart, IOnUpdateActual,
     IOnStartActual, IOnFixedUpdateActual, IAssetBundleTracker, ISceneOverride, IAsyncOperationOverride,
     IResourceAsyncTracker
@@ -720,7 +721,13 @@ public class AsyncOperationTracker : ISceneLoadTracker, IAssetBundleCreateReques
 
     private void WarnAsyncOperationAPI(AsyncOperation op)
     {
-        _logger.LogWarning($"found untracked async operation, API use at {new StackTrace()}, {op.GetHashCode()}, {DebugHelp.PrintClass(op)}");
+        _logger.LogWarning(
+            $"found untracked async operation, API use at {new StackTrace()}, {op.GetHashCode()}, {DebugHelp.PrintClass(op)}");
+    }
+
+    public bool ManagedInstance(AsyncOperation asyncOperation)
+    {
+        return _tracked.ContainsKey(asyncOperation);
     }
 
     private struct AsyncOperationData()
