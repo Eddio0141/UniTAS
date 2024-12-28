@@ -1,9 +1,11 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.SoftRestart;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.Trackers.UpdateTrackInfo;
+using UniTAS.Patcher.Utils;
 using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations.GameRestart;
@@ -17,6 +19,7 @@ public class CoroutinesStopOnRestart(ILogger logger) : ICoroutineRunningObjectsT
     {
         if (instance == null) return;
         logger.LogDebug($"new coroutine for {instance.GetType().SaneFullName()}");
+        StaticLogger.Trace($"call from {new StackTrace()}");
         _instances.Add(instance);
     }
 
