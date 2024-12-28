@@ -154,8 +154,14 @@ public class TimePatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
+        private static bool Prefix()
+        {
+            return ReverseInvoker.Invoking;
+        }
+
         private static void Postfix(ref int __result)
         {
+            if (ReverseInvoker.Invoking) return;
             __result = (int)((ulong)__result - TimeEnv.FrameCountRestartOffset);
         }
     }

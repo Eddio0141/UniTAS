@@ -6,7 +6,6 @@ using UniTAS.Patcher.Services.UnityEvents;
 using UnityEngine.InputSystem;
 #if TRACE
 using UniTAS.Patcher.Utils;
-using UniTAS.Patcher.Services;
 using UnityEngine;
 #endif
 

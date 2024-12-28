@@ -384,6 +384,11 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
 
     public void InvokeLastUpdate()
     {
+#if TRACE
+        StaticLogger.Trace($"InvokeLastUpdate, time: {_patchReverseInvoker.Invoke(() => Time.time)}, " +
+                           $"paused: {_monoBehaviourController.PausedExecution}");
+#endif
+
         for (var i = 0; i < _lastUpdatesUnconditional.Count; i++)
         {
             _lastUpdatesUnconditional[i]();
@@ -400,6 +405,11 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
     // calls awake before any other script
     public void InvokeAwake()
     {
+#if TRACE
+        StaticLogger.Trace($"InvokeAwake, time: {_patchReverseInvoker.Invoke(() => Time.time)}, " +
+                           $"paused: {_monoBehaviourController.PausedExecution}");
+#endif
+
         for (var i = 0; i < _awakesUnconditional.Count; i++)
         {
             _awakesUnconditional[i]();
@@ -416,6 +426,11 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
     // calls onEnable before any other script
     public void InvokeOnEnable()
     {
+#if TRACE
+        StaticLogger.Trace($"InvokeOnEnable, time: {_patchReverseInvoker.Invoke(() => Time.time)}, " +
+                           $"paused: {_monoBehaviourController.PausedExecution}");
+#endif
+
         for (var i = 0; i < _enablesUnconditional.Count; i++)
         {
             _enablesUnconditional[i]();
@@ -432,6 +447,11 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
     // calls start before any other script
     public void InvokeStart()
     {
+#if TRACE
+        StaticLogger.Trace($"InvokeStart, time: {_patchReverseInvoker.Invoke(() => Time.time)}, " +
+                           $"paused: {_monoBehaviourController.PausedExecution}");
+#endif
+
         for (var i = 0; i < _startsUnconditional.Count; i++)
         {
             _startsUnconditional[i]();
@@ -451,7 +471,8 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         _updated = true;
 
 #if TRACE
-        StaticLogger.Trace($"InvokeUpdate, time: {_patchReverseInvoker.Invoke(() => Time.time)}");
+        StaticLogger.Trace($"InvokeUpdate, time: {_patchReverseInvoker.Invoke(() => Time.time)}, " +
+                           $"paused: {_monoBehaviourController.PausedExecution || _monoBehaviourController.PausedUpdate}");
 #endif
 
         if (!_calledPreUpdate)
@@ -477,6 +498,11 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
     // right now I don't call this update before other scripts so I don't need to check if it was already called
     public void InvokeLateUpdate()
     {
+#if TRACE
+        StaticLogger.Trace($"InvokeLateUpdate, time: {_patchReverseInvoker.Invoke(() => Time.time)}, " +
+                           $"paused: {_monoBehaviourController.PausedExecution}");
+#endif
+
         _updated = false;
         _calledPreUpdate = false;
 
@@ -503,7 +529,8 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         _prevFrameCount = frameCount;
 
 #if TRACE
-        StaticLogger.Trace($"InvokeFixedUpdate, time: {_patchReverseInvoker.Invoke(() => Time.time)}");
+        StaticLogger.Trace(
+            $"InvokeFixedUpdate, time: {frameCount}, paused: {_monoBehaviourController.PausedExecution}");
 #endif
 
         InvokeCallOnPreUpdate();
@@ -523,6 +550,11 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
 
     public void InvokeOnGUI()
     {
+#if TRACE
+        StaticLogger.Trace($"InvokeOnGUI, time: {_patchReverseInvoker.Invoke(() => Time.time)}, " +
+                           $"paused: {_monoBehaviourController.PausedExecution}");
+#endif
+
         // currently, this doesn't get called before other scripts
         for (var i = 0; i < _guisUnconditional.Count; i++)
         {
@@ -539,6 +571,11 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
 
     private void InvokeCallOnPreUpdate()
     {
+#if TRACE
+        StaticLogger.Trace($"InvokeCallOnPreUpdate, time: {_patchReverseInvoker.Invoke(() => Time.time)}, " +
+                           $"paused: {_monoBehaviourController.PausedExecution}");
+#endif
+
         for (var i = 0; i < _preUpdatesUnconditional.Count; i++)
         {
             _preUpdatesUnconditional[i]();
