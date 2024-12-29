@@ -550,10 +550,10 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
 
     public void InvokeOnGUI()
     {
-#if TRACE
-        StaticLogger.Trace($"InvokeOnGUI, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)}, " +
-                           $"paused: {_monoBehaviourController.PausedExecution}");
-#endif
+// #if TRACE
+//         StaticLogger.Trace($"InvokeOnGUI, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)}, " +
+//                            $"paused: {_monoBehaviourController.PausedExecution}");
+// #endif
 
         // currently, this doesn't get called before other scripts
         for (var i = 0; i < _guisUnconditional.Count; i++)
