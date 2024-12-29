@@ -139,24 +139,34 @@ public class UnityCoroutineManager(ILogger logger, IHarmony harmony) : ICoroutin
         if (__result == null) return;
         if (ReverseInvoker.Invoking) return;
 
+        // managed async operation?
+        if (__result is AsyncOperation op && AsyncOperationTracker.ManagedInstance(op) && !op.isDone)
+        {
+            StaticLogger.Trace("paused execution for AsyncOperation Current, result is managed by unitas" +
+                               $", and it isn't complete, replaced result with null: {new StackTrace()}");
+            __result = null;
+            return;
+        }
+
         if (MonoBehaviourController.PausedExecution)
         {
             // TODO: i can probably just manually check for CoreModule / UnityEngine since its not like there's many of this
             if (__result.GetType().Assembly.GetName().Name.StartsWith("UnityEngine"))
+            {
+                StaticLogger.Trace("paused execution for coroutine Current" +
+                                   $", result is unity type: {__result.GetType().SaneFullName()}" +
+                                   $", replaced result with null: {new StackTrace()}");
                 __result = null;
+            }
 
             return;
         }
 
         if (MonoBehaviourController.PausedUpdate && __result is WaitForEndOfFrame)
         {
-            __result = null;
-            return;
-        }
-
-        // managed async operation?
-        if (__result is AsyncOperation op && AsyncOperationTracker.ManagedInstance(op) && !op.isDone)
-        {
+            StaticLogger.Trace("paused update execution for coroutine Current" +
+                               $", result is type: {__result.GetType().SaneFullName()}" +
+                               $", replaced result with null: {new StackTrace()}");
             __result = null;
             // return;
         }
@@ -165,21 +175,41 @@ public class UnityCoroutineManager(ILogger logger, IHarmony harmony) : ICoroutin
     private static bool CoroutineMoveNextPrefix(IEnumerator __instance)
     {
         var current = ReverseInvoker.Invoke(i => i.Current, __instance);
-        if (MonoBehaviourController.PausedExecution)
-        {
-            if (current is null) return false;
-            // TODO: i can probably just manually check for CoreModule / UnityEngine since its not like there's many of this
-            if (current.GetType().Assembly.GetName().Name.StartsWith("UnityEngine")) return false;
-            return true;
-        }
-
-        if (MonoBehaviourController.PausedUpdate && current is null or WaitForEndOfFrame)
-            return false;
 
         // managed async operation?
         if (current is AsyncOperation op && AsyncOperationTracker.ManagedInstance(op))
         {
+            StaticLogger.Trace("coroutine MoveNext with AsyncOperation, operation is managed by unitas" +
+                               $", running MoveNext: {op.isDone}");
             return op.isDone;
+        }
+
+        if (MonoBehaviourController.PausedExecution)
+        {
+            if (current is null)
+            {
+                StaticLogger.Trace("paused execution while coroutine MoveNext, Current is null, not running MoveNext");
+
+                return false;
+            }
+
+            // TODO: i can probably just manually check for CoreModule / UnityEngine since its not like there's many of this
+            if (current.GetType().Assembly.GetName().Name.StartsWith("UnityEngine"))
+            {
+                StaticLogger.Trace("paused execution while coroutine MoveNext" +
+                                   $", Current is type: {current.GetType().SaneFullName()}" +
+                                   " unity type, not running MoveNext");
+                return false;
+            }
+
+            return true;
+        }
+
+        if (MonoBehaviourController.PausedUpdate && current is null or WaitForEndOfFrame)
+        {
+            StaticLogger.Trace("paused update execution while coroutine MoveNext" +
+                               ", Current is null / WaitForEndOfFrame, not running MoveNext");
+            return false;
         }
 
         return true;

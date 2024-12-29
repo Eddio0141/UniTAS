@@ -6,7 +6,7 @@ public static class TypeExtensions
 {
     public static string SaneFullName(this Type type)
     {
-        if (type == null) throw new ArgumentNullException(nameof(type));
+        if (type == null) return "null";
 
         var name = type.Name;
         if (type.IsGenericParameter) return name;
