@@ -98,7 +98,7 @@ public class AsyncOperationPatch
 
         private static void Postfix(AsyncOperation __result)
         {
-            StaticLogger.LogDebug($"thingy: {DebugHelp.PrintClass(__result)}, {new StackTrace()}");
+            StaticLogger.Trace($"new AsyncOperation return: {DebugHelp.PrintClass(__result)}, {new StackTrace()}");
         }
     }
 #endif
