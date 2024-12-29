@@ -385,7 +385,7 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
     public void InvokeLastUpdate()
     {
 #if TRACE
-        StaticLogger.Trace($"InvokeLastUpdate, time: {_patchReverseInvoker.Invoke(() => Time.time)}, " +
+        StaticLogger.Trace($"InvokeLastUpdate, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)}, " +
                            $"paused: {_monoBehaviourController.PausedExecution}");
 #endif
 
@@ -406,7 +406,7 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
     public void InvokeAwake()
     {
 #if TRACE
-        StaticLogger.Trace($"InvokeAwake, time: {_patchReverseInvoker.Invoke(() => Time.time)}, " +
+        StaticLogger.Trace($"InvokeAwake, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)}, " +
                            $"paused: {_monoBehaviourController.PausedExecution}");
 #endif
 
@@ -427,7 +427,7 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
     public void InvokeOnEnable()
     {
 #if TRACE
-        StaticLogger.Trace($"InvokeOnEnable, time: {_patchReverseInvoker.Invoke(() => Time.time)}, " +
+        StaticLogger.Trace($"InvokeOnEnable, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)}, " +
                            $"paused: {_monoBehaviourController.PausedExecution}");
 #endif
 
@@ -448,7 +448,7 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
     public void InvokeStart()
     {
 #if TRACE
-        StaticLogger.Trace($"InvokeStart, time: {_patchReverseInvoker.Invoke(() => Time.time)}, " +
+        StaticLogger.Trace($"InvokeStart, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)}, " +
                            $"paused: {_monoBehaviourController.PausedExecution}");
 #endif
 
@@ -471,7 +471,7 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         _updated = true;
 
 #if TRACE
-        StaticLogger.Trace($"InvokeUpdate, time: {_patchReverseInvoker.Invoke(() => Time.time)}, " +
+        StaticLogger.Trace($"InvokeUpdate, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)}, " +
                            $"paused: {_monoBehaviourController.PausedExecution || _monoBehaviourController.PausedUpdate}");
 #endif
 
@@ -499,7 +499,7 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
     public void InvokeLateUpdate()
     {
 #if TRACE
-        StaticLogger.Trace($"InvokeLateUpdate, time: {_patchReverseInvoker.Invoke(() => Time.time)}, " +
+        StaticLogger.Trace($"InvokeLateUpdate, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)}, " +
                            $"paused: {_monoBehaviourController.PausedExecution}");
 #endif
 
@@ -551,7 +551,7 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
     public void InvokeOnGUI()
     {
 #if TRACE
-        StaticLogger.Trace($"InvokeOnGUI, time: {_patchReverseInvoker.Invoke(() => Time.time)}, " +
+        StaticLogger.Trace($"InvokeOnGUI, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)}, " +
                            $"paused: {_monoBehaviourController.PausedExecution}");
 #endif
 
@@ -572,7 +572,7 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
     private void InvokeCallOnPreUpdate()
     {
 #if TRACE
-        StaticLogger.Trace($"InvokeCallOnPreUpdate, time: {_patchReverseInvoker.Invoke(() => Time.time)}, " +
+        StaticLogger.Trace($"InvokeCallOnPreUpdate, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)}, " +
                            $"paused: {_monoBehaviourController.PausedExecution}");
 #endif
 
