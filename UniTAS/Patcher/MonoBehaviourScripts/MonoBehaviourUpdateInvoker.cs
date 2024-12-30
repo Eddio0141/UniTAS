@@ -104,6 +104,7 @@ public class MonoBehaviourUpdateInvoker : MonoBehaviour
         while (true)
         {
             yield return _waitForEndOfFrame;
+            _monoBehEventInvoker.InvokeEndOfFrame();
             _monoBehEventInvoker.InvokeLastUpdate();
         }
         // ReSharper disable once IteratorNeverReturns

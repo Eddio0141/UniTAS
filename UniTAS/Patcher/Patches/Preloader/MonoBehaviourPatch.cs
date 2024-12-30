@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Linq;
 using System.Reflection;
 using HarmonyLib;
@@ -8,6 +9,7 @@ using UniTAS.Patcher.ContainerBindings.GameExecutionControllers;
 using UniTAS.Patcher.ContainerBindings.UnityEvents;
 using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Interfaces;
+using UniTAS.Patcher.ManualServices;
 using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Patches.Preloader;
@@ -161,6 +163,22 @@ public class MonoBehaviourPatch : PreloadPatcher
                 if (foundMethod is not { HasBody: true }) continue;
 
                 StaticLogger.Trace($"Patching method for pausing execution {foundMethod.FullName}");
+
+                // is it an IEnumerator
+                if (foundMethod.ReturnType.FullName == typeof(IEnumerator).SaneFullName())
+                {
+                    StaticLogger.Trace($"this method is an IEnumerator");
+                    var typeFullName = type.FullName;
+                    if (GameInfoManual.MonoBehaviourWithIEnumerator.TryGetValue(typeFullName,
+                            out var iEnumeratorMethods))
+                    {
+                        iEnumeratorMethods.Add(eventMethodName);
+                    }
+                    else
+                    {
+                        GameInfoManual.MonoBehaviourWithIEnumerator[typeFullName] = [eventMethodName];
+                    }
+                }
 
                 foundMethod.Body.SimplifyMacros();
                 var il = foundMethod.Body.GetILProcessor();

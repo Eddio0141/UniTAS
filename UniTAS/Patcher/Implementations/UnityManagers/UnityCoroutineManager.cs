@@ -8,18 +8,20 @@ using HarmonyLib;
 using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.SoftRestart;
+using UniTAS.Patcher.ManualServices;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.GameExecutionControllers;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.Trackers.UpdateTrackInfo;
 using UniTAS.Patcher.Services.UnityAsyncOperationTracker;
+using UniTAS.Patcher.Services.UnityEvents;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations.UnityManagers;
 
 [Singleton]
-public class UnityCoroutineManager(ILogger logger, IHarmony harmony) : ICoroutineTracker, IOnPreGameRestart
+public class UnityCoroutineManager : ICoroutineTracker, IOnPreGameRestart
 {
     private readonly HashSet<MonoBehaviour> _instances = [];
     private readonly HashSet<Type> _patchedCoroutines = [];
@@ -27,11 +29,12 @@ public class UnityCoroutineManager(ILogger logger, IHarmony harmony) : ICoroutin
     public void NewCoroutine(MonoBehaviour instance, IEnumerator routine)
     {
         if (instance == null) return;
+        if (routine == null) return;
         // don't track ours
         if (Equals(instance.GetType().Assembly, typeof(UnityCoroutineManager).Assembly)) return;
 
         var routineType = routine.GetType();
-        logger.LogDebug(
+        _logger.LogDebug(
             $"new coroutine made in script {instance.GetType().SaneFullName()}, got IEnumerator {routineType.SaneFullName()}");
         StaticLogger.Trace($"call from {new StackTrace()}");
 
@@ -39,7 +42,7 @@ public class UnityCoroutineManager(ILogger logger, IHarmony harmony) : ICoroutin
 
         if (_patchedCoroutines.Contains(routineType)) return;
         _patchedCoroutines.Add(routineType);
-        logger.LogDebug("this coroutine is yet to be patched");
+        _logger.LogDebug("this coroutine is yet to be patched");
 
         var current =
             AccessTools.PropertyGetter(routineType, $"{typeof(IEnumerator).FullName}.{nameof(IEnumerator.Current)}") ??
@@ -47,11 +50,38 @@ public class UnityCoroutineManager(ILogger logger, IHarmony harmony) : ICoroutin
         var moveNext =
             AccessTools.Method(routineType, $"{typeof(IEnumerator).FullName}.{nameof(IEnumerator.MoveNext)}") ??
             AccessTools.Method(routineType, nameof(IEnumerator.MoveNext));
-        harmony.Harmony.Patch(current, postfix: CurrentPostfix);
-        harmony.Harmony.Patch(moveNext, MoveNextPrefix);
+        _harmony.Harmony.Patch(current, postfix: CurrentPostfix);
+        _harmony.Harmony.Patch(moveNext, MoveNextPrefix);
     }
 
     private readonly Dictionary<Type, HashSet<MethodBase>> _patchedCoroutinesMethods = [];
+    private readonly ILogger _logger;
+    private readonly IHarmony _harmony;
+
+    public UnityCoroutineManager(ILogger logger, IHarmony harmony)
+    {
+        _logger = logger;
+        _harmony = harmony;
+        foreach (var pair in GameInfoManual.MonoBehaviourWithIEnumerator)
+        {
+            var type = AccessTools.TypeByName(pair.Key);
+            var methods = pair.Value;
+            foreach (var methodRaw in methods)
+            {
+                var method = AccessTools.Method(type, methodRaw);
+                if (method is null)
+                {
+                    _logger.LogFatal(
+                        $"tracked MonoBehaviour type `{type.SaneFullName()}`'s method `{methodRaw}` wasn't found");
+                    continue;
+                }
+
+                harmony.Harmony.Patch(method, postfix: MonoBehaviourCoroutineStartPostfixMethod);
+            }
+
+            _patchedCoroutines.Add(type);
+        }
+    }
 
     public void NewCoroutine(MonoBehaviour instance, string methodName, object value)
     {
@@ -72,7 +102,7 @@ public class UnityCoroutineManager(ILogger logger, IHarmony harmony) : ICoroutin
             _patchedCoroutinesMethods[instanceType] = [method];
         }
 
-        harmony.Harmony.Patch(method, postfix: NewCoroutinePostfixMethod);
+        _harmony.Harmony.Patch(method, postfix: NewCoroutinePostfixMethod);
     }
 
     private void NewCoroutineHandle(MonoBehaviour instance, Type routineType)
@@ -81,7 +111,7 @@ public class UnityCoroutineManager(ILogger logger, IHarmony harmony) : ICoroutin
         // don't track ours
         if (Equals(instance.GetType().Assembly, typeof(UnityCoroutineManager).Assembly)) return;
 
-        logger.LogDebug(
+        _logger.LogDebug(
             $"new coroutine made in script {instance.GetType().SaneFullName()}, got IEnumerator {routineType.SaneFullName()}");
         StaticLogger.Trace($"call from {new StackTrace()}");
 
@@ -89,7 +119,7 @@ public class UnityCoroutineManager(ILogger logger, IHarmony harmony) : ICoroutin
 
         if (_patchedCoroutines.Contains(routineType)) return;
         _patchedCoroutines.Add(routineType);
-        logger.LogDebug("this coroutine is yet to be patched");
+        _logger.LogDebug("this coroutine is yet to be patched");
 
         var current =
             AccessTools.PropertyGetter(routineType, $"{typeof(IEnumerator).FullName}.{nameof(IEnumerator.Current)}") ??
@@ -98,8 +128,8 @@ public class UnityCoroutineManager(ILogger logger, IHarmony harmony) : ICoroutin
             AccessTools.Method(routineType, nameof(IEnumerator.MoveNext), [typeof(bool)]) ??
             AccessTools.Method(routineType, $"{typeof(IEnumerator).FullName}.{nameof(IEnumerator.MoveNext)}",
                 [typeof(bool)]);
-        harmony.Harmony.Patch(current, postfix: CurrentPostfix);
-        harmony.Harmony.Patch(moveNext, MoveNextPrefix);
+        _harmony.Harmony.Patch(current, postfix: CurrentPostfix);
+        _harmony.Harmony.Patch(moveNext, MoveNextPrefix);
     }
 
     public void OnPreGameRestart()
@@ -123,6 +153,9 @@ public class UnityCoroutineManager(ILogger logger, IHarmony harmony) : ICoroutin
 
     private static readonly HarmonyMethod NewCoroutinePostfixMethod =
         new(typeof(UnityCoroutineManager), nameof(NewCoroutinePostfix));
+
+    private static readonly HarmonyMethod MonoBehaviourCoroutineStartPostfixMethod =
+        new(typeof(UnityCoroutineManager), nameof(MonoBehaviourCoroutineStartPostfix));
 
     private static readonly IMonoBehaviourController MonoBehaviourController =
         ContainerStarter.Kernel.GetInstance<IMonoBehaviourController>();
@@ -150,13 +183,24 @@ public class UnityCoroutineManager(ILogger logger, IHarmony harmony) : ICoroutin
 
     private static readonly YieldNone NoYield = new();
 
+    private static readonly IMonoBehEventInvoker MonoBehEventInvoker =
+        ContainerStarter.Kernel.GetInstance<IMonoBehEventInvoker>();
+
+    private static readonly IAsyncOperationOverride AsyncOperationOverride =
+        ContainerStarter.Kernel.GetInstance<IAsyncOperationOverride>();
+
+    private static void MonoBehaviourCoroutineStartPostfix(MonoBehaviour __instance, IEnumerator __result)
+    {
+        CoroutineManager.NewCoroutine(__instance, __result);
+    }
+
     private static void CoroutineCurrentPostfix(ref object __result)
     {
         if (__result == null) return;
         if (ReverseInvoker.Invoking) return;
 
         // managed async operation?
-        if (__result is AsyncOperation op && AsyncOperationTracker.ManagedInstance(op))
+        if (__result is AsyncOperation op && AsyncOperationOverride.Yield(op))
         {
             if (op.isDone)
             {
@@ -184,13 +228,18 @@ public class UnityCoroutineManager(ILogger logger, IHarmony harmony) : ICoroutin
             return;
         }
 
-        if (MonoBehaviourController.PausedUpdate && __result is WaitForEndOfFrame)
+        if (__result is WaitForEndOfFrame)
         {
-            StaticLogger.Trace("paused update execution for coroutine Current" +
-                               $", result is type: {__result.GetType().SaneFullName()}" +
-                               $", replaced result with null: {new StackTrace()}");
-            __result = null;
-            // return;
+            if (MonoBehaviourController.PausedUpdate)
+            {
+                StaticLogger.Trace("paused update execution for coroutine Current" +
+                                   $", result is type: {__result.GetType().SaneFullName()}" +
+                                   $", replaced result with null: {new StackTrace()}");
+                __result = null;
+                return;
+            }
+
+            MonoBehEventInvoker.InvokeEndOfFrame();
         }
     }
 

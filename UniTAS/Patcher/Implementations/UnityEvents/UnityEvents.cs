@@ -44,7 +44,9 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         IEnumerable<IOnInputUpdateUnconditional> onInputUpdatesUnconditional,
         IEnumerable<IOnLateUpdateUnconditional> onLateUpdatesUnconditional,
         IEnumerable<IOnLastUpdateUnconditional> onLastUpdatesUnconditional,
-        IEnumerable<IOnLastUpdateActual> onLastUpdatesActual, IGameRestart gameRestart,
+        IEnumerable<IOnLastUpdateActual> onLastUpdatesActual,
+        IEnumerable<IOnEndOfFrameActual> onEndOfFrameActual,
+        IGameRestart gameRestart,
         IInputSystemState newInputSystemExists, IMonoBehaviourController monoBehaviourController,
         IPatchReverseInvoker patchReverseInvoker
     )
@@ -136,6 +138,11 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
             RegisterMethod(onLastUpdateActual, onLastUpdateActual.OnLastUpdateActual, CallbackUpdate.LastUpdateActual);
         }
 
+        foreach (var endOfFrameActual in onEndOfFrameActual)
+        {
+            RegisterMethod(endOfFrameActual, endOfFrameActual.OnEndOfFrame, CallbackUpdate.EndOfFrameActual);
+        }
+
         // input system events init
         foreach (var onInputUpdateActual in onInputUpdatesActual)
         {
@@ -174,6 +181,7 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
             CallbackUpdate.LastUpdateUnconditional => _lastUpdatesUnconditional,
             CallbackUpdate.LateUpdateUnconditional => _lateUpdatesUnconditional,
             CallbackUpdate.LateUpdateActual => _lateUpdatesActual,
+            CallbackUpdate.EndOfFrameActual => _endOfFramesActual,
             _ => throw new ArgumentOutOfRangeException(nameof(update), update, null)
         };
 
@@ -377,6 +385,8 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
     private readonly PriorityList<Action> _lastUpdatesUnconditional = new();
     private readonly PriorityList<Action> _lastUpdatesActual = new();
 
+    private readonly PriorityList<Action> _endOfFramesActual = new();
+
     private bool _updated;
     private bool _calledPreUpdate;
 
@@ -480,6 +490,8 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
             _calledPreUpdate = true;
             InvokeCallOnPreUpdate();
         }
+
+        _endOfFrameUpdated = false;
 
         for (var i = 0; i < _updatesUnconditional.Count; i++)
         {
@@ -586,6 +598,32 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
             var preUpdate = _preUpdatesActual[i];
             if (!_monoBehaviourController.PausedExecution)
                 preUpdate();
+        }
+    }
+
+    private bool _endOfFrameUpdated;
+
+    public void InvokeEndOfFrame()
+    {
+        if (_endOfFrameUpdated) return;
+        _endOfFrameUpdated = true;
+
+#if TRACE
+        StaticLogger.Trace($"InvokeEndOfFrame, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)}, " +
+                           $"paused: {_monoBehaviourController.PausedExecution}");
+#endif
+
+        for (var i = 0; i < _endOfFramesActual.Count; i++)
+        {
+            _endOfFramesActual[i]();
+        }
+
+        for (var i = 0; i < _endOfFramesActual.Count; i++)
+        {
+            var endOfFrame = _endOfFramesActual[i];
+            if (_monoBehaviourController.PausedExecution ||
+                _monoBehaviourController.PausedUpdate) continue;
+            endOfFrame();
         }
     }
 }
