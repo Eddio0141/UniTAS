@@ -95,9 +95,9 @@ public class UnityCoroutineManager(ILogger logger, IHarmony harmony) : ICoroutin
             AccessTools.PropertyGetter(routineType, $"{typeof(IEnumerator).FullName}.{nameof(IEnumerator.Current)}") ??
             AccessTools.PropertyGetter(routineType, nameof(IEnumerator.Current));
         var moveNext =
+            AccessTools.Method(routineType, nameof(IEnumerator.MoveNext), [typeof(bool)]) ??
             AccessTools.Method(routineType, $"{typeof(IEnumerator).FullName}.{nameof(IEnumerator.MoveNext)}",
-                [typeof(bool)]) ??
-            AccessTools.Method(routineType, nameof(IEnumerator.MoveNext), [typeof(bool)]);
+                [typeof(bool)]);
         harmony.Harmony.Patch(current, postfix: CurrentPostfix);
         harmony.Harmony.Patch(moveNext, MoveNextPrefix);
     }
@@ -111,6 +111,8 @@ public class UnityCoroutineManager(ILogger logger, IHarmony harmony) : ICoroutin
         }
 
         _instances.Clear();
+        // no need, but better clean it up
+        DoneFirstMoveNext.Clear();
     }
 
     private static readonly HarmonyMethod CurrentPostfix =
@@ -134,14 +136,34 @@ public class UnityCoroutineManager(ILogger logger, IHarmony harmony) : ICoroutin
     // ReSharper disable InconsistentNaming
     // TODO: for both, handle time based coroutines and check the rest
 
+    private class YieldNone : IEnumerator
+    {
+        public bool MoveNext() => false;
+
+        public void Reset()
+        {
+            throw new NotImplementedException();
+        }
+
+        public object Current => null;
+    }
+
+    private static readonly YieldNone NoYield = new();
+
     private static void CoroutineCurrentPostfix(ref object __result)
     {
         if (__result == null) return;
         if (ReverseInvoker.Invoking) return;
 
         // managed async operation?
-        if (__result is AsyncOperation op && AsyncOperationTracker.ManagedInstance(op) && !op.isDone)
+        if (__result is AsyncOperation op && AsyncOperationTracker.ManagedInstance(op))
         {
+            if (op.isDone)
+            {
+                __result = NoYield;
+                return;
+            }
+
             StaticLogger.Trace("paused execution for AsyncOperation Current, result is managed by unitas" +
                                $", and it isn't complete, replaced result with null: {new StackTrace()}");
             __result = null;
@@ -172,8 +194,16 @@ public class UnityCoroutineManager(ILogger logger, IHarmony harmony) : ICoroutin
         }
     }
 
-    private static bool CoroutineMoveNextPrefix(IEnumerator __instance)
+    private static readonly HashSet<IEnumerator> DoneFirstMoveNext = [];
+
+    private static bool CoroutineMoveNextPrefix(IEnumerator __instance, ref bool __result)
     {
+        if (!DoneFirstMoveNext.Contains(__instance))
+        {
+            DoneFirstMoveNext.Add(__instance);
+            return true;
+        }
+
         var current = ReverseInvoker.Invoke(i => i.Current, __instance);
 
         // managed async operation?
@@ -181,6 +211,7 @@ public class UnityCoroutineManager(ILogger logger, IHarmony harmony) : ICoroutin
         {
             StaticLogger.Trace("coroutine MoveNext with AsyncOperation, operation is managed by unitas" +
                                $", running MoveNext: {op.isDone}");
+            __result = !op.isDone;
             return op.isDone;
         }
 
@@ -189,7 +220,7 @@ public class UnityCoroutineManager(ILogger logger, IHarmony harmony) : ICoroutin
             if (current is null)
             {
                 StaticLogger.Trace("paused execution while coroutine MoveNext, Current is null, not running MoveNext");
-
+                __result = true;
                 return false;
             }
 
@@ -199,6 +230,7 @@ public class UnityCoroutineManager(ILogger logger, IHarmony harmony) : ICoroutin
                 StaticLogger.Trace("paused execution while coroutine MoveNext" +
                                    $", Current is type: {current.GetType().SaneFullName()}" +
                                    " unity type, not running MoveNext");
+                __result = true;
                 return false;
             }
 
@@ -209,6 +241,7 @@ public class UnityCoroutineManager(ILogger logger, IHarmony harmony) : ICoroutin
         {
             StaticLogger.Trace("paused update execution while coroutine MoveNext" +
                                ", Current is null / WaitForEndOfFrame, not running MoveNext");
+            __result = true;
             return false;
         }
 
