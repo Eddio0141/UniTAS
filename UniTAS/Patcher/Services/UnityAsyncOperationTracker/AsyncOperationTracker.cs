@@ -27,10 +27,8 @@ namespace UniTAS.Patcher.Services.UnityAsyncOperationTracker;
 // ReSharper disable once ClassNeverInstantiated.Global
 [Singleton]
 public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, IAssetBundleCreateRequestTracker,
-    IAssetBundleRequestTracker,
-    IOnLastUpdateActual, IAsyncOperationIsInvokingOnComplete, IOnPreGameRestart, IOnUpdateActual,
-    IOnStartActual, IOnFixedUpdateActual, IAssetBundleTracker, ISceneOverride, IAsyncOperationOverride,
-    IResourceAsyncTracker
+    IAssetBundleRequestTracker, IOnLastUpdateActual, IAsyncOperationIsInvokingOnComplete, IOnPreGameRestart,
+    IOnUpdateActual, IAssetBundleTracker, ISceneOverride, IAsyncOperationOverride, IResourceAsyncTracker
 {
     private bool _isInvokingOnComplete;
     private readonly ISceneManagerWrapper _sceneManagerWrapper;
@@ -108,6 +106,8 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
 
     public void OnLastUpdateActual()
     {
+        CallPendingCallbacks(true);
+
         _firstMatchUnloadPaths.Clear();
 
         if (_sceneLoadSync)
@@ -169,8 +169,6 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         _pendingLoadCallbacks.Add(op);
     }
 
-    public void FixedUpdateActual() => CallPendingCallbacks();
-
     public void UpdateActual()
     {
         _sceneLoadSync = false;
@@ -182,20 +180,24 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
                 data.DelayFrame = false;
         }
 
-        CallPendingCallbacks();
+        CallPendingCallbacks(false);
     }
 
-    public void StartActual() => CallPendingCallbacks();
+    // public void StartActual() => CallPendingCallbacks();
 
-    private void CallPendingCallbacks()
+    // public void FixedUpdateActual() => CallPendingCallbacks();
+
+    private void CallPendingCallbacks(bool lastUpdate)
     {
         if (_pendingLoadCallbacks.Count == 0) return;
 
         // to allow the scene to be findable, invoke when scene loads on update
-        var callbacks = new List<IAsyncOperation>(_pendingLoadCallbacks.Count);
-        foreach (var data in _pendingLoadCallbacks)
+        var callbacks = new List<(int, IAsyncOperation )>();
+        for (var i = 0; i < _pendingLoadCallbacks.Count; i++)
         {
-            callbacks.Add(data);
+            var data = _pendingLoadCallbacks[i];
+            if (lastUpdate != data.CallbackAtEndOfFrame) continue;
+            callbacks.Add((i, data));
             var op = data.Op;
             if (op == null) continue;
             var state = _tracked[op];
@@ -203,10 +205,13 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
             _tracked[op] = state;
         }
 
-        // prevent allowSceneActivation to be False on event callback
-        _pendingLoadCallbacks.Clear();
+        // separate loop since I wanna work backwards just here
+        foreach (var (i, _) in ((IEnumerable<(int, IAsyncOperation)>)callbacks).Reverse())
+        {
+            _pendingLoadCallbacks.RemoveAt(i);
+        }
 
-        foreach (var data in callbacks)
+        foreach (var (_, data) in callbacks)
         {
             data.Callback();
             if (data.Op == null) continue;
@@ -765,6 +770,8 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         }
 
         public AsyncOperation Op { get; } = op;
+
+        public bool CallbackAtEndOfFrame => true;
     }
 
     private class NewAssetBundleFromMemoryData(
@@ -791,6 +798,8 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         }
 
         public AsyncOperation Op { get; } = op;
+
+        public bool CallbackAtEndOfFrame => true;
     }
 
     private class NewAssetBundleFromStreamData(
@@ -818,6 +827,8 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         }
 
         public AsyncOperation Op { get; } = op;
+
+        public bool CallbackAtEndOfFrame => true;
     }
 
     private class NewAssetBundleRequestMultipleData(
@@ -843,6 +854,9 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         }
 
         public AsyncOperation Op { get; } = op;
+
+        // TODO: is this right
+        public bool CallbackAtEndOfFrame => false;
     }
 
     private class UnloadBundleAsyncData(AsyncOperation op, AssetBundle bundle, bool unloadAllLoadedObjects)
@@ -858,6 +872,8 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         }
 
         public AsyncOperation Op { get; } = op;
+
+        public bool CallbackAtEndOfFrame => false;
     }
 
     private class ResourceLoadAsyncData(AsyncOperation op, string path, Type type) : IAsyncOperation
@@ -874,6 +890,8 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         }
 
         public AsyncOperation Op { get; } = op;
+
+        public bool CallbackAtEndOfFrame => false;
     }
 
     private class AsyncSceneLoadData(
@@ -917,6 +935,8 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         {
             return $"scene load, name: {sceneName}, index: {sceneBuildIndex}";
         }
+
+        public bool CallbackAtEndOfFrame => false;
     }
 
     private class AsyncSceneUnloadData(
@@ -951,6 +971,8 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         {
             return $"scene unload, name: {SceneWrapper.Name}";
         }
+
+        public bool CallbackAtEndOfFrame => false;
     }
 
     public class SceneInfo(string path, string name, int buildIndex)
@@ -1018,6 +1040,8 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         /// Invoked when callback is about to happen
         /// </summary>
         void Callback();
+
+        bool CallbackAtEndOfFrame { get; }
 
         AsyncOperation Op { get; }
     }
