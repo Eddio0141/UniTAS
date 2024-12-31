@@ -542,9 +542,11 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
 
     public void InvokeFixedUpdate()
     {
+#if !UNIT_TESTS
         var frameCount = _patchReverseInvoker.Invoke(() => Time.frameCount);
         if (_prevFrameCount == frameCount) return;
         _prevFrameCount = frameCount;
+#endif
 
 #if TRACE
         StaticLogger.Trace(
