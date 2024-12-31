@@ -28,7 +28,8 @@ namespace UniTAS.Patcher.Services.UnityAsyncOperationTracker;
 [Singleton]
 public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, IAssetBundleCreateRequestTracker,
     IAssetBundleRequestTracker, IOnLastUpdateActual, IAsyncOperationIsInvokingOnComplete, IOnPreGameRestart,
-    IOnUpdateActual, IOnEndOfFrameActual, IAssetBundleTracker, ISceneOverride, IAsyncOperationOverride,
+    IOnUpdateActual, IOnEndOfFrameActual, IOnFixedUpdateActual, IOnStartActual, IOnAwakeActual,
+    IAssetBundleTracker, ISceneOverride, IAsyncOperationOverride,
     IResourceAsyncTracker
 {
     private bool _isInvokingOnComplete;
@@ -171,6 +172,12 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
     }
 
     public void OnEndOfFrame() => CallPendingCallbacks(true);
+
+    public void AwakeActual() => CallPendingCallbacks(false);
+
+    public void StartActual() => CallPendingCallbacks(false);
+
+    public void FixedUpdateActual() => CallPendingCallbacks(false);
 
     private void LoadOp(IAsyncOperation op)
     {

@@ -30,6 +30,7 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
     private readonly IPatchReverseInvoker _patchReverseInvoker;
 
     public UnityEvents(IEnumerable<IOnAwakeUnconditional> onAwakesUnconditional,
+        IEnumerable<IOnAwakeActual> onAwakeActual,
         IEnumerable<IOnStartUnconditional> onStartsUnconditional,
         IEnumerable<IOnEnableUnconditional> onEnablesUnconditional,
         IEnumerable<IOnPreUpdateUnconditional> onPreUpdatesUnconditional,
@@ -67,6 +68,11 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         foreach (var onAwake in onAwakesUnconditional)
         {
             RegisterMethod(onAwake, onAwake.AwakeUnconditional, CallbackUpdate.AwakeUnconditional);
+        }
+
+        foreach (var onAwake in onAwakeActual)
+        {
+            RegisterMethod(onAwake, onAwake.AwakeActual, CallbackUpdate.AwakeActual);
         }
 
         foreach (var onStart in onStartsUnconditional)

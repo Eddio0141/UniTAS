@@ -157,15 +157,7 @@ public class GameRestart : IGameRestart, IOnAwakeUnconditional, IOnEnableUncondi
 
     protected virtual void InvokeOnGameRestartResume(bool preMonoBehaviourResume)
     {
-        try
-        {
-            OnGameRestartResume?.Invoke(_softRestartTime, preMonoBehaviourResume);
-        }
-        catch (Exception e)
-        {
-            _logger.LogFatal($"something went wrong during GameRestartResume: {e}");
-            throw;
-        }
+        OnGameRestartResume?.Invoke(_softRestartTime, preMonoBehaviourResume);
     }
 
     private void InvokeOnPreGameRestart()
