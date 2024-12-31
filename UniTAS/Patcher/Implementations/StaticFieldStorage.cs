@@ -25,8 +25,10 @@ public class StaticFieldStorage(
         // UnityEngine.Resources.UnloadUnusedAssets();
 
         var bench = Bench.Measure();
-        foreach (var field in classStaticInfoTracker.StaticFields)
+        // ReSharper disable once ForCanBeConvertedToForeach
+        for (var i = 0; i < classStaticInfoTracker.StaticFields.Count; i++)
         {
+            var field = classStaticInfoTracker.StaticFields[i];
             var typeName = field.DeclaringType?.FullName ?? "unknown_type";
 
             logger.LogDebug($"resetting static field: {typeName}.{field.Name}");
