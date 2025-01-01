@@ -114,7 +114,7 @@ public class AsyncOperationPatch
         private static bool Prefix(AsyncOperation __instance)
         {
             StaticLogger.Trace($"patch prefix invoke\n{new StackTrace()}");
-            return AsyncOperationIsInvokingOnComplete.IsInvokingOnComplete(__instance, out var invoking) && invoking;
+            return !AsyncOperationIsInvokingOnComplete.IsInvokingOnComplete(__instance, out var invoking) || invoking;
         }
     }
 
