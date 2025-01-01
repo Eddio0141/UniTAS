@@ -200,7 +200,7 @@ public class UnityCoroutineManager : ICoroutineTracker, IOnPreGameRestart
         if (ReverseInvoker.Invoking) return;
 
         // managed async operation?
-        if (__result is AsyncOperation op && AsyncOperationOverride.Yield(op))
+        if (__result is AsyncOperation op && AsyncOperationTracker.ManagedInstance(op))
         {
             if (op.isDone)
             {
@@ -256,7 +256,7 @@ public class UnityCoroutineManager : ICoroutineTracker, IOnPreGameRestart
         var current = ReverseInvoker.Invoke(i => i.Current, __instance);
 
         // managed async operation?
-        if (current is AsyncOperation op && AsyncOperationTracker.ManagedInstance(op))
+        if (current is AsyncOperation op && AsyncOperationOverride.Yield(op))
         {
             StaticLogger.Trace("coroutine MoveNext with AsyncOperation, operation is managed by unitas" +
                                $", running MoveNext: {op.isDone}");
