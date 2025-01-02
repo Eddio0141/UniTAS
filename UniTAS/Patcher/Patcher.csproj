@@ -14,7 +14,7 @@
             https://api.nuget.org/v3/index.json;
             https://nuget.bepinex.dev/v3/index.json
         </RestoreAdditionalProjectSources>
-        <Configurations>Debug;Release;ReleaseTrace;ReleaseBench;ReleaseTest</Configurations>
+        <Configurations>Debug;DebugTest;Release;ReleaseTrace;ReleaseBench;ReleaseTest</Configurations>
         <Platforms>AnyCPU</Platforms>
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
         <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
@@ -23,10 +23,16 @@
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
         <DefineConstants />
+        <Optimize>true</Optimize>
         <OutputPath>bin/Release/BepInEx/patchers/UniTAS/</OutputPath>
         <DebugType>full</DebugType>
         <NoWarn />
         <DebugSymbols>true</DebugSymbols>
+        <Optimize>true</Optimize>
+    </PropertyGroup>
+    
+    <PropertyGroup Condition=" '$(Configuration)' == 'DebugTest' ">
+      <DefineConstants>BENCH;UNIT_TESTS;</DefineConstants>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -34,6 +40,14 @@
         <NoWarn />
         <DefineConstants>;</DefineConstants>
         <DebugType>full</DebugType>
+    </PropertyGroup>
+    
+    <PropertyGroup Condition=" '$(Configuration)' == 'DebugTrace' ">
+        <OutputPath>bin/Debug/BepInEx/patchers/UniTAS/</OutputPath>
+        <DebugType>full</DebugType>
+        <NoWarn />
+        <DebugSymbols>true</DebugSymbols>
+        <DefineConstants>BENCH;UNIT_TESTS</DefineConstants>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'ReleaseTrace' ">
@@ -60,6 +74,7 @@
         <DebugType>full</DebugType>
         <NoWarn />
         <DebugSymbols>true</DebugSymbols>
+        <Optimize>true</Optimize>
     </PropertyGroup>
 
     <ItemGroup>
