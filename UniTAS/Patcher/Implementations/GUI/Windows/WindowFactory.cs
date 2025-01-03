@@ -1,9 +1,9 @@
 ﻿using System.Diagnostics.CodeAnalysis;
-using StructureMap;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.GUI;
 using UniTAS.Patcher.Models;
 using UniTAS.Patcher.Services.GUI;
+using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Implementations.GUI.Windows;
 
@@ -18,16 +18,18 @@ public class WindowFactory(IContainer container) : IWindowFactory
 
     public ObjectTrackerInstanceWindow Create(UnityObjectIdentifier identifier)
     {
-        return container.With(identifier).GetInstance<ObjectTrackerInstanceWindow>();
+        return container.GetInstance<ObjectTrackerInstanceWindow>(new ConstructorArg(nameof(identifier), identifier));
     }
 
     public ObjectSearchConfigWindow Create(UnityObjectIdentifier.SearchSettings searchSettings)
     {
-        return container.With(searchSettings).GetInstance<ObjectSearchConfigWindow>();
+        return container.GetInstance<ObjectSearchConfigWindow>(new ConstructorArg(nameof(searchSettings),
+            searchSettings));
     }
 
     public ObjectPickerSearchSettings Create(ObjectPickerWindow.SearchSettings searchSettings)
     {
-        return container.With(searchSettings).GetInstance<ObjectPickerSearchSettings>();
+        return container.GetInstance<ObjectPickerSearchSettings>(new ConstructorArg(nameof(searchSettings),
+            searchSettings));
     }
 }

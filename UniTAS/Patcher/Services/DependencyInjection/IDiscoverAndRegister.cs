@@ -1,9 +1,9 @@
-using StructureMap;
 using UniTAS.Patcher.Models.DependencyInjection;
+using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Services.DependencyInjection;
 
 public interface IDiscoverAndRegister
 {
-    void Register<TAssemblyContainingType>(ConfigurationExpression config, RegisterTiming timing);
+    void Register<TAssemblyContainingType>(IContainer container, RegisterTiming timing);
 }

@@ -4,12 +4,12 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using HarmonyLib;
-using StructureMap;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.ManualServices;
 using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Services.DependencyInjection;
 using UniTAS.Patcher.Services.Logging;
+using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Implementations.DependencyInjection;
 

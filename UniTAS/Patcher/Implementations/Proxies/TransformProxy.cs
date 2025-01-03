@@ -1,6 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using MoonSharp.Interpreter;
-using StructureMap;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Movie;
 using UnityEngine;
@@ -14,7 +13,7 @@ public class TransformProxy : MovieProxyType<TransformProxy, Transform>
 {
     private readonly Transform _transform;
 
-    [DefaultConstructor]
+    [Ninject.Inject]
     [MoonSharpHidden]
     public TransformProxy()
     {

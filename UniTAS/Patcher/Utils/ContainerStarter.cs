@@ -2,7 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using StructureMap;
+using Ninject;
+using Ninject.Parameters;
 using UniTAS.Patcher.ContainerBindings.UnityEvents;
 using UniTAS.Patcher.Implementations.DependencyInjection;
 using UniTAS.Patcher.Implementations.Logging;
@@ -21,22 +22,21 @@ public static class ContainerStarter
     {
         StaticLogger.Log.LogDebug("Initializing container instance");
 
+        IKernel kernel;
         try
         {
-            Kernel = new Container(c =>
-            {
-                c.ForSingletonOf<DiscoverAndRegister>().Use<DiscoverAndRegister>();
-                c.For<IDiscoverAndRegister>().Use(x => x.GetInstance<DiscoverAndRegister>());
-
-                c.ForSingletonOf<Logger>().Use<Logger>();
-                c.For<ILogger>().Use(x => x.GetInstance<Logger>());
-            });
+            kernel = new StandardKernel();
+            kernel.Bind<IDiscoverAndRegister>().To<DiscoverAndRegister>().InSingletonScope();
+            kernel.Bind<ILogger>().To<Logger>().InSingletonScope();
         }
         catch (Exception e)
         {
             StaticLogger.Log.LogFatal($"An exception occurred while initializing the container\n{e}");
             throw;
         }
+
+        Kernel = new Container(kernel);
+        kernel.Bind<IContainer>().To<Container>().InSingletonScope();
 
         var timings = Enum.GetValues(typeof(RegisterTiming)).Cast<RegisterTiming>();
         foreach (var timing in timings)
@@ -61,7 +61,7 @@ public static class ContainerStarter
 
         try
         {
-            Kernel.Configure(c => Kernel.GetInstance<IDiscoverAndRegister>().Register<Logger>(c, timing));
+            Kernel.GetInstance<IDiscoverAndRegister>().Register<Logger>(Kernel, timing);
 
             var forceInstantiateTypes = Kernel.GetInstance<IForceInstantiateTypes>();
             forceInstantiateTypes.InstantiateTypes<ForceInstantiateTypes>(timing);
@@ -101,4 +101,32 @@ public static class ContainerStarter
     }
 
     private static readonly Dictionary<RegisterTiming, List<Action<IContainer>>> ContainerInitCallbacks = new();
+}
+
+public interface IContainer
+{
+    T GetInstance<T>(params ConstructorArg[] args);
+    object GetInstance(Type type, params ConstructorArg[] args);
+    IEnumerable<T> GetAllInstances<T>(params ConstructorArg[] args);
+    IEnumerable<object> GetAllInstances(Type type);
+    IKernel RawKernel { get; }
+}
+
+public class Container(IKernel rawKernel) : IContainer
+{
+    public T GetInstance<T>(params ConstructorArg[] args) => RawKernel.Get<T>(ToParams(args));
+
+    public object GetInstance(Type type, params ConstructorArg[] args) => RawKernel.Get(type, ToParams(args));
+
+    public IEnumerable<T> GetAllInstances<T>(params ConstructorArg[] args) => RawKernel.GetAll<T>(ToParams(args));
+    public IEnumerable<object> GetAllInstances(Type type) => RawKernel.GetAll(type);
+
+    public IKernel RawKernel { get; } = rawKernel;
+
+    private static IParameter[] ToParams(ConstructorArg[] args) => args.Select(IParameter (a) => a.ArgRaw).ToArray();
+}
+
+public class ConstructorArg(string name, object value)
+{
+    public readonly ConstructorArgument ArgRaw = new(name, value);
 }

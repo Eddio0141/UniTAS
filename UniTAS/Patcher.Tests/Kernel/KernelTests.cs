@@ -1,6 +1,4 @@
 using System.Linq;
-using MoonSharp.Interpreter;
-using StructureMap.Pipeline;
 using UniTAS.Patcher.Implementations.VirtualEnvironment;
 using UniTAS.Patcher.Interfaces.Events.SoftRestart;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents.DontRunIfPaused;
@@ -9,6 +7,7 @@ using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.GameExecutionControllers;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.Movie;
+using UniTAS.Patcher.Utils;
 
 namespace Patcher.Tests.Kernel;
 
@@ -193,9 +192,7 @@ public class KernelTests
 
         Assert.Same(env, env2);
 
-        var scriptArg = new ExplicitArguments();
-        scriptArg.Set(typeof(Script), null);
-        var engine = kernel.GetInstance<IMovieEngine>(scriptArg);
+        var engine = kernel.GetInstance<IMovieEngine>(new ConstructorArg("script", null));
         var env3 = kernel.GetInstance<IEngineModuleClassesFactory>().GetAll(engine)
             .OfType<KernelUtils.Env>().Single();
         Assert.NotNull(env3);

@@ -1,6 +1,5 @@
 using System;
-using StructureMap;
-using StructureMap.Configuration.DSL;
+using System.Collections.Generic;
 using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Utils;
@@ -18,27 +17,16 @@ public class RegisterInfo : RegisterInfoBase
         RegisterAttribute = registerAttribute;
     }
 
-    public override void Register(ConfigurationExpression config)
+    public override void Register(IContainer container)
     {
-        if (RegisterAttribute is SingletonAttribute)
-        {
-            config.For(Type).Singleton();
-        }
+        var interfaces = Type.GetInterfaces();
+        var baseType = Type.BaseType;
+        var typeAssembly = Type.Assembly;
+        var includeDiffAssembly = RegisterAttribute?.IncludeDifferentAssembly ?? false;
 
-        RegisterInterfaces(Type, config, RegisterAttribute);
-    }
+        StaticLogger.Trace($"Registering {Type.SaneFullName()}");
 
-    private static void RegisterInterfaces(Type type, IRegistry config, RegisterAttribute registerAttribute)
-    {
-        var interfaces = type.GetInterfaces();
-        var baseType = type.BaseType;
-        var typeAssembly = type.Assembly;
-        var includeDiffAssembly = registerAttribute?.IncludeDifferentAssembly ?? false;
-
-        // register type itself
-        config.For(type).Use(type);
-
-        StaticLogger.Trace($"Registering {type.SaneFullName()}");
+        var bindTypes = new List<Type>();
 
         // register with base type
         if (baseType != null && baseType != typeof(object) &&
@@ -46,7 +34,7 @@ public class RegisterInfo : RegisterInfoBase
             (includeDiffAssembly || Equals(baseType.Assembly, typeAssembly)))
         {
             StaticLogger.Trace($"Registering base type {baseType.SaneFullName()}");
-            config.For(baseType).Use(x => x.GetInstance(type));
+            bindTypes.Add(baseType);
         }
 
         // register with all interfaces
@@ -56,7 +44,7 @@ public class RegisterInfo : RegisterInfoBase
                 continue;
 
             StaticLogger.Trace($"Registering interface {@interface.SaneFullName()}");
-            config.For(@interface).Use(x => x.GetInstance(type));
+            bindTypes.Add(@interface);
         }
 
         // now go through inheritance
@@ -67,11 +55,19 @@ public class RegisterInfo : RegisterInfoBase
             // base type
             if (includeDiffAssembly || Equals(inheritanceType.Assembly, typeAssembly))
             {
-                config.For(inheritanceType).Use(x => x.GetInstance(type));
+                bindTypes.Add(inheritanceType);
                 StaticLogger.Trace($"Registering base type {inheritanceType.SaneFullName()}");
             }
 
             inheritanceType = inheritanceType.BaseType;
         }
+
+        // register with type itself
+        bindTypes.Add(Type);
+
+        var config = container.RawKernel.Bind(bindTypes.ToArray()).To(Type);
+
+        if (RegisterAttribute is SingletonAttribute)
+            config.InSingletonScope();
     }
 }

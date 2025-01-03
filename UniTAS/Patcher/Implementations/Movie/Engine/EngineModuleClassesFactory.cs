@@ -1,10 +1,9 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using StructureMap;
-using StructureMap.Pipeline;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Movie;
 using UniTAS.Patcher.Services.Movie;
+using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Implementations.Movie.Engine;
 
@@ -21,10 +20,7 @@ public class EngineModuleClassesFactory : IEngineModuleClassesFactory
 
     public IEnumerable<EngineMethodClass> GetAll(IMovieEngine engine)
     {
-        var args = new ExplicitArguments();
-        args.Set(engine);
-
         // pass script to each EngineMethodClass
-        return _container.GetAllInstances<EngineMethodClass>(args);
+        return _container.GetAllInstances<EngineMethodClass>(new ConstructorArg(nameof(engine), engine));
     }
 }

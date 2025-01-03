@@ -6,7 +6,7 @@ using AssetsTools.NET.Extra;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using MoonSharp.Interpreter;
-using StructureMap;
+using Ninject;
 using UniTAS.Patcher.ContainerBindings.UnityEvents;
 using UniTAS.Patcher.Implementations;
 using UniTAS.Patcher.Implementations.DependencyInjection;
@@ -34,6 +34,7 @@ using UniTAS.Patcher.Services.UnitySafeWrappers;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Patcher.Services.VirtualEnvironment;
 using UniTAS.Patcher.Services.VirtualEnvironment.Input.LegacyInputSystem;
+using UniTAS.Patcher.Utils;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -206,7 +207,8 @@ public static class KernelUtils
         {
         }
 
-        public void UnloadSceneAsync(string sceneName, int sceneBuildIndex, object options, bool immediate, out bool success)
+        public void UnloadSceneAsync(string sceneName, int sceneBuildIndex, object options, bool immediate,
+            out bool success)
         {
             success = false;
         }
@@ -253,7 +255,7 @@ public static class KernelUtils
     [SuppressMessage("ReSharper", "UnusedType.Local")]
     private class BindsDummy : IBinds
     {
-        public Bind Create(BindConfig config, bool noGenConfig)
+        public Bind Create(BindConfig bindConfig, bool noGenConfig)
         {
             return null!;
         }
@@ -319,7 +321,7 @@ public static class KernelUtils
     {
         public T Create<T>(object instance) where T : class
         {
-            return container.With(instance).GetInstance<T>();
+            return container.GetInstance<T>(new ConstructorArg(nameof(instance), instance));
         }
 
         public T CreateNew<T>(params object[] args) where T : class
@@ -386,16 +388,14 @@ public static class KernelUtils
         }
     }
 
-    public static Container Init()
+    public static IContainer Init()
     {
-        var kernel = new Container(c =>
-        {
-            c.ForSingletonOf<DiscoverAndRegister>().Use<DiscoverAndRegister>();
-            c.For<IDiscoverAndRegister>().Use(x => x.GetInstance<DiscoverAndRegister>());
+        var kernel = new StandardKernel();
+        kernel.Bind<IDiscoverAndRegister>().To<DiscoverAndRegister>().InSingletonScope();
+        kernel.Bind<ILogger>().To<FakeLogger>().InSingletonScope();
+        kernel.Bind<IContainer>().To<Container>().InSingletonScope();
 
-            c.ForSingletonOf<FakeLogger>().Use<FakeLogger>();
-            c.For<ILogger>().Use(x => x.GetInstance<FakeLogger>());
-        });
+        var container = new Container(kernel);
 
         var timings = new[]
         {
@@ -407,19 +407,16 @@ public static class KernelUtils
 
         foreach (var timing in timings)
         {
-            kernel.Configure(c =>
-            {
-                kernel.GetInstance<IDiscoverAndRegister>().Register<InfoPrintAndWelcome>(c, timing);
-                kernel.GetInstance<IDiscoverAndRegister>().Register<FakeStaticFieldStorage>(c, timing);
-            });
+            container.GetInstance<IDiscoverAndRegister>().Register<InfoPrintAndWelcome>(container, timing);
+            container.GetInstance<IDiscoverAndRegister>().Register<FakeStaticFieldStorage>(container, timing);
 
-            var forceInstantiateTypes = kernel.GetInstance<IForceInstantiateTypes>();
+            var forceInstantiateTypes = container.GetInstance<IForceInstantiateTypes>();
             forceInstantiateTypes.InstantiateTypes<InfoPrintAndWelcome>(timing);
             forceInstantiateTypes.InstantiateTypes<DummyMouseEnvLegacySystem>(timing);
         }
 
-        UnityEventInvokers.Init(kernel);
+        UnityEventInvokers.Init(container);
 
-        return kernel;
+        return container;
     }
 }

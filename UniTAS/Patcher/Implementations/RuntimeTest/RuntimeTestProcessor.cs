@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using HarmonyLib;
-using StructureMap;
 using UniTAS.Patcher.Interfaces.Coroutine;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.RuntimeTest;
@@ -12,6 +11,7 @@ using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Models.RuntimeTest;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.RuntimeTest;
+using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Implementations.RuntimeTest;
 
