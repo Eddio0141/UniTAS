@@ -28,7 +28,11 @@ public class UnityCoroutineManager : ICoroutineTracker
     public void NewCoroutine(MonoBehaviour instance, IEnumerator routine)
     {
         if (instance == null) return;
-        if (routine == null) return;
+        if (routine == null)
+        {
+            _logger.LogWarning($"coroutine is null, {new StackTrace()}");
+            return;
+        }
         // don't track ours
         if (Equals(instance.GetType().Assembly, typeof(UnityCoroutineManager).Assembly)) return;
 
@@ -37,7 +41,8 @@ public class UnityCoroutineManager : ICoroutineTracker
             $"new coroutine made in script {instance.GetType().SaneFullName()}, got IEnumerator {routineType.SaneFullName()}");
         StaticLogger.Trace($"call from {new StackTrace()}");
 
-        _instances.Add(instance);
+        if (!_instances.Contains(instance))
+            _instances.Add(instance);
 
         if (_patchedCoroutines.Contains(routineType)) return;
         _patchedCoroutines.Add(routineType);
