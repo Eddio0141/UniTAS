@@ -7,7 +7,6 @@ using System.Reflection;
 using HarmonyLib;
 using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
-using UniTAS.Patcher.Interfaces.Events.SoftRestart;
 using UniTAS.Patcher.ManualServices;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.GameExecutionControllers;
@@ -21,7 +20,7 @@ using UnityEngine;
 namespace UniTAS.Patcher.Implementations.UnityManagers;
 
 [Singleton]
-public class UnityCoroutineManager : ICoroutineTracker, IOnPreGameRestart
+public class UnityCoroutineManager : ICoroutineTracker
 {
     private readonly HashSet<MonoBehaviour> _instances = [];
     private readonly HashSet<Type> _patchedCoroutines = [];
@@ -58,10 +57,12 @@ public class UnityCoroutineManager : ICoroutineTracker, IOnPreGameRestart
     private readonly ILogger _logger;
     private readonly IHarmony _harmony;
 
-    public UnityCoroutineManager(ILogger logger, IHarmony harmony)
+    public UnityCoroutineManager(ILogger logger, IHarmony harmony, IGameRestart gameRestart)
     {
         _logger = logger;
         _harmony = harmony;
+        // do not use interface for game restart, it fucks everything up
+        gameRestart.OnPreGameRestart += OnPreGameRestart;
         foreach (var pair in GameInfoManual.MonoBehaviourWithIEnumerator)
         {
             var type = AccessTools.TypeByName(pair.Key);
