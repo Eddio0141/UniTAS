@@ -538,14 +538,15 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         }
     }
 
-    private int _prevFrameCount = -1;
+    private float _prevFixedTime = -1;
 
     public void InvokeFixedUpdate()
     {
 #if !UNIT_TESTS
-        var frameCount = _patchReverseInvoker.Invoke(() => Time.frameCount);
-        if (_prevFrameCount == frameCount) return;
-        _prevFrameCount = frameCount;
+        var fixedTime = _patchReverseInvoker.Invoke(() => Time.fixedTime);
+        // ReSharper disable once CompareOfFloatsByEqualityOperator
+        if (_prevFixedTime == fixedTime) return;
+        _prevFixedTime = fixedTime;
 #endif
 
 #if TRACE

@@ -257,6 +257,7 @@ public class TimePatch
 
         private static bool Prefix(ref float __result)
         {
+            if (ReverseInvoker.Invoking) return true;
             __result = (float)TimeEnv.ScaledFixedTime;
             return false;
         }
