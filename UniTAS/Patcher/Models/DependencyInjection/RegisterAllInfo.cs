@@ -1,7 +1,6 @@
 using System;
-using Ninject;
+using StructureMap;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
-using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Models.DependencyInjection;
 
@@ -16,8 +15,8 @@ public class RegisterAllInfo : RegisterInfoBase
         InnerType = innerType;
     }
 
-    public override void Register(IContainer container)
+    public override void Register(ConfigurationExpression config)
     {
-        container.RawKernel.Bind(Type).To(InnerType);
+        config.For(Type).Use(InnerType);
     }
 }

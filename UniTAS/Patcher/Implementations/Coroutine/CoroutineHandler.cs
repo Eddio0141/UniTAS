@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using StructureMap;
 using UniTAS.Patcher.Interfaces.Coroutine;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Models.Coroutine;
 using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Services;
-using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Implementations.Coroutine;
 

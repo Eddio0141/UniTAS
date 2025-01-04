@@ -1,5 +1,5 @@
+using StructureMap;
 using UniTAS.Patcher.Services.UnityEvents;
-using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.ContainerBindings.UnityEvents;
 

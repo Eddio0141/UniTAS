@@ -1,15 +1,21 @@
 using System;
+using StructureMap;
 using UniTAS.Patcher.Models.DependencyInjection;
-using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Interfaces.DependencyInjection;
 
-public abstract class RegisterInfoBase(RegisterPriority priority, RegisterTiming timing)
+public abstract class RegisterInfoBase
 {
     public Type Type { get; protected set; }
-    public RegisterTiming Timing { get; } = timing;
+    public RegisterTiming Timing { get; }
 
-    public int Priority { get; } = (int)priority;
+    protected RegisterInfoBase(RegisterPriority priority, RegisterTiming timing)
+    {
+        Priority = (int)priority;
+        Timing = timing;
+    }
 
-    public abstract void Register(IContainer container);
+    public int Priority { get; }
+
+    public abstract void Register(ConfigurationExpression config);
 }

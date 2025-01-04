@@ -9,7 +9,7 @@ namespace UniTAS.Patcher.Services.Customization;
 /// </summary>
 public interface IBinds
 {
-    Bind Create(BindConfig bindConfig, bool noGenConfig = false);
+    Bind Create(BindConfig config, bool noGenConfig = false);
     Bind Get(string name);
     ReadOnlyCollection<Bind> AllBinds { get; }
 }

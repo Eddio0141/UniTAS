@@ -1,7 +1,7 @@
+using StructureMap;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.GUI;
 using UniTAS.Patcher.Services.GUI;
-using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Implementations.GUI;
 

@@ -2,6 +2,8 @@ using System.Diagnostics.CodeAnalysis;
 using BepInEx;
 using MoonSharp.Interpreter;
 using MoonSharp.Interpreter.Loaders;
+using StructureMap;
+using StructureMap.Pipeline;
 using UniTAS.Patcher.Exceptions.Movie.Parser;
 using UniTAS.Patcher.Implementations.Movie.Engine;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
@@ -10,7 +12,6 @@ using UniTAS.Patcher.Models.Movie;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.Movie;
 using UniTAS.Patcher.Services.UnitySafeWrappers;
-using UniTAS.Patcher.Utils;
 #if !UNIT_TESTS
 using UnityEngine;
 using MoonSharp.Interpreter.Interop;
@@ -106,7 +107,9 @@ public partial class MovieParser(
 
         if (movieEngine == null)
         {
-            movieEngine = container.GetInstance<MovieEngine>(new ConstructorArg(nameof(script), script));
+            var args = new ExplicitArguments();
+            args.Set(script);
+            movieEngine = container.GetInstance<MovieEngine>(args);
         }
         else
         {

@@ -1,9 +1,9 @@
 ﻿using System;
+using StructureMap;
 using UniTAS.Patcher.Implementations.UnitySafeWrappers.SceneManagement;
 using UniTAS.Patcher.Implementations.UnitySafeWrappers.Unity.Collections;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Services.UnitySafeWrappers;
-using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Implementations.UnitySafeWrappers;
 
@@ -15,7 +15,7 @@ public class UnityInstanceWrapFactory(IContainer container) : IUnityInstanceWrap
     public T Create<T>(object instance) where T : class
     {
         // because the wrap could have dependencies, we need to use the container to create it, and pass the instance to the constructor
-        return container.GetInstance<T>(new ConstructorArg(nameof(instance), instance));
+        return container.With(instance).GetInstance<T>();
     }
 
     public T CreateNew<T>(params object[] args) where T : class

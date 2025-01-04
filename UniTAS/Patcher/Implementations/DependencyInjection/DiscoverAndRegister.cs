@@ -4,11 +4,11 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using HarmonyLib;
+using StructureMap;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Services.DependencyInjection;
 using UniTAS.Patcher.Services.Logging;
-using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Implementations.DependencyInjection;
 
@@ -17,7 +17,7 @@ public class DiscoverAndRegister(ILogger logger) : IDiscoverAndRegister
 {
     private readonly Dictionary<Assembly, Dictionary<RegisterTiming, List<RegisterInfoBase>>> _pendingRegisters = new();
 
-    public void Register<TAssemblyContainingType>(IContainer container, RegisterTiming timing)
+    public void Register<TAssemblyContainingType>(ConfigurationExpression config, RegisterTiming timing)
     {
         var assembly = typeof(TAssemblyContainingType).Assembly;
 
@@ -62,7 +62,7 @@ public class DiscoverAndRegister(ILogger logger) : IDiscoverAndRegister
         foreach (var register in currentRegisters)
         {
             logger.LogDebug($"registering {register.Type.FullName} with priority {register.Priority}");
-            register.Register(container);
+            register.Register(config);
         }
 
         if (pendingRegisters.Count == 0)

@@ -1,4 +1,5 @@
 using MoonSharp.Interpreter;
+using StructureMap;
 using UniTAS.Patcher.Interfaces.Movie;
 using UnityEngine;
 
@@ -8,7 +9,7 @@ public class CameraProxy : MovieProxyType<CameraProxy, Camera>
 {
     private readonly Camera _target;
 
-    [Ninject.Inject]
+    [DefaultConstructor]
     [MoonSharpHidden]
     public CameraProxy()
     {

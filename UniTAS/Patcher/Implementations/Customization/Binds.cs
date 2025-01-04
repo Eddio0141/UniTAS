@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using StructureMap;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Models.Customization;
 using UniTAS.Patcher.Services.Customization;
-using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Implementations.Customization;
 
@@ -16,9 +16,9 @@ public class Binds(IContainer container) : IBinds
 
     public ReadOnlyCollection<Bind> AllBinds => _binds.AsReadOnly();
 
-    public Bind Create(BindConfig bindConfig, bool noGenConfig = false)
+    public Bind Create(BindConfig config, bool noGenConfig = false)
     {
-        var bind = container.GetInstance<Bind>(new ConstructorArg(nameof(bindConfig), bindConfig));
+        var bind = container.With(config).GetInstance<Bind>();
         // don't allow same name
         var sameName = Get(bind.Name);
         if (sameName != null)

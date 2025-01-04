@@ -1,5 +1,5 @@
+using StructureMap;
 using UniTAS.Patcher.Implementations.Coroutine;
-using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Interfaces.Coroutine;
 

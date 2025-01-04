@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
+using StructureMap;
 using UniTAS.Patcher.Models.Movie;
 using UniTAS.Patcher.Services.Movie;
-using UniTAS.Patcher.Utils;
 
 namespace Patcher.Tests.MovieRunner;
 
