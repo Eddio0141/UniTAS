@@ -164,7 +164,12 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
 
     public bool Yield(AsyncOperation asyncOperation)
     {
-        if (!_tracked.TryGetValue(asyncOperation, out var data)) return false;
+        if (!_tracked.TryGetValue(asyncOperation, out var data))
+        {
+            WarnAsyncOperationAPI(asyncOperation);
+            return false;
+        }
+        _logger.LogDebug($"yield on async operation {asyncOperation}");
         if (data.Yield) return true;
         data.Yield = true;
         _tracked[asyncOperation] = data;
