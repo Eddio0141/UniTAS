@@ -209,6 +209,9 @@ public class UnityCoroutineManager : ICoroutineTracker
 
         if (__result is WaitForEndOfFrame)
         {
+            // MoveNext is invoked first, so code already ran, just run this here
+            MonoBehEventInvoker.InvokeEndOfFrame();
+            
             if (MonoBehaviourController.PausedUpdate)
             {
                 StaticLogger.Trace("paused update execution for coroutine Current" +
@@ -217,8 +220,6 @@ public class UnityCoroutineManager : ICoroutineTracker
                 __result = null;
                 return;
             }
-
-            MonoBehEventInvoker.InvokeEndOfFrame();
         }
     }
 
