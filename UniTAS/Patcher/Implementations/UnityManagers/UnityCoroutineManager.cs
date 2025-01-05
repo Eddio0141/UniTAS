@@ -36,13 +36,13 @@ public class UnityCoroutineManager : ICoroutineTracker
         // don't track ours
         if (Equals(instance.GetType().Assembly, typeof(UnityCoroutineManager).Assembly)) return;
 
+        if (!_instances.Contains(instance))
+            _instances.Add(instance);
+
         var routineType = routine.GetType();
         _logger.LogDebug(
             $"new coroutine made in script {instance.GetType().SaneFullName()}, got IEnumerator {routineType.SaneFullName()}");
         StaticLogger.Trace($"call from {new StackTrace()}");
-
-        if (!_instances.Contains(instance))
-            _instances.Add(instance);
 
         if (_patchedCoroutines.Contains(routineType)) return;
         _patchedCoroutines.Add(routineType);
