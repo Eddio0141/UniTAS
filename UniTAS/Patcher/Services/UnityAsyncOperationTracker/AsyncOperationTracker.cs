@@ -169,6 +169,7 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
             WarnAsyncOperationAPI(asyncOperation);
             return false;
         }
+
         _logger.LogDebug($"yield on async operation {asyncOperation}");
         if (data.Yield) return true;
         data.Yield = true;
@@ -232,12 +233,33 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
             _pendingLoadCallbacks.RemoveAt(i);
         }
 
+#if TRACE
+        var loadOrUnload = false;
+#endif
+
         foreach (var (_, data) in callbacks)
         {
             data.Callback();
+#if TRACE
+            if (!loadOrUnload && data is AsyncSceneLoadData or AsyncSceneUnloadData)
+                loadOrUnload = true;
+#endif
             if (data.Op == null) continue;
             InvokeOnComplete(data.Op);
         }
+
+#if TRACE
+        if (!loadOrUnload) return;
+        
+        StaticLogger.Trace("scene stack has changed");
+
+        var sceneCount = _sceneManagerWrapper.SceneCount;
+        for (var i = 0; i < sceneCount; i++)
+        {
+            var scene = _sceneManagerWrapper.GetSceneAt(i);
+            StaticLogger.Trace($"scene: name = `{scene.Name}`, path = `{scene.Path}`, index = `{scene.BuildIndex}`");
+        }
+#endif
     }
 
     public void NewAssetBundleRequest(AsyncOperation op, Object obj)
