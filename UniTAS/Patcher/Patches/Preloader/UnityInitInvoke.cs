@@ -108,7 +108,7 @@ public class UnityInitInvoke : PreloadPatcher
 
                 ILCodeUtils.MethodInvokeHook(assembly, initMethod,
                     AccessTools.Method(typeof(InvokeTracker), nameof(InvokeTracker.OnUnityInit)));
-                LogHook(assembly, type.Name, initMethod.Name);
+                LogHook(assembly, type.FullName, initMethod.Name);
             }
         }
     }
@@ -197,7 +197,7 @@ public class UnityInitInvoke : PreloadPatcher
             {
                 ILCodeUtils.MethodInvokeHook(assembly, method,
                     AccessTools.Method(typeof(InvokeTracker), nameof(InvokeTracker.OnUnityInit)));
-                LogHook(assembly, type.Name, "Awake");
+                LogHook(assembly, type.FullName, "Awake");
             }
         }
     }

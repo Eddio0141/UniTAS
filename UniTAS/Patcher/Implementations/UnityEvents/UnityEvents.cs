@@ -551,7 +551,7 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
 
 #if TRACE
         StaticLogger.Trace(
-            $"InvokeFixedUpdate, time: {frameCount}, paused: {_monoBehaviourController.PausedExecution}");
+            $"InvokeFixedUpdate, time: {fixedTime}, paused: {_monoBehaviourController.PausedExecution}");
 #endif
 
         InvokeCallOnPreUpdate();
