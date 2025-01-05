@@ -141,7 +141,7 @@ public class MonoBehaviourPatch : PreloadPatcher
                 var (eventMethodName, eventMethodArgs) = eventMethodPair;
 
                 // try finding method with no parameters
-                var eventMethodsMatch = type.GetMethods().Where(x => x.Name == eventMethodName).ToList();
+                var eventMethodsMatch = type.GetMethods().Where(x => x.Name == eventMethodName && !x.IsStatic).ToList();
                 var foundMethod =
                     eventMethodsMatch.FirstOrDefault(m => !m.HasParameters);
 
@@ -163,22 +163,6 @@ public class MonoBehaviourPatch : PreloadPatcher
                 if (foundMethod is not { HasBody: true }) continue;
 
                 StaticLogger.Trace($"Patching method for pausing execution {foundMethod.FullName}");
-
-                // is it an IEnumerator
-                if (foundMethod.ReturnType.FullName == typeof(IEnumerator).SaneFullName())
-                {
-                    StaticLogger.Trace($"this method is an IEnumerator");
-                    var typeFullName = type.FullName;
-                    if (GameInfoManual.MonoBehaviourWithIEnumerator.TryGetValue(typeFullName,
-                            out var iEnumeratorMethods))
-                    {
-                        iEnumeratorMethods.Add(eventMethodName);
-                    }
-                    else
-                    {
-                        GameInfoManual.MonoBehaviourWithIEnumerator[typeFullName] = [eventMethodName];
-                    }
-                }
 
                 foundMethod.Body.SimplifyMacros();
                 var il = foundMethod.Body.GetILProcessor();
@@ -213,8 +197,37 @@ public class MonoBehaviourPatch : PreloadPatcher
                     }
                 }
 
-                il.InsertBeforeInstructionReplace(firstInstruction, il.Create(OpCodes.Ret),
+                var ignoreRet = il.Create(OpCodes.Ret);
+                il.InsertBeforeInstructionReplace(firstInstruction, ignoreRet,
                     InstructionReplaceFixType.ExceptionRanges);
+
+                // is it an IEnumerator
+                if (foundMethod.ReturnType.FullName == typeof(IEnumerator).SaneFullName())
+                {
+                    StaticLogger.Trace($"this method is an IEnumerator");
+
+                    var iEnumeratorRef = assembly.MainModule.ImportReference(typeof(IEnumerator));
+                    var rets = il.Body.Instructions.Where(x => x != ignoreRet && x.OpCode == OpCodes.Ret).ToArray();
+                    var trackerInvoke = assembly.MainModule.ImportReference(
+                        typeof(CoroutineManagerManual).GetMethod(nameof(CoroutineManagerManual.MonoBehNewCoroutine)));
+
+                    var returnTemp = new VariableDefinition(iEnumeratorRef);
+                    il.Body.Variables.Add(returnTemp);
+
+                    foreach (var ret in rets)
+                    {
+                        // 1. dupe return value
+                        // 2. store return value
+                        // 3. load `this`
+                        // 4. load return value
+                        // 5. call tracker
+                        il.InsertBeforeInstructionReplace(ret, il.Create(OpCodes.Dup));
+                        il.InsertBeforeInstructionReplace(ret, il.Create(OpCodes.Stloc, returnTemp));
+                        il.InsertBeforeInstructionReplace(ret, il.Create(OpCodes.Ldarg_0));
+                        il.InsertBeforeInstructionReplace(ret, il.Create(OpCodes.Ldloc, returnTemp));
+                        il.InsertBeforeInstructionReplace(ret, il.Create(OpCodes.Call, trackerInvoke));
+                    }
+                }
 
                 foundMethod.Body.OptimizeMacros();
             }

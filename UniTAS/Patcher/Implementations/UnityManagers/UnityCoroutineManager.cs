@@ -7,7 +7,6 @@ using System.Reflection;
 using HarmonyLib;
 using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
-using UniTAS.Patcher.ManualServices;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.GameExecutionControllers;
 using UniTAS.Patcher.Services.Logging;
@@ -33,6 +32,7 @@ public class UnityCoroutineManager : ICoroutineTracker
             _logger.LogWarning($"coroutine is null, {new StackTrace()}");
             return;
         }
+
         // don't track ours
         if (Equals(instance.GetType().Assembly, typeof(UnityCoroutineManager).Assembly)) return;
 
@@ -68,25 +68,6 @@ public class UnityCoroutineManager : ICoroutineTracker
         _harmony = harmony;
         // do not use interface for game restart, it fucks everything up
         gameRestart.OnPreGameRestart += OnPreGameRestart;
-        foreach (var pair in GameInfoManual.MonoBehaviourWithIEnumerator)
-        {
-            var type = AccessTools.TypeByName(pair.Key);
-            var methods = pair.Value;
-            foreach (var methodRaw in methods)
-            {
-                var method = AccessTools.Method(type, methodRaw);
-                if (method is null)
-                {
-                    _logger.LogFatal(
-                        $"tracked MonoBehaviour type `{type.SaneFullName()}`'s method `{methodRaw}` wasn't found");
-                    continue;
-                }
-
-                harmony.Harmony.Patch(method, postfix: MonoBehaviourCoroutineStartPostfixMethod);
-            }
-
-            _patchedCoroutines.Add(type);
-        }
     }
 
     public void NewCoroutine(MonoBehaviour instance, string methodName, object value)
@@ -138,7 +119,7 @@ public class UnityCoroutineManager : ICoroutineTracker
         _harmony.Harmony.Patch(moveNext, MoveNextPrefix);
     }
 
-    public void OnPreGameRestart()
+    private void OnPreGameRestart()
     {
         foreach (var coroutine in _instances)
         {
@@ -159,9 +140,6 @@ public class UnityCoroutineManager : ICoroutineTracker
 
     private static readonly HarmonyMethod NewCoroutinePostfixMethod =
         new(typeof(UnityCoroutineManager), nameof(NewCoroutinePostfix));
-
-    private static readonly HarmonyMethod MonoBehaviourCoroutineStartPostfixMethod =
-        new(typeof(UnityCoroutineManager), nameof(MonoBehaviourCoroutineStartPostfix));
 
     private static readonly IMonoBehaviourController MonoBehaviourController =
         ContainerStarter.Kernel.GetInstance<IMonoBehaviourController>();
@@ -194,11 +172,6 @@ public class UnityCoroutineManager : ICoroutineTracker
 
     private static readonly IAsyncOperationOverride AsyncOperationOverride =
         ContainerStarter.Kernel.GetInstance<IAsyncOperationOverride>();
-
-    private static void MonoBehaviourCoroutineStartPostfix(MonoBehaviour __instance, IEnumerator __result)
-    {
-        CoroutineManager.NewCoroutine(__instance, __result);
-    }
 
     private static void CoroutineCurrentPostfix(ref object __result)
     {
