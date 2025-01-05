@@ -577,12 +577,12 @@ public class SceneManagerAsyncLoadPatch
     [HarmonyPatch]
     private class ReversePatches
     {
-        private static IEnumerable<MethodInfo> TargetMethods()
+        private static IEnumerable<MethodBase> TargetMethods()
         {
             return new[]
             {
                 AccessTools.Method(SceneManager, "Internal_SceneLoaded")
-            }.Where(x => x != null);
+            }.Where(x => x != null).Select(MethodBase (x) => x);
         }
 
         private static Exception Cleanup(MethodBase original, Exception ex)

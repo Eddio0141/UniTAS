@@ -63,7 +63,7 @@ public class AsyncOperationPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static IEnumerable<MethodInfo> TargetMethods()
+        private static IEnumerable<MethodBase> TargetMethods()
         {
             foreach (var type in AccessTools.AllTypes())
             {

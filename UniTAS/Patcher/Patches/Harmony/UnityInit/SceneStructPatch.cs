@@ -363,7 +363,7 @@ public class SceneStructPatch
     [HarmonyPatch]
     private class FixHandleOrReturnDefault
     {
-        private static IEnumerable<MethodInfo> TargetMethods()
+        private static IEnumerable<MethodBase> TargetMethods()
         {
             return new[]
             {
@@ -376,7 +376,7 @@ public class SceneStructPatch
                 AccessTools.Method(SceneType, "GetLoadingStateInternal"),
                 AccessTools.Method(SceneType, "GetGUIDInternal"),
                 AccessTools.Method(SceneType, "SetPathAndGUIDInternal"),
-            }.Where(x => x != null);
+            }.Where(x => x != null).Select(MethodBase (x) => x);
         }
 
         private static Exception Cleanup(MethodBase original, Exception ex)
