@@ -770,7 +770,8 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
     private void WarnAsyncOperationAPI(AsyncOperation op)
     {
         _logger.LogError(
-            $"found untracked async operation, hashcode: {op.GetHashCode()}, class structure: {DebugHelp.PrintClass(op)}, API use at {new StackTrace()}");
+            $"found untracked async operation, hashcode: {op.GetHashCode()}, type name: {op.GetType().SaneFullName()}" +
+            $", class structure: {DebugHelp.PrintClass(op)}, API use at {new StackTrace()}");
     }
 
     public bool ManagedInstance(AsyncOperation asyncOperation)
