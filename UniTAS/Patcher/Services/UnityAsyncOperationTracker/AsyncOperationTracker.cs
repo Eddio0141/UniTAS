@@ -814,6 +814,11 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         }
 
         public AsyncOperation Op { get; } = op;
+        
+        public override string ToString()
+        {
+            return $"new asset bundle, path: {path}, crc: {crc}, offset: {offset}";
+        }
     }
 
     private class NewAssetBundleFromMemoryData(
@@ -840,6 +845,11 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         }
 
         public AsyncOperation Op { get; } = op;
+        
+        public override string ToString()
+        {
+            return $"new asset bundle, byte len: {binary.Length}, crc: {crc}";
+        }
     }
 
     private class NewAssetBundleFromStreamData(
@@ -867,6 +877,11 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         }
 
         public AsyncOperation Op { get; } = op;
+
+        public override string ToString()
+        {
+            return $"new asset bundle, stream: {stream}, crc: {crc}, managedReadBufferSize: {managedReadBufferSize}";
+        }
     }
 
     private class NewAssetBundleRequestMultipleData(
@@ -892,6 +907,11 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         }
 
         public AsyncOperation Op { get; } = op;
+
+        public override string ToString()
+        {
+            return $"asset bundle request multiple data, bundle: {bundle}, name: {name}, type: {type.SaneFullName()}";
+        }
     }
 
     private class UnloadBundleAsyncData(AsyncOperation op, AssetBundle bundle, bool unloadAllLoadedObjects)
@@ -907,6 +927,11 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         }
 
         public AsyncOperation Op { get; } = op;
+        
+        public override string ToString()
+        {
+            return $"unload bundle, bundle: {bundle}, unload all objects: {unloadAllLoadedObjects}";
+        }
     }
 
     private class ResourceLoadAsyncData(AsyncOperation op, string path, Type type) : IAsyncOperation
@@ -923,6 +948,11 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         }
 
         public AsyncOperation Op { get; } = op;
+        
+        public override string ToString()
+        {
+            return $"resource load, path: {path}, type: {type.SaneFullName()}";
+        }
     }
 
     private class AsyncSceneLoadData(
