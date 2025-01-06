@@ -246,7 +246,7 @@ public class UnityCoroutineManager : ICoroutineTracker
             StaticLogger.Trace("coroutine MoveNext with AsyncOperation, operation is managed by unitas" +
                                $", running MoveNext: {op.isDone}");
             __result = !op.isDone;
-            return op.isDone;
+            return !__result;
         }
 
         if (MonoBehaviourController.PausedExecution)
