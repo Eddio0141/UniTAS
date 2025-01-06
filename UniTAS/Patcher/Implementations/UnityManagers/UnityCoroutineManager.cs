@@ -24,6 +24,11 @@ public class UnityCoroutineManager : ICoroutineTracker
     private readonly HashSet<MonoBehaviour> _instances = [];
     private readonly HashSet<Type> _patchedCoroutines = [];
 
+    public void NewCoroutine(object instance, IEnumerator routine)
+    {
+        NewCoroutine(instance as MonoBehaviour, routine);
+    }
+
     public void NewCoroutine(MonoBehaviour instance, IEnumerator routine)
     {
         if (instance == null) return;
@@ -211,14 +216,14 @@ public class UnityCoroutineManager : ICoroutineTracker
         {
             // MoveNext is invoked first, so code already ran, just run this here
             MonoBehEventInvoker.InvokeEndOfFrame();
-            
+
             if (MonoBehaviourController.PausedUpdate)
             {
                 StaticLogger.Trace("paused update execution for coroutine Current" +
                                    $", result is type: {__result.GetType().SaneFullName()}" +
                                    $", replaced result with null: {new StackTrace()}");
                 __result = null;
-                return;
+                // return;
             }
         }
     }
