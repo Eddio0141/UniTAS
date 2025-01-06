@@ -68,9 +68,8 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
     // loaded in this game session
     private readonly HashSet<SceneInfo> _loaded;
 
-    private class AssetBundleRequestData(Object singleResult = null, Object[] multipleResults = null)
+    private class AssetBundleRequestData(Object[] multipleResults = null)
     {
-        public Object SingleResult { get; } = singleResult;
         public Object[] MultipleResults { get; } = multipleResults;
     }
 
@@ -250,7 +249,7 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
 
 #if TRACE
         if (!loadOrUnload) return;
-        
+
         StaticLogger.Trace("scene stack has changed");
 
         var sceneCount = _sceneManagerWrapper.SceneCount;
@@ -265,14 +264,15 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
     public void NewAssetBundleRequest(AsyncOperation op, Object obj)
     {
         _tracked.Add(op, new AsyncOperationData { IsDone = true });
-        _assetBundleRequests.Add(op, new AssetBundleRequestData(obj));
+        _assetBundleRequests.Add(op, new AssetBundleRequestData([obj]));
         InvokeOnComplete(op);
     }
 
-    public void NewAssetBundleRequestMultiple(AsyncOperation op, AssetBundle bundle, string name, Type type)
+    public void NewAssetBundleRequestMultiple(AsyncOperation op, Object[] objs)
     {
-        _tracked.Add(op, new AsyncOperationData());
-        _ops.Add(new NewAssetBundleRequestMultipleData(op, bundle, name, type, this));
+        _tracked.Add(op, new AsyncOperationData { IsDone = true });
+        _assetBundleRequests.Add(op, new AssetBundleRequestData(multipleResults: objs));
+        InvokeOnComplete(op);
     }
 
     public void NewAssetBundleCreateRequest(AsyncOperation op, string path, uint crc, ulong offset)
@@ -538,7 +538,7 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
     {
         if (_assetBundleRequests.TryGetValue(asyncOperation, out var data))
         {
-            obj = data.SingleResult;
+            obj = data.MultipleResults[0];
             return true;
         }
 
@@ -814,7 +814,7 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         }
 
         public AsyncOperation Op { get; } = op;
-        
+
         public override string ToString()
         {
             return $"new asset bundle, path: {path}, crc: {crc}, offset: {offset}";
@@ -845,7 +845,7 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         }
 
         public AsyncOperation Op { get; } = op;
-        
+
         public override string ToString()
         {
             return $"new asset bundle, byte len: {binary.Length}, crc: {crc}";
@@ -884,36 +884,6 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         }
     }
 
-    private class NewAssetBundleRequestMultipleData(
-        AsyncOperation op,
-        AssetBundle bundle,
-        string name,
-        Type type,
-        AsyncOperationTracker tracker) : IAsyncOperation
-    {
-        private static readonly Func<AssetBundle, string, Type, Object[]> LoadAssetWithSubAssetsInternal = AccessTools
-            .Method(typeof(AssetBundle),
-                "LoadAssetWithSubAssets_Internal",
-                [typeof(string), typeof(Type)]).MethodDelegate<Func<AssetBundle, string, Type, Object[]>>();
-
-        public void Load()
-        {
-            var objs = LoadAssetWithSubAssetsInternal(bundle, name, type);
-            tracker._assetBundleRequests.Add(Op, new AssetBundleRequestData(multipleResults: objs));
-        }
-
-        public void Callback()
-        {
-        }
-
-        public AsyncOperation Op { get; } = op;
-
-        public override string ToString()
-        {
-            return $"asset bundle request multiple data, bundle: {bundle}, name: {name}, type: {type.SaneFullName()}";
-        }
-    }
-
     private class UnloadBundleAsyncData(AsyncOperation op, AssetBundle bundle, bool unloadAllLoadedObjects)
         : IAsyncOperation
     {
@@ -927,7 +897,7 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         }
 
         public AsyncOperation Op { get; } = op;
-        
+
         public override string ToString()
         {
             return $"unload bundle, bundle: {bundle}, unload all objects: {unloadAllLoadedObjects}";
@@ -948,7 +918,7 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         }
 
         public AsyncOperation Op { get; } = op;
-        
+
         public override string ToString()
         {
             return $"resource load, path: {path}, type: {type.SaneFullName()}";
