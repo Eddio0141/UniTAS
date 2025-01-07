@@ -180,6 +180,10 @@ public class UnityCoroutineManager : ICoroutineTracker
 
     private static void CoroutineCurrentPostfix(ref object __result)
     {
+        StaticLogger.Trace(
+            $"coroutine Current postfix, reverse invoke: {ReverseInvoker.Invoking}" +
+            $", result: {DebugHelp.PrintClass(__result)}, {new StackTrace(true)}");
+
         if (__result == null) return;
         if (ReverseInvoker.Invoking) return;
 
@@ -232,9 +236,12 @@ public class UnityCoroutineManager : ICoroutineTracker
 
     private static bool CoroutineMoveNextPrefix(IEnumerator __instance, ref bool __result)
     {
+        StaticLogger.Trace($"coroutine MoveNext prefix: {new StackTrace(true)}");
+
         if (!DoneFirstMoveNext.Contains(__instance))
         {
             DoneFirstMoveNext.Add(__instance);
+            StaticLogger.Trace("first MoveNext");
             return true;
         }
 

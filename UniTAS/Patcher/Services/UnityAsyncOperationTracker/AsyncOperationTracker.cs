@@ -236,6 +236,8 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         var loadOrUnload = false;
 #endif
 
+        _logger.LogDebug($"async op: {callbacks.Count} callbacks to be processed, endOfFrame: {endOfFrame}");
+
         foreach (var (_, data) in callbacks)
         {
             data.Callback();
