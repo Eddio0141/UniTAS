@@ -243,10 +243,12 @@ public class UnityCoroutineManager : ICoroutineTracker
         // managed async operation?
         if (current is AsyncOperation op && AsyncOperationOverride.Yield(op))
         {
+            var isDone = op.isDone;
             StaticLogger.Trace("coroutine MoveNext with AsyncOperation, operation is managed by unitas" +
-                               $", running MoveNext: {op.isDone}");
-            __result = !op.isDone;
-            return !__result;
+                               $", running MoveNext: {isDone}");
+            if (!isDone)
+                __result = true;
+            return isDone;
         }
 
         if (MonoBehaviourController.PausedExecution)
