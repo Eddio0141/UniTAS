@@ -57,8 +57,8 @@ public class UnityCoroutineManager : ICoroutineTracker
             AccessTools.PropertyGetter(routineType, $"{typeof(IEnumerator).FullName}.{nameof(IEnumerator.Current)}") ??
             AccessTools.PropertyGetter(routineType, nameof(IEnumerator.Current));
         var moveNext =
-            AccessTools.Method(routineType, $"{typeof(IEnumerator).FullName}.{nameof(IEnumerator.MoveNext)}") ??
-            AccessTools.Method(routineType, nameof(IEnumerator.MoveNext));
+            AccessTools.Method(routineType, nameof(IEnumerator.MoveNext)) ??
+            AccessTools.Method(routineType, $"{typeof(IEnumerator).FullName}.{nameof(IEnumerator.MoveNext)}");
         _harmony.Harmony.Patch(current, postfix: CurrentPostfix);
         _harmony.Harmony.Patch(moveNext, MoveNextPrefix);
     }

@@ -113,8 +113,7 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         {
             foreach (var loadData in _ops)
             {
-                loadData.Load();
-                _pendingLoadCallbacks.Add(loadData);
+                LoadOp(loadData);
             }
 
             _ops.Clear();
