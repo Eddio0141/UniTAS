@@ -335,7 +335,7 @@ public class AsyncOperationPatch
         private static readonly Func<AssetBundle, string, Type, Object> LoadAssetInternal = AccessTools.Method(
             typeof(AssetBundle),
             "LoadAsset_Internal",
-            [typeof(string), typeof(Type)]).MethodDelegate<Func<AssetBundle, string, Type, Object>>();
+            [typeof(string), typeof(Type)])?.MethodDelegate<Func<AssetBundle, string, Type, Object>>();
 
         private static bool Prefix(AssetBundle __instance, string name, Type type, ref AssetBundleRequest __result)
         {
@@ -357,11 +357,11 @@ public class AsyncOperationPatch
         {
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
-        
+
         private static readonly Func<AssetBundle, string, Type, Object[]> LoadAssetWithSubAssetsInternal = AccessTools
             .Method(typeof(AssetBundle),
                 "LoadAssetWithSubAssets_Internal",
-                [typeof(string), typeof(Type)]).MethodDelegate<Func<AssetBundle, string, Type, Object[]>>();
+                [typeof(string), typeof(Type)])?.MethodDelegate<Func<AssetBundle, string, Type, Object[]>>();
 
         private static bool Prefix(AssetBundle __instance, string name, Type type, ref AssetBundleRequest __result)
         {
