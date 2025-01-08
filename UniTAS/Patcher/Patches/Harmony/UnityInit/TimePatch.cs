@@ -31,7 +31,7 @@ public class TimePatch
         foreach (var frame in frames)
         {
             var method = frame.GetMethod();
-            if (method?.Name is not "FixedUpdate") return true;
+            if (method?.Name is not "FixedUpdate") continue;
 
             var declType = method.DeclaringType;
             while (declType != null)
@@ -39,8 +39,6 @@ public class TimePatch
                 if (declType.IsSubclassOf(typeof(MonoBehaviour))) return true;
                 declType = declType.DeclaringType;
             }
-
-            return true;
         }
 
         return false;
