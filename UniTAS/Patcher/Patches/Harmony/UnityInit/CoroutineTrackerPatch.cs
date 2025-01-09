@@ -14,7 +14,7 @@ namespace UniTAS.Patcher.Patches.Harmony.UnityInit;
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 [SuppressMessage("ReSharper", "UnusedMember.Local")]
 [SuppressMessage("ReSharper", "InconsistentNaming")]
-public class CoroutineTracker
+public class CoroutineTrackerPatch
 {
     private static readonly ICoroutineTracker Tracker =
         ContainerStarter.Kernel.GetInstance<ICoroutineTracker>();

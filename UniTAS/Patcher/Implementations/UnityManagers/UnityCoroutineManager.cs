@@ -24,44 +24,11 @@ public class UnityCoroutineManager : ICoroutineTracker
     private readonly HashSet<MonoBehaviour> _instances = [];
     private readonly HashSet<Type> _patchedCoroutines = [];
 
-    public void NewCoroutine(object instance, IEnumerator routine)
-    {
-        NewCoroutine(instance as MonoBehaviour, routine);
-    }
+    public void NewCoroutine(object instance, IEnumerator routine) =>
+        NewCoroutineHandle(instance as MonoBehaviour, routine?.GetType());
 
-    public void NewCoroutine(MonoBehaviour instance, IEnumerator routine)
-    {
-        if (instance == null) return;
-        if (routine == null)
-        {
-            _logger.LogWarning($"coroutine is null, {new StackTrace()}");
-            return;
-        }
-
-        // don't track ours
-        if (Equals(instance.GetType().Assembly, typeof(UnityCoroutineManager).Assembly)) return;
-
-        if (!_instances.Contains(instance))
-            _instances.Add(instance);
-
-        var routineType = routine.GetType();
-        _logger.LogDebug(
-            $"new coroutine made in script {instance.GetType().SaneFullName()}, got IEnumerator {routineType.SaneFullName()}");
-        StaticLogger.Trace($"call from {new StackTrace()}");
-
-        if (_patchedCoroutines.Contains(routineType)) return;
-        _patchedCoroutines.Add(routineType);
-        _logger.LogDebug("this coroutine is yet to be patched");
-
-        var current =
-            AccessTools.PropertyGetter(routineType, $"{typeof(IEnumerator).FullName}.{nameof(IEnumerator.Current)}") ??
-            AccessTools.PropertyGetter(routineType, nameof(IEnumerator.Current));
-        var moveNext =
-            AccessTools.Method(routineType, nameof(IEnumerator.MoveNext)) ??
-            AccessTools.Method(routineType, $"{typeof(IEnumerator).FullName}.{nameof(IEnumerator.MoveNext)}");
-        _harmony.Harmony.Patch(current, postfix: CurrentPostfix);
-        _harmony.Harmony.Patch(moveNext, MoveNextPrefix);
-    }
+    public void NewCoroutine(MonoBehaviour instance, IEnumerator routine) =>
+        NewCoroutineHandle(instance, routine?.GetType());
 
     private readonly Dictionary<Type, HashSet<MethodBase>> _patchedCoroutinesMethods = [];
     private readonly ILogger _logger;
@@ -99,9 +66,9 @@ public class UnityCoroutineManager : ICoroutineTracker
 
     private void NewCoroutineHandle(MonoBehaviour instance, Type routineType)
     {
-        if (instance == null) return;
+        if (instance == null || routineType == null) return;
         // don't track ours
-        if (Equals(instance.GetType().Assembly, typeof(UnityCoroutineManager).Assembly)) return;
+        if (Equals(routineType.Assembly, typeof(UnityCoroutineManager).Assembly)) return;
 
         _logger.LogDebug(
             $"new coroutine made in script {instance.GetType().SaneFullName()}, got IEnumerator {routineType.SaneFullName()}");
@@ -117,11 +84,10 @@ public class UnityCoroutineManager : ICoroutineTracker
             AccessTools.PropertyGetter(routineType, $"{typeof(IEnumerator).FullName}.{nameof(IEnumerator.Current)}") ??
             AccessTools.PropertyGetter(routineType, nameof(IEnumerator.Current));
         var moveNext =
-            AccessTools.Method(routineType, nameof(IEnumerator.MoveNext), [typeof(bool)]) ??
-            AccessTools.Method(routineType, $"{typeof(IEnumerator).FullName}.{nameof(IEnumerator.MoveNext)}",
-                [typeof(bool)]);
+            AccessTools.Method(routineType, nameof(IEnumerator.MoveNext));
+        AccessTools.Method(routineType, $"{typeof(IEnumerator).FullName}.{nameof(IEnumerator.MoveNext)}");
         _harmony.Harmony.Patch(current, postfix: CurrentPostfix);
-        _harmony.Harmony.Patch(moveNext, MoveNextPrefix);
+        _harmony.Harmony.Patch(moveNext, prefix: MoveNextPrefix);
     }
 
     private void OnPreGameRestart()
