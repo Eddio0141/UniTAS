@@ -22,13 +22,12 @@ namespace UniTAS.Patcher.Implementations.UnityManagers;
 public class UnityCoroutineManager : ICoroutineTracker
 {
     private readonly HashSet<MonoBehaviour> _instances = [];
-    private readonly HashSet<Type> _patchedCoroutines = [];
+    private readonly HashSet<IEnumerator> _enumeratorInstances = [];
 
     public void NewCoroutine(object instance, IEnumerator routine) =>
-        NewCoroutineHandle(instance as MonoBehaviour, routine?.GetType());
+        NewCoroutineHandle(instance as MonoBehaviour, routine);
 
-    public void NewCoroutine(MonoBehaviour instance, IEnumerator routine) =>
-        NewCoroutineHandle(instance, routine?.GetType());
+    public void NewCoroutine(MonoBehaviour instance, IEnumerator routine) => NewCoroutineHandle(instance, routine);
 
     private readonly Dictionary<Type, HashSet<MethodBase>> _patchedCoroutinesMethods = [];
     private readonly ILogger _logger;
@@ -64,10 +63,11 @@ public class UnityCoroutineManager : ICoroutineTracker
         _harmony.Harmony.Patch(method, postfix: NewCoroutinePostfixMethod);
     }
 
-    private void NewCoroutineHandle(MonoBehaviour instance, Type routineType)
+    private void NewCoroutineHandle(MonoBehaviour instance, IEnumerator routine)
     {
-        if (instance == null || routineType == null) return;
+        if (instance == null || routine == null) return;
         // don't track ours
+        var routineType = routine.GetType();
         if (Equals(routineType.Assembly, typeof(UnityCoroutineManager).Assembly)) return;
 
         _logger.LogDebug(
@@ -75,19 +75,7 @@ public class UnityCoroutineManager : ICoroutineTracker
         StaticLogger.Trace($"call from {new StackTrace()}");
 
         _instances.Add(instance);
-
-        if (_patchedCoroutines.Contains(routineType)) return;
-        _patchedCoroutines.Add(routineType);
-        _logger.LogDebug("this coroutine is yet to be patched");
-
-        var current =
-            AccessTools.PropertyGetter(routineType, $"{typeof(IEnumerator).FullName}.{nameof(IEnumerator.Current)}") ??
-            AccessTools.PropertyGetter(routineType, nameof(IEnumerator.Current));
-        var moveNext =
-            AccessTools.Method(routineType, nameof(IEnumerator.MoveNext));
-        AccessTools.Method(routineType, $"{typeof(IEnumerator).FullName}.{nameof(IEnumerator.MoveNext)}");
-        _harmony.Harmony.Patch(current, postfix: CurrentPostfix);
-        _harmony.Harmony.Patch(moveNext, prefix: MoveNextPrefix);
+        _enumeratorInstances.Add(routine);
     }
 
     private void OnPreGameRestart()
@@ -99,15 +87,10 @@ public class UnityCoroutineManager : ICoroutineTracker
         }
 
         _instances.Clear();
+        _enumeratorInstances.Clear();
         // no need, but better clean it up
         DoneFirstMoveNext.Clear();
     }
-
-    private static readonly HarmonyMethod CurrentPostfix =
-        new(typeof(UnityCoroutineManager), nameof(CoroutineCurrentPostfix));
-
-    private static readonly HarmonyMethod MoveNextPrefix =
-        new(typeof(UnityCoroutineManager), nameof(CoroutineMoveNextPrefix));
 
     private static readonly HarmonyMethod NewCoroutinePostfixMethod =
         new(typeof(UnityCoroutineManager), nameof(NewCoroutinePostfix));
@@ -144,8 +127,10 @@ public class UnityCoroutineManager : ICoroutineTracker
     private static readonly IAsyncOperationOverride AsyncOperationOverride =
         ContainerStarter.Kernel.GetInstance<IAsyncOperationOverride>();
 
-    private static void CoroutineCurrentPostfix(ref object __result)
+    public void CoroutineCurrentPostfix(IEnumerator __instance, ref object __result)
     {
+        if (!_enumeratorInstances.Contains(__instance)) return;
+
         StaticLogger.Trace(
             $"coroutine Current postfix, reverse invoke: {ReverseInvoker.Invoking}" +
             $", result: {DebugHelp.PrintClass(__result)}, {new StackTrace(true)}");
@@ -200,8 +185,10 @@ public class UnityCoroutineManager : ICoroutineTracker
 
     private static readonly HashSet<IEnumerator> DoneFirstMoveNext = [];
 
-    private static bool CoroutineMoveNextPrefix(IEnumerator __instance, ref bool __result)
+    public bool CoroutineMoveNextPrefix(IEnumerator __instance, ref bool __result)
     {
+        if (!_enumeratorInstances.Contains(__instance)) return true;
+
         StaticLogger.Trace($"coroutine MoveNext prefix: {new StackTrace(true)}");
 
         if (!DoneFirstMoveNext.Contains(__instance))
@@ -264,10 +251,7 @@ public class UnityCoroutineManager : ICoroutineTracker
 
     private static void NewCoroutinePostfix(MonoBehaviour __instance, IEnumerator __result, MethodBase __originalMethod)
     {
-        if (__result == null) return;
-        if (_newCoroutineRan.Contains(__originalMethod)) return;
-        _newCoroutineRan.Add(__originalMethod);
-        CoroutineManager.NewCoroutineHandle(__instance, __result.GetType());
+        CoroutineManager.NewCoroutineHandle(__instance, __result);
     }
 
     // ReSharper restore InconsistentNaming

@@ -13,6 +13,7 @@ public class PreloadPatcherProcessor
         new FinalizeSuppressionPatch(),
         new SteamAPIPatch(),
         new SerializationCallbackPatch(),
+        new CoroutinePatch(),
         new FunctionCallTrace() // this must run last, it hooks logs on start and ret
     ];
 }
