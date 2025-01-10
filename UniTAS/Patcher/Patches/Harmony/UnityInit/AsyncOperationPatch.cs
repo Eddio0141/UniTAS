@@ -461,9 +461,15 @@ public class AsyncOperationPatch
         }
     }
 
-    [HarmonyPatch(typeof(Resources), "LoadAsyncInternal")]
+    [HarmonyPatch]
     private class LoadAsyncInternalPatch
     {
+        private static readonly MethodBase Resources_LoadAsyncInternal =
+            AccessTools.Method(AccessTools.TypeByName("UnityEngine.ResourcesAPIInternal") ?? typeof(Resources),
+                "LoadAsyncInternal");
+
+        private static MethodBase TargetMethod() => Resources_LoadAsyncInternal;
+
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
             return PatchHelper.CleanupIgnoreFail(original, ex);
