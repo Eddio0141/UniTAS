@@ -131,15 +131,13 @@ public class UnityCoroutineManager : ICoroutineTracker
     {
         if (!_enumeratorInstances.Contains(__instance)) return;
 
-        StaticLogger.Trace(
-            $"coroutine Current postfix, reverse invoke: {ReverseInvoker.Invoking}" +
-            $", result: {DebugHelp.PrintClass(__result)}, {new StackTrace(true)}");
+        StaticLogger.Trace($"coroutine get_Current: {__instance.GetType().SaneFullName()}");
 
         if (__result == null) return;
         if (ReverseInvoker.Invoking) return;
 
         // managed async operation?
-        if (__result is AsyncOperation op && AsyncOperationTracker.ManagedInstance(op))
+        if (__result is AsyncOperation op && AsyncOperationOverride.Yield(op))
         {
             if (op.isDone)
             {
@@ -189,7 +187,7 @@ public class UnityCoroutineManager : ICoroutineTracker
     {
         if (!_enumeratorInstances.Contains(__instance)) return true;
 
-        StaticLogger.Trace($"coroutine MoveNext prefix: {new StackTrace(true)}");
+        StaticLogger.Trace($"coroutine MoveNext: {__instance.GetType().SaneFullName()}");
 
         if (!DoneFirstMoveNext.Contains(__instance))
         {
@@ -201,7 +199,7 @@ public class UnityCoroutineManager : ICoroutineTracker
         var current = ReverseInvoker.Invoke(i => i.Current, __instance);
 
         // managed async operation?
-        if (current is AsyncOperation op && AsyncOperationOverride.Yield(op))
+        if (current is AsyncOperation op && AsyncOperationTracker.ManagedInstance(op))
         {
             var isDone = op.isDone;
             StaticLogger.Trace("coroutine MoveNext with AsyncOperation, operation is managed by unitas" +
@@ -244,12 +242,10 @@ public class UnityCoroutineManager : ICoroutineTracker
         return true;
     }
 
-    private static readonly HashSet<MethodBase> _newCoroutineRan = [];
-
     private static readonly UnityCoroutineManager CoroutineManager =
         ContainerStarter.Kernel.GetInstance<UnityCoroutineManager>();
 
-    private static void NewCoroutinePostfix(MonoBehaviour __instance, IEnumerator __result, MethodBase __originalMethod)
+    private static void NewCoroutinePostfix(MonoBehaviour __instance, IEnumerator __result)
     {
         CoroutineManager.NewCoroutineHandle(__instance, __result);
     }
