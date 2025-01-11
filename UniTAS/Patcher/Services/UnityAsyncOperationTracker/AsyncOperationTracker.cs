@@ -699,8 +699,8 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
 
     public void ResourceUnloadAsync(AsyncOperation op)
     {
-        _tracked.Add(op, new AsyncOperationData { IsDone = true });
-        InvokeOnComplete(op);
+        _tracked.Add(op, new AsyncOperationData());
+        _ops.Add(new DummyOpData(op));
     }
 
     private readonly Type _sceneStruct = AccessTools.TypeByName("UnityEngine.SceneManagement.Scene");
@@ -1112,6 +1112,19 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
                 : [LoadAssetInternal(bundle, name, type)];
 
             tracker._assetBundleRequests.Add(Op, objs);
+        }
+
+        public void Callback()
+        {
+        }
+
+        public AsyncOperation Op { get; } = op;
+    }
+
+    private class DummyOpData(AsyncOperation op) : IAsyncOperation
+    {
+        public void Load()
+        {
         }
 
         public void Callback()
