@@ -483,4 +483,21 @@ public class AsyncOperationPatch
             return false;
         }
     }
+
+    [HarmonyPatch(typeof(Resources), nameof(Resources.UnloadUnusedAssets))]
+    private class Resources_UnloadUnusedAssets
+    {
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static bool Prefix(ref AsyncOperation __result)
+        {
+            StaticLogger.LogDebug("Resources async op, unload unused assets");
+            __result = new AsyncOperation();
+            ResourceAsyncTracker.ResourceUnloadAsync(__result);
+            return false;
+        }
+    }
 }

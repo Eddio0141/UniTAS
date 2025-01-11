@@ -6,4 +6,5 @@ namespace UniTAS.Patcher.Services.UnityAsyncOperationTracker;
 public interface IResourceAsyncTracker
 {
     void ResourceLoadAsync(AsyncOperation op, string path, Type type);
+    void ResourceUnloadAsync(AsyncOperation op);
 }
