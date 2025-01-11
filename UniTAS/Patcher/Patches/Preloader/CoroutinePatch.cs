@@ -19,12 +19,14 @@ public class CoroutinePatch : PreloadPatcher
         {
             if (type.Interfaces.All(x => x.InterfaceType.FullName != typeof(IEnumerator).FullName)) continue;
 
-            var moveNext = type.Methods.First(x => x.Name == "MoveNext" && x.Parameters.Count == 0);
+            StaticLogger.LogDebug($"coroutine patch: patching type {type.FullName}");
+
+            var moveNext = type.Methods.First(x =>
+                x.Name is "MoveNext" or "System.Collections.IEnumerator.MoveNext" &&
+                x.Parameters.Count == 0);
             var current = (type.Properties.FirstOrDefault(x => x.Name == "System.Collections.IEnumerator.Current") ??
                            type.Properties.First(x => x.Name == "Current")).GetMethod;
             if (!moveNext.HasBody || !current.HasBody) continue;
-
-            StaticLogger.LogDebug($"coroutine patch: patching type {type.FullName}");
 
             var moveNextPrefixTarget =
                 typeof(CoroutineManagerManual).GetMethod(nameof(CoroutineManagerManual.CoroutineMoveNextPrefix));
