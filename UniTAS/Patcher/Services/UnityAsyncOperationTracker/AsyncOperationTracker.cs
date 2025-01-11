@@ -160,6 +160,75 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         }
     }
 
+    private void ProcessOpsUntilOp(AsyncOperation op)
+    {
+        if (_ops.Count == 0) return;
+
+        var foundIdx = -1;
+        var pendingCallbacks = new List<IAsyncOperation>();
+        for (var i = 0; i < _ops.Count; i++)
+        {
+            var load = _ops[i];
+
+            _logger.LogDebug($"processing operation {op}");
+            load.Load();
+            pendingCallbacks.Add(load);
+
+            if (load.Op != op) continue;
+            foundIdx = i;
+            break;
+        }
+
+        if (foundIdx < 0)
+        {
+            _logger.LogError($"operation was not found in the _ops list, did you actually check for tracked?");
+            return;
+        }
+
+        _ops.RemoveRange(0, foundIdx + 1);
+
+        // to allow the scene to be findable, invoke when scene loads on update
+        if (pendingCallbacks.Count > 0)
+            _logger.LogDebug($"async op: {pendingCallbacks.Count} callbacks to be processed");
+
+        foreach (var data in pendingCallbacks)
+        {
+            var dataOp = data.Op;
+            if (dataOp == null) continue;
+            var state = _tracked[dataOp];
+            state.IsDone = true;
+            _tracked[dataOp] = state;
+        }
+
+#if TRACE
+        var loadOrUnload = false;
+#endif
+
+        foreach (var data in pendingCallbacks)
+        {
+            data.Callback();
+#if TRACE
+            if (!loadOrUnload && data is AsyncSceneLoadData or AsyncSceneUnloadData)
+                loadOrUnload = true;
+#endif
+            if (data.Op == null) continue;
+            InvokeOnComplete(data.Op);
+        }
+
+#if TRACE
+        if (!loadOrUnload) return;
+
+        StaticLogger.Trace("scene stack has changed");
+
+        var sceneCount = _sceneManagerWrapper.SceneCount;
+        for (var i = 0; i < sceneCount; i++)
+        {
+            var scene = _sceneManagerWrapper.GetSceneAt(i);
+            StaticLogger.Trace($"scene: name = `{scene.Name}`, path = `{scene.Path}`, index = `{scene.BuildIndex}`");
+        }
+#endif
+    }
+
     public bool Yield(AsyncOperation asyncOperation)
     {
         if (!_tracked.TryGetValue(asyncOperation, out var data))
@@ -531,6 +600,14 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
     {
         if (_assetBundleCreateRequests.TryGetValue(asyncOperation, out assetBundle)) return true;
 
+        // bundle access before operation completes, force load
+        if (_tracked.ContainsKey(asyncOperation))
+        {
+            ProcessOpsUntilOp(asyncOperation);
+            assetBundle = _assetBundleCreateRequests[asyncOperation];
+            return true;
+        }
+
         WarnAsyncOperationAPI(asyncOperation);
         return false;
     }
@@ -553,6 +630,12 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         if (_assetBundleRequests.TryGetValue(asyncOperation, out var data))
         {
             objects = data.MultipleResults;
+            return true;
+        }
+
+        if (_tracked.ContainsKey(asyncOperation))
+        {
+            objects = null;
             return true;
         }
 
@@ -931,19 +1014,6 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         {
             return $"resource load, path: {path}, type: {type.SaneFullName()}";
         }
-    }
-
-    private class DummyOperation(AsyncOperation op) : IAsyncOperation
-    {
-        public void Load()
-        {
-        }
-
-        public void Callback()
-        {
-        }
-
-        public AsyncOperation Op { get; } = op;
     }
 
     private class AsyncSceneLoadData(
