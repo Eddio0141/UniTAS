@@ -17,6 +17,7 @@ public class CoroutinePatch : PreloadPatcher
         var types = assembly.MainModule.GetAllTypes();
         foreach (var type in types)
         {
+            if (type.IsValueType) continue;
             if (type.Interfaces.All(x => x.InterfaceType.FullName != typeof(IEnumerator).FullName)) continue;
 
             StaticLogger.LogDebug($"coroutine patch: patching type {type.FullName}");
