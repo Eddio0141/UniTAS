@@ -331,11 +331,10 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
 #endif
     }
 
-    public void NewAssetBundleRequest(AsyncOperation op, Object obj)
+    public void NewAssetBundleRequest(AsyncOperation op, AssetBundle assetBundle, string name, Type type)
     {
-        _tracked.Add(op, new AsyncOperationData { IsDone = true });
-        _assetBundleRequests.Add(op, new AssetBundleRequestData([obj]));
-        InvokeOnComplete(op);
+        _tracked.Add(op, new AsyncOperationData());
+        _ops.Add(new NewAssetBundleRequestData(op, assetBundle, name, type, this));
     }
 
     public void NewAssetBundleRequestMultiple(AsyncOperation op, Object[] objs)
@@ -620,6 +619,14 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
             return true;
         }
 
+        // access before op completion, force load
+        if (_tracked.ContainsKey(asyncOperation))
+        {
+            ProcessOpsUntilOp(asyncOperation);
+            obj = _assetBundleRequests[asyncOperation].MultipleResults[0];
+            return true;
+        }
+
         WarnAsyncOperationAPI(asyncOperation);
         obj = null;
         return false;
@@ -633,9 +640,11 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
             return true;
         }
 
+        // access before op completion, force load
         if (_tracked.ContainsKey(asyncOperation))
         {
-            objects = null;
+            ProcessOpsUntilOp(asyncOperation);
+            objects = _assetBundleRequests[asyncOperation].MultipleResults;
             return true;
         }
 
@@ -1091,6 +1100,31 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         {
             return $"scene unload, name: {SceneWrapper.Name}";
         }
+    }
+
+    private class NewAssetBundleRequestData(
+        AsyncOperation op,
+        AssetBundle bundle,
+        string name,
+        Type type,
+        AsyncOperationTracker tracker) : IAsyncOperation
+    {
+        private static readonly Func<AssetBundle, string, Type, Object> LoadAssetInternal = AccessTools.Method(
+            typeof(AssetBundle),
+            "LoadAsset_Internal",
+            [typeof(string), typeof(Type)])?.MethodDelegate<Func<AssetBundle, string, Type, Object>>();
+
+        public void Load()
+        {
+            var obj = LoadAssetInternal(bundle, name, type);
+            tracker._assetBundleRequests.Add(Op, new AssetBundleRequestData(multipleResults: [obj]));
+        }
+
+        public void Callback()
+        {
+        }
+
+        public AsyncOperation Op { get; } = op;
     }
 
     public class SceneInfo(string path, string name, int buildIndex)

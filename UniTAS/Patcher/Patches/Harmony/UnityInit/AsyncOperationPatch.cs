@@ -332,19 +332,11 @@ public class AsyncOperationPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static readonly Func<AssetBundle, string, Type, Object> LoadAssetInternal = AccessTools.Method(
-            typeof(AssetBundle),
-            "LoadAsset_Internal",
-            [typeof(string), typeof(Type)])?.MethodDelegate<Func<AssetBundle, string, Type, Object>>();
-
         private static bool Prefix(AssetBundle __instance, string name, Type type, ref AssetBundleRequest __result)
         {
             StaticLogger.LogDebug($"Async op, load asset async, name: {name}, type: {type.SaneFullName()}");
-            // unsure why, but this one seems to completely instantly pretty much...
-            var obj = LoadAssetInternal(__instance, name, type);
-            StaticLogger.Trace($"result is {obj}");
             __result = new AssetBundleRequest();
-            AssetBundleRequestTracker.NewAssetBundleRequest(__result, obj);
+            AssetBundleRequestTracker.NewAssetBundleRequest(__result, __instance, name, type);
             return false;
         }
     }
