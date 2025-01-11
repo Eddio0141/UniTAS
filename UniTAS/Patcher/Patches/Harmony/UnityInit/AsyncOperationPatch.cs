@@ -336,7 +336,7 @@ public class AsyncOperationPatch
         {
             StaticLogger.LogDebug($"Async op, load asset async, name: {name}, type: {type.SaneFullName()}");
             __result = new AssetBundleRequest();
-            AssetBundleRequestTracker.NewAssetBundleRequest(__result, __instance, name, type);
+            AssetBundleRequestTracker.NewAssetBundleRequest(__result, __instance, name, type, false);
             return false;
         }
     }
@@ -350,19 +350,12 @@ public class AsyncOperationPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static readonly Func<AssetBundle, string, Type, Object[]> LoadAssetWithSubAssetsInternal = AccessTools
-            .Method(typeof(AssetBundle),
-                "LoadAssetWithSubAssets_Internal",
-                [typeof(string), typeof(Type)])?.MethodDelegate<Func<AssetBundle, string, Type, Object[]>>();
-
         private static bool Prefix(AssetBundle __instance, string name, Type type, ref AssetBundleRequest __result)
         {
             StaticLogger.LogDebug(
                 $"Async op, load asset with sub assets async, name: {name}, type: {type.SaneFullName()}");
-            var objs = LoadAssetWithSubAssetsInternal(__instance, name, type);
-            StaticLogger.Trace($"result is {objs}");
             __result = new AssetBundleRequest();
-            AssetBundleRequestTracker.NewAssetBundleRequestMultiple(__result, objs);
+            AssetBundleRequestTracker.NewAssetBundleRequest(__result, __instance, name, type, true);
             return false;
         }
     }
