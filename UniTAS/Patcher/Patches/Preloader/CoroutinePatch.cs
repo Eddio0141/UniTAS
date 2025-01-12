@@ -22,57 +22,60 @@ public class CoroutinePatch : PreloadPatcher
 
             StaticLogger.LogDebug($"coroutine patch: patching type {type.FullName}");
 
-            var moveNext = type.Methods.First(x =>
+            var moveNext = type.Methods.FirstOrDefault(x =>
                 x.Name is "MoveNext" or "System.Collections.IEnumerator.MoveNext" &&
                 x.Parameters.Count == 0);
-            var current = (type.Properties.FirstOrDefault(x => x.Name == "System.Collections.IEnumerator.Current") ??
-                           type.Properties.First(x => x.Name == "Current")).GetMethod;
-            if (!moveNext.HasBody || !current.HasBody) continue;
-
-            var moveNextPrefixTarget =
-                typeof(CoroutineManagerManual).GetMethod(nameof(CoroutineManagerManual.CoroutineMoveNextPrefix));
-            var currentPostfixTarget =
-                typeof(CoroutineManagerManual).GetMethod(nameof(CoroutineManagerManual.CoroutineCurrentPostfix));
-
-            var moveNextPrefix = assembly.MainModule.ImportReference(moveNextPrefixTarget);
-            var currentPostfix = assembly.MainModule.ImportReference(currentPostfixTarget);
+            var current =
+                type.Properties.FirstOrDefault(x => x.Name is "System.Collections.IEnumerator.Current" or "Current")
+                    ?.GetMethod;
 
             // MoveNext
-            var body = moveNext.Body;
-            body.SimplifyMacros();
-            var il = body.GetILProcessor();
-            var first = body.Instructions.First();
-            var resultVar = new VariableDefinition(assembly.MainModule.TypeSystem.Boolean);
-            body.Variables.Add(resultVar);
-            // TODO: create a utility where I can use harmony-type hooks but with preload patcher
-            il.InsertBefore(first, il.Create(OpCodes.Ldc_I4_0));
-            il.InsertBefore(first, il.Create(OpCodes.Stloc, resultVar));
-            il.InsertBefore(first, il.Create(OpCodes.Ldarg_0));
-            il.InsertBefore(first, il.Create(OpCodes.Ldloca, resultVar));
-            il.InsertBefore(first, il.Create(OpCodes.Call, moveNextPrefix));
-            il.InsertBefore(first, il.Create(OpCodes.Brtrue, first));
-            il.InsertBefore(first, il.Create(OpCodes.Ldloc, resultVar));
-            il.InsertBefore(first, il.Create(OpCodes.Ret));
-            body.Optimize();
-
-            // get_Current
-            body = current.Body;
-            body.SimplifyMacros();
-            il = body.GetILProcessor();
-            resultVar = new VariableDefinition(assembly.MainModule.TypeSystem.Object);
-            body.Variables.Add(resultVar);
-
-            foreach (var inst in body.Instructions.ToArray())
+            if (moveNext?.HasBody is true)
             {
-                if (inst.OpCode != OpCodes.Ret) continue;
-                il.InsertBeforeInstructionReplace(inst, il.Create(OpCodes.Stloc, resultVar));
-                il.InsertBeforeInstructionReplace(inst, il.Create(OpCodes.Ldarg_0));
-                il.InsertBeforeInstructionReplace(inst, il.Create(OpCodes.Ldloca, resultVar));
-                il.InsertBeforeInstructionReplace(inst, il.Create(OpCodes.Call, currentPostfix));
-                il.InsertBeforeInstructionReplace(inst, il.Create(OpCodes.Ldloc, resultVar));
+                var moveNextPrefix = assembly.MainModule.ImportReference(
+                    typeof(CoroutineManagerManual).GetMethod(nameof(CoroutineManagerManual.CoroutineMoveNextPrefix)));
+
+                var body = moveNext.Body;
+                body.SimplifyMacros();
+                var il = body.GetILProcessor();
+                var first = body.Instructions.First();
+                var resultVar = new VariableDefinition(assembly.MainModule.TypeSystem.Boolean);
+                body.Variables.Add(resultVar);
+                // TODO: create a utility where I can use harmony-type hooks but with preload patcher
+                il.InsertBefore(first, il.Create(OpCodes.Ldc_I4_0));
+                il.InsertBefore(first, il.Create(OpCodes.Stloc, resultVar));
+                il.InsertBefore(first, il.Create(OpCodes.Ldarg_0));
+                il.InsertBefore(first, il.Create(OpCodes.Ldloca, resultVar));
+                il.InsertBefore(first, il.Create(OpCodes.Call, moveNextPrefix));
+                il.InsertBefore(first, il.Create(OpCodes.Brtrue, first));
+                il.InsertBefore(first, il.Create(OpCodes.Ldloc, resultVar));
+                il.InsertBefore(first, il.Create(OpCodes.Ret));
+                body.Optimize();
             }
 
-            body.Optimize();
+            if (current?.HasBody is not true) continue;
+
+            var currentPostfix = assembly.MainModule.ImportReference(
+                typeof(CoroutineManagerManual).GetMethod(nameof(CoroutineManagerManual.CoroutineCurrentPostfix)));
+
+            // get_Current
+            var body2 = current.Body;
+            body2.SimplifyMacros();
+            var il2 = body2.GetILProcessor();
+            var resultVar2 = new VariableDefinition(assembly.MainModule.TypeSystem.Object);
+            body2.Variables.Add(resultVar2);
+
+            foreach (var inst in body2.Instructions.ToArray())
+            {
+                if (inst.OpCode != OpCodes.Ret) continue;
+                il2.InsertBeforeInstructionReplace(inst, il2.Create(OpCodes.Stloc, resultVar2));
+                il2.InsertBeforeInstructionReplace(inst, il2.Create(OpCodes.Ldarg_0));
+                il2.InsertBeforeInstructionReplace(inst, il2.Create(OpCodes.Ldloca, resultVar2));
+                il2.InsertBeforeInstructionReplace(inst, il2.Create(OpCodes.Call, currentPostfix));
+                il2.InsertBeforeInstructionReplace(inst, il2.Create(OpCodes.Ldloc, resultVar2));
+            }
+
+            body2.Optimize();
         }
     }
 }
