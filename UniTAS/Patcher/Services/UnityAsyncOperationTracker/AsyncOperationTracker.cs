@@ -677,6 +677,7 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
 
     public void Unload(AssetBundle assetBundle)
     {
+        // TODO: test
         _bundleScenes.Remove(assetBundle);
     }
 
@@ -770,13 +771,23 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
             // sceneName is path
             return new SceneInfo(name2, _gameBuildScenesInfo.PathToName[name2], index2);
         }
-        // TODO: in AssetBundle scenes, can i load from just name, or do i need path
-        // bundleScenes contains paths, not names
 
+        // bundleScenes contains paths, not names
+        // TODO: what happens if bundle contains same name as one already loaded?
+        // TODO: what if dupe name to ones in builtin
         if (_bundleScenes.Values.Any(scenes => scenes.Any(s => s == name2)))
         {
-            // TODO: fix below after resolving above
             return new SceneInfo(name2, name2, -1);
+        }
+
+        // search by converting to names
+        // TODO: what if theres dupe names in the bundles
+        // TODO: cache results
+        var bundleScenePath = _bundleScenes.Values.SelectMany(scenes => scenes)
+            .FirstOrDefault(s => Path.GetFileNameWithoutExtension(s) == name2);
+        if (bundleScenePath != null)
+        {
+            return new SceneInfo(bundleScenePath, name2, -1);
         }
 
         if (GetAllScenePaths == null)
@@ -885,8 +896,14 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         {
             var bundle = LoadFromFile(path, crc, offset);
             tracker._assetBundleCreateRequests.Add(Op, bundle);
-            if (GetAllScenePaths != null)
-                tracker._bundleScenes[bundle] = GetAllScenePaths(bundle);
+            if (GetAllScenePaths == null)
+            {
+                tracker._logger.LogWarning(
+                    "GetAllScenePaths function wasn't found, cannot discover scenes in asset bundles");
+                return;
+            }
+
+            tracker._bundleScenes[bundle] = GetAllScenePaths(bundle);
         }
 
         public void Callback()
