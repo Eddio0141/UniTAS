@@ -70,17 +70,12 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
 
     public void OnPreGameRestart()
     {
-        if (SafeAPI.UnityEngine.AssetBundle.UnloadAllAssetBundles == null)
+        SafeAPI.UnityEngine.AssetBundle.UnloadAllAssetBundles?.Invoke(true);
+
+        foreach (var bundle in _assetBundleCreateRequests.Values)
         {
-            foreach (var bundle in _assetBundleCreateRequests.Values)
-            {
-                if (bundle == null) continue;
-                bundle.Unload(true);
-            }
-        }
-        else
-        {
-            SafeAPI.UnityEngine.AssetBundle.UnloadAllAssetBundles(true);
+            if (bundle == null) continue;
+            bundle.Unload(true);
         }
 
         _ops.Clear();
