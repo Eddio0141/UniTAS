@@ -56,7 +56,11 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
 
     private readonly Dictionary<AsyncOperation, AssetBundle> _assetBundleCreateRequests = new();
     private readonly Dictionary<AsyncOperation, Object[]> _assetBundleRequests = new();
-    private readonly Dictionary<AssetBundle, string[]> _bundleScenes = new();
+
+    private readonly Dictionary<AssetBundle, HashSet<string>> _bundleScenes = new();
+
+    // path -> name
+    private readonly Dictionary<string, string> _bundleScenesNames = new();
 
     private bool _sceneLoadSync;
 
@@ -587,7 +591,7 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         if (_tracked.ContainsKey(asyncOperation))
         {
             ProcessOpsUntilOp(asyncOperation);
-            assetBundle = _assetBundleCreateRequests[asyncOperation];
+            _assetBundleCreateRequests.TryGetValue(asyncOperation, out assetBundle);
             return true;
         }
 
@@ -607,7 +611,7 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         if (_tracked.ContainsKey(asyncOperation))
         {
             ProcessOpsUntilOp(asyncOperation);
-            obj = _assetBundleRequests[asyncOperation][0];
+            obj = _assetBundleRequests.TryGetValue(asyncOperation, out var objs) ? objs[0] : null;
             return true;
         }
 
@@ -625,7 +629,7 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         if (_tracked.ContainsKey(asyncOperation))
         {
             ProcessOpsUntilOp(asyncOperation);
-            objects = _assetBundleRequests[asyncOperation];
+            _assetBundleRequests.TryGetValue(asyncOperation, out objects);
             return true;
         }
 
@@ -677,7 +681,13 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
 
     public void Unload(AssetBundle assetBundle)
     {
-        // TODO: test
+        // TODO: test, does it actually unload scene
+        var scenes = _bundleScenes[assetBundle];
+        foreach (var scene in scenes)
+        {
+            _bundleScenesNames.Remove(scene);
+        }
+
         _bundleScenes.Remove(assetBundle);
     }
 
@@ -753,41 +763,35 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
             var buildIndex = scene.Right;
             if (buildIndex >= _gameBuildScenesInfo.IndexToPath.Count) return null;
             var path = _gameBuildScenesInfo.IndexToPath[buildIndex];
-            var name = _gameBuildScenesInfo.PathToName[path];
-            return new SceneInfo(path, name, buildIndex);
+            return new SceneInfo(path, _gameBuildScenesInfo.PathToName[path], buildIndex);
         }
 
-        var name2 = scene.Left;
+        var name = scene.Left;
 
-        // find info about scene
-        if (_gameBuildScenesInfo.NameToPath.TryGetValue(name2, out var path2))
+        // asset bundle scenes take priority in name based matching
+        if (_bundleScenes.Values.Any(scenes => scenes.Any(s => s == name)))
+        {
+            return new SceneInfo(name, name, -1);
+        }
+
+        // note: asset bundle with same scene name as already loaded ones fails to load in the first place
+        var bundleScenePath = _bundleScenesNames.FirstOrDefault(x => x.Value == name);
+        if (bundleScenePath.Key != null)
+        {
+            return new SceneInfo(bundleScenePath.Key, name, -1);
+        }
+
+        // fallback to builtin scenes
+        if (_gameBuildScenesInfo.NameToPath.TryGetValue(name, out var path2))
         {
             // sceneName is name
-            return new SceneInfo(path2, name2, _gameBuildScenesInfo.PathToIndex[path2]);
+            return new SceneInfo(path2, name, _gameBuildScenesInfo.PathToIndex[path2]);
         }
 
-        if (_gameBuildScenesInfo.PathToIndex.TryGetValue(name2, out var index2))
+        if (_gameBuildScenesInfo.PathToIndex.TryGetValue(name, out var index2))
         {
             // sceneName is path
-            return new SceneInfo(name2, _gameBuildScenesInfo.PathToName[name2], index2);
-        }
-
-        // bundleScenes contains paths, not names
-        // TODO: what happens if bundle contains same name as one already loaded?
-        // TODO: what if dupe name to ones in builtin
-        if (_bundleScenes.Values.Any(scenes => scenes.Any(s => s == name2)))
-        {
-            return new SceneInfo(name2, name2, -1);
-        }
-
-        // search by converting to names
-        // TODO: what if theres dupe names in the bundles
-        // TODO: cache results
-        var bundleScenePath = _bundleScenes.Values.SelectMany(scenes => scenes)
-            .FirstOrDefault(s => Path.GetFileNameWithoutExtension(s) == name2);
-        if (bundleScenePath != null)
-        {
-            return new SceneInfo(bundleScenePath, name2, -1);
+            return new SceneInfo(name, _gameBuildScenesInfo.PathToName[name], index2);
         }
 
         if (GetAllScenePaths == null)
@@ -895,15 +899,9 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         public void Load()
         {
             var bundle = LoadFromFile(path, crc, offset);
+            if (bundle == null) return;
             tracker._assetBundleCreateRequests.Add(Op, bundle);
-            if (GetAllScenePaths == null)
-            {
-                tracker._logger.LogWarning(
-                    "GetAllScenePaths function wasn't found, cannot discover scenes in asset bundles");
-                return;
-            }
-
-            tracker._bundleScenes[bundle] = GetAllScenePaths(bundle);
+            tracker.AddScenesFromBundle(bundle);
         }
 
         public void Callback()
@@ -932,9 +930,9 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         public void Load()
         {
             var bundle = LoadFromMemoryInternal(binary, crc);
+            if (bundle == null) return;
             tracker._assetBundleCreateRequests.Add(Op, bundle);
-            if (GetAllScenePaths != null)
-                tracker._bundleScenes[bundle] = GetAllScenePaths(bundle);
+            tracker.AddScenesFromBundle(bundle);
         }
 
         public void Callback()
@@ -964,9 +962,9 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         public void Load()
         {
             var bundle = LoadFromStreamInternal(stream, crc, managedReadBufferSize);
+            if (bundle == null) return;
             tracker._assetBundleCreateRequests.Add(Op, bundle);
-            if (GetAllScenePaths != null)
-                tracker._bundleScenes[bundle] = GetAllScenePaths(bundle);
+            tracker.AddScenesFromBundle(bundle);
         }
 
         public void Callback()
@@ -979,6 +977,24 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         {
             return $"new asset bundle, stream: {stream}, crc: {crc}, managedReadBufferSize: {managedReadBufferSize}";
         }
+    }
+
+    private void AddScenesFromBundle(AssetBundle bundle)
+    {
+        if (GetAllScenePaths == null)
+        {
+            _logger.LogWarning(
+                "GetAllScenePaths function wasn't found, cannot discover scenes in asset bundles");
+            return;
+        }
+
+        var scenes = GetAllScenePaths(bundle);
+        foreach (var scene in scenes)
+        {
+            _bundleScenesNames.Add(scene, Path.GetFileNameWithoutExtension(scene));
+        }
+
+        _bundleScenes[bundle] = [..scenes];
     }
 
     private class UnloadBundleAsyncData(AsyncOperation op, AssetBundle bundle, bool unloadAllLoadedObjects)
