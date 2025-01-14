@@ -86,6 +86,7 @@ public class GameBuildScenesInfo : IGameBuildScenesInfo
             PathToIndex[path] = i;
             PathToName[path] = name;
             NameToPath[name] = path;
+            ShortPathToPath[path.Remove(path.Length - ".unity".Length).Remove(0, "Assets/".Length)] = path;
             IndexToPath.Add(path);
 
             i++;
@@ -96,5 +97,6 @@ public class GameBuildScenesInfo : IGameBuildScenesInfo
     public Dictionary<string, int> PathToIndex { get; } = new();
     public Dictionary<string, string> PathToName { get; } = new();
     public Dictionary<string, string> NameToPath { get; } = new();
+    public Dictionary<string, string> ShortPathToPath { get; } = new();
     public List<string> IndexToPath { get; } = new();
 }

@@ -57,10 +57,9 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
     private readonly Dictionary<AsyncOperation, AssetBundle> _assetBundleCreateRequests = new();
     private readonly Dictionary<AsyncOperation, Object[]> _assetBundleRequests = new();
 
-    private readonly Dictionary<AssetBundle, HashSet<string>> _bundleScenes = new();
-
-    // path -> name
-    private readonly Dictionary<string, string> _bundleScenesNames = new();
+    private readonly Dictionary<string, string> _bundleSceneNames = new(); // path -> name
+    private readonly Dictionary<string, string> _bundleSceneShortPaths = new(); // path -> short path
+    private readonly Dictionary<AssetBundle, HashSet<string>> _bundleScenePaths = new();
 
     private bool _sceneLoadSync;
 
@@ -87,7 +86,9 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         _assetBundleCreateRequests.Clear();
         _assetBundleRequests.Clear();
         _tracked.Clear();
-        _bundleScenes.Clear();
+        _bundleScenePaths.Clear();
+        _bundleSceneNames.Clear();
+        _bundleSceneShortPaths.Clear();
         DummyScenes.Clear();
         LoadingScenes.Clear();
         LoadingSceneCount = 0;
@@ -682,13 +683,14 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
     public void Unload(AssetBundle assetBundle)
     {
         // TODO: test, does it actually unload scene
-        var scenes = _bundleScenes[assetBundle];
-        foreach (var scene in scenes)
+        var paths = _bundleScenePaths[assetBundle];
+        foreach (var path in paths)
         {
-            _bundleScenesNames.Remove(scene);
+            _bundleSceneNames.Remove(path);
+            _bundleSceneShortPaths.Remove(path);
         }
 
-        _bundleScenes.Remove(assetBundle);
+        _bundleScenePaths.Remove(assetBundle);
     }
 
     public void UnloadBundleAsync(AsyncOperation op, AssetBundle bundle, bool unloadAllLoadedObjects)
@@ -769,29 +771,41 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         var name = scene.Left;
 
         // asset bundle scenes take priority in name based matching
-        if (_bundleScenes.Values.Any(scenes => scenes.Any(s => s == name)))
+        if (_bundleScenePaths.Values.Any(scenes => scenes.Any(s => s == name)))
         {
             return new SceneInfo(name, name, -1);
         }
 
+        var bundleScenePath2 = _bundleSceneShortPaths.FirstOrDefault(x => x.Value == name);
+        if (bundleScenePath2.Key != null)
+        {
+            return new SceneInfo(bundleScenePath2.Key, name, -1);
+        }
+
         // note: asset bundle with same scene name as already loaded ones fails to load in the first place
-        var bundleScenePath = _bundleScenesNames.FirstOrDefault(x => x.Value == name);
+        var bundleScenePath = _bundleSceneNames.FirstOrDefault(x => x.Value == name);
         if (bundleScenePath.Key != null)
         {
             return new SceneInfo(bundleScenePath.Key, name, -1);
         }
 
         // fallback to builtin scenes
-        if (_gameBuildScenesInfo.NameToPath.TryGetValue(name, out var path2))
-        {
-            // sceneName is name
-            return new SceneInfo(path2, name, _gameBuildScenesInfo.PathToIndex[path2]);
-        }
-
         if (_gameBuildScenesInfo.PathToIndex.TryGetValue(name, out var index2))
         {
             // sceneName is path
             return new SceneInfo(name, _gameBuildScenesInfo.PathToName[name], index2);
+        }
+
+        if (_gameBuildScenesInfo.ShortPathToPath.TryGetValue(name, out var path3))
+        {
+            // sceneName is short path
+            return new SceneInfo(path3, name, _gameBuildScenesInfo.PathToIndex[path3]);
+        }
+
+        if (_gameBuildScenesInfo.NameToPath.TryGetValue(name, out var path2))
+        {
+            // sceneName is name
+            return new SceneInfo(path2, name, _gameBuildScenesInfo.PathToIndex[path2]);
         }
 
         if (GetAllScenePaths == null)
@@ -988,13 +1002,18 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
             return;
         }
 
-        var scenes = GetAllScenePaths(bundle);
-        foreach (var scene in scenes)
+        var paths = GetAllScenePaths(bundle);
+        foreach (var path in paths)
         {
-            _bundleScenesNames.Add(scene, Path.GetFileNameWithoutExtension(scene));
+            _bundleSceneNames.Add(Path.GetFileNameWithoutExtension(path), path);
         }
 
-        _bundleScenes[bundle] = [..scenes];
+        foreach (var path in paths)
+        {
+            _bundleSceneShortPaths.Add(path.Remove(path.Length - ".unity".Length), path);
+        }
+
+        _bundleScenePaths[bundle] = [..paths];
     }
 
     private class UnloadBundleAsyncData(AsyncOperation op, AssetBundle bundle, bool unloadAllLoadedObjects)
