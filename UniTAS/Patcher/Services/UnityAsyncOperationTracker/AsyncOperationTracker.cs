@@ -682,7 +682,6 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
 
     public void Unload(AssetBundle assetBundle)
     {
-        // TODO: test, does it actually unload scene
         var paths = _bundleScenePaths[assetBundle];
         foreach (var path in paths)
         {
@@ -771,7 +770,7 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         var name = scene.Left;
 
         // asset bundle scenes take priority in name based matching
-        if (_bundleScenePaths.Values.Any(scenes => scenes.Any(s => s == name)))
+        if (_bundleScenePaths.Values.Any(scenes => scenes.Contains(name)))
         {
             return new SceneInfo(name, name, -1);
         }
@@ -1005,7 +1004,7 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         var paths = GetAllScenePaths(bundle);
         foreach (var path in paths)
         {
-            _bundleSceneNames.Add(Path.GetFileNameWithoutExtension(path), path);
+            _bundleSceneNames.Add(path, Path.GetFileNameWithoutExtension(path));
         }
 
         foreach (var path in paths)
