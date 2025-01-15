@@ -58,7 +58,7 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
     private readonly Dictionary<AsyncOperation, Object[]> _assetBundleRequests = new();
 
     private readonly Dictionary<string, string> _bundleSceneNames = new(); // path -> name
-    private readonly Dictionary<string, string> _bundleSceneShortPaths = new(); // path -> short path
+    private readonly Dictionary<string, HashSet<string>> _bundleSceneShortPaths = new(); // path -> short path
     private readonly Dictionary<AssetBundle, HashSet<string>> _bundleScenePaths = new();
 
     private bool _sceneLoadSync;
@@ -776,7 +776,7 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
             return new SceneInfo(name, name, -1);
         }
 
-        var bundleScenePath2 = _bundleSceneShortPaths.FirstOrDefault(x => x.Value == name);
+        var bundleScenePath2 = _bundleSceneShortPaths.FirstOrDefault(x => x.Value.Contains(name));
         if (bundleScenePath2.Key != null)
         {
             return new SceneInfo(bundleScenePath2.Key, name, -1);
@@ -1010,7 +1010,14 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
 
         foreach (var path in paths)
         {
-            _bundleSceneShortPaths.Add(path.Remove(path.Length - ".unity".Length), path);
+            var partial = path.Remove(path.Length - ".unity".Length);
+            var allPartialNames = new HashSet<string> { partial };
+            if (partial.StartsWith("Assets/"))
+            {
+                allPartialNames.Add(partial.Remove(0, "Assets/".Length));
+            }
+
+            _bundleSceneShortPaths.Add(path, allPartialNames);
         }
 
         _bundleScenePaths[bundle] = [..paths];
