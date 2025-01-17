@@ -682,6 +682,7 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
 
     public void Unload(AssetBundle assetBundle)
     {
+        if (assetBundle == null) return;
         var paths = _bundleScenePaths[assetBundle];
         foreach (var path in paths)
         {
