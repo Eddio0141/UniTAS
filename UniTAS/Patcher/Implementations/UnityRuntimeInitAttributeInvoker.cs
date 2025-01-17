@@ -9,6 +9,7 @@ using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.UnityEvents;
+using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Implementations;
 
@@ -116,7 +117,7 @@ public class UnityRuntimeInitAttributeInvoker
         foreach (var method in _beforeSceneLoad)
         {
             _logger.LogDebug($"Invoking BeforeSceneLoad method {method.DeclaringType?.Name}.{method.Name}");
-            method.Invoke(null, null);
+            ExceptionUtils.UnityLogErrorOnThrow(m => m.Invoke(null, null), method);
         }
     }
 
@@ -130,7 +131,7 @@ public class UnityRuntimeInitAttributeInvoker
         foreach (var method in _beforeStart)
         {
             _logger.LogDebug($"Invoking BeforeStart method {method.DeclaringType?.Name}.{method.Name}");
-            method.Invoke(null, null);
+            ExceptionUtils.UnityLogErrorOnThrow(m => m.Invoke(null, null), method);
         }
     }
 }
