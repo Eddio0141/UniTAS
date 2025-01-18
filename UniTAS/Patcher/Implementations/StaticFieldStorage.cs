@@ -22,11 +22,16 @@ public class StaticFieldStorage(
     {
         logger.LogDebug("resetting static fields");
 
-        UnityEngine.Resources.UnloadUnusedAssets();
+        // UnityEngine.Resources.UnloadUnusedAssets();
 
         var bench = Bench.Measure();
-        foreach (var field in classStaticInfoTracker.StaticFields)
+        
+        var fieldsCount = classStaticInfoTracker.StaticFields.Count;
+        var ctorInvokeCount = classStaticInfoTracker.StaticCtorInvokeOrder.Count;
+        
+        for (var i = 0; i < fieldsCount; i++)
         {
+            var field = classStaticInfoTracker.StaticFields[i];
             var typeName = field.DeclaringType?.FullName ?? "unknown_type";
 
             logger.LogDebug($"resetting static field: {typeName}.{field.Name}");
@@ -49,11 +54,10 @@ public class StaticFieldStorage(
         GC.Collect();
         GC.WaitForPendingFinalizers();
 
-        var count = classStaticInfoTracker.StaticCtorInvokeOrder.Count;
-        logger.LogDebug($"calling {count} static constructors");
+        logger.LogDebug($"calling {ctorInvokeCount} static constructors");
 
         bench = Bench.Measure();
-        for (var i = 0; i < count; i++)
+        for (var i = 0; i < ctorInvokeCount; i++)
         {
             var staticCtorType = classStaticInfoTracker.StaticCtorInvokeOrder[i];
             var cctor = staticCtorType.TypeInitializer;

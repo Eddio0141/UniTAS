@@ -240,7 +240,7 @@ public static class PatchMethods
 
         var stackCount = invokeStack.Count;
         var typeSaneFullName = type.SaneFullName();
-        StaticLogger.Log.LogDebug(
+        StaticLogger.Trace(
             $"Start of static ctor {typeSaneFullName}, stack count: {stackCount}, thread id: {Thread.CurrentThread.ManagedThreadId}");
         if (IsNotFirstInvoke(type)) return;
         StaticLogger.Trace("First static ctor invoke");
@@ -281,21 +281,20 @@ public static class PatchMethods
             throw new NullReferenceException("Could not find type of static ctor, something went horribly wrong");
         }
 
-        var threadId = Thread.CurrentThread.ManagedThreadId;
-
-        StaticLogger.Log.LogDebug($"End of static ctor {type.SaneFullName()}, thread id: {threadId}");
+        StaticLogger.Trace(
+            $"End of static ctor {type.SaneFullName()}, thread id: {Thread.CurrentThread.ManagedThreadId}");
 
         var invokeStack = CctorInvokeStack.Value;
         invokeStack.RemoveAt(invokeStack.Count - 1);
 
-        StaticLogger.Log.LogDebug($"stack count: {invokeStack.Count}");
+        StaticLogger.Trace($"stack count: {invokeStack.Count}");
 
         if (IsNotFirstInvoke(type)) return;
 
         // add only if not in ignore list
         if (PendingIgnoreAddingInvokeList.Value.Remove(type)) return;
 
-        StaticLogger.Log.LogDebug($"Adding type {type} to static ctor invoke list");
+        StaticLogger.Trace($"Adding type {type} to static ctor invoke list");
         ClassStaticInfoTracker.AddStaticCtorForTracking(type);
     }
 

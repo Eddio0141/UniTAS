@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using UniTAS.Patcher.Services.GameExecutionControllers;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.UnityEvents;
 using UniTAS.Patcher.Services.UnityInfo;
@@ -22,8 +23,17 @@ public class MonoBehaviourUpdateInvoker : MonoBehaviour
 
         _monoBehEventInvoker.InvokeAwake();
 
-        StartCoroutine(EndOfFrameCoroutine());
-        StartCoroutine(FixedUpdateCoroutine());
+        var controller = kernel.GetInstance<IMonoBehaviourController>();
+
+        var endOfFrame = EndOfFrameCoroutine();
+        var fixedUpdate = FixedUpdateCoroutine();
+        var update = UpdateCoroutine();
+        controller.IgnoreCoroutines.Add(endOfFrame);
+        controller.IgnoreCoroutines.Add(fixedUpdate);
+        controller.IgnoreCoroutines.Add(update);
+        StartCoroutine(endOfFrame);
+        StartCoroutine(fixedUpdate);
+        StartCoroutine(update);
     }
 
     private bool _quitting;
@@ -79,11 +89,22 @@ public class MonoBehaviourUpdateInvoker : MonoBehaviour
     private readonly WaitForEndOfFrame _waitForEndOfFrame = new();
     private readonly WaitForFixedUpdate _waitForFixedUpdate = new();
 
+    private IEnumerator UpdateCoroutine()
+    {
+        while (true)
+        {
+            yield return null;
+            _monoBehEventInvoker.InvokeUpdate();
+        }
+        // ReSharper disable once IteratorNeverReturns       
+    }
+
     private IEnumerator EndOfFrameCoroutine()
     {
         while (true)
         {
             yield return _waitForEndOfFrame;
+            _monoBehEventInvoker.InvokeEndOfFrame();
             _monoBehEventInvoker.InvokeLastUpdate();
         }
         // ReSharper disable once IteratorNeverReturns
@@ -94,7 +115,7 @@ public class MonoBehaviourUpdateInvoker : MonoBehaviour
         while (true)
         {
             yield return _waitForFixedUpdate;
-            _monoBehEventInvoker.CoroutineFixedUpdate();
+            _monoBehEventInvoker.InvokeFixedUpdate();
         }
         // ReSharper disable once IteratorNeverReturns
     }

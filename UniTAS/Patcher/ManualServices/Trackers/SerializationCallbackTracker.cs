@@ -70,7 +70,7 @@ public static class SerializationCallbackTracker
 
             foreach (var obj in AfterDeserializationInvoked)
             {
-                _afterDeserialization.Invoke(obj, null);
+                ExceptionUtils.UnityLogErrorOnThrow((m, o) => m.Invoke(o, null), _afterDeserialization, obj);
                 AfterSerializationManuallyInvoked.Add(obj);
             }
 

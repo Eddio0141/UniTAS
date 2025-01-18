@@ -4,12 +4,16 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
 using HarmonyLib;
+using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Interfaces.Patches.PatchTypes;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.UnityAsyncOperationTracker;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 using Object = UnityEngine.Object;
+#if TRACE
+using System.Collections.Generic;
+#endif
 
 namespace UniTAS.Patcher.Patches.Harmony.UnityInit;
 
@@ -37,7 +41,67 @@ public class AsyncOperationPatch
     private static readonly IAsyncOperationIsInvokingOnComplete AsyncOperationIsInvokingOnComplete =
         ContainerStarter.Kernel.GetInstance<IAsyncOperationIsInvokingOnComplete>();
 
+    private static readonly IAssetBundleTracker AssetBundleTracker =
+        ContainerStarter.Kernel.GetInstance<IAssetBundleTracker>();
+
+    private static readonly IAsyncOperationOverride AsyncOperationOverride =
+        ContainerStarter.Kernel.GetInstance<IAsyncOperationOverride>();
+
+    private static readonly IResourceAsyncTracker ResourceAsyncTracker =
+        ContainerStarter.Kernel.GetInstance<IResourceAsyncTracker>();
+
+    private static readonly IAssetBundleTracker Tracker = ContainerStarter.Kernel.GetInstance<IAssetBundleTracker>();
+
     private static readonly ILogger Logger = ContainerStarter.Kernel.GetInstance<ILogger>();
+
+#if TRACE
+    [HarmonyPatch]
+    private class AsyncOperationReturnTrace
+    {
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static IEnumerable<MethodBase> TargetMethods()
+        {
+            foreach (var type in AccessTools.AllTypes())
+            {
+                if (Equals(type.Assembly, typeof(AsyncOperationReturnTrace).Assembly)) continue;
+
+                IEnumerable<MethodInfo> methods;
+                try
+                {
+                    methods = AccessTools.GetDeclaredMethods(type);
+                }
+                catch (Exception)
+                {
+                    continue;
+                }
+
+                foreach (var method in methods)
+                {
+                    Type ret;
+                    try
+                    {
+                        ret = method.ReturnType;
+                    }
+                    catch (Exception)
+                    {
+                        continue;
+                    }
+
+                    if (ret == typeof(AsyncOperation)) yield return method;
+                }
+            }
+        }
+
+        private static void Postfix(AsyncOperation __result)
+        {
+            StaticLogger.Trace($"new AsyncOperation return: {DebugHelp.PrintClass(__result)}, {new StackTrace()}");
+        }
+    }
+#endif
 
     [HarmonyPatch(typeof(AsyncOperation), "InvokeCompletionEvent")]
     private class InvokeCompletionEvent
@@ -50,7 +114,7 @@ public class AsyncOperationPatch
         private static bool Prefix(AsyncOperation __instance)
         {
             StaticLogger.Trace($"patch prefix invoke\n{new StackTrace()}");
-            return AsyncOperationIsInvokingOnComplete.IsInvokingOnComplete(__instance, out var invoking) && invoking;
+            return !AsyncOperationIsInvokingOnComplete.IsInvokingOnComplete(__instance, out var invoking) || invoking;
         }
     }
 
@@ -92,7 +156,7 @@ public class AsyncOperationPatch
     }
 
     [HarmonyPatch(typeof(AsyncOperation), nameof(AsyncOperation.priority), MethodType.Setter)]
-    private class prioritySetter
+    private class set_priority
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
@@ -101,8 +165,23 @@ public class AsyncOperationPatch
 
         private static bool Prefix(int value, ref AsyncOperation __instance)
         {
-            StaticLogger.Trace($"patch prefix invoke\n{new StackTrace()}");
-            Logger.LogDebug($"Priority set to {value} for instance hash {__instance.GetHashCode()}, skipping");
+            return !AsyncOperationOverride.SetPriority(__instance, value);
+        }
+    }
+
+    [HarmonyPatch(typeof(AsyncOperation), nameof(AsyncOperation.priority), MethodType.Getter)]
+    private class get_priority
+    {
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static bool Prefix(ref int __result, ref AsyncOperation __instance)
+        {
+            if (!AsyncOperationOverride.GetPriority(__instance, out var priority)) return true;
+
+            __result = priority;
             return false;
         }
     }
@@ -123,7 +202,7 @@ public class AsyncOperationPatch
             // 0.9f if the scene is loaded and ready, doesn't matter if allowSceneActivation is true,
             // it will be at 0.9 till the scene loads in the next frame
 
-            if (!SceneLoadTracker.Progress(__instance, out var progress))
+            if (!AsyncOperationOverride.Progress(__instance, out var progress))
             {
                 // not tracked instance, proceed as original
                 return true;
@@ -146,7 +225,7 @@ public class AsyncOperationPatch
         {
             StaticLogger.Trace($"patch prefix invoke\n{new StackTrace()}");
 
-            if (!SceneLoadTracker.IsDone(__instance, out var isDone))
+            if (!AsyncOperationOverride.IsDone(__instance, out var isDone))
             {
                 StaticLogger.Trace("didn't find a tracked AsyncOperation instance");
                 return true;
@@ -166,12 +245,11 @@ public class AsyncOperationPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix(AsyncOperation __instance)
+        private static bool Prefix(IntPtr ___m_Ptr)
         {
             StaticLogger.Trace($"patch prefix invoke\n{new StackTrace()}");
 
-            var instanceTraverse = new Traverse(__instance).Field("m_Ptr");
-            return instanceTraverse.GetValue<IntPtr>() != IntPtr.Zero;
+            return ___m_Ptr != IntPtr.Zero;
         }
     }
 
@@ -198,22 +276,12 @@ public class AsyncOperationPatch
                 [typeof(string), typeof(uint), typeof(ulong)]);
         }
 
-        private static readonly MethodInfo _loadFromFile =
-            AccessTools.Method(typeof(AssetBundle), "LoadFromFile_Internal",
-                [typeof(string), typeof(uint), typeof(ulong)]) ??
-            AccessTools.Method(typeof(AssetBundle), "LoadFromFile",
-                [typeof(string), typeof(uint), typeof(ulong)]);
-
         private static bool Prefix(string path, uint crc, ulong offset, ref AssetBundleCreateRequest __result)
         {
-            StaticLogger.Trace(
-                $"patch prefix invoke (path = {path}, crc = {crc}, offset = {offset})\n{new StackTrace()}");
-
-            // LoadFromFile fails with null return if operation fails, __result.assetBundle will also reflect that if async load fails too
-            var loadResult = _loadFromFile.Invoke(null, [path, crc, offset]) as AssetBundle;
-            // create a new instance
-            __result = new();
-            AssetBundleCreateRequestTracker.NewAssetBundleCreateRequest(__result, loadResult);
+            StaticLogger.LogDebug($"Async op, load file async, path: {path}");
+            StaticLogger.Trace(new StackTrace());
+            __result = new AssetBundleCreateRequest();
+            AssetBundleCreateRequestTracker.NewAssetBundleCreateRequest(__result, path, crc, offset);
             return false;
         }
     }
@@ -227,17 +295,11 @@ public class AsyncOperationPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static readonly MethodBase _loadFromMemoryInternal = AccessTools.Method(typeof(AssetBundle),
-            "LoadFromMemory_Internal",
-            [typeof(byte[]), typeof(uint)]);
-
         private static bool Prefix(byte[] binary, uint crc, ref AssetBundleCreateRequest __result)
         {
-            StaticLogger.Trace($"patch prefix invoke\n{new StackTrace()}");
-
-            var loadResult = _loadFromMemoryInternal.Invoke(null, [binary, crc]) as AssetBundle;
-            __result = new();
-            AssetBundleCreateRequestTracker.NewAssetBundleCreateRequest(__result, loadResult);
+            StaticLogger.LogDebug("Async op, load memory async");
+            __result = new AssetBundleCreateRequest();
+            AssetBundleCreateRequestTracker.NewAssetBundleCreateRequest(__result, binary, crc);
             return false;
         }
     }
@@ -251,20 +313,12 @@ public class AsyncOperationPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static readonly MethodBase _loadFromStreamInternal = AccessTools.Method(typeof(AssetBundle),
-            "LoadFromStreamInternal",
-            [typeof(Stream), typeof(uint), typeof(uint)]);
-
         private static bool Prefix(Stream stream, uint crc, uint managedReadBufferSize,
             ref AssetBundleCreateRequest __result)
         {
-            StaticLogger.Trace($"patch prefix invoke\n{new StackTrace()}");
-
-            var loadResult =
-                _loadFromStreamInternal.Invoke(null, [stream, crc, managedReadBufferSize]) as
-                    AssetBundle;
-            __result = new();
-            AssetBundleCreateRequestTracker.NewAssetBundleCreateRequest(__result, loadResult);
+            StaticLogger.LogDebug("Async op, load stream async");
+            __result = new AssetBundleCreateRequest();
+            AssetBundleCreateRequestTracker.NewAssetBundleCreateRequest(__result, stream, crc, managedReadBufferSize);
             return false;
         }
     }
@@ -278,17 +332,11 @@ public class AsyncOperationPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static readonly MethodBase _loadAssetInternal = AccessTools.Method(typeof(AssetBundle),
-            "LoadAsset_Internal",
-            [typeof(string), typeof(Type)]);
-
         private static bool Prefix(AssetBundle __instance, string name, Type type, ref AssetBundleRequest __result)
         {
-            StaticLogger.Trace($"patch prefix invoke\n{new StackTrace()}");
-
-            var loadResult = _loadAssetInternal.Invoke(__instance, [name, type]) as Object;
-            __result = new();
-            AssetBundleRequestTracker.NewAssetBundleRequest(__result, loadResult);
+            StaticLogger.LogDebug($"Async op, load asset async, name: {name}, type: {type.SaneFullName()}");
+            __result = new AssetBundleRequest();
+            AssetBundleRequestTracker.NewAssetBundleRequest(__result, __instance, name, type, false);
             return false;
         }
     }
@@ -302,18 +350,12 @@ public class AsyncOperationPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static readonly MethodBase _loadAssetWithSubAssetsInternal = AccessTools.Method(typeof(AssetBundle),
-            "LoadAssetWithSubAssets_Internal",
-            [typeof(string), typeof(Type)]);
-
         private static bool Prefix(AssetBundle __instance, string name, Type type, ref AssetBundleRequest __result)
         {
-            StaticLogger.Trace($"patch prefix invoke\n{new StackTrace()}");
-
-            var loadResult =
-                _loadAssetWithSubAssetsInternal.Invoke(__instance, [name, type]) as Object[];
-            __result = new();
-            AssetBundleRequestTracker.NewAssetBundleRequestMultiple(__result, loadResult);
+            StaticLogger.LogDebug(
+                $"Async op, load asset with sub assets async, name: {name}, type: {type.SaneFullName()}");
+            __result = new AssetBundleRequest();
+            AssetBundleRequestTracker.NewAssetBundleRequest(__result, __instance, name, type, true);
             return false;
         }
     }
@@ -326,16 +368,30 @@ public class AsyncOperationPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static readonly MethodBase _unload =
-            AccessTools.Method(typeof(AssetBundle), "Unload", [typeof(bool)]);
+        private static readonly Type AssetBundleUnloadOperationType =
+            AccessTools.TypeByName("UnityEngine.AssetBundleUnloadOperation");
 
-        private static bool Prefix(bool unloadAllLoadedObjects, ref object __result)
+        private static bool Prefix(AssetBundle __instance, bool unloadAllLoadedObjects, ref object __result)
         {
-            StaticLogger.Trace($"patch prefix invoke\n{new StackTrace()}");
-
-            _unload.Invoke(null, [unloadAllLoadedObjects]);
-            __result = AccessTools.CreateInstance(typeof(AssetBundle));
+            StaticLogger.LogDebug("Async op, unload AssetBundle");
+            __result = AccessTools.CreateInstance(AssetBundleUnloadOperationType);
+            AssetBundleTracker.UnloadBundleAsync((AsyncOperation)__result, __instance, unloadAllLoadedObjects);
             return false;
+        }
+    }
+
+    [HarmonyPatch(typeof(AssetBundle), nameof(AssetBundle.Unload))]
+    private class Unload
+    {
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static void Postfix(AssetBundle __instance)
+        {
+            StaticLogger.LogDebug("non async op, unload AssetBundle");
+            AssetBundleTracker.Unload(__instance);
         }
     }
 
@@ -350,12 +406,11 @@ public class AsyncOperationPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix(AssetBundleRequest __instance, ref object __result)
+        private static bool Prefix(AssetBundleRequest __instance, ref Object __result)
         {
             StaticLogger.Trace($"patch prefix invoke\n{new StackTrace()}");
 
-            __result = AssetBundleRequestTracker.GetAssetBundleRequest(__instance);
-            return false;
+            return !AssetBundleRequestTracker.GetAssetBundleRequest(__instance, out __result);
         }
     }
 
@@ -367,15 +422,15 @@ public class AsyncOperationPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix(AssetBundleRequest __instance, ref object __result)
+        private static bool Prefix(AssetBundleRequest __instance, ref Object[] __result)
         {
-            __result = AssetBundleRequestTracker.GetAssetBundleRequestMultiple(__instance);
-            return __result == null;
+            StaticLogger.Trace($"patch prefix invoke\n{new StackTrace()}");
+
+            return !AssetBundleRequestTracker.GetAssetBundleRequestMultiple(__instance, out __result);
         }
     }
 
-    [HarmonyPatch(typeof(AssetBundleCreateRequest), nameof(AssetBundleCreateRequest.assetBundle),
-        MethodType.Getter)]
+    [HarmonyPatch(typeof(AssetBundleCreateRequest), nameof(AssetBundleCreateRequest.assetBundle), MethodType.Getter)]
     private class get_assetBundle
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
@@ -387,29 +442,46 @@ public class AsyncOperationPatch
         {
             StaticLogger.Trace($"patch prefix invoke\n{new StackTrace()}");
 
-            __result = AssetBundleCreateRequestTracker.GetAssetBundleCreateRequest(__instance);
+            return !AssetBundleCreateRequestTracker.GetAssetBundleCreateRequest(__instance, out __result);
+        }
+    }
+
+    [HarmonyPatch]
+    private class LoadAsyncInternalPatch
+    {
+        private static readonly MethodBase Resources_LoadAsyncInternal =
+            AccessTools.Method(AccessTools.TypeByName("UnityEngine.ResourcesAPIInternal") ?? typeof(Resources),
+                "LoadAsyncInternal");
+
+        private static MethodBase TargetMethod() => Resources_LoadAsyncInternal;
+
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static bool Prefix(string path, Type type, ref AsyncOperation __result)
+        {
+            StaticLogger.LogDebug("Resources async op, load");
+            __result = (AsyncOperation)AccessTools.CreateInstance(_resourceRequest);
+            ResourceAsyncTracker.ResourceLoadAsync(__result, path, type);
             return false;
         }
     }
 
-    [HarmonyPatch(typeof(Resources), "LoadAsyncInternal")]
-    private class LoadAsyncInternalPatch
+    [HarmonyPatch(typeof(Resources), nameof(Resources.UnloadUnusedAssets))]
+    private class Resources_UnloadUnusedAssets
     {
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix(string path, Type type, ref object __result)
+        private static bool Prefix(ref AsyncOperation __result)
         {
-            StaticLogger.Trace($"patch prefix invoke\n{new StackTrace()}");
-
-            // returns ResourceRequest
-            // should be fine with my instance and no tinkering
-            __result = AccessTools.CreateInstance(_resourceRequest);
-            var resultTraverse = Traverse.Create(__result);
-            _ = resultTraverse.Field("m_Path").SetValue(path);
-            _ = resultTraverse.Field("m_Type").SetValue(type);
+            StaticLogger.LogDebug("Resources async op, unload unused assets");
+            __result = new AsyncOperation();
+            ResourceAsyncTracker.ResourceUnloadAsync(__result);
             return false;
         }
     }

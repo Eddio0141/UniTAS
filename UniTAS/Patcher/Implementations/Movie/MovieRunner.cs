@@ -140,7 +140,11 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvent
         {
             _timeEnv.FrameTime = 0;
             MovieRunningStatusChange(false);
-            _coroutine.Start(FinishMovieCleanup());
+            _coroutine.Start(FinishMovieCleanup()).OnComplete += status =>
+            {
+                if (status.Exception != null)
+                    _logger.LogFatal($"exception occurs during movie runner coroutine: {status.Exception}");
+            };
             MovieLogger.LogInfo("movie end");
         }
     }

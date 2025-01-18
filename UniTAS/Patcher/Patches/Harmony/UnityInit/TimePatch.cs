@@ -31,7 +31,7 @@ public class TimePatch
         foreach (var frame in frames)
         {
             var method = frame.GetMethod();
-            if (method?.Name is not "FixedUpdate") return true;
+            if (method?.Name is not "FixedUpdate") continue;
 
             var declType = method.DeclaringType;
             while (declType != null)
@@ -39,8 +39,6 @@ public class TimePatch
                 if (declType.IsSubclassOf(typeof(MonoBehaviour))) return true;
                 declType = declType.DeclaringType;
             }
-
-            return true;
         }
 
         return false;
@@ -156,6 +154,7 @@ public class TimePatch
 
         private static void Postfix(ref int __result)
         {
+            if (ReverseInvoker.Invoking) return;
             __result = (int)((ulong)__result - TimeEnv.FrameCountRestartOffset);
         }
     }
@@ -256,6 +255,7 @@ public class TimePatch
 
         private static bool Prefix(ref float __result)
         {
+            if (ReverseInvoker.Invoking) return true;
             __result = (float)TimeEnv.ScaledFixedTime;
             return false;
         }

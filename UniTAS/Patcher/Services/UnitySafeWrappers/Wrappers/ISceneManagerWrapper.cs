@@ -1,11 +1,15 @@
+using JetBrains.Annotations;
+using UniTAS.Patcher.Implementations.UnitySafeWrappers.SceneManagement;
 using UniTAS.Patcher.Models.UnitySafeWrappers.SceneManagement;
 
 namespace UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 
-public interface ISceneWrapper
+public interface ISceneManagerWrapper
 {
     void LoadSceneAsync(string sceneName, int sceneBuildIndex, LoadSceneMode loadSceneMode,
         LocalPhysicsMode localPhysicsMode, bool mustCompleteNextFrame);
+
+    void UnloadSceneAsync(string sceneName, int sceneBuildIndex, object options, bool immediate, out bool success);
 
     void LoadScene(int buildIndex);
     void LoadScene(string name);
@@ -14,12 +18,17 @@ public interface ISceneWrapper
 
     int ActiveSceneIndex { get; }
 
+    [UsedImplicitly] // for test runner
     string ActiveSceneName { get; }
 
     // not really an actual call, but to keep track of stuff
-    int SceneCount { get; set; }
+    int LoadedSceneCountDummy { get; set; }
+
     /// <summary>
     /// Disabling this would not update SceneCount from any of the LoadScene functions here
     /// </summary>
-    bool TrackSceneCount { get; set; }
+    bool TrackSceneCountDummy { get; set; }
+
+    int SceneCount { get; }
+    SceneWrapper GetSceneAt(int index);
 }

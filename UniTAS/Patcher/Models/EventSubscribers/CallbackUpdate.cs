@@ -18,6 +18,7 @@ public enum CallbackUpdate
     GUIActual,
     LateUpdateUnconditional,
     LateUpdateActual,
+    EndOfFrameActual,
     LastUpdateUnconditional,
     LastUpdateActual
 }

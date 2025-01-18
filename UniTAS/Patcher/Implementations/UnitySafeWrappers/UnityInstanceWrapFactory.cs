@@ -4,7 +4,6 @@ using UniTAS.Patcher.Implementations.UnitySafeWrappers.SceneManagement;
 using UniTAS.Patcher.Implementations.UnitySafeWrappers.Unity.Collections;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Services.UnitySafeWrappers;
-using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 
 namespace UniTAS.Patcher.Implementations.UnitySafeWrappers;
 

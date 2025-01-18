@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using HarmonyLib;
@@ -97,7 +98,20 @@ public static class MethodBaseExtensions
             parameterTypes[0] = declaringType;
             for (var i = 0; i < numParameters; i++)
                 parameterTypes[i + 1] = parameters[i].ParameterType;
-            var delegateArgsResolved = delegateArgs ?? delegateType.GetGenericArguments();
+            // special handling for Func
+            var delegateArgsResolved = delegateArgs;
+            if (delegateArgsResolved == null && delegateType.IsGenericType && delegateType.GetGenericTypeDefinition()
+                    .SaneFullName().StartsWith("System.Func`"))
+            {
+                var args = delegateType.GetGenericArguments().ToList();
+                args.RemoveAt(args.Count - 1); // return
+                delegateArgsResolved = args.ToArray();
+            }
+            else if (delegateArgsResolved == null)
+            {
+                delegateArgsResolved = delegateType.GetGenericArguments();
+            }
+
             var dynMethodReturn = delegateArgsResolved.Length < parameterTypes.Length
                 ? parameterTypes
                 : delegateArgsResolved;
@@ -109,10 +123,37 @@ public static class MethodBaseExtensions
                 // OwnerType = declaringType
             };
             var ilGen = dmd.GetILGenerator();
-            if (declaringType is { IsValueType: true } && !delegateArgsResolved[0].IsByRef)
+            LocalBuilder valueTypeHolder = null;
+            if (declaringType is { IsValueType: true } && !delegateArgsResolved[0].IsByRef &&
+                (declaringType == delegateArgsResolved[0] || delegateArgsResolved[0].IsSubclassOf(declaringType)))
                 ilGen.Emit(OpCodes.Ldarga_S, 0);
+            // if `ref object` for instance, you would want a return
+            else if (declaringType is { IsValueType: true } &&
+                     !(delegateArgsResolved[0].GetElementType() ?? delegateArgsResolved[0]).IsValueType)
+            {
+                if (delegateArgsResolved[0].IsByRef)
+                {
+                    valueTypeHolder = ilGen.DeclareLocal(declaringType);
+
+                    // unbox and store to temp
+                    ilGen.Emit(OpCodes.Ldarg_0);
+                    ilGen.Emit(OpCodes.Ldind_Ref);
+                    ilGen.Emit(OpCodes.Unbox_Any, declaringType);
+                    ilGen.Emit(OpCodes.Stloc, valueTypeHolder);
+                    ilGen.Emit(OpCodes.Ldloca, valueTypeHolder);
+                }
+                else
+                {
+                    var tempHolder = ilGen.DeclareLocal(declaringType);
+                    ilGen.Emit(OpCodes.Ldarg_0);
+                    ilGen.Emit(OpCodes.Unbox_Any, declaringType);
+                    ilGen.Emit(OpCodes.Stloc, tempHolder);
+                    ilGen.Emit(OpCodes.Ldloca, tempHolder);
+                }
+            }
             else
                 ilGen.Emit(OpCodes.Ldarg_0);
+
             for (var i = 1; i < parameterTypes.Length; i++)
             {
                 ilGen.Emit(OpCodes.Ldarg, i);
@@ -125,8 +166,18 @@ public static class MethodBaseExtensions
             }
 
             ilGen.Emit(OpCodes.Call, method);
+
+            if (valueTypeHolder != null)
+            {
+                // replace ref
+                ilGen.Emit(OpCodes.Ldarg_0);
+                ilGen.Emit(OpCodes.Ldloc, valueTypeHolder);
+                ilGen.Emit(OpCodes.Box, declaringType);
+                ilGen.Emit(OpCodes.Stind_Ref);
+            }
+
             ilGen.Emit(OpCodes.Ret);
-            return (TDelegateType)dmd.Generate().CreateDelegate(delegateType);
+            return dmd.Generate().CreateDelegate<TDelegateType>();
         }
 
         // Closed instance method delegate that virtually calls

@@ -6,7 +6,6 @@ using UniTAS.Patcher.Services.UnityEvents;
 using UnityEngine.InputSystem;
 #if TRACE
 using UniTAS.Patcher.Utils;
-using UniTAS.Patcher.Services;
 using UnityEngine;
 #endif
 
@@ -106,55 +105,55 @@ public partial class UnityEvents
         switch (updateMode)
         {
             case InputSettings.UpdateMode.ProcessEventsInDynamicUpdate:
+            {
+                var registerOnBeforeUpdate = !AlreadyRegisteredOnEvent;
+
+                if (!_usingMonoBehFixedUpdate)
                 {
-                    var registerOnBeforeUpdate = !AlreadyRegisteredOnEvent;
-
-                    if (!_usingMonoBehFixedUpdate)
-                    {
-                        _inputFixedUpdate = () => InputUpdate(true, false);
-                        AddEventToFixedUpdateUnconditional();
-                        _usingMonoBehFixedUpdate = true;
-                    }
-
-                    if (_usingMonoBehUpdate)
-                    {
-                        OnUpdateUnconditional -= _inputUpdate;
-                        _usingMonoBehUpdate = false;
-                    }
-
-                    if (registerOnBeforeUpdate)
-                    {
-                        _inputUpdate = () => InputUpdate(false, true);
-                        InputSystem.onBeforeUpdate += _inputUpdate;
-                    }
-
-                    break;
+                    _inputFixedUpdate = () => InputUpdate(true, false);
+                    AddEventToFixedUpdateUnconditional();
+                    _usingMonoBehFixedUpdate = true;
                 }
+
+                if (_usingMonoBehUpdate)
+                {
+                    OnUpdateUnconditional -= _inputUpdate;
+                    _usingMonoBehUpdate = false;
+                }
+
+                if (registerOnBeforeUpdate)
+                {
+                    _inputUpdate = () => InputUpdate(false, true);
+                    InputSystem.onBeforeUpdate += _inputUpdate;
+                }
+
+                break;
+            }
             case InputSettings.UpdateMode.ProcessEventsInFixedUpdate:
+            {
+                var registerOnBeforeUpdate = !AlreadyRegisteredOnEvent;
+
+                if (!_usingMonoBehUpdate)
                 {
-                    var registerOnBeforeUpdate = !AlreadyRegisteredOnEvent;
-
-                    if (!_usingMonoBehUpdate)
-                    {
-                        _inputUpdate = () => InputUpdate(false, false);
-                        AddEventToUpdateUnconditional();
-                        _usingMonoBehUpdate = true;
-                    }
-
-                    if (_usingMonoBehFixedUpdate)
-                    {
-                        OnFixedUpdateUnconditional -= _inputFixedUpdate;
-                        _usingMonoBehFixedUpdate = false;
-                    }
-
-                    if (registerOnBeforeUpdate)
-                    {
-                        _inputFixedUpdate = () => InputUpdate(true, true);
-                        InputSystem.onBeforeUpdate += _inputFixedUpdate;
-                    }
-
-                    break;
+                    _inputUpdate = () => InputUpdate(false, false);
+                    AddEventToUpdateUnconditional();
+                    _usingMonoBehUpdate = true;
                 }
+
+                if (_usingMonoBehFixedUpdate)
+                {
+                    OnFixedUpdateUnconditional -= _inputFixedUpdate;
+                    _usingMonoBehFixedUpdate = false;
+                }
+
+                if (registerOnBeforeUpdate)
+                {
+                    _inputFixedUpdate = () => InputUpdate(true, true);
+                    InputSystem.onBeforeUpdate += _inputFixedUpdate;
+                }
+
+                break;
+            }
             case InputSettings.UpdateMode.ProcessEventsManually:
                 if (AlreadyRegisteredOnEvent)
                 {
@@ -188,9 +187,8 @@ public partial class UnityEvents
     private void InputUpdate(bool fixedUpdate, bool newInputSystemUpdate)
     {
 #if TRACE
-        _patchReverseInvoker ??= ContainerStarter.Kernel.GetInstance<IPatchReverseInvoker>();
         StaticLogger.Trace(
-            $"InputUpdate, time: {_patchReverseInvoker.Invoke(() => Time.time)} fixed update: {fixedUpdate}, new input system update: {newInputSystemUpdate}");
+            $"InputUpdate, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)} fixed update: {fixedUpdate}, new input system update: {newInputSystemUpdate}");
 #endif
 
         for (var i = 0; i < _inputUpdatesUnconditional.Count; i++)

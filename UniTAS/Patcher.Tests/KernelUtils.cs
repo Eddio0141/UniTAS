@@ -199,11 +199,16 @@ public static class KernelUtils
     }
 
     [Register(IncludeDifferentAssembly = true)]
-    public class SceneManagerWrapperDummy : ISceneWrapper
+    public class ISceneManagerManagerWrapperDummy : ISceneManagerWrapper
     {
         public void LoadSceneAsync(string sceneName, int sceneBuildIndex, LoadSceneMode loadSceneMode,
             LocalPhysicsMode localPhysicsMode, bool mustCompleteNextFrame)
         {
+        }
+
+        public void UnloadSceneAsync(string sceneName, int sceneBuildIndex, object options, bool immediate, out bool success)
+        {
+            success = false;
         }
 
         public void LoadScene(int buildIndex)
@@ -217,8 +222,14 @@ public static class KernelUtils
         public int TotalSceneCount => 0;
         public int ActiveSceneIndex => 0;
         public string ActiveSceneName => "";
-        public int SceneCount { get; set; }
-        public bool TrackSceneCount { get; set; }
+        public int LoadedSceneCountDummy { get; set; }
+        public bool TrackSceneCountDummy { get; set; }
+        public int SceneCount => 0;
+
+        public SceneWrapper GetSceneAt(int index)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     [Register(IncludeDifferentAssembly = true)]

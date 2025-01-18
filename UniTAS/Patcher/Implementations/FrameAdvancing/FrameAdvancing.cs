@@ -205,7 +205,11 @@ public partial class FrameAdvancing : IFrameAdvancing, IOnFixedUpdateUncondition
         // do we have new frame advance to do? don't bother pausing then
         if (_pendingPauseFrames != 0) return;
 
-        _coroutine.Start(Pause(update));
+        _coroutine.Start(Pause(update)).OnComplete += status =>
+        {
+            if (status.Exception != null)
+                _logger.LogFatal($"exception occurs during frame advance coroutine: {status.Exception}");
+        };
     }
 
     private void CheckAndAddPendingFrameAdvances()

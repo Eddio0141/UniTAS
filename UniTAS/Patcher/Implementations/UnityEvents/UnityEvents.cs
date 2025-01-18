@@ -11,9 +11,9 @@ using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.GameExecutionControllers;
 using UniTAS.Patcher.Services.InputSystemOverride;
 using UniTAS.Patcher.Services.UnityEvents;
+using UnityEngine;
 #if TRACE
 using UniTAS.Patcher.Utils;
-using UnityEngine;
 #endif
 
 namespace UniTAS.Patcher.Implementations.UnityEvents;
@@ -27,7 +27,10 @@ namespace UniTAS.Patcher.Implementations.UnityEvents;
 [Singleton(timing: RegisterTiming.Entry)]
 public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEventInvoker
 {
+    private readonly IPatchReverseInvoker _patchReverseInvoker;
+
     public UnityEvents(IEnumerable<IOnAwakeUnconditional> onAwakesUnconditional,
+        IEnumerable<IOnAwakeActual> onAwakeActual,
         IEnumerable<IOnStartUnconditional> onStartsUnconditional,
         IEnumerable<IOnEnableUnconditional> onEnablesUnconditional,
         IEnumerable<IOnPreUpdateUnconditional> onPreUpdatesUnconditional,
@@ -42,16 +45,14 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         IEnumerable<IOnInputUpdateUnconditional> onInputUpdatesUnconditional,
         IEnumerable<IOnLateUpdateUnconditional> onLateUpdatesUnconditional,
         IEnumerable<IOnLastUpdateUnconditional> onLastUpdatesUnconditional,
-        IEnumerable<IOnLastUpdateActual> onLastUpdatesActual, IGameRestart gameRestart,
-        IInputSystemState newInputSystemExists, IMonoBehaviourController monoBehaviourController
-#if TRACE
-        , IPatchReverseInvoker patchReverseInvoker
-#endif
+        IEnumerable<IOnLastUpdateActual> onLastUpdatesActual,
+        IEnumerable<IOnEndOfFrameActual> onEndOfFrameActual,
+        IGameRestart gameRestart,
+        IInputSystemState newInputSystemExists, IMonoBehaviourController monoBehaviourController,
+        IPatchReverseInvoker patchReverseInvoker
     )
     {
-#if TRACE
         _patchReverseInvoker = patchReverseInvoker;
-#endif
         _newInputSystemExists = newInputSystemExists;
         _monoBehaviourController = monoBehaviourController;
 
@@ -67,6 +68,11 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         foreach (var onAwake in onAwakesUnconditional)
         {
             RegisterMethod(onAwake, onAwake.AwakeUnconditional, CallbackUpdate.AwakeUnconditional);
+        }
+
+        foreach (var onAwake in onAwakeActual)
+        {
+            RegisterMethod(onAwake, onAwake.AwakeActual, CallbackUpdate.AwakeActual);
         }
 
         foreach (var onStart in onStartsUnconditional)
@@ -138,6 +144,11 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
             RegisterMethod(onLastUpdateActual, onLastUpdateActual.OnLastUpdateActual, CallbackUpdate.LastUpdateActual);
         }
 
+        foreach (var endOfFrameActual in onEndOfFrameActual)
+        {
+            RegisterMethod(endOfFrameActual, endOfFrameActual.OnEndOfFrame, CallbackUpdate.EndOfFrameActual);
+        }
+
         // input system events init
         foreach (var onInputUpdateActual in onInputUpdatesActual)
         {
@@ -176,6 +187,7 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
             CallbackUpdate.LastUpdateUnconditional => _lastUpdatesUnconditional,
             CallbackUpdate.LateUpdateUnconditional => _lateUpdatesUnconditional,
             CallbackUpdate.LateUpdateActual => _lateUpdatesActual,
+            CallbackUpdate.EndOfFrameActual => _endOfFramesActual,
             _ => throw new ArgumentOutOfRangeException(nameof(update), update, null)
         };
 
@@ -379,14 +391,20 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
     private readonly PriorityList<Action> _lastUpdatesUnconditional = new();
     private readonly PriorityList<Action> _lastUpdatesActual = new();
 
+    private readonly PriorityList<Action> _endOfFramesActual = new();
+
     private bool _updated;
-    private bool _calledFixedUpdate;
     private bool _calledPreUpdate;
 
     private readonly IMonoBehaviourController _monoBehaviourController;
 
     public void InvokeLastUpdate()
     {
+#if TRACE
+        StaticLogger.Trace($"InvokeLastUpdate, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)}, " +
+                           $"paused: {_monoBehaviourController.PausedExecution}");
+#endif
+
         for (var i = 0; i < _lastUpdatesUnconditional.Count; i++)
         {
             _lastUpdatesUnconditional[i]();
@@ -403,6 +421,11 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
     // calls awake before any other script
     public void InvokeAwake()
     {
+#if TRACE
+        StaticLogger.Trace($"InvokeAwake, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)}, " +
+                           $"paused: {_monoBehaviourController.PausedExecution}");
+#endif
+
         for (var i = 0; i < _awakesUnconditional.Count; i++)
         {
             _awakesUnconditional[i]();
@@ -419,6 +442,11 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
     // calls onEnable before any other script
     public void InvokeOnEnable()
     {
+#if TRACE
+        StaticLogger.Trace($"InvokeOnEnable, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)}, " +
+                           $"paused: {_monoBehaviourController.PausedExecution}");
+#endif
+
         for (var i = 0; i < _enablesUnconditional.Count; i++)
         {
             _enablesUnconditional[i]();
@@ -435,6 +463,11 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
     // calls start before any other script
     public void InvokeStart()
     {
+#if TRACE
+        StaticLogger.Trace($"InvokeStart, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)}, " +
+                           $"paused: {_monoBehaviourController.PausedExecution}");
+#endif
+
         for (var i = 0; i < _startsUnconditional.Count; i++)
         {
             _startsUnconditional[i]();
@@ -448,17 +481,14 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         }
     }
 
-#if TRACE
-    private IPatchReverseInvoker _patchReverseInvoker;
-#endif
-
     public void InvokeUpdate()
     {
         if (_updated) return;
         _updated = true;
 
 #if TRACE
-        StaticLogger.Trace($"InvokeUpdate, time: {_patchReverseInvoker.Invoke(() => Time.time)}");
+        StaticLogger.Trace($"InvokeUpdate, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)}, " +
+                           $"paused: {_monoBehaviourController.PausedExecution || _monoBehaviourController.PausedUpdate}");
 #endif
 
         if (!_calledPreUpdate)
@@ -466,6 +496,8 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
             _calledPreUpdate = true;
             InvokeCallOnPreUpdate();
         }
+
+        _endOfFrameUpdated = false;
 
         for (var i = 0; i < _updatesUnconditional.Count; i++)
         {
@@ -484,6 +516,11 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
     // right now I don't call this update before other scripts so I don't need to check if it was already called
     public void InvokeLateUpdate()
     {
+#if TRACE
+        StaticLogger.Trace($"InvokeLateUpdate, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)}, " +
+                           $"paused: {_monoBehaviourController.PausedExecution}");
+#endif
+
         _updated = false;
         _calledPreUpdate = false;
 
@@ -501,19 +538,20 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         }
     }
 
-    // isn't called at the very first yield WaitForFixedUpdate, but this is enough
-    public void CoroutineFixedUpdate()
-    {
-        _calledFixedUpdate = false;
-    }
+    private float _prevFixedTime = -1;
 
     public void InvokeFixedUpdate()
     {
-        if (_calledFixedUpdate) return;
-        _calledFixedUpdate = true;
+#if !UNIT_TESTS
+        var fixedTime = _patchReverseInvoker.Invoke(() => Time.fixedTime);
+        // ReSharper disable once CompareOfFloatsByEqualityOperator
+        if (_prevFixedTime == fixedTime) return;
+        _prevFixedTime = fixedTime;
+#endif
 
 #if TRACE
-        StaticLogger.Trace($"InvokeFixedUpdate, time: {_patchReverseInvoker.Invoke(() => Time.time)}");
+        StaticLogger.Trace(
+            $"InvokeFixedUpdate, time: {fixedTime}, paused: {_monoBehaviourController.PausedExecution}");
 #endif
 
         InvokeCallOnPreUpdate();
@@ -533,6 +571,11 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
 
     public void InvokeOnGUI()
     {
+// #if TRACE
+//         StaticLogger.Trace($"InvokeOnGUI, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)}, " +
+//                            $"paused: {_monoBehaviourController.PausedExecution}");
+// #endif
+
         // currently, this doesn't get called before other scripts
         for (var i = 0; i < _guisUnconditional.Count; i++)
         {
@@ -549,6 +592,11 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
 
     private void InvokeCallOnPreUpdate()
     {
+#if TRACE
+        StaticLogger.Trace($"InvokeCallOnPreUpdate, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)}, " +
+                           $"paused: {_monoBehaviourController.PausedExecution}");
+#endif
+
         for (var i = 0; i < _preUpdatesUnconditional.Count; i++)
         {
             _preUpdatesUnconditional[i]();
@@ -559,6 +607,32 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
             var preUpdate = _preUpdatesActual[i];
             if (!_monoBehaviourController.PausedExecution)
                 preUpdate();
+        }
+    }
+
+    private bool _endOfFrameUpdated;
+
+    public void InvokeEndOfFrame()
+    {
+        if (_endOfFrameUpdated) return;
+        _endOfFrameUpdated = true;
+
+#if TRACE
+        StaticLogger.Trace($"InvokeEndOfFrame, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)}, " +
+                           $"paused: {_monoBehaviourController.PausedExecution}");
+#endif
+
+        // for (var i = 0; i < _endOfFramesUnconditional.Count; i++)
+        // {
+        //     _endOfFramesUnconditional[i]();
+        // }
+
+        for (var i = 0; i < _endOfFramesActual.Count; i++)
+        {
+            var endOfFrame = _endOfFramesActual[i];
+            if (_monoBehaviourController.PausedExecution ||
+                _monoBehaviourController.PausedUpdate) continue;
+            endOfFrame();
         }
     }
 }

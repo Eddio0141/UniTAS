@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Linq;
 using System.Reflection;
 using HarmonyLib;
@@ -8,6 +9,7 @@ using UniTAS.Patcher.ContainerBindings.GameExecutionControllers;
 using UniTAS.Patcher.ContainerBindings.UnityEvents;
 using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Interfaces;
+using UniTAS.Patcher.ManualServices;
 using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Patches.Preloader;
@@ -139,7 +141,7 @@ public class MonoBehaviourPatch : PreloadPatcher
                 var (eventMethodName, eventMethodArgs) = eventMethodPair;
 
                 // try finding method with no parameters
-                var eventMethodsMatch = type.GetMethods().Where(x => x.Name == eventMethodName).ToList();
+                var eventMethodsMatch = type.GetMethods().Where(x => x.Name == eventMethodName && !x.IsStatic).ToList();
                 var foundMethod =
                     eventMethodsMatch.FirstOrDefault(m => !m.HasParameters);
 
@@ -195,8 +197,37 @@ public class MonoBehaviourPatch : PreloadPatcher
                     }
                 }
 
-                il.InsertBeforeInstructionReplace(firstInstruction, il.Create(OpCodes.Ret),
+                var ignoreRet = il.Create(OpCodes.Ret);
+                il.InsertBeforeInstructionReplace(firstInstruction, ignoreRet,
                     InstructionReplaceFixType.ExceptionRanges);
+
+                // is it an IEnumerator
+                if (foundMethod.ReturnType.FullName == typeof(IEnumerator).SaneFullName())
+                {
+                    StaticLogger.Trace($"this method is an IEnumerator");
+
+                    var iEnumeratorRef = assembly.MainModule.ImportReference(typeof(IEnumerator));
+                    var rets = il.Body.Instructions.Where(x => x != ignoreRet && x.OpCode == OpCodes.Ret).ToArray();
+                    var trackerInvoke = assembly.MainModule.ImportReference(
+                        typeof(CoroutineManagerManual).GetMethod(nameof(CoroutineManagerManual.MonoBehNewCoroutine)));
+
+                    var returnTemp = new VariableDefinition(iEnumeratorRef);
+                    il.Body.Variables.Add(returnTemp);
+
+                    foreach (var ret in rets)
+                    {
+                        // 1. dupe return value
+                        // 2. store return value
+                        // 3. load `this`
+                        // 4. load return value
+                        // 5. call tracker
+                        il.InsertBeforeInstructionReplace(ret, il.Create(OpCodes.Dup));
+                        il.InsertBeforeInstructionReplace(ret, il.Create(OpCodes.Stloc, returnTemp));
+                        il.InsertBeforeInstructionReplace(ret, il.Create(OpCodes.Ldarg_0));
+                        il.InsertBeforeInstructionReplace(ret, il.Create(OpCodes.Ldloc, returnTemp));
+                        il.InsertBeforeInstructionReplace(ret, il.Create(OpCodes.Call, trackerInvoke));
+                    }
+                }
 
                 foundMethod.Body.OptimizeMacros();
             }
