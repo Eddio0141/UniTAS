@@ -329,6 +329,7 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
     public void NewAssetBundleRequest(AsyncOperation op, AssetBundle assetBundle, string name, Type type,
         bool withSubAssets)
     {
+        if (assetBundle == null) return;
         _tracked.Add(op, new AsyncOperationData());
         _ops.Add(new NewAssetBundleRequestData(op, assetBundle, name, type, withSubAssets, this));
     }
@@ -695,6 +696,7 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
 
     public void UnloadBundleAsync(AsyncOperation op, AssetBundle bundle, bool unloadAllLoadedObjects)
     {
+        if (bundle == null) return;
         _tracked.Add(op, new AsyncOperationData());
         _ops.Add(new UnloadBundleAsyncData(op, bundle, unloadAllLoadedObjects));
     }
