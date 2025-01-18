@@ -59,7 +59,9 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
 
     private readonly Dictionary<string, string> _bundleSceneNames = new(); // path -> name
     private readonly Dictionary<string, HashSet<string>> _bundleSceneShortPaths = new(); // path -> short path
-    private readonly Dictionary<AssetBundle, HashSet<string>> _bundleScenePaths = new();
+
+    private readonly Dictionary<AssetBundle, HashSet<string>> _bundleScenePaths =
+        new(new HashUtils.ReferenceComparer<AssetBundle>());
 
     private bool _sceneLoadSync;
 
@@ -329,7 +331,6 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
     public void NewAssetBundleRequest(AsyncOperation op, AssetBundle assetBundle, string name, Type type,
         bool withSubAssets)
     {
-        if (assetBundle == null) return;
         _tracked.Add(op, new AsyncOperationData());
         _ops.Add(new NewAssetBundleRequestData(op, assetBundle, name, type, withSubAssets, this));
     }
@@ -683,8 +684,7 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
 
     public void Unload(AssetBundle assetBundle)
     {
-        if (assetBundle == null) return;
-        var paths = _bundleScenePaths[assetBundle];
+        if (!_bundleScenePaths.TryGetValue(assetBundle, out var paths)) return;
         foreach (var path in paths)
         {
             _bundleSceneNames.Remove(path);
@@ -696,7 +696,6 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
 
     public void UnloadBundleAsync(AsyncOperation op, AssetBundle bundle, bool unloadAllLoadedObjects)
     {
-        if (bundle == null) return;
         _tracked.Add(op, new AsyncOperationData());
         _ops.Add(new UnloadBundleAsyncData(op, bundle, unloadAllLoadedObjects));
     }
