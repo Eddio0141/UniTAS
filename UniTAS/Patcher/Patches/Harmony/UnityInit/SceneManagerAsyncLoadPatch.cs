@@ -477,10 +477,10 @@ public class SceneManagerAsyncLoadPatch
 
         private static bool Prefix(string name, ref object ret)
         {
-            foreach (var loading in SceneLoadTracker.DummyScenes)
+            foreach (var loading in SceneLoadTracker.LoadingScenes)
             {
-                if (loading.dummyScene.LoadingScene.Name != name) continue;
-                ret = loading.dummyScene.DummySceneStruct;
+                if (loading.LoadingScene.Name != name) continue;
+                ret = loading.DummySceneStruct;
                 return false;
             }
 
@@ -503,10 +503,10 @@ public class SceneManagerAsyncLoadPatch
 
         private static bool Prefix(int buildIndex, ref object ret)
         {
-            foreach (var loading in SceneLoadTracker.DummyScenes)
+            foreach (var loading in SceneLoadTracker.LoadingScenes)
             {
-                if (loading.dummyScene.LoadingScene.BuildIndex != buildIndex) continue;
-                ret = loading.dummyScene.DummySceneStruct;
+                if (loading.LoadingScene.BuildIndex != buildIndex) continue;
+                ret = loading.DummySceneStruct;
                 return false;
             }
 
@@ -529,10 +529,10 @@ public class SceneManagerAsyncLoadPatch
 
         private static bool Prefix(string scenePath, ref object ret)
         {
-            foreach (var loading in SceneLoadTracker.DummyScenes)
+            foreach (var loading in SceneLoadTracker.LoadingScenes)
             {
-                if (loading.dummyScene.LoadingScene.Path != scenePath) continue;
-                ret = loading.dummyScene.DummySceneStruct;
+                if (loading.LoadingScene.Path != scenePath) continue;
+                ret = loading.DummySceneStruct;
                 return false;
             }
 
