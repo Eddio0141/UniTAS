@@ -166,7 +166,11 @@ public class ExternPropertyReset
         // readonly property (?)
         "UnityEngine.Caching.enabled",
         // missing method exception, also pointless
-        "UnityEngine.AndroidJNIHelper.debug"
+        "UnityEngine.AndroidJNIHelper.debug",
+        // strange test properties
+        "UnityEngine.ExceptionTests.PropertyThatCanThrow",
+        "UnityEngine.ExceptionTests.PropertyGetThatCanThrow",
+        "UnityEngine.ExceptionTests.PropertySetThatCanThrow"
     ];
 
     private readonly HashSet<string> _knownProperties =
