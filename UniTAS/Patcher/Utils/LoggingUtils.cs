@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading;
 using BepInEx;
 using BepInEx.Logging;
+using HarmonyLib;
 
 namespace UniTAS.Patcher.Utils;
 
@@ -57,8 +58,11 @@ public static class LoggingUtils
             Instance?._logWriter?.Flush();
         }
 
+        private static readonly Type HarmonyLogSource = AccessTools.TypeByName("BepInEx.Logging.HarmonyLogSource")!;
+
         public void LogEvent(object sender, LogEventArgs eventArgs)
         {
+            if (eventArgs.Source.GetType() == HarmonyLogSource && eventArgs.Level != LogLevel.Error) return;
             _logWriter.WriteLine(eventArgs.ToString());
         }
     }
