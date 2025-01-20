@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using UniTAS.Patcher.Services.GameExecutionControllers;
 using UniTAS.Patcher.Services.Logging;
-using UniTAS.Patcher.Services.Trackers.UpdateTrackInfo;
 using UniTAS.Patcher.Services.UnityEvents;
 using UniTAS.Patcher.Services.UnityInfo;
 using UniTAS.Patcher.Utils;
@@ -12,7 +11,6 @@ namespace UniTAS.Patcher.MonoBehaviourScripts;
 public class MonoBehaviourUpdateInvoker : MonoBehaviour
 {
     private IMonoBehEventInvoker _monoBehEventInvoker;
-    private ICoroutineTracker _coroutineTracker;
     private ILogger _logger;
     private IGameInfoUpdate _gameInfo;
 
@@ -22,7 +20,6 @@ public class MonoBehaviourUpdateInvoker : MonoBehaviour
         _monoBehEventInvoker = kernel.GetInstance<IMonoBehEventInvoker>();
         _logger = kernel.GetInstance<ILogger>();
         _gameInfo = kernel.GetInstance<IGameInfoUpdate>();
-        _coroutineTracker = kernel.GetInstance<ICoroutineTracker>();
 
         _monoBehEventInvoker.InvokeAwake();
 
@@ -108,10 +105,7 @@ public class MonoBehaviourUpdateInvoker : MonoBehaviour
         {
             yield return _waitForEndOfFrame;
             _monoBehEventInvoker.InvokeEndOfFrame();
-            if (!_coroutineTracker.CoroutinesFinishedThisFrame)
-            {
-                _monoBehEventInvoker.InvokeLastUpdate();
-            }
+            _monoBehEventInvoker.InvokeLastUpdate();
         }
         // ReSharper disable once IteratorNeverReturns
     }
