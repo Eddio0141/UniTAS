@@ -11,6 +11,7 @@ using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.GameExecutionControllers;
 using UniTAS.Patcher.Services.InputSystemOverride;
 using UniTAS.Patcher.Services.UnityEvents;
+using UniTAS.Patcher.Utils;
 using UnityEngine;
 #if TRACE
 using UniTAS.Patcher.Utils;
@@ -395,6 +396,7 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
 
     private bool _updated;
     private bool _calledPreUpdate;
+    private bool _calledLastUpdate;
 
     private readonly IMonoBehaviourController _monoBehaviourController;
 
@@ -404,6 +406,12 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         StaticLogger.Trace($"InvokeLastUpdate, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)}, " +
                            $"paused: {_monoBehaviourController.PausedExecution}");
 #endif
+
+        if (_calledLastUpdate)
+        {
+            StaticLogger.LogError($"last update was called multiple times in one frame, {Environment.StackTrace}");
+            return;
+        }
 
         for (var i = 0; i < _lastUpdatesUnconditional.Count; i++)
         {
@@ -498,6 +506,7 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         }
 
         _endOfFrameUpdated = false;
+        _calledLastUpdate = false;
 
         for (var i = 0; i < _updatesUnconditional.Count; i++)
         {

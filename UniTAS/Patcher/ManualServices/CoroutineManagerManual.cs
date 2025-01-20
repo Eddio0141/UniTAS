@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Diagnostics.CodeAnalysis;
 using UniTAS.Patcher.Services.Trackers.UpdateTrackInfo;
 using UniTAS.Patcher.Utils;
 
@@ -20,9 +21,15 @@ public static class CoroutineManagerManual
     public static void MonoBehNewCoroutine(object instance, IEnumerator routine) =>
         CoroutineTracker.NewCoroutine(instance, routine);
 
-    public static bool CoroutineMoveNextPrefix(IEnumerator instance, ref bool result) =>
-        CoroutineTracker.CoroutineMoveNextPrefix(instance, ref result);
+    [SuppressMessage("ReSharper", "InconsistentNaming")]
+    public static bool CoroutineMoveNextPrefix(IEnumerator __instance, ref bool __result, ref bool __state) =>
+        CoroutineTracker.CoroutineMoveNextPrefix(__instance, ref __result, ref __state);
 
-    public static void CoroutineCurrentPostfix(IEnumerator instance, ref object result) =>
-        CoroutineTracker.CoroutineCurrentPostfix(instance, ref result);
+    [SuppressMessage("ReSharper", "InconsistentNaming")]
+    public static void CoroutineMoveNextPostfix(IEnumerator __instance, bool __result, bool __state) =>
+        CoroutineTracker.CoroutineMoveNextPostfix(__instance, __result, __state);
+
+    [SuppressMessage("ReSharper", "InconsistentNaming")]
+    public static void CoroutineCurrentPostfix(IEnumerator __instance, ref object __result) =>
+        CoroutineTracker.CoroutineCurrentPostfix(__instance, ref __result);
 }
