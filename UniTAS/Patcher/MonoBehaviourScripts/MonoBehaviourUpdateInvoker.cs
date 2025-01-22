@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using UniTAS.Patcher.Services.GameExecutionControllers;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.UnityEvents;
 using UniTAS.Patcher.Services.UnityInfo;
@@ -23,14 +22,9 @@ public class MonoBehaviourUpdateInvoker : MonoBehaviour
 
         _monoBehEventInvoker.InvokeAwake();
 
-        var controller = kernel.GetInstance<IMonoBehaviourController>();
-
         var endOfFrame = EndOfFrameCoroutine();
         var fixedUpdate = FixedUpdateCoroutine();
         var update = UpdateCoroutine();
-        controller.IgnoreCoroutines.Add(endOfFrame);
-        controller.IgnoreCoroutines.Add(fixedUpdate);
-        controller.IgnoreCoroutines.Add(update);
         StartCoroutine(endOfFrame);
         StartCoroutine(fixedUpdate);
         StartCoroutine(update);
