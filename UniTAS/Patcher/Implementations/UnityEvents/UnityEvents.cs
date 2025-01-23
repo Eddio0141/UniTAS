@@ -488,7 +488,7 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
 
 #if TRACE
         StaticLogger.Trace($"InvokeUpdate, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)}, " +
-                           $"paused: {_monoBehaviourController.PausedExecution || _monoBehaviourController.PausedUpdate}");
+                           $"paused: {_monoBehaviourController.PausedExecution}");
 #endif
 
         if (!_calledPreUpdate)
