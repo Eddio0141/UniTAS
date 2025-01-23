@@ -125,9 +125,6 @@ public class MonoBehaviourPatch : PreloadPatcher
         var pauseExecutionProperty = AccessTools.Property(typeof(MonoBehaviourController),
             nameof(MonoBehaviourController.PausedExecution)).GetGetMethod();
         var pauseExecutionReference = assembly.MainModule.ImportReference(pauseExecutionProperty);
-        var pausedUpdateProperty = AccessTools.Property(typeof(MonoBehaviourController),
-            nameof(MonoBehaviourController.PausedUpdate)).GetGetMethod();
-        var pausedUpdateReference = assembly.MainModule.ImportReference(pausedUpdateProperty);
 
         foreach (var type in types)
         {
@@ -232,18 +229,6 @@ public class MonoBehaviourPatch : PreloadPatcher
                 foundMethod.Body.OptimizeMacros();
             }
 
-            // update skip check and related methods
-            var updateMethods = new[]
-            {
-                type.Methods.FirstOrDefault(m => m.Name == "Update" && !m.HasParameters),
-                type.Methods.FirstOrDefault(m => m.Name == "LateUpdate" && !m.HasParameters)
-            };
-
-            foreach (var updateMethod in updateMethods)
-            {
-                UpdateEarlyReturn(updateMethod, assembly, pausedUpdateReference);
-            }
-
             StaticLogger.Trace("Patched Update related methods for skipping execution");
 
             // event methods invoke
@@ -252,51 +237,6 @@ public class MonoBehaviourPatch : PreloadPatcher
                 InvokeUnityEventMethod(type, eventMethodPair.Item1, assembly, eventMethodPair.Item2);
             }
         }
-    }
-
-    private static void UpdateEarlyReturn(MethodDefinition skipCheckMethod, AssemblyDefinition assembly,
-        MethodReference pausedUpdateReference)
-    {
-        if (skipCheckMethod is not { HasBody: true }) return;
-        skipCheckMethod.Body.SimplifyMacros();
-        var updateIl = skipCheckMethod.Body.GetILProcessor();
-        var updateFirstInstruction = updateIl.Body.Instructions.First();
-
-        // return early check
-        updateIl.InsertBeforeInstructionReplace(updateFirstInstruction,
-            updateIl.Create(OpCodes.Call, pausedUpdateReference), InstructionReplaceFixType.ExceptionRanges);
-        updateIl.InsertBeforeInstructionReplace(updateFirstInstruction,
-            updateIl.Create(OpCodes.Brfalse_S, updateFirstInstruction), InstructionReplaceFixType.ExceptionRanges);
-
-        // if the return type isn't void, we need to return a default value
-        var skipCheckMethodReturn = skipCheckMethod.ReturnType;
-        if (skipCheckMethodReturn != assembly.MainModule.TypeSystem.Void)
-        {
-            // if value type, we need to return a default value
-            if (skipCheckMethodReturn.IsValueType)
-            {
-                var local = new VariableDefinition(skipCheckMethodReturn);
-                updateIl.Body.Variables.Add(local);
-                updateIl.InsertBeforeInstructionReplace(updateFirstInstruction,
-                    updateIl.Create(OpCodes.Ldloca_S, local),
-                    InstructionReplaceFixType.ExceptionRanges);
-                updateIl.InsertBeforeInstructionReplace(updateFirstInstruction,
-                    updateIl.Create(OpCodes.Initobj, skipCheckMethodReturn),
-                    InstructionReplaceFixType.ExceptionRanges);
-                updateIl.InsertBeforeInstructionReplace(updateFirstInstruction, updateIl.Create(OpCodes.Ldloc_S, local),
-                    InstructionReplaceFixType.ExceptionRanges);
-            }
-            else
-            {
-                updateIl.InsertBeforeInstructionReplace(updateFirstInstruction, updateIl.Create(OpCodes.Ldnull),
-                    InstructionReplaceFixType.ExceptionRanges);
-            }
-        }
-
-        updateIl.InsertBeforeInstructionReplace(updateFirstInstruction, updateIl.Create(OpCodes.Ret),
-            InstructionReplaceFixType.ExceptionRanges);
-
-        skipCheckMethod.Body.OptimizeMacros();
     }
 
     private static void InvokeUnityEventMethod(TypeDefinition type, string methodName, AssemblyDefinition assembly,

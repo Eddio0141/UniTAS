@@ -198,9 +198,8 @@ public partial class UnityEvents
 
         for (var i = 0; i < _inputUpdatesActual.Count; i++)
         {
-            if (_monoBehaviourController.PausedExecution || (!fixedUpdate && _monoBehaviourController.PausedUpdate))
-                continue;
-            _inputUpdatesActual[i](fixedUpdate, newInputSystemUpdate);
+            if (!_monoBehaviourController.PausedExecution)
+                _inputUpdatesActual[i](fixedUpdate, newInputSystemUpdate);
         }
     }
 }

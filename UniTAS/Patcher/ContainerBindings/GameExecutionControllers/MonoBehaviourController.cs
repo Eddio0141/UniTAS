@@ -19,10 +19,4 @@ public static class MonoBehaviourController
         get => _monoBehaviourController.PausedExecution;
         set => _monoBehaviourController.PausedExecution = value;
     }
-
-    public static bool PausedUpdate
-    {
-        get => _monoBehaviourController.PausedUpdate;
-        set => _monoBehaviourController.PausedUpdate = value;
-    }
 }

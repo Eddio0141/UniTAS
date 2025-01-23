@@ -151,6 +151,12 @@ public class UnityCoroutineManager : ICoroutineTracker
             return;
         }
 
+        if (__result is WaitForEndOfFrame)
+        {
+            // MoveNext is invoked first, so code already ran, just run this here
+            MonoBehEventInvoker.InvokeEndOfFrame();
+        }
+
         if (MonoBehaviourController.PausedExecution)
         {
             // TODO: i can probably just manually check for CoreModule / UnityEngine since its not like there's many of this
@@ -162,22 +168,7 @@ public class UnityCoroutineManager : ICoroutineTracker
                 __result = null;
             }
 
-            return;
-        }
-
-        if (__result is WaitForEndOfFrame)
-        {
-            // MoveNext is invoked first, so code already ran, just run this here
-            MonoBehEventInvoker.InvokeEndOfFrame();
-
-            if (MonoBehaviourController.PausedUpdate)
-            {
-                StaticLogger.Trace("paused update execution for coroutine Current" +
-                                   $", result is type: {__result.GetType().SaneFullName()}" +
-                                   $", replaced result with null: {new StackTrace()}");
-                __result = null;
-                // return;
-            }
+            // return;
         }
     }
 
@@ -229,14 +220,6 @@ public class UnityCoroutineManager : ICoroutineTracker
             }
 
             return true;
-        }
-
-        if (MonoBehaviourController.PausedUpdate && current is null or WaitForEndOfFrame)
-        {
-            StaticLogger.Trace("paused update execution while coroutine MoveNext" +
-                               ", Current is null / WaitForEndOfFrame, not running MoveNext");
-            __result = true;
-            return false;
         }
 
         return true;

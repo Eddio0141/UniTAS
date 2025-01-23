@@ -18,7 +18,6 @@ public class FirstUpdateSkipOnRestart
         PendingRestart,
         PendingPause,
         PendingResumeLastUpdate,
-        PendingResumeFinal
     }
 
     private PendingState _pendingState = PendingState.PendingRestart;
@@ -49,55 +48,23 @@ public class FirstUpdateSkipOnRestart
 
     private void InputUpdateActual(bool fixedUpdate, bool newInputSystemUpdate)
     {
-        if (fixedUpdate) return;
-
-        if (_monoBehaviourController.PausedExecution || _monoBehaviourController.PausedUpdate)
-            return;
-
-        if (_pendingState != PendingState.PendingPause) return;
+        if (fixedUpdate || _pendingState != PendingState.PendingPause) return;
 
         _updateEvents.OnInputUpdateUnconditional -= InputUpdateActual;
 
         _pendingState = PendingState.PendingResumeLastUpdate;
         _logger.LogDebug("Pausing mono behaviour to skip an update");
-        _monoBehaviourController.PausedUpdate = true;
+        _monoBehaviourController.PausedExecution = true;
 
         _updateEvents.AddPriorityCallback(CallbackUpdate.LastUpdateUnconditional, OnLastUpdateUnconditional,
             CallbackPriority.FirstUpdateSkipOnRestart);
     }
 
-    private void InputUpdateUnconditional(bool fixedUpdate, bool newInputSystemUpdate)
-    {
-        ProcessResumeFinal("input update");
-    }
-
-    private void PreUpdateUnconditional()
-    {
-        ProcessResumeFinal("pre update");
-    }
-
-    private void ProcessResumeFinal(string updatePoint)
-    {
-        if (_pendingState != PendingState.PendingResumeFinal) return;
-        _updateEvents.OnInputUpdateUnconditional -= InputUpdateUnconditional;
-        _updateEvents.OnPreUpdateUnconditional -= PreUpdateUnconditional;
-
-        _logger.LogDebug($"Skipped an update after restart at {updatePoint}, resuming mono behaviour");
-
-        _pendingState = PendingState.PendingRestart;
-        _monoBehaviourController.PausedUpdate = false;
-    }
-
     private void OnLastUpdateUnconditional()
     {
         if (_pendingState != PendingState.PendingResumeLastUpdate) return;
+        _pendingState = PendingState.PendingRestart;
         _updateEvents.OnLastUpdateUnconditional -= OnLastUpdateUnconditional;
-
-        _pendingState = PendingState.PendingResumeFinal;
-
-        _updateEvents.AddPriorityCallback(CallbackInputUpdate.InputUpdateUnconditional, InputUpdateUnconditional,
-            CallbackPriority.FirstUpdateSkipOnRestart);
-        _updateEvents.AddPriorityCallback(CallbackUpdate.PreUpdateUnconditional, PreUpdateUnconditional,
-            CallbackPriority.FirstUpdateSkipOnRestart);
+        _monoBehaviourController.PausedExecution = false;
     }
 }

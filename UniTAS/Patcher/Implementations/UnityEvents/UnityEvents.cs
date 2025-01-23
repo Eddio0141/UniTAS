@@ -413,8 +413,8 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         for (var i = 0; i < _lastUpdatesActual.Count; i++)
         {
             var lastUpdate = _lastUpdatesActual[i];
-            if (_monoBehaviourController.PausedExecution || _monoBehaviourController.PausedUpdate) continue;
-            lastUpdate();
+            if (!_monoBehaviourController.PausedExecution)
+                lastUpdate();
         }
     }
 
@@ -507,9 +507,8 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         for (var i = 0; i < _updatesActual.Count; i++)
         {
             var update = _updatesActual[i];
-            if (_monoBehaviourController.PausedExecution ||
-                _monoBehaviourController.PausedUpdate) continue;
-            update();
+            if (!_monoBehaviourController.PausedExecution)
+                update();
         }
     }
 
@@ -532,9 +531,8 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         for (var i = 0; i < _lateUpdatesActual.Count; i++)
         {
             var lateUpdate = _lateUpdatesActual[i];
-            if (_monoBehaviourController.PausedExecution ||
-                _monoBehaviourController.PausedUpdate) continue;
-            lateUpdate();
+            if (!_monoBehaviourController.PausedExecution)
+                lateUpdate();
         }
     }
 
@@ -630,9 +628,8 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         for (var i = 0; i < _endOfFramesActual.Count; i++)
         {
             var endOfFrame = _endOfFramesActual[i];
-            if (_monoBehaviourController.PausedExecution ||
-                _monoBehaviourController.PausedUpdate) continue;
-            endOfFrame();
+            if (!_monoBehaviourController.PausedExecution)
+                endOfFrame();
         }
     }
 }
