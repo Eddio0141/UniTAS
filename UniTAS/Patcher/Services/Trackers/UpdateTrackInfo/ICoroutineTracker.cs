@@ -12,4 +12,6 @@ public interface ICoroutineTracker
     void NewCoroutine(MonoBehaviour instance, string methodName, object value);
     bool CoroutineMoveNextPrefix(IEnumerator instance, ref bool result);
     void CoroutineCurrentPostfix(IEnumerator instance, ref object result);
+
+    bool HasEndOfFrameCoroutineThisFrame { get; }
 }

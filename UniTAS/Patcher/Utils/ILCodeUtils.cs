@@ -4,7 +4,6 @@ using System.Reflection;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
-using MonoMod.Utils;
 using UniTAS.Patcher.Extensions;
 using MethodAttributes = Mono.Cecil.MethodAttributes;
 using MethodBody = Mono.Cecil.Cil.MethodBody;
@@ -113,7 +112,7 @@ public static class ILCodeUtils
         il.Emit(OpCodes.Ret);
     }
 
-    public static void HookHarmony(MethodDefinition method, MethodInfo prefix, MethodInfo postfix)
+    public static void HookHarmony(MethodDefinition method, MethodInfo prefix = null, MethodInfo postfix = null)
     {
         if (prefix == null && postfix == null) return;
         if (!method.HasBody) return;

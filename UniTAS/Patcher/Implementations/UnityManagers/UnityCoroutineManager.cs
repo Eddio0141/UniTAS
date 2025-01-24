@@ -23,6 +23,8 @@ public class UnityCoroutineManager : ICoroutineTracker
 {
     private readonly HashSet<MonoBehaviour> _instances = [];
     private readonly HashSet<IEnumerator> _enumeratorInstances = [];
+    private HashSet<IEnumerator> _coroutineEndOfFrames = [];
+    private HashSet<IEnumerator> _coroutineEndOfFramesNext = [];
 
     public void NewCoroutine(object instance, IEnumerator routine) =>
         NewCoroutineHandle(instance as MonoBehaviour, routine);
@@ -33,13 +35,24 @@ public class UnityCoroutineManager : ICoroutineTracker
     private readonly ILogger _logger;
     private readonly IHarmony _harmony;
 
-    public UnityCoroutineManager(ILogger logger, IHarmony harmony, IGameRestart gameRestart)
+    public UnityCoroutineManager(ILogger logger, IHarmony harmony, IGameRestart gameRestart, IUpdateEvents updateEvents)
     {
         _logger = logger;
         _harmony = harmony;
         // do not use interface for game restart, it fucks everything up
         gameRestart.OnPreGameRestart += OnPreGameRestart;
+        updateEvents.OnUpdateUnconditional += UpdateUnconditional;
     }
+
+    private void UpdateUnconditional()
+    {
+        HasEndOfFrameCoroutineThisFrame = _coroutineEndOfFramesNext.Count > 0;
+        if (!HasEndOfFrameCoroutineThisFrame) return;
+        _coroutineEndOfFrames = _coroutineEndOfFramesNext;
+        _coroutineEndOfFramesNext = new();
+    }
+
+    public bool HasEndOfFrameCoroutineThisFrame { get; private set; }
 
     public void NewCoroutine(MonoBehaviour instance, string methodName, object value)
     {
@@ -88,6 +101,8 @@ public class UnityCoroutineManager : ICoroutineTracker
 
         _instances.Clear();
         _enumeratorInstances.Clear();
+        _coroutineEndOfFrames.Clear();
+        _coroutineEndOfFramesNext.Clear();
         // no need, but better clean it up
         DoneFirstMoveNext.Clear();
     }
@@ -131,10 +146,9 @@ public class UnityCoroutineManager : ICoroutineTracker
     {
         if (!_enumeratorInstances.Contains(__instance)) return;
 
-        StaticLogger.Trace($"coroutine get_Current: {__instance.GetType().SaneFullName()}");
+        StaticLogger.Trace($"coroutine get_Current: {__instance.GetType().SaneFullName()}, result: {__result}");
 
-        if (__result == null) return;
-        if (ReverseInvoker.Invoking) return;
+        if (ReverseInvoker.Invoking || __result == null) return;
 
         // managed async operation?
         if (__result is AsyncOperation op && AsyncOperationOverride.Yield(op))
@@ -153,8 +167,8 @@ public class UnityCoroutineManager : ICoroutineTracker
 
         if (__result is WaitForEndOfFrame)
         {
-            // MoveNext is invoked first, so code already ran, just run this here
-            MonoBehEventInvoker.InvokeEndOfFrame();
+            // next MoveNext is end of frame
+            _coroutineEndOfFramesNext.Add(__instance);
         }
 
         if (MonoBehaviourController.PausedExecution)
@@ -179,20 +193,34 @@ public class UnityCoroutineManager : ICoroutineTracker
 
     private static readonly HashSet<IEnumerator> DoneFirstMoveNext = [];
 
-    public bool CoroutineMoveNextPrefix(IEnumerator __instance, ref bool __result)
+    // state is true if original is executed
+    public bool CoroutineMoveNextPrefix(IEnumerator instance, ref bool result)
     {
-        if (!_enumeratorInstances.Contains(__instance)) return true;
+        if (!_enumeratorInstances.Contains(instance)) return true;
 
-        StaticLogger.Trace($"coroutine MoveNext: {__instance.GetType().SaneFullName()}");
+        StaticLogger.Trace($"coroutine MoveNext: {instance.GetType().SaneFullName()}");
 
-        if (!DoneFirstMoveNext.Contains(__instance))
+        if (!DoneFirstMoveNext.Contains(instance))
         {
-            DoneFirstMoveNext.Add(__instance);
+            DoneFirstMoveNext.Add(instance);
             StaticLogger.Trace("first MoveNext");
             return true;
         }
 
-        var current = ReverseInvoker.Invoke(i => i.Current, __instance);
+        var current = ReverseInvoker.Invoke(i => i.Current, instance);
+
+        if (current is WaitForEndOfFrame)
+        {
+            MonoBehEventInvoker.InvokeEndOfFrame();
+
+            // do we invoke end of frame?
+            _coroutineEndOfFrames.Remove(instance);
+            if (_coroutineEndOfFrames.Count == 0)
+            {
+                // MoveNext is invoked first, so code already ran, just run this here
+                MonoBehEventInvoker.InvokeLastUpdate();
+            }
+        }
 
         // managed async operation?
         if (current is AsyncOperation op && AsyncOperationTracker.ManagedInstance(op))
@@ -201,7 +229,7 @@ public class UnityCoroutineManager : ICoroutineTracker
             StaticLogger.Trace("coroutine MoveNext with AsyncOperation, operation is managed by unitas" +
                                $", running MoveNext: {isDone}");
             if (!isDone)
-                __result = true;
+                result = true;
             return isDone;
         }
 
@@ -211,7 +239,7 @@ public class UnityCoroutineManager : ICoroutineTracker
             {
                 StaticLogger.Trace(
                     $"paused execution while coroutine MoveNext, Current is {current}, not running MoveNext");
-                __result = true;
+                result = true;
                 return false;
             }
 
@@ -221,7 +249,7 @@ public class UnityCoroutineManager : ICoroutineTracker
                 StaticLogger.Trace("paused execution while coroutine MoveNext" +
                                    $", Current is type: {current.GetType().SaneFullName()}" +
                                    " unity type, not running MoveNext");
-                __result = true;
+                result = true;
                 return false;
             }
 
