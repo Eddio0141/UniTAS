@@ -6,6 +6,7 @@ using System.Reflection;
 using BepInEx;
 using HarmonyLib;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
+using UniTAS.Patcher.Models.EventSubscribers;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.UnityEvents;
@@ -26,9 +27,6 @@ public class UnityRuntimeInitAttributeInvoker
     private readonly IUpdateEvents _updateEvents;
     private readonly ILogger _logger;
 
-    private bool _invokedBeforeSceneLoad;
-    private bool _invokedBeforeStart;
-
     public UnityRuntimeInitAttributeInvoker(IGameRestart gameRestart, IUpdateEvents updateEvents, ILogger logger)
     {
         var runtimeInitializeOnLoadMethodAttribute =
@@ -40,11 +38,6 @@ public class UnityRuntimeInitAttributeInvoker
         _updateEvents = updateEvents;
         _logger = logger;
         _gameRestart.OnGameRestart += GameRestart;
-        _gameRestart.OnGameRestart += (_, _) =>
-        {
-            _invokedBeforeSceneLoad = false;
-            _invokedBeforeStart = false;
-        };
 
         var loadType = AccessTools.PropertyGetter(runtimeInitializeOnLoadMethodAttribute, "loadType");
 
@@ -99,18 +92,19 @@ public class UnityRuntimeInitAttributeInvoker
     {
         if (!preSceneLoad) return;
 
-        _updateEvents.OnAwakeActual += InvokeBeforeSceneLoad;
-
-        _updateEvents.OnStartActual += InvokeBeforeStart;
-        _updateEvents.OnFixedUpdateActual += InvokeBeforeStart;
+        _updateEvents.AddPriorityCallback(CallbackUpdate.AwakeActual, InvokeBeforeSceneLoad,
+            CallbackPriority.UnityRuntimeInitAttributeInvoker);
+        _updateEvents.AddPriorityCallback(CallbackUpdate.StartActual, InvokeBeforeStart,
+            CallbackPriority.UnityRuntimeInitAttributeInvoker);
+        _updateEvents.AddPriorityCallback(CallbackUpdate.FixedUpdateActual, InvokeBeforeStart,
+            CallbackPriority.UnityRuntimeInitAttributeInvoker);
 
         _gameRestart.OnGameRestart -= GameRestart;
     }
 
     private void InvokeBeforeSceneLoad()
     {
-        if (_invokedBeforeSceneLoad) return;
-        _invokedBeforeSceneLoad = true;
+        _updateEvents.OnAwakeActual -= InvokeBeforeSceneLoad;
 
         _logger.LogDebug($"Invoking BeforeSceneLoad methods, callback count: {_beforeSceneLoad.Length}");
 
@@ -123,8 +117,8 @@ public class UnityRuntimeInitAttributeInvoker
 
     private void InvokeBeforeStart()
     {
-        if (_invokedBeforeStart) return;
-        _invokedBeforeStart = true;
+        _updateEvents.OnStartActual -= InvokeBeforeStart;
+        _updateEvents.OnFixedUpdateActual -= InvokeBeforeStart;
 
         _logger.LogDebug($"Invoking BeforeStart methods, callback count: {_beforeStart.Length}");
 
