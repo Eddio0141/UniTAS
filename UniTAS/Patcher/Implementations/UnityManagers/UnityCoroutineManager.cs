@@ -159,6 +159,11 @@ public class UnityCoroutineManager : ICoroutineTracker
 
         if (MonoBehaviourController.PausedExecution)
         {
+            if (__result is WaitForEndOfFrame or WaitForFixedUpdate or null)
+            {
+                return;
+            }
+
             // TODO: i can probably just manually check for CoreModule / UnityEngine since its not like there's many of this
             if (__result.GetType().Assembly.GetName().Name.StartsWith("UnityEngine"))
             {
@@ -202,9 +207,10 @@ public class UnityCoroutineManager : ICoroutineTracker
 
         if (MonoBehaviourController.PausedExecution)
         {
-            if (current is null)
+            if (current is WaitForEndOfFrame or WaitForFixedUpdate or null)
             {
-                StaticLogger.Trace("paused execution while coroutine MoveNext, Current is null, not running MoveNext");
+                StaticLogger.Trace(
+                    $"paused execution while coroutine MoveNext, Current is {current}, not running MoveNext");
                 __result = true;
                 return false;
             }
