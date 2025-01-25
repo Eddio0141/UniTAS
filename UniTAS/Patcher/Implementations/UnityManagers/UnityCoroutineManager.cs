@@ -21,10 +21,9 @@ namespace UniTAS.Patcher.Implementations.UnityManagers;
 [Singleton]
 public class UnityCoroutineManager : ICoroutineTracker
 {
-    private readonly HashSet<MonoBehaviour> _instances = [];
-    private readonly HashSet<IEnumerator> _enumeratorInstances = [];
+    private readonly Dictionary<IEnumerator, MonoBehaviour> _instances = [];
     private HashSet<IEnumerator> _coroutineEndOfFrames = [];
-    private HashSet<IEnumerator> _coroutineEndOfFramesNext = [];
+    private readonly Dictionary<IEnumerator, MonoBehaviour> _coroutineEndOfFramesNext = [];
 
     public void NewCoroutine(object instance, IEnumerator routine) =>
         NewCoroutineHandle(instance as MonoBehaviour, routine);
@@ -41,15 +40,17 @@ public class UnityCoroutineManager : ICoroutineTracker
         _harmony = harmony;
         // do not use interface for game restart, it fucks everything up
         gameRestart.OnPreGameRestart += OnPreGameRestart;
-        updateEvents.OnUpdateUnconditional += UpdateUnconditional;
+        updateEvents.OnLateUpdateUnconditional += LateUpdateUnconditional;
     }
 
-    private void UpdateUnconditional()
+    private void LateUpdateUnconditional()
     {
-        HasEndOfFrameCoroutineThisFrame = _coroutineEndOfFramesNext.Count > 0;
-        if (!HasEndOfFrameCoroutineThisFrame) return;
-        _coroutineEndOfFrames = _coroutineEndOfFramesNext;
-        _coroutineEndOfFramesNext = new();
+        // update this state right before end of frame yield
+        HasEndOfFrameCoroutineThisFrame = false;
+        if (_coroutineEndOfFramesNext.Count == 0) return;
+        _coroutineEndOfFrames = [.._coroutineEndOfFramesNext.Where(x => x.Value != null).Select(x => x.Key)];
+        HasEndOfFrameCoroutineThisFrame = _coroutineEndOfFrames.Count > 0;
+        _coroutineEndOfFramesNext.Clear();
     }
 
     public bool HasEndOfFrameCoroutineThisFrame { get; private set; }
@@ -87,20 +88,18 @@ public class UnityCoroutineManager : ICoroutineTracker
             $"new coroutine made in script {instance.GetType().SaneFullName()}, got IEnumerator {routineType.SaneFullName()}");
         StaticLogger.Trace($"call from {new StackTrace()}");
 
-        _instances.Add(instance);
-        _enumeratorInstances.Add(routine);
+        _instances.Add(routine, instance);
     }
 
     private void OnPreGameRestart()
     {
-        foreach (var coroutine in _instances)
+        foreach (var coroutine in _instances.Values)
         {
             if (coroutine == null) continue;
             coroutine.StopAllCoroutines();
         }
 
         _instances.Clear();
-        _enumeratorInstances.Clear();
         _coroutineEndOfFrames.Clear();
         _coroutineEndOfFramesNext.Clear();
         // no need, but better clean it up
@@ -144,7 +143,7 @@ public class UnityCoroutineManager : ICoroutineTracker
 
     public void CoroutineCurrentPostfix(IEnumerator __instance, ref object __result)
     {
-        if (!_enumeratorInstances.Contains(__instance)) return;
+        if (!_instances.TryGetValue(__instance, out var monoBeh)) return;
 
         StaticLogger.Trace($"coroutine get_Current: {__instance.GetType().SaneFullName()}, result: {__result}");
 
@@ -168,7 +167,7 @@ public class UnityCoroutineManager : ICoroutineTracker
         if (__result is WaitForEndOfFrame)
         {
             // next MoveNext is end of frame
-            _coroutineEndOfFramesNext.Add(__instance);
+            _coroutineEndOfFramesNext.Add(__instance, monoBeh);
         }
 
         if (MonoBehaviourController.PausedExecution)
@@ -196,7 +195,7 @@ public class UnityCoroutineManager : ICoroutineTracker
     // state is true if original is executed
     public bool CoroutineMoveNextPrefix(IEnumerator instance, ref bool result)
     {
-        if (!_enumeratorInstances.Contains(instance)) return true;
+        if (!_instances.ContainsKey(instance)) return true;
 
         StaticLogger.Trace($"coroutine MoveNext: {instance.GetType().SaneFullName()}");
 
@@ -214,7 +213,12 @@ public class UnityCoroutineManager : ICoroutineTracker
             MonoBehEventInvoker.InvokeEndOfFrame();
 
             // do we invoke end of frame?
-            _coroutineEndOfFrames.Remove(instance);
+            if (!_coroutineEndOfFrames.Remove(instance))
+            {
+                _logger.LogError(
+                    $"coroutine {instance.GetType().SaneFullName()}'s Current is WaitForEndOfFrame but it was not tracked");
+            }
+
             if (_coroutineEndOfFrames.Count == 0)
             {
                 // MoveNext is invoked first, so code already ran, just run this here
