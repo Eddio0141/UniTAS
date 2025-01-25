@@ -55,15 +55,15 @@ public class FirstUpdateSkipOnRestart
         _logger.LogDebug("Pausing MonoBehaviour to skip an update");
         _monoBehaviourController.PausedExecution = true;
 
-        _updateEvents.AddPriorityCallback(CallbackUpdate.LastUpdateUnconditional, OnLastUpdateUnconditional,
+        _updateEvents.AddPriorityCallback(CallbackUpdate.FixedUpdateUnconditional, OnFixedUpdateUnconditional,
             CallbackPriority.FirstUpdateSkipOnRestart);
     }
 
-    private void OnLastUpdateUnconditional()
+    private void OnFixedUpdateUnconditional()
     {
         if (_pendingState != PendingState.PendingResumeLastUpdate) return;
         _pendingState = PendingState.PendingRestart;
-        _updateEvents.OnLastUpdateUnconditional -= OnLastUpdateUnconditional;
+        _updateEvents.OnFixedUpdateUnconditional -= OnFixedUpdateUnconditional;
         _logger.LogDebug("Resuming MonoBehaviour after skipped an update");
         _monoBehaviourController.PausedExecution = false;
     }
