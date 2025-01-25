@@ -6,6 +6,7 @@ using UniTAS.Patcher.Interfaces.Events.UnityEvents.DontRunIfPaused;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
 using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Services;
+using UniTAS.Patcher.Services.GameExecutionControllers;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Patcher.Services.VirtualEnvironment;
 using UnityEngine;
@@ -18,10 +19,13 @@ public class TimeEnv : ITimeEnv, IOnPreUpdateActual, IOnGameRestartResume, IOnSt
     IOnFixedUpdateActual, IOnUpdateUnconditional, IOnStartUnconditional
 {
     private readonly ITimeWrapper _timeWrap;
+    private readonly IMonoBehaviourController _monoBehaviourController;
 
-    public TimeEnv(ITimeWrapper timeWrap, IPatchReverseInvoker patchReverseInvoker)
+    public TimeEnv(ITimeWrapper timeWrap, IPatchReverseInvoker patchReverseInvoker,
+        IMonoBehaviourController monoBehaviourController)
     {
         _timeWrap = timeWrap;
+        _monoBehaviourController = monoBehaviourController;
 
         // start time to current time
         StartupTime = patchReverseInvoker.Invoke(() => DateTime.Now);
@@ -44,6 +48,12 @@ public class TimeEnv : ITimeEnv, IOnPreUpdateActual, IOnGameRestartResume, IOnSt
 
     public void UpdateUnconditional()
     {
+        if (_monoBehaviourController.PausedExecution)
+        {
+            FrameCountRestartOffset++;
+            RenderedFrameCountOffset++;
+        }
+
         if (_initialTimeSet) return;
         _initialTimeSet = true;
 
@@ -78,12 +88,7 @@ public class TimeEnv : ITimeEnv, IOnPreUpdateActual, IOnGameRestartResume, IOnSt
     public double ScaledFixedTime { get; private set; }
     public double RealtimeSinceStartup { get; private set; }
 
-    private bool _timeInitialized;
-
-    public void PreUpdateActual()
-    {
-        TimeInit();
-    }
+    private bool _timeInitialized = true;
 
     public void OnLastUpdateActual()
     {
@@ -108,20 +113,6 @@ public class TimeEnv : ITimeEnv, IOnPreUpdateActual, IOnGameRestartResume, IOnSt
         {
             ScaledFixedTime = newScaledFixedTime;
         }
-    }
-
-    public override string ToString()
-    {
-        return $"StartupTime: {StartupTime} " +
-               $"CurrentTime: {CurrentTime} " +
-               $"RenderedFrameCountOffset: {RenderedFrameCountOffset} " +
-               $"SecondsSinceStartUp: {SecondsSinceStartUp} " +
-               $"FrameCountRestartOffset: {FrameCountRestartOffset} " +
-               $"FixedUnscaledTime: {FixedUnscaledTime} " +
-               $"UnscaledTime: {UnscaledTime} " +
-               $"ScaledTime: {ScaledTime} " +
-               $"ScaledFixedTime: {ScaledFixedTime} " +
-               $"RealtimeSinceStartup: {RealtimeSinceStartup}";
     }
 
     // setting the start up time causes the game to update other time related variables, which requires this to be ran in the main thread
@@ -152,6 +143,11 @@ public class TimeEnv : ITimeEnv, IOnPreUpdateActual, IOnGameRestartResume, IOnSt
         SecondsSinceStartUp += initialFt;
 
         _timeInitialized = false;
+    }
+
+    public void PreUpdateActual()
+    {
+        TimeInit();
     }
 
     public void StartActual()
