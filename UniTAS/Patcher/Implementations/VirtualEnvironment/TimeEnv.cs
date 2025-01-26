@@ -14,7 +14,7 @@ namespace UniTAS.Patcher.Implementations.VirtualEnvironment;
 
 [Singleton(RegisterPriority.TimeEnv)]
 [ExcludeRegisterIfTesting]
-public class TimeEnv : ITimeEnv, IOnGameRestartResume, IOnStartActual, IOnLastUpdateActual,
+public class TimeEnv : ITimeEnv, IOnGameRestartResume, IOnLastUpdateActual,
     IOnFixedUpdateActual, IOnUpdateUnconditional, IOnStartUnconditional
 {
     private readonly ITimeWrapper _timeWrap;
@@ -39,6 +39,8 @@ public class TimeEnv : ITimeEnv, IOnGameRestartResume, IOnStartActual, IOnLastUp
 
     public void StartUnconditional()
     {
+        TimeInit();
+
         if (_setInitialFt) return;
         _setInitialFt = true;
 
@@ -144,8 +146,6 @@ public class TimeEnv : ITimeEnv, IOnGameRestartResume, IOnStartActual, IOnLastUp
 
         _timeInitialized = false;
     }
-
-    public void StartActual() => TimeInit();
 
     private void TimeInit()
     {
