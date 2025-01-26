@@ -13,9 +13,6 @@ using UniTAS.Patcher.Services.InputSystemOverride;
 using UniTAS.Patcher.Services.UnityEvents;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
-#if TRACE
-using UniTAS.Patcher.Utils;
-#endif
 
 namespace UniTAS.Patcher.Implementations.UnityEvents;
 

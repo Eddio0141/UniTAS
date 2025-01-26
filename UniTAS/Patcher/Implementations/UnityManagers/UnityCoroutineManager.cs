@@ -13,6 +13,7 @@ using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.Trackers.UpdateTrackInfo;
 using UniTAS.Patcher.Services.UnityAsyncOperationTracker;
 using UniTAS.Patcher.Services.UnityEvents;
+using UniTAS.Patcher.Services.VirtualEnvironment;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 
@@ -127,7 +128,52 @@ public class UnityCoroutineManager : ICoroutineTracker
 
         public void Reset()
         {
-            throw new NotImplementedException();
+        }
+
+        public object Current => null;
+    }
+
+    private static readonly ITimeEnv TimeEnv = ContainerStarter.Kernel.GetInstance<ITimeEnv>();
+
+    private class WaitForSecondsDummy(float seconds) : IEnumerator
+    {
+        private float _seconds = seconds;
+        private bool _done;
+
+        public bool MoveNext()
+        {
+            if (MonoBehaviourController.PausedExecution) return true;
+            if (_done) return false;
+            _seconds -= (float)TimeEnv.FrameTime * Time.timeScale;
+            if (_seconds <= 0)
+                _done = true;
+            return true;
+        }
+
+        public void Reset()
+        {
+        }
+
+        public object Current => null;
+    }
+
+    private class WaitForSecondsRealTimeDummy(float seconds) : IEnumerator
+    {
+        private float _seconds = seconds;
+        private bool _done;
+
+        public bool MoveNext()
+        {
+            if (MonoBehaviourController.PausedExecution) return true;
+            if (_done) return false;
+            _seconds -= (float)TimeEnv.FrameTime;
+            if (_seconds <= 0)
+                _done = true;
+            return true;
+        }
+
+        public void Reset()
+        {
         }
 
         public object Current => null;
@@ -147,7 +193,7 @@ public class UnityCoroutineManager : ICoroutineTracker
 
         StaticLogger.Trace($"coroutine get_Current: {__instance.GetType().SaneFullName()}, result: {__result}");
 
-        if (ReverseInvoker.Invoking || __result == null) return;
+        if (ReverseInvoker.Invoking || __result is null or WaitForSecondsDummy or WaitForSecondsRealTimeDummy) return;
 
         // managed async operation?
         if (__result is AsyncOperation op && AsyncOperationOverride.Yield(op))
@@ -168,6 +214,17 @@ public class UnityCoroutineManager : ICoroutineTracker
         {
             // next MoveNext is end of frame
             _coroutineEndOfFramesNext.Add(__instance, monoBeh);
+        }
+
+        if (__result is WaitForSeconds waitForSeconds)
+        {
+            __result = new WaitForSecondsDummy(waitForSeconds.m_Seconds);
+        }
+
+        if (__result.GetType().SaneFullName() == "UnityEngine.WaitForSecondsRealtime")
+        {
+            var waitTime = new Traverse(__result).Property("waitTime").GetValue<float>();
+            __result = new WaitForSecondsRealTimeDummy(waitTime);
         }
 
         if (MonoBehaviourController.PausedExecution)
