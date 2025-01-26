@@ -169,6 +169,7 @@ public class TimePatch
 
         private static void Postfix(ref int __result)
         {
+            if (ReverseInvoker.Invoking) return;
             // https://discussions.unity.com/t/time-framecount-vs-time-renderedframecount/134435
             // https://web.archive.org/web/20240822132700/https://discussions.unity.com/t/time-framecount-vs-time-renderedframecount/134435
             // some versions may have this weird behaviour

@@ -1,5 +1,4 @@
 using System;
-using HarmonyLib;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.SoftRestart;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents.DontRunIfPaused;
@@ -19,12 +18,14 @@ public class TimeEnv : ITimeEnv, IOnGameRestartResume, IOnStartActual, IOnLastUp
     IOnFixedUpdateActual, IOnUpdateUnconditional, IOnStartUnconditional
 {
     private readonly ITimeWrapper _timeWrap;
+    private readonly IPatchReverseInvoker _patchReverseInvoker;
     private readonly IMonoBehaviourController _monoBehaviourController;
 
     public TimeEnv(ITimeWrapper timeWrap, IPatchReverseInvoker patchReverseInvoker,
         IMonoBehaviourController monoBehaviourController)
     {
         _timeWrap = timeWrap;
+        _patchReverseInvoker = patchReverseInvoker;
         _monoBehaviourController = monoBehaviourController;
 
         // start time to current time
@@ -92,10 +93,11 @@ public class TimeEnv : ITimeEnv, IOnGameRestartResume, IOnStartActual, IOnLastUp
 
     public void OnLastUpdateActual()
     {
-        RealtimeSinceStartup += FrameTime;
-        UnscaledTime += FrameTime;
-        ScaledTime += FrameTime * Time.timeScale;
-        SecondsSinceStartUp += FrameTime;
+        var ft = FrameTime;
+        RealtimeSinceStartup += ft;
+        UnscaledTime += ft;
+        ScaledTime += ft * Time.timeScale;
+        SecondsSinceStartUp += ft;
     }
 
     public void FixedUpdateActual()
@@ -124,15 +126,11 @@ public class TimeEnv : ITimeEnv, IOnGameRestartResume, IOnStartActual, IOnLastUp
 
         StartupTime = startupTime;
 
-        RenderedFrameCountOffset += (ulong)Time.renderedFrameCount;
+        RenderedFrameCountOffset = _patchReverseInvoker.Invoke(() => (ulong)Time.renderedFrameCount);
         SecondsSinceStartUp = 0;
-        FrameCountRestartOffset += (ulong)Time.frameCount;
-        var fixedUnscaledTime = AccessTools.Property(typeof(Time), "fixedUnscaledTime");
-        if (fixedUnscaledTime != null)
-            FixedUnscaledTime = 0;
-        var unscaledTime = AccessTools.Property(typeof(Time), "unscaledTime");
-        if (unscaledTime != null)
-            UnscaledTime = 0;
+        FrameCountRestartOffset = _patchReverseInvoker.Invoke(() => (ulong)Time.frameCount);
+        FixedUnscaledTime = 0;
+        UnscaledTime = 0;
         ScaledTime = 0;
         ScaledFixedTime = 0;
         RealtimeSinceStartup = 0;
