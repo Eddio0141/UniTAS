@@ -146,7 +146,10 @@ public class UnityCoroutineManager : ICoroutineTracker
             if (_done) return false;
             _seconds -= (float)TimeEnv.FrameTime * Time.timeScale;
             if (_seconds <= 0)
+            {
+                StaticLogger.Trace($"WaitForSeconds: done, {GetHashCode()}");
                 _done = true;
+            }
             return true;
         }
 
@@ -168,7 +171,10 @@ public class UnityCoroutineManager : ICoroutineTracker
             if (_done) return false;
             _seconds -= (float)TimeEnv.FrameTime;
             if (_seconds <= 0)
+            {
+                StaticLogger.Trace($"WaitForSecondsRealTime: done, {GetHashCode()}");
                 _done = true;
+            }
             return true;
         }
 
@@ -193,7 +199,7 @@ public class UnityCoroutineManager : ICoroutineTracker
 
         StaticLogger.Trace($"coroutine get_Current: {__instance.GetType().SaneFullName()}, result: {__result}");
 
-        if (ReverseInvoker.Invoking || __result is null or WaitForSecondsDummy or WaitForSecondsRealTimeDummy) return;
+        if (ReverseInvoker.Invoking || __result is null) return;
 
         // managed async operation?
         if (__result is AsyncOperation op && AsyncOperationOverride.Yield(op))
@@ -219,12 +225,16 @@ public class UnityCoroutineManager : ICoroutineTracker
         if (__result is WaitForSeconds waitForSeconds)
         {
             __result = new WaitForSecondsDummy(waitForSeconds.m_Seconds);
+            StaticLogger.Trace($"new WaitForSeconds with {waitForSeconds.m_Seconds} seconds, {__result.GetHashCode()}\n{Environment.StackTrace}");
+            return;
         }
 
         if (__result.GetType().SaneFullName() == "UnityEngine.WaitForSecondsRealtime")
         {
             var waitTime = new Traverse(__result).Property("waitTime").GetValue<float>();
             __result = new WaitForSecondsRealTimeDummy(waitTime);
+            StaticLogger.Trace($"new WaitForSecondsRealTime with {waitTime} seconds, {__result.GetHashCode()}\n{Environment.StackTrace}");
+            return;
         }
 
         if (MonoBehaviourController.PausedExecution)
