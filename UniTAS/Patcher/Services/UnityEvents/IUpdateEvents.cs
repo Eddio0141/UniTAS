@@ -22,8 +22,6 @@ public interface IUpdateEvents
     event Action OnLateUpdateUnconditional;
     event Action OnLastUpdateUnconditional;
     event Action OnLastUpdateActual;
-    event Action OnPreUpdateActual;
-    event Action OnPreUpdateUnconditional;
     event InputUpdateCall OnInputUpdateActual;
     event InputUpdateCall OnInputUpdateUnconditional;
 

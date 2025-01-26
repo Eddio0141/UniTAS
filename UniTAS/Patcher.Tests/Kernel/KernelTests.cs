@@ -3,7 +3,6 @@ using MoonSharp.Interpreter;
 using StructureMap.Pipeline;
 using UniTAS.Patcher.Implementations.VirtualEnvironment;
 using UniTAS.Patcher.Interfaces.Events.SoftRestart;
-using UniTAS.Patcher.Interfaces.Events.UnityEvents.DontRunIfPaused;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.GameExecutionControllers;
@@ -208,19 +207,19 @@ public class KernelTests
         Assert.Same(env, env4);
     }
 
-    [Fact]
-    public void TestPriority()
-    {
-        var kernel = KernelUtils.Init();
-
-        var updates = kernel.GetAllInstances<IOnPreUpdateActual>().ToList();
-        Assert.NotNull(updates);
-
-        var indexOfTestPriority = updates.FindIndex(x => x is KernelUtils.TestPriority);
-        var indexOfTestPriority2 = updates.FindIndex(x => x is KernelUtils.TestPriority2);
-        // var indexOfMovieRunner = inputUpdates.FindIndex(x => x is Implementations.Movie.MovieRunner);
-
-        Assert.True(indexOfTestPriority < indexOfTestPriority2);
-        // Assert.True(indexOfTestPriority < indexOfMovieRunner);
-    }
+    // [Fact]
+    // public void TestPriority()
+    // {
+    //     var kernel = KernelUtils.Init();
+    //
+    //     var updates = kernel.GetAllInstances<IOnPreUpdateActual>().ToList();
+    //     Assert.NotNull(updates);
+    //
+    //     var indexOfTestPriority = updates.FindIndex(x => x is KernelUtils.TestPriority);
+    //     var indexOfTestPriority2 = updates.FindIndex(x => x is KernelUtils.TestPriority2);
+    //     // var indexOfMovieRunner = inputUpdates.FindIndex(x => x is Implementations.Movie.MovieRunner);
+    //
+    //     Assert.True(indexOfTestPriority < indexOfTestPriority2);
+    //     // Assert.True(indexOfTestPriority < indexOfMovieRunner);
+    // }
 }

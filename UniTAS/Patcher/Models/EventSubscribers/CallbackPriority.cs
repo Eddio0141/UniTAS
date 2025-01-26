@@ -6,7 +6,6 @@ public enum CallbackPriority
     UpdateInvokeOffset,
     UnityRuntimeInitAttributeInvoker, // must be before FirstUpdateSkipOnRestart
     FirstUpdateSkipOnRestart, // shouldn't matter if its before UpdateInvokeOffset, since it just handles Actual calls
-    PreUpdate,
     InputUpdate,
     Default,
     FrameAdvancingTest

@@ -128,22 +128,6 @@ public static class KernelUtils
     }
 
     [Singleton(IncludeDifferentAssembly = true)]
-    public class TestPriority : IOnPreUpdateActual
-    {
-        public void PreUpdateActual()
-        {
-        }
-    }
-
-    [Singleton(IncludeDifferentAssembly = true)]
-    public class TestPriority2 : IOnPreUpdateActual
-    {
-        public void PreUpdateActual()
-        {
-        }
-    }
-
-    [Singleton(IncludeDifferentAssembly = true)]
     [SuppressMessage("ReSharper", "UnassignedGetOnlyAutoProperty")]
     public class DummyMouseEnvLegacySystem : IMouseStateEnvLegacySystem
     {

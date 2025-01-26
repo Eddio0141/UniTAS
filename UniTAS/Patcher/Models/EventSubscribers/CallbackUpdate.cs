@@ -8,8 +8,6 @@ public enum CallbackUpdate
     StartActual,
     EnableUnconditional,
     EnableActual,
-    PreUpdateUnconditional,
-    PreUpdateActual,
     UpdateUnconditional,
     UpdateActual,
     FixedUpdateUnconditional,

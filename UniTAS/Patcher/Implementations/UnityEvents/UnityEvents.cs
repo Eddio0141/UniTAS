@@ -31,8 +31,6 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         IEnumerable<IOnAwakeActual> onAwakeActual,
         IEnumerable<IOnStartUnconditional> onStartsUnconditional,
         IEnumerable<IOnEnableUnconditional> onEnablesUnconditional,
-        IEnumerable<IOnPreUpdateUnconditional> onPreUpdatesUnconditional,
-        IEnumerable<IOnPreUpdateActual> onPreUpdatesActual,
         IEnumerable<IOnUpdateUnconditional> onUpdatesUnconditional,
         IEnumerable<IOnFixedUpdateUnconditional> onFixedUpdatesUnconditional,
         IEnumerable<IOnGUIUnconditional> onGuisUnconditional,
@@ -56,13 +54,6 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
 
         gameRestart.OnGameRestart += OnGameRestart;
 
-        _inputUpdatesUnconditional.Add((fixedUpdate, _) =>
-        {
-            if (fixedUpdate || _calledPreUpdate) return;
-            _calledPreUpdate = true;
-            InvokeCallOnPreUpdate();
-        }, (int)CallbackPriority.PreUpdate);
-
         foreach (var onAwake in onAwakesUnconditional)
         {
             RegisterMethod(onAwake, onAwake.AwakeUnconditional, CallbackUpdate.AwakeUnconditional);
@@ -83,11 +74,6 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
             RegisterMethod(onEnable, onEnable.OnEnableUnconditional, CallbackUpdate.EnableUnconditional);
         }
 
-        foreach (var onPreUpdate in onPreUpdatesUnconditional)
-        {
-            RegisterMethod(onPreUpdate, onPreUpdate.PreUpdateUnconditional, CallbackUpdate.PreUpdateUnconditional);
-        }
-
         foreach (var onUpdate in onUpdatesUnconditional)
         {
             RegisterMethod(onUpdate, onUpdate.UpdateUnconditional, CallbackUpdate.UpdateUnconditional);
@@ -102,11 +88,6 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         foreach (var onGui in onGuisUnconditional)
         {
             RegisterMethod(onGui, onGui.OnGUIUnconditional, CallbackUpdate.GUIUnconditional);
-        }
-
-        foreach (var onPreUpdateActual in onPreUpdatesActual)
-        {
-            RegisterMethod(onPreUpdateActual, onPreUpdateActual.PreUpdateActual, CallbackUpdate.PreUpdateActual);
         }
 
         foreach (var onFixedUpdateActual in onFixedUpdatesActual)
@@ -173,8 +154,6 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
             CallbackUpdate.StartUnconditional => _startsUnconditional,
             CallbackUpdate.EnableActual => _enablesActual,
             CallbackUpdate.EnableUnconditional => _enablesUnconditional,
-            CallbackUpdate.PreUpdateActual => _preUpdatesActual,
-            CallbackUpdate.PreUpdateUnconditional => _preUpdatesUnconditional,
             CallbackUpdate.UpdateActual => _updatesActual,
             CallbackUpdate.UpdateUnconditional => _updatesUnconditional,
             CallbackUpdate.FixedUpdateActual => _fixedUpdatesActual,
@@ -263,18 +242,6 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         remove => _enablesActual.Remove(value);
     }
 
-    public event Action OnPreUpdateUnconditional
-    {
-        add => _preUpdatesUnconditional.Add(value, (int)CallbackPriority.Default);
-        remove => _preUpdatesUnconditional.Remove(value);
-    }
-
-    public event Action OnPreUpdateActual
-    {
-        add => _preUpdatesActual.Add(value, (int)CallbackPriority.Default);
-        remove => _preUpdatesActual.Remove(value);
-    }
-
     public event Action OnUpdateUnconditional
     {
         add => _updatesUnconditional.Add(value, (int)CallbackPriority.Default);
@@ -345,8 +312,6 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
             CallbackUpdate.StartUnconditional => _startsUnconditional,
             CallbackUpdate.EnableActual => _enablesActual,
             CallbackUpdate.EnableUnconditional => _enablesUnconditional,
-            CallbackUpdate.PreUpdateActual => _preUpdatesActual,
-            CallbackUpdate.PreUpdateUnconditional => _preUpdatesUnconditional,
             CallbackUpdate.UpdateActual => _updatesActual,
             CallbackUpdate.UpdateUnconditional => _updatesUnconditional,
             CallbackUpdate.FixedUpdateActual => _fixedUpdatesActual,
@@ -371,9 +336,6 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
     private readonly PriorityList<Action> _enablesUnconditional = new();
     private readonly PriorityList<Action> _enablesActual = new();
 
-    private readonly PriorityList<Action> _preUpdatesUnconditional = new();
-    private readonly PriorityList<Action> _preUpdatesActual = new();
-
     private readonly PriorityList<Action> _updatesUnconditional = new();
     private readonly PriorityList<Action> _updatesActual = new();
 
@@ -392,7 +354,6 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
     private readonly PriorityList<Action> _endOfFramesActual = new();
 
     private bool _updated;
-    private bool _calledPreUpdate;
     private bool _calledLastUpdate = true; // true initially to stop printing error, Update will run first anyways
 
     private readonly IMonoBehaviourController _monoBehaviourController;
@@ -498,12 +459,6 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
                            $"paused: {_monoBehaviourController.PausedExecution}");
 #endif
 
-        if (!_calledPreUpdate)
-        {
-            _calledPreUpdate = true;
-            InvokeCallOnPreUpdate();
-        }
-
         if (!_calledLastUpdate)
         {
             StaticLogger.LogError("LastUpdate was not called in the previous frame, something is wrong");
@@ -534,7 +489,6 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
 #endif
 
         _updated = false;
-        _calledPreUpdate = false;
 
         for (var i = 0; i < _lateUpdatesUnconditional.Count; i++)
         {
@@ -564,8 +518,6 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         StaticLogger.Trace(
             $"InvokeFixedUpdate, time: {fixedTime}, paused: {_monoBehaviourController.PausedExecution}");
 #endif
-
-        InvokeCallOnPreUpdate();
 
         for (var i = 0; i < _fixedUpdatesUnconditional.Count; i++)
         {
@@ -598,26 +550,6 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
             var gui = _guisActual[i];
             if (!_monoBehaviourController.PausedExecution)
                 gui();
-        }
-    }
-
-    private void InvokeCallOnPreUpdate()
-    {
-#if TRACE
-        StaticLogger.Trace($"InvokeCallOnPreUpdate, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)}, " +
-                           $"paused: {_monoBehaviourController.PausedExecution}");
-#endif
-
-        for (var i = 0; i < _preUpdatesUnconditional.Count; i++)
-        {
-            _preUpdatesUnconditional[i]();
-        }
-
-        for (var i = 0; i < _preUpdatesActual.Count; i++)
-        {
-            var preUpdate = _preUpdatesActual[i];
-            if (!_monoBehaviourController.PausedExecution)
-                preUpdate();
         }
     }
 
