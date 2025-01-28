@@ -143,13 +143,15 @@ public class UnityCoroutineManager : ICoroutineTracker
         public bool MoveNext()
         {
             if (MonoBehaviourController.PausedExecution) return true;
-            if (_done) return false;
-            _seconds -= (float)TimeEnv.FrameTime * Time.timeScale;
-            if (_seconds <= 0)
+            if (_done)
             {
                 StaticLogger.Trace($"WaitForSeconds: done, {GetHashCode()}");
-                _done = true;
+                return false;
             }
+
+            _seconds -= (float)TimeEnv.FrameTime * Time.timeScale;
+            if (_seconds <= 0)
+                _done = true;
 
             return true;
         }
@@ -169,13 +171,15 @@ public class UnityCoroutineManager : ICoroutineTracker
         public bool MoveNext()
         {
             if (MonoBehaviourController.PausedExecution) return true;
-            if (_done) return false;
-            _seconds -= (float)TimeEnv.FrameTime;
-            if (_seconds <= 0)
+            if (_done)
             {
                 StaticLogger.Trace($"WaitForSecondsRealTime: done, {GetHashCode()}");
-                _done = true;
+                return false;
             }
+
+            _seconds -= (float)TimeEnv.FrameTime;
+            if (_seconds <= 0)
+                _done = true;
 
             return true;
         }
