@@ -218,7 +218,7 @@ public class GameInfo(IPatchReverseInvoker reverseInvoker) : IGameInfo, IGameInf
         }
     }
 
-    private bool _isFocused;
+    private bool _isFocused = true;
 
     public bool IsFocused
     {
