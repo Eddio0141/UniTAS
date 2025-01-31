@@ -98,8 +98,6 @@ public class UnityRuntimeInitAttributeInvoker
             CallbackPriority.UnityRuntimeInitAttributeInvoker);
         _updateEvents.AddPriorityCallback(CallbackUpdate.FixedUpdateActual, InvokeBeforeStart,
             CallbackPriority.UnityRuntimeInitAttributeInvoker);
-
-        _gameRestart.OnGameRestart -= GameRestart;
     }
 
     private void InvokeBeforeSceneLoad()
