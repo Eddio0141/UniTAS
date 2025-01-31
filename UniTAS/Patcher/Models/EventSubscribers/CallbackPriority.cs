@@ -8,5 +8,6 @@ public enum CallbackPriority
     InputUpdate,
     Default,
     UnityRuntimeInitAttributeInvoker, // after GameRestart (Default in this case)
-    FrameAdvancingTest
+    FrameAdvancingTest,
+    FirstUpdateSkipOnRestartLastUpdate, // need for last update resuming
 }
