@@ -361,8 +361,9 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
     public void InvokeLastUpdate()
     {
 #if TRACE
-        StaticLogger.Trace($"InvokeLastUpdate, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)}, " +
-                           $"paused: {_monoBehaviourController.PausedExecution}");
+        StaticLogger.Trace(
+            $"InvokeLastUpdate, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)} ({Time.frameCount}), " +
+            $"paused: {_monoBehaviourController.PausedExecution}");
 #endif
 
         if (_calledLastUpdate)
@@ -390,8 +391,9 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
     public void InvokeAwake()
     {
 #if TRACE
-        StaticLogger.Trace($"InvokeAwake, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)}, " +
-                           $"paused: {_monoBehaviourController.PausedExecution}");
+        StaticLogger.Trace(
+            $"InvokeAwake, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)} ({Time.frameCount}), " +
+            $"paused: {_monoBehaviourController.PausedExecution}");
 #endif
 
         for (var i = 0; i < _awakesUnconditional.Count; i++)
@@ -411,8 +413,9 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
     public void InvokeOnEnable()
     {
 #if TRACE
-        StaticLogger.Trace($"InvokeOnEnable, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)}, " +
-                           $"paused: {_monoBehaviourController.PausedExecution}");
+        StaticLogger.Trace(
+            $"InvokeOnEnable, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)} ({Time.frameCount}), " +
+            $"paused: {_monoBehaviourController.PausedExecution}");
 #endif
 
         for (var i = 0; i < _enablesUnconditional.Count; i++)
@@ -432,8 +435,9 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
     public void InvokeStart()
     {
 #if TRACE
-        StaticLogger.Trace($"InvokeStart, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)}, " +
-                           $"paused: {_monoBehaviourController.PausedExecution}");
+        StaticLogger.Trace(
+            $"InvokeStart, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)} ({Time.frameCount}), " +
+            $"paused: {_monoBehaviourController.PausedExecution}");
 #endif
 
         for (var i = 0; i < _startsUnconditional.Count; i++)
@@ -455,8 +459,9 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         _updated = true;
 
 #if TRACE
-        StaticLogger.Trace($"InvokeUpdate, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)}, " +
-                           $"paused: {_monoBehaviourController.PausedExecution}");
+        StaticLogger.Trace(
+            $"InvokeUpdate, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)} ({Time.frameCount}), " +
+            $"paused: {_monoBehaviourController.PausedExecution}");
 #endif
 
         if (!_calledLastUpdate)
@@ -484,8 +489,9 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
     public void InvokeLateUpdate()
     {
 #if TRACE
-        StaticLogger.Trace($"InvokeLateUpdate, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)}, " +
-                           $"paused: {_monoBehaviourController.PausedExecution}");
+        StaticLogger.Trace(
+            $"InvokeLateUpdate, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)} ({Time.frameCount}), " +
+            $"paused: {_monoBehaviourController.PausedExecution}");
 #endif
 
         _updated = false;
@@ -561,8 +567,9 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         _endOfFrameUpdated = true;
 
 #if TRACE
-        StaticLogger.Trace($"InvokeEndOfFrame, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)}, " +
-                           $"paused: {_monoBehaviourController.PausedExecution}");
+        StaticLogger.Trace(
+            $"InvokeEndOfFrame, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)} ({Time.frameCount}), " +
+            $"paused: {_monoBehaviourController.PausedExecution}");
 #endif
 
         // for (var i = 0; i < _endOfFramesUnconditional.Count; i++)
