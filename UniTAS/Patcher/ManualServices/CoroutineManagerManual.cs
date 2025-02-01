@@ -22,8 +22,12 @@ public static class CoroutineManagerManual
         CoroutineTracker.NewCoroutine(instance, routine);
 
     [SuppressMessage("ReSharper", "InconsistentNaming")]
-    public static bool CoroutineMoveNextPrefix(IEnumerator __instance, ref bool __result) =>
-        CoroutineTracker.CoroutineMoveNextPrefix(__instance, ref __result);
+    public static bool CoroutineMoveNextPrefix(IEnumerator __instance, ref bool __result, ref bool __state) =>
+        CoroutineTracker.CoroutineMoveNextPrefix(__instance, ref __result, ref __state);
+    
+    [SuppressMessage("ReSharper", "InconsistentNaming")]
+    public static void CoroutineMoveNextPostfix(IEnumerator __instance, bool __state) =>
+        CoroutineTracker.CoroutineMoveNextPostfix(__instance, __state);
 
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     public static void CoroutineCurrentPostfix(IEnumerator __instance, ref object __result) =>

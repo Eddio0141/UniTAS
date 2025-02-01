@@ -268,7 +268,7 @@ public class UnityCoroutineManager : ICoroutineTracker
     private static readonly HashSet<IEnumerator> DoneFirstMoveNext = [];
 
     // state is true if original is executed
-    public bool CoroutineMoveNextPrefix(IEnumerator instance, ref bool result)
+    public bool CoroutineMoveNextPrefix(IEnumerator instance, ref bool result, ref bool state)
     {
         if (!_instances.ContainsKey(instance)) return true;
 
@@ -296,8 +296,7 @@ public class UnityCoroutineManager : ICoroutineTracker
 
             if (_coroutineEndOfFrames.Count == 0)
             {
-                // MoveNext is invoked first, so code already ran, just run this here
-                MonoBehEventInvoker.InvokeLastUpdate();
+                state = true;
             }
         }
 
@@ -336,6 +335,12 @@ public class UnityCoroutineManager : ICoroutineTracker
         }
 
         return true;
+    }
+
+    public void CoroutineMoveNextPostfix(IEnumerator instance, bool state)
+    {
+        if (!state) return;
+        MonoBehEventInvoker.InvokeLastUpdate();
     }
 
     private static readonly UnityCoroutineManager CoroutineManager =

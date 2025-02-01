@@ -29,7 +29,8 @@ public class CoroutinePatch : PreloadPatcher
 
             // MoveNext
             ILCodeUtils.HookHarmony(moveNext,
-                typeof(CoroutineManagerManual).GetMethod(nameof(CoroutineManagerManual.CoroutineMoveNextPrefix)));
+                typeof(CoroutineManagerManual).GetMethod(nameof(CoroutineManagerManual.CoroutineMoveNextPrefix)),
+                typeof(CoroutineManagerManual).GetMethod(nameof(CoroutineManagerManual.CoroutineMoveNextPostfix)));
 
             // current
             ILCodeUtils.HookHarmony(current,

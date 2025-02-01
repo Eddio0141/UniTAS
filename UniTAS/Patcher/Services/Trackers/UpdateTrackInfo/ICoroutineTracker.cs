@@ -10,7 +10,8 @@ public interface ICoroutineTracker
     // `object` replacement for accessing this function in preload patcher
     void NewCoroutine(object instance, IEnumerator routine);
     void NewCoroutine(MonoBehaviour instance, string methodName, object value);
-    bool CoroutineMoveNextPrefix(IEnumerator instance, ref bool result);
+    bool CoroutineMoveNextPrefix(IEnumerator instance, ref bool result, ref bool state);
+    void CoroutineMoveNextPostfix(IEnumerator instance, bool state);
     void CoroutineCurrentPostfix(IEnumerator instance, ref object result);
 
     bool HasEndOfFrameCoroutineThisFrame { get; }
