@@ -7,6 +7,7 @@ using System.Reflection;
 using HarmonyLib;
 using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
+using UniTAS.Patcher.Interfaces.Events.SoftRestart;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.GameExecutionControllers;
 using UniTAS.Patcher.Services.Logging;
@@ -20,7 +21,7 @@ using UnityEngine;
 namespace UniTAS.Patcher.Implementations.UnityManagers;
 
 [Singleton]
-public class UnityCoroutineManager : ICoroutineTracker
+public class UnityCoroutineManager : ICoroutineTracker, IOnPreGameRestart
 {
     private readonly Dictionary<IEnumerator, MonoBehaviour> _instances = [];
     private HashSet<IEnumerator> _coroutineEndOfFrames = [];
@@ -34,13 +35,13 @@ public class UnityCoroutineManager : ICoroutineTracker
     private readonly Dictionary<Type, HashSet<MethodBase>> _patchedCoroutinesMethods = [];
     private readonly ILogger _logger;
     private readonly IHarmony _harmony;
+    private readonly IUpdateEvents _updateEvents;
 
-    public UnityCoroutineManager(ILogger logger, IHarmony harmony, IGameRestart gameRestart, IUpdateEvents updateEvents)
+    public UnityCoroutineManager(ILogger logger, IHarmony harmony, IUpdateEvents updateEvents)
     {
         _logger = logger;
         _harmony = harmony;
-        // do not use interface for game restart, it fucks everything up
-        gameRestart.OnPreGameRestart += OnPreGameRestart;
+        _updateEvents = updateEvents;
         updateEvents.OnLateUpdateUnconditional += LateUpdateUnconditional;
     }
 
@@ -92,7 +93,7 @@ public class UnityCoroutineManager : ICoroutineTracker
         _instances.Add(routine, instance);
     }
 
-    private void OnPreGameRestart()
+    public void OnPreGameRestart()
     {
         foreach (var coroutine in _instances.Values)
         {
@@ -105,6 +106,24 @@ public class UnityCoroutineManager : ICoroutineTracker
         _coroutineEndOfFramesNext.Clear();
         // no need, but better clean it up
         DoneFirstMoveNext.Clear();
+
+        _startCall = false;
+        _updateEvents.OnStartUnconditional += StartUnconditional;
+    }
+
+    private bool _startCall;
+
+    private void StartUnconditional()
+    {
+        _updateEvents.OnStartUnconditional -= StartUnconditional;
+        _startCall = true;
+        _updateEvents.OnUpdateActual += UpdateActual;
+    }
+
+    private void UpdateActual()
+    {
+        _updateEvents.OnUpdateActual -= UpdateActual;
+        _startCall = false;
     }
 
     private static readonly HarmonyMethod NewCoroutinePostfixMethod =
@@ -135,16 +154,24 @@ public class UnityCoroutineManager : ICoroutineTracker
 
     private static readonly ITimeEnv TimeEnv = ContainerStarter.Kernel.GetInstance<ITimeEnv>();
 
-    private class WaitForSecondsDummy(float seconds) : IEnumerator
+    private class WaitForSecondsDummy(float seconds, bool startCall) : IEnumerator
     {
         private float _seconds = seconds;
         private bool _done;
+        private bool _startCall = startCall;
 
         public bool MoveNext()
         {
             if (MonoBehaviourController.PausedExecution) return true;
+
             if (_done)
             {
+                if (_startCall)
+                {
+                    _startCall = false;
+                    return true;
+                }
+
                 StaticLogger.Trace($"WaitForSeconds: done, {GetHashCode()}");
                 return false;
             }
@@ -230,7 +257,7 @@ public class UnityCoroutineManager : ICoroutineTracker
 
         if (__result is WaitForSeconds waitForSeconds)
         {
-            __result = new WaitForSecondsDummy(waitForSeconds.m_Seconds);
+            __result = new WaitForSecondsDummy(waitForSeconds.m_Seconds, _startCall);
             StaticLogger.Trace(
                 $"new WaitForSeconds with {waitForSeconds.m_Seconds} seconds, {__result.GetHashCode()}\n{Environment.StackTrace}");
             return;

@@ -15,7 +15,7 @@ public partial class UnityEvents
 {
     private readonly IInputSystemState _newInputSystemExists;
 
-    private void InputSystemEventsInit()
+    public void InputSystemEventsInit()
     {
         if (_usingMonoBehUpdate)
         {

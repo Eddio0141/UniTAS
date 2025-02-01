@@ -1,9 +1,6 @@
 using System;
-using System.Collections.Generic;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents;
-using UniTAS.Patcher.Interfaces.Events.UnityEvents.DontRunIfPaused;
-using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
 using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Models.EventSubscribers;
 using UniTAS.Patcher.Models.Utils;
@@ -27,124 +24,17 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
 {
     private readonly IPatchReverseInvoker _patchReverseInvoker;
 
-    public UnityEvents(IEnumerable<IOnAwakeUnconditional> onAwakesUnconditional,
-        IEnumerable<IOnAwakeActual> onAwakeActual,
-        IEnumerable<IOnStartUnconditional> onStartsUnconditional,
-        IEnumerable<IOnEnableUnconditional> onEnablesUnconditional,
-        IEnumerable<IOnUpdateUnconditional> onUpdatesUnconditional,
-        IEnumerable<IOnFixedUpdateUnconditional> onFixedUpdatesUnconditional,
-        IEnumerable<IOnGUIUnconditional> onGuisUnconditional,
-        IEnumerable<IOnFixedUpdateActual> onFixedUpdatesActual,
-        IEnumerable<IOnStartActual> onStartsActual,
-        IEnumerable<IOnUpdateActual> onUpdatesActual,
-        IEnumerable<IOnInputUpdateActual> onInputUpdatesActual,
-        IEnumerable<IOnInputUpdateUnconditional> onInputUpdatesUnconditional,
-        IEnumerable<IOnLateUpdateUnconditional> onLateUpdatesUnconditional,
-        IEnumerable<IOnLastUpdateUnconditional> onLastUpdatesUnconditional,
-        IEnumerable<IOnLastUpdateActual> onLastUpdatesActual,
-        IEnumerable<IOnEndOfFrameActual> onEndOfFrameActual,
-        IGameRestart gameRestart,
-        IInputSystemState newInputSystemExists, IMonoBehaviourController monoBehaviourController,
-        IPatchReverseInvoker patchReverseInvoker
-    )
+    public UnityEvents(IInputSystemState newInputSystemExists, IMonoBehaviourController monoBehaviourController,
+        IPatchReverseInvoker patchReverseInvoker)
     {
         _patchReverseInvoker = patchReverseInvoker;
         _newInputSystemExists = newInputSystemExists;
         _monoBehaviourController = monoBehaviourController;
 
-        gameRestart.OnGameRestart += OnGameRestart;
-
-        foreach (var onAwake in onAwakesUnconditional)
-        {
-            RegisterMethod(onAwake, onAwake.AwakeUnconditional, CallbackUpdate.AwakeUnconditional);
-        }
-
-        foreach (var onAwake in onAwakeActual)
-        {
-            RegisterMethod(onAwake, onAwake.AwakeActual, CallbackUpdate.AwakeActual);
-        }
-
-        foreach (var onStart in onStartsUnconditional)
-        {
-            RegisterMethod(onStart, onStart.StartUnconditional, CallbackUpdate.StartUnconditional);
-        }
-
-        foreach (var onEnable in onEnablesUnconditional)
-        {
-            RegisterMethod(onEnable, onEnable.OnEnableUnconditional, CallbackUpdate.EnableUnconditional);
-        }
-
-        foreach (var onUpdate in onUpdatesUnconditional)
-        {
-            RegisterMethod(onUpdate, onUpdate.UpdateUnconditional, CallbackUpdate.UpdateUnconditional);
-        }
-
-        foreach (var onFixedUpdate in onFixedUpdatesUnconditional)
-        {
-            RegisterMethod(onFixedUpdate, onFixedUpdate.FixedUpdateUnconditional,
-                CallbackUpdate.FixedUpdateUnconditional);
-        }
-
-        foreach (var onGui in onGuisUnconditional)
-        {
-            RegisterMethod(onGui, onGui.OnGUIUnconditional, CallbackUpdate.GUIUnconditional);
-        }
-
-        foreach (var onFixedUpdateActual in onFixedUpdatesActual)
-        {
-            RegisterMethod(onFixedUpdateActual, onFixedUpdateActual.FixedUpdateActual,
-                CallbackUpdate.FixedUpdateActual);
-        }
-
-        foreach (var onStartActual in onStartsActual)
-        {
-            RegisterMethod(onStartActual, onStartActual.StartActual, CallbackUpdate.StartActual);
-        }
-
-        foreach (var onUpdateActual in onUpdatesActual)
-        {
-            RegisterMethod(onUpdateActual, onUpdateActual.UpdateActual, CallbackUpdate.UpdateActual);
-        }
-
-        foreach (var onLateUpdateUnconditional in onLateUpdatesUnconditional)
-        {
-            RegisterMethod(onLateUpdateUnconditional, onLateUpdateUnconditional.OnLateUpdateUnconditional,
-                CallbackUpdate.LateUpdateUnconditional);
-        }
-
-        foreach (var onLastUpdateUnconditional in onLastUpdatesUnconditional)
-        {
-            RegisterMethod(onLastUpdateUnconditional, onLastUpdateUnconditional.OnLastUpdateUnconditional,
-                CallbackUpdate.LastUpdateUnconditional);
-        }
-
-        foreach (var onLastUpdateActual in onLastUpdatesActual)
-        {
-            RegisterMethod(onLastUpdateActual, onLastUpdateActual.OnLastUpdateActual, CallbackUpdate.LastUpdateActual);
-        }
-
-        foreach (var endOfFrameActual in onEndOfFrameActual)
-        {
-            RegisterMethod(endOfFrameActual, endOfFrameActual.OnEndOfFrame, CallbackUpdate.EndOfFrameActual);
-        }
-
-        // input system events init
-        foreach (var onInputUpdateActual in onInputUpdatesActual)
-        {
-            RegisterMethod(onInputUpdateActual, onInputUpdateActual.InputUpdateActual,
-                CallbackInputUpdate.InputUpdateActual);
-        }
-
-        foreach (var onInputUpdateUnconditional in onInputUpdatesUnconditional)
-        {
-            RegisterMethod(onInputUpdateUnconditional, onInputUpdateUnconditional.InputUpdateUnconditional,
-                CallbackInputUpdate.InputUpdateUnconditional);
-        }
-
         InputSystemEventsInit();
     }
 
-    private void RegisterMethod(object processingCallback, Action callback, CallbackUpdate update)
+    public void RegisterMethod(object processingCallback, Action callback, CallbackUpdate update)
     {
         var callbackList = update switch
         {
@@ -182,7 +72,7 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         callbackList.Add(callback, (int)CallbackPriority.Default);
     }
 
-    private void RegisterMethod(object processingCallback, IUpdateEvents.InputUpdateCall callback,
+    public void RegisterMethod(object processingCallback, IUpdateEvents.InputUpdateCall callback,
         CallbackInputUpdate update)
     {
         var callbackList = update switch
@@ -288,6 +178,12 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
     {
         add => _lateUpdatesActual.Add(value, (int)CallbackPriority.Default);
         remove => _lateUpdatesActual.Remove(value);
+    }
+
+    public event Action OnEndOfFrameActual
+    {
+        add => _endOfFramesActual.Add(value, (int)CallbackPriority.Default);
+        remove => _endOfFramesActual.Remove(value);
     }
 
     public event Action OnLastUpdateUnconditional

@@ -8,7 +8,6 @@ public enum RegisterPriority
     RuntimeTestProcessor,
     FrameAdvancing,
     Default,
-    GameRestart,
     CoroutineHandler,
     ToolBar,
     KeyBindsWindow,

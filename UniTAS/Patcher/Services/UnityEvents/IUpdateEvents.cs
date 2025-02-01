@@ -22,12 +22,15 @@ public interface IUpdateEvents
     event Action OnLateUpdateUnconditional;
     event Action OnLastUpdateUnconditional;
     event Action OnLastUpdateActual;
+    event Action OnEndOfFrameActual;
     event InputUpdateCall OnInputUpdateActual;
     event InputUpdateCall OnInputUpdateUnconditional;
 
     void AddPriorityCallback(CallbackUpdate callbackUpdate, Action callback, CallbackPriority priority);
 
     void AddPriorityCallback(CallbackInputUpdate callbackUpdate, InputUpdateCall callback, CallbackPriority priority);
+    void RegisterMethod(object processingCallback, InputUpdateCall callback, CallbackInputUpdate update);
+    void RegisterMethod(object processingCallback, Action callback, CallbackUpdate update);
 
     public delegate void InputUpdateCall(bool fixedUpdate, bool newInputSystemUpdate);
 }

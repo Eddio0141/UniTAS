@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using UniTAS.Patcher.Exceptions.Movie.Runner;
 using UniTAS.Patcher.Implementations.Coroutine;
 using UniTAS.Patcher.Interfaces.Coroutine;
@@ -16,7 +15,6 @@ using UniTAS.Patcher.Services.VirtualEnvironment;
 
 namespace UniTAS.Patcher.Implementations.Movie;
 
-[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 [Singleton(RegisterPriority.MovieRunner)]
 public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvents
 {
