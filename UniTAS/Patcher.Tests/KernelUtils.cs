@@ -14,7 +14,6 @@ using UniTAS.Patcher.Implementations.UnitySafeWrappers;
 using UniTAS.Patcher.Implementations.UnitySafeWrappers.SceneManagement;
 using UniTAS.Patcher.Implementations.UnitySafeWrappers.Unity.Collections;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
-using UniTAS.Patcher.Interfaces.Events.UnityEvents.DontRunIfPaused;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
 using UniTAS.Patcher.Interfaces.GlobalHotkeyListener;
 using UniTAS.Patcher.Interfaces.Movie;
@@ -190,7 +189,8 @@ public static class KernelUtils
         {
         }
 
-        public void UnloadSceneAsync(string sceneName, int sceneBuildIndex, object options, bool immediate, out bool success)
+        public void UnloadSceneAsync(string sceneName, int sceneBuildIndex, object options, bool immediate,
+            out bool success)
         {
             success = false;
         }
@@ -389,14 +389,14 @@ public static class KernelUtils
 
         Assert.Equal(Enum.GetValues(typeof(RegisterTiming)).Length, timings.Length);
 
+        kernel.Configure(c =>
+        {
+            kernel.GetInstance<IDiscoverAndRegister>().Register<InfoPrintAndWelcome>(c);
+            kernel.GetInstance<IDiscoverAndRegister>().Register<FakeStaticFieldStorage>(c);
+        });
+
         foreach (var timing in timings)
         {
-            kernel.Configure(c =>
-            {
-                kernel.GetInstance<IDiscoverAndRegister>().Register<InfoPrintAndWelcome>(c, timing);
-                kernel.GetInstance<IDiscoverAndRegister>().Register<FakeStaticFieldStorage>(c, timing);
-            });
-
             var forceInstantiateTypes = kernel.GetInstance<IForceInstantiateTypes>();
             forceInstantiateTypes.InstantiateTypes<InfoPrintAndWelcome>(timing);
             forceInstantiateTypes.InstantiateTypes<DummyMouseEnvLegacySystem>(timing);

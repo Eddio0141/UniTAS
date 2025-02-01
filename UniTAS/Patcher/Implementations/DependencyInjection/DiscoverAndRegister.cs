@@ -2,11 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Reflection;
 using HarmonyLib;
 using StructureMap;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
-using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Services.DependencyInjection;
 using UniTAS.Patcher.Services.Logging;
 
@@ -15,60 +13,26 @@ namespace UniTAS.Patcher.Implementations.DependencyInjection;
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public class DiscoverAndRegister(ILogger logger) : IDiscoverAndRegister
 {
-    private readonly Dictionary<Assembly, Dictionary<RegisterTiming, List<RegisterInfoBase>>> _pendingRegisters = new();
-
-    public void Register<TAssemblyContainingType>(ConfigurationExpression config, RegisterTiming timing)
+    public void Register<TAssemblyContainingType>(ConfigurationExpression config)
     {
-        var assembly = typeof(TAssemblyContainingType).Assembly;
+        var allTypes = AccessTools.GetTypesFromAssembly(typeof(TAssemblyContainingType).Assembly);
 
-        // have we processed pending registers yet?
-        if (!_pendingRegisters.TryGetValue(assembly, out var pendingRegisters))
+        var types = allTypes.Where(
+            x => x.GetCustomAttributes(typeof(DependencyInjectionAttribute), true).Length > 0);
+
+        logger.LogDebug("registering types");
+        var count = 0;
+        foreach (var type in types)
         {
-            pendingRegisters = new();
-            _pendingRegisters.Add(assembly, pendingRegisters);
-
-            var allTypes = AccessTools.GetTypesFromAssembly(typeof(TAssemblyContainingType).Assembly);
-            var types = allTypes.Where(
-                x => x.GetCustomAttributes(typeof(DependencyInjectionAttribute), true).Length > 0);
-
-            var registers = new List<RegisterInfoBase>();
-
-            foreach (var type in types)
+            foreach (var register in GetRegisterInfos(type, allTypes).OrderBy(x => x.Priority))
             {
-                registers.AddRange(GetRegisterInfos(type, allTypes));
-            }
-
-            // order by priority
-            registers = registers.OrderBy(x => x.Priority).ToList();
-
-            // group by timing
-            var timings = Enum.GetValues(typeof(RegisterTiming)).Cast<RegisterTiming>();
-            foreach (var registerTiming in timings)
-            {
-                pendingRegisters.Add(registerTiming, new());
-            }
-
-            foreach (var register in registers)
-            {
-                pendingRegisters[register.Timing].Add(register);
+                logger.LogDebug($"registering {register.Type.FullName} with priority {register.Priority}");
+                register.Register(config);
+                count++;
             }
         }
 
-        // actually register
-        if (!pendingRegisters.TryGetValue(timing, out var currentRegisters)) return;
-        pendingRegisters.Remove(timing);
-
-        logger.LogDebug($"registering {currentRegisters.Count} types with timing {timing}");
-        foreach (var register in currentRegisters)
-        {
-            logger.LogDebug($"registering {register.Type.FullName} with priority {register.Priority}");
-            register.Register(config);
-        }
-
-        if (pendingRegisters.Count == 0)
-        {
-            _pendingRegisters.Remove(assembly);
-        }
+        logger.LogDebug($"registered {count} types");
     }
 
     private static IEnumerable<RegisterInfoBase> GetRegisterInfos(Type type, Type[] allTypes)

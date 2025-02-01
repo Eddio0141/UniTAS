@@ -31,12 +31,16 @@ public static class ContainerStarter
                 c.ForSingletonOf<Logger>().Use<Logger>();
                 c.For<ILogger>().Use(x => x.GetInstance<Logger>());
             });
+
+            Kernel.Configure(c => Kernel.GetInstance<IDiscoverAndRegister>().Register<Logger>(c));
         }
         catch (Exception e)
         {
             StaticLogger.Log.LogFatal($"An exception occurred while initializing the container\n{e}");
             throw;
         }
+
+        StaticLogger.LogDebug($"Register info\n{Kernel.WhatDoIHave()}");
 
         var timings = Enum.GetValues(typeof(RegisterTiming)).Cast<RegisterTiming>();
         foreach (var timing in timings)
@@ -57,12 +61,8 @@ public static class ContainerStarter
 
     public static void Init(RegisterTiming timing)
     {
-        StaticLogger.Log.LogDebug($"Registering types at timing {timing}");
-
         try
         {
-            Kernel.Configure(c => Kernel.GetInstance<IDiscoverAndRegister>().Register<Logger>(c, timing));
-
             var forceInstantiateTypes = Kernel.GetInstance<IForceInstantiateTypes>();
             forceInstantiateTypes.InstantiateTypes<ForceInstantiateTypes>(timing);
         }
@@ -72,8 +72,6 @@ public static class ContainerStarter
                 $"An exception occurred while initializing the container at timing {timing}\n{e}");
             throw;
         }
-
-        StaticLogger.Log.LogDebug($"Registered types at timing {timing}");
 
         if (!ContainerInitCallbacks.TryGetValue(timing, out var callbacks)) return;
         ContainerInitCallbacks.Remove(timing);
