@@ -13,6 +13,7 @@ using UniTAS.Patcher.Interfaces.GUI;
 using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Logging;
+using UniTAS.Patcher.Services.UnityEvents;
 
 namespace UniTAS.Patcher.Implementations;
 
@@ -23,12 +24,13 @@ public class RemoteControl
 {
     private readonly Script _script;
 
-    private readonly Queue<string> _printResponse;
-    private readonly object _printResponseLock;
+    private readonly Queue<string> _doStrings;
+    private readonly Queue<string> _printResponse = new();
 
     private readonly ILogger _logger;
 
-    public RemoteControl(IConfig config, ILogger logger, ILiveScripting liveScripting, TerminalCmd[] commands)
+    public RemoteControl(IConfig config, ILogger logger, ILiveScripting liveScripting, TerminalCmd[] commands,
+        IUpdateEvents updateEvents)
     {
         var conf = config.BepInExConfigFile;
 
@@ -43,12 +45,12 @@ public class RemoteControl
 
         _logger = logger;
 
+        _doStrings = new();
         _printResponse = new();
-        _printResponseLock = new();
         _script = liveScripting.NewScript();
         _script.Options.DebugPrint = msg =>
         {
-            lock (_printResponseLock)
+            lock (_printResponse)
             {
                 _printResponse.Enqueue(msg);
             }
@@ -69,6 +71,26 @@ public class RemoteControl
 
         var thread = new Thread(() => ThreadLoop(ipAddr, portConf.Value));
         thread.Start();
+
+        updateEvents.OnUpdateUnconditional += UpdateUnconditional;
+    }
+
+    private void UpdateUnconditional()
+    {
+        lock (_doStrings)
+        {
+            while (_doStrings.Count > 0)
+            {
+                try
+                {
+                    _script.DoString(_doStrings.Dequeue());
+                }
+                catch (Exception e)
+                {
+                    _printResponse.Enqueue(e.ToString());
+                }
+            }
+        }
     }
 
     private void ThreadLoop(IPAddress ipAddr, int port)
@@ -122,7 +144,7 @@ public class RemoteControl
                     break;
                 }
 
-                lock (_printResponseLock)
+                lock (_printResponse)
                 {
                     while (_printResponse.Count > 0)
                     {
@@ -187,13 +209,9 @@ public class RemoteControl
 
                 _logger.LogDebug($"remote got client data: {response}");
 
-                try
+                lock (_doStrings)
                 {
-                    _script.DoString(response);
-                }
-                catch (Exception e)
-                {
-                    _printResponse.Enqueue(e.ToString());
+                    _doStrings.Enqueue(response);
                 }
             }
         }
