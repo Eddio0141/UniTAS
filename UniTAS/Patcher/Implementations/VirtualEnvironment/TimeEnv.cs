@@ -8,6 +8,7 @@ using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.GameExecutionControllers;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Patcher.Services.VirtualEnvironment;
+using UniTAS.Patcher.Utils;
 using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations.VirtualEnvironment;
@@ -154,5 +155,6 @@ public class TimeEnv : ITimeEnv, IOnGameRestartResume, IOnLastUpdateActual,
 
         FrameCountRestartOffset--;
         RenderedFrameCountOffset--;
+        StaticLogger.Trace("initialized time");
     }
 }
