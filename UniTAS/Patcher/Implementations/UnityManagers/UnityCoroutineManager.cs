@@ -39,6 +39,7 @@ public class UnityCoroutineManager : ICoroutineTracker, IOnPreGameRestart
 
     public UnityCoroutineManager(ILogger logger, IHarmony harmony, IUpdateEvents updateEvents)
     {
+        CoroutineManager = this;
         _logger = logger;
         _harmony = harmony;
         _updateEvents = updateEvents;
@@ -370,8 +371,7 @@ public class UnityCoroutineManager : ICoroutineTracker, IOnPreGameRestart
         MonoBehEventInvoker.InvokeLastUpdate();
     }
 
-    private static readonly UnityCoroutineManager CoroutineManager =
-        ContainerStarter.Kernel.GetInstance<UnityCoroutineManager>();
+    private static UnityCoroutineManager CoroutineManager;
 
     private static void NewCoroutinePostfix(MonoBehaviour __instance, IEnumerator __result)
     {
