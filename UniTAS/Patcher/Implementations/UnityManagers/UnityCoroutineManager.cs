@@ -191,33 +191,33 @@ public class UnityCoroutineManager : ICoroutineTracker, IOnPreGameRestart
         public object Current => null;
     }
 
-    private class WaitForSecondsRealTimeDummy(float seconds) : IEnumerator
-    {
-        private float _seconds = seconds;
-        private bool _done;
-
-        public bool MoveNext()
-        {
-            if (MonoBehaviourController.PausedExecution) return true;
-            if (_done)
-            {
-                StaticLogger.Trace($"WaitForSecondsRealTime: done, {GetHashCode()}");
-                return false;
-            }
-
-            _seconds -= (float)TimeEnv.FrameTime;
-            if (_seconds <= 0)
-                _done = true;
-
-            return true;
-        }
-
-        public void Reset()
-        {
-        }
-
-        public object Current => null;
-    }
+    // private class WaitForSecondsRealTimeDummy(float seconds) : IEnumerator
+    // {
+    //     private float _seconds = seconds;
+    //     private bool _done;
+    //
+    //     public bool MoveNext()
+    //     {
+    //         if (MonoBehaviourController.PausedExecution) return true;
+    //         if (_done)
+    //         {
+    //             StaticLogger.Trace($"WaitForSecondsRealTime: done, {GetHashCode()}");
+    //             return false;
+    //         }
+    //
+    //         _seconds -= (float)TimeEnv.FrameTime;
+    //         if (_seconds <= 0)
+    //             _done = true;
+    //
+    //         return true;
+    //     }
+    //
+    //     public void Reset()
+    //     {
+    //     }
+    //
+    //     public object Current => null;
+    // }
 
     private static readonly YieldNone NoYield = new();
 
@@ -264,14 +264,14 @@ public class UnityCoroutineManager : ICoroutineTracker, IOnPreGameRestart
             return;
         }
 
-        if (__result.GetType().SaneFullName() == "UnityEngine.WaitForSecondsRealtime")
-        {
-            var waitTime = new Traverse(__result).Property("waitTime").GetValue<float>();
-            __result = new WaitForSecondsRealTimeDummy(waitTime);
-            StaticLogger.Trace(
-                $"new WaitForSecondsRealTime with {waitTime} seconds, {__result.GetHashCode()}\n{Environment.StackTrace}");
-            return;
-        }
+        // if (__result.GetType().SaneFullName() == "UnityEngine.WaitForSecondsRealtime")
+        // {
+        //     var waitTime = new Traverse(__result).Property("waitTime").GetValue<float>();
+        //     __result = new WaitForSecondsRealTimeDummy(waitTime);
+        //     StaticLogger.Trace(
+        //         $"new WaitForSecondsRealTime with {waitTime} seconds, {__result.GetHashCode()}\n{Environment.StackTrace}");
+        //     return;
+        // }
 
         if (MonoBehaviourController.PausedExecution)
         {
