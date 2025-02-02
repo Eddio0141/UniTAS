@@ -43,6 +43,13 @@ public class PatchReverseInvoker : IPatchReverseInvoker
         _invoking.Value = false;
     }
 
+    public void Invoke<T1, T2>(Action<T1, T2> method, T1 arg1, T2 arg2)
+    {
+        _invoking.Value = true;
+        method(arg1, arg2);
+        _invoking.Value = false;
+    }
+
     public void Invoke<T1, T2, T3, T4>(Action<T1, T2, T3, T4> method, T1 arg1, T2 arg2, T3 arg3, T4 arg4)
     {
         _invoking.Value = true;

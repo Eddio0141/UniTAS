@@ -38,16 +38,17 @@ public class WindowEnv(
             logger.LogDebug(
                 $"setting game resolution to {CurrentResolution.Width}x{CurrentResolution.Height}, use full screen: {useFullScreen}");
 
-            patchReverseInvoker.Invoke(() =>
-                Screen.SetResolution(CurrentResolution.Width, CurrentResolution.Height, useFullScreen));
+            patchReverseInvoker.Invoke((res, useFs) => Screen.SetResolution(res.Width, res.Height, useFs),
+                CurrentResolution, useFullScreen);
             return;
         }
 
         logger.LogDebug(
             $"restoring original resolution {_originalResolution.Width}x{_originalResolution.Height}, full screen: {_originalIsFullScreen}");
 
-        patchReverseInvoker.Invoke(() =>
-            Screen.SetResolution(_originalResolution.Width, _originalResolution.Height, _originalIsFullScreen));
+        patchReverseInvoker.Invoke(
+            (originalRes, originalFs) => Screen.SetResolution(originalRes.Width, originalRes.Height, originalFs),
+            _originalResolution, _originalIsFullScreen);
     }
 
 #if UNIT_TESTS
