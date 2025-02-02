@@ -138,13 +138,6 @@ public class TimeEnv : ITimeEnv, IOnGameRestartResume, IOnLastUpdateActual,
         ScaledFixedTime = 0;
         RealtimeSinceStartup = 0;
 
-        // funny hack to update the time properly but also with starting time
-        var initialFt = _timeWrap.CaptureFrameTime;
-        RealtimeSinceStartup += initialFt;
-        UnscaledTime += initialFt;
-        ScaledTime += initialFt;
-        SecondsSinceStartUp += initialFt;
-
         _timeInitialized = false;
     }
 
