@@ -129,20 +129,6 @@ public class KernelTests
     }
 
     [Fact]
-    public void StaticFieldManipulator()
-    {
-        var kernel = KernelUtils.Init();
-
-        var staticFieldManipulator = kernel.GetInstance<IStaticFieldManipulator>();
-        Assert.NotNull(staticFieldManipulator);
-
-        var staticFieldManipulator2 = kernel.GetInstance<IStaticFieldManipulator>();
-        Assert.NotNull(staticFieldManipulator2);
-
-        Assert.Same(staticFieldManipulator, staticFieldManipulator2);
-    }
-
-    [Fact]
     public void OnGameRestartResume()
     {
         var kernel = KernelUtils.Init();

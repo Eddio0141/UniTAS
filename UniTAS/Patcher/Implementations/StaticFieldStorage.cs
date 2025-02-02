@@ -1,8 +1,10 @@
 using System;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
+using UniTAS.Patcher.Interfaces.Events.SoftRestart;
 using UniTAS.Patcher.ManualServices;
 using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Services;
+using UniTAS.Patcher.Services.GameExecutionControllers;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.Trackers.TrackInfo;
 using UniTAS.Patcher.Utils;
@@ -10,25 +12,27 @@ using UniTAS.Patcher.Utils;
 namespace UniTAS.Patcher.Implementations;
 
 // ReSharper disable once ClassNeverInstantiated.Global
-[Singleton(timing: RegisterTiming.Entry)]
+[Singleton(RegisterPriority.StaticFieldStorage)]
 [ExcludeRegisterIfTesting]
 public class StaticFieldStorage(
     ILogger logger,
     IClassStaticInfoTracker classStaticInfoTracker,
-    ITryFreeMalloc freeMalloc)
-    : IStaticFieldManipulator
+    ITryFreeMalloc freeMalloc,
+    IFinalizeSuppressor finalizeSuppressor) : IOnPreGameRestart
 {
-    public void ResetStaticFields()
+    public void OnPreGameRestart()
     {
         logger.LogDebug("resetting static fields");
+
+        finalizeSuppressor.DisableFinalizeInvoke = true;
 
         // UnityEngine.Resources.UnloadUnusedAssets();
 
         var bench = Bench.Measure();
-        
+
         var fieldsCount = classStaticInfoTracker.StaticFields.Count;
         var ctorInvokeCount = classStaticInfoTracker.StaticCtorInvokeOrder.Count;
-        
+
         for (var i = 0; i < fieldsCount; i++)
         {
             var field = classStaticInfoTracker.StaticFields[i];
@@ -67,13 +71,15 @@ public class StaticFieldStorage(
             LoggingUtils.DiskLogger.Flush();
             try
             {
-                cctor.Invoke(null, default);
+                cctor.Invoke(null, null);
             }
             catch (Exception e)
             {
                 logger.LogDebug($"Exception thrown while calling static constructor: {e}");
             }
         }
+
+        finalizeSuppressor.DisableFinalizeInvoke = false;
 
         bench.Dispose();
     }

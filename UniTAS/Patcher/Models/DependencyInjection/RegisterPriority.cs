@@ -7,6 +7,7 @@ public enum RegisterPriority
     MovieRunner,
     RuntimeTestProcessor,
     FrameAdvancing,
+    StaticFieldStorage, // must be before InvokeAllAfterDeserialization (Default)
     Default,
     CoroutineHandler,
     ToolBar,

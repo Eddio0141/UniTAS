@@ -118,15 +118,6 @@ public static class KernelUtils
     }
 
     [Singleton(IncludeDifferentAssembly = true)]
-    [SuppressMessage("ReSharper", "UnusedType.Local")]
-    public class FakeStaticFieldStorage : IStaticFieldManipulator
-    {
-        public void ResetStaticFields()
-        {
-        }
-    }
-
-    [Singleton(IncludeDifferentAssembly = true)]
     [SuppressMessage("ReSharper", "UnassignedGetOnlyAutoProperty")]
     public class DummyMouseEnvLegacySystem : IMouseStateEnvLegacySystem
     {
@@ -392,7 +383,7 @@ public static class KernelUtils
         kernel.Configure(c =>
         {
             kernel.GetInstance<IDiscoverAndRegister>().Register<InfoPrintAndWelcome>(c);
-            kernel.GetInstance<IDiscoverAndRegister>().Register<FakeStaticFieldStorage>(c);
+            kernel.GetInstance<IDiscoverAndRegister>().Register<DummyMouseEnvLegacySystem>(c);
         });
 
         foreach (var timing in timings)

@@ -1,23 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using UniTAS.Patcher.Implementations.Coroutine;
 using UniTAS.Patcher.Interfaces.Coroutine;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.SoftRestart;
 using UniTAS.Patcher.ManualServices;
-using UniTAS.Patcher.ManualServices.Trackers;
 using UniTAS.Patcher.Models.EventSubscribers;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.GameExecutionControllers;
 using UniTAS.Patcher.Services.Logging;
-using UniTAS.Patcher.Services.Trackers.TrackInfo;
 using UniTAS.Patcher.Services.UnityEvents;
 using UniTAS.Patcher.Services.UnityInfo;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Patcher.Services.VirtualEnvironment;
-using Object = UnityEngine.Object;
 
 namespace UniTAS.Patcher.Implementations.GameRestart;
 
@@ -32,13 +28,10 @@ public class GameRestart : IGameRestart
     private readonly ISceneManagerWrapper _iSceneManagerWrapper;
     private readonly IMonoBehaviourController _monoBehaviourController;
     private readonly ILogger _logger;
-    private readonly IFinalizeSuppressor _finalizeSuppressor;
     private readonly IUpdateInvokeOffset _updateInvokeOffset;
-    private readonly IObjectTracker _objectTracker;
     private readonly ICoroutine _coroutine;
     private readonly IGameInfo _gameInfo;
 
-    private readonly IStaticFieldManipulator _staticFieldManipulator;
     private readonly ITimeEnv _timeEnv;
 
     private bool _pendingRestart;
@@ -47,20 +40,16 @@ public class GameRestart : IGameRestart
     [SuppressMessage("ReSharper", "MemberCanBeProtected.Global")]
     public GameRestart(ISyncFixedUpdateCycle syncFixedUpdate, ISceneManagerWrapper iSceneManagerWrapper,
         IMonoBehaviourController monoBehaviourController, ILogger logger, IOnGameRestart[] onGameRestart,
-        IOnGameRestartResume[] onGameRestartResume, IOnPreGameRestart[] onPreGameRestart,
-        IStaticFieldManipulator staticFieldManipulator, ITimeEnv timeEnv, IFinalizeSuppressor finalizeSuppressor,
-        IUpdateInvokeOffset updateInvokeOffset, IObjectTracker objectTracker, ICoroutine coroutine, IGameInfo gameInfo,
+        IOnGameRestartResume[] onGameRestartResume, IOnPreGameRestart[] onPreGameRestart, ITimeEnv timeEnv,
+        IUpdateInvokeOffset updateInvokeOffset, ICoroutine coroutine, IGameInfo gameInfo,
         IInputEventInvoker inputEventInvoker, IUpdateEvents updateEvents)
     {
         _syncFixedUpdate = syncFixedUpdate;
         _iSceneManagerWrapper = iSceneManagerWrapper;
         _monoBehaviourController = monoBehaviourController;
         _logger = logger;
-        _staticFieldManipulator = staticFieldManipulator;
         _timeEnv = timeEnv;
-        _finalizeSuppressor = finalizeSuppressor;
         _updateInvokeOffset = updateInvokeOffset;
-        _objectTracker = objectTracker;
         _coroutine = coroutine;
         _gameInfo = gameInfo;
 
@@ -99,22 +88,6 @@ public class GameRestart : IGameRestart
     public bool Restarting => _pendingRestart || _pendingResumePausedExecution;
 
     /// <summary>
-    /// Destroys all necessary game objects to reset the game state.
-    /// Default behaviour is to destroy all DontDestroyOnLoad objects.
-    /// </summary>
-    private void DestroyGameObjects()
-    {
-        var objs = _objectTracker.DontDestroyOnLoadRootObjects.ToList();
-        _logger.LogDebug($"Destroying {objs.Count} DontDestroyOnLoad objects");
-
-        foreach (var obj in objs)
-        {
-            _logger.LogDebug($"Destroying {obj.name}");
-            Object.Destroy(obj);
-        }
-    }
-
-    /// <summary>
     /// Soft restart the game. This will not reload the game, but tries to reset the game state.
     /// </summary>
     /// <param name="time">Time to start the game at</param>
@@ -150,18 +123,6 @@ public class GameRestart : IGameRestart
         _logger.LogDebug("Stopping MonoBehaviour execution");
         _monoBehaviourController.PausedExecution = true;
 
-        DestroyGameObjects();
-
-        _logger.LogDebug("Disabling finalize invoke");
-        // TODO is this even a good idea
-        _finalizeSuppressor.DisableFinalizeInvoke = true;
-
-        _staticFieldManipulator.ResetStaticFields();
-
-        SerializationCallbackTracker.InvokeAllAfterDeserialization();
-
-        _logger.LogDebug("Enabling finalize invoke");
-        _finalizeSuppressor.DisableFinalizeInvoke = false;
         bench.Dispose();
 
         _syncFixedUpdate.OnSync(SoftRestartOperation, -_timeEnv.FrameTime);
