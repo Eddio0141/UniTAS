@@ -110,14 +110,11 @@ public class TimePatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static readonly Traverse fixedUnscaledTime =
-            Traverse.Create(typeof(Time)).Property("fixedUnscaledTime");
-
         private static bool Prefix(ref float __result)
         {
             // When called from inside MonoBehaviour's FixedUpdate, it returns Time.fixedUnscaledTime
             __result = CalledFromFixedUpdate()
-                ? fixedUnscaledTime.GetValue<float>()
+                ? (float)TimeEnv.FixedUnscaledTime
                 : (float)TimeEnv.UnscaledTime;
             return false;
         }
@@ -131,14 +128,11 @@ public class TimePatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static readonly Traverse fixedUnscaledTimeAsDouble =
-            Traverse.Create(typeof(Time)).Property("fixedUnscaledTimeAsDouble");
-
         private static bool Prefix(ref double __result)
         {
             // When called from inside MonoBehaviour's FixedUpdate, it returns Time.fixedUnscaledTimeAsDouble
             __result = CalledFromFixedUpdate()
-                ? fixedUnscaledTimeAsDouble.GetValue<double>()
+                ? TimeEnv.FixedUnscaledTime
                 : TimeEnv.UnscaledTime;
             return false;
         }
@@ -233,9 +227,6 @@ public class TimePatch
     [HarmonyPatch(typeof(Time), "timeAsDouble", MethodType.Getter)]
     private class get_timeAsDouble
     {
-        private static readonly Traverse fixedTimeAsDouble =
-            Traverse.Create(typeof(Time)).Property("fixedTimeAsDouble");
-
         private static Exception Cleanup(MethodBase original, Exception ex)
         {
             return PatchHelper.CleanupIgnoreFail(original, ex);
@@ -244,7 +235,7 @@ public class TimePatch
         private static bool Prefix(ref double __result)
         {
             __result = CalledFromFixedUpdate()
-                ? fixedTimeAsDouble.GetValue<double>()
+                ? TimeEnv.ScaledFixedTime
                 : TimeEnv.ScaledTime;
             return false;
         }
