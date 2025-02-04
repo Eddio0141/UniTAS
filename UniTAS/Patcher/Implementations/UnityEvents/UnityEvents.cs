@@ -1,6 +1,7 @@
 using System;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents;
+using UniTAS.Patcher.ManualServices;
 using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Models.EventSubscribers;
 using UniTAS.Patcher.Models.Utils;
@@ -272,14 +273,18 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
 
         for (var i = 0; i < _lastUpdatesUnconditional.Count; i++)
         {
+            var bench = Bench.Measure();
             _lastUpdatesUnconditional[i]();
+            bench.Dispose();
         }
 
         for (var i = 0; i < _lastUpdatesActual.Count; i++)
         {
+            var bench = Bench.Measure();
             var lastUpdate = _lastUpdatesActual[i];
             if (!_monoBehaviourController.PausedExecution)
                 lastUpdate();
+            bench.Dispose();
         }
     }
 
@@ -370,14 +375,18 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
 
         for (var i = 0; i < _updatesUnconditional.Count; i++)
         {
+            var bench = Bench.Measure();
             _updatesUnconditional[i]();
+            bench.Dispose();
         }
 
         for (var i = 0; i < _updatesActual.Count; i++)
         {
+            var bench = Bench.Measure();
             var update = _updatesActual[i];
             if (!_monoBehaviourController.PausedExecution)
                 update();
+            bench.Dispose();
         }
     }
 
@@ -394,14 +403,18 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
 
         for (var i = 0; i < _lateUpdatesUnconditional.Count; i++)
         {
+            var bench = Bench.Measure();
             _lateUpdatesUnconditional[i]();
+            bench.Dispose();
         }
 
         for (var i = 0; i < _lateUpdatesActual.Count; i++)
         {
+            var bench = Bench.Measure();
             var lateUpdate = _lateUpdatesActual[i];
             if (!_monoBehaviourController.PausedExecution)
                 lateUpdate();
+            bench.Dispose();
         }
     }
 
@@ -423,14 +436,18 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
 
         for (var i = 0; i < _fixedUpdatesUnconditional.Count; i++)
         {
+            var bench = Bench.Measure();
             _fixedUpdatesUnconditional[i]();
+            bench.Dispose();
         }
 
         for (var i = 0; i < _fixedUpdatesActual.Count; i++)
         {
+            var bench = Bench.Measure();
             var fixedUpdate = _fixedUpdatesActual[i];
             if (!_monoBehaviourController.PausedExecution)
                 fixedUpdate();
+            bench.Dispose();
         }
     }
 
@@ -444,14 +461,18 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         // currently, this doesn't get called before other scripts
         for (var i = 0; i < _guisUnconditional.Count; i++)
         {
+            var bench = Bench.Measure();
             _guisUnconditional[i]();
+            bench.Dispose();
         }
 
         for (var i = 0; i < _guisActual.Count; i++)
         {
+            var bench = Bench.Measure();
             var gui = _guisActual[i];
             if (!_monoBehaviourController.PausedExecution)
                 gui();
+            bench.Dispose();
         }
     }
 
@@ -475,9 +496,11 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
 
         for (var i = 0; i < _endOfFramesActual.Count; i++)
         {
+            var bench = Bench.Measure();
             var endOfFrame = _endOfFramesActual[i];
             if (!_monoBehaviourController.PausedExecution)
                 endOfFrame();
+            bench.Dispose();
         }
     }
 }

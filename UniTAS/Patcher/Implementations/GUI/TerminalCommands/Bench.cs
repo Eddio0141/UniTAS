@@ -1,7 +1,7 @@
 using System;
-using System.Linq;
 using UniTAS.Patcher.Interfaces.GUI;
 #if BENCH
+using System.Linq;
 using System.IO;
 using BepInEx;
 using Newtonsoft.Json;
