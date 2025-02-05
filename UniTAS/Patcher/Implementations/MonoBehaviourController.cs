@@ -1,3 +1,4 @@
+using System;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Services.GameExecutionControllers;
@@ -8,5 +9,18 @@ namespace UniTAS.Patcher.Implementations;
 [Singleton(timing: RegisterTiming.Entry)]
 public class MonoBehaviourController : IMonoBehaviourController
 {
-    public bool PausedExecution { get; set; }
+    private bool _pausedExecution;
+
+    public bool PausedExecution
+    {
+        get => _pausedExecution;
+        set
+        {
+            if (_pausedExecution == value) return;
+            _pausedExecution = value;
+            OnPauseChange?.Invoke(value);
+        }
+    }
+
+    public event Action<bool> OnPauseChange;
 }
