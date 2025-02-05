@@ -48,12 +48,6 @@ public partial class UnityEvents
         InputSystemChangeUpdate(InputSystem.settings.updateMode);
     }
 
-    private void OnGameRestart(DateTime startupTime, bool preSceneLoad)
-    {
-        if (!preSceneLoad) return;
-        InputSystemEventsInit();
-    }
-
     public event IUpdateEvents.InputUpdateCall OnInputUpdateActual
     {
         add => _inputUpdatesActual.Add(value, (int)CallbackPriority.Default);
