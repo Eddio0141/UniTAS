@@ -2,15 +2,35 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
+using UniTAS.Patcher.Interfaces.DependencyInjection;
+using UniTAS.Patcher.Services.GameExecutionControllers;
+using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace UniTAS.Patcher.Implementations.FrameAdvancing;
+namespace UniTAS.Patcher.Implementations.MonoBehaviourPause;
 
-// handles all animators for frame advancing
-public partial class FrameAdvancing
+[Singleton]
+[ForceInstantiate]
+public class AnimationPause
 {
+    private readonly ILogger _logger;
+    
+    public AnimationPause(IMonoBehaviourController monoBehaviourController, ILogger logger)
+    {
+        _logger = logger;
+        monoBehaviourController.OnPauseChange += OnPauseChange;
+    }
+
+    private void OnPauseChange(bool pause)
+    {
+        if (pause)
+            PauseAnimation();
+        else
+            ResumeAnimation();
+    }
+
     private readonly List<AnimatorTracker> _trackedAnimators = new();
     private readonly List<AnimationTracker> _trackedAnimations = new();
 
