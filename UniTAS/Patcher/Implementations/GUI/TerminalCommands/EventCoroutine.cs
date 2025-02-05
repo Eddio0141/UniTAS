@@ -24,6 +24,7 @@ public class EventCoroutine(IUpdateEvents updateEvents) : TerminalCmd
         if (_coroutineCount == 0)
         {
             updateEvents.OnUpdateUnconditional += UpdateUnconditional;
+            updateEvents.OnUpdateActual += UpdateActual;
         }
 
         _coroutineCount++;
@@ -62,6 +63,9 @@ public class EventCoroutine(IUpdateEvents updateEvents) : TerminalCmd
             case Event.UpdateUnconditional:
                 _updateUnconditionalCallbacks.Enqueue(coroutine);
                 break;
+            case Event.UpdateActual:
+                _updateActualCallbacks.Enqueue(coroutine);
+                break;
             default:
                 CoroutineEnd();
                 throw new ArgumentOutOfRangeException();
@@ -74,9 +78,11 @@ public class EventCoroutine(IUpdateEvents updateEvents) : TerminalCmd
         if (_coroutineCount > 0) return;
 
         updateEvents.OnUpdateUnconditional -= UpdateUnconditional;
+        updateEvents.OnUpdateActual -= UpdateActual;
     }
 
     private readonly Queue<MoonSharp.Interpreter.Coroutine> _updateUnconditionalCallbacks = new();
+    private readonly Queue<MoonSharp.Interpreter.Coroutine> _updateActualCallbacks = new();
 
     private void UpdateUnconditional()
     {
@@ -87,8 +93,18 @@ public class EventCoroutine(IUpdateEvents updateEvents) : TerminalCmd
         }
     }
 
+    private void UpdateActual()
+    {
+        var count = _updateActualCallbacks.Count;
+        for (var i = 0; i < count; i++)
+        {
+            HandleCoroutine(_updateActualCallbacks.Dequeue());
+        }
+    }
+
     private enum Event
     {
+        UpdateActual,
         UpdateUnconditional
     }
 }
