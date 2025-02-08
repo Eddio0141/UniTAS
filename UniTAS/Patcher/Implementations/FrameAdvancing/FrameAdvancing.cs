@@ -23,7 +23,7 @@ namespace UniTAS.Patcher.Implementations.FrameAdvancing;
 [Singleton(RegisterPriority.FrameAdvancing)]
 [ExcludeRegisterIfTesting]
 public partial class FrameAdvancing : IFrameAdvancing, IOnFixedUpdateUnconditional, IOnGameRestartResume,
-    IOnInputUpdateUnconditional, IOnUpdateUnconditional, IOnLateUpdateUnconditional
+    IOnUpdateUnconditional, IOnLateUpdateUnconditional
 {
     private bool _active;
 
@@ -107,22 +107,6 @@ public partial class FrameAdvancing : IFrameAdvancing, IOnFixedUpdateUncondition
 
     public void UpdateUnconditional()
     {
-        Update();
-    }
-
-    public void InputUpdateUnconditional(bool fixedUpdate, bool newInputSystemUpdate)
-    {
-        if (fixedUpdate) return;
-        Update();
-    }
-
-    public void OnLateUpdateUnconditional()
-    {
-        _updated = false;
-    }
-
-    private void Update()
-    {
         if (_updated) return;
         _updated = true;
 
@@ -152,6 +136,11 @@ public partial class FrameAdvancing : IFrameAdvancing, IOnFixedUpdateUncondition
         }
 
         FrameAdvanceUpdate(true);
+    }
+
+    public void OnLateUpdateUnconditional()
+    {
+        _updated = false;
     }
 
     public void FixedUpdateUnconditional()

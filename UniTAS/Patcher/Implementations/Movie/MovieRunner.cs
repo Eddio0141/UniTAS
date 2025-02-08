@@ -16,7 +16,7 @@ using UniTAS.Patcher.Services.VirtualEnvironment;
 namespace UniTAS.Patcher.Implementations.Movie;
 
 [Singleton(RegisterPriority.MovieRunner)]
-public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvents
+public class MovieRunner : IMovieRunner, IOnUpdateActual, IOnFixedUpdateActual, IMovieRunnerEvents
 {
     private readonly IGameRestart _gameRestart;
 
@@ -117,34 +117,49 @@ public class MovieRunner : IMovieRunner, IOnInputUpdateActual, IMovieRunnerEvent
         MovieRunningStatusChange(true);
     }
 
-    public void InputUpdateActual(bool fixedUpdate, bool newInputSystemUpdate)
+    public void UpdateActual()
     {
         if (MovieEnd) return;
 
         // skip if update type doesn't match current update type
-        if (UpdateType != UpdateType.Both &&
-            ((fixedUpdate && UpdateType != UpdateType.FixedUpdate) ||
-             (!fixedUpdate && UpdateType != UpdateType.Update))
-           )
+        if (UpdateType is UpdateType.FixedUpdate)
         {
-            RunUpdateEvents(fixedUpdate);
+            RunUpdateEvents(false);
             return;
         }
 
+        EngineUpdateAndCheck(false);
+    }
+
+    public void FixedUpdateActual()
+    {
+        if (MovieEnd) return;
+
+        // skip if update type doesn't match current update type
+        if (UpdateType is UpdateType.Update)
+        {
+            RunUpdateEvents(true);
+            return;
+        }
+
+        EngineUpdateAndCheck(true);
+    }
+
+    private void EngineUpdateAndCheck(bool fixedUpdate)
+    {
         _engine.Update();
         RunUpdateEvents(fixedUpdate);
 
-        if (_engine.Finished)
+        if (!_engine.Finished) return;
+
+        _timeEnv.FrameTime = 0;
+        MovieRunningStatusChange(false);
+        _coroutine.Start(FinishMovieCleanup()).OnComplete += status =>
         {
-            _timeEnv.FrameTime = 0;
-            MovieRunningStatusChange(false);
-            _coroutine.Start(FinishMovieCleanup()).OnComplete += status =>
-            {
-                if (status.Exception != null)
-                    _logger.LogFatal($"exception occurs during movie runner coroutine: {status.Exception}");
-            };
-            MovieLogger.LogInfo("movie end");
-        }
+            if (status.Exception != null)
+                _logger.LogFatal($"exception occurs during movie runner coroutine: {status.Exception}");
+        };
+        MovieLogger.LogInfo("movie end");
     }
 
     private void RunUpdateEvents(bool fixedUpdate)

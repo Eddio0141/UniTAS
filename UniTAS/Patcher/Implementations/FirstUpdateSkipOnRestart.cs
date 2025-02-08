@@ -13,15 +13,6 @@ namespace UniTAS.Patcher.Implementations;
 [ForceInstantiate]
 public class FirstUpdateSkipOnRestart
 {
-    private enum PendingState
-    {
-        PendingRestart,
-        PendingPause,
-        PendingResumeLastUpdate,
-    }
-
-    private PendingState _pendingState = PendingState.PendingRestart;
-
     private readonly IMonoBehaviourController _monoBehaviourController;
     private readonly ILogger _logger;
 
@@ -39,19 +30,15 @@ public class FirstUpdateSkipOnRestart
     private void OnGameRestartResume(DateTime startupTime, bool preMonoBehaviourResume)
     {
         if (preMonoBehaviourResume) return;
-        _pendingState = PendingState.PendingPause;
 
-        _updateEvents.AddPriorityCallback(CallbackInputUpdate.InputUpdateActual, InputUpdateActual,
+        _updateEvents.AddPriorityCallback(CallbackUpdate.UpdateUnconditional, UpdateUnconditional,
             CallbackPriority.FirstUpdateSkipOnRestart);
     }
 
-    private void InputUpdateActual(bool fixedUpdate, bool newInputSystemUpdate)
+    private void UpdateUnconditional()
     {
-        if (fixedUpdate || _pendingState != PendingState.PendingPause) return;
+        _updateEvents.OnUpdateUnconditional -= UpdateUnconditional;
 
-        _updateEvents.OnInputUpdateActual -= InputUpdateActual;
-
-        _pendingState = PendingState.PendingResumeLastUpdate;
         _logger.LogDebug("Pausing MonoBehaviour to skip an update");
         _monoBehaviourController.PausedExecution = true;
 
@@ -61,8 +48,6 @@ public class FirstUpdateSkipOnRestart
 
     private void LastUpdate()
     {
-        if (_pendingState != PendingState.PendingResumeLastUpdate) return;
-        _pendingState = PendingState.PendingRestart;
         _updateEvents.OnLastUpdateUnconditional -= LastUpdate;
         _logger.LogDebug("Resuming MonoBehaviour after skipped an update");
         _monoBehaviourController.PausedExecution = false;

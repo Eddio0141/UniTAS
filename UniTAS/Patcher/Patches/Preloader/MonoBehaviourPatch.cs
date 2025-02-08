@@ -253,7 +253,7 @@ public class MonoBehaviourPatch : PreloadPatcher
         ilProcessor.InsertBeforeInstructionReplace(method.Body.Instructions.First(),
             ilProcessor.Create(OpCodes.Call, reference), InstructionReplaceFixType.ExceptionRanges);
 
-        method.Body.OptimizeMacros();
+        method.Body.Optimize();
 
         StaticLogger.Trace(
             $"Successfully patched {methodName} for type {type.FullName} for updates, invokes {eventInvoker.Name}");
