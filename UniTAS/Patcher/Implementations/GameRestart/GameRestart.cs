@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using UniTAS.Patcher.Implementations.Coroutine;
 using UniTAS.Patcher.Interfaces.Coroutine;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
@@ -17,8 +16,6 @@ using UniTAS.Patcher.Services.VirtualEnvironment;
 
 namespace UniTAS.Patcher.Implementations.GameRestart;
 
-// ReSharper disable once ClassNeverInstantiated.Global
-// target priority to after sync fixed update
 [Singleton]
 public class GameRestart : IGameRestart
 {
@@ -37,7 +34,6 @@ public class GameRestart : IGameRestart
     private bool _pendingRestart;
     private bool _pendingResumePausedExecution;
 
-    [SuppressMessage("ReSharper", "MemberCanBeProtected.Global")]
     public GameRestart(ISyncFixedUpdateCycle syncFixedUpdate, ISceneManagerWrapper iSceneManagerWrapper,
         IMonoBehaviourController monoBehaviourController, ILogger logger, IOnGameRestart[] onGameRestart,
         IOnGameRestartResume[] onGameRestartResume, IOnPreGameRestart[] onPreGameRestart, ITimeEnv timeEnv,
@@ -107,7 +103,7 @@ public class GameRestart : IGameRestart
         _logger.LogInfo("Starting soft restart");
 
         var bench = Bench.Measure();
-        InvokeOnPreGameRestart();
+        OnPreGameRestart?.Invoke();
 
         _pendingRestart = true;
         _softRestartTime = time;
@@ -124,16 +120,6 @@ public class GameRestart : IGameRestart
     public event Services.GameRestart OnGameRestart;
     public event Action OnPreGameRestart;
 
-    protected virtual void InvokeOnGameRestartResume(bool preMonoBehaviourResume)
-    {
-        OnGameRestartResume?.Invoke(_softRestartTime, preMonoBehaviourResume);
-    }
-
-    private void InvokeOnPreGameRestart()
-    {
-        OnPreGameRestart?.Invoke();
-    }
-
     private void SoftRestartOperation()
     {
         _logger.LogInfo("Soft restarting");
@@ -146,32 +132,17 @@ public class GameRestart : IGameRestart
         _pendingResumePausedExecution = true;
     }
 
-    private void AwakeUnconditional()
-    {
-        PendingResumePausedExecution("Awake");
-    }
-
-    private void OnEnableUnconditional()
-    {
-        PendingResumePausedExecution("OnEnable");
-    }
-
-    private void StartUnconditional()
-    {
-        PendingResumePausedExecution("Start");
-    }
-
-    private void FixedUpdateUnconditional()
-    {
-        PendingResumePausedExecution("FixedUpdate");
-    }
+    private void AwakeUnconditional() => PendingResumePausedExecution("Awake");
+    private void OnEnableUnconditional() => PendingResumePausedExecution("OnEnable");
+    private void StartUnconditional() => PendingResumePausedExecution("Start");
+    private void FixedUpdateUnconditional() => PendingResumePausedExecution("FixedUpdate");
 
     private void PendingResumePausedExecution(string timing)
     {
         if (!_pendingResumePausedExecution) return;
         _pendingResumePausedExecution = false;
 
-        InvokeOnGameRestartResume(true);
+        OnGameRestartResume?.Invoke(_softRestartTime, true);
 
         _logger.LogInfo("Finish soft restarting");
         var actualTime = DateTime.Now;
@@ -179,6 +150,6 @@ public class GameRestart : IGameRestart
 
         _monoBehaviourController.PausedExecution = false;
         _logger.LogDebug($"Resuming MonoBehaviour execution at {timing}, {_updateInvokeOffset.Offset}");
-        InvokeOnGameRestartResume(false);
+        OnGameRestartResume?.Invoke(_softRestartTime, false);
     }
 }
