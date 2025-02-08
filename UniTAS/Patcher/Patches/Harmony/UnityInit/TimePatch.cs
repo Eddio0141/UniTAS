@@ -187,7 +187,7 @@ public class TimePatch
                 return true;
             }
 
-            __result = (float)TimeEnv.SecondsSinceStartUp;
+            __result = (float)TimeEnv.UnscaledTime;
             return false;
         }
     }
@@ -202,7 +202,7 @@ public class TimePatch
 
         private static bool Prefix(ref double __result)
         {
-            __result = TimeEnv.SecondsSinceStartUp;
+            __result = TimeEnv.UnscaledTime;
             return false;
         }
     }

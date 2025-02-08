@@ -52,7 +52,7 @@ public class SystemTimeOverrideModule
 
         private static bool Prefix(ref int __result)
         {
-            __result = (int)(TimeEnv.RealtimeSinceStartup * 1000f);
+            __result = (int)(TimeEnv.UnscaledTime * 1000f);
             return false;
         }
     }

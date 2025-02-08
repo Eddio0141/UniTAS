@@ -45,11 +45,11 @@ public class TimeEnv : ITimeEnv, IOnGameRestartResume
             if (pause)
             {
                 // must be added to be ran after FirstUpdateSkipOnRestart UpdateUnconditional
-                _updateEvents.OnUpdateUnconditional += UpdateUnconditional;
+                _updateEvents.OnUpdateUnconditional += UpdateDuringPause;
             }
             else
             {
-                _updateEvents.OnUpdateUnconditional -= UpdateUnconditional;
+                _updateEvents.OnUpdateUnconditional -= UpdateDuringPause;
             }
         };
     }
@@ -62,7 +62,7 @@ public class TimeEnv : ITimeEnv, IOnGameRestartResume
         FrameTime = DefaultFt;
     }
 
-    private void UpdateUnconditional()
+    private void UpdateDuringPause()
     {
         FrameCountRestartOffset++;
         RenderedFrameCountOffset++;
@@ -73,10 +73,8 @@ public class TimeEnv : ITimeEnv, IOnGameRestartResume
         _updateEvents.OnUpdateUnconditional -= UpdateUnconditionalOnce;
 
         // stupid but slightly fixes accuracy on game first start
-        RealtimeSinceStartup += DefaultFt;
         UnscaledTime += DefaultFt;
         ScaledTime += DefaultFt * Time.timeScale;
-        SecondsSinceStartUp += DefaultFt;
     }
 
     public double TimeTolerance { get; }
@@ -93,23 +91,19 @@ public class TimeEnv : ITimeEnv, IOnGameRestartResume
 
     private DateTime StartupTime { get; set; }
 
-    public DateTime CurrentTime => StartupTime + TimeSpan.FromSeconds(RealtimeSinceStartup);
+    public DateTime CurrentTime => StartupTime + TimeSpan.FromSeconds(UnscaledTime);
     public ulong RenderedFrameCountOffset { get; private set; }
     public ulong FrameCountRestartOffset { get; private set; }
-    public double SecondsSinceStartUp { get; private set; }
     public double UnscaledTime { get; private set; }
     public double FixedUnscaledTime { get; private set; }
     public double ScaledTime { get; private set; }
     public double ScaledFixedTime { get; private set; }
-    public double RealtimeSinceStartup { get; private set; }
 
     private void OnLastUpdateActual()
     {
         var ft = FrameTime;
-        RealtimeSinceStartup += ft;
         UnscaledTime += ft;
         ScaledTime += ft * Time.timeScale;
-        SecondsSinceStartUp += ft;
     }
 
     private void FixedUpdateActual()
@@ -137,13 +131,11 @@ public class TimeEnv : ITimeEnv, IOnGameRestartResume
         StartupTime = startupTime;
 
         RenderedFrameCountOffset = _patchReverseInvoker.Invoke(() => (ulong)Time.renderedFrameCount);
-        SecondsSinceStartUp = 0;
         FrameCountRestartOffset = _patchReverseInvoker.Invoke(() => (ulong)Time.frameCount);
         FixedUnscaledTime = 0;
         UnscaledTime = 0;
         ScaledTime = 0;
         ScaledFixedTime = 0;
-        RealtimeSinceStartup = 0;
 
         _updateEvents.AddPriorityCallback(CallbackUpdate.StartUnconditional, TimeInit, CallbackPriority.TimeEnv);
         _updateEvents.AddPriorityCallback(CallbackUpdate.FixedUpdateActual, TimeInit, CallbackPriority.TimeEnv);

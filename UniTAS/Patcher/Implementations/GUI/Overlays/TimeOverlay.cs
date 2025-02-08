@@ -28,7 +28,7 @@ public class TimeOverlay : BuiltInOverlay
     {
         if (!_update) return _text;
 
-        var time = TimeSpan.FromSeconds(_timeEnv.SecondsSinceStartUp);
+        var time = TimeSpan.FromSeconds(_timeEnv.UnscaledTime);
 
         var hour = time.Hours > 0;
         _text = "";

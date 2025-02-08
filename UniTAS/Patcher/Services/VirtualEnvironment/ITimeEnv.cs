@@ -8,12 +8,10 @@ public interface ITimeEnv
     DateTime CurrentTime { get; }
     ulong RenderedFrameCountOffset { get; }
     ulong FrameCountRestartOffset { get; }
-    double SecondsSinceStartUp { get; }
     double UnscaledTime { get; }
     double FixedUnscaledTime { get; }
     double ScaledTime { get; }
     double ScaledFixedTime { get; }
-    double RealtimeSinceStartup { get; }
 
     double TimeTolerance { get; }
 }
