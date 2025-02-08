@@ -118,12 +118,12 @@ public class UnityCoroutineManager : ICoroutineTracker, IOnPreGameRestart
     {
         _updateEvents.OnStartUnconditional -= StartUnconditional;
         _startCall = true;
-        _updateEvents.OnUpdateActual += UpdateActual;
+        _updateEvents.OnFixedUpdateUnconditional += FixedUpdateUnconditional;
     }
 
-    private void UpdateActual()
+    private void FixedUpdateUnconditional()
     {
-        _updateEvents.OnUpdateActual -= UpdateActual;
+        _updateEvents.OnFixedUpdateUnconditional -= FixedUpdateUnconditional;
         _startCall = false;
     }
 
@@ -138,9 +138,6 @@ public class UnityCoroutineManager : ICoroutineTracker, IOnPreGameRestart
 
     private static readonly IPatchReverseInvoker ReverseInvoker =
         ContainerStarter.Kernel.GetInstance<IPatchReverseInvoker>();
-
-    // ReSharper disable InconsistentNaming
-    // TODO: for both, handle time based coroutines and check the rest
 
     private class YieldNone : IEnumerator
     {
@@ -165,21 +162,25 @@ public class UnityCoroutineManager : ICoroutineTracker, IOnPreGameRestart
         {
             if (MonoBehaviourController.PausedExecution) return true;
 
+            if (_startCall)
+            {
+                StaticLogger.Trace($"WaitForSeconds, startCall false, {GetHashCode()}");
+                _startCall = false;
+                return true;
+            }
+
             if (_done)
             {
-                if (_startCall)
-                {
-                    _startCall = false;
-                    return true;
-                }
-
-                StaticLogger.Trace($"WaitForSeconds: done, {GetHashCode()}");
+                StaticLogger.Trace($"WaitForSeconds: finish, {GetHashCode()}");
                 return false;
             }
 
             _seconds -= (float)TimeEnv.FrameTime * Time.timeScale;
             if (_seconds <= 0)
+            {
+                StaticLogger.Trace($"WaitForSeconds: done, {GetHashCode()}");
                 _done = true;
+            }
 
             return true;
         }
@@ -227,6 +228,7 @@ public class UnityCoroutineManager : ICoroutineTracker, IOnPreGameRestart
     private static readonly IAsyncOperationOverride AsyncOperationOverride =
         ContainerStarter.Kernel.GetInstance<IAsyncOperationOverride>();
 
+    // ReSharper disable InconsistentNaming
     public void CoroutineCurrentPostfix(IEnumerator __instance, ref object __result)
     {
         if (!_instances.TryGetValue(__instance, out var monoBeh)) return;

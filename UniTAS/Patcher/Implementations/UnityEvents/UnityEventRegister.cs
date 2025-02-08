@@ -21,8 +21,6 @@ public class UnityEventRegister
         IEnumerable<IOnFixedUpdateActual> onFixedUpdatesActual,
         IEnumerable<IOnStartActual> onStartsActual,
         IEnumerable<IOnUpdateActual> onUpdatesActual,
-        IEnumerable<IOnInputUpdateActual> onInputUpdatesActual,
-        IEnumerable<IOnInputUpdateUnconditional> onInputUpdatesUnconditional,
         IEnumerable<IOnLateUpdateUnconditional> onLateUpdatesUnconditional,
         IEnumerable<IOnLastUpdateUnconditional> onLastUpdatesUnconditional,
         IEnumerable<IOnLastUpdateActual> onLastUpdatesActual,
@@ -94,25 +92,14 @@ public class UnityEventRegister
 
         foreach (var onLastUpdateActual in onLastUpdatesActual)
         {
-            updateEvents.RegisterMethod(onLastUpdateActual, onLastUpdateActual.OnLastUpdateActual, CallbackUpdate.LastUpdateActual);
+            updateEvents.RegisterMethod(onLastUpdateActual, onLastUpdateActual.OnLastUpdateActual,
+                CallbackUpdate.LastUpdateActual);
         }
 
         foreach (var endOfFrameActual in onEndOfFrameActual)
         {
-            updateEvents.RegisterMethod(endOfFrameActual, endOfFrameActual.OnEndOfFrame, CallbackUpdate.EndOfFrameActual);
-        }
-
-        // input system events init
-        foreach (var onInputUpdateActual in onInputUpdatesActual)
-        {
-            updateEvents.RegisterMethod(onInputUpdateActual, onInputUpdateActual.InputUpdateActual,
-                CallbackInputUpdate.InputUpdateActual);
-        }
-
-        foreach (var onInputUpdateUnconditional in onInputUpdatesUnconditional)
-        {
-            updateEvents.RegisterMethod(onInputUpdateUnconditional, onInputUpdateUnconditional.InputUpdateUnconditional,
-                CallbackInputUpdate.InputUpdateUnconditional);
+            updateEvents.RegisterMethod(endOfFrameActual, endOfFrameActual.OnEndOfFrame,
+                CallbackUpdate.EndOfFrameActual);
         }
     }
 }

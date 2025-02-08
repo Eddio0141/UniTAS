@@ -1,11 +1,10 @@
 using System;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.SoftRestart;
-using UniTAS.Patcher.Interfaces.Events.UnityEvents.DontRunIfPaused;
-using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
-using UniTAS.Patcher.Models.DependencyInjection;
+using UniTAS.Patcher.Models.EventSubscribers;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.GameExecutionControllers;
+using UniTAS.Patcher.Services.UnityEvents;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Patcher.Services.VirtualEnvironment;
 using UniTAS.Patcher.Utils;
@@ -13,56 +12,65 @@ using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations.VirtualEnvironment;
 
-[Singleton(RegisterPriority.TimeEnv)]
+[Singleton]
 [ExcludeRegisterIfTesting]
-public class TimeEnv : ITimeEnv, IOnGameRestartResume, IOnLastUpdateActual,
-    IOnFixedUpdateActual, IOnUpdateUnconditional, IOnStartUnconditional, IOnAwakeUnconditional
+public class TimeEnv : ITimeEnv, IOnGameRestartResume
 {
     private readonly ITimeWrapper _timeWrap;
     private readonly IPatchReverseInvoker _patchReverseInvoker;
-    private readonly IMonoBehaviourController _monoBehaviourController;
+    private readonly IUpdateEvents _updateEvents;
 
     public TimeEnv(ITimeWrapper timeWrap, IPatchReverseInvoker patchReverseInvoker,
-        IMonoBehaviourController monoBehaviourController)
+        IMonoBehaviourController monoBehaviourController, IUpdateEvents updateEvents)
     {
         _timeWrap = timeWrap;
         _patchReverseInvoker = patchReverseInvoker;
-        _monoBehaviourController = monoBehaviourController;
+        _updateEvents = updateEvents;
 
         // start time to current time
         StartupTime = patchReverseInvoker.Invoke(() => DateTime.Now);
         TimeTolerance = _timeWrap.IntFPSOnly ? 1.0 / int.MaxValue : float.Epsilon;
+
+        // once only
+        _updateEvents.OnAwakeUnconditional += AwakeUnconditional;
+        _updateEvents.OnUpdateUnconditional += UpdateUnconditionalOnce;
+
+        _updateEvents.AddPriorityCallback(CallbackUpdate.FixedUpdateActual, FixedUpdateActual,
+            CallbackPriority.TimeEnv);
+        _updateEvents.AddPriorityCallback(CallbackUpdate.LastUpdateActual, OnLastUpdateActual,
+            CallbackPriority.TimeEnv);
+
+        monoBehaviourController.OnPauseChange += pause =>
+        {
+            if (pause)
+            {
+                // must be added to be ran after FirstUpdateSkipOnRestart UpdateUnconditional
+                _updateEvents.OnUpdateUnconditional += UpdateUnconditional;
+            }
+            else
+            {
+                _updateEvents.OnUpdateUnconditional -= UpdateUnconditional;
+            }
+        };
     }
 
     private const double DefaultFt = 0.01f;
 
-    private bool _setInitialFt;
-
-    public void AwakeUnconditional()
+    private void AwakeUnconditional()
     {
-        if (_setInitialFt) return;
-        _setInitialFt = true;
-
+        _updateEvents.OnAwakeUnconditional -= AwakeUnconditional;
         FrameTime = DefaultFt;
     }
 
-    public void StartUnconditional()
+    private void UpdateUnconditional()
     {
-        TimeInit();
+        FrameCountRestartOffset++;
+        RenderedFrameCountOffset++;
     }
 
-    private bool _initialTimeSet;
-
-    public void UpdateUnconditional()
+    private void UpdateUnconditionalOnce()
     {
-        if (_monoBehaviourController.PausedExecution)
-        {
-            FrameCountRestartOffset++;
-            RenderedFrameCountOffset++;
-        }
-
-        if (_initialTimeSet) return;
-        _initialTimeSet = true;
+        _updateEvents.OnUpdateUnconditional -= UpdateUnconditionalOnce;
 
         // stupid but slightly fixes accuracy on game first start
         RealtimeSinceStartup += DefaultFt;
@@ -95,9 +103,7 @@ public class TimeEnv : ITimeEnv, IOnGameRestartResume, IOnLastUpdateActual,
     public double ScaledFixedTime { get; private set; }
     public double RealtimeSinceStartup { get; private set; }
 
-    private bool _timeInitialized = true;
-
-    public void OnLastUpdateActual()
+    private void OnLastUpdateActual()
     {
         var ft = FrameTime;
         RealtimeSinceStartup += ft;
@@ -106,10 +112,8 @@ public class TimeEnv : ITimeEnv, IOnGameRestartResume, IOnLastUpdateActual,
         SecondsSinceStartUp += ft;
     }
 
-    public void FixedUpdateActual()
+    private void FixedUpdateActual()
     {
-        TimeInit();
-
         var fixedDt = Time.fixedDeltaTime;
 
         var newFixedUnscaledTime = FixedUnscaledTime + fixedDt;
@@ -141,13 +145,14 @@ public class TimeEnv : ITimeEnv, IOnGameRestartResume, IOnLastUpdateActual,
         ScaledFixedTime = 0;
         RealtimeSinceStartup = 0;
 
-        _timeInitialized = false;
+        _updateEvents.AddPriorityCallback(CallbackUpdate.StartUnconditional, TimeInit, CallbackPriority.TimeEnv);
+        _updateEvents.AddPriorityCallback(CallbackUpdate.FixedUpdateActual, TimeInit, CallbackPriority.TimeEnv);
     }
 
     private void TimeInit()
     {
-        if (_timeInitialized) return;
-        _timeInitialized = true;
+        _updateEvents.OnStartUnconditional -= TimeInit;
+        _updateEvents.OnFixedUpdateActual -= TimeInit;
 
         FrameCountRestartOffset--;
         RenderedFrameCountOffset--;

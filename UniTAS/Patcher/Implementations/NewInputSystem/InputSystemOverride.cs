@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.InputSystemOverride;
@@ -23,9 +22,9 @@ public class InputSystemOverride
 
     private bool _overridden;
 
-    [SuppressMessage("ReSharper", "ConditionIsAlwaysTrueOrFalse")]
     public InputSystemOverride(ILogger logger, InputOverrideDevice[] devices,
-        IInputSystemState newInputSystemExists, IUpdateEvents updateEvents, IVirtualEnvController virtualEnv, IMovieRunner movieRunner)
+        IInputSystemState newInputSystemExists, IUpdateEvents updateEvents, IVirtualEnvController virtualEnv,
+        IMovieRunner movieRunner)
     {
         if (!newInputSystemExists.HasNewInputSystem) return;
 
@@ -33,7 +32,7 @@ public class InputSystemOverride
         _devices = devices;
         _updateEvents = updateEvents;
 
-        _updateEvents.OnInputUpdateActual += UpdateDevices;
+        _updateEvents.OnUpdateActual += UpdateDevices;
         virtualEnv.OnVirtualEnvStatusChange += OnVirtualEnvStatusChange;
 
         _actualDevices.AddRange(InputSystem.devices);
@@ -89,9 +88,9 @@ public class InputSystemOverride
             $"Connected devices:\n{string.Join("\n", InputSystem.devices.Select(x => $"name: {x.name}, type: {x.GetType().FullName}").ToArray())}");
     }
 
-    private void UpdateDevices(bool fixedUpdate, bool newInputSystemUpdate)
+    private void UpdateDevices()
     {
-        if (!newInputSystemUpdate || !_overridden) return;
+        if (!_overridden) return;
 
         foreach (var device in _devices)
         {

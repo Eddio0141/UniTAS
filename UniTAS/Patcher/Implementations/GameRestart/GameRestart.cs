@@ -41,8 +41,7 @@ public class GameRestart : IGameRestart
     public GameRestart(ISyncFixedUpdateCycle syncFixedUpdate, ISceneManagerWrapper iSceneManagerWrapper,
         IMonoBehaviourController monoBehaviourController, ILogger logger, IOnGameRestart[] onGameRestart,
         IOnGameRestartResume[] onGameRestartResume, IOnPreGameRestart[] onPreGameRestart, ITimeEnv timeEnv,
-        IUpdateInvokeOffset updateInvokeOffset, ICoroutine coroutine, IGameInfo gameInfo,
-        IInputEventInvoker inputEventInvoker, IUpdateEvents updateEvents)
+        IUpdateInvokeOffset updateInvokeOffset, ICoroutine coroutine, IGameInfo gameInfo, IUpdateEvents updateEvents)
     {
         _syncFixedUpdate = syncFixedUpdate;
         _iSceneManagerWrapper = iSceneManagerWrapper;
@@ -67,13 +66,6 @@ public class GameRestart : IGameRestart
         {
             OnPreGameRestart += gameRestart.OnPreGameRestart;
         }
-
-        // this has to be here, don't move to UnityEvents
-        OnGameRestart += (_, preSceneLoad) =>
-        {
-            if (!preSceneLoad) return;
-            inputEventInvoker.InputSystemEventsInit();
-        };
 
         updateEvents.AddPriorityCallback(CallbackUpdate.AwakeUnconditional, AwakeUnconditional,
             CallbackPriority.GameRestart);

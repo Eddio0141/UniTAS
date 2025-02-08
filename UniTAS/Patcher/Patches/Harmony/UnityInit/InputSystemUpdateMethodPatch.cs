@@ -1,22 +1,17 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using HarmonyLib;
-using UniTAS.Patcher.Interfaces.Patches.PatchTypes;
 using UniTAS.Patcher.Services.InputSystemOverride;
-using UniTAS.Patcher.Services.UnityEvents;
 using UniTAS.Patcher.Utils;
 using UnityEngine.InputSystem;
 
 namespace UniTAS.Patcher.Patches.Harmony.UnityInit;
 
-[RawPatchUnityInit]
+// [RawPatchUnityInit]
 [SuppressMessage("ReSharper", "UnusedMember.Local")]
 [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public class InputSystemUpdateMethodPatch
 {
-    private static readonly IInputEventInvoker InputEventInvoker =
-        ContainerStarter.Kernel.GetInstance<IInputEventInvoker>();
-
     private static readonly IInputSystemState NewInputSystemState =
         ContainerStarter.Kernel.GetInstance<IInputSystemState>();
 
@@ -25,7 +20,8 @@ public class InputSystemUpdateMethodPatch
     {
         private static void Prefix(InputSettings.UpdateMode value)
         {
-            InputEventInvoker.InputSystemChangeUpdate(value);
+            // TODO: what to do with this
+            // InputEventInvoker.InputSystemChangeUpdate(value);
         }
 
         private static MethodBase TargetMethod()

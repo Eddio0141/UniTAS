@@ -7,7 +7,6 @@ using UniTAS.Patcher.Models.EventSubscribers;
 using UniTAS.Patcher.Models.Utils;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.GameExecutionControllers;
-using UniTAS.Patcher.Services.InputSystemOverride;
 using UniTAS.Patcher.Services.UnityEvents;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
@@ -21,20 +20,9 @@ namespace UniTAS.Patcher.Implementations.UnityEvents;
 /// Actual events are called only if MonoBehaviour is not paused
 /// </summary>
 [Singleton(timing: RegisterTiming.Entry)]
-public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEventInvoker
+public class UnityEvents(IMonoBehaviourController monoBehaviourController, IPatchReverseInvoker patchReverseInvoker)
+    : IUpdateEvents, IMonoBehEventInvoker
 {
-    private readonly IPatchReverseInvoker _patchReverseInvoker;
-
-    public UnityEvents(IInputSystemState newInputSystemExists, IMonoBehaviourController monoBehaviourController,
-        IPatchReverseInvoker patchReverseInvoker)
-    {
-        _patchReverseInvoker = patchReverseInvoker;
-        _newInputSystemExists = newInputSystemExists;
-        _monoBehaviourController = monoBehaviourController;
-
-        InputSystemEventsInit();
-    }
-
     public void RegisterMethod(object processingCallback, Action callback, CallbackUpdate update)
     {
         var callbackList = update switch
@@ -61,34 +49,8 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
 
         if (processingCallback is IUnityEventPriority unityEventPriority)
         {
-            var priorityKey = new Either<CallbackUpdate, CallbackInputUpdate>(update);
-            if (unityEventPriority.Priorities.TryGetValue(priorityKey, out var priority))
+            if (unityEventPriority.Priorities.TryGetValue(update, out var priority))
             {
-                unityEventPriority.Priorities.Remove(new(CallbackUpdate.UpdateUnconditional));
-                callbackList.Add(callback, (int)priority);
-                return;
-            }
-        }
-
-        callbackList.Add(callback, (int)CallbackPriority.Default);
-    }
-
-    public void RegisterMethod(object processingCallback, IUpdateEvents.InputUpdateCall callback,
-        CallbackInputUpdate update)
-    {
-        var callbackList = update switch
-        {
-            CallbackInputUpdate.InputUpdateActual => _inputUpdatesActual,
-            CallbackInputUpdate.InputUpdateUnconditional => _inputUpdatesUnconditional,
-            _ => throw new ArgumentOutOfRangeException(nameof(update), update, null)
-        };
-
-        if (processingCallback is IUnityEventPriority unityEventPriority)
-        {
-            var priorityKey = new Either<CallbackUpdate, CallbackInputUpdate>(update);
-            if (unityEventPriority.Priorities.TryGetValue(priorityKey, out var priority))
-            {
-                unityEventPriority.Priorities.Remove(new(CallbackUpdate.UpdateUnconditional));
                 callbackList.Add(callback, (int)priority);
                 return;
             }
@@ -224,43 +186,41 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
     }
 
     // if touching this, probably should rewrite but otherwise i ain't doing anything since its not like there's much to add
-    private readonly PriorityList<Action> _awakesUnconditional = new();
-    private readonly PriorityList<Action> _awakesActual = new();
+    private readonly UnityEventList<Action> _awakesUnconditional = new();
+    private readonly UnityEventList<Action> _awakesActual = new();
 
-    private readonly PriorityList<Action> _startsUnconditional = new();
-    private readonly PriorityList<Action> _startsActual = new();
+    private readonly UnityEventList<Action> _startsUnconditional = new();
+    private readonly UnityEventList<Action> _startsActual = new();
 
-    private readonly PriorityList<Action> _enablesUnconditional = new();
-    private readonly PriorityList<Action> _enablesActual = new();
+    private readonly UnityEventList<Action> _enablesUnconditional = new();
+    private readonly UnityEventList<Action> _enablesActual = new();
 
-    private readonly PriorityList<Action> _updatesUnconditional = new();
-    private readonly PriorityList<Action> _updatesActual = new();
+    private readonly UnityEventList<Action> _updatesUnconditional = new();
+    private readonly UnityEventList<Action> _updatesActual = new();
 
-    private readonly PriorityList<Action> _fixedUpdatesUnconditional = new();
-    private readonly PriorityList<Action> _fixedUpdatesActual = new();
+    private readonly UnityEventList<Action> _fixedUpdatesUnconditional = new();
+    private readonly UnityEventList<Action> _fixedUpdatesActual = new();
 
-    private readonly PriorityList<Action> _guisUnconditional = new();
-    private readonly PriorityList<Action> _guisActual = new();
+    private readonly UnityEventList<Action> _guisUnconditional = new();
+    private readonly UnityEventList<Action> _guisActual = new();
 
-    private readonly PriorityList<Action> _lateUpdatesUnconditional = new();
-    private readonly PriorityList<Action> _lateUpdatesActual = new();
+    private readonly UnityEventList<Action> _lateUpdatesUnconditional = new();
+    private readonly UnityEventList<Action> _lateUpdatesActual = new();
 
-    private readonly PriorityList<Action> _lastUpdatesUnconditional = new();
-    private readonly PriorityList<Action> _lastUpdatesActual = new();
+    private readonly UnityEventList<Action> _lastUpdatesUnconditional = new();
+    private readonly UnityEventList<Action> _lastUpdatesActual = new();
 
-    private readonly PriorityList<Action> _endOfFramesActual = new();
+    private readonly UnityEventList<Action> _endOfFramesActual = new();
 
     private bool _updated;
     private bool _calledLastUpdate = true; // true initially to stop printing error, Update will run first anyways
-
-    private readonly IMonoBehaviourController _monoBehaviourController;
 
     public void InvokeLastUpdate()
     {
 #if TRACE
         StaticLogger.Trace(
-            $"InvokeLastUpdate, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)} ({Time.frameCount}), " +
-            $"paused: {_monoBehaviourController.PausedExecution}");
+            $"InvokeLastUpdate, time: {patchReverseInvoker.Invoke(() => Time.frameCount)} ({Time.frameCount}), " +
+            $"paused: {monoBehaviourController.PausedExecution}");
 #endif
 
         if (_calledLastUpdate)
@@ -271,19 +231,18 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
 
         _calledLastUpdate = true;
 
-        for (var i = 0; i < _lastUpdatesUnconditional.Count; i++)
+        foreach (var action in _lastUpdatesUnconditional)
         {
             var bench = Bench.Measure();
-            _lastUpdatesUnconditional[i]();
+            action();
             bench.Dispose();
         }
 
-        for (var i = 0; i < _lastUpdatesActual.Count; i++)
+        foreach (var action in _lastUpdatesActual)
         {
             var bench = Bench.Measure();
-            var lastUpdate = _lastUpdatesActual[i];
-            if (!_monoBehaviourController.PausedExecution)
-                lastUpdate();
+            if (!monoBehaviourController.PausedExecution)
+                action();
             bench.Dispose();
         }
     }
@@ -293,20 +252,19 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
     {
 #if TRACE
         StaticLogger.Trace(
-            $"InvokeAwake, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)} ({Time.frameCount}), " +
-            $"paused: {_monoBehaviourController.PausedExecution}");
+            $"InvokeAwake, time: {patchReverseInvoker.Invoke(() => Time.frameCount)} ({Time.frameCount}), " +
+            $"paused: {monoBehaviourController.PausedExecution}");
 #endif
 
-        for (var i = 0; i < _awakesUnconditional.Count; i++)
+        foreach (var action in _awakesUnconditional)
         {
-            _awakesUnconditional[i]();
+            action();
         }
 
-        for (var i = 0; i < _awakesActual.Count; i++)
+        foreach (var action in _awakesActual)
         {
-            var awake = _awakesActual[i];
-            if (!_monoBehaviourController.PausedExecution)
-                awake();
+            if (!monoBehaviourController.PausedExecution)
+                action();
         }
     }
 
@@ -315,20 +273,19 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
     {
 #if TRACE
         StaticLogger.Trace(
-            $"InvokeOnEnable, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)} ({Time.frameCount}), " +
-            $"paused: {_monoBehaviourController.PausedExecution}");
+            $"InvokeOnEnable, time: {patchReverseInvoker.Invoke(() => Time.frameCount)} ({Time.frameCount}), " +
+            $"paused: {monoBehaviourController.PausedExecution}");
 #endif
 
-        for (var i = 0; i < _enablesUnconditional.Count; i++)
+        foreach (var action in _enablesUnconditional)
         {
-            _enablesUnconditional[i]();
+            action();
         }
 
-        for (var i = 0; i < _enablesActual.Count; i++)
+        foreach (var action in _enablesActual)
         {
-            var enable = _enablesActual[i];
-            if (!_monoBehaviourController.PausedExecution)
-                enable();
+            if (!monoBehaviourController.PausedExecution)
+                action();
         }
     }
 
@@ -337,20 +294,19 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
     {
 #if TRACE
         StaticLogger.Trace(
-            $"InvokeStart, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)} ({Time.frameCount}), " +
-            $"paused: {_monoBehaviourController.PausedExecution}");
+            $"InvokeStart, time: {patchReverseInvoker.Invoke(() => Time.frameCount)} ({Time.frameCount}), " +
+            $"paused: {monoBehaviourController.PausedExecution}");
 #endif
 
-        for (var i = 0; i < _startsUnconditional.Count; i++)
+        foreach (var action in _startsUnconditional)
         {
-            _startsUnconditional[i]();
+            action();
         }
 
-        for (var i = 0; i < _startsActual.Count; i++)
+        foreach (var action in _startsActual)
         {
-            var start = _startsActual[i];
-            if (!_monoBehaviourController.PausedExecution)
-                start();
+            if (!monoBehaviourController.PausedExecution)
+                action();
         }
     }
 
@@ -361,8 +317,8 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
 
 #if TRACE
         StaticLogger.Trace(
-            $"InvokeUpdate, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)} ({Time.frameCount}), " +
-            $"paused: {_monoBehaviourController.PausedExecution}");
+            $"InvokeUpdate, time: {patchReverseInvoker.Invoke(() => Time.frameCount)} ({Time.frameCount}), " +
+            $"paused: {monoBehaviourController.PausedExecution}");
 #endif
 
         if (!_calledLastUpdate)
@@ -373,19 +329,18 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
         _endOfFrameUpdated = false;
         _calledLastUpdate = false;
 
-        for (var i = 0; i < _updatesUnconditional.Count; i++)
+        foreach (var action in _updatesUnconditional)
         {
             var bench = Bench.Measure();
-            _updatesUnconditional[i]();
+            action();
             bench.Dispose();
         }
 
-        for (var i = 0; i < _updatesActual.Count; i++)
+        foreach (var action in _updatesActual)
         {
             var bench = Bench.Measure();
-            var update = _updatesActual[i];
-            if (!_monoBehaviourController.PausedExecution)
-                update();
+            if (!monoBehaviourController.PausedExecution)
+                action();
             bench.Dispose();
         }
     }
@@ -395,25 +350,24 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
     {
 #if TRACE
         StaticLogger.Trace(
-            $"InvokeLateUpdate, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)} ({Time.frameCount}), " +
-            $"paused: {_monoBehaviourController.PausedExecution}");
+            $"InvokeLateUpdate, time: {patchReverseInvoker.Invoke(() => Time.frameCount)} ({Time.frameCount}), " +
+            $"paused: {monoBehaviourController.PausedExecution}");
 #endif
 
         _updated = false;
 
-        for (var i = 0; i < _lateUpdatesUnconditional.Count; i++)
+        foreach (var action in _lateUpdatesUnconditional)
         {
             var bench = Bench.Measure();
-            _lateUpdatesUnconditional[i]();
+            action();
             bench.Dispose();
         }
 
-        for (var i = 0; i < _lateUpdatesActual.Count; i++)
+        foreach (var action in _lateUpdatesActual)
         {
             var bench = Bench.Measure();
-            var lateUpdate = _lateUpdatesActual[i];
-            if (!_monoBehaviourController.PausedExecution)
-                lateUpdate();
+            if (!monoBehaviourController.PausedExecution)
+                action();
             bench.Dispose();
         }
     }
@@ -423,7 +377,7 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
     public void InvokeFixedUpdate()
     {
 #if !UNIT_TESTS
-        var fixedTime = _patchReverseInvoker.Invoke(() => Time.fixedTime);
+        var fixedTime = patchReverseInvoker.Invoke(() => Time.fixedTime);
         // ReSharper disable once CompareOfFloatsByEqualityOperator
         if (_prevFixedTime == fixedTime) return;
         _prevFixedTime = fixedTime;
@@ -431,22 +385,21 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
 
 #if TRACE
         StaticLogger.Trace(
-            $"InvokeFixedUpdate, time: {fixedTime}, paused: {_monoBehaviourController.PausedExecution}");
+            $"InvokeFixedUpdate, time: {fixedTime}, paused: {monoBehaviourController.PausedExecution}");
 #endif
 
-        for (var i = 0; i < _fixedUpdatesUnconditional.Count; i++)
+        foreach (var action in _fixedUpdatesUnconditional)
         {
             var bench = Bench.Measure();
-            _fixedUpdatesUnconditional[i]();
+            action();
             bench.Dispose();
         }
 
-        for (var i = 0; i < _fixedUpdatesActual.Count; i++)
+        foreach (var action in _fixedUpdatesActual)
         {
             var bench = Bench.Measure();
-            var fixedUpdate = _fixedUpdatesActual[i];
-            if (!_monoBehaviourController.PausedExecution)
-                fixedUpdate();
+            if (!monoBehaviourController.PausedExecution)
+                action();
             bench.Dispose();
         }
     }
@@ -459,19 +412,18 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
 // #endif
 
         // currently, this doesn't get called before other scripts
-        for (var i = 0; i < _guisUnconditional.Count; i++)
+        foreach (var action in _guisUnconditional)
         {
             var bench = Bench.Measure();
-            _guisUnconditional[i]();
+            action();
             bench.Dispose();
         }
 
-        for (var i = 0; i < _guisActual.Count; i++)
+        foreach (var action in _guisActual)
         {
             var bench = Bench.Measure();
-            var gui = _guisActual[i];
-            if (!_monoBehaviourController.PausedExecution)
-                gui();
+            if (!monoBehaviourController.PausedExecution)
+                action();
             bench.Dispose();
         }
     }
@@ -485,21 +437,17 @@ public partial class UnityEvents : IUpdateEvents, IMonoBehEventInvoker, IInputEv
 
 #if TRACE
         StaticLogger.Trace(
-            $"InvokeEndOfFrame, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)} ({Time.frameCount}), " +
-            $"paused: {_monoBehaviourController.PausedExecution}");
+            $"InvokeEndOfFrame, time: {patchReverseInvoker.Invoke(() => Time.frameCount)} ({Time.frameCount}), " +
+            $"paused: {monoBehaviourController.PausedExecution}");
 #endif
 
-        // for (var i = 0; i < _endOfFramesUnconditional.Count; i++)
-        // {
-        //     _endOfFramesUnconditional[i]();
-        // }
+        // _endOfFramesUnconditional
 
-        for (var i = 0; i < _endOfFramesActual.Count; i++)
+        foreach (var action in _endOfFramesActual)
         {
             var bench = Bench.Measure();
-            var endOfFrame = _endOfFramesActual[i];
-            if (!_monoBehaviourController.PausedExecution)
-                endOfFrame();
+            if (!monoBehaviourController.PausedExecution)
+                action();
             bench.Dispose();
         }
     }
