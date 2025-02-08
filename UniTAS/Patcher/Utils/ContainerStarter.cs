@@ -15,10 +15,45 @@ namespace UniTAS.Patcher.Utils;
 
 public static class ContainerStarter
 {
-    public static IContainer Kernel { get; }
+    public static IContainer Kernel { get; private set; }
 
-    static ContainerStarter()
+    [InvokeOnUnityInit]
+    [SuppressMessage("ReSharper", "UnusedMember.Global")]
+    public static void UnityInit()
     {
+        Init(RegisterTiming.UnityInit);
+        UnityEventInvokers.Init(Kernel);
+    }
+
+    public static void Init(RegisterTiming timing)
+    {
+        InitContainer();
+
+        try
+        {
+            var forceInstantiateTypes = Kernel.GetInstance<IForceInstantiateTypes>();
+            forceInstantiateTypes.InstantiateTypes<ForceInstantiateTypes>(timing);
+        }
+        catch (Exception e)
+        {
+            StaticLogger.Log.LogFatal(
+                $"An exception occurred while initializing the container at timing {timing}\n{e}");
+            throw;
+        }
+
+        if (!ContainerInitCallbacks.TryGetValue(timing, out var callbacks)) return;
+        ContainerInitCallbacks.Remove(timing);
+
+        foreach (var callback in callbacks)
+        {
+            callback(Kernel);
+        }
+    }
+
+    private static void InitContainer()
+    {
+        if (Kernel != null) return;
+
         StaticLogger.Log.LogDebug("Initializing container instance");
 
         try
@@ -49,37 +84,6 @@ public static class ContainerStarter
         }
 
         StaticLogger.Log.LogDebug("Initialized container instance");
-    }
-
-    [InvokeOnUnityInit]
-    [SuppressMessage("ReSharper", "UnusedMember.Global")]
-    public static void UnityInit()
-    {
-        Init(RegisterTiming.UnityInit);
-        UnityEventInvokers.Init(Kernel);
-    }
-
-    public static void Init(RegisterTiming timing)
-    {
-        try
-        {
-            var forceInstantiateTypes = Kernel.GetInstance<IForceInstantiateTypes>();
-            forceInstantiateTypes.InstantiateTypes<ForceInstantiateTypes>(timing);
-        }
-        catch (Exception e)
-        {
-            StaticLogger.Log.LogFatal(
-                $"An exception occurred while initializing the container at timing {timing}\n{e}");
-            throw;
-        }
-
-        if (!ContainerInitCallbacks.TryGetValue(timing, out var callbacks)) return;
-        ContainerInitCallbacks.Remove(timing);
-
-        foreach (var callback in callbacks)
-        {
-            callback(Kernel);
-        }
     }
 
     /// <summary>

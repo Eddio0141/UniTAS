@@ -21,6 +21,7 @@ using UnityEngine;
 namespace UniTAS.Patcher.Implementations.UnityManagers;
 
 [Singleton]
+[ExcludeRegisterIfTesting]
 public class UnityCoroutineManager : ICoroutineTracker, IOnPreGameRestart
 {
     private readonly Dictionary<IEnumerator, MonoBehaviour> _instances = [];
