@@ -25,25 +25,25 @@ public class UnityEvents(IMonoBehaviourController monoBehaviourController, IPatc
 {
     public void RegisterMethod(object processingCallback, Action callback, CallbackUpdate update)
     {
-        var callbackList = update switch
+        var (callbackList, actual) = update switch
         {
-            CallbackUpdate.AwakeActual => _awakesActual,
-            CallbackUpdate.AwakeUnconditional => _awakesUnconditional,
-            CallbackUpdate.StartActual => _startsActual,
-            CallbackUpdate.StartUnconditional => _startsUnconditional,
-            CallbackUpdate.EnableActual => _enablesActual,
-            CallbackUpdate.EnableUnconditional => _enablesUnconditional,
-            CallbackUpdate.UpdateActual => _updatesActual,
-            CallbackUpdate.UpdateUnconditional => _updatesUnconditional,
-            CallbackUpdate.FixedUpdateActual => _fixedUpdatesActual,
-            CallbackUpdate.FixedUpdateUnconditional => _fixedUpdatesUnconditional,
-            CallbackUpdate.GUIActual => _guisActual,
-            CallbackUpdate.GUIUnconditional => _guisUnconditional,
-            CallbackUpdate.LastUpdateActual => _lastUpdatesActual,
-            CallbackUpdate.LastUpdateUnconditional => _lastUpdatesUnconditional,
-            CallbackUpdate.LateUpdateUnconditional => _lateUpdatesUnconditional,
-            CallbackUpdate.LateUpdateActual => _lateUpdatesActual,
-            CallbackUpdate.EndOfFrameActual => _endOfFramesActual,
+            CallbackUpdate.AwakeUnconditional => (_awakes, false),
+            CallbackUpdate.AwakeActual => (_awakes, true),
+            CallbackUpdate.StartUnconditional => (_starts, false),
+            CallbackUpdate.StartActual => (_starts, true),
+            CallbackUpdate.EnableUnconditional => (_enables, false),
+            CallbackUpdate.EnableActual => (_enables, true),
+            CallbackUpdate.UpdateUnconditional => (_updates, false),
+            CallbackUpdate.UpdateActual => (_updates, true),
+            CallbackUpdate.FixedUpdateUnconditional => (_fixedUpdates, false),
+            CallbackUpdate.FixedUpdateActual => (_fixedUpdates, true),
+            CallbackUpdate.GUIUnconditional => (_guis, false),
+            CallbackUpdate.GUIActual => (_guis, true),
+            CallbackUpdate.LateUpdateUnconditional => (_lateUpdates, false),
+            CallbackUpdate.LateUpdateActual => (_lateUpdates, true),
+            CallbackUpdate.EndOfFrameActual => (_endOfFrames, false),
+            CallbackUpdate.LastUpdateUnconditional => (_lastUpdates, false),
+            CallbackUpdate.LastUpdateActual => (_lastUpdates, true),
             _ => throw new ArgumentOutOfRangeException(nameof(update), update, null)
         };
 
@@ -51,166 +51,162 @@ public class UnityEvents(IMonoBehaviourController monoBehaviourController, IPatc
         {
             if (unityEventPriority.Priorities.TryGetValue(update, out var priority))
             {
-                callbackList.Add(callback, (int)priority);
+                callbackList.Add(new UnityEvent(callback, actual), (int)priority);
                 return;
             }
         }
 
-        callbackList.Add(callback, (int)CallbackPriority.Default);
-    }
-
-    public event Action OnAwakeUnconditional
-    {
-        add => _awakesUnconditional.Add(value, (int)CallbackPriority.Default);
-        remove => _awakesUnconditional.Remove(value);
-    }
-
-    public event Action OnAwakeActual
-    {
-        add => _awakesActual.Add(value, (int)CallbackPriority.Default);
-        remove => _awakesActual.Remove(value);
-    }
-
-    public event Action OnStartUnconditional
-    {
-        add => _startsUnconditional.Add(value, (int)CallbackPriority.Default);
-        remove => _startsUnconditional.Remove(value);
-    }
-
-    public event Action OnStartActual
-    {
-        add => _startsActual.Add(value, (int)CallbackPriority.Default);
-        remove => _startsActual.Remove(value);
-    }
-
-    public event Action OnEnableUnconditional
-    {
-        add => _enablesUnconditional.Add(value, (int)CallbackPriority.Default);
-        remove => _enablesUnconditional.Remove(value);
-    }
-
-    public event Action OnEnableActual
-    {
-        add => _enablesActual.Add(value, (int)CallbackPriority.Default);
-        remove => _enablesActual.Remove(value);
-    }
-
-    public event Action OnUpdateUnconditional
-    {
-        add => _updatesUnconditional.Add(value, (int)CallbackPriority.Default);
-        remove => _updatesUnconditional.Remove(value);
-    }
-
-    public event Action OnUpdateActual
-    {
-        add => _updatesActual.Add(value, (int)CallbackPriority.Default);
-        remove => _updatesActual.Remove(value);
-    }
-
-    public event Action OnFixedUpdateUnconditional
-    {
-        add => _fixedUpdatesUnconditional.Add(value, (int)CallbackPriority.Default);
-        remove => _fixedUpdatesUnconditional.Remove(value);
-    }
-
-    public event Action OnFixedUpdateActual
-    {
-        add => _fixedUpdatesActual.Add(value, (int)CallbackPriority.Default);
-        remove => _fixedUpdatesActual.Remove(value);
-    }
-
-    public event Action OnGUIUnconditional
-    {
-        add => _guisUnconditional.Add(value, (int)CallbackPriority.Default);
-        remove => _guisUnconditional.Remove(value);
-    }
-
-    public event Action OnGUIActual
-    {
-        add => _guisActual.Add(value, (int)CallbackPriority.Default);
-        remove => _guisActual.Remove(value);
-    }
-
-    public event Action OnLateUpdateUnconditional
-    {
-        add => _lateUpdatesUnconditional.Add(value, (int)CallbackPriority.Default);
-        remove => _lateUpdatesUnconditional.Remove(value);
-    }
-
-    public event Action OnLateUpdateActual
-    {
-        add => _lateUpdatesActual.Add(value, (int)CallbackPriority.Default);
-        remove => _lateUpdatesActual.Remove(value);
-    }
-
-    public event Action OnEndOfFrameActual
-    {
-        add => _endOfFramesActual.Add(value, (int)CallbackPriority.Default);
-        remove => _endOfFramesActual.Remove(value);
-    }
-
-    public event Action OnLastUpdateUnconditional
-    {
-        add => _lastUpdatesUnconditional.Add(value, (int)CallbackPriority.Default);
-        remove => _lastUpdatesUnconditional.Remove(value);
-    }
-
-    public event Action OnLastUpdateActual
-    {
-        add => _lastUpdatesActual.Add(value, (int)CallbackPriority.Default);
-        remove => _lastUpdatesActual.Remove(value);
+        callbackList.Add(new UnityEvent(callback, actual), (int)CallbackPriority.Default);
     }
 
     public void AddPriorityCallback(CallbackUpdate callbackUpdate, Action callback, CallbackPriority priority)
     {
-        var callbackList = callbackUpdate switch
-        {
-            CallbackUpdate.AwakeActual => _awakesActual,
-            CallbackUpdate.AwakeUnconditional => _awakesUnconditional,
-            CallbackUpdate.StartActual => _startsActual,
-            CallbackUpdate.StartUnconditional => _startsUnconditional,
-            CallbackUpdate.EnableActual => _enablesActual,
-            CallbackUpdate.EnableUnconditional => _enablesUnconditional,
-            CallbackUpdate.UpdateActual => _updatesActual,
-            CallbackUpdate.UpdateUnconditional => _updatesUnconditional,
-            CallbackUpdate.FixedUpdateActual => _fixedUpdatesActual,
-            CallbackUpdate.FixedUpdateUnconditional => _fixedUpdatesUnconditional,
-            CallbackUpdate.GUIActual => _guisActual,
-            CallbackUpdate.GUIUnconditional => _guisUnconditional,
-            CallbackUpdate.LastUpdateActual => _lastUpdatesActual,
-            CallbackUpdate.LastUpdateUnconditional => _lastUpdatesUnconditional,
-            _ => throw new ArgumentOutOfRangeException(nameof(callbackUpdate), callbackUpdate, null)
-        };
-
-        callbackList.Add(callback, (int)priority);
+        var (callbackList, actual) = CallbackUpdateToList(callbackUpdate);
+        callbackList.Add(new UnityEvent(callback, actual), (int)priority);
     }
 
-    // if touching this, probably should rewrite but otherwise i ain't doing anything since its not like there's much to add
-    private readonly UnityEventList<Action> _awakesUnconditional = new();
-    private readonly UnityEventList<Action> _awakesActual = new();
+    private (UnityEventList<UnityEvent>, bool) CallbackUpdateToList(CallbackUpdate callbackUpdate)
+    {
+        return callbackUpdate switch
+        {
+            CallbackUpdate.AwakeUnconditional => (_awakes, false),
+            CallbackUpdate.AwakeActual => (_awakes, true),
+            CallbackUpdate.StartUnconditional => (_starts, false),
+            CallbackUpdate.StartActual => (_starts, true),
+            CallbackUpdate.EnableUnconditional => (_enables, false),
+            CallbackUpdate.EnableActual => (_enables, true),
+            CallbackUpdate.UpdateUnconditional => (_updates, false),
+            CallbackUpdate.UpdateActual => (_updates, true),
+            CallbackUpdate.FixedUpdateUnconditional => (_fixedUpdates, false),
+            CallbackUpdate.FixedUpdateActual => (_fixedUpdates, true),
+            CallbackUpdate.GUIUnconditional => (_guis, false),
+            CallbackUpdate.GUIActual => (_guis, true),
+            CallbackUpdate.LateUpdateUnconditional => (_lateUpdates, false),
+            CallbackUpdate.LateUpdateActual => (_lateUpdates, true),
+            CallbackUpdate.EndOfFrameActual => (_endOfFrames, false),
+            CallbackUpdate.LastUpdateUnconditional => (_lastUpdates, false),
+            CallbackUpdate.LastUpdateActual => (_lastUpdates, true),
+            _ => throw new ArgumentOutOfRangeException(nameof(callbackUpdate), callbackUpdate, null)
+        };
+    }
 
-    private readonly UnityEventList<Action> _startsUnconditional = new();
-    private readonly UnityEventList<Action> _startsActual = new();
+    public event Action OnAwakeUnconditional
+    {
+        add => _awakes.Add(new UnityEvent(value, false), (int)CallbackPriority.Default);
+        remove => _awakes.Remove(new UnityEvent(value, false));
+    }
 
-    private readonly UnityEventList<Action> _enablesUnconditional = new();
-    private readonly UnityEventList<Action> _enablesActual = new();
+    public event Action OnAwakeActual
+    {
+        add => _awakes.Add(new UnityEvent(value, true), (int)CallbackPriority.Default);
+        remove => _awakes.Remove(new UnityEvent(value, true));
+    }
 
-    private readonly UnityEventList<Action> _updatesUnconditional = new();
-    private readonly UnityEventList<Action> _updatesActual = new();
+    public event Action OnStartUnconditional
+    {
+        add => _starts.Add(new UnityEvent(value, false), (int)CallbackPriority.Default);
+        remove => _starts.Remove(new UnityEvent(value, false));
+    }
 
-    private readonly UnityEventList<Action> _fixedUpdatesUnconditional = new();
-    private readonly UnityEventList<Action> _fixedUpdatesActual = new();
+    public event Action OnStartActual
+    {
+        add => _starts.Add(new UnityEvent(value, true), (int)CallbackPriority.Default);
+        remove => _starts.Remove(new UnityEvent(value, true));
+    }
 
-    private readonly UnityEventList<Action> _guisUnconditional = new();
-    private readonly UnityEventList<Action> _guisActual = new();
+    public event Action OnEnableUnconditional
+    {
+        add => _enables.Add(new UnityEvent(value, false), (int)CallbackPriority.Default);
+        remove => _enables.Remove(new UnityEvent(value, false));
+    }
 
-    private readonly UnityEventList<Action> _lateUpdatesUnconditional = new();
-    private readonly UnityEventList<Action> _lateUpdatesActual = new();
+    public event Action OnEnableActual
+    {
+        add => _enables.Add(new UnityEvent(value, true), (int)CallbackPriority.Default);
+        remove => _enables.Remove(new UnityEvent(value, true));
+    }
 
-    private readonly UnityEventList<Action> _lastUpdatesUnconditional = new();
-    private readonly UnityEventList<Action> _lastUpdatesActual = new();
+    public event Action OnUpdateUnconditional
+    {
+        add => _updates.Add(new UnityEvent(value, false), (int)CallbackPriority.Default);
+        remove => _updates.Remove(new UnityEvent(value, false));
+    }
 
-    private readonly UnityEventList<Action> _endOfFramesActual = new();
+    public event Action OnUpdateActual
+    {
+        add => _updates.Add(new UnityEvent(value, true), (int)CallbackPriority.Default);
+        remove => _updates.Remove(new UnityEvent(value, true));
+    }
+
+    public event Action OnFixedUpdateUnconditional
+    {
+        add => _fixedUpdates.Add(new UnityEvent(value, false), (int)CallbackPriority.Default);
+        remove => _fixedUpdates.Remove(new UnityEvent(value, true));
+    }
+
+    public event Action OnFixedUpdateActual
+    {
+        add => _fixedUpdates.Add(new UnityEvent(value, true), (int)CallbackPriority.Default);
+        remove => _fixedUpdates.Remove(new UnityEvent(value, true));
+    }
+
+    public event Action OnGUIUnconditional
+    {
+        add => _guis.Add(new UnityEvent(value, false), (int)CallbackPriority.Default);
+        remove => _guis.Remove(new UnityEvent(value, false));
+    }
+
+    public event Action OnGUIActual
+    {
+        add => _guis.Add(new UnityEvent(value, true), (int)CallbackPriority.Default);
+        remove => _guis.Remove(new UnityEvent(value, true));
+    }
+
+    public event Action OnLateUpdateUnconditional
+    {
+        add => _lateUpdates.Add(new UnityEvent(value, false), (int)CallbackPriority.Default);
+        remove => _lateUpdates.Remove(new UnityEvent(value, false));
+    }
+
+    public event Action OnLateUpdateActual
+    {
+        add => _lateUpdates.Add(new UnityEvent(value, true), (int)CallbackPriority.Default);
+        remove => _lateUpdates.Remove(new UnityEvent(value, true));
+    }
+
+    public event Action OnEndOfFrameActual
+    {
+        add => _endOfFrames.Add(new UnityEvent(value, true), (int)CallbackPriority.Default);
+        remove => _endOfFrames.Remove(new UnityEvent(value, true));
+    }
+
+    public event Action OnLastUpdateUnconditional
+    {
+        add => _lastUpdates.Add(new UnityEvent(value, false), (int)CallbackPriority.Default);
+        remove => _lastUpdates.Remove(new UnityEvent(value, false));
+    }
+
+    public event Action OnLastUpdateActual
+    {
+        add => _lastUpdates.Add(new UnityEvent(value, true), (int)CallbackPriority.Default);
+        remove => _lastUpdates.Remove(new UnityEvent(value, true));
+    }
+
+    private readonly struct UnityEvent(Action callback, bool actual)
+    {
+        public readonly Action Callback = callback;
+        public readonly bool Actual = actual;
+    }
+
+    private readonly UnityEventList<UnityEvent> _awakes = new();
+    private readonly UnityEventList<UnityEvent> _starts = new();
+    private readonly UnityEventList<UnityEvent> _enables = new();
+    private readonly UnityEventList<UnityEvent> _updates = new();
+    private readonly UnityEventList<UnityEvent> _fixedUpdates = new();
+    private readonly UnityEventList<UnityEvent> _guis = new();
+    private readonly UnityEventList<UnityEvent> _lateUpdates = new();
+    private readonly UnityEventList<UnityEvent> _lastUpdates = new();
+    private readonly UnityEventList<UnityEvent> _endOfFrames = new();
 
     private bool _updated;
     private bool _calledLastUpdate = true; // true initially to stop printing error, Update will run first anyways
@@ -231,20 +227,7 @@ public class UnityEvents(IMonoBehaviourController monoBehaviourController, IPatc
 
         _calledLastUpdate = true;
 
-        foreach (var action in _lastUpdatesUnconditional)
-        {
-            var bench = Bench.Measure();
-            action();
-            bench.Dispose();
-        }
-
-        foreach (var action in _lastUpdatesActual)
-        {
-            var bench = Bench.Measure();
-            if (!monoBehaviourController.PausedExecution)
-                action();
-            bench.Dispose();
-        }
+        HandleCallbacks(_lastUpdates);
     }
 
     // calls awake before any other script
@@ -256,16 +239,7 @@ public class UnityEvents(IMonoBehaviourController monoBehaviourController, IPatc
             $"paused: {monoBehaviourController.PausedExecution}");
 #endif
 
-        foreach (var action in _awakesUnconditional)
-        {
-            action();
-        }
-
-        foreach (var action in _awakesActual)
-        {
-            if (!monoBehaviourController.PausedExecution)
-                action();
-        }
+        HandleCallbacks(_awakes);
     }
 
     // calls onEnable before any other script
@@ -277,16 +251,7 @@ public class UnityEvents(IMonoBehaviourController monoBehaviourController, IPatc
             $"paused: {monoBehaviourController.PausedExecution}");
 #endif
 
-        foreach (var action in _enablesUnconditional)
-        {
-            action();
-        }
-
-        foreach (var action in _enablesActual)
-        {
-            if (!monoBehaviourController.PausedExecution)
-                action();
-        }
+        HandleCallbacks(_enables);
     }
 
     // calls start before any other script
@@ -298,16 +263,7 @@ public class UnityEvents(IMonoBehaviourController monoBehaviourController, IPatc
             $"paused: {monoBehaviourController.PausedExecution}");
 #endif
 
-        foreach (var action in _startsUnconditional)
-        {
-            action();
-        }
-
-        foreach (var action in _startsActual)
-        {
-            if (!monoBehaviourController.PausedExecution)
-                action();
-        }
+        HandleCallbacks(_starts);
     }
 
     public void InvokeUpdate()
@@ -329,20 +285,7 @@ public class UnityEvents(IMonoBehaviourController monoBehaviourController, IPatc
         _endOfFrameUpdated = false;
         _calledLastUpdate = false;
 
-        foreach (var action in _updatesUnconditional)
-        {
-            var bench = Bench.Measure();
-            action();
-            bench.Dispose();
-        }
-
-        foreach (var action in _updatesActual)
-        {
-            var bench = Bench.Measure();
-            if (!monoBehaviourController.PausedExecution)
-                action();
-            bench.Dispose();
-        }
+        HandleCallbacks(_updates);
     }
 
     // right now I don't call this update before other scripts so I don't need to check if it was already called
@@ -356,20 +299,7 @@ public class UnityEvents(IMonoBehaviourController monoBehaviourController, IPatc
 
         _updated = false;
 
-        foreach (var action in _lateUpdatesUnconditional)
-        {
-            var bench = Bench.Measure();
-            action();
-            bench.Dispose();
-        }
-
-        foreach (var action in _lateUpdatesActual)
-        {
-            var bench = Bench.Measure();
-            if (!monoBehaviourController.PausedExecution)
-                action();
-            bench.Dispose();
-        }
+        HandleCallbacks(_lateUpdates);
     }
 
     private float _prevFixedTime = -1;
@@ -388,44 +318,13 @@ public class UnityEvents(IMonoBehaviourController monoBehaviourController, IPatc
             $"InvokeFixedUpdate, time: {fixedTime}, paused: {monoBehaviourController.PausedExecution}");
 #endif
 
-        foreach (var action in _fixedUpdatesUnconditional)
-        {
-            var bench = Bench.Measure();
-            action();
-            bench.Dispose();
-        }
-
-        foreach (var action in _fixedUpdatesActual)
-        {
-            var bench = Bench.Measure();
-            if (!monoBehaviourController.PausedExecution)
-                action();
-            bench.Dispose();
-        }
+        HandleCallbacks(_fixedUpdates);
     }
 
     public void InvokeOnGUI()
     {
-// #if TRACE
-//         StaticLogger.Trace($"InvokeOnGUI, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)}, " +
-//                            $"paused: {_monoBehaviourController.PausedExecution}");
-// #endif
-
         // currently, this doesn't get called before other scripts
-        foreach (var action in _guisUnconditional)
-        {
-            var bench = Bench.Measure();
-            action();
-            bench.Dispose();
-        }
-
-        foreach (var action in _guisActual)
-        {
-            var bench = Bench.Measure();
-            if (!monoBehaviourController.PausedExecution)
-                action();
-            bench.Dispose();
-        }
+        HandleCallbacks(_guis);
     }
 
     private bool _endOfFrameUpdated;
@@ -443,11 +342,16 @@ public class UnityEvents(IMonoBehaviourController monoBehaviourController, IPatc
 
         // _endOfFramesUnconditional
 
-        foreach (var action in _endOfFramesActual)
+        HandleCallbacks(_endOfFrames);
+    }
+
+    private void HandleCallbacks(UnityEventList<UnityEvent> events)
+    {
+        foreach (var action in events)
         {
+            if (monoBehaviourController.PausedExecution && action.Actual) continue;
             var bench = Bench.Measure();
-            if (!monoBehaviourController.PausedExecution)
-                action();
+            action.Callback();
             bench.Dispose();
         }
     }
