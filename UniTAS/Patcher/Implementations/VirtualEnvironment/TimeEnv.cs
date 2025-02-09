@@ -33,7 +33,7 @@ public class TimeEnv : ITimeEnv, IOnGameRestartResume
 
         // once only
         _updateEvents.OnAwakeUnconditional += AwakeUnconditional;
-        _updateEvents.OnUpdateUnconditional += UpdateUnconditionalOnce;
+        _updateEvents.OnStartUnconditional += StartOnce;
 
         _updateEvents.AddPriorityCallback(CallbackUpdate.FixedUpdateActual, FixedUpdateActual,
             CallbackPriority.TimeEnv);
@@ -68,9 +68,9 @@ public class TimeEnv : ITimeEnv, IOnGameRestartResume
         RenderedFrameCountOffset++;
     }
 
-    private void UpdateUnconditionalOnce()
+    private void StartOnce()
     {
-        _updateEvents.OnUpdateUnconditional -= UpdateUnconditionalOnce;
+        _updateEvents.OnStartUnconditional -= StartOnce;
 
         // stupid but slightly fixes accuracy on game first start
         UnscaledTime += DefaultFt;
@@ -148,6 +148,11 @@ public class TimeEnv : ITimeEnv, IOnGameRestartResume
 
         FrameCountRestartOffset--;
         RenderedFrameCountOffset--;
+
+        var ft = FrameTime;
+        UnscaledTime += ft;
+        ScaledTime += ft * Time.timeScale;
+
         StaticLogger.Trace("initialized time");
     }
 }
