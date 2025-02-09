@@ -115,7 +115,7 @@ public static class ILCodeUtils
     public static void HookHarmony(MethodDefinition method, MethodInfo prefix = null, MethodInfo postfix = null)
     {
         if (prefix == null && postfix == null) return;
-        if (!method.HasBody) return;
+        if (method is not { HasBody: true }) return;
 
         var body = method.Body;
         body.SimplifyMacros();
@@ -195,7 +195,8 @@ public static class ILCodeUtils
             if (boolReturn)
             {
                 il.InsertBefore(first, il.Create(OpCodes.Brtrue, first));
-                il.InsertBefore(first, il.Create(OpCodes.Ldloc, resultVar));
+                if (resultVar != null)
+                    il.InsertBefore(first, il.Create(OpCodes.Ldloc, resultVar));
             }
 
             il.InsertBefore(first, il.Create(OpCodes.Ret));
