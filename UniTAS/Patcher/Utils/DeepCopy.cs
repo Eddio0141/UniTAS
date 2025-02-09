@@ -115,9 +115,7 @@ public static class DeepCopy
 
         object result;
 
-        var typeFullName = type.SaneFullName();
-
-        if (source is AnimationCurve || typeFullName == "UnityEngine.AnimationCurve.AnimationCurve")
+        if (source is AnimationCurve || type.SaneFullName() == "UnityEngine.AnimationCurve.AnimationCurve")
         {
             fields = FieldInfoCache.GetOrAdd(type, t =>
             {
@@ -161,7 +159,8 @@ public static class DeepCopy
 
             if (field.FieldType == typeof(IntPtr) || field.FieldType == typeof(UIntPtr))
             {
-                StaticLogger.LogDebug($"DeepCopy: found pointer field `{typeFullName}.{field.Name}`, may be unmanaged");
+                StaticLogger.LogWarning(
+                    $"DeepCopy: found pointer field `{type.SaneFullName()}.{field.Name}`, may be unmanaged");
             }
 
             var copiedObj = MakeDeepCopy(value, processor, references);
