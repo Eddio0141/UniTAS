@@ -301,4 +301,36 @@ public class TimePatch
             return false;
         }
     }
+
+    [HarmonyPatch(typeof(Time), nameof(Time.timeSinceLevelLoad), MethodType.Getter)]
+    private class get_timeSinceLevelLoad
+    {
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static bool Prefix(ref float __result)
+        {
+            __result = CalledFromFixedUpdate()
+                ? (float)TimeEnv.FixedTimeSinceLevelLoad
+                : (float)TimeEnv.TimeSinceLevelLoad;
+            return false;
+        }
+    }
+
+    [HarmonyPatch(typeof(Time), "timeSinceLevelLoadAsDouble", MethodType.Getter)]
+    private class get_timeSinceLevelLoadAsDouble
+    {
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static bool Prefix(ref double __result)
+        {
+            __result = CalledFromFixedUpdate() ? TimeEnv.FixedTimeSinceLevelLoad : TimeEnv.TimeSinceLevelLoad;
+            return false;
+        }
+    }
 }

@@ -1,6 +1,7 @@
 using System;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.SoftRestart;
+using UniTAS.Patcher.Interfaces.Events.UnityEvents;
 using UniTAS.Patcher.Models.EventSubscribers;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.GameExecutionControllers;
@@ -14,7 +15,7 @@ namespace UniTAS.Patcher.Implementations.VirtualEnvironment;
 
 [Singleton]
 [ExcludeRegisterIfTesting]
-public class TimeEnv : ITimeEnv, IOnGameRestartResume
+public class TimeEnv : ITimeEnv, IOnGameRestartResume, IOnSceneLoad
 {
     private readonly ITimeWrapper _timeWrap;
     private readonly IPatchReverseInvoker _patchReverseInvoker;
@@ -73,8 +74,10 @@ public class TimeEnv : ITimeEnv, IOnGameRestartResume
         _updateEvents.OnStartUnconditional -= StartOnce;
 
         // stupid but slightly fixes accuracy on game first start
+        var scaledFt = DefaultFt * Time.timeScale;
         UnscaledTime += DefaultFt;
-        ScaledTime += DefaultFt * Time.timeScale;
+        ScaledTime += scaledFt;
+        TimeSinceLevelLoad += scaledFt;
     }
 
     public double TimeTolerance { get; }
@@ -98,17 +101,22 @@ public class TimeEnv : ITimeEnv, IOnGameRestartResume
     public double FixedUnscaledTime { get; private set; }
     public double ScaledTime { get; private set; }
     public double ScaledFixedTime { get; private set; }
+    public double TimeSinceLevelLoad { get; private set; }
+    public double FixedTimeSinceLevelLoad { get; private set; }
 
     private void OnLastUpdateActual()
     {
         var ft = FrameTime;
+        var scaledFt = ft * Time.timeScale;
         UnscaledTime += ft;
-        ScaledTime += ft * Time.timeScale;
+        ScaledTime += scaledFt;
+        TimeSinceLevelLoad += scaledFt;
     }
 
     private void FixedUpdateActual()
     {
         var fixedDt = Time.fixedDeltaTime;
+        var scaledFixedDt = fixedDt * Time.timeScale;
 
         var newFixedUnscaledTime = FixedUnscaledTime + fixedDt;
         if (newFixedUnscaledTime <= UnscaledTime)
@@ -116,11 +124,15 @@ public class TimeEnv : ITimeEnv, IOnGameRestartResume
             FixedUnscaledTime = newFixedUnscaledTime;
         }
 
-        var newScaledFixedTime = ScaledFixedTime + fixedDt * Time.timeScale;
+        var newScaledFixedTime = ScaledFixedTime + scaledFixedDt;
         if (newScaledFixedTime <= ScaledTime)
         {
             ScaledFixedTime = newScaledFixedTime;
         }
+
+        var newFixedTimeSinceLevelLoad = FixedTimeSinceLevelLoad + scaledFixedDt;
+        if (newFixedTimeSinceLevelLoad <= TimeSinceLevelLoad)
+            FixedTimeSinceLevelLoad = newFixedUnscaledTime;
     }
 
     // setting the start up time causes the game to update other time related variables, which requires this to be ran in the main thread
@@ -136,6 +148,8 @@ public class TimeEnv : ITimeEnv, IOnGameRestartResume
         UnscaledTime = 0;
         ScaledTime = 0;
         ScaledFixedTime = 0;
+        TimeSinceLevelLoad = 0;
+        FixedTimeSinceLevelLoad = 0;
 
         _updateEvents.AddPriorityCallback(CallbackUpdate.StartUnconditional, TimeInit, CallbackPriority.TimeEnv);
         _updateEvents.AddPriorityCallback(CallbackUpdate.FixedUpdateActual, TimeInit, CallbackPriority.TimeEnv);
@@ -150,9 +164,17 @@ public class TimeEnv : ITimeEnv, IOnGameRestartResume
         RenderedFrameCountOffset--;
 
         var ft = FrameTime;
+        var scaledFt = ft * Time.timeScale;
         UnscaledTime += ft;
-        ScaledTime += ft * Time.timeScale;
+        ScaledTime += scaledFt;
+        TimeSinceLevelLoad += scaledFt;
 
         StaticLogger.Trace("initialized time");
+    }
+
+    public void OnSceneLoad()
+    {
+        TimeSinceLevelLoad = 0f;
+        FixedTimeSinceLevelLoad = 0f;
     }
 }

@@ -12,6 +12,8 @@ public interface ITimeEnv
     double FixedUnscaledTime { get; }
     double ScaledTime { get; }
     double ScaledFixedTime { get; }
+    double TimeSinceLevelLoad { get; }
+    double FixedTimeSinceLevelLoad { get; }
 
     double TimeTolerance { get; }
 }
