@@ -16,7 +16,7 @@ namespace UniTAS.Patcher.Implementations.MonoBehaviourPause;
 public class AnimationPause
 {
     private readonly ILogger _logger;
-    
+
     public AnimationPause(IMonoBehaviourController monoBehaviourController, ILogger logger)
     {
         _logger = logger;
@@ -31,8 +31,8 @@ public class AnimationPause
             ResumeAnimation();
     }
 
-    private readonly List<AnimatorTracker> _trackedAnimators = new();
-    private readonly List<AnimationTracker> _trackedAnimations = new();
+    private readonly List<AnimatorTracker> _trackedAnimators = [];
+    private readonly List<AnimationTracker> _trackedAnimations = [];
 
     private void PauseAnimation()
     {
@@ -113,6 +113,7 @@ public class AnimationPause
 
         public void Resume()
         {
+            if (animator == null) return;
             SetSpeed.Invoke(animator, [_speedBeforePause]);
         }
     }
