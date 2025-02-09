@@ -26,10 +26,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **BREAKING**: Async scene load is not supposed to be instant, there is a frame of delay before loading
 - **BREAKING**: Async operations in unity now follows a queue of operations, so if a scene load operation happens, rest of the operations stop until scene loads
 - **BREAKING**: Setting async operation activation to true won't instantly load, which was the case before which is inaccurate
+- **BREAKING**: Fixed Time class related inconsistencies
 - AsyncOperation's InvokeCompletionEvent is only disabled for tracked AsyncOperation instances
 - Implemented LoadScene forcing pending LoadSceneAsync to be all loaded
 - Fixed accidentally obliterating return value of LoadScene instances
 - Fixed inaccurate scene load counter
+
+## Added
+
+### Compatibility
+
+- Unity animations can be paused now
+- Coroutines are pausable, including WaitForSeconds
 
 # [v0.6.0] - 2024-11-18
 
