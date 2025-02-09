@@ -1,7 +1,5 @@
 using System.Linq;
-using HarmonyLib;
 using Mono.Cecil;
-using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 using MonoMod.Utils;
 using UniTAS.Patcher.Interfaces;
@@ -43,25 +41,10 @@ public class SerializationCallbackPatch : PreloadPatcher
 
             var method = type.Methods.FirstOrDefault(m =>
                 m.Name is "OnAfterDeserialize" or "UnityEngine.ISerializationCallbackReceiver.OnAfterDeserialize");
-            if (method is not { HasBody: true }) continue;
 
-            method.Body.SimplifyMacros();
-            var il = method.Body.GetILProcessor();
-
-            var hook = typeof(SerializationCallbackTracker).GetMethod(
-                nameof(SerializationCallbackTracker.OnAfterDeserializeInvoke), AccessTools.all);
-            var hookRef = assembly.MainModule.ImportReference(hook);
-
-            var first = method.Body.Instructions.First();
-            il.InsertBefore(first, il.Create(OpCodes.Ldarg_0));
-            il.InsertBefore(first, il.Create(OpCodes.Call, hookRef));
-            // if true, run original
-            il.InsertBefore(first, il.Create(OpCodes.Brtrue, first));
-            il.InsertBefore(first, il.Create(OpCodes.Ret));
-
-            method.Body.OptimizeMacros();
-
-            StaticLogger.LogDebug($"Patched `{type}` OnAfterDeserialize");
+            ILCodeUtils.HookHarmony(method,
+                typeof(SerializationCallbackTrackerManual).GetMethod(nameof(SerializationCallbackTrackerManual
+                    .OnAfterDeserializeInvoke)));
         }
     }
 }
