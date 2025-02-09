@@ -197,9 +197,8 @@ public static class ILCodeUtils
                 il.InsertBefore(first, il.Create(OpCodes.Brtrue, first));
                 if (resultVar != null)
                     il.InsertBefore(first, il.Create(OpCodes.Ldloc, resultVar));
+                il.InsertBefore(first, il.Create(OpCodes.Ret));
             }
-
-            il.InsertBefore(first, il.Create(OpCodes.Ret));
         }
 
         // postfix
