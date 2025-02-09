@@ -5,7 +5,6 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using HarmonyLib;
-using UniTAS.Patcher.Exceptions;
 using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.ManualServices;
 using UnityEngine;
@@ -33,10 +32,6 @@ public static class DeepCopy
     {
         result = (T)MakeDeepCopy(source, processor);
     }
-
-    private static int _makeDeepCopyRecursionDepth;
-
-    private const int MakeDeepCopyRecursionDepthLimit = 200;
 
     /// <summary>Makes a deep copy of any object</summary>
     /// <param name="source">The original object</param>
@@ -101,13 +96,6 @@ public static class DeepCopy
             return source;
         }
 
-        _makeDeepCopyRecursionDepth++;
-
-        if (_makeDeepCopyRecursionDepth > MakeDeepCopyRecursionDepthLimit)
-        {
-            throw new DeepCopyMaxRecursionException(source);
-        }
-
         if (type.IsArray)
         {
             var newElementType = type.GetElementType();
@@ -120,7 +108,6 @@ public static class DeepCopy
                 newArray.SetValue(newElement, i);
             }
 
-            _makeDeepCopyRecursionDepth--;
             return newArray;
         }
 
@@ -182,7 +169,6 @@ public static class DeepCopy
             field.SetValue(result, copiedObj);
         }
 
-        _makeDeepCopyRecursionDepth--;
         return result;
     }
 
