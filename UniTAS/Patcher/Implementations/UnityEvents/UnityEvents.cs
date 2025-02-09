@@ -141,7 +141,7 @@ public class UnityEvents(IMonoBehaviourController monoBehaviourController, IPatc
     public event Action OnFixedUpdateUnconditional
     {
         add => _fixedUpdates.Add(new UnityEvent(value, false), (int)CallbackPriority.Default);
-        remove => _fixedUpdates.Remove(new UnityEvent(value, true));
+        remove => _fixedUpdates.Remove(new UnityEvent(value, false));
     }
 
     public event Action OnFixedUpdateActual
