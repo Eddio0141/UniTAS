@@ -10,17 +10,14 @@ using UniTAS.Patcher.Utils;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-// ReSharper disable UnusedMember.Local
-
 namespace UniTAS.Patcher.Patches.Harmony.UnityInit;
 
 [RawPatchUnityInit]
-[SuppressMessage("ReSharper", "InconsistentNaming")]
-// ReSharper disable once ClassNeverInstantiated.Global
+[SuppressMessage("ReSharper", "UnusedMember.Local")]
 public class ObjectPatch
 {
     [HarmonyPatch]
-    private class PreventPluginDestruction
+    private class PreventDestruction
     {
         private static IEnumerable<MethodBase> TargetMethods()
         {
@@ -41,27 +38,15 @@ public class ObjectPatch
 
         private static bool Prefix(Object obj)
         {
-            // Don't destroy Plugin
             return obj is not MonoBehaviourUpdateInvoker;
         }
 
-        // ReSharper disable once UnusedParameter.Local
-        private static Exception Cleanup(MethodBase original, Exception ex)
-        {
-            if (ex != null)
-            {
-                StaticLogger.Log.LogWarning("Failed to patch Object destruction methods, Plugin may be destroyed");
-            }
-
-            return null;
-        }
+        private static Exception Cleanup(MethodBase original, Exception ex) =>
+            PatchHelper.CleanupIgnoreFail(original, ex);
     }
 
-    // private static readonly INewScriptableObjectTracker NewScriptableObjectTracker =
-    //     ContainerStarter.Kernel.GetInstance<INewScriptableObjectTracker>();
-
     [HarmonyPatch]
-    private class PreventPluginInstantiation
+    private class PreventInstantiation
     {
         private static IEnumerable<MethodBase> TargetMethods()
         {
@@ -85,27 +70,10 @@ public class ObjectPatch
 
         private static bool Prefix(Object data)
         {
-            // Don't instantiate Plugin
             return data is not MonoBehaviourUpdateInvoker;
         }
 
-        private static void Postfix(Object __result)
-        {
-            if (__result is ScriptableObject scriptableObject)
-            {
-                // NewScriptableObjectTracker.NewScriptableObject(scriptableObject);
-            }
-        }
-
-        // ReSharper disable once UnusedParameter.Local
-        private static Exception Cleanup(MethodBase original, Exception ex)
-        {
-            if (ex != null)
-            {
-                StaticLogger.Log.LogWarning("Failed to patch Object instantiation methods, Plugin may be instantiated");
-            }
-
-            return null;
-        }
+        private static Exception Cleanup(MethodBase original, Exception ex) =>
+            PatchHelper.CleanupIgnoreFail(original, ex);
     }
 }
