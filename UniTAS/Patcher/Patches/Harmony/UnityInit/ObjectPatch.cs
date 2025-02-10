@@ -6,6 +6,9 @@ using System.Reflection;
 using HarmonyLib;
 using UniTAS.Patcher.Interfaces.Patches.PatchTypes;
 using UniTAS.Patcher.MonoBehaviourScripts;
+using UniTAS.Patcher.Services;
+using UniTAS.Patcher.Services.Trackers.TrackInfo;
+using UniTAS.Patcher.Services.Trackers.UpdateTrackInfo;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -14,8 +17,18 @@ namespace UniTAS.Patcher.Patches.Harmony.UnityInit;
 
 [RawPatchUnityInit]
 [SuppressMessage("ReSharper", "UnusedMember.Local")]
+[SuppressMessage("ReSharper", "InconsistentNaming")]
 public class ObjectPatch
 {
+    private static readonly IUpdateScriptableObjDestroyState UpdateScriptableObjDestroyState =
+        ContainerStarter.Kernel.GetInstance<IUpdateScriptableObjDestroyState>();
+
+    private static readonly IScriptableObjDestroyState ScriptableObjDestroyState =
+        ContainerStarter.Kernel.GetInstance<IScriptableObjDestroyState>();
+
+    private static readonly IPatchReverseInvoker ReverseInvoker =
+        ContainerStarter.Kernel.GetInstance<IPatchReverseInvoker>();
+
     [HarmonyPatch]
     private class PreventDestruction
     {
@@ -38,6 +51,14 @@ public class ObjectPatch
 
         private static bool Prefix(Object obj)
         {
+            if (ReverseInvoker.Invoking) return true;
+            
+            if (obj is ScriptableObject so)
+            {
+                UpdateScriptableObjDestroyState.Destroy(so);
+                return false;
+            }
+
             return obj is not MonoBehaviourUpdateInvoker;
         }
 
@@ -75,5 +96,33 @@ public class ObjectPatch
 
         private static Exception Cleanup(MethodBase original, Exception ex) =>
             PatchHelper.CleanupIgnoreFail(original, ex);
+    }
+
+    [HarmonyPatch(typeof(Object), nameof(Object.CompareBaseObjects))]
+    private class CompareBaseObjects
+    {
+        private static Exception Cleanup(MethodBase original, Exception ex) =>
+            PatchHelper.CleanupIgnoreFail(original, ex);
+
+        private static bool Prefix(Object lhs, Object rhs, ref bool __result)
+        {
+            if (ReferenceEquals(lhs, null))
+            {
+                if (rhs is not ScriptableObject so) return true;
+                if (!ScriptableObjDestroyState.Destroyed(so)) return true;
+                __result = true;
+                return false;
+            }
+
+            if (ReferenceEquals(rhs, null))
+            {
+                if (lhs is not ScriptableObject so) return true;
+                if (!ScriptableObjDestroyState.Destroyed(so)) return true;
+                __result = true;
+                return false;
+            }
+
+            return true;
+        }
     }
 }

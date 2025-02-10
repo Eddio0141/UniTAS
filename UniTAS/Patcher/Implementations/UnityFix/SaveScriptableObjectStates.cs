@@ -6,6 +6,7 @@ using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.SoftRestart;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents.RunEvenPaused;
 using UniTAS.Patcher.ManualServices;
+using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.Trackers.UpdateTrackInfo;
 using UniTAS.Patcher.Utils;
@@ -22,9 +23,15 @@ public class SaveScriptableObjectStates : INewScriptableObjectTracker, IOnAwakeU
 
     private readonly Assembly[] _ignoreAssemblies;
 
-    public SaveScriptableObjectStates(ILogger logger)
+    private readonly IUpdateScriptableObjDestroyState _updateScriptableObjDestroyState;
+    private readonly IPatchReverseInvoker _reverseInvoker;
+
+    public SaveScriptableObjectStates(ILogger logger, IUpdateScriptableObjDestroyState updateScriptableObjDestroyState,
+        IPatchReverseInvoker reverseInvoker)
     {
         _logger = logger;
+        _updateScriptableObjDestroyState = updateScriptableObjDestroyState;
+        _reverseInvoker = reverseInvoker;
 
         _ignoreAssemblies = new[]
         {
@@ -68,11 +75,12 @@ public class SaveScriptableObjectStates : INewScriptableObjectTracker, IOnAwakeU
             $"Destroying all {_destroyObjectsOnRestart.Count} ScriptableObject that was created during runtime");
         foreach (var obj in _destroyObjectsOnRestart)
         {
-            Object.DestroyImmediate(obj);
+            _reverseInvoker.Invoke(Object.DestroyImmediate, obj);
         }
 
         _destroyObjectsOnRestart.Clear();
 
+        _updateScriptableObjDestroyState.ClearState();
         SaveScriptableObjectStatesManual.LoadAll();
     }
 }
