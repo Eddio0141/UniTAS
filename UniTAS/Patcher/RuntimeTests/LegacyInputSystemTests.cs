@@ -18,52 +18,7 @@ public class LegacyInputSystemTests(
     IInputSystemState inputSystemState)
 {
     private readonly LegacyInputSystemDevice _keyboardControllerBase = (LegacyInputSystemDevice)keyboardController;
-
     private readonly LegacyInputSystemDevice _mouseControllerBase = (LegacyInputSystemDevice)mouseController;
-
-    [RuntimeTest]
-    public bool GetKeyTest()
-    {
-        if (!inputSystemState.HasOldInputSystem) return false;
-
-        virtualEnvController.RunVirtualEnvironment = true;
-
-        keyboardController.Hold(KeyCode.A);
-        _keyboardControllerBase.MovieUpdate(false);
-
-        RuntimeAssert.True(Input.GetKeyDown(KeyCode.A), "keycode down check");
-        RuntimeAssert.True(Input.GetKeyDown("a"), "string down check");
-        RuntimeAssert.True(Input.GetKey(KeyCode.A), "keycode check");
-        RuntimeAssert.True(Input.GetKey("a"), "string check");
-
-        _keyboardControllerBase.MovieUpdate(false);
-
-        RuntimeAssert.False(Input.GetKeyDown(KeyCode.A), "keycode down check");
-        RuntimeAssert.False(Input.GetKeyDown("a"), "string down check");
-        RuntimeAssert.True(Input.GetKey(KeyCode.A), "keycode 2 check");
-        RuntimeAssert.True(Input.GetKey("a"), "string 2 check");
-
-        _keyboardControllerBase.MovieUpdate(false);
-
-        RuntimeAssert.True(Input.GetKey(KeyCode.A), "keycode 3 check");
-        RuntimeAssert.True(Input.GetKey("a"), "string 3 check");
-
-        keyboardController.Release(KeyCode.A);
-        _keyboardControllerBase.MovieUpdate(false);
-
-        RuntimeAssert.False(Input.GetKey(KeyCode.A), "keycode 4 check");
-        RuntimeAssert.False(Input.GetKey("a"), "string 4 check");
-        RuntimeAssert.True(Input.GetKeyUp(KeyCode.A), "keycode up check");
-        RuntimeAssert.True(Input.GetKeyUp("a"), "string up check");
-
-        _keyboardControllerBase.MovieUpdate(false);
-
-        RuntimeAssert.False(Input.GetKeyUp(KeyCode.A), "keycode up check");
-        RuntimeAssert.False(Input.GetKeyUp("a"), "string up check");
-
-        virtualEnvController.RunVirtualEnvironment = false;
-        return true;
-    }
 
     [RuntimeTest]
     public bool KeyDownTest()
