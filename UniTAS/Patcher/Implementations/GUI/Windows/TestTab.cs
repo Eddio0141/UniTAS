@@ -5,7 +5,6 @@ using UniTAS.Patcher.Interfaces.TASRenderer;
 using UniTAS.Patcher.Models.GUI;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.GameExecutionControllers;
-using UniTAS.Patcher.Services.RuntimeTest;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
@@ -18,8 +17,7 @@ public class TestTab(
     IGameRender gameRender,
     IGameRestart gameRestart,
     ISceneManagerWrapper iSceneManagerWrapper,
-    IMonoBehaviourController monoBehaviourController,
-    IRuntimeTestAndLog runtimeTestAndLog)
+    IMonoBehaviourController monoBehaviourController)
     : Window(windowDependencies,
         new WindowConfig(windowName: "test", layoutOptions: [GUILayout.ExpandWidth(true), GUILayout.ExpandHeight(true)]
         ))
@@ -58,13 +56,6 @@ public class TestTab(
 
         GUILayout.EndHorizontal();
 
-        GUILayout.BeginHorizontal(GUIUtils.EmptyOptions);
-        if (GUILayout.Button("Run tests", GUIUtils.EmptyOptions))
-        {
-            runtimeTestAndLog.Test();
-        }
-
-        GUILayout.EndHorizontal();
         GUILayout.EndVertical();
     }
 }
