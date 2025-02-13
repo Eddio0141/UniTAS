@@ -40,8 +40,20 @@ public class StaticFieldStorage(
 
             logger.LogDebug($"resetting static field: {typeName}.{field.Name}");
 
+            object fieldValue;
+            try
+            {
+                fieldValue = field.GetValue(null);
+            }
+            catch (Exception e)
+            {
+                logger.LogWarning(
+                    $"exception thrown during resetting static field, skipping `{typeName}.{field.Name}`: {e}");
+                continue;
+            }
+
             // only dispose if disposable in is in system namespace
-            if (field.GetValue(null) is IDisposable disposable &&
+            if (fieldValue is IDisposable disposable &&
                 field.FieldType.Namespace?.StartsWith("System") is true)
             {
                 logger.LogDebug("disposing object via IDisposable");
