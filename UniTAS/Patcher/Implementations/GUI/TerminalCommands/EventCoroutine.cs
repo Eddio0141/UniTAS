@@ -59,7 +59,7 @@ public class EventCoroutine : TerminalCmd
         }
 
         var yield = (int)(Event)Enum.Parse(typeof(Event), yieldRaw);
-        if (yield < 0 || yield >= Enum.GetValues(typeof(Event)).Length)
+        if (yield >= Enum.GetValues(typeof(Event)).Length)
         {
             CoroutineEnd();
             throw new Exception($"Event coroutine '{yieldRaw}' is out of range.");
