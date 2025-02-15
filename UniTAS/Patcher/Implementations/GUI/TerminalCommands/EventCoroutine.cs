@@ -6,7 +6,7 @@ using UniTAS.Patcher.Services.UnityEvents;
 
 namespace UniTAS.Patcher.Implementations.GUI.TerminalCommands;
 
-public class EventCoroutine(IUpdateEvents updateEvents) : TerminalCmd
+public class EventCoroutine : TerminalCmd
 {
     public override string Name => "event_coroutine";
 
@@ -23,8 +23,9 @@ public class EventCoroutine(IUpdateEvents updateEvents) : TerminalCmd
 
         if (_coroutineCount == 0)
         {
-            updateEvents.OnUpdateUnconditional += UpdateUnconditional;
-            updateEvents.OnUpdateActual += UpdateActual;
+            _updateEvents.OnUpdateUnconditional += UpdateUnconditional;
+            _updateEvents.OnUpdateActual += UpdateActual;
+            _updateEvents.OnFixedUpdateActual += FixedUpdateActual;
         }
 
         _coroutineCount++;
@@ -57,19 +58,14 @@ public class EventCoroutine(IUpdateEvents updateEvents) : TerminalCmd
             throw new Exception($"Event coroutine '{yieldRaw}' is not defined.");
         }
 
-        var yield = (Event)Enum.Parse(typeof(Event), yieldRaw);
-        switch (yield)
+        var yield = (int)(Event)Enum.Parse(typeof(Event), yieldRaw);
+        if (yield < 0 || yield >= Enum.GetValues(typeof(Event)).Length)
         {
-            case Event.UpdateUnconditional:
-                _updateUnconditionalCallbacks.Enqueue(coroutine);
-                break;
-            case Event.UpdateActual:
-                _updateActualCallbacks.Enqueue(coroutine);
-                break;
-            default:
-                CoroutineEnd();
-                throw new ArgumentOutOfRangeException();
+            CoroutineEnd();
+            throw new Exception($"Event coroutine '{yieldRaw}' is out of range.");
         }
+
+        _callbacks[yield].Enqueue(coroutine);
     }
 
     private void CoroutineEnd()
@@ -77,34 +73,40 @@ public class EventCoroutine(IUpdateEvents updateEvents) : TerminalCmd
         _coroutineCount--;
         if (_coroutineCount > 0) return;
 
-        updateEvents.OnUpdateUnconditional -= UpdateUnconditional;
-        updateEvents.OnUpdateActual -= UpdateActual;
+        _updateEvents.OnUpdateUnconditional -= UpdateUnconditional;
+        _updateEvents.OnUpdateActual -= UpdateActual;
+        _updateEvents.OnFixedUpdateActual -= FixedUpdateActual;
     }
 
-    private readonly Queue<MoonSharp.Interpreter.Coroutine> _updateUnconditionalCallbacks = new();
-    private readonly Queue<MoonSharp.Interpreter.Coroutine> _updateActualCallbacks = new();
+    private readonly Queue<MoonSharp.Interpreter.Coroutine>[] _callbacks;
+    private readonly IUpdateEvents _updateEvents;
 
-    private void UpdateUnconditional()
+    public EventCoroutine(IUpdateEvents updateEvents)
     {
-        var count = _updateUnconditionalCallbacks.Count;
-        for (var i = 0; i < count; i++)
+        _updateEvents = updateEvents;
+        var events = Enum.GetValues(typeof(Event));
+        _callbacks = new Queue<MoonSharp.Interpreter.Coroutine>[events.Length];
+        for (var i = 0; i < events.Length; i++)
         {
-            HandleCoroutine(_updateUnconditionalCallbacks.Dequeue());
+            _callbacks[i] = new();
         }
     }
 
-    private void UpdateActual()
+    private void UpdateUnconditional() => HandleCoroutine(Event.UpdateUnconditional);
+    private void UpdateActual() => HandleCoroutine(Event.UpdateActual);
+    private void FixedUpdateActual() => HandleCoroutine(Event.FixedUpdateActual);
+
+    private void HandleCoroutine(Event @event)
     {
-        var count = _updateActualCallbacks.Count;
-        for (var i = 0; i < count; i++)
-        {
-            HandleCoroutine(_updateActualCallbacks.Dequeue());
-        }
+        var callbacks = _callbacks[(int)@event];
+        while (callbacks.Count > 0)
+            HandleCoroutine(callbacks.Dequeue());
     }
 
     private enum Event
     {
         UpdateActual,
-        UpdateUnconditional
+        UpdateUnconditional,
+        FixedUpdateActual,
     }
 }
