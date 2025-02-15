@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using HarmonyLib;
 using UniTAS.Patcher.Interfaces.Patches.PatchTypes;
+using UniTAS.Patcher.Services.GameExecutionControllers;
 using UniTAS.Patcher.Services.UnityEvents;
 using UniTAS.Patcher.Utils;
 
@@ -15,6 +16,9 @@ public class OnBeforeUpdatePatch
     private static readonly IMonoBehEventInvoker MonoBehEventInvoker =
         ContainerStarter.Kernel.GetInstance<IMonoBehEventInvoker>();
 
+    private static readonly IMonoBehaviourController MonoBehaviourController =
+        ContainerStarter.Kernel.GetInstance<IMonoBehaviourController>();
+
     [HarmonyPatch]
     private class NotifyBeforeUpdate
     {
@@ -26,7 +30,7 @@ public class OnBeforeUpdatePatch
         private static MethodBase TargetMethod() =>
             AccessTools.Method("UnityEngineInternal.Input.NativeInputSystem:NotifyBeforeUpdate");
 
-        private static void Prefix(int updateType)
+        private static bool Prefix(int updateType)
         {
             /*
                 Dynamic = 1,
@@ -42,6 +46,25 @@ public class OnBeforeUpdatePatch
             {
                 MonoBehEventInvoker.InvokeFixedUpdate();
             }
+
+            return !MonoBehaviourController.PausedExecution;
+        }
+    }
+
+    [HarmonyPatch]
+    private class NotifyUpdate
+    {
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static MethodBase TargetMethod() =>
+            AccessTools.Method("UnityEngineInternal.Input.NativeInputSystem:NotifyUpdate");
+
+        private static bool Prefix()
+        {
+            return !MonoBehaviourController.PausedExecution;
         }
     }
 }

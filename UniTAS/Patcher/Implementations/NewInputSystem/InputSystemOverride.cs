@@ -1,10 +1,13 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.InputSystemOverride;
+using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.InputSystemOverride;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.Movie;
+using UniTAS.Patcher.Services.Trackers.UpdateTrackInfo;
 using UniTAS.Patcher.Services.UnityEvents;
 using UniTAS.Patcher.Services.VirtualEnvironment;
 using UnityEngine.InputSystem;
@@ -13,7 +16,7 @@ namespace UniTAS.Patcher.Implementations.NewInputSystem;
 
 [Singleton]
 [ForceInstantiate]
-public class InputSystemOverride
+public class InputSystemOverride : IInputSystemTrackerUpdate
 {
     private readonly InputOverrideDevice[] _devices;
     private readonly ILogger _logger;
@@ -24,7 +27,7 @@ public class InputSystemOverride
 
     public InputSystemOverride(ILogger logger, InputOverrideDevice[] devices,
         IInputSystemState newInputSystemExists, IUpdateEvents updateEvents, IVirtualEnvController virtualEnv,
-        IMovieRunner movieRunner)
+        IMovieRunner movieRunner, IGameRestart gameRestart)
     {
         if (!newInputSystemExists.HasNewInputSystem) return;
 
@@ -34,6 +37,7 @@ public class InputSystemOverride
 
         _updateEvents.OnUpdateActual += UpdateDevices;
         virtualEnv.OnVirtualEnvStatusChange += OnVirtualEnvStatusChange;
+        gameRestart.OnPreGameRestart += OnPreGameRestart;
 
         _actualDevices.AddRange(InputSystem.devices);
     }
@@ -95,6 +99,20 @@ public class InputSystemOverride
         foreach (var device in _devices)
         {
             device.Update();
+        }
+    }
+
+    private readonly List<Action> _onBeforeUpdateEvents = [];
+
+    public void NewOnBeforeUpdateEvent(Action action) => _onBeforeUpdateEvents.Add(action);
+
+    private void OnPreGameRestart()
+    {
+        _logger.LogDebug($"unsubscribing {_onBeforeUpdateEvents.Count} onBeforeUpdate events");
+        foreach (var beforeUpdate in _onBeforeUpdateEvents)
+        {
+            _logger.LogDebug($"thingy: {beforeUpdate.Method.DeclaringType?.FullName}.{beforeUpdate.Method.Name}");
+            InputSystem.onBeforeUpdate -= beforeUpdate;
         }
     }
 }
