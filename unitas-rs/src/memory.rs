@@ -1,8 +1,9 @@
 use std::{
     collections::HashMap,
-    ffi::CStr,
-    ffi::CString,
-    io, mem, ptr,
+    ffi::{CStr, CString},
+    io, mem,
+    path::PathBuf,
+    ptr,
     sync::{LazyLock, Mutex},
 };
 
@@ -180,6 +181,7 @@ unsafe fn restore_exec_mem_prot(addr: usize, len: usize, page_size: usize) -> io
 }
 
 pub struct MemoryMap {
+    pub path: PathBuf,
     pub start: usize,
     pub end: usize,
 }
@@ -188,10 +190,10 @@ impl MemoryMap {
     #[cfg(unix)]
     // as of now, it is represented by a hashmap with the filename, and address
     // should be enough
-    pub fn read_proc_maps() -> io::Result<HashMap<CString, MemoryMap>> {
+    pub fn read_proc_maps() -> io::Result<Vec<MemoryMap>> {
         use std::{fs::File, io::Read, path::Path};
 
-        let mut maps: HashMap<String, MemoryMap> = HashMap::new();
+        let mut maps: Vec<MemoryMap> = Vec::new();
         let mut file = File::open("/proc/self/maps")?;
         let mut content = String::new();
         file.read_to_string(&mut content)?;
@@ -227,50 +229,42 @@ impl MemoryMap {
                 continue;
             };
 
-            let file_name = Path::new(path)
-                .file_name()
-                .expect("the map file should have a path, or no path")
-                .to_string_lossy();
+            let file_name = Path::new(path);
 
-            if let Some(mem) = maps.get_mut(file_name.as_ref()) {
+            if let Some(mem) = maps.iter_mut().find(|m| m.path == file_name) {
                 mem.end = end_addr;
                 continue;
             }
 
-            maps.insert(
-                file_name.into_owned(),
-                MemoryMap {
-                    start: start_addr,
-                    end: end_addr,
-                },
-            );
+            maps.push(MemoryMap {
+                path: file_name.to_path_buf(),
+                start: start_addr,
+                end: end_addr,
+            });
         }
 
-        Ok(maps
-            .into_iter()
-            .map(|m| (CString::new(m.0).unwrap(), m.1))
-            .collect())
+        Ok(maps)
     }
 }
 
 #[cfg(unix)]
-pub struct SymbolLookup<'a> {
+pub struct SymbolLookup {
     // value contains the handle, and HashMap for symbol and its offset
-    handles: HashMap<&'a CStr, (*mut libc::c_void, HashMap<&'a CStr, usize>)>,
+    handles: HashMap<CString, (*mut libc::c_void, HashMap<CString, usize>)>,
 }
 
 #[cfg(unix)]
-impl<'a> SymbolLookup<'a> {
+impl SymbolLookup {
     pub fn new() -> Self {
         Self {
             handles: HashMap::new(),
         }
     }
 
-    pub fn get_symbol_in_file(&mut self, file_name: &'a CStr, symbol: &'a CStr) -> usize {
+    pub fn get_symbol_in_file(&mut self, file_name: &CStr, symbol: &CStr) -> usize {
         use libc::*;
 
-        let (handle, symbol_map) = match self.handles.get_mut(&file_name) {
+        let (handle, symbol_map) = match self.handles.get_mut(file_name) {
             Some(handle) => handle,
             None => {
                 let handle = unsafe { dlopen(file_name.as_ptr(), RTLD_NOW | RTLD_NOLOAD) };
@@ -278,12 +272,13 @@ impl<'a> SymbolLookup<'a> {
                     // TODO: error diagnostics
                     panic!("failed to open library with dlopen");
                 }
-                self.handles.insert(file_name, (handle, HashMap::new()));
-                self.handles.get_mut(&file_name).unwrap()
+                self.handles
+                    .insert(file_name.to_owned(), (handle, HashMap::new()));
+                self.handles.get_mut(file_name).unwrap()
             }
         };
 
-        match symbol_map.get(&symbol) {
+        match symbol_map.get(symbol) {
             Some(addr) => *addr,
             None => {
                 let symbol_ptr = unsafe { dlsym(*handle, symbol.as_ptr()) };
@@ -292,7 +287,7 @@ impl<'a> SymbolLookup<'a> {
                     panic!("failed to obtain symbol with dlsym");
                 }
                 let symbol_ptr = symbol_ptr as usize;
-                symbol_map.insert(symbol, symbol_ptr);
+                symbol_map.insert(symbol.to_owned(), symbol_ptr);
                 symbol_ptr
             }
         }
@@ -300,7 +295,7 @@ impl<'a> SymbolLookup<'a> {
 }
 
 #[cfg(unix)]
-impl Drop for SymbolLookup<'_> {
+impl Drop for SymbolLookup {
     fn drop(&mut self) {
         use libc::*;
 
