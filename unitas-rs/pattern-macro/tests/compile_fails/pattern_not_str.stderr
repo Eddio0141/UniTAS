@@ -1,0 +1,7 @@
+error: expected a pattern as a string literal
+ --> tests/compile_fails/pattern_not_str.rs:4:5
+  |
+4 |     pattern!(0, foo);
+  |     ^^^^^^^^^^^^^^^^
+  |
+  = note: this error originates in the macro `pattern` (in Nightly builds, run with -Z macro-backtrace for more info)

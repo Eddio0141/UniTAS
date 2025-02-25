@@ -1,17 +1,18 @@
-type Callback = extern "C" fn(i32) -> i32;
+use log::info;
 
-static mut CALLBACK: Option<Callback> = None;
+mod hooks;
+mod memory;
 
-#[no_mangle]
-pub extern "C" fn set_callback(cb: Callback) {
-    unsafe {
-        CALLBACK = Some(cb);
-    }
+#[unsafe(no_mangle)]
+pub extern "C" fn init() {
+    // TODO: fix logging
+    // env_logger::builder()
+    //     .target(env_logger::Target::Stdout)
+    //     .init();
+
+    info!("initilising unitas-rs");
+
+    hooks::install();
+
+    info!("initialised unitas-rs");
 }
-
-#[no_mangle]
-pub extern "C" fn hello_world() {
-    let value = unsafe { CALLBACK.unwrap()(123) };
-    println!("hello world, {value}");
-}
-
