@@ -65,14 +65,13 @@ public static class Entry
     [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public static void Initialize()
     {
-        Test.set_callback(num => num + 456);
-        Test.hello_world();
-        
+        UniTasRs.init();
+
         using var _ = Bench.Measure();
 
         LoggingUtils.Init();
         StaticLogger.Log.LogInfo("Initializing UniTAS");
-        
+
         UniTASSha256Info.AssemblyLockFileValidate();
         UniTASSha256Info.AssemblyLockFileCreate();
 
