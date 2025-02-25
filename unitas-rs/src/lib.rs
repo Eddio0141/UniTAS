@@ -1,14 +1,11 @@
-use log::info;
+use log::*;
 
 mod hooks;
 mod memory;
 
 #[unsafe(no_mangle)]
 pub extern "C" fn init() {
-    // TODO: fix logging
-    // env_logger::builder()
-    //     .target(env_logger::Target::Stdout)
-    //     .init();
+    env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
 
     info!("initilising unitas-rs");
 
