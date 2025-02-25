@@ -52,11 +52,12 @@ impl Hook for LastUpdate {
 
         const {
             &[(
-                // 2022.2.0f1 x64 linux
-                // TODO: make it more generic
+                // 2022.2.0f1 - 2022.3.41f1 x64 linux
+                // TODO: it seems like symbol exists for `PlayerMain`, which this hook attaches to
+                //       this may narrow the scope of search and make things cleaner and accurate, so i should probably support this
                 pattern!(
-                    52,
-                    "e8 cd 7a db ff 83 f8 01 75 19 bf 02 00 00 00 be 01 00 00 00 e8 d9 dc db ff bf 01 00 00 00 e8 7f fd 00 00 0f b6 3d c0 fa 1b 01 e8 13 86 e7 ff e8 3e 8c db ff e9",
+                    10,
+                    "e8 ?? ?? ?? ?? e8 ?? ?? ?? ?? e9 ?? ?? ?? ?? e8 ?? ?? ?? ?? 8b",
                 ),
                 install_jmp_32,
             )]
