@@ -1,0 +1,5 @@
+error: there's no point in ending with wildcards, remove them
+ --> tests/compile_fails/wildcard_end.rs:4:17
+  |
+4 |     pattern!(0, "11 ??");
+  |                 ^^^^^^^

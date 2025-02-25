@@ -1,0 +1,5 @@
+error: there's no point in starting with wildcards, remove them and fix the offset
+ --> tests/compile_fails/wildcard_start.rs:4:17
+  |
+4 |     pattern!(0, "?? 11");
+  |                 ^^^^^^^

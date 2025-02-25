@@ -1,0 +1,5 @@
+error: expected `??` or a two character hex byte
+ --> tests/compile_fails/invalid_pattern_hex.rs:4:17
+  |
+4 |     pattern!(0, "5");
+  |                 ^^^

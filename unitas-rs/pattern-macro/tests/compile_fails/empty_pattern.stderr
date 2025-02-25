@@ -1,0 +1,5 @@
+error: what's the point of an empty pattern?
+ --> tests/compile_fails/empty_pattern.rs:4:17
+  |
+4 |     pattern!(0, "");
+  |                 ^^
