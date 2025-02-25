@@ -1,5 +1,7 @@
 use std::{
     collections::HashMap,
+    ffi::CStr,
+    ffi::CString,
     io, mem, ptr,
     sync::{LazyLock, Mutex},
 };
@@ -186,7 +188,7 @@ impl MemoryMap {
     #[cfg(unix)]
     // as of now, it is represented by a hashmap with the filename, and address
     // should be enough
-    pub fn read_proc_maps() -> io::Result<HashMap<String, MemoryMap>> {
+    pub fn read_proc_maps() -> io::Result<HashMap<CString, MemoryMap>> {
         use std::{fs::File, io::Read, path::Path};
 
         let mut maps: HashMap<String, MemoryMap> = HashMap::new();
@@ -244,6 +246,69 @@ impl MemoryMap {
             );
         }
 
-        Ok(maps)
+        Ok(maps
+            .into_iter()
+            .map(|m| (CString::new(m.0).unwrap(), m.1))
+            .collect())
+    }
+}
+
+#[cfg(unix)]
+pub struct SymbolLookup<'a> {
+    // value contains the handle, and HashMap for symbol and its offset
+    handles: HashMap<&'a CStr, (*mut libc::c_void, HashMap<&'a CStr, usize>)>,
+}
+
+#[cfg(unix)]
+impl<'a> SymbolLookup<'a> {
+    pub fn new() -> Self {
+        Self {
+            handles: HashMap::new(),
+        }
+    }
+
+    pub fn get_symbol_in_file(&mut self, file_name: &'a CStr, symbol: &'a CStr) -> usize {
+        use libc::*;
+
+        let (handle, symbol_map) = match self.handles.get_mut(&file_name) {
+            Some(handle) => handle,
+            None => {
+                let handle = unsafe { dlopen(file_name.as_ptr(), RTLD_NOW | RTLD_NOLOAD) };
+                if handle.is_null() {
+                    // TODO: error diagnostics
+                    panic!("failed to open library with dlopen");
+                }
+                self.handles.insert(file_name, (handle, HashMap::new()));
+                self.handles.get_mut(&file_name).unwrap()
+            }
+        };
+
+        match symbol_map.get(&symbol) {
+            Some(addr) => *addr,
+            None => {
+                let symbol_ptr = unsafe { dlsym(*handle, symbol.as_ptr()) };
+                if symbol_ptr.is_null() {
+                    // TODO: error diagnostics
+                    panic!("failed to obtain symbol with dlsym");
+                }
+                let symbol_ptr = symbol_ptr as usize;
+                symbol_map.insert(symbol, symbol_ptr);
+                symbol_ptr
+            }
+        }
+    }
+}
+
+#[cfg(unix)]
+impl Drop for SymbolLookup<'_> {
+    fn drop(&mut self) {
+        use libc::*;
+
+        for (handle, _) in self.handles.values() {
+            unsafe {
+                // TODO: do i check for error?
+                dlclose(*handle);
+            }
+        }
     }
 }

@@ -1,37 +1,49 @@
-use std::slice;
+use std::{ffi::CStr, slice};
 
 use pattern::Pattern;
 use pattern_macro::pattern;
 
-use crate::memory::{self, MemoryMap};
+use crate::memory::{self, MemoryMap, SymbolLookup};
 
 trait Hook {
-    fn module(&self) -> &'static str;
-    fn pattern(&self) -> &'static [(Pattern, HookInstall)];
+    fn module(&self) -> &'static CStr;
+    fn searches(&self) -> &'static [(Search, HookInstall)];
+}
+
+struct Search {
+    pattern: Pattern,
+    start_symbol: Option<&'static CStr>,
 }
 
 #[cfg(unix)]
-const UNITY_PLAYER_MODULE: &str = "UnityPlayer.so";
+const UNITY_PLAYER_MODULE: &CStr = c"UnityPlayer.so";
 
 pub fn install() {
     let hooks: &[&dyn Hook] = &[&LastUpdate];
 
     let modules = MemoryMap::read_proc_maps().expect("couldn't read memory map");
-    for hook in hooks {
+    let mut symbol_lookup = SymbolLookup::new();
+    'hooks: for hook in hooks {
         let base = modules
             .get(hook.module())
             .expect("failed to get base address for module");
         let memory =
             unsafe { slice::from_raw_parts(base.start as *const u8, base.end - base.start) };
 
-        let Some((offset, hook_install)) = hook
-            .pattern()
-            .iter()
-            .find_map(|p| p.0.matches(memory).map(|offset| (offset, p.1)))
-        else {
-            panic!("failed to install hook, no patterns matches");
-        };
-        hook_install(base.start + offset);
+        for (offset, hook_install) in hook.searches() {
+            let mem_offset = offset
+                .start_symbol
+                .map(|s| symbol_lookup.get_symbol_in_file(UNITY_PLAYER_MODULE, s) - base.start)
+                .unwrap_or_default();
+            let Some(offset) = offset.pattern.matches(&memory[mem_offset..]) else {
+                continue;
+            };
+
+            hook_install(base.start + offset + mem_offset);
+
+            continue 'hooks;
+        }
+        panic!("failed to install hook, no patterns matches");
     }
 }
 
@@ -40,11 +52,11 @@ type HookInstall = fn(addr: usize);
 struct LastUpdate;
 
 impl Hook for LastUpdate {
-    fn module(&self) -> &'static str {
+    fn module(&self) -> &'static CStr {
         UNITY_PLAYER_MODULE
     }
 
-    fn pattern(&self) -> &'static [(Pattern, HookInstall)] {
+    fn searches(&self) -> &'static [(Search, HookInstall)] {
         fn install_jmp_32(addr: usize) {
             unsafe { memory::hook_jmp_32(addr, LastUpdate::hook) }
                 .expect("failed to install jmp hook");
@@ -53,12 +65,13 @@ impl Hook for LastUpdate {
         const {
             &[(
                 // 2022.2.0f1 - 2022.3.41f1 x64 linux
-                // TODO: it seems like symbol exists for `PlayerMain`, which this hook attaches to
-                //       this may narrow the scope of search and make things cleaner and accurate, so i should probably support this
-                pattern!(
-                    10,
-                    "e8 ?? ?? ?? ?? e8 ?? ?? ?? ?? e9 ?? ?? ?? ?? e8 ?? ?? ?? ?? 8b",
-                ),
+                Search {
+                    pattern: pattern!(
+                        10,
+                        "e8 ?? ?? ?? ?? e8 ?? ?? ?? ?? e9 ?? ?? ?? ?? e8 ?? ?? ?? ?? 8b",
+                    ),
+                    start_symbol: Some(c"_Z10PlayerMainiPPc"),
+                },
                 install_jmp_32,
             )]
         }
