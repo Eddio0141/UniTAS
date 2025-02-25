@@ -1,5 +1,6 @@
 use std::{ffi::CStr, slice};
 
+use log::{debug, info};
 use pattern::Pattern;
 use pattern_macro::pattern;
 
@@ -23,23 +24,38 @@ pub fn install() {
 
     let modules = MemoryMap::read_proc_maps().expect("couldn't read memory map");
     let mut symbol_lookup = SymbolLookup::new();
+    info!("installing {} hooks", hooks.len());
     'hooks: for hook in hooks {
+        let base = hook.module();
+        debug!("hook: targeting module {}", base.to_string_lossy());
         let base = modules
-            .get(hook.module())
+            .get(base)
             .expect("failed to get base address for module");
+        debug!(
+            "hook: base addr range: 0x{:x}..0x{:x}",
+            base.start, base.end
+        );
         let memory =
             unsafe { slice::from_raw_parts(base.start as *const u8, base.end - base.start) };
 
-        for (offset, hook_install) in hook.searches() {
+        let hooks = hook.searches();
+        debug!("hook: attempting {} hook searches", hooks.len());
+        for (offset, hook_install) in hooks {
+            debug!("search: start symbol: {:?}", offset.start_symbol);
             let mem_offset = offset
                 .start_symbol
                 .map(|s| symbol_lookup.get_symbol_in_file(UNITY_PLAYER_MODULE, s) - base.start)
                 .unwrap_or_default();
+            debug!("search: symbol offset is 0x{mem_offset:x}");
             let Some(offset) = offset.pattern.matches(&memory[mem_offset..]) else {
+                debug!("search: failed to match pattern!");
                 continue;
             };
 
-            hook_install(base.start + offset + mem_offset);
+            let rel_offset = offset + mem_offset;
+            let offset = base.start + rel_offset;
+            debug!("search: found pattern in 0x{offset:x} (0x{rel_offset:x})",);
+            hook_install(offset);
 
             continue 'hooks;
         }

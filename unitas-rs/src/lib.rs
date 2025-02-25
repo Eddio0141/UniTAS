@@ -1,4 +1,4 @@
-use log::*;
+use log::info;
 
 mod hooks;
 mod memory;
