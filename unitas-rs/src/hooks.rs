@@ -109,24 +109,39 @@ struct LastUpdate;
 
 impl Hook for LastUpdate {
     fn searches(&self) -> &'static [(Search, HookInstall)] {
-        fn install_jmp_32(addr: usize) {
-            unsafe { memory::hook_jmp_32(addr, LastUpdate::hook) }
+        fn install_jmp_rel_32(addr: usize) {
+            unsafe { memory::hook_jmp_rel_32(addr, LastUpdate::hook) }
                 .expect("failed to install jmp hook");
+        }
+        fn install_call_rel_32(addr: usize) {
+            unsafe { memory::hook_call_rel_32(addr, false, LastUpdate::hook) }
+                .expect("failed to install call hook");
         }
 
         const {
-            &[(
+            &[
                 // 2022.2.0f1 - 2022.3.41f1 x64 linux
-                Search {
-                    pattern: pattern!(
-                        10,
-                        "e8 ?? ?? ?? ?? e8 ?? ?? ?? ?? e9 ?? ?? ?? ?? e8 ?? ?? ?? ?? 8b",
-                    ),
-                    start_symbol: Some(c"_Z10PlayerMainiPPc"),
-                    module: Some(UNITY_PLAYER_MODULE),
-                },
-                install_jmp_32,
-            )]
+                (
+                    Search {
+                        pattern: pattern!(
+                            10,
+                            "e8 ?? ?? ?? ?? e8 ?? ?? ?? ?? e9 ?? ?? ?? ?? e8 ?? ?? ?? ?? 8b",
+                        ),
+                        start_symbol: Some(c"_Z10PlayerMainiPPc"),
+                        module: Some(UNITY_PLAYER_MODULE),
+                    },
+                    install_jmp_rel_32,
+                ),
+                // 2017.4.6f1               x64 linux
+                (
+                    Search {
+                        pattern: pattern!(5, "e8 ?? ?? ?? ?? e8 ?? ?? ?? ?? eb"),
+                        start_symbol: None,
+                        module: Some(UNITY_PLAYER_MODULE),
+                    },
+                    install_call_rel_32,
+                ),
+            ]
         }
     }
 }

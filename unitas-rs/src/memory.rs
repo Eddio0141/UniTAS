@@ -74,7 +74,7 @@ impl Memory {
 /// - There are no checks if `hook_target` is a valid memory address
 /// - The only memory check done here is if the `hook_target` is pointing to `jmp rel32` (0xE9)
 #[cfg(all(unix, any(target_arch = "x86_64", target_arch = "x86")))]
-pub unsafe fn hook_jmp_32(mut hook_target: usize, hook: extern "C" fn()) -> io::Result<()> {
+pub unsafe fn hook_jmp_rel_32(mut hook_target: usize, hook: extern "C" fn()) -> io::Result<()> {
     let hook = hook as usize;
 
     if unsafe { *(hook_target as *const u8) } != 0xe9 {
@@ -84,6 +84,7 @@ pub unsafe fn hook_jmp_32(mut hook_target: usize, hook: extern "C" fn()) -> io::
 
     // save before overwriting
     let jmp_dst = (hook_target + 4) as isize + unsafe { *(hook_target as *const i32) } as isize;
+    let jmp_dst = jmp_dst as i32;
 
     // rewrite original jump to custom location
     let memory = &mut MEMORY.lock().unwrap();
@@ -130,7 +131,107 @@ pub unsafe fn hook_jmp_32(mut hook_target: usize, hook: extern "C" fn()) -> io::
     memory.dynamic_inst_ptr += 1;
 
     unsafe { *(memory.dynamic_inst_ptr as *mut u8) = 0xe9 }; // jmp
-    let offset = jmp_dst as i32 - (memory.dynamic_inst_ptr as i32 + 5);
+    let offset = jmp_dst - (memory.dynamic_inst_ptr as i32 + 5);
+    memory.dynamic_inst_ptr += 1;
+    unsafe { *(memory.dynamic_inst_ptr as *mut i32) = offset };
+    memory.dynamic_inst_ptr += 4;
+
+    memory.check_dynamic_inst_ptr();
+
+    Ok(())
+}
+
+/// Hooks function at point in memory, targetting call instructions that is 5 bytes in length
+///
+/// # Args
+/// - `hook_target`: address where the `hook` should be installed in
+/// - `hook_run_after_original`: if true, hook will run first, then then original function
+/// - `hook`: function to be called
+///
+/// # Panics
+/// - `hook_target` is not pointing to `call rel32` (0xE8)
+///
+/// # Safety
+/// - There are no checks if `hook_target` is a valid memory address
+/// - The only memory check done here is if the `hook_target` is pointing to `call rel32` (0xE8)
+#[cfg(all(unix, any(target_arch = "x86_64", target_arch = "x86")))]
+pub unsafe fn hook_call_rel_32(
+    mut hook_target: usize,
+    hook_run_after_original: bool,
+    hook: extern "C" fn(),
+) -> io::Result<()> {
+    let hook = hook as usize;
+
+    if unsafe { *(hook_target as *const u8) } != 0xe8 {
+        panic!("hook target is not targetting `call`");
+    }
+    hook_target += 1;
+
+    // save before overwriting
+    let call_dst = (hook_target + 4) as isize + unsafe { *(hook_target as *const i32) } as isize;
+    let call_dst = call_dst as i32;
+    hook_target += 4;
+
+    // rewrite original jump to custom location
+    let memory = &mut MEMORY.lock().unwrap();
+
+    unsafe { make_exec_mem_writable(hook_target, 4, memory.page_size) }?;
+    let offset = memory.dynamic_inst_ptr as isize - (hook_target + 4) as isize;
+    unsafe { *(hook_target as *mut i32) = offset as i32 };
+    unsafe { restore_exec_mem_prot(hook_target, 4, memory.page_size) }?;
+
+    // call hook from custom location
+    if hook_run_after_original {
+        unsafe { *(memory.dynamic_inst_ptr as *mut u8) = 0xe8 };
+        memory.dynamic_inst_ptr += 1;
+        unsafe { *(memory.dynamic_inst_ptr as *mut i32) = call_dst };
+        memory.dynamic_inst_ptr += 4;
+    }
+
+    unsafe { *(memory.dynamic_inst_ptr as *mut u8) = 0x50 }; // push eax / rax
+    memory.dynamic_inst_ptr += 1;
+
+    if cfg!(target_pointer_width = "64") {
+        let inst = [0x48, 0xb8];
+        unsafe {
+            ptr::copy_nonoverlapping(
+                inst.as_ptr(),
+                memory.dynamic_inst_ptr as *mut u8,
+                inst.len(),
+            )
+        }; // mov rax
+        memory.dynamic_inst_ptr += inst.len();
+    } else if cfg!(target_pointer_width = "32") {
+        unsafe { *(memory.dynamic_inst_ptr as *mut u8) = 0xb8 }; // mov eax
+        memory.dynamic_inst_ptr += 1;
+    } else {
+        unreachable!();
+    }
+    unsafe { *(memory.dynamic_inst_ptr as *mut usize) = hook };
+    memory.dynamic_inst_ptr += mem::size_of::<usize>();
+
+    let inst = [0xff, 0xd0];
+    unsafe {
+        ptr::copy_nonoverlapping(
+            inst.as_ptr(),
+            memory.dynamic_inst_ptr as *mut u8,
+            inst.len(),
+        )
+    }; // call eax / rax
+    memory.dynamic_inst_ptr += inst.len();
+
+    unsafe { *(memory.dynamic_inst_ptr as *mut u8) = 0x58 }; // pop eax / rax
+    memory.dynamic_inst_ptr += 1;
+
+    if !hook_run_after_original {
+        unsafe { *(memory.dynamic_inst_ptr as *mut u8) = 0xe8 };
+        memory.dynamic_inst_ptr += 1;
+        unsafe { *(memory.dynamic_inst_ptr as *mut i32) = call_dst };
+        memory.dynamic_inst_ptr += 4;
+    }
+
+    unsafe { *(memory.dynamic_inst_ptr as *mut u8) = 0xe9 }; // jmp
+    let offset = hook_target as i32 - (memory.dynamic_inst_ptr as i32 + 5);
     memory.dynamic_inst_ptr += 1;
     unsafe { *(memory.dynamic_inst_ptr as *mut i32) = offset };
     memory.dynamic_inst_ptr += 4;
