@@ -1,6 +1,7 @@
 use std::{
     env,
     ffi::{CStr, CString},
+    ops::Range,
     slice,
 };
 
@@ -43,7 +44,7 @@ pub fn install() {
                     .map(|m| m.to_string_lossy())
                     .unwrap_or("<executable>".into())
             );
-            let mut get_mem_range = |base: &MemoryMap, file| match search.start_symbol {
+            let mut get_mem_range = |base: &Range<usize>, file| match search.start_symbol {
                 Some(start_symbol) => {
                     debug!("hook: targeting symbol {}", start_symbol.to_string_lossy());
                     let mem_offset = search
@@ -56,29 +57,16 @@ pub fn install() {
             };
             let (base, mem_start, mem_end) = match search.module {
                 Some(m) => {
-                    let base = modules
-                        .iter()
-                        .find(|m_info| {
-                            m_info
-                                .path
-                                .file_name()
-                                .expect("module path somehow doesn't have a file name")
-                                .to_string_lossy()
-                                == m.to_string_lossy()
-                        })
-                        .expect("failed to find module");
-                    let (mem_start, mem_end) = get_mem_range(base, m);
+                    let base = modules.find_by_filename(m).expect("failed to find module");
+                    let (mem_start, mem_end) = get_mem_range(&base, m);
                     (base, mem_start, mem_end)
                 }
                 None => {
                     let exe_path =
                         env::current_exe().expect("failed to get current executable path");
-                    let base = modules
-                        .iter()
-                        .find(|m_info| m_info.path == exe_path)
-                        .expect("failed to find executable address");
+                    let base = modules.find_exe();
                     let exe_path_cstr = CString::new(exe_path.to_string_lossy().as_ref()).unwrap();
-                    let (mem_start, mem_end) = get_mem_range(base, &exe_path_cstr);
+                    let (mem_start, mem_end) = get_mem_range(&base, &exe_path_cstr);
                     (base, mem_start, mem_end)
                 }
             };

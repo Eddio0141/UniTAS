@@ -372,6 +372,7 @@ dependencies = [
  "log",
  "pattern",
  "pattern-macro",
+ "windows-sys",
 ]
 
 [[package]]
