@@ -39,7 +39,10 @@
         "type": "github"
       }
     },
-    "nixpkgs": {
+    "naersk": {
+      "inputs": {
+        "nixpkgs": "nixpkgs"
+      },
       "locked": {
         "lastModified": 1740695751,
         "narHash": "sha256-D+R+kFxy1KsheiIzkkx/6L63wEHBYX21OIwlFV8JvDs=",
@@ -49,9 +52,21 @@
         "type": "github"
       },
       "original": {
-        "owner": "NixOS",
-        "repo": "nixpkgs",
+        "owner": "nix-community",
+        "repo": "naersk",
         "type": "github"
+      }
+    },
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 0,
+        "narHash": "sha256-eDAiNagpMExcLoSIgjdef2ZYyvjuy1VTF8r9OZXCMGc=",
+        "path": "/nix/store/bsj8x0xhwnklp4d3qgnd4a0pzw4j07w3-source",
+        "type": "path"
+      },
+      "original": {
+        "id": "nixpkgs",
+        "type": "indirect"
       }
     },
     "nixpkgs-lib": {
@@ -66,11 +81,27 @@
         "url": "https://github.com/NixOS/nixpkgs/archive/6d3702243441165a03f699f64416f635220f4f15.tar.gz"
       }
     },
+    "nixpkgs_2": {
+      "locked": {
+        "lastModified": 1740418484,
+        "narHash": "sha256-zSBm19j0PSBj11wPRKr3YxinzN29u9uwBEGKV2PVMvM=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "d1a2fc43040c3b8a726b131963b9ef60344d0c76",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "fenix": "fenix",
         "flake-parts": "flake-parts",
-        "nixpkgs": "nixpkgs",
+        "naersk": "naersk",
+        "nixpkgs": "nixpkgs_2",
         "rust-overlay": "rust-overlay"
       }
     },
