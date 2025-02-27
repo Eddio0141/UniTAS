@@ -16,6 +16,8 @@ struct Memory {
 
 const DYNAMIC_INST_MEM_SIZE: usize = 0x20;
 
+const BITNESS: u32 = (mem::size_of::<usize>() * 8) as u32;
+
 #[cfg(all(unix, any(target_arch = "x86_64", target_arch = "x86")))]
 static MEMORY: LazyLock<Mutex<Memory>> = LazyLock::new(|| {
     use libc::*;
@@ -61,188 +63,144 @@ impl Memory {
     }
 }
 
-/// Hooks function at point in memory, targetting jmp instructions that is 5 bytes in length
+/// Hooks function at point in memory, targetting call instructions that is 5 bytes or more in length
+///
+/// Use this hook if you need some hook installed in the middle of the function
 ///
 /// # Args
 /// - `hook_target`: address where the `hook` should be installed in
+/// - `original_before_hook`: run original code that is replaced before hook callback
 /// - `hook`: function to be called
 ///
 /// # Panics
-/// - `hook_target` is not pointing to `jmp rel32` (0xE9)
+/// - Target instruction size is less than 5 bytes total
 ///
 /// # Safety
 /// - There are no checks if `hook_target` is a valid memory address
-/// - The only memory check done here is if the `hook_target` is pointing to `jmp rel32` (0xE9)
-#[cfg(all(unix, any(target_arch = "x86_64", target_arch = "x86")))]
-pub unsafe fn hook_jmp_rel_32(mut hook_target: usize, hook: extern "C" fn()) -> io::Result<()> {
-    let hook = hook as usize;
-
-    if unsafe { *(hook_target as *const u8) } != 0xe9 {
-        panic!("hook target is not targetting `jmp`");
-    }
-    hook_target += 1;
-
-    // save before overwriting
-    let jmp_dst = (hook_target + 4) as isize + unsafe { *(hook_target as *const i32) } as isize;
-    let jmp_dst = jmp_dst as i32;
-
-    // rewrite original jump to custom location
-    let memory = &mut MEMORY.lock().unwrap();
-
-    unsafe { make_exec_mem_writable(hook_target, 4, memory.page_size) }?;
-    let offset = memory.dynamic_inst_ptr as isize - (hook_target + 4) as isize;
-    unsafe { *(hook_target as *mut i32) = offset as i32 };
-    unsafe { restore_exec_mem_prot(hook_target, 4, memory.page_size) }?;
-
-    // call hook from custom location
-    unsafe { *(memory.dynamic_inst_ptr as *mut u8) = 0x50 }; // push eax / rax
-    memory.dynamic_inst_ptr += 1;
-
-    if cfg!(target_pointer_width = "64") {
-        let inst = [0x48, 0xb8];
-        unsafe {
-            ptr::copy_nonoverlapping(
-                inst.as_ptr(),
-                memory.dynamic_inst_ptr as *mut u8,
-                inst.len(),
-            )
-        }; // mov rax
-        memory.dynamic_inst_ptr += inst.len();
-    } else if cfg!(target_pointer_width = "32") {
-        unsafe { *(memory.dynamic_inst_ptr as *mut u8) = 0xb8 }; // mov eax
-        memory.dynamic_inst_ptr += 1;
-    } else {
-        unreachable!();
-    }
-    unsafe { *(memory.dynamic_inst_ptr as *mut usize) = hook };
-    memory.dynamic_inst_ptr += mem::size_of::<usize>();
-
-    let inst = [0xff, 0xd0];
-    unsafe {
-        ptr::copy_nonoverlapping(
-            inst.as_ptr(),
-            memory.dynamic_inst_ptr as *mut u8,
-            inst.len(),
-        )
-    }; // call eax / rax
-    memory.dynamic_inst_ptr += inst.len();
-
-    unsafe { *(memory.dynamic_inst_ptr as *mut u8) = 0x58 }; // pop eax / rax
-    memory.dynamic_inst_ptr += 1;
-
-    unsafe { *(memory.dynamic_inst_ptr as *mut u8) = 0xe9 }; // jmp
-    let offset = jmp_dst - (memory.dynamic_inst_ptr as i32 + 5);
-    memory.dynamic_inst_ptr += 1;
-    unsafe { *(memory.dynamic_inst_ptr as *mut i32) = offset };
-    memory.dynamic_inst_ptr += 4;
-
-    memory.check_dynamic_inst_ptr();
-
-    Ok(())
-}
-
-/// Hooks function at point in memory, targetting call instructions that is 5 bytes in length
-///
-/// # Args
-/// - `hook_target`: address where the `hook` should be installed in
-/// - `hook_run_after_original`: if true, hook will run first, then then original function
-/// - `hook`: function to be called
-///
-/// # Panics
-/// - `hook_target` is not pointing to `call rel32` (0xE8)
-///
-/// # Safety
-/// - There are no checks if `hook_target` is a valid memory address
-/// - The only memory check done here is if the `hook_target` is pointing to `call rel32` (0xE8)
-#[cfg(all(unix, any(target_arch = "x86_64", target_arch = "x86")))]
-pub unsafe fn hook_call_rel_32(
-    mut hook_target: usize,
-    hook_run_after_original: bool,
+/// - If the hook somehow fails, it will crash the program
+#[cfg(any(target_arch = "x86_64", target_arch = "x86"))]
+pub unsafe fn hook_inject(
+    hook_target: usize,
+    original_before_hook: bool,
     hook: extern "C" fn(),
 ) -> io::Result<()> {
-    let hook = hook as usize;
+    use std::slice;
 
-    if unsafe { *(hook_target as *const u8) } != 0xe8 {
-        panic!("hook target is not targetting `call`");
+    use iced_x86::{Decoder, DecoderOptions, code_asm::*};
+
+    let memory = unsafe { slice::from_raw_parts(hook_target as *const u8, 15) };
+    let mut decoder = Decoder::new(BITNESS, memory, DecoderOptions::NO_INVALID_CHECK);
+    decoder.set_ip(hook_target as u64);
+    let target_inst = decoder.decode();
+    let target_inst_branch = target_inst.is_jmp_short_or_near() | target_inst.is_jmp_far();
+    if target_inst.len() < 5 {
+        panic!("target instruction is less than 5 bytes");
     }
-    hook_target += 1;
-
-    // save before overwriting
-    let call_dst = (hook_target + 4) as isize + unsafe { *(hook_target as *const i32) } as isize;
-    let call_dst = call_dst as i32;
-    hook_target += 4;
 
     // rewrite original jump to custom location
     let memory = &mut MEMORY.lock().unwrap();
 
-    unsafe { make_exec_mem_writable(hook_target, 4, memory.page_size) }?;
-    let offset = memory.dynamic_inst_ptr as isize - (hook_target + 4) as isize;
-    unsafe { *(hook_target as *mut i32) = offset as i32 };
-    unsafe { restore_exec_mem_prot(hook_target, 4, memory.page_size) }?;
+    let mut assembler = CodeAssembler::new(BITNESS).expect("failed to create code assembler");
+    assembler.jmp(memory.dynamic_inst_ptr as u64).unwrap();
+    let inst = assembler
+        .assemble(hook_target as u64)
+        .expect("failed to assemble jmp to custom location");
+    assert_eq!(inst.len(), 5);
+    make_exec_mem_writable(hook_target, inst.len(), memory.page_size)?;
+    unsafe { ptr::copy_nonoverlapping(inst.as_ptr(), hook_target as *mut u8, inst.len()) };
+    restore_exec_mem_prot(hook_target, inst.len(), memory.page_size)?;
 
-    // call hook from custom location
-    if hook_run_after_original {
-        unsafe { *(memory.dynamic_inst_ptr as *mut u8) = 0xe8 };
-        memory.dynamic_inst_ptr += 1;
-        unsafe { *(memory.dynamic_inst_ptr as *mut i32) = call_dst };
-        memory.dynamic_inst_ptr += 4;
+    // custom location instructions
+    let mut assembler = CodeAssembler::new(BITNESS).expect("failed to create code assembler");
+
+    if original_before_hook {
+        if target_inst_branch {
+            panic!(
+                "you cannot call hook_inject with `original_before_hook` for a branching instruction"
+            );
+        }
+        assembler
+            .add_instruction(target_inst)
+            .expect("failed to add original instruction to assembler");
     }
 
-    unsafe { *(memory.dynamic_inst_ptr as *mut u8) = 0x50 }; // push eax / rax
-    memory.dynamic_inst_ptr += 1;
+    assembler.pushfq().unwrap();
+    assembler.push(rax).unwrap();
+    assembler.push(rbx).unwrap();
+    assembler.push(rcx).unwrap();
+    assembler.push(rdx).unwrap();
+    assembler.push(rsi).unwrap();
+    assembler.push(rdi).unwrap();
+    assembler.push(rbp).unwrap();
+    assembler.push(r8).unwrap();
+    assembler.push(r9).unwrap();
+    assembler.push(r10).unwrap();
+    assembler.push(r11).unwrap();
+    assembler.push(r12).unwrap();
+    assembler.push(r13).unwrap();
+    assembler.push(r14).unwrap();
+    assembler.push(r15).unwrap();
 
-    if cfg!(target_pointer_width = "64") {
-        let inst = [0x48, 0xb8];
-        unsafe {
-            ptr::copy_nonoverlapping(
-                inst.as_ptr(),
-                memory.dynamic_inst_ptr as *mut u8,
-                inst.len(),
-            )
-        }; // mov rax
-        memory.dynamic_inst_ptr += inst.len();
-    } else if cfg!(target_pointer_width = "32") {
-        unsafe { *(memory.dynamic_inst_ptr as *mut u8) = 0xb8 }; // mov eax
-        memory.dynamic_inst_ptr += 1;
-    } else {
-        unreachable!();
+    assembler.push(rbp).unwrap(); // align sp
+    assembler.mov(rbp, rsp).unwrap();
+    assembler.and(rsp, -16i32).unwrap();
+
+    assembler.mov(rax, hook as usize as u64).unwrap();
+    assembler.call(rax).unwrap();
+
+    assembler.mov(rsp, rbp).unwrap();
+    assembler.pop(rbp).unwrap();
+
+    assembler.pop(r15).unwrap();
+    assembler.pop(r14).unwrap();
+    assembler.pop(r13).unwrap();
+    assembler.pop(r12).unwrap();
+    assembler.pop(r11).unwrap();
+    assembler.pop(r10).unwrap();
+    assembler.pop(r9).unwrap();
+    assembler.pop(r8).unwrap();
+    assembler.pop(rbp).unwrap();
+    assembler.pop(rdi).unwrap();
+    assembler.pop(rsi).unwrap();
+    assembler.pop(rdx).unwrap();
+    assembler.pop(rcx).unwrap();
+    assembler.pop(rbx).unwrap();
+    assembler.pop(rax).unwrap();
+    assembler.popfq().unwrap();
+
+    if !original_before_hook {
+        // if target_inst.is_jmp_short_or_near() {}
+        assembler
+            .add_instruction(target_inst)
+            .expect("failed to add original instruction to assembler");
     }
-    unsafe { *(memory.dynamic_inst_ptr as *mut usize) = hook };
-    memory.dynamic_inst_ptr += mem::size_of::<usize>();
 
-    let inst = [0xff, 0xd0];
+    if !target_inst_branch {
+        assembler
+            .jmp((hook_target + target_inst.len()) as u64)
+            .unwrap();
+    }
+
+    let instrs = assembler
+        .assemble(memory.dynamic_inst_ptr as u64)
+        .expect("failed to assemble custom assembly");
+
     unsafe {
         ptr::copy_nonoverlapping(
-            inst.as_ptr(),
+            instrs.as_ptr(),
             memory.dynamic_inst_ptr as *mut u8,
-            inst.len(),
+            instrs.len(),
         )
-    }; // call eax / rax
-    memory.dynamic_inst_ptr += inst.len();
+    };
 
-    unsafe { *(memory.dynamic_inst_ptr as *mut u8) = 0x58 }; // pop eax / rax
-    memory.dynamic_inst_ptr += 1;
-
-    if !hook_run_after_original {
-        unsafe { *(memory.dynamic_inst_ptr as *mut u8) = 0xe8 };
-        memory.dynamic_inst_ptr += 1;
-        unsafe { *(memory.dynamic_inst_ptr as *mut i32) = call_dst };
-        memory.dynamic_inst_ptr += 4;
-    }
-
-    unsafe { *(memory.dynamic_inst_ptr as *mut u8) = 0xe9 }; // jmp
-    let offset = hook_target as i32 - (memory.dynamic_inst_ptr as i32 + 5);
-    memory.dynamic_inst_ptr += 1;
-    unsafe { *(memory.dynamic_inst_ptr as *mut i32) = offset };
-    memory.dynamic_inst_ptr += 4;
-
+    memory.dynamic_inst_ptr += instrs.len();
     memory.check_dynamic_inst_ptr();
 
     Ok(())
 }
 
 #[cfg(all(unix, any(target_arch = "x86_64", target_arch = "x86")))]
-unsafe fn make_exec_mem_writable(addr: usize, len: usize, page_size: usize) -> io::Result<()> {
+fn make_exec_mem_writable(addr: usize, len: usize, page_size: usize) -> io::Result<()> {
     use libc::*;
 
     let page_start = addr & !(page_size - 1);
@@ -262,7 +220,7 @@ unsafe fn make_exec_mem_writable(addr: usize, len: usize, page_size: usize) -> i
 }
 
 #[cfg(unix)]
-unsafe fn restore_exec_mem_prot(addr: usize, len: usize, page_size: usize) -> io::Result<()> {
+fn restore_exec_mem_prot(addr: usize, len: usize, page_size: usize) -> io::Result<()> {
     use libc::*;
 
     let page_start = addr & !(page_size - 1);
