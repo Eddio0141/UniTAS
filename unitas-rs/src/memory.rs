@@ -124,8 +124,9 @@ pub unsafe fn hook_inject(
             .expect("failed to add original instruction to assembler");
     }
 
-    assembler.pushfq().unwrap();
+    // assembler.pushfq().unwrap();
     assembler.push(rax).unwrap();
+    /*
     assembler.push(rbx).unwrap();
     assembler.push(rcx).unwrap();
     assembler.push(rdx).unwrap();
@@ -140,6 +141,7 @@ pub unsafe fn hook_inject(
     assembler.push(r13).unwrap();
     assembler.push(r14).unwrap();
     assembler.push(r15).unwrap();
+    */
 
     assembler.push(rbp).unwrap(); // align sp
     assembler.mov(rbp, rsp).unwrap();
@@ -151,6 +153,7 @@ pub unsafe fn hook_inject(
     assembler.mov(rsp, rbp).unwrap();
     assembler.pop(rbp).unwrap();
 
+    /*
     assembler.pop(r15).unwrap();
     assembler.pop(r14).unwrap();
     assembler.pop(r13).unwrap();
@@ -165,8 +168,9 @@ pub unsafe fn hook_inject(
     assembler.pop(rdx).unwrap();
     assembler.pop(rcx).unwrap();
     assembler.pop(rbx).unwrap();
+    */
     assembler.pop(rax).unwrap();
-    assembler.popfq().unwrap();
+    // assembler.popfq().unwrap();
 
     if !original_before_hook {
         // if target_inst.is_jmp_short_or_near() {}
