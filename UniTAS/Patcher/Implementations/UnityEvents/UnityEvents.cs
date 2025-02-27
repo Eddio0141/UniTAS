@@ -1,4 +1,5 @@
 using System;
+using UniTAS.Patcher.External;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents;
 using UniTAS.Patcher.ManualServices;
@@ -20,8 +21,7 @@ namespace UniTAS.Patcher.Implementations.UnityEvents;
 /// Actual events are called only if MonoBehaviour is not paused
 /// </summary>
 [Singleton(timing: RegisterTiming.Entry)]
-public class UnityEvents(IMonoBehaviourController monoBehaviourController, IPatchReverseInvoker patchReverseInvoker)
-    : IUpdateEvents, IMonoBehEventInvoker
+public class UnityEvents : IUpdateEvents, IMonoBehEventInvoker
 {
     public void RegisterMethod(object processingCallback, Action callback, CallbackUpdate update)
     {
@@ -211,12 +211,14 @@ public class UnityEvents(IMonoBehaviourController monoBehaviourController, IPatc
     private bool _updated;
     private bool _calledLastUpdate = true; // true initially to stop printing error, Update will run first anyways
 
-    public void InvokeLastUpdate()
+    private static void InvokeLastUpdateStatic() => _unityEvent.InvokeLastUpdate();
+
+    private void InvokeLastUpdate()
     {
 #if TRACE
         StaticLogger.Trace(
-            $"InvokeLastUpdate, time: {patchReverseInvoker.Invoke(() => Time.frameCount)} ({Time.frameCount}), " +
-            $"paused: {monoBehaviourController.PausedExecution}");
+            $"InvokeLastUpdate, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)} ({Time.frameCount}), " +
+            $"paused: {_monoBehaviourController.PausedExecution}");
 #endif
 
         if (_calledLastUpdate)
@@ -235,8 +237,8 @@ public class UnityEvents(IMonoBehaviourController monoBehaviourController, IPatc
     {
 #if TRACE
         StaticLogger.Trace(
-            $"InvokeAwake, time: {patchReverseInvoker.Invoke(() => Time.frameCount)} ({Time.frameCount}), " +
-            $"paused: {monoBehaviourController.PausedExecution}");
+            $"InvokeAwake, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)} ({Time.frameCount}), " +
+            $"paused: {_monoBehaviourController.PausedExecution}");
 #endif
 
         HandleCallbacks(_awakes);
@@ -247,8 +249,8 @@ public class UnityEvents(IMonoBehaviourController monoBehaviourController, IPatc
     {
 #if TRACE
         StaticLogger.Trace(
-            $"InvokeOnEnable, time: {patchReverseInvoker.Invoke(() => Time.frameCount)} ({Time.frameCount}), " +
-            $"paused: {monoBehaviourController.PausedExecution}");
+            $"InvokeOnEnable, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)} ({Time.frameCount}), " +
+            $"paused: {_monoBehaviourController.PausedExecution}");
 #endif
 
         HandleCallbacks(_enables);
@@ -259,8 +261,8 @@ public class UnityEvents(IMonoBehaviourController monoBehaviourController, IPatc
     {
 #if TRACE
         StaticLogger.Trace(
-            $"InvokeStart, time: {patchReverseInvoker.Invoke(() => Time.frameCount)} ({Time.frameCount}), " +
-            $"paused: {monoBehaviourController.PausedExecution}");
+            $"InvokeStart, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)} ({Time.frameCount}), " +
+            $"paused: {_monoBehaviourController.PausedExecution}");
 #endif
 
         HandleCallbacks(_starts);
@@ -273,8 +275,8 @@ public class UnityEvents(IMonoBehaviourController monoBehaviourController, IPatc
 
 #if TRACE
         StaticLogger.Trace(
-            $"InvokeUpdate, time: {patchReverseInvoker.Invoke(() => Time.frameCount)} ({Time.frameCount}), " +
-            $"paused: {monoBehaviourController.PausedExecution}");
+            $"InvokeUpdate, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)} ({Time.frameCount}), " +
+            $"paused: {_monoBehaviourController.PausedExecution}");
 #endif
 
         if (!_calledLastUpdate)
@@ -293,8 +295,8 @@ public class UnityEvents(IMonoBehaviourController monoBehaviourController, IPatc
     {
 #if TRACE
         StaticLogger.Trace(
-            $"InvokeLateUpdate, time: {patchReverseInvoker.Invoke(() => Time.frameCount)} ({Time.frameCount}), " +
-            $"paused: {monoBehaviourController.PausedExecution}");
+            $"InvokeLateUpdate, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)} ({Time.frameCount}), " +
+            $"paused: {_monoBehaviourController.PausedExecution}");
 #endif
 
         _updated = false;
@@ -307,7 +309,7 @@ public class UnityEvents(IMonoBehaviourController monoBehaviourController, IPatc
     public void InvokeFixedUpdate()
     {
 #if !UNIT_TESTS
-        var fixedTime = patchReverseInvoker.Invoke(() => Time.fixedTime);
+        var fixedTime = _patchReverseInvoker.Invoke(() => Time.fixedTime);
         // ReSharper disable once CompareOfFloatsByEqualityOperator
         if (_prevFixedTime == fixedTime) return;
         _prevFixedTime = fixedTime;
@@ -315,7 +317,7 @@ public class UnityEvents(IMonoBehaviourController monoBehaviourController, IPatc
 
 #if TRACE
         StaticLogger.Trace(
-            $"InvokeFixedUpdate, time: {fixedTime}, paused: {monoBehaviourController.PausedExecution}");
+            $"InvokeFixedUpdate, time: {fixedTime}, paused: {_monoBehaviourController.PausedExecution}");
 #endif
 
         HandleCallbacks(_fixedUpdates);
@@ -328,6 +330,17 @@ public class UnityEvents(IMonoBehaviourController monoBehaviourController, IPatc
     }
 
     private bool _endOfFrameUpdated;
+    private readonly IMonoBehaviourController _monoBehaviourController;
+    private readonly IPatchReverseInvoker _patchReverseInvoker;
+    private static UnityEvents _unityEvent;
+
+    public UnityEvents(IMonoBehaviourController monoBehaviourController, IPatchReverseInvoker patchReverseInvoker)
+    {
+        _monoBehaviourController = monoBehaviourController;
+        _patchReverseInvoker = patchReverseInvoker;
+        _unityEvent = this;
+        UniTasRs.last_update_set_callback(InvokeLastUpdateStatic);
+    }
 
     public void InvokeEndOfFrame()
     {
@@ -336,8 +349,8 @@ public class UnityEvents(IMonoBehaviourController monoBehaviourController, IPatc
 
 #if TRACE
         StaticLogger.Trace(
-            $"InvokeEndOfFrame, time: {patchReverseInvoker.Invoke(() => Time.frameCount)} ({Time.frameCount}), " +
-            $"paused: {monoBehaviourController.PausedExecution}");
+            $"InvokeEndOfFrame, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)} ({Time.frameCount}), " +
+            $"paused: {_monoBehaviourController.PausedExecution}");
 #endif
 
         // _endOfFramesUnconditional
@@ -349,7 +362,7 @@ public class UnityEvents(IMonoBehaviourController monoBehaviourController, IPatc
     {
         foreach (var action in events)
         {
-            if (monoBehaviourController.PausedExecution && action.Actual) continue;
+            if (_monoBehaviourController.PausedExecution && action.Actual) continue;
             var bench = Bench.Measure();
             action.Callback();
             bench.Dispose();
