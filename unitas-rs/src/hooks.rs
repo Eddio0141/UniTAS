@@ -11,7 +11,8 @@ use pattern_macro::pattern;
 use crate::memory::{self, MemoryMap, SymbolLookup};
 
 trait Hook {
-    fn searches(&self) -> &'static [(Search, HookInstall)];
+    /// A list of searches
+    fn searches<'a>(&self) -> &'a [(Search, &dyn Fn(usize))];
 }
 
 struct Search {
@@ -103,21 +104,10 @@ pub fn install() {
     }
 }
 
-type HookInstall = fn(addr: usize);
-
 struct LastUpdate;
 
 impl Hook for LastUpdate {
-    fn searches(&self) -> &'static [(Search, HookInstall)] {
-        fn install_jmp_rel_32(addr: usize) {
-            unsafe { memory::hook_jmp_rel_32(addr, LastUpdate::hook) }
-                .expect("failed to install jmp hook");
-        }
-        fn install_call_rel_32(addr: usize) {
-            unsafe { memory::hook_call_rel_32(addr, false, LastUpdate::hook) }
-                .expect("failed to install call hook");
-        }
-
+    fn searches<'a>(&self) -> &'a [(Search, &dyn Fn(usize))] {
         const {
             &[
                 // 2022.2.0f1 - 2022.3.41f1 x64 linux
@@ -130,7 +120,7 @@ impl Hook for LastUpdate {
                         start_symbol: Some(c"_Z10PlayerMainiPPc"),
                         module: Some(UNITY_PLAYER_MODULE),
                     },
-                    install_jmp_rel_32,
+                    &|addr| unsafe { memory::hook_inject(addr, false, LastUpdate::hook) }.unwrap(),
                 ),
                 // 2017.4.6f1               x64 linux
                 (
@@ -139,15 +129,20 @@ impl Hook for LastUpdate {
                         start_symbol: None,
                         module: Some(UNITY_PLAYER_MODULE),
                     },
-                    install_call_rel_32,
+                    &|addr| unsafe { memory::hook_inject(addr, true, LastUpdate::hook) }.unwrap(),
                 ),
             ]
         }
     }
 }
 
+pub type LastUpdateCallbackFn = unsafe extern "C" fn();
+pub static mut LAST_UPDATE_CALLBACK: Option<LastUpdateCallbackFn> = None;
+
 impl LastUpdate {
     extern "C" fn hook() {
-        println!("hi!");
+        if let Some(callback) = unsafe { LAST_UPDATE_CALLBACK } {
+            unsafe { callback() };
+        }
     }
 }
