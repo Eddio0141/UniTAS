@@ -25,8 +25,6 @@ namespace UniTAS.Patcher.Implementations.UnityManagers;
 public class UnityCoroutineManager : ICoroutineTracker, IOnPreGameRestart
 {
     private readonly Dictionary<IEnumerator, MonoBehaviour> _instances = [];
-    private HashSet<IEnumerator> _coroutineEndOfFrames = [];
-    private readonly Dictionary<IEnumerator, MonoBehaviour> _coroutineEndOfFramesNext = [];
 
     public void NewCoroutine(object instance, IEnumerator routine) =>
         NewCoroutineHandle(instance as MonoBehaviour, routine);
@@ -44,20 +42,7 @@ public class UnityCoroutineManager : ICoroutineTracker, IOnPreGameRestart
         _logger = logger;
         _harmony = harmony;
         _updateEvents = updateEvents;
-        updateEvents.OnLateUpdateUnconditional += LateUpdateUnconditional;
     }
-
-    private void LateUpdateUnconditional()
-    {
-        // update this state right before end of frame yield
-        HasEndOfFrameCoroutineThisFrame = false;
-        if (_coroutineEndOfFramesNext.Count == 0) return;
-        _coroutineEndOfFrames = [.._coroutineEndOfFramesNext.Where(x => x.Value != null).Select(x => x.Key)];
-        HasEndOfFrameCoroutineThisFrame = _coroutineEndOfFrames.Count > 0;
-        _coroutineEndOfFramesNext.Clear();
-    }
-
-    public bool HasEndOfFrameCoroutineThisFrame { get; private set; }
 
     public void NewCoroutine(MonoBehaviour instance, string methodName, object value)
     {
@@ -104,8 +89,6 @@ public class UnityCoroutineManager : ICoroutineTracker, IOnPreGameRestart
         }
 
         _instances.Clear();
-        _coroutineEndOfFrames.Clear();
-        _coroutineEndOfFramesNext.Clear();
         // no need, but better clean it up
         DoneFirstMoveNext.Clear();
 
@@ -232,7 +215,7 @@ public class UnityCoroutineManager : ICoroutineTracker, IOnPreGameRestart
     // ReSharper disable InconsistentNaming
     public void CoroutineCurrentPostfix(IEnumerator __instance, ref object __result)
     {
-        if (!_instances.TryGetValue(__instance, out var monoBeh)) return;
+        if (!_instances.ContainsKey(__instance)) return;
 
         if (ReverseInvoker.Invoking || __result is null) return;
 
@@ -251,12 +234,6 @@ public class UnityCoroutineManager : ICoroutineTracker, IOnPreGameRestart
                                $", and it isn't complete, replaced result with null: {new StackTrace()}");
             __result = null;
             return;
-        }
-
-        if (__result is WaitForEndOfFrame)
-        {
-            // next MoveNext is end of frame
-            _coroutineEndOfFramesNext.Add(__instance, monoBeh);
         }
 
         if (__result is WaitForSeconds waitForSeconds)
@@ -299,7 +276,7 @@ public class UnityCoroutineManager : ICoroutineTracker, IOnPreGameRestart
     private static readonly HashSet<IEnumerator> DoneFirstMoveNext = [];
 
     // state is true if original is executed
-    public bool CoroutineMoveNextPrefix(IEnumerator instance, ref bool result, ref bool state)
+    public bool CoroutineMoveNextPrefix(IEnumerator instance, ref bool result)
     {
         if (!_instances.ContainsKey(instance)) return true;
 
@@ -317,18 +294,6 @@ public class UnityCoroutineManager : ICoroutineTracker, IOnPreGameRestart
         if (current is WaitForEndOfFrame)
         {
             MonoBehEventInvoker.InvokeEndOfFrame();
-
-            // do we invoke end of frame?
-            if (!_coroutineEndOfFrames.Remove(instance))
-            {
-                _logger.LogError(
-                    $"coroutine {instance.GetType().SaneFullName()}'s Current is WaitForEndOfFrame but it was not tracked");
-            }
-
-            if (_coroutineEndOfFrames.Count == 0)
-            {
-                state = true;
-            }
         }
 
         // managed async operation?
@@ -366,12 +331,6 @@ public class UnityCoroutineManager : ICoroutineTracker, IOnPreGameRestart
         }
 
         return true;
-    }
-
-    public void CoroutineMoveNextPostfix(IEnumerator instance, bool state)
-    {
-        if (!state) return;
-        MonoBehEventInvoker.InvokeLastUpdate();
     }
 
     private static UnityCoroutineManager CoroutineManager;
