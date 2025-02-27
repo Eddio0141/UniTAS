@@ -12,6 +12,12 @@ iced-x86 = { version = "1.21.0", default-features = false, features = ["std", "d
 [target.'cfg(unix)'.dependencies]
 libc = "0.2.169"
 
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.59.0", default-features = false, features = [ "Win32_System_Memory", "Win32_System_LibraryLoader", "Win32_System_ProcessStatus", "Win32_System_Threading" ] }
+
+[dev-dependencies]
+windows-sys = { version = "0.59.0", default-features = false, features = [ "Win32_System_Memory", "Win32_System_LibraryLoader", "Win32_System_ProcessStatus", "Win32_System_Threading" ] }
+
 [lib]
 crate-type = ["cdylib"]
 

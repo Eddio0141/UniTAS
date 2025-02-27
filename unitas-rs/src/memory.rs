@@ -2,6 +2,7 @@ use std::{
     collections::HashMap,
     ffi::{CStr, CString},
     io, mem,
+    ops::Range,
     path::PathBuf,
     ptr,
     sync::{LazyLock, Mutex},
@@ -106,9 +107,9 @@ pub unsafe fn hook_inject(
         .assemble(hook_target as u64)
         .expect("failed to assemble jmp to custom location");
     assert_eq!(inst.len(), 5);
-    make_exec_mem_writable(hook_target, inst.len(), memory.page_size)?;
+    let orig = make_exec_mem_writable(hook_target, inst.len(), memory.page_size)?;
     unsafe { ptr::copy_nonoverlapping(inst.as_ptr(), hook_target as *mut u8, inst.len()) };
-    restore_exec_mem_prot(hook_target, inst.len(), memory.page_size)?;
+    restore_exec_mem_prot(hook_target, inst.len(), memory.page_size, orig)?;
 
     // custom location instructions
     let mut assembler = CodeAssembler::new(BITNESS).expect("failed to create code assembler");
@@ -204,7 +205,7 @@ pub unsafe fn hook_inject(
 }
 
 #[cfg(all(unix, any(target_arch = "x86_64", target_arch = "x86")))]
-fn make_exec_mem_writable(addr: usize, len: usize, page_size: usize) -> io::Result<()> {
+fn make_exec_mem_writable(addr: usize, len: usize, page_size: usize) -> io::Result<u32> {
     use libc::*;
 
     let page_start = addr & !(page_size - 1);
@@ -220,11 +221,37 @@ fn make_exec_mem_writable(addr: usize, len: usize, page_size: usize) -> io::Resu
         return Err(io::Error::last_os_error());
     }
 
-    Ok(())
+    Ok((PROT_READ | PROT_EXEC) as u32)
+}
+
+#[cfg(windows)]
+fn make_exec_mem_writable(addr: usize, len: usize, _page_size: usize) -> io::Result<u32> {
+    use std::ffi::c_void;
+    use windows_sys::Win32::System::Memory::{PAGE_EXECUTE_READWRITE, VirtualProtect};
+
+    let old_prot = 0u32;
+    if unsafe {
+        VirtualProtect(
+            addr as *const c_void,
+            len,
+            PAGE_EXECUTE_READWRITE,
+            old_prot as *mut u32,
+        )
+    } != 0
+    {
+        return Err(io::Error::last_os_error());
+    }
+
+    Ok(old_prot)
 }
 
 #[cfg(unix)]
-fn restore_exec_mem_prot(addr: usize, len: usize, page_size: usize) -> io::Result<()> {
+fn restore_exec_mem_prot(
+    addr: usize,
+    len: usize,
+    page_size: usize,
+    original: u32,
+) -> io::Result<()> {
     use libc::*;
 
     let page_start = addr & !(page_size - 1);
@@ -233,7 +260,7 @@ fn restore_exec_mem_prot(addr: usize, len: usize, page_size: usize) -> io::Resul
         mprotect(
             page_start as *mut libc::c_void,
             aligned_len,
-            PROT_READ | PROT_EXEC,
+            original as i32,
         )
     } != 0
     {
@@ -243,20 +270,42 @@ fn restore_exec_mem_prot(addr: usize, len: usize, page_size: usize) -> io::Resul
     Ok(())
 }
 
-pub struct MemoryMap {
+#[cfg(windows)]
+fn restore_exec_mem_prot(
+    addr: usize,
+    len: usize,
+    page_size: usize,
+    original: u32,
+) -> io::Result<u32> {
+    use std::ffi::c_void;
+    use windows_sys::Win32::System::Memory::{PAGE_EXECUTE_READWRITE, VirtualProtect};
+
+    let old_prot = 0u32;
+    if unsafe { VirtualProtect(addr as *const c_void, len, original, old_prot as *mut u32) } != 0 {
+        return Err(io::Error::last_os_error());
+    }
+
+    Ok(old_prot)
+}
+
+#[cfg(unix)]
+pub struct MemoryMap(Vec<MemoryMapEntry>);
+
+#[cfg(windows)]
+pub struct MemoryMap;
+
+#[cfg(unix)]
+struct MemoryMapEntry {
     pub path: PathBuf,
-    pub start: usize,
-    pub end: usize,
+    pub range: Range<usize>,
 }
 
 impl MemoryMap {
     #[cfg(unix)]
-    // as of now, it is represented by a hashmap with the filename, and address
-    // should be enough
-    pub fn read_proc_maps() -> io::Result<Vec<MemoryMap>> {
+    pub fn read_proc_maps() -> io::Result<MemoryMap> {
         use std::{fs::File, io::Read, path::Path};
 
-        let mut maps: Vec<MemoryMap> = Vec::new();
+        let mut maps: Vec<MemoryMapEntry> = Vec::new();
         let mut file = File::open("/proc/self/maps")?;
         let mut content = String::new();
         file.read_to_string(&mut content)?;
@@ -295,18 +344,116 @@ impl MemoryMap {
             let file_name = Path::new(path);
 
             if let Some(mem) = maps.iter_mut().find(|m| m.path == file_name) {
-                mem.end = end_addr;
+                mem.range.end = end_addr;
                 continue;
             }
 
-            maps.push(MemoryMap {
+            maps.push(MemoryMapEntry {
                 path: file_name.to_path_buf(),
-                start: start_addr,
-                end: end_addr,
+                range: start_addr..end_addr + 1,
             });
         }
 
-        Ok(maps)
+        Ok(MemoryMap(maps))
+    }
+
+    #[cfg(windows)]
+    pub fn read_proc_maps() -> io::Result<MemoryMap> {
+        Ok(MemoryMap)
+    }
+
+    #[cfg(unix)]
+    pub fn find_by_filename(&self, filename: &CStr) -> Option<Range<usize>> {
+        let filename = filename.to_string_lossy();
+        self.0.iter().find_map(|m_info| {
+            if m_info.path.file_name().unwrap().to_string_lossy() == filename {
+                Some(m_info.range.clone())
+            } else {
+                None
+            }
+        })
+    }
+
+    #[cfg(windows)]
+    pub fn find_by_filename(&self, filename: &CStr) -> Option<Range<usize>> {
+        use windows_sys::Win32::System::{
+            LibraryLoader::GetModuleHandleA,
+            ProcessStatus::{GetModuleInformation, MODULEINFO},
+            Threading::GetCurrentProcess,
+        };
+
+        let handle = unsafe { GetModuleHandleA(filename.as_ptr() as *const u8) };
+        if handle.is_null() {
+            panic!("failed to find exe module, {}", io::Error::last_os_error());
+        }
+
+        let mut mod_info = MODULEINFO {
+            lpBaseOfDll: ptr::null_mut(),
+            SizeOfImage: 0,
+            EntryPoint: ptr::null_mut(),
+        };
+        let res = unsafe {
+            GetModuleInformation(
+                GetCurrentProcess(),
+                handle,
+                &mut mod_info as *mut MODULEINFO,
+                size_of::<MODULEINFO>() as u32,
+            )
+        };
+        if res == 0 {
+            panic!("failed to find exe module, {}", io::Error::last_os_error());
+        }
+        Some(
+            mod_info.lpBaseOfDll as usize
+                ..mod_info.lpBaseOfDll as usize + mod_info.SizeOfImage as usize,
+        )
+    }
+
+    #[cfg(unix)]
+    pub fn find_exe(&self) -> Range<usize> {
+        use std::env;
+
+        let exe_path = env::current_exe().expect("failed to get current executable path");
+        let exe_path = exe_path.to_string_lossy();
+
+        self.0
+            .iter()
+            .find(|m_info| m_info.path.file_name().unwrap().to_string_lossy() == exe_path)
+            .unwrap()
+            .range
+            .clone()
+    }
+
+    #[cfg(windows)]
+    pub fn find_exe(&self) -> Range<usize> {
+        use windows_sys::Win32::System::{
+            LibraryLoader::GetModuleHandleA,
+            ProcessStatus::{GetModuleInformation, MODULEINFO},
+            Threading::GetCurrentProcess,
+        };
+
+        let handle = unsafe { GetModuleHandleA(ptr::null()) };
+        if handle.is_null() {
+            panic!("failed to find exe module, {}", io::Error::last_os_error());
+        }
+
+        let mut mod_info = MODULEINFO {
+            lpBaseOfDll: ptr::null_mut(),
+            SizeOfImage: 0,
+            EntryPoint: ptr::null_mut(),
+        };
+        let res = unsafe {
+            GetModuleInformation(
+                GetCurrentProcess(),
+                handle,
+                &mut mod_info as *mut MODULEINFO,
+                size_of::<MODULEINFO>() as u32,
+            )
+        };
+        if res == 0 {
+            panic!("failed to find exe module, {}", io::Error::last_os_error());
+        }
+        mod_info.lpBaseOfDll as usize..mod_info.lpBaseOfDll as usize + mod_info.SizeOfImage as usize
     }
 }
 
