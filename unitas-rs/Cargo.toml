@@ -8,6 +8,7 @@ pattern = { path = "./pattern/" }
 env_logger = "0.11.6"
 log = "0.4.26"
 iced-x86 = { version = "1.21.0", default-features = false, features = ["std", "decoder", "encoder", "block_encoder", "code_asm", "instr_info"] }
+const-str = { version = "0.6.2", features = ["proc"] }
 
 [target.'cfg(unix)'.dependencies]
 libc = "0.2.169"

@@ -24,10 +24,8 @@ struct Search {
     module: Option<&'static CStr>,
 }
 
-#[cfg(unix)]
-const UNITY_PLAYER_MODULE: &CStr = c"UnityPlayer.so";
-#[cfg(windows)]
-const UNITY_PLAYER_MODULE: &CStr = c"UnityPlayer.dll";
+const UNITY_PLAYER_MODULE: &CStr =
+    const_str::cstr!(const_str::format!("UnityPlayer{}", env::consts::DLL_SUFFIX));
 
 pub fn install() {
     let hooks: &[&dyn Hook] = &[&LastUpdate];
@@ -100,7 +98,7 @@ impl Hook for LastUpdate {
     fn searches<'a>(&self) -> &'a [(Search, &dyn Fn(usize))] {
         const {
             &[
-                // x64 linux
+                // x86_64-linux
                 // 2019.4.40f1 - 2022.3.41f1
                 (
                     Search {
@@ -113,13 +111,16 @@ impl Hook for LastUpdate {
                     },
                     &|addr| unsafe { memory::hook_inject(addr, false, LastUpdate::hook) }.unwrap(),
                 ),
-                // x64 linux
-                // 2017.4.6f1
+                // x86_64-linux
+                // 2017.4.6f1 - 2018.1.5f1
                 (
                     Search {
-                        pattern: pattern!(5, "e8 ?? ?? ?? ?? e8 ?? ?? ?? ?? eb"),
+                        pattern: pattern!(
+                            12,
+                            "0f b6 ?? ?? ?? ?? ?? e8 ?? ?? ?? ?? e8 ?? ?? ?? ?? eb"
+                        ),
                         start_symbol: None,
-                        module: Some(UNITY_PLAYER_MODULE),
+                        module: None,
                     },
                     &|addr| unsafe { memory::hook_inject(addr, true, LastUpdate::hook) }.unwrap(),
                 ),
