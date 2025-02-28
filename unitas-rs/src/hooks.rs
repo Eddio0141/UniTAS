@@ -99,12 +99,12 @@ impl Hook for LastUpdate {
         const {
             &[
                 // x86_64-linux
-                // 2019.4.40f1 - 2022.3.41f1
+                // 2019.4.40f1 - 2023.2.20f1
                 (
                     Search {
                         pattern: pattern!(
-                            17,
-                            "0f b6 ?? ?? ?? ?? ?? e8 ?? ?? ?? ?? e8 ?? ?? ?? ?? e9",
+                            22,
+                            "e8 ?? ?? ?? ?? 0f b6 ?? ?? ?? ?? ?? e8 ?? ?? ?? ?? e8",
                         ),
                         start_symbol: Some(c"_Z10PlayerMainiPPc"),
                         module: Some(UNITY_PLAYER_MODULE),
