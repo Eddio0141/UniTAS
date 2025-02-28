@@ -580,17 +580,3 @@ impl SymbolLookup {
         }
     }
 }
-
-#[cfg(unix)]
-impl Drop for SymbolLookup {
-    fn drop(&mut self) {
-        use libc::*;
-
-        for (handle, _) in self.handles.values() {
-            unsafe {
-                // TODO: do i check for error?
-                dlclose(*handle);
-            }
-        }
-    }
-}
