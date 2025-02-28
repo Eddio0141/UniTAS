@@ -26,6 +26,8 @@ struct Search {
 
 #[cfg(unix)]
 const UNITY_PLAYER_MODULE: &CStr = c"UnityPlayer.so";
+#[cfg(windows)]
+const UNITY_PLAYER_MODULE: &CStr = c"UnityPlayer.dll";
 
 pub fn install() {
     let hooks: &[&dyn Hook] = &[&LastUpdate];

@@ -3,7 +3,6 @@ use std::{
     ffi::{CStr, CString},
     io, mem,
     ops::Range,
-    path::PathBuf,
     ptr,
     sync::{LazyLock, Mutex},
 };
@@ -12,10 +11,11 @@ struct Memory {
     dynamic_inst_ptr_start: usize,
     dynamic_inst_ptr: usize,
     dynamic_inst_mem_size: usize,
+    #[cfg(unix)]
     page_size: usize,
 }
 
-const DYNAMIC_INST_MEM_SIZE: usize = 0x20;
+const DYNAMIC_INST_MEM_SIZE: usize = 0x1000;
 
 const BITNESS: u32 = (mem::size_of::<usize>() * 8) as u32;
 
@@ -49,6 +49,37 @@ static MEMORY: LazyLock<Mutex<Memory>> = LazyLock::new(|| {
         dynamic_inst_ptr: alloc_ptr,
         dynamic_inst_mem_size,
         page_size,
+    }
+    .into()
+});
+
+#[cfg(all(windows, any(target_arch = "x86_64", target_arch = "x86")))]
+static MEMORY: LazyLock<Mutex<Memory>> = LazyLock::new(|| {
+    use windows_sys::Win32::System::Memory::{
+        MEM_COMMIT, MEM_RESERVE, PAGE_EXECUTE_READWRITE, VirtualAlloc,
+    };
+
+    let alloc_ptr = unsafe {
+        VirtualAlloc(
+            ptr::null(),
+            DYNAMIC_INST_MEM_SIZE,
+            MEM_COMMIT | MEM_RESERVE,
+            PAGE_EXECUTE_READWRITE,
+        )
+    };
+    if alloc_ptr.is_null() {
+        panic!(
+            "failed to initialise memory: {}",
+            io::Error::last_os_error()
+        );
+    }
+
+    let alloc_ptr = alloc_ptr as usize;
+
+    Memory {
+        dynamic_inst_ptr_start: alloc_ptr,
+        dynamic_inst_ptr: alloc_ptr,
+        dynamic_inst_mem_size: DYNAMIC_INST_MEM_SIZE,
     }
     .into()
 });
@@ -107,9 +138,15 @@ pub unsafe fn hook_inject(
         .assemble(hook_target as u64)
         .expect("failed to assemble jmp to custom location");
     assert_eq!(inst.len(), 5);
+    #[cfg(unix)]
     let orig = make_exec_mem_writable(hook_target, inst.len(), memory.page_size)?;
+    #[cfg(windows)]
+    let orig = make_exec_mem_writable(hook_target, inst.len())?;
     unsafe { ptr::copy_nonoverlapping(inst.as_ptr(), hook_target as *mut u8, inst.len()) };
+    #[cfg(unix)]
     restore_exec_mem_prot(hook_target, inst.len(), memory.page_size, orig)?;
+    #[cfg(windows)]
+    restore_exec_mem_prot(hook_target, inst.len(), orig)?;
 
     // custom location instructions
     let mut assembler = CodeAssembler::new(BITNESS).expect("failed to create code assembler");
@@ -225,7 +262,7 @@ fn make_exec_mem_writable(addr: usize, len: usize, page_size: usize) -> io::Resu
 }
 
 #[cfg(windows)]
-fn make_exec_mem_writable(addr: usize, len: usize, _page_size: usize) -> io::Result<u32> {
+fn make_exec_mem_writable(addr: usize, len: usize) -> io::Result<u32> {
     use std::ffi::c_void;
     use windows_sys::Win32::System::Memory::{PAGE_EXECUTE_READWRITE, VirtualProtect};
 
@@ -271,14 +308,9 @@ fn restore_exec_mem_prot(
 }
 
 #[cfg(windows)]
-fn restore_exec_mem_prot(
-    addr: usize,
-    len: usize,
-    page_size: usize,
-    original: u32,
-) -> io::Result<u32> {
+fn restore_exec_mem_prot(addr: usize, len: usize, original: u32) -> io::Result<u32> {
     use std::ffi::c_void;
-    use windows_sys::Win32::System::Memory::{PAGE_EXECUTE_READWRITE, VirtualProtect};
+    use windows_sys::Win32::System::Memory::VirtualProtect;
 
     let old_prot = 0u32;
     if unsafe { VirtualProtect(addr as *const c_void, len, original, old_prot as *mut u32) } != 0 {
@@ -296,7 +328,7 @@ pub struct MemoryMap;
 
 #[cfg(unix)]
 struct MemoryMapEntry {
-    pub path: PathBuf,
+    pub path: std::path::PathBuf,
     pub range: Range<usize>,
 }
 
@@ -457,13 +489,20 @@ impl MemoryMap {
     }
 }
 
-#[cfg(unix)]
 pub struct SymbolLookup {
-    // value contains the handle, and HashMap for symbol and its offset
+    #[cfg(unix)]
     handles: HashMap<CString, (*mut libc::c_void, HashMap<CString, usize>)>,
+    // value contains the handle, and HashMap for symbol and its offset
+    #[cfg(windows)]
+    handles: HashMap<
+        CString,
+        (
+            windows_sys::Win32::Foundation::HMODULE,
+            HashMap<CString, usize>,
+        ),
+    >,
 }
 
-#[cfg(unix)]
 impl SymbolLookup {
     pub fn new() -> Self {
         Self {
@@ -471,6 +510,7 @@ impl SymbolLookup {
         }
     }
 
+    #[cfg(unix)]
     pub fn get_symbol_in_file(&mut self, file_name: &CStr, symbol: &CStr) -> usize {
         use libc::*;
 
@@ -496,6 +536,43 @@ impl SymbolLookup {
                     // TODO: error diagnostics
                     panic!("failed to obtain symbol with dlsym");
                 }
+                let symbol_ptr = symbol_ptr as usize;
+                symbol_map.insert(symbol.to_owned(), symbol_ptr);
+                symbol_ptr
+            }
+        }
+    }
+
+    #[cfg(windows)]
+    pub fn get_symbol_in_file(&mut self, file_name: &CStr, symbol: &CStr) -> usize {
+        use windows_sys::Win32::System::LibraryLoader::{GetModuleHandleA, GetProcAddress};
+
+        let (handle, symbol_map) = match self.handles.get_mut(file_name) {
+            Some(handle) => handle,
+            None => {
+                let handle = unsafe { GetModuleHandleA(file_name.as_ptr() as *const u8) };
+                if handle.is_null() {
+                    panic!(
+                        "failed to open library with GetModuleHandleA, {}",
+                        io::Error::last_os_error()
+                    );
+                }
+                self.handles
+                    .insert(file_name.to_owned(), (handle, HashMap::new()));
+                self.handles.get_mut(file_name).unwrap()
+            }
+        };
+
+        match symbol_map.get(symbol) {
+            Some(addr) => *addr,
+            None => {
+                let symbol_ptr = unsafe { GetProcAddress(*handle, symbol.as_ptr() as *const u8) };
+                let Some(symbol_ptr) = symbol_ptr else {
+                    panic!(
+                        "failed to get symbol with GetProcAddress, {}",
+                        io::Error::last_os_error()
+                    );
+                };
                 let symbol_ptr = symbol_ptr as usize;
                 symbol_map.insert(symbol.to_owned(), symbol_ptr);
                 symbol_ptr
