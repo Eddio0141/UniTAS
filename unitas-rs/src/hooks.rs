@@ -100,19 +100,21 @@ impl Hook for LastUpdate {
     fn searches<'a>(&self) -> &'a [(Search, &dyn Fn(usize))] {
         const {
             &[
-                // 2022.2.0f1 - 2022.3.41f1 x64 linux
+                // x64 linux
+                // 2019.4.40f1 - 2022.3.41f1
                 (
                     Search {
                         pattern: pattern!(
-                            10,
-                            "e8 ?? ?? ?? ?? e8 ?? ?? ?? ?? e9 ?? ?? ?? ?? e8 ?? ?? ?? ?? 8b",
+                            17,
+                            "0f b6 ?? ?? ?? ?? ?? e8 ?? ?? ?? ?? e8 ?? ?? ?? ?? e9",
                         ),
                         start_symbol: Some(c"_Z10PlayerMainiPPc"),
                         module: Some(UNITY_PLAYER_MODULE),
                     },
                     &|addr| unsafe { memory::hook_inject(addr, false, LastUpdate::hook) }.unwrap(),
                 ),
-                // 2017.4.6f1               x64 linux
+                // x64 linux
+                // 2017.4.6f1
                 (
                     Search {
                         pattern: pattern!(5, "e8 ?? ?? ?? ?? e8 ?? ?? ?? ?? eb"),
