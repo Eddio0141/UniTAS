@@ -2,7 +2,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using HarmonyLib;
-using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Interfaces.UnitySafeWrappers;
 using UniTAS.Patcher.Models.UnitySafeWrappers.Unity.Collections;
 
@@ -16,7 +15,7 @@ public class NativeArrayWrapper<T> : UnityInstanceWrap
     private readonly MethodBase _toArray;
     private readonly MethodBase _dispose;
 
-    public NativeArrayWrapper(object instance) : base(instance)
+    private NativeArrayWrapper(object instance) : base(instance)
     {
         var genericArg = typeof(T);
         var wrappedType = AccessTools.TypeByName("Unity.Collections.NativeArray`1")?.MakeGenericType(genericArg) ??
@@ -29,15 +28,7 @@ public class NativeArrayWrapper<T> : UnityInstanceWrap
         WrappedType = wrappedType;
     }
 
-    public NativeArrayWrapper(int length, object allocator) : this(null)
-    {
-        if (allocator.GetType() != _allocator)
-        {
-            throw new ArgumentException($"Allocator must be the type: {_allocator.SaneFullName()}", nameof(allocator));
-        }
-
-        PostConstructor(length, allocator);
-    }
+    public NativeArrayWrapper(int length, Allocator allocator) : this(null) => PostConstructor(length, allocator);
 
     private void PostConstructor(int length, object allocator)
     {

@@ -61,9 +61,13 @@ public class UnityInstanceWrapFactory(IContainer container) : IUnityInstanceWrap
             return new FullScreenModeWrap(null) as T;
         }
 
-        // NativeArrayWrapper<T>, i don't care whatever, fix when more generics shit
-        var tGenerics = typeof(T).GetGenericArguments();
-        var newNativeArray = typeof(NativeArrayWrapper<>).MakeGenericType(tGenerics);
-        return Activator.CreateInstance(newNativeArray, args) as T;
+        if (typeof(T).IsGenericType && typeof(T).GetGenericTypeDefinition() == typeof(NativeArrayWrapper<>))
+        {
+            var tGenerics = typeof(T).GetGenericArguments();
+            var newNativeArray = typeof(NativeArrayWrapper<>).MakeGenericType(tGenerics);
+            return Activator.CreateInstance(newNativeArray, args) as T;
+        }
+
+        throw new ArgumentException($"type {typeof(T).FullName} is not supported");
     }
 }
