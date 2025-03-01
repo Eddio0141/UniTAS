@@ -112,6 +112,20 @@ impl Hook for LastUpdate {
                     &|addr| unsafe { memory::hook_inject(addr, false, LastUpdate::hook) }.unwrap(),
                 ),
                 // x86_64-linux
+                // 6000.0.40f1
+                // TODO: fix hook failure
+                (
+                    Search {
+                        pattern: pattern!(
+                            6,
+                            "8b ?? ?? ?? ?? ?? e8 ?? ?? ?? ?? ?? 8b ?? ?? ?? ?? ?? e8 ?? ?? ?? ?? 83 ?? ?? ?? 8d"
+                        ),
+                        start_symbol: Some(c"_Z10PlayerMainiPPc"),
+                        module: Some(UNITY_PLAYER_MODULE),
+                    },
+                    &|addr| unsafe { memory::hook_inject(addr, true, LastUpdate::hook) }.unwrap(),
+                ),
+                // x86_64-linux
                 // 2017.4.6f1 - 2018.1.5f1
                 (
                     Search {
