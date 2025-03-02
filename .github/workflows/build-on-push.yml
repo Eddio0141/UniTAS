@@ -100,7 +100,7 @@ jobs:
         run: |
           cd .\test-runner
           Start-Process -FilePath .\test-runner.exe `
-            -ArgumentList '--github-token' '${{ secrets.GITHUB_TOKEN }}'
+            -ArgumentList '--github-token', '${{ secrets.GITHUB_TOKEN }}'
             -NoNewWindow -Wait
 
       - if: failure()
