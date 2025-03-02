@@ -96,9 +96,8 @@ jobs:
 
       - if: matrix.os == 'windows-latest'
         name: run test-runner
-        run: |
-          Set-Location -Path .\test-runner
-          & .\test-runner.exe --github-token ${{ secrets.GITHUB_TOKEN }}
+        run: test-runner.exe --github-token ${{ secrets.GITHUB_TOKEN }}
+        working-directory: test-runner
 
       - if: failure()
         name: test-runner logs
