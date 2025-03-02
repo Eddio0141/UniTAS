@@ -339,7 +339,9 @@ public class UnityEvents : IUpdateEvents, IMonoBehEventInvoker
         _monoBehaviourController = monoBehaviourController;
         _patchReverseInvoker = patchReverseInvoker;
         _unityEvent = this;
+#if !UNIT_TESTS
         UniTasRs.last_update_set_callback(InvokeLastUpdateStatic);
+#endif
     }
 
     public void InvokeEndOfFrame()
