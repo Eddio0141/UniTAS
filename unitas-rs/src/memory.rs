@@ -11,7 +11,6 @@ struct Memory {
     dynamic_inst_ptr_start: usize,
     dynamic_inst_ptr: usize,
     dynamic_inst_mem_size: usize,
-    #[cfg(unix)]
     page_size: usize,
 }
 
@@ -80,6 +79,7 @@ static MEMORY: LazyLock<Mutex<Memory>> = LazyLock::new(|| {
         dynamic_inst_ptr_start: alloc_ptr,
         dynamic_inst_ptr: alloc_ptr,
         dynamic_inst_mem_size: DYNAMIC_INST_MEM_SIZE,
+        page_size: 0,
     }
     .into()
 });
@@ -118,10 +118,16 @@ pub unsafe fn hook_inject(
 ) -> io::Result<()> {
     use std::slice;
 
-    use iced_x86::{Decoder, DecoderOptions, code_asm::*};
+    use iced_x86::{
+        Code, Decoder, DecoderOptions, Encoder, Instruction, MemoryOperand, Register, code_asm::*,
+    };
+    use log::debug;
 
-    let memory = unsafe { slice::from_raw_parts(hook_target as *const u8, 15) };
-    let mut decoder = Decoder::new(BITNESS, memory, DecoderOptions::NO_INVALID_CHECK);
+    let mut decoder = {
+        let memory =
+            unsafe { slice::from_raw_parts(hook_target as *const u8, isize::MAX as usize) };
+        Decoder::new(BITNESS, memory, DecoderOptions::NO_INVALID_CHECK)
+    };
     decoder.set_ip(hook_target as u64);
     let target_inst = decoder.decode();
     let target_inst_branch = target_inst.is_jmp_short_or_near() | target_inst.is_jmp_far();
@@ -132,21 +138,119 @@ pub unsafe fn hook_inject(
     // rewrite original jump to custom location
     let memory = &mut MEMORY.lock().unwrap();
 
-    let mut assembler = CodeAssembler::new(BITNESS).expect("failed to create code assembler");
-    assembler.jmp(memory.dynamic_inst_ptr as u64).unwrap();
-    let inst = assembler
-        .assemble(hook_target as u64)
-        .expect("failed to assemble jmp to custom location");
-    assert_eq!(inst.len(), 5);
-    #[cfg(unix)]
-    let orig = make_exec_mem_writable(hook_target, inst.len(), memory.page_size)?;
-    #[cfg(windows)]
-    let orig = make_exec_mem_writable(hook_target, inst.len())?;
-    unsafe { ptr::copy_nonoverlapping(inst.as_ptr(), hook_target as *mut u8, inst.len()) };
-    #[cfg(unix)]
-    restore_exec_mem_prot(hook_target, inst.len(), memory.page_size, orig)?;
-    #[cfg(windows)]
-    restore_exec_mem_prot(hook_target, inst.len(), orig)?;
+    let jmp_diff = memory.dynamic_inst_ptr.abs_diff(hook_target);
+    if jmp_diff > i32::MAX as usize {
+        debug!("jumping to custom location is more than 32 bits in distance");
+
+        let mut jmp_inst = if cfg!(target_pointer_width = "64") {
+            Instruction::with1(
+                Code::Jmp_rm64,
+                MemoryOperand::with_base_displ(Register::RIP, 0),
+            )
+            .unwrap()
+        } else if cfg!(target_pointer_width = "32") {
+            unimplemented!()
+        } else {
+            unreachable!()
+        };
+        let jmp_inst_len = {
+            let mut encoder = Encoder::new(BITNESS);
+            encoder.encode(&jmp_inst, 0).unwrap()
+        };
+
+        // find a suitable location for jump addr
+        let mut inst = Instruction::new();
+        // find location for jumping instruction
+        let mut jmp_inst_addr;
+        'outer: loop {
+            if !decoder.can_decode() {
+                panic!("decoder can't read");
+            }
+            decoder.decode_out(&mut inst);
+            jmp_inst_addr = decoder.ip();
+            let mut cnt = jmp_inst_len;
+            while cnt > 0 {
+                if !inst.is_invalid() {
+                    continue 'outer;
+                }
+                cnt -= inst.len();
+                if !decoder.can_decode() {
+                    panic!("decoder can't read");
+                }
+                decoder.decode_out(&mut inst);
+            }
+            break;
+        }
+        let mut jmp_addr;
+        'outer: loop {
+            jmp_addr = decoder.ip();
+            let mut cnt = mem::size_of::<usize>();
+            while cnt > 0 {
+                if !inst.is_invalid() {
+                    if !decoder.can_decode() {
+                        panic!("decoder can't read");
+                    }
+                    decoder.decode_out(&mut inst);
+                    continue 'outer;
+                }
+                cnt -= inst.len();
+                if !decoder.can_decode() {
+                    panic!("decoder can't read");
+                }
+                decoder.decode_out(&mut inst);
+            }
+            break;
+        }
+        debug!("jmp destination stored in 0x{jmp_addr:x}, instruction in 0x{jmp_inst_addr:x}");
+        jmp_inst.set_memory_displacement64(jmp_addr);
+
+        // write target
+        let target = memory.dynamic_inst_ptr.to_le_bytes();
+        let orig = make_exec_mem_writable(jmp_addr as usize, target.len(), memory.page_size)?;
+        unsafe { ptr::copy_nonoverlapping(target.as_ptr(), jmp_addr as *mut u8, target.len()) };
+        restore_exec_mem_prot(jmp_addr as usize, target.len(), memory.page_size, orig)?;
+
+        // write instruction
+        let mut encoder = Encoder::new(BITNESS);
+        encoder.encode(&jmp_inst, jmp_inst_addr).unwrap();
+        let inst = encoder.take_buffer();
+        let orig = make_exec_mem_writable(jmp_inst_addr as usize, inst.len(), memory.page_size)?;
+        unsafe { ptr::copy_nonoverlapping(inst.as_ptr(), jmp_inst_addr as *mut u8, inst.len()) };
+        restore_exec_mem_prot(jmp_inst_addr as usize, inst.len(), memory.page_size, orig)?;
+
+        // actual jmp to the 2nd jmp
+        let inst = if cfg!(target_pointer_width = "64") {
+            Code::Jmp_rel32_64
+        } else if cfg!(target_pointer_width = "32") {
+            Code::Jmp_rel32_32
+        } else {
+            unreachable!()
+        };
+        let inst = Instruction::with_branch(inst, jmp_inst_addr).unwrap();
+        let mut encoder = Encoder::new(BITNESS);
+        assert_eq!(encoder.encode(&inst, hook_target as u64).unwrap(), 5);
+
+        let inst = encoder.take_buffer();
+        let orig = make_exec_mem_writable(hook_target, inst.len(), memory.page_size)?;
+        unsafe { ptr::copy_nonoverlapping(inst.as_ptr(), hook_target as *mut u8, inst.len()) };
+        restore_exec_mem_prot(hook_target, inst.len(), memory.page_size, orig)?;
+    } else {
+        let inst = if cfg!(target_pointer_width = "64") {
+            Code::Jmp_rel32_64
+        } else if cfg!(target_pointer_width = "32") {
+            Code::Jmp_rel32_32
+        } else {
+            unreachable!()
+        };
+        let inst = Instruction::with_branch(inst, memory.dynamic_inst_ptr as u64).unwrap();
+        let mut encoder = Encoder::new(BITNESS);
+        assert_eq!(encoder.encode(&inst, hook_target as u64).unwrap(), 5);
+
+        let inst = encoder.take_buffer();
+        let orig = make_exec_mem_writable(hook_target, inst.len(), memory.page_size)?;
+        unsafe { ptr::copy_nonoverlapping(inst.as_ptr(), hook_target as *mut u8, inst.len()) };
+        restore_exec_mem_prot(hook_target, inst.len(), memory.page_size, orig)?;
+    }
 
     // custom location instructions
     let mut assembler = CodeAssembler::new(BITNESS).expect("failed to create code assembler");
@@ -262,7 +366,7 @@ fn make_exec_mem_writable(addr: usize, len: usize, page_size: usize) -> io::Resu
 }
 
 #[cfg(windows)]
-fn make_exec_mem_writable(addr: usize, len: usize) -> io::Result<u32> {
+fn make_exec_mem_writable(addr: usize, len: usize, _page_size: usize) -> io::Result<u32> {
     use std::ffi::c_void;
     use windows_sys::Win32::System::Memory::{PAGE_EXECUTE_READWRITE, VirtualProtect};
 
@@ -308,7 +412,12 @@ fn restore_exec_mem_prot(
 }
 
 #[cfg(windows)]
-fn restore_exec_mem_prot(addr: usize, len: usize, original: u32) -> io::Result<u32> {
+fn restore_exec_mem_prot(
+    addr: usize,
+    len: usize,
+    _page_size: usize,
+    original: u32,
+) -> io::Result<u32> {
     use std::ffi::c_void;
     use windows_sys::Win32::System::Memory::VirtualProtect;
 

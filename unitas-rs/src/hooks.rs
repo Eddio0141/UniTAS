@@ -99,7 +99,7 @@ impl Hook for LastUpdate {
         const {
             &[
                 // x86_64-linux
-                // 2019.4.40f1 - 2023.2.20f1
+                // 2019.4.40f1 - 6000.0.0b11
                 (
                     Search {
                         pattern: pattern!(
@@ -113,7 +113,6 @@ impl Hook for LastUpdate {
                 ),
                 // x86_64-linux
                 // 6000.0.40f1
-                // TODO: fix hook failure
                 (
                     Search {
                         pattern: pattern!(
