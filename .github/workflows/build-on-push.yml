@@ -99,7 +99,8 @@ jobs:
         shell: pwsh
         run: |
           cd .\test-runner
-          & .\test-runner.exe --github-token ${{ secrets.GITHUB_TOKEN }}
+          Get-ChildItem
+          .\test-runner.exe --github-token ${{ secrets.GITHUB_TOKEN }}
 
       - if: failure()
         name: test-runner logs
