@@ -6,7 +6,9 @@ jobs:
   buildAndTest:
     strategy:
       fail-fast: false
-    runs-on: ubuntu-latest
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -24,19 +26,44 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Tests
+      - name: rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: unitas-rs -> unitas-rs
+
+      - name: Tests unitas-rs
+        run: cargo test --all
+        working-directory: unitas-rs
+
+      - if: matrix.os == 'ubuntu-latest'
+        name: Tests UniTAS
         run: dotnet test UniTAS --configuration ReleaseTest
 
-      - name: Build
+      - name: Build unitas-rs
+        run: cargo build --release
+        working-directory: unitas-rs
+
+      - name: Build UniTAS
         run: dotnet build UniTAS --configuration Release
+
+      - if: matrix.os == 'ubuntu-latest'
+        name: Copy unitas-rs output to UniTAS output
+        run: |
+          cp unitas-rs/target/release/libunitas_rs.so UniTAS/Patcher/bin/Release/BepInEx/patchers/UniTAS
+
+      - if: matrix.os == 'windows-latest'
+        name: Copy unitas-rs output to UniTAS output
+        run: |
+          cp unitas-rs/target/release/unitas_rs.dll UniTAS/Patcher/bin/Release/BepInEx/patchers/UniTAS
 
       - name: Get built artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: UniTAS
+          name: UniTAS-${{ matrix.os }}
           path: ./UniTAS/Patcher/bin/Release
-
-      - name: download test-runner
+  
+      - if: matrix.os == 'ubuntu-latest'
+        name: download test-runner
         uses: dawidd6/action-download-artifact@v6
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -46,19 +73,37 @@ jobs:
           repo: Eddio0141/UniTASTestClients
           path: test-runner
 
+      - if: matrix.os == 'windows-latest'
+        name: download test-runner
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          workflow: build-on-push.yml
+          branch: main
+          name: test-runner-win
+          repo: Eddio0141/UniTASTestClients
+          path: test-runner
+
       - name: copy UniTAS to test-runner directory
         run: cp UniTAS/Patcher/bin/Release test-runner/UniTAS -r
 
-      - name: run test-runner
+      - if: matrix.os == 'ubuntu-latest'
+        name: run test-runner
         run: |
           cd test-runner
           chmod +x test-runner
           ./test-runner --github-token ${{ secrets.GITHUB_TOKEN }}
 
+      - if: matrix.os == 'windows-latest'
+        name: run test-runner
+        run: |
+          cd test-runner
+          ./test-runner.exe --github-token ${{ secrets.GITHUB_TOKEN }}
+
       - name: test-runner logs
         uses: actions/upload-artifact@v4
         with:
-          name: test-runner-logs
+          name: test-runner-logs-${{ matrix.os }}
           path: test-runner/logs
 
       - if: contains(github.event.pull_request.labels.*.name, 'automation')
