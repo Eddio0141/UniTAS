@@ -99,8 +99,9 @@ jobs:
         shell: pwsh
         run: |
           cd .\test-runner
-          Get-ChildItem
-          .\test-runner.exe --github-token ${{ secrets.GITHUB_TOKEN }}
+          Start-Process -FilePath .\test-runner.exe `
+            -ArgumentList '--github-token' '${{ secrets.GITHUB_TOKEN }}'
+            -NoNewWindow -Wait
 
       - if: failure()
         name: test-runner logs
