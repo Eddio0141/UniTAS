@@ -101,7 +101,14 @@ jobs:
           cd .\test-runner
           Start-Process -FilePath .\test-runner.exe `
             -ArgumentList '--github-token', '${{ secrets.GITHUB_TOKEN }}' `
-            -NoNewWindow -Wait
+            -NoNewWindow -Wait `
+            -RedirectStandardOutput output.txt `
+            -RedirectStandardError error.txt
+          Write-Host "Exit code: $LASTEXITCODE"
+          Write-Output "Standard Output:"
+          Get-Content output.txt
+          Write-Output "Standard Error:"
+          Get-Content error.txt
 
       - if: failure()
         name: test-runner logs
