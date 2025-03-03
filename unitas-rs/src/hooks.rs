@@ -112,7 +112,7 @@ impl Hook for LastUpdate {
                     &|addr| unsafe { memory::hook_inject(addr, false, LastUpdate::hook) }.unwrap(),
                 ),
                 // x86_64-linux
-                // 6000.0.40f1
+                // 6000.0.25f1 - 6000.0.40f1
                 (
                     Search {
                         pattern: pattern!(
