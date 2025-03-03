@@ -95,15 +95,13 @@ jobs:
           ./test-runner --github-token ${{ secrets.GITHUB_TOKEN }}
 
       - if: matrix.os == 'windows-latest'
-        name: install visual c++ redistributable
+        name: run test-runner
         run: |
           Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vc_redist.x64.exe" -OutFile vc_redist.x64.exe
-          Start-Process -FilePath .\vc_redist.x64.exe -ArgumentList '/install', '/quiet', '/norestart' -Wait
-
-      - if: matrix.os == 'windows-latest'
-        name: run test-runner
-        run: .\test-runner.exe --github-token ${{ secrets.GITHUB_TOKEN }}
-        working-directory: .\test-runner
+          Start-Process -FilePath ./vc_redist.x64.exe -ArgumentList '/install', '/quiet', '/norestart' -Wait
+          Start-Process -FilePath ./test-runner.exe -ArgumentList '--github-token ${{ secrets.GITHUB_TOKEN }}' -Wait
+          Start-Process -FilePath ./test-runner.exe -ArgumentList '--help' -Wait
+        working-directory: test-runner
 
       - if: failure()
         name: test-runner logs
