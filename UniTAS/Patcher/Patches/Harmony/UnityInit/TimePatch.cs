@@ -161,13 +161,20 @@ public class TimePatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
+        private static bool _warnGetterCall;
+
         private static void Postfix(ref int __result)
         {
             if (ReverseInvoker.Invoking) return;
             // https://discussions.unity.com/t/time-framecount-vs-time-renderedframecount/134435
             // https://web.archive.org/web/20240822132700/https://discussions.unity.com/t/time-framecount-vs-time-renderedframecount/134435
             // some versions may have this weird behaviour
-            StaticLogger.LogWarning("get_renderedFrameCount called, behaviour may be inaccurate");
+            if (!_warnGetterCall)
+            {
+                _warnGetterCall = true;
+                StaticLogger.LogWarning("get_renderedFrameCount called, behaviour may be inaccurate");
+            }
+
             __result = (int)((ulong)__result - TimeEnv.RenderedFrameCountOffset);
         }
     }
