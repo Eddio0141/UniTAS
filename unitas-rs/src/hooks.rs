@@ -103,6 +103,7 @@ pub fn install() {
 struct LastUpdate;
 
 impl Hook for LastUpdate {
+    #[cfg(unix)]
     fn searches<'a>(&self) -> &'a [(Search, &dyn Fn(usize))] {
         const {
             &[
@@ -142,6 +143,27 @@ impl Hook for LastUpdate {
                         ),
                         start_symbol: None,
                         module: None,
+                    },
+                    &|addr| unsafe { memory::hook_inject(addr, true, LastUpdate::hook) }.unwrap(),
+                ),
+            ]
+        }
+    }
+
+    #[cfg(windows)]
+    fn searches<'a>(&self) -> &'a [(Search, &dyn Fn(usize))] {
+        const {
+            &[
+                // win64
+                // 2022.2.0f1
+                (
+                    Search {
+                        pattern: pattern!(
+                            5,
+                            "e8 ?? ?? ?? ?? e8 ?? ?? ?? ?? ?? 8b ?? ?? ?? ?? ?? ?? 85 ?? 74 ?? ?? 38 ?? ?? ?? ?? ?? 74",
+                        ),
+                        start_symbol: None,
+                        module: Some(UNITY_PLAYER_MODULE),
                     },
                     &|addr| unsafe { memory::hook_inject(addr, true, LastUpdate::hook) }.unwrap(),
                 ),
