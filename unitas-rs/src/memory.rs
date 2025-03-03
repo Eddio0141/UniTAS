@@ -620,16 +620,18 @@ impl SymbolLookup {
     }
 
     #[cfg(unix)]
-    pub fn get_symbol_in_file(&mut self, file_name: &CStr, symbol: &CStr) -> usize {
+    // TODO: stop trying to redo failed operations
+    pub fn get_symbol_in_file(&mut self, file_name: &CStr, symbol: &CStr) -> Option<usize> {
         use libc::*;
+        use log::debug;
 
         let (handle, symbol_map) = match self.handles.get_mut(file_name) {
             Some(handle) => handle,
             None => {
                 let handle = unsafe { dlopen(file_name.as_ptr(), RTLD_NOW | RTLD_NOLOAD) };
                 if handle.is_null() {
-                    // TODO: error diagnostics
-                    panic!("failed to open library with dlopen");
+                    debug!("dlopen failure with error: {}", io::Error::last_os_error());
+                    return None;
                 }
                 self.handles
                     .insert(file_name.to_owned(), (handle, HashMap::new()));
@@ -638,22 +640,24 @@ impl SymbolLookup {
         };
 
         match symbol_map.get(symbol) {
-            Some(addr) => *addr,
+            Some(addr) => Some(*addr),
             None => {
                 let symbol_ptr = unsafe { dlsym(*handle, symbol.as_ptr()) };
                 if symbol_ptr.is_null() {
-                    // TODO: error diagnostics
-                    panic!("failed to obtain symbol with dlsym");
+                    debug!("dlsym failure with error: {}", io::Error::last_os_error());
+                    return None;
                 }
                 let symbol_ptr = symbol_ptr as usize;
                 symbol_map.insert(symbol.to_owned(), symbol_ptr);
-                symbol_ptr
+                Some(symbol_ptr)
             }
         }
     }
 
     #[cfg(windows)]
-    pub fn get_symbol_in_file(&mut self, file_name: &CStr, symbol: &CStr) -> usize {
+    // TODO: stop trying to redo failed operations
+    pub fn get_symbol_in_file(&mut self, file_name: &CStr, symbol: &CStr) -> Option<usize> {
+        use log::debug;
         use windows_sys::Win32::System::LibraryLoader::{GetModuleHandleA, GetProcAddress};
 
         let (handle, symbol_map) = match self.handles.get_mut(file_name) {
@@ -661,10 +665,11 @@ impl SymbolLookup {
             None => {
                 let handle = unsafe { GetModuleHandleA(file_name.as_ptr() as *const u8) };
                 if handle.is_null() {
-                    panic!(
+                    debug!(
                         "failed to open library with GetModuleHandleA, {}",
                         io::Error::last_os_error()
                     );
+                    return None;
                 }
                 self.handles
                     .insert(file_name.to_owned(), (handle, HashMap::new()));
@@ -673,18 +678,19 @@ impl SymbolLookup {
         };
 
         match symbol_map.get(symbol) {
-            Some(addr) => *addr,
+            Some(addr) => Some(*addr),
             None => {
                 let symbol_ptr = unsafe { GetProcAddress(*handle, symbol.as_ptr() as *const u8) };
                 let Some(symbol_ptr) = symbol_ptr else {
-                    panic!(
+                    debug!(
                         "failed to get symbol with GetProcAddress, {}",
                         io::Error::last_os_error()
                     );
+                    return None;
                 };
                 let symbol_ptr = symbol_ptr as usize;
                 symbol_map.insert(symbol.to_owned(), symbol_ptr);
-                symbol_ptr
+                Some(symbol_ptr)
             }
         }
     }

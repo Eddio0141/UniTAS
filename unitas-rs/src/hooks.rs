@@ -47,18 +47,24 @@ pub fn install() {
             let mut get_mem_range = |base: &Range<usize>, file| match search.start_symbol {
                 Some(start_symbol) => {
                     debug!("hook: targeting symbol {}", start_symbol.to_string_lossy());
-                    let mem_offset = search
-                        .start_symbol
-                        .map(|s| symbol_lookup.get_symbol_in_file(file, s) - base.start)
-                        .unwrap_or_default();
-                    (base.start + mem_offset, base.end)
+                    match symbol_lookup.get_symbol_in_file(file, start_symbol) {
+                        Some(off) => Some((off, base.end)),
+                        None => {
+                            debug!("failed to find symbol");
+                            None
+                        }
+                    }
                 }
-                None => (base.start, base.end),
+                None => Some((base.start, base.end)),
             };
             let (base, mem_start, mem_end) = match search.module {
                 Some(m) => {
-                    let base = modules.find_by_filename(m).expect("failed to find module");
-                    let (mem_start, mem_end) = get_mem_range(&base, m);
+                    let Some(base) = modules.find_by_filename(m) else {
+                        continue;
+                    };
+                    let Some((mem_start, mem_end)) = get_mem_range(&base, m) else {
+                        continue;
+                    };
                     (base, mem_start, mem_end)
                 }
                 None => {
@@ -66,7 +72,9 @@ pub fn install() {
                         env::current_exe().expect("failed to get current executable path");
                     let base = modules.find_exe();
                     let exe_path_cstr = CString::new(exe_path.to_string_lossy().as_ref()).unwrap();
-                    let (mem_start, mem_end) = get_mem_range(&base, &exe_path_cstr);
+                    let Some((mem_start, mem_end)) = get_mem_range(&base, &exe_path_cstr) else {
+                        continue;
+                    };
                     (base, mem_start, mem_end)
                 }
             };
