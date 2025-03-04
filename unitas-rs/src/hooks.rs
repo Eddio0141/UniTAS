@@ -177,8 +177,6 @@ pub static mut LAST_UPDATE_CALLBACK: Option<LastUpdateCallbackFn> = None;
 
 impl LastUpdate {
     extern "C" fn hook() {
-        if let Some(callback) = unsafe { LAST_UPDATE_CALLBACK } {
-            unsafe { callback() };
-        }
+        unsafe { LAST_UPDATE_CALLBACK.expect("last update callback is not set")() };
     }
 }
