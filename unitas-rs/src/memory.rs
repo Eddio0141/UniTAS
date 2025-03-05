@@ -119,7 +119,8 @@ pub unsafe fn hook_inject(
     use std::slice;
 
     use iced_x86::{
-        Code, Decoder, DecoderOptions, Encoder, Instruction, MemoryOperand, Register, code_asm::*,
+        Code, Decoder, DecoderOptions, Encoder, FlowControl, Instruction, MemoryOperand, Register,
+        code_asm::*,
     };
     use log::debug;
 
@@ -130,7 +131,17 @@ pub unsafe fn hook_inject(
     };
     decoder.set_ip(hook_target as u64);
     let target_inst = decoder.decode();
-    let target_inst_branch = target_inst.is_jmp_short_or_near() | target_inst.is_jmp_far();
+    let target_inst_branch = matches!(
+        target_inst.flow_control(),
+        FlowControl::UnconditionalBranch
+            | FlowControl::IndirectBranch
+            | FlowControl::ConditionalBranch
+            | FlowControl::Return
+            // TODO: not sure how to handle those, so for now im taking it safe
+            | FlowControl::Interrupt
+            | FlowControl::XbeginXabortXend
+            | FlowControl::Exception
+    );
     if target_inst.len() < 5 {
         panic!("target instruction is less than 5 bytes");
     }
