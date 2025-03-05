@@ -14,10 +14,10 @@ const-str = { version = "0.6.2", features = ["proc"] }
 libc = "0.2.169"
 
 [target.'cfg(windows)'.dependencies]
-windows-sys = { version = "0.59.0", default-features = false, features = [ "Win32_System_Memory", "Win32_System_LibraryLoader", "Win32_System_ProcessStatus", "Win32_System_Threading" ] }
+windows-sys = { version = "0.59.0", default-features = false, features = [ "Win32_System_Memory", "Win32_System_LibraryLoader", "Win32_System_ProcessStatus", "Win32_System_Threading", "Win32_System_Diagnostics_Debug" ] }
 
 [dev-dependencies]
-windows-sys = { version = "0.59.0", default-features = false, features = [ "Win32_System_Memory", "Win32_System_LibraryLoader", "Win32_System_ProcessStatus", "Win32_System_Threading" ] }
+windows-sys = { version = "0.59.0", default-features = false, features = [ "Win32_System_Memory", "Win32_System_LibraryLoader", "Win32_System_ProcessStatus", "Win32_System_Threading", "Win32_System_Diagnostics_Debug" ] }
 
 [lib]
 crate-type = ["cdylib"]

@@ -350,10 +350,27 @@ pub unsafe fn hook_inject(
         )
     };
 
+    #[cfg(windows)]
+    flush_instruction_cache();
+
     memory.dynamic_inst_ptr += instrs.len();
     memory.check_dynamic_inst_ptr();
 
     Ok(())
+}
+
+#[cfg(windows)]
+fn flush_instruction_cache() {
+    use windows_sys::Win32::System::{
+        Diagnostics::Debug::FlushInstructionCache, Threading::GetCurrentProcess,
+    };
+
+    if unsafe { FlushInstructionCache(GetCurrentProcess(), ptr::null_mut(), 0) } == 0 {
+        panic!(
+            "failed to flush instruction cache: {}",
+            io::Error::last_os_error()
+        );
+    }
 }
 
 #[cfg(all(unix, any(target_arch = "x86_64", target_arch = "x86")))]
