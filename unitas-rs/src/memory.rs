@@ -11,14 +11,13 @@ struct Memory {
     dynamic_inst_ptr_start: usize,
     dynamic_inst_ptr: usize,
     dynamic_inst_mem_size: usize,
-    page_size: usize,
 }
 
 const DYNAMIC_INST_MEM_SIZE: usize = 0x1000;
 
 const BITNESS: u32 = (mem::size_of::<usize>() * 8) as u32;
 
-#[cfg(all(unix, any(target_arch = "x86_64", target_arch = "x86")))]
+#[cfg(unix)]
 static MEMORY: LazyLock<Mutex<Memory>> = LazyLock::new(|| {
     use libc::*;
 
@@ -47,12 +46,11 @@ static MEMORY: LazyLock<Mutex<Memory>> = LazyLock::new(|| {
         dynamic_inst_ptr_start: alloc_ptr,
         dynamic_inst_ptr: alloc_ptr,
         dynamic_inst_mem_size,
-        page_size,
     }
     .into()
 });
 
-#[cfg(all(windows, any(target_arch = "x86_64", target_arch = "x86")))]
+#[cfg(windows)]
 static MEMORY: LazyLock<Mutex<Memory>> = LazyLock::new(|| {
     use windows_sys::Win32::System::Memory::{
         MEM_COMMIT, MEM_RESERVE, PAGE_EXECUTE_READWRITE, VirtualAlloc,
@@ -79,7 +77,6 @@ static MEMORY: LazyLock<Mutex<Memory>> = LazyLock::new(|| {
         dynamic_inst_ptr_start: alloc_ptr,
         dynamic_inst_ptr: alloc_ptr,
         dynamic_inst_mem_size: DYNAMIC_INST_MEM_SIZE,
-        page_size: 0,
     }
     .into()
 });
@@ -89,7 +86,7 @@ impl Memory {
         let used = self.dynamic_inst_ptr - self.dynamic_inst_ptr_start;
         if used > self.dynamic_inst_mem_size {
             panic!(
-                "ran out of space for dynamically generated x86 instructions, used {used:x} bytes"
+                "ran out of space for dynamically generated x86 instructions, used 0x{used:x} bytes"
             );
         }
     }
@@ -217,17 +214,17 @@ pub unsafe fn hook_inject(
 
         // write target
         let target = memory.dynamic_inst_ptr.to_le_bytes();
-        let orig = make_exec_mem_writable(jmp_addr as usize, target.len(), memory.page_size)?;
+        let orig = make_exec_mem_writable(jmp_addr as usize, target.len())?;
         unsafe { ptr::copy_nonoverlapping(target.as_ptr(), jmp_addr as *mut u8, target.len()) };
-        restore_exec_mem_prot(jmp_addr as usize, target.len(), memory.page_size, orig)?;
+        restore_exec_mem_prot(jmp_addr as usize, target.len(), orig)?;
 
         // write instruction
         let mut encoder = Encoder::new(BITNESS);
         encoder.encode(&jmp_inst, jmp_inst_addr).unwrap();
         let inst = encoder.take_buffer();
-        let orig = make_exec_mem_writable(jmp_inst_addr as usize, inst.len(), memory.page_size)?;
+        let orig = make_exec_mem_writable(jmp_inst_addr as usize, inst.len())?;
         unsafe { ptr::copy_nonoverlapping(inst.as_ptr(), jmp_inst_addr as *mut u8, inst.len()) };
-        restore_exec_mem_prot(jmp_inst_addr as usize, inst.len(), memory.page_size, orig)?;
+        restore_exec_mem_prot(jmp_inst_addr as usize, inst.len(), orig)?;
 
         // actual jmp to the 2nd jmp
         let inst = if cfg!(target_pointer_width = "64") {
@@ -242,9 +239,9 @@ pub unsafe fn hook_inject(
         assert_eq!(encoder.encode(&inst, hook_target as u64).unwrap(), 5);
 
         let inst = encoder.take_buffer();
-        let orig = make_exec_mem_writable(hook_target, inst.len(), memory.page_size)?;
+        let orig = make_exec_mem_writable(hook_target, inst.len())?;
         unsafe { ptr::copy_nonoverlapping(inst.as_ptr(), hook_target as *mut u8, inst.len()) };
-        restore_exec_mem_prot(hook_target, inst.len(), memory.page_size, orig)?;
+        restore_exec_mem_prot(hook_target, inst.len(), orig)?;
     } else {
         let inst = if cfg!(target_pointer_width = "64") {
             Code::Jmp_rel32_64
@@ -258,9 +255,9 @@ pub unsafe fn hook_inject(
         assert_eq!(encoder.encode(&inst, hook_target as u64).unwrap(), 5);
 
         let inst = encoder.take_buffer();
-        let orig = make_exec_mem_writable(hook_target, inst.len(), memory.page_size)?;
+        let orig = make_exec_mem_writable(hook_target, inst.len())?;
         unsafe { ptr::copy_nonoverlapping(inst.as_ptr(), hook_target as *mut u8, inst.len()) };
-        restore_exec_mem_prot(hook_target, inst.len(), memory.page_size, orig)?;
+        restore_exec_mem_prot(hook_target, inst.len(), orig)?;
     }
 
     // custom location instructions
@@ -373,10 +370,11 @@ fn flush_instruction_cache() {
     }
 }
 
-#[cfg(all(unix, any(target_arch = "x86_64", target_arch = "x86")))]
-fn make_exec_mem_writable(addr: usize, len: usize, page_size: usize) -> io::Result<u32> {
+#[cfg(unix)]
+fn make_exec_mem_writable(addr: usize, len: usize) -> io::Result<u32> {
     use libc::*;
 
+    let page_size = unsafe { sysconf(_SC_PAGESIZE) } as usize;
     let page_start = addr & !(page_size - 1);
     let aligned_len = ((addr + len + page_size - 1) & !(page_size - 1)) - page_start;
     if unsafe {
@@ -394,7 +392,7 @@ fn make_exec_mem_writable(addr: usize, len: usize, page_size: usize) -> io::Resu
 }
 
 #[cfg(windows)]
-fn make_exec_mem_writable(addr: usize, len: usize, _page_size: usize) -> io::Result<u32> {
+fn make_exec_mem_writable(addr: usize, len: usize) -> io::Result<u32> {
     use std::ffi::c_void;
     use windows_sys::Win32::System::Memory::{PAGE_EXECUTE_READWRITE, VirtualProtect};
 
@@ -415,14 +413,10 @@ fn make_exec_mem_writable(addr: usize, len: usize, _page_size: usize) -> io::Res
 }
 
 #[cfg(unix)]
-fn restore_exec_mem_prot(
-    addr: usize,
-    len: usize,
-    page_size: usize,
-    original: u32,
-) -> io::Result<()> {
+fn restore_exec_mem_prot(addr: usize, len: usize, original: u32) -> io::Result<()> {
     use libc::*;
 
+    let page_size = unsafe { sysconf(_SC_PAGESIZE) } as usize;
     let page_start = addr & !(page_size - 1);
     let aligned_len = ((addr + len + page_size - 1) & !(page_size - 1)) - page_start;
     if unsafe {
@@ -440,12 +434,7 @@ fn restore_exec_mem_prot(
 }
 
 #[cfg(windows)]
-fn restore_exec_mem_prot(
-    addr: usize,
-    len: usize,
-    _page_size: usize,
-    original: u32,
-) -> io::Result<u32> {
+fn restore_exec_mem_prot(addr: usize, len: usize, original: u32) -> io::Result<u32> {
     use std::ffi::c_void;
     use windows_sys::Win32::System::Memory::VirtualProtect;
 
