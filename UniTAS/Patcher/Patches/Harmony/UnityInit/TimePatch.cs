@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 using HarmonyLib;
 using UniTAS.Patcher.Interfaces.Patches.PatchTypes;
 using UniTAS.Patcher.Services;
@@ -22,6 +25,23 @@ public class TimePatch
         ReverseInvoker = ContainerStarter.Kernel.GetInstance<IPatchReverseInvoker>();
 
     private static readonly ITimeEnv TimeEnv = ContainerStarter.Kernel.GetInstance<ITimeEnv>();
+
+    private static bool CalledFromNamespace(string targetNamespace)
+    {
+        var frames = new StackTrace().GetFrames();
+        if (frames == null) return false;
+
+        foreach (var frame in frames)
+        {
+            var method = frame.GetMethod();
+            if (method?.DeclaringType == null) continue;
+
+            var declaringNamespace = method.DeclaringType.Namespace;
+            if (declaringNamespace.StartsWith(targetNamespace)) return true;
+        }
+
+        return false;
+    }
 
     private static bool CalledFromFixedUpdate()
     {
@@ -176,6 +196,45 @@ public class TimePatch
             }
 
             __result = (int)((ulong)__result - TimeEnv.RenderedFrameCountOffset);
+        }
+    }
+
+    [HarmonyPatch]
+    private class StopwatchGetTimestamp
+    {
+        static IEnumerable<MethodBase> TargetMethods()
+        {
+            return AccessTools.GetDeclaredMethods(typeof(Stopwatch))
+                .Cast<MethodBase>();
+        }
+
+        static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+        {
+            var originalMethod = AccessTools.Method(typeof(Stopwatch), nameof(Stopwatch.GetTimestamp));
+            var replacementMethod = AccessTools.Method(typeof(StopwatchGetTimestamp), nameof(GetTimestamp));
+
+            foreach (var instruction in instructions)
+            {
+                if (instruction.opcode == OpCodes.Call && instruction.operand is MethodInfo method && method == originalMethod)
+                {
+                    var repl = new CodeInstruction(OpCodes.Call, replacementMethod);
+                    repl.labels.AddRange(instruction.labels);
+                    yield return repl;
+                }
+                else
+                {
+                    yield return instruction;
+                }
+            }
+        }
+
+        public static long GetTimestamp()
+        {
+            if (!CalledFromNamespace("Rewired")) {
+                return Stopwatch.GetTimestamp();
+            }
+
+            return (long)(TimeEnv.UnscaledTime * Stopwatch.Frequency);
         }
     }
 
