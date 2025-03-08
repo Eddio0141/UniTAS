@@ -37,11 +37,11 @@
           rust-doc = pkgs.writeShellApplication {
             name = "rust-doc";
             text = ''
-              xdg-open "${inputs'.fenix.packages.stable.rust-docs}/share/doc/rust/html/index.html"
+              xdg-open "${inputs'.fenix.packages.latest.rust-docs}/share/doc/rust/html/index.html"
             '';
           };
 
-          rust = pkgs.rust-bin.stable.latest.default;
+          rust = pkgs.rust-bin.selectLatestNightlyWith (t: t.default);
 
           toolchain =
             with fenix.packages.${system};

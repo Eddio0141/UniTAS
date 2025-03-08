@@ -1,6 +1,6 @@
 use log::info;
 
-mod hooks;
+mod hook;
 mod memory;
 mod unitas_exports;
 
@@ -12,7 +12,7 @@ pub extern "C" fn init() {
 
     info!("initilising unitas-rs");
 
-    hooks::install();
+    hook::install();
 
     info!("initialised unitas-rs");
 }

@@ -7,17 +7,14 @@ pattern-macro = { path = "./pattern-macro/" }
 pattern = { path = "./pattern/" }
 env_logger = "0.11.6"
 log = "0.4.26"
-iced-x86 = { version = "1.21.0", default-features = false, features = ["std", "decoder", "encoder", "block_encoder", "code_asm", "instr_info"] }
 const-str = { version = "0.6.2", features = ["proc"] }
+retour = { git = "https://github.com/Eddio0141/retour-rs.git", branch = "master", features = ["static-detour"] }
 
 [target.'cfg(unix)'.dependencies]
-libc = "0.2.169"
+libc = "0.2.170"
 
 [target.'cfg(windows)'.dependencies]
-windows-sys = { version = "0.59.0", default-features = false, features = [ "Win32_System_Memory", "Win32_System_LibraryLoader", "Win32_System_ProcessStatus", "Win32_System_Threading", "Win32_System_Diagnostics_Debug" ] }
-
-[dev-dependencies]
-windows-sys = { version = "0.59.0", default-features = false, features = [ "Win32_System_Memory", "Win32_System_LibraryLoader", "Win32_System_ProcessStatus", "Win32_System_Threading", "Win32_System_Diagnostics_Debug" ] }
+windows-sys = { version = "0.59.0", default-features = false, features = [ "Win32_System_LibraryLoader", "Win32_System_ProcessStatus", "Win32_System_Threading" ] }
 
 [lib]
 crate-type = ["cdylib"]
