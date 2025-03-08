@@ -99,6 +99,8 @@ impl MemoryMap {
             Threading::GetCurrentProcess,
         };
 
+        use std::ptr;
+
         let handle = unsafe { GetModuleHandleA(filename.as_ptr() as *const u8) };
         if handle.is_null() {
             panic!("failed to find exe module, {}", io::Error::last_os_error());
@@ -143,6 +145,8 @@ impl MemoryMap {
 
     #[cfg(windows)]
     pub fn find_exe(&self) -> Range<usize> {
+        use std::ptr;
+
         use windows_sys::Win32::System::{
             LibraryLoader::GetModuleHandleA,
             ProcessStatus::{GetModuleInformation, MODULEINFO},
