@@ -16,7 +16,10 @@ pub const fn last_update_hook<'a>() -> Hook<'a> {
                 // x86_64-linux
                 // 2019.4.40f1 - 6000.0.0b11
                 Search {
-                    pattern: pattern!(22, "e8 ?? ?? ?? ?? 0f b6 ?? ?? ?? ?? ?? e8 ?? ?? ?? ?? e8",),
+                    pattern: Some(pattern!(
+                        22,
+                        "e8 ?? ?? ?? ?? 0f b6 ?? ?? ?? ?? ?? e8 ?? ?? ?? ?? e8"
+                    )),
                     start_symbol: Some(c"_Z10PlayerMainiPPc"),
                     module: Some(UNITY_PLAYER_MODULE),
                     installer: &|addr| {
@@ -26,10 +29,10 @@ pub const fn last_update_hook<'a>() -> Hook<'a> {
                 // x86_64-linux
                 // 6000.0.25f1 - 6000.0.40f1
                 Search {
-                    pattern: pattern!(
+                    pattern: Some(pattern!(
                         6,
                         "8b ?? ?? ?? ?? ?? e8 ?? ?? ?? ?? ?? 8b ?? ?? ?? ?? ?? e8 ?? ?? ?? ?? 83 ?? ?? ?? 8d"
-                    ),
+                    )),
                     start_symbol: Some(c"_Z10PlayerMainiPPc"),
                     module: Some(UNITY_PLAYER_MODULE),
                     installer: &|addr| last_update_mid_func_install(addr, true),
@@ -37,7 +40,10 @@ pub const fn last_update_hook<'a>() -> Hook<'a> {
                 // x86_64-linux
                 // 2017.4.6f1 - 2018.1.5f1
                 Search {
-                    pattern: pattern!(12, "0f b6 ?? ?? ?? ?? ?? e8 ?? ?? ?? ?? e8 ?? ?? ?? ?? eb"),
+                    pattern: Some(pattern!(
+                        12,
+                        "0f b6 ?? ?? ?? ?? ?? e8 ?? ?? ?? ?? e8 ?? ?? ?? ?? eb"
+                    )),
                     start_symbol: None,
                     module: None,
                     installer: &|addr| last_update_mid_func_install(addr, true),
@@ -55,10 +61,10 @@ pub const fn last_update_hook<'a>() -> Hook<'a> {
                 // win64
                 // 2022.2.0f1
                 Search {
-                    pattern: pattern!(
+                    pattern: Some(pattern!(
                         5,
-                        "e8 ?? ?? ?? ?? e8 ?? ?? ?? ?? ?? 8b ?? ?? ?? ?? ?? ?? 85 ?? 74 ?? ?? 38 ?? ?? ?? ?? ?? 74",
-                    ),
+                        "e8 ?? ?? ?? ?? e8 ?? ?? ?? ?? ?? 8b ?? ?? ?? ?? ?? ?? 85 ?? 74 ?? ?? 38 ?? ?? ?? ?? ?? 74"
+                    )),
                     start_symbol: None,
                     module: Some(UNITY_PLAYER_MODULE),
                     installer: &|addr| last_update_mid_func_install(addr, true),

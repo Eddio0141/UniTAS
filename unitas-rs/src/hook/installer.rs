@@ -5,7 +5,7 @@ use std::{
     slice,
 };
 
-use log::{debug, info};
+use log::{debug, info, warn};
 use pattern::Pattern;
 
 use crate::{
@@ -14,7 +14,7 @@ use crate::{
 };
 
 pub struct Search {
-    pub pattern: Pattern,
+    pub pattern: Option<Pattern>,
     pub start_symbol: Option<&'static CStr>,
     /// Module to search for
     /// - `None` will make it search in the executable itself
@@ -39,6 +39,9 @@ pub fn install() {
                     .map(|m| m.to_string_lossy())
                     .unwrap_or("<executable>".into())
             );
+            if search.start_symbol.is_none() && search.pattern.is_none() {
+                warn!("hook: start symbol and search pattern is `None`, sure this is intended?");
+            }
             let mut get_mem_range = |base: &Range<usize>, file| match search.start_symbol {
                 Some(start_symbol) => {
                     debug!("hook: targeting symbol {}", start_symbol.to_string_lossy());
@@ -73,20 +76,30 @@ pub fn install() {
                     (base, mem_start, mem_end)
                 }
             };
-            let memory =
-                unsafe { slice::from_raw_parts(mem_start as *const u8, mem_end - mem_start) };
-            debug!("hook: search addr range: 0x{mem_start:x}..0x{mem_end:x}");
+            let offset = match search.pattern.as_ref() {
+                Some(pattern) => {
+                    let memory = unsafe {
+                        slice::from_raw_parts(mem_start as *const u8, mem_end - mem_start)
+                    };
 
-            let Some(offset) = search.pattern.matches(memory) else {
-                debug!("search: failed to match pattern!");
-                continue;
+                    debug!("hook: search addr range: 0x{mem_start:x}..0x{mem_end:x}");
+
+                    let Some(offset) = pattern.matches(memory) else {
+                        debug!("search: failed to match pattern!");
+                        continue;
+                    };
+                    let offset = offset + mem_start;
+
+                    debug!(
+                        "search: found pattern in 0x{offset:x} (0x{:x})",
+                        offset - base.start
+                    );
+
+                    offset
+                }
+                None => mem_start,
             };
-            let offset = offset + mem_start;
 
-            debug!(
-                "search: found pattern in 0x{offset:x} (0x{:x})",
-                offset - base.start
-            );
             (search.installer)(offset);
 
             continue 'hooks;
