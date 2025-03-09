@@ -99,11 +99,11 @@ jobs:
           path: test-runner
 
       # TODO: wait for test-runner for windows
-      - if: matrix.target.os == 'ubuntu-latest'
+      - if: matrix.target.os == 'ubuntu-latest' && matrix.target.triple == 'x86_64-unknown-linux-gnu'
         name: copy UniTAS to test-runner directory
         run: cp UniTAS/Patcher/bin/Release test-runner/UniTAS -r
 
-      - if: matrix.target.os == 'ubuntu-latest'
+      - if: matrix.target.os == 'ubuntu-latest' && matrix.target.triple == 'x86_64-unknown-linux-gnu'
         name: run test-runner
         run: |
           cd test-runner
