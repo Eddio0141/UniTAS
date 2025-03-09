@@ -14,13 +14,39 @@ use crate::{
 };
 
 pub struct Search {
-    pub pattern: Option<Pattern>,
-    pub start_symbol: Option<&'static CStr>,
+    pattern: Option<Pattern>,
+    start_symbol: Option<&'static CStr>,
     /// Module to search for
     /// - `None` will make it search in the executable itself
-    pub module: Option<&'static CStr>,
+    module: Option<&'static CStr>,
     /// Function callback for when this search matches
-    pub installer: &'static dyn Fn(usize),
+    installer: &'static dyn Fn(usize),
+}
+
+impl Search {
+    pub const fn new(installer: &'static dyn Fn(usize)) -> Search {
+        Search {
+            pattern: None,
+            start_symbol: None,
+            module: None,
+            installer,
+        }
+    }
+
+    pub const fn with_pattern(mut self, pattern: Pattern) -> Search {
+        self.pattern = Some(pattern);
+        self
+    }
+
+    pub const fn with_module(mut self, module: &'static CStr) -> Search {
+        self.module = Some(module);
+        self
+    }
+
+    pub const fn with_symbol(mut self, symbol: &'static CStr) -> Search {
+        self.start_symbol = Some(symbol);
+        self
+    }
 }
 
 pub struct Hook<'a>(pub &'a [Search]);

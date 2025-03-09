@@ -10,44 +10,19 @@ pub static mut LAST_UPDATE_CALLBACK: Option<LastUpdateCallbackFn> = None;
 
 #[cfg(unix)]
 pub const fn last_update_hook<'a>() -> Hook<'a> {
+    use std::ffi::CStr;
+
+    const PLAYER_MAIN_SYMBOL: &CStr = c"_Z10PlayerMainiPPc";
+
     Hook(
         const {
             &[
-                // x86_64-linux
                 // 2019.4.40f1 - 6000.0.0b11
-                Search {
-                    pattern: Some(pattern!(
-                        22,
-                        "e8 ?? ?? ?? ?? 0f b6 ?? ?? ?? ?? ?? e8 ?? ?? ?? ?? e8"
-                    )),
-                    start_symbol: Some(c"_Z10PlayerMainiPPc"),
-                    module: Some(UNITY_PLAYER_MODULE),
-                    installer: &|addr| {
-                        last_update_mid_func_install(addr, false);
-                    },
-                },
-                // x86_64-linux
+                Search::new(&|addr| last_update_mid_func_install(addr, false)).with_module(UNITY_PLAYER_MODULE).with_pattern(pattern!(22, "e8 ?? ?? ?? ?? 0f b6 ?? ?? ?? ?? ?? e8 ?? ?? ?? ?? e8")).with_symbol(PLAYER_MAIN_SYMBOL),
                 // 6000.0.25f1 - 6000.0.40f1
-                Search {
-                    pattern: Some(pattern!(
-                        6,
-                        "8b ?? ?? ?? ?? ?? e8 ?? ?? ?? ?? ?? 8b ?? ?? ?? ?? ?? e8 ?? ?? ?? ?? 83 ?? ?? ?? 8d"
-                    )),
-                    start_symbol: Some(c"_Z10PlayerMainiPPc"),
-                    module: Some(UNITY_PLAYER_MODULE),
-                    installer: &|addr| last_update_mid_func_install(addr, true),
-                },
-                // x86_64-linux
+                Search::new(&|addr| last_update_mid_func_install(addr, true)).with_module(UNITY_PLAYER_MODULE).with_pattern(pattern!(6, "8b ?? ?? ?? ?? ?? e8 ?? ?? ?? ?? ?? 8b ?? ?? ?? ?? ?? e8 ?? ?? ?? ?? 83 ?? ?? ?? 8d")).with_symbol(PLAYER_MAIN_SYMBOL),
                 // 2017.4.6f1 - 2018.1.5f1
-                Search {
-                    pattern: Some(pattern!(
-                        12,
-                        "0f b6 ?? ?? ?? ?? ?? e8 ?? ?? ?? ?? e8 ?? ?? ?? ?? eb"
-                    )),
-                    start_symbol: None,
-                    module: None,
-                    installer: &|addr| last_update_mid_func_install(addr, true),
-                },
+                Search::new(&|addr| last_update_mid_func_install(addr, true)).with_module(UNITY_PLAYER_MODULE).with_pattern(pattern!(12, "0f b6 ?? ?? ?? ?? ?? e8 ?? ?? ?? ?? e8 ?? ?? ?? ?? eb")),
             ]
         },
     )
@@ -58,17 +33,10 @@ pub const fn last_update_hook<'a>() -> Hook<'a> {
     Hook(
         const {
             &[
-                // win64
+                // 2017.4.22f1
+                Search::new(&|addr| last_update_mid_func_install(addr, true)).with_module(UNITY_PLAYER_MODULE).with_pattern(pattern!(12, "e8 ?? ?? ?? ?? ?? ?? e8 ?? ?? ?? ?? e8 ?? ?? ?? ?? ?? 83 ?? ?? e9 ?? ?? ?? ?? e8")),
                 // 2022.2.0f1
-                Search {
-                    pattern: Some(pattern!(
-                        5,
-                        "e8 ?? ?? ?? ?? e8 ?? ?? ?? ?? ?? 8b ?? ?? ?? ?? ?? ?? 85 ?? 74 ?? ?? 38 ?? ?? ?? ?? ?? 74"
-                    )),
-                    start_symbol: None,
-                    module: Some(UNITY_PLAYER_MODULE),
-                    installer: &|addr| last_update_mid_func_install(addr, true),
-                },
+                Search::new(&|addr| last_update_mid_func_install(addr, true)).with_module(UNITY_PLAYER_MODULE).with_pattern(pattern!(5, "e8 ?? ?? ?? ?? e8 ?? ?? ?? ?? ?? 8b ?? ?? ?? ?? ?? ?? 85 ?? 74 ?? ?? 38 ?? ?? ?? ?? ?? 74")),
             ]
         },
     )
