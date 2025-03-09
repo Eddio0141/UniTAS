@@ -7,8 +7,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
-    runs-on: ${{ matrix.os }}
+        target:
+          - os: ubuntu-latest
+            triple: x86_64-unknown-linux-gnu
+          - os: ubuntu-latest
+            triple: i686-unknown-linux-gnu
+          - os: windows-latest
+            triple: x86_64-pc-windows-msvc
+          - os: windows-latest
+            triple: i686-pc-windows-msvc
+    runs-on: ${{ matrix.target.os }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -26,7 +34,13 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: rust cache
+      - name: Rustup toolchain install
+        uses: dtolnay/rust-toolchain@v1
+        with:
+          toolchain: nightly
+          targets: ${{ matrix.target.triple }}
+
+      - name: Rust cache
         uses: Swatinem/rust-cache@v2
         with:
           workspaces: unitas-rs -> unitas-rs
@@ -35,7 +49,7 @@ jobs:
         run: cargo test --all
         working-directory: unitas-rs
 
-      - if: matrix.os == 'ubuntu-latest'
+      - if: matrix.target.os == 'ubuntu-latest' && matrix.target.triple == 'x86_64-unknown-linux-gnu'
         name: Tests UniTAS
         run: dotnet test UniTAS --configuration ReleaseTest
 
@@ -46,12 +60,12 @@ jobs:
       - name: Build UniTAS
         run: dotnet build UniTAS --configuration Release
 
-      - if: matrix.os == 'ubuntu-latest'
+      - if: matrix.target.os == 'ubuntu-latest'
         name: Copy unitas-rs output to UniTAS output
         run: |
           cp unitas-rs/target/release/libunitas_rs.so UniTAS/Patcher/bin/Release/BepInEx/patchers/UniTAS
 
-      - if: matrix.os == 'windows-latest'
+      - if: matrix.target.os == 'windows-latest'
         name: Copy unitas-rs output to UniTAS output
         run: |
           cp unitas-rs/target/release/unitas_rs.dll UniTAS/Patcher/bin/Release/BepInEx/patchers/UniTAS
@@ -59,10 +73,10 @@ jobs:
       - name: Get built artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: UniTAS-${{ matrix.os }}
+          name: UniTAS-${{ matrix.target.os }}-${{ matrix.target.triple }}
           path: ./UniTAS/Patcher/bin/Release
   
-      - if: matrix.os == 'ubuntu-latest'
+      - if: matrix.target.os == 'ubuntu-latest'
         name: download test-runner
         uses: dawidd6/action-download-artifact@v6
         with:
@@ -73,7 +87,7 @@ jobs:
           repo: Eddio0141/UniTASTestClients
           path: test-runner
 
-      - if: matrix.os == 'windows-latest'
+      - if: matrix.target.os == 'windows-latest'
         name: download test-runner
         uses: dawidd6/action-download-artifact@v6
         with:
@@ -84,30 +98,32 @@ jobs:
           repo: Eddio0141/UniTASTestClients
           path: test-runner
 
-      - name: copy UniTAS to test-runner directory
+      # TODO: wait for test-runner for windows
+      - if: matrix.target.os == 'ubuntu-latest'
+        name: copy UniTAS to test-runner directory
         run: cp UniTAS/Patcher/bin/Release test-runner/UniTAS -r
 
-      - if: matrix.os == 'ubuntu-latest'
+      - if: matrix.target.os == 'ubuntu-latest'
         name: run test-runner
         run: |
           cd test-runner
           chmod +x test-runner
           ./test-runner --github-token ${{ secrets.GITHUB_TOKEN }}
 
-      - if: matrix.os == 'windows-latest'
-        name: run test-runner
-        run: |
-          Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vc_redist.x64.exe" -OutFile vc_redist.x64.exe
-          Start-Process -FilePath ./vc_redist.x64.exe -ArgumentList '/install', '/quiet', '/norestart' -Wait
-          Start-Process -FilePath ./test-runner.exe -ArgumentList '--github-token ${{ secrets.GITHUB_TOKEN }}' -Wait
-          Start-Process -FilePath ./test-runner.exe -ArgumentList '--help' -Wait
-        working-directory: test-runner
+      # - if: matrix.target.os == 'windows-latest'
+      #   name: run test-runner
+      #   run: |
+      #     Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vc_redist.x64.exe" -OutFile vc_redist.x64.exe
+      #     Start-Process -FilePath ./vc_redist.x64.exe -ArgumentList '/install', '/quiet', '/norestart' -Wait
+      #     Start-Process -FilePath ./test-runner.exe -ArgumentList '--github-token ${{ secrets.GITHUB_TOKEN }}' -Wait
+      #     Start-Process -FilePath ./test-runner.exe -ArgumentList '--help' -Wait
+      #   working-directory: test-runner
 
       - if: failure()
         name: test-runner logs
         uses: actions/upload-artifact@v4
         with:
-          name: test-runner-logs-${{ matrix.os }}
+          name: test-runner-logs-${{ matrix.target.os }}-${{ matrix.target.triple }}
           path: test-runner/logs
 
       - if: contains(github.event.pull_request.labels.*.name, 'automation')
