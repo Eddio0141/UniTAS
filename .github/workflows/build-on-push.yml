@@ -54,7 +54,7 @@ jobs:
         run: dotnet test UniTAS --configuration ReleaseTest
 
       - name: Build unitas-rs
-        run: cargo build --release
+        run: cargo build --release --target ${{ matrix.target.triple }}
         working-directory: unitas-rs
 
       - name: Build UniTAS
@@ -63,12 +63,12 @@ jobs:
       - if: matrix.target.os == 'ubuntu-latest'
         name: Copy unitas-rs output to UniTAS output
         run: |
-          cp unitas-rs/target/release/libunitas_rs.so UniTAS/Patcher/bin/Release/BepInEx/patchers/UniTAS
+          cp unitas-rs/target/${{ matrix.target.triple }}/release/libunitas_rs.so UniTAS/Patcher/bin/Release/BepInEx/patchers/UniTAS
 
       - if: matrix.target.os == 'windows-latest'
         name: Copy unitas-rs output to UniTAS output
         run: |
-          cp unitas-rs/target/release/unitas_rs.dll UniTAS/Patcher/bin/Release/BepInEx/patchers/UniTAS
+          cp unitas-rs/target/${{ matrix.target.triple }}/release/unitas_rs.dll UniTAS/Patcher/bin/Release/BepInEx/patchers/UniTAS
 
       - name: Get built artifacts
         uses: actions/upload-artifact@v4
