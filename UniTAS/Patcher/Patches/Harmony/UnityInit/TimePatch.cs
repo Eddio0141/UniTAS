@@ -34,10 +34,9 @@ public class TimePatch
         foreach (var frame in frames)
         {
             var method = frame.GetMethod();
-            if (method?.DeclaringType == null) continue;
 
-            var declaringNamespace = method.DeclaringType.Namespace;
-            if (declaringNamespace.StartsWith(targetNamespace)) return true;
+            var declaringNamespace = method?.DeclaringType?.Namespace;
+            if (declaringNamespace?.StartsWith(targetNamespace) is true) return true;
         }
 
         return false;
@@ -215,7 +214,8 @@ public class TimePatch
 
             foreach (var instruction in instructions)
             {
-                if (instruction.opcode == OpCodes.Call && instruction.operand is MethodInfo method && method == originalMethod)
+                if (instruction.opcode == OpCodes.Call && instruction.operand is MethodInfo method &&
+                    method == originalMethod)
                 {
                     var repl = new CodeInstruction(OpCodes.Call, replacementMethod);
                     repl.labels.AddRange(instruction.labels);
@@ -230,7 +230,8 @@ public class TimePatch
 
         public static long GetTimestamp()
         {
-            if (!CalledFromNamespace("Rewired")) {
+            if (!CalledFromNamespace("Rewired"))
+            {
                 return Stopwatch.GetTimestamp();
             }
 
