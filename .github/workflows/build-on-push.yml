@@ -46,7 +46,7 @@ jobs:
           workspaces: unitas-rs -> unitas-rs
 
       - name: Tests unitas-rs
-        run: cargo test --all
+        run: cargo test --all --target ${{ matrix.target.triple }}
         working-directory: unitas-rs
 
       - if: matrix.target.os == 'ubuntu-latest' && matrix.target.triple == 'x86_64-unknown-linux-gnu'
