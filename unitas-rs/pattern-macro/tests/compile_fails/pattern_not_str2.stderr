@@ -1,0 +1,5 @@
+error: expected a pattern as a string literal
+ --> tests/compile_fails/pattern_not_str2.rs:4:17
+  |
+4 |     pattern!(0, 10);
+  |                 ^^

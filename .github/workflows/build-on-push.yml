@@ -6,7 +6,17 @@ jobs:
   buildAndTest:
     strategy:
       fail-fast: false
-    runs-on: ubuntu-latest
+      matrix:
+        target:
+          - os: ubuntu-latest
+            triple: x86_64-unknown-linux-gnu
+          # - os: ubuntu-latest
+          #   triple: i686-unknown-linux-gnu
+          - os: windows-latest
+            triple: x86_64-pc-windows-msvc
+          - os: windows-latest
+            triple: i686-pc-windows-msvc
+    runs-on: ${{ matrix.target.os }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -24,19 +34,50 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Tests
+      - name: Rustup toolchain install
+        uses: dtolnay/rust-toolchain@v1
+        with:
+          toolchain: nightly
+          targets: ${{ matrix.target.triple }}
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: unitas-rs -> unitas-rs
+
+      - name: Tests unitas-rs
+        run: cargo test --all --target ${{ matrix.target.triple }}
+        working-directory: unitas-rs
+
+      - if: matrix.target.os == 'ubuntu-latest' && matrix.target.triple == 'x86_64-unknown-linux-gnu'
+        name: Tests UniTAS
         run: dotnet test UniTAS --configuration ReleaseTest
 
-      - name: Build
+      - name: Build unitas-rs
+        run: cargo build --release --target ${{ matrix.target.triple }}
+        working-directory: unitas-rs
+
+      - name: Build UniTAS
         run: dotnet build UniTAS --configuration Release
+
+      - if: matrix.target.os == 'ubuntu-latest'
+        name: Copy unitas-rs output to UniTAS output
+        run: |
+          cp unitas-rs/target/${{ matrix.target.triple }}/release/libunitas_rs.so UniTAS/Patcher/bin/Release
+
+      - if: matrix.target.os == 'windows-latest'
+        name: Copy unitas-rs output to UniTAS output
+        run: |
+          cp unitas-rs/target/${{ matrix.target.triple }}/release/unitas_rs.dll UniTAS/Patcher/bin/Release
 
       - name: Get built artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: UniTAS
+          name: UniTAS-${{ matrix.target.os }}-${{ matrix.target.triple }}
           path: ./UniTAS/Patcher/bin/Release
-
-      - name: download test-runner
+  
+      - if: matrix.target.os == 'ubuntu-latest'
+        name: download test-runner
         uses: dawidd6/action-download-artifact@v6
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -46,19 +87,43 @@ jobs:
           repo: Eddio0141/UniTASTestClients
           path: test-runner
 
-      - name: copy UniTAS to test-runner directory
+      - if: matrix.target.os == 'windows-latest'
+        name: download test-runner
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          workflow: build-on-push.yml
+          branch: main
+          name: test-runner-win
+          repo: Eddio0141/UniTASTestClients
+          path: test-runner
+
+      # TODO: wait for test-runner for windows
+      - if: matrix.target.os == 'ubuntu-latest' && matrix.target.triple == 'x86_64-unknown-linux-gnu'
+        name: copy UniTAS to test-runner directory
         run: cp UniTAS/Patcher/bin/Release test-runner/UniTAS -r
 
-      - name: run test-runner
+      - if: matrix.target.os == 'ubuntu-latest' && matrix.target.triple == 'x86_64-unknown-linux-gnu'
+        name: run test-runner
         run: |
           cd test-runner
           chmod +x test-runner
           ./test-runner --github-token ${{ secrets.GITHUB_TOKEN }}
 
-      - name: test-runner logs
+      # - if: matrix.target.os == 'windows-latest'
+      #   name: run test-runner
+      #   run: |
+      #     Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vc_redist.x64.exe" -OutFile vc_redist.x64.exe
+      #     Start-Process -FilePath ./vc_redist.x64.exe -ArgumentList '/install', '/quiet', '/norestart' -Wait
+      #     Start-Process -FilePath ./test-runner.exe -ArgumentList '--github-token ${{ secrets.GITHUB_TOKEN }}' -Wait
+      #     Start-Process -FilePath ./test-runner.exe -ArgumentList '--help' -Wait
+      #   working-directory: test-runner
+
+      - if: failure()
+        name: test-runner logs
         uses: actions/upload-artifact@v4
         with:
-          name: test-runner-logs
+          name: test-runner-logs-${{ matrix.target.os }}-${{ matrix.target.triple }}
           path: test-runner/logs
 
       - if: contains(github.event.pull_request.labels.*.name, 'automation')

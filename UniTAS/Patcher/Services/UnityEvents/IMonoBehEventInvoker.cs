@@ -7,7 +7,6 @@ public interface IMonoBehEventInvoker
     void InvokeUpdate();
     void InvokeFixedUpdate();
     void InvokeLateUpdate();
-    void InvokeLastUpdate();
     void InvokeOnGUI();
     void InvokeOnEnable();
     void InvokeEndOfFrame();

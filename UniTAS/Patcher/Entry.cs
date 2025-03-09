@@ -10,6 +10,7 @@ using HarmonyLib;
 using JetBrains.Annotations;
 using Mono.Cecil;
 using UniTAS.Patcher.Extensions;
+using UniTAS.Patcher.External;
 using UniTAS.Patcher.Implementations;
 using UniTAS.Patcher.ManualServices;
 using UniTAS.Patcher.Models.DependencyInjection;
@@ -64,11 +65,13 @@ public static class Entry
     [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public static void Initialize()
     {
+        UniTasRs.init();
+
         using var _ = Bench.Measure();
 
         LoggingUtils.Init();
         StaticLogger.Log.LogInfo("Initializing UniTAS");
-        
+
         UniTASSha256Info.AssemblyLockFileValidate();
         UniTASSha256Info.AssemblyLockFileCreate();
 

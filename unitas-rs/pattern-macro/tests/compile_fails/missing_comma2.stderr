@@ -1,0 +1,7 @@
+error: expected a comma
+ --> tests/compile_fails/missing_comma2.rs:4:5
+  |
+4 |     pattern!(0+);
+  |     ^^^^^^^^^^^^
+  |
+  = note: this error originates in the macro `pattern` (in Nightly builds, run with -Z macro-backtrace for more info)
