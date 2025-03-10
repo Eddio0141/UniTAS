@@ -132,4 +132,8 @@ pub fn install() {
         }
         panic!("failed to install hook, no patterns matches");
     }
+
+    info!("installing detours");
+    super::install_detours();
+    info!("installed detours");
 }
