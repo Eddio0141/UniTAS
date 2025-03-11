@@ -86,7 +86,7 @@ pub const fn last_update_hook<'a>() -> Hook<'a> {
                 // 2019.3.7f1 - 2021.3.10f1
                 Search::new(&|addr| last_update_mid_func_install(addr, true))
                     .with_module(UNITY_PLAYER_MODULE)
-                    .with_pattern(pattern!(21, "83 ?? ?? 75 ?? 0f b6 ?? 8d ?? ?? e8 ?? ?? ?? ?? e8")),
+                    .with_pattern(pattern!(21, "83 ?? ?? 75 ?? 0f b6 ?? 8d ?? ?? e8 ?? ?? ?? ?? e8 ?? ?? ?? ?? e8")),
                 // 2017.4.22f1 - 2018.4.1f1
                 Search::new(&|addr| last_update_mid_func_install(addr, true))
                     .with_module(UNITY_PLAYER_MODULE)
