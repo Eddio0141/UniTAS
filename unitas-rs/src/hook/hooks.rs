@@ -26,6 +26,7 @@ pub struct ReverseInvoke {
 }
 
 impl ReverseInvoke {
+    #[must_use]
     pub fn new() -> Self {
         REVERSE_INVOKE.set(true);
         Self {

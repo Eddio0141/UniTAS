@@ -1,17 +1,54 @@
+use std::{
+    panic::{self, PanicHookInfo},
+    sync::OnceLock,
+    thread,
+};
+
+use backtrace::Backtrace;
 use log::info;
+use logger::DiskLogger;
 
 mod hook;
+mod logger;
 mod memory;
 mod unitas_exports;
 
 fn init() {
-    env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info"))
-        .target(env_logger::Target::Stdout)
-        .init();
+    init_logger();
 
     info!("initilising unitas-rs");
 
     hook::install();
 
     info!("initialised unitas-rs");
+}
+
+static LOGGER: OnceLock<DiskLogger> = OnceLock::new();
+
+fn init_logger() {
+    let logger = LOGGER.get_or_init(|| DiskLogger::new().expect("failed to initialize DiskLogger"));
+    log::set_logger(logger).expect("failed to initialize logger");
+    log::set_max_level(log::LevelFilter::Debug);
+
+    panic::set_hook(Box::new(panic_hook));
+}
+
+fn panic_hook(info: &PanicHookInfo<'_>) {
+    let thread = thread::current();
+    let thread = thread.name().unwrap_or("unnamed");
+    let payload = if let Some(s) = info.payload().downcast_ref::<&str>() {
+        s
+    } else if let Some(s) = info.payload().downcast_ref::<String>() {
+        s
+    } else {
+        ""
+    };
+    let loc = match info.location() {
+        Some(loc) => format!("{}:{}:{}", loc.file(), loc.line(), loc.column()),
+        None => "<unknown>".to_owned(),
+    };
+    let bt = format!("\nstack backtrace:\n{:?}", Backtrace::new());
+    log::error!("thread '{thread}' panicked at {loc}:\n{payload}{bt}");
+
+    log::logger().flush();
 }
