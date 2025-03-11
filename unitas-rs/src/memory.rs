@@ -103,7 +103,7 @@ impl MemoryMap {
 
         let handle = unsafe { GetModuleHandleA(filename.as_ptr() as *const u8) };
         if handle.is_null() {
-            panic!("failed to find exe module, {}", io::Error::last_os_error());
+            return None;
         }
 
         let mut mod_info = MODULEINFO {
@@ -120,7 +120,7 @@ impl MemoryMap {
             )
         };
         if res == 0 {
-            panic!("failed to find exe module, {}", io::Error::last_os_error());
+            return None;
         }
         Some(
             mod_info.lpBaseOfDll as usize
