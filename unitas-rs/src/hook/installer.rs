@@ -74,7 +74,7 @@ pub fn install() {
                     match symbol_lookup.get_symbol_in_file(file, start_symbol) {
                         Some(off) => Some((off, base.end)),
                         None => {
-                            debug!("failed to find symbol");
+                            debug!("hook: failed to find symbol");
                             None
                         }
                     }
@@ -84,9 +84,11 @@ pub fn install() {
             let (base, mem_start, mem_end) = match search.module {
                 Some(m) => {
                     let Some(base) = modules.find_by_filename(m) else {
+                        debug!("hook: failed to find module");
                         continue;
                     };
                     let Some((mem_start, mem_end)) = get_mem_range(&base, m) else {
+                        debug!("hook: failed to get memory range");
                         continue;
                     };
                     (base, mem_start, mem_end)
@@ -97,6 +99,7 @@ pub fn install() {
                     let base = modules.find_exe();
                     let exe_path_cstr = CString::new(exe_path.to_string_lossy().as_ref()).unwrap();
                     let Some((mem_start, mem_end)) = get_mem_range(&base, &exe_path_cstr) else {
+                        debug!("hook: failed to get memory range");
                         continue;
                     };
                     (base, mem_start, mem_end)
