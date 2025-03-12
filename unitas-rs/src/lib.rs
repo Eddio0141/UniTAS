@@ -1,11 +1,12 @@
 use std::{
+    env,
     panic::{self, PanicHookInfo},
     sync::OnceLock,
     thread,
 };
 
 use backtrace::Backtrace;
-use log::info;
+use log::{LevelFilter, info};
 use logger::DiskLogger;
 
 mod hook;
@@ -26,9 +27,16 @@ fn init() {
 static LOGGER: OnceLock<DiskLogger> = OnceLock::new();
 
 fn init_logger() {
+    // TODO: Debug for now
+    let default_lvl = LevelFilter::Debug;
+    let max_level = match env::var("UNITAS_LOG") {
+        Ok(lvl) => lvl.parse::<LevelFilter>().unwrap_or(default_lvl),
+        Err(_) => default_lvl,
+    };
+
     let logger = LOGGER.get_or_init(|| DiskLogger::new().expect("failed to initialize DiskLogger"));
     log::set_logger(logger).expect("failed to initialize logger");
-    log::set_max_level(log::LevelFilter::Debug);
+    log::set_max_level(max_level);
 
     panic::set_hook(Box::new(panic_hook));
 }
