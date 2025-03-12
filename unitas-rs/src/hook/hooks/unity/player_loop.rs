@@ -72,11 +72,9 @@ pub const fn last_update_hook<'a>() -> Hook<'a> {
                 // 5.4.0f3
                 // NOTE: the instruction mnemonics are the same with 4.2.2f1
                 Search::new(&|addr| last_update_mid_func_install(addr, true))
-                    .with_module(UNITY_PLAYER_MODULE)
                     .with_pattern(pattern!(17, "e8 ?? ?? ?? ?? 0f b6 ?? ?? ?? ?? ?? 6a ?? 6a ?? ?? e8 ?? ?? ?? ?? 83 ?? ?? e9")),
                 // 4.2.2f1
                 Search::new(&|addr| last_update_mid_func_install(addr, true))
-                    .with_module(UNITY_PLAYER_MODULE)
                     .with_pattern(pattern!(16, "e8 ?? ?? ?? ?? 0f b6 ?? ?? ?? ?? ?? ?? 6a ?? ?? e8 ?? ?? ?? ?? 83 ?? ?? eb")),
             ]
         },
