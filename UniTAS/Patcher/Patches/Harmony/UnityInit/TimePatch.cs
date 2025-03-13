@@ -8,6 +8,7 @@ using System.Reflection.Emit;
 using HarmonyLib;
 using UniTAS.Patcher.Interfaces.Patches.PatchTypes;
 using UniTAS.Patcher.Services;
+using UniTAS.Patcher.Services.InputSystemOverride;
 using UniTAS.Patcher.Services.VirtualEnvironment;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
@@ -25,6 +26,9 @@ public class TimePatch
         ReverseInvoker = ContainerStarter.Kernel.GetInstance<IPatchReverseInvoker>();
 
     private static readonly ITimeEnv TimeEnv = ContainerStarter.Kernel.GetInstance<ITimeEnv>();
+
+    private static readonly IInputSystemState InputSystemState =
+        ContainerStarter.Kernel.GetInstance<IInputSystemState>();
 
     private static bool CalledFromNamespace(string targetNamespace)
     {
@@ -198,16 +202,19 @@ public class TimePatch
         }
     }
 
+    // TODO: temporary fix, unitas-rs should be used to fix
     [HarmonyPatch]
     private class StopwatchGetTimestamp
     {
-        static IEnumerable<MethodBase> TargetMethods()
+        private static bool Prepare() => InputSystemState.HasRewired;
+
+        private static IEnumerable<MethodBase> TargetMethods()
         {
             return AccessTools.GetDeclaredMethods(typeof(Stopwatch))
                 .Cast<MethodBase>();
         }
 
-        static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
             var originalMethod = AccessTools.Method(typeof(Stopwatch), nameof(Stopwatch.GetTimestamp));
             var replacementMethod = AccessTools.Method(typeof(StopwatchGetTimestamp), nameof(GetTimestamp));
