@@ -8,8 +8,12 @@ pub use installer::install;
 const HOOKS: &[Hook] = &[hooks::unity::player_loop::last_update_hook()];
 
 fn install_detours() {
+    /*
     #[cfg(unix)]
     hooks::libc::install_detours();
+    #[cfg(windows)]
+    hooks::win32::install_detours();
+    */
 }
 
 #[macro_export]

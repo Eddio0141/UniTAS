@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using UniTAS.Patcher.External;
 using UniTAS.Patcher.Implementations.Coroutine;
 using UniTAS.Patcher.Interfaces.Coroutine;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
@@ -103,6 +104,14 @@ public class GameRestart : IGameRestart
         _logger.LogInfo("Starting soft restart");
 
         var bench = Bench.Measure();
+
+#if !UNIT_TESTS
+        var elapsed = time.Subtract(DateTime.MinValue).Ticks;
+        var secs = elapsed / 10000 / 1000; // ticks -> ms -> secs
+        var nanos = (elapsed - secs * 1000 * 10000) * 100; // 1 tick is 100 nano secs
+        
+        UniTasRs.restart((ulong)secs, (uint)nanos);
+#endif
         OnPreGameRestart?.Invoke();
 
         _pendingRestart = true;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Threading;
+using UniTAS.Patcher.External;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Utils;
@@ -25,6 +26,9 @@ public class PatchReverseInvoker : IPatchReverseInvoker
                 return;
             }
 
+#if !UNIT_TESTS
+            UniTasRs.toggle_reverse_invoker(value);
+#endif
             _invoking.Value = value;
         }
     }

@@ -11,12 +11,16 @@ retour = { git = "https://github.com/Eddio0141/retour-rs.git", branch = "master"
 time = { version = "0.3.39", features = ["formatting"] }
 backtrace = "0.3.74"
 colored = "3.0.0"
+thiserror = "2.0.12"
 
 [target.'cfg(unix)'.dependencies]
 libc = "0.2.170"
 
 [target.'cfg(windows)'.dependencies]
-windows-sys = { version = "0.59.0", default-features = false, features = [ "Win32_System_LibraryLoader", "Win32_System_ProcessStatus", "Win32_System_Threading" ] }
+windows-sys = { version = "0.59.0", default-features = false, features = [ "Win32_System_LibraryLoader", "Win32_System_ProcessStatus", "Win32_System_Threading", "Win32_System_Performance" ] }
+
+[dev-dependencies]
+windows-sys = { version = "0.59.0", default-features = false, features = [ "Win32_System_LibraryLoader", "Win32_System_ProcessStatus", "Win32_System_Threading", "Win32_System_Performance" ] }
 
 [lib]
 crate-type = ["cdylib"]

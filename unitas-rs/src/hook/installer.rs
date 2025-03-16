@@ -1,5 +1,6 @@
 use std::{
     env,
+    error::Error,
     ffi::{CStr, CString},
     ops::Range,
     slice,
@@ -20,11 +21,13 @@ pub struct Search {
     /// - `None` will make it search in the executable itself
     module: Option<&'static CStr>,
     /// Function callback for when this search matches
-    installer: &'static dyn Fn(usize),
+    installer: &'static Installer,
 }
 
+type Installer = dyn Fn(usize) -> Result<(), Box<dyn Error>>;
+
 impl Search {
-    pub const fn new(installer: &'static dyn Fn(usize)) -> Search {
+    pub const fn new(installer: &'static Installer) -> Search {
         Search {
             pattern: None,
             start_symbol: None,
@@ -114,13 +117,13 @@ pub fn install() {
                     debug!("hook: search addr range: 0x{mem_start:x}..0x{mem_end:x}");
 
                     let Some(offset) = pattern.matches(memory) else {
-                        debug!("search: failed to match pattern!");
+                        debug!("hook: failed to match pattern!");
                         continue;
                     };
                     let offset = offset + mem_start;
 
                     debug!(
-                        "search: found pattern in 0x{offset:x} (0x{:x})",
+                        "hook: found pattern in 0x{offset:x} (0x{:x})",
                         offset - base.start
                     );
 
@@ -129,11 +132,14 @@ pub fn install() {
                 None => mem_start,
             };
 
-            (search.installer)(offset);
+            if let Err(err) = (search.installer)(offset) {
+                warn!("failed to install hook: {err:?}")
+            }
 
+            debug!("hook: installed!");
             continue 'hooks;
         }
-        panic!("failed to install hook, no patterns matches");
+        warn!("failed to install hook, no patterns matches");
     }
 
     info!("installing detours");

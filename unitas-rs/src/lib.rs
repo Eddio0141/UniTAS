@@ -9,15 +9,22 @@ use backtrace::Backtrace;
 use log::{LevelFilter, info};
 use logger::DiskLogger;
 
+mod error;
 mod hook;
+pub mod info;
 mod logger;
 mod memory;
+mod state;
 mod unitas_exports;
 
 fn init() {
     init_logger();
 
     info!("initilising unitas-rs");
+
+    info::unity::MAIN_THREAD_ID
+        .set(thread::current().id())
+        .unwrap();
 
     hook::install();
 

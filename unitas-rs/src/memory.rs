@@ -83,7 +83,13 @@ impl MemoryMap {
     pub fn find_by_filename(&self, filename: &CStr) -> Option<Range<usize>> {
         let filename = filename.to_string_lossy();
         self.0.iter().find_map(|m_info| {
-            if m_info.path.file_name().unwrap().to_string_lossy() == filename {
+            if m_info
+                .path
+                .file_name()
+                .unwrap()
+                .to_string_lossy()
+                .starts_with(&*filename)
+            {
                 Some(m_info.range.clone())
             } else {
                 None
@@ -135,6 +141,7 @@ impl MemoryMap {
         let exe_path = env::current_exe().expect("failed to get current executable path");
         let exe_path = exe_path.to_string_lossy();
 
+        // TODO: this fails on unity 2022.2 x86_64-linux
         self.0
             .iter()
             .find(|m_info| m_info.path.file_name().unwrap().to_string_lossy() == exe_path)

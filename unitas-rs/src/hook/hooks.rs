@@ -3,11 +3,21 @@ use std::{cell::Cell, marker::PhantomData};
 #[cfg(unix)]
 pub mod libc;
 
+#[cfg(windows)]
+pub mod win32;
+
 pub mod unity;
 
 thread_local! {
     /// Controls if the original function for detours should be used instead
     static REVERSE_INVOKE: Cell<bool> = const { Cell::new(false) };
+}
+
+#[unsafe(no_mangle)]
+/// # Safety
+/// This function isn't meant to be used in the crate, it exists for UniTAS C# side of things
+unsafe extern "C" fn toggle_reverse_invoker(enable: bool) {
+    REVERSE_INVOKE.set(enable);
 }
 
 /// Thread local detour reverse invoke marker
