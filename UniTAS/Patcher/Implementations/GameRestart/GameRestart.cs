@@ -105,13 +105,13 @@ public class GameRestart : IGameRestart
 
         var bench = Bench.Measure();
 
-#if !UNIT_TESTS
-        var elapsed = time.Subtract(DateTime.MinValue).Ticks;
-        var secs = elapsed / 10000 / 1000; // ticks -> ms -> secs
-        var nanos = (elapsed - secs * 1000 * 10000) * 100; // 1 tick is 100 nano secs
-        
-        UniTasRs.restart((ulong)secs, (uint)nanos);
-#endif
+// #if !UNIT_TESTS
+//         var elapsed = time.Subtract(DateTime.MinValue).Ticks;
+//         var secs = elapsed / 10000 / 1000; // ticks -> ms -> secs
+//         var nanos = (elapsed - secs * 1000 * 10000) * 100; // 1 tick is 100 nano secs
+//         
+//         UniTasRs.restart((ulong)secs, (uint)nanos);
+// #endif
         OnPreGameRestart?.Invoke();
 
         _pendingRestart = true;
