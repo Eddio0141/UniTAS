@@ -341,10 +341,10 @@ public class UnityEvents : IUpdateEvents, IMonoBehEventInvoker
         _unityEvent = this;
 #if !UNIT_TESTS
         UniTasRs.last_update_set_callback(InvokeLastUpdateStatic);
-        AddPriorityCallback(CallbackUpdate.UpdateActual, () => UniTasRs.update_actual(Time.deltaTime),
-            CallbackPriority.UniTASRs);
-        AddPriorityCallback(CallbackUpdate.FixedUpdateActual, () => UniTasRs.fixed_update_actual(Time.deltaTime),
-            CallbackPriority.UniTASRs);
+        // AddPriorityCallback(CallbackUpdate.UpdateActual, () => UniTasRs.update_actual(Time.deltaTime),
+        //     CallbackPriority.UniTASRs);
+        // AddPriorityCallback(CallbackUpdate.FixedUpdateActual, () => UniTasRs.fixed_update_actual(Time.deltaTime),
+        //     CallbackPriority.UniTASRs);
 #endif
     }
 

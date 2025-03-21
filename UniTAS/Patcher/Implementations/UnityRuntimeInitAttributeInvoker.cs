@@ -32,7 +32,14 @@ public class UnityRuntimeInitAttributeInvoker
         var runtimeInitializeOnLoadMethodAttribute =
             AccessTools.TypeByName("UnityEngine.RuntimeInitializeOnLoadMethodAttribute");
         if (runtimeInitializeOnLoadMethodAttribute == null) return;
+        // TODO: 5.1 has UnityEngine.RuntimeInitializeOnLoadMethodAttribute but not RuntimeInitializeLoadType, what to do?
         var runtimeInitializeLoadType = AccessTools.TypeByName("UnityEngine.RuntimeInitializeLoadType");
+        if (runtimeInitializeLoadType == null)
+        {
+            logger.LogWarning(
+                "UnityEngine.RuntimeInitializeOnLoadMethodAttribute exists but UnityEngine.RuntimeInitializeLoadType doesn't");
+            return;
+        }
 
         _gameRestart = gameRestart;
         _updateEvents = updateEvents;
