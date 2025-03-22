@@ -10,7 +10,7 @@ use std::{
 use colored::Colorize;
 use time::{OffsetDateTime, format_description};
 
-use crate::hook::hooks::ReverseInvoke;
+use crate::{hook::hooks::ReverseInvoke, reverse_invoke};
 
 pub struct DiskLogger {
     output_file: Arc<Mutex<BufWriter<File>>>,
@@ -18,6 +18,8 @@ pub struct DiskLogger {
 
 impl DiskLogger {
     pub fn new() -> io::Result<Self> {
+        reverse_invoke!();
+
         // as of now, the BepInEx directory is guaranteed to exist so create_buffered will not fail
         let output_file = env::current_exe()
             .expect("failed to get current exe")
@@ -30,11 +32,10 @@ impl DiskLogger {
 
         // TODO: as of now, I can't flush in case of crashes
         thread::spawn(move || {
+            reverse_invoke!();
             loop {
                 thread::sleep(Duration::from_secs(2));
-                let ri = ReverseInvoke::new();
                 output_file_.lock().unwrap().flush().unwrap();
-                drop(ri);
             }
         });
 
@@ -48,7 +49,7 @@ impl log::Log for DiskLogger {
     }
 
     fn log(&self, record: &log::Record) {
-        let ri = ReverseInvoke::new();
+        reverse_invoke!();
 
         let time = {
             let time_format =
@@ -93,13 +94,10 @@ impl log::Log for DiskLogger {
                 println!("failed to write disk log: {err:?}");
             }
         }
-
-        drop(ri);
     }
 
     fn flush(&self) {
-        let ri = ReverseInvoke::new();
+        reverse_invoke!();
         self.output_file.lock().unwrap().flush().unwrap();
-        drop(ri);
     }
 }

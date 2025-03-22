@@ -50,3 +50,14 @@ impl Drop for ReverseInvoke {
         REVERSE_INVOKE.set(false);
     }
 }
+
+#[macro_export]
+/// Enables reverse invoker for this scope
+///
+/// # Note
+/// All it is doing is a [ReverseInvoke::new()] invoke assigned to a variable
+macro_rules! reverse_invoke {
+    () => {
+        let _ri = $crate::hook::hooks::ReverseInvoke::new();
+    };
+}
