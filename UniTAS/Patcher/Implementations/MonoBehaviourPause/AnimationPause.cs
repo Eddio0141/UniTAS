@@ -135,6 +135,7 @@ public class AnimationPause
         {
             foreach (var keyValue in _speeds)
             {
+                if (keyValue.Key == null) continue;
                 keyValue.Key.speed = keyValue.Value;
             }
 
