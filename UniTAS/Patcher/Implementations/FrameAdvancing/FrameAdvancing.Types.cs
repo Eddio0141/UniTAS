@@ -1,19 +1,10 @@
-using System;
-
 namespace UniTAS.Patcher.Implementations.FrameAdvancing;
 
 public partial class FrameAdvancing
 {
-    private struct PendingFrameAdvance
+    private struct PendingFrameAdvance(uint pendingFrames)
     {
-        public readonly uint PendingFrames;
-        public readonly FrameAdvanceMode FrameAdvanceMode;
-
-        public PendingFrameAdvance(uint pendingFrames, FrameAdvanceMode frameAdvanceMode)
-        {
-            PendingFrames = pendingFrames;
-            FrameAdvanceMode = frameAdvanceMode;
-        }
+        public readonly uint PendingFrames = pendingFrames;
     }
 
     private enum PendingUpdateOffsetFixState
@@ -23,11 +14,4 @@ public partial class FrameAdvancing
         PendingSync,
         Done
     }
-}
-
-[Flags]
-public enum FrameAdvanceMode
-{
-    Update = 1,
-    FixedUpdate = 2
 }

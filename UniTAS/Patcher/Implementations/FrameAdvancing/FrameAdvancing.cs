@@ -16,6 +16,7 @@ using UniTAS.Patcher.Services.VirtualEnvironment;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 
+
 namespace UniTAS.Patcher.Implementations.FrameAdvancing;
 
 // this class needs to run before coroutine is processed in CoroutineHandler (for tracking fixed update index)
@@ -29,8 +30,6 @@ public partial class FrameAdvancing : IFrameAdvancing, IOnFixedUpdateUncondition
 
     private readonly Queue<PendingFrameAdvance> _pendingFrameAdvances = new();
     private uint _pendingPauseFrames;
-
-    private FrameAdvanceMode _frameAdvanceMode;
 
     // for after fixed update and next update isn't in sync
     private PendingUpdateOffsetFixState _pendingUpdateOffsetFixState = PendingUpdateOffsetFixState.Done;
@@ -86,7 +85,7 @@ public partial class FrameAdvancing : IFrameAdvancing, IOnFixedUpdateUncondition
         _active = false;
     }
 
-    public void FrameAdvance(uint frames, FrameAdvanceMode frameAdvanceMode)
+    public void FrameAdvance(uint frames)
     {
         if (!_active)
         {
@@ -95,8 +94,8 @@ public partial class FrameAdvancing : IFrameAdvancing, IOnFixedUpdateUncondition
             frames = 0;
         }
 
-        _pendingFrameAdvances.Enqueue(new(frames, frameAdvanceMode));
-        _logger.LogDebug($"added frame advance queue, mode: {frameAdvanceMode}, count: {frames}");
+        _pendingFrameAdvances.Enqueue(new(frames));
+        _logger.LogDebug($"added frame advance queue, count: {frames}");
     }
 
     public void TogglePause()
@@ -135,7 +134,7 @@ public partial class FrameAdvancing : IFrameAdvancing, IOnFixedUpdateUncondition
             _pendingUpdateOffsetFixState = PendingUpdateOffsetFixState.Done;
         }
 
-        FrameAdvanceUpdate(true);
+        FrameAdvanceUpdate();
     }
 
     public void OnLateUpdateUnconditional()
@@ -145,15 +144,10 @@ public partial class FrameAdvancing : IFrameAdvancing, IOnFixedUpdateUncondition
 
     public void FixedUpdateUnconditional()
     {
-        // if (!_monoBehaviourController.PausedExecution)
-        // {
         _fixedUpdateIndex++;
-        // }
-
-        FrameAdvanceUpdate(false);
     }
 
-    private void FrameAdvanceUpdate(bool update)
+    private void FrameAdvanceUpdate()
     {
         if (_pendingUpdateOffsetFixState is not (PendingUpdateOffsetFixState.Done
             or PendingUpdateOffsetFixState.PendingCheckUpdateOffset))
@@ -194,7 +188,7 @@ public partial class FrameAdvancing : IFrameAdvancing, IOnFixedUpdateUncondition
         // do we have new frame advance to do? don't bother pausing then
         if (_pendingPauseFrames != 0) return;
 
-        _coroutine.Start(Pause(update)).OnComplete += status =>
+        _coroutine.Start(Pause()).OnComplete += status =>
         {
             if (status.Exception != null)
                 _logger.LogFatal($"exception occurs during frame advance coroutine: {status.Exception}");
@@ -206,44 +200,23 @@ public partial class FrameAdvancing : IFrameAdvancing, IOnFixedUpdateUncondition
         if (_pendingFrameAdvances.Count <= 0) return;
 
         var pendingFrameAdvance = _pendingFrameAdvances.Peek();
-        if (_pendingPauseFrames > 0)
-        {
-            // we don't add if not done frame advancing yet, and frame advance mode is incompatible
-            if (pendingFrameAdvance.FrameAdvanceMode != _frameAdvanceMode) return;
-        }
-        else
-        {
-            // set new mode
-            _frameAdvanceMode = pendingFrameAdvance.FrameAdvanceMode;
-        }
 
         _pendingFrameAdvances.Dequeue();
         // add queued frames
         _pendingPauseFrames += pendingFrameAdvance.PendingFrames;
 
         _logger.LogDebug(
-            $"adding pending frame advances, pending pause frames: {_pendingPauseFrames}, current mode: {_frameAdvanceMode}");
+            $"adding pending frame advances, pending pause frames: {_pendingPauseFrames}");
     }
 
-    private IEnumerable<CoroutineWait> Pause(bool update)
+    private IEnumerable<CoroutineWait> Pause()
     {
         if (_paused || _pendingPause) yield break;
         _pendingPause = true;
 
         // pause at right timing, basically let the game run until reached requirement timing of pause depending on user choice
-        // we run FixedUpdate if mode only includes FixedUpdate
-        // or if mode has FixedUpdate along with other mode and currently is not update
-        if (_frameAdvanceMode == FrameAdvanceMode.FixedUpdate ||
-            (!update && (_frameAdvanceMode & FrameAdvanceMode.FixedUpdate) != 0))
-        {
-            _logger.LogDebug("Pausing frame advance on FixedUpdate");
-            yield return new WaitForFixedUpdateActual();
-        }
-        else
-        {
-            _logger.LogDebug("Pausing frame advance on Update");
-            yield return new WaitForUpdateActual();
-        }
+        _logger.LogDebug("Pausing frame advance on Update");
+        yield return new WaitForUpdateActual();
 
         PauseActual();
         _pendingPause = false;
