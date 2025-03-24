@@ -51,7 +51,14 @@ public class EventCoroutine : TerminalCmd
             throw;
         }
 
-        var yieldRaw = resumeValue.CastToString().Trim();
+        var yieldRaw = resumeValue.CastToString();
+        if (yieldRaw == null)
+        {
+            CoroutineEnd();
+            return;
+        }
+
+        yieldRaw = yieldRaw.Trim();
         if (!Enum.IsDefined(typeof(Event), yieldRaw))
         {
             CoroutineEnd();
