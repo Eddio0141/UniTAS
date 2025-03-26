@@ -199,14 +199,12 @@ public partial class FrameAdvancing : IFrameAdvancing, IOnFixedUpdateUncondition
     {
         if (_pendingFrameAdvances.Count <= 0) return;
 
-        var pendingFrameAdvance = _pendingFrameAdvances.Peek();
+        var pendingFrameAdvance = _pendingFrameAdvances.Dequeue();
 
-        _pendingFrameAdvances.Dequeue();
         // add queued frames
         _pendingPauseFrames += pendingFrameAdvance.PendingFrames;
 
-        _logger.LogDebug(
-            $"adding pending frame advances, pending pause frames: {_pendingPauseFrames}");
+        _logger.LogDebug($"adding pending frame advances, pending pause frames: {_pendingPauseFrames}");
     }
 
     private IEnumerable<CoroutineWait> Pause()
