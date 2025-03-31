@@ -485,4 +485,19 @@ public class AsyncOperationPatch
             return false;
         }
     }
+
+    [HarmonyPatch(typeof(Object), "Internal_InstantiateAsyncWithParams_Injected")]
+    private class Internal_InstantiateAsyncWithParams_Injected
+    {
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static bool Prefix(ref IntPtr __result)
+        {
+            __result = IntPtr.Zero;
+            return false;
+        }
+    }
 }

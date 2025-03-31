@@ -30,7 +30,7 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
     IAssetBundleRequestTracker, IOnLastUpdateActual, IAsyncOperationIsInvokingOnComplete, IOnPreGameRestart,
     IOnUpdateActual, IOnEndOfFrameActual, IOnFixedUpdateActual, IOnStartActual, IOnAwakeActual,
     IAssetBundleTracker, ISceneOverride, IAsyncOperationOverride,
-    IResourceAsyncTracker
+    IResourceAsyncTracker, IAsyncInstantiateTracker
 {
     private bool _isInvokingOnComplete;
     private readonly ISceneManagerWrapper _sceneManagerWrapper;
@@ -1048,6 +1048,13 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         }
 
         _bundleScenePaths[bundle] = [..paths];
+    }
+
+    public object Initialize(Object original, int count, ReadOnlySpan<Vector3> positions,
+        ReadOnlySpan<Quaternion> rotations, object parameters,
+        object cancellationToken)
+    {
+        throw new NotImplementedException();
     }
 
     private class UnloadBundleAsyncData(AsyncOperation op, AssetBundle bundle, bool unloadAllLoadedObjects)
