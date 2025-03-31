@@ -1,0 +1,24 @@
+ManifestFileVersion: 0
+UnityVersion: 6000.0.44f1
+CRC: 1902734072
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: fff429c8e012ff6d8a6b8b559e2ae2cb
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 767148d2cba1a92a15442f2b767884c0
+  IncrementalBuildHash:
+    serializedVersion: 2
+    Hash: 74d441ab19b88acb55040ca14d0a1939
+HashAppended: 0
+ClassTypes:
+- Class: 1
+  Script: {instanceID: 0}
+- Class: 4
+  Script: {instanceID: 0}
+SerializeReferenceClassIdentifiers: []
+Assets:
+- Assets/TestFramework/AssetBundles/assets 10/empty.prefab
+- Assets/TestFramework/AssetBundles/assets 10/empty2.prefab
+Dependencies: []

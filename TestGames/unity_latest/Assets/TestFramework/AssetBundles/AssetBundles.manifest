@@ -1,9 +1,42 @@
 ManifestFileVersion: 0
 UnityVersion: 6000.0.44f1
-CRC: 1308511093
+CRC: 2858257771
 HashAppended: 0
 AssetBundleManifest:
   AssetBundleInfos:
     Info_0:
       Name: bundle.bundle
+      Dependencies: {}
+    Info_1:
+      Name: bundle 1.bundle
+      Dependencies: {}
+    Info_2:
+      Name: bundle 2.bundle
+      Dependencies: {}
+    Info_3:
+      Name: bundle 3.bundle
+      Dependencies: {}
+    Info_4:
+      Name: bundle 4.bundle
+      Dependencies: {}
+    Info_5:
+      Name: bundle 5.bundle
+      Dependencies: {}
+    Info_6:
+      Name: bundle 6.bundle
+      Dependencies: {}
+    Info_7:
+      Name: bundle 7.bundle
+      Dependencies: {}
+    Info_8:
+      Name: bundle 8.bundle
+      Dependencies: {}
+    Info_9:
+      Name: bundle 9.bundle
+      Dependencies: {}
+    Info_10:
+      Name: bundle 10.bundle
+      Dependencies: {}
+    Info_11:
+      Name: bundle 11.bundle
       Dependencies: {}

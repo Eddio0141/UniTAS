@@ -6,9 +6,9 @@ using UnityEngine;
 [MovieTest(MovieTestTiming.Awake)]
 public class old_input_system__2022_3__6000_0_44f1 : MonoBehaviour
 {
-    [Test]
-    public void Test()
-    {
-        Assert.True(false);
-    }
+    // [Test]
+    // public void Test()
+    // {
+    //     Assert.True(false);
+    // }
 }

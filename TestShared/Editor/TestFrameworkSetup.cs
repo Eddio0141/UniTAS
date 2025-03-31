@@ -5,15 +5,18 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using UnityEditor;
+using UnityEditor.Build;
+using UnityEditor.Build.Reporting;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
 
-namespace Editor
+namespace Editor.UniTASTest
 {
     public static class TestFrameworkSetup
     {
-        [MenuItem("Test/Setup")]
+        [MenuItem("Test/Setup ^#s")]
         private static void Setup()
         {
             Debug.Log("Loading UniTAS testing framework");
@@ -59,6 +62,9 @@ namespace Editor
             // safety, because directory can be deleted and domain reload can happen
             InitDirs();
 
+            var (_, _, testsDir) = GetRepoDirs();
+            LinkAndAddTests(testsDir);
+
             var testObj = Object.FindObjectsByType<GameObject>(FindObjectsSortMode.None)
                 .FirstOrDefault(o => o.name == TestObjName);
 
@@ -66,12 +72,15 @@ namespace Editor
             {
                 AddTests(testObj);
                 SetupTestScene(testObj);
+                SaveAssetBundles();
 
                 if (!EditorSceneManager.SaveOpenScenes())
                 {
-                    Debug.LogError("failed to save opened scenes");
+                    throw new InvalidOperationException("failed to save opened scenes");
                 }
             }
+
+            ValidateSceneList();
 
             Debug.Log("Finished loading UniTAS testing framework");
             _preventAfterReload = false;
@@ -112,7 +121,7 @@ namespace Editor
             var createPaths = new[]
             {
                 TestFrameworkRuntime.SceneAssetPath, TestFrameworkRuntime.PrefabAssetPath, TestsDir,
-                TestFrameworkRuntime.ResourcesPath, TestFrameworkRuntime.AssetBundlePath
+                TestFrameworkRuntime.ResourcesPath, TestFrameworkRuntime.AssetBundlePath, TestFrameworkRuntime.BuildPath
             };
             foreach (var path in createPaths)
             {
@@ -358,8 +367,16 @@ namespace Editor
             }
 
             if (saveScene) EditorSceneManager.SaveScene(scene, TestFrameworkRuntime.TestingScenePath);
-            EditorBuildSettings.scenes = new[]
+
+            var sceneSetting = EditorBuildSettings.scenes.FirstOrDefault(x => x.path == TestFrameworkRuntime.TestingScenePath);
+            if (sceneSetting == null)
+            {
+                EditorBuildSettings.scenes = new[]
                 { new EditorBuildSettingsScene(TestFrameworkRuntime.TestingScenePath, true) };
+                return;
+            }
+
+            sceneSetting.enabled = true;
         }
 
         private static void SetupTestScene(GameObject tests)
@@ -369,39 +386,61 @@ namespace Editor
                 if (monoBeh == null) continue;
                 var type = monoBeh.GetType();
                 var testMethods = TestFrameworkRuntime.GetTestFuncs(type);
-                var invalidTest = false;
                 var hasTests = false;
                 foreach (var testMethod in testMethods)
                 {
                     hasTests = true;
                     if (testMethod.ReturnType == typeof(void) ||
                         testMethod.ReturnType == typeof(IEnumerator<TestYield>))
+                    {
                         continue;
-                    Debug.LogError("Test return type must be void or IEnumerable<TestYield>");
-                    invalidTest = true;
-                    break;
+                    }
+
+                    throw new InvalidOperationException("Test return type must be void or IEnumerable<TestYield>");
                 }
 
-                if (invalidTest || !hasTests) continue;
+                if (!hasTests) continue;
                 var injectFields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
                     .Select(f => (f.Name, f.GetCustomAttribute<TestInjectAttribute>(true), f.FieldType))
                     .Where(tuple => tuple.Item2 != null);
                 var prop = new SerializedObject(monoBeh);
                 foreach (var (fieldName, attr, fieldType) in injectFields)
                 {
-                    var field = prop.FindProperty(fieldName);
-                    if (field == null)
-                    {
-                        Debug.LogError($"Field {fieldName} not found");
-                        continue;
-                    }
-
+                    var field = prop.FindProperty(fieldName) ?? throw new InvalidOperationException($"Field {fieldName} not found");
                     Debug.Log($"Injecting field {type.FullName}.{fieldName}");
                     InjectField(type, attr, fieldType, field);
                 }
 
                 prop.ApplyModifiedProperties();
             }
+        }
+
+        private static readonly List<AssetBundleBuild> _saveAssetBundles = new();
+
+        private static void SaveAssetBundles()
+        {
+            if (_saveAssetBundles.Count == 0) return;
+
+            BuildPipeline.BuildAssetBundles(new BuildAssetBundlesParameters
+            {
+                bundleDefinitions = _saveAssetBundles.ToArray(),
+                outputPath = TestFrameworkRuntime.AssetBundlePath
+            });
+
+            _saveAssetBundles.Clear();
+        }
+
+        private static void ValidateSceneList()
+        {
+            var scenes = new List<EditorBuildSettingsScene>(EditorBuildSettings.scenes.Length);
+            foreach (var scene in EditorBuildSettings.scenes)
+            {
+                if (!AssetDatabase.AssetPathExists(scene.path)) continue;
+
+                scenes.Add(scene);
+            }
+
+            EditorBuildSettings.scenes = scenes.ToArray();
         }
 
         private const string AlreadyInjected = "Field already injected";
@@ -414,8 +453,8 @@ namespace Editor
                 case TestInjectSceneAttribute:
                     InjectFieldScene(fieldType, field);
                     break;
-                case TestInjectPrefabAttribute:
-                    InjectFieldPrefab(fieldType, field);
+                case TestInjectPrefabAttribute prefab:
+                    InjectFieldPrefab(monoBehType, fieldType, field, prefab);
                     break;
                 case TestInjectResource resource:
                     InjectFieldResource(monoBehType, fieldType, field, resource);
@@ -425,6 +464,25 @@ namespace Editor
                     break;
                 default:
                     throw new InvalidOperationException($"Injection type `{attr}` is not handled");
+            }
+        }
+
+        internal static void CopyEditorAssetBundleToBuildPath()
+        {
+            var paths = Directory.GetFileSystemEntries(TestFrameworkRuntime.AssetPath, "*.bundle",
+                SearchOption.AllDirectories);
+            foreach (var path in paths)
+            {
+                var dest = Path.Combine(TestFrameworkRuntime.BuildPath, path);
+                var destDir = Path.GetDirectoryName(dest);
+                if (destDir == null)
+                {
+                    throw new InvalidOperationException(
+                        $"Failed to get asset bundle parent directory, which should be impossible. Path is `{path}`");
+                }
+
+                Directory.CreateDirectory(destDir);
+                File.Copy(path, dest, true);
             }
         }
 
@@ -440,49 +498,48 @@ namespace Editor
 
             if (fieldType != typeof(OnceOnlyPath))
             {
-                Debug.LogError($"Field type is not `{nameof(OnceOnlyPath)}`");
-                return;
+                throw new InvalidOperationException($"Field type is not `{nameof(OnceOnlyPath)}`");
             }
 
             var property = monoBehType.GetProperty(assetBundle.AssetProperty);
             if (property == null)
             {
-                Debug.LogError("`AssetProperty` isn't pointing to a valid property");
-                return;
+                throw new InvalidOperationException("`AssetProperty` isn't pointing to a valid property");
             }
 
             var assetRaw = property.GetValue(null);
             if (assetRaw == null)
             {
-                Debug.LogError("Asset is null");
-                return;
+                throw new InvalidOperationException("Asset is null");
             }
 
             if (assetRaw.GetType() != typeof(Dictionary<string, ITestAsset>))
             {
-                Debug.LogError($"Asset property was expected to be {nameof(Dictionary<string, ITestAsset>)}");
-                return;
+                throw new InvalidOperationException(
+                    $"Asset property was expected to be {nameof(Dictionary<string, ITestAsset>)}");
             }
 
             var assets = (Dictionary<string, ITestAsset>)assetRaw;
+            if (assets.Count == 0)
+            {
+                throw new InvalidOperationException("Asset contains no objects");
+            }
             var paths = new string[assets.Count];
-            var assetsIter = assets.GetEnumerator();
 
             var assetsPath = Path.Combine(TestFrameworkRuntime.AssetBundlePath, "assets");
             assetsPath = AssetDatabase.GenerateUniqueAssetPath(assetsPath);
             Directory.CreateDirectory(assetsPath);
+            Debug.Log($"new assets directory `{assetsPath}`");
 
-            for (var i = 0; i < assets.Count; i++)
+            var i = 0;
+            foreach (var (assetPath, asset) in assets)
             {
-                assetsIter.MoveNext();
-                var (assetPath, asset) = assetsIter.Current;
-
-                var j = i;
-                var assetReady = new Action<string>(path =>
+                InitAsset(asset, assetsPath, path =>
                 {
-                    paths[j] = path;
+                    paths[i] = path;
+                    i++;
 
-                    if (j + 1 < assets.Count)
+                    if (i < assets.Count)
                         return;
 
                     // last entry is done
@@ -491,24 +548,23 @@ namespace Editor
                             "bundle.bundle"));
                     var assetBundleName = Path.GetFileName(assetBundlePath);
 
-                    BuildPipeline.BuildAssetBundles(new BuildAssetBundlesParameters
-                    {
-                        bundleDefinitions = new[]
-                        {
-                            new AssetBundleBuild
-                            {
-                                assetBundleName = assetBundleName,
-                                assetNames = paths
-                            }
-                        },
-                        outputPath = TestFrameworkRuntime.AssetBundlePath
-                    });
+                    File.Create(assetBundlePath);
 
                     inner.stringValue = assetBundlePath;
                     inner.serializedObject.ApplyModifiedProperties();
-                });
 
-                InitAsset(asset, assetsPath, assetReady, assetPath);
+                    // required as this is delayed
+                    if (!EditorSceneManager.SaveOpenScenes())
+                    {
+                        throw new InvalidOperationException("failed to save open scenes");
+                    }
+
+                    _saveAssetBundles.Add(new AssetBundleBuild
+                    {
+                        assetBundleName = assetBundleName,
+                        assetNames = paths
+                    });
+                }, assetPath);
             }
         }
 
@@ -526,31 +582,10 @@ namespace Editor
 
             if (fieldType != typeof(OnceOnlyPath))
             {
-                Debug.LogError($"Field type is not `{nameof(OnceOnlyPath)}`");
-                return;
+                throw new InvalidOperationException($"Field type is not `{nameof(OnceOnlyPath)}`");
             }
 
-            var property = monoBehType.GetProperty(resource.AssetProperty);
-            if (property == null)
-            {
-                Debug.LogError("`AssetProperty` isn't pointing to a valid property");
-                return;
-            }
-
-            var assetRaw = property.GetValue(null);
-            if (assetRaw == null)
-            {
-                Debug.LogError("Asset is null");
-                return;
-            }
-
-            if (assetRaw.GetType().GetInterfaces().All(t => t != typeof(ITestAsset)))
-            {
-                Debug.LogError($"Asset property was expected to be {nameof(ITestAsset)}");
-                return;
-            }
-
-            InitAsset((ITestAsset)assetRaw, TestFrameworkRuntime.ResourcesPath,
+            InitAssetByProperty(monoBehType, resource.AssetProperty, TestFrameworkRuntime.ResourcesPath,
                 path =>
                 {
                     const string key = "/Resources/";
@@ -563,8 +598,8 @@ namespace Editor
 
                     path = path.Substring(idx + key.Length);
                     var pathDir = Path.GetDirectoryName(path);
-                    var filename = Path.GetFileNameWithoutExtension(path);
-                    path = pathDir == null ? filename : Path.Combine(pathDir, filename);
+                    var filenameWithoutExt = Path.GetFileNameWithoutExtension(path);
+                    path = pathDir == null ? filenameWithoutExt : Path.Combine(pathDir, filenameWithoutExt);
 
                     inner.stringValue = path;
                     inner.serializedObject.ApplyModifiedProperties();
@@ -575,48 +610,32 @@ namespace Editor
         {
             if (fieldType != typeof(string))
             {
-                Debug.LogError("Field type is not string");
+                throw new InvalidOperationException("Field type is not string");
+            }
+
+            if (!string.IsNullOrEmpty(field.stringValue) && AssetDatabase.AssetPathExists(field.stringValue))
+            {
+                Debug.Log(AlreadyInjected);
                 return;
             }
 
-            string scenePath;
-            if (string.IsNullOrEmpty(field.stringValue) ||
-                !AssetDatabase.AssetPathExists(field.stringValue))
+            InitAsset(new SceneAsset(), TestFrameworkRuntime.SceneAssetPath, path =>
             {
-                scenePath = AssetDatabase.GenerateUniqueAssetPath(Path.Combine(TestFrameworkRuntime.SceneAssetPath,
-                    "generated.unity"));
+                field.stringValue = path;
+                field.serializedObject.ApplyModifiedProperties();
 
-                Debug.Log($"Creating scene at `{scenePath}`");
-                var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene,
-                    NewSceneMode.Additive);
-                if (!EditorSceneManager.SaveScene(scene, scenePath))
-                {
-                    Debug.LogError($"Failed to save scene {scenePath}");
-                    return;
-                }
-
-                EditorSceneManager.CloseScene(scene, true);
-
-                field.stringValue = scenePath;
-                HelperEditor.DelaySaveOpenScenes();
-            }
-            else
-            {
-                Debug.Log(AlreadyInjected);
-                scenePath = field.stringValue;
-            }
-
-            var scenes = EditorBuildSettings.scenes.ToList();
-            scenes.Add(new EditorBuildSettingsScene(scenePath, true));
-            EditorBuildSettings.scenes = scenes.ToArray();
+                if (EditorBuildSettings.scenes.Any(x => x.path == path)) return;
+                var scenes = EditorBuildSettings.scenes.ToList();
+                scenes.Add(new EditorBuildSettingsScene(path, true));
+                EditorBuildSettings.scenes = scenes.ToArray();
+            });
         }
 
-        private static void InjectFieldPrefab(Type fieldType, SerializedProperty field)
+        private static void InjectFieldPrefab(Type monoBehType, Type fieldType, SerializedProperty field, TestInjectPrefabAttribute prefab)
         {
             if (fieldType != typeof(GameObject))
             {
-                Debug.LogError("Field type is not GameObject");
-                return;
+                throw new InvalidOperationException("Field type is not GameObject");
             }
 
             if (field.objectReferenceValue != null)
@@ -625,24 +644,33 @@ namespace Editor
                 return;
             }
 
-            var prefabBase = new GameObject();
-
-            var prefabPath =
-                AssetDatabase.GenerateUniqueAssetPath(Path.Combine(TestFrameworkRuntime.PrefabAssetPath,
-                    "generated.prefab"));
-            Debug.Log($"Creating prefab at `{prefabPath}`");
-            PrefabUtility.SaveAsPrefabAsset(prefabBase, prefabPath, out var success);
-            Object.DestroyImmediate(prefabBase);
-
-            EditorApplication.delayCall += () =>
+            InitAssetByProperty(monoBehType, prefab.AssetProperty, TestFrameworkRuntime.PrefabAssetPath, path =>
             {
-                field.objectReferenceValue = AssetDatabase.LoadAssetAtPath<GameObject>(prefabPath);
+                field.objectReferenceValue = AssetDatabase.LoadAssetAtPath<GameObject>(path);
                 field.serializedObject.ApplyModifiedProperties();
-                HelperEditor.DelaySaveOpenScenes();
-            };
+            });
+        }
 
-            if (!success)
-                Debug.LogError("Failed to save prefab");
+        private static void InitAssetByProperty(Type monoBehType, string propertyName, string pathPrefix, Action<string> assetReady, string fileName = null)
+        {
+            var property = monoBehType.GetProperty(propertyName);
+            if (property == null)
+            {
+                throw new InvalidOperationException("`AssetProperty` isn't pointing to a valid property");
+            }
+
+            var assetRaw = property.GetValue(null);
+            if (assetRaw == null)
+            {
+                throw new InvalidOperationException("Asset is null");
+            }
+
+            if (assetRaw.GetType().GetInterfaces().All(t => t != typeof(ITestAsset)))
+            {
+                throw new InvalidOperationException($"Asset property `{monoBehType.Name}.{property.Name}` was expected to be {nameof(ITestAsset)}");
+            }
+
+            InitAsset((ITestAsset)assetRaw, pathPrefix, assetReady, fileName);
         }
 
         private static void InitAsset(ITestAsset testAsset, string pathPrefix, Action<string> assetReady,
@@ -652,36 +680,36 @@ namespace Editor
             {
                 case GameObjectAsset:
                     {
+                        var path = InitAssetPath(fileName ?? "asset.prefab", pathPrefix);
+
                         var prefab = new GameObject();
-
-                        var path = fileName ?? "asset.prefab";
-                        if (pathPrefix != null)
-                        {
-                            if (!Directory.Exists(pathPrefix))
-                            {
-                                Directory.CreateDirectory(pathPrefix);
-                            }
-
-                            path = Path.Combine(pathPrefix, path);
-                        }
-
-                        if (fileName == null)
-                        {
-                            path = AssetDatabase.GenerateUniqueAssetPath(path);
-                        }
-
                         PrefabUtility.SaveAsPrefabAsset(prefab, path, out var success);
                         Object.DestroyImmediate(prefab);
 
-                        EditorApplication.delayCall += () =>
-                        {
-                            assetReady(path);
-                            HelperEditor.DelaySaveOpenScenes();
-                        };
-
                         if (!success)
-                            Debug.LogError("Failed to save prefab");
+                            throw new InvalidOperationException("Failed to save prefab");
 
+                        assetReady(path);
+                        break;
+                    }
+
+                case SceneAsset:
+                    {
+                        var path = InitAssetPath(fileName ?? "generated.unity", pathPrefix);
+
+                        Debug.Log($"Creating scene at `{path}`");
+                        if (!EditorSceneManager.SaveOpenScenes())
+                        {
+                            throw new InvalidOperationException("failed to save open scenes before creating scene");
+                        }
+                        var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Additive);
+                        if (!EditorSceneManager.SaveScene(scene, path))
+                        {
+                            throw new InvalidOperationException($"Failed to save scene {path}");
+                        }
+                        EditorSceneManager.CloseScene(scene, true);
+
+                        assetReady(path);
                         break;
                     }
 
@@ -690,8 +718,24 @@ namespace Editor
             }
         }
 
-        [MenuItem("Test/Run General Tests")]
-        private static void RunGeneralTests()
+        private static string InitAssetPath(string fileName, string pathPrefix)
+        {
+            var path = fileName;
+            if (pathPrefix != null)
+            {
+                if (!Directory.Exists(pathPrefix))
+                {
+                    Directory.CreateDirectory(pathPrefix);
+                }
+
+                path = Path.Combine(pathPrefix, path);
+            }
+
+            return AssetDatabase.GenerateUniqueAssetPath(path);
+        }
+
+        [MenuItem("Test/Run Tests ^t")]
+        private static void RunTests()
         {
             if (!EditorApplication.isPlaying)
             {
@@ -699,21 +743,197 @@ namespace Editor
                 return;
             }
 
-            TestFrameworkRuntime.RunGeneralTests();
+            TestFrameworkRuntime.RunTestsEditor();
+        }
+
+        [MenuItem("Test/Build ^b")]
+        private static void Build()
+        {
+            var activeProfile = EditorUserBuildSettings.activeBuildTarget;
+            BuildScript.Build(activeProfile);
+        }
+
+        [MenuItem("Test/Run test ^#t")]
+        private static void RunTest()
+        {
+            ScriptableObject.CreateInstance<RunTestDialog>().ShowUtility();
         }
     }
-}
 
-public static class HelperEditor
-{
-    public static void DelaySaveOpenScenes()
+    public class RunTestDialog : EditorWindow
     {
-        EditorApplication.delayCall += () =>
+        private string testToRun;
+
+        private void OnGUI()
         {
-            if (!EditorSceneManager.SaveOpenScenes())
+            testToRun = EditorGUILayout.TextField(testToRun);
+
+            if (GUILayout.Button("Run"))
+                TestFrameworkRuntime.Instance.StartCoroutine(TestFrameworkRuntime.RunTestByName(testToRun));
+
+            if (GUILayout.Button("Cancel"))
+                Close();
+        }
+    }
+
+    public static class BuildScript
+    {
+        private static readonly string Eol = Environment.NewLine;
+
+        private static readonly string[] Secrets =
+            { "androidKeystorePass", "androidKeyaliasName", "androidKeyaliasPass" };
+
+        public static void Build()
+        {
+            // Gather values from args
+            var options = GetValidatedOptions();
+
+            // Set version for this build
+            if (options.TryGetValue("buildVersion", out var buildVersion) && buildVersion != "none")
             {
-                Debug.LogError("failed to save open scenes");
+                PlayerSettings.bundleVersion = buildVersion;
+                PlayerSettings.macOS.buildNumber = buildVersion;
             }
-        };
+
+            if (options.TryGetValue("androidVersionCode", out var versionCode) && versionCode != "0")
+            {
+                PlayerSettings.Android.bundleVersionCode = int.Parse(options["androidVersionCode"]);
+            }
+
+            // Apply build target
+            var buildTarget = (BuildTarget)Enum.Parse(typeof(BuildTarget), options["buildTarget"]);
+            switch (buildTarget)
+            {
+                case BuildTarget.StandaloneOSX:
+                    PlayerSettings.SetScriptingBackend(NamedBuildTarget.Standalone, ScriptingImplementation.Mono2x);
+                    // PlayerSettings.SetScriptingBackend(BuildTargetGroup.Standalone, ScriptingImplementation.Mono2x);
+                    break;
+            }
+
+            // Custom build
+            var result = Build(buildTarget);
+            ExitWithResult(result.result);
+        }
+
+        private static Dictionary<string, string> GetValidatedOptions()
+        {
+            ParseCommandLineArguments(out var validatedOptions);
+
+            if (validatedOptions.TryGetValue("buildTarget", out var buildTarget) && !Enum.IsDefined(typeof(BuildTarget), buildTarget ?? string.Empty))
+            {
+                Console.WriteLine($"{buildTarget} is not a defined {nameof(BuildTarget)}");
+                EditorApplication.Exit(121);
+            }
+
+            return validatedOptions;
+        }
+
+        private static void ParseCommandLineArguments(out Dictionary<string, string> providedArguments)
+        {
+            providedArguments = new Dictionary<string, string>();
+            var args = Environment.GetCommandLineArgs();
+
+            Console.WriteLine(
+                $"{Eol}" +
+                $"###########################{Eol}" +
+                $"#    Parsing settings     #{Eol}" +
+                $"###########################{Eol}" +
+                $"{Eol}"
+            );
+
+            // Extract flags with optional values
+            for (int current = 0, next = 1; current < args.Length; current++, next++)
+            {
+                // Parse flag
+                var isFlag = args[current].StartsWith("-");
+                if (!isFlag) continue;
+                var flag = args[current].TrimStart('-');
+
+                // Parse optional value
+                var flagHasValue = next < args.Length && !args[next].StartsWith("-");
+                var value = flagHasValue ? args[next].TrimStart('-') : "";
+                var secret = Secrets.Contains(flag);
+                var displayValue = secret ? "*HIDDEN*" : "\"" + value + "\"";
+
+                // Assign
+                Console.WriteLine($"Found flag \"{flag}\" with value {displayValue}.");
+                providedArguments.Add(flag, value);
+            }
+        }
+
+        internal static BuildSummary Build(BuildTarget buildTarget)
+        {
+            TestFrameworkSetup.CopyEditorAssetBundleToBuildPath();
+
+            string filePath;
+            switch (buildTarget)
+            {
+                case BuildTarget.StandaloneWindows:
+                    filePath = "exe";
+                    break;
+                case BuildTarget.StandaloneLinux64:
+                    filePath = "x86_64";
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(buildTarget), buildTarget, null);
+            }
+
+            filePath = Path.Combine(TestFrameworkRuntime.BuildPath, $"build.{filePath}");
+
+            var scenes = EditorBuildSettings.scenes.Where(scene => scene.enabled).Select(s => s.path).ToArray();
+
+            var buildPlayerOptions = new BuildPlayerOptions
+            {
+                scenes = scenes,
+                target = buildTarget,
+                //                targetGroup = BuildPipeline.GetBuildTargetGroup(buildTarget),
+                locationPathName = filePath,
+                //                options = UnityEditor.BuildOptions.Development
+            };
+
+            var buildSummary = BuildPipeline.BuildPlayer(buildPlayerOptions).summary;
+            ReportSummary(buildSummary);
+            return buildSummary;
+        }
+
+        private static void ReportSummary(BuildSummary summary)
+        {
+            Console.WriteLine(
+                $"{Eol}" +
+                $"###########################{Eol}" +
+                $"#      Build results      #{Eol}" +
+                $"###########################{Eol}" +
+                $"{Eol}" +
+                $"Duration: {summary.totalTime.ToString()}{Eol}" +
+                $"Warnings: {summary.totalWarnings.ToString()}{Eol}" +
+                $"Errors: {summary.totalErrors.ToString()}{Eol}" +
+                $"Size: {summary.totalSize.ToString()} bytes{Eol}" +
+                $"{Eol}"
+            );
+        }
+
+        private static void ExitWithResult(BuildResult result)
+        {
+            switch (result)
+            {
+                case BuildResult.Succeeded:
+                    Console.WriteLine("Build succeeded!");
+                    EditorApplication.Exit(0);
+                    break;
+                case BuildResult.Failed:
+                    Console.WriteLine("Build failed!");
+                    EditorApplication.Exit(101);
+                    break;
+                case BuildResult.Cancelled:
+                    Console.WriteLine("Build cancelled!");
+                    EditorApplication.Exit(102);
+                    break;
+                case BuildResult.Unknown:
+                default:
+                    Console.WriteLine("Build result is unknown!");
+                    EditorApplication.Exit(103);
+                    break;
+            }
+        }
     }
 }
