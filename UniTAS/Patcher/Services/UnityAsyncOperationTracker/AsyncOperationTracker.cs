@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization;
 using System.Text;
 using HarmonyLib;
 using UniTAS.Patcher.Extensions;
@@ -1051,11 +1052,41 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         _bundleScenePaths[bundle] = [..paths];
     }
 
+    private static Type _asyncInstantiateOperationType;
+
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     public bool Initialize(object original, int count, object positions,
         object rotations, object parameters, object cancellationToken, ref object __result)
     {
-        throw new NotImplementedException();
+        var originalCasted = (Object)original;
+
+        if (originalCasted == null)
+        {
+            // TODO: could maybe grab error str
+            throw new ArgumentException("The Object you want to instantiate is null.");
+        }
+
+        if (count <= 0)
+        {
+            // TODO: could maybe grab error str
+            throw new ArgumentException("Cannot call instantiate multiple with count less or equal to zero");
+        }
+
+        // manually create AsyncInstantiateOperation<T>
+        // T can be obtained through `original` argument as this is supposed to be generic
+        _asyncInstantiateOperationType ??= AccessTools.TypeByName("UnityEngine.AsyncInstantiateOperation");
+        // TODO: optimisations
+        __result = FormatterServices.GetUninitializedObject(
+            _asyncInstantiateOperationType.MakeGenericType(original.GetType()));
+        var result = new Traverse(__result);
+        result.Field("m_CancellationToken").SetValue(cancellationToken);
+
+        _tracked.Add((AsyncOperation)__result, new AsyncOperationData());
+        _ops.Add(new InstantiateAsyncData((AsyncOperation)__result, this, originalCasted, count, positions, rotations,
+            parameters, cancellationToken));
+        throw new NotImplementedException("TODO: accurate?");
+
+        return false;
     }
 
     private class UnloadBundleAsyncData(AsyncOperation op, AssetBundle bundle, bool unloadAllLoadedObjects)
@@ -1205,6 +1236,29 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
 
         public void Callback()
         {
+        }
+
+        public AsyncOperation Op { get; } = op;
+    }
+
+    private class InstantiateAsyncData(
+        AsyncOperation op,
+        AsyncOperationTracker tracker,
+        Object original,
+        int count,
+        object positions,
+        object rotations,
+        object parameters,
+        object cancellationToken) : IAsyncOperation
+    {
+        public void Load()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Callback()
+        {
+            throw new NotImplementedException();
         }
 
         public AsyncOperation Op { get; } = op;
