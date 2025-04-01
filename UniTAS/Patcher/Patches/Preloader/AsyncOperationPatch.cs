@@ -22,17 +22,17 @@ public class AsyncOperationPatch : PreloadPatcher
 
         var type = assembly.MainModule.GetAllTypes().FirstOrDefault(x => x.FullName == "UnityEngine.Object");
         var method = type?.Methods.FirstOrDefault(x =>
-            x.Name == "InstantiateAsync" && x.Parameters.Count == 6
-                                         && x.Parameters[0].ParameterType.FullName == "T" &&
-                                         x.Parameters[1].ParameterType == x.Module.TypeSystem.Int32 &&
-                                         x.Parameters[2].ParameterType.FullName ==
-                                         "System.ReadOnlySpan<UnityEngine.Vector3>" &&
-                                         x.Parameters[3].ParameterType.FullName ==
-                                         "System.ReadOnlySpan<UnityEngine.Quaternion>" &&
-                                         x.Parameters[4].ParameterType.FullName ==
-                                         "UnityEngine.InstantiateParameters" &&
-                                         x.Parameters[5].ParameterType.FullName ==
-                                         "System.Threading.CancellationToken");
+            x.IsStatic && x.Name == "InstantiateAsync" && x.Parameters.Count == 6
+            && x.Parameters[0].ParameterType.FullName == "T" &&
+            x.Parameters[1].ParameterType == x.Module.TypeSystem.Int32 &&
+            x.Parameters[2].ParameterType.FullName ==
+            "System.ReadOnlySpan`1<UnityEngine.Vector3>" &&
+            x.Parameters[3].ParameterType.FullName ==
+            "System.ReadOnlySpan`1<UnityEngine.Quaternion>" &&
+            x.Parameters[4].ParameterType.FullName ==
+            "UnityEngine.InstantiateParameters" &&
+            x.Parameters[5].ParameterType.FullName ==
+            "System.Threading.CancellationToken");
         if (method == null)
         {
             StaticLogger.LogDebug("UnityEngine.Object.AsyncInstantiateOperation patch won't apply");
