@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -1050,9 +1051,9 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         _bundleScenePaths[bundle] = [..paths];
     }
 
-    public object Initialize(Object original, int count, ReadOnlySpan<Vector3> positions,
-        ReadOnlySpan<Quaternion> rotations, object parameters,
-        object cancellationToken)
+    [SuppressMessage("ReSharper", "InconsistentNaming")]
+    public bool Initialize(object original, int count, object positions,
+        object rotations, object parameters, object cancellationToken, ref object __result)
     {
         throw new NotImplementedException();
     }

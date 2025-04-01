@@ -1,8 +1,6 @@
-using System;
+using System.Diagnostics.CodeAnalysis;
 using UniTAS.Patcher.Services.UnityAsyncOperationTracker;
 using UniTAS.Patcher.Utils;
-using UnityEngine;
-using Object = UnityEngine.Object;
 
 namespace UniTAS.Patcher.ManualServices.Trackers;
 
@@ -10,10 +8,12 @@ public class ObjectInitializeTrackerManual
 {
     private static IAsyncInstantiateTracker _asyncInstantiateTracker;
 
-    public static object Initialize(Object original, int count, ReadOnlySpan<Vector3> positions,
-        ReadOnlySpan<Quaternion> rotations, object parameters, object cancellationToken)
+    [SuppressMessage("ReSharper", "InconsistentNaming")]
+    public static bool Initialize(object original, int count, object positions, object rotations, object parameters,
+        object cancellationToken, ref object __result)
     {
         _asyncInstantiateTracker ??= ContainerStarter.Kernel.GetInstance<IAsyncInstantiateTracker>();
-        return _asyncInstantiateTracker.Initialize(original, count, positions, rotations, parameters, cancellationToken);
+        return _asyncInstantiateTracker.Initialize(original, count, positions, rotations, parameters, cancellationToken,
+            ref __result);
     }
 }
