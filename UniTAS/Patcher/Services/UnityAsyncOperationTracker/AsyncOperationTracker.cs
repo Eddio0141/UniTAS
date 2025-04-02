@@ -429,6 +429,32 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         LoadingSceneCount++;
     }
 
+    public void AsyncSceneUnload(out IntPtr result, object scene, object options)
+    {
+        var op = new AsyncOperation();
+        AsyncSceneUnload(ref op, scene, options);
+
+        if (op == null)
+        {
+            result = IntPtr.Zero;
+            return;
+        }
+
+        // a funny way to make it unique, it shouldn't clash with unity's pointers i think...
+        result = op.Addr();
+    }
+
+    public AsyncOperation ConvertToManaged(IntPtr ptr)
+    {
+        foreach (var tracked in _tracked)
+        {
+            if (tracked.Key.Addr() == ptr)
+                return tracked.Key;
+        }
+
+        return null;
+    }
+
     private int ResolveDummyHandle(int handle)
     {
         var dummySceneIndex = DummyScenes.FindIndex(x => x.dummyScene.TrackingHandle == handle);

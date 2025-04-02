@@ -253,7 +253,10 @@ public class SceneManagerAsyncLoadPatch
     {
         private static MethodBase TargetMethod()
         {
-            return AccessTools.Method(SceneManager, "UnloadSceneAsyncInternal_Injected", [SceneType.MakeByRefType()]);
+            var method = AccessTools.Method(SceneManager, "UnloadSceneAsyncInternal_Injected",
+                [SceneType.MakeByRefType()]);
+            if (method == null || method.ReturnType == typeof(IntPtr)) return null;
+            return method;
         }
 
         private static Exception Cleanup(MethodBase original, Exception ex)
@@ -274,8 +277,10 @@ public class SceneManagerAsyncLoadPatch
     {
         private static MethodBase TargetMethod()
         {
-            return AccessTools.Method(SceneManager, "UnloadSceneAsyncInternal_Injected",
+            var method = AccessTools.Method(SceneManager, "UnloadSceneAsyncInternal_Injected",
                 [SceneType.MakeByRefType(), UnloadSceneOptions]);
+            if (method == null || method.ReturnType == typeof(IntPtr)) return null;
+            return method;
         }
 
         private static Exception Cleanup(MethodBase original, Exception ex)
@@ -290,6 +295,50 @@ public class SceneManagerAsyncLoadPatch
             __result = new();
             SceneLoadTracker.AsyncSceneUnload(ref __result, scene, options);
             return false;
+        }
+    }
+
+    [HarmonyPatch]
+    private class UnloadSceneAsyncInternalInjected_IntPtr
+    {
+        private static MethodBase TargetMethod()
+        {
+            var method = AccessTools.Method(SceneManager, "UnloadSceneAsyncInternal_Injected",
+                [SceneType.MakeByRefType(), UnloadSceneOptions]);
+            if (method == null || method.ReturnType != typeof(IntPtr)) return null;
+            return method;
+        }
+
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static bool Prefix(object scene, object options, ref IntPtr __result)
+        {
+            if (ReverseInvoker.Invoking) return true;
+
+            SceneLoadTracker.AsyncSceneUnload(out __result, scene, options);
+            return false;
+        }
+    }
+
+    [HarmonyPatch]
+    private class ConvertToManaged
+    {
+        private static MethodBase TargetMethod() =>
+            AccessTools.Method(AccessTools.TypeByName("UnityEngine.AsyncOperation.BindingsMarshaller"),
+                "ConvertToManaged");
+
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static bool Prefix(IntPtr ptr, ref AsyncOperation __result)
+        {
+            __result = SceneLoadTracker.ConvertToManaged(ptr);
+            return __result != null;
         }
     }
 

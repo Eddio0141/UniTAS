@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UniTAS.Patcher.Implementations.UnitySafeWrappers.SceneManagement;
 using UniTAS.Patcher.Models.UnitySafeWrappers.SceneManagement;
@@ -17,6 +18,16 @@ public interface ISceneLoadTracker
     void AsyncSceneUnload(ref AsyncOperation asyncOperation, Either<string, int> scene, object options);
 
     void AsyncSceneUnload(ref AsyncOperation asyncOperation, object scene, object options);
+    
+    void AsyncSceneUnload(out IntPtr result, object scene, object options);
+
+    /// <summary>
+    /// Attempts to convert to UniTAS managed AsyncOperation
+    /// This is for UnityEngine.AsyncOperation.BindingsMarshaller.ConvertToManaged where passing in pointer for
+    /// AsyncOperation will convert it to managed UniTAS version (if it exists)
+    /// </summary>
+    /// <returns>Instance of AsyncOperation or null if not found</returns>
+    AsyncOperation ConvertToManaged(IntPtr ptr);
 
     void AllowSceneActivation(bool allow, AsyncOperation asyncOperation);
 
