@@ -67,9 +67,20 @@ public class SceneManagerWrapper : ISceneManagerWrapper, IOnPreGameRestart
         {
             var usingType = _sceneManagerAPIInternal ?? _sceneManager;
             _loadSceneAsyncNameIndexInternalInjected = usingType?.GetMethod(
-                "LoadSceneAsyncNameIndexInternal_Injected", AccessTools.all,
-                null, [typeof(string), typeof(int), _loadSceneParametersType.MakeByRefType(), typeof(bool)],
-                null);
+                                                           "LoadSceneAsyncNameIndexInternal_Injected", AccessTools.all,
+                                                           null,
+                                                           [
+                                                               typeof(string), typeof(int),
+                                                               _loadSceneParametersType.MakeByRefType(), typeof(bool)
+                                                           ],
+                                                           null)
+                                                       // for unity 6000 and beyond, injected variant isn't found so try the other one
+                                                       ?? usingType?.GetMethod("LoadSceneAsyncNameIndexInternal",
+                                                           AccessTools.all, null,
+                                                           [
+                                                               typeof(string), typeof(int), _loadSceneParametersType,
+                                                               typeof(bool)
+                                                           ], null);
         }
 
         if (_sceneManager != null)
