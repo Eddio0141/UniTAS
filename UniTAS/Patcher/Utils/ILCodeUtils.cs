@@ -1,9 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using HarmonyLib;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
+using MonoMod.Utils;
 using UniTAS.Patcher.Extensions;
 using MethodAttributes = Mono.Cecil.MethodAttributes;
 using MethodBody = Mono.Cecil.Cil.MethodBody;
@@ -186,9 +189,12 @@ public static class ILCodeUtils
 
             foreach (var param in prefixParams)
             {
-                var insertInst = HandleInjection(method, il, param, resultVar,
+                var insertInstructions = HandleInjection(method, il, param, resultVar,
                     (v, i, p) => i.Create(p.ParameterType.IsByRef ? OpCodes.Ldloca : OpCodes.Ldloc, v), stateDef);
-                il.InsertBefore(first, insertInst);
+                foreach (var inst in insertInstructions)
+                {
+                    il.InsertBefore(first, inst);
+                }
             }
 
             il.InsertBefore(first, il.Create(OpCodes.Call, prefixRef));
@@ -219,7 +225,7 @@ public static class ILCodeUtils
                 // start pushing args
                 foreach (var param in postfixParams)
                 {
-                    var insertInst = HandleInjection(method, il, param, resultVar, (v, i, _) =>
+                    var insertInstructions = HandleInjection(method, il, param, resultVar, (v, i, _) =>
                     {
                         if (v == null)
                             throw new InvalidOperationException(
@@ -227,7 +233,10 @@ public static class ILCodeUtils
                         return i.Create(OpCodes.Ldloc, v);
                     }, stateDef);
 
-                    il.InsertBeforeInstructionReplace(inst, insertInst);
+                    foreach (var insertInst in insertInstructions)
+                    {
+                        il.InsertBeforeInstructionReplace(inst, insertInst);
+                    }
                 }
 
                 il.InsertBeforeInstructionReplace(inst, il.Create(OpCodes.Call, postfixRef));
@@ -240,7 +249,8 @@ public static class ILCodeUtils
         body.Optimize();
     }
 
-    private static Instruction HandleInjection(MethodDefinition method, ILProcessor il, ParameterInfo param,
+    private static IEnumerable<Instruction> HandleInjection(MethodDefinition method, ILProcessor il,
+        ParameterInfo param,
         VariableDefinition resultVar, Func<VariableDefinition, ILProcessor, ParameterInfo, Instruction> state,
         VariableDefinition stateVar)
     {
@@ -253,20 +263,23 @@ public static class ILCodeUtils
                 if (method.IsStatic)
                     throw new InvalidOperationException(
                         "Hook requested for __instance param, but this is a static method");
-                return il.Create(OpCodes.Ldarg_0);
+                yield return il.Create(OpCodes.Ldarg_0);
+                yield break;
             }
             case "__result":
             {
                 if (resultVar == null)
                     throw new InvalidOperationException(
                         "Hook requested for __result param, but return type is void");
-                return param.ParameterType.IsByRef
+                yield return param.ParameterType.IsByRef
                     ? il.Create(OpCodes.Ldloca, resultVar)
                     : il.Create(OpCodes.Ldloc, resultVar);
+                yield break;
             }
             case "__state":
             {
-                return state(stateVar, il, param);
+                yield return state(stateVar, il, param);
+                yield break;
             }
             default:
             {
@@ -275,8 +288,85 @@ public static class ILCodeUtils
                 if (paramDef == null)
                     throw new InvalidOperationException(
                         $"Hook requested for non-existent method param name `{name}`");
-                return il.Create(OpCodes.Ldarg, paramDef);
+
+                // need span coercion?
+
+                // note that we can't resolve reflection, if it contains a unity type
+                // (which it most likely would which is why span coercion exists to replace those types with fake ones)
+                // it will load the unity assembly too early, which is bad!
+                var paramFullname = paramDef.ParameterType.FullName;
+                if (paramFullname.StartsWith("System.ReadOnlySpan`1") || paramFullname.StartsWith("System.Span`1"))
+                {
+                    var destType = param.ParameterType;
+                    if (((GenericInstanceType)paramDef.ParameterType).GenericArguments[0].FullName !=
+                        destType.SaneFullName())
+                    {
+                        // TODO: is the size equals with the struct type? if not its an error
+                        foreach (var inst in HandleSpanCoercion(il, paramDef, destType, method.Module))
+                        {
+                            yield return inst;
+                        }
+
+                        yield break;
+                    }
+                }
+
+                yield return il.Create(OpCodes.Ldarg, paramDef);
+                yield break;
             }
         }
+    }
+
+    private static IEnumerable<Instruction> HandleSpanCoercion(ILProcessor il, ParameterDefinition paramDef,
+        Type destType, ModuleDefinition module)
+    {
+        // 1. get pinnable address of original span
+        // 2. conv.u to prepare (idk what this does but decomp shows it)
+        // 3. get length of original span via Length property
+        // stack now should be: pinned_addr_of_original_span, length_of_original_span
+        // 4. constructor for span with fake struct as generic arg for replacement :)
+
+        var paramType = paramDef.ParameterType.Resolve();
+        var getPinnableReference =
+            module.ImportReference(paramType.Methods.First(x => x.Name == "GetPinnableReference"));
+        var lengthGetter = module.ImportReference(paramType.Properties.First(x => x.Name == "Length").GetMethod);
+        var destTypeCtor = AccessTools.Constructor(destType, [typeof(void).MakePointerType(), typeof(int)]);
+        var destTypeRef = il.Import(destType);
+
+        var destVar = new VariableDefinition(destTypeRef);
+        il.Body.Variables.Add(destVar);
+
+        yield return il.Create(OpCodes.Ldloca, destVar);
+        yield return il.Create(OpCodes.Initobj, destTypeRef);
+        // yield return il.Create(OpCodes.Ldloca, destVar);
+        // yield return il.Create(OpCodes.Ldarga, paramDef);
+        // yield return il.Create(OpCodes.Call, getPinnableReference);
+        // yield return il.Create(OpCodes.Conv_U);
+        // yield return il.Create(OpCodes.Ldarga, paramDef);
+        // yield return il.Create(OpCodes.Call, lengthGetter);
+        // yield return il.Create(OpCodes.Call, destTypeCtor);
+        yield return il.Create(OpCodes.Ldloc, destVar);
+
+        // IL_0021: ldloca.s     a
+        // IL_0023: call         instance !0/*valuetype Patcher.Tests.CoroutineTests/Foo*/& valuetype [System.Runtime]System.Span`1<valuetype Patcher.Tests.CoroutineTests/Foo>::GetPinnableReference()
+        // IL_002c: conv.u
+        // IL_002d: stloc.s      aPtr
+        // IL_002f: ldloca.s     b
+        // IL_0031: ldloc.s      aPtr
+        // IL_0033: ldloca.s     a
+        // IL_0035: call         instance int32 valuetype [System.Runtime]System.Span`1<valuetype Patcher.Tests.CoroutineTests/Foo>::get_Length()
+        // IL_003a: call         instance void valuetype [System.Runtime]System.Span`1<valuetype Patcher.Tests.CoroutineTests/Bar>::.ctor(void*, int32)
+
+        // IL_0021: ldloca.s     a
+        // IL_0023: call         instance !0/*valuetype Patcher.Tests.CoroutineTests/Foo*/& valuetype [System.Runtime]System.Span`1<valuetype Patcher.Tests.CoroutineTests/Foo>::GetPinnableReference()
+        // IL_0028: stloc.s      V_5
+        // IL_002a: ldloc.s      V_5
+        // IL_002c: conv.u
+        // IL_002d: stloc.s      aPtr
+        // IL_002f: ldloca.s     b
+        // IL_0031: ldloc.s      aPtr
+        // IL_0033: ldloca.s     a
+        // IL_0035: call         instance int32 valuetype [System.Runtime]System.Span`1<valuetype Patcher.Tests.CoroutineTests/Foo>::get_Length()
+        // IL_003a: call         instance void valuetype [System.Runtime]System.Span`1<valuetype Patcher.Tests.CoroutineTests/Bar>::.ctor(void*, int32)
     }
 }
