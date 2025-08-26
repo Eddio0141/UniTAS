@@ -8,6 +8,10 @@ public interface IAsyncInstantiateTracker
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     bool Instantiate(object original, int count, ReadOnlySpan<Vector3Alt> positions,
         ReadOnlySpan<QuaternionAlt> rotations, object parameters, object cancellationToken, ref object __result);
+
+    [SuppressMessage("ReSharper", "InconsistentNaming")]
+    bool Instantiate(object original, int count, object parent, ReadOnlySpan<Vector3Alt> positions,
+        ReadOnlySpan<QuaternionAlt> rotations, ref object __result);
 }
 
 [SuppressMessage("ReSharper", "InconsistentNaming")]

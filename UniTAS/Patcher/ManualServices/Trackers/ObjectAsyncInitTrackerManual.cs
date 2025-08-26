@@ -23,6 +23,6 @@ public class ObjectAsyncInitTrackerManual
         ReadOnlySpan<QuaternionAlt> rotations, ref object __result)
     {
         _asyncInstantiateTracker ??= ContainerStarter.Kernel.GetInstance<IAsyncInstantiateTracker>();
-        return _asyncInstantiateTracker.Instantiate(original, count, positions, rotations, null, null, ref __result);
+        return _asyncInstantiateTracker.Instantiate(original, count, parent, positions, rotations, ref __result);
     }
 }

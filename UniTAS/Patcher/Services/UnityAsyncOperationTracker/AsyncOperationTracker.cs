@@ -48,6 +48,9 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         _gameBuildScenesInfo = gameBuildScenesInfo;
         _wrapFactory = wrapFactory;
         _loaded = [GetSceneInfo(0)];
+        _asyncInstantiateOperationT0 = AccessTools.AllTypes().First(x =>
+            x.IsGenericTypeDefinition && x.Namespace == "UnityEngine" && x.Name == "AsyncInstantiateOperation`1");
+        _instantiateAsyncOld = AccessTools.Field(_asyncInstantiateOperationT0, "m_op") != null;
     }
 
     private readonly Dictionary<AsyncOperation, AsyncOperationData> _tracked = [];
@@ -1068,12 +1071,51 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         _bundleScenePaths[bundle] = [..paths];
     }
 
-    private static Type _asyncInstantiateOperationType;
+    private readonly Type _asyncInstantiateOperationT0;
+    private Type _asyncInstantiateOperation;
 
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     public bool Instantiate(object original, int count, ReadOnlySpan<Vector3Alt> positions,
         ReadOnlySpan<QuaternionAlt> rotations, object parameters, object cancellationToken, ref object __result)
     {
+        InstantiateShared(original, count, positions, rotations, ref __result);
+
+        // TODO: optimisations
+        var result = new Traverse(__result);
+        result.Field("m_CancellationToken").SetValue(cancellationToken);
+
+        _tracked.Add((AsyncOperation)__result, new AsyncOperationData());
+        _ops.Add(new InstantiateAsyncData((AsyncOperation)__result, this, (Object)original, count, positions, rotations,
+            parameters, cancellationToken));
+
+        return false;
+    }
+
+    [SuppressMessage("ReSharper", "InconsistentNaming")]
+    public bool Instantiate(object original, int count, object parent, ReadOnlySpan<Vector3Alt> positions,
+        ReadOnlySpan<QuaternionAlt> rotations, ref object __result)
+    {
+        InstantiateShared(original, count, positions, rotations, ref __result);
+
+        _asyncInstantiateOperation ??= AccessTools.TypeByName("UnityEngine.AsyncInstantiateOperation");
+        var instantiateOp = FormatterServices.GetUninitializedObject(_asyncInstantiateOperation);
+        // TODO: optimisations
+        var result = new Traverse(__result);
+        result.Field("m_op").SetValue(instantiateOp);
+
+        _tracked.Add((AsyncOperation)instantiateOp, new AsyncOperationData());
+        _ops.Add(new InstantiateAsyncData((AsyncOperation)instantiateOp, this, (Object)original, count,
+            (Transform)parent, positions, rotations));
+
+        return false;
+    }
+
+    [SuppressMessage("ReSharper", "InconsistentNaming")]
+    private void InstantiateShared(object original, int count, ReadOnlySpan<Vector3Alt> positions,
+        ReadOnlySpan<QuaternionAlt> rotations, ref object __result)
+    {
+        // functionality is shared across old and new implementations
+
         // mimic unity's original function
 
         foreach (var position in positions)
@@ -1086,9 +1128,7 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
             StaticLogger.LogDebug($"thingy2: {rot.x}, {rot.y}, {rot.z}");
         }
 
-        var originalCasted = (Object)original;
-
-        if (originalCasted == null)
+        if ((Object)original == null)
         {
             // TODO: could maybe grab error str
             throw new ArgumentException("The Object you want to instantiate is null.");
@@ -1103,18 +1143,8 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         // manually create AsyncInstantiateOperation<T>
         // T can be obtained through `original` argument as this is supposed to be generic
         // UnityEngine.AsyncInstantiateOperation
-        _asyncInstantiateOperationType ??= AccessTools.TypeByName("UnityEngine.AsyncInstantiateOperation`1");
-        // TODO: optimisations
         __result = FormatterServices.GetUninitializedObject(
-            _asyncInstantiateOperationType.MakeGenericType(original.GetType()));
-        var result = new Traverse(__result);
-        result.Field("m_CancellationToken").SetValue(cancellationToken);
-
-        _tracked.Add((AsyncOperation)__result, new AsyncOperationData());
-        _ops.Add(new InstantiateAsyncData((AsyncOperation)__result, this, originalCasted, count, positions, rotations,
-            parameters, cancellationToken));
-
-        return false;
+            _asyncInstantiateOperationT0.MakeGenericType(original.GetType()));
     }
 
     private class UnloadBundleAsyncData(AsyncOperation op, AssetBundle bundle, bool unloadAllLoadedObjects)
@@ -1269,6 +1299,12 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         public AsyncOperation Op { get; } = op;
     }
 
+    /// <summary>
+    /// If the internal structure of InstantiateAsync is using the old format or not
+    /// Note that if internal structure drastically changes again, this would also change in how its stored
+    /// </summary>
+    private readonly bool _instantiateAsyncOld;
+
     private class InstantiateAsyncData : IAsyncOperation
     {
         private readonly Vector3[] _positions;
@@ -1276,6 +1312,22 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         private readonly AsyncOperationTracker _tracker;
         private readonly Object _original;
         private readonly int _count;
+
+        public InstantiateAsyncData(AsyncOperation op,
+            AsyncOperationTracker tracker,
+            Object original,
+            int count,
+            Transform parent,
+            ReadOnlySpan<Vector3Alt> positions,
+            ReadOnlySpan<QuaternionAlt> rotations)
+        {
+            _tracker = tracker;
+            _original = original;
+            _count = count;
+            Op = op;
+            _positions = positions.ToArray().Select(p => new Vector3(p.x, p.y, p.z)).ToArray();
+            _rotations = rotations.ToArray().Select(r => new Quaternion(r.x, r.y, r.z, r.w)).ToArray();
+        }
 
         public InstantiateAsyncData(AsyncOperation op,
             AsyncOperationTracker tracker,
