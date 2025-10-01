@@ -6,7 +6,6 @@ using HarmonyLib;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
-using MonoMod.Utils;
 using UniTAS.Patcher.Extensions;
 using MethodAttributes = Mono.Cecil.MethodAttributes;
 using MethodBody = Mono.Cecil.Cil.MethodBody;
@@ -249,6 +248,37 @@ public static class ILCodeUtils
         body.Optimize();
     }
 
+    private static TypeReference MakeGenericType(this TypeReference self, params TypeReference[] arguments)
+    {
+        if (self.GenericParameters.Count != arguments.Length)
+            throw new ArgumentException();
+
+        var instance = new GenericInstanceType(self);
+        foreach (var argument in arguments)
+            instance.GenericArguments.Add(argument);
+
+        return instance;
+    }
+
+    private static MethodReference MakeGeneric(this MethodReference self, params TypeReference[] arguments)
+    {
+        var reference = new MethodReference(self.Name, self.ReturnType)
+        {
+            DeclaringType = self.DeclaringType.MakeGenericType(arguments),
+            HasThis = self.HasThis,
+            ExplicitThis = self.ExplicitThis,
+            CallingConvention = self.CallingConvention,
+        };
+
+        foreach (var parameter in self.Parameters)
+            reference.Parameters.Add(new ParameterDefinition(parameter.ParameterType));
+
+        foreach (var genericParameter in self.GenericParameters)
+            reference.GenericParameters.Add(new GenericParameter(genericParameter.Name, reference));
+
+        return reference;
+    }
+
     private static IEnumerable<Instruction> HandleInjection(MethodDefinition method, ILProcessor il,
         ParameterInfo param,
         VariableDefinition resultVar, Func<VariableDefinition, ILProcessor, ParameterInfo, Instruction> state,
@@ -327,46 +357,20 @@ public static class ILCodeUtils
         // 4. constructor for span with fake struct as generic arg for replacement :)
 
         var paramType = paramDef.ParameterType.Resolve();
-        var getPinnableReference =
-            module.ImportReference(paramType.Methods.First(x => x.Name == "GetPinnableReference"));
-        var lengthGetter = module.ImportReference(paramType.Properties.First(x => x.Name == "Length").GetMethod);
-        var destTypeCtor = AccessTools.Constructor(destType, [typeof(void).MakePointerType(), typeof(int)]);
-        var destTypeRef = il.Import(destType);
+        var genericArgs = ((GenericInstanceType)paramDef.ParameterType).GenericArguments.ToArray();
+        var getPinnable =
+            module.ImportReference(paramType.Methods.First(x => x.Name == "GetPinnableReference"))
+                .MakeGeneric(genericArgs);
+        var lengthGetter = module.ImportReference(paramType.Properties.First(x => x.Name == "Length").GetMethod)
+            .MakeGeneric(genericArgs);
+        var destTypeCtor =
+            module.ImportReference(AccessTools.Constructor(destType, [typeof(void).MakePointerType(), typeof(int)]));
 
-        var destVar = new VariableDefinition(destTypeRef);
-        il.Body.Variables.Add(destVar);
-
-        yield return il.Create(OpCodes.Ldloca, destVar);
-        yield return il.Create(OpCodes.Initobj, destTypeRef);
-        // yield return il.Create(OpCodes.Ldloca, destVar);
-        // yield return il.Create(OpCodes.Ldarga, paramDef);
-        // yield return il.Create(OpCodes.Call, getPinnableReference);
-        // yield return il.Create(OpCodes.Conv_U);
-        // yield return il.Create(OpCodes.Ldarga, paramDef);
-        // yield return il.Create(OpCodes.Call, lengthGetter);
-        // yield return il.Create(OpCodes.Call, destTypeCtor);
-        yield return il.Create(OpCodes.Ldloc, destVar);
-
-        // IL_0021: ldloca.s     a
-        // IL_0023: call         instance !0/*valuetype Patcher.Tests.CoroutineTests/Foo*/& valuetype [System.Runtime]System.Span`1<valuetype Patcher.Tests.CoroutineTests/Foo>::GetPinnableReference()
-        // IL_002c: conv.u
-        // IL_002d: stloc.s      aPtr
-        // IL_002f: ldloca.s     b
-        // IL_0031: ldloc.s      aPtr
-        // IL_0033: ldloca.s     a
-        // IL_0035: call         instance int32 valuetype [System.Runtime]System.Span`1<valuetype Patcher.Tests.CoroutineTests/Foo>::get_Length()
-        // IL_003a: call         instance void valuetype [System.Runtime]System.Span`1<valuetype Patcher.Tests.CoroutineTests/Bar>::.ctor(void*, int32)
-
-        // IL_0021: ldloca.s     a
-        // IL_0023: call         instance !0/*valuetype Patcher.Tests.CoroutineTests/Foo*/& valuetype [System.Runtime]System.Span`1<valuetype Patcher.Tests.CoroutineTests/Foo>::GetPinnableReference()
-        // IL_0028: stloc.s      V_5
-        // IL_002a: ldloc.s      V_5
-        // IL_002c: conv.u
-        // IL_002d: stloc.s      aPtr
-        // IL_002f: ldloca.s     b
-        // IL_0031: ldloc.s      aPtr
-        // IL_0033: ldloca.s     a
-        // IL_0035: call         instance int32 valuetype [System.Runtime]System.Span`1<valuetype Patcher.Tests.CoroutineTests/Foo>::get_Length()
-        // IL_003a: call         instance void valuetype [System.Runtime]System.Span`1<valuetype Patcher.Tests.CoroutineTests/Bar>::.ctor(void*, int32)
+        yield return il.Create(OpCodes.Ldarga, paramDef);
+        yield return il.Create(OpCodes.Call, getPinnable);
+        yield return il.Create(OpCodes.Conv_U);
+        yield return il.Create(OpCodes.Ldarga, paramDef);
+        yield return il.Create(OpCodes.Call, lengthGetter);
+        yield return il.Create(OpCodes.Newobj, destTypeCtor);
     }
 }
