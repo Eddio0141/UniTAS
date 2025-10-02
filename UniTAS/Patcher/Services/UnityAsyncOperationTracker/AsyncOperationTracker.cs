@@ -1312,6 +1312,7 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         private readonly AsyncOperationTracker _tracker;
         private readonly Object _original;
         private readonly int _count;
+        private readonly Transform _parent;
 
         public InstantiateAsyncData(AsyncOperation op,
             AsyncOperationTracker tracker,
@@ -1327,6 +1328,7 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
             Op = op;
             _positions = positions.ToArray().Select(p => new Vector3(p.x, p.y, p.z)).ToArray();
             _rotations = rotations.ToArray().Select(r => new Quaternion(r.x, r.y, r.z, r.w)).ToArray();
+            _parent = parent;
         }
 
         public InstantiateAsyncData(AsyncOperation op,
@@ -1349,9 +1351,34 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         public void Load()
         {
             var allObjs = new Object[_count];
+            var posI = 0;
+            var rotI = 0;
             for (var i = 0; i < _count; i++)
             {
-                allObjs[i] = Object.Instantiate(_original, _positions[i], _rotations[i]);
+                var obj = Object.Instantiate(_original, _positions[posI], _rotations[rotI]);
+                // TODO: is this accurate
+                switch (obj)
+                {
+                    case GameObject go:
+                        go.transform.parent = _parent;
+                        break;
+                    case Transform transform:
+                        transform.parent = _parent;
+                        break;
+                }
+                allObjs[i] = obj;
+                
+                posI++;
+                if (_positions.Length <= posI)
+                {
+                    posI = 0;
+                }
+
+                rotI++;
+                if (_rotations.Length <= rotI)
+                {
+                    rotI = 0;
+                }
             }
 
             // TODO: optimisation
