@@ -210,11 +210,13 @@ public partial class MovieParser(
     }
 #endif
 
+    internal const string frameAdvanceFullName = "movie.frame_advance";
+
     private static void AddFrameAdvance(Script script)
     {
         // manually modify movie.frame_advance
-        const string frameAdvance = @"
-movie.frame_advance = function(frames)
+        const string frameAdvance = $@"
+{frameAdvanceFullName} = function(frames)
     if type(frames) ~= 'number' then
         frames = 1
     end
