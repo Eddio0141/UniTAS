@@ -50,7 +50,6 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         _loaded = [GetSceneInfo(0)];
         _asyncInstantiateOperationT0 = AccessTools.AllTypes().First(x =>
             x.IsGenericTypeDefinition && x.Namespace == "UnityEngine" && x.Name == "AsyncInstantiateOperation`1");
-        _instantiateAsyncOld = AccessTools.Field(_asyncInstantiateOperationT0, "m_op") != null;
     }
 
     private readonly Dictionary<AsyncOperation, AsyncOperationData> _tracked = [];
@@ -1085,7 +1084,7 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         result.Field("m_CancellationToken").SetValue(cancellationToken);
 
         _tracked.Add((AsyncOperation)__result, new AsyncOperationData());
-        _ops.Add(new InstantiateAsyncData((AsyncOperation)__result, this, (Object)original, count, positions, rotations,
+        _ops.Add(new InstantiateAsyncData((AsyncOperation)__result, (Object)original, count, positions, rotations,
             parameters, cancellationToken));
 
         return false;
@@ -1104,8 +1103,8 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         result.Field("m_op").SetValue(instantiateOp);
 
         _tracked.Add((AsyncOperation)instantiateOp, new AsyncOperationData());
-        _ops.Add(new InstantiateAsyncData((AsyncOperation)instantiateOp, this, (Object)original, count,
-            (Transform)parent, positions, rotations));
+        _ops.Add(new InstantiateAsyncData((AsyncOperation)instantiateOp, (Object)original, count, (Transform)parent,
+            positions, rotations));
 
         return false;
     }
@@ -1303,26 +1302,46 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
     /// If the internal structure of InstantiateAsync is using the old format or not
     /// Note that if internal structure drastically changes again, this would also change in how its stored
     /// </summary>
-    private readonly bool _instantiateAsyncOld;
+    private static readonly bool InstantiateAsyncOld =
+        AccessTools.Field(
+            AccessTools.AllTypes().First(x =>
+                x.IsGenericTypeDefinition && x.Namespace == "UnityEngine" && x.Name == "AsyncInstantiateOperation`1"),
+            "m_op") != null;
+
+    private static readonly MethodInfo InstantiateFullOld = AccessTools.Method(typeof(Object),
+        nameof(Object.Instantiate), [typeof(Object), typeof(Vector3), typeof(Quaternion), typeof(Transform)]);
 
     private class InstantiateAsyncData : IAsyncOperation
     {
         private readonly Vector3[] _positions;
         private readonly Quaternion[] _rotations;
-        private readonly AsyncOperationTracker _tracker;
         private readonly Object _original;
         private readonly int _count;
         private readonly Transform _parent;
+        private readonly object _parameters;
+
+        private static readonly MethodInfo InstantiateFullNew;
+
+        static InstantiateAsyncData()
+        {
+            var paramType = AccessTools.TypeByName("UnityEngine.InstantiateParameters");
+            if (paramType == null) return;
+            InstantiateFullNew = AccessTools.Method(typeof(Object),
+                nameof(Object.Instantiate),
+                [
+                    typeof(Object), typeof(Vector3), typeof(Quaternion),
+                    paramType
+                ]);
+        }
+
 
         public InstantiateAsyncData(AsyncOperation op,
-            AsyncOperationTracker tracker,
             Object original,
             int count,
             Transform parent,
             ReadOnlySpan<Vector3Alt> positions,
             ReadOnlySpan<QuaternionAlt> rotations)
         {
-            _tracker = tracker;
             _original = original;
             _count = count;
             Op = op;
@@ -1332,7 +1351,6 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         }
 
         public InstantiateAsyncData(AsyncOperation op,
-            AsyncOperationTracker tracker,
             Object original,
             int count,
             ReadOnlySpan<Vector3Alt> positions,
@@ -1340,12 +1358,12 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
             object parameters,
             object cancellationToken)
         {
-            _tracker = tracker;
             _original = original;
             _count = count;
             Op = op;
             _positions = positions.ToArray().Select(p => new Vector3(p.x, p.y, p.z)).ToArray();
             _rotations = rotations.ToArray().Select(r => new Quaternion(r.x, r.y, r.z, r.w)).ToArray();
+            _parameters = parameters;
         }
 
         public void Load()
@@ -1355,19 +1373,20 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
             var rotI = 0;
             for (var i = 0; i < _count; i++)
             {
-                var obj = Object.Instantiate(_original, _positions[posI], _rotations[rotI]);
-                // TODO: is this accurate
-                switch (obj)
+                Object obj;
+                if (InstantiateAsyncOld)
                 {
-                    case GameObject go:
-                        go.transform.parent = _parent;
-                        break;
-                    case Transform transform:
-                        transform.parent = _parent;
-                        break;
+                    obj = (Object)InstantiateFullOld.Invoke(null,
+                        [_original, _positions[posI], _rotations[rotI], _parent]);
                 }
+                else
+                {
+                    obj = (Object)InstantiateFullNew.Invoke(null,
+                        [_original, _positions[posI], _rotations[rotI], _parameters]);
+                }
+
                 allObjs[i] = obj;
-                
+
                 posI++;
                 if (_positions.Length <= posI)
                 {
