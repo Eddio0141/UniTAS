@@ -325,9 +325,9 @@ public static class ILCodeUtils
                 // (which it most likely would which is why span coercion exists to replace those types with fake ones)
                 // it will load the unity assembly too early, which is bad!
                 var paramFullname = paramDef.ParameterType.FullName;
+                var destType = param.ParameterType;
                 if (paramFullname.StartsWith("System.ReadOnlySpan`1") || paramFullname.StartsWith("System.Span`1"))
                 {
-                    var destType = param.ParameterType;
                     if (((GenericInstanceType)paramDef.ParameterType).GenericArguments[0].FullName !=
                         destType.SaneFullName())
                     {
@@ -342,6 +342,12 @@ public static class ILCodeUtils
                 }
 
                 yield return il.Create(OpCodes.Ldarg, paramDef);
+                // need boxing?
+                if (paramDef.ParameterType.IsValueType && !destType.IsValueType)
+                {
+                    yield return il.Create(OpCodes.Box, paramDef.ParameterType);
+                }
+
                 yield break;
             }
         }
