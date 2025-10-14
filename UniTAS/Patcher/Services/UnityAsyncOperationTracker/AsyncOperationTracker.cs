@@ -1308,9 +1308,6 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
                 x.IsGenericTypeDefinition && x.Namespace == "UnityEngine" && x.Name == "AsyncInstantiateOperation`1"),
             "m_op") != null;
 
-    private static readonly MethodInfo InstantiateFullOld = AccessTools.Method(typeof(Object),
-        nameof(Object.Instantiate), [typeof(Object), typeof(Vector3), typeof(Quaternion), typeof(Transform)]);
-
     private class InstantiateAsyncData : IAsyncOperation
     {
         private readonly Vector3[] _positions;
@@ -1321,17 +1318,36 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         private readonly object _parameters;
 
         private static readonly MethodInfo InstantiateFullNew;
+        private static readonly MethodInfo InstantiateShortNew;
+        private static readonly MethodInfo InstantiateFullOld;
+        private static readonly MethodInfo InstantiateShortOld;
 
         static InstantiateAsyncData()
         {
             var paramType = AccessTools.TypeByName("UnityEngine.InstantiateParameters");
-            if (paramType == null) return;
+            if (paramType == null)
+            {
+                InstantiateFullOld = AccessTools.Method(typeof(Object), nameof(Object.Instantiate),
+                    [typeof(Object), typeof(Vector3), typeof(Quaternion), typeof(Transform)]);
+                InstantiateShortOld = AccessTools.Method(typeof(Object), nameof(Object.Instantiate),
+                    [typeof(Object), typeof(Transform)]);
+                return;
+            }
+
             InstantiateFullNew = AccessTools.Method(typeof(Object),
                 nameof(Object.Instantiate),
                 [
                     typeof(Object), typeof(Vector3), typeof(Quaternion),
                     paramType
                 ]);
+
+            InstantiateShortNew = AccessTools.GetDeclaredMethods(typeof(Object)).First(o =>
+                {
+                    var p = o.GetParameters();
+                    if (o.Name != nameof(Object.Instantiate) || p.Length != 2 || p[1].ParameterType != paramType) return false;
+                    return p[0].ParameterType.IsGenericParameter;
+                })
+                .MakeGenericMethod(typeof(Object));
         }
 
 
@@ -1374,6 +1390,22 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
             for (var i = 0; i < _count; i++)
             {
                 Object obj;
+                // TODO: what to do if one is 0 and the other isn't?
+                if (_positions.Length == 0 || _rotations.Length == 0)
+                {
+                    if (InstantiateAsyncOld)
+                    {
+                        obj = (Object)InstantiateShortOld.Invoke(null, [_original, _parent]);
+                    }
+                    else
+                    {
+                        obj = (Object)InstantiateShortNew.Invoke(null, [_original, _parameters]);
+                    }
+
+                    allObjs[i] = obj;
+                    continue;
+                }
+
                 if (InstantiateAsyncOld)
                 {
                     obj = (Object)InstantiateFullOld.Invoke(null,
