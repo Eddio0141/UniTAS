@@ -29,6 +29,9 @@ public class AsyncOperationPatch
 
     private static readonly Type _resourceRequest = AccessTools.TypeByName("UnityEngine.ResourceRequest");
 
+    private static readonly Type _asyncInstantiateOperation =
+        AccessTools.TypeByName("UnityEngine.AsyncInstantiateOperation");
+
     private static readonly ISceneLoadTracker SceneLoadTracker =
         ContainerStarter.Kernel.GetInstance<ISceneLoadTracker>();
 
@@ -498,6 +501,40 @@ public class AsyncOperationPatch
         {
             __result = IntPtr.Zero;
             return false;
+        }
+    }
+
+    [HarmonyPatch]
+    private class IsWaitingForSceneActivation
+    {
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static MethodInfo TargetMethod() => _asyncInstantiateOperation
+            ?.GetMethod("IsWaitingForSceneActivation");
+
+        private static bool Prefix(AsyncOperation __instance, ref bool __result)
+        {
+            return !AsyncOperationOverride.IsWaitingForSceneActivation(__instance, out __result);
+        }
+    }
+
+    [HarmonyPatch]
+    private class WaitForCompletion
+    {
+        private static Exception Cleanup(MethodBase original, Exception ex)
+        {
+            return PatchHelper.CleanupIgnoreFail(original, ex);
+        }
+
+        private static MethodInfo TargetMethod() => _asyncInstantiateOperation
+            ?.GetMethod("WaitForCompletion");
+
+        private static bool Prefix(AsyncOperation __instance)
+        {
+            return !AsyncOperationOverride.WaitForCompletion(__instance);
         }
     }
 }
