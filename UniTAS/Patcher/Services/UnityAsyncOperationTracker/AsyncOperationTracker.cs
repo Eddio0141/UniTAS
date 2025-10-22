@@ -276,6 +276,14 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         _pendingLoadCallbacks.Add(op);
     }
 
+    private void LoadOpBlocking(IAsyncOperation op)
+    {
+        _logger.LogDebug($"processing operation {op}, with immediate callback");
+        op.Load();
+        _pendingLoadCallbacks.Add(op);
+        op.Callback();
+    }
+
     public void UpdateActual()
     {
         _sceneLoadSync = false;
@@ -584,7 +592,12 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         _tracked[asyncOperation] = state;
         if (state.NotAllowedToStall) return;
 
-        _logger.LogDebug(allow ? "restored scene activation" : "scene load is stalled");
+        _logger.LogDebug(allow ? "restored async activation" : "async load is stalled");
+        
+        // TODO: probably wrong way to get this, it could not exist
+        var op = _ops.First(o => o.Op == asyncOperation);
+        if (op is not InstantiateAsyncData) return;
+        LoadOpBlocking(op);
     }
 
     public bool GetAllowSceneActivation(AsyncOperation asyncOperation, out bool state)
@@ -700,6 +713,32 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         // WarnAsyncOperationAPI(asyncOperation);
         wasInvoked = false;
         return false;
+    }
+
+    public bool IsWaitingForSceneActivation(AsyncOperation asyncOperation, out bool waiting)
+    {
+        if (!_tracked.TryGetValue(asyncOperation, out var data))
+        {
+            waiting = false;
+            WarnAsyncOperationAPI(asyncOperation);
+            return false;
+        }
+
+        waiting = !data.AllowSceneActivation;
+        return true;
+    }
+
+    public bool WaitForCompletion(AsyncOperation asyncOperation)
+    {
+        if (!_tracked.ContainsKey(asyncOperation))
+        {
+            return false;
+        }
+
+        // TODO: this is slow but meh...
+        // TODO: probably wrong way to get this, it could not exist
+        LoadOpBlocking(_ops.First(o => o.Op == asyncOperation));
+        return true;
     }
 
     private void InvokeOnComplete(AsyncOperation asyncOperation)
@@ -1344,7 +1383,8 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
             InstantiateShortNew = AccessTools.GetDeclaredMethods(typeof(Object)).First(o =>
                 {
                     var p = o.GetParameters();
-                    if (o.Name != nameof(Object.Instantiate) || p.Length != 2 || p[1].ParameterType != paramType) return false;
+                    if (o.Name != nameof(Object.Instantiate) || p.Length != 2 || p[1].ParameterType != paramType)
+                        return false;
                     return p[0].ParameterType.IsGenericParameter;
                 })
                 .MakeGenericMethod(typeof(Object));
