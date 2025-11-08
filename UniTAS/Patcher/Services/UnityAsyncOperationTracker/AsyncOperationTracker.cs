@@ -280,8 +280,11 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
     {
         _logger.LogDebug($"processing operation {op}, with immediate callback");
         op.Load();
-        _pendingLoadCallbacks.Add(op);
+        var state = _tracked[op.Op];
+        state.IsDone = true;
+        _tracked[op.Op] = state;
         op.Callback();
+        InvokeOnComplete(op.Op);
     }
 
     public void UpdateActual()
@@ -593,7 +596,10 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         if (state.NotAllowedToStall) return;
 
         _logger.LogDebug(allow ? "restored async activation" : "async load is stalled");
-        
+
+        // handle blocking load
+        if (!allow) return;
+
         // TODO: probably wrong way to get this, it could not exist
         var op = _ops.First(o => o.Op == asyncOperation);
         if (op is not InstantiateAsyncData) return;
