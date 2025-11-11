@@ -1430,7 +1430,7 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
 
         public void Load()
         {
-            var targetType = Op.GetType().GetGenericArguments()[0];
+            var targetType = Op.GetType().GetGenericArguments().FirstOrDefault() ?? typeof(Object);
             var allObjs = (Object[])Array.CreateInstance(targetType, _count);
             var posI = 0;
             var rotI = 0;
