@@ -28,6 +28,7 @@ namespace UniTAS.Patcher.Services.UnityAsyncOperationTracker;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 [Singleton]
+[ExcludeRegisterIfTesting]
 public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, IAssetBundleCreateRequestTracker,
     IAssetBundleRequestTracker, IOnLastUpdateActual, IAsyncOperationIsInvokingOnComplete, IOnPreGameRestart,
     IOnUpdateActual, IOnEndOfFrameActual, IOnFixedUpdateActual, IOnStartActual, IOnAwakeActual,
@@ -306,7 +307,7 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         if (_pendingLoadCallbacks.Count == 0) return;
 
         // to allow the scene to be findable, invoke when scene loads on update
-        var callbacks = new List<(int, IAsyncOperation )>();
+        var callbacks = new List<(int, IAsyncOperation)>();
         for (var i = 0; i < _pendingLoadCallbacks.Count; i++)
         {
             var data = _pendingLoadCallbacks[i];
@@ -1112,7 +1113,7 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
             _bundleSceneShortPaths.Add(path, allPartialNames);
         }
 
-        _bundleScenePaths[bundle] = [..paths];
+        _bundleScenePaths[bundle] = [.. paths];
     }
 
     private readonly Type _asyncInstantiateOperationT0;
@@ -1430,7 +1431,7 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
 
         public void Load()
         {
-            var targetType = Op.GetType().GetGenericArguments()[0];
+            var targetType = Op.GetType().GetGenericArguments().FirstOrDefault() ?? typeof(Object);
             var allObjs = (Object[])Array.CreateInstance(targetType, _count);
             var posI = 0;
             var rotI = 0;
