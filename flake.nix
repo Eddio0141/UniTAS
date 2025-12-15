@@ -66,7 +66,7 @@
 
           devShells.default = pkgs.mkShell {
             packages = with pkgs; [
-              dotnet-sdk_8
+              dotnet-sdk_10
               (rust.override {
                 extensions = [
                   "rust-analyzer"
@@ -74,6 +74,7 @@
                 ];
               })
               rust-doc
+              roslyn-ls
             ];
           };
 
