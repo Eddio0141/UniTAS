@@ -5,22 +5,22 @@ edition = "2024"
 [dependencies]
 pattern-macro = { path = "./pattern-macro/" }
 pattern = { path = "./pattern/" }
-log = "0.4.26"
-const-str = { version = "0.6.2", features = ["proc"] }
-retour = { git = "https://github.com/Eddio0141/retour-rs.git", branch = "master", features = ["static-detour"] }
-time = { version = "0.3.39", features = ["formatting"] }
-backtrace = "0.3.74"
+log = "0.4.29"
+const-str = { version = "0.7.1", features = ["proc"] }
+retour = { git = "https://github.com/Eddio0141/retour-rs.git", branch = "mid-function-hook", features = ["static-detour"] }
+time = { version = "0.3.44", features = ["formatting"] }
+backtrace = "0.3.76"
 colored = "3.0.0"
-thiserror = "2.0.12"
+thiserror = "2.0.17"
 
 [target.'cfg(unix)'.dependencies]
-libc = "0.2.170"
+libc = "0.2.178"
 
 [target.'cfg(windows)'.dependencies]
-windows-sys = { version = "0.59.0", default-features = false, features = [ "Win32_System_LibraryLoader", "Win32_System_ProcessStatus", "Win32_System_Threading", "Win32_System_Performance" ] }
+windows-sys = { version = "0.61.2", default-features = false, features = [ "Win32_System_LibraryLoader", "Win32_System_ProcessStatus", "Win32_System_Threading", "Win32_System_Performance" ] }
 
 [dev-dependencies]
-windows-sys = { version = "0.59.0", default-features = false, features = [ "Win32_System_LibraryLoader", "Win32_System_ProcessStatus", "Win32_System_Threading", "Win32_System_Performance" ] }
+windows-sys = { version = "0.61.2", default-features = false, features = [ "Win32_System_LibraryLoader", "Win32_System_ProcessStatus", "Win32_System_Threading", "Win32_System_Performance" ] }
 
 [lib]
 crate-type = ["cdylib"]
