@@ -1,0 +1,22 @@
+ManifestFileVersion: 0
+CRC: 1891487182
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: 9eff37cc6c330aec56972a6a2c42f4f8
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 767148d2cba1a92a15442f2b767884c0
+  IncrementalBuildHash:
+    serializedVersion: 2
+    Hash: 9eff37cc6c330aec56972a6a2c42f4f8
+HashAppended: 0
+ClassTypes:
+- Class: 1
+  Script: {instanceID: 0}
+- Class: 4
+  Script: {instanceID: 0}
+SerializeReferenceClassIdentifiers: []
+Assets:
+- Assets/DummyAssets/Dummy5.prefab
+Dependencies: []

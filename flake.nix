@@ -56,6 +56,11 @@
               rust-doc
               roslyn-ls
               just
+              openssl
+              pkg-config
+              unzip
+              curl
+              nushell
             ];
           };
         };

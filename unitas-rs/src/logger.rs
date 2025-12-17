@@ -10,7 +10,7 @@ use std::{
 use colored::Colorize;
 use time::{OffsetDateTime, format_description};
 
-use crate::{hook::hooks::ReverseInvoke, reverse_invoke};
+use crate::reverse_invoke;
 
 pub struct DiskLogger {
     output_file: Arc<Mutex<BufWriter<File>>>,

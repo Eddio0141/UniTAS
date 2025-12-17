@@ -32,6 +32,7 @@
     </PropertyGroup>
     
     <PropertyGroup Condition=" '$(Configuration)' == 'DebugTest' ">
+        <OutputPath>bin/DebugTest/BepInEx/patchers/UniTAS/</OutputPath>
       <DefineConstants>BENCH;UNIT_TESTS;</DefineConstants>
     </PropertyGroup>
 
@@ -61,7 +62,7 @@
     
     <PropertyGroup Condition=" '$(Configuration)' == 'ReleaseBench' ">
         <DefineConstants>BENCH;</DefineConstants>
-        <OutputPath>bin/Release/BepInEx/patchers/UniTAS/</OutputPath>
+        <OutputPath>bin/ReleaseBench/BepInEx/patchers/UniTAS/</OutputPath>
         <DebugType>full</DebugType>
         <NoWarn />
         <DebugSymbols>true</DebugSymbols>
@@ -70,7 +71,7 @@
     
     <PropertyGroup Condition=" '$(Configuration)' == 'ReleaseTest' ">
         <DefineConstants>BENCH;UNIT_TESTS</DefineConstants>
-        <OutputPath>bin/Release/BepInEx/patchers/UniTAS/</OutputPath>
+        <OutputPath>bin/ReleaseTest/BepInEx/patchers/UniTAS/</OutputPath>
         <DebugType>full</DebugType>
         <NoWarn />
         <DebugSymbols>true</DebugSymbols>
@@ -94,7 +95,7 @@
         <PackageReference Include="BepInEx.Core" Version="5.4.21" />
         <PackageReference Include="BepInEx.PluginInfoProps" Version="2.1.0" />
         <PackageReference Include="JetBrains.Annotations" Version="2025.2.2" />
-        <PackageReference Include="MonoMod.Utils" Version="25.0.7" />
+        <PackageReference Include="MonoMod.Utils" Version="25.0.11" />
         <PackageReference Include="StructureMap" Version="2.6.3" />
         <PackageReference Include="Unity.InputSystem" Version="1.5.0" />
         <PackageReference Include="UnityEngine.Modules" Version="3.4.0" IncludeAssets="compile" />

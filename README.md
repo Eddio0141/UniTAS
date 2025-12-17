@@ -2,8 +2,6 @@
 
 [![Discord](https://img.shields.io/discord/1093033615161573490)](https://discord.gg/ddMqdqgPeB)
 
-![Static Badge](https://img.shields.io/badge/Discord%20DM-%40yuu0141-5865F2?style=flat)
-
 A tool that lets you TAS unity games
 
 - The tool doesn't bypass anti cheat or anything, USE AT YOUR OWN RISK!
