@@ -89,7 +89,7 @@
     </Target>
 
     <ItemGroup>
-        <PackageReference Include="AssetsTools.NET" Version="3.0.3" />
+        <PackageReference Include="AssetsTools.NET" Version="3.0.1" />
 <!--        the below is disabled due to https://github.com/BepInEx/BepInEx.Analyzers/issues/7, probably won't get fixed though-->
 <!--        <PackageReference Include="BepInEx.Analyzers" Version="1.0.8" PrivateAssets="all" />-->
         <PackageReference Include="BepInEx.Core" Version="5.4.21" />

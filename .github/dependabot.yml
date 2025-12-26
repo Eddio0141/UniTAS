@@ -19,6 +19,7 @@ updates:
     ignore:
       - dependency-name: "StructureMap"
       - dependency-name: "UnityEngine.Modules"
+      - dependency-name: "AssetsTools.NET"
     labels:
       - "dependencies"
       - "automation"
