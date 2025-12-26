@@ -22,3 +22,13 @@ updates:
     labels:
       - "dependencies"
       - "automation"
+
+  - package-ecosystem: "cargo"
+    directories:
+      - "/test-runner"
+      - "/unitas-rs"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "automation"

@@ -1,0 +1,16 @@
+ManifestFileVersion: 0
+CRC: 3360567083
+AssetBundleManifest:
+  AssetBundleInfos:
+    Info_0:
+      Name: test
+      Dependencies: {}
+    Info_1:
+      Name: test2
+      Dependencies: {}
+    Info_2:
+      Name: test3
+      Dependencies: {}
+    Info_3:
+      Name: testscene
+      Dependencies: {}

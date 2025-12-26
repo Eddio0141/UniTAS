@@ -1,133 +1,192 @@
-name: build-on-push
+name: Build and test on push
 
-on: [ push, pull_request ]
+on:
+  push:
+    branches:
+      - "main"
+  pull_request:
 
 jobs:
-  buildAndTest:
+  buildUnityGames:
+    name: Build unity game
     strategy:
-      fail-fast: false
       matrix:
         target:
-          - os: ubuntu-latest
-            triple: x86_64-unknown-linux-gnu
-            name: linux-x64
-          # - os: ubuntu-latest
-          #   triple: i686-unknown-linux-gnu
-          - os: windows-latest
-            triple: x86_64-pc-windows-msvc
-            name: win-x64
-          - os: windows-latest
-            triple: i686-pc-windows-msvc
-            name: win-x86
-    runs-on: ${{ matrix.target.os }}
+          - name: unity_latest
+            targetPlatform: StandaloneLinux64
+          # - name: unity_latest
+          #   targetPlatform: StandaloneWindows64
+          # - name: unity_latest
+          #   targetPlatform: StandaloneWindows
+    runs-on: ${{ matrix.target.targetPlatform == 'StandaloneLinux64' && 'ubuntu-24.04' ||
+                 matrix.target.targetPlatform == 'StandaloneWindows64' && 'windows-2025' ||
+                 matrix.target.targetPlatform == 'StandaloneWindows' && 'windows-2025' ||
+                 '' }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
+        with:
+          lfs: true
+
+      - name: Binary cache
+        uses: actions/cache@v5
+        id: unity-game-bin-cache
+        with:
+          path: TestGames/${{ matrix.target.name }}/build
+          key: unity-game-bin-${{ matrix.target.targetPlatform }}-${{ hashFiles(format('TestGames/{0}/Assets/**', matrix.target.name), format('TestGames/{0}/Packages/**', matrix.target.name), format('TestGames/{0}/ProjectSettings/**', matrix.target.name)) }}
+
+      - if: steps.unity-game-bin-cache.outputs.cache-hit != 'true'
+        uses: actions/cache@v5
+        name: Library cache
+        with:
+          path: TestGames/${{ matrix.target.name }}/Library
+          key: unity-game-library-${{ matrix.target.name }}-${{ matrix.target.targetPlatform }}-${{ hashFiles(format('TestGames/{0}/Assets/**', matrix.target.name), format('TestGames/{0}/Packages/**', matrix.target.name), format('TestGames/{0}/ProjectSettings/**', matrix.target.name)) }}
+          restore-keys: |
+            unity-game-library-${{ matrix.target.name }}-${{ matrix.target.targetPlatform }}-
+
+      - if: steps.unity-game-bin-cache.outputs.cache-hit != 'true'
+        uses: game-ci/unity-builder@v4
+        name: Build
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          targetPlatform: ${{ matrix.target.targetPlatform }}
+          projectPath: TestGames/${{ matrix.target.name }}
+          buildsPath: TestGames/${{ matrix.target.name }}/build
+          buildName: build.x86_64
+
+      - uses: actions/upload-artifact@v4
+        name: Upload binary
+        with:
+          name: unity-game-${{ matrix.target.name }}-${{ matrix.target.targetPlatform }}
+          path: TestGames/${{ matrix.target.name }}/build/${{ matrix.target.targetPlatform }}
+  buildUniTAS:
+    name: Build UniTAS
+    needs: buildUnityGames
+    strategy:
+      matrix:
+        target:
+          - triple: x86_64-unknown-linux-gnu
+            name: linux-x64
+          - triple: x86_64-pc-windows-msvc
+            name: win-x64
+          - triple: i686-pc-windows-msvc
+            name: win-x86
+    runs-on: ${{ matrix.target.name == 'linux-x64' && 'ubuntu-24.04' ||
+                 matrix.target.name == 'win-x64' && 'windows-2025' ||
+                 matrix.target.name == 'win-x86' && 'windows-2025' ||
+                 '' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
         with:
           submodules: true
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-      # NOTE: this is replaced because of https://github.com/federicocarboni/setup-ffmpeg/issues/19
-      # - name: Setup ffmpeg
-      #   uses: FedericoCarboni/setup-ffmpeg@v3.1
-
-      - name: Setup ffmpeg with retries
-        uses: ./.github/actions/setup-ffmpeg
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+        uses: actions/setup-dotnet@v5
 
       - name: Rustup toolchain install
-        uses: dtolnay/rust-toolchain@v1
+        uses: dtolnay/rust-toolchain@nightly
         with:
-          toolchain: nightly
           targets: ${{ matrix.target.triple }}
+
+      - name: Setup just
+        uses: extractions/setup-just@v3
 
       - name: Rust cache
         uses: Swatinem/rust-cache@v2
         with:
-          workspaces: unitas-rs -> unitas-rs
-
-      - name: Tests unitas-rs
-        run: cargo test --all --target ${{ matrix.target.triple }}
-        working-directory: unitas-rs
-
-      - if: matrix.target.os == 'ubuntu-latest' && matrix.target.triple == 'x86_64-unknown-linux-gnu'
-        name: Tests UniTAS
-        run: dotnet test UniTAS --configuration ReleaseTest
-
-      - name: Build unitas-rs
-        run: cargo build --release --target ${{ matrix.target.triple }}
-        working-directory: unitas-rs
+          workspaces: "unitas-rs -> unitas-rs"
 
       - name: Build UniTAS
-        run: dotnet build UniTAS --configuration Release
+        env:
+          CARGO_BUILD_TARGET: ${{ matrix.target.triple }}
+        run: just build
 
-      - if: matrix.target.os == 'ubuntu-latest'
-        name: Copy unitas-rs output to UniTAS output
-        run: |
-          cp unitas-rs/target/${{ matrix.target.triple }}/release/libunitas_rs.so UniTAS/Patcher/bin/Release
-
-      - if: matrix.target.os == 'windows-latest'
-        name: Copy unitas-rs output to UniTAS output
-        run: |
-          cp unitas-rs/target/${{ matrix.target.triple }}/release/unitas_rs.dll UniTAS/Patcher/bin/Release
-
-      - name: Get built artifacts
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
+        name: Upload built artifacts
         with:
           name: UniTAS-${{ matrix.target.name }}
-          path: ./UniTAS/Patcher/bin/Release
-  
-      - if: matrix.target.os == 'ubuntu-latest'
-        name: download test-runner
-        uses: dawidd6/action-download-artifact@v6
+          path: UniTAS/Patcher/bin/Release
+  testUniTAS:
+    name: Test UniTAS
+    needs: buildUniTAS
+    strategy:
+      matrix:
+        target:
+          - unitasName: linux-x64
+            gameName: unity_latest
+            gameTargetPlatform: StandaloneLinux64
+            triple: x86_64-unknown-linux-gnu
+          # - unitasName: win-x64
+          #   gameName: unity_latest
+          #   gameTargetPlatform: StandaloneWindows64
+          #   triple: x86_64-pc-windows-msvc
+          # - unitasName: win-x86
+          #   gameName: unity_latest
+          #   gameTargetPlatform: StandaloneWindows
+          #   triple: i686-pc-windows-msvc
+    runs-on: ${{ matrix.target.gameTargetPlatform == 'StandaloneLinux64' && 'ubuntu-24.04' ||
+                 matrix.target.gameTargetPlatform == 'StandaloneWindows64' && 'windows-2025' ||
+                 matrix.target.gameTargetPlatform == 'StandaloneWindows' && 'windows-2025' ||
+                 '' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          workflow: build-on-push.yml
-          branch: main
-          name: test-runner-unix
-          repo: Eddio0141/UniTASTestClients
-          path: test-runner
+          submodules: true
 
-      - if: matrix.target.os == 'windows-latest'
-        name: download test-runner
-        uses: dawidd6/action-download-artifact@v6
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+
+      - name: Setup ffmpeg
+        uses: FedericoCarboni/setup-ffmpeg@v3.1
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          workflow: build-on-push.yml
-          branch: main
-          name: test-runner-win
-          repo: Eddio0141/UniTASTestClients
-          path: test-runner
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      # TODO: wait for test-runner for windows
-      - if: matrix.target.os == 'ubuntu-latest' && matrix.target.triple == 'x86_64-unknown-linux-gnu'
-        name: copy UniTAS to test-runner directory
-        run: cp UniTAS/Patcher/bin/Release test-runner/UniTAS -r
-
-      - if: matrix.target.os == 'ubuntu-latest' && matrix.target.triple == 'x86_64-unknown-linux-gnu'
-        name: run test-runner
-        run: |
-          cd test-runner
-          chmod +x test-runner
-          ./test-runner --github-token ${{ secrets.GITHUB_TOKEN }}
-
-      # - if: matrix.target.os == 'windows-latest'
-      #   name: run test-runner
-      #   run: |
-      #     Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vc_redist.x64.exe" -OutFile vc_redist.x64.exe
-      #     Start-Process -FilePath ./vc_redist.x64.exe -ArgumentList '/install', '/quiet', '/norestart' -Wait
-      #     Start-Process -FilePath ./test-runner.exe -ArgumentList '--github-token ${{ secrets.GITHUB_TOKEN }}' -Wait
-      #     Start-Process -FilePath ./test-runner.exe -ArgumentList '--help' -Wait
-      #   working-directory: test-runner
-
-      - if: failure()
-        name: test-runner logs
-        uses: actions/upload-artifact@v4
+      - name: Rustup toolchain install
+        uses: dtolnay/rust-toolchain@nightly
         with:
-          name: test-runner-logs-${{ matrix.target.name }}
-          path: test-runner/logs
+          targets: ${{ matrix.target.triple }}
+
+      - name: Setup just
+        uses: extractions/setup-just@v3
+
+      - name: Setup Nu
+        uses: hustcer/setup-nu@v3
+      
+      - name: Setup packages
+        run: sudo apt update && sudo apt install -qyy xvfb
+
+      - name: Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "test-runner -> test-runner"
+          cache-on-failure: "true"
+
+      - uses: actions/download-artifact@v7
+        name: Download built unity game
+        with:
+          name: unity-game-${{ matrix.target.gameName }}-${{ matrix.target.gameTargetPlatform }}
+          path: TestGames/${{ matrix.target.gameName }}/build
+
+      - uses: actions/download-artifact@v7
+        name: Download UniTAS
+        with:
+          name: UniTAS-${{ matrix.target.unitasName }}
+          path: UniTAS/Patcher/bin/Release
+
+      - name: Run tests
+        run: xvfb-run --auto-servernum --server-args='-screen 0 640x480x24:32' just test
+
+      - if: always()
+        uses: actions/upload-artifact@v6
+        name: Upload test-runner logs
+        with:
+          name: test-runner-logs-${{ matrix.target.gameName }}-${{ matrix.target.gameTargetPlatform }}
+          path: ~/.cache/unitas-test-runner/logs
 
       - if: contains(github.event.pull_request.labels.*.name, 'automation')
         name: Auto-merge for automated PRs

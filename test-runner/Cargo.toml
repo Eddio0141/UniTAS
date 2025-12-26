@@ -1,0 +1,13 @@
+[package]
+name = "test-runner"
+version = "0.1.0"
+edition = "2024"
+description = "Tool to automatically execute unity games with UniTAS and BepInEx, and run tests on them"
+
+[dependencies]
+anyhow = "1.0.100"
+clap = { version = "4.5.53", features = ["derive"] }
+colored = "3.0.0"
+env_logger = "0.11.6"
+log = "0.4.29"
+thiserror = "2.0.17"

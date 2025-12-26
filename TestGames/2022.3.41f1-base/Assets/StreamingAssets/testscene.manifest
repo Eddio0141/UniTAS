@@ -1,0 +1,42 @@
+ManifestFileVersion: 0
+CRC: 331254788
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: b6a1741e4f7dee62aafafb049074a022
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 5a53e622d0b2f3561dab024a01f6d3b0
+  IncrementalBuildHash:
+    serializedVersion: 2
+    Hash: b6a1741e4f7dee62aafafb049074a022
+HashAppended: 0
+ClassTypes:
+- Class: 1
+  Script: {instanceID: 0}
+- Class: 4
+  Script: {instanceID: 0}
+- Class: 20
+  Script: {instanceID: 0}
+- Class: 21
+  Script: {instanceID: 0}
+- Class: 28
+  Script: {instanceID: 0}
+- Class: 48
+  Script: {instanceID: 0}
+- Class: 81
+  Script: {instanceID: 0}
+- Class: 89
+  Script: {instanceID: 0}
+- Class: 104
+  Script: {instanceID: 0}
+- Class: 108
+  Script: {instanceID: 0}
+- Class: 157
+  Script: {instanceID: 0}
+- Class: 196
+  Script: {instanceID: 0}
+SerializeReferenceClassIdentifiers: []
+Assets:
+- Assets/DummyAssets/Foo/Dummy.unity
+Dependencies: []
