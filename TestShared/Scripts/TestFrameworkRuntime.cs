@@ -20,6 +20,7 @@ public class TestFrameworkRuntime : MonoBehaviour
     public const string TestingScenePath = AssetPath + "/Scenes/general.unity";
     public const string ResourcesPath = AssetPath + "/Resources";
     public const string AssetBundlePath = AssetPath + "/AssetBundles";
+    public const string BuildPath = "build";
 
     private static TestFrameworkRuntime _instance;
     private readonly List<Result> _generalTestResults = new List<Result>();

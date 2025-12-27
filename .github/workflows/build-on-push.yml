@@ -57,10 +57,8 @@ jobs:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
-          targetPlatform: ${{ matrix.target.targetPlatform }}
           projectPath: TestGames/${{ matrix.target.name }}
-          buildsPath: TestGames/${{ matrix.target.name }}/build
-          buildName: build.x86_64
+          customParameters: -buildTarget ${{ matrix.target.targetPlatform }}
 
       - uses: actions/upload-artifact@v4
         name: Upload binary
