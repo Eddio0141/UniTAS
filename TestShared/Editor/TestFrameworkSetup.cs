@@ -360,8 +360,16 @@ namespace Editor.UniTASTest
             }
 
             if (saveScene) EditorSceneManager.SaveScene(scene, TestFrameworkRuntime.TestingScenePath);
-            EditorBuildSettings.scenes = new[]
+
+            var sceneSetting = EditorBuildSettings.scenes.FirstOrDefault(x => x.path == TestFrameworkRuntime.TestingScenePath);
+            if (sceneSetting == null)
+            {
+                EditorBuildSettings.scenes = new[]
                 { new EditorBuildSettingsScene(TestFrameworkRuntime.TestingScenePath, true) };
+                return;
+            }
+
+            sceneSetting.enabled = true;
         }
 
         private static void SetupTestScene(GameObject tests)
@@ -588,31 +596,27 @@ namespace Editor.UniTASTest
                 throw new InvalidOperationException("Field type is not string");
             }
 
-            string scenePath;
-            if (string.IsNullOrEmpty(field.stringValue) ||
-                !AssetDatabase.AssetPathExists(field.stringValue))
-            {
-                scenePath = AssetDatabase.GenerateUniqueAssetPath(Path.Combine(TestFrameworkRuntime.SceneAssetPath,
-                    "generated.unity"));
-
-                Debug.Log($"Creating scene at `{scenePath}`");
-                var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene,
-                    NewSceneMode.Additive);
-                if (!EditorSceneManager.SaveScene(scene, scenePath))
-                {
-                    throw new InvalidOperationException($"Failed to save scene {scenePath}");
-                }
-
-                EditorSceneManager.CloseScene(scene, true);
-
-                field.stringValue = scenePath;
-                HelperEditor.DelaySaveOpenScenes();
-            }
-            else
+            if (!string.IsNullOrEmpty(field.stringValue) && AssetDatabase.AssetPathExists(field.stringValue))
             {
                 Debug.Log(AlreadyInjected);
-                scenePath = field.stringValue;
+                return;
             }
+
+            var scenePath = AssetDatabase.GenerateUniqueAssetPath(Path.Combine(TestFrameworkRuntime.SceneAssetPath,
+                "generated.unity"));
+
+            Debug.Log($"Creating scene at `{scenePath}`");
+            var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene,
+                NewSceneMode.Additive);
+            if (!EditorSceneManager.SaveScene(scene, scenePath))
+            {
+                throw new InvalidOperationException($"Failed to save scene {scenePath}");
+            }
+
+            EditorSceneManager.CloseScene(scene, true);
+
+            field.stringValue = scenePath;
+            HelperEditor.DelaySaveOpenScenes();
 
             var scenes = EditorBuildSettings.scenes.ToList();
             scenes.Add(new EditorBuildSettingsScene(scenePath, true));
@@ -658,39 +662,39 @@ namespace Editor.UniTASTest
             switch (testAsset)
             {
                 case GameObjectAsset:
-                {
-                    var prefab = new GameObject();
-
-                    var path = fileName ?? "asset.prefab";
-                    if (pathPrefix != null)
                     {
-                        if (!Directory.Exists(pathPrefix))
+                        var prefab = new GameObject();
+
+                        var path = fileName ?? "asset.prefab";
+                        if (pathPrefix != null)
                         {
-                            Directory.CreateDirectory(pathPrefix);
+                            if (!Directory.Exists(pathPrefix))
+                            {
+                                Directory.CreateDirectory(pathPrefix);
+                            }
+
+                            path = Path.Combine(pathPrefix, path);
                         }
 
-                        path = Path.Combine(pathPrefix, path);
+                        if (fileName == null)
+                        {
+                            path = AssetDatabase.GenerateUniqueAssetPath(path);
+                        }
+
+                        PrefabUtility.SaveAsPrefabAsset(prefab, path, out var success);
+                        Object.DestroyImmediate(prefab);
+
+                        EditorApplication.delayCall += () =>
+                        {
+                            assetReady(path);
+                            HelperEditor.DelaySaveOpenScenes();
+                        };
+
+                        if (!success)
+                            throw new InvalidOperationException("Failed to save prefab");
+
+                        break;
                     }
-
-                    if (fileName == null)
-                    {
-                        path = AssetDatabase.GenerateUniqueAssetPath(path);
-                    }
-
-                    PrefabUtility.SaveAsPrefabAsset(prefab, path, out var success);
-                    Object.DestroyImmediate(prefab);
-
-                    EditorApplication.delayCall += () =>
-                    {
-                        assetReady(path);
-                        HelperEditor.DelaySaveOpenScenes();
-                    };
-
-                    if (!success)
-                        throw new InvalidOperationException("Failed to save prefab");
-
-                    break;
-                }
 
                 default:
                     throw new InvalidOperationException($"Asset type `{testAsset}` is not handled");
@@ -830,9 +834,9 @@ namespace Editor.UniTASTest
             {
                 scenes = scenes,
                 target = buildTarget,
-//                targetGroup = BuildPipeline.GetBuildTargetGroup(buildTarget),
+                //                targetGroup = BuildPipeline.GetBuildTargetGroup(buildTarget),
                 locationPathName = filePath,
-//                options = UnityEditor.BuildOptions.Development
+                //                options = UnityEditor.BuildOptions.Development
             };
 
             var buildSummary = BuildPipeline.BuildPlayer(buildPlayerOptions).summary;
