@@ -242,6 +242,10 @@ MonoBehaviour:
     inner: Assets/TestFramework/AssetBundles/bundle.bundle
   loadResource:
     inner: asset 1
+  loadResourceYield:
+    inner: asset 2
+  loadResourceBlocking:
+    inner: asset 3
 --- !u!114 &499555419
 MonoBehaviour:
   m_ObjectHideFlags: 0
