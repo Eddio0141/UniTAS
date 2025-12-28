@@ -58,13 +58,14 @@ jobs:
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
           projectPath: TestGames/${{ matrix.target.name }}
-          customParameters: -buildTarget ${{ matrix.target.targetPlatform }}
+          buildMethod: Editor.UniTASTest.BuildScript.Build
+          targetPlatform: ${{ matrix.target.targetPlatform }}
 
       - uses: actions/upload-artifact@v4
         name: Upload binary
         with:
           name: unity-game-${{ matrix.target.name }}-${{ matrix.target.targetPlatform }}
-          path: TestGames/${{ matrix.target.name }}/build/${{ matrix.target.targetPlatform }}
+          path: TestGames/${{ matrix.target.name }}/build
   buildUniTAS:
     name: Build UniTAS
     needs: buildUnityGames

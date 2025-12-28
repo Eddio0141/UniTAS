@@ -764,13 +764,10 @@ namespace Editor.UniTASTest
         {
             ParseCommandLineArguments(out var validatedOptions);
 
-            if (validatedOptions.TryGetValue("buildTarget", out var buildTarget))
+            if (validatedOptions.TryGetValue("buildTarget", out var buildTarget) && !Enum.IsDefined(typeof(BuildTarget), buildTarget ?? string.Empty))
             {
-                if (!Enum.IsDefined(typeof(BuildTarget), buildTarget ?? string.Empty))
-                {
-                    Console.WriteLine($"{buildTarget} is not a defined {nameof(BuildTarget)}");
-                    EditorApplication.Exit(121);
-                }
+                Console.WriteLine($"{buildTarget} is not a defined {nameof(BuildTarget)}");
+                EditorApplication.Exit(121);
             }
 
             return validatedOptions;
