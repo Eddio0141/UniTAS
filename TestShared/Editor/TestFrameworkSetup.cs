@@ -15,7 +15,7 @@ namespace Editor.UniTASTest
 {
     public static class TestFrameworkSetup
     {
-        [MenuItem("Test/Setup")]
+        [MenuItem("Test/Setup ^#s")]
         private static void Setup()
         {
             Debug.Log("Loading UniTAS testing framework");
@@ -701,7 +701,7 @@ namespace Editor.UniTASTest
             }
         }
 
-        [MenuItem("Test/Run General Tests")]
+        [MenuItem("Test/Run General Tests ^t")]
         private static void RunGeneralTests()
         {
             if (!EditorApplication.isPlaying)
@@ -713,7 +713,7 @@ namespace Editor.UniTASTest
             TestFrameworkRuntime.RunGeneralTests();
         }
 
-        [MenuItem("Test/Build")]
+        [MenuItem("Test/Build ^b")]
         private static void Build()
         {
             var activeProfile = EditorUserBuildSettings.activeBuildTarget;
