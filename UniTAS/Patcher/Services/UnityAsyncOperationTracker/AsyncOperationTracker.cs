@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization;
 using System.Text;
 using HarmonyLib;
 using UniTAS.Patcher.Extensions;
@@ -26,11 +28,12 @@ namespace UniTAS.Patcher.Services.UnityAsyncOperationTracker;
 
 // ReSharper disable once ClassNeverInstantiated.Global
 [Singleton]
+[ExcludeRegisterIfTesting]
 public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, IAssetBundleCreateRequestTracker,
     IAssetBundleRequestTracker, IOnLastUpdateActual, IAsyncOperationIsInvokingOnComplete, IOnPreGameRestart,
     IOnUpdateActual, IOnEndOfFrameActual, IOnFixedUpdateActual, IOnStartActual, IOnAwakeActual,
     IAssetBundleTracker, ISceneOverride, IAsyncOperationOverride,
-    IResourceAsyncTracker
+    IResourceAsyncTracker, IAsyncInstantiateTracker
 {
     private bool _isInvokingOnComplete;
     private readonly ISceneManagerWrapper _sceneManagerWrapper;
@@ -46,6 +49,8 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         _gameBuildScenesInfo = gameBuildScenesInfo;
         _wrapFactory = wrapFactory;
         _loaded = [GetSceneInfo(0)];
+        _asyncInstantiateOperationT0 = AccessTools.AllTypes().First(x =>
+            x.IsGenericTypeDefinition && x.Namespace == "UnityEngine" && x.Name == "AsyncInstantiateOperation`1");
     }
 
     private readonly Dictionary<AsyncOperation, AsyncOperationData> _tracked = [];
@@ -106,49 +111,62 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
     {
         _firstMatchUnloadPaths.Clear();
 
+        var removes = new List<int>();
         if (_sceneLoadSync)
         {
-            foreach (var loadData in _ops)
+            for (var i = 0; i < _ops.Count; i++)
             {
+                var loadData = _ops[i];
+                // sync loading doesn't force instantiation operations if stalled
+                if (SkipLoadInstantiateAsyncData(loadData)) continue;
+
                 LoadOp(loadData);
+                removes.Add(i);
             }
-
-            _ops.Clear();
-            return;
         }
-
-        if (_ops.Count == 0) return;
-
-        var removes = new List<int>();
-        var foundLoad = false;
-        for (var i = 0; i < _ops.Count; i++)
+        else
         {
-            var load = _ops[i];
-
-            if (!foundLoad)
+            var foundLoad = false;
+            var i = 0;
+            for (; i < _ops.Count; i++)
             {
-                if (load is AsyncSceneLoadData data)
-                {
-                    foundLoad = true;
-                    if (data.DelayFrame) break;
+                var load = _ops[i];
+                if (SkipLoadInstantiateAsyncData(load)) continue;
 
-                    var op = load.Op;
-                    if (op != null)
+                if (!foundLoad)
+                {
+                    if (load is AsyncSceneLoadData data)
                     {
-                        var trackState = _tracked[load.Op];
-                        if (trackState.NotAllowedToStall || !trackState.AllowSceneActivation) break;
+                        foundLoad = true;
+                        if (data.DelayFrame) break;
+
+                        var op = load.Op;
+                        if (op != null)
+                        {
+                            var trackState = _tracked[load.Op];
+                            if (trackState.NotAllowedToStall || !trackState.AllowSceneActivation) break;
+                        }
                     }
+
+                    LoadOp(load);
+                    removes.Add(i);
+                    continue;
                 }
 
+                if (load is AsyncSceneLoadData) break;
+                // add the rest of the operations
                 LoadOp(load);
                 removes.Add(i);
-                continue;
             }
 
-            if (load is AsyncSceneLoadData) break;
-            // add the rest of the operations
-            LoadOp(load);
-            removes.Add(i);
+            // handle rest
+            for (; i < _ops.Count; i++)
+            {
+                var load = _ops[i];
+                if (load is not AsyncSceneLoadData data || !_tracked[data.Op].AllowSceneActivation) continue;
+                LoadOp(data);
+                removes.Add(i);
+            }
         }
 
         foreach (var i in ((IEnumerable<int>)removes).Reverse())
@@ -156,6 +174,9 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
             _ops.RemoveAt(i);
         }
     }
+
+    private bool SkipLoadInstantiateAsyncData(IAsyncOperation op) =>
+        op is InstantiateAsyncData data && !_tracked[data.Op].AllowSceneActivation;
 
     private void ProcessOpsUntilOp(AsyncOperation op)
     {
@@ -256,6 +277,17 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         _pendingLoadCallbacks.Add(op);
     }
 
+    private void LoadOpBlocking(IAsyncOperation op)
+    {
+        _logger.LogDebug($"processing operation {op}, with immediate callback");
+        op.Load();
+        var state = _tracked[op.Op];
+        state.IsDone = true;
+        _tracked[op.Op] = state;
+        op.Callback();
+        InvokeOnComplete(op.Op);
+    }
+
     public void UpdateActual()
     {
         _sceneLoadSync = false;
@@ -275,7 +307,7 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         if (_pendingLoadCallbacks.Count == 0) return;
 
         // to allow the scene to be findable, invoke when scene loads on update
-        var callbacks = new List<(int, IAsyncOperation )>();
+        var callbacks = new List<(int, IAsyncOperation)>();
         for (var i = 0; i < _pendingLoadCallbacks.Count; i++)
         {
             var data = _pendingLoadCallbacks[i];
@@ -564,7 +596,15 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         _tracked[asyncOperation] = state;
         if (state.NotAllowedToStall) return;
 
-        _logger.LogDebug(allow ? "restored scene activation" : "scene load is stalled");
+        _logger.LogDebug(allow ? "restored async activation" : "async load is stalled");
+
+        // handle blocking load
+        if (!allow) return;
+
+        // TODO: probably wrong way to get this, it could not exist
+        var op = _ops.First(o => o.Op == asyncOperation);
+        if (op is not InstantiateAsyncData) return;
+        LoadOpBlocking(op);
     }
 
     public bool GetAllowSceneActivation(AsyncOperation asyncOperation, out bool state)
@@ -680,6 +720,32 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         // WarnAsyncOperationAPI(asyncOperation);
         wasInvoked = false;
         return false;
+    }
+
+    public bool IsWaitingForSceneActivation(AsyncOperation asyncOperation, out bool waiting)
+    {
+        if (!_tracked.TryGetValue(asyncOperation, out var data))
+        {
+            waiting = false;
+            WarnAsyncOperationAPI(asyncOperation);
+            return false;
+        }
+
+        waiting = !data.AllowSceneActivation;
+        return true;
+    }
+
+    public bool WaitForCompletion(AsyncOperation asyncOperation)
+    {
+        if (!_tracked.ContainsKey(asyncOperation))
+        {
+            return false;
+        }
+
+        // TODO: this is slow but meh...
+        // TODO: probably wrong way to get this, it could not exist
+        LoadOpBlocking(_ops.First(o => o.Op == asyncOperation));
+        return true;
     }
 
     private void InvokeOnComplete(AsyncOperation asyncOperation)
@@ -1047,7 +1113,83 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
             _bundleSceneShortPaths.Add(path, allPartialNames);
         }
 
-        _bundleScenePaths[bundle] = [..paths];
+        _bundleScenePaths[bundle] = [.. paths];
+    }
+
+    private readonly Type _asyncInstantiateOperationT0;
+    private Type _asyncInstantiateOperation;
+
+    [SuppressMessage("ReSharper", "InconsistentNaming")]
+    public bool Instantiate(object original, int count, ReadOnlySpan<Vector3Alt> positions,
+        ReadOnlySpan<QuaternionAlt> rotations, object parameters, object cancellationToken, ref object __result)
+    {
+        InstantiateShared(original, count, positions, rotations, ref __result);
+
+        // TODO: optimisations
+        var result = new Traverse(__result);
+        result.Field("m_CancellationToken").SetValue(cancellationToken);
+
+        _tracked.Add((AsyncOperation)__result, new AsyncOperationData());
+        _ops.Add(new InstantiateAsyncData((AsyncOperation)__result, (Object)original, count, positions, rotations,
+            parameters, cancellationToken));
+
+        return false;
+    }
+
+    [SuppressMessage("ReSharper", "InconsistentNaming")]
+    public bool Instantiate(object original, int count, object parent, ReadOnlySpan<Vector3Alt> positions,
+        ReadOnlySpan<QuaternionAlt> rotations, ref object __result)
+    {
+        InstantiateShared(original, count, positions, rotations, ref __result);
+
+        _asyncInstantiateOperation ??= AccessTools.TypeByName("UnityEngine.AsyncInstantiateOperation");
+        var instantiateOp = FormatterServices.GetUninitializedObject(_asyncInstantiateOperation);
+        // TODO: optimisations
+        var result = new Traverse(__result);
+        result.Field("m_op").SetValue(instantiateOp);
+
+        _tracked.Add((AsyncOperation)instantiateOp, new AsyncOperationData());
+        _ops.Add(new InstantiateAsyncData((AsyncOperation)instantiateOp, (Object)original, count, (Transform)parent,
+            positions, rotations));
+
+        return false;
+    }
+
+    [SuppressMessage("ReSharper", "InconsistentNaming")]
+    private void InstantiateShared(object original, int count, ReadOnlySpan<Vector3Alt> positions,
+        ReadOnlySpan<QuaternionAlt> rotations, ref object __result)
+    {
+        // functionality is shared across old and new implementations
+
+        // mimic unity's original function
+
+        foreach (var position in positions)
+        {
+            StaticLogger.LogDebug($"thingy: {position.x}, {position.y}, {position.z}");
+        }
+
+        foreach (var rot in rotations)
+        {
+            StaticLogger.LogDebug($"thingy2: {rot.x}, {rot.y}, {rot.z}");
+        }
+
+        if ((Object)original == null)
+        {
+            // TODO: could maybe grab error str
+            throw new ArgumentException("The Object you want to instantiate is null.");
+        }
+
+        if (count <= 0)
+        {
+            // TODO: could maybe grab error str
+            throw new ArgumentException("Cannot call instantiate multiple with count less or equal to zero");
+        }
+
+        // manually create AsyncInstantiateOperation<T>
+        // T can be obtained through `original` argument as this is supposed to be generic
+        // UnityEngine.AsyncInstantiateOperation
+        __result = FormatterServices.GetUninitializedObject(
+            _asyncInstantiateOperationT0.MakeGenericType(original.GetType()));
     }
 
     private class UnloadBundleAsyncData(AsyncOperation op, AssetBundle bundle, bool unloadAllLoadedObjects)
@@ -1200,6 +1342,154 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         }
 
         public AsyncOperation Op { get; } = op;
+    }
+
+    /// <summary>
+    /// If the internal structure of InstantiateAsync is using the old format or not
+    /// Note that if internal structure drastically changes again, this would also change in how its stored
+    /// </summary>
+    private static readonly bool InstantiateAsyncOld =
+        AccessTools.Field(
+            AccessTools.AllTypes().First(x =>
+                x.IsGenericTypeDefinition && x.Namespace == "UnityEngine" && x.Name == "AsyncInstantiateOperation`1"),
+            "m_op") != null;
+
+    private class InstantiateAsyncData : IAsyncOperation
+    {
+        private readonly Vector3[] _positions;
+        private readonly Quaternion[] _rotations;
+        private readonly Object _original;
+        private readonly int _count;
+        private readonly Transform _parent;
+        private readonly object _parameters;
+
+        private static readonly MethodInfo InstantiateFullNew;
+        private static readonly MethodInfo InstantiateShortNew;
+        private static readonly MethodInfo InstantiateFullOld;
+        private static readonly MethodInfo InstantiateShortOld;
+
+        static InstantiateAsyncData()
+        {
+            var paramType = AccessTools.TypeByName("UnityEngine.InstantiateParameters");
+            if (paramType == null)
+            {
+                InstantiateFullOld = AccessTools.Method(typeof(Object), nameof(Object.Instantiate),
+                    [typeof(Object), typeof(Vector3), typeof(Quaternion), typeof(Transform)]);
+                InstantiateShortOld = AccessTools.Method(typeof(Object), nameof(Object.Instantiate),
+                    [typeof(Object), typeof(Transform)]);
+                return;
+            }
+
+            InstantiateFullNew = AccessTools.Method(typeof(Object),
+                nameof(Object.Instantiate),
+                [
+                    typeof(Object), typeof(Vector3), typeof(Quaternion),
+                    paramType
+                ]);
+
+            InstantiateShortNew = AccessTools.GetDeclaredMethods(typeof(Object)).First(o =>
+                {
+                    var p = o.GetParameters();
+                    if (o.Name != nameof(Object.Instantiate) || p.Length != 2 || p[1].ParameterType != paramType)
+                        return false;
+                    return p[0].ParameterType.IsGenericParameter;
+                })
+                .MakeGenericMethod(typeof(Object));
+        }
+
+
+        public InstantiateAsyncData(AsyncOperation op,
+            Object original,
+            int count,
+            Transform parent,
+            ReadOnlySpan<Vector3Alt> positions,
+            ReadOnlySpan<QuaternionAlt> rotations)
+        {
+            _original = original;
+            _count = count;
+            Op = op;
+            _positions = positions.ToArray().Select(p => new Vector3(p.x, p.y, p.z)).ToArray();
+            _rotations = rotations.ToArray().Select(r => new Quaternion(r.x, r.y, r.z, r.w)).ToArray();
+            _parent = parent;
+        }
+
+        public InstantiateAsyncData(AsyncOperation op,
+            Object original,
+            int count,
+            ReadOnlySpan<Vector3Alt> positions,
+            ReadOnlySpan<QuaternionAlt> rotations,
+            object parameters,
+            object cancellationToken)
+        {
+            _original = original;
+            _count = count;
+            Op = op;
+            _positions = positions.ToArray().Select(p => new Vector3(p.x, p.y, p.z)).ToArray();
+            _rotations = rotations.ToArray().Select(r => new Quaternion(r.x, r.y, r.z, r.w)).ToArray();
+            _parameters = parameters;
+        }
+
+        public void Load()
+        {
+            var targetType = Op.GetType().GetGenericArguments().FirstOrDefault() ?? typeof(Object);
+            var allObjs = (Object[])Array.CreateInstance(targetType, _count);
+            var posI = 0;
+            var rotI = 0;
+            for (var i = 0; i < _count; i++)
+            {
+                Object obj;
+                // TODO: what to do if one is 0 and the other isn't?
+                if (_positions.Length == 0 || _rotations.Length == 0)
+                {
+                    if (InstantiateAsyncOld)
+                    {
+                        obj = (Object)InstantiateShortOld.Invoke(null, [_original, _parent]);
+                    }
+                    else
+                    {
+                        obj = (Object)InstantiateShortNew.Invoke(null, [_original, _parameters]);
+                    }
+
+                    allObjs[i] = obj;
+                    continue;
+                }
+
+                if (InstantiateAsyncOld)
+                {
+                    obj = (Object)InstantiateFullOld.Invoke(null,
+                        [_original, _positions[posI], _rotations[rotI], _parent]);
+                }
+                else
+                {
+                    obj = (Object)InstantiateFullNew.Invoke(null,
+                        [_original, _positions[posI], _rotations[rotI], _parameters]);
+                }
+
+                allObjs[i] = obj;
+
+                posI++;
+                if (_positions.Length <= posI)
+                {
+                    posI = 0;
+                }
+
+                rotI++;
+                if (_rotations.Length <= rotI)
+                {
+                    rotI = 0;
+                }
+            }
+
+            // TODO: optimisation
+            var opTraverse = new Traverse(Op);
+            opTraverse.Field("m_Result").SetValue(allObjs);
+        }
+
+        public void Callback()
+        {
+        }
+
+        public AsyncOperation Op { get; }
     }
 
     private class DummyOpData(AsyncOperation op) : IAsyncOperation
