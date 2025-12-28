@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -9,8 +8,6 @@ using System.Text;
 using JetBrains.Annotations;
 using UnityEngine;
 
-[SuppressMessage("ReSharper", "UseStringInterpolation")]
-[SuppressMessage("ReSharper", "ArrangeObjectCreationWhenTypeEvident")]
 [DefaultExecutionOrder(0)]
 public class TestFrameworkRuntime : MonoBehaviour
 {
@@ -29,20 +26,23 @@ public class TestFrameworkRuntime : MonoBehaviour
     private Test[] _generalTests;
     private Test[] _eventTests;
     private (MovieTestAttribute, Test[])[] _movieTests;
-    private List<Test> _initTestsAwake;
+    private Test[] _initTestsAwake;
 
 #pragma warning disable CS0414 // Field is assigned but its value is never used
     private static bool _generalTestsDone;
 #pragma warning restore CS0414 // Field is assigned but its value is never used
-
-    private bool _initTestsAwakeRan;
 
     /// <summary>
     /// Movie test class to run by name, setting this flag will make certain events check / start running movie tests
     /// </summary>
     private static string _movieTestClassToRun;
 
-    private bool _movieTestStarted;
+    /// <summary>
+    /// Init test to run by name
+    /// </summary>
+    private static string _initTestMethodToRun;
+
+    private bool _execTestRun;
 
     private void Awake()
     {
@@ -102,11 +102,17 @@ public class TestFrameworkRuntime : MonoBehaviour
         _generalTests = generalTests.ToArray();
         _eventTests = eventTests.ToArray();
         _movieTests = movieTests.ToArray();
-        _initTestsAwake = initTestsAwake;
+        _initTestsAwake = initTestsAwake.ToArray();
         Debug.Log($"Discovered {_generalTests.Length} general tests" +
                   $", {_eventTests.Length} event tests" +
                   $", {_movieTests.Length} movie tests" +
-                  $", {_initTestsAwake.Count} init tests (Awake)");
+                  $", {_initTestsAwake.Length} init tests (Awake)");
+    }
+
+    private static Test[] AllInitTests()
+    {
+        _instance.DiscoverTestsIfNot();
+        return _instance._initTestsAwake;
     }
 
     public static IEnumerable<MethodInfo> GetTestFuncs(Type type)
@@ -211,34 +217,60 @@ public class TestFrameworkRuntime : MonoBehaviour
     private readonly Queue<Test> _pendingEventTests = new Queue<Test>();
     private Test? _currentEventTest;
 
-    /// <summary>
-    /// Runs tests as init tests, meaning the tests run in parallel
-    /// </summary>
-    private IEnumerator RunInitTest(Test test)
-    {
-        yield return RunTest(test, _initTestResults);
-        _initTestsAwake.Remove(test);
-
-        InitTestsFinishCheckAndLog();
-    }
-
     public static IEnumerator AwakeTestHook()
     {
         if (!InstanceSetCheckAndLog()) yield break;
 
         yield return _instance.MovieTestCheckAndRun(MovieTestTiming.Awake);
-        yield return _instance.InitTestAwakeCheckAndRun();
-        yield return _instance.EventHookInternal(EventTiming.Awake);
+        yield return _instance.InitTestCheckAndRun(InitTestTiming.Awake);
+    }
+
+    private void CheckExecTestFlag()
+    {
+        const string checkMsg = "check if you are trying to run init test / movie test multiple times without restart";
+
+        if (_execTestRun)
+        {
+            throw new InvalidOperationException($"Execute test is already running, {checkMsg}");
+        }
+
+        if (_initTestMethodToRun != null && _movieTestClassToRun != null)
+        {
+            throw new InvalidOperationException($"Execute test flag is conflicting, {checkMsg}");
+        }
+    }
+
+    private IEnumerator InitTestCheckAndRun(InitTestTiming timing)
+    {
+        if (_initTestMethodToRun == null) yield break;
+        CheckExecTestFlag();
+        // check format
+        Debug.Log($"Init test is set to be executed: `{_initTestMethodToRun}`");
+        DiscoverTestsIfNot();
+        var testIdx = Array.FindIndex(_initTestsAwake, t => t.InitTiming == timing && t.Name == _initTestMethodToRun);
+        if (testIdx < 0)
+        {
+            throw new InvalidOperationException("Init test not found");
+        }
+        _execTestRun = true;
+        var test = _initTestsAwake[testIdx];
+
+        yield return RunTest(test, _initTestResults);
+        Debug.Log(_initTestResults[0]);
     }
 
     private IEnumerator MovieTestCheckAndRun(MovieTestTiming movieTestTiming)
     {
-        if (_movieTestClassToRun == null || _movieTestStarted) yield break;
+        if (_movieTestClassToRun == null) yield break;
+        CheckExecTestFlag();
         Debug.Log($"Movie test is set to be executed: `{_movieTestClassToRun}`");
         DiscoverTestsIfNot();
         var testPairIdx = Array.FindIndex(_movieTests, t => t.Item1.Timing == movieTestTiming);
-        if (testPairIdx < 0) yield break;
-        _movieTestStarted = true;
+        if (testPairIdx < 0)
+        {
+            throw new InvalidOperationException("Movie test not found");
+        }
+        _execTestRun = true;
         var testPair = _movieTests[testPairIdx];
         var tests = testPair.Item2.Where(t => t.TypeName == _movieTestClassToRun).ToArray();
 
@@ -246,31 +278,6 @@ public class TestFrameworkRuntime : MonoBehaviour
         foreach (var test in testPair.Item2)
         {
             yield return RunTest(test, _movieTestResults);
-        }
-    }
-
-    private IEnumerator InitTestAwakeCheckAndRun()
-    {
-        if (_initTestsAwakeRan) yield break;
-        _initTestsAwakeRan = true;
-        DiscoverTestsIfNot();
-        foreach (var test in _initTestsAwake)
-        {
-            StartCoroutine(RunInitTest(test));
-        }
-    }
-
-    private bool _initTestsFinishLogged;
-
-    private void InitTestsFinishCheckAndLog()
-    {
-        if (_initTestsAwake.Count > 0 || _initTestsFinishLogged) return;
-        _initTestsFinishLogged = true;
-
-        Debug.Log("Init tests finished");
-        foreach (var result in _initTestResults)
-        {
-            Debug.Log(result);
         }
     }
 
@@ -283,8 +290,6 @@ public class TestFrameworkRuntime : MonoBehaviour
         EventTestStart();
     }
 
-    [SuppressMessage("ReSharper", "MemberCanBePrivate.Local")]
-    [SuppressMessage("ReSharper", "StructCanBeMadeReadOnly")]
     private struct Result
     {
         public Result(string name, string message, bool success)
@@ -433,7 +438,6 @@ public class TestFrameworkRuntime : MonoBehaviour
     }
 }
 
-[SuppressMessage("ReSharper", "UseStringInterpolation")]
 public static class Assert
 {
     public static void Log(string name, LogType expectedType, string expectedLog, string message = null,
@@ -598,11 +602,8 @@ public static class Assert
     }
 
     private static readonly List<Result> TestResults = new List<Result>();
-#pragma warning disable CS1691 CS1692 CS0414 CS1696 // Field is assigned but its value is never used
     private static bool _testsDone;
-#pragma warning restore CS1691 CS1692 CS0414 CS1696 // Field is assigned but its value is never used
 
-    [SuppressMessage("ReSharper", "UnusedMember.Local")]
     private static void Reset()
     {
         _testsDone = false;
@@ -619,8 +620,6 @@ public static class Assert
         }
     }
 
-    [SuppressMessage("ReSharper", "MemberCanBePrivate.Local")]
-    [SuppressMessage("ReSharper", "StructCanBeMadeReadOnly")]
     private struct Result
     {
         public Result(string name, string message, bool success)
@@ -640,7 +639,6 @@ public static class Assert
         }
     }
 
-    [SuppressMessage("ReSharper", "StructCanBeMadeReadOnly")]
     private struct LogHookStore
     {
         public readonly string Name;
@@ -663,7 +661,6 @@ public static class Assert
     }
 }
 
-[SuppressMessage("ReSharper", "UseStringInterpolation")]
 public class AssertionException : Exception
 {
     public AssertionException(string assertMsg, string userMsg, string file, int line) : base(AssertMsg(assertMsg,
@@ -743,7 +740,6 @@ public class TestAttribute : Attribute
 
 public enum EventTiming
 {
-    Awake
 }
 
 [AttributeUsage(AttributeTargets.Class)]

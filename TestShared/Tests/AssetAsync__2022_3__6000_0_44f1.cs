@@ -35,7 +35,7 @@ public class AssetAsync__2022_3_6000_0_4 : MonoBehaviour
         Assert.True(resource.isDone);
     }
 
-    [Test(EventTiming.Awake)]
+    [Test(InitTestTiming.Awake)]
     public IEnumerator<TestYield> UnloadUnusedAssetsAwake()
     {
         var startTime = Time.frameCount;
