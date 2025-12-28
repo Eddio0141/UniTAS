@@ -1,9 +1,6 @@
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 
-[SuppressMessage("ReSharper", "InconsistentNaming")]
-[SuppressMessage("ReSharper", "CheckNamespace")]
 public class AssetAsync__2022_3_6000_0_4 : MonoBehaviour
 {
     public ITestAsset emptyObjectAsset => new GameObjectAsset();
@@ -34,6 +31,7 @@ public class AssetAsync__2022_3_6000_0_4 : MonoBehaviour
         Assert.NotNull(asset);
         Assert.True(op.isDone);
         Assert.True(callback);
+        // resource will also be forced to load, despite not being touched
         Assert.True(resource.isDone);
     }
 
@@ -57,16 +55,58 @@ public class AssetAsync__2022_3_6000_0_4 : MonoBehaviour
     [Test]
     public IEnumerator<TestYield> LoadResource()
     {
-        var startTime = Time.frameCount;
         var callback = false;
+        // note that resource.asset access will force load
         var resource = Resources.LoadAsync(loadResource);
         resource.completed += _ => callback = true;
+        Assert.False(callback);
+        yield return new UnityYield(new WaitForEndOfFrame());
+        Assert.False(callback);
+        yield return new UnityYield(null);
+        Assert.True(callback);
+        Assert.NotNull(resource.asset);
+    }
+
+    [TestInjectResource(nameof(emptyObjectAsset))]
+    public OnceOnlyPath loadResourceYield;
+
+    [Test]
+    public IEnumerator<TestYield> LoadResourceYield()
+    {
+        var startTime = Time.frameCount;
+        var callback = false;
+        // note that resource.asset access will force load
+        var resource = Resources.LoadAsync(loadResourceYield);
+        resource.completed += _ => callback = true;
+        Assert.False(callback);
         yield return new UnityYield(resource);
         Assert.Equal(1, Time.frameCount - startTime);
         Assert.False(callback);
         yield return new UnityYield(new WaitForEndOfFrame());
+        Assert.Equal(1, Time.frameCount - startTime);
+        Assert.True(callback);
+        yield return new UnityYield(null);
         Assert.True(callback);
         Assert.NotNull(resource.asset);
+    }
+
+    [TestInjectResource(nameof(emptyObjectAsset))]
+    public OnceOnlyPath loadResourceBlocking;
+
+    [Test]
+    public IEnumerator<TestYield> LoadResourceBlocking()
+    {
+        var callback = false;
+        var resource = Resources.LoadAsync(loadResourceBlocking);
+        resource.completed += _ => callback = true;
+        Assert.False(callback);
+        // force load
+        Assert.NotNull(resource.asset);
+        Assert.False(callback);
+        yield return new UnityYield(new WaitForEndOfFrame());
+        Assert.False(callback);
+        yield return new UnityYield(null);
+        Assert.True(callback);
     }
 
     // public static AsyncOperation LoadEmpty2;
