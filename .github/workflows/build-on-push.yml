@@ -44,6 +44,11 @@ jobs:
           restore-keys: |
             unity-game-library-${{ matrix.target.name }}-${{ matrix.target.targetPlatform }}-
 
+        # THANKS MICROSOFT, AMAZING WORK!!!! https://github.com/orgs/community/discussions/25678#discussioncomment-5242449
+      - if: steps.unity-game-bin-cache.outputs.cache-hit != 'true'
+        name: Delete huge unnecessary tools folder
+        run: rm -rf /opt/hostedtoolcache
+
       - if: steps.unity-game-bin-cache.outputs.cache-hit != 'true'
         uses: game-ci/unity-builder@v4
         name: Build
