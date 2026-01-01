@@ -215,9 +215,7 @@ public class UnityCoroutineManager : ICoroutineTracker, IOnPreGameRestart
     // ReSharper disable InconsistentNaming
     public void CoroutineCurrentPostfix(IEnumerator __instance, ref object __result)
     {
-        if (!_instances.TryGetValue(__instance, out var monoBeh)) return;
-
-        if (ReverseInvoker.Invoking || __result is null) return;
+        if (!_instances.TryGetValue(__instance, out var monoBeh) || ReverseInvoker.Invoking || __result is null) return;
 
         StaticLogger.Trace($"coroutine get_Current: {__instance.GetType().SaneFullName()}, result: {__result}");
 
