@@ -78,14 +78,18 @@ public class AssetAsync__2022_3_6000_0_4 : MonoBehaviour
         // note that resource.asset access will force load
         var resource = Resources.LoadAsync(loadResourceYield);
         resource.completed += _ => callback = true;
+        Assert.False(resource.isDone);
         Assert.False(callback);
         yield return new UnityYield(resource);
         Assert.Equal(1, Time.frameCount - startTime);
+        Assert.True(resource.isDone);
         Assert.False(callback);
         yield return new UnityYield(new WaitForEndOfFrame());
         Assert.Equal(1, Time.frameCount - startTime);
+        Assert.True(resource.isDone);
         Assert.True(callback);
         yield return new UnityYield(null);
+        Assert.True(resource.isDone);
         Assert.True(callback);
         Assert.NotNull(resource.asset);
     }
