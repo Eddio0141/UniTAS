@@ -82,7 +82,7 @@ public class UnityCoroutineManager : ICoroutineTracker, IOnPreGameRestart
 
     public void OnPreGameRestart()
     {
-        foreach (var coroutine in _instances.Values)
+        foreach (var coroutine in new HashSet<MonoBehaviour>(_instances.Values))
         {
             if (coroutine == null) continue;
             coroutine.StopAllCoroutines();
@@ -215,11 +215,16 @@ public class UnityCoroutineManager : ICoroutineTracker, IOnPreGameRestart
     // ReSharper disable InconsistentNaming
     public void CoroutineCurrentPostfix(IEnumerator __instance, ref object __result)
     {
-        if (!_instances.ContainsKey(__instance)) return;
+        if (!_instances.TryGetValue(__instance, out var monoBeh)) return;
 
         if (ReverseInvoker.Invoking || __result is null) return;
 
         StaticLogger.Trace($"coroutine get_Current: {__instance.GetType().SaneFullName()}, result: {__result}");
+
+        if (__result is IEnumerator result)
+        {
+            _instances.Add(result, monoBeh);
+        }
 
         // managed async operation?
         if (__result is AsyncOperation op && AsyncOperationOverride.Yield(op))
