@@ -61,6 +61,9 @@ namespace Editor.UniTASTest
             // safety, because directory can be deleted and domain reload can happen
             InitDirs();
 
+            var (_, _, testsDir) = GetRepoDirs();
+            LinkAndAddTests(testsDir);
+
             var testObj = Object.FindObjectsByType<GameObject>(FindObjectsSortMode.None)
                 .FirstOrDefault(o => o.name == TestObjName);
 

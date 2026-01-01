@@ -182,6 +182,8 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
     {
         if (_ops.Count == 0) return;
 
+        _logger.LogDebug($"process ops until op {op}");
+
         var foundIdx = -1;
         var pendingCallbacks = new List<IAsyncOperation>();
         for (var i = 0; i < _ops.Count; i++)
@@ -199,7 +201,7 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
 
         if (foundIdx < 0)
         {
-            _logger.LogError($"operation was not found in the _ops list, did you actually check for tracked?");
+            _logger.LogError("operation was not found in the _ops list, did you actually check for tracked?");
             return;
         }
 
