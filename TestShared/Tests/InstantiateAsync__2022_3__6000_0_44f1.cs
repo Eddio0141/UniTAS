@@ -149,13 +149,12 @@ public class InstantiateAsync__2022_3__6000_0_44f1 : MonoBehaviour
         // now try sync loading scene, see if it forces init
         var asyncInit = InstantiateAsync(prefab);
         asyncInit.allowSceneActivation = false;
-        Assert.NotNull(asyncInit);
 
         yield return new SceneSwitchYield(emptyScene);
 
         Assert.False(asyncInit.isDone);
         asyncInit.allowSceneActivation = true;
-        Assert.True(asyncInit.Result[0] != null);
+        Assert.NotNull(asyncInit.Result[0]);
     }
 
     [Test]
