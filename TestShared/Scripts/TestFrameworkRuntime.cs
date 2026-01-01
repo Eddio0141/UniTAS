@@ -496,64 +496,69 @@ public static class Assert
         throw new AssertionException("assertion failed{0}", message, file, line);
     }
 
-    // public static void Throws<T>(T expected, Action action, string message = null,
-    //     [CallerFilePath] string file = null, [CallerLineNumber] int line = 0)
-    //     where
-    //     T : Exception
-    // {
-    //     Result result;
-    //     try
-    //     {
-    //         action();
-    //         var fullMsg = AssertMsg(name,
-    //             string.Format("assertion failed `expected` throws{{0}}\n expected: {0}: {1}",
-    //                 expected.GetType().FullName, expected.Message),
-    //             message, file, line);
-    //         result = new Result(name, fullMsg, false);
-    //     }
-    //     catch (Exception e)
-    //     {
-    //         if (e.GetType() == expected.GetType() && e.Message == expected.Message)
-    //             return;
-    //
-    //         var fullMsg = AssertMsg(name,
-    //                 string.Format("assertion failed `expected` throws{{0}}\n expected: {0}: {1}\n   actual: {2}: {3}",
-    //                     expected.GetType().FullName, expected.Message, e.GetType().FullName, e.Message),
-    //                 message, file, line);
-    //         result = new Result(name, fullMsg, false);
-    //
-    //     }
-    //
-    //     LogAssert(name, file, line, result);
-    //     TestResults.Add(result);
-    // }
+    public static void Throws<T>(T expected, Action action, string message = null,
+        [CallerFilePath] string file = null, [CallerLineNumber] int line = 0)
+        where
+        T : Exception
+    {
+        try
+        {
+            action();
+            var msg = new StringBuilder();
+            msg.AppendLine("assertion failed throw `expected`{0}");
+            msg.AppendFormat(" expected: {0}: {1}", expected.GetType().FullName, expected.Message);
+            throw new AssertionException(msg.ToString(), message, file, line);
+        }
+        catch (Exception e) when (e is not AssertionException)
+        {
+            if (e.GetType() == expected.GetType() && e.Message == expected.Message)
+                return;
 
-    public static void Equal<T>(T expected, T actual, string message = null,
+            var msg = new StringBuilder();
+            msg.AppendLine("assertion failed `expected` == `actual`{0}");
+            msg.AppendFormat(" expected: {0}: {1}", expected.GetType().FullName, expected.Message);
+            msg.AppendLine();
+            msg.AppendFormat("   actual: {0}: {1}", e.GetType().FullName, e.Message);
+            throw new AssertionException(msg.ToString(), message, file, line);
+        }
+    }
+
+    public static void Equal<T>(T left, T right, string message = null,
         [CallerFilePath] string file = null,
         [CallerLineNumber] int line = 0)
     {
-        EqualBase(expected, actual, Equals(expected, actual), file, line, message);
+        EqualBase(left, right, file, line, message, true);
     }
 
-    private static void EqualBase<T>(T expected, T actual, bool success, string file, int line,
-        string message = null)
+    public static void NotEqual<T>(T left, T right, string message = null,
+        [CallerFilePath] string file = null,
+        [CallerLineNumber] int line = 0)
     {
-        if (success) return;
+        EqualBase(left, right, file, line, message, false);
+    }
+
+    private static void EqualBase<T>(T left, T right, string file, int line, string message, bool equal)
+    {
+        var result = Equals(left, right);
+        if (result && equal) return;
         var assertMsg = new StringBuilder();
-        assertMsg.AppendLine("assertion failed `expected` == `actual`{0}");
-        if (typeof(T) == typeof(string) && expected != null && actual != null)
+        assertMsg.AppendFormat("assertion failed `left` {0}= `right`{{0}}", equal ? "=" : "!");
+        assertMsg.AppendLine();
+        if (typeof(T) == typeof(string) && left != null && right != null)
         {
-            var sExpected = (string)(object)expected;
-            var sActual = (string)(object)actual;
-            sExpected = ShowHiddenChars(sExpected);
-            sActual = ShowHiddenChars(sActual);
-            assertMsg.AppendFormat(" expected: {0}", sExpected).AppendLine();
-            assertMsg.AppendFormat("   actual: {0}", sActual).AppendLine();
+            var sLeft = (string)(object)left;
+            var sRight = (string)(object)right;
+            sLeft = ShowHiddenChars(sLeft);
+            sRight = ShowHiddenChars(sRight);
+            assertMsg.AppendFormat(" left: {0}", sLeft).AppendLine();
+            assertMsg.AppendLine();
+            assertMsg.AppendFormat("   right: {0}", sRight).AppendLine();
         }
         else
         {
-            assertMsg.AppendFormat(" expected: {0}", expected).AppendLine();
-            assertMsg.AppendFormat("   actual: {0}", actual).AppendLine();
+            assertMsg.AppendFormat(" left: {0}", left).AppendLine();
+            assertMsg.AppendLine();
+            assertMsg.AppendFormat("   right: {0}", right).AppendLine();
         }
 
         throw new AssertionException(assertMsg.ToString(), message, file, line);
