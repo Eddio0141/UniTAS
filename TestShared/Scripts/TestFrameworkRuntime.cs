@@ -164,17 +164,8 @@ public class TestFrameworkRuntime : MonoBehaviour
             _pendingEventTests.Enqueue(test);
         }
 
-        EventTestStart();
-    }
-
-    private void GeneralTestsFinish()
-    {
         _generalTestsDone = true;
         Debug.Log("General tests finished");
-        foreach (var result in _generalTestResults)
-        {
-            Debug.Log(result);
-        }
     }
 
     private static IEnumerator RunTest(Test test, List<Result> results)
@@ -185,6 +176,7 @@ public class TestFrameworkRuntime : MonoBehaviour
         {
             if (executeIter.Current is Result result)
             {
+                Debug.Log(result);
                 results.Add(result);
                 break;
             }
@@ -199,19 +191,6 @@ public class TestFrameworkRuntime : MonoBehaviour
         {
             yield return null;
         }
-    }
-
-    private void EventTestStart()
-    {
-        if (_pendingEventTests.Count == 0)
-        {
-            GeneralTestsFinish();
-            return;
-        }
-
-        // trigger Awake / Start event
-        _currentEventTest = _pendingEventTests.Dequeue();
-        Helper.Scene.LoadScene(TestingScenePath);
     }
 
     private readonly Queue<Test> _pendingEventTests = new Queue<Test>();
@@ -279,15 +258,6 @@ public class TestFrameworkRuntime : MonoBehaviour
         {
             yield return RunTest(test, _movieTestResults);
         }
-    }
-
-    private IEnumerator EventHookInternal(EventTiming timing)
-    {
-        if (!_currentEventTest.HasValue || _currentEventTest.Value.EventTiming != timing)
-            yield break;
-        yield return RunTest(_currentEventTest.Value, _generalTestResults);
-        yield return TestSafetyDelay();
-        EventTestStart();
     }
 
     private struct Result
