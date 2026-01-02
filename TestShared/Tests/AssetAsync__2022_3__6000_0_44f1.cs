@@ -1,9 +1,6 @@
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 
-[SuppressMessage("ReSharper", "InconsistentNaming")]
-[SuppressMessage("ReSharper", "CheckNamespace")]
 public class AssetAsync__2022_3_6000_0_4 : MonoBehaviour
 {
     public ITestAsset emptyObjectAsset => new GameObjectAsset();
@@ -34,10 +31,11 @@ public class AssetAsync__2022_3_6000_0_4 : MonoBehaviour
         Assert.NotNull(asset);
         Assert.True(op.isDone);
         Assert.True(callback);
+        // resource will also be forced to load, despite not being touched
         Assert.True(resource.isDone);
     }
 
-    [Test(EventTiming.Awake)]
+    [Test(InitTestTiming.Awake)]
     public IEnumerator<TestYield> UnloadUnusedAssetsAwake()
     {
         var startTime = Time.frameCount;
@@ -57,16 +55,62 @@ public class AssetAsync__2022_3_6000_0_4 : MonoBehaviour
     [Test]
     public IEnumerator<TestYield> LoadResource()
     {
-        var startTime = Time.frameCount;
         var callback = false;
+        // note that resource.asset access will force load
         var resource = Resources.LoadAsync(loadResource);
         resource.completed += _ => callback = true;
-        yield return new UnityYield(resource);
-        Assert.Equal(1, Time.frameCount - startTime);
         Assert.False(callback);
         yield return new UnityYield(new WaitForEndOfFrame());
+        Assert.False(callback);
+        yield return new UnityYield(null);
         Assert.True(callback);
         Assert.NotNull(resource.asset);
+    }
+
+    [TestInjectResource(nameof(emptyObjectAsset))]
+    public OnceOnlyPath loadResourceYield;
+
+    [Test]
+    public IEnumerator<TestYield> LoadResourceYield()
+    {
+        var startTime = Time.frameCount;
+        var callback = false;
+        // note that resource.asset access will force load
+        var resource = Resources.LoadAsync(loadResourceYield);
+        resource.completed += _ => callback = true;
+        Assert.False(resource.isDone);
+        Assert.False(callback);
+        yield return new UnityYield(resource);
+        Assert.Equal(1, Time.frameCount - startTime);
+        Assert.True(resource.isDone);
+        Assert.False(callback);
+        yield return new UnityYield(new WaitForEndOfFrame());
+        Assert.Equal(1, Time.frameCount - startTime);
+        Assert.True(resource.isDone);
+        Assert.True(callback);
+        yield return new UnityYield(null);
+        Assert.True(resource.isDone);
+        Assert.True(callback);
+        Assert.NotNull(resource.asset);
+    }
+
+    [TestInjectResource(nameof(emptyObjectAsset))]
+    public OnceOnlyPath loadResourceBlocking;
+
+    [Test]
+    public IEnumerator<TestYield> LoadResourceBlocking()
+    {
+        var callback = false;
+        var resource = Resources.LoadAsync(loadResourceBlocking);
+        resource.completed += _ => callback = true;
+        Assert.False(callback);
+        // force load
+        Assert.NotNull(resource.asset);
+        Assert.False(callback);
+        yield return new UnityYield(new WaitForEndOfFrame());
+        Assert.False(callback);
+        yield return new UnityYield(null);
+        Assert.True(callback);
     }
 
     // public static AsyncOperation LoadEmpty2;
@@ -142,11 +186,6 @@ public class AssetAsync__2022_3_6000_0_4 : MonoBehaviour
     //     Assert.NotThrows("struct.constrained_opcode", () => _ = new StructTest("bar"));
     //
     //     var startFrame = Time.frameCount;
-    //     Assert.Equal("scene.initial", "General", SceneManager.GetSceneAt(0).name);
-    //
-    //     // Empty has yet to be loaded
-    //     Assert.Throws("scene.unload.missing", new ArgumentException("Scene to unload is invalid"),
-    //         () => SceneManager.UnloadSceneAsync("Empty"));
     //
     //     // frame 1
     //     var loadEmpty = SceneManager.LoadSceneAsync("Empty", LoadSceneMode.Additive)!;
@@ -159,25 +198,6 @@ public class AssetAsync__2022_3_6000_0_4 : MonoBehaviour
     //     };
     //     var emptyScene = SceneManager.GetSceneAt(1);
     //     var emptySceneByName = SceneManager.GetSceneByName("Empty");
-    //     Assert.Equal("scene.get_scene_at.name", "Empty", emptyScene.name);
-    //     Assert.Equal("scene.get_scene_at.name", "Empty", emptySceneByName.name);
-    //     Assert.False("scene.get_scene_at.isLoaded", emptyScene.isLoaded);
-    //     Assert.False("scene.get_scene_at.isLoaded", emptySceneByName.isLoaded);
-    //     Assert.Equal("scene.get_scene_at.rootCount", 0, emptyScene.rootCount);
-    //     Assert.Equal("scene.get_scene_at.rootCount", 0, emptySceneByName.rootCount);
-    //     Assert.False("scene.get_scene_at.isSubScene", emptyScene.isSubScene);
-    //     Assert.False("scene.get_scene_at.isSubScene", emptySceneByName.isSubScene);
-    //     Assert.Equal("scene.get_scene_at.path", "Assets/Scenes/Empty.unity", emptyScene.path);
-    //     Assert.Equal("scene.get_scene_at.path", "Assets/Scenes/Empty.unity", emptySceneByName.path);
-    //     Assert.Equal("scene.get_scene_at.buildIndex", 3, emptyScene.buildIndex);
-    //     Assert.Equal("scene.get_scene_at.buildIndex", 3, emptySceneByName.buildIndex);
-    //     Assert.False("scene.get_scene_at.isDirty", emptyScene.isDirty);
-    //     Assert.False("scene.get_scene_at.isDirty", emptySceneByName.isDirty);
-    //     Assert.True("scene.get_scene_at.IsValid", emptyScene.IsValid());
-    //     Assert.True("scene.get_scene_at.IsValid", emptySceneByName.IsValid());
-    //     emptyScene.isSubScene = true;
-    //     Assert.True("scene.get_scene_at.isSubScene", emptyScene.isSubScene);
-    //     Assert.True("scene.get_scene_at.isSubScene", emptySceneByName.isSubScene);
     //     Assert.Equal("scene.op.progress", 0.9f, loadEmpty.progress, 0.0001f);
     //     Assert.False("scene.op.isDone", loadEmpty.isDone);
     //
