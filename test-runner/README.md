@@ -29,8 +29,8 @@ you may disable part of the test / remove the test for the editor with the prepr
     - Can be ran any number of times at any point of the unity runtime
     - May hook onto unity events such as `Awake` and `Start`
 - Init tests
-    - Automatically ran on initialization of unity, which could be from `RuntimeInitializeOnLoadMethodAttribute` or `Awake`, whatever is required
-    - Tests are ran in parallel all at once
+    - Automatically ran on initialization of unity
+    - Unity events such as `Awake` and `Start` and 
 - Movie tests
     - They are ran during UniTAS is playing a movie
     - Linearly ran (tests defined in order) and a failed test may influence next movie tests

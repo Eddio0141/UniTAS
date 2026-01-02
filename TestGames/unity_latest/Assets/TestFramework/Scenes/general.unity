@@ -176,6 +176,7 @@ GameObject:
   - component: {fileID: 499555418}
   - component: {fileID: 499555417}
   - component: {fileID: 499555419}
+  - component: {fileID: 499555420}
   m_Layer: 0
   m_Name: Tests
   m_TagString: Untagged
@@ -258,6 +259,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 16b8abddcf09e76438a116a2eb54ac8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &499555420
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 499555414}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b148831a510d0a208bcf68b42d9ee697, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  emptyScene: Assets/TestFramework/Scenes/generated 1.unity
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
