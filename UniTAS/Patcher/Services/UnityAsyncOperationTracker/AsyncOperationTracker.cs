@@ -820,6 +820,7 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         LoadingScenes.Add(dummyScene);
         DummyScenes.Add((dummyScene, null));
         _sceneStructHandleId++;
+        instance.IsSubScene = false;
     }
 
     private void ReplaceDummyScene(AsyncOperation op, string path)
