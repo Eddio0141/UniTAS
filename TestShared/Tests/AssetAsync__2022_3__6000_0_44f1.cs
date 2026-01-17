@@ -186,11 +186,6 @@ public class AssetAsync__2022_3_6000_0_4 : MonoBehaviour
     //     Assert.NotThrows("struct.constrained_opcode", () => _ = new StructTest("bar"));
     //
     //     var startFrame = Time.frameCount;
-    //     Assert.Equal("scene.initial", "General", SceneManager.GetSceneAt(0).name);
-    //
-    //     // Empty has yet to be loaded
-    //     Assert.Throws("scene.unload.missing", new ArgumentException("Scene to unload is invalid"),
-    //         () => SceneManager.UnloadSceneAsync("Empty"));
     //
     //     // frame 1
     //     var loadEmpty = SceneManager.LoadSceneAsync("Empty", LoadSceneMode.Additive)!;
@@ -203,25 +198,6 @@ public class AssetAsync__2022_3_6000_0_4 : MonoBehaviour
     //     };
     //     var emptyScene = SceneManager.GetSceneAt(1);
     //     var emptySceneByName = SceneManager.GetSceneByName("Empty");
-    //     Assert.Equal("scene.get_scene_at.name", "Empty", emptyScene.name);
-    //     Assert.Equal("scene.get_scene_at.name", "Empty", emptySceneByName.name);
-    //     Assert.False("scene.get_scene_at.isLoaded", emptyScene.isLoaded);
-    //     Assert.False("scene.get_scene_at.isLoaded", emptySceneByName.isLoaded);
-    //     Assert.Equal("scene.get_scene_at.rootCount", 0, emptyScene.rootCount);
-    //     Assert.Equal("scene.get_scene_at.rootCount", 0, emptySceneByName.rootCount);
-    //     Assert.False("scene.get_scene_at.isSubScene", emptyScene.isSubScene);
-    //     Assert.False("scene.get_scene_at.isSubScene", emptySceneByName.isSubScene);
-    //     Assert.Equal("scene.get_scene_at.path", "Assets/Scenes/Empty.unity", emptyScene.path);
-    //     Assert.Equal("scene.get_scene_at.path", "Assets/Scenes/Empty.unity", emptySceneByName.path);
-    //     Assert.Equal("scene.get_scene_at.buildIndex", 3, emptyScene.buildIndex);
-    //     Assert.Equal("scene.get_scene_at.buildIndex", 3, emptySceneByName.buildIndex);
-    //     Assert.False("scene.get_scene_at.isDirty", emptyScene.isDirty);
-    //     Assert.False("scene.get_scene_at.isDirty", emptySceneByName.isDirty);
-    //     Assert.True("scene.get_scene_at.IsValid", emptyScene.IsValid());
-    //     Assert.True("scene.get_scene_at.IsValid", emptySceneByName.IsValid());
-    //     emptyScene.isSubScene = true;
-    //     Assert.True("scene.get_scene_at.isSubScene", emptyScene.isSubScene);
-    //     Assert.True("scene.get_scene_at.isSubScene", emptySceneByName.isSubScene);
     //     Assert.Equal("scene.op.progress", 0.9f, loadEmpty.progress, 0.0001f);
     //     Assert.False("scene.op.isDone", loadEmpty.isDone);
     //

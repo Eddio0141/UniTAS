@@ -540,7 +540,7 @@ public static class Assert
     private static void EqualBase<T>(T left, T right, string file, int line, string message, bool equal)
     {
         var result = Equals(left, right);
-        if (result && equal) return;
+        if (result == equal) return;
         var assertMsg = new StringBuilder();
         assertMsg.AppendFormat("assertion failed `left` {0}= `right`{{0}}", equal ? "=" : "!");
         assertMsg.AppendLine();
