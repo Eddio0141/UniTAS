@@ -152,8 +152,10 @@ public class InstantiateAsync__2022_3__6000_0_44f1 : MonoBehaviour
 
         yield return new SceneSwitchYield(emptyScene);
 
+        Assert.False(asyncInit.allowSceneActivation);
         Assert.False(asyncInit.isDone);
         asyncInit.allowSceneActivation = true;
+        Assert.True(asyncInit.isDone);
         Assert.NotNull(asyncInit.Result[0]);
     }
 
