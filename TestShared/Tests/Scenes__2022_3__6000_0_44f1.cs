@@ -16,7 +16,7 @@ public class Scenes__2022_3__6000_0_44f1 : MonoBehaviour
     [Test(InitTestTiming.Awake)]
     public void InitialScene()
     {
-        Assert.Equal("General", SceneManager.GetActiveScene().name);
+        Assert.Equal("general", SceneManager.GetActiveScene().name);
     }
 
     [Test]
@@ -73,5 +73,64 @@ public class Scenes__2022_3__6000_0_44f1 : MonoBehaviour
         Assert.Equal(scene.isSubScene, sceneByIdx.isSubScene);
         Assert.Equal(scene.buildIndex, sceneByName.buildIndex);
         Assert.Equal(scene.name, sceneByName.name);
+
+        Assert.Throws(new InvalidOperationException($"Setting a name on a saved scene is not allowed (the filename is used as name). Scene: '{emptyScene}'"), () => scene.name = "foo");
+    }
+
+    [TestInjectScene] public string loadAsyncStallAdditive1fScene;
+
+    [Test]
+    public IEnumerator<TestYield> LoadAsyncStallAdditive1f()
+    {
+        var startFrame = Time.frameCount;
+        var op = SceneManager.LoadSceneAsync(loadAsyncStallAdditive1fScene, LoadSceneMode.Additive)!;
+        var scene = SceneManager.GetSceneByPath(loadAsyncStallAdditive1fScene);
+        Assert.False(scene.isSubScene);
+        scene.isSubScene = true;
+        Assert.Equal(scene.path, loadAsyncStallAdditive1fScene);
+
+        op.completed += _ =>
+        {
+            Assert.Equal(2, SceneManager.sceneCount);
+            Assert.Equal(2, SceneManager.loadedSceneCount);
+            Assert.Equal(2, Time.frameCount - startFrame);
+
+            var actualScene = SceneManager.GetSceneByPath(loadAsyncStallAdditive1fScene);
+            Assert.True(scene == actualScene);
+            Assert.False(scene != actualScene);
+            Assert.True(scene.Equals(actualScene));
+            Assert.True(scene.isLoaded);
+            Assert.Equal(0, scene.rootCount);
+            Assert.True(scene.isSubScene);
+            Assert.Equal(loadAsyncStallAdditive1fScene, scene.path);
+            Assert.False(scene.isDirty);
+            Assert.True(scene.IsValid());
+            Assert.NotEqual(0, scene.handle);
+            Assert.NotEqual(0, scene.GetHashCode());
+        };
+
+        Assert.Equal(op.priority, 0);
+#if !UNITY_EDITOR
+        Assert.Equal(op.progress, 0.9f);
+#endif
+        Assert.False(op.isDone);
+
+        op.allowSceneActivation = false;
+
+        Assert.Throws(new ArgumentException($"SceneManager.SetActiveScene failed; scene '{scene.name}' is not loaded and therefore cannot be set active"), () => SceneManager.SetActiveScene(scene));
+
+        yield return new UnityYield(null);
+
+        Assert.Equal(2, SceneManager.sceneCount);
+        Assert.Equal(1, SceneManager.loadedSceneCount);
+
+        Assert.False(op.isDone);
+        op.allowSceneActivation = true;
+        Assert.False(op.isDone);
+
+        yield return new UnityYield(null);
+
+        Assert.True(op.isDone);
+        Assert.Equal(1f, op.progress);
     }
 }
