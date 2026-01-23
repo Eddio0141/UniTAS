@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using JetBrains.Annotations;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 [DefaultExecutionOrder(0)]
 public class TestFrameworkRuntime : MonoBehaviour
@@ -159,10 +160,7 @@ public class TestFrameworkRuntime : MonoBehaviour
             yield return TestSafetyDelay();
         }
 
-        foreach (var test in _eventTests)
-        {
-            _pendingEventTests.Enqueue(test);
-        }
+        yield return TestCleanup();
 
         _generalTestsDone = true;
         Debug.Log("General tests finished");
@@ -193,7 +191,26 @@ public class TestFrameworkRuntime : MonoBehaviour
         }
     }
 
-    private readonly Queue<Test> _pendingEventTests = new Queue<Test>();
+    private static IEnumerator TestCleanup()
+    {
+        // restore default scene
+        SceneManager.LoadScene(0);
+
+        // unload non-default scenes
+        while (true)
+        {
+            var sceneCount = SceneManager.sceneCount;
+            if (sceneCount == 1) break;
+            for (var i = 0; i < sceneCount; i++)
+            {
+                var scene = SceneManager.GetSceneAt(i);
+                if (scene.buildIndex == 0) continue;
+                yield return SceneManager.UnloadSceneAsync(scene);
+                break;
+            }
+        }
+    }
+
     private Test? _currentEventTest;
 
     public static IEnumerator AwakeTestHook()
