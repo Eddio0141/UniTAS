@@ -102,6 +102,7 @@ public class Scenes__2022_3__6000_0_44f1 : MonoBehaviour
             Assert.True(scene.isLoaded);
             Assert.Equal(0, scene.rootCount);
             Assert.True(scene.isSubScene);
+            scene.isSubScene = false;
             Assert.Equal(loadAsyncStallAdditive1fScene, scene.path);
             Assert.False(scene.isDirty);
             Assert.True(scene.IsValid());
