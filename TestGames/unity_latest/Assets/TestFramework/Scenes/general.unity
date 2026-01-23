@@ -119,7 +119,7 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!1 &441882918
+--- !u!1 &246667460
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -127,8 +127,8 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 441882920}
-  - component: {fileID: 441882919}
+  - component: {fileID: 246667462}
+  - component: {fileID: 246667461}
   m_Layer: 0
   m_Name: EventHooks
   m_TagString: Untagged
@@ -136,25 +136,25 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &441882919
+--- !u!114 &246667461
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 441882918}
+  m_GameObject: {fileID: 246667460}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 55b812f054364f33ab45835fe7972c66, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!4 &441882920
+--- !u!4 &246667462
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 441882918}
+  m_GameObject: {fileID: 246667460}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -163,7 +163,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &499555414
+--- !u!1 &772108570
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -171,11 +171,13 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 499555416}
-  - component: {fileID: 499555415}
-  - component: {fileID: 499555418}
-  - component: {fileID: 499555417}
-  - component: {fileID: 499555419}
+  - component: {fileID: 772108572}
+  - component: {fileID: 772108571}
+  - component: {fileID: 772108577}
+  - component: {fileID: 772108576}
+  - component: {fileID: 772108575}
+  - component: {fileID: 772108574}
+  - component: {fileID: 772108573}
   m_Layer: 0
   m_Name: Tests
   m_TagString: Untagged
@@ -183,25 +185,25 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &499555415
+--- !u!114 &772108571
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 499555414}
+  m_GameObject: {fileID: 772108570}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: ed4914e6c26a44a7b8cac2aa54a54089, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!4 &499555416
+--- !u!4 &772108572
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 499555414}
+  m_GameObject: {fileID: 772108570}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -210,53 +212,83 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &499555417
+--- !u!114 &772108573
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 499555414}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e714cd0143c173b83a95d5afd0e21f5e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  prefab: {fileID: 5138566977196165304, guid: 824f58573ef950fd59a40fcd14d6c07e, type: 3}
-  emptyScene: Assets/TestFramework/Scenes/generated.unity
---- !u!114 &499555418
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 499555414}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 41cd6f9ff88743005b41669fbed11ff2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  loadOnInitBlockingAwakeResource:
-    inner: asset
-  loadOnInitNonBlockingAssetBundle:
-    inner: Assets/TestFramework/AssetBundles/bundle.bundle
-  loadResource:
-    inner: asset 1
---- !u!114 &499555419
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 499555414}
+  m_GameObject: {fileID: 772108570}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 16b8abddcf09e76438a116a2eb54ac8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &772108574
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 772108570}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b148831a510d0a208bcf68b42d9ee697, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  emptyScene: Assets/TestFramework/Scenes/generated 4.unity
+  loadAsyncStallAdditive1fScene: Assets/TestFramework/Scenes/generated 5.unity
+--- !u!114 &772108575
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 772108570}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0fcb8d05c9888c6a8970cf6f5b01d654, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  loadResource:
+    inner: asset 24
+  loadResourceYield:
+    inner: asset 25
+  loadResourceBlocking:
+    inner: asset 26
+--- !u!114 &772108576
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 772108570}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e714cd0143c173b83a95d5afd0e21f5e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  prefab: {fileID: 3795857589170476701, guid: 2a9f86c4d4ae12b8cb5ebf6bf14455b4, type: 3}
+  emptyScene: Assets/TestFramework/Scenes/generated 3.unity
+--- !u!114 &772108577
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 772108570}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bedd93affa0a3ebe2afeb1f8913ea346, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  loadOnInitBlockingAwakeResource:
+    inner: asset 23
+  loadOnInitNonBlockingAssetBundle:
+    inner: Assets/TestFramework/AssetBundles/bundle 5.bundle
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
-  - {fileID: 499555416}
-  - {fileID: 441882920}
+  - {fileID: 246667462}
+  - {fileID: 772108572}
