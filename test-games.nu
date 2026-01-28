@@ -10,8 +10,14 @@ mkdir $cache_dir
  
 if ($bepinex_dir | path type) != "dir" {
     print "downloading bepinex"
+    let token_header = $env | get GITHUB_TOKEN?
+    const url = "https://api.github.com/repos/BepInEx/BepInEx/releases/latest"
     # TODO: not crossplatform friendly
-    let url = curl -s "https://api.github.com/repos/BepInEx/BepInEx/releases/latest"
+    let url = if ($token_header | describe) == "nothing" {
+        curl -s $token_header $url
+    } else {
+        curl -s --header $"authorization: Bearer ($env | get GITHUB_TOKEN)" $token_header $url
+    }
     let url = try {
         $url | from json | get assets | where ($it.name | str contains "BepInEx_linux_x64") | get 0.browser_download_url
     } catch { |e| 
