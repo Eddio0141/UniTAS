@@ -79,8 +79,7 @@ public class InstantiateAsync__2022_3__6000_0_44f1 : MonoBehaviour
         Assert.False(initOp2.isDone);
         Assert.False(completedCalledNonBlocking);
         Assert.False(initOp2.IsWaitingForSceneActivation());
-        // TODO: why does yield return on the op not work, must test too
-        // yield return new UnityYield(initOp2);
+        yield return new UnityYield(initOp2);
         yield return new UnityYield(null);
         Assert.True(completedCalledNonBlocking);
     }
@@ -149,13 +148,15 @@ public class InstantiateAsync__2022_3__6000_0_44f1 : MonoBehaviour
         // now try sync loading scene, see if it forces init
         var asyncInit = InstantiateAsync(prefab);
         asyncInit.allowSceneActivation = false;
-        Assert.NotNull(asyncInit);
+        Assert.Null(asyncInit.Result);
 
         yield return new SceneSwitchYield(emptyScene);
 
+        Assert.False(asyncInit.allowSceneActivation);
         Assert.False(asyncInit.isDone);
         asyncInit.allowSceneActivation = true;
-        Assert.True(asyncInit.Result[0] != null);
+        Assert.True(asyncInit.isDone);
+        Assert.NotNull(asyncInit.Result[0]);
     }
 
     [Test]
