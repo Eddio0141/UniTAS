@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -26,7 +25,6 @@ using Object = UnityEngine.Object;
 
 namespace UniTAS.Patcher.Services.UnityAsyncOperationTracker;
 
-// ReSharper disable once ClassNeverInstantiated.Global
 [Singleton]
 [ExcludeRegisterIfTesting]
 public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, IAssetBundleCreateRequestTracker,
@@ -59,11 +57,11 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
     private readonly List<IAsyncOperation> _ops = [];
     private readonly List<IAsyncOperation> _pendingLoadCallbacks = [];
 
-    private readonly Dictionary<AsyncOperation, AssetBundle> _assetBundleCreateRequests = new();
-    private readonly Dictionary<AsyncOperation, Object[]> _assetBundleRequests = new();
+    private readonly Dictionary<AsyncOperation, AssetBundle> _assetBundleCreateRequests = [];
+    private readonly Dictionary<AsyncOperation, Object[]> _assetBundleRequests = [];
 
-    private readonly Dictionary<string, string> _bundleSceneNames = new(); // path -> name
-    private readonly Dictionary<string, HashSet<string>> _bundleSceneShortPaths = new(); // path -> short path
+    private readonly Dictionary<string, string> _bundleSceneNames = []; // path -> name
+    private readonly Dictionary<string, HashSet<string>> _bundleSceneShortPaths = []; // path -> short path
 
     private readonly Dictionary<AssetBundle, HashSet<string>> _bundleScenePaths =
         new(new HashUtils.ReferenceComparer<AssetBundle>());
@@ -428,7 +426,7 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         }
 
         _tracked.Add(asyncOperation, new AsyncOperationData());
-        _ops.Add(new AsyncSceneUnloadData(asyncOperation, options, sceneFound, ResolveDummyHandle(sceneFound!.Handle),
+        _ops.Add(new AsyncSceneUnloadData(asyncOperation, options, sceneFound, ResolveDummyHandle(sceneFound.Handle),
             this));
         _sceneManagerWrapper.LoadedSceneCountDummy--;
         LoadingSceneCount++;
@@ -544,7 +542,6 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
             {
                 var op = pair.Key;
                 var data = pair.Value;
-                data.AllowSceneActivation = true;
                 data.NotAllowedToStall = true;
                 _tracked[op] = data;
             }
@@ -596,7 +593,6 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
 
         state.AllowSceneActivation = allow;
         _tracked[asyncOperation] = state;
-        if (state.NotAllowedToStall) return;
 
         _logger.LogDebug(allow ? "restored async activation" : "async load is stalled");
 
@@ -769,12 +765,12 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
     // note: this property exists here, because this class handles async scene loading, not scene wrapper
     public int LoadingSceneCount { get; private set; }
 
-    public List<(DummyScene dummyScene, SceneWrapper actualScene)> DummyScenes { get; } = new();
+    public List<(DummyScene dummyScene, SceneWrapper actualScene)> DummyScenes { get; } = [];
 
-    public List<DummyScene> LoadingScenes { get; } = new();
+    public List<DummyScene> LoadingScenes { get; } = [];
 
     // tracks sub scene for dummy scenes during load
-    private readonly Dictionary<int, bool> _subSceneTracker = new();
+    private readonly Dictionary<int, bool> _subSceneTracker = [];
 
     public void Unload(AssetBundle assetBundle)
     {
@@ -985,11 +981,11 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
 
     private struct AsyncOperationData()
     {
-        public bool IsDone = false;
+        public bool IsDone;
         public bool AllowSceneActivation = true;
-        public bool NotAllowedToStall = false;
-        public int Priority = 0;
-        public bool Yield = false;
+        public bool NotAllowedToStall;
+        public int Priority;
+        public bool Yield;
     }
 
     private class NewAssetBundleFromFileData(
@@ -1122,7 +1118,6 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
     private readonly Type _asyncInstantiateOperationT0;
     private Type _asyncInstantiateOperation;
 
-    [SuppressMessage("ReSharper", "InconsistentNaming")]
     public bool Instantiate(object original, int count, ReadOnlySpan<Vector3Alt> positions,
         ReadOnlySpan<QuaternionAlt> rotations, object parameters, object cancellationToken, ref object __result)
     {
@@ -1139,7 +1134,6 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         return false;
     }
 
-    [SuppressMessage("ReSharper", "InconsistentNaming")]
     public bool Instantiate(object original, int count, object parent, ReadOnlySpan<Vector3Alt> positions,
         ReadOnlySpan<QuaternionAlt> rotations, ref object __result)
     {
@@ -1158,7 +1152,6 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         return false;
     }
 
-    [SuppressMessage("ReSharper", "InconsistentNaming")]
     private void InstantiateShared(object original, int count, ReadOnlySpan<Vector3Alt> positions,
         ReadOnlySpan<QuaternionAlt> rotations, ref object __result)
     {
@@ -1295,8 +1288,7 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
             tracker._logger.LogWarning(
                 "THIS OPERATION MIGHT BREAK THE GAME, scene unloading patch is using an unstable unity function, and it may fail");
             tracker._sceneManagerWrapper.TrackSceneCountDummy = false;
-            tracker._sceneManagerWrapper.UnloadSceneAsync(SceneWrapper.Name, -1, options, true,
-                out var success);
+            tracker._sceneManagerWrapper.UnloadSceneAsync(SceneWrapper.Name, -1, options, false, out var success);
             tracker._sceneManagerWrapper.TrackSceneCountDummy = true;
             if (success) return;
             tracker._logger.LogError("async unload failed, prepare for game to maybe go nuts");
@@ -1411,8 +1403,8 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
             _original = original;
             _count = count;
             Op = op;
-            _positions = positions.ToArray().Select(p => new Vector3(p.x, p.y, p.z)).ToArray();
-            _rotations = rotations.ToArray().Select(r => new Quaternion(r.x, r.y, r.z, r.w)).ToArray();
+            _positions = [.. positions.ToArray().Select(p => new Vector3(p.x, p.y, p.z))];
+            _rotations = [.. rotations.ToArray().Select(r => new Quaternion(r.x, r.y, r.z, r.w))];
             _parent = parent;
         }
 
@@ -1427,8 +1419,8 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
             _original = original;
             _count = count;
             Op = op;
-            _positions = positions.ToArray().Select(p => new Vector3(p.x, p.y, p.z)).ToArray();
-            _rotations = rotations.ToArray().Select(r => new Quaternion(r.x, r.y, r.z, r.w)).ToArray();
+            _positions = [.. positions.ToArray().Select(p => new Vector3(p.x, p.y, p.z))];
+            _rotations = [.. rotations.ToArray().Select(r => new Quaternion(r.x, r.y, r.z, r.w))];
             _parameters = parameters;
         }
 
