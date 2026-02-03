@@ -14,7 +14,7 @@ if ($bepinex_dir | path type) != "dir" {
     const url = "https://api.github.com/repos/BepInEx/BepInEx/releases/latest"
     # TODO: not crossplatform friendly
     let url = if ($token_header | describe) == "nothing" {
-        curl -s $token_header $url
+        curl -s $url
     } else {
         curl -s --header $"authorization: Bearer ($env | get GITHUB_TOKEN)" $token_header $url
     }
