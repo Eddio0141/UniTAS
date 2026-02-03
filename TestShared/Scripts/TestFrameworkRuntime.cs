@@ -160,7 +160,7 @@ public class TestFrameworkRuntime : MonoBehaviour
             yield return TestSafetyDelay();
         }
 
-        yield return TestCleanup();
+        TestCleanup();
 
         _generalTestsDone = true;
         Debug.Log("General tests finished");
@@ -191,24 +191,14 @@ public class TestFrameworkRuntime : MonoBehaviour
         }
     }
 
-    private static IEnumerator TestCleanup()
+    private static void TestCleanup()
     {
+        Debug.Log("cleaning up...");
+
         // restore default scene
         SceneManager.LoadScene(0);
 
-        // unload non-default scenes
-        while (true)
-        {
-            var sceneCount = SceneManager.sceneCount;
-            if (sceneCount == 1) break;
-            for (var i = 0; i < sceneCount; i++)
-            {
-                var scene = SceneManager.GetSceneAt(i);
-                if (scene.buildIndex == 0) continue;
-                yield return SceneManager.UnloadSceneAsync(scene);
-                break;
-            }
-        }
+        Debug.Log("done cleanup");
     }
 
     private Test? _currentEventTest;
