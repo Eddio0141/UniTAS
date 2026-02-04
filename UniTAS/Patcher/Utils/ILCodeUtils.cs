@@ -9,6 +9,7 @@ using Mono.Cecil.Rocks;
 using UniTAS.Patcher.Extensions;
 using MethodAttributes = Mono.Cecil.MethodAttributes;
 using MethodBody = Mono.Cecil.Cil.MethodBody;
+using MethodImplAttributes = Mono.Cecil.MethodImplAttributes;
 
 namespace UniTAS.Patcher.Utils;
 
@@ -50,7 +51,7 @@ public static class ILCodeUtils
         }
         else
         {
-            ilProcessor.InsertBeforeInstructionReplace(body.Instructions.First(),
+            ilProcessor.InsertBeforeInstructionReplace(body.Instructions[0],
                 ilProcessor.Create(OpCodes.Call, invoke), InstructionReplaceFixType.ExceptionRanges);
         }
 
@@ -117,10 +118,25 @@ public static class ILCodeUtils
     public static void HookHarmony(MethodDefinition method, MethodInfo prefix = null, MethodInfo postfix = null)
     {
         if (prefix == null && postfix == null) return;
-        if (method is not { HasBody: true }) return;
+        if (method == null) return;
 
-        var body = method.Body;
-        body.SimplifyMacros();
+        method.PInvokeInfo = null;
+        method.Attributes &= ~MethodAttributes.PInvokeImpl;
+        method.ImplAttributes &= ~MethodImplAttributes.InternalCall;
+
+        MethodBody body;
+        if (!method.HasBody || method.Body.Instructions.Count == 0)
+        {
+            method.Body = new MethodBody(method);
+            body = method.Body;
+            body.Instructions.Add(Instruction.Create(OpCodes.Ret));
+        }
+        else
+        {
+            body = method.Body;
+            body.SimplifyMacros();
+        }
+
         var il = body.GetILProcessor();
 
         VariableDefinition resultVar = null;
@@ -140,7 +156,7 @@ public static class ILCodeUtils
 
             var prefixParams = prefix.GetParameters();
             var prefixRef = method.Module.ImportReference(prefix);
-            var first = body.Instructions.First();
+            var first = body.Instructions[0];
 
             if (resultVar != null)
             {
@@ -163,10 +179,13 @@ public static class ILCodeUtils
                 if (param.Name != "__state") continue;
 
                 if (param.ParameterType is { IsValueType: true, IsByRef: false })
+                {
                     throw new InvalidOperationException(
                         "state is a value type, but argument isn't using `ref` to be modifiable");
+                }
+
                 var paramType = param.ParameterType.HasElementType
-                    ? param.ParameterType.GetElementType()!
+                    ? param.ParameterType.GetElementType()
                     : param.ParameterType;
                 var paramTypeImport = method.Module.ImportReference(paramType);
                 stateDef = new VariableDefinition(paramTypeImport);
@@ -227,8 +246,11 @@ public static class ILCodeUtils
                     var insertInstructions = HandleInjection(method, il, param, resultVar, (v, i, _) =>
                     {
                         if (v == null)
+                        {
                             throw new InvalidOperationException(
                                 "Prefix doesn't have a state, add it to prefix or remove from postfix");
+                        }
+
                         return i.Create(OpCodes.Ldloc, v);
                     }, stateDef);
 
@@ -289,35 +311,34 @@ public static class ILCodeUtils
         {
             // check for injections
             case "__instance":
-            {
                 if (method.IsStatic)
+                {
                     throw new InvalidOperationException(
                         "Hook requested for __instance param, but this is a static method");
+                }
+
                 yield return il.Create(OpCodes.Ldarg_0);
                 yield break;
-            }
+
             case "__result":
-            {
                 if (resultVar == null)
+                {
                     throw new InvalidOperationException(
                         "Hook requested for __result param, but return type is void");
+                }
+
                 yield return param.ParameterType.IsByRef
                     ? il.Create(OpCodes.Ldloca, resultVar)
                     : il.Create(OpCodes.Ldloc, resultVar);
                 yield break;
-            }
+
             case "__state":
-            {
                 yield return state(stateVar, il, param);
                 yield break;
-            }
+
             default:
-            {
                 // method arg, does name match
-                var paramDef = method.Parameters.FirstOrDefault(x => x.Name == name);
-                if (paramDef == null)
-                    throw new InvalidOperationException(
-                        $"Hook requested for non-existent method param name `{name}`");
+                var paramDef = method.Parameters.FirstOrDefault(x => x.Name == name) ?? throw new InvalidOperationException($"Hook requested for non-existent method param name `{name}`");
 
                 // need span coercion?
 
@@ -349,7 +370,6 @@ public static class ILCodeUtils
                 }
 
                 yield break;
-            }
         }
     }
 
