@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using HarmonyLib;
@@ -15,10 +14,6 @@ using UniTAS.Patcher.Utils;
 namespace UniTAS.Patcher.Patches.Harmony.UnityInit;
 
 [RawPatchUnityInit]
-[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-[SuppressMessage("ReSharper", "UnusedMember.Local")]
-[SuppressMessage("ReSharper", "RedundantAssignment")]
-[SuppressMessage("ReSharper", "InconsistentNaming")]
 public class SceneStructPatch
 {
     private static readonly Type SceneType = AccessTools.TypeByName("UnityEngine.SceneManagement.Scene");
@@ -438,10 +433,10 @@ public class SceneStructPatch
             return false;
         }
 
-        foreach (var loading in SceneLoadTracker.DummyScenes)
+        foreach (var (dummyScene, actualScene) in SceneLoadTracker.DummyScenes)
         {
-            if (loading.dummyScene.TrackingHandle != mHandle) continue;
-            __result = PatchReverseInvoker.Invoke((a, b) => a(b), actualSet, loading.actualScene);
+            if (dummyScene.TrackingHandle != mHandle) continue;
+            __result = PatchReverseInvoker.Invoke((a, b) => a(b), actualSet, actualScene);
             return false;
         }
 
