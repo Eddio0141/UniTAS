@@ -16,7 +16,7 @@ public static class Trace
     {
 #if TRACE
         StaticLogger.TraceLog.LogDebug(
-            $"[{path}:{lineNumber}] ENTRY, {FormatArgs(methodArgs)}");
+            $"[{path}:{lineNumber}] ENTRY{FormatArgs(methodArgs)}");
 
         return new Tracer(lineNumber, path, methodArgs);
 #else
@@ -30,13 +30,14 @@ public static class Trace
         public void Dispose()
         {
             StaticLogger.TraceLog.LogDebug(
-                $"[{path}:{lineNumber}] EXIT, {FormatArgs(methodArgs)}");
+                $"[{path}:{lineNumber}] EXIT{FormatArgs(methodArgs)}");
         }
     }
 
     private static string FormatArgs((string, object)[] methodArgs)
     {
-        return methodArgs?.Join(converter: pair => $"{pair.Item1}: {DebugHelp.PrintClass(pair.Item2)}");
+        if (methodArgs == null) return "";
+        return ", " + methodArgs.Join(converter: pair => $"{pair.Item1}: {DebugHelp.PrintClass(pair.Item2)}");
     }
 #else
     private class NoOpDisposable : IDisposable

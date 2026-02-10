@@ -5,6 +5,24 @@ Unity projects made to test UniTAS
 ## Unity tests
 Those tests just test unity state without checking on UniTAS internals
 
+Note that writing those tests will require the unity editor, and open the targeting version from `TestGames`
+
+Within unity editor, important utility functions are under the `Test` context menu. Shortcuts exist for them for convenience
+
+- Build
+    - Builds the game under `build` directory. It is essential that you use this build function as a custom build pipeline is required for a correct setup
+- Run General Tests
+    - During game execution within unity editor, you can run "General tests"
+    - Results are logged in the console
+- Setup
+    - This reloads the test environment to make sure everything is setup
+    - Use if the modifying source isn't updating the test environment correctly
+
+It is important that all defined tests pass during in the unity editor project
+
+If it can't pass for whatever reason (e.g. async tests bringing in inconsistencies),
+you may disable part of the test / remove the test for the editor with the preprocessor condition `#if !UNITY_EDITOR`
+
 ### Types of test
 - General tests
     - They can be ran as long as UniTAS is loaded and maybe with some environment setups
@@ -20,7 +38,7 @@ Those tests just test unity state without checking on UniTAS internals
     - Movies themselves aren't defined on the C# side, it must be defined in test-runner and ran from there, more about movie tests further down
 
 ### Where to write them
-- `UnityShared/Tests` contains all tests
+- `TestShared/Tests` contains all tests
 - File name indicates the type of test and the unity versions the script covers
     - Formatted as `SomeCategory__min_version_inclusive__max_version_inclusive`
 - If the category seems like the appropriate place for the test then write in it, otherwise new file

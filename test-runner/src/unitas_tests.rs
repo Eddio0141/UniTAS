@@ -9,6 +9,7 @@ use std::{
     fmt::Debug,
     fs::{self, File},
     io::{self, Read, Write},
+    iter::repeat_n,
     net::{IpAddr, Ipv4Addr, SocketAddr, TcpStream},
     path::Path,
     process::{Command, Stdio},
@@ -75,7 +76,6 @@ impl TestCtx {
     }
 
     fn run_init_and_general_tests(&mut self, stream: &mut UniTasStream) -> Result<()> {
-        self.print_test_results(stream, TestType::Init)?;
         self.run_general_tests_iter(stream)?;
 
         stream.send(
@@ -93,13 +93,13 @@ impl TestCtx {
         }
 
         if setup_fail {
-            panic!("failed to soft restart");
+            bail!("failed to soft restart");
         }
 
         self.print_test_results(stream, TestType::Init)?;
         self.run_general_tests_iter(stream)?;
 
-        thread::sleep(Duration::from_secs(1));
+        self.run_init_tests(stream)?;
 
         Ok(())
     }
@@ -121,7 +121,7 @@ impl TestCtx {
         }
 
         if timeout {
-            panic!("failed to finish running general tests");
+            bail!("failed to finish running general tests");
         }
 
         self.print_test_results(stream, TestType::General)?;
@@ -143,7 +143,7 @@ impl TestCtx {
         let count = stream
             .receive()?
             .parse::<usize>()
-            .expect("count of test results should be a number");
+            .context("count of test results should be a number")?;
 
         stream.send(&format!(
             "local results = traverse('TestFrameworkRuntime').field('_instance').field('{res_field_name}').GetValue() \
@@ -172,7 +172,68 @@ impl TestCtx {
         Ok(())
     }
 
-    // TODO: movie test always run no matter what, which shouldn't happen!
+    fn run_init_tests(&mut self, stream: &mut UniTasStream) -> Result<()> {
+        stream.send(
+            r#"
+            local tests = traverse('TestFrameworkRuntime').method('AllInitTests').GetValue()
+            print(traverse(tests).property('Length').GetValue())
+
+            for _, test in ipairs(tests) do
+                print(test.Name)
+            end
+            "#,
+        )?;
+
+        let tests = stream
+            .receive()?
+            .parse::<usize>()
+            .context("init test count is not an integer")?;
+
+        // must collect to ensure all test names are received
+        let tests = repeat_n((), tests)
+            .map(|_| stream.receive())
+            .collect::<Result<Vec<_>, _>>()?;
+
+        for test in tests {
+            stream.send(&format!(
+                r#"
+            local function on_restart(_, pre_scene_load)
+                if pre_scene_load then
+                    return
+                end
+                hook_on_game_restart(on_restart, false)
+
+                traverse("TestFrameworkRuntime").field("_initTestMethodToRun").SetValue("{test}")
+            end
+
+            hook_on_game_restart(on_restart, true)
+            restart()
+            "#
+            ))?;
+
+            let mut fail = true;
+            for _ in 0..60 {
+                thread::sleep(Duration::from_secs(1));
+                stream.send(
+                "print(traverse('TestFrameworkRuntime').field('_instance').field('_initTestResults').property('Count').GetValue())",
+            )?;
+                let result = stream.receive()?;
+                if result == "1" {
+                    fail = false;
+                    break;
+                }
+            }
+
+            if fail {
+                bail!("init test failed to stop running");
+            }
+
+            self.print_test_results(stream, TestType::Init)?;
+        }
+
+        Ok(())
+    }
+
     fn run_movie_test(
         &mut self,
         stream: &mut UniTasStream,
@@ -214,7 +275,7 @@ impl TestCtx {
         }
 
         if fail {
-            panic!("movie failed to stop running");
+            bail!("movie failed to stop running");
         }
 
         self.print_test_results(stream, TestType::Movie)?;
@@ -325,7 +386,7 @@ impl UniTasStream {
                 self.buf.resize(size_of::<ReceivePrefix>(), 0);
                 self.stream
                     .set_read_timeout(Some(Duration::from_secs(30)))
-                    .expect("failed to set timeout, somehow");
+                    .context("failed to set timeout, somehow")?;
                 self.stream.read_exact(&mut self.buf).with_context(|| {
                     format!("{ERR_PREFIX_READ_FAIL}, can't send data to remote")
                 })?;
@@ -384,7 +445,7 @@ impl UniTasStream {
             self.buf.resize(size_of::<ReceivePrefix>(), 0);
             self.stream
                 .set_read_timeout(Some(Duration::from_secs(30)))
-                .expect("failed to set timeout, somehow");
+                .context("failed to set timeout, somehow")?;
             self.stream.read_exact(&mut self.buf).with_context(|| {
                 format!("{ERR_PREFIX_READ_FAIL}, failed to receive data from remote")
             })?;
@@ -408,16 +469,16 @@ impl UniTasStream {
         bail!("UniTAS is not responding");
     }
 
-    fn read_stdout(&mut self) -> Option<io::Result<String>> {
+    fn read_stdout(&mut self) -> Option<Result<String>> {
         // use after reading message type prefix
-        self.stream
-            .set_read_timeout(Some(Duration::from_secs(1)))
-            .expect("failed to set timeout somehow");
+        if let Err(err) = self.stream.set_read_timeout(Some(Duration::from_secs(1))) {
+            return Some(Err(err.into()));
+        }
         if let Err(err) = self.stream.read_exact(&mut self.buf_msg_len) {
             if matches!(err.kind(), io::ErrorKind::TimedOut) {
                 return None;
             }
-            return Some(Err(err));
+            return Some(Err(err.into()));
         }
 
         let msg_len = u64::from_le_bytes(self.buf_msg_len) as usize;
@@ -427,7 +488,7 @@ impl UniTasStream {
             if matches!(err.kind(), io::ErrorKind::TimedOut) {
                 return None;
             }
-            return Some(Err(err));
+            return Some(Err(err.into()));
         }
 
         let msg = String::from_utf8_lossy(&self.buf).trim_end().to_owned();
