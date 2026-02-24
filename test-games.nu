@@ -2,7 +2,7 @@
 
 use std
 
-def help [] {
+def print-help [] {
     print "script to run unity tests\n"
     print "args:\n"
     print "--preserve-games"
@@ -11,7 +11,7 @@ def help [] {
 
 def --wrapped main [...args] {
     if $args has "--help" {
-        help
+        print-help
         return
     }
 
