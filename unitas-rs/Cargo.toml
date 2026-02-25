@@ -8,7 +8,7 @@ pattern = { path = "./pattern/" }
 log = "0.4.29"
 const-str = { version = "1.1.0", features = ["proc"] }
 retour = { git = "https://github.com/Eddio0141/retour-rs.git", branch = "mid-function-hook", features = ["static-detour"] }
-time = { version = "0.3.46", features = ["formatting"] }
+time = { version = "0.3.47", features = ["formatting"] }
 backtrace = "0.3.76"
 colored = "3.1.1"
 thiserror = "2.0.18"
