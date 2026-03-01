@@ -237,6 +237,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   emptyScene: Assets/TestFramework/Scenes/generated 4.unity
+  emptyScene2: Assets/TestFramework/Scenes/generated 6.unity
   loadAsyncStallAdditive1fScene: Assets/TestFramework/Scenes/generated 5.unity
 --- !u!114 &772108575
 MonoBehaviour:

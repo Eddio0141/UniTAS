@@ -155,12 +155,11 @@ public class TestFrameworkRuntime : MonoBehaviour
 
         foreach (var test in _generalTests)
         {
-            yield return null;
+            yield return TestSafetyDelay();
             yield return RunTest(test, _generalTestResults);
             yield return TestSafetyDelay();
+            yield return TestCleanup();
         }
-
-        TestCleanup();
 
         _generalTestsDone = true;
         Debug.Log("General tests finished");
@@ -191,12 +190,19 @@ public class TestFrameworkRuntime : MonoBehaviour
         }
     }
 
-    private static void TestCleanup()
+    private static IEnumerator TestCleanup()
     {
         Debug.Log("cleaning up...");
 
         // restore default scene
         SceneManager.LoadScene(0);
+        yield return null;
+
+        var sceneCount = SceneManager.sceneCount;
+        if (sceneCount != 1)
+        {
+            throw new InvalidProgramException($"cleanup failure, expected 1 scene to be ready but there are `{sceneCount}` scenes");
+        }
 
         Debug.Log("done cleanup");
     }
@@ -678,22 +684,6 @@ public class UnityYield : TestYield
     }
 }
 
-public class SceneSwitchYield : TestYield
-{
-    private readonly string _scenePath;
-
-    public SceneSwitchYield(string scenePath)
-    {
-        _scenePath = scenePath;
-    }
-
-    public override IEnumerator Operation()
-    {
-        Helper.Scene.LoadScene(_scenePath);
-        yield break;
-    }
-}
-
 // test attributes
 [AttributeUsage(AttributeTargets.Method)]
 [MeansImplicitUse]
@@ -812,19 +802,6 @@ public class TestInjectAssetBundle : TestInjectAttribute
     }
 
     public string AssetProperty { get; }
-}
-
-public static class Helper
-{
-    public static class Scene
-    {
-        public static void LoadScene(string scene)
-        {
-#pragma warning disable CS0618 // Type or member is obsolete
-            Application.LoadLevel(scene);
-#pragma warning restore CS0618 // Type or member is obsolete
-        }
-    }
 }
 
 /// <summary>

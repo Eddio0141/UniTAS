@@ -6,6 +6,7 @@ using System.Collections.Generic;
 public class Scenes__2022_3__6000_0_44f1 : MonoBehaviour
 {
     [TestInjectScene] public string emptyScene;
+    [TestInjectScene] public string emptyScene2;
 
     [Test(InitTestTiming.Awake)]
     public void UnloadInvalid()
@@ -82,8 +83,9 @@ public class Scenes__2022_3__6000_0_44f1 : MonoBehaviour
     [Test]
     public IEnumerator<TestYield> LoadAsyncStallAdditive1f()
     {
+        // asserts values for a stalled load operation
         var startFrame = Time.frameCount;
-        var op = SceneManager.LoadSceneAsync(loadAsyncStallAdditive1fScene, LoadSceneMode.Additive)!;
+        var op = SceneManager.LoadSceneAsync(loadAsyncStallAdditive1fScene, LoadSceneMode.Additive);
         var scene = SceneManager.GetSceneByPath(loadAsyncStallAdditive1fScene);
         Assert.False(scene.isSubScene);
         scene.isSubScene = true;
@@ -133,5 +135,143 @@ public class Scenes__2022_3__6000_0_44f1 : MonoBehaviour
 
         Assert.True(op.isDone);
         Assert.Equal(1f, op.progress);
+    }
+
+    [Test]
+    public IEnumerator<TestYield> AsyncLoadOrderBlocking()
+    {
+        // check if second operation gets blocked by first operation being stalled
+        // ---
+        // result: it does
+        var op = SceneManager.LoadSceneAsync(emptyScene, LoadSceneMode.Additive);
+        op.allowSceneActivation = false;
+        var op2 = SceneManager.LoadSceneAsync(emptyScene2, LoadSceneMode.Additive);
+
+        yield return new UnityYield(null);
+        yield return new UnityYield(null);
+        yield return new UnityYield(null);
+
+        Assert.False(op.isDone, "sanity check");
+        Assert.False(op2.isDone);
+
+        op.allowSceneActivation = true;
+
+        Assert.False(op.isDone, "sanity check");
+        Assert.False(op2.isDone, "sanity check");
+
+        yield return new UnityYield(null);
+
+        Assert.True(op.isDone);
+        Assert.False(op2.isDone);
+
+        yield return new UnityYield(null);
+
+        Assert.True(op.isDone);
+        Assert.True(op2.isDone);
+    }
+
+    [Test]
+    public IEnumerator<TestYield> AsyncLoadActivationFalseInDelayFrame()
+    {
+        // see if allowSceneActivation true does stop next scene from loading
+        // ---
+        // result: TODO
+        var op = SceneManager.LoadSceneAsync(emptyScene, LoadSceneMode.Additive);
+        op.allowSceneActivation = false;
+        var op2 = SceneManager.LoadSceneAsync(emptyScene2, LoadSceneMode.Additive);
+
+        yield return new UnityYield(null);
+        yield return new UnityYield(null);
+        yield return new UnityYield(null);
+
+        Assert.False(op.isDone, "sanity check");
+        Assert.False(op2.isDone);
+
+        op.allowSceneActivation = true;
+
+        Assert.False(op.isDone, "sanity check");
+        Assert.False(op2.isDone, "sanity check");
+
+        yield return new UnityYield(null);
+
+        Assert.True(op.isDone);
+        Assert.False(op2.isDone);
+
+        op.allowSceneActivation = false;
+        Assert.False(op.allowSceneActivation);
+
+        yield return new UnityYield(null);
+
+        Assert.True(op.isDone);
+        Assert.True(op2.isDone);
+    }
+
+    [Test]
+    public IEnumerator<TestYield> AsyncLoadDoubleTiming()
+    {
+        // check load timing for 2 loads at the same time
+        // ---
+        // result: nope, its a queue
+        var op = SceneManager.LoadSceneAsync(emptyScene, LoadSceneMode.Additive);
+        var op2 = SceneManager.LoadSceneAsync(emptyScene2, LoadSceneMode.Additive);
+
+        yield return new UnityYield(null);
+
+        Assert.False(op.isDone);
+        Assert.False(op2.isDone);
+
+        yield return new UnityYield(null);
+
+        Assert.True(op.isDone);
+        Assert.False(op2.isDone);
+
+        yield return new UnityYield(null);
+
+        Assert.True(op.isDone);
+        Assert.True(op2.isDone);
+    }
+
+    [Test]
+    public IEnumerator<TestYield> AsyncLoadStallInDelayFrame()
+    {
+        // check progress of scene load if stalled during delay frame
+        // ---
+        // result: nope, its a queue
+        var op = SceneManager.LoadSceneAsync(emptyScene, LoadSceneMode.Additive);
+        var op2 = SceneManager.LoadSceneAsync(emptyScene2, LoadSceneMode.Additive);
+
+        yield return new UnityYield(null);
+
+        Assert.False(op.isDone);
+        Assert.False(op2.isDone);
+
+        op.allowSceneActivation = false;
+
+        yield return new UnityYield(null);
+
+        Assert.False(op.isDone);
+        Assert.False(op2.isDone);
+
+        yield return new UnityYield(null);
+
+        Assert.False(op.isDone);
+        Assert.False(op2.isDone);
+
+        yield return new UnityYield(null);
+
+        Assert.False(op.isDone);
+        Assert.False(op2.isDone);
+
+        op.allowSceneActivation = true;
+
+        yield return new UnityYield(null);
+
+        Assert.True(op.isDone);
+        Assert.False(op2.isDone);
+
+        yield return new UnityYield(null);
+
+        Assert.True(op.isDone);
+        Assert.True(op2.isDone);
     }
 }

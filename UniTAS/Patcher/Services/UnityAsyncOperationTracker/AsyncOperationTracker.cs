@@ -55,6 +55,8 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
 
     // all async operations queued up in order
     private readonly List<IAsyncOperation> _ops = [];
+    // separate queue for scene loading
+    private readonly List<AsyncSceneLoadData> _opsScenes = [];
     private readonly List<IAsyncOperation> _pendingLoadCallbacks = [];
 
     private readonly Dictionary<AsyncOperation, AssetBundle> _assetBundleCreateRequests = [];
@@ -87,6 +89,7 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         }
 
         _ops.Clear();
+        _opsScenes.Clear();
         _pendingLoadCallbacks.Clear();
         _assetBundleCreateRequests.Clear();
         _assetBundleRequests.Clear();
@@ -110,72 +113,51 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         _firstMatchUnloadPaths.Clear();
 
         var removes = new List<int>();
-        if (_sceneLoadSync)
+
+        for (var i = 0; i < _ops.Count; i++)
         {
-            for (var i = 0; i < _ops.Count; i++)
-            {
-                var loadData = _ops[i];
-                // sync loading doesn't force instantiation operations if stalled
-                if (SkipLoadInstantiateAsyncData(loadData)) continue;
+            var load = _ops[i];
+            if (!_tracked[load.Op].AllowSceneActivation)
+                continue;
 
-                LoadOp(loadData);
-                removes.Add(i);
-            }
-        }
-        else
-        {
-            var foundLoad = false;
-            var i = 0;
-            for (; i < _ops.Count; i++)
-            {
-                var load = _ops[i];
-                if (SkipLoadInstantiateAsyncData(load)) continue;
-
-                if (!foundLoad)
-                {
-                    if (load is AsyncSceneLoadData data)
-                    {
-                        foundLoad = true;
-                        if (data.DelayFrame) break;
-
-                        var op = load.Op;
-                        if (op != null)
-                        {
-                            var trackState = _tracked[load.Op];
-                            if (trackState.NotAllowedToStall || !trackState.AllowSceneActivation) break;
-                        }
-                    }
-
-                    LoadOp(load);
-                    removes.Add(i);
-                    continue;
-                }
-
-                if (load is AsyncSceneLoadData) break;
-                // add the rest of the operations
-                LoadOp(load);
-                removes.Add(i);
-            }
-
-            // handle rest
-            for (; i < _ops.Count; i++)
-            {
-                var load = _ops[i];
-                if (load is not AsyncSceneLoadData data || !_tracked[data.Op].AllowSceneActivation) continue;
-                LoadOp(data);
-                removes.Add(i);
-            }
+            LoadOp(load);
+            removes.Add(i);
         }
 
         foreach (var i in ((IEnumerable<int>)removes).Reverse())
         {
             _ops.RemoveAt(i);
         }
+
+        var removeCount = 0;
+
+        if (_sceneLoadSync)
+        {
+            removeCount = _opsScenes.Count;
+            for (var i = 0; i < _opsScenes.Count; i++)
+            {
+                LoadOp(_opsScenes[i]);
+            }
+        }
+        else
+        {
+            for (; removeCount < _opsScenes.Count; removeCount++)
+            {
+                var load = _opsScenes[removeCount];
+                if (load.DelayFrame)
+                {
+                    load.DelayFrame = false;
+                    break;
+                }
+                if (!_tracked[load.Op].AllowSceneActivation) break;
+                LoadOp(load);
+            }
+        }
+
+        _opsScenes.RemoveRange(0, removeCount);
     }
 
-    private bool SkipLoadInstantiateAsyncData(IAsyncOperation op) =>
-        op is InstantiateAsyncData data && !_tracked[data.Op].AllowSceneActivation;
-
+    // TODO: accurate? this is for non-scene async
     private void ProcessOpsUntilOp(AsyncOperation op)
     {
         if (_ops.Count == 0) return;
@@ -218,33 +200,12 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
             _tracked[dataOp] = state;
         }
 
-#if TRACE
-        var loadOrUnload = false;
-#endif
-
         foreach (var data in pendingCallbacks)
         {
             data.Callback();
-#if TRACE
-            if (!loadOrUnload && data is AsyncSceneLoadData or AsyncSceneUnloadData)
-                loadOrUnload = true;
-#endif
             if (data.Op == null) continue;
             InvokeOnComplete(data.Op);
         }
-
-#if TRACE
-        if (!loadOrUnload) return;
-
-        StaticLogger.Trace("scene stack has changed");
-
-        var sceneCount = _sceneManagerWrapper.SceneCount;
-        for (var i = 0; i < sceneCount; i++)
-        {
-            var scene = _sceneManagerWrapper.GetSceneAt(i);
-            StaticLogger.Trace($"scene: name = `{scene.Name}`, path = `{scene.Path}`, index = `{scene.BuildIndex}`");
-        }
-#endif
     }
 
     public bool Yield(AsyncOperation asyncOperation)
@@ -291,14 +252,6 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
     public void UpdateActual()
     {
         _sceneLoadSync = false;
-
-        // doesn't matter, as long as next frame happens, before the game update adds more scenes, delay is gone
-        foreach (var op in _ops)
-        {
-            if (op is AsyncSceneLoadData data)
-                data.DelayFrame = false;
-        }
-
         CallPendingCallbacks(false);
     }
 
@@ -513,7 +466,7 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         var loadData =
             new AsyncSceneLoadData(sceneName, sceneBuildIndex, loadSceneMode, localPhysicsMode, asyncOperation,
                 sceneInfo, this);
-        _ops.Add(loadData);
+        _opsScenes.Add(loadData);
 
         if (!_sceneLoadSync) return;
         _logger.LogDebug("load scene sync is happening for next frame");
@@ -538,20 +491,17 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
             _sceneLoadSync = true;
 
             // first, all stalls are moved to load
-            foreach (var pair in _tracked.ToList())
+            foreach (var op in _opsScenes)
             {
-                var op = pair.Key;
-                var data = pair.Value;
+                var data = _tracked[op.Op];
                 data.NotAllowedToStall = true;
-                _tracked[op] = data;
+                _tracked[op.Op] = data;
             }
 
-            foreach (var sceneData in _ops)
+            foreach (var sceneData in _opsScenes)
             {
                 // delays are all gone now
-                if (sceneData is not AsyncSceneLoadData data) continue;
-
-                data.DelayFrame = false;
+                sceneData.DelayFrame = false;
                 _logger.LogDebug("force loading scene via non-async scene load");
             }
         }
@@ -560,7 +510,7 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         LoadingSceneCount++;
         CreateDummySceneStruct(scene, null);
 
-        _ops.Add(new AsyncSceneLoadData(sceneName, sceneBuildIndex, loadSceneMode, localPhysicsMode, null,
+        _opsScenes.Add(new AsyncSceneLoadData(sceneName, sceneBuildIndex, loadSceneMode, localPhysicsMode, null,
             sceneInfo, this));
     }
 
@@ -599,10 +549,9 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         // handle blocking load
         if (!allow) return;
 
-        // TODO: probably wrong way to get this, it could not exist
-        var op = _ops.First(o => o.Op == asyncOperation);
-        if (op is not InstantiateAsyncData) return;
-        LoadOpBlocking(op);
+        var op = _ops.FirstOrDefault(o => o.Op == asyncOperation);
+        if (op is not null)
+            LoadOpBlocking(op);
     }
 
     public bool GetAllowSceneActivation(AsyncOperation asyncOperation, out bool state)
@@ -1272,6 +1221,7 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         }
     }
 
+    // TODO: how about this stuff
     private class AsyncSceneUnloadData(
         AsyncOperation asyncOperation,
         object options,
