@@ -1,5 +1,8 @@
+using System;
+using System.Diagnostics;
 using StructureMap;
 using UniTAS.Patcher.Services.UnityEvents;
+using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.ContainerBindings.UnityEvents;
 
@@ -17,11 +20,11 @@ public static class UnityEventInvokers
 
     public static void InvokeStart() => _monoBehEventInvoker?.InvokeStart();
 
-    public static void InvokeUpdate() => _monoBehEventInvoker?.InvokeUpdate();
+    public static void InvokeUpdate() => _monoBehEventInvoker?.InvokeUpdate(true);
 
-    public static void InvokeFixedUpdate() => _monoBehEventInvoker?.InvokeFixedUpdate();
+    public static void InvokeFixedUpdate() => _monoBehEventInvoker?.InvokeFixedUpdate(true);
 
-    public static void InvokeLateUpdate() => _monoBehEventInvoker?.InvokeLateUpdate();
+    public static void InvokeLateUpdate() => _monoBehEventInvoker?.InvokeLateUpdate(true);
 
     public static void InvokeOnEnable() => _monoBehEventInvoker?.InvokeOnEnable();
 }
