@@ -9,7 +9,7 @@ using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Patches.Harmony.UnityInit;
 
-[RawPatchUnityInit]
+// [RawPatchUnityInit]
 [SuppressMessage("ReSharper", "UnusedMember.Local")]
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 public class UnityUnsafeUtilityPatch
