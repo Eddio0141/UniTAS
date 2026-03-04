@@ -78,9 +78,12 @@ public class ExternPropertyReset
             var typeName = propDef.DeclaringType.FullName ?? "unknown_type";
             var fullName = $"{typeName}.{propDef.Name}";
 
-            if (_skipProperties.Contains(fullName) || _skipProperties.Any(x => fullName.Like(x))) continue;
-            if (GameInfoManual.NoGraphics && _skipPropertiesNoGraphics.Contains(fullName) ||
-                _skipPropertiesNoGraphics.Any(x => fullName.Like(x))) continue;
+            if (_skipProperties.Contains(fullName) || _skipProperties.Any(fullName.Like)) continue;
+            if ((GameInfoManual.NoGraphics && _skipPropertiesNoGraphics.Contains(fullName)) ||
+                _skipPropertiesNoGraphics.Any(fullName.Like))
+            {
+                continue;
+            }
 
             var get = getMethod?.ResolveReflection();
             var set = setMethod?.ResolveReflection();
