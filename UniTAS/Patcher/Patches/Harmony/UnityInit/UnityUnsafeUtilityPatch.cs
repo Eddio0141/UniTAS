@@ -9,7 +9,7 @@ using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Patches.Harmony.UnityInit;
 
-[RawPatchUnityInit]
+// [RawPatchUnityInit]
 [SuppressMessage("ReSharper", "UnusedMember.Local")]
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 public class UnityUnsafeUtilityPatch
@@ -32,8 +32,12 @@ public class UnityUnsafeUtilityPatch
 
         private static unsafe void Postfix(void* __result, object allocator)
         {
-            var allocatorTranslated = (Allocator)Enum.Parse(typeof(Allocator), allocator.ToString());
-            UnityMallocTracker.Malloc((IntPtr)__result, allocatorTranslated, false);
+            // try
+            // {
+            //     var allocatorTranslated = (Allocator)Enum.Parse(typeof(Allocator), allocator.ToString());
+            //     UnityMallocTracker.Malloc((IntPtr)__result, allocatorTranslated, false);
+            // }
+            // catch (Exception e) { StaticLogger.Log.LogFatal($"thingy, {e}"); }
         }
     }
 
@@ -52,8 +56,12 @@ public class UnityUnsafeUtilityPatch
 
         private static unsafe void Postfix(void* __result, object allocator)
         {
-            var allocatorTranslated = (Allocator)Enum.Parse(typeof(Allocator), allocator.ToString());
-            UnityMallocTracker.Malloc((IntPtr)__result, allocatorTranslated, true);
+            // try
+            // {
+            //     var allocatorTranslated = (Allocator)Enum.Parse(typeof(Allocator), allocator.ToString());
+            //     UnityMallocTracker.Malloc((IntPtr)__result, allocatorTranslated, true);
+            // }
+            // catch (Exception e) { StaticLogger.Log.LogFatal($"thingy2, {e}"); }
         }
     }
 
@@ -72,8 +80,12 @@ public class UnityUnsafeUtilityPatch
 
         private static unsafe void Prefix(void* memory, object allocator)
         {
-            var allocatorTranslated = (Allocator)Enum.Parse(typeof(Allocator), allocator.ToString());
-            UnityMallocTracker.Free((IntPtr)memory, allocatorTranslated, false);
+            // try
+            // {
+            //     var allocatorTranslated = (Allocator)Enum.Parse(typeof(Allocator), allocator.ToString());
+            //     UnityMallocTracker.Free((IntPtr)memory, allocatorTranslated, false);
+            // }
+            // catch (Exception e) { StaticLogger.Log.LogFatal($"thingy3, {e}"); }
         }
     }
 
@@ -92,8 +104,12 @@ public class UnityUnsafeUtilityPatch
 
         private static unsafe void Prefix(void* memory, object allocator)
         {
-            var allocatorTranslated = (Allocator)Enum.Parse(typeof(Allocator), allocator.ToString());
-            UnityMallocTracker.Free((IntPtr)memory, allocatorTranslated, true);
+            // try
+            // {
+            //     var allocatorTranslated = (Allocator)Enum.Parse(typeof(Allocator), allocator.ToString());
+            //     UnityMallocTracker.Free((IntPtr)memory, allocatorTranslated, true);
+            // }
+            // catch (Exception e) { StaticLogger.Log.LogFatal($"thingy4, {e}"); }
         }
     }
 }

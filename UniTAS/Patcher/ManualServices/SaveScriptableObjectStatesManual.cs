@@ -29,7 +29,7 @@ public static class SaveScriptableObjectStatesManual
         if (StoredStates.ContainsKey(obj)) return;
 
         StaticLogger.LogDebug($"Saving ScriptableObject, name: `{obj.name}`, type: `{obj.GetType().SaneFullName()}`");
-        StoredStates.Add(obj, new StoredState(obj));
+        // StoredStates.Add(obj, new StoredState(obj));
     }
 
     private readonly struct StoredState
