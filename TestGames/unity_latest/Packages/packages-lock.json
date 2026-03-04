@@ -106,12 +106,13 @@
       "url": "https://packages.unity.com"
     },
     "com.walcht.ide.neovim": {
-      "version": "file:/home/yuu/src/com.walcht.ide.neovim",
+      "version": "https://github.com/walcht/com.walcht.ide.neovim.git",
       "depth": 0,
-      "source": "local",
+      "source": "git",
       "dependencies": {
         "com.unity.nuget.newtonsoft-json": "3.2.2"
-      }
+      },
+      "hash": "83ce701202a3e471300cc0a751f78d594c2625a1"
     },
     "com.unity.modules.accessibility": {
       "version": "1.0.0",
