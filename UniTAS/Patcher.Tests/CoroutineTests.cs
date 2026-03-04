@@ -17,15 +17,15 @@ public class CoroutineTests
 
         Assert.True(status.IsRunning);
 
-        monoBehEventInvoker.InvokeUpdate();
+        monoBehEventInvoker.InvokeUpdate(false);
         Assert.True(status.IsRunning);
 
-        monoBehEventInvoker.InvokeLateUpdate();
-        monoBehEventInvoker.InvokeUpdate();
+        monoBehEventInvoker.InvokeLateUpdate(false);
+        monoBehEventInvoker.InvokeUpdate(false);
         Assert.True(status.IsRunning);
 
-        monoBehEventInvoker.InvokeLateUpdate();
-        monoBehEventInvoker.InvokeUpdate();
+        monoBehEventInvoker.InvokeLateUpdate(false);
+        monoBehEventInvoker.InvokeUpdate(false);
         Assert.False(status.IsRunning);
     }
 

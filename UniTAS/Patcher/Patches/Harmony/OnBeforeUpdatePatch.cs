@@ -40,11 +40,11 @@ public class OnBeforeUpdatePatch
              */
             if ((updateType & 1) != 0)
             {
-                MonoBehEventInvoker.InvokeUpdate();
+                MonoBehEventInvoker.InvokeUpdate(false);
             }
             else if ((updateType & 2) != 0)
             {
-                MonoBehEventInvoker.InvokeFixedUpdate();
+                MonoBehEventInvoker.InvokeFixedUpdate(false);
             }
 
             return !MonoBehaviourController.PausedExecution;

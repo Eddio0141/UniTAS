@@ -50,17 +50,17 @@ public class MonoBehaviourUpdateInvoker : MonoBehaviour
 
     private void Update()
     {
-        _monoBehEventInvoker.InvokeUpdate();
+        _monoBehEventInvoker.InvokeUpdate(false);
     }
 
     private void FixedUpdate()
     {
-        _monoBehEventInvoker.InvokeFixedUpdate();
+        _monoBehEventInvoker.InvokeFixedUpdate(false);
     }
 
     private void LateUpdate()
     {
-        _monoBehEventInvoker.InvokeLateUpdate();
+        _monoBehEventInvoker.InvokeLateUpdate(false);
     }
 
     private void OnGUI()
@@ -88,7 +88,7 @@ public class MonoBehaviourUpdateInvoker : MonoBehaviour
         while (true)
         {
             yield return null;
-            _monoBehEventInvoker.InvokeUpdate();
+            _monoBehEventInvoker.InvokeUpdate(false);
         }
         // ReSharper disable once IteratorNeverReturns       
     }
@@ -108,7 +108,7 @@ public class MonoBehaviourUpdateInvoker : MonoBehaviour
         while (true)
         {
             yield return _waitForFixedUpdate;
-            _monoBehEventInvoker.InvokeFixedUpdate();
+            _monoBehEventInvoker.InvokeFixedUpdate(false);
         }
         // ReSharper disable once IteratorNeverReturns
     }
