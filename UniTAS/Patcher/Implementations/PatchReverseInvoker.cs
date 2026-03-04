@@ -22,7 +22,7 @@ public class PatchReverseInvoker : IPatchReverseInvoker
         {
             if (_invoking.Value == value)
             {
-                StaticLogger.LogWarning($"reverse patcher is already in use for this thread at {new StackTrace(true)}");
+                StaticLogger.LogWarning($"reverse patcher is already in use for this thread ID {Thread.CurrentThread.ManagedThreadId}, value tried to set to {value} at {new StackTrace(true)}");
                 return;
             }
 
@@ -30,6 +30,7 @@ public class PatchReverseInvoker : IPatchReverseInvoker
             UniTasRs.toggle_reverse_invoker(value);
 #endif
             _invoking.Value = value;
+            StaticLogger.Trace($"PatchReverseInvoker: invoking is {value} for thread ID {Thread.CurrentThread.ManagedThreadId}");
         }
     }
 
