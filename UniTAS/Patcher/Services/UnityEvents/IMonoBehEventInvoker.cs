@@ -4,9 +4,9 @@ public interface IMonoBehEventInvoker
 {
     void InvokeAwake();
     void InvokeStart();
-    void InvokeUpdate();
-    void InvokeFixedUpdate();
-    void InvokeLateUpdate();
+    void InvokeUpdate(bool monoBehCall);
+    void InvokeFixedUpdate(bool monoBehCall);
+    void InvokeLateUpdate(bool monoBehCall);
     void InvokeOnGUI();
     void InvokeOnEnable();
     void InvokeEndOfFrame();

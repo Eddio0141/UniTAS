@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using HarmonyLib;
+using UniTAS.Patcher.Extensions;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 
@@ -27,8 +28,8 @@ public static class SaveScriptableObjectStatesManual
         if (obj == null) return;
         if (StoredStates.ContainsKey(obj)) return;
 
-        StaticLogger.LogDebug($"Saving ScriptableObject {obj.name}");
-        StoredStates.Add(obj, new StoredState(obj));
+        StaticLogger.LogDebug($"Saving ScriptableObject, name: `{obj.name}`, type: `{obj.GetType().SaneFullName()}`");
+        // StoredStates.Add(obj, new StoredState(obj));
     }
 
     private readonly struct StoredState
@@ -44,7 +45,7 @@ public static class SaveScriptableObjectStatesManual
             // save
             var fields = scriptableObject.GetType().GetFields(AccessTools.all).Where(x => !x.IsStatic && !x.IsLiteral);
 
-            _savedFields = fields.Select(field => new FieldData(field, scriptableObject)).ToArray();
+            _savedFields = [.. fields.Select(field => new FieldData(field, scriptableObject))];
         }
 
         public void Load()
