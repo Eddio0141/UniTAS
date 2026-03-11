@@ -18,7 +18,7 @@ public interface ISceneLoadTracker
     void AsyncSceneUnload(ref AsyncOperation asyncOperation, Either<string, int> scene, object options);
 
     void AsyncSceneUnload(ref AsyncOperation asyncOperation, object scene, object options);
-    
+
     void AsyncSceneUnload(out IntPtr result, object scene, object options);
 
     /// <summary>
@@ -45,7 +45,7 @@ public interface ISceneLoadTracker
 
     /// <summary>
     /// The LoadingScene will provide dummy data for the fake instances, but once the scene is actually loaded,
-    /// SceneWrapper will give real information for the fake instance to use 
+    /// SceneWrapper will give real information for the fake instance to use
     /// </summary>
     List<AsyncOperationTracker.DummyScene> LoadingScenes { get; }
 }
