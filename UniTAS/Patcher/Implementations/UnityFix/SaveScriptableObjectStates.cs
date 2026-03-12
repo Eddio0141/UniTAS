@@ -15,30 +15,22 @@ using UnityEngine;
 namespace UniTAS.Patcher.Implementations.UnityFix;
 
 [Singleton]
-public class SaveScriptableObjectStates : INewScriptableObjectTracker, IOnAwakeUnconditional, IOnPreGameRestart
+public class SaveScriptableObjectStates(ILogger logger, IUpdateScriptableObjDestroyState updateScriptableObjDestroyState,
+    IPatchReverseInvoker reverseInvoker) : INewScriptableObjectTracker, IOnAwakeUnconditional, IOnPreGameRestart
 {
     private readonly List<Object> _destroyObjectsOnRestart = [];
 
-    private readonly ILogger _logger;
+    private readonly ILogger _logger = logger;
 
-    private readonly Assembly[] _ignoreAssemblies;
-
-    private readonly IUpdateScriptableObjDestroyState _updateScriptableObjDestroyState;
-    private readonly IPatchReverseInvoker _reverseInvoker;
-
-    public SaveScriptableObjectStates(ILogger logger, IUpdateScriptableObjDestroyState updateScriptableObjDestroyState,
-        IPatchReverseInvoker reverseInvoker)
-    {
-        _logger = logger;
-        _updateScriptableObjDestroyState = updateScriptableObjDestroyState;
-        _reverseInvoker = reverseInvoker;
-
-        _ignoreAssemblies = new[]
+    private readonly Assembly[] _ignoreAssemblies = [.. new[]
         {
-            AccessTools.TypeByName("TMPro.TMP_FontAsset")
-        }.Where(x => x != null).Select(x => x.Assembly).ToArray();
-    }
+            AccessTools.TypeByName("TMPro.TMP_FontAsset"),
+            // this caused a crash when loading saved data
+            typeof(UnityEngine.InputSystem.Keyboard)
+        }.Where(x => x != null).Select(x => x.Assembly)];
 
+    private readonly IUpdateScriptableObjDestroyState _updateScriptableObjDestroyState = updateScriptableObjDestroyState;
+    private readonly IPatchReverseInvoker _reverseInvoker = reverseInvoker;
     private bool _initialized;
 
     public void AwakeUnconditional()
