@@ -1,4 +1,6 @@
-use crate::hook::hooks;
+use std::time::Duration;
+
+use crate::{hook::hooks, info, state::os::TIME};
 
 #[unsafe(no_mangle)]
 pub extern "C" fn last_update_set_callback(
@@ -8,23 +10,19 @@ pub extern "C" fn last_update_set_callback(
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn init() {
-    crate::init();
+pub extern "C" fn set_frame_time(frame_time: f64) {
+    TIME.lock()
+        .unwrap()
+        .set_frame_time(Duration::from_secs_f64(frame_time));
 }
 
-// #[unsafe(no_mangle)]
-// pub extern "C" fn update_actual(_delta_time: f64) {
-//     TIME.lock()
-//         .unwrap()
-//         .add_frame_time(Duration::from_secs_f64(delta_time));
-// }
+#[unsafe(no_mangle)]
+pub extern "C" fn update_actual() {
+    info::set_main_thread();
+    TIME.lock().unwrap().add_frame_time();
+}
 
-// #[unsafe(no_mangle)]
-// pub extern "C" fn restart(_secs: u64, _nano_secs: u32) -> bool {
-//     if let Err(err) = TIME.lock().unwrap().restart(Duration::new(secs, nano_secs)) {
-//         error!("restart: {err}");
-//         return false;
-//     }
-//
-//     true
-// }
+#[unsafe(no_mangle)]
+pub extern "C" fn restart(secs: u64, nano_secs: u32) {
+    TIME.lock().unwrap().restart(Duration::new(secs, nano_secs));
+}

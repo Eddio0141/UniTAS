@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -19,7 +18,6 @@ using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher;
 
-[SuppressMessage("ReSharper", "UnusedType.Global")]
 public static class Entry
 {
     static Entry()
@@ -63,12 +61,10 @@ public static class Entry
     private static readonly PreloadPatcherProcessor PreloadPatcherProcessor = new();
 
     // Called before the assemblies are patched
-    [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public static void Initialize()
     {
         // for windows, add library directory to allow DllImport to pick up library path
         Environment.SetEnvironmentVariable("PATH", Environment.GetEnvironmentVariable("PATH") + ";" + UniTASPaths.Patcher);
-        UniTasRs.init();
 
         using var _ = Bench.Measure();
 
@@ -78,7 +74,7 @@ public static class Entry
         UniTASSha256Info.AssemblyLockFileValidate();
         UniTASSha256Info.AssemblyLockFileCreate();
 
-        ThreadPool.QueueUserWorkItem(_ => { BepInExUtils.GenerateMissingDirs(); });
+        ThreadPool.QueueUserWorkItem(_ => BepInExUtils.GenerateMissingDirs());
 
         if (UniTASSha256Info.UniTASInvalidCache)
         {
@@ -109,7 +105,7 @@ public static class Entry
                 {
                     ThreadPool.QueueUserWorkItem(_ =>
                     {
-                        var dllPath = Path.Combine(Path.GetDirectoryName(hashPath)!,
+                        var dllPath = Path.Combine(Path.GetDirectoryName(hashPath),
                             Path.GetFileNameWithoutExtension(hashPath));
                         var originalDllPathFile = Path.Combine(UniTASPaths.AssemblyCache,
                             $"{Path.GetFileNameWithoutExtension(hashPath)}.path");
@@ -173,7 +169,6 @@ public static class Entry
     private static readonly ManualResetEvent DeletedCacheInfo = new(false);
 
     // Patches the assemblies
-    [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public static void Patch(ref AssemblyDefinition assembly)
     {
         var assemblyNameWithDll = $"{assembly.Name.Name}.dll";
@@ -252,7 +247,6 @@ public static class Entry
         }
     }
 
-    [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public static void Finish()
     {
         StaticLogger.Log.LogInfo("Finished preload patcher!");

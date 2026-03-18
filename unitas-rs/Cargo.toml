@@ -7,11 +7,16 @@ pattern-macro = { path = "./pattern-macro/" }
 pattern = { path = "./pattern/" }
 log = "0.4.29"
 const-str = { version = "1.1.0", features = ["proc"] }
-retour = { git = "https://github.com/Eddio0141/retour-rs.git", branch = "mid-function-hook", features = ["static-detour"] }
+retour = { git = "https://github.com/Eddio0141/retour-rs.git", branch = "mid-function-hook", features = ["static-detour", "thiscall-abi"] }
 time = { version = "0.3.47", features = ["formatting"] }
 backtrace = "0.3.76"
 colored = "3.1.1"
 thiserror = "2.0.18"
+rustc-hash = "2.1.2"
+plt-rs = "0.4.0"
+ctor = "1.0.6"
+goblin = "0.10.5"
+iced-x86 = { version = "1.21.0", default-features = false, features = ["decoder"] }
 
 [target.'cfg(unix)'.dependencies]
 libc = "0.2.186"
@@ -32,5 +37,6 @@ members = [
 ]
 
 [profile.release]
+opt-level = 3
 codegen-units = 1
 lto = "fat"

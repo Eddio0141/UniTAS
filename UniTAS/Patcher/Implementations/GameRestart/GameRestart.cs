@@ -14,6 +14,7 @@ using UniTAS.Patcher.Services.UnityEvents;
 using UniTAS.Patcher.Services.UnityInfo;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Patcher.Services.VirtualEnvironment;
+using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Implementations.GameRestart;
 
@@ -83,6 +84,7 @@ public class GameRestart : IGameRestart
     public void SoftRestart(DateTime time)
     {
         if (_pendingRestart && !_pendingResumePausedExecution) return;
+        if (time < TimeUtils.Epoch) return;
 
         _coroutine.Start(SoftRestartCoroutine(time)).OnComplete += status =>
         {
@@ -105,13 +107,13 @@ public class GameRestart : IGameRestart
 
         var bench = Bench.Measure();
 
-// #if !UNIT_TESTS
-//         var elapsed = time.Subtract(DateTime.MinValue).Ticks;
-//         var secs = elapsed / 10000 / 1000; // ticks -> ms -> secs
-//         var nanos = (elapsed - secs * 1000 * 10000) * 100; // 1 tick is 100 nano secs
-//         
-//         UniTasRs.restart((ulong)secs, (uint)nanos);
-// #endif
+#if !UNIT_TESTS
+        var elapsed = (time - TimeUtils.Epoch).Ticks;
+        var secs = elapsed / 10000 / 1000; // ticks -> ms -> secs
+        var nanos = (elapsed - (secs * 1000 * 10000)) * 100; // 1 tick is 100 nano secs
+
+        UniTasRs.restart((ulong)secs, (uint)nanos);
+#endif
         OnPreGameRestart?.Invoke();
 
         _pendingRestart = true;

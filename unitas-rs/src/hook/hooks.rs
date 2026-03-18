@@ -6,6 +6,7 @@ pub mod libc;
 #[cfg(windows)]
 pub mod win32;
 
+pub mod mono;
 pub mod unity;
 
 thread_local! {
@@ -57,7 +58,10 @@ impl Drop for ReverseInvoke {
 /// # Note
 /// All it is doing is a [ReverseInvoke::new()] invoke assigned to a variable
 macro_rules! reverse_invoke {
-    () => {
-        let _ri = $crate::hook::hooks::ReverseInvoke::new();
-    };
+    ($content:expr) => {{
+        let ri = $crate::hook::hooks::ReverseInvoke::new();
+        let res = $content;
+        drop(ri);
+        res
+    }};
 }

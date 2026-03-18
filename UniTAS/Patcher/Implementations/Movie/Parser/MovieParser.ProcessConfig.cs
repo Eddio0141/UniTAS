@@ -5,6 +5,7 @@ using System.Globalization;
 using MoonSharp.Interpreter;
 using UniTAS.Patcher.Implementations.UnitySafeWrappers;
 using UniTAS.Patcher.Models.Movie;
+using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Implementations.Movie.Parser;
 
@@ -50,19 +51,19 @@ public partial class MovieParser
         switch (startTimeRaw.Type)
         {
             case DataType.String:
-            {
-                // culture invariant
-                if (!DateTime.TryParse(startTimeRaw.String, CultureInfo.InvariantCulture,
-                        DateTimeStyles.AdjustToUniversal,
-                        out startTime))
                 {
-                    startTime = default;
-                    movieLogger.LogWarning(
-                        $"{startTimeVariable} is invalid, using default time of {startTime.ToString(CultureInfo.InvariantCulture)}");
-                }
+                    // culture invariant
+                    if (!DateTime.TryParse(startTimeRaw.String, CultureInfo.InvariantCulture,
+                            DateTimeStyles.AdjustToUniversal,
+                            out startTime))
+                    {
+                        startTime = default;
+                        movieLogger.LogWarning(
+                            $"{startTimeVariable} is invalid, using default time of {startTime.ToString(CultureInfo.InvariantCulture)}");
+                    }
 
-                break;
-            }
+                    break;
+                }
             case DataType.Number:
                 // parse as ticks
                 startTime = new((long)startTimeRaw.Number);
@@ -72,6 +73,12 @@ public partial class MovieParser
                 movieLogger.LogWarning(
                     $"{startTimeVariable} is not defined, using default value of {startTime.ToString(CultureInfo.InvariantCulture)}");
                 break;
+        }
+
+        if (startTime < TimeUtils.Epoch)
+        {
+            movieLogger.LogWarning($"start time is less than {TimeUtils.Epoch}, time will be set to the lower bound");
+            startTime = TimeUtils.Epoch;
         }
 
         return startTime;

@@ -1,13 +1,16 @@
 use retour::static_detour;
-use windows_sys::Win32::{
-    Foundation::{BOOL, TRUE},
-    System::Performance::{QueryPerformanceCounter, QueryPerformanceFrequency},
+use windows_sys::{
+    Win32::{
+        Foundation::TRUE,
+        System::Performance::{QueryPerformanceCounter, QueryPerformanceFrequency},
+    },
+    core::BOOL,
 };
 
 use crate::{
     detour_setup_log_fail,
     hook::hooks::REVERSE_INVOKE,
-    state::{hardware::CPU_CLOCK_SPEED, os::time::TIME},
+    state::{hardware::CPU_CLOCK_SPEED, os::TIME},
 };
 
 static_detour! {
@@ -36,7 +39,7 @@ pub fn install_detours() {
                 return unsafe { QueryPerformanceCounter_detour.call(lpperformancecount) };
             }
             let lpperformancecount = unsafe { &mut *lpperformancecount };
-            let monotonic = TIME.lock().unwrap().monotonic();
+            let monotonic = TIME.lock().unwrap().get(0);
             let khz_clock = CPU_CLOCK_SPEED / 1000;
             *lpperformancecount = (monotonic.as_secs() * khz_clock
                 + monotonic.subsec_nanos() as u64 * (khz_clock / 1_000_000_000))

@@ -29,11 +29,11 @@ pub fn pattern(input: TokenStream) -> TokenStream {
 
     let mut found_comma = false;
     for input in input.by_ref() {
-        if let TokenTree::Punct(token) = &input {
-            if token.as_char() == ',' {
-                found_comma = true;
-                break;
-            }
+        if let TokenTree::Punct(token) = &input
+            && token.as_char() == ','
+        {
+            found_comma = true;
+            break;
         }
 
         builder.push_str(&input.to_string());

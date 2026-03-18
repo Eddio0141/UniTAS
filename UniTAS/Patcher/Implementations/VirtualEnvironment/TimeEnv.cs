@@ -1,4 +1,5 @@
 using System;
+using UniTAS.Patcher.External;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.SoftRestart;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents;
@@ -89,6 +90,7 @@ public class TimeEnv : ITimeEnv, IOnGameRestartResume, IOnSceneLoad
         {
             if (value <= 0f) value = DefaultFt;
             _timeWrap.CaptureFrameTime = value;
+            UniTasRs.set_frame_time(value);
         }
     }
 

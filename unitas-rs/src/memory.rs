@@ -1,25 +1,165 @@
+use core::slice;
 use std::{
     collections::HashMap,
+    env,
     ffi::{CStr, CString},
     io,
     ops::Range,
+    sync::{Arc, LazyLock, Mutex},
 };
 
+pub const PLAYER_MAIN_SYMBOL: &CStr = c"_Z10PlayerMainiPPc";
+
+pub const UNITY_PLAYER_MODULE: &CStr =
+    const_str::cstr!(const_str::format!("UnityPlayer{}", env::consts::DLL_SUFFIX));
+
+use iced_x86::{Decoder, DecoderOptions, Instruction};
+use pattern::Pattern;
+
+pub static SEARCH: LazyLock<Search> = LazyLock::new(Search::new);
+
+#[derive(Debug)]
+pub struct Search {
+    modules: MemoryMap,
+    symbol_lookup: Arc<Mutex<SymbolLookup>>,
+}
+
+impl Search {
+    pub fn new() -> Self {
+        let modules = MemoryMap::read_proc_maps().expect("couldn't read memory map");
+        Self {
+            modules,
+            symbol_lookup: Arc::new(Mutex::new(SymbolLookup::new())),
+        }
+    }
+
+    pub fn search<'a>(&'a self) -> SearchStep<'a> {
+        SearchStep {
+            search: self,
+            window: 0..(isize::MAX as usize),
+            memory: &[],
+            module: None,
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct SearchStep<'a> {
+    search: &'a Search,
+    window: Range<usize>,
+    memory: &'a [u8],
+    /// Last looked up module
+    module: Option<&'a CStr>,
+}
+
+impl<'a> SearchStep<'a> {
+    fn update_memory(&self) -> Self {
+        let mut ret = self.clone();
+        let mem_start = ret.window.start;
+        let mem_end = ret.window.end;
+        ret.memory = unsafe { slice::from_raw_parts(mem_start as *const u8, mem_end - mem_start) };
+        ret
+    }
+
+    pub fn set_start(&self, value: usize) -> Self {
+        let mut ret = self.clone();
+        ret.window.start = value;
+        ret
+    }
+
+    pub fn set_end(&self, value: usize) -> Self {
+        let mut ret = self.clone();
+        ret.window.end = value;
+        ret
+    }
+
+    pub fn start(&self) -> usize {
+        self.window.start
+    }
+
+    pub fn memory(&self) -> &'a [u8] {
+        self.update_memory().memory
+    }
+
+    pub fn module(&mut self, file_name: &'a CStr) -> Option<Self> {
+        let window = self.search.modules.find_by_filename(file_name)?;
+        let mut ret = self.clone();
+        ret.window = window;
+        ret.module = Some(file_name);
+        Some(ret)
+    }
+
+    pub fn exe_module(&self) -> Self {
+        let window = self.search.modules.find_exe();
+        let mut ret = self.clone();
+        ret.window = window;
+        // TODO: what to do with self.module?
+        ret
+    }
+
+    pub fn symbol(&self, symbol: &CStr) -> Option<Self> {
+        let file_name = self.module?;
+        let offset = self
+            .search
+            .symbol_lookup
+            .lock()
+            .unwrap()
+            .get_symbol_in_file(file_name, symbol)?;
+        let mut ret = self.clone();
+        ret.window.start = offset;
+        Some(ret)
+    }
+
+    pub fn pattern(&self, pattern: Pattern) -> Option<Self> {
+        let mut ret = self.update_memory();
+        let offset = pattern.matches(ret.memory)? + ret.window.start;
+        ret.window.start = offset;
+        Some(ret)
+    }
+
+    pub fn find_instruction<F: FnMut(Instruction) -> bool>(&self, mut search: F) -> Option<Self> {
+        let mut ret = self.update_memory();
+
+        let mut decoder = Decoder::with_ip(
+            usize::BITS,
+            ret.memory,
+            ret.window.start as u64,
+            DecoderOptions::NONE,
+        );
+
+        let mut instruction = Instruction::default();
+
+        while decoder.can_decode() {
+            decoder.decode_out(&mut instruction);
+
+            if search(instruction) {
+                ret.window.start = instruction.ip() as usize;
+                return Some(ret);
+            }
+        }
+
+        None
+    }
+}
+
 #[cfg(unix)]
-pub struct MemoryMap(Vec<MemoryMapEntry>);
+#[derive(Debug)]
+struct MemoryMap(Vec<MemoryMapEntry>);
 
 #[cfg(windows)]
-pub struct MemoryMap;
+#[derive(Debug)]
+struct MemoryMap;
 
 #[cfg(unix)]
+#[derive(Debug)]
 struct MemoryMapEntry {
-    pub path: std::path::PathBuf,
-    pub range: Range<usize>,
+    path: std::path::PathBuf,
+    range: Range<usize>,
 }
 
 impl MemoryMap {
     #[cfg(unix)]
-    pub fn read_proc_maps() -> io::Result<MemoryMap> {
+    fn read_proc_maps() -> io::Result<MemoryMap> {
         use std::{fs::File, io::Read, path::Path};
 
         let mut maps: Vec<MemoryMapEntry> = Vec::new();
@@ -75,12 +215,12 @@ impl MemoryMap {
     }
 
     #[cfg(windows)]
-    pub fn read_proc_maps() -> io::Result<MemoryMap> {
+    fn read_proc_maps() -> io::Result<MemoryMap> {
         Ok(MemoryMap)
     }
 
     #[cfg(unix)]
-    pub fn find_by_filename(&self, filename: &CStr) -> Option<Range<usize>> {
+    fn find_by_filename(&self, filename: &CStr) -> Option<Range<usize>> {
         let filename = filename.to_string_lossy();
         self.0.iter().find_map(|m_info| {
             if m_info
@@ -98,7 +238,7 @@ impl MemoryMap {
     }
 
     #[cfg(windows)]
-    pub fn find_by_filename(&self, filename: &CStr) -> Option<Range<usize>> {
+    fn find_by_filename(&self, filename: &CStr) -> Option<Range<usize>> {
         use windows_sys::Win32::System::{
             LibraryLoader::GetModuleHandleA,
             ProcessStatus::{GetModuleInformation, MODULEINFO},
@@ -135,7 +275,7 @@ impl MemoryMap {
     }
 
     #[cfg(unix)]
-    pub fn find_exe(&self) -> Range<usize> {
+    fn find_exe(&self) -> Range<usize> {
         use std::env;
 
         let exe_path = env::current_exe().expect("failed to get current executable path");
@@ -151,7 +291,7 @@ impl MemoryMap {
     }
 
     #[cfg(windows)]
-    pub fn find_exe(&self) -> Range<usize> {
+    fn find_exe(&self) -> Range<usize> {
         use std::ptr;
 
         use windows_sys::Win32::System::{
@@ -185,7 +325,8 @@ impl MemoryMap {
     }
 }
 
-pub struct SymbolLookup {
+#[derive(Debug)]
+struct SymbolLookup {
     #[cfg(unix)]
     handles: HashMap<CString, (*mut libc::c_void, HashMap<CString, usize>)>,
     // value contains the handle, and HashMap for symbol and its offset
@@ -199,8 +340,10 @@ pub struct SymbolLookup {
     >,
 }
 
+unsafe impl Send for SymbolLookup {}
+
 impl SymbolLookup {
-    pub fn new() -> Self {
+    fn new() -> Self {
         Self {
             handles: HashMap::new(),
         }
@@ -208,7 +351,7 @@ impl SymbolLookup {
 
     #[cfg(unix)]
     // TODO: stop trying to redo failed operations
-    pub fn get_symbol_in_file(&mut self, file_name: &CStr, symbol: &CStr) -> Option<usize> {
+    fn get_symbol_in_file(&mut self, file_name: &CStr, symbol: &CStr) -> Option<usize> {
         use libc::*;
         use log::debug;
 
@@ -243,7 +386,7 @@ impl SymbolLookup {
 
     #[cfg(windows)]
     // TODO: stop trying to redo failed operations
-    pub fn get_symbol_in_file(&mut self, file_name: &CStr, symbol: &CStr) -> Option<usize> {
+    fn get_symbol_in_file(&mut self, file_name: &CStr, symbol: &CStr) -> Option<usize> {
         use log::debug;
         use windows_sys::Win32::System::LibraryLoader::{GetModuleHandleA, GetProcAddress};
 

@@ -272,6 +272,8 @@ public class UnityEvents : IUpdateEvents, IMonoBehEventInvoker
         if (_updated || (monoBehCall && NotUnityCalled())) return;
         _updated = true;
 
+        UniTasRs.update_actual();
+
 #if TRACE
         StaticLogger.Trace(
             $"InvokeUpdate, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)} ({Time.frameCount}), " +

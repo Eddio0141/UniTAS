@@ -35,12 +35,10 @@ impl Pattern {
 
         'data_loop: loop {
             // advance data slice to head
-            data = match data.iter().position(|&f| f == head) {
-                Some(index) => {
-                    data_offset += index;
-                    &data[index..]
-                }
-                None => return None,
+            data = {
+                let index = data.iter().position(|&f| f == head)?;
+                data_offset += index;
+                &data[index..]
             };
 
             // not enough bytes?
@@ -50,12 +48,12 @@ impl Pattern {
 
             // check if pattern matches
             for (i, pattern) in self.pattern[1..].iter().enumerate() {
-                if let Some(pattern) = pattern {
-                    if data[i + 1] != *pattern {
-                        data_offset += 1;
-                        data = &data[1..];
-                        continue 'data_loop;
-                    }
+                if let Some(pattern) = pattern
+                    && data[i + 1] != *pattern
+                {
+                    data_offset += 1;
+                    data = &data[1..];
+                    continue 'data_loop;
                 }
             }
 

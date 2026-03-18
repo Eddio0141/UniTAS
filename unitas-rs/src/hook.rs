@@ -1,28 +1,35 @@
-use installer::Hook;
+use log::info;
+
+use crate::memory;
 
 pub mod hooks;
-mod installer;
 
-pub use installer::install;
+pub fn install() {
+    let search = &memory::SEARCH;
 
-const HOOKS: &[Hook] = &[hooks::unity::player_loop::last_update_hook()];
+    info!("installing hooks");
 
-fn install_detours() {
-    /*
-    #[cfg(unix)]
-    hooks::libc::install_detours();
-    #[cfg(windows)]
-    hooks::win32::install_detours();
-    */
+    info!("last_update_hook");
+    hooks::unity::player_loop::last_update_hook(search);
+
+    // #[cfg(windows)]
+    // hooks::win32::time::install_detours();
+
+    info!("installed hooks");
 }
 
 #[macro_export]
 macro_rules! detour_setup_log_fail {
-    ($detour: expr, $before: expr, $after: expr) => {
+    ($detour: expr, $before: expr, $signiture: ty, $after: expr) => {
         let detour = &$detour;
         let before = $before;
         let after = $after;
-        if let Err(err) = unsafe { detour.initialize(before, after) } {
+        if let Err(err) = unsafe {
+            detour.initialize(
+                std::mem::transmute::<*const (), $signiture>(before as *const ()),
+                after,
+            )
+        } {
             log::warn!(
                 "detour: failed to init `{}`, reason: {err:?}",
                 stringify!($detour)

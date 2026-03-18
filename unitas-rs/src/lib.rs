@@ -6,25 +6,24 @@ use std::{
 };
 
 use backtrace::Backtrace;
+use ctor::ctor;
 use log::{LevelFilter, info};
 use logger::DiskLogger;
 
-mod error;
 mod hook;
 pub mod info;
 mod logger;
 mod memory;
 mod state;
 mod unitas_exports;
+mod utils;
 
+#[cfg(not(test))]
+#[ctor(unsafe)]
 fn init() {
     init_logger();
 
     info!("initilising unitas-rs");
-
-    info::unity::MAIN_THREAD_ID
-        .set(thread::current().id())
-        .unwrap();
 
     hook::install();
 
@@ -35,7 +34,7 @@ static LOGGER: OnceLock<DiskLogger> = OnceLock::new();
 
 fn init_logger() {
     // TODO: Debug for now
-    let default_lvl = LevelFilter::Debug;
+    let default_lvl = LevelFilter::Trace;
     let max_level = match env::var("UNITAS_LOG") {
         Ok(lvl) => lvl.parse::<LevelFilter>().unwrap_or(default_lvl),
         Err(_) => default_lvl,
