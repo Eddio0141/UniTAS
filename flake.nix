@@ -61,6 +61,7 @@
               unzip
               curl
               nushell
+              ffmpeg
             ];
           };
         };

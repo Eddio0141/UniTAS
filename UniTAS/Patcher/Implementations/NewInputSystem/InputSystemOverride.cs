@@ -111,7 +111,7 @@ public class InputSystemOverride : IInputSystemTrackerUpdate
         _logger.LogDebug($"unsubscribing {_onBeforeUpdateEvents.Count} onBeforeUpdate events");
         foreach (var beforeUpdate in _onBeforeUpdateEvents)
         {
-            _logger.LogDebug($"thingy: {beforeUpdate.Method.DeclaringType?.FullName}.{beforeUpdate.Method.Name}");
+            _logger.LogDebug($"event: {beforeUpdate.Method.DeclaringType?.FullName}.{beforeUpdate.Method.Name}");
             InputSystem.onBeforeUpdate -= beforeUpdate;
         }
     }

@@ -1,0 +1,33 @@
+ManifestFileVersion: 0
+UnityVersion: 6000.0.44f1
+CRC: 2016053830
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: a8e2b6587eebe7fd2377deb5eeaf52bf
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: d2ea29fc5225b3ab4553a4a9d4104d1f
+  IncrementalBuildHash:
+    serializedVersion: 2
+    Hash: ac9e242bdfed27668e0238a0d45be4da
+HashAppended: 0
+ClassTypes:
+- Class: 21
+  Script: {instanceID: 0}
+- Class: 28
+  Script: {instanceID: 0}
+- Class: 48
+  Script: {instanceID: 0}
+- Class: 89
+  Script: {instanceID: 0}
+- Class: 104
+  Script: {instanceID: 0}
+- Class: 157
+  Script: {instanceID: 0}
+- Class: 196
+  Script: {instanceID: 0}
+SerializeReferenceClassIdentifiers: []
+Assets:
+- Assets/TestFramework/AssetBundles/assets 11/scene.unity
+Dependencies: []

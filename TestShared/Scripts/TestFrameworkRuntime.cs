@@ -1,16 +1,16 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.RegularExpressions;
+using Extensions;
 using JetBrains.Annotations;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
-[SuppressMessage("ReSharper", "UseStringInterpolation")]
-[SuppressMessage("ReSharper", "ArrangeObjectCreationWhenTypeEvident")]
 [DefaultExecutionOrder(0)]
 public class TestFrameworkRuntime : MonoBehaviour
 {
@@ -20,6 +20,7 @@ public class TestFrameworkRuntime : MonoBehaviour
     public const string TestingScenePath = AssetPath + "/Scenes/general.unity";
     public const string ResourcesPath = AssetPath + "/Resources";
     public const string AssetBundlePath = AssetPath + "/AssetBundles";
+    public const string BuildPath = "build";
 
     private static TestFrameworkRuntime _instance;
     private readonly List<Result> _generalTestResults = new List<Result>();
@@ -28,20 +29,25 @@ public class TestFrameworkRuntime : MonoBehaviour
     private Test[] _generalTests;
     private Test[] _eventTests;
     private (MovieTestAttribute, Test[])[] _movieTests;
-    private List<Test> _initTestsAwake;
+    private Test[] _initTestsAwake;
+
+    public static TestFrameworkRuntime Instance => _instance;
 
 #pragma warning disable CS0414 // Field is assigned but its value is never used
     private static bool _generalTestsDone;
 #pragma warning restore CS0414 // Field is assigned but its value is never used
-
-    private bool _initTestsAwakeRan;
 
     /// <summary>
     /// Movie test class to run by name, setting this flag will make certain events check / start running movie tests
     /// </summary>
     private static string _movieTestClassToRun;
 
-    private bool _movieTestStarted;
+    /// <summary>
+    /// Init test to run by name
+    /// </summary>
+    private static string _initTestMethodToRun;
+
+    private bool _execTestRun;
 
     private void Awake()
     {
@@ -101,17 +107,30 @@ public class TestFrameworkRuntime : MonoBehaviour
         _generalTests = generalTests.ToArray();
         _eventTests = eventTests.ToArray();
         _movieTests = movieTests.ToArray();
-        _initTestsAwake = initTestsAwake;
+        _initTestsAwake = initTestsAwake.ToArray();
         Debug.Log($"Discovered {_generalTests.Length} general tests" +
                   $", {_eventTests.Length} event tests" +
                   $", {_movieTests.Length} movie tests" +
-                  $", {_initTestsAwake.Count} init tests (Awake)");
+                  $", {_initTestsAwake.Length} init tests (Awake)");
+    }
+
+    private static Test[] AllInitTests()
+    {
+        _instance.DiscoverTestsIfNot();
+        return _instance._initTestsAwake;
     }
 
     public static IEnumerable<MethodInfo> GetTestFuncs(Type type)
     {
         return type.GetMethods(BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public |
                                BindingFlags.NonPublic).Where(m => m.GetCustomAttributes<TestAttribute>().Any());
+    }
+
+    public static void RunTestsEditor()
+    {
+        if (!InstanceSetCheckAndLog()) return;
+        _instance.DiscoverTestsIfNot();
+        _instance.StartCoroutine(_instance.RunAllTests());
     }
 
     public static void RunGeneralTests()
@@ -147,26 +166,56 @@ public class TestFrameworkRuntime : MonoBehaviour
 
         foreach (var test in _generalTests)
         {
+            yield return TestSafetyDelay();
             yield return RunTest(test, _generalTestResults);
             yield return TestSafetyDelay();
+            yield return TestCleanup();
         }
 
-        foreach (var test in _eventTests)
-        {
-            _pendingEventTests.Enqueue(test);
-        }
-
-        EventTestStart();
-    }
-
-    private void GeneralTestsFinish()
-    {
         _generalTestsDone = true;
         Debug.Log("General tests finished");
-        foreach (var result in _generalTestResults)
+    }
+
+    private IEnumerable<Test> AllTests => _movieTests.SelectMany(t => t.Item2).Concat(_generalTests).Concat(_eventTests).Concat(_initTestsAwake);
+
+    /// <summary>
+    /// Only used internally for editor
+    /// </summary>
+    public IEnumerator RunAllTests()
+    {
+        // dummy result list
+        var results = new List<Result>();
+        foreach (var test in AllTests)
         {
-            Debug.Log(result);
+            yield return TestSafetyDelay();
+            yield return RunTest(test, results);
+            yield return TestSafetyDelay();
+            yield return TestCleanup();
         }
+
+        Debug.Log("All tests finished");
+    }
+
+    /// <summary>
+    /// Only used internally for editor
+    /// </summary>
+    public static IEnumerator RunTestByName(string name)
+    {
+        _instance.DiscoverTestsIfNot();
+
+        var test = _instance.AllTests.FirstOrDefault(t => t.Name.Like(name));
+        if (test.Name == null)
+        {
+            Debug.LogWarning("couldn't find test");
+            yield break;
+        }
+
+        // if (tests.MoveNext())
+        // {
+        //     Debug.LogWarning("more than 1 match with test");
+        // }
+
+        yield return RunTest(test, new List<Result>());
     }
 
     private static IEnumerator RunTest(Test test, List<Result> results)
@@ -177,6 +226,7 @@ public class TestFrameworkRuntime : MonoBehaviour
         {
             if (executeIter.Current is Result result)
             {
+                Debug.Log(result);
                 results.Add(result);
                 break;
             }
@@ -193,50 +243,81 @@ public class TestFrameworkRuntime : MonoBehaviour
         }
     }
 
-    private void EventTestStart()
+    private static IEnumerator TestCleanup()
     {
-        if (_pendingEventTests.Count == 0)
+        Debug.Log("cleaning up...");
+
+        // restore default scene
+        SceneManager.LoadScene(0);
+        yield return null;
+
+        var sceneCount = SceneManager.sceneCount;
+        if (sceneCount != 1)
         {
-            GeneralTestsFinish();
-            return;
+            throw new InvalidProgramException($"cleanup failure, expected 1 scene to be ready but there are `{sceneCount}` scenes");
         }
 
-        // trigger Awake / Start event
-        _currentEventTest = _pendingEventTests.Dequeue();
-        Helper.Scene.LoadScene(TestingScenePath);
+        AssetBundle.UnloadAllAssetBundles(true);
+        yield return Resources.UnloadUnusedAssets();
+
+        Debug.Log("done cleanup");
     }
 
-    private readonly Queue<Test> _pendingEventTests = new Queue<Test>();
     private Test? _currentEventTest;
-
-    /// <summary>
-    /// Runs tests as init tests, meaning the tests run in parallel
-    /// </summary>
-    private IEnumerator RunInitTest(Test test)
-    {
-        yield return RunTest(test, _initTestResults);
-        _initTestsAwake.Remove(test);
-
-        InitTestsFinishCheckAndLog();
-    }
 
     public static IEnumerator AwakeTestHook()
     {
         if (!InstanceSetCheckAndLog()) yield break;
 
         yield return _instance.MovieTestCheckAndRun(MovieTestTiming.Awake);
-        yield return _instance.InitTestAwakeCheckAndRun();
-        yield return _instance.EventHookInternal(EventTiming.Awake);
+        yield return _instance.InitTestCheckAndRun(InitTestTiming.Awake);
+    }
+
+    private void CheckExecTestFlag()
+    {
+        const string checkMsg = "check if you are trying to run init test / movie test multiple times without restart";
+
+        if (_execTestRun)
+        {
+            throw new InvalidOperationException($"Execute test is already running, {checkMsg}");
+        }
+
+        if (_initTestMethodToRun != null && _movieTestClassToRun != null)
+        {
+            throw new InvalidOperationException($"Execute test flag is conflicting, {checkMsg}");
+        }
+    }
+
+    private IEnumerator InitTestCheckAndRun(InitTestTiming timing)
+    {
+        if (_initTestMethodToRun == null) yield break;
+        CheckExecTestFlag();
+        // check format
+        Debug.Log($"Init test is set to be executed: `{_initTestMethodToRun}`");
+        DiscoverTestsIfNot();
+        var testIdx = Array.FindIndex(_initTestsAwake, t => t.InitTiming == timing && t.Name == _initTestMethodToRun);
+        if (testIdx < 0)
+        {
+            throw new InvalidOperationException("Init test not found");
+        }
+        _execTestRun = true;
+        var test = _initTestsAwake[testIdx];
+
+        yield return RunTest(test, _initTestResults);
     }
 
     private IEnumerator MovieTestCheckAndRun(MovieTestTiming movieTestTiming)
     {
-        if (_movieTestClassToRun == null || _movieTestStarted) yield break;
+        if (_movieTestClassToRun == null) yield break;
+        CheckExecTestFlag();
         Debug.Log($"Movie test is set to be executed: `{_movieTestClassToRun}`");
         DiscoverTestsIfNot();
         var testPairIdx = Array.FindIndex(_movieTests, t => t.Item1.Timing == movieTestTiming);
-        if (testPairIdx < 0) yield break;
-        _movieTestStarted = true;
+        if (testPairIdx < 0)
+        {
+            throw new InvalidOperationException("Movie test not found");
+        }
+        _execTestRun = true;
         var testPair = _movieTests[testPairIdx];
         var tests = testPair.Item2.Where(t => t.TypeName == _movieTestClassToRun).ToArray();
 
@@ -247,42 +328,6 @@ public class TestFrameworkRuntime : MonoBehaviour
         }
     }
 
-    private IEnumerator InitTestAwakeCheckAndRun()
-    {
-        if (_initTestsAwakeRan) yield break;
-        _initTestsAwakeRan = true;
-        DiscoverTestsIfNot();
-        foreach (var test in _initTestsAwake)
-        {
-            StartCoroutine(RunInitTest(test));
-        }
-    }
-
-    private bool _initTestsFinishLogged;
-
-    private void InitTestsFinishCheckAndLog()
-    {
-        if (_initTestsAwake.Count > 0 || _initTestsFinishLogged) return;
-        _initTestsFinishLogged = true;
-
-        Debug.Log("Init tests finished");
-        foreach (var result in _initTestResults)
-        {
-            Debug.Log(result);
-        }
-    }
-
-    private IEnumerator EventHookInternal(EventTiming timing)
-    {
-        if (!_currentEventTest.HasValue || _currentEventTest.Value.EventTiming != timing)
-            yield break;
-        yield return RunTest(_currentEventTest.Value, _generalTestResults);
-        yield return TestSafetyDelay();
-        EventTestStart();
-    }
-
-    [SuppressMessage("ReSharper", "MemberCanBePrivate.Local")]
-    [SuppressMessage("ReSharper", "StructCanBeMadeReadOnly")]
     private struct Result
     {
         public Result(string name, string message, bool success)
@@ -431,79 +476,47 @@ public class TestFrameworkRuntime : MonoBehaviour
     }
 }
 
-[SuppressMessage("ReSharper", "UseStringInterpolation")]
 public static class Assert
 {
-    public static void Log(string name, LogType expectedType, string expectedLog, string message = null,
-        [CallerFilePath] string file = null,
-        [CallerLineNumber] int line = 0)
+    /// <summary>
+    /// <para>Asserts unity log.</para>
+    /// <para>
+    /// It is recommended you sandwich the function expected to produce the log with the following function
+    /// <see cref="LogRecieved(string, string, int)"/>
+    /// </para>
+    /// </summary>
+    public static void LogTrackNext()
     {
-        _logHookStore = new LogHookStore(name, expectedType, expectedLog, message, file, line);
-        Application.logMessageReceived += LogHook;
+        Application.logMessageReceivedThreaded += LogHook;
+    }
+
+    public static void LogRecieved(LogType expectedType, string expectedLog = null, string message = null, [CallerFilePath] string file = null, [CallerLineNumber] int line = 0)
+    {
+        if (_logHookStore.Condition == null)
+        {
+            _logHookStore = default;
+            throw new AssertionException("assertion failed `no log recieved`{0}", message, file, line);
+        }
+        Equal(_logHookStore.Type, expectedType, message, file, line);
+        if (expectedLog != null)
+        {
+            Equal(_logHookStore.Condition, expectedLog, message, file, line);
+        }
+        _logHookStore = default;
     }
 
     private static LogHookStore _logHookStore;
 
     private static void LogHook(string condition, string _, LogType type)
     {
-        Application.logMessageReceived -= LogHook;
-
-        var name = _logHookStore.Name;
-        var file = _logHookStore.File;
-        var line = _logHookStore.Line;
-        Result result;
-        if (_logHookStore.ExpectedType == type && _logHookStore.ExpectedLog == condition)
-        {
-            result = new Result(name, null, true);
-        }
-        else
-        {
-            var fullMsg = new StringBuilder();
-            fullMsg.AppendLine("assertion failed `expected_log` == `actual_log` && `expected_msg` == `actual_msg`{0}");
-            if (_logHookStore.ExpectedType != type)
-            {
-                fullMsg.AppendLine(string.Format(" expected_log: {0}", _logHookStore.ExpectedType));
-                fullMsg.AppendLine(string.Format("   actual_log: {0}", type));
-            }
-
-            if (_logHookStore.ExpectedLog != condition)
-            {
-                fullMsg.AppendLine(string.Format(" expected_msg: {0}", ShowHiddenChars(_logHookStore.ExpectedLog)));
-                fullMsg.AppendLine(string.Format("   actual_msg: {0}", ShowHiddenChars(condition)));
-            }
-
-            var fullMsgStr = AssertMsg(name, fullMsg.ToString(), _logHookStore.Message, file, line);
-            result = new Result(name, fullMsgStr, false);
-        }
-
-        LogAssert(name, file, line, result);
-        TestResults.Add(result);
+        Application.logMessageReceivedThreaded -= LogHook;
+        _logHookStore = new LogHookStore(condition, type);
     }
 
     private static string ShowHiddenChars(string str)
     {
         if (str == null) return null;
         return str.Replace("\n", "\\n").Replace("\r", "\\r").Replace("\t", "\\t");
-    }
-
-    public static void Null<T>(string name, T actual, string message = null,
-        [CallerFilePath] string file = null,
-        [CallerLineNumber] int line = 0)
-        where T : class
-    {
-        Result result;
-        if (actual == null)
-            result = new Result(name, null, true);
-        else
-        {
-            var fullMsg = AssertMsg(name, string.Format("assertion failed `actual` == null{{0}}\n actual: {0}", actual),
-                message, file,
-                line);
-            result = new Result(name, fullMsg, false);
-        }
-
-        LogAssert(name, file, line, result);
-        TestResults.Add(result);
     }
 
     public static void Null<T>(T actual, string message = null,
@@ -525,47 +538,12 @@ public static class Assert
         throw new AssertionException("assertion failed `actual` != null{0}", message, file, line);
     }
 
-    public static void NotNull<T>(string name, T actual, string message = null,
-        [CallerFilePath] string file = null,
-        [CallerLineNumber] int line = 0)
-        where T : class
-    {
-        Result result;
-        if (actual == null)
-        {
-            var fullMsg = AssertMsg(name, "assertion failed `actual` != null{0}", message, file, line);
-            result = new Result(name, fullMsg, false);
-        }
-        else
-            result = new Result(name, null, true);
-
-        LogAssert(name, file, line, result);
-        TestResults.Add(result);
-    }
-
     public static void True(bool success, string message = null,
         [CallerFilePath] string file = null,
         [CallerLineNumber] int line = 0)
     {
         if (success) return;
         throw new AssertionException("assertion failed{0}", message, file, line);
-    }
-
-    public static void True(string name, bool success, string message = null,
-        [CallerFilePath] string file = null,
-        [CallerLineNumber] int line = 0)
-    {
-        Result result;
-        if (success)
-            result = new Result(name, null, true);
-        else
-        {
-            var fullMsg = AssertMsg(name, "assertion failed{0}", message, file, line);
-            result = new Result(name, fullMsg, false);
-        }
-
-        LogAssert(name, file, line, result);
-        TestResults.Add(result);
     }
 
     public static void False(bool success, string message = null, [CallerFilePath] string file = null,
@@ -575,184 +553,86 @@ public static class Assert
         throw new AssertionException("assertion failed{0}", message, file, line);
     }
 
-    public static void False(string name, bool success, string message = null,
-        [CallerFilePath] string file = null,
-        [CallerLineNumber] int line = 0)
-    {
-        Result result;
-        if (success)
-        {
-            var fullMsg = AssertMsg(name, "assertion failed{0}", message, file, line);
-            result = new Result(name, fullMsg, false);
-        }
-        else
-            result = new Result(name, null, true);
-
-        LogAssert(name, file, line, result);
-        TestResults.Add(result);
-    }
-
-    public static void NotThrows(string name, Action action, string message = null,
-        [CallerFilePath] string file = null, [CallerLineNumber] int line = 0)
-    {
-        Result result;
-        try
-        {
-            action();
-            result = new Result(name, null, true);
-        }
-        catch (Exception e)
-        {
-            var fullMsg = AssertMsg(name,
-                string.Format("assertion failed `expected` no throw{{0}}\n actual: {0}: {1}", e.GetType().FullName,
-                    e.Message), message,
-                file, line);
-            result = new Result(name, fullMsg, false);
-        }
-
-        LogAssert(name, file, line, result);
-        TestResults.Add(result);
-    }
-
-    public static void Throws<T>(string name, T expected, Action action, string message = null,
+    public static void Throws<T>(T expected, Action action, string message = null,
         [CallerFilePath] string file = null, [CallerLineNumber] int line = 0)
         where
         T : Exception
     {
-        Result result;
         try
         {
             action();
-            var fullMsg = AssertMsg(name,
-                string.Format("assertion failed `expected` throws{{0}}\n expected: {0}: {1}",
-                    expected.GetType().FullName, expected.Message),
-                message, file, line);
-            result = new Result(name, fullMsg, false);
+            var msg = new StringBuilder();
+            msg.AppendLine("assertion failed throw `expected`{0}");
+            msg.AppendFormat(" expected: {0}: {1}", expected.GetType().FullName, expected.Message);
+            throw new AssertionException(msg.ToString(), message, file, line);
         }
-        catch (Exception e)
+        catch (Exception e) when (e is not AssertionException)
         {
             if (e.GetType() == expected.GetType() && e.Message == expected.Message)
-                result = new Result(name, null, true);
-            else
-            {
-                var fullMsg = AssertMsg(name,
-                    string.Format("assertion failed `expected` throws{{0}}\n expected: {0}: {1}\n   actual: {2}: {3}",
-                        expected.GetType().FullName, expected.Message, e.GetType().FullName, e.Message),
-                    message, file, line);
-                result = new Result(name, fullMsg, false);
-            }
-        }
+                return;
 
-        LogAssert(name, file, line, result);
-        TestResults.Add(result);
+            var msg = new StringBuilder();
+            msg.AppendLine("assertion failed `expected` == `actual`{0}");
+            msg.AppendFormat(" expected: {0}: {1}", expected.GetType().FullName, expected.Message);
+            msg.AppendLine();
+            msg.AppendFormat("   actual: {0}: {1}", e.GetType().FullName, e.Message);
+            throw new AssertionException(msg.ToString(), message, file, line);
+        }
     }
 
-    public static void NotEqual<T>(string name, T expected, T actual, string message = null,
+    public static void Equal(Vector3 left, Vector3 right, float precision, string message = null,
         [CallerFilePath] string file = null,
         [CallerLineNumber] int line = 0)
     {
-        NotEqualBase(name, expected, actual, Equals(expected, actual), file, line, message);
+
+        var diff = new Vector3(Mathf.Abs(left.x) - Mathf.Abs(right.x), Mathf.Abs(left.y) - Mathf.Abs(right.y), Mathf.Abs(left.z) - Mathf.Abs(right.z));
+        var result = diff.x <= precision && diff.y <= precision && diff.z <= precision;
+        EqualBase(result, left, right, file, line, message, true);
     }
 
-    public static void Equal<T>(T expected, T actual, string message = null,
+    public static void Equal<T>(T left, T right, string message = null,
         [CallerFilePath] string file = null,
         [CallerLineNumber] int line = 0)
     {
-        EqualBase(expected, actual, Equals(expected, actual), file, line, message);
+        EqualBase(left, right, file, line, message, true);
     }
 
-    public static void Equal<T>(string name, T expected, T actual, string message = null,
+    public static void NotEqual<T>(T left, T right, string message = null,
         [CallerFilePath] string file = null,
         [CallerLineNumber] int line = 0)
     {
-        EqualBase(name, expected, actual, Equals(expected, actual), file, line, message);
+        EqualBase(left, right, file, line, message, false);
     }
 
-    public static void Equal(string name, double expected, double actual, double tolerance, string message = null,
-        [CallerFilePath] string file = "", [CallerLineNumber] int line = 0)
+    private static void EqualBase<T>(T left, T right, string file, int line, string message, bool equal)
     {
-        EqualBase(name, expected, actual, Math.Abs(expected - actual) < tolerance, file, line, message);
+        EqualBase(Equals(left, right), left, right, file, line, message, equal);
     }
 
-    private static void NotEqualBase<T>(string name, T expected, T actual, bool success, string file, int line,
-        string message = null)
+    private static void EqualBase<T>(bool result, T left, T right, string file, int line, string message, bool equal)
     {
-        Result result;
-        if (success)
-        {
-            var fullMsg = AssertMsg(name,
-                string.Format("assertion failed `expected` != `actual`{{0}}\n expected: {0}\n   actual: {1}", expected,
-                    actual), message,
-                file,
-                line);
-            result = new Result(name, fullMsg, false);
-        }
-        else
-        {
-            result = new Result(name, null, true);
-        }
-
-        LogAssert(name, file, line, result);
-        TestResults.Add(result);
-    }
-
-    private static void EqualBase<T>(T expected, T actual, bool success, string file, int line,
-        string message = null)
-    {
-        if (success) return;
+        if (result == equal) return;
         var assertMsg = new StringBuilder();
-        assertMsg.AppendLine("assertion failed `expected` == `actual`{0}");
-        if (typeof(T) == typeof(string) && expected != null && actual != null)
+        assertMsg.AppendFormat("assertion failed `left` {0}= `right`{{0}}", equal ? "=" : "!");
+        assertMsg.AppendLine();
+        if (typeof(T) == typeof(string) && left != null && right != null)
         {
-            var sExpected = (string)(object)expected;
-            var sActual = (string)(object)actual;
-            sExpected = ShowHiddenChars(sExpected);
-            sActual = ShowHiddenChars(sActual);
-            assertMsg.AppendLine(string.Format(" expected: {0}", sExpected));
-            assertMsg.AppendLine(string.Format("   actual: {0}", sActual));
+            var sLeft = (string)(object)left;
+            var sRight = (string)(object)right;
+            sLeft = ShowHiddenChars(sLeft);
+            sRight = ShowHiddenChars(sRight);
+            assertMsg.AppendFormat(" left: {0}", sLeft).AppendLine();
+            assertMsg.AppendLine();
+            assertMsg.AppendFormat("   right: {0}", sRight).AppendLine();
         }
         else
         {
-            assertMsg.AppendLine(string.Format(" expected: {0}", expected));
-            assertMsg.AppendLine(string.Format("   actual: {0}", actual));
+            assertMsg.AppendFormat(" left: {0}", left).AppendLine();
+            assertMsg.AppendLine();
+            assertMsg.AppendFormat("   right: {0}", right).AppendLine();
         }
 
         throw new AssertionException(assertMsg.ToString(), message, file, line);
-    }
-
-    private static void EqualBase<T>(string name, T expected, T actual, bool success, string file, int line,
-        string message = null)
-    {
-        Result result;
-        if (success)
-        {
-            result = new Result(name, null, true);
-        }
-        else
-        {
-            var assertMsg = new StringBuilder();
-            assertMsg.AppendLine("assertion failed `expected` == `actual`{0}");
-            if (typeof(T) == typeof(string) && expected != null && actual != null)
-            {
-                var sExpected = (string)(object)expected;
-                var sActual = (string)(object)actual;
-                sExpected = ShowHiddenChars(sExpected);
-                sActual = ShowHiddenChars(sActual);
-                assertMsg.AppendLine(string.Format(" expected: {0}", sExpected));
-                assertMsg.AppendLine(string.Format("   actual: {0}", sActual));
-            }
-            else
-            {
-                assertMsg.AppendLine(string.Format(" expected: {0}", expected));
-                assertMsg.AppendLine(string.Format("   actual: {0}", actual));
-            }
-
-            var fullMsg = AssertMsg(name, assertMsg.ToString(), message, file, line);
-            result = new Result(name, fullMsg, false);
-        }
-
-        LogAssert(name, file, line, result);
-        TestResults.Add(result);
     }
 
     private static string AssertMsg(string name, string assertMsg, string userMsg, string file, int line)
@@ -761,18 +641,9 @@ public static class Assert
         return string.Format("test {0} failed at {1}:{2}:\n", name, file, line) + string.Format(assertMsg, userMsg);
     }
 
-    private static void LogAssert(string name, string file, int line, Result result)
-    {
-        Debug.Log(string.Format("Assertion `{0}` at {1}:{2}, {3}", name, file, line,
-            result.Success ? "success" : "failure"));
-    }
-
     private static readonly List<Result> TestResults = new List<Result>();
-#pragma warning disable CS1691 CS1692 CS0414 CS1696 // Field is assigned but its value is never used
     private static bool _testsDone;
-#pragma warning restore CS1691 CS1692 CS0414 CS1696 // Field is assigned but its value is never used
 
-    [SuppressMessage("ReSharper", "UnusedMember.Local")]
     private static void Reset()
     {
         _testsDone = false;
@@ -789,8 +660,6 @@ public static class Assert
         }
     }
 
-    [SuppressMessage("ReSharper", "MemberCanBePrivate.Local")]
-    [SuppressMessage("ReSharper", "StructCanBeMadeReadOnly")]
     private struct Result
     {
         public Result(string name, string message, bool success)
@@ -810,30 +679,19 @@ public static class Assert
         }
     }
 
-    [SuppressMessage("ReSharper", "StructCanBeMadeReadOnly")]
     private struct LogHookStore
     {
-        public readonly string Name;
-        public readonly LogType ExpectedType;
-        public readonly string ExpectedLog;
-        public readonly string Message;
-        public readonly string File;
-        public readonly int Line;
+        public readonly LogType Type;
+        public readonly string Condition;
 
-        public LogHookStore(string name, LogType expectedType, string expectedLog, string message, string file,
-            int line)
+        public LogHookStore(string condition, LogType type)
         {
-            Name = name;
-            ExpectedType = expectedType;
-            ExpectedLog = expectedLog;
-            Message = message;
-            File = file;
-            Line = line;
+            Condition = condition;
+            Type = type;
         }
     }
 }
 
-[SuppressMessage("ReSharper", "UseStringInterpolation")]
 public class AssertionException : Exception
 {
     public AssertionException(string assertMsg, string userMsg, string file, int line) : base(AssertMsg(assertMsg,
@@ -869,22 +727,6 @@ public class UnityYield : TestYield
     }
 }
 
-public class SceneSwitchYield : TestYield
-{
-    private readonly string _scenePath;
-
-    public SceneSwitchYield(string scenePath)
-    {
-        _scenePath = scenePath;
-    }
-
-    public override IEnumerator Operation()
-    {
-        Helper.Scene.LoadScene(_scenePath);
-        yield break;
-    }
-}
-
 // test attributes
 [AttributeUsage(AttributeTargets.Method)]
 [MeansImplicitUse]
@@ -913,7 +755,6 @@ public class TestAttribute : Attribute
 
 public enum EventTiming
 {
-    Awake
 }
 
 [AttributeUsage(AttributeTargets.Class)]
@@ -951,6 +792,10 @@ public class GameObjectAsset : ITestAsset
 {
 }
 
+public class SceneAsset : ITestAsset
+{
+}
+
 [AttributeUsage(AttributeTargets.Field)]
 public abstract class TestInjectAttribute : Attribute
 {
@@ -972,6 +817,15 @@ public class TestInjectSceneAttribute : TestInjectAttribute
 /// </summary>
 public class TestInjectPrefabAttribute : TestInjectAttribute
 {
+    /// <summary>
+    /// <param name="assetProperty">Name of the property that returns <see cref="ITestAsset"/> for this resource</param>
+    /// </summary>
+    public TestInjectPrefabAttribute(string assetProperty)
+    {
+        AssetProperty = assetProperty;
+    }
+
+    public string AssetProperty { get; }
 }
 
 /// <summary>
@@ -981,7 +835,9 @@ public class TestInjectPrefabAttribute : TestInjectAttribute
 /// </summary>
 public class TestInjectResource : TestInjectAttribute
 {
+    /// <summary>
     /// <param name="assetProperty">Name of the property that returns <see cref="ITestAsset"/> for this resource</param>
+    /// </summary>
     public TestInjectResource(string assetProperty)
     {
         AssetProperty = assetProperty;
@@ -997,26 +853,15 @@ public class TestInjectResource : TestInjectAttribute
 /// </summary>
 public class TestInjectAssetBundle : TestInjectAttribute
 {
+    /// <summary>
     /// <param name="assetProperty">Name of the property that returns <see cref="ITestAsset"/> for this resource</param>
+    /// </summary>
     public TestInjectAssetBundle(string assetProperty)
     {
         AssetProperty = assetProperty;
     }
 
     public string AssetProperty { get; }
-}
-
-public static class Helper
-{
-    public static class Scene
-    {
-        public static void LoadScene(string scene)
-        {
-#pragma warning disable CS0618 // Type or member is obsolete
-            Application.LoadLevel(scene);
-#pragma warning restore CS0618 // Type or member is obsolete
-        }
-    }
 }
 
 /// <summary>
@@ -1026,7 +871,7 @@ public static class Helper
 public class OnceOnlyPath
 {
     public const string InnerFieldName = nameof(inner);
-    
+
     [SerializeField]
     private string inner;
     private bool _used;
@@ -1050,5 +895,25 @@ public class OnceOnlyPath
 
         from._used = true;
         return from.inner;
+    }
+}
+
+namespace Extensions
+{
+    public static class StringExtensions
+    {
+        /// <summary>
+        /// Compares the string against a given pattern.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <param name="pattern">The pattern to match, where "*" means any sequence of characters, and "?" means any single character.</param>
+        /// <returns><c>true</c> if the string matches the given pattern; otherwise <c>false</c>.</returns>
+        public static bool Like(this string str, string pattern)
+        {
+            return new Regex(
+                "^" + Regex.Escape(pattern).Replace(@"\*", ".*").Replace(@"\?", ".") + "$",
+                RegexOptions.IgnoreCase | RegexOptions.Singleline
+            ).IsMatch(str);
+        }
     }
 }

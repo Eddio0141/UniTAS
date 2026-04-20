@@ -28,4 +28,19 @@ public interface IAsyncOperationOverride
     /// </summary>
     /// <returns>If instance is tracked</returns>
     bool Yield(AsyncOperation asyncOperation);
+
+    /// <summary>
+    /// <returns>If instance is tracked</returns>
+    /// </summary>
+    bool IsWaitingForSceneActivation(AsyncOperation asyncOperation, out bool waiting);
+
+    /// <summary>
+    /// <returns>If instance is tracked</returns>
+    /// </summary>
+    bool WaitForCompletion(AsyncOperation asyncOperation);
+
+    /// <summary>
+    /// <returns>If instance is tracked</returns>
+    /// </summary>
+    bool Cancel(AsyncOperation asyncOperation);
 }

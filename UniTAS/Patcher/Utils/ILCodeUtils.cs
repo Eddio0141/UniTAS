@@ -1,12 +1,15 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using HarmonyLib;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
 using Mono.Cecil.Rocks;
 using UniTAS.Patcher.Extensions;
 using MethodAttributes = Mono.Cecil.MethodAttributes;
 using MethodBody = Mono.Cecil.Cil.MethodBody;
+using MethodImplAttributes = Mono.Cecil.MethodImplAttributes;
 
 namespace UniTAS.Patcher.Utils;
 
@@ -48,7 +51,7 @@ public static class ILCodeUtils
         }
         else
         {
-            ilProcessor.InsertBeforeInstructionReplace(body.Instructions.First(),
+            ilProcessor.InsertBeforeInstructionReplace(body.Instructions[0],
                 ilProcessor.Create(OpCodes.Call, invoke), InstructionReplaceFixType.ExceptionRanges);
         }
 
@@ -115,10 +118,25 @@ public static class ILCodeUtils
     public static void HookHarmony(MethodDefinition method, MethodInfo prefix = null, MethodInfo postfix = null)
     {
         if (prefix == null && postfix == null) return;
-        if (method is not { HasBody: true }) return;
+        if (method == null) return;
 
-        var body = method.Body;
-        body.SimplifyMacros();
+        method.PInvokeInfo = null;
+        method.Attributes &= ~MethodAttributes.PInvokeImpl;
+        method.ImplAttributes &= ~MethodImplAttributes.InternalCall;
+
+        MethodBody body;
+        if (!method.HasBody || method.Body.Instructions.Count == 0)
+        {
+            method.Body = new MethodBody(method);
+            body = method.Body;
+            body.Instructions.Add(Instruction.Create(OpCodes.Ret));
+        }
+        else
+        {
+            body = method.Body;
+            body.SimplifyMacros();
+        }
+
         var il = body.GetILProcessor();
 
         VariableDefinition resultVar = null;
@@ -138,7 +156,7 @@ public static class ILCodeUtils
 
             var prefixParams = prefix.GetParameters();
             var prefixRef = method.Module.ImportReference(prefix);
-            var first = body.Instructions.First();
+            var first = body.Instructions[0];
 
             if (resultVar != null)
             {
@@ -161,10 +179,13 @@ public static class ILCodeUtils
                 if (param.Name != "__state") continue;
 
                 if (param.ParameterType is { IsValueType: true, IsByRef: false })
+                {
                     throw new InvalidOperationException(
                         "state is a value type, but argument isn't using `ref` to be modifiable");
+                }
+
                 var paramType = param.ParameterType.HasElementType
-                    ? param.ParameterType.GetElementType()!
+                    ? param.ParameterType.GetElementType()
                     : param.ParameterType;
                 var paramTypeImport = method.Module.ImportReference(paramType);
                 stateDef = new VariableDefinition(paramTypeImport);
@@ -186,9 +207,12 @@ public static class ILCodeUtils
 
             foreach (var param in prefixParams)
             {
-                var insertInst = HandleInjection(method, il, param, resultVar,
+                var insertInstructions = HandleInjection(method, il, param, resultVar,
                     (v, i, p) => i.Create(p.ParameterType.IsByRef ? OpCodes.Ldloca : OpCodes.Ldloc, v), stateDef);
-                il.InsertBefore(first, insertInst);
+                foreach (var inst in insertInstructions)
+                {
+                    il.InsertBefore(first, inst);
+                }
             }
 
             il.InsertBefore(first, il.Create(OpCodes.Call, prefixRef));
@@ -219,15 +243,21 @@ public static class ILCodeUtils
                 // start pushing args
                 foreach (var param in postfixParams)
                 {
-                    var insertInst = HandleInjection(method, il, param, resultVar, (v, i, _) =>
+                    var insertInstructions = HandleInjection(method, il, param, resultVar, (v, i, _) =>
                     {
                         if (v == null)
+                        {
                             throw new InvalidOperationException(
                                 "Prefix doesn't have a state, add it to prefix or remove from postfix");
+                        }
+
                         return i.Create(OpCodes.Ldloc, v);
                     }, stateDef);
 
-                    il.InsertBeforeInstructionReplace(inst, insertInst);
+                    foreach (var insertInst in insertInstructions)
+                    {
+                        il.InsertBeforeInstructionReplace(inst, insertInst);
+                    }
                 }
 
                 il.InsertBeforeInstructionReplace(inst, il.Create(OpCodes.Call, postfixRef));
@@ -240,7 +270,39 @@ public static class ILCodeUtils
         body.Optimize();
     }
 
-    private static Instruction HandleInjection(MethodDefinition method, ILProcessor il, ParameterInfo param,
+    private static TypeReference MakeGenericType(this TypeReference self, params TypeReference[] arguments)
+    {
+        if (self.GenericParameters.Count != arguments.Length)
+            throw new ArgumentException();
+
+        var instance = new GenericInstanceType(self);
+        foreach (var argument in arguments)
+            instance.GenericArguments.Add(argument);
+
+        return instance;
+    }
+
+    private static MethodReference MakeGeneric(this MethodReference self, params TypeReference[] arguments)
+    {
+        var reference = new MethodReference(self.Name, self.ReturnType)
+        {
+            DeclaringType = self.DeclaringType.MakeGenericType(arguments),
+            HasThis = self.HasThis,
+            ExplicitThis = self.ExplicitThis,
+            CallingConvention = self.CallingConvention,
+        };
+
+        foreach (var parameter in self.Parameters)
+            reference.Parameters.Add(new ParameterDefinition(parameter.ParameterType));
+
+        foreach (var genericParameter in self.GenericParameters)
+            reference.GenericParameters.Add(new GenericParameter(genericParameter.Name, reference));
+
+        return reference;
+    }
+
+    private static IEnumerable<Instruction> HandleInjection(MethodDefinition method, ILProcessor il,
+        ParameterInfo param,
         VariableDefinition resultVar, Func<VariableDefinition, ILProcessor, ParameterInfo, Instruction> state,
         VariableDefinition stateVar)
     {
@@ -249,34 +311,92 @@ public static class ILCodeUtils
         {
             // check for injections
             case "__instance":
-            {
                 if (method.IsStatic)
+                {
                     throw new InvalidOperationException(
                         "Hook requested for __instance param, but this is a static method");
-                return il.Create(OpCodes.Ldarg_0);
-            }
+                }
+
+                yield return il.Create(OpCodes.Ldarg_0);
+                yield break;
+
             case "__result":
-            {
                 if (resultVar == null)
+                {
                     throw new InvalidOperationException(
                         "Hook requested for __result param, but return type is void");
-                return param.ParameterType.IsByRef
+                }
+
+                yield return param.ParameterType.IsByRef
                     ? il.Create(OpCodes.Ldloca, resultVar)
                     : il.Create(OpCodes.Ldloc, resultVar);
-            }
+                yield break;
+
             case "__state":
-            {
-                return state(stateVar, il, param);
-            }
+                yield return state(stateVar, il, param);
+                yield break;
+
             default:
-            {
                 // method arg, does name match
-                var paramDef = method.Parameters.FirstOrDefault(x => x.Name == name);
-                if (paramDef == null)
-                    throw new InvalidOperationException(
-                        $"Hook requested for non-existent method param name `{name}`");
-                return il.Create(OpCodes.Ldarg, paramDef);
-            }
+                var paramDef = method.Parameters.FirstOrDefault(x => x.Name == name) ?? throw new InvalidOperationException($"Hook requested for non-existent method param name `{name}`");
+
+                // need span coercion?
+
+                // note that we can't resolve reflection, if it contains a unity type
+                // (which it most likely would which is why span coercion exists to replace those types with fake ones)
+                // it will load the unity assembly too early, which is bad!
+                var paramFullname = paramDef.ParameterType.FullName;
+                var destType = param.ParameterType;
+                if (paramFullname.StartsWith("System.ReadOnlySpan`1") || paramFullname.StartsWith("System.Span`1"))
+                {
+                    if (((GenericInstanceType)paramDef.ParameterType).GenericArguments[0].FullName !=
+                        destType.SaneFullName())
+                    {
+                        // TODO: is the size equals with the struct type? if not its an error
+                        foreach (var inst in HandleSpanCoercion(il, paramDef, destType, method.Module))
+                        {
+                            yield return inst;
+                        }
+
+                        yield break;
+                    }
+                }
+
+                yield return il.Create(OpCodes.Ldarg, paramDef);
+                // need boxing?
+                if (paramDef.ParameterType.IsValueType && !destType.IsValueType)
+                {
+                    yield return il.Create(OpCodes.Box, paramDef.ParameterType);
+                }
+
+                yield break;
         }
+    }
+
+    private static IEnumerable<Instruction> HandleSpanCoercion(ILProcessor il, ParameterDefinition paramDef,
+        Type destType, ModuleDefinition module)
+    {
+        // 1. get pinnable address of original span
+        // 2. conv.u to prepare (idk what this does but decomp shows it)
+        // 3. get length of original span via Length property
+        // stack now should be: pinned_addr_of_original_span, length_of_original_span
+        // 4. constructor for span with fake struct as generic arg for replacement :)
+
+        var paramType = paramDef.ParameterType.Resolve();
+        var genericArgs = ((GenericInstanceType)paramDef.ParameterType).GenericArguments.ToArray();
+        var getPinnable =
+            module.ImportReference(paramType.Methods.First(x => x.Name == "GetPinnableReference"))
+                .MakeGeneric(genericArgs);
+        var lengthGetter = module.ImportReference(paramType.Properties.First(x => x.Name == "Length").GetMethod)
+            .MakeGeneric(genericArgs);
+        var destTypeCtor =
+            module.ImportReference(AccessTools.Constructor(destType, [typeof(void).MakePointerType(), typeof(int)]));
+
+        yield return il.Create(OpCodes.Ldarga, paramDef);
+        yield return il.Create(OpCodes.Call, getPinnable);
+        yield return il.Create(OpCodes.Conv_U);
+        yield return il.Create(OpCodes.Ldarga, paramDef);
+        yield return il.Create(OpCodes.Call, lengthGetter);
+        yield return il.Create(OpCodes.Newobj, destTypeCtor);
     }
 }

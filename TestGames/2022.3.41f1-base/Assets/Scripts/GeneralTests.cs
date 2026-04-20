@@ -59,19 +59,8 @@ public class GeneralTests : MonoBehaviour
         testLoad.assetBundle.Unload(true);
     }
 
-    private IEnumerator EndOfFrame()
-    {
-        while (true)
-        {
-            yield return new WaitForEndOfFrame();
-        }
-        // ReSharper disable once IteratorNeverReturns
-    }
-
     private void Awake()
     {
-        StartCoroutine(EndOfFrame());
-
         var fooResource = Resources.LoadAsync("Foo");
 
         var op = AssetBundle.LoadFromFileAsync(Path.Combine(Application.streamingAssetsPath, "test"));
@@ -88,11 +77,6 @@ public class GeneralTests : MonoBehaviour
 
         var op2 = AssetBundle.LoadFromFileAsync(Path.Combine(Application.streamingAssetsPath, "test2"));
         Assert.False("asset_bundle.op.isDone", op2.isDone);
-
-        _ = op2.assetBundle;
-
-        op.assetBundle?.Unload(true);
-        op2.assetBundle?.Unload(true);
     }
 
     private IEnumerator Start()
@@ -134,75 +118,13 @@ public class GeneralTests : MonoBehaviour
         Assert.NotThrows("struct.constrained_opcode", () => _ = new StructTest("bar"));
 
         var startFrame = Time.frameCount;
-        Assert.Equal("scene.initial", "General", SceneManager.GetSceneAt(0).name);
-
-        // Empty has yet to be loaded
-        Assert.Throws("scene.unload.missing", new ArgumentException("Scene to unload is invalid"),
-            () => SceneManager.UnloadSceneAsync("Empty"));
 
         // frame 1
-        var loadEmpty = SceneManager.LoadSceneAsync("Empty", LoadSceneMode.Additive)!;
-        Assert.Equal("scene.op.priority", 0, loadEmpty.priority);
         var bundleLoad = AssetBundle.LoadFromFileAsync(Path.Combine(Application.streamingAssetsPath, "test"));
         var bundleLoadTime = Time.frameCount;
         bundleLoad.completed += _ =>
         {
             Assert.Equal("asset_bundle.op.callback_frame", 2, Time.frameCount - bundleLoadTime);
-        };
-        var emptyScene = SceneManager.GetSceneAt(1);
-        var emptySceneByName = SceneManager.GetSceneByName("Empty");
-        Assert.Equal("scene.get_scene_at.name", "Empty", emptyScene.name);
-        Assert.Equal("scene.get_scene_at.name", "Empty", emptySceneByName.name);
-        Assert.False("scene.get_scene_at.isLoaded", emptyScene.isLoaded);
-        Assert.False("scene.get_scene_at.isLoaded", emptySceneByName.isLoaded);
-        Assert.Equal("scene.get_scene_at.rootCount", 0, emptyScene.rootCount);
-        Assert.Equal("scene.get_scene_at.rootCount", 0, emptySceneByName.rootCount);
-        Assert.False("scene.get_scene_at.isSubScene", emptyScene.isSubScene);
-        Assert.False("scene.get_scene_at.isSubScene", emptySceneByName.isSubScene);
-        Assert.Equal("scene.get_scene_at.path", "Assets/Scenes/Empty.unity", emptyScene.path);
-        Assert.Equal("scene.get_scene_at.path", "Assets/Scenes/Empty.unity", emptySceneByName.path);
-        Assert.Equal("scene.get_scene_at.buildIndex", 3, emptyScene.buildIndex);
-        Assert.Equal("scene.get_scene_at.buildIndex", 3, emptySceneByName.buildIndex);
-        Assert.False("scene.get_scene_at.isDirty", emptyScene.isDirty);
-        Assert.False("scene.get_scene_at.isDirty", emptySceneByName.isDirty);
-        Assert.True("scene.get_scene_at.IsValid", emptyScene.IsValid());
-        Assert.True("scene.get_scene_at.IsValid", emptySceneByName.IsValid());
-        emptyScene.isSubScene = true;
-        Assert.True("scene.get_scene_at.isSubScene", emptyScene.isSubScene);
-        Assert.True("scene.get_scene_at.isSubScene", emptySceneByName.isSubScene);
-        Assert.Equal("scene.op.progress", 0.9f, loadEmpty.progress, 0.0001f);
-        Assert.False("scene.op.isDone", loadEmpty.isDone);
-
-        Assert.Throws("scene.get_scene_at.set_name",
-            new InvalidOperationException(
-                "Setting a name on a saved scene is not allowed (the filename is used as name). Scene: 'Assets/Scenes/Empty.unity'"),
-            () => emptyScene.name = "foo");
-
-        Assert.Equal("scene.sceneCount", 2, SceneManager.sceneCount);
-        Assert.Equal("scene.loadedSceneCount", 1, SceneManager.loadedSceneCount);
-        loadEmpty.allowSceneActivation = false;
-        loadEmpty.completed += _ =>
-        {
-            // frame 3
-            // sceneCount to get count including loading / unloading
-            Assert.Equal("scene.sceneCount", 2, SceneManager.sceneCount);
-            Assert.Equal("scene.loadedSceneCount", 2, SceneManager.loadedSceneCount);
-            Assert.Equal("scene.op.callback_time", 2, Time.frameCount - startFrame);
-
-            var actualScene = SceneManager.GetSceneAt(1);
-            Assert.True("scene.dummy_scene_struct.eq", emptyScene == actualScene);
-            Assert.False("scene.dummy_scene_struct.neq", emptyScene != actualScene);
-            Assert.True("scene.dummy_scene_struct.Equals", emptyScene.Equals(actualScene));
-            Assert.Equal("scene.dummy_scene_struct.name", "Empty", emptyScene.name);
-            Assert.True("scene.dummy_scene_struct.isLoaded", emptyScene.isLoaded);
-            Assert.Equal("scene.dummy_scene_struct.rootCount", 1, emptyScene.rootCount);
-            Assert.True("scene.dummy_scene_struct.isSubScene", emptyScene.isSubScene);
-            Assert.Equal("scene.dummy_scene_struct.path", "Assets/Scenes/Empty.unity", emptyScene.path);
-            Assert.Equal("scene.dummy_scene_struct.buildIndex", 3, emptyScene.buildIndex);
-            Assert.False("scene.dummy_scene_struct.isDirty", emptyScene.isDirty);
-            Assert.True("scene.dummy_scene_struct.IsValid", emptyScene.IsValid());
-            Assert.NotEqual("scene.dummy_scene_struct.handle", 0, emptyScene.handle);
-            Assert.NotEqual("scene.dummy_scene_struct.hash_code", 0, emptyScene.GetHashCode());
         };
 
         Assert.Throws("scene.dummy_scene_struct.set_active",
@@ -227,19 +149,13 @@ public class GeneralTests : MonoBehaviour
 
         yield return null;
 
-        // 1f passed, unitas forces 100 fps by default
-        Assert.Equal("time.unscaled_time", 0.01f, Time.unscaledTime - unscaledTime, 0.001f);
-        Assert.Equal("time.time", 0f, Time.time - scaledTime, 0.001f);
         Time.timeScale = 1;
 
-        Assert.False("scene.op.isDone", loadEmpty.isDone);
         Assert.False("asset_bundle.op.isDone", bundleLoad.isDone);
         Assert.Equal("asset_bundle.op.progress", 0.9f, bundleLoad.progress, 0.0001f);
 
         // frame 2
-        // loadEmpty 1f delay
 
-        loadEmpty.allowSceneActivation = true;
         Assert.Equal("scene.sceneCount", 2, SceneManager.sceneCount);
         Assert.Equal("scene.loadedSceneCount", 1, SceneManager.loadedSceneCount);
 
@@ -247,8 +163,6 @@ public class GeneralTests : MonoBehaviour
         Assert.Equal("time.unscaled_time", 0.02f, Time.unscaledTime - unscaledTime, 0.001f);
         Assert.Equal("time.time", 0.01f, Time.time - scaledTime, 0.001f);
 
-        Assert.True("scene.op.isDone", loadEmpty.isDone);
-        Assert.Equal("scene.op.progress", 1f, loadEmpty.progress, 0.0001f);
         Assert.True("asset_bundle.op.isDone", bundleLoad.isDone);
         var bundleRequestStart = Time.frameCount;
         var bundleRequest = bundleLoad.assetBundle.LoadAssetAsync<GameObject>("Dummy");
