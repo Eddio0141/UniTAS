@@ -34,7 +34,6 @@ public class ThreadSoftRestartHandler : IThreadTracker, IOnPreGameRestart
                 typeof(DiskLogListener),
                 typeof(GameVideoRenderer),
                 typeof(NativeAudioRenderer),
-                typeof(LoggingUtils.DiskLogger),
                 typeof(RemoteControl),
                 typeof(ReadOnlyFieldDescriptor),
                 typeof(Config),
