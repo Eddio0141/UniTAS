@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using HarmonyLib;
@@ -24,10 +23,6 @@ using Trace = UniTAS.Patcher.ManualServices.Trace;
 namespace UniTAS.Patcher.Patches.Harmony.UnityInit;
 
 [RawPatchUnityInit]
-[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
-[SuppressMessage("ReSharper", "UnusedMember.Local")]
-[SuppressMessage("ReSharper", "RedundantAssignment")]
-[SuppressMessage("ReSharper", "InconsistentNaming")]
 public class SceneManagerAsyncLoadPatch
 {
     static SceneManagerAsyncLoadPatch()
@@ -74,16 +69,13 @@ public class SceneManagerAsyncLoadPatch
         : SceneManager?.GetMethod("SetActiveScene_Injected", AccessTools.all,
             null, [SceneType.MakeByRefType()], null);
 
-    private static readonly MethodInfo GetSceneByNameInjected = SceneType == null
+    private static readonly MethodInfo GetSceneByName = SceneType == null
         ? null
-        : SceneManager?.GetMethod("GetSceneByName_Injected", AccessTools.all, null,
-            [typeof(string), SceneType.MakeByRefType()], null);
+        : SceneManager?.GetMethod("GetSceneByName", AccessTools.all, null, [typeof(string)], null);
 
-    private static readonly MethodInfo GetSceneByPathInjected = SceneType == null
+    private static readonly MethodInfo GetSceneByPath = SceneType == null
         ? null
-        : SceneManager?.GetMethod("GetSceneByPath_Injected", AccessTools.all,
-            null,
-            [typeof(string), SceneType.MakeByRefType()], null);
+        : SceneManager?.GetMethod("GetSceneByPath", AccessTools.all, null, [typeof(string)], null);
 
     private static readonly MethodInfo GetSceneByBuildIndexInjected = SceneType == null
         ? null
@@ -512,24 +504,18 @@ public class SceneManagerAsyncLoadPatch
     }
 
     [HarmonyPatch]
-    private class GetSceneByName_Injected
+    private class GetSceneByNamePatch
     {
-        private static MethodBase TargetMethod()
-        {
-            return GetSceneByNameInjected;
-        }
+        private static MethodBase TargetMethod() => GetSceneByName;
 
-        private static Exception Cleanup(MethodBase original, Exception ex)
-        {
-            return PatchHelper.CleanupIgnoreFail(original, ex);
-        }
+        private static Exception Cleanup(MethodBase original, Exception ex) => PatchHelper.CleanupIgnoreFail(original, ex);
 
-        private static bool Prefix(string name, ref object ret)
+        private static bool Prefix(string name, ref object __result)
         {
             foreach (var loading in SceneLoadTracker.LoadingScenes)
             {
                 if (loading.LoadingScene.Name != name) continue;
-                ret = loading.DummySceneStruct;
+                __result = loading.DummySceneStruct;
                 return false;
             }
 
@@ -564,11 +550,11 @@ public class SceneManagerAsyncLoadPatch
     }
 
     [HarmonyPatch]
-    private class GetSceneByPath_Injected
+    private class GetSceneByPathPatch
     {
         private static MethodBase TargetMethod()
         {
-            return GetSceneByPathInjected;
+            return GetSceneByPath;
         }
 
         private static Exception Cleanup(MethodBase original, Exception ex)
@@ -576,12 +562,12 @@ public class SceneManagerAsyncLoadPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix(string scenePath, ref object ret)
+        private static bool Prefix(string scenePath, ref object __result)
         {
             foreach (var loading in SceneLoadTracker.LoadingScenes)
             {
                 if (loading.LoadingScene.Path != scenePath) continue;
-                ret = loading.DummySceneStruct;
+                __result = loading.DummySceneStruct;
                 return false;
             }
 

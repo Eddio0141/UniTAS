@@ -11,6 +11,6 @@ public interface ISceneOverride
     /// Returns true if override loaded state
     /// </summary>
     bool IsSubScene(int handle, out bool subScene);
-    
+
     bool SetSubScene(int handle, bool subScene);
 }
