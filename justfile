@@ -10,7 +10,7 @@ default:
 build target="release":
     cd unitas-rs && cargo build {{ if target == "debug" { "" } else { "--release" } }}
     dotnet build UniTAS -c {{ if target == "release" { "Release" } else if target == "debug" { "Debug" } else { target } }}
-    if [ -z ${CARGO_BUILD_TARGET+x} ]; then source=""; else source="$CARGO_BUILD_TARGET/"; fi && cp unitas-rs/target/"$source"{{ if target == "debug" { "debug" } else { "release" } }}/{{ unitas_rs_file }} UniTAS/Patcher/bin/{{ if target == "release" { "Release" } else if target == "debug" { "Debug" } else { target } }}
+    if [ -z ${CARGO_BUILD_TARGET+x} ]; then source=""; else source="$CARGO_BUILD_TARGET/"; fi && cp unitas-rs/target/"$source"{{ if target == "debug" { "debug" } else { "release" } }}/{{ unitas_rs_file }} UniTAS/Patcher/bin/{{ if target == "release" { "Release" } else if target == "debug" { "Debug" } else { target } }}/BepInEx/patchers/UniTAS
 
 test-unit target="release": (build target)
     cd unitas-rs && cargo test {{ if target == "debug" { "" } else { "--release" } }}
