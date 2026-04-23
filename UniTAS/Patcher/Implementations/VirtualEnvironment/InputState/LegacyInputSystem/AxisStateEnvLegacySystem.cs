@@ -130,7 +130,7 @@ public class AxisStateEnvLegacySystem(IAxisButtonStateEnvUpdate axisButtonStateE
         }
     }
 
-    public void MouseMove(Vector2 pos)
+    public void MouseMoveRel(Vector2 pos)
     {
         foreach (var pair in _values)
         {

@@ -516,8 +516,6 @@ impl Test {
         println!("executing unity game");
         let mut process = Command::new(&args.path)
             .current_dir(game_dir)
-            .arg("-batchmode")
-            .arg("-nographics")
             .args(["-logFile", "game-stdout.log"])
             .stdout(stdout)
             .stderr(stderr)

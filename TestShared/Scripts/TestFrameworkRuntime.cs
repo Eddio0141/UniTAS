@@ -166,17 +166,20 @@ public class TestFrameworkRuntime : MonoBehaviour
 
         foreach (var test in _generalTests)
         {
-            yield return TestSafetyDelay();
-            yield return RunTest(test, _generalTestResults);
-            yield return TestSafetyDelay();
             yield return TestCleanup();
+            yield return TestSafetyDelay();
+
+            yield return RunTest(test, _generalTestResults);
+
+            yield return TestCleanup();
+            yield return TestSafetyDelay();
         }
 
         _generalTestsDone = true;
         Debug.Log("General tests finished");
     }
 
-    private IEnumerable<Test> AllTests => _movieTests.SelectMany(t => t.Item2).Concat(_generalTests).Concat(_eventTests).Concat(_initTestsAwake);
+    private IEnumerable<Test> AllTests => _generalTests.Concat(_eventTests).Concat(_initTestsAwake);
 
     /// <summary>
     /// Only used internally for editor
@@ -187,10 +190,13 @@ public class TestFrameworkRuntime : MonoBehaviour
         var results = new List<Result>();
         foreach (var test in AllTests)
         {
-            yield return TestSafetyDelay();
-            yield return RunTest(test, results);
-            yield return TestSafetyDelay();
             yield return TestCleanup();
+            yield return TestSafetyDelay();
+
+            yield return RunTest(test, results);
+
+            yield return TestCleanup();
+            yield return TestSafetyDelay();
         }
 
         Debug.Log("All tests finished");
@@ -246,6 +252,13 @@ public class TestFrameworkRuntime : MonoBehaviour
     private static IEnumerator TestCleanup()
     {
         Debug.Log("cleaning up...");
+
+        var defaultWidth = 1920;
+        var defaultHeight = 1080;
+        if (Screen.width != defaultWidth || Screen.height != defaultHeight || Screen.fullScreen)
+        {
+            Screen.SetResolution(1920, 1080, false);
+        }
 
         // restore default scene
         SceneManager.LoadScene(0);

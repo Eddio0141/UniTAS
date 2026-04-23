@@ -8,6 +8,7 @@ using UniTAS.Patcher.Models.VirtualEnvironment;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.VirtualEnvironment;
 using UniTAS.Patcher.Services.VirtualEnvironment.Input.LegacyInputSystem;
+using UniTAS.Patcher.Services.VirtualEnvironment.Input.NewInputSystem;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 
@@ -34,6 +35,9 @@ public class LegacyInputPatch
 
     private static readonly IAxisButtonStateEnvLegacySystem AxisButtonStateEnvLegacySystem =
         ContainerStarter.Kernel.GetInstance<IAxisButtonStateEnvLegacySystem>();
+
+    private static readonly IMouseState MouseState =
+        ContainerStarter.Kernel.GetInstance<IMouseState>();
 
     private static readonly IMouseStateEnvLegacySystem MouseStateEnvLegacySystem =
         ContainerStarter.Kernel.GetInstance<IMouseStateEnvLegacySystem>();
@@ -313,7 +317,7 @@ public class LegacyInputPatch
             if (ReverseInvoker.Invoking)
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
-            __result = MouseStateEnvLegacySystem.Position;
+            __result = MouseState.Position;
             return false;
         }
     }
@@ -333,7 +337,7 @@ public class LegacyInputPatch
             if (ReverseInvoker.Invoking)
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
-            ret = MouseStateEnvLegacySystem.Position;
+            ret = MouseState.Position;
             return false;
         }
     }
@@ -358,7 +362,7 @@ public class LegacyInputPatch
                 return false;
             }
 
-            __result = MouseStateEnvLegacySystem.IsButtonHeld(GetMouseButtonVariant(button));
+            __result = MouseState.IsButtonHeld(GetMouseButtonVariant(button));
             return false;
         }
     }
@@ -902,7 +906,7 @@ public class LegacyInputPatch
         private static bool Prefix(ref Vector2 __result)
         {
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
-            __result = MouseStateEnvLegacySystem.Scroll;
+            __result = MouseState.Scroll;
             return false;
         }
     }

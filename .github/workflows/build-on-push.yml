@@ -183,7 +183,7 @@ jobs:
           path: UniTAS/Patcher/bin/Release
 
       - name: Run tests
-        run: xvfb-run --auto-servernum --server-args='-screen 0 640x480x24:32' just test
+        run: just test
 
       - if: always()
         uses: actions/upload-artifact@v7

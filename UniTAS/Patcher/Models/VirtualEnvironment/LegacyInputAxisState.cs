@@ -17,8 +17,7 @@ public class LegacyInputAxisState(LegacyInputAxis axis)
         ValueRaw = 0f;
         _moveDir = AxisMoveDirection.Neutral;
         _moveDirPrev = AxisMoveDirection.Neutral;
-        _mousePrevPos = 0f;
-        _mousePos = 0f;
+        _mousePosDelta = 0f;
     }
 
     public Vector2 MousePos
@@ -30,7 +29,7 @@ public class LegacyInputAxisState(LegacyInputAxis axis)
                 return;
             }
 
-            _mousePos = Axis.Axis switch
+            _mousePosDelta = Axis.Axis switch
             {
                 AxisChoice.XAxis => value.x,
                 AxisChoice.YAxis => value.y,
@@ -39,27 +38,11 @@ public class LegacyInputAxisState(LegacyInputAxis axis)
         }
     }
 
-    public void MouseMoveRelative(Vector2 pos)
-    {
-        if (Axis.Type != AxisType.MouseMovement)
-        {
-            return;
-        }
-
-        _mousePos = Axis.Axis switch
-        {
-            AxisChoice.XAxis => _mousePos + pos.x,
-            AxisChoice.YAxis => _mousePos + pos.y,
-            _ => 0f
-        };
-    }
-
     private AxisMoveDirection _moveDir;
     private AxisMoveDirection _moveDirPrev;
 
     // in case type is mouse movement
-    private float _mousePrevPos;
-    private float _mousePos;
+    private float _mousePosDelta;
 
     public void KeyDown(KeyCode key)
     {
@@ -145,7 +128,7 @@ public class LegacyInputAxisState(LegacyInputAxis axis)
             // sensitivity is literally a multiplier
             // invert actually inverts
 
-            var diff = (_mousePos - _mousePrevPos) * Axis.Sensitivity;
+            var diff = _mousePosDelta * Axis.Sensitivity;
             if (Axis.Invert)
             {
                 diff = -diff;
@@ -154,7 +137,6 @@ public class LegacyInputAxisState(LegacyInputAxis axis)
             ValueRaw = diff;
             Value = diff;
 
-            _mousePrevPos = _mousePos;
             return;
         }
 
@@ -174,54 +156,54 @@ public class LegacyInputAxisState(LegacyInputAxis axis)
         switch (_moveDir)
         {
             case AxisMoveDirection.Positive:
-            {
-                // handle smoothing
-                if (_moveDirPrev == AxisMoveDirection.Negative && Axis.Snap)
                 {
-                    // snap actually resets to 0 for a frame
-                    ValueRaw = 0f;
-                    Value = 0f;
-                }
-                else
-                {
-                    ValueRaw = 1f;
-                    Value = Math.Min(Value + Axis.Sensitivity * dt, 1f);
-                }
+                    // handle smoothing
+                    if (_moveDirPrev == AxisMoveDirection.Negative && Axis.Snap)
+                    {
+                        // snap actually resets to 0 for a frame
+                        ValueRaw = 0f;
+                        Value = 0f;
+                    }
+                    else
+                    {
+                        ValueRaw = 1f;
+                        Value = Math.Min(Value + Axis.Sensitivity * dt, 1f);
+                    }
 
-                break;
-            }
+                    break;
+                }
             case AxisMoveDirection.Negative:
-            {
-                // handle smoothing
-                if (_moveDirPrev == AxisMoveDirection.Positive && Axis.Snap)
                 {
-                    // snap actually resets to 0 for a frame
-                    ValueRaw = 0f;
-                    Value = 0f;
-                }
-                else
-                {
-                    ValueRaw = -1f;
-                    Value = Math.Max(Value - Axis.Sensitivity * dt, -1f);
-                }
+                    // handle smoothing
+                    if (_moveDirPrev == AxisMoveDirection.Positive && Axis.Snap)
+                    {
+                        // snap actually resets to 0 for a frame
+                        ValueRaw = 0f;
+                        Value = 0f;
+                    }
+                    else
+                    {
+                        ValueRaw = -1f;
+                        Value = Math.Max(Value - Axis.Sensitivity * dt, -1f);
+                    }
 
-                break;
-            }
+                    break;
+                }
             case AxisMoveDirection.Neutral:
-            {
-                // handle smoothing
-                // also yes negative gravity works its stupid
-                ValueRaw = 0f;
-                Value = Mathf.MoveTowards(Value, 0f, Axis.Gravity * dt);
-
-                // dead zone only applies to neutral
-                if (Math.Abs(Value) < Axis.Dead)
                 {
-                    Value = 0f;
-                }
+                    // handle smoothing
+                    // also yes negative gravity works its stupid
+                    ValueRaw = 0f;
+                    Value = Mathf.MoveTowards(Value, 0f, Axis.Gravity * dt);
 
-                break;
-            }
+                    // dead zone only applies to neutral
+                    if (Math.Abs(Value) < Axis.Dead)
+                    {
+                        Value = 0f;
+                    }
+
+                    break;
+                }
             default:
                 throw new ArgumentOutOfRangeException();
         }

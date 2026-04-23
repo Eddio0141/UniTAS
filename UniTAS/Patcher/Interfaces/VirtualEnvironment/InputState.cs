@@ -5,6 +5,7 @@ using UniTAS.Patcher.Interfaces.Events.SoftRestart;
 
 namespace UniTAS.Patcher.Interfaces.VirtualEnvironment;
 
+// TODO: hate abstract classes
 public abstract class InputState : IOnVirtualEnvStatusChange, IOnGameRestart, IOnMovieUpdate
 {
     protected abstract void ResetState();
