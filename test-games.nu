@@ -53,7 +53,7 @@ def --wrapped main [...args] {
         let config_dir = $bepinex_dir | path join "BepInEx" "config"
         mkdir $config_dir
         "[Remote]\nEnable = true" | save ($config_dir | path join "UniTAS.cfg")
-        "[Logging.Disk]\nWriteUnityLog = true\nEnabled = true\nLogLevels = All" | save ($config_dir | path join "BepInEx.cfg")
+        "[Logging.Disk]\nWriteUnityLog = true\nLogLevels = All" | save ($config_dir | path join "BepInEx.cfg")
         print "done"
     }
 
@@ -100,7 +100,7 @@ def --wrapped main [...args] {
         print $"\n[($game_name)]"
         # TODO: not crossplatform friendly
         $exit_code = try {
-            ^$"($repo_dir)/test-runner/target/release/test-runner" $executable
+            xvfb-run --auto-servernum --server-args='-screen 0 640x480x24:32' $"($repo_dir)/test-runner/target/release/test-runner" $executable
             0
         } catch { |e| 
             let exit_code = $e | get -o exit_code

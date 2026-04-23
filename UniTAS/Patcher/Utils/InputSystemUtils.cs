@@ -226,21 +226,21 @@ public static class InputSystemUtils
             case Key.LeftApple:
             case Key.RightApple:
             case Key.AltGr:
-            {
-                // duplicate definitions so handle them here
-                var keyCodeString = key.ToString();
-
-                return keyCodeString switch
                 {
-                    nameof(Key.LeftApple) => KeyCode.LeftApple,
-                    nameof(Key.LeftWindows) => KeyCode.LeftWindows,
-                    nameof(Key.RightApple) => KeyCode.RightApple,
-                    nameof(Key.RightWindows) => KeyCode.RightWindows,
-                    nameof(Key.AltGr) => KeyCode.AltGr,
-                    nameof(Key.RightAlt) => KeyCode.RightAlt,
-                    _ => throw new ArgumentOutOfRangeException()
-                };
-            }
+                    // duplicate definitions so handle them here
+                    var keyCodeString = key.ToString();
+
+                    return keyCodeString switch
+                    {
+                        nameof(Key.LeftApple) => KeyCode.LeftApple,
+                        nameof(Key.LeftWindows) => KeyCode.LeftWindows,
+                        nameof(Key.RightApple) => KeyCode.RightApple,
+                        nameof(Key.RightWindows) => KeyCode.RightWindows,
+                        nameof(Key.AltGr) => KeyCode.AltGr,
+                        nameof(Key.RightAlt) => KeyCode.RightAlt,
+                        _ => throw new ArgumentOutOfRangeException()
+                    };
+                }
             case Key.A:
                 return KeyCode.A;
             case Key.B:
@@ -689,15 +689,5 @@ public static class InputSystemUtils
             KeyCode.Keypad9 => Key.Numpad9,
             _ => null
         };
-    }
-
-    /// <summary>
-    /// Fixes position to be inside screen space
-    /// </summary>
-    public static Vector2 MousePosConstraintInScreen(Vector2 position)
-    {
-        position.x = Mathf.Clamp(position.x, 0, Screen.width);
-        position.y = Mathf.Clamp(position.y, 0, Screen.height);
-        return position;
     }
 }

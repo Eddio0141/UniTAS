@@ -62,6 +62,7 @@
               curl
               nushell
               ffmpeg
+              xvfb-run
             ];
           };
         };

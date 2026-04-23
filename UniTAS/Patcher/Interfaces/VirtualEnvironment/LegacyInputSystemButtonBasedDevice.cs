@@ -7,6 +7,7 @@ namespace UniTAS.Patcher.Interfaces.VirtualEnvironment;
 /// Provides a way to create a device that uses legacy input system, or is also used in the new input system.
 /// This contains button states which can be pressed, held, or released.
 /// </summary>
+// TODO: hate abstract classes
 public abstract class LegacyInputSystemButtonBasedDevice<TButton> : LegacyInputSystemDevice
     where TButton : IEquatable<TButton>
 {

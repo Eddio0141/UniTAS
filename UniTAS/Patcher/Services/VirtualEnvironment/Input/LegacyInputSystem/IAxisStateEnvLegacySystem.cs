@@ -10,7 +10,7 @@ public interface IAxisStateEnvLegacySystem
     void SetAxis(AxisChoice axis, float value);
     void KeyDown(KeyCode key, JoyNum joystickNumber);
     void KeyUp(KeyCode key, JoyNum joystickNumber);
-    void MouseMove(Vector2 pos);
+    void MouseMoveRel(Vector2 pos);
     void MouseScroll(float scroll);
     void AddAxis(LegacyInputAxis axis);
 }

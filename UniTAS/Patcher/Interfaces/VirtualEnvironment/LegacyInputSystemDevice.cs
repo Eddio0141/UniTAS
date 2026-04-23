@@ -3,6 +3,7 @@
 /// <summary>
 /// Provides a way to create a device that uses legacy input system, or is also used in the new input system.
 /// </summary>
+// TODO: hate abstract classes
 public abstract class LegacyInputSystemDevice : InputState
 {
     /// <summary>
@@ -21,7 +22,7 @@ public abstract class LegacyInputSystemDevice : InputState
         base.MovieUpdate(fixedUpdate);
 
         if (fixedUpdate) return;
-        
+
         // this just needs to be flushed before legacy input system input is read so its fine to be pre-updates
         FlushBufferedInputs();
     }

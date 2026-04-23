@@ -11,9 +11,9 @@ namespace UniTAS.Patcher.Implementations.NewInputSystem;
 
 public class MouseDeviceOverride : InputOverrideDevice
 {
-    private readonly IMouseStateEnvNewSystem _mouseStateEnvNewSystem;
+    private readonly IMouseState _mouseStateEnvNewSystem;
 
-    public MouseDeviceOverride(IMouseStateEnvNewSystem mouseStateEnvNewSystem)
+    public MouseDeviceOverride(IMouseState mouseStateEnvNewSystem)
     {
         _mouseStateEnvNewSystem = mouseStateEnvNewSystem;
     }
