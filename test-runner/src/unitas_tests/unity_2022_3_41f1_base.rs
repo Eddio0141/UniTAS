@@ -9,7 +9,7 @@ pub const TEST: Test = Test {
     test,
 };
 
-fn test(ctx: &mut TestCtx, mut args: TestArgs) -> Result<()> {
+fn test(ctx: &mut TestCtx, args: &TestArgs) -> Result<()> {
     let movie_path = args.game_dir.join("movie.lua");
     fs::write(&movie_path, MOVIE).with_context(|| {
         format!(
@@ -18,16 +18,14 @@ fn test(ctx: &mut TestCtx, mut args: TestArgs) -> Result<()> {
         )
     })?;
 
-    let stream = &mut args.stream;
-
-    ctx.run_init_and_general_tests(stream)?;
+    ctx.run_init_and_general_tests(args)?;
 
     // frame advancing test
 
     // sanity check
-    stream.send("service('ITimeWrapper').capture_frame_time = 0.01 service('ISceneManagerWrapper').load_scene('FrameAdvancing')")?;
-    ctx.print_test_results(stream, TestType::General)?;
-    ctx.reset_general_tests(stream)?;
+    ctx.stream.send("service('ITimeWrapper').capture_frame_time = 0.01 service('ISceneManagerWrapper').load_scene('FrameAdvancing')")?;
+    ctx.print_test_results(TestType::General)?;
+    ctx.reset_general_tests()?;
 
     // actual test
     /*
@@ -106,6 +104,7 @@ fn test(ctx: &mut TestCtx, mut args: TestArgs) -> Result<()> {
     // end of frame: 0.03
     // last update: 0.03
 
+    let stream = &mut ctx.stream;
     stream.send(&format!(
         r#"time = traverse('UnityEngine.Time')
 service('ITimeWrapper').capture_frame_time = 0.01
@@ -223,31 +222,35 @@ end, "method")
     // update_count
     // end_of_frame_count
     // last_update_count
+    let result = &ctx.stream.receive()?;
     ctx.assert_eq(
         &(frame_count / 2).to_string(),
-        &stream.receive()?,
+        result,
         "unitas updates: fixed update count",
         "mismatch in update count",
     );
+    let result = &ctx.stream.receive()?;
     ctx.assert_eq(
         &frame_count.to_string(),
-        &stream.receive()?,
+        result,
         "unitas updates: update count",
         "mismatch in update count",
     );
+    let result = &ctx.stream.receive()?;
     ctx.assert_eq(
         &(frame_count - 1).to_string(),
-        &stream.receive()?,
+        result,
         "unitas updates: end of frame count",
         "mismatch in update count",
     );
+    let result = &ctx.stream.receive()?;
     ctx.assert_eq(
         &frame_count.to_string(),
-        &stream.receive()?,
+        result,
         "unitas updates: last update count",
         "mismatch in update count",
     );
-    let time_offset = stream.receive()?;
+    let time_offset = ctx.stream.receive()?;
     let mut time_offset = time_offset
         .parse::<f64>()
         .with_context(|| format!("time offset is an invalid f64 value, got: {time_offset}"))?;
@@ -255,7 +258,7 @@ end, "method")
     time_offset += 0.01;
     time_offset %= 0.02;
     for _ in 0..time_offset_check_count {
-        let offset = stream.receive()?;
+        let offset = ctx.stream.receive()?;
         let offset = offset
             .parse::<f64>()
             .with_context(|| format!("update offset is an invalid f64 value, got: {offset}"))?;
@@ -291,32 +294,36 @@ end, "method")
     // update_count
     // end_of_frame_count
     // last_update_count
+    let result = &ctx.stream.receive()?;
     ctx.assert_eq(
         &(frame_count * 2 + 1).to_string(),
-        &stream.receive()?,
+        result,
         "unitas updates: fixed update count",
         "mismatch in update count",
     );
+    let result = &ctx.stream.receive()?;
     ctx.assert_eq(
         &frame_count.to_string(),
-        &stream.receive()?,
+        result,
         "unitas updates: update count",
         "mismatch in update count",
     );
+    let result = &ctx.stream.receive()?;
     ctx.assert_eq(
         &(frame_count - 1).to_string(),
-        &stream.receive()?,
+        result,
         "unitas updates: end of frame count",
         "mismatch in update count",
     );
+    let result = &ctx.stream.receive()?;
     ctx.assert_eq(
         &frame_count.to_string(),
-        &stream.receive()?,
+        result,
         "unitas updates: last update count",
         "mismatch in update count",
     );
     for _ in 0..2 {
-        stream.receive()?;
+        ctx.stream.receive()?;
     }
 
     Ok(())

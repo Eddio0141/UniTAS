@@ -25,3 +25,14 @@ mouse.move(100, 100)
 f(2)
 mouse.move(-100, -100)
 f(2)
+
+-- MouseAxis
+mouse.move(150, 142)
+f()
+mouse.move(50, 32)
+f(3)
+-- limit within resolution
+mouse.move(10000, 10000)
+f()
+mouse.move(-10000, -10000)
+f()
