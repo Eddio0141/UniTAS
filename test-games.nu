@@ -3,17 +3,24 @@
 use std
 
 def print-help [] {
-    print "script to run unity tests\n"
-    print "args:\n"
-    print "--preserve-games"
-    print "skips cleanup of test game environment, and prints the path"
+    print "Usage:"
+    print "  test-games [--preserve-games] [-h --help] [<tests>]"
+    print ""
+    print "Positional Arguments:"
+    print "  tests    Optional name of tests to be executed. Name of the tests can be globbed. By default, all tests are ran."
+    print ""
+    print "Flags:"
+    print "  --preserve-games    Skips cleanup of test game environment, and prints the path."
+    print "  --help -h           Prints this help page."
 }
 
 def --wrapped main [...args] {
-    if $args has "--help" {
+    if $args has "--help" or $args has "-h" {
         print-help
         return
     }
+
+    let target_tests = $args | where {|v| ($v | str starts-with "-" | not $in)}
 
     const repo_dir = path self | path dirname
     let cache_dir = $env.HOME | path join ".cache" "unitas-test-runner"
@@ -100,7 +107,7 @@ def --wrapped main [...args] {
         print $"\n[($game_name)]"
         # TODO: not crossplatform friendly
         $exit_code = try {
-            xvfb-run --auto-servernum --server-args='-screen 0 640x480x24:32' $"($repo_dir)/test-runner/target/release/test-runner" $executable
+            xvfb-run --auto-servernum --server-args='-screen 0 640x480x24:32' $"($repo_dir)/test-runner/target/release/test-runner" $executable ...$target_tests
             0
         } catch { |e| 
             let exit_code = $e | get -o exit_code

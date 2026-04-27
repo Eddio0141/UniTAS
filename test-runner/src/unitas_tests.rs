@@ -1,6 +1,8 @@
 use crate::{cli::Args, symbols};
 use anyhow::{Context, Result, bail};
 use colored::Colorize;
+use globset::{Glob, GlobMatcher};
+use itertools::Itertools;
 use log::{debug, trace};
 #[cfg(target_family = "unix")]
 use std::os::unix::process::ExitStatusExt;
@@ -26,11 +28,12 @@ pub const WIN_TESTS: &[Test] = &[unity_2022_3_41f1_base::TEST, unity_latest::TES
 
 pub struct Test {
     pub name: &'static str,
-    test: fn(ctx: &mut TestCtx, args: TestArgs) -> Result<()>,
+    test: fn(ctx: &mut TestCtx, args: &TestArgs) -> Result<()>,
 }
 
 struct TestCtx {
     results: Vec<TestResult>,
+    stream: UniTasStream,
 }
 
 impl TestCtx {
@@ -75,9 +78,10 @@ impl TestCtx {
         );
     }
 
-    fn run_init_and_general_tests(&mut self, stream: &mut UniTasStream) -> Result<()> {
-        self.run_general_tests_iter(stream)?;
+    fn run_init_and_general_tests(&mut self, args: &TestArgs) -> Result<()> {
+        self.run_general_tests_iter(args)?;
 
+        let stream = &mut self.stream;
         stream.send(
             "service('IGameRestart').SoftRestart(traverse('DateTime').property('Now').GetValue())",
         )?;
@@ -96,17 +100,24 @@ impl TestCtx {
             bail!("failed to soft restart");
         }
 
-        self.print_test_results(stream, TestType::Init)?;
-        self.run_general_tests_iter(stream)?;
+        self.print_test_results(TestType::Init)?;
+        self.run_general_tests_iter(args)?;
 
-        self.run_init_tests(stream)?;
+        self.run_init_tests(args)?;
 
         Ok(())
     }
 
     // single iteration version
-    fn run_general_tests_iter(&mut self, stream: &mut UniTasStream) -> Result<()> {
-        stream.send("traverse('TestFrameworkRuntime').method('RunGeneralTests').GetValue()")?;
+    fn run_general_tests_iter(&mut self, args: &TestArgs) -> Result<()> {
+        let stream = &mut self.stream;
+        stream.send(&format!(
+            "traverse('TestFrameworkRuntime').method('RunGeneralTests', {{AccessTools.TypeByName('System.String[]')}}, {{ }}).GetValue({{ {} }})",
+            args.target_tests
+                .iter()
+                .map(|t| format!("'{t}'"))
+                .join(", ")
+        ))?;
 
         let mut timeout = true;
         for _ in 0..60 {
@@ -124,20 +135,21 @@ impl TestCtx {
             bail!("failed to finish running general tests");
         }
 
-        self.print_test_results(stream, TestType::General)?;
-        self.reset_general_tests(stream)?;
+        self.print_test_results(TestType::General)?;
+        self.reset_general_tests()?;
 
         Ok(())
     }
 
-    fn reset_general_tests(&self, stream: &mut UniTasStream) -> Result<()> {
-        stream.send("traverse('TestFrameworkRuntime').method('ResetGeneralTests').GetValue()")
+    fn reset_general_tests(&mut self) -> Result<()> {
+        self.stream
+            .send("traverse('TestFrameworkRuntime').method('ResetGeneralTests').GetValue()")
     }
 
-    fn print_test_results(&mut self, stream: &mut UniTasStream, test_type: TestType) -> Result<()> {
-        println!("---");
+    fn print_test_results(&mut self, test_type: TestType) -> Result<()> {
         let res_field_name = test_type.results_field_name();
 
+        let stream = &mut self.stream;
         stream
             .send(&format!("print(traverse('TestFrameworkRuntime').field('_instance').field('{res_field_name}').property('Count').GetValue())"))?;
         let count = stream
@@ -169,10 +181,15 @@ impl TestCtx {
             self.results.push(result);
         }
 
+        if count > 0 {
+            println!();
+        }
+
         Ok(())
     }
 
-    fn run_init_tests(&mut self, stream: &mut UniTasStream) -> Result<()> {
+    fn run_init_tests(&mut self, args: &TestArgs) -> Result<()> {
+        let stream = &mut self.stream;
         stream.send(
             r#"
             local tests = traverse('TestFrameworkRuntime').method('AllInitTests').GetValue()
@@ -195,6 +212,11 @@ impl TestCtx {
             .collect::<Result<Vec<_>, _>>()?;
 
         for test in tests {
+            if !args.test_is_target(&test) {
+                continue;
+            }
+
+            let stream = &mut self.stream;
             stream.send(&format!(
                 r#"
             local function on_restart(_, pre_scene_load)
@@ -228,22 +250,23 @@ impl TestCtx {
                 bail!("init test failed to stop running");
             }
 
-            self.print_test_results(stream, TestType::Init)?;
+            self.print_test_results(TestType::Init)?;
         }
 
         Ok(())
     }
 
-    fn run_movie_test(
-        &mut self,
-        stream: &mut UniTasStream,
-        movie: &str,
-        name: &str,
-        game_dir: &Path,
-    ) -> Result<()> {
-        let dest = game_dir.join(format!("{name}.lua"));
+    fn run_movie_test(&mut self, movie: &str, name: &str, args: &TestArgs) -> Result<()> {
+        // filter test
+        if !args.test_is_target(name) {
+            return Ok(());
+        }
+
+        let dest = args.game_dir.join(format!("{name}.lua"));
         fs::write(&dest, movie)
             .with_context(|| format!("failed to write movie file to `{}`", dest.display()))?;
+
+        let stream = &mut self.stream;
 
         // OnPreGameRestart event resets static fields, so an event after that is registered
         stream.send(&format!(
@@ -278,7 +301,7 @@ impl TestCtx {
             bail!("movie failed to stop running");
         }
 
-        self.print_test_results(stream, TestType::Movie)?;
+        self.print_test_results(TestType::Movie)?;
 
         Ok(())
     }
@@ -312,7 +335,18 @@ struct TestFailInfo {
 
 struct TestArgs<'a> {
     game_dir: &'a Path,
-    stream: UniTasStream,
+    target_tests: &'a [String],
+    target_tests_glob: &'a [GlobMatcher],
+}
+
+impl TestArgs<'_> {
+    fn test_is_target(&self, name: &str) -> bool {
+        if self.target_tests_glob.is_empty() {
+            return true;
+        }
+
+        self.target_tests_glob.iter().any(|t| t.is_match(name))
+    }
 }
 
 struct UniTasStream {
@@ -507,6 +541,13 @@ impl Test {
             .path
             .parent()
             .expect("failed to get parent of executable, which is unexpected");
+        let target_tests_glob = args
+            .tests
+            .iter()
+            .map(|t| Glob::new(t).map(|t| t.compile_matcher()))
+            .collect::<Result<Vec<_>, _>>()
+            .expect("test glob is not valid");
+
         let stdout =
             File::create(game_dir.join("stdout.log")).expect("failed to create `stdout.log`");
         let stderr =
@@ -566,13 +607,18 @@ impl Test {
         stream.send("full_access(true)")?;
         stream.receive()?;
 
-        let test_args = TestArgs { game_dir, stream };
+        let test_args = TestArgs {
+            game_dir,
+            target_tests: &args.tests,
+            target_tests_glob: &target_tests_glob,
+        };
         let mut test_ctx = TestCtx {
             results: Vec::new(),
+            stream,
         };
 
         // run tests
-        let result = (self.test)(&mut test_ctx, test_args);
+        let result = (self.test)(&mut test_ctx, &test_args);
 
         println!();
         process.kill().context("failed to stop running game")?;
@@ -580,7 +626,6 @@ impl Test {
         let status = process.wait().unwrap();
 
         result?;
-        println!("test completed\n\n");
 
         let success_count = test_ctx
             .results

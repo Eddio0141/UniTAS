@@ -33,9 +33,7 @@ public class TestFrameworkRuntime : MonoBehaviour
 
     public static TestFrameworkRuntime Instance => _instance;
 
-#pragma warning disable CS0414 // Field is assigned but its value is never used
     private static bool _generalTestsDone;
-#pragma warning restore CS0414 // Field is assigned but its value is never used
 
     /// <summary>
     /// Movie test class to run by name, setting this flag will make certain events check / start running movie tests
@@ -133,11 +131,11 @@ public class TestFrameworkRuntime : MonoBehaviour
         _instance.StartCoroutine(_instance.RunAllTests());
     }
 
-    public static void RunGeneralTests()
+    public static void RunGeneralTests(string[] tests = null)
     {
         if (!InstanceSetCheckAndLog()) return;
         _instance.DiscoverTestsIfNot();
-        _instance.StartCoroutine(_instance.RunGeneralInternal());
+        _instance.StartCoroutine(_instance.RunGeneralInternal(tests));
     }
 
     public static void ResetGeneralTests()
@@ -160,12 +158,20 @@ public class TestFrameworkRuntime : MonoBehaviour
         return false;
     }
 
-    private IEnumerator RunGeneralInternal()
+    private IEnumerator RunGeneralInternal(string[] tests)
     {
         _generalTestsDone = false;
 
+        if (tests != null)
+        {
+            tests = tests.Where(t => !string.IsNullOrWhiteSpace(t)).ToArray();
+        }
+
         foreach (var test in _generalTests)
         {
+            // filter
+            if (tests != null && tests.Length != 0 && tests.All(t => !test.Name.Like(t))) continue;
+
             yield return TestCleanup();
             yield return TestSafetyDelay();
 
@@ -591,6 +597,13 @@ public static class Assert
             msg.AppendFormat("   actual: {0}: {1}", e.GetType().FullName, e.Message);
             throw new AssertionException(msg.ToString(), message, file, line);
         }
+    }
+
+    public static void Equal(float left, float right, float precision, string message = null,
+        [CallerFilePath] string file = null,
+        [CallerLineNumber] int line = 0)
+    {
+        EqualBase(Mathf.Abs(left) - Mathf.Abs(right) <= precision, left, right, file, line, message, true);
     }
 
     public static void Equal(Vector3 left, Vector3 right, float precision, string message = null,
