@@ -1,34 +1,35 @@
 ﻿using System;
 using System.Collections.Generic;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
-using UniTAS.Patcher.Interfaces.VirtualEnvironment;
+using UniTAS.Patcher.Interfaces.Events;
+using UniTAS.Patcher.Interfaces.Events.Movie;
+using UniTAS.Patcher.Interfaces.Events.SoftRestart;
+using UniTAS.Patcher.Models.DependencyInjection;
 using UniTAS.Patcher.Models.UnityInfo;
 using UniTAS.Patcher.Models.VirtualEnvironment;
 using UniTAS.Patcher.Services.VirtualEnvironment.Input.LegacyInputSystem;
 using UnityEngine;
 
-namespace UniTAS.Patcher.Implementations.VirtualEnvironment.InputState.LegacyInputSystem;
+namespace UniTAS.Patcher.Implementations.VirtualEnvironment.InputState;
 
-[Singleton]
-public class AxisStateEnvLegacySystem(IAxisButtonStateEnvUpdate axisButtonStateEnvUpdate)
-    : LegacyInputSystemDevice, IAxisStateEnvLegacySystem
+[Singleton(RegisterPriority.AxisState)]
+public class AxisState : IAxisState, IOnVirtualEnvStatusChange, IOnGameRestart, IOnMovieUpdate
 {
-    private readonly Dictionary<string, List<LegacyInputAxisState>> _values = new();
+    private readonly BufferedFullKeyState<string> _button = new();
+    private readonly Dictionary<string, List<LegacyInputAxisState>> _values = [];
 
-    protected override void Update()
+    public void MovieUpdate(bool fixedUpdate)
     {
-    }
+        if (fixedUpdate) return;
 
-    protected override void FlushBufferedInputs()
-    {
+        // this just needs to be flushed before legacy input system input is read so its fine to be pre-updates
+
         // TODO: add unit tests for this
         var pressedNames = new HashSet<string>();
         foreach (var pair in _values)
         {
             var name = pair.Key;
-            var axisStates = pair.Value;
-
-            foreach (var axis in axisStates)
+            foreach (var axis in pair.Value)
             {
                 axis.FlushBufferedInputs();
 
@@ -37,18 +38,20 @@ public class AxisStateEnvLegacySystem(IAxisButtonStateEnvUpdate axisButtonStateE
                 // as long as value isn't 0, it is pressed
                 if (axis.ValueRaw != 0f)
                 {
-                    axisButtonStateEnvUpdate.Hold(name);
+                    _button.Hold(name);
                     pressedNames.Add(name);
                 }
                 else
                 {
-                    axisButtonStateEnvUpdate.Release(name);
+                    _button.Release(name);
                 }
             }
         }
+
+        _button.Update();
     }
 
-    protected override void ResetState()
+    private void ResetState()
     {
         foreach (var pair in _values)
         {
@@ -58,7 +61,7 @@ public class AxisStateEnvLegacySystem(IAxisButtonStateEnvUpdate axisButtonStateE
             }
         }
 
-        axisButtonStateEnvUpdate.ResetState();
+        _button.ResetState();
     }
 
     public float GetAxis(string axisName)
@@ -163,5 +166,32 @@ public class AxisStateEnvLegacySystem(IAxisButtonStateEnvUpdate axisButtonStateE
                     axis.SetAxis(scroll);
             }
         }
+    }
+
+    public void OnVirtualEnvStatusChange(bool runVirtualEnv)
+    {
+        if (!runVirtualEnv) return;
+
+        ResetState();
+    }
+
+    public void OnGameRestart(DateTime startupTime, bool preSceneLoad)
+    {
+        ResetState();
+    }
+
+    public bool IsButtonHeld(string button)
+    {
+        return _button.IsHeld(button);
+    }
+
+    public bool IsButtonDown(string button)
+    {
+        return _button.IsDown(button);
+    }
+
+    public bool IsButtonUp(string button)
+    {
+        return _button.IsUp(button);
     }
 }

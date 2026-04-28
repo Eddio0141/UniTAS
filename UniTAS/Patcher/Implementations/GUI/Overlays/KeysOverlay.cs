@@ -6,7 +6,6 @@ using UniTAS.Patcher.Models.GUI;
 using UniTAS.Patcher.Services.InputSystemOverride;
 using UniTAS.Patcher.Services.VirtualEnvironment.Input.LegacyInputSystem;
 using UniTAS.Patcher.Services.VirtualEnvironment.Input.NewInputSystem;
-using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations.GUI.Overlays;
 
@@ -15,7 +14,7 @@ namespace UniTAS.Patcher.Implementations.GUI.Overlays;
 public class KeysOverlay(
     WindowDependencies windowDependencies,
     IInputSystemState inputSystemState,
-    IKeyboardStateEnvNewSystem keyboardStateEnvNewSystem,
+    IKeyboardStateNew keyboardStateEnvNewSystem,
     IKeyboardStateEnvLegacySystem keyboardStateEnvLegacySystem)
     : BuiltInOverlay(windowDependencies, "Keys", showByDefault: true)
 {

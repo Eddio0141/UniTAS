@@ -136,6 +136,7 @@ public class LegacyInputAxisState(LegacyInputAxis axis)
 
             ValueRaw = diff;
             Value = diff;
+            StaticLogger.LogDebug($"new value {Value}");
 
             return;
         }

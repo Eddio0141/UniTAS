@@ -10,19 +10,17 @@ namespace UniTAS.Patcher.Implementations.Movie.Engine.Modules;
 [SuppressMessage("ReSharper", "UnusedType.Global")]
 [SuppressMessage("ReSharper", "UnusedMember.Global")]
 [method: MoonSharpHidden]
-public class Mouse(IMouseStateEnvController mouseController)
+public class Mouse(IMouseState mouse)
     : EngineMethodClass
 {
     public void Move(float x, float y)
     {
-        var mousePos = new Vector2(x, y);
-        mouseController.SetPosition(mousePos);
+        mouse.Position = new(x, y);
     }
 
     public void Move_rel(float x, float y)
     {
-        var mousePos = new Vector2(x, y);
-        mouseController.SetPositionRelative(mousePos);
+        mouse.Position += new Vector2(x, y);
     }
 
     public void Left(bool hold = true)
@@ -44,16 +42,16 @@ public class Mouse(IMouseStateEnvController mouseController)
     {
         if (hold)
         {
-            mouseController.HoldButton(button);
+            mouse.HoldButton(button);
         }
         else
         {
-            mouseController.ReleaseButton(button);
+            mouse.ReleaseButton(button);
         }
     }
 
     public void Set_scroll(float x, float y)
     {
-        mouseController.SetScroll(new(x, y));
+        mouse.Scroll = new(x, y);
     }
 }

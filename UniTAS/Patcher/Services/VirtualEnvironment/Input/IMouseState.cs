@@ -1,7 +1,7 @@
 using UniTAS.Patcher.Models.VirtualEnvironment;
 using UnityEngine;
 
-namespace UniTAS.Patcher.Services.VirtualEnvironment.Input.NewInputSystem;
+namespace UniTAS.Patcher.Services.VirtualEnvironment.Input;
 
 public interface IMouseState
 {

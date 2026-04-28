@@ -7,8 +7,8 @@ using UniTAS.Patcher.Interfaces.Patches.PatchTypes;
 using UniTAS.Patcher.Models.VirtualEnvironment;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.VirtualEnvironment;
+using UniTAS.Patcher.Services.VirtualEnvironment.Input;
 using UniTAS.Patcher.Services.VirtualEnvironment.Input.LegacyInputSystem;
-using UniTAS.Patcher.Services.VirtualEnvironment.Input.NewInputSystem;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 
@@ -33,17 +33,14 @@ public class LegacyInputPatch
     private static readonly IKeyboardStateEnvLegacySystem KeyboardStateEnvLegacySystem =
         ContainerStarter.Kernel.GetInstance<IKeyboardStateEnvLegacySystem>();
 
-    private static readonly IAxisButtonStateEnvLegacySystem AxisButtonStateEnvLegacySystem =
-        ContainerStarter.Kernel.GetInstance<IAxisButtonStateEnvLegacySystem>();
+    private static readonly IAxisState AxisState =
+        ContainerStarter.Kernel.GetInstance<IAxisState>();
 
     private static readonly IMouseState MouseState =
         ContainerStarter.Kernel.GetInstance<IMouseState>();
 
-    private static readonly IMouseStateEnvLegacySystem MouseStateEnvLegacySystem =
-        ContainerStarter.Kernel.GetInstance<IMouseStateEnvLegacySystem>();
-
-    private static readonly IAxisStateEnvLegacySystem AxisStateEnvLegacySystem =
-        ContainerStarter.Kernel.GetInstance<IAxisStateEnvLegacySystem>();
+    private static readonly IMouseStateLegacy MouseStateEnvLegacySystem =
+        ContainerStarter.Kernel.GetInstance<IMouseStateLegacy>();
 
     private static readonly IResetInputAxesState ResetInputAxesState =
         ContainerStarter.Kernel.GetInstance<IResetInputAxesState>();
@@ -264,7 +261,7 @@ public class LegacyInputPatch
                 return false;
             }
 
-            __result = AxisStateEnvLegacySystem.GetAxis(axisName);
+            __result = AxisState.GetAxis(axisName);
             return false;
         }
     }
@@ -299,7 +296,7 @@ public class LegacyInputPatch
                 return false;
             }
 
-            __result = AxisStateEnvLegacySystem.GetAxisRaw(axisName);
+            __result = AxisState.GetAxisRaw(axisName);
             return false;
         }
     }
@@ -477,7 +474,7 @@ public class LegacyInputPatch
                 return false;
             }
 
-            __result = AxisButtonStateEnvLegacySystem.IsButtonHeld(buttonName);
+            __result = AxisState.IsButtonHeld(buttonName);
             return false;
         }
     }
@@ -512,7 +509,7 @@ public class LegacyInputPatch
                 return false;
             }
 
-            __result = AxisButtonStateEnvLegacySystem.IsButtonDown(buttonName);
+            __result = AxisState.IsButtonDown(buttonName);
             return false;
         }
     }
@@ -547,7 +544,7 @@ public class LegacyInputPatch
                 return false;
             }
 
-            __result = AxisButtonStateEnvLegacySystem.IsButtonUp(buttonName);
+            __result = AxisState.IsButtonUp(buttonName);
             return false;
         }
     }

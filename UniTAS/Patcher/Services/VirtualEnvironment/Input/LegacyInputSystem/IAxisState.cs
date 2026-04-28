@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace UniTAS.Patcher.Services.VirtualEnvironment.Input.LegacyInputSystem;
 
-public interface IAxisStateEnvLegacySystem
+public interface IAxisState
 {
     float GetAxis(string axisName);
     float GetAxisRaw(string axisName);
@@ -13,4 +13,7 @@ public interface IAxisStateEnvLegacySystem
     void MouseMoveRel(Vector2 pos);
     void MouseScroll(float scroll);
     void AddAxis(LegacyInputAxis axis);
+    bool IsButtonHeld(string button);
+    bool IsButtonDown(string button);
+    bool IsButtonUp(string button);
 }

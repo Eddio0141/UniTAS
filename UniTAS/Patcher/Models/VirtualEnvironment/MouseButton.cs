@@ -9,14 +9,9 @@ public enum MouseButton
     Middle
 }
 
-public readonly struct MouseButtonWrap : IEquatable<MouseButtonWrap>
+public readonly struct MouseButtonWrap(MouseButton mouseButton) : IEquatable<MouseButtonWrap>
 {
-    private MouseButton MouseButton { get; }
-
-    public MouseButtonWrap(MouseButton mouseButton)
-    {
-        MouseButton = mouseButton;
-    }
+    private MouseButton MouseButton { get; } = mouseButton;
 
     public bool Equals(MouseButtonWrap other)
     {

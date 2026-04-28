@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using UniTAS.Patcher.Interfaces.InputSystemOverride;
-using UniTAS.Patcher.Services.VirtualEnvironment.Input.NewInputSystem;
+using UniTAS.Patcher.Services.VirtualEnvironment.Input;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Layouts;
 using UnityEngine.InputSystem.LowLevel;
@@ -9,17 +9,11 @@ using MouseButton = UniTAS.Patcher.Models.VirtualEnvironment.MouseButton;
 
 namespace UniTAS.Patcher.Implementations.NewInputSystem;
 
-public class MouseDeviceOverride : InputOverrideDevice
+public class MouseDeviceOverride(IMouseState mouseStateEnvNewSystem) : InputOverrideDevice
 {
-    private readonly IMouseState _mouseStateEnvNewSystem;
-
-    public MouseDeviceOverride(IMouseState mouseStateEnvNewSystem)
-    {
-        _mouseStateEnvNewSystem = mouseStateEnvNewSystem;
-    }
+    private readonly IMouseState _mouseStateEnvNewSystem = mouseStateEnvNewSystem;
 
     [InputControlLayout(stateType = typeof(MouseState), isGenericTypeOfDevice = true)]
-    [SuppressMessage("ReSharper", "ClassNeverInstantiated.Local")]
     private class TASMouse : Mouse;
 
     protected override Type InputControlLayout => typeof(TASMouse);

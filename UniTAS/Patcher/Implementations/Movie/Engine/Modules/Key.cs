@@ -15,8 +15,8 @@ namespace UniTAS.Patcher.Implementations.Movie.Engine.Modules;
 [SuppressMessage("ReSharper", "UnusedMember.Global")]
 [method: MoonSharpHidden]
 public class Key(
-    IKeyboardStateEnvController kbController,
-    IAxisStateEnvLegacySystem axisStateEnvLegacySystem,
+    IKeyboardState keyboard,
+    IAxisState axisState,
     IMovieRunner movieRunner,
     IInputSystemState inputSystemState)
     : EngineMethodClass
@@ -25,23 +25,23 @@ public class Key(
     {
         var (keyCode, newKey) = ParseKeyCodeAndWarn(key);
 
-        kbController.Hold(keyCode, newKey);
+        keyboard.Hold(keyCode, newKey);
         if (keyCode.HasValue)
-            axisStateEnvLegacySystem.KeyDown(keyCode.Value, JoyNum.AllJoysticks);
+            axisState.KeyDown(keyCode.Value, JoyNum.AllJoysticks);
     }
 
     public void Release(string key)
     {
         var (keyCode, newKey) = ParseKeyCodeAndWarn(key);
 
-        kbController.Release(keyCode, newKey);
+        keyboard.Release(keyCode, newKey);
         if (keyCode.HasValue)
-            axisStateEnvLegacySystem.KeyUp(keyCode.Value, JoyNum.AllJoysticks);
+            axisState.KeyUp(keyCode.Value, JoyNum.AllJoysticks);
     }
 
     public void Clear()
     {
-        kbController.Clear();
+        keyboard.Clear();
     }
 
     private (KeyCode?, UnityEngine.InputSystem.Key?) ParseKeyCodeAndWarn(string key)

@@ -16,7 +16,7 @@ public class LegacyInputInfo
 {
     /// Grabs legacy input info from globalgamemanagers
     public LegacyInputInfo(IAssetsManager assetsManager, ILogger logger,
-        IAxisStateEnvLegacySystem axisStateEnvLegacySystem)
+        IAxisState axisStateEnvLegacySystem)
     {
         var globalGameManagersPath = Directory.GetParent(Paths.ManagedPath)?.FullName;
         if (globalGameManagersPath == null)

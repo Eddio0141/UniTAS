@@ -6,10 +6,7 @@ namespace UniTAS.Patcher.Services.VirtualEnvironment.Input.LegacyInputSystem;
 
 public interface IKeyboardStateEnvLegacySystem
 {
-    HashSet<KeyCodeWrap> HeldKeys { get; }
-    void Hold(KeyCode keyCode);
-    void Release(KeyCode keyCode);
-    void Clear();
+    IReadOnlyCollection<KeyCodeWrap> HeldKeys { get; }
     bool IsKeyDown(KeyCode keyCode);
     bool IsKeyUp(KeyCode keyCode);
     bool IsKeyHeld(KeyCode keyCode);

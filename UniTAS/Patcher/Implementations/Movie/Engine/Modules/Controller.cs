@@ -11,7 +11,7 @@ namespace UniTAS.Patcher.Implementations.Movie.Engine.Modules;
 [SuppressMessage("ReSharper", "UnusedType.Global")]
 [SuppressMessage("ReSharper", "UnusedMember.Global")]
 [method: MoonSharpHidden]
-public class Controller(IAxisStateEnvLegacySystem axisStateEnvLegacySystem, IMovieRunner movieRunner)
+public class Controller(IAxisState axisStateEnvLegacySystem, IMovieRunner movieRunner)
     : EngineMethodClass
 {
     private uint _controllerCount;
