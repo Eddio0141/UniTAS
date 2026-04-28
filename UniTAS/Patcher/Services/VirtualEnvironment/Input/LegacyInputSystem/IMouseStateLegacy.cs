@@ -2,7 +2,7 @@ using UniTAS.Patcher.Models.VirtualEnvironment;
 
 namespace UniTAS.Patcher.Services.VirtualEnvironment.Input.LegacyInputSystem;
 
-public interface IMouseStateEnvLegacySystem
+public interface IMouseStateLegacy
 {
     bool MousePresent { get; }
     bool IsButtonDown(MouseButton button);

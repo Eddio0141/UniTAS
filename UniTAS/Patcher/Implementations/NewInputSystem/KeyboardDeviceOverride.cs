@@ -1,5 +1,4 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 using UniTAS.Patcher.Interfaces.InputSystemOverride;
 using UniTAS.Patcher.Services.VirtualEnvironment.Input.NewInputSystem;
 using UnityEngine.InputSystem;
@@ -8,17 +7,11 @@ using UnityEngine.InputSystem.LowLevel;
 
 namespace UniTAS.Patcher.Implementations.NewInputSystem;
 
-public class KeyboardDeviceOverride : InputOverrideDevice
+public class KeyboardDeviceOverride(IKeyboardStateNew keyboardStateEnvNewSystem) : InputOverrideDevice
 {
-    private readonly IKeyboardStateEnvNewSystem _keyboardStateEnvNewSystem;
-
-    public KeyboardDeviceOverride(IKeyboardStateEnvNewSystem keyboardStateEnvNewSystem)
-    {
-        _keyboardStateEnvNewSystem = keyboardStateEnvNewSystem;
-    }
+    private readonly IKeyboardStateNew _keyboardStateNew = keyboardStateEnvNewSystem;
 
     [InputControlLayout(stateType = typeof(KeyboardState), isGenericTypeOfDevice = true)]
-    [SuppressMessage("ReSharper", "ClassNeverInstantiated.Local")]
     private class TASKeyboard : Keyboard;
 
     protected override Type InputControlLayout => typeof(TASKeyboard);
@@ -26,7 +19,7 @@ public class KeyboardDeviceOverride : InputOverrideDevice
     public override void Update()
     {
         var state = new KeyboardState();
-        foreach (var heldKey in _keyboardStateEnvNewSystem.HeldKeys)
+        foreach (var heldKey in _keyboardStateNew.HeldKeys)
         {
             state.Set(heldKey.Key, true);
         }

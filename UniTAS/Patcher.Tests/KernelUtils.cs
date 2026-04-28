@@ -32,6 +32,7 @@ using UniTAS.Patcher.Services.UnityInfo;
 using UniTAS.Patcher.Services.UnitySafeWrappers;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Patcher.Services.VirtualEnvironment;
+using UniTAS.Patcher.Services.VirtualEnvironment.Input;
 using UniTAS.Patcher.Services.VirtualEnvironment.Input.LegacyInputSystem;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -118,37 +119,26 @@ public static class KernelUtils
     }
 
     [Singleton(IncludeDifferentAssembly = true)]
-    [SuppressMessage("ReSharper", "UnassignedGetOnlyAutoProperty")]
-    public class DummyMouseEnvLegacySystem : IMouseStateEnvLegacySystem
+    public class DummyMouseEnvLegacySystem : IMouseStateLegacy, IMouseState
     {
-        public bool AnyButtonDown { get; }
-        public bool AnyButtonHeld { get; }
-        public bool MousePresent { get; }
         public Vector2 Position { get; set; }
+        public Vector2 Delta { get; private set; }
         public Vector2 Scroll { get; set; }
+        public void HoldButton(MouseButton button) { }
 
-        public bool IsButtonHeld(MouseButton button)
-        {
-            return false;
-        }
+        public void ReleaseButton(MouseButton button) { }
 
-        public bool IsButtonDown(MouseButton button)
-        {
-            return false;
-        }
+        public bool IsButtonHeld(MouseButton button) => false;
 
-        public bool IsButtonUp(MouseButton button)
-        {
-            return false;
-        }
+        public bool IsButtonDown(MouseButton button) => false;
 
-        public void HoldButton(MouseButton button)
-        {
-        }
+        public bool IsButtonUp(MouseButton button) => false;
 
-        public void ReleaseButton(MouseButton button)
-        {
-        }
+        public bool MousePresent => false;
+
+        public bool AnyButtonHeld => false;
+
+        public bool AnyButtonDown => false;
     }
 
     [Register(IncludeDifferentAssembly = true)]

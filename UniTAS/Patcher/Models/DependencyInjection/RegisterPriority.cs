@@ -7,6 +7,8 @@ public enum RegisterPriority
     RuntimeTestProcessor,
     FrameAdvancing,
     StaticFieldStorage, // must be before InvokeAllAfterDeserialization (Default)
+    MouseState, // before axis state, so mouse relative movement is handled
+    AxisState,
     Default,
     CoroutineHandler,
     ToolBar,
