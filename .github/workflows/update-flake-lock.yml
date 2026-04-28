@@ -18,5 +18,4 @@ jobs:
           pr-title: "Update flake.lock"
           pr-labels: |
             dependencies
-            automation
-          token: ${{ secrets.GH_TOKEN_FOR_UPDATES }}
+          token: ${{ github.token }}
