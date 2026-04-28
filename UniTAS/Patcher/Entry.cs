@@ -72,7 +72,8 @@ public static class Entry
 
         using var _ = Bench.Measure();
 
-        StaticLogger.LogInfo("Initializing UniTAS");
+        LoggingUtils.Init();
+        StaticLogger.Log.LogInfo("Initializing UniTAS");
 
         UniTASSha256Info.AssemblyLockFileValidate();
         UniTASSha256Info.AssemblyLockFileCreate();
