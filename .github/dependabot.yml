@@ -22,6 +22,7 @@ updates:
     labels:
       - "dependencies"
       - "automation"
+    rebase-strategy: "auto"
 
   - package-ecosystem: "cargo"
     directories:
@@ -32,3 +33,4 @@ updates:
     labels:
       - "dependencies"
       - "automation"
+    rebase-strategy: "auto"
