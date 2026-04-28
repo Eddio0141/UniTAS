@@ -80,6 +80,7 @@ public class StaticFieldStorage(
             if (cctor == null) continue;
             logger.LogDebug($"Calling static constructor for type: {cctor.DeclaringType?.FullName ?? "unknown_type"}");
 
+            LoggingUtils.DiskLogger.Flush();
             try
             {
                 cctor.Invoke(null, null);

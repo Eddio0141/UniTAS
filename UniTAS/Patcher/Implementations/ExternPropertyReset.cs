@@ -45,6 +45,7 @@ public class ExternPropertyReset
         foreach (var (setMethod, value, name) in _externMethodSaves)
         {
             _logger.LogDebug($"Resetting extern property: {name}");
+            LoggingUtils.DiskLogger.Flush();
             var valueClone = DeepCopy.MakeDeepCopy(value);
             try
             {
@@ -98,6 +99,7 @@ public class ExternPropertyReset
             if (get == null || set == null) continue;
 
             _logger.LogDebug($"Saving extern property: {fullName}");
+            LoggingUtils.DiskLogger.Flush();
 
             object value;
             try
