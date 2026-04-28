@@ -34,3 +34,12 @@ updates:
       - "dependencies"
       - "automation"
     rebase-strategy: "auto"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "automation"
+    rebase-strategy: "auto"
