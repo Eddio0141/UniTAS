@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using HarmonyLib;
 using StructureMap;
@@ -10,7 +9,6 @@ using UniTAS.Patcher.Services.Logging;
 
 namespace UniTAS.Patcher.Implementations.DependencyInjection;
 
-[SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
 public class DiscoverAndRegister(ILogger logger) : IDiscoverAndRegister
 {
     public void Register<TAssemblyContainingType>(ConfigurationExpression config)
@@ -22,14 +20,11 @@ public class DiscoverAndRegister(ILogger logger) : IDiscoverAndRegister
 
         logger.LogDebug("registering types");
         var count = 0;
-        foreach (var type in types)
+        foreach (var register in types.SelectMany(t => GetRegisterInfos(t, allTypes)).OrderBy(x => x.Priority))
         {
-            foreach (var register in GetRegisterInfos(type, allTypes).OrderBy(x => x.Priority))
-            {
-                logger.LogDebug($"registering {register.Type.FullName} with priority {register.Priority}");
-                register.Register(config);
-                count++;
-            }
+            logger.LogDebug($"registering {register.Type.FullName} with priority {register.Priority}");
+            register.Register(config);
+            count++;
         }
 
         logger.LogDebug($"registered {count} types");
