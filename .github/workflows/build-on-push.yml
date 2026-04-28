@@ -170,13 +170,13 @@ jobs:
           workspaces: "test-runner -> test-runner"
           cache-on-failure: "true"
 
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         name: Download built unity game
         with:
           name: unity-game-${{ matrix.target.gameName }}-${{ matrix.target.gameTargetPlatform }}
           path: TestGames/${{ matrix.target.gameName }}/build
 
-      - uses: actions/download-artifact@v7
+      - uses: actions/download-artifact@v8
         name: Download UniTAS
         with:
           name: UniTAS-${{ matrix.target.unitasName }}
