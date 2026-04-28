@@ -195,8 +195,8 @@ jobs:
       - if: ( ${{ github.actor == 'dependabot[bot]' }} || ${{ github.actor == 'Eddio0141' }} ) && contains(github.event.pull_request.labels.*.name, 'automation')
         name: Auto-merge for automated PRs
         run: |
-          gh pr review --approve "$PR_URL"
+          # gh pr review --approve "$PR_URL"
           gh pr merge --auto --merge "$PR_URL"
         env:
           PR_URL: ${{github.event.pull_request.html_url}}
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN_FOR_UPDATES }}

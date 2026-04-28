@@ -22,6 +22,7 @@ updates:
     labels:
       - "dependencies"
       - "automation"
+    rebase-strategy: "auto"
 
   - package-ecosystem: "cargo"
     directories:
@@ -32,3 +33,13 @@ updates:
     labels:
       - "dependencies"
       - "automation"
+    rebase-strategy: "auto"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "automation"
+    rebase-strategy: "auto"
