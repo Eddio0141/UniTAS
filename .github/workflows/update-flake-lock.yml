@@ -19,4 +19,4 @@ jobs:
           pr-labels: |
             dependencies
             automation
-          token: ${{ github.token }}
+          token: ${{ secrets.GH_TOKEN_FOR_UPDATES }}
