@@ -97,7 +97,7 @@ jobs:
           targets: ${{ matrix.target.triple }}
 
       - name: Setup just
-        uses: extractions/setup-just@v3
+        uses: extractions/setup-just@v4
 
       - name: Rust cache
         uses: Swatinem/rust-cache@v2
@@ -156,7 +156,7 @@ jobs:
           targets: ${{ matrix.target.triple }}
 
       - name: Setup just
-        uses: extractions/setup-just@v3
+        uses: extractions/setup-just@v4
 
       - name: Setup Nu
         uses: hustcer/setup-nu@v3
