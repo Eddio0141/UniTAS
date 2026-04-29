@@ -100,9 +100,9 @@ impl TestCtx {
             bail!("failed to soft restart");
         }
 
-        self.print_test_results(TestType::Init)?;
         self.run_general_tests_iter(args)?;
 
+        self.run_init_tests(args)?;
         self.run_init_tests(args)?;
 
         Ok(())
@@ -257,6 +257,12 @@ impl TestCtx {
     }
 
     fn run_movie_test(&mut self, movie: &str, name: &str, args: &TestArgs) -> Result<()> {
+        self.run_movie_test_iter(movie, name, args)?;
+        self.run_movie_test_iter(movie, name, args)?;
+        Ok(())
+    }
+
+    fn run_movie_test_iter(&mut self, movie: &str, name: &str, args: &TestArgs) -> Result<()> {
         // filter test
         if !args.test_is_target(name) {
             return Ok(());
