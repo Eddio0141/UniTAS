@@ -61,7 +61,7 @@ jobs:
           buildMethod: Editor.UniTASTest.BuildScript.Build
           targetPlatform: ${{ matrix.target.targetPlatform }}
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         name: Upload binary
         with:
           name: unity-game-${{ matrix.target.name }}-${{ matrix.target.targetPlatform }}
@@ -109,7 +109,7 @@ jobs:
           CARGO_BUILD_TARGET: ${{ matrix.target.triple }}
         run: just build
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         name: Upload built artifacts
         with:
           name: UniTAS-${{ matrix.target.name }}
@@ -186,7 +186,7 @@ jobs:
         run: xvfb-run --auto-servernum --server-args='-screen 0 640x480x24:32' just test
 
       - if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         name: Upload test-runner logs
         with:
           name: test-runner-logs-${{ matrix.target.gameName }}-${{ matrix.target.gameTargetPlatform }}
