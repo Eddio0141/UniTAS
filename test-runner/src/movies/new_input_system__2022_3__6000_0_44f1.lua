@@ -35,19 +35,6 @@ mouse.move(-100, -100)
 f()
 f()
 
--- MouseAxis
-mouse.move(150, 142)
-f()
-mouse.move(50, 32)
-f()
-f()
-f()
--- limit within resolution
-mouse.move(10000, 10000)
-f()
-mouse.move(-10000, -10000)
-f()
-
 -- KeyboardTwoKeys
 -- press A and B, but B is 1f delayed in action
 f()

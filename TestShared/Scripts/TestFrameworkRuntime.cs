@@ -606,6 +606,16 @@ public static class Assert
         EqualBase(Mathf.Abs(left) - Mathf.Abs(right) <= precision, left, right, file, line, message, true);
     }
 
+    public static void Equal(Vector2 left, Vector2 right, float precision, string message = null,
+        [CallerFilePath] string file = null,
+        [CallerLineNumber] int line = 0)
+    {
+
+        var diff = new Vector2(Mathf.Abs(left.x) - Mathf.Abs(right.x), Mathf.Abs(left.y) - Mathf.Abs(right.y));
+        var result = diff.x <= precision && diff.y <= precision;
+        EqualBase(result, left, right, file, line, message, true);
+    }
+
     public static void Equal(Vector3 left, Vector3 right, float precision, string message = null,
         [CallerFilePath] string file = null,
         [CallerLineNumber] int line = 0)
