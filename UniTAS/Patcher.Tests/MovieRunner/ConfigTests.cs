@@ -49,11 +49,11 @@ public class ConfigTests
         var properties = Utils.Setup(input).Item2;
 
         // 2021-03-28T12:00:00.0000000
-        Assert.Equal(new(2021, 3, 28, 12, 0, 0, DateTimeKind.Utc), properties.StartupProperties.StartTime);
-        Assert.Equal(1 / 60f, properties.StartupProperties.FrameTime);
+        Assert.Equal(new(2021, 3, 28, 12, 0, 0, DateTimeKind.Utc), properties.StartTime);
+        Assert.Equal(1 / 60f, properties.FrameTime);
         Assert.Equal(UpdateType.FixedUpdate, properties.UpdateType);
-        Assert.Equal(123, properties.StartupProperties.Seed);
-        var windowState = properties.StartupProperties.WindowState;
+        Assert.Equal(123, properties.Seed);
+        var windowState = properties.WindowState;
         Assert.Equal(500, windowState.CurrentResolution.Width);
         Assert.Equal(600, windowState.CurrentResolution.Height);
         Assert.Equal(144, windowState.CurrentResolution.RefreshRateWrap.Rate);
@@ -91,7 +91,7 @@ MOVIE_CONFIG = {
 
         var (_, properties, kernel) = Utils.Setup(input);
 
-        Assert.Equal(1 / 50f, properties.StartupProperties.FrameTime);
+        Assert.Equal(1 / 50f, properties.FrameTime);
         Assert.Equal("frametime and fps are both defined, using frametime",
             kernel.GetInstance<KernelUtils.DummyLogger>().Warns[0]);
     }
