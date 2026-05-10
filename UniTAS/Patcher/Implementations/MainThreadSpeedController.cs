@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 using System.Threading;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
@@ -8,7 +9,7 @@ using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.GameExecutionControllers;
 using UniTAS.Patcher.Services.UnityInfo;
 using UniTAS.Patcher.Services.VirtualEnvironment;
-using UniTAS.Patcher.Utils;
+using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations;
 
@@ -22,7 +23,9 @@ public class MainThreadSpeedControl : IMainThreadSpeedControl, IOnUpdateUncondit
         get => _speedMultiplier;
         set
         {
-            _speedMultiplier = value < 0f ? 0f : value;
+            value = Mathf.Clamp01(value);
+            if (_speedMultiplier == value) return;
+            _speedMultiplier = value;
             _actualTime = _reverseInvoker.Invoke(Stopwatch.StartNew);
             _gameTime = 0.0;
         }
