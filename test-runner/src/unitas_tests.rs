@@ -278,13 +278,12 @@ impl TestCtx {
         stream.send(&format!(
             r#"
             local function on_restart(_, pre_scene_load)
-                if pre_scene_load then
+                if not pre_scene_load then
                     return
                 end
                 hook_on_game_restart(on_restart, false)
 
                 traverse("TestFrameworkRuntime").field("_movieTestClassToRun").SetValue("{name}")
-                traverse("TestFrameworkRuntime").field("_movieTestClassToRun").GetValue("{name}")
             end
 
             hook_on_game_restart(on_restart, true)
