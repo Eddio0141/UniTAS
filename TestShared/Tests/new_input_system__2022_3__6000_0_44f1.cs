@@ -18,7 +18,7 @@ public class new_input_system__2022_3__6000_0_44f1 : MonoBehaviour
         Assert.Equal(Screen.height, 100);
 
         Assert.Equal(mouse.position.ReadValue(), new Vector2(100, 100), 0.000001f);
-        Assert.Equal(mouse.delta.ReadValue(), Vector2.zero, 0.000001f);
+        Assert.Equal(mouse.delta.ReadValue(), new Vector2(100, 100), 0.000001f);
         yield return new UnityYield(null);
 
         Assert.Equal(mouse.position.ReadValue(), new Vector2(50, 50), 0.000001f);
