@@ -28,7 +28,7 @@ public class TestFrameworkRuntime : MonoBehaviour
     private readonly List<Result> _movieTestResults = new List<Result>();
     private Test[] _generalTests;
     private Test[] _eventTests;
-    private (MovieTestAttribute, Test[])[] _movieTests;
+    private (string, MovieTestAttribute, Test[])[] _movieTests;
     private Test[] _initTestsAwake;
 
     public static TestFrameworkRuntime Instance => _instance;
@@ -67,7 +67,7 @@ public class TestFrameworkRuntime : MonoBehaviour
         _discoveredTests = true;
         var generalTests = new List<Test>();
         var eventTests = new List<Test>();
-        var movieTests = new List<(MovieTestAttribute, Test[])>();
+        var movieTests = new List<(string, MovieTestAttribute, Test[])>();
         var initTestsAwake = new List<Test>();
 
         foreach (var monoBeh in GetComponents<MonoBehaviour>())
@@ -93,7 +93,7 @@ public class TestFrameworkRuntime : MonoBehaviour
                     }
                 }
 
-                movieTests.Add((movieTestAttr, testsIter));
+                movieTests.Add((monoBehType.FullName, movieTestAttr, testsIter));
                 continue;
             }
 
@@ -331,17 +331,24 @@ public class TestFrameworkRuntime : MonoBehaviour
         CheckExecTestFlag();
         Debug.Log($"Movie test is set to be executed: `{_movieTestClassToRun}`");
         DiscoverTestsIfNot();
-        var testPairIdx = Array.FindIndex(_movieTests, t => t.Item1.Timing == movieTestTiming);
+        var testPairIdx = Array.FindIndex(_movieTests, t => t.Item1.Like(_movieTestClassToRun));
         if (testPairIdx < 0)
         {
             throw new InvalidOperationException("Movie test not found");
         }
+        var movieTest = _movieTests[testPairIdx];
+        var testTiming = movieTest.Item2.Timing;
+        if (testTiming != movieTestTiming)
+        {
+            Debug.Log($"Test found but mismatching timing, need timing {testTiming} but current at {movieTestTiming}, skipping test execution");
+            yield break;
+        }
+
         _execTestRun = true;
-        var testPair = _movieTests[testPairIdx];
-        var tests = testPair.Item2.Where(t => t.TypeName == _movieTestClassToRun).ToArray();
+        var tests = _movieTests[testPairIdx].Item3;
 
         Debug.Log($"Running {tests.Length} movie tests");
-        foreach (var test in testPair.Item2)
+        foreach (var test in tests)
         {
             yield return RunTest(test, _movieTestResults);
         }
