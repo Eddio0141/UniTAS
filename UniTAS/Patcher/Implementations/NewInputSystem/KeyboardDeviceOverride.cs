@@ -1,5 +1,6 @@
 using System;
 using UniTAS.Patcher.Interfaces.InputSystemOverride;
+using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.VirtualEnvironment.Input.NewInputSystem;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Layouts;
@@ -7,7 +8,7 @@ using UnityEngine.InputSystem.LowLevel;
 
 namespace UniTAS.Patcher.Implementations.NewInputSystem;
 
-public class KeyboardDeviceOverride(IKeyboardStateNew keyboardStateEnvNewSystem) : InputOverrideDevice
+public class KeyboardDeviceOverride(IPatchReverseInvoker reverseInvoker, IKeyboardStateNew keyboardStateEnvNewSystem) : InputOverrideDevice(reverseInvoker)
 {
     private readonly IKeyboardStateNew _keyboardStateNew = keyboardStateEnvNewSystem;
 
@@ -24,6 +25,6 @@ public class KeyboardDeviceOverride(IKeyboardStateNew keyboardStateEnvNewSystem)
             state.Set(heldKey.Key, true);
         }
 
-        InputSystem.QueueStateEvent(Device, state);
+        QueueStateEvent(state);
     }
 }

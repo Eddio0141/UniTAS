@@ -1,6 +1,8 @@
 using System;
 using UniTAS.Patcher.Interfaces.InputSystemOverride;
+using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.VirtualEnvironment.Input;
+using UniTAS.Patcher.Utils;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Layouts;
 using UnityEngine.InputSystem.LowLevel;
@@ -8,7 +10,7 @@ using MouseButton = UniTAS.Patcher.Models.VirtualEnvironment.MouseButton;
 
 namespace UniTAS.Patcher.Implementations.NewInputSystem;
 
-public class MouseDeviceOverride(IMouseState mouseStateEnvNewSystem) : InputOverrideDevice
+public class MouseDeviceOverride(IPatchReverseInvoker reverseInvoker, IMouseState mouseStateEnvNewSystem) : InputOverrideDevice(reverseInvoker)
 {
     private readonly IMouseState _mouseState = mouseStateEnvNewSystem;
 
@@ -46,6 +48,6 @@ public class MouseDeviceOverride(IMouseState mouseStateEnvNewSystem) : InputOver
             // displayIndex = ??, // TODO: probably look into it once virtual env gets more enriched with os stuff
         };
 
-        InputSystem.QueueStateEvent(Device, state);
+        QueueStateEvent(state);
     }
 }

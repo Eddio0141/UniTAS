@@ -34,7 +34,6 @@ public class MouseState(ICursorWrapper cursorWrapper, IAxisState axisState) : IM
     private Vector2 _prevPos;
     private CursorLockMode _prevLockState;
     private Vector2 scroll;
-    private bool _initialLockDelta;
 
     private void ResetState()
     {
@@ -104,11 +103,7 @@ public class MouseState(ICursorWrapper cursorWrapper, IAxisState axisState) : IM
         var position = Position;
 
         var locked = _prevLockState == CursorLockMode.Locked;
-        if (locked)
-        {
-            _initialLockDelta = true;
-        }
-        else
+        if (!locked)
         {
             position.x = Mathf.Clamp(position.x, 0, Screen.width);
             position.y = Mathf.Clamp(position.y, 0, Screen.height);
@@ -121,12 +116,6 @@ public class MouseState(ICursorWrapper cursorWrapper, IAxisState axisState) : IM
             // position is locked to center
             // delta must be calculated before position is locked
             position = new Vector2(Screen.width / 2f, Screen.height / 2f);
-
-            if (_initialLockDelta)
-            {
-                _initialLockDelta = false;
-                Delta = Vector2.zero;
-            }
         }
 
         Position = position;
