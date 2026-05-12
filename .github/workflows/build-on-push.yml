@@ -50,7 +50,7 @@ jobs:
         run: rm -rf /opt/hostedtoolcache
 
       - if: steps.unity-game-bin-cache.outputs.cache-hit != 'true'
-        uses: game-ci/unity-builder@v4
+        uses: game-ci/unity-builder@v5
         name: Build
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
