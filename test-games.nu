@@ -10,17 +10,20 @@ def print-help [] {
     print "  tests    Optional name of tests to be executed. Name of the tests can be globbed. By default, all tests are ran."
     print ""
     print "Flags:"
-    print "  --preserve-games    Skips cleanup of test game environment, and prints the path."
-    print "  --help -h           Prints this help page."
+    print "  --preserve-games         Skips cleanup of test game environment, and prints the path."
+    print "  --target (Optional)      Target to grab the build of UniTAS from. Default: Release"
+    print "  --help -h                Prints this help page."
 }
 
-def --wrapped main [...args] {
-    if $args has "--help" or $args has "-h" {
+def --wrapped main [
+  --preserve-games
+  --target: string = "Release"
+  --help (-h)
+  ...target_tests] {
+    if $help {
         print-help
         return
     }
-
-    let target_tests = $args | where {|v| ($v | str starts-with "-" | not $in)}
 
     const repo_dir = path self | path dirname
     let cache_dir = $env.HOME | path join ".cache" "unitas-test-runner"
@@ -64,7 +67,7 @@ def --wrapped main [...args] {
     }
 
     let games_dir = mktemp -d
-    let unitas_build_dir = $repo_dir | path join "UniTAS" "Patcher" "bin" "Release"
+    let unitas_build_dir = $repo_dir | path join "UniTAS" "Patcher" "bin" $target
 
     for dir in (ls -la $unitas_build_dir) {
         cp -r ($dir | get name) $bepinex_dir
@@ -132,7 +135,7 @@ def --wrapped main [...args] {
     }
 
     # cleanup / print location
-    if $args has "--preserve-games" {
+    if $preserve_games {
         print $"preserving games located at `($games_dir)`"
     } else {
         rm -rf $games_dir

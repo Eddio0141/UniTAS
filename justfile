@@ -21,7 +21,7 @@ test-unit target="release": (build target)
 [arg("target", long="target")]
 test-games target="release" *TESTS: (build target)
     cd test-runner && cargo build --release
-    ./test-games.nu {{TESTS}}
+    ./test-games.nu {{TESTS}} --target {{ if target == "release" { "Release" } else { target } }}
 
 [arg("target", long="target")]
 test target="release": (test-unit target) (test-games target)
