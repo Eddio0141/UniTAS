@@ -12,13 +12,6 @@ using UniTAS.Patcher.Services.VirtualEnvironment.Input.LegacyInputSystem;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
 
-// ReSharper disable InconsistentNaming
-
-// ReSharper disable ClassNeverInstantiated.Local
-// ReSharper disable ClassNeverInstantiated.Global
-
-// ReSharper disable UnusedMember.Local
-
 namespace UniTAS.Patcher.Patches.Harmony.UnityInit;
 
 [RawPatchUnityInit]
@@ -908,6 +901,19 @@ public class LegacyInputPatch
         }
     }
 
+    [HarmonyPatch(typeof(Input), "mousePositionDelta", MethodType.Getter)]
+    private class get_mousePositionDelta
+    {
+        private static Exception Cleanup(MethodBase original, Exception ex) => PatchHelper.CleanupIgnoreFail(original, ex);
+
+        private static bool Prefix(ref Vector2 __result)
+        {
+            if (!VirtualEnvController.RunVirtualEnvironment) return true;
+            __result = MouseState.Delta;
+            return false;
+        }
+    }
+
     // left to do properties
     // TODO backButtonLeavesApp { get; set; }
     // TODO compass { get; }
@@ -917,7 +923,6 @@ public class LegacyInputPatch
     // TODO imeCompositionMode { get; set; }
     // TODO imeIsSelected { get; }
     // TODO location { get; }
-    // TODO mousePositionDelta { get; }
     // TODO simulateMouseWithTouches { get; set; }
     // TODO stylusTouchSupported { get; }
     // TODO touchPressureSupported { get; }

@@ -26,7 +26,7 @@ public class SaveScriptableObjectStates(ILogger logger, IUpdateScriptableObjDest
         {
             AccessTools.TypeByName("TMPro.TMP_FontAsset"),
             // this caused a crash when loading saved data
-            typeof(UnityEngine.InputSystem.Keyboard)
+            // typeof(UnityEngine.InputSystem.Keyboard)
         }.Where(x => x != null).Select(x => x.Assembly)];
 
     private readonly IUpdateScriptableObjDestroyState _updateScriptableObjDestroyState = updateScriptableObjDestroyState;

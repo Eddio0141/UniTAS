@@ -2,21 +2,16 @@ using System;
 using System.Reflection;
 using HarmonyLib;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
-using UniTAS.Patcher.Services;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.LowLevel;
 
 namespace UniTAS.Patcher.Interfaces.InputSystemOverride;
 
 [RegisterAll]
-public abstract class InputOverrideDevice(IPatchReverseInvoker reverseInvoker)
+public abstract class InputOverrideDevice
 {
     private static readonly MethodInfo AddDeviceGeneric = AccessTools.DeclaredMethod(typeof(InputSystem), nameof(InputSystem.AddDevice), [typeof(string)]);
     private static readonly object[] AddDeviceArgs = [null];
-    private static Type InputRuntime = AccessTools.TypeByName("UnityEngine.InputSystem.LowLevel.InputRuntime");
-    private static FieldInfo InputRuntimeInstance = AccessTools.Field(InputRuntime, "s_Instance");
-    private static Type NativeInputRuntime = AccessTools.TypeByName("UnityEngine.InputSystem.LowLevel.NativeInputRuntime");
-    private static MethodInfo InputRuntimeCurrentTime = AccessTools.PropertyGetter(NativeInputRuntime, "currentTime");
 
     public void AddDevice()
     {
@@ -33,6 +28,7 @@ public abstract class InputOverrideDevice(IPatchReverseInvoker reverseInvoker)
     public void RemoveDevice()
     {
         InputSystem.RemoveDevice(Device);
+        Device = null;
     }
 
     public void MakeCurrent()
@@ -55,8 +51,7 @@ public abstract class InputOverrideDevice(IPatchReverseInvoker reverseInvoker)
     protected void QueueStateEvent<TState>(TState state)
         where TState : struct, IInputStateTypeInfo
     {
-        // var time = (double)reverseInvoker.Invoke(() => InputRuntimeCurrentTime.Invoke(InputRuntimeInstance.GetValue(null), null));
-        // InputSystem.QueueStateEvent(Device, state, time);
-        InputSystem.QueueStateEvent(Device, state);
+        // time is explicitly set to 0 as to queue the event as soon as possible
+        InputSystem.QueueStateEvent(Device, state, 0.0);
     }
 }

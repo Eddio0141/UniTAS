@@ -1,6 +1,5 @@
 using System;
 using UniTAS.Patcher.Interfaces.InputSystemOverride;
-using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.VirtualEnvironment.Input.NewInputSystem;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Layouts;
@@ -8,7 +7,7 @@ using UnityEngine.InputSystem.LowLevel;
 
 namespace UniTAS.Patcher.Implementations.NewInputSystem;
 
-public class KeyboardDeviceOverride(IPatchReverseInvoker reverseInvoker, IKeyboardStateNew keyboardStateEnvNewSystem) : InputOverrideDevice(reverseInvoker)
+public class KeyboardDeviceOverride(IKeyboardStateNew keyboardStateEnvNewSystem) : InputOverrideDevice
 {
     private readonly IKeyboardStateNew _keyboardStateNew = keyboardStateEnvNewSystem;
 

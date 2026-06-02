@@ -10,7 +10,6 @@ using UniTAS.Patcher.Models.VirtualEnvironment;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Patcher.Services.VirtualEnvironment.Input;
 using UniTAS.Patcher.Services.VirtualEnvironment.Input.LegacyInputSystem;
-using UniTAS.Patcher.Utils;
 using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations.VirtualEnvironment.InputState;

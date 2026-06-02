@@ -162,7 +162,7 @@ public class ExternPropertyReset
         // clipboard access
         "UnityEngine.GUIUtility.systemCopyBuffer",
         // new input system stuff
-        "UnityEngineInternal.Input.NativeInputSystem.*",
+        // "UnityEngineInternal.Input.NativeInputSystem.*",
         // null exception
         "UnityEngine.Rendering.GraphicsSettings.INTERNAL_defaultRenderPipeline",
         "UnityEngine.QualitySettings.INTERNAL_renderPipeline",

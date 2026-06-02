@@ -119,6 +119,10 @@ public static class ILCodeUtils
     {
         if (prefix == null && postfix == null) return;
         if (method == null) return;
+        if (prefix?.IsStatic is false || postfix?.IsStatic is false)
+        {
+            throw new ArgumentException("Hook method must be static");
+        }
 
         method.PInvokeInfo = null;
         method.Attributes &= ~MethodAttributes.PInvokeImpl;
