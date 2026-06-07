@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using HarmonyLib;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.SoftRestart;
@@ -8,8 +6,6 @@ using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.InputSystemOverride;
 using UniTAS.Patcher.Services.Logging;
 using UnityEngine;
-using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.Layouts;
 
 namespace UniTAS.Patcher.Implementations.NewInputSystem;
 

@@ -906,7 +906,7 @@ public class LegacyInputPatch
     {
         private static Exception Cleanup(MethodBase original, Exception ex) => PatchHelper.CleanupIgnoreFail(original, ex);
 
-        private static bool Prefix(ref Vector2 __result)
+        private static bool Prefix(ref Vector3 __result)
         {
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
             __result = MouseState.Delta;
