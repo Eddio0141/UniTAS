@@ -39,10 +39,6 @@ public static class Entry
             // should be fine
             "UnityEngine.IMGUIModule",
 
-            // "Unity.InputSystem",
-            // "Unity.InputSystem.ForUI",
-            // "UnityEngine.InputModule",
-
             // ignore rewired, there's a fix for it
             "Rewired_*"
         };

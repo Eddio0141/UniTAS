@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -11,6 +12,7 @@ using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.Trackers.UpdateTrackInfo;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace UniTAS.Patcher.Implementations.UnityFix;
 
@@ -25,9 +27,14 @@ public class SaveScriptableObjectStates(ILogger logger, IUpdateScriptableObjDest
     private readonly Assembly[] _ignoreAssemblies = [.. new[]
         {
             AccessTools.TypeByName("TMPro.TMP_FontAsset"),
-            // this caused a crash when loading saved data
-            // typeof(UnityEngine.InputSystem.Keyboard)
         }.Where(x => x != null).Select(x => x.Assembly)];
+
+    private readonly Type[] _ignoreTypes = [.. new[]
+    {
+        // this caused a crash when loading saved data
+        // TODO: should be savable
+        AccessTools.TypeByName("UnityEngine.InputSystem.InputActionAsset")
+    }.Where(x => x != null)];
 
     private readonly IUpdateScriptableObjDestroyState _updateScriptableObjDestroyState = updateScriptableObjDestroyState;
     private readonly IPatchReverseInvoker _reverseInvoker = reverseInvoker;
@@ -47,7 +54,7 @@ public class SaveScriptableObjectStates(ILogger logger, IUpdateScriptableObjDest
         _logger.LogDebug("Saving all ScriptableObject states");
 
         var allScriptableObjects = ResourcesUtils.FindObjectsOfTypeAll<ScriptableObject>()
-            .Where(x => _ignoreAssemblies.All(a => !Equals(a, x.GetType().Assembly))).ToArray();
+            .Where(x => _ignoreAssemblies.All(a => !Equals(a, x.GetType().Assembly)) && _ignoreTypes.All(t => !Equals(t, x.GetType()))).ToArray();
         _logger.LogDebug($"Found {allScriptableObjects.Length} ScriptableObjects");
 
         foreach (var obj in allScriptableObjects)
