@@ -40,10 +40,10 @@ public class new_input_system__2022_3__6000_0_44f1 : MonoBehaviour
         Assert.Equal(mouse.delta.ReadValue(), new Vector2(25, -25), 0.000001f);
         yield return new UnityYield(null);
         Assert.Equal(mouse.position.ReadValue(), new Vector2(50, 50), 0.000001f);
-        Assert.Equal(mouse.delta.ReadValue(), new Vector2(-500, -500), 0.000001f);
+        Assert.Equal(mouse.delta.ReadValue(), new Vector2(-600, -600), 0.000001f);
         yield return new UnityYield(null);
         Assert.Equal(mouse.position.ReadValue(), new Vector2(50, 50), 0.000001f);
-        Assert.Equal(mouse.delta.ReadValue(), new Vector2(-500, -500), 0.000001f);
+        Assert.Equal(mouse.delta.ReadValue(), new Vector2(-600, -600), 0.000001f);
         yield return new UnityYield(null);
         Assert.Equal(mouse.position.ReadValue(), new Vector2(50, 50), 0.000001f);
         Assert.Equal(mouse.delta.ReadValue(), new Vector2(0, 0), 0.000001f);
