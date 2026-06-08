@@ -109,7 +109,7 @@ def --wrapped main [
         print $"\n[($game_name)]"
         # TODO: not crossplatform friendly
         $exit_code = try {
-            xvfb-run --auto-servernum --server-args='-screen 0 640x480x24:32' $"($repo_dir)/test-runner/target/release/test-runner" $executable ...$target_tests
+            xvfb-run --auto-display $"($repo_dir)/test-runner/target/release/test-runner" $executable ...$target_tests
             0
         } catch { |e| 
             let exit_code = $e | get -o exit_code
