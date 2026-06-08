@@ -145,11 +145,6 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
 
-      - name: Setup ffmpeg
-        uses: FedericoCarboni/setup-ffmpeg@v3.1
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Rustup toolchain install
         uses: dtolnay/rust-toolchain@nightly
         with:
@@ -162,7 +157,7 @@ jobs:
         uses: hustcer/setup-nu@v3
       
       - name: Setup packages
-        run: sudo apt update && sudo apt install -qyy xvfb
+        run: sudo apt update && sudo apt install -qyy xvfb ffmpeg
 
       - name: Rust cache
         uses: Swatinem/rust-cache@v2
