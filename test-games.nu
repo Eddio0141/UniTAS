@@ -109,7 +109,7 @@ def --wrapped main [
         print $"\n[($game_name)]"
         # TODO: not crossplatform friendly
         $exit_code = try {
-            xvfb-run --auto-display $"($repo_dir)/test-runner/target/release/test-runner" $executable ...$target_tests
+            xvfb-run --auto-servernum $"($repo_dir)/test-runner/target/release/test-runner" $executable ...$target_tests
             0
         } catch { |e| 
             let exit_code = $e | get -o exit_code
