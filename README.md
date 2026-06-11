@@ -42,17 +42,20 @@ discord or GitHub discussions
 
 ## Requirements
 
-- Make sure you have [.NET SDK 8.0](https://dotnet.microsoft.com/en-us/download) installed on your system
+- Install [.NET SDK](https://dotnet.microsoft.com/en-us/download)
+- Install [Rust](https://rustup.rs/)
+- Install [Just](https://just.systems/man/en/installation.html)
 - Add BepInEx nuget feed with `dotnet nuget add source "https://nuget.bepinex.dev/v3/index.json"`
 
 ## Build
 
+### Grab the source code
 - Clone the repo with `git clone`
 - Initialize submodules with `git submodule update --init --recursive`
-- Run `dotnet build UniTAS` at the base directory
-    - Remove the `UniTAS` if you are in the inner `UniTAS` directory
-    - If you need to choose `Release` or `Debug` config, do so with the `--configuration` flag
-- Output folder would be in `UniTAS/Patcher/bin/{Debug|Release}`
-    - The output content can be copied directly inside a `BepInEx` folder to be used
+
+### Build UniTAS
+- Run `just build`
+- Output folder would be in `UniTAS/Patcher/bin/Release`
+- The output content can be copied directly inside a `BepInEx` folder to be used
 
 [BepInEx 5]: https://docs.bepinex.dev/articles/user_guide/installation/index.html
