@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 using System.Threading;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
@@ -8,6 +9,7 @@ using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.GameExecutionControllers;
 using UniTAS.Patcher.Services.UnityInfo;
 using UniTAS.Patcher.Services.VirtualEnvironment;
+using UnityEngine;
 
 namespace UniTAS.Patcher.Implementations;
 
@@ -21,7 +23,9 @@ public class MainThreadSpeedControl : IMainThreadSpeedControl, IOnUpdateUncondit
         get => _speedMultiplier;
         set
         {
-            _speedMultiplier = value < 0f ? 0f : value;
+            value = Mathf.Clamp01(value);
+            if (_speedMultiplier == value) return;
+            _speedMultiplier = value;
             _actualTime = _reverseInvoker.Invoke(Stopwatch.StartNew);
             _gameTime = 0.0;
         }
@@ -47,8 +51,6 @@ public class MainThreadSpeedControl : IMainThreadSpeedControl, IOnUpdateUncondit
 
     public void OnSceneLoad()
     {
-        _actualTime = _reverseInvoker.Invoke(Stopwatch.StartNew);
-        _gameTime = 0.0;
     }
 
     public void UpdateUnconditional()
@@ -60,8 +62,13 @@ public class MainThreadSpeedControl : IMainThreadSpeedControl, IOnUpdateUncondit
 
         // if the actual time passed is less than the time that should have passed, wait
         var waitTime = _gameTime - actualTime;
-
-        if (waitTime > 0)
+        if (waitTime < 0)
+        {
+            // reset clock to prevent game from running too fast for too long
+            _actualTime = _reverseInvoker.Invoke(Stopwatch.StartNew);
+            _gameTime = 0;
+        }
+        else
         {
             SleepPrecise(waitTime);
         }

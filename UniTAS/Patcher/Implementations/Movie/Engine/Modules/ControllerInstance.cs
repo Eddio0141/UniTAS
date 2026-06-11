@@ -11,13 +11,13 @@ namespace UniTAS.Patcher.Implementations.Movie.Engine.Modules;
 [SuppressMessage("ReSharper", "UnusedMember.Global")]
 public class ControllerInstance
 {
-    private readonly IAxisStateEnvLegacySystem _axisStateEnvLegacySystem;
+    private readonly IAxisState _axisStateEnvLegacySystem;
 
     private readonly uint _playerNumber;
     private readonly JoyNum _playerJoyNum;
 
     [MoonSharpHidden]
-    public ControllerInstance(IAxisStateEnvLegacySystem axisStateEnvLegacySystem, uint playerNumber)
+    public ControllerInstance(IAxisState axisStateEnvLegacySystem, uint playerNumber)
     {
         _axisStateEnvLegacySystem = axisStateEnvLegacySystem;
         _playerNumber = playerNumber;

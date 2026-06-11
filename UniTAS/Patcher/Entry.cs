@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
@@ -38,10 +39,6 @@ public static class Entry
             // should be fine
             "UnityEngine.IMGUIModule",
 
-            "Unity.InputSystem",
-            "Unity.InputSystem.ForUI",
-            "UnityEngine.InputModule",
-
             // ignore rewired, there's a fix for it
             "Rewired_*"
         };
@@ -65,6 +62,8 @@ public static class Entry
     [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public static void Initialize()
     {
+        // for windows, add library directory to allow DllImport to pick up library path
+        Environment.SetEnvironmentVariable("PATH", Environment.GetEnvironmentVariable("PATH") + ";" + UniTASPaths.Patcher);
         UniTasRs.init();
 
         using var _ = Bench.Measure();

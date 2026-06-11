@@ -28,14 +28,12 @@ public class TestFrameworkRuntime : MonoBehaviour
     private readonly List<Result> _movieTestResults = new List<Result>();
     private Test[] _generalTests;
     private Test[] _eventTests;
-    private (MovieTestAttribute, Test[])[] _movieTests;
+    private (string, MovieTestAttribute, Test[])[] _movieTests;
     private Test[] _initTestsAwake;
 
     public static TestFrameworkRuntime Instance => _instance;
 
-#pragma warning disable CS0414 // Field is assigned but its value is never used
     private static bool _generalTestsDone;
-#pragma warning restore CS0414 // Field is assigned but its value is never used
 
     /// <summary>
     /// Movie test class to run by name, setting this flag will make certain events check / start running movie tests
@@ -69,7 +67,7 @@ public class TestFrameworkRuntime : MonoBehaviour
         _discoveredTests = true;
         var generalTests = new List<Test>();
         var eventTests = new List<Test>();
-        var movieTests = new List<(MovieTestAttribute, Test[])>();
+        var movieTests = new List<(string, MovieTestAttribute, Test[])>();
         var initTestsAwake = new List<Test>();
 
         foreach (var monoBeh in GetComponents<MonoBehaviour>())
@@ -95,7 +93,7 @@ public class TestFrameworkRuntime : MonoBehaviour
                     }
                 }
 
-                movieTests.Add((movieTestAttr, testsIter));
+                movieTests.Add((monoBehType.FullName, movieTestAttr, testsIter));
                 continue;
             }
 
@@ -133,11 +131,11 @@ public class TestFrameworkRuntime : MonoBehaviour
         _instance.StartCoroutine(_instance.RunAllTests());
     }
 
-    public static void RunGeneralTests()
+    public static void RunGeneralTests(string[] tests = null)
     {
         if (!InstanceSetCheckAndLog()) return;
         _instance.DiscoverTestsIfNot();
-        _instance.StartCoroutine(_instance.RunGeneralInternal());
+        _instance.StartCoroutine(_instance.RunGeneralInternal(tests));
     }
 
     public static void ResetGeneralTests()
@@ -160,23 +158,34 @@ public class TestFrameworkRuntime : MonoBehaviour
         return false;
     }
 
-    private IEnumerator RunGeneralInternal()
+    private IEnumerator RunGeneralInternal(string[] tests)
     {
         _generalTestsDone = false;
 
+        if (tests != null)
+        {
+            tests = tests.Where(t => !string.IsNullOrWhiteSpace(t)).ToArray();
+        }
+
         foreach (var test in _generalTests)
         {
-            yield return TestSafetyDelay();
-            yield return RunTest(test, _generalTestResults);
-            yield return TestSafetyDelay();
+            // filter
+            if (tests != null && tests.Length != 0 && tests.All(t => !test.Name.Like(t))) continue;
+
             yield return TestCleanup();
+            yield return TestSafetyDelay();
+
+            yield return RunTest(test, _generalTestResults);
+
+            yield return TestCleanup();
+            yield return TestSafetyDelay();
         }
 
         _generalTestsDone = true;
         Debug.Log("General tests finished");
     }
 
-    private IEnumerable<Test> AllTests => _movieTests.SelectMany(t => t.Item2).Concat(_generalTests).Concat(_eventTests).Concat(_initTestsAwake);
+    private IEnumerable<Test> AllTests => _generalTests.Concat(_eventTests).Concat(_initTestsAwake);
 
     /// <summary>
     /// Only used internally for editor
@@ -187,10 +196,13 @@ public class TestFrameworkRuntime : MonoBehaviour
         var results = new List<Result>();
         foreach (var test in AllTests)
         {
-            yield return TestSafetyDelay();
-            yield return RunTest(test, results);
-            yield return TestSafetyDelay();
             yield return TestCleanup();
+            yield return TestSafetyDelay();
+
+            yield return RunTest(test, results);
+
+            yield return TestCleanup();
+            yield return TestSafetyDelay();
         }
 
         Debug.Log("All tests finished");
@@ -246,6 +258,13 @@ public class TestFrameworkRuntime : MonoBehaviour
     private static IEnumerator TestCleanup()
     {
         Debug.Log("cleaning up...");
+
+        var defaultWidth = 1920;
+        var defaultHeight = 1080;
+        if (Screen.width != defaultWidth || Screen.height != defaultHeight || Screen.fullScreen)
+        {
+            Screen.SetResolution(1920, 1080, false);
+        }
 
         // restore default scene
         SceneManager.LoadScene(0);
@@ -312,17 +331,24 @@ public class TestFrameworkRuntime : MonoBehaviour
         CheckExecTestFlag();
         Debug.Log($"Movie test is set to be executed: `{_movieTestClassToRun}`");
         DiscoverTestsIfNot();
-        var testPairIdx = Array.FindIndex(_movieTests, t => t.Item1.Timing == movieTestTiming);
+        var testPairIdx = Array.FindIndex(_movieTests, t => t.Item1.Like(_movieTestClassToRun));
         if (testPairIdx < 0)
         {
             throw new InvalidOperationException("Movie test not found");
         }
+        var movieTest = _movieTests[testPairIdx];
+        var testTiming = movieTest.Item2.Timing;
+        if (testTiming != movieTestTiming)
+        {
+            Debug.Log($"Test found but mismatching timing, need timing {testTiming} but current at {movieTestTiming}, skipping test execution");
+            yield break;
+        }
+
         _execTestRun = true;
-        var testPair = _movieTests[testPairIdx];
-        var tests = testPair.Item2.Where(t => t.TypeName == _movieTestClassToRun).ToArray();
+        var tests = _movieTests[testPairIdx].Item3;
 
         Debug.Log($"Running {tests.Length} movie tests");
-        foreach (var test in testPair.Item2)
+        foreach (var test in tests)
         {
             yield return RunTest(test, _movieTestResults);
         }
@@ -578,6 +604,23 @@ public static class Assert
             msg.AppendFormat("   actual: {0}: {1}", e.GetType().FullName, e.Message);
             throw new AssertionException(msg.ToString(), message, file, line);
         }
+    }
+
+    public static void Equal(float left, float right, float precision, string message = null,
+        [CallerFilePath] string file = null,
+        [CallerLineNumber] int line = 0)
+    {
+        EqualBase(Mathf.Abs(left) - Mathf.Abs(right) <= precision, left, right, file, line, message, true);
+    }
+
+    public static void Equal(Vector2 left, Vector2 right, float precision, string message = null,
+        [CallerFilePath] string file = null,
+        [CallerLineNumber] int line = 0)
+    {
+
+        var diff = new Vector2(Mathf.Abs(left.x) - Mathf.Abs(right.x), Mathf.Abs(left.y) - Mathf.Abs(right.y));
+        var result = diff.x <= precision && diff.y <= precision;
+        EqualBase(result, left, right, file, line, message, true);
     }
 
     public static void Equal(Vector3 left, Vector3 right, float precision, string message = null,

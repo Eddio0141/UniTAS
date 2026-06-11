@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using UniTAS.Patcher.External;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
 using UniTAS.Patcher.Interfaces.Events.UnityEvents;
@@ -47,13 +48,10 @@ public class UnityEvents : IUpdateEvents, IMonoBehEventInvoker
             _ => throw new ArgumentOutOfRangeException(nameof(update), update, null)
         };
 
-        if (processingCallback is IUnityEventPriority unityEventPriority)
+        if (processingCallback is IUnityEventPriority unityEventPriority && unityEventPriority.Priorities.TryGetValue(update, out var priority))
         {
-            if (unityEventPriority.Priorities.TryGetValue(update, out var priority))
-            {
-                callbackList.Add(new UnityEvent(callback, actual), (int)priority);
-                return;
-            }
+            callbackList.Add(new UnityEvent(callback, actual), (int)priority);
+            return;
         }
 
         callbackList.Add(new UnityEvent(callback, actual), (int)CallbackPriority.Default);
@@ -198,17 +196,18 @@ public class UnityEvents : IUpdateEvents, IMonoBehEventInvoker
         public readonly bool Actual = actual;
     }
 
-    private readonly UnityEventList<UnityEvent> _awakes = new();
-    private readonly UnityEventList<UnityEvent> _starts = new();
-    private readonly UnityEventList<UnityEvent> _enables = new();
-    private readonly UnityEventList<UnityEvent> _updates = new();
-    private readonly UnityEventList<UnityEvent> _fixedUpdates = new();
-    private readonly UnityEventList<UnityEvent> _guis = new();
-    private readonly UnityEventList<UnityEvent> _lateUpdates = new();
-    private readonly UnityEventList<UnityEvent> _lastUpdates = new();
-    private readonly UnityEventList<UnityEvent> _endOfFrames = new();
+    private readonly UnityEventList<UnityEvent> _awakes = [];
+    private readonly UnityEventList<UnityEvent> _starts = [];
+    private readonly UnityEventList<UnityEvent> _enables = [];
+    private readonly UnityEventList<UnityEvent> _updates = [];
+    private readonly UnityEventList<UnityEvent> _fixedUpdates = [];
+    private readonly UnityEventList<UnityEvent> _guis = [];
+    private readonly UnityEventList<UnityEvent> _lateUpdates = [];
+    private readonly UnityEventList<UnityEvent> _lastUpdates = [];
+    private readonly UnityEventList<UnityEvent> _endOfFrames = [];
 
     private bool _updated;
+    private bool _lateUpdated;
     private bool _calledLastUpdate = true; // true initially to stop printing error, Update will run first anyways
 
     private static void InvokeLastUpdateStatic() => _unityEvent.InvokeLastUpdate();
@@ -268,9 +267,9 @@ public class UnityEvents : IUpdateEvents, IMonoBehEventInvoker
         HandleCallbacks(_starts);
     }
 
-    public void InvokeUpdate()
+    public void InvokeUpdate(bool monoBehCall)
     {
-        if (_updated) return;
+        if (_updated || (monoBehCall && NotUnityCalled())) return;
         _updated = true;
 
 #if TRACE
@@ -286,13 +285,16 @@ public class UnityEvents : IUpdateEvents, IMonoBehEventInvoker
 
         _endOfFrameUpdated = false;
         _calledLastUpdate = false;
+        _lateUpdated = false;
 
         HandleCallbacks(_updates);
     }
 
     // right now I don't call this update before other scripts so I don't need to check if it was already called
-    public void InvokeLateUpdate()
+    public void InvokeLateUpdate(bool monoBehCall)
     {
+        if (_lateUpdated || (monoBehCall && NotUnityCalled())) return;
+        _lateUpdated = true;
 #if TRACE
         StaticLogger.Trace(
             $"InvokeLateUpdate, time: {_patchReverseInvoker.Invoke(() => Time.frameCount)} ({Time.frameCount}), " +
@@ -306,8 +308,9 @@ public class UnityEvents : IUpdateEvents, IMonoBehEventInvoker
 
     private float _prevFixedTime = -1;
 
-    public void InvokeFixedUpdate()
+    public void InvokeFixedUpdate(bool monoBehCall)
     {
+        if (monoBehCall && NotUnityCalled()) return;
 #if !UNIT_TESTS
         var fixedTime = _patchReverseInvoker.Invoke(() => Time.fixedTime);
         // ReSharper disable once CompareOfFloatsByEqualityOperator
@@ -373,5 +376,19 @@ public class UnityEvents : IUpdateEvents, IMonoBehEventInvoker
             action.Callback();
             bench.Dispose();
         }
+    }
+
+    // cheap and dirty check
+    // TODO: this won't work for 100% of the cases... ideally this hook is done from unity engine because stuff like Awake, Start, Enable isn't always called only from unity (probably)
+    private static bool NotUnityCalled()
+    {
+        var st = new StackTrace(false);
+        if (st.FrameCount != 4)
+        {
+            StaticLogger.Trace($"MonoBehaviour method called by user and not unity: {st}");
+            return true;
+        }
+
+        return false;
     }
 }

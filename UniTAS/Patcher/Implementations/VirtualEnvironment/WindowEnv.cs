@@ -33,13 +33,9 @@ public class WindowEnv(
                     .Create<FullScreenModeWrap>(patchReverseInvoker.Invoke(() => GetFullScreenMode.Invoke(null, null)))
                     .FullScreen;
 
-            var useFullScreen = currentRes.width == CurrentResolution.Width &&
-                                currentRes.height == CurrentResolution.Height;
-            logger.LogDebug(
-                $"setting game resolution to {CurrentResolution.Width}x{CurrentResolution.Height}, use full screen: {useFullScreen}");
+            logger.LogDebug($"setting game resolution to {CurrentResolution.Width}x{CurrentResolution.Height}");
 
-            patchReverseInvoker.Invoke((res, useFs) => Screen.SetResolution(res.Width, res.Height, useFs),
-                CurrentResolution, useFullScreen);
+            patchReverseInvoker.Invoke((res, useFs) => Screen.SetResolution(res.Width, res.Height, useFs), CurrentResolution, false);
             return;
         }
 

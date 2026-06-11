@@ -1,9 +1,9 @@
 using UniTAS.Patcher.Models.VirtualEnvironment;
 using UnityEngine;
 
-namespace UniTAS.Patcher.Services.VirtualEnvironment.Input.NewInputSystem;
+namespace UniTAS.Patcher.Services.VirtualEnvironment.Input;
 
-public interface IMouseStateEnvNewSystem
+public interface IMouseState
 {
     Vector2 Position { get; set; }
     Vector2 Scroll { get; set; }

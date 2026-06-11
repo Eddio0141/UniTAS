@@ -15,6 +15,7 @@ public class PreloadPatcherProcessor
         new SerializationCallbackPatch(),
         new CoroutinePatch(),
         new AsyncOperationPatch(),
+        new NewInputSystemPatch(),
         new FunctionCallTrace() // this must run last, it hooks logs on start and ret
     ];
 }

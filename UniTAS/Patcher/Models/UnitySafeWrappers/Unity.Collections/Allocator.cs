@@ -7,5 +7,6 @@ public enum Allocator
     Temp,
     TempJob,
     Persistent,
-    AudioKernel
+    AudioKernel,
+    FirstUserIndex = 64
 }

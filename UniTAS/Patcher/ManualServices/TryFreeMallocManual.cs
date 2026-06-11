@@ -28,7 +28,7 @@ public static class TryFreeMallocManual
 
     private static void TryFree(IntPtr ptr)
     {
-        if (HasUnityMalloc && TryFreeUnityMalloc(ptr)) return;
+        if (ptr != IntPtr.Zero && HasUnityMalloc && TryFreeUnityMalloc(ptr)) return;
 
         StaticLogger.LogWarning($"Could not find malloc at {ptr} to free");
     }

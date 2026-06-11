@@ -21,12 +21,16 @@ impl DiskLogger {
         reverse_invoke!();
 
         // as of now, the BepInEx directory is guaranteed to exist so create_buffered will not fail
-        let output_file = env::current_exe()
-            .expect("failed to get current exe")
-            .parent()
-            .unwrap()
-            .join("BepInEx")
-            .join("unitas-rs.log");
+        let output_file = env::current_exe().expect("failed to get current exe");
+        let mut output_file = output_file.parent().unwrap();
+
+        // logging should work regardless of expected directories existing
+        let bepinex_dir = output_file.join("BepInEx");
+        if bepinex_dir.is_dir() {
+            output_file = &bepinex_dir;
+        }
+
+        let output_file = output_file.join("unitas-rs.log");
         let output_file = Arc::new(Mutex::new(BufWriter::new(File::create(output_file)?)));
         let output_file_ = Arc::clone(&output_file);
 

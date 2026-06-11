@@ -1,15 +1,15 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using HarmonyLib;
 using MoonSharp.Interpreter;
 using UniTAS.Patcher.Extensions;
+using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Implementations.Proxies;
 
 [method: MoonSharpHidden]
-[SuppressMessage("ReSharper", "UnusedMember.Global")]
 public class TraverseProxy(Traverse traverse)
 {
     private static readonly AccessTools.FieldRef<object, MethodBase> TraverseMethodField =
@@ -18,17 +18,41 @@ public class TraverseProxy(Traverse traverse)
     private static readonly AccessTools.FieldRef<object, MemberInfo> TraverseInfoField =
         AccessTools.FieldRefAccess<MemberInfo>(typeof(Traverse), "_info");
 
+    private static readonly MethodInfo Cast = AccessTools.Method(typeof(Enumerable), "Cast");
+    private static readonly MethodInfo ToArray = AccessTools.Method(typeof(Enumerable), "ToArray");
+
     public DynValue GetValue(Script script, params object[] args)
     {
+        var method = TraverseMethodField.Invoke(traverse);
+        if (method != null)
+        {
+            var @params = method.GetParameters();
+            if (@params.Length == args.Length)
+            {
+                for (int i = 0; i < @params.Length; i++)
+                {
+                    var param = @params[i];
+                    var type = param.ParameterType;
+                    var obj = args[i];
+
+                    if (type.IsArray && obj is Table t)
+                    {
+                        var element = type.GetElementType();
+                        var newArray = t.Values.Select(x => Convert.ChangeType(x.ToObject(), element));
+                        var enumerable = typeof(Enumerable);
+                        var newArray2 = Cast.MakeGenericMethod(element).Invoke(null, [newArray]);
+                        args[i] = ToArray.MakeGenericMethod(element).Invoke(null, [newArray2]);
+                    }
+                }
+            }
+        }
         var ret = args.Length == 0 ? traverse.GetValue() : traverse.GetValue(args);
         return ret.ToDynValue(script);
     }
 
     public Traverse SetValue(DynValue value)
     {
-        var memberInfo = TraverseInfoField(traverse);
-
-        switch (memberInfo)
+        switch (TraverseInfoField(traverse))
         {
             case FieldInfo f:
                 return traverse.SetValue(value.ToObject(f.FieldType));
@@ -68,7 +92,7 @@ public class TraverseProxy(Traverse traverse)
                 var item = values.Current;
                 var argType = argTypesEnumerator.Current;
 
-                convertedArray[i] = item!.ToObject(argType);
+                convertedArray[i] = item.ToObject(argType);
             }
 
             values.Dispose();
@@ -84,9 +108,9 @@ public class TraverseProxy(Traverse traverse)
 
     public Traverse Property(string name, object[] index = null) => traverse.Property(name, index);
 
-    public Traverse Method(string name, params object[] arguments) => traverse.Method(name, arguments);
+    public Traverse Method(string name, object[] arguments) => traverse.Method(name, arguments);
 
-    public Traverse Method(string name, Type[] paramTypes, object[] arguments = null) =>
+    public Traverse Method(string name, Type[] paramTypes, object[] arguments) =>
         traverse.Method(name, paramTypes, arguments);
 
     public bool PropertyExists() => traverse.PropertyExists();
@@ -98,6 +122,6 @@ public class TraverseProxy(Traverse traverse)
     public Table Methods(Script script)
     {
         var list = traverse.Methods();
-        return new Table(script, list.Select(x => DynValue.FromObject(script, x)).ToArray());
+        return new Table(script, [.. list.Select(x => DynValue.FromObject(script, x))]);
     }
 }

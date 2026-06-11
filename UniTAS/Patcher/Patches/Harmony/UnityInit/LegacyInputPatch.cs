@@ -7,16 +7,10 @@ using UniTAS.Patcher.Interfaces.Patches.PatchTypes;
 using UniTAS.Patcher.Models.VirtualEnvironment;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.VirtualEnvironment;
+using UniTAS.Patcher.Services.VirtualEnvironment.Input;
 using UniTAS.Patcher.Services.VirtualEnvironment.Input.LegacyInputSystem;
 using UniTAS.Patcher.Utils;
 using UnityEngine;
-
-// ReSharper disable InconsistentNaming
-
-// ReSharper disable ClassNeverInstantiated.Local
-// ReSharper disable ClassNeverInstantiated.Global
-
-// ReSharper disable UnusedMember.Local
 
 namespace UniTAS.Patcher.Patches.Harmony.UnityInit;
 
@@ -32,14 +26,14 @@ public class LegacyInputPatch
     private static readonly IKeyboardStateEnvLegacySystem KeyboardStateEnvLegacySystem =
         ContainerStarter.Kernel.GetInstance<IKeyboardStateEnvLegacySystem>();
 
-    private static readonly IAxisButtonStateEnvLegacySystem AxisButtonStateEnvLegacySystem =
-        ContainerStarter.Kernel.GetInstance<IAxisButtonStateEnvLegacySystem>();
+    private static readonly IAxisState AxisState =
+        ContainerStarter.Kernel.GetInstance<IAxisState>();
 
-    private static readonly IMouseStateEnvLegacySystem MouseStateEnvLegacySystem =
-        ContainerStarter.Kernel.GetInstance<IMouseStateEnvLegacySystem>();
+    private static readonly IMouseState MouseState =
+        ContainerStarter.Kernel.GetInstance<IMouseState>();
 
-    private static readonly IAxisStateEnvLegacySystem AxisStateEnvLegacySystem =
-        ContainerStarter.Kernel.GetInstance<IAxisStateEnvLegacySystem>();
+    private static readonly IMouseStateLegacy MouseStateEnvLegacySystem =
+        ContainerStarter.Kernel.GetInstance<IMouseStateLegacy>();
 
     private static readonly IResetInputAxesState ResetInputAxesState =
         ContainerStarter.Kernel.GetInstance<IResetInputAxesState>();
@@ -260,7 +254,7 @@ public class LegacyInputPatch
                 return false;
             }
 
-            __result = AxisStateEnvLegacySystem.GetAxis(axisName);
+            __result = AxisState.GetAxis(axisName);
             return false;
         }
     }
@@ -295,7 +289,7 @@ public class LegacyInputPatch
                 return false;
             }
 
-            __result = AxisStateEnvLegacySystem.GetAxisRaw(axisName);
+            __result = AxisState.GetAxisRaw(axisName);
             return false;
         }
     }
@@ -313,7 +307,7 @@ public class LegacyInputPatch
             if (ReverseInvoker.Invoking)
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
-            __result = MouseStateEnvLegacySystem.Position;
+            __result = MouseState.Position;
             return false;
         }
     }
@@ -333,7 +327,7 @@ public class LegacyInputPatch
             if (ReverseInvoker.Invoking)
                 return true;
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
-            ret = MouseStateEnvLegacySystem.Position;
+            ret = MouseState.Position;
             return false;
         }
     }
@@ -358,7 +352,7 @@ public class LegacyInputPatch
                 return false;
             }
 
-            __result = MouseStateEnvLegacySystem.IsButtonHeld(GetMouseButtonVariant(button));
+            __result = MouseState.IsButtonHeld(GetMouseButtonVariant(button));
             return false;
         }
     }
@@ -473,7 +467,7 @@ public class LegacyInputPatch
                 return false;
             }
 
-            __result = AxisButtonStateEnvLegacySystem.IsButtonHeld(buttonName);
+            __result = AxisState.IsButtonHeld(buttonName);
             return false;
         }
     }
@@ -508,7 +502,7 @@ public class LegacyInputPatch
                 return false;
             }
 
-            __result = AxisButtonStateEnvLegacySystem.IsButtonDown(buttonName);
+            __result = AxisState.IsButtonDown(buttonName);
             return false;
         }
     }
@@ -543,7 +537,7 @@ public class LegacyInputPatch
                 return false;
             }
 
-            __result = AxisButtonStateEnvLegacySystem.IsButtonUp(buttonName);
+            __result = AxisState.IsButtonUp(buttonName);
             return false;
         }
     }
@@ -902,7 +896,20 @@ public class LegacyInputPatch
         private static bool Prefix(ref Vector2 __result)
         {
             if (!VirtualEnvController.RunVirtualEnvironment) return true;
-            __result = MouseStateEnvLegacySystem.Scroll;
+            __result = MouseState.Scroll;
+            return false;
+        }
+    }
+
+    [HarmonyPatch(typeof(Input), "mousePositionDelta", MethodType.Getter)]
+    private class get_mousePositionDelta
+    {
+        private static Exception Cleanup(MethodBase original, Exception ex) => PatchHelper.CleanupIgnoreFail(original, ex);
+
+        private static bool Prefix(ref Vector3 __result)
+        {
+            if (!VirtualEnvController.RunVirtualEnvironment) return true;
+            __result = MouseState.Delta;
             return false;
         }
     }
@@ -916,7 +923,6 @@ public class LegacyInputPatch
     // TODO imeCompositionMode { get; set; }
     // TODO imeIsSelected { get; }
     // TODO location { get; }
-    // TODO mousePositionDelta { get; }
     // TODO simulateMouseWithTouches { get; set; }
     // TODO stylusTouchSupported { get; }
     // TODO touchPressureSupported { get; }

@@ -10,10 +10,8 @@
         <FileVersion>0.6.0</FileVersion>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <LangVersion>12</LangVersion>
-        <RestoreAdditionalProjectSources>
-            https://api.nuget.org/v3/index.json;
-            https://nuget.bepinex.dev/v3/index.json
-        </RestoreAdditionalProjectSources>
+        <RestoreAdditionalProjectSources>https://api.nuget.org/v3/index.json;
+            https://nuget.bepinex.dev/v3/index.json</RestoreAdditionalProjectSources>
         <Configurations>Debug;DebugTest;Release;ReleaseTrace;ReleaseBench;ReleaseTest</Configurations>
         <Platforms>AnyCPU</Platforms>
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
@@ -30,10 +28,10 @@
         <DebugSymbols>true</DebugSymbols>
         <Optimize>true</Optimize>
     </PropertyGroup>
-    
+
     <PropertyGroup Condition=" '$(Configuration)' == 'DebugTest' ">
         <OutputPath>bin/DebugTest/BepInEx/patchers/UniTAS/</OutputPath>
-      <DefineConstants>BENCH;UNIT_TESTS;</DefineConstants>
+        <DefineConstants>BENCH;UNIT_TESTS;</DefineConstants>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -42,7 +40,7 @@
         <DefineConstants>;</DefineConstants>
         <DebugType>full</DebugType>
     </PropertyGroup>
-    
+
     <PropertyGroup Condition=" '$(Configuration)' == 'DebugTrace' ">
         <OutputPath>bin/Debug/BepInEx/patchers/UniTAS/</OutputPath>
         <DebugType>full</DebugType>
@@ -52,14 +50,14 @@
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'ReleaseTrace' ">
-        <OutputPath>bin/Release/BepInEx/patchers/UniTAS/</OutputPath>
+        <OutputPath>bin/ReleaseTrace/BepInEx/patchers/UniTAS/</OutputPath>
         <Optimize>true</Optimize>
         <DebugType>full</DebugType>
         <NoWarn />
         <DebugSymbols>true</DebugSymbols>
         <DefineConstants>TRACE;</DefineConstants>
     </PropertyGroup>
-    
+
     <PropertyGroup Condition=" '$(Configuration)' == 'ReleaseBench' ">
         <DefineConstants>BENCH;</DefineConstants>
         <OutputPath>bin/ReleaseBench/BepInEx/patchers/UniTAS/</OutputPath>
@@ -68,7 +66,7 @@
         <DebugSymbols>true</DebugSymbols>
         <Optimize>true</Optimize>
     </PropertyGroup>
-    
+
     <PropertyGroup Condition=" '$(Configuration)' == 'ReleaseTest' ">
         <DefineConstants>BENCH;UNIT_TESTS</DefineConstants>
         <OutputPath>bin/ReleaseTest/BepInEx/patchers/UniTAS/</OutputPath>
@@ -90,8 +88,8 @@
 
     <ItemGroup>
         <PackageReference Include="AssetsTools.NET" Version="3.0.4" />
-<!--        the below is disabled due to https://github.com/BepInEx/BepInEx.Analyzers/issues/7, probably won't get fixed though-->
-<!--        <PackageReference Include="BepInEx.Analyzers" Version="1.0.8" PrivateAssets="all" />-->
+        <!--        the below is disabled due to https://github.com/BepInEx/BepInEx.Analyzers/issues/7, probably won't get fixed though-->
+        <!--        <PackageReference Include="BepInEx.Analyzers" Version="1.0.8" PrivateAssets="all" />-->
         <PackageReference Include="BepInEx.Core" Version="5.4.21" />
         <PackageReference Include="BepInEx.PluginInfoProps" Version="2.1.0" />
         <PackageReference Include="JetBrains.Annotations" Version="2025.2.4" />

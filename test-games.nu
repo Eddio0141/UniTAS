@@ -3,14 +3,24 @@
 use std
 
 def print-help [] {
-    print "script to run unity tests\n"
-    print "args:\n"
-    print "--preserve-games"
-    print "skips cleanup of test game environment, and prints the path"
+    print "Usage:"
+    print "  test-games [--preserve-games] [-h --help] [<tests>]"
+    print ""
+    print "Positional Arguments:"
+    print "  tests    Optional name of tests to be executed. Name of the tests can be globbed. By default, all tests are ran."
+    print ""
+    print "Flags:"
+    print "  --preserve-games         Skips cleanup of test game environment, and prints the path."
+    print "  --target (Optional)      Target to grab the build of UniTAS from. Default: Release"
+    print "  --help -h                Prints this help page."
 }
 
-def --wrapped main [...args] {
-    if $args has "--help" {
+def --wrapped main [
+  --preserve-games
+  --target: string = "Release"
+  --help (-h)
+  ...target_tests] {
+    if $help {
         print-help
         return
     }
@@ -57,7 +67,7 @@ def --wrapped main [...args] {
     }
 
     let games_dir = mktemp -d
-    let unitas_build_dir = $repo_dir | path join "UniTAS" "Patcher" "bin" "Release"
+    let unitas_build_dir = $repo_dir | path join "UniTAS" "Patcher" "bin" $target
 
     for dir in (ls -la $unitas_build_dir) {
         cp -r ($dir | get name) $bepinex_dir
@@ -99,7 +109,7 @@ def --wrapped main [...args] {
         print $"\n[($game_name)]"
         # TODO: not crossplatform friendly
         $exit_code = try {
-            ^$"($repo_dir)/test-runner/target/release/test-runner" $executable
+            xvfb-run --auto-servernum $"($repo_dir)/test-runner/target/release/test-runner" $executable ...$target_tests
             0
         } catch { |e| 
             let exit_code = $e | get -o exit_code
@@ -125,7 +135,7 @@ def --wrapped main [...args] {
     }
 
     # cleanup / print location
-    if $args has "--preserve-games" {
+    if $preserve_games {
         print $"preserving games located at `($games_dir)`"
     } else {
         rm -rf $games_dir

@@ -1359,7 +1359,7 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         public void Load()
         {
             // cancelled operation?
-            if ((_tracker._tracked.TryGetValue(Op, out var data) && data.Cancel) || _cancellationTokenHandle.WaitOne(0))
+            if ((_tracker._tracked.TryGetValue(Op, out var data) && data.Cancel) || _cancellationTokenHandle?.WaitOne(0) == true)
                 return;
 
             var targetType = Op.GetType().GetGenericArguments().FirstOrDefault() ?? typeof(Object);

@@ -1,118 +1,159 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
+using HarmonyLib;
+using MonoMod.Utils;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
-using UniTAS.Patcher.Interfaces.InputSystemOverride;
+using UniTAS.Patcher.Patches.Preloader;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.InputSystemOverride;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.Movie;
-using UniTAS.Patcher.Services.Trackers.UpdateTrackInfo;
 using UniTAS.Patcher.Services.UnityEvents;
-using UniTAS.Patcher.Services.VirtualEnvironment;
+using UniTAS.Patcher.Services.VirtualEnvironment.Input;
+using UniTAS.Patcher.Services.VirtualEnvironment.Input.NewInputSystem;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Layouts;
+using UnityEngine.InputSystem.LowLevel;
+using MouseButton = UniTAS.Patcher.Models.VirtualEnvironment.MouseButton;
 
 namespace UniTAS.Patcher.Implementations.NewInputSystem;
 
 [Singleton]
 [ForceInstantiate]
-public class InputSystemOverride : IInputSystemTrackerUpdate
+public class InputSystemOverride
 {
-    private readonly InputOverrideDevice[] _devices;
     private readonly ILogger _logger;
-    private readonly List<InputDevice> _actualDevices = new();
     private readonly IUpdateEvents _updateEvents;
+    private readonly IPatchReverseInvoker _reverseInvoker;
+    private readonly IMouseState _mouseState;
+    private readonly IKeyboardStateNew _keyboardState;
 
     private bool _overridden;
 
-    public InputSystemOverride(ILogger logger, InputOverrideDevice[] devices,
-        IInputSystemState newInputSystemExists, IUpdateEvents updateEvents, IVirtualEnvController virtualEnv,
-        IMovieRunner movieRunner, IGameRestart gameRestart)
+    private readonly Action<int, string> NotifyDeviceDiscovered;
+
+    private InputDevice _mouse;
+    private InputDevice _keyboard;
+
+    public InputSystemOverride(ILogger logger, IInputSystemState newInputSystemExists, IUpdateEvents updateEvents, IMovieRunnerEvents movieRunnerEvents, IGameRestart gameRestart, IPatchReverseInvoker reverseInvoker, IMouseState mouseState, IKeyboardStateNew keyboardState)
     {
         if (!newInputSystemExists.HasNewInputSystem) return;
 
         _logger = logger;
-        _devices = devices;
         _updateEvents = updateEvents;
+        _reverseInvoker = reverseInvoker;
+        _mouseState = mouseState;
+        _keyboardState = keyboardState;
 
         _updateEvents.OnUpdateActual += UpdateDevices;
-        virtualEnv.OnVirtualEnvStatusChange += OnVirtualEnvStatusChange;
-        gameRestart.OnPreGameRestart += OnPreGameRestart;
+        movieRunnerEvents.OnMovieStart += OnMovieStart;
+        movieRunnerEvents.OnMovieEnd += OnMovieEnd;
+        gameRestart.OnGameRestartResume += OnGameRestartResume;
 
-        _actualDevices.AddRange(InputSystem.devices);
-    }
-
-    private void OnVirtualEnvStatusChange(bool runVirtualEnv)
-    {
-        _overridden = runVirtualEnv;
-
-        if (runVirtualEnv)
-        {
-            foreach (var device in _actualDevices)
-            {
-                InputSystem.RemoveDevice(device);
-            }
-
-            _logger.LogDebug("removed all InputSystem devices that isn't ours");
-            LogConnectedDevices();
-
-            foreach (var device in _devices)
-            {
-                device.AddDevice();
-                device.MakeCurrent();
-            }
-
-            _logger.LogDebug("adding TAS devices to InputSystem");
-            LogConnectedDevices();
-        }
-        else
-        {
-            foreach (var device in _devices)
-            {
-                device.RemoveDevice();
-            }
-
-            _logger.LogDebug("removed all TAS devices from InputSystem");
-            LogConnectedDevices();
-
-            foreach (var device in _actualDevices)
-            {
-                InputSystem.AddDevice(device);
-                device.MakeCurrent();
-            }
-
-            _logger.LogDebug("restored all InputSystem devices that isn't ours");
-            LogConnectedDevices();
-        }
+        NotifyDeviceDiscovered = AccessTools.Method("UnityEngineInternal.Input.NativeInputSystem:NotifyDeviceDiscovered").CreateDelegate<Action<int, string>>();
     }
 
     private void LogConnectedDevices()
     {
         _logger.LogDebug(
-            $"Connected devices:\n{string.Join("\n", InputSystem.devices.Select(x => $"name: {x.name}, type: {x.GetType().FullName}").ToArray())}");
+            $"Connected devices:\n{InputSystem.devices.Select(x => $"name: {x.name}, type: {x.GetType().FullName}").Join()}");
     }
 
     private void UpdateDevices()
     {
         if (!_overridden) return;
 
-        foreach (var device in _devices)
-        {
-            device.Update();
-        }
+        UpdateMouse();
+        UpdateKeyboard();
     }
 
-    private readonly List<Action> _onBeforeUpdateEvents = [];
-
-    public void NewOnBeforeUpdateEvent(Action action) => _onBeforeUpdateEvents.Add(action);
-
-    private void OnPreGameRestart()
+    private void UpdateMouse()
     {
-        _logger.LogDebug($"unsubscribing {_onBeforeUpdateEvents.Count} onBeforeUpdate events");
-        foreach (var beforeUpdate in _onBeforeUpdateEvents)
+        ushort buttons = 0;
+        if (_mouseState.IsButtonHeld(MouseButton.Left))
         {
-            _logger.LogDebug($"event: {beforeUpdate.Method.DeclaringType?.FullName}.{beforeUpdate.Method.Name}");
-            InputSystem.onBeforeUpdate -= beforeUpdate;
+            buttons |= 0b1;
         }
+
+        if (_mouseState.IsButtonHeld(MouseButton.Right))
+        {
+            buttons |= 0b10;
+        }
+
+        if (_mouseState.IsButtonHeld(MouseButton.Middle))
+        {
+            buttons |= 0b100;
+        }
+
+        var state = new MouseState
+        {
+            buttons = buttons,
+            position = _mouseState.Position,
+            delta = _mouseState.Delta,
+            scroll = _mouseState.Scroll,
+            // TODO: testing with normal game shows its 0 regardless of how fast I click, test more to determine whats best
+            // clickCount = ??,
+            // displayIndex = ??, // TODO: probably look into it once virtual env gets more enriched with os stuff
+        };
+
+        QueueStateEvent(_mouse, state);
     }
+
+    private void UpdateKeyboard()
+    {
+        var state = new KeyboardState();
+        foreach (var heldKey in _keyboardState.HeldKeys)
+        {
+            state.Set(heldKey.Key, true);
+        }
+
+        QueueStateEvent(_keyboard, state);
+    }
+
+    private void QueueStateEvent<TState>(InputDevice device, TState state)
+        where TState : struct, IInputStateTypeInfo
+    {
+        // time is explicitly set to 0 as to queue the event as soon as possible
+        InputSystem.QueueStateEvent(device, state, 0.0);
+    }
+
+    private void OnMovieStart()
+    {
+        _overridden = true;
+    }
+
+    private void OnMovieEnd()
+    {
+        _overridden = false;
+
+        RestoreNativeDevices();
+        LogConnectedDevices();
+    }
+
+    private void OnGameRestartResume(DateTime _, bool preMonoBehaviourResume)
+    {
+        if (preMonoBehaviourResume) return;
+
+        _mouse = InputSystem.AddDevice<TASMouse>();
+        _keyboard = InputSystem.AddDevice<TASKeyboard>();
+        _mouse.MakeCurrent();
+        _keyboard.MakeCurrent();
+    }
+
+    private void RestoreNativeDevices()
+    {
+        _reverseInvoker.Invoke(this_ =>
+        {
+            foreach (var device in NewInputSystemPatch.NotifyDeviceDiscovered)
+            {
+                this_.NotifyDeviceDiscovered(device.DeviceId, device.DeviceDescriptor);
+            }
+        }, this);
+    }
+
+    [InputControlLayout(stateType = typeof(MouseState), isGenericTypeOfDevice = true)]
+    private class TASMouse : Mouse;
+
+    [InputControlLayout(stateType = typeof(KeyboardState), isGenericTypeOfDevice = true)]
+    private class TASKeyboard : Keyboard;
 }

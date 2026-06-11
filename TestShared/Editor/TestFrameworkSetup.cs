@@ -190,6 +190,7 @@ namespace Editor.UniTASTest
                 var scriptType = script.GetClass();
                 if (testObj.GetComponent(scriptType) != null) continue;
                 testObj.AddComponent(scriptType);
+                Debug.Log($"adding test component {scriptType.FullName}");
             }
         }
 
