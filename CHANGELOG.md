@@ -15,11 +15,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed Resonance Of The Ocean not saving some information at the start
 - Fixed Cat Quest 2 from soft locking in the first cave
 - Fixed Untitled Goose Game breaking when restarting level
+- Fixed latest ULTRAKILL crashing, and input desyncs depending on system performance.
 
 ### UniTAS
 
 - Fixed non-existant axis name checks causing UniTAS to throw exceptions
 - Fixed first load caching creating broken caches, which completely breaks things
+- Fixed new input system event time desyncs
+- Fixed soft restart breaking new input system
 
 ### Compatibility
 
