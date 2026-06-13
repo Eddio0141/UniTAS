@@ -7,5 +7,4 @@ https://github.com/Eddio0141/UniTAS
 A tool that lets you TAS unity games
 
 - The tool doesn't bypass anti cheat or anything, USE AT YOUR OWN RISK!
-- The tool is early in development and only basic games work
-    - This also means TASes made in earlier versions might not work in later versions
+- The tool is early in development, TASes made in earlier versions may not work in later versions

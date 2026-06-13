@@ -5,8 +5,7 @@
 A tool that lets you TAS unity games
 
 - The tool doesn't bypass anti cheat or anything, USE AT YOUR OWN RISK!
-- :warning: The tool is early in development and only basic games work
-    - This also means TASes made in earlier versions might not work in later versions
+- The tool is early in development, TASes made in earlier versions may not work in later versions
 - This is a [BepInEx 5] mod
 
 # TASing in UniTAS
@@ -28,10 +27,18 @@ discord or GitHub discussions
 
 # How to install
 
+## Thunderstore
+
+I have packaged UniTAS for some games on thunderstore:
+
+- [ULTRAKILL](https://thunderstore.io/c/ultrakill/p/UniTAS/UniTAS/)
+
+## Manual
+
 - Install [BepInEx 5] to your game
 - Download the latest release from [here](https://github.com/Eddio0141/UniTAS/releases/latest), or nightly versions
   from [here](https://github.com/Eddio0141/UniTAS/actions)
-- Unzip UniTAS and place it inside the `patchers` folder your game's `BepInEx` folder
+- Unzip and override paste it in your game folder (same folder as where your game executable is placed in)
 
 # How to use
 
