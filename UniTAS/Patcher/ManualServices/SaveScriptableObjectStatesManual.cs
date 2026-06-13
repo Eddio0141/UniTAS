@@ -42,10 +42,9 @@ public static class SaveScriptableObjectStatesManual
         {
             _scriptableObject = scriptableObject;
 
-            // save
             var fields = scriptableObject.GetType().GetFields(AccessTools.all).Where(x => !x.IsStatic && !x.IsLiteral);
 
-            _savedFields = [.. fields.Select(field => new FieldData(field, scriptableObject))];
+            _savedFields = [.. fields.Select(x => new FieldData(x, scriptableObject))];
         }
 
         public void Load()
@@ -71,11 +70,13 @@ public static class SaveScriptableObjectStatesManual
         private readonly object _value;
         private readonly FieldInfo _saveField;
         private readonly bool _pointerField;
+        private readonly bool _serializable;
 
         public FieldData(FieldInfo fieldInfo, ScriptableObject instance)
         {
             _saveField = fieldInfo;
             _instance = instance;
+            _serializable = fieldInfo.IsFieldUnitySerializable();
 
             var value = fieldInfo.GetValue(instance);
 
@@ -97,6 +98,13 @@ public static class SaveScriptableObjectStatesManual
             {
                 // try to free pointer if it's a pointer
                 TryFreeMallocManual.TryFree(_instance, _saveField);
+            }
+
+            if (_serializable)
+            {
+                var defaultValue = _saveField.DeclaringType.IsValueType ? Activator.CreateInstance(_saveField.DeclaringType) : null;
+                _saveField.SetValue(_instance, defaultValue);
+                return;
             }
 
             // additional one to make it not use the stored value
