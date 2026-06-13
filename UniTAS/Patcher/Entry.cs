@@ -63,7 +63,7 @@ public static class Entry
     public static void Initialize()
     {
         // for windows, add library directory to allow DllImport to pick up library path
-        Environment.SetEnvironmentVariable("PATH", Environment.GetEnvironmentVariable("PATH") + ";" + UniTASPaths.Patcher);
+        Environment.SetEnvironmentVariable("PATH", Environment.GetEnvironmentVariable("PATH") + ";" + UniTASPaths.PatcherDir);
         UniTasRs.init();
 
         using var _ = Bench.Measure();

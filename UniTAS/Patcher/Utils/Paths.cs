@@ -13,8 +13,9 @@ public static class UniTASPaths
 
     private static string UniTASBase { get; } = Path.Combine(Paths.GameRootPath, "UniTAS");
     public static string Benchmarks { get; } = Path.Combine(UniTASBase, "benchmarks");
-    public static string Patcher { get; } = Path.Combine(Paths.PatcherPluginPath, "UniTAS");
-    public static string Resources { get; } = Path.Combine(Patcher, "Resources");
+    public static string PatcherDll { get; } = new System.Uri(System.Reflection.Assembly.GetExecutingAssembly().CodeBase).LocalPath;
+    public static string PatcherDir { get; } = Directory.GetParent(PatcherDll).FullName;
+    public static string Resources { get; } = Path.Combine(PatcherDir, "Resources");
     public static string Cache { get; } = Path.Combine(UniTASBase, "cache");
     public static string AssemblyCache { get; } = Path.Combine(Cache, "assemblies");
     public static string ConfigCache { get; } = Path.Combine(Cache, "config");
