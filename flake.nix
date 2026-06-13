@@ -63,6 +63,7 @@
               nushell
               ffmpeg
               xvfb-run
+              zip
             ];
           };
         };

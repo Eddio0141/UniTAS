@@ -1,0 +1,9 @@
+{
+  "name": "UniTAS",
+  "description": "Tool Assisted Speedrun tool made for unity games",
+  "version_number": "0.7.0",
+  "dependencies": [,
+    "BepInEx-BepInExPack-5.4.2305"
+  ],
+  "website_url": "https://github.com/Eddio0141/UniTAS"
+}
