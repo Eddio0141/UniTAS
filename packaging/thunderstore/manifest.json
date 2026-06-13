@@ -1,7 +1,7 @@
 {
   "name": "UniTAS",
   "description": "Tool Assisted Speedrun tool made for unity games",
-  "version_number": "0.7.0",
+  "version_number": "0.7.1",
   "dependencies": [,
     "BepInEx-BepInExPack-5.4.2305"
   ],
