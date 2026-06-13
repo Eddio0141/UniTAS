@@ -49,12 +49,9 @@ public static class DeepCopy
 
         if (processor is not null)
         {
-            if (source != null)
+            if (source != null && references.TryGetValue(source, out var reference))
             {
-                if (references.TryGetValue(source, out var reference))
-                {
-                    return reference;
-                }
+                return reference;
             }
 
             if (processor(source, out var processorValue))
@@ -119,9 +116,8 @@ public static class DeepCopy
         {
             fields = FieldInfoCache.GetOrAdd(type, t =>
             {
-                return t.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic |
-                                   BindingFlags.GetField | BindingFlags.SetField).Where(f => !f.IsLiteral)
-                    .Where(f => !(f.Name == "m_Ptr" && f.FieldType == typeof(IntPtr))).ToArray();
+                return [.. t.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic |
+                                   BindingFlags.GetField | BindingFlags.SetField).Where(f => !f.IsLiteral && !(f.Name == "m_Ptr" && f.FieldType == typeof(IntPtr)))];
             });
 
             // call the default ctor
@@ -129,10 +125,10 @@ public static class DeepCopy
         }
         else
         {
-            fields = FieldInfoCache.GetOrAdd(type, t => t.GetFields(BindingFlags.Instance | BindingFlags.Public |
+            fields = FieldInfoCache.GetOrAdd(type, t => [.. t.GetFields(BindingFlags.Instance | BindingFlags.Public |
                                                                     BindingFlags.NonPublic |
                                                                     BindingFlags.GetField | BindingFlags.SetField)
-                .Where(f => !f.IsLiteral).ToArray());
+                .Where(f => !f.IsLiteral)]);
 
             result = source is ScriptableObject
                 ? ScriptableObject.CreateInstance(type)

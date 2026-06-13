@@ -31,7 +31,6 @@ public class NewInputSystemPatch : PreloadPatcher
 
     private static void NotifyDeviceDiscoveredPatch(int deviceId, string deviceDescriptor)
     {
-        StaticLogger.Trace("thingy");
         ReverseInvoker ??= ContainerStarter.Kernel.GetInstance<IPatchReverseInvoker>();
         if (ReverseInvoker.Invoking) return;
         StaticLogger.Trace($"NotifyDeviceDiscovered, deviceId: {deviceId}, deviceDescriptor: {deviceDescriptor}");
