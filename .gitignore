@@ -1,3 +1,5 @@
 .direnv/
 .idea/
 .env.local
+/packaging/thunderstore/BepInEx
+/packaging/unitas-thunderstore.zip

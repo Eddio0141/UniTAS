@@ -39,8 +39,7 @@ public static class UniTASSha256Info
         }
 
         var oldRunSha256Path = Path.Combine(UniTASPaths.Cache, "UniTASPatcher.sha256");
-        var currentRunSha256Path = Utility.CombinePaths(Paths.PatcherPluginPath, "UniTAS", "UniTAS.Patcher.dll");
-        var currentRunSha256Stream = File.OpenRead(currentRunSha256Path);
+        var currentRunSha256Stream = File.OpenRead(UniTASPaths.PatcherDll);
         using var sha256 = SHA256.Create();
         var currentRunSha256 = sha256.ComputeHash(currentRunSha256Stream);
 
