@@ -29,14 +29,14 @@ jobs:
           lfs: true
 
       - name: Binary cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         id: unity-game-bin-cache
         with:
           path: TestGames/${{ matrix.target.name }}/build
           key: unity-game-bin-${{ matrix.target.targetPlatform }}-${{ hashFiles(format('TestGames/{0}/Assets/**', matrix.target.name), format('TestGames/{0}/Packages/**', matrix.target.name), format('TestGames/{0}/ProjectSettings/**', matrix.target.name)) }}
 
       - if: steps.unity-game-bin-cache.outputs.cache-hit != 'true'
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         name: Library cache
         with:
           path: TestGames/${{ matrix.target.name }}/Library
