@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Reflection;
 using UnityEngine;
 
@@ -9,7 +8,6 @@ public static class FieldInfoExtensions
 {
     public static bool IsFieldUnitySerializable(this FieldInfo field)
     {
-        var attrs = field.GetCustomAttributes(true);
-        return (field.IsPublic && !attrs.Any(x => x is NonSerializedAttribute)) || attrs.Any(x => x is SerializeField);
+        return field.GetCustomAttributes(typeof(NonSerializedAttribute), true).Length == 0 && (field.IsPublic || field.GetCustomAttributes(typeof(SerializeField), true).Length > 0);
     }
 }

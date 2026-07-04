@@ -104,8 +104,24 @@ public static class SaveScriptableObjectStatesManual
             _saveField.SetValue(_instance, value);
         }
 
+        private static readonly Type InputActionState = AccessTools.TypeByName("UnityEngine.InputSystem.InputActionState");
+        private static readonly MethodInfo InputActionStateClone = InputActionState == null ? null : AccessTools.Method(InputActionState, "Clone");
+
         private static bool ProcessScriptableObjectCopy(object source, out object copiedObj)
         {
+            if (source != null && source.GetType() == InputActionState)
+            {
+                if (InputActionStateClone != null)
+                {
+                    copiedObj = InputActionStateClone.Invoke(source, []);
+                }
+                else
+                {
+                    copiedObj = source;
+                }
+                return true;
+            }
+
             if (source is not ScriptableObject)
             {
                 copiedObj = null;
