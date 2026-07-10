@@ -23,4 +23,5 @@ public static class UniTASPaths
     public const string BepInExConfigFileName = "UniTAS.cfg";
     public static string ConfigBackend { get; } = Path.Combine(UniTASBase, BackendConfigFileName);
     private const string BackendConfigFileName = "save.dat";
+    public static string Localization { get; } = Path.Combine(Resources, "localestrings.json");
 }
