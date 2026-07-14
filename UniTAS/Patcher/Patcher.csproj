@@ -93,7 +93,7 @@
         <PackageReference Include="BepInEx.Core" Version="5.4.21" />
         <PackageReference Include="BepInEx.PluginInfoProps" Version="2.1.0" />
         <PackageReference Include="JetBrains.Annotations" Version="2026.2.0" />
-        <PackageReference Include="MonoMod.Utils" Version="25.0.12" />
+        <PackageReference Include="MonoMod.Utils" Version="25.0.14" />
         <PackageReference Include="StructureMap" Version="2.6.3" />
         <PackageReference Include="Unity.InputSystem" Version="1.5.0" />
         <PackageReference Include="UnityEngine.Modules" Version="3.4.0" IncludeAssets="compile" />
