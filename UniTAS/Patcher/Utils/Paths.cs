@@ -23,4 +23,17 @@ public static class UniTASPaths
     public const string BepInExConfigFileName = "UniTAS.cfg";
     public static string ConfigBackend { get; } = Path.Combine(UniTASBase, BackendConfigFileName);
     private const string BackendConfigFileName = "save.dat";
+
+    public static string UniqueTempDir()
+    {
+        var tmp = Path.GetTempPath();
+
+        while (true)
+        {
+            var dirname = Path.GetRandomFileName();
+            var path = Path.Combine(tmp, dirname);
+            if (!Directory.Exists(path))
+                return path;
+        }
+    }
 }

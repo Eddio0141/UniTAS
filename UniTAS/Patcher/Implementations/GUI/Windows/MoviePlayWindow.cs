@@ -121,15 +121,13 @@ public class MoviePlayWindow : Window
 
         _movieLogger.LogInfo("Starting TAS movie...");
 
-        // run movie
         try
         {
-            var movie = File.ReadAllText(_tasPath);
-            _movieRunner.RunFromInput(movie);
+            _movieRunner.RunFromPath(_tasPath);
         }
         catch (IOException e)
         {
-            _movieLogger.LogError($"Failed to read TAS movie file\n{e}");
+            _movieLogger.LogError($"Failed to play TAS\n{e}");
         }
     }
 

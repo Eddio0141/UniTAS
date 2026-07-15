@@ -8,6 +8,6 @@ public interface IMovieRunner
     bool MovieEnd { get; }
     bool SetupOrMovieRunning { get; }
     IMovieLogger MovieLogger { get; }
-    void RunFromInput(string input);
+    void RunFromPath(string path);
     UpdateType UpdateType { set; }
 }

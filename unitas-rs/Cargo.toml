@@ -12,6 +12,8 @@ time = { version = "0.3.47", features = ["formatting"] }
 backtrace = "0.3.76"
 colored = "3.1.1"
 thiserror = "2.0.18"
+zip = "8.6.0"
+rand = "0.10.1"
 
 [target.'cfg(unix)'.dependencies]
 libc = "0.2.186"
