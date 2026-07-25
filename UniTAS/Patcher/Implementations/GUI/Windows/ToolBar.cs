@@ -6,6 +6,7 @@ using UniTAS.Patcher.Models.UnitySafeWrappers;
 using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Customization;
 using UniTAS.Patcher.Services.GUI;
+using UniTAS.Patcher.Services.Localization;
 using UniTAS.Patcher.Services.UnityEvents;
 using UniTAS.Patcher.Services.UnitySafeWrappers.Wrappers;
 using UniTAS.Patcher.Utils;
@@ -20,6 +21,7 @@ public class ToolBar : IToolBar, IActualCursorState
 {
     private readonly IWindowFactory _windowFactory;
     private readonly ICursorWrapper _cursorWrapper;
+    private readonly ILocalization _localizationHandler;
 
     private readonly GUIStyle _buttonStyle;
     private readonly Texture2D _buttonNormal = new(1, 1);
@@ -68,10 +70,11 @@ public class ToolBar : IToolBar, IActualCursorState
 
     public ToolBar(IWindowFactory windowFactory, IBinds binds, IGUIComponentFactory guiComponentFactory,
         IObjectTrackerManager objectTrackerManager, IUpdateEvents updateEvents, ICursorWrapper cursorWrapper,
-        IGameRestart gameRestart)
+        IGameRestart gameRestart, ILocalization localizationHandler)
     {
         _windowFactory = windowFactory;
         _cursorWrapper = cursorWrapper;
+        _localizationHandler = localizationHandler;
         gameRestart.OnGameRestart += OnGameRestart;
         _dropdownList = guiComponentFactory.CreateComponent<IDropdownList>();
 
@@ -151,14 +154,14 @@ public class ToolBar : IToolBar, IActualCursorState
 
         GUILayout.FlexibleSpace();
 
-        if (GUILayout.Button("Movie", _buttonStyle, GUIUtils.EmptyOptions))
+        if (GUILayout.Button(_localizationHandler.Get("Movie"), _buttonStyle, GUIUtils.EmptyOptions))
         {
             _windowFactory.Create<MoviePlayWindow>().Show = true;
         }
 
         GUILayout.FlexibleSpace();
 
-        if (GUILayout.Button("View", _buttonStyle, GUIUtils.EmptyOptions))
+        if (GUILayout.Button(_localizationHandler.Get("View"), _buttonStyle, GUIUtils.EmptyOptions))
         {
             _currentDropDown = DropDownSection.View;
         }
@@ -171,7 +174,7 @@ public class ToolBar : IToolBar, IActualCursorState
 
         GUILayout.FlexibleSpace();
 
-        if (GUILayout.Button("Windows", _buttonStyle, GUIUtils.EmptyOptions))
+        if (GUILayout.Button(_localizationHandler.Get("Windows"), _buttonStyle, GUIUtils.EmptyOptions))
         {
             _currentDropDown = DropDownSection.Windows;
         }
@@ -183,7 +186,7 @@ public class ToolBar : IToolBar, IActualCursorState
 
         GUILayout.FlexibleSpace();
 
-        if (GUILayout.Button("Settings", _buttonStyle, GUIUtils.EmptyOptions))
+        if (GUILayout.Button(_localizationHandler.Get("Settings"), _buttonStyle, GUIUtils.EmptyOptions))
         {
             _currentDropDown = DropDownSection.Settings;
         }

@@ -21,5 +21,11 @@ public partial class Config
             public const string Address = "Address";
             public const string Port = "Port";
         }
+
+        public static class Localization
+        {
+            public const string SectionName = $"{nameof(Localization)}";
+            public const string Locale = "Locale";
+        }
     }
 }
