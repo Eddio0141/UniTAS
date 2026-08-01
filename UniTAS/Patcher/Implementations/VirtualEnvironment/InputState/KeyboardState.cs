@@ -17,7 +17,7 @@ namespace UniTAS.Patcher.Implementations.VirtualEnvironment.InputState;
 public class KeyboardStateEnvNewSystem : IOnVirtualEnvStatusChange, IOnGameRestart, IKeyboardStateNew, IKeyboardStateEnvLegacySystem, IKeyboardState, IOnMovieUpdate
 {
     private readonly BufferedFullKeyState<KeyCodeWrap> _keyStateOld = new();
-    IReadOnlyCollection<KeyCodeWrap> IKeyboardStateEnvLegacySystem.HeldKeys => _keyStateOld.Held;
+    HashSet<KeyCodeWrap> IKeyboardStateEnvLegacySystem.HeldKeys => _keyStateOld.Held;
     public HashSet<NewKeyCodeWrap> HeldKeys { get; } = [];
 
     public bool AnyKeyHeld => _keyStateOld.Held.Count > 0;
