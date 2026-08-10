@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Linq;
 using MoonSharp.Interpreter;
 using UniTAS.Patcher.Implementations.UnitySafeWrappers;
 using UniTAS.Patcher.Models.Movie;
@@ -24,12 +25,12 @@ public partial class MovieParser
 
         var configTable = configValue.Table;
 
-        var properties = new PropertiesModel(new(
-                GetStartTime(configTable),
-                GetFrameTime(configTable),
-                GetSeed(configTable),
-                GetWindowState(configTable)
-            ),
+        var properties = new PropertiesModel(
+            GetStartTime(configTable),
+            GetFrameTime(configTable),
+            GetSeed(configTable),
+            GetWindowState(configTable),
+            GetFsPassthrough(configTable),
             GetUpdateType(configTable));
 
         return (IsGlobalScope(configTable), properties);
@@ -50,19 +51,19 @@ public partial class MovieParser
         switch (startTimeRaw.Type)
         {
             case DataType.String:
-            {
-                // culture invariant
-                if (!DateTime.TryParse(startTimeRaw.String, CultureInfo.InvariantCulture,
-                        DateTimeStyles.AdjustToUniversal,
-                        out startTime))
                 {
-                    startTime = default;
-                    movieLogger.LogWarning(
-                        $"{startTimeVariable} is invalid, using default time of {startTime.ToString(CultureInfo.InvariantCulture)}");
-                }
+                    // culture invariant
+                    if (!DateTime.TryParse(startTimeRaw.String, CultureInfo.InvariantCulture,
+                            DateTimeStyles.AdjustToUniversal,
+                            out startTime))
+                    {
+                        startTime = default;
+                        movieLogger.LogWarning(
+                            $"{startTimeVariable} is invalid, using default time of {startTime.ToString(CultureInfo.InvariantCulture)}");
+                    }
 
-                break;
-            }
+                    break;
+                }
             case DataType.Number:
                 // parse as ticks
                 startTime = new((long)startTimeRaw.Number);
@@ -253,6 +254,19 @@ public partial class MovieParser
 
         return new WindowState(unityInstanceWrapFactory, new ResolutionWrapper(width, height, rr),
             resolutions.ToArray(), fallbackResClosest);
+    }
+
+    private string[] GetFsPassthrough(Table table)
+    {
+        var fs_passthrough = table.Get("fs_passthrough");
+
+        if (fs_passthrough.Type != DataType.Table)
+        {
+            movieLogger.LogWarning("`fs_passthrough` isn't a table array containing string paths");
+            return [];
+        }
+
+        return [.. fs_passthrough.Table.Values.Select(x => x.CastToString())];
     }
 
     private bool RefreshRateParser(DynValue entry, out RefreshRateWrap refreshRate)

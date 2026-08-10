@@ -1,21 +1,22 @@
-﻿namespace UniTAS.Patcher.Models.Movie;
+﻿using System;
+using System.Linq;
+using HarmonyLib;
 
-public class PropertiesModel
+namespace UniTAS.Patcher.Models.Movie;
+
+public class PropertiesModel(DateTime startTime, float frameTime, long seed, WindowState windowState, string[] fsPassthrough, UpdateType updateType)
 {
-    public StartupPropertiesModel StartupProperties { get; }
+    public UpdateType UpdateType { get; } = updateType;
 
-    public UpdateType UpdateType { get; }
-    // public string LoadSaveStatePath { get; }
-    // public string EndSavePath { get; }
+    // public Os Os { get; }
+    public WindowState WindowState { get; } = windowState;
+    public DateTime StartTime { get; } = startTime;
+    public float FrameTime { get; } = frameTime;
+    public long Seed { get; } = seed;
+    public string[] FsPassthrough { get; } = fsPassthrough;
 
-    public PropertiesModel(StartupPropertiesModel startupPropertiesModel, UpdateType updateType)
+    public override string ToString()
     {
-        StartupProperties = startupPropertiesModel;
-        UpdateType = updateType;
+        return $"UpdateType: {UpdateType}, WindowState: {WindowState}, StartTime: {StartTime}, FrameTime: {FrameTime}, Seed: {Seed}, FsPassthrough: [{FsPassthrough.Join()}]";
     }
-
-    // public PropertiesModel(string loadSaveStatePath)
-    // {
-    //     StartupProperties = null;
-    // }
 }

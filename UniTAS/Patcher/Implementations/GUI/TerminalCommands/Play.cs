@@ -20,31 +20,9 @@ public class Play(IMovieRunner movieRunner, ILogger logger) : TerminalCmd
     {
         var print = script.Options.DebugPrint;
 
-        string absPath;
         try
         {
-            absPath = Path.GetFullPath(path);
-        }
-        catch (Exception e)
-        {
-            print($"Failed to get absolute path from arg0: {e.Message}");
-            return;
-        }
-
-        string movieContent;
-        try
-        {
-            movieContent = File.ReadAllText(absPath);
-        }
-        catch (Exception e)
-        {
-            print($"Failed to read from path {absPath}: {e.Message}");
-            return;
-        }
-
-        try
-        {
-            movieRunner.RunFromInput(movieContent);
+            movieRunner.RunFromPath(path);
         }
         catch (Exception e)
         {

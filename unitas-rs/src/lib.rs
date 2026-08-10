@@ -16,6 +16,7 @@ mod logger;
 mod memory;
 mod state;
 mod unitas_exports;
+mod utils;
 
 fn init() {
     init_logger();

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using UniTAS.Patcher.Exceptions.Movie.Runner;
+using UniTAS.Patcher.External;
 using UniTAS.Patcher.Implementations.Coroutine;
 using UniTAS.Patcher.Interfaces.Coroutine;
 using UniTAS.Patcher.Interfaces.DependencyInjection;
@@ -12,6 +14,7 @@ using UniTAS.Patcher.Services;
 using UniTAS.Patcher.Services.Logging;
 using UniTAS.Patcher.Services.Movie;
 using UniTAS.Patcher.Services.VirtualEnvironment;
+using UniTAS.Patcher.Utils;
 
 namespace UniTAS.Patcher.Implementations.Movie;
 
@@ -63,11 +66,52 @@ public class MovieRunner : IMovieRunner, IOnUpdateActual, IOnFixedUpdateActual, 
         }
     }
 
-    public void RunFromInput(string input)
+    const string DirMovieName = "movie.lua";
+    const string DirFsName = "filesystem";
+
+    public void RunFromPath(string path)
     {
         if (_setup) throw new MovieAlreadySettingUpException();
         _setup = true;
         SetupOrMovieRunning = true;
+
+        StaticLogger.LogDebug($"thingy, {path}");
+        string moviePath;
+        string fsPath;
+        if (Directory.Exists(path))
+        {
+            MovieLogger.LogInfo("Reading TAS from directory");
+            moviePath = Path.Combine(path, DirMovieName);
+            fsPath = Path.Combine(path, DirFsName);
+        }
+        else if (Path.GetExtension(path) == ".zip")
+        {
+            MovieLogger.LogInfo("Reading TAS from zip");
+            var dest = UniTASPaths.UniqueTempDir();
+            UniTasRs.extract_zip(path, dest);
+            moviePath = Path.Combine(path, DirMovieName);
+            fsPath = Path.Combine(path, DirFsName);
+        }
+        else if (Path.GetExtension(path) == ".lua")
+        {
+            MovieLogger.LogInfo("Reading TAS from lua");
+            moviePath = path;
+            fsPath = null;
+        }
+        else
+        {
+            throw new MovieSetupException("Unknown movie format, cannot play movie");
+        }
+
+        string input;
+        try
+        {
+            input = File.ReadAllText(moviePath);
+        }
+        catch (Exception e)
+        {
+            throw new MovieSetupException($"Failed to read movie content from `{moviePath}`", e);
+        }
 
         if (!MovieEnd)
         {
@@ -92,20 +136,23 @@ public class MovieRunner : IMovieRunner, IOnUpdateActual, IOnFixedUpdateActual, 
         }
 
         _engine = parsed.Item1;
-        var properties = parsed.Item2;
+        var props = parsed.Item2;
+
+        _logger.LogDebug($"Using startup property: {props}");
+
+        UniTasRs.movie_start(fsPath, props.FsPassthrough, (nuint)props.FsPassthrough.Length);
 
         // set env from properties
-        _logger.LogDebug($"Using startup property: {properties.StartupProperties}");
-        _timeEnv.FrameTime = properties.StartupProperties.FrameTime;
-        _randomEnv.StartUpSeed = properties.StartupProperties.Seed;
-        properties.StartupProperties.WindowState.SetWindowEnv(_windowEnv);
+        _timeEnv.FrameTime = props.FrameTime;
+        _randomEnv.StartUpSeed = props.Seed;
+        props.WindowState.SetWindowEnv(_windowEnv);
 
         // this runs after setting venv up
         _virtualEnvController.RunVirtualEnvironment = true;
 
-        _gameRestart.SoftRestart(properties.StartupProperties.StartTime);
+        _gameRestart.SoftRestart(props.StartTime);
 
-        UpdateType = properties.UpdateType;
+        UpdateType = props.UpdateType;
         _logger.LogDebug($"set update type to {UpdateType}");
     }
 
@@ -180,6 +227,7 @@ public class MovieRunner : IMovieRunner, IOnUpdateActual, IOnFixedUpdateActual, 
         }
         else
         {
+            UniTasRs.movie_end();
             SetupOrMovieRunning = false;
             OnMovieEnd?.Invoke();
         }
