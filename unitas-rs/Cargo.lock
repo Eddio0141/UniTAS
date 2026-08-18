@@ -262,7 +262,7 @@ dependencies = [
 [[package]]
 name = "retour"
 version = "0.4.0-alpha.4"
-source = "git+https://github.com/Eddio0141/retour-rs.git?branch=mid-function-hook#c6aa16dd599fd04a55ea859faf9406d035f19c3f"
+source = "git+https://github.com/Eddio0141/retour-rs.git?branch=mid-function-hook#afb572043e55dbae4163dc450f9a12a6f2424b39"
 dependencies = [
  "cfg-if",
  "generic-array",
