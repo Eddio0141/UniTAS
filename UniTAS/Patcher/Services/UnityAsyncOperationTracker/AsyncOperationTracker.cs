@@ -48,7 +48,7 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
         _gameBuildScenesInfo = gameBuildScenesInfo;
         _wrapFactory = wrapFactory;
         _loaded = [GetSceneInfo(0)];
-        _asyncInstantiateOperationT0 = AccessTools.AllTypes().First(x =>
+        _asyncInstantiateOperationT0 = AccessTools.AllTypes().FirstOrDefault(x =>
             x.IsGenericTypeDefinition && x.Namespace == "UnityEngine" && x.Name == "AsyncInstantiateOperation`1");
     }
 
@@ -1284,7 +1284,7 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
     /// </summary>
     private static readonly bool InstantiateAsyncOld =
         AccessTools.Field(
-            AccessTools.AllTypes().First(x =>
+            AccessTools.AllTypes().FirstOrDefault(x =>
                 x.IsGenericTypeDefinition && x.Namespace == "UnityEngine" && x.Name == "AsyncInstantiateOperation`1"),
             "m_op") != null;
 
@@ -1314,12 +1314,11 @@ public class AsyncOperationTracker : IAsyncOperationTracker, ISceneLoadTracker, 
                 return;
             }
 
-            InstantiateNew = AccessTools.GetDeclaredMethods(typeof(Object)).First(o =>
+            InstantiateNew = AccessTools.GetDeclaredMethods(typeof(Object)).FirstOrDefault(o =>
                 {
                     var p = o.GetParameters();
                     return o.Name == nameof(Object.Instantiate) && p.Length == 4 && p[0].ParameterType.IsGenericParameter && p[1].ParameterType == typeof(Vector3) && p[2].ParameterType == typeof(Quaternion) && p[3].ParameterType == paramType;
-                })
-                .MakeGenericMethod(typeof(Object)) ?? throw new InvalidOperationException("Instantiate function was not found correctly");
+                })?.MakeGenericMethod(typeof(Object)) ?? throw new InvalidOperationException("Instantiate function was not found correctly");
         }
 
         public InstantiateAsyncData(AsyncOperation op,

@@ -43,7 +43,7 @@ public class NewInputSystemPatch
 
     static NewInputSystemPatch()
     {
-        if (!ContainerStarter.Kernel.GetInstance<IInputSystemState>().HasNewInputSystem)
+        if (!InputSystemState.HasNewInputSystem)
         {
             return;
         }
@@ -170,6 +170,8 @@ public class NewInputSystemPatch
     [HarmonyPatch]
     private class NotifyUpdate
     {
+        private static bool Prepare() => InputSystemState.HasNewInputSystem;
+
         private static Exception Cleanup(MethodBase original, Exception ex) => PatchHelper.CleanupIgnoreFail(original, ex);
 
         private static MethodBase TargetMethod() => AccessTools.Method(NativeInputSystem, "NotifyUpdate");
