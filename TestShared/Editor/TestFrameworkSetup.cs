@@ -6,7 +6,9 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using UnityEditor;
 using UnityEditor.Build;
+#if UNITY_2018_1_OR_NEWER
 using UnityEditor.Build.Reporting;
+#endif
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -21,7 +23,8 @@ namespace Editor.UniTASTest
         {
             Debug.Log("Loading UniTAS testing framework");
             InitDirs();
-            var (sharedScriptsDir, sharedEditorDir, testsDir) = GetRepoDirs();
+            string sharedScriptsDir, sharedEditorDir, testsDir;
+            GetRepoDirs(out sharedScriptsDir, out sharedEditorDir, out testsDir);
             LinkRunnerFiles(sharedScriptsDir, sharedEditorDir);
             InitTestScene();
             LinkAndAddTests(testsDir);
@@ -62,10 +65,11 @@ namespace Editor.UniTASTest
             // safety, because directory can be deleted and domain reload can happen
             InitDirs();
 
-            var (_, _, testsDir) = GetRepoDirs();
+            string _, testsDir;
+            GetRepoDirs(out _, out _, out testsDir);
             LinkAndAddTests(testsDir);
 
-            var testObj = Object.FindObjectsByType<GameObject>(FindObjectsSortMode.None)
+            var testObj = (GameObject)Object.FindObjectsOfType(typeof(GameObject))
                 .FirstOrDefault(o => o.name == TestObjName);
 
             if (testObj != null)
@@ -90,25 +94,28 @@ namespace Editor.UniTASTest
         private const string ScriptsDir = "Assets/Scripts";
         private const string TestsDir = ScriptsDir + "/Tests";
 
-        private static (string sharedScriptsDir, string sharedEditorDir, string testsDir) GetRepoDirs()
+        private static void GetRepoDirs(out string sharedScriptsDir, out string sharedEditorDir, out string testsDir)
         {
             var repoDir = Directory.GetCurrentDirectory();
             while (Path.GetFileName(repoDir) != "UniTAS")
             {
-                repoDir = Directory.GetParent(repoDir)?.FullName;
-                if (repoDir != null) continue;
+                var repoDirParent = Directory.GetParent(repoDir);
+                if (repoDirParent != null)
+                {
+                    repoDir = repoDirParent.FullName;
+                    if (repoDir != null) continue;
+                }
                 throw new Exception("Failed to find repository base directory, failed file setup");
             }
 
             var sharedDir = Path.Combine(repoDir, "TestShared");
             AssertDirExists(sharedDir);
-            var sharedScriptsDir = Path.Combine(sharedDir, "Scripts");
+            sharedScriptsDir = Path.Combine(sharedDir, "Scripts");
             AssertDirExists(sharedScriptsDir);
-            var sharedEditorDir = Path.Combine(sharedDir, "Editor");
+            sharedEditorDir = Path.Combine(sharedDir, "Editor");
             AssertDirExists(sharedEditorDir);
-            var testsDir = Path.Combine(sharedDir, "Tests");
+            testsDir = Path.Combine(sharedDir, "Tests");
             AssertDirExists(testsDir);
-            return (sharedScriptsDir, sharedEditorDir, testsDir);
         }
 
         private static void AssertDirExists(string dir)
@@ -139,9 +146,10 @@ namespace Editor.UniTASTest
             // TODO: figure out which unity version didn't work with symlinks
 
             // link everything
-            var links = new[] { (sharedScriptsDir, ScriptsDir), (sharedEditorDir, editorDir) };
-            foreach (var (sourceDir, destDir) in links)
+            var links = new Dictionary<string, string> { { sharedScriptsDir, ScriptsDir }, { sharedEditorDir, editorDir } };
+            foreach (var sourceDir in links.Keys)
             {
+                var destDir = links[sourceDir];
                 foreach (var sourceFile in Directory.GetFiles(sourceDir, "*.cs", SearchOption.TopDirectoryOnly))
                 {
                     var destFile = Path.Combine(destDir, Path.GetFileName(sourceFile));
@@ -165,7 +173,7 @@ namespace Editor.UniTASTest
                     continue;
                 }
 
-                Debug.Log($"found matching test file `{fileNameNoExt}`");
+                Debug.Log(string.Format("found matching test file `{0}`", fileNameNoExt));
                 var destFile = Path.Combine(TestsDir, Path.GetFileName(sourceFile));
                 if (File.Exists(destFile))
                 {
@@ -180,7 +188,7 @@ namespace Editor.UniTASTest
         {
             if (!Directory.Exists(TestsDir))
             {
-                Debug.LogWarning($"tests directory `{TestsDir}` doesn't exist");
+                Debug.LogWarning(string.Format("tests directory `{0}` doesn't exist", TestsDir));
                 return;
             }
 
@@ -190,7 +198,7 @@ namespace Editor.UniTASTest
                 var scriptType = script.GetClass();
                 if (testObj.GetComponent(scriptType) != null) continue;
                 testObj.AddComponent(scriptType);
-                Debug.Log($"adding test component {scriptType.FullName}");
+                Debug.Log(string.Format("adding test component {0}", scriptType.FullName));
             }
         }
 
@@ -199,70 +207,74 @@ namespace Editor.UniTASTest
 
         private static bool MatchesVersion(string testName)
         {
-            var exampleTestName = $"`Category{BigSep}2022{TinySep}3{TinySep}41{BigSep}2023{TinySep}3`";
+            var exampleTestName = string.Format("`Category{0}2022{1}3{2}41{3}2023{4}3`", BigSep, TinySep, TinySep, BigSep, TinySep);
             var versionStartIdx = testName.IndexOf(BigSep, StringComparison.InvariantCulture);
             switch (versionStartIdx)
             {
                 case -1:
                     throw new InvalidOperationException(
-                        $"test name `{testName}` is formatted wrong, missing initial `{BigSep}` before stating" +
+                        string.Format("test name `{0}` is formatted wrong, missing initial `{1}` before stating", testName, BigSep) +
                         " minimum unity version like so: " + exampleTestName);
                 case 0:
-                    Debug.LogWarning($"test name `{testName}` has got no category prefixed in the name like so: " +
+                    Debug.LogWarning(string.Format("test name `{0}` has got no category prefixed in the name like so: ", testName) +
                                      exampleTestName);
                     break;
             }
 
-            var fullVersionRaw = testName[(versionStartIdx + BigSep.Length)..];
+            var fullVersionRaw = testName.Substring(versionStartIdx + BigSep.Length);
             var versionSepIdx = fullVersionRaw.IndexOf(BigSep, StringComparison.InvariantCulture);
             switch (versionSepIdx)
             {
                 case -1:
                     throw new InvalidOperationException(
-                        $"test name `{testName}` doesn't have a max version defined for the test, only the min version" +
+                        string.Format("test name `{0}` doesn't have a max version defined for the test, only the min version", testName) +
                         "you need to add the maximum inclusive version like so: " + exampleTestName);
                 case 0:
                     throw new InvalidOperationException(
-                        $"test name `{testName}` minimum version is non-existent, you need to define it like so: " +
+                        string.Format("test name `{0}` minimum version is non-existent, you need to define it like so: ", testName) +
                         exampleTestName);
             }
 
-            var versionMinRaw = fullVersionRaw[..versionSepIdx];
-            var versionMaxRaw = fullVersionRaw[(versionSepIdx + BigSep.Length)..];
+            var versionMinRaw = fullVersionRaw.Substring(0, versionSepIdx);
+            var versionMaxRaw = fullVersionRaw.Substring(versionSepIdx + BigSep.Length);
             if (versionMaxRaw.Trim().Length == 0)
             {
                 throw new InvalidOperationException(
-                    $"test name `{testName}` maximum version is non-existent, you need to define it like so: " +
+                    string.Format("test name `{0}` maximum version is non-existent, you need to define it like so: ", testName) +
                     exampleTestName);
             }
 
-            using var versionMin = GetVersionFromRaw(versionMinRaw).GetEnumerator();
-            using var versionMax = GetVersionFromRaw(versionMaxRaw).GetEnumerator();
-            var currentVersion = Application.unityVersion.Split('.').Select(v => int.Parse(v.Replace('f', '0')))
-                .ToArray();
-            foreach (var currentVersionEntry in currentVersion)
+            using (var versionMin = GetVersionFromRaw(versionMinRaw).GetEnumerator())
             {
-                if (!versionMin.MoveNext())
+                using (var versionMax = GetVersionFromRaw(versionMaxRaw).GetEnumerator())
                 {
-                    break;
+                    var currentVersion = Application.unityVersion.Split('.').Select(v => int.Parse(v.Replace('f', '0')))
+                        .ToArray();
+                    foreach (var currentVersionEntry in currentVersion)
+                    {
+                        if (!versionMin.MoveNext())
+                        {
+                            break;
+                        }
+
+                        if (currentVersionEntry > versionMin.Current) break;
+                        if (currentVersionEntry < versionMin.Current) return false;
+                    }
+
+                    foreach (var currentVersionEntry in currentVersion)
+                    {
+                        if (!versionMax.MoveNext())
+                        {
+                            break;
+                        }
+
+                        if (currentVersionEntry < versionMax.Current) break;
+                        if (currentVersionEntry > versionMax.Current) return false;
+                    }
+
+                    return true;
                 }
-
-                if (currentVersionEntry > versionMin.Current) break;
-                if (currentVersionEntry < versionMin.Current) return false;
             }
-
-            foreach (var currentVersionEntry in currentVersion)
-            {
-                if (!versionMax.MoveNext())
-                {
-                    break;
-                }
-
-                if (currentVersionEntry < versionMax.Current) break;
-                if (currentVersionEntry > versionMax.Current) return false;
-            }
-
-            return true;
         }
 
         private static IEnumerable<int> GetVersionFromRaw(string rawVersion)
@@ -270,51 +282,63 @@ namespace Editor.UniTASTest
             var split = rawVersion.Split(TinySep);
             return split.Select(v =>
             {
-                if (int.TryParse(v.Replace('f', '0'), out var success))
+                int success;
+                if (int.TryParse(v.Replace('f', '0'), out success))
                 {
                     return success;
                 }
 
                 throw new InvalidOperationException(
-                    $"invalid version: `{rawVersion}`, make sure each version number is separated by `{TinySep}`");
+                    string.Format("invalid version: `{0}`, make sure each version number is separated by `{1}`", rawVersion, TinySep));
             });
         }
 
         private static void RelativeSymlinkFile(string source, string target)
         {
-            var targetWorking = Directory.GetParent(target)?.FullName;
-            if (targetWorking == null)
+            var targetWorkingParent = Directory.GetParent(target);
+            if (targetWorkingParent == null)
             {
-                throw new ArgumentException($"path `{target}` doesn't have a parent directory", nameof(target));
+                throw new ArgumentException(string.Format("path `{0}` doesn't have a parent directory", target), nameof(target));
             }
+            var targetWorking = targetWorkingParent.FullName;
 
             // find out how much we need to go back to reach source dir
             var sourceRel = string.Empty;
             while (!source.StartsWith(targetWorking))
             {
-                targetWorking = Directory.GetParent(targetWorking)?.FullName;
-                if (targetWorking == null)
+                targetWorkingParent = Directory.GetParent(targetWorking);
+                if (targetWorkingParent == null)
                 {
                     throw new InvalidOperationException("Directory.GetParent returned null, this should never happen" +
-                                                        $", source: `{source}`, target: `{target}`");
+                                                        string.Format(", source: `{0}`, target: `{1}`", source, target));
                 }
+                targetWorking = targetWorkingParent.FullName;
 
-                sourceRel += $"..{Path.DirectorySeparatorChar}";
+                sourceRel += string.Format("..{0}", Path.DirectorySeparatorChar);
             }
 
             // now push rest of the path
-            source = sourceRel + source[(targetWorking.Length + 1)..];
+            source = sourceRel + source.Substring(targetWorking.Length + 1);
             var plat = Environment.OSVersion.Platform;
-            var success = plat switch
+            bool success;
+            switch (plat)
             {
-                PlatformID.Unix => symlink(source, target) == 0,
-                PlatformID.Win32NT or PlatformID.Win32S or PlatformID.Win32Windows or PlatformID.WinCE =>
-                    CreateSymbolicLink(target, source, SymbolicLink.File),
-                _ => throw new NotImplementedException($"symlink operation not implemented for platform {plat}")
-            };
+                case PlatformID.Win32NT:
+                case PlatformID.Win32S:
+                case PlatformID.Win32Windows:
+                case PlatformID.WinCE:
+                    success = CreateSymbolicLink(target, source, SymbolicLink.File);
+                    break;
+                case PlatformID.Unix:
+                    success = symlink(source, target) == 0;
+                    break;
+                default:
+                    throw new NotImplementedException(string.Format("symlink operation not implemented for platform {0}", plat));
+            }
+
             if (!success)
             {
-                throw new Exception($"symlink failed: error code {Marshal.GetLastWin32Error()}");
+                throw new Exception(string.Format("symlink failed: error code {0}", Marshal.GetLastWin32Error()));
             }
         }
 
@@ -335,11 +359,11 @@ namespace Editor.UniTASTest
         private static void InitTestScene()
         {
             var saveScene = false;
-            var scene = AssetDatabase.AssetPathExists(TestFrameworkRuntime.TestingScenePath)
+            var scene = File.Exists(TestFrameworkRuntime.TestingScenePath)
                 ? EditorSceneManager.OpenScene(TestFrameworkRuntime.TestingScenePath, OpenSceneMode.Single)
                 : EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             const string eventHooksObjName = "EventHooks";
-            var testObj = Object.FindObjectsByType<GameObject>(FindObjectsSortMode.None)
+            var testObj = (GameObject)Object.FindObjectsOfType(typeof(GameObject))
                 .FirstOrDefault(o => o.name == TestObjName);
             if (testObj == null)
             {
@@ -353,7 +377,7 @@ namespace Editor.UniTASTest
                 saveScene = true;
             }
 
-            var eventHooksObj = Object.FindObjectsByType<GameObject>(FindObjectsSortMode.None)
+            var eventHooksObj = (GameObject)Object.FindObjectsOfType(typeof(GameObject))
                 .FirstOrDefault(o => o.name == eventHooksObjName);
             if (eventHooksObj == null)
             {
@@ -401,22 +425,26 @@ namespace Editor.UniTASTest
                 }
 
                 if (!hasTests) continue;
-                var injectFields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-                    .Select(f => (f.Name, f.GetCustomAttribute<TestInjectAttribute>(true), f.FieldType))
-                    .Where(tuple => tuple.Item2 != null);
                 var prop = new SerializedObject(monoBeh);
-                foreach (var (fieldName, attr, fieldType) in injectFields)
+                foreach (var field in type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
                 {
-                    var field = prop.FindProperty(fieldName) ?? throw new InvalidOperationException($"Field {fieldName} not found");
-                    Debug.Log($"Injecting field {type.FullName}.{fieldName}");
-                    InjectField(type, attr, fieldType, field);
+                    var attrs = field.GetCustomAttribute<TestInjectAttribute>(true);
+                    if (attrs == null) continue;
+                    var fieldName = field.Name;
+                    var fieldType = field.FieldType;
+
+                    var fieldProp = prop.FindProperty(fieldName);
+                    if (fieldProp == null)
+                        throw new InvalidOperationException(string.Format("Field {0} not found", fieldName));
+                    Debug.Log(string.Format("Injecting field {0}.{1}", type.FullName, fieldName));
+                    InjectField(type, attrs, fieldType, fieldProp);
                 }
 
                 prop.ApplyModifiedProperties();
             }
         }
 
-        private static readonly List<AssetBundleBuild> _saveAssetBundles = new();
+        private static readonly List<AssetBundleBuild> _saveAssetBundles = new List<AssetBundleBuild>();
 
         private static void SaveAssetBundles()
         {
@@ -436,7 +464,7 @@ namespace Editor.UniTASTest
             var scenes = new List<EditorBuildSettingsScene>(EditorBuildSettings.scenes.Length);
             foreach (var scene in EditorBuildSettings.scenes)
             {
-                if (!AssetDatabase.AssetPathExists(scene.path)) continue;
+                if (!File.Exists(scene.path)) continue;
 
                 scenes.Add(scene);
             }
@@ -449,22 +477,28 @@ namespace Editor.UniTASTest
         private static void InjectField(Type monoBehType, TestInjectAttribute attr, Type fieldType,
             SerializedProperty field)
         {
-            switch (attr)
+            if (attr is TestInjectSceneAttribute)
             {
-                case TestInjectSceneAttribute:
-                    InjectFieldScene(fieldType, field);
-                    break;
-                case TestInjectPrefabAttribute prefab:
-                    InjectFieldPrefab(monoBehType, fieldType, field, prefab);
-                    break;
-                case TestInjectResource resource:
-                    InjectFieldResource(monoBehType, fieldType, field, resource);
-                    break;
-                case TestInjectAssetBundle assetBundle:
-                    InjectAssetBundle(monoBehType, fieldType, field, assetBundle);
-                    break;
-                default:
-                    throw new InvalidOperationException($"Injection type `{attr}` is not handled");
+                InjectFieldScene(fieldType, field);
+            }
+            else if (attr is TestInjectPrefabAttribute)
+            {
+                var prefab = (TestInjectPrefabAttribute)attr;
+                InjectFieldPrefab(monoBehType, fieldType, field, prefab);
+            }
+            else if (attr is TestInjectResource)
+            {
+                var resource = (TestInjectResource)attr;
+                InjectFieldResource(monoBehType, fieldType, field, resource);
+            }
+            else if (attr is TestInjectAssetBundle)
+            {
+                var assetBundle = (TestInjectAssetBundle)attr;
+                InjectAssetBundle(monoBehType, fieldType, field, assetBundle);
+            }
+            else
+            {
+                throw new InvalidOperationException(string.Format("Injection type `{0}` is not handled", attr));
             }
         }
 
@@ -479,7 +513,7 @@ namespace Editor.UniTASTest
                 if (destDir == null)
                 {
                     throw new InvalidOperationException(
-                        $"Failed to get asset bundle parent directory, which should be impossible. Path is `{path}`");
+                        string.Format("Failed to get asset bundle parent directory, which should be impossible. Path is `{0}`", path));
                 }
 
                 Directory.CreateDirectory(destDir);
@@ -499,7 +533,7 @@ namespace Editor.UniTASTest
 
             if (fieldType != typeof(OnceOnlyPath))
             {
-                throw new InvalidOperationException($"Field type is not `{nameof(OnceOnlyPath)}`");
+                throw new InvalidOperationException(string.Format("Field type is not `{0}`", nameof(OnceOnlyPath)));
             }
 
             var property = monoBehType.GetProperty(assetBundle.AssetProperty);
@@ -517,7 +551,7 @@ namespace Editor.UniTASTest
             if (assetRaw.GetType() != typeof(Dictionary<string, ITestAsset>))
             {
                 throw new InvalidOperationException(
-                    $"Asset property was expected to be {nameof(Dictionary<string, ITestAsset>)}");
+                    string.Format("Asset property was expected to be {0}", nameof(Dictionary<string, ITestAsset>)));
             }
 
             var assets = (Dictionary<string, ITestAsset>)assetRaw;
@@ -530,11 +564,12 @@ namespace Editor.UniTASTest
             var assetsPath = Path.Combine(TestFrameworkRuntime.AssetBundlePath, "assets");
             assetsPath = AssetDatabase.GenerateUniqueAssetPath(assetsPath);
             Directory.CreateDirectory(assetsPath);
-            Debug.Log($"new assets directory `{assetsPath}`");
+            Debug.Log(string.Format("new assets directory `{0}`", assetsPath));
 
             var i = 0;
-            foreach (var (assetPath, asset) in assets)
+            foreach (var assetPath in assets.Keys)
             {
+                var asset = assets[assetPath];
                 InitAsset(asset, assetsPath, path =>
                 {
                     paths[i] = path;
@@ -583,7 +618,7 @@ namespace Editor.UniTASTest
 
             if (fieldType != typeof(OnceOnlyPath))
             {
-                throw new InvalidOperationException($"Field type is not `{nameof(OnceOnlyPath)}`");
+                throw new InvalidOperationException(string.Format("Field type is not `{0}`", nameof(OnceOnlyPath)));
             }
 
             InitAssetByProperty(monoBehType, resource.AssetProperty, TestFrameworkRuntime.ResourcesPath,
@@ -593,7 +628,7 @@ namespace Editor.UniTASTest
                     var idx = path.IndexOf(key, StringComparison.InvariantCulture);
                     if (idx < 0)
                     {
-                        Debug.LogWarning($"Somehow, the path `{path}` isn't in the resources directory");
+                        Debug.LogWarning(string.Format("Somehow, the path `{0}` isn't in the resources directory", path));
                         return;
                     }
 
@@ -614,7 +649,7 @@ namespace Editor.UniTASTest
                 throw new InvalidOperationException("Field type is not string");
             }
 
-            if (!string.IsNullOrEmpty(field.stringValue) && AssetDatabase.AssetPathExists(field.stringValue))
+            if (!string.IsNullOrEmpty(field.stringValue) && File.Exists(field.stringValue))
             {
                 Debug.Log(AlreadyInjected);
                 return;
@@ -668,7 +703,7 @@ namespace Editor.UniTASTest
 
             if (assetRaw.GetType().GetInterfaces().All(t => t != typeof(ITestAsset)))
             {
-                throw new InvalidOperationException($"Asset property `{monoBehType.Name}.{property.Name}` was expected to be {nameof(ITestAsset)}");
+                throw new InvalidOperationException(string.Format("Asset property `{0}.{1}` was expected to be {2}", monoBehType.Name, property.Name, nameof(ITestAsset)));
             }
 
             InitAsset((ITestAsset)assetRaw, pathPrefix, assetReady, fileName);
@@ -677,45 +712,41 @@ namespace Editor.UniTASTest
         private static void InitAsset(ITestAsset testAsset, string pathPrefix, Action<string> assetReady,
             string fileName = null)
         {
-            switch (testAsset)
+            if (testAsset is GameObjectAsset)
             {
-                case GameObjectAsset:
-                    {
-                        var path = InitAssetPath(fileName ?? "asset.prefab", pathPrefix);
+                var path = InitAssetPath(fileName ?? "asset.prefab", pathPrefix);
 
-                        var prefab = new GameObject();
-                        PrefabUtility.SaveAsPrefabAsset(prefab, path, out var success);
-                        Object.DestroyImmediate(prefab);
+                var prefab = new GameObject();
+                bool success;
+                PrefabUtility.SaveAsPrefabAsset(prefab, path, out success);
+                Object.DestroyImmediate(prefab);
 
-                        if (!success)
-                            throw new InvalidOperationException("Failed to save prefab");
+                if (!success)
+                    throw new InvalidOperationException("Failed to save prefab");
 
-                        assetReady(path);
-                        break;
-                    }
+                assetReady(path);
+            }
+            else if (testAsset is SceneAsset)
+            {
+                var path = InitAssetPath(fileName ?? "generated.unity", pathPrefix);
 
-                case SceneAsset:
-                    {
-                        var path = InitAssetPath(fileName ?? "generated.unity", pathPrefix);
+                Debug.Log(string.Format("Creating scene at `{0}`", path));
+                if (!EditorSceneManager.SaveOpenScenes())
+                {
+                    throw new InvalidOperationException("failed to save open scenes before creating scene");
+                }
+                var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Additive);
+                if (!EditorSceneManager.SaveScene(scene, path))
+                {
+                    throw new InvalidOperationException(string.Format("Failed to save scene {0}", path));
+                }
+                EditorSceneManager.CloseScene(scene, true);
 
-                        Debug.Log($"Creating scene at `{path}`");
-                        if (!EditorSceneManager.SaveOpenScenes())
-                        {
-                            throw new InvalidOperationException("failed to save open scenes before creating scene");
-                        }
-                        var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Additive);
-                        if (!EditorSceneManager.SaveScene(scene, path))
-                        {
-                            throw new InvalidOperationException($"Failed to save scene {path}");
-                        }
-                        EditorSceneManager.CloseScene(scene, true);
-
-                        assetReady(path);
-                        break;
-                    }
-
-                default:
-                    throw new InvalidOperationException($"Asset type `{testAsset}` is not handled");
+                assetReady(path);
+            }
+            else
+            {
+                throw new InvalidOperationException(string.Format("Asset type `{0}` is not handled", testAsset));
             }
         }
 
@@ -790,13 +821,15 @@ namespace Editor.UniTASTest
             var options = GetValidatedOptions();
 
             // Set version for this build
-            if (options.TryGetValue("buildVersion", out var buildVersion) && buildVersion != "none")
+            string buildVersion;
+            if (options.TryGetValue("buildVersion", out buildVersion) && buildVersion != "none")
             {
                 PlayerSettings.bundleVersion = buildVersion;
                 PlayerSettings.macOS.buildNumber = buildVersion;
             }
 
-            if (options.TryGetValue("androidVersionCode", out var versionCode) && versionCode != "0")
+            string versionCode;
+            if (options.TryGetValue("androidVersionCode", out versionCode) && versionCode != "0")
             {
                 PlayerSettings.Android.bundleVersionCode = int.Parse(options["androidVersionCode"]);
             }
@@ -813,16 +846,22 @@ namespace Editor.UniTASTest
 
             // Custom build
             var result = Build(buildTarget);
+#if UNITY_2017_4_7_OR_NEWER
             ExitWithResult(result.result);
+#else
+            ExitWithResult(result);
+#endif
         }
 
         private static Dictionary<string, string> GetValidatedOptions()
         {
-            ParseCommandLineArguments(out var validatedOptions);
+            Dictionary<string, string> validatedOptions;
+            ParseCommandLineArguments(out validatedOptions);
 
-            if (validatedOptions.TryGetValue("buildTarget", out var buildTarget) && !Enum.IsDefined(typeof(BuildTarget), buildTarget ?? string.Empty))
+            string buildTarget;
+            if (validatedOptions.TryGetValue("buildTarget", out buildTarget) && !Enum.IsDefined(typeof(BuildTarget), buildTarget ?? string.Empty))
             {
-                Console.WriteLine($"{buildTarget} is not a defined {nameof(BuildTarget)}");
+                Console.WriteLine(string.Format("{0} is not a defined {1}", buildTarget, nameof(BuildTarget)));
                 EditorApplication.Exit(121);
             }
 
@@ -835,11 +874,11 @@ namespace Editor.UniTASTest
             var args = Environment.GetCommandLineArgs();
 
             Console.WriteLine(
-                $"{Eol}" +
-                $"###########################{Eol}" +
-                $"#    Parsing settings     #{Eol}" +
-                $"###########################{Eol}" +
-                $"{Eol}"
+                Eol +
+                "###########################" + Eol +
+                "#    Parsing settings     #" + Eol +
+                "###########################" + Eol +
+                Eol
             );
 
             // Extract flags with optional values
@@ -857,12 +896,16 @@ namespace Editor.UniTASTest
                 var displayValue = secret ? "*HIDDEN*" : "\"" + value + "\"";
 
                 // Assign
-                Console.WriteLine($"Found flag \"{flag}\" with value {displayValue}.");
+                Console.WriteLine(string.Format("Found flag \"{0}\" with value {1}.", flag, displayValue));
                 providedArguments.Add(flag, value);
             }
         }
 
+#if UNITY_2017_4_7_OR_NEWER
         internal static BuildSummary Build(BuildTarget buildTarget)
+#else
+        internal static string Build(BuildTarget buildTarget)
+#endif
         {
             TestFrameworkSetup.CopyEditorAssetBundleToBuildPath();
 
@@ -879,7 +922,7 @@ namespace Editor.UniTASTest
                     throw new ArgumentOutOfRangeException(nameof(buildTarget), buildTarget, null);
             }
 
-            filePath = Path.Combine(TestFrameworkRuntime.BuildPath, $"build.{filePath}");
+            filePath = Path.Combine(TestFrameworkRuntime.BuildPath, string.Format("build.{0}", filePath));
 
             var scenes = EditorBuildSettings.scenes.Where(scene => scene.enabled).Select(s => s.path).ToArray();
 
@@ -892,27 +935,47 @@ namespace Editor.UniTASTest
                 //                options = UnityEditor.BuildOptions.Development
             };
 
+#if UNITY_2017_4_7_OR_NEWER
             var buildSummary = BuildPipeline.BuildPlayer(buildPlayerOptions).summary;
+#else
+            var buildSummary = BuildPipeline.BuildPlayer(buildPlayerOptions);
+#endif
             ReportSummary(buildSummary);
             return buildSummary;
         }
 
+#if UNITY_2017_4_7_OR_NEWER
         private static void ReportSummary(BuildSummary summary)
         {
             Console.WriteLine(
-                $"{Eol}" +
-                $"###########################{Eol}" +
-                $"#      Build results      #{Eol}" +
-                $"###########################{Eol}" +
-                $"{Eol}" +
-                $"Duration: {summary.totalTime.ToString()}{Eol}" +
-                $"Warnings: {summary.totalWarnings.ToString()}{Eol}" +
-                $"Errors: {summary.totalErrors.ToString()}{Eol}" +
-                $"Size: {summary.totalSize.ToString()} bytes{Eol}" +
-                $"{Eol}"
+                Eol +
+                "###########################" + Eol +
+                "#      Build results      #" + Eol +
+                "###########################" + Eol +
+                Eol +
+                "Duration: " + summary.totalTime.ToString() + Eol +
+                "Warnings: " + summary.totalWarnings.ToString() + Eol +
+                "Errors: " + summary.totalErrors.ToString() + Eol +
+                "Size: " + summary.totalSize.ToString() + " bytes" + Eol +
+                Eol
             );
         }
+#else
+        private static void ReportSummary(string summary)
+        {
+            if (string.IsNullOrWhiteSpace(summary))
+                summary = "Success";
+            Console.WriteLine(
+                Eol +
+                "###########################" + Eol +
+                "#      Build results      #" + Eol +
+                "###########################" + Eol +
+                Eol + summary + Eol
+            );
+        }
+#endif
 
+#if UNITY_2017_4_7_OR_NEWER
         private static void ExitWithResult(BuildResult result)
         {
             switch (result)
@@ -929,12 +992,28 @@ namespace Editor.UniTASTest
                     Console.WriteLine("Build cancelled!");
                     EditorApplication.Exit(102);
                     break;
-                case BuildResult.Unknown:
                 default:
                     Console.WriteLine("Build result is unknown!");
                     EditorApplication.Exit(103);
                     break;
             }
         }
+#else
+        private static void ExitWithResult(string result)
+        {
+            int res;
+            if (string.IsNullOrWhiteSpace(result))
+            {
+                res = 0;
+            }
+            else
+            {
+                Console.WriteLine("Build failed!");
+                res = 1;
+            }
+
+            EditorApplication.Exit(res);
+        }
+#endif
     }
 }
