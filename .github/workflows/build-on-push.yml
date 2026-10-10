@@ -14,6 +14,8 @@ jobs:
         target:
           - name: unity_latest
             targetPlatform: StandaloneLinux64
+          - name: 2017.4.6f1
+            targetPlatform: StandaloneLinux64
           # - name: unity_latest
           #   targetPlatform: StandaloneWindows64
           # - name: unity_latest
@@ -114,6 +116,28 @@ jobs:
         with:
           name: UniTAS-${{ matrix.target.name }}
           path: UniTAS/Patcher/bin/Release
+
+  - if: matrix.target.gameTargetPlatform == "StandaloneLinux64"
+    name: Install nix
+    uses: cachix/install-nix-action@v31
+    with:
+      github_access_token: ${{ secrets.GH_TOKEN }}
+
+  - if: matrix.target.gameTargetPlatform == "StandaloneLinux64" && matrix.target.name == "2017.4.6f1"
+    name: Test UniTAS
+    runs-on: "ubuntu-24.04"
+    run: |
+      nix develop ".#unity-testing"
+
+      mkdir -p editor
+
+      editor_version=$(just detect-game-unity-version TestGames/${{ matrix.target.name }})
+      pushd editor
+      curl -O "https://download.leashed.dev/unity-editor/linux/${editor_version}.tar.gz"
+      popd
+
+      just build-test-game '${{ matrix.target.name }}' editor ${{ matrix.target.targetPlatform }}
+
   testUniTAS:
     name: Test UniTAS
     needs: buildUniTAS
@@ -149,9 +173,6 @@ jobs:
         uses: dtolnay/rust-toolchain@nightly
         with:
           targets: ${{ matrix.target.triple }}
-
-      - name: Setup just
-        uses: extractions/setup-just@v4
 
       - name: Setup Nu
         uses: hustcer/setup-nu@v3
