@@ -21,17 +21,15 @@ public class TestFrameworkRuntime : MonoBehaviour
     public const string ResourcesPath = AssetPath + "/Resources";
     public const string AssetBundlePath = AssetPath + "/AssetBundles";
     public const string BuildPath = "build";
-
-    private static TestFrameworkRuntime _instance;
     private readonly List<Result> _generalTestResults = new List<Result>();
     private readonly List<Result> _initTestResults = new List<Result>();
     private readonly List<Result> _movieTestResults = new List<Result>();
     private Test[] _generalTests;
     private Test[] _eventTests;
-    private (string, MovieTestAttribute, Test[])[] _movieTests;
+    private MovieTest[] _movieTests;
     private Test[] _initTestsAwake;
 
-    public static TestFrameworkRuntime Instance => _instance;
+    public static TestFrameworkRuntime Instance { get; private set; }
 
     private static bool _generalTestsDone;
 
@@ -49,14 +47,14 @@ public class TestFrameworkRuntime : MonoBehaviour
 
     private void Awake()
     {
-        if (_instance != null)
+        if (Instance != null)
         {
             DestroyImmediate(gameObject);
             return;
         }
 
         DontDestroyOnLoad(this);
-        _instance = this;
+        Instance = this;
     }
 
     private bool _discoveredTests;
@@ -67,7 +65,7 @@ public class TestFrameworkRuntime : MonoBehaviour
         _discoveredTests = true;
         var generalTests = new List<Test>();
         var eventTests = new List<Test>();
-        var movieTests = new List<(string, MovieTestAttribute, Test[])>();
+        var movieTests = new List<MovieTest>();
         var initTestsAwake = new List<Test>();
 
         foreach (var monoBeh in GetComponents<MonoBehaviour>())
@@ -78,7 +76,7 @@ public class TestFrameworkRuntime : MonoBehaviour
             var testsIter = methods.Select(m =>
             {
                 var attr = m.GetCustomAttribute<TestAttribute>();
-                return new Test($"{monoBehType.FullName}.{m.Name}", monoBehType.FullName, m, monoBeh, attr.EventTiming,
+                return new Test(string.Format("{0}.{1}", monoBehType.FullName, m.Name), monoBehType.FullName, m, monoBeh, attr.EventTiming,
                     attr.InitTestTiming);
             }).ToArray();
             if (movieTestAttr != null)
@@ -89,11 +87,11 @@ public class TestFrameworkRuntime : MonoBehaviour
                     {
                         // TODO: why warn here? the tests discovery isn't used in setup
                         Debug.LogWarning(
-                            $"Test {test.Name} is a movie test and the event timing argument is ineffective");
+                            string.Format("Test {0} is a movie test and the event timing argument is ineffective", test.Name));
                     }
                 }
 
-                movieTests.Add((monoBehType.FullName, movieTestAttr, testsIter));
+                movieTests.Add(new MovieTest(monoBehType.FullName, movieTestAttr, testsIter));
                 continue;
             }
 
@@ -106,16 +104,16 @@ public class TestFrameworkRuntime : MonoBehaviour
         _eventTests = eventTests.ToArray();
         _movieTests = movieTests.ToArray();
         _initTestsAwake = initTestsAwake.ToArray();
-        Debug.Log($"Discovered {_generalTests.Length} general tests" +
-                  $", {_eventTests.Length} event tests" +
-                  $", {_movieTests.Length} movie tests" +
-                  $", {_initTestsAwake.Length} init tests (Awake)");
+        Debug.Log(string.Format("Discovered {0} general tests", _generalTests.Length) +
+                  string.Format(", {0} event tests", _eventTests.Length) +
+                  string.Format(", {0} movie tests", _movieTests.Length) +
+                  string.Format(", {0} init tests (Awake)", _initTestsAwake.Length));
     }
 
     private static Test[] AllInitTests()
     {
-        _instance.DiscoverTestsIfNot();
-        return _instance._initTestsAwake;
+        Instance.DiscoverTestsIfNot();
+        return Instance._initTestsAwake;
     }
 
     public static IEnumerable<MethodInfo> GetTestFuncs(Type type)
@@ -127,21 +125,21 @@ public class TestFrameworkRuntime : MonoBehaviour
     public static void RunTestsEditor()
     {
         if (!InstanceSetCheckAndLog()) return;
-        _instance.DiscoverTestsIfNot();
-        _instance.StartCoroutine(_instance.RunAllTests());
+        Instance.DiscoverTestsIfNot();
+        Instance.StartCoroutine(Instance.RunAllTests());
     }
 
     public static void RunGeneralTests(string[] tests = null)
     {
         if (!InstanceSetCheckAndLog()) return;
-        _instance.DiscoverTestsIfNot();
-        _instance.StartCoroutine(_instance.RunGeneralInternal(tests));
+        Instance.DiscoverTestsIfNot();
+        Instance.StartCoroutine(Instance.RunGeneralInternal(tests));
     }
 
     public static void ResetGeneralTests()
     {
         if (!InstanceSetCheckAndLog()) return;
-        _instance.ResetGeneralTestsInternal();
+        Instance.ResetGeneralTestsInternal();
     }
 
     private void ResetGeneralTestsInternal()
@@ -152,7 +150,7 @@ public class TestFrameworkRuntime : MonoBehaviour
 
     private static bool InstanceSetCheckAndLog()
     {
-        if (_instance != null) return true;
+        if (Instance != null) return true;
 
         Debug.LogError("wait for the test runner instance to be instantiated");
         return false;
@@ -164,7 +162,7 @@ public class TestFrameworkRuntime : MonoBehaviour
 
         if (tests != null)
         {
-            tests = tests.Where(t => !string.IsNullOrWhiteSpace(t)).ToArray();
+            tests = tests.Where(t => t == null || t.Trim().Length == 0).ToArray();
         }
 
         foreach (var test in _generalTests)
@@ -185,7 +183,10 @@ public class TestFrameworkRuntime : MonoBehaviour
         Debug.Log("General tests finished");
     }
 
-    private IEnumerable<Test> AllTests => _generalTests.Concat(_eventTests).Concat(_initTestsAwake);
+    private IEnumerable<Test> AllTests
+    {
+        get { return _generalTests.Concat(_eventTests).Concat(_initTestsAwake); }
+    }
 
     /// <summary>
     /// Only used internally for editor
@@ -213,9 +214,9 @@ public class TestFrameworkRuntime : MonoBehaviour
     /// </summary>
     public static IEnumerator RunTestByName(string name)
     {
-        _instance.DiscoverTestsIfNot();
+        Instance.DiscoverTestsIfNot();
 
-        var test = _instance.AllTests.FirstOrDefault(t => t.Name.Like(name));
+        var test = Instance.AllTests.FirstOrDefault(t => t.Name.Like(name));
         if (test.Name == null)
         {
             Debug.LogWarning("couldn't find test");
@@ -232,12 +233,13 @@ public class TestFrameworkRuntime : MonoBehaviour
 
     private static IEnumerator RunTest(Test test, List<Result> results)
     {
-        Debug.Log($"Running test {test.Name}");
+        Debug.Log(string.Format("Running test {0}", test.Name));
         var executeIter = test.Execute();
         while (executeIter.MoveNext())
         {
-            if (executeIter.Current is Result result)
+            if (executeIter.Current is Result)
             {
+                var result = (Result)executeIter.Current;
                 Debug.Log(result);
                 results.Add(result);
                 break;
@@ -273,7 +275,7 @@ public class TestFrameworkRuntime : MonoBehaviour
         var sceneCount = SceneManager.sceneCount;
         if (sceneCount != 1)
         {
-            throw new InvalidProgramException($"cleanup failure, expected 1 scene to be ready but there are `{sceneCount}` scenes");
+            throw new InvalidProgramException(string.Format("cleanup failure, expected 1 scene to be ready but there are `{0}` scenes", sceneCount));
         }
 
         AssetBundle.UnloadAllAssetBundles(true);
@@ -288,8 +290,8 @@ public class TestFrameworkRuntime : MonoBehaviour
     {
         if (!InstanceSetCheckAndLog()) yield break;
 
-        yield return _instance.MovieTestCheckAndRun(MovieTestTiming.Awake);
-        yield return _instance.InitTestCheckAndRun(InitTestTiming.Awake);
+        yield return Instance.MovieTestCheckAndRun(MovieTestTiming.Awake);
+        yield return Instance.InitTestCheckAndRun(InitTestTiming.Awake);
     }
 
     private void CheckExecTestFlag()
@@ -298,12 +300,12 @@ public class TestFrameworkRuntime : MonoBehaviour
 
         if (_execTestRun)
         {
-            throw new InvalidOperationException($"Execute test is already running, {checkMsg}");
+            throw new InvalidOperationException(string.Format("Execute test is already running, {0}", checkMsg));
         }
 
         if (_initTestMethodToRun != null && _movieTestClassToRun != null)
         {
-            throw new InvalidOperationException($"Execute test flag is conflicting, {checkMsg}");
+            throw new InvalidOperationException(string.Format("Execute test flag is conflicting, {0}", checkMsg));
         }
     }
 
@@ -312,7 +314,7 @@ public class TestFrameworkRuntime : MonoBehaviour
         if (_initTestMethodToRun == null) yield break;
         CheckExecTestFlag();
         // check format
-        Debug.Log($"Init test is set to be executed: `{_initTestMethodToRun}`");
+        Debug.Log(string.Format("Init test is set to be executed: `{0}`", _initTestMethodToRun));
         DiscoverTestsIfNot();
         var testIdx = Array.FindIndex(_initTestsAwake, t => t.InitTiming == timing && t.Name == _initTestMethodToRun);
         if (testIdx < 0)
@@ -329,28 +331,42 @@ public class TestFrameworkRuntime : MonoBehaviour
     {
         if (_movieTestClassToRun == null) yield break;
         CheckExecTestFlag();
-        Debug.Log($"Movie test is set to be executed: `{_movieTestClassToRun}`");
+        Debug.Log(string.Format("Movie test is set to be executed: `{0}`", _movieTestClassToRun));
         DiscoverTestsIfNot();
-        var testPairIdx = Array.FindIndex(_movieTests, t => t.Item1.Like(_movieTestClassToRun));
+        var testPairIdx = Array.FindIndex(_movieTests, t => t.ClassName.Like(_movieTestClassToRun));
         if (testPairIdx < 0)
         {
             throw new InvalidOperationException("Movie test not found");
         }
         var movieTest = _movieTests[testPairIdx];
-        var testTiming = movieTest.Item2.Timing;
+        var testTiming = movieTest.Attrs.Timing;
         if (testTiming != movieTestTiming)
         {
-            Debug.Log($"Test found but mismatching timing, need timing {testTiming} but current at {movieTestTiming}, skipping test execution");
+            Debug.Log(string.Format("Test found but mismatching timing, need timing {0} but current at {1}, skipping test execution", testTiming, movieTestTiming));
             yield break;
         }
 
         _execTestRun = true;
-        var tests = _movieTests[testPairIdx].Item3;
+        var tests = movieTest.Tests;
 
-        Debug.Log($"Running {tests.Length} movie tests");
+        Debug.Log(string.Format("Running {0} movie tests", tests.Length));
         foreach (var test in tests)
         {
             yield return RunTest(test, _movieTestResults);
+        }
+    }
+
+    private struct MovieTest
+    {
+        public readonly string ClassName;
+        public readonly MovieTestAttribute Attrs;
+        public readonly Test[] Tests;
+
+        public MovieTest(string className, MovieTestAttribute attrs, Test[] tests)
+        {
+            ClassName = className;
+            Attrs = attrs;
+            Tests = tests;
         }
     }
 
@@ -373,7 +389,7 @@ public class TestFrameworkRuntime : MonoBehaviour
         }
     }
 
-    private readonly struct Test : IEquatable<Test>
+    private struct Test : IEquatable<Test>
     {
         public readonly string Name;
         public readonly string TypeName;
@@ -398,7 +414,7 @@ public class TestFrameworkRuntime : MonoBehaviour
             if (EventTiming != null && InitTiming != null)
             {
                 throw new InvalidOperationException(
-                    $"Test {name} has event timing and init timing specified, choose one, " +
+                    string.Format("Test {0} has event timing and init timing specified, choose one, ", name) +
                     "event timing are tests that can be ran at any point in the lifetime of unity games, " +
                     "init tests are ran automatically on the specified timing");
             }
@@ -406,8 +422,9 @@ public class TestFrameworkRuntime : MonoBehaviour
 
         private static string GetExceptionMsg(Exception ex)
         {
-            if (ex.InnerException is AssertionException assertionException)
+            if (ex.InnerException is AssertionException)
             {
+                var assertionException = (AssertionException)ex.InnerException;
                 return assertionException.Message;
             }
 
@@ -435,12 +452,13 @@ public class TestFrameworkRuntime : MonoBehaviour
 
             try
             {
-                testRet = _method.Invoke(_objInstance, Array.Empty<object>());
+                testRet = _method.Invoke(_objInstance, new object[0]);
             }
             catch (Exception e)
             {
                 success = false;
-                msg ??= GetExceptionMsg(e);
+                if (msg == null)
+                    msg = GetExceptionMsg(e);
             }
 
             if (!_testDoesIter || !success)
@@ -452,7 +470,7 @@ public class TestFrameworkRuntime : MonoBehaviour
                 yield break;
             }
 
-            var iter = (IEnumerator<TestYield>)testRet!;
+            var iter = (IEnumerator<TestYield>)testRet;
             while (true)
             {
                 bool moveNextResult;
@@ -463,7 +481,8 @@ public class TestFrameworkRuntime : MonoBehaviour
                 catch (Exception e)
                 {
                     success = false;
-                    msg ??= GetExceptionMsg(e);
+                    if (msg == null)
+                        msg = GetExceptionMsg(e);
                     break;
                 }
 
@@ -492,7 +511,9 @@ public class TestFrameworkRuntime : MonoBehaviour
 
         public override bool Equals(object obj)
         {
-            return obj is Test other && Equals(other);
+            if (!(obj is Test)) return false;
+            var other = (Test)obj;
+            return Equals(other);
         }
 
         public override int GetHashCode()
@@ -520,7 +541,7 @@ public static class Assert
     {
         if (_logHookStore.Condition == null)
         {
-            _logHookStore = default;
+            _logHookStore = default(LogHookStore);
             throw new AssertionException("assertion failed `no log recieved`{0}", message, file, line);
         }
         Equal(_logHookStore.Type, expectedType, message, file, line);
@@ -528,7 +549,7 @@ public static class Assert
         {
             Equal(_logHookStore.Condition, expectedLog, message, file, line);
         }
-        _logHookStore = default;
+        _logHookStore = default(LogHookStore);
     }
 
     private static LogHookStore _logHookStore;
@@ -592,8 +613,9 @@ public static class Assert
             msg.AppendFormat(" expected: {0}: {1}", expected.GetType().FullName, expected.Message);
             throw new AssertionException(msg.ToString(), message, file, line);
         }
-        catch (Exception e) when (e is not AssertionException)
+        catch (Exception e)
         {
+            if (e is AssertionException) throw;
             if (e.GetType() == expected.GetType() && e.Message == expected.Message)
                 return;
 
@@ -913,7 +935,7 @@ public class TestInjectAssetBundle : TestInjectAttribute
 [Serializable]
 public class OnceOnlyPath
 {
-    public const string InnerFieldName = nameof(inner);
+    public const string InnerFieldName = "inner";
 
     [SerializeField]
     private string inner;

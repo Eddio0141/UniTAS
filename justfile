@@ -45,3 +45,24 @@ package:
     fi
 
     zip -r ../unitas-thunderstore.zip *
+
+[group("utils")]
+detect-game-unity-version path:
+    @cat "{{path}}/ProjectSettings/ProjectVersion.txt" | cut -d " " -f 2
+
+[group("build")]
+[script]
+build-test-game name editors buildTarget:
+    set -x
+    game=$(readlink -f "TestGames/{{name}}")
+    version=$(just detect-game-unity-version "$game")
+    echo "Detected version $version"
+    editor="{{editors}}/${version}/Editor/Unity"
+    if [ ! -f "$editor" ]; then
+        echo "Couldn't find an editor at '${editor}'"
+        exit 1
+    fi
+
+    mkdir -p logs
+
+    "$editor" -batchmode -nographics -quit -logFile logs/build-test-game.log -projectPath /home/yuu/src/UniTAS/TestGames/2017.4.6f1 -executeMethod Editor.UniTASTest.BuildScript.Build -buildTarget {{buildTarget}}
