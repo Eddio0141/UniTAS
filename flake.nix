@@ -67,8 +67,10 @@
                 zip
               ];
             };
+          };
 
-            unity-testing = (import ./nix/unity-testing.nix { inherit pkgs; }).env;
+          packages = {
+            unity-testing = (import ./nix/unity-testing.nix { inherit pkgs; });
           };
         };
     };
