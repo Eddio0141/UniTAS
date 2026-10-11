@@ -2,6 +2,14 @@
 pkgs.buildFHSEnv {
   name = "unity-testing-fhs-env";
 
+  targetPkgs =
+    pkgs:
+    (with pkgs; [
+      just
+      curl
+      busybox
+    ]);
+
   multiPkgs =
     pkgs: with pkgs; [
       cups
