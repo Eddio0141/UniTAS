@@ -33,5 +33,12 @@ pkgs.buildFHSEnv {
       libxi
       libxrender
       glibc_multi.static
+      fontconfig.lib
+      freetype
+      pango
+      cairo
+      libxcomposite
+      libxext
+      libxfixes
     ];
 }
