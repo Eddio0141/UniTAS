@@ -67,6 +67,12 @@
                 zip
               ];
             };
+
+            github-ci = pkgs.mkShell {
+              packages = with pkgs; [
+                nodejs
+              ];
+            };
           };
 
           packages = {

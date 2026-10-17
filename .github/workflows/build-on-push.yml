@@ -24,44 +24,54 @@ jobs:
                  matrix.target.targetPlatform == 'StandaloneWindows64' && 'windows-2025' ||
                  matrix.target.targetPlatform == 'StandaloneWindows' && 'windows-2025' ||
                  '' }}
+    container:
+      image: docker.io/debian:trixie-slim
+      options: --privileged
     steps:
-      - run: |
-          curl -O "https://download.leashed.dev/unity-editor/linux/2017.4.6f1.tar.gz"
-
-      - name: Idiotic ubuntu setup
+      - name: Setup
         run: |
-          # bwrap: setting up uid map: Permission denied workaround <- why github....
-          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+          apt update
+          apt install -y nodejs git git-lfs curl xz-utils nix-setup-systemd
 
-          # THANKS MICROSOFT, AMAZING WORK!!!! https://github.com/orgs/community/discussions/25678#discussioncomment-5242449
           rm -rf /opt/hostedtoolcache
+
+          echo "experimental-features = nix-command flakes" >> /etc/nix/nix.conf
+
+          chown root:root /__w/UniTAS/UniTAS
+
+      # - name: Idiotic ubuntu setup
+      #   run: |
+      #     # bwrap: setting up uid map: Permission denied workaround <- why github....
+      #     sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+      #
+      #     # THANKS MICROSOFT, AMAZING WORK!!!! https://github.com/orgs/community/discussions/25678#discussioncomment-5242449
 
       - name: Checkout
         uses: actions/checkout@v7
         with:
           lfs: true
 
-      - if: runner.os == 'Linux'
-        name: Install nix
-        uses: cachix/install-nix-action@v31
-        with:
-          github_access_token: ${{ secrets.GH_TOKEN }}
+      # - if: runner.os == 'Linux'
+      #   name: Install nix
+      #   uses: cachix/install-nix-action@v31
+      #   with:
+      #     github_access_token: ${{ secrets.GH_TOKEN }}
 
-      - name: Binary cache
-        uses: actions/cache@v6
-        id: unity-game-bin-cache
-        with:
-          path: TestGames/${{ matrix.target.name }}/build
-          key: unity-game-bin-${{ matrix.target.targetPlatform }}-${{ hashFiles(format('TestGames/{0}/Assets/**', matrix.target.name), format('TestGames/{0}/Packages/**', matrix.target.name), format('TestGames/{0}/ProjectSettings/**', matrix.target.name)) }}
+      # - name: Binary cache
+      #   uses: actions/cache@v6
+      #   id: unity-game-bin-cache
+      #   with:
+      #     path: TestGames/${{ matrix.target.name }}/build
+      #     key: unity-game-bin-${{ matrix.target.targetPlatform }}-${{ hashFiles(format('TestGames/{0}/Assets/**', matrix.target.name), format('TestGames/{0}/Packages/**', matrix.target.name), format('TestGames/{0}/ProjectSettings/**', matrix.target.name)) }}
           
-      - if: steps.unity-game-bin-cache.outputs.cache-hit != 'true'
-        uses: actions/cache@v6
-        name: Library cache
-        with:
-          path: TestGames/${{ matrix.target.name }}/Library
-          key: unity-game-library-${{ matrix.target.name }}-${{ matrix.target.targetPlatform }}-${{ hashFiles(format('TestGames/{0}/Assets/**', matrix.target.name), format('TestGames/{0}/Packages/**', matrix.target.name), format('TestGames/{0}/ProjectSettings/**', matrix.target.name)) }}
-          restore-keys: |
-            unity-game-library-${{ matrix.target.name }}-${{ matrix.target.targetPlatform }}-
+      # - if: steps.unity-game-bin-cache.outputs.cache-hit != 'true'
+      #   uses: actions/cache@v6
+      #   name: Library cache
+      #   with:
+      #     path: TestGames/${{ matrix.target.name }}/Library
+      #     key: unity-game-library-${{ matrix.target.name }}-${{ matrix.target.targetPlatform }}-${{ hashFiles(format('TestGames/{0}/Assets/**', matrix.target.name), format('TestGames/{0}/Packages/**', matrix.target.name), format('TestGames/{0}/ProjectSettings/**', matrix.target.name)) }}
+      #     restore-keys: |
+      #       unity-game-library-${{ matrix.target.name }}-${{ matrix.target.targetPlatform }}-
 
       # - if: steps.unity-game-bin-cache.outputs.cache-hit != 'true'
       #   uses: game-ci/unity-builder@v5
@@ -75,20 +85,12 @@ jobs:
       #     buildMethod: Editor.UniTASTest.BuildScript.Build
       #     targetPlatform: ${{ matrix.target.targetPlatform }}
 
+      - run: |
+          ls -ld /__w/UniTAS/UniTAS /github/home
+
       - name: Build
         shell: 'nix run ".#unity-testing" -- -e {0}'
         run: |
-          cat /sys/fs/cgroup/memory.events || true
-          cat /sys/fs/cgroup/memory.max || true
-
-          (
-            while true; do
-              echo "$(date): $(free -mh | grep Mem:)"
-              sleep 1
-            done
-          ) &
-          MONITOR_PID=$!
-
           mkdir -p editor
 
           editor_version=$(just detect-game-unity-version TestGames/${{ matrix.target.name }})
