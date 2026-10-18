@@ -65,4 +65,4 @@ build-test-game name editors buildTarget:
 
     mkdir -p logs
 
-    "$editor" -batchmode -nographics -quit -logFile logs/build-test-game.log -projectPath /home/yuu/src/UniTAS/TestGames/2017.4.6f1 -executeMethod Editor.UniTASTest.BuildScript.Build -buildTarget {{buildTarget}}
+    "$editor" -batchmode -nographics -quit -logFile logs/build-test-game.log -projectPath "${game}" -executeMethod Editor.UniTASTest.BuildScript.Build -buildTarget {{buildTarget}}

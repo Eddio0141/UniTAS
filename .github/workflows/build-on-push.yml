@@ -33,45 +33,33 @@ jobs:
           apt update
           apt install -y nodejs git git-lfs curl xz-utils nix-setup-systemd
 
+          # THANKS MICROSOFT, AMAZING WORK!!!! https://github.com/orgs/community/discussions/25678#discussioncomment-5242449
           rm -rf /opt/hostedtoolcache
 
           echo "experimental-features = nix-command flakes" >> /etc/nix/nix.conf
 
           chown root:root /__w/UniTAS/UniTAS
 
-      # - name: Idiotic ubuntu setup
-      #   run: |
-      #     # bwrap: setting up uid map: Permission denied workaround <- why github....
-      #     sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
-      #
-      #     # THANKS MICROSOFT, AMAZING WORK!!!! https://github.com/orgs/community/discussions/25678#discussioncomment-5242449
-
       - name: Checkout
         uses: actions/checkout@v7
         with:
           lfs: true
 
-      # - if: runner.os == 'Linux'
-      #   name: Install nix
-      #   uses: cachix/install-nix-action@v31
-      #   with:
-      #     github_access_token: ${{ secrets.GH_TOKEN }}
-
-      # - name: Binary cache
-      #   uses: actions/cache@v6
-      #   id: unity-game-bin-cache
-      #   with:
-      #     path: TestGames/${{ matrix.target.name }}/build
-      #     key: unity-game-bin-${{ matrix.target.targetPlatform }}-${{ hashFiles(format('TestGames/{0}/Assets/**', matrix.target.name), format('TestGames/{0}/Packages/**', matrix.target.name), format('TestGames/{0}/ProjectSettings/**', matrix.target.name)) }}
+      - name: Binary cache
+        uses: actions/cache@v6
+        id: unity-game-bin-cache
+        with:
+          path: TestGames/${{ matrix.target.name }}/build
+          key: unity-game-bin-${{ matrix.target.targetPlatform }}-${{ hashFiles(format('TestGames/{0}/Assets/**', matrix.target.name), format('TestGames/{0}/Packages/**', matrix.target.name), format('TestGames/{0}/ProjectSettings/**', matrix.target.name)) }}
           
-      # - if: steps.unity-game-bin-cache.outputs.cache-hit != 'true'
-      #   uses: actions/cache@v6
-      #   name: Library cache
-      #   with:
-      #     path: TestGames/${{ matrix.target.name }}/Library
-      #     key: unity-game-library-${{ matrix.target.name }}-${{ matrix.target.targetPlatform }}-${{ hashFiles(format('TestGames/{0}/Assets/**', matrix.target.name), format('TestGames/{0}/Packages/**', matrix.target.name), format('TestGames/{0}/ProjectSettings/**', matrix.target.name)) }}
-      #     restore-keys: |
-      #       unity-game-library-${{ matrix.target.name }}-${{ matrix.target.targetPlatform }}-
+      - if: steps.unity-game-bin-cache.outputs.cache-hit != 'true'
+        uses: actions/cache@v6
+        name: Library cache
+        with:
+          path: TestGames/${{ matrix.target.name }}/Library
+          key: unity-game-library-${{ matrix.target.name }}-${{ matrix.target.targetPlatform }}-${{ hashFiles(format('TestGames/{0}/Assets/**', matrix.target.name), format('TestGames/{0}/Packages/**', matrix.target.name), format('TestGames/{0}/ProjectSettings/**', matrix.target.name)) }}
+          restore-keys: |
+            unity-game-library-${{ matrix.target.name }}-${{ matrix.target.targetPlatform }}-
 
       # - if: steps.unity-game-bin-cache.outputs.cache-hit != 'true'
       #   uses: game-ci/unity-builder@v5
@@ -91,15 +79,18 @@ jobs:
       - name: Build
         shell: 'nix run ".#unity-testing" -- -e {0}'
         run: |
-          mkdir -p editor
-
           editor_version=$(just detect-game-unity-version TestGames/${{ matrix.target.name }})
-          pushd editor
+
+          mkdir -p "editor/${editor_version}/Editor"
+          pushd "editor/${editor_version}"
+
           echo "Downloading from 'https://download.leashed.dev/unity-editor/linux/${editor_version}.tar.gz'"
-          curl -OfL "https://download.leashed.dev/unity-editor/linux/${editor_version}.tar.gz" || true
+          curl -OfL "https://download.leashed.dev/unity-editor/linux/${editor_version}.tar.gz"
+          tar xf "${editor_version}.tar.gz" -C Editor --strip-components 1
+          rm -f "${editor_version}.tar.gz"
+
           popd
 
-          exit 1
           just build-test-game '${{ matrix.target.name }}' editor ${{ matrix.target.targetPlatform }}
 
       - uses: actions/upload-artifact@v7
