@@ -1,0 +1,44 @@
+{ pkgs }:
+pkgs.buildFHSEnv {
+  name = "unity-testing-fhs-env";
+
+  targetPkgs =
+    pkgs:
+    (with pkgs; [
+      just
+      curl
+      busybox
+    ]);
+
+  multiPkgs =
+    pkgs: with pkgs; [
+      cups
+      expat
+      alsa-lib
+      nspr
+      dbus
+      libxdamage
+      libxtst
+      nss
+      libxrandr
+      libxcursor
+      libx11
+      libglvnd
+      gdk-pixbuf
+      glib
+      gtk2
+      libGLU
+      gnome2.GConf
+      libcap
+      libxi
+      libxrender
+      glibc_multi.static
+      fontconfig.lib
+      freetype
+      pango
+      cairo
+      libxcomposite
+      libxext
+      libxfixes
+    ];
+}

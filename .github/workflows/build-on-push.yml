@@ -12,17 +12,34 @@ jobs:
     strategy:
       matrix:
         target:
-          - name: unity_latest
+          # - name: unity_latest
+          #   targetPlatform: StandaloneLinux64
+          - name: 2017.4.6f1
             targetPlatform: StandaloneLinux64
           # - name: unity_latest
           #   targetPlatform: StandaloneWindows64
           # - name: unity_latest
           #   targetPlatform: StandaloneWindows
-    runs-on: ${{ matrix.target.targetPlatform == 'StandaloneLinux64' && 'ubuntu-24.04' ||
+    runs-on: ${{ matrix.target.targetPlatform == 'StandaloneLinux64' && 'ubuntu-latest' ||
                  matrix.target.targetPlatform == 'StandaloneWindows64' && 'windows-2025' ||
                  matrix.target.targetPlatform == 'StandaloneWindows' && 'windows-2025' ||
                  '' }}
+    container:
+      image: docker.io/debian:trixie-slim
+      options: --privileged
     steps:
+      - name: Setup
+        run: |
+          apt update
+          apt install -y nodejs git git-lfs curl xz-utils nix-setup-systemd
+
+          # THANKS MICROSOFT, AMAZING WORK!!!! https://github.com/orgs/community/discussions/25678#discussioncomment-5242449
+          rm -rf /opt/hostedtoolcache
+
+          echo "experimental-features = nix-command flakes" >> /etc/nix/nix.conf
+
+          chown root:root /__w/UniTAS/UniTAS
+
       - name: Checkout
         uses: actions/checkout@v7
         with:
@@ -34,7 +51,7 @@ jobs:
         with:
           path: TestGames/${{ matrix.target.name }}/build
           key: unity-game-bin-${{ matrix.target.targetPlatform }}-${{ hashFiles(format('TestGames/{0}/Assets/**', matrix.target.name), format('TestGames/{0}/Packages/**', matrix.target.name), format('TestGames/{0}/ProjectSettings/**', matrix.target.name)) }}
-
+          
       - if: steps.unity-game-bin-cache.outputs.cache-hit != 'true'
         uses: actions/cache@v6
         name: Library cache
@@ -44,22 +61,37 @@ jobs:
           restore-keys: |
             unity-game-library-${{ matrix.target.name }}-${{ matrix.target.targetPlatform }}-
 
-        # THANKS MICROSOFT, AMAZING WORK!!!! https://github.com/orgs/community/discussions/25678#discussioncomment-5242449
-      - if: steps.unity-game-bin-cache.outputs.cache-hit != 'true'
-        name: Delete huge unnecessary tools folder
-        run: rm -rf /opt/hostedtoolcache
+      # - if: steps.unity-game-bin-cache.outputs.cache-hit != 'true'
+      #   uses: game-ci/unity-builder@v5
+      #   name: Build
+      #   env:
+      #     UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+      #     UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+      #     UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+      #   with:
+      #     projectPath: TestGames/${{ matrix.target.name }}
+      #     buildMethod: Editor.UniTASTest.BuildScript.Build
+      #     targetPlatform: ${{ matrix.target.targetPlatform }}
 
-      - if: steps.unity-game-bin-cache.outputs.cache-hit != 'true'
-        uses: game-ci/unity-builder@v5
-        name: Build
-        env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-        with:
-          projectPath: TestGames/${{ matrix.target.name }}
-          buildMethod: Editor.UniTASTest.BuildScript.Build
-          targetPlatform: ${{ matrix.target.targetPlatform }}
+      - run: |
+          ls -ld /__w/UniTAS/UniTAS /github/home
+
+      - name: Build
+        shell: 'nix run ".#unity-testing" -- -e {0}'
+        run: |
+          editor_version=$(just detect-game-unity-version TestGames/${{ matrix.target.name }})
+
+          mkdir -p "editor/${editor_version}/Editor"
+          pushd "editor/${editor_version}"
+
+          echo "Downloading from 'https://download.leashed.dev/unity-editor/linux/${editor_version}.tar.gz'"
+          curl -OfL "https://download.leashed.dev/unity-editor/linux/${editor_version}.tar.gz"
+          tar xf "${editor_version}.tar.gz" -C Editor --strip-components 1
+          rm -f "${editor_version}.tar.gz"
+
+          popd
+
+          just build-test-game '${{ matrix.target.name }}' editor ${{ matrix.target.targetPlatform }}
 
       - uses: actions/upload-artifact@v7
         name: Upload binary
@@ -78,7 +110,7 @@ jobs:
             name: win-x64
           - triple: i686-pc-windows-msvc
             name: win-x86
-    runs-on: ${{ matrix.target.name == 'linux-x64' && 'ubuntu-24.04' ||
+    runs-on: ${{ matrix.target.name == 'linux-x64' && 'ubuntu-latest' ||
                  matrix.target.name == 'win-x64' && 'windows-2025' ||
                  matrix.target.name == 'win-x86' && 'windows-2025' ||
                  '' }}
@@ -114,6 +146,7 @@ jobs:
         with:
           name: UniTAS-${{ matrix.target.name }}
           path: UniTAS/Patcher/bin/Release
+
   testUniTAS:
     name: Test UniTAS
     needs: buildUniTAS
@@ -132,7 +165,7 @@ jobs:
           #   gameName: unity_latest
           #   gameTargetPlatform: StandaloneWindows
           #   triple: i686-pc-windows-msvc
-    runs-on: ${{ matrix.target.gameTargetPlatform == 'StandaloneLinux64' && 'ubuntu-24.04' ||
+    runs-on: ${{ matrix.target.gameTargetPlatform == 'StandaloneLinux64' && 'ubuntu-latest' ||
                  matrix.target.gameTargetPlatform == 'StandaloneWindows64' && 'windows-2025' ||
                  matrix.target.gameTargetPlatform == 'StandaloneWindows' && 'windows-2025' ||
                  '' }}
