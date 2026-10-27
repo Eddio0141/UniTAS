@@ -12,6 +12,8 @@ jobs:
     strategy:
       matrix:
         target:
+          - name: 2017.4.6f1
+            targetPlatform: StandaloneLinux64
           - name: unity_latest
             targetPlatform: StandaloneLinux64
           # - name: unity_latest
