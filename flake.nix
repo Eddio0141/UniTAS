@@ -44,27 +44,39 @@
             ];
           };
 
-          devShells.default = pkgs.mkShell {
-            packages = with pkgs; [
-              dotnet-sdk_10
-              (rust.override {
-                extensions = [
-                  "rust-analyzer"
-                  "rust-src"
-                ];
-              })
-              rust-doc
-              roslyn-ls
-              just
-              openssl
-              pkg-config
-              unzip
-              curl
-              nushell
-              ffmpeg
-              xvfb-run
-              zip
-            ];
+          devShells = {
+            default = pkgs.mkShell {
+              packages = with pkgs; [
+                dotnet-sdk_10
+                (rust.override {
+                  extensions = [
+                    "rust-analyzer"
+                    "rust-src"
+                  ];
+                })
+                rust-doc
+                roslyn-ls
+                just
+                openssl
+                pkg-config
+                unzip
+                curl
+                nushell
+                ffmpeg
+                xvfb-run
+                zip
+              ];
+            };
+
+            github-ci = pkgs.mkShell {
+              packages = with pkgs; [
+                nodejs
+              ];
+            };
+          };
+
+          packages = {
+            unity-testing = (import ./nix/unity-testing.nix { inherit pkgs; });
           };
         };
     };
