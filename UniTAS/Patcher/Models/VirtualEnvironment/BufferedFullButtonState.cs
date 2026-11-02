@@ -9,21 +9,18 @@ namespace UniTAS.Patcher.Models.VirtualEnvironment;
 public class BufferedFullKeyState<TKey>
     where TKey : IEquatable<TKey>
 {
-    public IReadOnlyCollection<TKey> Held => (IReadOnlyCollection<TKey>)_held;
-    public IReadOnlyCollection<TKey> Down => (IReadOnlyCollection<TKey>)_down;
-    public IReadOnlyCollection<TKey> Up => (IReadOnlyCollection<TKey>)_up;
-    private readonly HashSet<TKey> _held = [];
-    private readonly HashSet<TKey> _down = [];
-    private readonly HashSet<TKey> _up = [];
+    public HashSet<TKey> Held { get; } = [];
+    public HashSet<TKey> Down { get; } = [];
+    public HashSet<TKey> Up { get; } = [];
 
     private readonly HashSet<TKey> _bufferedPress = [];
     private readonly HashSet<TKey> _bufferedRelease = [];
 
     public void ResetState()
     {
-        _held.Clear();
-        _down.Clear();
-        _up.Clear();
+        Held.Clear();
+        Down.Clear();
+        Up.Clear();
         _bufferedPress.Clear();
         _bufferedRelease.Clear();
     }
@@ -33,22 +30,22 @@ public class BufferedFullKeyState<TKey>
     /// </summary>
     public void Update()
     {
-        _down.Clear();
-        _up.Clear();
+        Down.Clear();
+        Up.Clear();
 
         foreach (var key in _bufferedPress)
         {
-            if (_held.Contains(key)) continue;
-            _down.Add(key);
-            _held.Add(key);
+            if (Held.Contains(key)) continue;
+            Down.Add(key);
+            Held.Add(key);
         }
 
         foreach (var bufferedRelease in _bufferedRelease)
         {
-            _held.RemoveWhere(key =>
+            Held.RemoveWhere(key =>
             {
                 if (!key.Equals(bufferedRelease)) return false;
-                _up.Add(key);
+                Up.Add(key);
                 return true;
             });
         }
@@ -74,7 +71,7 @@ public class BufferedFullKeyState<TKey>
     {
         _bufferedPress.RemoveWhere(key.Equals);
 
-        if (_held.Contains(key))
+        if (Held.Contains(key))
         {
             _bufferedRelease.Add(key);
         }
@@ -86,7 +83,7 @@ public class BufferedFullKeyState<TKey>
     public void Clear()
     {
         _bufferedPress.Clear();
-        foreach (var key in _held)
+        foreach (var key in Held)
         {
             _bufferedRelease.Add(key);
         }
@@ -97,7 +94,7 @@ public class BufferedFullKeyState<TKey>
     /// </summary>
     public bool IsDown(TKey key)
     {
-        return _down.Contains(key);
+        return Down.Contains(key);
     }
 
     /// <summary>
@@ -105,7 +102,7 @@ public class BufferedFullKeyState<TKey>
     /// </summary>
     public bool IsUp(TKey key)
     {
-        return _up.Contains(key);
+        return Up.Contains(key);
     }
 
     /// <summary>
@@ -113,6 +110,6 @@ public class BufferedFullKeyState<TKey>
     /// </summary>
     public bool IsHeld(TKey key)
     {
-        return _held.Contains(key);
+        return Held.Contains(key);
     }
 }

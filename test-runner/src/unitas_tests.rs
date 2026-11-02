@@ -151,14 +151,14 @@ impl TestCtx {
 
         let stream = &mut self.stream;
         stream
-            .send(&format!("print(traverse('TestFrameworkRuntime').field('_instance').field('{res_field_name}').property('Count').GetValue())"))?;
+            .send(&format!("print(traverse('TestFrameworkRuntime').property('Instance').field('{res_field_name}').property('Count').GetValue())"))?;
         let count = stream
             .receive()?
             .parse::<usize>()
             .context("count of test results should be a number")?;
 
         stream.send(&format!(
-            "local results = traverse('TestFrameworkRuntime').field('_instance').field('{res_field_name}').GetValue() \
+            "local results = traverse('TestFrameworkRuntime').property('Instance').field('{res_field_name}').GetValue() \
             for _, res in ipairs(results) do print(res.Name) print(res.Success) print(res.Message) end",
         )
         )?;
@@ -237,7 +237,7 @@ impl TestCtx {
             for _ in 0..60 {
                 thread::sleep(Duration::from_secs(1));
                 stream.send(
-                "print(traverse('TestFrameworkRuntime').field('_instance').field('_initTestResults').property('Count').GetValue())",
+                "print(traverse('TestFrameworkRuntime').property('Instance').field('_initTestResults').property('Count').GetValue())",
             )?;
                 let result = stream.receive()?;
                 if result == "1" {
