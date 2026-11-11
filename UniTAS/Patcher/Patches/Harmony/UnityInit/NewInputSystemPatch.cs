@@ -57,7 +57,8 @@ public class NewInputSystemPatch
         var body = def.Body;
         var il = dmd.GetILProcessor();
 
-        var result = new VariableDefinition(il.Import(typeof(InputEventBuffer)));
+        var inputEventBuffer = AccessTools.TypeByName("UnityEngine.InputSystem.LowLevel.InputEventBuffer");
+        var result = new VariableDefinition(il.Import(inputEventBuffer));
         var eventBufferPtr = new VariableDefinition(il.Import(typeof(NativeInputEventBuffer).MakePointerType()));
         body.Variables.AddRange([result, eventBufferPtr]);
 
@@ -75,7 +76,7 @@ public class NewInputSystemPatch
         il.Emit(OpCodes.Ldfld, AccessTools.Field(typeof(NativeInputEventBuffer), nameof(NativeInputEventBuffer.sizeInBytes)));
         il.Emit(OpCodes.Ldloc, eventBufferPtr);
         il.Emit(OpCodes.Ldfld, AccessTools.Field(typeof(NativeInputEventBuffer), nameof(NativeInputEventBuffer.capacityInBytes)));
-        il.Emit(OpCodes.Call, AccessTools.Constructor(typeof(InputEventBuffer), [typeof(InputEvent).MakePointerType(), typeof(int), typeof(int), typeof(int)]));
+        il.Emit(OpCodes.Call, AccessTools.Constructor(inputEventBuffer, [typeof(InputEvent).MakePointerType(), typeof(int), typeof(int), typeof(int)]));
         il.Emit(OpCodes.Ldloc, result);
         il.Emit(OpCodes.Ret);
 
