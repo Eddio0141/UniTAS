@@ -70,10 +70,10 @@ public class UnityRuntimeInitAttributeInvoker
         var loadTypesFiltered = loadTypes
             .Where(x => Enum.IsDefined(runtimeInitializeLoadType, x))
             .Select(x => Enum.Parse(runtimeInitializeLoadType, x)).ToList();
-        var methodWithAttributes = types.SelectMany(x => x
-                .GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.NonPublic)
-                .Where(m => m.GetParameters().Length == 0))
-            .Where(x => x.GetCustomAttributes(runtimeInitializeOnLoadMethodAttribute, true).Length > 0);
+        var methodWithAttributes = types
+            .SelectMany(x => x.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.NonPublic))
+            .Where(x => x.IsDefined(runtimeInitializeOnLoadMethodAttribute, true))
+            .Where(m => m.GetParameters().Length == 0);
 
         var methodsUnordered = new List<(MethodBase, int)>();
 
