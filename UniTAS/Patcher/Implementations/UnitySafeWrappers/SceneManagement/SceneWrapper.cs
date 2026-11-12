@@ -93,22 +93,41 @@ public class SceneWrapper(object instance) : UnityInstanceWrap(instance)
         }
 
         var handleField = AccessTools.Field(SceneType, "m_Handle");
-        var dmd = new DynamicMethodDefinition("m_Handle_get", typeof(int), [typeof(object)]);
-        var il = dmd.GetILGenerator();
-        il.Emit(OpCodes.Ldarg_0);
-        il.Emit(OpCodes.Unbox_Any, SceneType);
-        il.Emit(OpCodes.Ldfld, handleField);
-        il.Emit(OpCodes.Ret);
-        GetHandleField = dmd.Generate().CreateDelegate<Func<object, int>>();
 
-        dmd = new DynamicMethodDefinition("m_Handle_set", null, [typeof(object).MakeByRefType(), typeof(int)]);
-        il = dmd.GetILGenerator();
-        il.Emit(OpCodes.Ldarg_0);
-        il.Emit(OpCodes.Ldind_Ref);
-        il.Emit(OpCodes.Unbox, SceneType);
-        il.Emit(OpCodes.Ldarg_1);
-        il.Emit(OpCodes.Stfld, handleField);
-        il.Emit(OpCodes.Ret);
-        SetHandleField = dmd.Generate().CreateDelegate<SetIntDelegate>();
+        if (handleField.FieldType == typeof(int))
+        {
+            var dmd = new DynamicMethodDefinition("m_Handle_get", typeof(int), [typeof(object)]);
+            var il = dmd.GetILGenerator();
+            il.Emit(OpCodes.Ldarg_0);
+            il.Emit(OpCodes.Unbox_Any, SceneType);
+            il.Emit(OpCodes.Ldfld, handleField);
+            il.Emit(OpCodes.Ret);
+            GetHandleField = dmd.Generate().CreateDelegate<Func<object, int>>();
+
+            dmd = new DynamicMethodDefinition("m_Handle_set", null, [typeof(object).MakeByRefType(), typeof(int)]);
+            il = dmd.GetILGenerator();
+            il.Emit(OpCodes.Ldarg_0);
+            il.Emit(OpCodes.Ldind_Ref);
+            il.Emit(OpCodes.Unbox, SceneType);
+            il.Emit(OpCodes.Ldarg_1);
+            il.Emit(OpCodes.Stfld, handleField);
+            il.Emit(OpCodes.Ret);
+            SetHandleField = dmd.Generate().CreateDelegate<SetIntDelegate>();
+        }
+        // In 6.3 this type changed from int to SceneHandle, so the above IL code won't work.
+        // Instead, use reflection to convert between SceneHandle and int.
+        else if (handleField.FieldType.Name == "SceneHandle")
+        {
+            var entityIdType = AccessTools.TypeByName("UnityEngine.EntityId");
+            var entityIdFromInt = AccessTools.Method(entityIdType, "From", [typeof(int)]);
+
+            var sceneHandleType = AccessTools.TypeByName("UnityEngine.SceneManagement.SceneHandle");
+            var sceneHandleFromEntityId = AccessTools.Method(sceneHandleType, "From", [entityIdType]);
+
+            GetHandleField = instance => (int)handleField.GetValue(instance);
+            SetHandleField = (ref object instance, int handleInt) =>
+                handleField.SetValue(
+                    instance, sceneHandleFromEntityId.Invoke(null, [entityIdFromInt.Invoke(null, [handleInt])]));
+        }
     }
 }

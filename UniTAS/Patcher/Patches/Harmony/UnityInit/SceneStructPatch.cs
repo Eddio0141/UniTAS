@@ -17,6 +17,12 @@ namespace UniTAS.Patcher.Patches.Harmony.UnityInit;
 public class SceneStructPatch
 {
     private static readonly Type SceneType = AccessTools.TypeByName("UnityEngine.SceneManagement.Scene");
+    private static readonly Type SceneHandleType = AccessTools.TypeByName("UnityEngine.SceneManagement.SceneHandle");
+    private static readonly Type EntityIdType = AccessTools.TypeByName("UnityEngine.EntityId");
+
+    private static readonly FieldInfo SceneHandleMValue = AccessTools.Field(SceneHandleType, "m_Value");
+    private static readonly FieldInfo EntityIdMData = AccessTools.Field(EntityIdType, "m_Data");
+    
 
     private static readonly ISceneLoadTracker SceneLoadTracker =
         ContainerStarter.Kernel.GetInstance<ISceneLoadTracker>();
@@ -28,6 +34,20 @@ public class SceneStructPatch
         ContainerStarter.Kernel.GetInstance<IUnityInstanceWrapFactory>();
 
     private static readonly ISceneOverride SceneOverride = ContainerStarter.Kernel.GetInstance<ISceneOverride>();
+
+    private static int GetSceneHandleAsInt(object sceneHandle)
+    {
+        // Unity 6.3 introduced a SceneHandle struct, which wraps an int.
+        // Use reflection to get the int.
+        if (sceneHandle.GetType().Name == "SceneHandle")
+        {
+            var entityId = SceneHandleMValue.GetValue(sceneHandle);
+            return (int)EntityIdMData.GetValue(entityId);
+        }
+
+        // If this isn't a SceneHandle struct then this should already be an int.
+        return (int)sceneHandle;
+    }
 
     [HarmonyPatch]
     private class IsValidInternal
@@ -42,9 +62,10 @@ public class SceneStructPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix(ref bool __result, int sceneHandle)
+        private static bool Prefix(ref bool __result, object sceneHandle)
         {
-            return CheckAndSetDefault(sceneHandle, ref __result, _ => true, actual => actual.IsValid);
+            var sceneHandleInt = GetSceneHandleAsInt(sceneHandle);
+            return CheckAndSetDefault(sceneHandleInt, ref __result, _ => true, actual => actual.IsValid);
         }
     }
 
@@ -61,9 +82,10 @@ public class SceneStructPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix(ref string __result, int sceneHandle)
+        private static bool Prefix(ref string __result, object sceneHandle)
         {
-            return CheckAndSetDefault(sceneHandle, ref __result, x => x.Name, x => x.Name);
+            var sceneHandleInt = GetSceneHandleAsInt(sceneHandle);
+            return CheckAndSetDefault(sceneHandleInt, ref __result, x => x.Name, x => x.Name);
         }
     }
 
@@ -80,13 +102,15 @@ public class SceneStructPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix(int sceneHandle)
+        private static bool Prefix(object sceneHandle)
         {
             if (PatchReverseInvoker.Invoking) return true;
 
+            var sceneHandleInt = GetSceneHandleAsInt(sceneHandle);
+
             foreach (var loading in SceneLoadTracker.LoadingScenes)
             {
-                if (loading.TrackingHandle != sceneHandle) continue;
+                if (loading.TrackingHandle != sceneHandleInt) continue;
                 CheckAndWarnAPIUsage();
                 // well this ain't the proper error, but it should do the same thing
                 throw new InvalidOperationException(
@@ -110,9 +134,10 @@ public class SceneStructPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix(int sceneHandle, ref int __result)
+        private static bool Prefix(object sceneHandle, ref int __result)
         {
-            return CheckAndSetDefault(sceneHandle, ref __result, dummy => dummy.BuildIndex,
+            var sceneHandleInt = GetSceneHandleAsInt(sceneHandle);
+            return CheckAndSetDefault(sceneHandleInt, ref __result, dummy => dummy.BuildIndex,
                 actual => actual.BuildIndex);
         }
     }
@@ -130,9 +155,10 @@ public class SceneStructPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix(int sceneHandle, ref string __result)
+        private static bool Prefix(object sceneHandle, ref string __result)
         {
-            return CheckAndSetDefault(sceneHandle, ref __result, dummy => dummy.Path, actual => actual.Path);
+            var sceneHandleInt = GetSceneHandleAsInt(sceneHandle);
+            return CheckAndSetDefault(sceneHandleInt, ref __result, dummy => dummy.Path, actual => actual.Path);
         }
     }
 
@@ -237,6 +263,8 @@ public class SceneStructPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
+        // TODO: Invalid IL code on 6000.3, even when using __instance or changing ___m_Handle type to object.
+        // Also happens in EqualsPatch below.
         private static bool Prefix(int ___m_Handle, ref int __result)
         {
             return CheckAndSetDefault(___m_Handle, ref __result, _ => 0, actual => actual.Instance.GetHashCode());
@@ -299,15 +327,17 @@ public class SceneStructPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix(int sceneHandle, ref bool __result)
+        private static bool Prefix(object sceneHandle, ref bool __result)
         {
-            if (SceneOverride.IsLoaded(sceneHandle, out var loaded))
+            var sceneHandleInt = GetSceneHandleAsInt(sceneHandle);
+
+            if (SceneOverride.IsLoaded(sceneHandleInt, out var loaded))
             {
                 __result = loaded;
                 return false;
             }
 
-            return CheckAndSetDefault(sceneHandle, ref __result, _ => false, actual => actual.IsLoaded);
+            return CheckAndSetDefault(sceneHandleInt, ref __result, _ => false, actual => actual.IsLoaded);
         }
     }
 
@@ -324,15 +354,17 @@ public class SceneStructPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix(int sceneHandle, ref bool __result)
+        private static bool Prefix(object sceneHandle, ref bool __result)
         {
-            if (SceneOverride.IsSubScene(sceneHandle, out var sub))
+            var sceneHandleInt = GetSceneHandleAsInt(sceneHandle);
+
+            if (SceneOverride.IsSubScene(sceneHandleInt, out var sub))
             {
                 __result = sub;
                 return false;
             }
 
-            return CheckAndSetDefault(sceneHandle, ref __result, _ => false, actual => actual.IsSubScene);
+            return CheckAndSetDefault(sceneHandleInt, ref __result, _ => false, actual => actual.IsSubScene);
         }
     }
 
@@ -349,9 +381,10 @@ public class SceneStructPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix(int sceneHandle, bool value)
+        private static bool Prefix(object sceneHandle, bool value)
         {
-            return !SceneOverride.SetSubScene(sceneHandle, value);
+            var sceneHandleInt = GetSceneHandleAsInt(sceneHandle);
+            return !SceneOverride.SetSubScene(sceneHandleInt, value);
         }
     }
 
@@ -379,9 +412,12 @@ public class SceneStructPatch
             return PatchHelper.CleanupIgnoreFail(original, ex);
         }
 
-        private static bool Prefix(ref int sceneHandle)
+        private static bool Prefix(ref object sceneHandle)
         {
-            return CheckAndSetHandleArg(ref sceneHandle);
+            var sceneHandleInt = GetSceneHandleAsInt(sceneHandle);
+            var result = CheckAndSetHandleArg(ref sceneHandleInt);
+            sceneHandle = sceneHandleInt;
+            return result;
         }
     }
 

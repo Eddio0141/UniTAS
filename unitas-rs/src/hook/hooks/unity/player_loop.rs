@@ -92,6 +92,10 @@ pub const fn last_update_hook<'a>() -> Hook<'a> {
     Hook(
         const {
             &[
+                // 6000.3.11f1
+                Search::new(&|addr| Ok(last_update_mid_func_install(addr, true)))
+                    .with_module(UNITY_PLAYER_MODULE)
+                    .with_pattern(pattern!(17, "74 ?? 49 ?? ?? 83 ?? ?? 49 ?? ?? 0f ?? ??  ff ?? ?? e8")),
                 // 2022.2.0f1 - 6000.0.41f1
                 Search::new(&|addr| Ok(last_update_mid_func_install(addr, true)))
                     .with_module(UNITY_PLAYER_MODULE)

@@ -11,13 +11,13 @@ public static class TryFreeMallocManual
 {
     private static readonly List<UnityMallocInfo> UnityMallocs = [];
 
+    private static readonly Type Allocator = AccessTools.TypeByName("Unity.Collections.Allocator");
+    
     private static readonly MethodBase UnityFree =
-        AccessTools.Method("Unity.Collections.LowLevel.Unsafe.UnsafeUtility:Free");
+        AccessTools.Method("Unity.Collections.LowLevel.Unsafe.UnsafeUtility:Free", [typeof(void*), Allocator]);
 
     private static readonly MethodBase UnityFreeTracked =
-        AccessTools.Method("Unity.Collections.LowLevel.Unsafe.UnsafeUtility:FreeTracked");
-
-    private static readonly Type Allocator = AccessTools.TypeByName("Unity.Collections.Allocator");
+        AccessTools.Method("Unity.Collections.LowLevel.Unsafe.UnsafeUtility:FreeTracked", [typeof(void*), Allocator]);
 
     private static readonly bool HasUnityMalloc;
 
